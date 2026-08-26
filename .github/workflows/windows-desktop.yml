@@ -41,13 +41,31 @@ jobs:
             $targetPath = Join-Path $targetDir "app-builder.exe"
             if (-not (Test-Path $targetPath)) {
               New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
-              $tarballUrl = "https://registry.npmjs.org/app-builder-bin/-/app-builder-bin-4.0.0.tgz"
-              $tgzPath = Join-Path $env:TEMP "app-builder-bin-4.0.0.tgz"
-              Invoke-WebRequest -Uri $tarballUrl -OutFile $tgzPath
-              Push-Location $env:TEMP
-              tar -xzf app-builder-bin-4.0.0.tgz package/win/x64/app-builder.exe
-              Pop-Location
-              Copy-Item (Join-Path $env:TEMP "package/win/x64/app-builder.exe") $targetPath
+              node -e "
+                const https = require('https');
+                const fs = require('fs');
+                const path = require('path');
+                const { execSync } = require('child_process');
+                const url = 'https://registry.npmjs.org/app-builder-bin/-/app-builder-bin-4.0.0.tgz';
+                const tgz = path.join(process.env.TEMP, 'app-builder-bin-4.0.0.tgz');
+                const file = fs.createWriteStream(tgz);
+                https.get(url, (res) => {
+                  if (res.statusCode !== 200) {
+                    console.error('Failed to download:', res.statusCode);
+                    process.exit(1);
+                  }
+                  res.pipe(file);
+                  file.on('finish', () => {
+                    file.close();
+                    execSync('tar -xzf ' + tgz + ' package/win/x64/app-builder.exe', { cwd: process.env.TEMP, stdio: 'inherit' });
+                    fs.copyFileSync(path.join(process.env.TEMP, 'package/win/x64/app-builder.exe'), process.argv[2]);
+                    console.log('Copied app-builder.exe to', process.argv[2]);
+                  });
+                }).on('error', (e) => {
+                  console.error(e);
+                  process.exit(1);
+                });
+              " $targetPath
             }
           }
 
