@@ -1,0 +1,88 @@
+import React from "react";
+import type { Project } from "./App.js";
+
+interface WelcomeScreenProps {
+  recentProjects: Project[];
+  onOpenProject: (path?: string) => void;
+  onCreateProject: () => void;
+  loading: boolean;
+  error: string | null;
+}
+
+export default function WelcomeScreen({
+  recentProjects,
+  onOpenProject,
+  onCreateProject,
+  loading,
+  error,
+}: WelcomeScreenProps) {
+  return (
+    <div className="welcome">
+      <div className="welcome-container">
+        <div className="welcome-header">
+          <div className="welcome-logo">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+              <rect width="64" height="64" rx="12" fill="#6366f1"/>
+              <path d="M18 44L28 20H36L46 44H38L36 38H28L26 44H18ZM30 32H34L32 26L30 32Z" fill="white"/>
+              <circle cx="48" cy="16" r="8" fill="#22c55e"/>
+            </svg>
+          </div>
+          <h1 className="welcome-title">CodeForge</h1>
+          <p className="welcome-subtitle">Free AI-powered coding agent</p>
+        </div>
+
+        {error && (
+          <div className="welcome-error">
+            {error}
+          </div>
+        )}
+
+        <div className="welcome-actions">
+          <button
+            className="welcome-btn primary"
+            onClick={() => onOpenProject()}
+            disabled={loading}
+          >
+            <span className="btn-icon">📂</span>
+            <span>Open Project</span>
+          </button>
+          <button
+            className="welcome-btn secondary"
+            onClick={onCreateProject}
+            disabled={loading}
+          >
+            <span className="btn-icon">➕</span>
+            <span>New Project</span>
+          </button>
+        </div>
+
+        {recentProjects.length > 0 && (
+          <div className="welcome-recent">
+            <h3 className="welcome-recent-title">Recent Projects</h3>
+            <ul className="welcome-recent-list">
+              {recentProjects.slice(0, 5).map((project) => (
+                <li key={project.id}>
+                  <button
+                    className="welcome-recent-item"
+                    onClick={() => onOpenProject(project.path)}
+                    disabled={loading}
+                  >
+                    <span className="recent-icon">📁</span>
+                    <div className="recent-info">
+                      <span className="recent-name">{project.name}</span>
+                      <span className="recent-path">{project.path}</span>
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="welcome-footer">
+          <p>Windows Desktop • Free Cloud LLMs • Autonomous Coding</p>
+        </div>
+      </div>
+    </div>
+  );
+}

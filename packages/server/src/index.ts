@@ -1,0 +1,808 @@
+import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import type { WorkspaceEvent } from "@codeforge/protocol";
+import { EventStore, createSessionPersistence, type SessionRecord, type TurnRecord, type WorkItem } from "@codeforge/sessions";
+import { ForgeZero, createDevelopmentEntitlementProvider } from "@codeforge/forge-zero";
+import type { FreeModelRecord } from "@codeforge/forge-zero";
+import type { ProviderCatalog } from "@codeforge/providers";
+import { InMemoryProviderCatalog } from "@codeforge/providers";
+import { runDemoRuntime } from "./demo-runtime.js";
+import { AgentRuntime, createAgentRuntime } from "./agent-runtime.js";
+import { resolveWithinWorkspace } from "./path-security.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export interface ServerOptions {
+  port?: number;
+  webDist?: string;
+  dbPath?: string;
+  /** Catalog injection point for tests; production uses InMemoryProviderCatalog. */
+  providerCatalog?: ProviderCatalog;
+}
+
+export class CodeForgeServer {
+  private port: number;
+  private webDist: string;
+  private eventStore: EventStore;
+  private server: http.Server | null = null;
+  private clients: Set<http.ServerResponse> = new Set();
+  private persistence = createSessionPersistence();
+  private firewall: ForgeZero;
+  private providerCatalog: ProviderCatalog;
+  private runtimes: Map<string, AgentRuntime> = new Map();
+  private useRealRuntime: boolean;
+  private activeWorkspacePath: string | null = null;
+
+  constructor(options: ServerOptions = {}) {
+    this.port = options.port ?? 3210;
+    this.webDist = options.webDist ?? path.join(__dirname, "..", "web", "dist");
+    this.eventStore = new EventStore();
+    // Development scaffold: deterministic entitlement scenarios until the real
+    // entitlement service exists. GEMS access still fails closed.
+    this.firewall = new ForgeZero({
+      entitlementProvider: createDevelopmentEntitlementProvider(),
+    });
+    this.providerCatalog = options.providerCatalog ?? new InMemoryProviderCatalog();
+    this.useRealRuntime = process.env.CODEFORGE_REAL_RUNTIME === "true";
+
+    this.registerFreeModels();
+    this.registerGemsModels();
+  }
+
+  private registerFreeModels(): void {
+    const model: FreeModelRecord = {
+      providerId: "codeforge",
+      modelId: "free-model-1",
+      displayName: "CodeForge Free Model",
+      freeStatus: "verified_free",
+      contextWindow: 128000,
+      capabilities: {
+        text: true,
+        coding: true,
+        toolCalling: true,
+        vision: false,
+        structuredOutput: true,
+        longContext: true,
+      },
+      costProfile: {
+        inputCostPerMillion: 0,
+        outputCostPerMillion: 0,
+        isFree: true,
+        paidFallbackPossible: false,
+        paidFallbackDisabled: true,
+        source: "official",
+      },
+      // ForgeZero.verifyProviderAccount requires an available/verified health
+      // state; without it auto-routing can never select this model.
+      health: { status: "available", lastCheckedAt: new Date().toISOString() },
+      isRemote: true,
+      isCloudHosted: true,
+    };
+    this.firewall.register(model);
+  }
+
+  /**
+   * First-party GEMS paid models. Registered so they are visible to the model
+   * selector, but they are never free-eligible (auto-routing cannot pick them)
+   * and every turn using them passes through ForgeZero.checkEntitlement.
+   */
+  private registerGemsModels(): void {
+    const gemsModels: Array<{ modelId: string; displayName: string }> = [
+      { modelId: "topaz", displayName: "Topaz" },
+      { modelId: "sapphire", displayName: "Sapphire" },
+      { modelId: "peridot", displayName: "Peridot" },
+      { modelId: "garnet", displayName: "Garnet" },
+    ];
+
+    for (const gem of gemsModels) {
+      const model: FreeModelRecord = {
+        providerId: "codeforge",
+        modelId: gem.modelId,
+        displayName: gem.displayName,
+        freeStatus: "paid",
+        tier: "gems_paid",
+        contextWindow: 128000,
+        capabilities: {
+          text: true,
+          coding: true,
+          toolCalling: true,
+          vision: false,
+          structuredOutput: true,
+          longContext: true,
+        },
+        costProfile: {
+          inputCostPerMillion: 0,
+          outputCostPerMillion: 0,
+          isFree: false,
+          paidFallbackPossible: false,
+          paidFallbackDisabled: true,
+          source: "official",
+        },
+        isRemote: true,
+        isCloudHosted: true,
+      };
+      this.firewall.register(model);
+    }
+  }
+
+  /** Bound port after start() (resolves the ephemeral port when started with 0). */
+  get httpPort(): number {
+    return this.port;
+  }
+
+  async start(): Promise<void> {
+    this.server = http.createServer((req, res) => this.handleRequest(req, res));
+    const server = this.server;
+    await new Promise<void>((resolveListen) => {
+      server.listen(this.port, () => resolveListen());
+    });
+    const address = server.address();
+    if (typeof address === "object" && address !== null) {
+      this.port = address.port;
+    }
+    console.log(`CodeForge server running at http://localhost:${this.port}`);
+  }
+
+  async stop(): Promise<void> {
+    if (this.server) {
+      const server = this.server;
+      this.server = null;
+      server.close();
+      // Keep-alive sockets from HTTP clients must not hold the process open.
+      server.closeAllConnections();
+    }
+    this.clients.clear();
+    this.persistence.close();
+  }
+
+  private persistSession(sessionId: string, userMessage: string): void {
+    const now = new Date().toISOString();
+    const existing = this.persistence.getSession(sessionId);
+    this.persistence.upsertSession({
+      id: sessionId,
+      title: userMessage.slice(0, 80),
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      status: "running",
+    });
+  }
+
+  private persistTurn(sessionId: string, turnId: string, userMessage: string): void {
+    const turn: TurnRecord = {
+      id: turnId,
+      sessionId,
+      seq: this.eventStore.getLastSeq(),
+      userMessage,
+      status: "running",
+      startedAt: new Date().toISOString(),
+    };
+    this.persistence.upsertTurn(turn);
+  }
+
+  private handleRequest(req: http.IncomingMessage, res: http.ServerResponse): void {
+    const url = new URL(req.url || "/", `http://${req.headers.host}`);
+
+    if (req.method === "OPTIONS") {
+      res.writeHead(204, {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      });
+      res.end();
+      return;
+    }
+
+    if (url.pathname === "/api/events") {
+      this.handleSSE(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/send" && req.method === "POST") {
+      this.handleSend(req, res);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/sessions\/[^/]+\/turns\/[^/]+\/pause$/) && req.method === "POST") {
+      this.handlePauseTurn(req, res, url.pathname);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/sessions\/[^/]+\/turns\/[^/]+\/resume$/) && req.method === "POST") {
+      this.handleResumeTurn(req, res, url.pathname);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/sessions\/[^/]+\/turns\/[^/]+\/cancel$/) && req.method === "POST") {
+      this.handleCancelTurn(req, res, url.pathname);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/sessions\/[^/]+\/turns\/[^/]+\/steer$/) && req.method === "POST") {
+      this.handleSteerTurn(req, res, url.pathname);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/approvals\/[^/]+\/resolve$/) && req.method === "POST") {
+      this.handleResolveApproval(req, res, url.pathname);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/questions\/[^/]+\/resolve$/) && req.method === "POST") {
+      this.handleResolveQuestion(req, res, url.pathname);
+      return;
+    }
+
+    if (url.pathname === "/api/workspace/set" && req.method === "POST") {
+      this.handleSetWorkspace(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/workspace/tree" && req.method === "GET") {
+      this.handleWorkspaceTree(req, res, url);
+      return;
+    }
+
+    if (url.pathname === "/api/models" && req.method === "GET") {
+      this.handleModels(res);
+      return;
+    }
+
+    if (url.pathname === "/api/model-selection" && req.method === "POST") {
+      this.handleModelSelection(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/sessions" && req.method === "GET") {
+      const sessions = this.persistence.listSessions();
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify(sessions));
+      return;
+    }
+
+    if (url.pathname.startsWith("/api/sessions/") && url.pathname.endsWith("/events") && req.method === "GET") {
+      const sessionId = url.pathname.replace("/api/sessions/", "").replace("/events", "");
+      const events = this.persistence.getEvents(sessionId);
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify(events));
+      return;
+    }
+
+    if (url.pathname.startsWith("/api/sessions/") && req.method === "GET") {
+      const sessionId = url.pathname.replace("/api/sessions/", "");
+      const session = this.persistence.getSession(sessionId);
+      const turns = this.persistence.getTurns(sessionId);
+      const workItems = this.persistence.getWorkItems(sessionId);
+      const events = this.persistence.getEvents(sessionId);
+      const runtime = this.runtimes.get(sessionId);
+      const pendingApprovals = runtime?.getAllPendingApprovals().map((a) => ({
+        approvalId: a.approvalId,
+        tool: a.tool,
+        action: a.action,
+        description: a.description,
+        risk: a.risk,
+        scope: a.scope,
+      })) ?? [];
+      const pendingQuestions = runtime?.getAllPendingQuestions().map((q) => ({
+        questionId: q.questionId,
+        prompt: q.prompt,
+        options: q.options,
+      })) ?? [];
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ session, turns, workItems, events, pendingApprovals, pendingQuestions }));
+      return;
+    }
+
+    this.serveStatic(req, res, url.pathname);
+  }
+
+  private handleSend(req: http.IncomingMessage, res: http.ServerResponse): void {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const data = JSON.parse(body);
+        const sessionId = data.sessionId ?? "default";
+
+        const runtime = this.getOrCreateRuntime(
+          sessionId,
+          typeof data.userId === "string" && data.userId ? data.userId : undefined,
+        );
+
+        if (this.useRealRuntime) {
+          const turnId = await runtime.startTurn(data.message ?? "");
+          res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ ok: true, turnId, mode: "real" }));
+        } else {
+          const turnId = crypto.randomUUID();
+          this.eventStore.append({
+            type: "turn.started",
+            timestamp: new Date().toISOString(),
+            seq: this.eventStore.getLastSeq() + 1,
+            sessionId,
+            payload: { turnId, userMessage: data.message ?? "" },
+          } as WorkspaceEvent);
+          this.persistSession(sessionId, data.message ?? "");
+          this.persistTurn(sessionId, turnId, data.message ?? "");
+          runDemoRuntime({
+            sessionId,
+            turnId,
+            emit: (event) => {
+              this.eventStore.append(event);
+              this.persistence.appendEvent({ ...event, seq: this.eventStore.getLastSeq() });
+            },
+          }).catch(() => {});
+          res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ ok: true, turnId, mode: "demo" }));
+        }
+      } catch (error) {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({
+          error: "SEND_FAILED",
+          message: error instanceof Error ? error.message : String(error),
+        }));
+      }
+    });
+  }
+
+  private handlePauseTurn(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+    const match = pathname.match(/\/api\/sessions\/([^/]+)\/turns\/([^/]+)\/pause$/);
+    if (!match) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Invalid path" }));
+      return;
+    }
+    const [, sessionId, turnId] = match;
+    const runtime = this.runtimes.get(sessionId ?? "");
+    if (!runtime) {
+      res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Session not found" }));
+      return;
+    }
+    runtime.pauseTurn(turnId ?? "")
+      .then(() => {
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ ok: true }));
+      })
+      .catch((error) => {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+      });
+  }
+
+  private handleResumeTurn(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+    const match = pathname.match(/\/api\/sessions\/([^/]+)\/turns\/([^/]+)\/resume$/);
+    if (!match) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Invalid path" }));
+      return;
+    }
+    const [, sessionId, turnId] = match;
+    const runtime = this.runtimes.get(sessionId ?? "");
+    if (!runtime) {
+      res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Session not found" }));
+      return;
+    }
+    runtime.resumeTurn(turnId ?? "")
+      .then(() => {
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ ok: true }));
+      })
+      .catch((error) => {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+      });
+  }
+
+  private handleCancelTurn(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+    const match = pathname.match(/\/api\/sessions\/([^/]+)\/turns\/([^/]+)\/cancel$/);
+    if (!match) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Invalid path" }));
+      return;
+    }
+    const [, sessionId, turnId] = match;
+    const runtime = this.runtimes.get(sessionId ?? "");
+    if (!runtime) {
+      res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Session not found" }));
+      return;
+    }
+    runtime.cancelTurn(turnId ?? "", "User cancelled")
+      .then(() => {
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ ok: true }));
+      })
+      .catch((error) => {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+      });
+  }
+
+  private handleSteerTurn(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+    const match = pathname.match(/\/api\/sessions\/([^/]+)\/turns\/([^/]+)\/steer$/);
+    if (!match) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Invalid path" }));
+      return;
+    }
+    const [, sessionId, turnId] = match;
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const data = JSON.parse(body);
+        const runtime = this.runtimes.get(sessionId ?? "");
+        if (!runtime) {
+          res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "Session not found" }));
+          return;
+        }
+        await runtime.steerTurn(turnId ?? "", data.steering ?? "");
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (error) {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+      }
+    });
+  }
+
+  private handleResolveApproval(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+    const match = pathname.match(/\/api\/approvals\/([^/]+)\/resolve$/);
+    if (!match) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Invalid path" }));
+      return;
+    }
+    const [, approvalId] = match;
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const data = JSON.parse(body);
+        for (const runtime of this.runtimes.values()) {
+          const approval = runtime.getPendingApproval(approvalId ?? "");
+          if (approval) {
+            runtime.resolveApproval(approvalId ?? "", data.decision ?? "deny");
+            res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+            res.end(JSON.stringify({ ok: true }));
+            return;
+          }
+        }
+        res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: "Approval not found" }));
+      } catch (error) {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+      }
+    });
+  }
+
+  private handleResolveQuestion(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+    const match = pathname.match(/\/api\/questions\/([^/]+)\/resolve$/);
+    if (!match) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Invalid path" }));
+      return;
+    }
+    const [, questionId] = match;
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const data = JSON.parse(body);
+        for (const runtime of this.runtimes.values()) {
+          const question = runtime.getPendingQuestion(questionId ?? "");
+          if (question) {
+            runtime.resolveQuestion(questionId ?? "", data.answer ?? "");
+            res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+            res.end(JSON.stringify({ ok: true }));
+            return;
+          }
+        }
+        res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: "Question not found" }));
+      } catch (error) {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+      }
+    });
+  }
+
+  private handleSetWorkspace(req: http.IncomingMessage, res: http.ServerResponse): void {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const data = JSON.parse(body);
+        const workspacePath = data.path;
+        
+        if (!workspacePath || typeof workspacePath !== "string") {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "Invalid workspace path" }));
+          return;
+        }
+
+        if (!fs.existsSync(workspacePath)) {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "Workspace path does not exist" }));
+          return;
+        }
+
+        const stats = fs.statSync(workspacePath);
+        if (!stats.isDirectory()) {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "Workspace path is not a directory" }));
+          return;
+        }
+
+        this.activeWorkspacePath = workspacePath;
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ ok: true, path: workspacePath }));
+      } catch (error) {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+      }
+    });
+  }
+
+  private handleWorkspaceTree(req: http.IncomingMessage, res: http.ServerResponse, url: URL): void {
+    const requestedPath = url.searchParams.get("path");
+
+    if (!this.activeWorkspacePath && !requestedPath) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "No workspace set" }));
+      return;
+    }
+
+    const workspaceRoot = this.activeWorkspacePath || requestedPath;
+    if (!workspaceRoot) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "No workspace path provided" }));
+      return;
+    }
+
+    try {
+      let resolvedRoot: string;
+
+      // Security: if a path parameter is provided alongside an active workspace,
+      // enforce symlink/junction-aware containment within the active workspace.
+      if (requestedPath && this.activeWorkspacePath) {
+        const containment = resolveWithinWorkspace(this.activeWorkspacePath, requestedPath);
+        if (!containment.valid || !containment.resolvedPath) {
+          res.writeHead(403, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "Path traversal denied: workspace boundary violated" }));
+          return;
+        }
+        resolvedRoot = containment.resolvedPath;
+      } else {
+        resolvedRoot = path.resolve(workspaceRoot);
+      }
+
+      if (!fs.existsSync(resolvedRoot)) {
+        res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: "Workspace not found" }));
+        return;
+      }
+
+      const tree = this.buildFileTree(resolvedRoot, resolvedRoot);
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify(tree));
+    } catch (error) {
+      res.writeHead(500, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+    }
+  }
+
+  private getOrCreateRuntime(sessionId: string, userId?: string): AgentRuntime {
+    let runtime = this.runtimes.get(sessionId);
+    if (!runtime) {
+      runtime = createAgentRuntime({
+        sessionId,
+        eventStore: this.eventStore,
+        persistence: this.persistence,
+        firewall: this.firewall,
+        providerCatalog: this.providerCatalog,
+        userId,
+      });
+      this.runtimes.set(sessionId, runtime);
+    }
+    return runtime;
+  }
+
+  /**
+   * HTTP boundary for UI model selection. The server stays authoritative:
+   * only models registered with ForgeZero can be selected (unknown ids fail
+   * closed), and gems_paid entitlement is still enforced later in
+   * AgentRuntime.executeTurn via ForgeZero.checkEntitlement immediately
+   * before any provider execution. A client sending a locked model id can
+   * never bypass that gate.
+   */
+  private handleModelSelection(req: http.IncomingMessage, res: http.ServerResponse): void {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const data = body ? JSON.parse(body) : {};
+        const sessionId =
+          typeof data.sessionId === "string" && data.sessionId ? data.sessionId : "default";
+        const runtime = this.getOrCreateRuntime(
+          sessionId,
+          typeof data.userId === "string" && data.userId ? data.userId : undefined,
+        );
+
+        const respond = (status: number, payload: Record<string, unknown>): void => {
+          res.writeHead(status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify(payload));
+        };
+
+        const modelId = data.modelId;
+        if (modelId === undefined || modelId === null || modelId === "auto") {
+          runtime.clearModelSelection();
+          respond(200, { ok: true, selection: { modelId: "auto" } });
+          return;
+        }
+
+        if (typeof modelId !== "string" || typeof data.providerId !== "string") {
+          respond(400, {
+            error: "MODEL_SELECTION_INVALID",
+            message: "providerId and modelId must be strings when selecting a model",
+          });
+          return;
+        }
+
+        // Fail closed: reject selections for unregistered models instead of
+        // storing them and letting the turn path discover the miss.
+        const model = this.firewall.getModel(data.providerId, modelId);
+        if (!model) {
+          respond(400, {
+            error: "MODEL_NOT_FOUND",
+            message: `Unknown model ${data.providerId}/${modelId}`,
+          });
+          return;
+        }
+
+        runtime.setModelSelection({ providerId: data.providerId, modelId });
+        respond(200, {
+          ok: true,
+          selection: { providerId: data.providerId, modelId, tier: model.tier ?? "free" },
+        });
+      } catch {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: "Invalid JSON" }));
+      }
+    });
+  }
+
+  private handleModels(res: http.ServerResponse): void {
+    const models = this.firewall.allModels().map((m) => ({
+      id: m.modelId,
+      providerId: m.providerId,
+      displayName: m.displayName,
+      tier: m.tier ?? "free",
+      freeStatus: m.freeStatus,
+    }));
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify(models));
+  }
+
+  private buildFileTree(dirPath: string, rootPath: string, depth: number = 0): Array<{ name: string; path: string; type: "file" | "directory"; children?: unknown[] }> {
+    if (depth > 20) return [];
+    
+    const entries: Array<{ name: string; path: string; type: "file" | "directory"; children?: unknown[] }> = [];
+    
+    try {
+      const items = fs.readdirSync(dirPath, { withFileTypes: true });
+      
+      for (const item of items) {
+        if (item.name.startsWith(".") && item.name !== ".git") continue;
+        
+        const itemPath = path.join(dirPath, item.name);
+        const relativePath = path.relative(rootPath, itemPath);
+        
+        if (item.isDirectory()) {
+          entries.push({
+            name: item.name,
+            path: relativePath,
+            type: "directory",
+            children: this.buildFileTree(itemPath, rootPath, depth + 1),
+          });
+        } else if (item.isFile()) {
+          entries.push({
+            name: item.name,
+            path: relativePath,
+            type: "file",
+          });
+        }
+      }
+    } catch {
+      // Skip directories we can't read
+    }
+
+    return entries.sort((a, b) => {
+      if (a.type !== b.type) return a.type === "directory" ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  private handleSSE(req: http.IncomingMessage, res: http.ServerResponse): void {
+    const url = new URL(req.url || "/", `http://${req.headers.host}`);
+    const lastSeq = parseInt(url.searchParams.get("lastSeq") ?? "0", 10) || 0;
+
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+    });
+    this.clients.add(res);
+
+    const send = (event: WorkspaceEvent) => {
+      const data = `data: ${JSON.stringify(event)}\n\n`;
+      this.clients.forEach((client) => {
+        try { client.write(data); } catch { /* ignore */ }
+      });
+    };
+
+    if (lastSeq > 0) {
+      const missed = this.eventStore.getAll({ afterSeq: lastSeq });
+      missed.forEach((event) => {
+        res.write(`data: ${JSON.stringify(event)}\n\n`);
+      });
+    }
+
+    const unsub = this.eventStore.subscribe(send);
+    res.on("close", () => {
+      this.clients.delete(res);
+      unsub();
+    });
+
+    res.write(`data: ${JSON.stringify({ type: "connected", timestamp: new Date().toISOString() })}\n\n`);
+  }
+
+  private serveStatic(req: http.IncomingMessage, res: http.ServerResponse, filePath: string): void {
+    let safePath = decodeURIComponent(filePath);
+    if (safePath === "/" || safePath === "") safePath = "/index.html";
+
+    const fullPath = path.join(this.webDist, safePath);
+    if (!fullPath.startsWith(this.webDist)) {
+      res.writeHead(403);
+      res.end("Forbidden");
+      return;
+    }
+
+    fs.readFile(fullPath, (err, data) => {
+      if (err) {
+        res.writeHead(404, { "Content-Type": "text/plain" });
+        res.end("Not Found");
+        return;
+      }
+      const ext = path.extname(fullPath);
+      const mimeTypes: Record<string, string> = {
+        ".html": "text/html",
+        ".js": "application/javascript",
+        ".css": "text/css",
+        ".json": "application/json",
+        ".png": "image/png",
+        ".svg": "image/svg+xml",
+        ".ico": "image/x-icon",
+      };
+      res.writeHead(200, { "Content-Type": mimeTypes[ext] || "application/octet-stream" });
+      res.end(data);
+    });
+  }
+}
+
+export * from "./demo-runtime.js";
+export * from "./workspace-event-adapter.js";
+export * from "./agent-runtime.js";
+export * from "./filesystem-service.js";
+export * from "./command-service.js";
+export * from "./validation-service.js";
+export * from "./checkpoint-service.js";
+export function createServer(options?: ServerOptions): CodeForgeServer {
+  return new CodeForgeServer(options);
+}

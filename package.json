@@ -1,0 +1,40 @@
+{
+  "name": "codeforge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CodeForge — free-first autonomous software engineering agent for Windows, CLI, and editors.",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "tsc -b --force",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "npm run clean --workspaces --if-present",
+    "forge": "node packages/cli/dist/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "vite": "^5.4.21",
+    "zod": "^3.24.0"
+  },
+  "allowScripts": {
+    "electron@33.4.11": true,
+    "better-sqlite3@13.0.3": true
+  }
+}

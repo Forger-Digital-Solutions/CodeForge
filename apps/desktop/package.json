@@ -1,0 +1,66 @@
+{
+  "name": "@codeforge/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "author": "CodeForge Team",
+  "description": "CodeForge Desktop - AI-powered coding agent for Windows",
+  "main": "./dist/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build && electron .",
+    "build": "npm run build:main && npm run build:renderer",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:renderer": "vite build",
+    "build:prod": "npm run build && electron-builder",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "rebuild:native": "npx --yes @electron/rebuild -f -w better-sqlite3",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@codeforge/ui": "*",
+    "@codeforge/server": "*",
+    "@codeforge/protocol": "*",
+    "@codeforge/sessions": "*",
+    "@codeforge/forge-zero": "*",
+    "@codeforge/providers": "*",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "electron": "33.4.11",
+    "electron-builder": "^25.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21"
+  },
+  "build": {
+    "appId": "app.codeforge.desktop",
+    "productName": "CodeForge",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "portable": {
+      "artifactName": "CodeForge-Portable.exe"
+    }
+  }
+}

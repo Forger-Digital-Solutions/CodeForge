@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["test", "dist"],
+  "references": [
+    { "path": "../core" },
+    { "path": "../protocol" },
+    { "path": "../sessions" },
+    { "path": "../router" },
+    { "path": "../forge-zero" },
+    { "path": "../providers" },
+    { "path": "../tools" },
+    { "path": "../permissions" }
+  ]
+}

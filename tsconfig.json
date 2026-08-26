@@ -1,0 +1,32 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/protocol" },
+    { "path": "packages/forge-zero" },
+    { "path": "packages/model-registry" },
+    { "path": "packages/providers" },
+    { "path": "packages/router" },
+    { "path": "packages/agent" },
+    { "path": "packages/director" },
+    { "path": "packages/tools" },
+    { "path": "packages/sessions" },
+    { "path": "packages/context" },
+    { "path": "packages/git" },
+    { "path": "packages/permissions" },
+    { "path": "packages/sandbox" },
+    { "path": "packages/secrets" },
+    { "path": "packages/server" },
+    { "path": "packages/sdk" },
+    { "path": "packages/cli" },
+    { "path": "packages/lsp" },
+    { "path": "packages/mcp" },
+    { "path": "packages/telemetry" },
+    { "path": "packages/gems" },
+    { "path": "packages/benchmark" },
+    { "path": "packages/plugins" },
+    { "path": "packages/ui" },
+    { "path": "packages/shared" },
+    { "path": "packages/vscode" }
+  ]
+}

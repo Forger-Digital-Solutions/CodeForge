@@ -1,0 +1,78 @@
+# CodeForge Desktop — Windows packaging.
+#
+# The end-user guarantee: users NEVER need Python, MSVC, node-gyp, Docker or
+# WSL. All native compilation happens here, on this CI runner, which comes
+# with a full toolchain preinstalled. The produced better-sqlite3 binary
+# targets Electron's bundled Node ABI and ships inside the installer.
+#
+# Evidence base: node:sqlite requires Node >= 22.5; Electron 33 bundles
+# Node 20.18 (verified via ELECTRON_RUN_AS_NODE probe), so the packaged app
+# needs the better-sqlite3 driver (packages/sessions/src/sqlite.ts falls back
+# to it automatically when require("node:sqlite") fails).
+name: windows-desktop
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  package-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install workspace dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Compile better-sqlite3 for Electron ABI (CI-only toolchain)
+        run: npm run rebuild:native --workspace @codeforge/desktop
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build all workspaces
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Package (NSIS installer + portable)
+        run: npm run dist --workspace @codeforge/desktop
+
+      - name: Verify packaged bundle ships the Electron-ABI SQLite binding
+        shell: pwsh
+        run: |
+          $bindingFiles = Get-ChildItem -Path "apps/desktop/release/win-unpacked" -Recurse -Filter "better_sqlite3.node" -ErrorAction SilentlyContinue
+          if (-not $bindingFiles -or @($bindingFiles).Count -lt 1) {
+            Write-Host "PACKAGING_FAILED better_sqlite3.node missing from win-unpacked"
+            exit 1
+          }
+          Write-Host "packaged_native_binding=$(@($bindingFiles)[0].FullName)"
+
+      - name: Persistence smoke check inside packaged runtime
+        shell: pwsh
+        run: |
+          $env:ELECTRON_RUN_AS_NODE = "1"
+          $env:CODEFORGE_SMOKE_OUT = Join-Path $env:GITHUB_WORKSPACE "packaged-persistence-result.log"
+          & "apps/desktop/release/win-unpacked/CodeForge.exe" scripts/verify-packaged-persistence.cjs
+          $smokeExitCode = $LASTEXITCODE
+          if (Test-Path $env:CODEFORGE_SMOKE_OUT) {
+            Write-Host "--- packaged persistence evidence ---"
+            Get-Content $env:CODEFORGE_SMOKE_OUT
+            Write-Host "--- end evidence ---"
+          }
+          Write-Host "smoke_exit_code=$smokeExitCode"
+          exit $smokeExitCode
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codeforge-windows-installers
+          path: |
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.blockmap
