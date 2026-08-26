@@ -70,6 +70,8 @@ jobs:
       - name: Verify packaged bundle ships the Electron-ABI SQLite binding
         shell: pwsh
         run: |
+          Write-Host "Release directory structure:"
+          Get-ChildItem -Path "apps/desktop/release/win-unpacked" -Recurse -Name | Select-String "sqlite" | Write-Host
           $bindingFiles = Get-ChildItem -Path "apps/desktop/release/win-unpacked" -Recurse -Filter "better_sqlite3.node" -ErrorAction SilentlyContinue
           if (-not $bindingFiles -or @($bindingFiles).Count -lt 1) {
             Write-Host "PACKAGING_FAILED better_sqlite3.node missing from win-unpacked"
