@@ -1,5 +1,5 @@
 {
-  "name": "@codeforge/desktop",
+  "name": "codeforge-desktop",
   "version": "0.1.0",
   "private": true,
   "author": "CodeForge Team",
@@ -37,9 +37,15 @@
     "typescript": "^5.9.3",
     "vite": "^5.4.21"
   },
+  "allowScripts": {
+    "electron@33.4.11": true,
+    "better-sqlite3@13.0.3": true
+  },
   "build": {
     "appId": "app.codeforge.desktop",
     "productName": "CodeForge",
+    "executableName": "CodeForge",
+    "npmRebuild": false,
     "directories": {
       "output": "release"
     },
@@ -57,7 +63,8 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "artifactName": "CodeForge-Setup-${version}.${ext}"
     },
     "portable": {
       "artifactName": "CodeForge-Portable.exe"

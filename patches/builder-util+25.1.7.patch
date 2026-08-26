@@ -1,0 +1,14 @@
+diff --git a/node_modules/builder-util/out/util.js b/node_modules/builder-util/out/util.js
+index cdf5767..d7d91d8 100640
+--- a/node_modules/builder-util/out/util.js
++++ b/node_modules/builder-util/out/util.js
+@@ -195,6 +195,9 @@ function doSpawn(command, args, options, extraOptions) {
+     }
+     logSpawn(command, args, options);
+     try {
++        if (process.platform === "win32" && (command.endsWith(".exe") || command.endsWith(".EXE"))) {
++            return (0, child_process_1.spawn)(command, args, options);
++        }
+         return (0, cross_spawn_1.spawn)(command, args, options);
+     }
+     catch (e) {
