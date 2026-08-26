@@ -37,32 +37,11 @@ jobs:
         run: |
           if (-not (Test-Path $env:APP_BUILDER_TARGET)) {
             New-Item -ItemType Directory -Path (Split-Path $env:APP_BUILDER_TARGET) -Force | Out-Null
-            node -e "
-              const https = require('https');
-              const fs = require('fs');
-              const path = require('path');
-              const { execSync } = require('child_process');
-              const url = 'https://registry.npmjs.org/app-builder-bin/-/app-builder-bin-4.0.0.tgz';
-              const tgz = path.join(process.env.TEMP, 'app-builder-bin-4.0.0.tgz');
-              const target = process.env.APP_BUILDER_TARGET;
-              const file = fs.createWriteStream(tgz);
-              https.get(url, (res) => {
-                if (res.statusCode !== 200) {
-                  console.error('Failed to download:', res.statusCode);
-                  process.exit(1);
-                }
-                res.pipe(file);
-                file.on('finish', () => {
-                  file.close();
-                  execSync('tar -xzf ' + tgz + ' package/win/x64/app-builder.exe', { cwd: process.env.TEMP, stdio: 'inherit' });
-                  fs.copyFileSync(path.join(process.env.TEMP, 'package/win/x64/app-builder.exe'), target);
-                  console.log('Copied app-builder.exe to', target);
-                });
-              }).on('error', (e) => {
-                console.error(e);
-                process.exit(1);
-              });
-            "
+            Push-Location $env:TEMP
+            npm pack app-builder-bin@4.0.0 --quiet
+            tar -xzf app-builder-bin-4.0.0.tgz package/win/x64/app-builder.exe
+            Pop-Location
+            Copy-Item (Join-Path $env:TEMP "package/win/x64/app-builder.exe") $env:APP_BUILDER_TARGET
           }
 
       - name: Compile better-sqlite3 for Electron ABI (CI-only toolchain)
