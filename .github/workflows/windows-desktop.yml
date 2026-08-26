@@ -48,6 +48,8 @@ jobs:
           & $env:APP_BUILDER_TARGET --version
           Write-Host "app-builder.exe version (spawnSync):"
           node -e "const { spawnSync } = require('child_process'); const r = spawnSync(process.env.APP_BUILDER_TARGET, ['--version'], { encoding: 'utf8' }); console.log('status:', r.status); console.log('stdout:', r.stdout?.trim()); console.log('stderr:', r.stderr?.trim()); if (r.error) console.log('error:', r.error.message);"
+          Write-Host "cross-spawn parse test:"
+          node -e "const crossSpawn = require('cross-spawn'); const parsed = crossSpawn._parse(process.env.APP_BUILDER_TARGET, ['--version'], {}); console.log('command:', parsed.command); console.log('file:', parsed.file); console.log('args:', parsed.args);"
 
       - name: Compile better-sqlite3 for Electron ABI (CI-only toolchain)
         run: npm run rebuild:native --workspace @codeforge/desktop
