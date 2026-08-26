@@ -36,5 +36,8 @@
   "allowScripts": {
     "electron@33.4.11": true,
     "better-sqlite3@13.0.3": true
+  },
+  "overrides": {
+    "app-builder-bin": "4.0.0"
   }
 }
