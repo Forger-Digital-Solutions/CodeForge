@@ -14,7 +14,7 @@
     "build:prod": "npm run build && electron-builder",
     "pack": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
-    "rebuild:native": "npx --yes @electron/rebuild -f -w better-sqlite3 -v 33.4.11",
+    "rebuild:native": "npx --yes @electron/rebuild -f -w better-sqlite3",
     "clean": "rm -rf dist"
   },
   "dependencies": {
