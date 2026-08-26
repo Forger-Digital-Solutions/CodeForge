@@ -38,11 +38,13 @@ jobs:
           if (-not (Test-Path $env:APP_BUILDER_TARGET)) {
             New-Item -ItemType Directory -Path (Split-Path $env:APP_BUILDER_TARGET) -Force | Out-Null
             Push-Location $env:TEMP
-            npm pack app-builder-bin@4.0.0 --quiet
-            tar -xzf app-builder-bin-4.0.0.tgz package/win/x64/app-builder.exe
+            npm pack app-builder-bin@4.1.2 --quiet
+            tar -xzf app-builder-bin-4.1.2.tgz package/win/x64/app-builder.exe
             Pop-Location
             Copy-Item (Join-Path $env:TEMP "package/win/x64/app-builder.exe") $env:APP_BUILDER_TARGET
           }
+          Write-Host "app-builder.exe version:"
+          & $env:APP_BUILDER_TARGET --version
 
       - name: Compile better-sqlite3 for Electron ABI (CI-only toolchain)
         run: npm run rebuild:native --workspace @codeforge/desktop
