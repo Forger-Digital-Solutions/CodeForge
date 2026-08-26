@@ -15,6 +15,7 @@
     "pack": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
     "rebuild:native": "npx --yes @electron/rebuild -f -w better-sqlite3",
+    "postrebuild:native": "node scripts/copy-native-module.js",
     "clean": "rm -rf dist"
   },
   "dependencies": {
@@ -46,12 +47,17 @@
     "productName": "CodeForge",
     "executableName": "CodeForge",
     "npmRebuild": false,
+    "asarUnpack": [
+      "**/*.node",
+      "native-modules/**/*"
+    ],
     "directories": {
       "output": "release"
     },
     "files": [
       "dist/**/*",
       "node_modules/**/*",
+      "native-modules/**/*",
       "package.json"
     ],
     "win": {
