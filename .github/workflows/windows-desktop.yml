@@ -43,8 +43,11 @@ jobs:
             Pop-Location
             Copy-Item (Join-Path $env:TEMP "package/win/x64/app-builder.exe") $env:APP_BUILDER_TARGET
           }
-          Write-Host "app-builder.exe version:"
+          Unblock-File -Path $env:APP_BUILDER_TARGET -ErrorAction SilentlyContinue
+          Write-Host "app-builder.exe version (direct):"
           & $env:APP_BUILDER_TARGET --version
+          Write-Host "app-builder.exe version (spawnSync):"
+          node -e "const { spawnSync } = require('child_process'); const r = spawnSync(process.env.APP_BUILDER_TARGET, ['--version'], { encoding: 'utf8' }); console.log('status:', r.status); console.log('stdout:', r.stdout?.trim()); console.log('stderr:', r.stderr?.trim()); if (r.error) console.log('error:', r.error.message);"
 
       - name: Compile better-sqlite3 for Electron ABI (CI-only toolchain)
         run: npm run rebuild:native --workspace @codeforge/desktop
@@ -95,9 +98,21 @@ jobs:
           Write-Host "smoke_exit_code=$smokeExitCode"
           exit $smokeExitCode
 
+      - name: Verify artifacts exist before upload
+        shell: pwsh
+        run: |
+          $artifacts = Get-ChildItem -Path "apps/desktop/release" -File -ErrorAction SilentlyContinue
+          if (-not $artifacts) {
+            Write-Host "PACKAGING_FAILED no artifacts found in apps/desktop/release"
+            exit 1
+          }
+          Write-Host "Found artifacts:"
+          $artifacts | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
+
       - uses: actions/upload-artifact@v4
         with:
           name: codeforge-windows-installers
           path: |
             apps/desktop/release/*.exe
+            apps/desktop/release/*.zip
             apps/desktop/release/*.blockmap
