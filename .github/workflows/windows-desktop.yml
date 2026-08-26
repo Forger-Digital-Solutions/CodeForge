@@ -33,17 +33,22 @@ jobs:
       - name: Ensure app-builder binary is present
         shell: pwsh
         run: |
-          $targetDir = "node_modules/app-builder-bin/win/x64"
-          $targetPath = Join-Path $targetDir "app-builder.exe"
-          if (-not (Test-Path $targetPath)) {
-            New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
-            $tarballUrl = "https://registry.npmjs.org/app-builder-bin/-/app-builder-bin-4.0.0.tgz"
-            $tgzPath = Join-Path $env:TEMP "app-builder-bin-4.0.0.tgz"
-            Invoke-WebRequest -Uri $tarballUrl -OutFile $tgzPath
-            Push-Location $env:TEMP
-            tar -xzf app-builder-bin-4.0.0.tgz package/win/x64/app-builder.exe
-            Pop-Location
-            Copy-Item (Join-Path $env:TEMP "package/win/x64/app-builder.exe") $targetPath
+          $targetDirs = @(
+            "node_modules/app-builder-bin/win/x64",
+            "apps/desktop/node_modules/app-builder-bin/win/x64"
+          )
+          foreach ($targetDir in $targetDirs) {
+            $targetPath = Join-Path $targetDir "app-builder.exe"
+            if (-not (Test-Path $targetPath)) {
+              New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+              $tarballUrl = "https://registry.npmjs.org/app-builder-bin/-/app-builder-bin-4.0.0.tgz"
+              $tgzPath = Join-Path $env:TEMP "app-builder-bin-4.0.0.tgz"
+              Invoke-WebRequest -Uri $tarballUrl -OutFile $tgzPath
+              Push-Location $env:TEMP
+              tar -xzf app-builder-bin-4.0.0.tgz package/win/x64/app-builder.exe
+              Pop-Location
+              Copy-Item (Join-Path $env:TEMP "package/win/x64/app-builder.exe") $targetPath
+            }
           }
 
       - name: Compile better-sqlite3 for Electron ABI (CI-only toolchain)
