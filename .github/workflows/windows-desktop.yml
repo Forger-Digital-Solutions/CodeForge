@@ -44,7 +44,7 @@ jobs:
           & $env:APP_BUILDER_TARGET --version
 
       - name: Compile better-sqlite3 for Electron ABI (CI-only toolchain)
-        run: npm run rebuild:native --workspace @codeforge/desktop
+        run: npm run rebuild:native --workspace=apps/desktop
 
       - name: Typecheck
         run: npm run typecheck
@@ -54,130 +54,6 @@ jobs:
 
       - name: Test
         run: npm test
-
-      - name: Comprehensive app-builder.exe diagnostic
-        shell: pwsh
-        run: |
-          Write-Host "=== COMPREHENSIVE APP-BUILDER.EXE DIAGNOSTIC ==="
-          
-          # Test 1: File existence and basic info
-          Write-Host "`n1. File existence check:"
-          $absPath = (Resolve-Path "node_modules/app-builder-bin/win/x64/app-builder.exe").Path
-          Write-Host "   Absolute path: $absPath"
-          Write-Host "   Exists: $(Test-Path $absPath)"
-          Get-Item $absPath | Format-List FullName,Length,LastWriteTime,Attributes | Out-String | Write-Host
-          
-          # Test 2: Node fs.statSync
-          Write-Host "`n2. Node fs.statSync test:"
-          node -e "
-          const fs = require('fs');
-          const p = require('path').resolve('node_modules/app-builder-bin/win/x64/app-builder.exe');
-          console.log('   Path:', p);
-          try {
-            const s = fs.statSync(p);
-            console.log('   SUCCESS - isFile:', s.isFile(), 'size:', s.size);
-          } catch (e) {
-            console.log('   ERROR:', e.code, e.message);
-          }
-          "
-          
-          # Test 3: which.sync test
-          Write-Host "`n3. which.sync test:"
-          node -e "
-          const which = require('which');
-          const p = require('./node_modules/app-builder-bin').appBuilderPath;
-          const path = require('path');
-          console.log('   Path:', p);
-          console.log('   Absolute:', path.isAbsolute(p));
-          try {
-            console.log('   which result:', which.sync(p));
-          } catch (e) {
-            console.log('   which ERROR:', e.code, e.message);
-          }
-          "
-          
-          # Test 4: Node direct spawn
-          Write-Host "`n4. Node direct spawnSync test:"
-          node -e "
-          const { spawnSync } = require('child_process');
-          const path = require('path');
-          const p = require('./node_modules/app-builder-bin').appBuilderPath;
-          console.log('   Path:', p);
-          const cwd = path.resolve('apps/desktop');
-          console.log('   CWD:', cwd);
-          const r = spawnSync(p, ['--version'], { encoding: 'utf8', cwd: cwd });
-          console.log('   Status:', r.status);
-          console.log('   Stdout:', r.stdout ? r.stdout.trim() : '(empty)');
-          console.log('   Stderr:', r.stderr ? r.stderr.trim() : '(empty)');
-          if (r.error) console.log('   Error:', r.error.message);
-          "
-          
-          # Test 5: cross-spawn._parse analysis
-          Write-Host "`n5. cross-spawn._parse test:"
-          node -e "
-          const cs = require('cross-spawn');
-          const p = require('./node_modules/app-builder-bin').appBuilderPath;
-          const path = require('path');
-          console.log('   Path:', p);
-          const cwd = path.resolve('apps/desktop');
-          console.log('   CWD:', cwd);
-          const parsed = cs._parse(p, ['--version'], { cwd: cwd });
-          console.log('   Parsed command:', parsed.command);
-          console.log('   Parsed file:', parsed.file);
-          console.log('   Parsed args:', parsed.args);
-          "
-          
-          # Test 6: cross-spawn.sync test
-          Write-Host "`n6. cross-spawn.sync test:"
-          node -e "
-          const cs = require('cross-spawn');
-          const p = require('./node_modules/app-builder-bin').appBuilderPath;
-          const path = require('path');
-          console.log('   Path:', p);
-          const cwd = path.resolve('apps/desktop');
-          console.log('   CWD:', cwd);
-          try {
-            const r = cs.sync(p, ['--version'], { encoding: 'utf8', cwd: cwd });
-            console.log('   Status:', r.status);
-            console.log('   Stdout:', r.stdout ? r.stdout.trim() : '(empty)');
-            console.log('   Stderr:', r.stderr ? r.stderr.trim() : '(empty)');
-            if (r.error) console.log('   Error:', r.error.message);
-          } catch (e) {
-            console.log('   cross-spawn ERROR:', e.code, e.message);
-          }
-          "
-          
-          # Test 7: Dependency versions
-          Write-Host "`n7. Dependency versions:"
-          node -e "
-          const packages = [
-            'cross-spawn',
-            'which',
-            'isexe',
-            'app-builder-bin',
-            'builder-util',
-            'app-builder-lib',
-            'electron-builder'
-          ];
-          for (const pkg of packages) {
-            try {
-              const version = require(pkg + '/package.json').version;
-              console.log('   ' + pkg + ':', version);
-            } catch (e) {
-              console.log('   ' + pkg + ': NOT FOUND');
-            }
-          }
-          "
-          
-          # Test 8: Resolve paths
-          Write-Host "`n8. Resolve paths:"
-          node -e "
-          console.log('   cross-spawn:', require.resolve('cross-spawn'));
-          console.log('   which:', require.resolve('which'));
-          console.log('   isexe:', require.resolve('isexe'));
-          "
-          
-          Write-Host "`n=== DIAGNOSTIC COMPLETE ==="
 
       - name: Package (NSIS installer + portable)
         shell: pwsh
@@ -189,7 +65,7 @@ jobs:
             Write-Host "PACKAGING_FAILED app-builder.exe missing before electron-builder"
             exit 1
           }
-          npm run dist --workspace @codeforge/desktop
+          npm run dist --workspace=apps/desktop
 
       - name: Verify packaged bundle ships the Electron-ABI SQLite binding
         shell: pwsh
