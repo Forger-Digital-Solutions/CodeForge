@@ -76,3 +76,4 @@ jobs:
           path: |
             apps/desktop/release/*.exe
             apps/desktop/release/*.blockmap
+ 
