@@ -11,7 +11,6 @@
     { "path": "../core" },
     { "path": "../protocol" },
     { "path": "../agent" },
-    { "path": "../router" },
     { "path": "../tools" }
   ]
 }
