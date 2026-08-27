@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { Project } from "./App.js";
 import ProviderSetup from "./ProviderSetup.js";
+import OnboardingFlow from "./OnboardingFlow.js";
 
 interface WelcomeScreenProps {
   recentProjects: Project[];
@@ -18,11 +19,81 @@ export default function WelcomeScreen({
   error,
 }: WelcomeScreenProps) {
   const [showProviderSetup, setShowProviderSetup] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [hasConfiguredProvider, setHasConfiguredProvider] = useState(false);
+
+  useEffect(() => {
+    checkOnboardingState();
+  }, []);
+
+  const checkOnboardingState = async () => {
+    try {
+      let onboardingCompleted = false;
+      if (window.electronAPI?.getOnboardingCompleted) {
+        onboardingCompleted = await window.electronAPI.getOnboardingCompleted();
+      } else {
+        onboardingCompleted = localStorage.getItem("codeforge:onboarding-completed") === "true";
+      }
+
+      if (window.electronAPI) {
+        const credentials = await window.electronAPI.getProviderCredentials();
+        const hasCredentials = Object.keys(credentials).length > 0;
+        setHasConfiguredProvider(hasCredentials);
+
+        if (!onboardingCompleted && !hasCredentials) {
+          setShowOnboarding(true);
+        }
+      }
+    } catch {
+      // If we can't check, don't show onboarding
+    }
+  };
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    setShowProviderSetup(true);
+  };
+
+  const handleOnboardingSkip = async () => {
+    try {
+      if (window.electronAPI?.setOnboardingCompleted) {
+        await window.electronAPI.setOnboardingCompleted(true);
+      } else {
+        localStorage.setItem("codeforge:onboarding-completed", "true");
+      }
+    } catch {
+      // ignore
+    }
+    setShowOnboarding(false);
+  };
+
+  const handleProviderSetupComplete = async () => {
+    try {
+      if (window.electronAPI?.setOnboardingCompleted) {
+        await window.electronAPI.setOnboardingCompleted(true);
+      } else {
+        localStorage.setItem("codeforge:onboarding-completed", "true");
+      }
+    } catch {
+      // ignore
+    }
+    setShowProviderSetup(false);
+    checkOnboardingState();
+  };
+
+  if (showOnboarding) {
+    return (
+      <OnboardingFlow
+        onComplete={handleOnboardingComplete}
+        onSkip={handleOnboardingSkip}
+      />
+    );
+  }
 
   if (showProviderSetup) {
     return (
       <ProviderSetup
-        onComplete={() => setShowProviderSetup(false)}
+        onComplete={handleProviderSetupComplete}
       />
     );
   }

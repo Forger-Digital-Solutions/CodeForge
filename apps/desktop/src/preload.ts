@@ -34,6 +34,12 @@ const api = {
   testProviderConnection: (providerId: string): Promise<{ status: string; error?: string }> => {
     return ipcRenderer.invoke("provider:testConnection", providerId);
   },
+  getOnboardingCompleted: (): Promise<boolean> => {
+    return ipcRenderer.invoke("onboarding:getCompleted");
+  },
+  setOnboardingCompleted: (completed: boolean): Promise<void> => {
+    return ipcRenderer.invoke("onboarding:setCompleted", completed);
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);

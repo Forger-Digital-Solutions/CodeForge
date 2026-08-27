@@ -53,6 +53,7 @@ export interface ModelSelectorProps {
   onUpgradeNavigation?: (url: string, model: ModelSelectorItem) => void;
   upgradeUrl?: string;
   disabled?: boolean;
+  onShowDetails?: (model: ModelSelectorItem) => void;
 }
 
 export function ModelSelector({
@@ -62,6 +63,7 @@ export function ModelSelector({
   onUpgradeNavigation,
   upgradeUrl,
   disabled,
+  onShowDetails,
 }: ModelSelectorProps): React.ReactElement {
   const url = upgradeUrl ?? getUpgradeUrl();
 
@@ -77,6 +79,13 @@ export function ModelSelector({
     onSelect(model);
   };
 
+  const getAutoStatusText = () => {
+    const autoModel = models.find(m => m.id === "auto");
+    if (!autoModel) return undefined;
+    if (autoModel.description) return autoModel.description;
+    return "Best Verified Free Model";
+  };
+
   return (
     <div className="model-selector" role="listbox" aria-label="Model selection">
       <div className="model-selector-label">Model</div>
@@ -90,6 +99,11 @@ export function ModelSelector({
           ]
             .filter(Boolean)
             .join(" ");
+          
+          const displayDescription = model.id === "auto" && selectedId === "auto" 
+            ? getAutoStatusText() 
+            : model.description;
+          
           return (
             <button
               key={model.id}
@@ -103,12 +117,25 @@ export function ModelSelector({
             >
               <span className="model-option-name">{model.displayName}</span>
               <span className="model-option-meta">
-                {model.description && (
-                  <span className="model-option-desc">{model.description}</span>
+                {displayDescription && (
+                  <span className="model-option-desc">{displayDescription}</span>
                 )}
                 {locked && <span className="model-option-badge paid">Paid 🔒</span>}
-                {!locked && !model.description && model.tier === "free" && (
+                {!locked && !displayDescription && model.tier === "free" && (
                   <span className="model-option-badge free">Free</span>
+                )}
+                {onShowDetails && model.id !== "auto" && (
+                  <button
+                    type="button"
+                    className="model-option-details"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onShowDetails(model);
+                    }}
+                    title="View model details"
+                  >
+                    ℹ️
+                  </button>
                 )}
               </span>
             </button>

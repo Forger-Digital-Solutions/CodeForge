@@ -14,11 +14,26 @@ declare global {
       setProviderCredential: (providerId: string, apiKey: string) => Promise<void>;
       deleteProviderCredential: (providerId: string) => Promise<void>;
       testProviderConnection: (providerId: string) => Promise<{ status: string; error?: string }>;
+      getOnboardingCompleted: () => Promise<boolean>;
+      setOnboardingCompleted: (completed: boolean) => Promise<void>;
     };
   }
 }
 
 const SERVER_BASE_URL = "http://localhost:3210";
+
+interface ApiModel {
+  id: string;
+  providerId: string;
+  displayName: string;
+  tier: "free" | "gems_paid" | "paid";
+  freeStatus: string;
+  costProfile?: {
+    isFree: boolean;
+    paidFallbackPossible: boolean;
+  };
+  isPromotional?: boolean;
+}
 
 interface ProviderConfig {
   providerId: string;
@@ -57,16 +72,14 @@ interface ProviderState {
   status: ConnectionStatus;
   error?: string;
   hasCredential: boolean;
+  freeModelCount?: number;
+  paidModelCount?: number;
 }
 
 export default function ProviderSetup({ onComplete }: { onComplete?: () => void }) {
   const [providerStates, setProviderStates] = useState<Record<string, ProviderState>>({});
   const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
   const [showApiKeys, setShowApiKeys] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    loadProviderStates();
-  }, []);
 
   const loadProviderStates = async () => {
     if (!window.electronAPI) return;
@@ -84,13 +97,96 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
         };
       }
       setProviderStates(states);
+      
+      // Refresh health for providers with credentials
+      for (const provider of PROVIDERS) {
+        if (credentials[provider.providerId]) {
+          await refreshProviderHealth(provider.providerId);
+        }
+      }
     } catch {
       // ignore
     }
   };
 
+  const refreshProviderHealth = async (providerId: string) => {
+    if (!window.electronAPI) return;
+
+    try {
+      const result = await window.electronAPI.testProviderConnection(providerId);
+      if (result.status === "available") {
+        setProviderStates((prev) => ({
+          ...prev,
+          [providerId]: { status: "connected", hasCredential: true },
+        }));
+      } else {
+        setProviderStates((prev) => ({
+          ...prev,
+          [providerId]: {
+            status: "error",
+            error: result.error || "Connection failed",
+            hasCredential: true,
+          },
+        }));
+      }
+    } catch (err) {
+      // If health check fails, don't update state - might be temporary
+    }
+  };
+
+  useEffect(() => {
+    loadProviderStates();
+  }, []);
+
+  // Fetch model counts for each provider
+  useEffect(() => {
+    const fetchModelCounts = async () => {
+      try {
+        const response = await fetch(`${SERVER_BASE_URL}/api/models`);
+        if (response.ok) {
+          const models = await response.json() as ApiModel[];
+          const counts: Record<string, { free: number; paid: number }> = {};
+          
+          PROVIDERS.forEach((provider) => {
+            const providerModels = models.filter((m) => m.providerId === provider.providerId);
+            counts[provider.providerId] = {
+              free: providerModels.filter((m) => m.costProfile?.isFree || m.isPromotional).length,
+              paid: providerModels.filter((m) => m.tier === "paid" || m.tier === "gems_paid").length,
+            };
+          });
+          
+          setProviderStates((prev) => {
+            const updated = { ...prev };
+            Object.entries(counts).forEach(([providerId, count]) => {
+              if (updated[providerId]) {
+                updated[providerId] = {
+                  ...updated[providerId],
+                  freeModelCount: count.free,
+                  paidModelCount: count.paid,
+                };
+              }
+            });
+            return updated;
+          });
+        }
+      } catch {
+        // Ignore model count fetch failures
+      }
+    };
+
+    fetchModelCounts();
+  }, []);
+
   const handleApiKeyChange = (providerId: string, value: string) => {
     setApiKeys((prev) => ({ ...prev, [providerId]: value }));
+  };
+
+  const notifyProviderUpdated = () => {
+    try {
+      window.dispatchEvent(new CustomEvent("codeforge:provider-updated"));
+    } catch {
+      // ignore
+    }
   };
 
   const handleSaveCredential = async (providerId: string) => {
@@ -105,12 +201,14 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
         ...prev,
         [providerId]: { status: "not_connected", hasCredential: true },
       }));
-    } catch (err) {
+      await refreshProviderHealth(providerId);
+      notifyProviderUpdated();
+    } catch {
       setProviderStates((prev) => ({
         ...prev,
         [providerId]: {
           status: "error",
-          error: err instanceof Error ? err.message : "Failed to save credential",
+          error: "Failed to save credential. Please check your input and try again.",
           hasCredential: prev[providerId]?.hasCredential ?? false,
         },
       }));
@@ -127,6 +225,7 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
         ...prev,
         [providerId]: { status: "missing_credential", hasCredential: false },
       }));
+      notifyProviderUpdated();
     } catch (err) {
       setProviderStates((prev) => ({
         ...prev,
@@ -155,24 +254,45 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
           [providerId]: { status: "connected", hasCredential: true },
         }));
       } else {
+        const raw = (result.error || "").toLowerCase();
+        const mapped = (() => {
+          if (raw.includes("401") || raw.includes("auth") || raw.includes("credential_invalid") || raw.includes("unauthorized"))
+            return "Invalid credentials — please check your API key and try again.";
+          if (raw.includes("403")) return "Access denied — your API key may not have the required permissions.";
+          if (raw.includes("429") || raw.includes("rate")) return "Provider is temporarily rate limited. Try again shortly.";
+          if (raw.includes("timeout")) return "Connection timed out — the provider may be slow or unavailable.";
+          if (raw.includes("network")) return "Network error — please check your internet connection.";
+          if (raw.includes("no_free") || raw.includes("no verified free"))
+            return "No verified free model is currently available.";
+          if (raw.includes("free_tier_expired") || raw.includes("expired") || raw.includes("promotional"))
+            return "This promotional free model has expired and is no longer verified as free.";
+          if (raw.includes("payment") || raw.includes("paid") || raw.includes("paid model"))
+            return "Paid model selected while in Free Mode — switch to a verified free model or connect a free provider.";
+          if (raw.includes("provider_offline") || raw.includes("unavailable") || raw.includes("not registered"))
+            return "Provider is currently unavailable. Please try again.";
+          return result.error || "Connection failed — please check your credentials and try again.";
+        })();
+
         setProviderStates((prev) => ({
           ...prev,
           [providerId]: {
             status: "error",
-            error: result.error || "Connection failed",
+            error: mapped,
             hasCredential: true,
           },
         }));
       }
-    } catch (err) {
+    } catch {
       setProviderStates((prev) => ({
         ...prev,
         [providerId]: {
           status: "error",
-          error: err instanceof Error ? err.message : "Connection test failed",
+          error: "Network error — please check your internet connection.",
           hasCredential: true,
         },
       }));
+    } finally {
+      notifyProviderUpdated();
     }
   };
 
@@ -221,11 +341,37 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
                 )}
 
                 <div className="provider-models">
-                  {provider.hasFreeModels && (
-                    <span className="provider-badge free">Free models available</span>
+                  {state?.freeModelCount !== undefined && state.freeModelCount > 0 && (
+                    <span className="provider-badge free">{state.freeModelCount} Free models</span>
                   )}
-                  {provider.hasPaidModels && (
-                    <span className="provider-badge paid">Paid models available</span>
+                  {state?.paidModelCount !== undefined && state.paidModelCount > 0 && (
+                    <span className="provider-badge paid">{state.paidModelCount} Paid models</span>
+                  )}
+                  {state?.freeModelCount === 0 && state?.paidModelCount === 0 && (
+                    <span className="provider-badge">No models available</span>
+                  )}
+                </div>
+
+                <div className="provider-availability">
+                  {state?.status === "connected" && (
+                    <span className="availability-status available">
+                      ✓ Provider connected and verified
+                    </span>
+                  )}
+                  {state?.status === "error" && (
+                    <span className="availability-status error">
+                      ✗ Connection error: {state.error}
+                    </span>
+                  )}
+                  {state?.status === "not_connected" && state.hasCredential && (
+                    <span className="availability-status warning">
+                      ⚠ Credential saved but not tested
+                    </span>
+                  )}
+                  {state?.status === "missing_credential" && (
+                    <span className="availability-status missing">
+                      ⚠ No credential configured
+                    </span>
                   )}
                 </div>
 
@@ -302,10 +448,11 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
           </div>
         )}
 
-        <div className="provider-setup-note">
+        <div className="provider-setup-note" role="note" aria-label="Free Mode note">
           <p>
-            <strong>Free Mode:</strong> CodeForge will only use models verified as free.
-            Paid models require explicit authorization.
+            <strong>Free Mode:</strong> Full-Auto selects the best currently verified free model. If no
+            verified free model is available, CodeForge will not silently use a paid model. Promotional
+            free models may expire.
           </p>
         </div>
       </div>

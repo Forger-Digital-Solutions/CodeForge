@@ -22,6 +22,7 @@ interface ProjectInfo {
 
 const RECENT_PROJECTS_KEY = "codeforge:recent-projects";
 const PROVIDER_CREDENTIALS_KEY = "codeforge:provider-credentials";
+const ONBOARDING_COMPLETED_KEY = "codeforge:onboarding-completed";
 
 class DesktopCredentialStore implements CredentialStore {
   private credentials: Record<string, string> = {};
@@ -136,6 +137,37 @@ function deleteProviderCredential(providerId: string): void {
     const credentials = (settings[PROVIDER_CREDENTIALS_KEY] as Record<string, string>) || {};
     delete credentials[providerId];
     settings[PROVIDER_CREDENTIALS_KEY] = credentials;
+    fs.writeFileSync(storePath, JSON.stringify(settings, null, 2));
+  } catch {
+    // ignore
+  }
+}
+
+function getOnboardingCompleted(): boolean {
+  try {
+    const data = app.getPath("userData");
+    const fs = require("node:fs");
+    const storePath = path.join(data, "settings.json");
+    if (fs.existsSync(storePath)) {
+      const settings = JSON.parse(fs.readFileSync(storePath, "utf-8"));
+      return Boolean(settings[ONBOARDING_COMPLETED_KEY]);
+    }
+  } catch {
+    // ignore
+  }
+  return false;
+}
+
+function setOnboardingCompleted(completed: boolean): void {
+  try {
+    const data = app.getPath("userData");
+    const fs = require("node:fs");
+    const storePath = path.join(data, "settings.json");
+    let settings: Record<string, unknown> = {};
+    if (fs.existsSync(storePath)) {
+      settings = JSON.parse(fs.readFileSync(storePath, "utf-8"));
+    }
+    settings[ONBOARDING_COMPLETED_KEY] = completed;
     fs.writeFileSync(storePath, JSON.stringify(settings, null, 2));
   } catch {
     // ignore
@@ -345,4 +377,12 @@ ipcMain.handle("provider:testConnection", async (_event, providerId: string): Pr
   } catch (err) {
     return { status: "error", error: err instanceof Error ? err.message : String(err) };
   }
+});
+
+ipcMain.handle("onboarding:getCompleted", async () => {
+  return getOnboardingCompleted();
+});
+
+ipcMain.handle("onboarding:setCompleted", async (_event, completed: boolean) => {
+  setOnboardingCompleted(completed);
 });
