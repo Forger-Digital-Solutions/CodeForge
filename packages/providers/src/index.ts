@@ -329,3 +329,4 @@ export class ProviderError extends Error {
 }
 
 export { OpenRouterAdapter, type OpenRouterOptions, createOpenRouterAdapter } from "./openrouter.js";
+export { OpencodeAdapter, type OpencodeOptions, createOpencodeAdapter } from "./opencode.js";

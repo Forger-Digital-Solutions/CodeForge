@@ -29,9 +29,9 @@ describe("Muse Spark 1.2 — catalog & ForgeZero", () => {
     expect(eligible.some((m) => m.modelId === MUSE_SPARK_1_2.modelId)).toBe(true);
   });
 
-  it("2. provider/model identity is correct (canonical OpenRouter ID)", () => {
-    expect(MUSE_SPARK_1_2.providerId).toBe("openrouter");
-    expect(MUSE_SPARK_1_2.modelId).toBe("opencode/muse-spark-1.2-contributor-free");
+  it("2. provider/model identity is correct (canonical opencode ID)", () => {
+    expect(MUSE_SPARK_1_2.providerId).toBe("opencode");
+    expect(MUSE_SPARK_1_2.modelId).toBe("muse-spark-1.2-contributor-free");
     expect(MUSE_SPARK_1_2.displayName).toBe("Muse Spark 1.2");
   });
 
@@ -64,7 +64,7 @@ describe("Muse Spark 1.2 — catalog & ForgeZero", () => {
   it("7. free-first filtering behaves correctly (verified via verifier)", () => {
     const fw = new ForgeZero({ context: testContext });
     fw.register(freshMuseSpark());
-    const result = fw.verify("openrouter", "opencode/muse-spark-1.2-contributor-free");
+    const result = fw.verify("opencode", "muse-spark-1.2-contributor-free");
     expect(result.ok).toBe(true);
   });
 
@@ -83,7 +83,7 @@ describe("Muse Spark 1.2 — catalog & ForgeZero", () => {
         },
       } as unknown as Record<string, unknown>),
     );
-    const result = fw.verify("openrouter", "opencode/muse-spark-1.2-contributor-free");
+    const result = fw.verify("opencode", "muse-spark-1.2-contributor-free");
     expect(result.ok).toBe(false);
   });
 
@@ -95,7 +95,7 @@ describe("Muse Spark 1.2 — catalog & ForgeZero", () => {
       } as unknown as Record<string, unknown>),
     );
     expect(fw.eligibleModels()).toHaveLength(0);
-    expect(fw.canRouteTo("openrouter", "opencode/muse-spark-1.2-contributor-free")).toBe(false);
+    expect(fw.canRouteTo("opencode", "muse-spark-1.2-contributor-free")).toBe(false);
   });
 
   it("8b. quota_exhausted Muse Spark is not eligible", () => {
@@ -126,7 +126,7 @@ describe("Muse Spark 1.2 — catalog & ForgeZero", () => {
       health: { status: "available", lastCheckedAt: now.toISOString() },
     };
     fw.register(expired);
-    const result = fw.verify("openrouter", "opencode/muse-spark-1.2-contributor-free");
+    const result = fw.verify("opencode", "muse-spark-1.2-contributor-free");
     expect(result.ok).toBe(false);
   });
 
@@ -138,6 +138,7 @@ describe("Muse Spark 1.2 — catalog & ForgeZero", () => {
         isCloudHosted: false,
       } as unknown as Record<string, unknown>),
     );
-    expect(fw.canRouteTo("openrouter", "opencode/muse-spark-1.2-contributor-free")).toBe(false);
+    expect(fw.canRouteTo("opencode", "muse-spark-1.2-contributor-free")).toBe(false);
   });
 });
+

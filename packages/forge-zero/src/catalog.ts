@@ -7,14 +7,23 @@ function nowIso(): string {
 /**
  * Muse Spark 1.2 — Meta's agentic coding model optimized for repository-scale tasks.
  *
- * Canonical provider/model identifier: openrouter / opencode/muse-spark-1.2-contributor-free
- * This identifier is the OpenRouter-routed free variant exposed via the
- * opencode zero-cost cloud routing. The underlying provider is accessed through
- * the existing OpenRouterAdapter (https://openrouter.ai/api/v1/models).
+ * Canonical provider/model identifier: opencode / muse-spark-1.2-contributor-free
+ * This identifier is the OpenCode Zen-routed free variant exposed via the
+ * opencode zero-cost cloud routing (https://opencode.ai/zen/v1). The underlying
+ * provider is accessed through OpencodeAdapter (OpenAI-compatible).
  *
- * Free-first classification: VERIFIED_FREE
- * - Genuinely free cloud-hosted model via OpenRouter's :free / contributor-free routing
- * - No paid fallback (paidFallbackPossible=false, paidFallbackDisabled=true)
+ * Provider evidence (2026-08-20 live catalog):
+ * - OpenCode Zen lists `muse-spark-1.2-contributor-free` at $0 / $0 (Input/Output per 1M)
+ * - OpenRouter lists `meta/muse-spark-1.2` at $1.25 / $4.25 (paid) and
+ *   `meta/muse-spark-1.2-contributor` at $0.10 / $0.20 (paid contributor, not free)
+ * - OpenRouter does NOT list `opencode/muse-spark-1.2-contributor-free` — 400 invalid model on OpenRouter
+ *   => free route is via opencode, not openrouter
+ * - OpenCode docs mark free models as "for a limited time" (promotional/feedback)
+ *   => treated as verified_free with 7-day expiry (fail-closed), not permanent
+ *
+ * Free-first classification: VERIFIED_FREE (limited-time, re-verified weekly)
+ * - Genuinely free cloud-hosted model via OpenCode Zen (`isFree true`, provider-backed $0 pricing)
+ * - No paid fallback (paidFallbackPossible=false, paidFallbackDisabled=true) — ForgeZero fail-closed
  * - Zero cost per million tokens (input/output 0)
  * - Remote and cloud-hosted (isRemote && isCloudHosted)
  * - Available health status
@@ -25,8 +34,8 @@ function nowIso(): string {
  * routing (fail-closed), preserving the free-first policy without code changes.
  */
 export const MUSE_SPARK_1_2: FreeModelRecord = {
-  providerId: "openrouter",
-  modelId: "opencode/muse-spark-1.2-contributor-free",
+  providerId: "opencode",
+  modelId: "muse-spark-1.2-contributor-free",
   displayName: "Muse Spark 1.2",
   freeStatus: "verified_free",
   freeStatusVerifiedAt: nowIso(),
@@ -56,7 +65,7 @@ export const MUSE_SPARK_1_2: FreeModelRecord = {
     freeTierVerifiedAt: nowIso(),
     paidFallbackPossible: false,
     paidFallbackDisabled: true,
-    source: "openrouter:free",
+    source: "opencode:free",
   },
   isRemote: true,
   isCloudHosted: true,

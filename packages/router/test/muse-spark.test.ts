@@ -39,11 +39,11 @@ describe("Muse Spark 1.2 — ForgeRouter integration", () => {
     });
     expect(decision).not.toBeNull();
     const eligibleIds = fw.eligibleModels().map((m) => m.modelId);
-    expect(eligibleIds).toContain("opencode/muse-spark-1.2-contributor-free");
+    expect(eligibleIds).toContain("muse-spark-1.2-contributor-free");
     expect(eligibleIds).toContain("free-model-1");
     expect(decision!.alternatives.length).toBeGreaterThan(0);
     const allCandidates = [decision!.model.modelId, ...decision!.alternatives.map((m) => m.modelId)];
-    expect(allCandidates).toContain("opencode/muse-spark-1.2-contributor-free");
+    expect(allCandidates).toContain("muse-spark-1.2-contributor-free");
   });
 
   it("5. receives strong score for long-horizon repository coding", () => {
@@ -55,7 +55,7 @@ describe("Muse Spark 1.2 — ForgeRouter integration", () => {
       requiredCapabilities: ["coding", "toolCalling", "longContext"],
     });
     expect(decision).not.toBeNull();
-    expect(decision!.model.modelId).toBe("opencode/muse-spark-1.2-contributor-free");
+    expect(decision!.model.modelId).toBe("muse-spark-1.2-contributor-free");
     expect(decision!.score).toBeGreaterThan(80);
     expect(decision!.reasons).toContain("high_coding_score");
     expect(decision!.reasons).toContain("long_context_optimized");
@@ -70,7 +70,7 @@ describe("Muse Spark 1.2 — ForgeRouter integration", () => {
       estimatedContextTokens: 100000,
       requiredCapabilities: ["coding", "toolCalling", "longContext"],
     });
-    expect(decision!.model.modelId).toBe("opencode/muse-spark-1.2-contributor-free");
+    expect(decision!.model.modelId).toBe("muse-spark-1.2-contributor-free");
   });
 
   it("5c. multi-file changes with large context favors Muse Spark", () => {
@@ -81,7 +81,7 @@ describe("Muse Spark 1.2 — ForgeRouter integration", () => {
       estimatedContextTokens: 90000,
       requiredCapabilities: ["coding", "longContext"],
     });
-    expect(decision!.model.modelId).toBe("opencode/muse-spark-1.2-contributor-free");
+    expect(decision!.model.modelId).toBe("muse-spark-1.2-contributor-free");
   });
 
   it("6. does not automatically win simple text tasks (speed favors generic)", () => {
@@ -111,7 +111,7 @@ describe("Muse Spark 1.2 — ForgeRouter integration", () => {
     });
     expect(simple!.model.modelId).not.toBe(codingLarge!.model.modelId);
     expect(simple!.model.modelId).toBe("free-model-1");
-    expect(codingLarge!.model.modelId).toBe("opencode/muse-spark-1.2-contributor-free");
+    expect(codingLarge!.model.modelId).toBe("muse-spark-1.2-contributor-free");
   });
 
   it("8. unavailable Muse Spark is not selected (only generic remains)", () => {
@@ -139,7 +139,7 @@ describe("Muse Spark 1.2 — ForgeRouter integration", () => {
     });
     expect(decision!.model.modelId).toBe("free-model-1");
     expect(decision!.alternatives).not.toContainEqual(
-      expect.objectContaining({ modelId: "opencode/muse-spark-1.2-contributor-free" }),
+      expect.objectContaining({ modelId: "muse-spark-1.2-contributor-free" }),
     );
   });
 
@@ -148,7 +148,7 @@ describe("Muse Spark 1.2 — ForgeRouter integration", () => {
     const eligible = fw.eligibleModels();
     expect(eligible).toHaveLength(2);
     expect(eligible.some((m) => m.modelId === "free-model-1")).toBe(true);
-    expect(eligible.some((m) => m.modelId === "opencode/muse-spark-1.2-contributor-free")).toBe(true);
+    expect(eligible.some((m) => m.modelId === "muse-spark-1.2-contributor-free")).toBe(true);
     const router = new ForgeRouter({ firewall: fw });
     const viaResolve = router.resolveSelection({ mode: "forgezero-adaptive" });
     expect(viaResolve.ok).toBe(true);
@@ -159,12 +159,12 @@ describe("Muse Spark 1.2 — ForgeRouter integration", () => {
     const router = new ForgeRouter({ firewall: fw });
     const result = router.resolveSelection({
       mode: "exact-free",
-      providerId: "openrouter",
-      modelId: "opencode/muse-spark-1.2-contributor-free",
+      providerId: "opencode",
+      modelId: "muse-spark-1.2-contributor-free",
     });
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.value.resolvedModelId).toBe("opencode/muse-spark-1.2-contributor-free");
+      expect(result.value.resolvedModelId).toBe("muse-spark-1.2-contributor-free");
     }
   });
 
@@ -176,7 +176,7 @@ describe("Muse Spark 1.2 — ForgeRouter integration", () => {
       estimatedContextTokens: 70000,
       requiredCapabilities: ["coding", "toolCalling", "longContext"],
     });
-    expect(decision!.model.modelId).toBe("opencode/muse-spark-1.2-contributor-free");
+    expect(decision!.model.modelId).toBe("muse-spark-1.2-contributor-free");
     expect(decision!.reasons.length).toBeGreaterThan(3);
     expect(decision!.reasons).toContain("coding_capable");
     expect(decision!.reasons).toContain("muse_spark_selected");
@@ -228,3 +228,4 @@ describe("Muse Spark 1.2 — ForgeRouter integration", () => {
     expect(decision!.model.modelId).toBe("free-model-1");
   });
 });
+
