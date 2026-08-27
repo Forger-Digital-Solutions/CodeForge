@@ -237,3 +237,100 @@ describe("SessionPersistence", () => {
     expect(db!.getWorkItems("to-delete")).toEqual([]);
   });
 });
+
+describe("SessionPersistence - dbPath resolution scenarios", () => {
+  let tempDir: string;
+  
+  beforeEach(async () => {
+    tempDir = join(tmpdir(), "codeforge-persistence-scenarios-" + Date.now());
+    mkdirSync(tempDir, { recursive: true });
+  });
+  
+  afterEach(async () => {
+    try {
+      rmSync(tempDir, { recursive: true, force: true });
+    } catch {
+      // ignore cleanup errors
+    }
+  });
+
+  describe("Electron packaged app scenario", () => {
+    it("should resolve to userData directory (like Electron app.getPath('userData'))", () => {
+      const userDataPath = tempDir;
+      const dbPath = join(userDataPath, "codeforge.db");
+      const persistence = createSessionPersistence({ dbPath });
+      
+      expect(persistence.getDbPath()).toBe(dbPath);
+      persistence.close();
+    });
+
+    it("should create database in nested userData directory structure", () => {
+      const nestedPath = join(tempDir, "CodeForge", "data", "codeforge.db");
+      const persistence = createSessionPersistence({ dbPath: nestedPath });
+      
+      expect(persistence.getDbPath()).toBe(nestedPath);
+      
+      // Verify file was created
+      expect(existsSync(nestedPath)).toBe(true);
+      persistence.close();
+    });
+
+    it("should persist across app restarts with same userData path", () => {
+      const userDataPath = join(tempDir, "userData");
+      const dbPath = join(userDataPath, "codeforge.db");
+      
+      // Simulate first app run
+      const persistence1 = createSessionPersistence({ dbPath });
+      persistence1.upsertSession(makeSession({ id: "restart-test", title: "Before restart" }));
+      persistence1.close();
+      
+      // Simulate app restart (new instance, same userData)
+      const persistence2 = createSessionPersistence({ dbPath });
+      const session = persistence2.getSession("restart-test");
+      expect(session).toBeDefined();
+      expect(session!.title).toBe("Before restart");
+      persistence2.close();
+    });
+  });
+
+  describe("Developer mode vs packaged mode path separation", () => {
+    it("should support different paths for dev and packaged modes", () => {
+      const devDbPath = join(tempDir, "dev", "codeforge.db");
+      const packagedDbPath = join(tempDir, "packaged", "codeforge.db");
+      
+      // Dev mode - writes to dev path
+      const devPersistence = createSessionPersistence({ dbPath: devDbPath });
+      devPersistence.upsertSession(makeSession({ id: "dev-only" }));
+      devPersistence.close();
+      
+      // Packaged mode - writes to packaged path (different)
+      const packagedPersistence = createSessionPersistence({ dbPath: packagedDbPath });
+      packagedPersistence.upsertSession(makeSession({ id: "packaged-only" }));
+      packagedPersistence.close();
+      
+      // Verify isolation
+      const devRead = createSessionPersistence({ dbPath: devDbPath });
+      expect(devRead.getSession("dev-only")).toBeDefined();
+      expect(devRead.getSession("packaged-only")).toBeUndefined();
+      devRead.close();
+      
+      const packagedRead = createSessionPersistence({ dbPath: packagedDbPath });
+      expect(packagedRead.getSession("packaged-only")).toBeDefined();
+      expect(packagedRead.getSession("dev-only")).toBeUndefined();
+      packagedRead.close();
+    });
+  });
+
+  describe("In-memory mode for testing", () => {
+    it("provides isolation between test files with :memory:", () => {
+      // Each test gets fresh in-memory DB
+      const db1 = createSessionPersistence({ dbPath: ":memory:" });
+      db1.upsertSession(makeSession({ id: "isolated-1" }));
+      db1.close();
+      
+      const db2 = createSessionPersistence({ dbPath: ":memory:" });
+      expect(db2.getSession("isolated-1")).toBeUndefined();
+      db2.close();
+    });
+  });
+});
