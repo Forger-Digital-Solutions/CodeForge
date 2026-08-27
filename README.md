@@ -34,15 +34,14 @@ npm run forge -- version
 ## Documentation
 
 - `README.md` — this file
-- `ARCHITECTURE.md` — system design
 - `SECURITY.md` — security model
-- `PROVIDERS.md` — provider adapter guide
-- `ROUTER.md` — ForgeRouter design
-- `FULL_AUTO.md` — autonomous task ownership
-- `GEMS_MODE.md` — governed GEMS lane
-- `PLUGIN_API.md` — plugin system
 - `CONTRIBUTING.md` — how to contribute
-- `docs/research/` — OpenCode/Kilo research and CodeForge decisions
+- `AGENTS.md` — AI agent instructions for this repo
+- `.env.example` — optional environment variables
+- `docs/phase-10.6-report.md` — current implementation status (authoritative audit)
+- `docs/research/` — OpenCode/Kilo research and CodeForge architecture decisions
+
+Planned documentation (not yet written): `ARCHITECTURE.md`, `PROVIDERS.md`, `ROUTER.md`, `FULL_AUTO.md`, `GEMS_MODE.md`, `PLUGIN_API.md`.
 
 ## License
 

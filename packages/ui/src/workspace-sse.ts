@@ -35,6 +35,13 @@ export const initialWorkspaceState: WorkspaceState = {
   commandOutput: "",
 };
 
+function resolveApiPath(sseUrl: string, apiPath: string): string {
+  if (sseUrl.startsWith("http://") || sseUrl.startsWith("https://")) {
+    return `${new URL(sseUrl).origin}${apiPath}`;
+  }
+  return apiPath;
+}
+
 export function useWorkspaceSSE(url: string) {
   const [state, setState] = useState<WorkspaceState>(initialWorkspaceState);
   const lastSeqRef = useRef<number>(0);
@@ -153,7 +160,7 @@ export function useWorkspaceSSE(url: string) {
     async (message: string, steer = false) => {
       const sessionId: string = state.session?.id ?? "default";
       const turnId = crypto.randomUUID();
-      const endpoint = "/api/send";
+      const endpoint = resolveApiPath(url, "/api/send");
 
       const body = steer
         ? JSON.stringify({ sessionId, message, steer: true, turnId })
@@ -169,13 +176,13 @@ export function useWorkspaceSSE(url: string) {
         // network error; SSE will reconnect and state remains consistent
       }
     },
-    [state.session?.id]
+    [state.session?.id, url]
   );
 
   const approve = useCallback(
     (decision: "allow_once" | "allow_session" | "deny") => {
       if (!state.pendingApproval) return;
-      fetch("/api/send", {
+      fetch(resolveApiPath(url, "/api/send"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -186,13 +193,13 @@ export function useWorkspaceSSE(url: string) {
       }).catch(() => {});
       setState((prev: WorkspaceState) => ({ ...prev, pendingApproval: null }));
     },
-    [state.pendingApproval]
+    [state.pendingApproval, url]
   );
 
   const answerQuestion = useCallback(
     (answer: string) => {
       if (!state.pendingQuestion) return;
-      fetch("/api/send", {
+      fetch(resolveApiPath(url, "/api/send"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -203,7 +210,7 @@ export function useWorkspaceSSE(url: string) {
       }).catch(() => {});
       setState((prev: WorkspaceState) => ({ ...prev, pendingQuestion: null }));
     },
-    [state.pendingQuestion]
+    [state.pendingQuestion, url]
   );
 
   return {

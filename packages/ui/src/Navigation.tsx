@@ -15,7 +15,7 @@ export default function Navigation({ active, onSelect, workItems }: NavigationPr
 
   const navItems = [
     { id: "projects", label: "Projects", icon: "◈" },
-    { id: "sessions", label: "Sessions", icon: "◫", badge: "2" },
+    { id: "sessions", label: "Sessions", icon: "◫" },
     { id: "agents", label: "Agents", icon: "●", badge: activeSessions > 0 ? String(activeSessions) : undefined },
     { id: "checkpoints", label: "Checkpoints", icon: "◉", badge: checkpoints > 0 ? String(checkpoints) : undefined },
     { id: "artifacts", label: "Artifacts", icon: "◆", badge: artifacts > 0 ? String(artifacts) : undefined },

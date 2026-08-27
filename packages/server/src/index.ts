@@ -28,7 +28,7 @@ export class CodeForgeServer {
   private eventStore: EventStore;
   private server: http.Server | null = null;
   private clients: Set<http.ServerResponse> = new Set();
-  private persistence = createSessionPersistence();
+  private persistence: ReturnType<typeof createSessionPersistence>;
   private firewall: ForgeZero;
   private providerCatalog: ProviderCatalog;
   private runtimes: Map<string, AgentRuntime> = new Map();
@@ -38,6 +38,9 @@ export class CodeForgeServer {
   constructor(options: ServerOptions = {}) {
     this.port = options.port ?? 3210;
     this.webDist = options.webDist ?? path.join(__dirname, "..", "web", "dist");
+    this.persistence = createSessionPersistence(
+      options.dbPath ? { dbPath: options.dbPath } : undefined,
+    );
     this.eventStore = new EventStore();
     // Development scaffold: deterministic entitlement scenarios until the real
     // entitlement service exists. GEMS access still fails closed.
@@ -540,6 +543,7 @@ export class CodeForgeServer {
         }
 
         this.activeWorkspacePath = workspacePath;
+        this.runtimes.clear();
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
         res.end(JSON.stringify({ ok: true, path: workspacePath }));
       } catch (error) {
@@ -606,6 +610,7 @@ export class CodeForgeServer {
         persistence: this.persistence,
         firewall: this.firewall,
         providerCatalog: this.providerCatalog,
+        workspacePath: this.activeWorkspacePath ?? undefined,
         userId,
       });
       this.runtimes.set(sessionId, runtime);

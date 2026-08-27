@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import type { Project } from "./App.js";
-import { ModelSelector, type ModelSelectorItem } from "@codeforge/ui";
+import { ModelSelector, WorkspaceApp, type ModelSelectorItem } from "@codeforge/ui";
 
 interface WorkspaceShellProps {
   project: Project;
@@ -18,12 +18,21 @@ interface ApiModel {
 }
 
 export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps) {
-  const [sessionStarted, setSessionStarted] = useState(false);
   const [models, setModels] = useState<ModelSelectorItem[]>([
     { id: "auto", displayName: "Auto", tier: "free", description: "Best Free Model" },
   ]);
   const [selectedModelId, setSelectedModelId] = useState<string | null>("auto");
   const [modelProviders, setModelProviders] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetch(`${SERVER_BASE_URL}/api/workspace/set`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: project.path }),
+    }).catch(() => {
+      // Server may still be starting; workspace tools fail closed until set succeeds
+    });
+  }, [project.path]);
 
   useEffect(() => {
     let cancelled = false;
@@ -86,11 +95,6 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
     }
   }, []);
 
-  const handleSend = useCallback((message: string, steer: boolean) => {
-    console.log("Send:", message, "steer:", steer, "model:", selectedModelId);
-    setSessionStarted(true);
-  }, [selectedModelId]);
-
   return (
     <div className="workspace-shell">
       <header className="workspace-shell-header">
@@ -121,10 +125,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
       </header>
 
       <main className="workspace-shell-main">
-        <WorkspaceApp
-          sseUrl={`${SERVER_BASE_URL}/api/events`}
-          onSendMessage={handleSend}
-        />
+        <WorkspaceApp sseUrl={`${SERVER_BASE_URL}/api/events`} />
       </main>
     </div>
   );
