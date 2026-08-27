@@ -8,6 +8,7 @@ import {
 import type { SessionRecord, TurnRecord, WorkItem } from "./session-state.js";
 import { mkdirSync, existsSync, unlinkSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { redactSecrets } from "@codeforge/secrets";
 
 export interface PersistenceOptions {
   dbPath?: string;
@@ -54,6 +55,10 @@ interface StoredEvent {
   sessionId: string;
   data: string;
   createdAt: string;
+}
+
+function sanitizeForPersistence<T>(value: T): T {
+  return JSON.parse(redactSecrets(JSON.stringify(value))) as T;
 }
 
 const SCHEMA = `
@@ -265,20 +270,21 @@ export class SessionPersistence {
   }
 
   upsertSession(session: SessionRecord): void {
+    const safeSession = sanitizeForPersistence(session);
     this.run("upsertSession", {
-      $id: session.id,
-      $title: session.title,
-      $createdAt: session.createdAt,
-      $updatedAt: session.updatedAt,
-      $status: session.status,
-      $currentAgentId: session.currentAgentId ?? null,
-      $currentModelId: session.currentModelId ?? null,
-      $currentProviderId: session.currentProviderId ?? null,
-      $permissionMode: session.permissionMode ?? null,
-      $displayMode: session.displayMode ?? null,
-      $branch: session.branch ?? null,
-      $workspacePath: session.workspacePath ?? null,
-      $taskTitle: session.taskTitle ?? null,
+      $id: safeSession.id,
+      $title: safeSession.title,
+      $createdAt: safeSession.createdAt,
+      $updatedAt: safeSession.updatedAt,
+      $status: safeSession.status,
+      $currentAgentId: safeSession.currentAgentId ?? null,
+      $currentModelId: safeSession.currentModelId ?? null,
+      $currentProviderId: safeSession.currentProviderId ?? null,
+      $permissionMode: safeSession.permissionMode ?? null,
+      $displayMode: safeSession.displayMode ?? null,
+      $branch: safeSession.branch ?? null,
+      $workspacePath: safeSession.workspacePath ?? null,
+      $taskTitle: safeSession.taskTitle ?? null,
     });
   }
 
@@ -297,16 +303,17 @@ export class SessionPersistence {
   }
 
   upsertTurn(turn: TurnRecord): void {
+    const safeTurn = sanitizeForPersistence(turn);
     this.run("upsertTurn", {
-      $id: turn.id,
-      $sessionId: turn.sessionId,
-      $seq: turn.seq,
-      $userMessage: turn.userMessage,
-      $status: turn.status,
-      $agentId: turn.agentId ?? null,
-      $startedAt: turn.startedAt ?? null,
-      $completedAt: turn.completedAt ?? null,
-      $error: turn.error ?? null,
+      $id: safeTurn.id,
+      $sessionId: safeTurn.sessionId,
+      $seq: safeTurn.seq,
+      $userMessage: safeTurn.userMessage,
+      $status: safeTurn.status,
+      $agentId: safeTurn.agentId ?? null,
+      $startedAt: safeTurn.startedAt ?? null,
+      $completedAt: safeTurn.completedAt ?? null,
+      $error: safeTurn.error ?? null,
     });
   }
 
@@ -316,11 +323,12 @@ export class SessionPersistence {
   }
 
   upsertWorkItem(item: WorkItem): void {
+    const safeItem = sanitizeForPersistence(item);
     this.run("upsertWorkItem", {
-      $id: item.id,
-      $sessionId: item.sessionId,
-      $kind: item.kind,
-      $data: JSON.stringify(item),
+      $id: safeItem.id,
+      $sessionId: safeItem.sessionId,
+      $kind: safeItem.kind,
+      $data: JSON.stringify(safeItem),
     });
   }
 
@@ -330,10 +338,10 @@ export class SessionPersistence {
   }
 
   appendEvent(event: unknown): void {
-    const sessionId = (event as { sessionId?: string }).sessionId ?? "";
+    const safeEvent = sanitizeForPersistence(event) as { sessionId?: string };
     this.run("appendEvent", {
-      $sessionId: sessionId,
-      $data: JSON.stringify(event),
+      $sessionId: safeEvent.sessionId ?? "",
+      $data: JSON.stringify(safeEvent),
       $createdAt: new Date().toISOString(),
     });
   }

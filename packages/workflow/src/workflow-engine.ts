@@ -67,6 +67,8 @@ export interface WorkflowEngineOptions {
   workspacePath: string;
   sessionId: string;
   taskId?: string;
+  /** Supplied by the server so workflow approval/cancellation share one turn identity. */
+  turnId?: string;
   signal?: AbortSignal;
   maxRepairAttempts?: number;
   verificationCommands?: string[];
@@ -135,7 +137,7 @@ export class WorkflowEngine {
     this.task = {
       id: options.taskId ?? crypto.randomUUID(),
       sessionId: this.sessionId,
-      turnId: crypto.randomUUID(),
+      turnId: options.turnId ?? crypto.randomUUID(),
       title: "",
       userMessage: "",
       workspacePath: this.workspacePath,
@@ -151,7 +153,13 @@ export class WorkflowEngine {
     return { ...this.task };
   }
 
+  private readonly TERMINAL_PHASES = new Set<WorkflowPhase>(["completed", "failed", "cancelled"]);
+
   private setPhase(phase: WorkflowPhase, status?: TaskStatus): void {
+    // Terminal states are immutable — once reached, no further transitions allowed
+    if (this.TERMINAL_PHASES.has(this.phase as WorkflowPhase)) {
+      return;
+    }
     this.phase = phase;
     this.task.phase = phase;
     this.task.updatedAt = new Date().toISOString();
@@ -240,9 +248,15 @@ export class WorkflowEngine {
           }
           plan = updatePlanStatus(plan, "approved");
         } else {
-          // Auto-approve in deterministic mode if no approval handler, but log that approval was required
-          // For security, we still mark as approved but record that approval was bypassed in test mode
-          plan = updatePlanStatus(plan, "approved");
+          plan = updatePlanStatus(plan, "rejected");
+          this.setPhase("failed", "failed_safely");
+          return {
+            taskId: this.task.id,
+            status: "failed",
+            phase: this.phase,
+            summary: "Approval is required, but no ApprovalService handler is configured.",
+            plan,
+          };
         }
         this.setPhase("planning", "planning");
       } else {
@@ -273,14 +287,13 @@ export class WorkflowEngine {
       while (analysis.hasFailures && analysis.isRepairable && attempts < this.maxRepairAttempts) {
         this.ensureNotAborted();
         this.setPhase("repairing", "repairing");
-        this.onEvent?.({ type: "workflow.repair_attempted", phase: this.phase, payload: { attempt: attempts + 1, analysis } });
+        attempts++;
+        this.onEvent?.({ type: "workflow.repair_attempted", phase: this.phase, payload: { attempt: attempts, analysis } });
 
         const repaired = await this.attemptRepair(plan, context, repoMap, intent, verification, analysis);
         if (!repaired.success) {
           break;
         }
-        attempts++;
-
         // Re-test
         this.setPhase("verifying", "testing");
         verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal });
@@ -304,8 +317,8 @@ export class WorkflowEngine {
 
       if (!passed && analysis.hasFailures) {
         // Even if verification failed, we still produce evidence but mark as failed_safely if unrepairable
-        const finalPhase: WorkflowPhase = "completed";
-        this.setPhase(finalPhase, passed ? "complete" : "failed_safely");
+        const finalPhase: WorkflowPhase = "failed";
+        this.setPhase(finalPhase, "failed_safely");
         return {
           taskId: this.task.id,
           status: passed ? "completed" : "failed",

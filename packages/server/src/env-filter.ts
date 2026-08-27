@@ -35,14 +35,22 @@ const SENSITIVE_SUBSTRINGS = [
   "AUTH_TOKEN",
   "ACCESS_TOKEN",
   "REFRESH_TOKEN",
+  "API_KEY",
+  "TOKEN",
 ];
 
 const SENSITIVE_PREFIXES = [
   "AWS_",
   "AZURE_",
   "GCP_",
+  "GOOGLE_",
   "GOOGLE_CREDENTIALS",
   "CLOUDFLARE_",
+  "OPENAI_",
+  "ANTHROPIC_",
+  "GROQ_",
+  "OPENROUTER_",
+  "OPENCODE_",
 ];
 
 export function isSensitiveEnvKey(key: string): boolean {

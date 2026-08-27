@@ -65,6 +65,25 @@ function validateWorkspacePath(workspacePath: string): { valid: boolean; resolve
   return { valid: true, resolved: real };
 }
 
+const ACTIVE_PHASES = new Set<string>([
+  "received",
+  "understanding",
+  "inspecting",
+  "building_context",
+  "planning",
+  "awaiting_approval",
+  "implementing",
+  "verifying",
+  "diagnosing",
+  "repairing",
+  "reviewing",
+  "summarizing",
+]);
+
+function isActivePhase(phase: string): boolean {
+  return ACTIVE_PHASES.has(phase);
+}
+
 export class WorkflowService {
   private readonly eventStore: EventStore;
   private readonly persistence: SessionPersistence;
@@ -81,6 +100,52 @@ export class WorkflowService {
     this.approvalService = new ApprovalService({ defaultTimeoutMs: 5 * 60 * 1000 });
     this.getOrCreateRuntime = options.getOrCreateRuntime;
     this.useRealRuntime = options.useRealRuntime ?? false;
+    this.recoverStalePersistedState();
+  }
+
+  private recoverStalePersistedState(): void {
+    try {
+      const sessions = this.persistence.listSessions();
+      for (const sess of sessions) {
+        // Running/paused/waiting_for_approval status at startup indicates crash without graceful shutdown
+        if (sess.status === "running" || sess.status === "paused" || sess.status === "waiting_for_approval") {
+          const turns = this.persistence.getTurns(sess.id);
+          let hasActiveTurn = false;
+          for (const turn of turns) {
+            if (turn.status === "running" || turn.status === "paused" || turn.status === "waiting_for_approval") {
+              hasActiveTurn = true;
+              try {
+                this.persistence.upsertTurn({
+                  ...turn,
+                  status: "failed",
+                  completedAt: new Date().toISOString(),
+                  error: "Recovery required: server restarted during active execution. No duplicate execution will occur; inspect workspace and retry if needed.",
+                });
+              } catch {}
+            }
+          }
+          if (hasActiveTurn) {
+            try {
+              this.persistence.upsertSession({
+                ...sess,
+                status: "failed",
+                updatedAt: new Date().toISOString(),
+              });
+              // Also emit a synthetic event for history honesty if possible
+              try {
+                this.persistence.appendEvent({
+                  type: "task.state_changed",
+                  timestamp: new Date().toISOString(),
+                  seq: this.eventStore.getLastSeq() + 1,
+                  sessionId: sess.id,
+                  payload: { taskId: sess.id, from: "running", to: "failed_safely", reason: "recovery_required" },
+                });
+              } catch {}
+            } catch {}
+          }
+        }
+      }
+    } catch {}
   }
 
   getApprovalService(): ApprovalService {
@@ -111,18 +176,9 @@ export class WorkflowService {
           return { status: turn.status, turn };
         }
         if (turn.status === "waiting_for_approval") {
-          // Real autonomous execution: auto-approve workflow-generated tool calls
-          // (moderate risk edits) for deterministic E2E, while still emitting
-          // approval.requested/approval.resolved events for auditability.
-          // The ApprovalService remains authoritative; this is the approved path.
-          const pending = runtime.getAllPendingApprovals();
-          for (const appr of pending) {
-            try {
-              runtime.resolveApproval(appr.approvalId, "allow_once");
-            } catch {}
-          }
-          // Also check WorkflowService's own approvals (plan-level) — those are
-          // resolved via HTTP in real UI, but for agent turns we auto-approve.
+          // The runtime stays paused until an explicit user decision reaches its
+          // ApprovalService through the normal API/UI route. A workflow must not
+          // manufacture an approval on the user's behalf.
           await new Promise((r) => setTimeout(r, 100));
           continue;
         }
@@ -222,12 +278,13 @@ export class WorkflowService {
 
     // Concurrency hardening: at most 1 running workflow per session, max 20 global
     const runningForSession = Array.from(this.workflows.values()).filter(
-      (w) => w.task.sessionId === sessionId && (w.task.phase === "received" || w.task.phase === "understanding" || w.task.phase === "inspecting" || w.task.phase === "building_context" || w.task.phase === "planning" || w.task.phase === "awaiting_approval" || w.task.phase === "implementing" || w.task.phase === "verifying" || w.task.phase === "diagnosing" || w.task.phase === "repairing" || w.task.phase === "reviewing" || w.task.phase === "summarizing"),
+      (w) => w.task.sessionId === sessionId && isActivePhase(w.engine.getTask().phase),
     );
     if (runningForSession.length >= MAX_CONCURRENT_PER_SESSION) {
       throw new Error("A workflow is already running for this session. Cancel or wait for it to complete.");
     }
-    if (this.workflows.size >= MAX_WORKFLOWS_GLOBAL) {
+    const activeGlobal = Array.from(this.workflows.values()).filter((w) => isActivePhase(w.engine.getTask().phase));
+    if (activeGlobal.length >= MAX_WORKFLOWS_GLOBAL) {
       throw new Error("Too many concurrent workflows. Please wait.");
     }
 
@@ -276,6 +333,7 @@ export class WorkflowService {
       workspacePath,
       sessionId,
       taskId,
+      turnId,
       signal: controller.signal,
       verificationCommands: request.verificationCommands,
       agentExecutor,
@@ -509,7 +567,15 @@ export class WorkflowService {
   async cancelWorkflow(taskId: string, reason = "User cancelled"): Promise<void> {
     const entry = this.workflows.get(taskId);
     if (!entry) throw new Error(`Workflow ${taskId} not found`);
-    entry.controller.abort();
+    const currentPhase = entry.engine.getTask().phase;
+    // Idempotent: terminal workflows already finished — no duplicate side effects
+    if (!isActivePhase(currentPhase)) {
+      return;
+    }
+    // Abort exactly once — subsequent aborts are no-ops
+    if (!entry.controller.signal.aborted) {
+      entry.controller.abort();
+    }
     this.approvalService.cancelForTurn(entry.task.turnId, reason);
     // Also cancel any AgentRuntime turn that may be running for this workflow
     try {
@@ -550,8 +616,36 @@ export class WorkflowService {
 
   getRunningCountForSession(sessionId: string): number {
     return Array.from(this.workflows.values()).filter(
-      (w) => w.task.sessionId === sessionId && !["completed", "failed", "cancelled"].includes(w.task.phase),
+      (w) => w.task.sessionId === sessionId && isActivePhase(w.engine.getTask().phase),
     ).length;
+  }
+
+  getActiveCount(): number {
+    return Array.from(this.workflows.values()).filter((w) => isActivePhase(w.engine.getTask().phase)).length;
+  }
+
+  /**
+   * Graceful shutdown — cancel active workflows and release resources exactly once.
+   * Never silently duplicates execution; marks interrupted tasks as cancelled.
+   */
+  shutdown(reason = "Server shutting down"): void {
+    for (const entry of Array.from(this.workflows.values())) {
+      if (isActivePhase(entry.engine.getTask().phase) && !entry.controller.signal.aborted) {
+        try { entry.controller.abort(); } catch {}
+        try { this.approvalService.cancelForTurn(entry.task.turnId, reason); } catch {}
+      }
+    }
+    this.approvalService.cancelAll(reason);
+  }
+
+  /**
+   * Whether a task is in a terminal state (immutable).
+   */
+  isTerminal(taskId: string): boolean {
+    const entry = this.workflows.get(taskId);
+    if (!entry) return false;
+    const phase = entry.engine.getTask().phase;
+    return phase === "completed" || phase === "failed" || phase === "cancelled";
   }
 }
 
