@@ -1,29 +1,65 @@
 {
-  "name": "@codeforge/vscode",
+  "name": "codeforge-vscode",
+  "displayName": "CodeForge",
+  "description": "Free-first autonomous software engineering agent for VS Code",
   "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+  "publisher": "codeforge",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "AI",
+    "Programming Languages",
+    "Education"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "codeforge.startSession",
+        "title": "CodeForge: Start Session"
+      },
+      {
+        "command": "codeforge.sendMessage",
+        "title": "CodeForge: Send Message"
+      },
+      {
+        "command": "codeforge.openWebview",
+        "title": "CodeForge: Open Webview"
+      },
+      {
+        "command": "codeforge.stopServer",
+        "title": "CodeForge: Stop Server"
+      }
+    ],
+    "configuration": {
+      "title": "CodeForge",
+      "properties": {
+        "codeforge.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:3210",
+          "description": "URL of the CodeForge server"
+        }
+      }
     }
   },
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b --force",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w"
   },
   "dependencies": {
-    "@codeforge/core": "*",
-    "@codeforge/protocol": "*",
     "@codeforge/sdk": "*",
     "@codeforge/server": "*",
-    "zod": "^3.24.0"
+    "@codeforge/protocol": "*"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.3.9"
   }
 }
-
-
-

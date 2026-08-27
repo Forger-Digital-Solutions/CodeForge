@@ -1,0 +1,6 @@
+**/*.ts
+**/*.map
+test/
+**/*.test.ts
+node_modules/
+src/

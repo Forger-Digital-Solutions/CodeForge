@@ -29,6 +29,7 @@ const packages = [
   "ui",
   "shared",
   "vscode",
+  "integration-tests",
 ];
 
 const aliases: Record<string, string | string[]> = {};
@@ -45,6 +46,7 @@ export default defineConfig({
       "apps/*/test/**/*.test.ts",
     ],
     globals: false,
+    testTimeout: 30000,
   },
   resolve: {
     alias: aliases,

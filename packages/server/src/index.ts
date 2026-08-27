@@ -342,12 +342,14 @@ export class CodeForgeServer {
           typeof data.userId === "string" && data.userId ? data.userId : undefined,
         );
 
+        // Start the turn in the runtime (tracks state for pause/resume/cancel)
+        // In demo mode, AgentRuntime skips real provider execution entirely.
+        const turnId = await runtime.startTurn(data.message ?? "");
+
         if (this.useRealRuntime) {
-          const turnId = await runtime.startTurn(data.message ?? "");
           res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ ok: true, turnId, mode: "real" }));
         } else {
-          const turnId = crypto.randomUUID();
           this.eventStore.append({
             type: "turn.started",
             timestamp: new Date().toISOString(),
@@ -392,6 +394,7 @@ export class CodeForgeServer {
       res.end(JSON.stringify({ error: "Session not found" }));
       return;
     }
+    
     runtime.pauseTurn(turnId ?? "")
       .then(() => {
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
@@ -417,6 +420,7 @@ export class CodeForgeServer {
       res.end(JSON.stringify({ error: "Session not found" }));
       return;
     }
+    
     runtime.resumeTurn(turnId ?? "")
       .then(() => {
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
@@ -641,6 +645,8 @@ export class CodeForgeServer {
         providerCatalog: this.providerCatalog,
         workspacePath: this.activeWorkspacePath ?? undefined,
         userId,
+        // Demo mode: skip real provider execution when useRealRuntime is false
+        demoMode: !this.useRealRuntime,
       });
       this.runtimes.set(sessionId, runtime);
     }

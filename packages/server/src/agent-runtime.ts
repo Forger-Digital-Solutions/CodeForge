@@ -57,6 +57,8 @@ export interface AgentRuntimeOptions {
   workspacePath?: string;
   /** CodeForge account user id used for entitlement checks on GEMS models. */
   userId?: string;
+  /** Demo mode: skip real provider execution, only track turn state. */
+  demoMode?: boolean;
 }
 
 /** Explicit manual model selection for a session (may be a GEMS paid model). */
@@ -73,6 +75,7 @@ export class AgentRuntime {
   private readonly providerCatalog: ProviderCatalog;
   private readonly workspacePath?: string;
   private readonly userId: string;
+  private readonly demoMode: boolean;
   private modelSelection: ModelSelection | null = null;
   private readonly activeTurns: Map<string, TurnState> = new Map();
   private readonly pendingApprovals: Map<string, ApprovalRequest> = new Map();
@@ -90,6 +93,7 @@ export class AgentRuntime {
     this.providerCatalog = options.providerCatalog;
     this.workspacePath = options.workspacePath;
     this.userId = options.userId ?? "anonymous";
+    this.demoMode = options.demoMode ?? false;
   }
 
   /**
@@ -145,16 +149,21 @@ export class AgentRuntime {
     const abortController = new AbortController();
     this.abortControllers.set(turnId, abortController);
 
-    this.executeTurn(turnId, userMessage, adapter, abortController.signal).catch((error) => {
-      const turnState = this.activeTurns.get(turnId);
-      if (turnState && turnState.status === "running") {
-        turnState.status = "failed";
-        turnState.error = error instanceof Error ? error.message : String(error);
-        this.activeTurns.set(turnId, turnState);
-        adapter.emitTurnFailed(turnId, turnState.error);
-        adapter.emitStatusChanged("running", "failed");
-      }
-    });
+    // Demo mode: skip real provider execution entirely.
+    // Only track turn state for pause/resume/cancel operations.
+    // The demo-runtime handles emitting demo events separately.
+    if (!this.demoMode) {
+      this.executeTurn(turnId, userMessage, adapter, abortController.signal).catch((error) => {
+        const turnState = this.activeTurns.get(turnId);
+        if (turnState && turnState.status === "running") {
+          turnState.status = "failed";
+          turnState.error = error instanceof Error ? error.message : String(error);
+          this.activeTurns.set(turnId, turnState);
+          adapter.emitTurnFailed(turnId, turnState.error);
+          adapter.emitStatusChanged("running", "failed");
+        }
+      });
+    }
 
     return turnId;
   }
@@ -220,15 +229,18 @@ export class AgentRuntime {
     const abortController = new AbortController();
     this.abortControllers.set(turnId, abortController);
 
-    this.executeTurn(turnId, state.userMessage, adapter, abortController.signal).catch((error) => {
-      const turnState = this.activeTurns.get(turnId);
-      if (turnState && turnState.status === "running") {
-        turnState.status = "failed";
-        turnState.error = error instanceof Error ? error.message : String(error);
-        this.activeTurns.set(turnId, turnState);
-        adapter.emitTurnFailed(turnId, turnState.error);
-      }
-    });
+    // Demo mode: skip real provider execution entirely.
+    if (!this.demoMode) {
+      this.executeTurn(turnId, state.userMessage, adapter, abortController.signal).catch((error) => {
+        const turnState = this.activeTurns.get(turnId);
+        if (turnState && turnState.status === "running") {
+          turnState.status = "failed";
+          turnState.error = error instanceof Error ? error.message : String(error);
+          this.activeTurns.set(turnId, turnState);
+          adapter.emitTurnFailed(turnId, turnState.error);
+        }
+      });
+    }
   }
 
   async cancelTurn(turnId: string, reason?: string): Promise<void> {

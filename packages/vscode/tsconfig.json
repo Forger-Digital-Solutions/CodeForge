@@ -3,10 +3,13 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "verbatimModuleSyntax": false
   },
   "include": ["src/**/*"],
-  "exclude": ["test", "dist"],
+  "exclude": ["dist", "node_modules"],
   "references": [
     { "path": "../core" },
     { "path": "../protocol" },

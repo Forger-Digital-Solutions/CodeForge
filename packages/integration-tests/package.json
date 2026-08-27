@@ -1,0 +1,19 @@
+{
+  "name": "@codeforge/integration-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --force",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@codeforge/server": "*",
+    "@codeforge/protocol": "*",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9"
+  }
+}
