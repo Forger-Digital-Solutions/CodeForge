@@ -71,7 +71,7 @@ export class CodeForgeServer {
     // Check for common provider API keys
     const providerKeys = [
       "openrouter", // OpenRouter API key
-      // Add other providers here as they are implemented
+      "opencode", // OpenCode Zen API key
     ];
     
     const hasAtLeastOneApiKey = providerKeys.some(
