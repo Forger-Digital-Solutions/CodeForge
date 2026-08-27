@@ -17,6 +17,9 @@ export interface WorkspaceState {
   pendingQuestion: Extract<WorkItem, { kind: "question" }> | null;
   agentStatus: SessionStatus;
   commandOutput: string;
+  // Stop/Pause/Resume action states
+  actionPending: "none" | "stop" | "pause" | "resume";
+  actionError: string | null;
 }
 
 export const initialWorkspaceState: WorkspaceState = {
@@ -33,6 +36,8 @@ export const initialWorkspaceState: WorkspaceState = {
   pendingQuestion: null,
   agentStatus: "idle",
   commandOutput: "",
+  actionPending: "none",
+  actionError: null,
 };
 
 function resolveApiPath(sseUrl: string, apiPath: string): string {
@@ -254,8 +259,10 @@ export function useWorkspaceSSE(url: string) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({}),
         });
-      } catch {
+      } catch (error) {
         // network error; SSE will reconnect and state remains consistent
+        // For UI error display, this should be handled by the caller
+        console.error("Resume turn failed:", error);
       }
     },
     [url]

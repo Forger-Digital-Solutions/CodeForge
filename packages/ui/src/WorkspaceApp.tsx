@@ -147,6 +147,7 @@ export default function WorkspaceApp({ sseUrl, onSendMessage }: WorkspaceAppProp
           workItems={state.workItems}
           turns={state.turns}
           isRunning={state.isRunning}
+          workspacePath={state.session?.workspacePath}
         />
       </div>
       {state.pendingApproval && (

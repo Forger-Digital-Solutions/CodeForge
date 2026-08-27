@@ -1,6 +1,7 @@
 import React from "react";
 import type { SessionRecord, WorkItem, TurnRecord } from "@codeforge/sessions";
 import { isWorkItemKind } from "@codeforge/sessions";
+import FileExplorer from "./FileExplorer.js";
 
 interface InspectorProps {
   activeTab: string;
@@ -9,6 +10,7 @@ interface InspectorProps {
   workItems: WorkItem[];
   turns: TurnRecord[];
   isRunning: boolean;
+  workspacePath?: string;
 }
 
 const TABS = [
@@ -21,9 +23,10 @@ const TABS = [
   "agents",
   "context",
   "evidence",
+  "files",
 ];
 
-export default function Inspector({ activeTab, onTabSelect, session, workItems, turns, isRunning }: InspectorProps) {
+export default function Inspector({ activeTab, onTabSelect, session, workItems, turns, isRunning, workspacePath }: InspectorProps) {
   const renderTabContent = () => {
     switch (activeTab) {
       case "overview":
@@ -44,6 +47,8 @@ export default function Inspector({ activeTab, onTabSelect, session, workItems, 
         return renderContext(workItems);
       case "evidence":
         return renderEvidence(workItems);
+      case "files":
+        return renderFiles(workspacePath);
       default:
         return null;
     }
@@ -324,4 +329,15 @@ function renderEvidence(workItems: WorkItem[]) {
       })}
     </div>
   );
+}
+
+function renderFiles(workspacePath?: string | null) {
+  if (!workspacePath) {
+    return (
+      <div style={{ color: "var(--text-muted)", fontSize: 12 }}>
+        No workspace path set. Open a project to view files.
+      </div>
+    );
+  }
+  return <FileExplorer rootPath={workspacePath} />;
 }
