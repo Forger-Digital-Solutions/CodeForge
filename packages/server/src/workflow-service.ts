@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import { createWorkspaceEventAdapter, type WorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { ApprovalService } from "./approval-service.js";
 import type { EventStore, SessionPersistence } from "@codeforge/sessions";
@@ -10,6 +12,7 @@ import {
 } from "@codeforge/workflow";
 import type { WorkflowPlan, ContextBundle, RepoMap, FailureAnalysis, VerificationResult, TaskIntent } from "@codeforge/workflow";
 import type { AgentRuntime } from "./agent-runtime.js";
+import { redactSecrets } from "@codeforge/secrets";
 
 export interface WorkflowServiceOptions {
   eventStore: EventStore;
@@ -29,6 +32,37 @@ export interface WorkflowRunRequest {
   userId?: string;
   /** Force heuristic even if real runtime available (for deterministic tests) */
   forceHeuristic?: boolean;
+}
+
+const MAX_CONCURRENT_PER_SESSION = 1;
+const MAX_WORKFLOWS_GLOBAL = 20;
+const WORKFLOW_TIMEOUT_MS = 10 * 60 * 1000;
+const MAX_WORKSPACE_PATH_LENGTH = 1024;
+
+function validateWorkspacePath(workspacePath: string): { valid: boolean; resolved?: string; error?: string } {
+  if (typeof workspacePath !== "string" || workspacePath.length === 0 || workspacePath.length > MAX_WORKSPACE_PATH_LENGTH) {
+    return { valid: false, error: "Invalid workspace path" };
+  }
+  if (workspacePath.includes("\0")) return { valid: false, error: "Invalid workspace path" };
+  let resolved: string;
+  try {
+    resolved = path.resolve(workspacePath);
+  } catch {
+    return { valid: false, error: "Invalid workspace path" };
+  }
+  let real: string;
+  try {
+    real = fs.realpathSync(resolved);
+  } catch {
+    return { valid: false, error: "Workspace path does not exist" };
+  }
+  try {
+    const stat = fs.statSync(real);
+    if (!stat.isDirectory()) return { valid: false, error: "Workspace path is not a directory" };
+  } catch {
+    return { valid: false, error: "Workspace path not accessible" };
+  }
+  return { valid: true, resolved: real };
 }
 
 export class WorkflowService {
@@ -176,9 +210,32 @@ export class WorkflowService {
 
   async startWorkflow(request: WorkflowRunRequest): Promise<{ taskId: string; turnId: string }> {
     const sessionId = request.sessionId;
-    const workspacePath = request.workspacePath ?? this.defaultWorkspacePath;
-    if (!workspacePath) {
+    const rawWorkspacePath = request.workspacePath ?? this.defaultWorkspacePath;
+    if (!rawWorkspacePath) {
       throw new Error("No workspace path configured for workflow");
+    }
+    const validated = validateWorkspacePath(rawWorkspacePath);
+    if (!validated.valid || !validated.resolved) {
+      throw new Error(validated.error ?? "Invalid workspace");
+    }
+    const workspacePath = validated.resolved;
+
+    // Concurrency hardening: at most 1 running workflow per session, max 20 global
+    const runningForSession = Array.from(this.workflows.values()).filter(
+      (w) => w.task.sessionId === sessionId && (w.task.phase === "received" || w.task.phase === "understanding" || w.task.phase === "inspecting" || w.task.phase === "building_context" || w.task.phase === "planning" || w.task.phase === "awaiting_approval" || w.task.phase === "implementing" || w.task.phase === "verifying" || w.task.phase === "diagnosing" || w.task.phase === "repairing" || w.task.phase === "reviewing" || w.task.phase === "summarizing"),
+    );
+    if (runningForSession.length >= MAX_CONCURRENT_PER_SESSION) {
+      throw new Error("A workflow is already running for this session. Cancel or wait for it to complete.");
+    }
+    if (this.workflows.size >= MAX_WORKFLOWS_GLOBAL) {
+      throw new Error("Too many concurrent workflows. Please wait.");
+    }
+
+    if (typeof request.message !== "string" || request.message.trim().length === 0) {
+      throw new Error("Message is required");
+    }
+    if (request.message.length > 10000) {
+      throw new Error("Message too long");
     }
 
     const adapter = createWorkspaceEventAdapter({
@@ -190,13 +247,26 @@ export class WorkflowService {
     const taskId = crypto.randomUUID();
     const turnId = crypto.randomUUID();
 
-    // Emit task lifecycle events immediately
-    adapter.emitTaskCreated(taskId, request.message.slice(0, 80), "autonomous");
+    // Emit task lifecycle events immediately (redact secrets in title)
+    const redactedTitle = redactSecrets(request.message.slice(0, 80));
+    adapter.emitTaskCreated(taskId, redactedTitle, "autonomous");
     adapter.emitTaskStarted(taskId);
     adapter.emitTaskStateChanged(taskId, "received", "reconnaissance");
     adapter.emitStatusChanged("idle", "running");
 
     const controller = new AbortController();
+    const workflowTimeout = setTimeout(() => {
+      if (!controller.signal.aborted) {
+        controller.abort();
+        try {
+          adapter.emitTaskStateChanged(taskId, "running", "failed_safely");
+          adapter.emitStatusChanged("running", "failed");
+          adapter.emitTurnFailed(turnId, "Workflow timed out after 10 minutes");
+        } catch {}
+      }
+    }, WORKFLOW_TIMEOUT_MS);
+    // Ensure timeout is cleared when workflow settles
+    const clearWorkflowTimeout = () => clearTimeout(workflowTimeout);
 
     const shouldUseRealAgent = !request.forceHeuristic && this.useRealRuntime && !!this.getOrCreateRuntime;
     const agentExecutor = shouldUseRealAgent ? this.createAgentExecutor(sessionId, request.userId, controller.signal, adapter) : undefined;
@@ -323,66 +393,74 @@ export class WorkflowService {
     const task: WorkflowTask = engine.getTask();
     const promise = engine.run(request.message).then(
       (result: WorkflowResult) => {
-        if (result.status === "completed") {
-          adapter.emitTaskCompleted(taskId, result.summary);
+        clearWorkflowTimeout();
+        // Redact secrets in summary/diff for safe persistence/display
+        const safeSummary = redactSecrets(result.summary);
+        const safeDiff = result.diffSummary ? redactSecrets(result.diffSummary) : undefined;
+        const safeResult = { ...result, summary: safeSummary, diffSummary: safeDiff };
+        if (safeResult.status === "completed") {
+          adapter.emitTaskCompleted(taskId, safeResult.summary);
           adapter.emitStatusChanged("running", "completed");
           // Evidence and checkpoint as artifacts
-          if (result.evidenceId) {
-            adapter.emitEvidenceCreated(result.evidenceId, result.summary.slice(0, 500), [
-              { kind: "file", ref: result.diffSummary?.slice(0, 100) ?? "workflow" },
+          if (safeResult.evidenceId) {
+            adapter.emitEvidenceCreated(safeResult.evidenceId, safeResult.summary.slice(0, 500), [
+              { kind: "file", ref: safeDiff?.slice(0, 100) ?? "workflow" },
             ]);
             try {
               this.persistence.upsertWorkItem({
                 kind: "evidence",
-                id: result.evidenceId,
+                id: safeResult.evidenceId,
                 sessionId,
                 turnId,
-                conclusion: result.summary.slice(0, 500),
+                conclusion: safeResult.summary.slice(0, 500),
                 references: [],
                 createdAt: new Date().toISOString(),
               } as unknown as import("@codeforge/sessions").WorkItem);
             } catch {}
           }
-          if (result.checkpointId) {
-            adapter.emitCheckpointCreated(result.checkpointId, `Workflow ${taskId.slice(0, 8)}`, result.review?.diffs.length ?? 0);
+          if (safeResult.checkpointId) {
+            adapter.emitCheckpointCreated(safeResult.checkpointId, `Workflow ${taskId.slice(0, 8)}`, safeResult.review?.diffs.length ?? 0);
           }
           // Final turn-like completion for compatibility
-          adapter.emitTurnCompleted(turnId, result.summary);
-        } else if (result.status === "failed") {
+          adapter.emitTurnCompleted(turnId, safeResult.summary);
+        } else if (safeResult.status === "failed") {
           adapter.emitTaskStateChanged(taskId, "implementing", "failed_safely");
-          adapter.emitTurnFailed(turnId, result.summary);
+          adapter.emitTurnFailed(turnId, safeResult.summary);
           adapter.emitStatusChanged("running", "failed");
-        } else if (result.status === "cancelled") {
-          adapter.emitTaskCancelled(taskId, result.summary);
-          adapter.emitTurnCancelled(turnId, result.summary);
+        } else if (safeResult.status === "cancelled") {
+          adapter.emitTaskCancelled(taskId, safeResult.summary);
+          adapter.emitTurnCancelled(turnId, safeResult.summary);
           adapter.emitStatusChanged("running", "cancelled");
         }
-        // Persist final session status
+        // Persist final session status (redacted)
         try {
+          const safeMsg = redactSecrets(request.message.slice(0, 80));
           this.persistence.upsertSession({
             id: sessionId,
-            title: request.message.slice(0, 80),
+            title: safeMsg,
             createdAt: task.createdAt,
             updatedAt: new Date().toISOString(),
-            status: result.status === "completed" ? "completed" : result.status === "cancelled" ? "cancelled" : "failed",
-            taskTitle: request.message.slice(0, 80),
+            status: safeResult.status === "completed" ? "completed" : safeResult.status === "cancelled" ? "cancelled" : "failed",
+            taskTitle: safeMsg,
             workspacePath,
           });
           this.persistence.upsertTurn({
             id: turnId,
             sessionId,
             seq: this.eventStore.getLastSeq(),
-            userMessage: request.message,
-            status: result.status === "completed" ? "completed" : result.status === "cancelled" ? "cancelled" : "failed",
+            userMessage: redactSecrets(request.message),
+            status: safeResult.status === "completed" ? "completed" : safeResult.status === "cancelled" ? "cancelled" : "failed",
             startedAt: task.createdAt,
             completedAt: new Date().toISOString(),
-            error: result.status !== "completed" ? result.summary : undefined,
+            error: safeResult.status !== "completed" ? safeResult.summary : undefined,
           });
         } catch {}
-        return result;
+        return safeResult;
       },
       (error: unknown) => {
-        const msg = error instanceof Error ? error.message : String(error);
+        clearWorkflowTimeout();
+        const raw = error instanceof Error ? error.message : String(error);
+        const msg = redactSecrets(raw);
         adapter.emitTurnFailed(turnId, msg);
         adapter.emitTaskStateChanged(taskId, "running", "failed_safely");
         adapter.emitStatusChanged("running", "failed");
@@ -395,15 +473,18 @@ export class WorkflowService {
       },
     );
 
+    // Ensure timeout and promise cleanup on settle
+    promise.finally(clearWorkflowTimeout).catch(() => clearWorkflowTimeout());
+
     this.workflows.set(taskId, { engine, controller, promise, task: engine.getTask() });
 
-    // Also persist initial turn as running
+    // Also persist initial turn as running (redacted)
     try {
       this.persistence.upsertTurn({
         id: turnId,
         sessionId,
         seq: this.eventStore.getLastSeq(),
-        userMessage: request.message,
+        userMessage: redactSecrets(request.message),
         status: "running",
         startedAt: task.createdAt,
       });
@@ -427,10 +508,47 @@ export class WorkflowService {
     if (!entry) throw new Error(`Workflow ${taskId} not found`);
     entry.controller.abort();
     this.approvalService.cancelForTurn(entry.task.turnId, reason);
+    // Also cancel any AgentRuntime turn that may be running for this workflow
+    try {
+      if (this.getOrCreateRuntime) {
+        const rt = this.getOrCreateRuntime(entry.task.sessionId);
+        const active = rt.getActiveTurns();
+        for (const t of active) {
+          try { await rt.cancelTurn(t.turnId, reason); } catch {}
+        }
+      }
+    } catch {}
+  }
+
+  cancelAll(reason = "Workspace changed"): void {
+    for (const [id, entry] of Array.from(this.workflows.entries())) {
+      if (entry.task.phase !== "completed" && entry.task.phase !== "failed" && entry.task.phase !== "cancelled") {
+        entry.controller.abort();
+        this.approvalService.cancelForTurn(entry.task.turnId, reason);
+        try {
+          if (this.getOrCreateRuntime) {
+            const rt = this.getOrCreateRuntime(entry.task.sessionId);
+            for (const t of rt.getActiveTurns()) {
+              rt.cancelTurn(t.turnId, reason).catch(() => {});
+            }
+          }
+        } catch {}
+      }
+    }
   }
 
   setWorkspacePath(p: string): void {
+    // Cancel running workflows when workspace changes — prevents cross-workspace file writes
+    if (this.defaultWorkspacePath && this.defaultWorkspacePath !== p) {
+      this.cancelAll("Workspace changed");
+    }
     this.defaultWorkspacePath = p;
+  }
+
+  getRunningCountForSession(sessionId: string): number {
+    return Array.from(this.workflows.values()).filter(
+      (w) => w.task.sessionId === sessionId && !["completed", "failed", "cancelled"].includes(w.task.phase),
+    ).length;
   }
 }
 
