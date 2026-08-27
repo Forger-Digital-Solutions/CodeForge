@@ -64,7 +64,7 @@ describe("OpencodeAdapter", () => {
     await expect(adapter.listModels()).rejects.toMatchObject({ code: "MISSING_API_KEY" });
   });
 
-  it("listModels uses correct endpoint and auth header and parses free detection via -free suffix", async () => {
+  it("listModels uses correct endpoint and auth header and parses free detection via known set", async () => {
     const adapter = createAdapter();
     const fetchMock = mockFetchOnce({
       ok: true,
@@ -227,10 +227,16 @@ describe("OpencodeAdapter", () => {
     });
   });
 
-  it("chat HTTP error handling maps 401/429/503 correctly", async () => {
+  it("chat HTTP error handling maps 401/402/404/429/503 correctly", async () => {
     const adapter = createAdapter();
     mockFetchOnce({ ok: false, status: 401, body: '{"type":"error","error":{"type":"AuthError","message":"Invalid API key."}}' });
     await expect(adapter.chat({ model: "deepseek-v4-flash", messages: [{ role: "user", content: "hi" }] })).rejects.toMatchObject({ code: "AUTH_ERROR" });
+
+    mockFetchOnce({ ok: false, status: 402, body: "payment required" });
+    await expect(adapter.chat({ model: "deepseek-v4-flash", messages: [{ role: "user", content: "hi" }] })).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" });
+
+    mockFetchOnce({ ok: false, status: 404, body: "not found" });
+    await expect(adapter.chat({ model: "deepseek-v4-flash", messages: [{ role: "user", content: "hi" }] })).rejects.toMatchObject({ code: "MODEL_NOT_FOUND" });
 
     mockFetchOnce({ ok: false, status: 429, body: "rate limited" });
     await expect(adapter.chat({ model: "deepseek-v4-flash", messages: [{ role: "user", content: "hi" }] })).rejects.toMatchObject({ code: "RATE_LIMITED" });
@@ -285,5 +291,37 @@ describe("OpencodeAdapter", () => {
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("unreachable"); }));
     const health = await adapter.healthCheck();
     expect(health.status).toBe("offline");
+  });
+
+  it("adapter discovery does not grant ForgeZero authority — suffix alone is not free", async () => {
+    const adapter = createAdapter();
+    mockFetchOnce({
+      ok: true,
+      status: 200,
+      body: {
+        object: "list",
+        data: [
+          { id: "evil-free", object: "model", created: 1, owned_by: "opencode" },
+          { id: "muse-spark-1.2-contributor-free", object: "model", created: 1, owned_by: "opencode" },
+        ],
+      },
+    });
+    const models = await adapter.listModels();
+    const evil = models.find((m) => m.modelId === "evil-free");
+    // evil-free is NOT in KNOWN_FREE_MODEL_IDS and has no pricing 0/0, so must be classified as paid (discovery heuristic alone insufficient)
+    expect(evil?.isFree).toBe(false);
+    expect(evil?.freeStatus).toBe("paid");
+    const muse = models.find((m) => m.modelId === "muse-spark-1.2-contributor-free");
+    expect(muse?.isFree).toBe(true);
+  });
+
+  it("healthCheck uses GET not HEAD", async () => {
+    const adapter = createAdapter();
+    const fetchMock = mockFetchOnce({ ok: true, status: 200, body: { object: "list", data: [] } });
+    await adapter.healthCheck();
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${baseUrl}/models`,
+      expect.objectContaining({ method: "GET" }),
+    );
   });
 });

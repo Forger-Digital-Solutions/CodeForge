@@ -303,7 +303,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
     try {
       const apiKey = this.getApiKey();
       const response = await fetch(`${this.baseUrl}/models`, {
-        method: "HEAD",
+        method: "GET",
         headers: { Authorization: `Bearer ${apiKey}` },
       });
       return {
@@ -404,6 +404,8 @@ export class OpenRouterAdapter implements ProviderAdapter {
       code = "AUTH_ERROR";
     } else if (status === 402) {
       code = "PAYMENT_REQUIRED";
+    } else if (status === 404) {
+      code = "MODEL_NOT_FOUND";
     } else if (status === 429) {
       code = "RATE_LIMITED";
       retryable = true;

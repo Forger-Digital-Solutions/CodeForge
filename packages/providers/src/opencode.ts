@@ -55,7 +55,6 @@ const KNOWN_FREE_MODEL_IDS = new Set([
 function isKnownFreeModel(modelId: string, pricing?: { prompt?: string; completion?: string }): boolean {
   if (pricing?.prompt === "0" && pricing?.completion === "0") return true;
   if (KNOWN_FREE_MODEL_IDS.has(modelId)) return true;
-  if (modelId.endsWith("-free")) return true;
   return false;
 }
 
@@ -426,6 +425,7 @@ export class OpencodeAdapter implements ProviderAdapter {
     let code = "PROVIDER_ERROR";
     if (status === 401) code = "AUTH_ERROR";
     else if (status === 402) code = "PAYMENT_REQUIRED";
+    else if (status === 404) code = "MODEL_NOT_FOUND";
     else if (status === 429) { code = "RATE_LIMITED"; retryable = true; }
     else if (status === 503) { code = "MODEL_OVERLOADED"; retryable = true; }
     else if (status >= 500) { code = "PROVIDER_ERROR"; retryable = true; }
