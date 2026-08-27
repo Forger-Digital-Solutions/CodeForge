@@ -13,8 +13,10 @@ rule is enforced centrally, not by convention.
 
 ## Provider Credentials
 
-Stored using OS secure facilities (Windows DPAPI/Credential Manager). Never unencrypted
-in project files.
+- Desktop: encrypted at rest via Electron `safeStorage` (DPAPI on Windows) when available; stored as `enc:<base64>` in `userData/settings.json` with `0o600` + atomic write. Plaintext fallback for migration/non-DPAPI platforms.
+- Validation: providerId allowlist (`opencode`, `openrouter`), `MAX_API_KEY_LENGTH=512`, prototype-pollution guard, type-checked reads.
+- IPC: allowlisted `provider:setCredential`/`deleteCredential`/`testConnection`; `shell:openExternal` restricted to `https:` (and `http://localhost`); `will-navigate` checked via `URL.origin`; errors truncated to 200 chars. Never log `Authorization: Bearer` headers.
+- Catalog isolation: `DesktopCredentialStore` per-provider `get` prevents cross-provider leakage; `provider:testConnection` uses caller-supplied only allowlisted providerId.
 
 ## Execution Safety
 

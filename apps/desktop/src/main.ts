@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, Menu, shell, safeStorage } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import fs from "node:fs";
 import { CodeForgeServer } from "@codeforge/server";
 import { ForgeZero, createGenericFreeRecord, createMuseSparkRecord } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, OpencodeAdapter, OpenRouterAdapter, createOpencodeAdapter, createOpenRouterAdapter, type CredentialStore, type ProviderHealthResponse } from "@codeforge/providers";
@@ -23,6 +24,9 @@ interface ProjectInfo {
 const RECENT_PROJECTS_KEY = "codeforge:recent-projects";
 const PROVIDER_CREDENTIALS_KEY = "codeforge:provider-credentials";
 const ONBOARDING_COMPLETED_KEY = "codeforge:onboarding-completed";
+const ALLOWED_PROVIDER_IDS = new Set(["opencode", "openrouter"]);
+const MAX_API_KEY_LENGTH = 512;
+const SETTINGS_FILE = "settings.json";
 
 class DesktopCredentialStore implements CredentialStore {
   private credentials: Record<string, string> = {};
@@ -59,119 +63,166 @@ class DesktopCredentialStore implements CredentialStore {
   }
 }
 
-function getRecentProjects(): ProjectInfo[] {
+function isValidProviderId(id: unknown): id is string {
+  return typeof id === "string" && ALLOWED_PROVIDER_IDS.has(id);
+}
+
+function isValidApiKey(key: unknown): boolean {
+  return typeof key === "string" && key.length > 0 && key.length <= MAX_API_KEY_LENGTH;
+}
+
+function getStorePath(): string {
+  return path.join(app.getPath("userData"), SETTINGS_FILE);
+}
+
+function readSettings(): Record<string, unknown> {
   try {
-    const data = app.getPath("userData");
-    const fs = require("node:fs");
-    const storePath = path.join(data, "settings.json");
-    if (fs.existsSync(storePath)) {
-      const settings = JSON.parse(fs.readFileSync(storePath, "utf-8"));
-      return settings[RECENT_PROJECTS_KEY] || [];
+    const storePath = getStorePath();
+    if (!fs.existsSync(storePath)) return {};
+    const raw = fs.readFileSync(storePath, "utf-8");
+    if (!raw.trim()) return {};
+    const parsed = JSON.parse(raw);
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return {};
+    return parsed as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
+function writeSettingsAtomic(settings: Record<string, unknown>): void {
+  const storePath = getStorePath();
+  const tmpPath = `${storePath}.tmp`;
+  const data = JSON.stringify(settings, null, 2);
+  try {
+    fs.writeFileSync(tmpPath, data, { mode: 0o600 });
+    fs.renameSync(tmpPath, storePath);
+    try {
+      fs.chmodSync(storePath, 0o600);
+    } catch {
+      // Windows ignores chmod; best-effort
     }
   } catch {
-    // ignore
+    try {
+      fs.unlinkSync(tmpPath);
+    } catch {
+      // ignore
+    }
   }
-  return [];
+}
+
+function decryptCredential(value: string): string {
+  if (!value) return value;
+  if (value.startsWith("enc:")) {
+    try {
+      if (safeStorage.isEncryptionAvailable()) {
+        const buf = Buffer.from(value.slice(4), "base64");
+        return safeStorage.decryptString(buf);
+      }
+    } catch {
+      // fall through to plaintext fallback
+    }
+  }
+  return value;
+}
+
+function encryptCredential(value: string): string {
+  try {
+    if (safeStorage.isEncryptionAvailable()) {
+      const buf = safeStorage.encryptString(value);
+      return `enc:${buf.toString("base64")}`;
+    }
+  } catch {
+    // fallback to plaintext
+  }
+  return value;
+}
+
+function getRecentProjects(): ProjectInfo[] {
+  const settings = readSettings();
+  const recent = settings[RECENT_PROJECTS_KEY];
+  if (!Array.isArray(recent)) return [];
+  return recent.filter(
+    (p): p is ProjectInfo =>
+      typeof p === "object" &&
+      p !== null &&
+      typeof (p as ProjectInfo).path === "string" &&
+      typeof (p as ProjectInfo).id === "string",
+  );
 }
 
 function saveRecentProject(project: ProjectInfo): void {
-  try {
-    const data = app.getPath("userData");
-    const fs = require("node:fs");
-    const storePath = path.join(data, "settings.json");
-    let settings: Record<string, unknown> = {};
-    if (fs.existsSync(storePath)) {
-      settings = JSON.parse(fs.readFileSync(storePath, "utf-8"));
-    }
-    const recent = (settings[RECENT_PROJECTS_KEY] as ProjectInfo[] | undefined) || [];
-    const filtered = recent.filter((p) => p.path !== project.path);
-    settings[RECENT_PROJECTS_KEY] = [project, ...filtered].slice(0, 10);
-    fs.writeFileSync(storePath, JSON.stringify(settings, null, 2));
-  } catch {
-    // ignore
-  }
+  if (typeof project.path !== "string" || project.path.length === 0 || project.path.length > 1024) return;
+  const settings = readSettings();
+  const recent = Array.isArray(settings[RECENT_PROJECTS_KEY])
+    ? (settings[RECENT_PROJECTS_KEY] as ProjectInfo[])
+    : [];
+  const filtered = recent.filter((p) => typeof p.path === "string" && p.path !== project.path);
+  settings[RECENT_PROJECTS_KEY] = [project, ...filtered].slice(0, 10);
+  writeSettingsAtomic(settings);
 }
 
 function getProviderCredentials(): Record<string, string> {
-  try {
-    const data = app.getPath("userData");
-    const fs = require("node:fs");
-    const storePath = path.join(data, "settings.json");
-    if (fs.existsSync(storePath)) {
-      const settings = JSON.parse(fs.readFileSync(storePath, "utf-8"));
-      return (settings[PROVIDER_CREDENTIALS_KEY] as Record<string, string>) || {};
-    }
-  } catch {
-    // ignore
+  const settings = readSettings();
+  const raw = settings[PROVIDER_CREDENTIALS_KEY];
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return {};
+  const result: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (!ALLOWED_PROVIDER_IDS.has(k)) continue;
+    if (typeof v !== "string") continue;
+    result[k] = decryptCredential(v);
   }
-  return {};
+  return result;
+}
+
+function getProviderCredentialStatus(): Record<string, boolean> {
+  const creds = getProviderCredentials();
+  return {
+    opencode: !!creds.opencode,
+    openrouter: !!creds.openrouter,
+  };
 }
 
 function setProviderCredential(providerId: string, apiKey: string): void {
-  try {
-    const data = app.getPath("userData");
-    const fs = require("node:fs");
-    const storePath = path.join(data, "settings.json");
-    let settings: Record<string, unknown> = {};
-    if (fs.existsSync(storePath)) {
-      settings = JSON.parse(fs.readFileSync(storePath, "utf-8"));
-    }
-    const credentials = (settings[PROVIDER_CREDENTIALS_KEY] as Record<string, string>) || {};
-    credentials[providerId] = apiKey;
-    settings[PROVIDER_CREDENTIALS_KEY] = credentials;
-    fs.writeFileSync(storePath, JSON.stringify(settings, null, 2));
-  } catch {
-    // ignore
-  }
+  if (!isValidProviderId(providerId)) throw new Error(`Invalid providerId: ${providerId}`);
+  if (!isValidApiKey(apiKey)) throw new Error("Invalid API key");
+  const settings = readSettings();
+  const raw = settings[PROVIDER_CREDENTIALS_KEY];
+  const credentials: Record<string, string> =
+    typeof raw === "object" && raw !== null && !Array.isArray(raw)
+      ? { ...(raw as Record<string, string>) }
+      : {};
+  // Use Object prototype-safe assignment
+  Object.defineProperty(credentials, providerId, {
+    value: encryptCredential(apiKey),
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+  settings[PROVIDER_CREDENTIALS_KEY] = credentials;
+  writeSettingsAtomic(settings);
 }
 
 function deleteProviderCredential(providerId: string): void {
-  try {
-    const data = app.getPath("userData");
-    const fs = require("node:fs");
-    const storePath = path.join(data, "settings.json");
-    let settings: Record<string, unknown> = {};
-    if (fs.existsSync(storePath)) {
-      settings = JSON.parse(fs.readFileSync(storePath, "utf-8"));
-    }
-    const credentials = (settings[PROVIDER_CREDENTIALS_KEY] as Record<string, string>) || {};
-    delete credentials[providerId];
-    settings[PROVIDER_CREDENTIALS_KEY] = credentials;
-    fs.writeFileSync(storePath, JSON.stringify(settings, null, 2));
-  } catch {
-    // ignore
-  }
+  if (!isValidProviderId(providerId)) throw new Error(`Invalid providerId: ${providerId}`);
+  const settings = readSettings();
+  const raw = settings[PROVIDER_CREDENTIALS_KEY];
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return;
+  const credentials = { ...(raw as Record<string, string>) };
+  delete credentials[providerId];
+  settings[PROVIDER_CREDENTIALS_KEY] = credentials;
+  writeSettingsAtomic(settings);
 }
 
 function getOnboardingCompleted(): boolean {
-  try {
-    const data = app.getPath("userData");
-    const fs = require("node:fs");
-    const storePath = path.join(data, "settings.json");
-    if (fs.existsSync(storePath)) {
-      const settings = JSON.parse(fs.readFileSync(storePath, "utf-8"));
-      return Boolean(settings[ONBOARDING_COMPLETED_KEY]);
-    }
-  } catch {
-    // ignore
-  }
-  return false;
+  const settings = readSettings();
+  return settings[ONBOARDING_COMPLETED_KEY] === true;
 }
 
 function setOnboardingCompleted(completed: boolean): void {
-  try {
-    const data = app.getPath("userData");
-    const fs = require("node:fs");
-    const storePath = path.join(data, "settings.json");
-    let settings: Record<string, unknown> = {};
-    if (fs.existsSync(storePath)) {
-      settings = JSON.parse(fs.readFileSync(storePath, "utf-8"));
-    }
-    settings[ONBOARDING_COMPLETED_KEY] = completed;
-    fs.writeFileSync(storePath, JSON.stringify(settings, null, 2));
-  } catch {
-    // ignore
-  }
+  if (typeof completed !== "boolean") throw new Error("Invalid onboarding value");
+  const settings = readSettings();
+  settings[ONBOARDING_COMPLETED_KEY] = completed;
+  writeSettingsAtomic(settings);
 }
 
 async function selectDirectory(): Promise<string | null> {
@@ -220,9 +271,17 @@ function createWindow(): void {
   });
 
   mainWindow.webContents.on("will-navigate", (event, url) => {
-    if (!url.startsWith("http://localhost:3210")) {
+    try {
+      const parsed = new URL(url);
+      const allowedOrigin = "http://localhost:3210";
+      const isFile = parsed.protocol === "file:";
+      const isAllowedHttp = parsed.origin === allowedOrigin;
+      if (!isFile && !isAllowedHttp) {
+        event.preventDefault();
+        shell.openExternal(url);
+      }
+    } catch {
       event.preventDefault();
-      shell.openExternal(url);
     }
   });
 
@@ -291,10 +350,15 @@ ipcMain.handle("project:getRecent", async () => {
 });
 
 ipcMain.handle("project:open", async (_event, projectPath: string) => {
-  const projectName = path.basename(projectPath);
+  if (typeof projectPath !== "string" || projectPath.length === 0 || projectPath.length > 1024) {
+    throw new Error("Invalid project path");
+  }
+  const normalized = path.normalize(projectPath);
+  if (normalized.includes("\0")) throw new Error("Invalid project path");
+  const projectName = path.basename(normalized);
   const project: ProjectInfo = {
     id: crypto.randomUUID(),
-    path: projectPath,
+    path: normalized,
     name: projectName,
     lastOpened: new Date().toISOString(),
   };
@@ -318,7 +382,14 @@ ipcMain.handle("project:create", async () => {
 });
 
 ipcMain.handle("shell:openExternal", async (_event, url: string) => {
-  await shell.openExternal(url);
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw new Error("Unsupported protocol");
+    if (parsed.protocol === "http:" && parsed.hostname !== "localhost") throw new Error("http only allowed for localhost");
+    await shell.openExternal(url);
+  } catch {
+    throw new Error("Invalid URL");
+  }
 });
 
 ipcMain.handle("app:getVersion", () => {
@@ -333,11 +404,16 @@ ipcMain.handle("provider:getCredentials", async () => {
   return getProviderCredentials();
 });
 
+ipcMain.handle("provider:getCredentialStatus", async () => {
+  return getProviderCredentialStatus();
+});
+
 ipcMain.handle("provider:setCredential", async (_event, providerId: string, apiKey: string) => {
+  if (!isValidProviderId(providerId)) throw new Error("Invalid providerId");
+  if (!isValidApiKey(apiKey)) throw new Error("Invalid API key");
   setProviderCredential(providerId, apiKey);
   desktopCredentialStore?.reload();
-  
-  // Re-register provider adapter if credentials were added
+
   if (providerCatalog && desktopCredentialStore) {
     if (providerId === "opencode" && apiKey) {
       const existing = providerCatalog.get("opencode");
@@ -357,25 +433,31 @@ ipcMain.handle("provider:setCredential", async (_event, providerId: string, apiK
 });
 
 ipcMain.handle("provider:deleteCredential", async (_event, providerId: string) => {
+  if (!isValidProviderId(providerId)) throw new Error("Invalid providerId");
   deleteProviderCredential(providerId);
   desktopCredentialStore?.reload();
 });
 
 ipcMain.handle("provider:testConnection", async (_event, providerId: string): Promise<{ status: string; error?: string }> => {
+  if (!isValidProviderId(providerId)) {
+    return { status: "error", error: "Invalid providerId" };
+  }
   if (!providerCatalog) {
     return { status: "error", error: "Provider catalog not initialized" };
   }
-  
+
   const adapter = providerCatalog.get(providerId);
   if (!adapter) {
     return { status: "error", error: "Provider not registered" };
   }
-  
+
   try {
     const health: ProviderHealthResponse = await adapter.healthCheck();
-    return { status: health.status, error: health.error };
+    const safeError = health.error ? health.error.slice(0, 200) : undefined;
+    return { status: health.status, error: safeError };
   } catch (err) {
-    return { status: "error", error: err instanceof Error ? err.message : String(err) };
+    const msg = err instanceof Error ? err.message : String(err);
+    return { status: "error", error: msg.slice(0, 200) };
   }
 });
 
@@ -384,5 +466,6 @@ ipcMain.handle("onboarding:getCompleted", async () => {
 });
 
 ipcMain.handle("onboarding:setCompleted", async (_event, completed: boolean) => {
+  if (typeof completed !== "boolean") throw new Error("Invalid onboarding value");
   setOnboardingCompleted(completed);
 });

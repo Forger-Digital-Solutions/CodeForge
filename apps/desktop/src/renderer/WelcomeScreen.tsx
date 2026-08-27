@@ -36,8 +36,14 @@ export default function WelcomeScreen({
       }
 
       if (window.electronAPI) {
-        const credentials = await window.electronAPI.getProviderCredentials();
-        const hasCredentials = Object.keys(credentials).length > 0;
+        let hasCredentials = false;
+        if (window.electronAPI.getProviderCredentialStatus) {
+          const status = await window.electronAPI.getProviderCredentialStatus();
+          hasCredentials = Object.values(status).some(Boolean);
+        } else {
+          const credentials = await window.electronAPI.getProviderCredentials();
+          hasCredentials = Object.keys(credentials).length > 0;
+        }
         setHasConfiguredProvider(hasCredentials);
 
         if (!onboardingCompleted && !hasCredentials) {

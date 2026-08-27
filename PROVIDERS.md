@@ -279,12 +279,34 @@ case "newprovider":
 
 ---
 
+## Packaged Providers (Windows Desktop)
+
+CodeForge ships with two cloud providers wired to the desktop credential store:
+
+- **OpenCode Zen** — `providerId: opencode`, credential `OPENCODE_API_KEY`, promotional free models (e.g., `opencode::muse-spark-1.2-contributor-free`). Verification via ForgeZero 7-day re-check.
+- **OpenRouter** — `providerId: openrouter`, credential `OPENROUTER_API_KEY`, mixed free/paid catalog. Free model detection via zero-cost pricing.
+
+Only `opencode` and `openrouter` are allowlisted in `apps/desktop/src/main.ts` IPC handlers (`ALLOWED_PROVIDER_IDS`). Renderer `PROVIDERS` array is not authoritative.
+
+## Desktop Credential Store
+
+- Location: `app.getPath("userData")/settings.json` (`%APPDATA%/CodeForge` on Windows)
+- Encryption at rest: Electron `safeStorage` (DPAPI on Windows) when `isEncryptionAvailable()` — values stored as `enc:<base64>`; fallback to plaintext with migration support. File written atomically via `.tmp` + `rename` and `0o600` where supported.
+- Validation: providerId allowlist, apiKey length ≤512, onboarding `boolean` only, prototype-pollution guard, type checks on read.
+- IPC surface: `provider:getCredentials` (full, legacy), `provider:getCredentialStatus` (boolean map, preferred for existence checks), `provider:setCredential`, `provider:deleteCredential`, `provider:testConnection`. All handlers validate providerId and truncate errors to 200 chars; never log Authorization headers.
+
 ## Current Limitations
 
-1. **Single production provider** — Only OpenRouter implemented
-2. **No credential rotation** — API keys set once at startup
-3. **No rate limiting** — Provider-side limits not mapped
-4. **No fallback** — If provider fails, turn fails (no secondary provider)
+1. **Single production provider** — Only OpenRouter implemented for server-side real runtime; desktop supports both via credential store
+2. **No credential rotation** — API keys set via ProviderSetup or env; no automatic refresh
+3. **Rate limit awareness** — 429 marked retryable but no automatic storm; health checks are on-demand + focus/visibility, not polling
+4. **No fallback** — If provider fails, turn fails; no silent paid fallback (fail-closed `NO_FREE_PROVIDER`)
+
+## Free-Mode Guarantees
+
+- ForgeZero authoritative: `firewall.eligibleModels()` gates all Full-Auto routing; UI metadata cannot override (`firewall.verify` re-checked in `AgentRuntime.resolveTurnModel` for manual selections).
+- Canonical identity `providerId::modelId` preserved end-to-end; `modelId` alone insufficient.
+- Promotional free models expire after 7 days without re-verification and are excluded from eligibility.
 
 ## Future Work
 

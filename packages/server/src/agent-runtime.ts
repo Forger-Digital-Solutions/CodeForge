@@ -452,9 +452,14 @@ export class AgentRuntime {
    */
   private resolveTurnModel(): FreeModelRecord | null {
     if (this.modelSelection) {
-      const requested = this.firewall.getModel(this.modelSelection.providerId, this.modelSelection.modelId);
-      if (requested) {
-        return requested;
+      const { providerId, modelId } = this.modelSelection;
+      if (providerId && modelId) {
+        const requested = this.firewall.getModel(providerId, modelId);
+        if (requested) {
+          if (requested.tier === "gems_paid") return requested;
+          const v = this.firewall.verify(providerId, modelId);
+          if (v.ok) return requested;
+        }
       }
     }
     return this.selectModel();

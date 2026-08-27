@@ -39,7 +39,7 @@ export class ForgeRouter {
         model,
         score: this.scoreModel(model, req),
       }))
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => b.score - a.score || a.model.modelId.localeCompare(b.model.modelId));
 
     const best = scored[0];
     if (!best) {

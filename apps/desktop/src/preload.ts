@@ -25,6 +25,9 @@ const api = {
   getProviderCredentials: (): Promise<Record<string, string>> => {
     return ipcRenderer.invoke("provider:getCredentials");
   },
+  getProviderCredentialStatus: (): Promise<Record<string, boolean>> => {
+    return ipcRenderer.invoke("provider:getCredentialStatus");
+  },
   setProviderCredential: (providerId: string, apiKey: string): Promise<void> => {
     return ipcRenderer.invoke("provider:setCredential", providerId, apiKey);
   },
