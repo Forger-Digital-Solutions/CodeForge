@@ -14,9 +14,10 @@ export interface ProviderAdapter {
 /**
  * Product tier for a model in CodeForge's offering.
  * - "free": Models available at no cost through Free Tier
+ * - "paid": Third-party provider paid models (e.g., OpenRouter Muse Spark)
  * - "gems_paid": CodeForge first-party paid models (Topaz, Sapphire, Peridot, Garnet)
  */
-export type ModelTier = "free" | "gems_paid";
+export type ModelTier = "free" | "paid" | "gems_paid";
 
 /**
  * User's entitlement status for a model.

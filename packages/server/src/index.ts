@@ -9,6 +9,7 @@ import {
   createDevelopmentEntitlementProvider,
   createGenericFreeRecord,
   createMuseSparkRecord,
+  PAID_CATALOG,
 } from "@codeforge/forge-zero";
 import type { FreeModelRecord } from "@codeforge/forge-zero";
 import type { ProviderCatalog } from "@codeforge/providers";
@@ -61,6 +62,7 @@ export class CodeForgeServer {
     }
 
     this.registerFreeModels();
+    this.registerPaidModels();
     this.registerGemsModels();
   }
 
@@ -93,6 +95,12 @@ export class CodeForgeServer {
     this.firewall.register(generic);
     const museSpark = createMuseSparkRecord();
     this.firewall.register(museSpark);
+  }
+
+  private registerPaidModels(): void {
+    for (const model of PAID_CATALOG) {
+      this.firewall.register(model);
+    }
   }
 
   /**

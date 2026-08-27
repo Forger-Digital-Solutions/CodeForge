@@ -123,6 +123,148 @@ export const GENERIC_FREE_MODEL: FreeModelRecord = {
 
 export const FREE_CATALOG: FreeModelRecord[] = [GENERIC_FREE_MODEL, MUSE_SPARK_1_2];
 
+/**
+ * Paid Muse Spark — verified via live OpenRouter /models 2026-08-27.
+ * Distinct provider/model identity from opencode::muse-spark-1.2-contributor-free.
+ * Must NEVER enter FREE_CATALOG or be selected by Full-Auto free-only routing.
+ */
+export const MUSE_SPARK_PAID: FreeModelRecord = {
+  providerId: "openrouter",
+  modelId: "meta/muse-spark-1.2",
+  displayName: "Muse Spark 1.2 (Paid — OpenRouter)",
+  freeStatus: "paid",
+  tier: "paid",
+  contextWindow: 1048576,
+  capabilities: {
+    text: true,
+    coding: true,
+    toolCalling: true,
+    vision: true,
+    structuredOutput: true,
+    longContext: true,
+  },
+  benchmarkProfile: {
+    coding: 92,
+    toolCalling: 90,
+    reasoning: 88,
+    longContext: 90,
+    speed: 72,
+  },
+  costProfile: {
+    inputCostPerMillion: 1.25,
+    outputCostPerMillion: 4.25,
+    cacheReadCostPerMillion: 0.15,
+    cacheWriteCostPerMillion: null,
+    isFree: false,
+    paidFallbackPossible: true,
+    paidFallbackDisabled: false,
+    source: "openrouter:paid",
+  },
+  isRemote: true,
+  isCloudHosted: true,
+  health: {
+    status: "available",
+    lastCheckedAt: nowIso(),
+  },
+};
+
+export const MUSE_SPARK_CONTRIBUTOR_PAID: FreeModelRecord = {
+  providerId: "openrouter",
+  modelId: "meta/muse-spark-1.2-contributor",
+  displayName: "Muse Spark 1.2 Contributor (Paid — OpenRouter)",
+  freeStatus: "paid",
+  tier: "paid",
+  contextWindow: 1048576,
+  capabilities: {
+    text: true,
+    coding: true,
+    toolCalling: true,
+    vision: true,
+    structuredOutput: true,
+    longContext: true,
+  },
+  benchmarkProfile: {
+    coding: 92,
+    toolCalling: 90,
+    reasoning: 88,
+    longContext: 90,
+    speed: 72,
+  },
+  costProfile: {
+    inputCostPerMillion: 0.1,
+    outputCostPerMillion: 0.2,
+    cacheReadCostPerMillion: 0.002,
+    cacheWriteCostPerMillion: null,
+    isFree: false,
+    paidFallbackPossible: true,
+    paidFallbackDisabled: false,
+    source: "openrouter:paid",
+  },
+  isRemote: true,
+  isCloudHosted: true,
+  health: {
+    status: "available",
+    lastCheckedAt: nowIso(),
+  },
+};
+
+export const PAID_CATALOG: FreeModelRecord[] = [MUSE_SPARK_PAID, MUSE_SPARK_CONTRIBUTOR_PAID];
+
+export const ALL_CATALOG: FreeModelRecord[] = [...FREE_CATALOG, ...PAID_CATALOG];
+
+export const PROVIDER_META = {
+  opencode: {
+    providerId: "opencode",
+    displayName: "OpenCode Zen",
+    endpoint: "https://opencode.ai/zen/v1",
+    authEnv: "OPENCODE_API_KEY",
+    setupHelp: "Get key at https://opencode.ai/auth then set OPENCODE_API_KEY. Test via npm run verify:opencode",
+    modelsEndpoint: "https://opencode.ai/zen/v1/models",
+  },
+  openrouter: {
+    providerId: "openrouter",
+    displayName: "OpenRouter",
+    endpoint: "https://openrouter.ai/api/v1",
+    authEnv: "OPENROUTER_API_KEY",
+    setupHelp: "Get key at https://openrouter.ai/keys then set OPENROUTER_API_KEY",
+    modelsEndpoint: "https://openrouter.ai/api/v1/models",
+  },
+  codeforge: {
+    providerId: "codeforge",
+    displayName: "CodeForge Generic",
+    endpoint: "internal",
+    authEnv: null,
+    setupHelp: "No credential — internal generic free model for fallback/testing",
+    modelsEndpoint: null,
+  },
+} as const;
+
+export function createMuseSparkPaidRecord(overrides: Partial<FreeModelRecord> = {}): FreeModelRecord {
+  const ts = nowIso();
+  return {
+    ...MUSE_SPARK_PAID,
+    ...overrides,
+    costProfile: {
+      ...MUSE_SPARK_PAID.costProfile,
+      ...(overrides.costProfile ?? {}),
+    },
+    health: overrides.health ?? { status: "available", lastCheckedAt: ts },
+  };
+}
+
+export function createMuseSparkContributorPaidRecord(overrides: Partial<FreeModelRecord> = {}): FreeModelRecord {
+  const ts = nowIso();
+  return {
+    ...MUSE_SPARK_CONTRIBUTOR_PAID,
+    ...overrides,
+    costProfile: {
+      ...MUSE_SPARK_CONTRIBUTOR_PAID.costProfile,
+      ...(overrides.costProfile ?? {}),
+    },
+    health: overrides.health ?? { status: "available", lastCheckedAt: ts },
+  };
+}
+
 export function createMuseSparkRecord(overrides: Partial<FreeModelRecord> = {}): FreeModelRecord {
   const ts = nowIso();
   return {
