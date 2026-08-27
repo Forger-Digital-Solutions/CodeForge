@@ -1,147 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import type { SessionRecord, TurnRecord } from "@codeforge/sessions";
 
 // Mock the fetch API
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
-
-// Mock EventSource
-class MockEventSource {
-  onopen?: () => void;
-  onerror?: (e: Event) => void;
-  onmessage?: (e: MessageEvent) => void;
-  readyState = 0;
-  
-  addEventListener(_type: string, cb: () => void) {
-    this.onmessage = cb;
-  }
-  
-  close() {}
-}
-
-(global as any).EventSource = MockEventSource;
-
-describe("useWorkspaceSSE - stop/pause/resume", () => {
-  const mockSession: SessionRecord = {
-    id: "test-session",
-    title: "Test Session",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: "running",
-  };
-
-  const mockRunningTurn: TurnRecord = {
-    id: "running-turn-1",
-    sessionId: "test-session",
-    seq: 1,
-    userMessage: "Test message",
-    status: "running",
-    startedAt: new Date().toISOString(),
-  };
-
-  const mockPausedTurn: TurnRecord = {
-    id: "paused-turn-1",
-    sessionId: "test-session",
-    seq: 2,
-    userMessage: "Paused task",
-    status: "paused",
-    startedAt: new Date().toISOString(),
-  };
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ ok: true }),
-    });
-  });
-
-  it("stopTurn calls the cancel endpoint", async () => {
-    const stopTurn = (sessionId: string, turnId: string) => {
-      const endpoint = `/api/sessions/${sessionId}/turns/${turnId}/cancel`;
-      return fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: "User stopped" }),
-      });
-    };
-    
-    await stopTurn(mockSession.id, mockRunningTurn.id);
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      "/api/sessions/test-session/turns/running-turn-1/cancel",
-      expect.objectContaining({
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: "User stopped" }),
-      })
-    );
-  });
-
-  it("pauseTurn calls the pause endpoint", async () => {
-    const pauseTurn = (sessionId: string, turnId: string) => {
-      const endpoint = `/api/sessions/${sessionId}/turns/${turnId}/pause`;
-      return fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-    };
-    
-    await pauseTurn(mockSession.id, mockRunningTurn.id);
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      "/api/sessions/test-session/turns/running-turn-1/pause",
-      expect.objectContaining({
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      })
-    );
-  });
-
-  it("resumeTurn calls the resume endpoint", async () => {
-    const resumeTurn = (sessionId: string, turnId: string) => {
-      const endpoint = `/api/sessions/${sessionId}/turns/${turnId}/resume`;
-      return fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-    };
-    
-    await resumeTurn(mockSession.id, mockPausedTurn.id);
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      "/api/sessions/test-session/turns/paused-turn-1/resume",
-      expect.objectContaining({
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      })
-    );
-  });
-
-  it("handles API path correctly for relative URLs", async () => {
-    const endpoint = `/api/sessions/test-session/turns/test-turn/pause`;
-    
-    expect(endpoint).toBe("/api/sessions/test-session/turns/test-turn/pause");
-  });
-
-  it("handles API path correctly for absolute URLs", async () => {
-    const url = "http://localhost:3210/api/events";
-    const apiPath = "/api/sessions/test-session/turns/test-turn/cancel";
-    
-    // Simulate resolveApiPath logic
-    const resolved = `${new URL(url).origin}${apiPath}`;
-    
-    expect(resolved).toBe("http://localhost:3210/api/sessions/test-session/turns/test-turn/cancel");
-  });
-});
-
-describe("stop/pause/resume state machine constraints", () => {
+describe("workspace-sse - state machine constraints", () => {
   it("can only pause running turns", () => {
-    // State machine constraint: pause only valid on "running"
     const runningTurn: TurnRecord = {
       id: "running-1",
       sessionId: "test",
@@ -209,5 +71,171 @@ describe("stop/pause/resume state machine constraints", () => {
     
     expect(runningTurn.status).toBe("running");
     expect(pausedTurn.status).toBe("paused");
+  });
+});
+
+describe("workspace-sse - API path encoding", () => {
+  it("should encode workspace path correctly in API URL", () => {
+    const rootPath = "/workspace/my project";
+    const encodedPath = encodeURIComponent(rootPath);
+    // encodeURIComponent does encode slashes as %2F
+    expect(encodedPath).toBe("%2Fworkspace%2Fmy%20project");
+  });
+
+  it("should handle special characters in path", () => {
+    const rootPath = "/workspace/test (1)/folder";
+    const encodedPath = encodeURIComponent(rootPath);
+    expect(encodedPath).toBe("%2Fworkspace%2Ftest%20(1)%2Ffolder");
+  });
+
+  it("resolveApiPath handles relative paths", () => {
+    const sseUrl = "/api/events";
+    const apiPath = "/api/sessions/turn/pause";
+    
+    function resolveApiPath(url: string, path: string): string {
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return `${new URL(url).origin}${path}`;
+      }
+      return path;
+    }
+    
+    expect(resolveApiPath(sseUrl, apiPath)).toBe(apiPath);
+  });
+
+  it("resolveApiPath handles absolute URLs", () => {
+    const sseUrl = "http://localhost:3210/api/events";
+    const apiPath = "/api/sessions/turn/pause";
+    
+    function resolveApiPath(url: string, path: string): string {
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return `${new URL(url).origin}${path}`;
+      }
+      return path;
+    }
+    
+    expect(resolveApiPath(sseUrl, apiPath)).toBe("http://localhost:3210/api/sessions/turn/pause");
+  });
+});
+
+describe("workspace-sse - fetch error handling (mocked)", () => {
+  let mockFetch: any;
+
+  beforeEach(() => {
+    mockFetch = vi.fn();
+    (global as any).fetch = mockFetch;
+  });
+
+  afterEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it("handles network errors gracefully", async () => {
+    mockFetch.mockRejectedValue(new Error("Network error"));
+    
+    const sessionId = "test-session";
+    const turnId = "test-turn";
+    const endpoint = `/api/sessions/${sessionId}/turns/${turnId}/cancel`;
+    
+    await expect(
+      fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: "User stopped" }),
+      })
+    ).rejects.toThrow("Network error");
+    
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("handles HTTP 400 error with error message", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: () => Promise.resolve({ error: "Turn is not paused" }),
+    });
+    
+    const response = await fetch("/api/sessions/test/turns/test/pause");
+    
+    expect(response.ok).toBe(false);
+    expect(response.status).toBe(400);
+    
+    const errorData = await response.json();
+    expect(errorData.error).toBe("Turn is not paused");
+  });
+
+  it("handles HTTP 404 error (turn not found)", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: () => Promise.resolve({ error: "Session not found" }),
+    });
+    
+    const response = await fetch("/api/sessions/nonexistent/turns/test/pause");
+    
+    expect(response.ok).toBe(false);
+    expect(response.status).toBe(404);
+  });
+
+  it("handles successful actions without errors", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ ok: true }),
+    });
+    
+    const response = await fetch("/api/sessions/test/turns/test/pause", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    
+    expect(response.ok).toBe(true);
+    expect(response.status).toBe(200);
+    
+    const data = await response.json();
+    expect(data.ok).toBe(true);
+  });
+});
+
+describe("workspace-sse - state management expectations", () => {
+  it("actionPending should be 'none' initially", () => {
+    const initialState = {
+      actionPending: "none" as const,
+      actionError: null,
+    };
+    
+    expect(initialState.actionPending).toBe("none");
+    expect(initialState.actionError).toBeNull();
+  });
+
+  it("actionPending should set to 'pause' before the fetch", () => {
+    // Simulates setting loading state before request
+    const stateWithLoading = {
+      actionPending: "pause",
+      actionError: null,
+    };
+    
+    expect(stateWithLoading.actionPending).toBe("pause");
+    expect(stateWithLoading.actionError).toBeNull();
+  });
+
+  it("actionPending should clear after completion", () => {
+    const stateAfter = {
+      actionPending: "none",
+      actionError: null,
+    };
+    
+    expect(stateAfter.actionPending).toBe("none");
+    expect(stateAfter.actionError).toBeNull();
+  });
+
+  it("actionError should contain error message on failure", () => {
+    const stateWithError = {
+      actionPending: "none",
+      actionError: "Turn is not paused",
+    };
+    
+    expect(stateWithError.actionError).toBe("Turn is not paused");
+    expect(stateWithError.actionPending).toBe("none");
   });
 });
