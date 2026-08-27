@@ -17,6 +17,7 @@ import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/
 import { runDemoRuntime } from "./demo-runtime.js";
 import { AgentRuntime, createAgentRuntime } from "./agent-runtime.js";
 import { resolveWithinWorkspace } from "./path-security.js";
+import { createWorkflowService, type WorkflowService } from "./workflow-service.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -26,6 +27,8 @@ export interface ServerOptions {
   dbPath?: string;
   /** Catalog injection point for tests; production uses InMemoryProviderCatalog. */
   providerCatalog?: ProviderCatalog;
+  firewall?: ForgeZero;
+  useRealRuntime?: boolean;
 }
 
 export class CodeForgeServer {
@@ -40,6 +43,7 @@ export class CodeForgeServer {
   private runtimes: Map<string, AgentRuntime> = new Map();
   private useRealRuntime: boolean;
   private activeWorkspacePath: string | null = null;
+  private workflowService: WorkflowService;
 
   constructor(options: ServerOptions = {}) {
     this.port = options.port ?? 3210;
@@ -50,11 +54,11 @@ export class CodeForgeServer {
     this.eventStore = new EventStore();
     // Development scaffold: deterministic entitlement scenarios until the real
     // entitlement service exists. GEMS access still fails closed.
-    this.firewall = new ForgeZero({
+    this.firewall = options.firewall ?? new ForgeZero({
       entitlementProvider: createDevelopmentEntitlementProvider(),
     });
     this.providerCatalog = options.providerCatalog ?? new InMemoryProviderCatalog();
-    this.useRealRuntime = process.env.CODEFORGE_REAL_RUNTIME === "true";
+    this.useRealRuntime = options.useRealRuntime ?? process.env.CODEFORGE_REAL_RUNTIME === "true";
 
     // Validate that API keys are available if real runtime is requested
     if (this.useRealRuntime) {
@@ -64,6 +68,13 @@ export class CodeForgeServer {
     this.registerFreeModels();
     this.registerPaidModels();
     this.registerGemsModels();
+    this.workflowService = createWorkflowService({
+      eventStore: this.eventStore,
+      persistence: this.persistence,
+      workspacePath: this.activeWorkspacePath ?? undefined,
+      getOrCreateRuntime: (sessionId: string, userId?: string) => this.getOrCreateRuntime(sessionId, userId),
+      useRealRuntime: this.useRealRuntime,
+    });
   }
 
   private validateRealRuntimeConfiguration(): void {
@@ -301,7 +312,7 @@ export class CodeForgeServer {
       const workItems = this.persistence.getWorkItems(sessionId);
       const events = this.persistence.getEvents(sessionId);
       const runtime = this.runtimes.get(sessionId);
-      const pendingApprovals = runtime?.getAllPendingApprovals().map((a) => ({
+      const runtimeApprovals = runtime?.getAllPendingApprovals().map((a) => ({
         approvalId: a.approvalId,
         tool: a.tool,
         action: a.action,
@@ -309,6 +320,15 @@ export class CodeForgeServer {
         risk: a.risk,
         scope: a.scope,
       })) ?? [];
+      const workflowApprovals = this.workflowService.getApprovalService().getAllPending().map((a) => ({
+        approvalId: a.approvalId,
+        tool: a.tool,
+        action: a.action,
+        description: a.description,
+        risk: a.risk,
+        scope: a.scope,
+      }));
+      const pendingApprovals = [...runtimeApprovals, ...workflowApprovals];
       const pendingQuestions = runtime?.getAllPendingQuestions().map((q) => ({
         questionId: q.questionId,
         prompt: q.prompt,
@@ -319,7 +339,37 @@ export class CodeForgeServer {
       return;
     }
 
+    if (url.pathname === "/api/workflow/run" && req.method === "POST") {
+      this.handleWorkflowRun(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/workflow" && req.method === "GET") {
+      this.handleWorkflowList(req, res);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/workflow\/[^/]+$/) && req.method === "GET") {
+      this.handleWorkflowGet(req, res, url.pathname);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/workflow\/[^/]+\/cancel$/) && req.method === "POST") {
+      this.handleWorkflowCancel(req, res, url.pathname);
+      return;
+    }
+
     this.serveStatic(req, res, url.pathname);
+  }
+
+  private shouldUseWorkflow(message: string): boolean {
+    if (!this.activeWorkspacePath) return false;
+    if (!message || typeof message !== "string" || !message.trim()) return false;
+    // Heuristic: coding tasks contain verbs like fix, implement, add, create, refactor, etc.
+    // For real autonomous execution, any non-trivial message with workspace should go via workflow
+    // when useRealRuntime or when explicitly requested via data.useWorkflow
+    const lower = message.toLowerCase();
+    return /(fix|implement|add|create|build|refactor|update|change|modify|feature|bug|test|repair|implement|create)/.test(lower) && message.trim().length > 10;
   }
 
   private handleSend(req: http.IncomingMessage, res: http.ServerResponse): void {
@@ -329,6 +379,28 @@ export class CodeForgeServer {
       try {
         const data = JSON.parse(body);
         const sessionId = data.sessionId ?? "default";
+        const message: string = data.message ?? "";
+        const wantsWorkflow = data.useWorkflow === true || (this.activeWorkspacePath && this.shouldUseWorkflow(message));
+
+        if (wantsWorkflow && this.activeWorkspacePath) {
+          // Real autonomous workflow path: Understand → Inspect → Plan → Approval → Implement (via AgentRuntime) → Verify → Repair → Review
+          try {
+            const wf = await this.workflowService.startWorkflow({
+              sessionId,
+              message,
+              workspacePath: this.activeWorkspacePath,
+              userId: typeof data.userId === "string" ? data.userId : undefined,
+              verificationCommands: Array.isArray(data.verificationCommands) ? data.verificationCommands : undefined,
+              forceHeuristic: data.forceHeuristic === true ? true : undefined,
+            });
+            res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+            res.end(JSON.stringify({ ok: true, turnId: wf.turnId, taskId: wf.taskId, mode: this.useRealRuntime ? "real-workflow" : "workflow" }));
+            return;
+          } catch (e) {
+            // Fall through to normal turn on workflow start failure
+            console.warn("Workflow start failed, falling back to turn:", e instanceof Error ? e.message : String(e));
+          }
+        }
 
         const runtime = this.getOrCreateRuntime(
           sessionId,
@@ -337,7 +409,7 @@ export class CodeForgeServer {
 
         // Start the turn in the runtime (tracks state for pause/resume/cancel)
         // In demo mode, AgentRuntime skips real provider execution entirely.
-        const turnId = await runtime.startTurn(data.message ?? "");
+        const turnId = await runtime.startTurn(message);
 
         if (this.useRealRuntime) {
           res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
@@ -348,10 +420,10 @@ export class CodeForgeServer {
             timestamp: new Date().toISOString(),
             seq: this.eventStore.getLastSeq() + 1,
             sessionId,
-            payload: { turnId, userMessage: data.message ?? "" },
+            payload: { turnId, userMessage: message },
           } as WorkspaceEvent);
-          this.persistSession(sessionId, data.message ?? "");
-          this.persistTurn(sessionId, turnId, data.message ?? "");
+          this.persistSession(sessionId, message);
+          this.persistTurn(sessionId, turnId, message);
           runDemoRuntime({
             sessionId,
             turnId,
@@ -501,6 +573,24 @@ export class CodeForgeServer {
             return;
           }
         }
+        // Also check workflow service approvals
+        const wfApproval = this.workflowService.getApprovalService().getPending(approvalId ?? "");
+        if (wfApproval) {
+          this.workflowService.getApprovalService().resolve(approvalId ?? "", data.decision === "allow_session" ? "allow_session" : data.decision === "allow_once" ? "allow_once" : "deny");
+          res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ ok: true }));
+          return;
+        }
+        const wfRecord = this.workflowService.getApprovalService().getRecord(approvalId ?? "");
+        if (wfRecord) {
+          // Allow resolving already handled but still pending in legacy sense
+          try {
+            this.workflowService.getApprovalService().resolve(approvalId ?? "", data.decision === "allow_session" ? "allow_session" : data.decision === "allow_once" ? "allow_once" : "deny");
+            res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+            res.end(JSON.stringify({ ok: true }));
+            return;
+          } catch {}
+        }
         res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
         res.end(JSON.stringify({ error: "Approval not found" }));
       } catch (error) {
@@ -569,6 +659,7 @@ export class CodeForgeServer {
         }
 
         this.activeWorkspacePath = workspacePath;
+        this.workflowService.setWorkspacePath(workspacePath);
         this.runtimes.clear();
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
         res.end(JSON.stringify({ ok: true, path: workspacePath }));
@@ -576,6 +667,85 @@ export class CodeForgeServer {
         res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
         res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
       }
+    });
+  }
+
+  private handleWorkflowRun(req: http.IncomingMessage, res: http.ServerResponse): void {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const data = JSON.parse(body);
+        const sessionId = typeof data.sessionId === "string" && data.sessionId ? data.sessionId : "default";
+        const message = typeof data.message === "string" ? data.message : "";
+        if (!message.trim()) {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "message required" }));
+          return;
+        }
+        const workspacePath = typeof data.workspacePath === "string" && data.workspacePath ? data.workspacePath : this.activeWorkspacePath ?? undefined;
+        if (!workspacePath) {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "No workspace set" }));
+          return;
+        }
+        const result = await this.workflowService.startWorkflow({
+          sessionId,
+          message,
+          workspacePath,
+          verificationCommands: Array.isArray(data.verificationCommands) ? data.verificationCommands : undefined,
+        });
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ ok: true, taskId: result.taskId, turnId: result.turnId }));
+      } catch (error) {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+      }
+    });
+  }
+
+  private handleWorkflowList(req: http.IncomingMessage, res: http.ServerResponse): void {
+    const tasks = this.workflowService.listWorkflows();
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify(tasks));
+  }
+
+  private handleWorkflowGet(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+    const match = pathname.match(/^\/api\/workflow\/([^/]+)$/);
+    const taskId = match?.[1];
+    if (!taskId) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Invalid task id" }));
+      return;
+    }
+    const entry = this.workflowService.getWorkflow(taskId);
+    if (!entry) {
+      res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Workflow not found" }));
+      return;
+    }
+    // Also include persisted session data if available
+    const session = this.persistence.getSession(entry.task.sessionId);
+    const workItems = this.persistence.getWorkItems(entry.task.sessionId);
+    const events = this.persistence.getEvents(entry.task.sessionId);
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify({ task: entry.task, session, workItems, events }));
+  }
+
+  private handleWorkflowCancel(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+    const match = pathname.match(/^\/api\/workflow\/([^/]+)\/cancel$/);
+    const taskId = match?.[1];
+    if (!taskId) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Invalid task id" }));
+      return;
+    }
+    this.workflowService.cancelWorkflow(taskId).then(() => {
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ ok: true }));
+    }).catch((e) => {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }));
     });
   }
 

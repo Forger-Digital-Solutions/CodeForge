@@ -237,9 +237,17 @@ async function selectDirectory(): Promise<string | null> {
 }
 
 async function initializeServer(dbPath: string): Promise<void> {
+  // Share the desktop's firewall and provider catalog with the server so that
+  // the real autonomous workflow (Workflow ↔ AgentRuntime) uses the same
+  // ForgeZero-verified free models and authenticated provider credentials.
+  // This connects the desktop execution path to the real runtime.
+  const hasCredentials = !!providerCatalog && (providerCatalog.get("opencode") || providerCatalog.get("openrouter"));
   server = new CodeForgeServer({
     port: 3210,
     dbPath,
+    firewall: firewall ?? undefined,
+    providerCatalog: providerCatalog ?? undefined,
+    useRealRuntime: hasCredentials ? true : undefined,
   });
   await server.start();
 }

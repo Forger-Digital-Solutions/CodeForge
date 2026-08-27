@@ -140,6 +140,32 @@ export function useWorkspaceSSE(url: string) {
             if (parsed.type === "status.changed") {
               next.agentStatus = parsed.payload.to as SessionStatus;
             }
+            // Workflow orchestration events — keep UI reactive to the disciplined workflow
+            if (parsed.type === "task.created" || parsed.type === "task.started") {
+              next.isRunning = true;
+              next.agentStatus = "running";
+            }
+            if (parsed.type === "task.completed" || parsed.type === "task.cancelled") {
+              next.isRunning = false;
+              next.agentStatus = parsed.type === "task.completed" ? "idle" : "cancelled" as SessionStatus;
+            }
+            if (parsed.type === "task.state_changed") {
+              const to = (parsed.payload as { to: string }).to;
+              if (to === "complete" || to === "failed_safely" || to === "cancelled") {
+                next.isRunning = false;
+                next.agentStatus = to === "complete" ? "idle" : to as SessionStatus;
+              } else if (to === "implementing" || to === "testing" || to === "planning" || to === "reconnaissance") {
+                next.isRunning = true;
+                next.agentStatus = "running";
+              }
+            }
+            if (parsed.type === "plan.started" || parsed.type === "plan.updated" || parsed.type === "plan.status_changed") {
+              // WorkItems are hydrated via /api/sessions poll; mark running for plan review
+              next.isRunning = true;
+            }
+            if (parsed.type === "validation.completed" || parsed.type === "test.completed" || parsed.type === "review.completed" || parsed.type === "evidence.created") {
+              // Keep running until final task.completed; these are intermediate
+            }
             return next;
           });
         } catch {
@@ -265,6 +291,23 @@ export function useWorkspaceSSE(url: string) {
     [url]
   );
 
+  const runWorkflow = useCallback(
+    async (message: string, sessionId?: string) => {
+      const sid = sessionId ?? state.session?.id ?? "default";
+      const endpoint = resolveApiPath(url, "/api/workflow/run");
+      try {
+        await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: sid, message }),
+        });
+      } catch {
+        // network error; SSE will reconnect
+      }
+    },
+    [state.session?.id, url]
+  );
+
   return {
     state,
     setState,
@@ -274,5 +317,6 @@ export function useWorkspaceSSE(url: string) {
     stopTurn,
     pauseTurn,
     resumeTurn,
+    runWorkflow,
   };
 }

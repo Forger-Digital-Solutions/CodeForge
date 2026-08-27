@@ -30,6 +30,7 @@ const packages = [
   "shared",
   "vscode",
   "integration-tests",
+  "workflow",
 ];
 
 const aliases: Record<string, string | string[]> = {};

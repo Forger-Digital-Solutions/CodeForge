@@ -10,12 +10,6 @@
   "references": [
     { "path": "../core" },
     { "path": "../protocol" },
-    { "path": "../sessions" },
-    { "path": "../router" },
-    { "path": "../forge-zero" },
-    { "path": "../providers" },
-    { "path": "../tools" },
-    { "path": "../permissions" },
-    { "path": "../workflow" }
+    { "path": "../sessions" }
   ]
 }

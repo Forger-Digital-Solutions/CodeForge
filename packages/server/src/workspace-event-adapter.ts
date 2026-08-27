@@ -322,6 +322,62 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent);
   }
 
+  emitTaskCreated(taskId: string, title: string, mode: string): void {
+    this.emit({
+      type: "task.created",
+      payload: { taskId, title, mode },
+    } as WorkspaceEvent);
+  }
+
+  emitTaskStarted(taskId: string): void {
+    this.emit({
+      type: "task.started",
+      payload: { taskId },
+    } as WorkspaceEvent);
+  }
+
+  emitTaskStateChanged(taskId: string, from: string, to: string): void {
+    this.emit({
+      type: "task.state_changed",
+      payload: { taskId, from, to },
+    } as WorkspaceEvent);
+  }
+
+  emitTaskCompleted(taskId: string, result: string): void {
+    this.emit({
+      type: "task.completed",
+      payload: { taskId, result },
+    } as WorkspaceEvent);
+  }
+
+  emitTaskCancelled(taskId: string, reason?: string): void {
+    this.emit({
+      type: "task.cancelled",
+      payload: { taskId, reason },
+    } as WorkspaceEvent);
+  }
+
+  emitReviewStarted(taskId: string): void {
+    this.emit({
+      type: "review.started",
+      payload: { taskId },
+    } as WorkspaceEvent);
+  }
+
+  emitReviewCompleted(taskId: string, accepted: boolean, issues: string[]): void {
+    this.emit({
+      type: "review.completed",
+      payload: { taskId, accepted, issues },
+    } as WorkspaceEvent);
+  }
+
+  emitPlanStatusChanged(planId: string, status: "draft" | "review" | "approved" | "rejected" | "superseded" | "completed"): void {
+    this.emit({
+      type: "plan.status_changed",
+      payload: { planId, status },
+    } as WorkspaceEvent);
+  }
+
   emitStatusChanged(from: string, to: string): void {
     this.emit({
       type: "status.changed",

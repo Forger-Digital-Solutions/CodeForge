@@ -1,5 +1,5 @@
 {
-  "name": "@codeforge/server",
+  "name": "@codeforge/workflow",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -20,15 +20,6 @@
     "@codeforge/core": "*",
     "@codeforge/protocol": "*",
     "@codeforge/sessions": "*",
-    "@codeforge/router": "*",
-    "@codeforge/forge-zero": "*",
-    "@codeforge/providers": "*",
-    "@codeforge/tools": "*",
-    "@codeforge/permissions": "*",
-    "@codeforge/workflow": "*",
     "zod": "^3.24.0"
   }
 }
-
-
-
