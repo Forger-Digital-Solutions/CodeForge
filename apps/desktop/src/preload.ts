@@ -22,6 +22,18 @@ const api = {
   getPlatform: (): Promise<string> => {
     return ipcRenderer.invoke("app:getPlatform");
   },
+  getProviderCredentials: (): Promise<Record<string, string>> => {
+    return ipcRenderer.invoke("provider:getCredentials");
+  },
+  setProviderCredential: (providerId: string, apiKey: string): Promise<void> => {
+    return ipcRenderer.invoke("provider:setCredential", providerId, apiKey);
+  },
+  deleteProviderCredential: (providerId: string): Promise<void> => {
+    return ipcRenderer.invoke("provider:deleteCredential", providerId);
+  },
+  testProviderConnection: (providerId: string): Promise<{ status: string; error?: string }> => {
+    return ipcRenderer.invoke("provider:testConnection", providerId);
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);

@@ -274,6 +274,11 @@ export class CodeForgeServer {
       return;
     }
 
+    if (url.pathname.match(/^\/api\/providers\/[^/]+\/health$/) && req.method === "GET") {
+      this.handleProviderHealth(req, res, url.pathname);
+      return;
+    }
+
     if (url.pathname === "/api/sessions" && req.method === "GET") {
       const sessions = this.persistence.listSessions();
       res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
@@ -712,9 +717,47 @@ export class CodeForgeServer {
       displayName: m.displayName,
       tier: m.tier ?? "free",
       freeStatus: m.freeStatus,
+      contextWindow: m.contextWindow,
+      capabilities: m.capabilities,
+      costProfile: m.costProfile ? {
+        inputCostPerMillion: m.costProfile.inputCostPerMillion,
+        outputCostPerMillion: m.costProfile.outputCostPerMillion,
+        isFree: m.costProfile.isFree,
+        paidFallbackPossible: m.costProfile.paidFallbackPossible,
+      } : undefined,
+      isPromotional: m.costProfile?.source === "opencode:free",
     }));
     res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
     res.end(JSON.stringify(models));
+  }
+
+  private handleProviderHealth(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+    const match = pathname.match(/\/api\/providers\/([^/]+)\/health$/);
+    if (!match || !match[1]) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Invalid path" }));
+      return;
+    }
+    const providerId = match[1];
+    const adapter = this.providerCatalog.get(providerId);
+    if (!adapter) {
+      res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Provider not found" }));
+      return;
+    }
+
+    adapter.healthCheck()
+      .then((health) => {
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify(health));
+      })
+      .catch((error) => {
+        res.writeHead(500, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({
+          status: "error",
+          error: error instanceof Error ? error.message : String(error),
+        }));
+      });
   }
 
   private buildFileTree(dirPath: string, rootPath: string, depth: number = 0): Array<{ name: string; path: string; type: "file" | "directory"; children?: unknown[] }> {

@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { CodeForgeServer } from "@codeforge/server";
 import { ForgeZero, createGenericFreeRecord, createMuseSparkRecord } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog } from "@codeforge/providers";
+import { InMemoryProviderCatalog, OpencodeAdapter, OpenRouterAdapter, createOpencodeAdapter, createOpenRouterAdapter, type CredentialStore, type ProviderHealthResponse } from "@codeforge/providers";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -11,6 +11,7 @@ let server: CodeForgeServer | null = null;
 let mainWindow: BrowserWindow | null = null;
 let firewall: ForgeZero | null = null;
 let providerCatalog: InMemoryProviderCatalog | null = null;
+let desktopCredentialStore: DesktopCredentialStore | null = null;
 
 interface ProjectInfo {
   id: string;
@@ -20,6 +21,42 @@ interface ProjectInfo {
 }
 
 const RECENT_PROJECTS_KEY = "codeforge:recent-projects";
+const PROVIDER_CREDENTIALS_KEY = "codeforge:provider-credentials";
+
+class DesktopCredentialStore implements CredentialStore {
+  private credentials: Record<string, string> = {};
+
+  constructor() {
+    this.load();
+  }
+
+  private load(): void {
+    this.credentials = getProviderCredentials();
+  }
+
+  get(providerId: string): string | undefined {
+    return this.credentials[providerId];
+  }
+
+  set(providerId: string, credential: string): void {
+    this.credentials[providerId] = credential;
+    setProviderCredential(providerId, credential);
+  }
+
+  delete(providerId: string): boolean {
+    delete this.credentials[providerId];
+    deleteProviderCredential(providerId);
+    return true;
+  }
+
+  has(providerId: string): boolean {
+    return !!this.credentials[providerId];
+  }
+
+  reload(): void {
+    this.load();
+  }
+}
 
 function getRecentProjects(): ProjectInfo[] {
   try {
@@ -48,6 +85,57 @@ function saveRecentProject(project: ProjectInfo): void {
     const recent = (settings[RECENT_PROJECTS_KEY] as ProjectInfo[] | undefined) || [];
     const filtered = recent.filter((p) => p.path !== project.path);
     settings[RECENT_PROJECTS_KEY] = [project, ...filtered].slice(0, 10);
+    fs.writeFileSync(storePath, JSON.stringify(settings, null, 2));
+  } catch {
+    // ignore
+  }
+}
+
+function getProviderCredentials(): Record<string, string> {
+  try {
+    const data = app.getPath("userData");
+    const fs = require("node:fs");
+    const storePath = path.join(data, "settings.json");
+    if (fs.existsSync(storePath)) {
+      const settings = JSON.parse(fs.readFileSync(storePath, "utf-8"));
+      return (settings[PROVIDER_CREDENTIALS_KEY] as Record<string, string>) || {};
+    }
+  } catch {
+    // ignore
+  }
+  return {};
+}
+
+function setProviderCredential(providerId: string, apiKey: string): void {
+  try {
+    const data = app.getPath("userData");
+    const fs = require("node:fs");
+    const storePath = path.join(data, "settings.json");
+    let settings: Record<string, unknown> = {};
+    if (fs.existsSync(storePath)) {
+      settings = JSON.parse(fs.readFileSync(storePath, "utf-8"));
+    }
+    const credentials = (settings[PROVIDER_CREDENTIALS_KEY] as Record<string, string>) || {};
+    credentials[providerId] = apiKey;
+    settings[PROVIDER_CREDENTIALS_KEY] = credentials;
+    fs.writeFileSync(storePath, JSON.stringify(settings, null, 2));
+  } catch {
+    // ignore
+  }
+}
+
+function deleteProviderCredential(providerId: string): void {
+  try {
+    const data = app.getPath("userData");
+    const fs = require("node:fs");
+    const storePath = path.join(data, "settings.json");
+    let settings: Record<string, unknown> = {};
+    if (fs.existsSync(storePath)) {
+      settings = JSON.parse(fs.readFileSync(storePath, "utf-8"));
+    }
+    const credentials = (settings[PROVIDER_CREDENTIALS_KEY] as Record<string, string>) || {};
+    delete credentials[providerId];
+    settings[PROVIDER_CREDENTIALS_KEY] = credentials;
     fs.writeFileSync(storePath, JSON.stringify(settings, null, 2));
   } catch {
     // ignore
@@ -121,8 +209,23 @@ function createWindow(): void {
 }
 
 app.whenReady().then(async () => {
+  desktopCredentialStore = new DesktopCredentialStore();
   firewall = new ForgeZero();
   providerCatalog = new InMemoryProviderCatalog();
+  
+  // Register provider adapters with credentials from storage
+  const credentials = getProviderCredentials();
+  
+  if (credentials.opencode) {
+    const opencodeAdapter = createOpencodeAdapter({ credentialStore: desktopCredentialStore });
+    providerCatalog.register(opencodeAdapter);
+  }
+  
+  if (credentials.openrouter) {
+    const openrouterAdapter = createOpenRouterAdapter({ credentialStore: desktopCredentialStore });
+    providerCatalog.register(openrouterAdapter);
+  }
+  
   registerFreeModels(firewall);
 
   const dbPath = path.join(app.getPath("userData"), "codeforge.db");
@@ -192,4 +295,54 @@ ipcMain.handle("app:getVersion", () => {
 
 ipcMain.handle("app:getPlatform", () => {
   return process.platform;
+});
+
+ipcMain.handle("provider:getCredentials", async () => {
+  return getProviderCredentials();
+});
+
+ipcMain.handle("provider:setCredential", async (_event, providerId: string, apiKey: string) => {
+  setProviderCredential(providerId, apiKey);
+  desktopCredentialStore?.reload();
+  
+  // Re-register provider adapter if credentials were added
+  if (providerCatalog && desktopCredentialStore) {
+    if (providerId === "opencode" && apiKey) {
+      const existing = providerCatalog.get("opencode");
+      if (!existing) {
+        const adapter = createOpencodeAdapter({ credentialStore: desktopCredentialStore });
+        providerCatalog.register(adapter);
+      }
+    }
+    if (providerId === "openrouter" && apiKey) {
+      const existing = providerCatalog.get("openrouter");
+      if (!existing) {
+        const adapter = createOpenRouterAdapter({ credentialStore: desktopCredentialStore });
+        providerCatalog.register(adapter);
+      }
+    }
+  }
+});
+
+ipcMain.handle("provider:deleteCredential", async (_event, providerId: string) => {
+  deleteProviderCredential(providerId);
+  desktopCredentialStore?.reload();
+});
+
+ipcMain.handle("provider:testConnection", async (_event, providerId: string): Promise<{ status: string; error?: string }> => {
+  if (!providerCatalog) {
+    return { status: "error", error: "Provider catalog not initialized" };
+  }
+  
+  const adapter = providerCatalog.get(providerId);
+  if (!adapter) {
+    return { status: "error", error: "Provider not registered" };
+  }
+  
+  try {
+    const health: ProviderHealthResponse = await adapter.healthCheck();
+    return { status: health.status, error: health.error };
+  } catch (err) {
+    return { status: "error", error: err instanceof Error ? err.message : String(err) };
+  }
 });

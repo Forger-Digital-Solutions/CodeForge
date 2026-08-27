@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import type { Project } from "./App.js";
+import ProviderSetup from "./ProviderSetup.js";
 
 interface WelcomeScreenProps {
   recentProjects: Project[];
@@ -16,6 +17,16 @@ export default function WelcomeScreen({
   loading,
   error,
 }: WelcomeScreenProps) {
+  const [showProviderSetup, setShowProviderSetup] = useState(false);
+
+  if (showProviderSetup) {
+    return (
+      <ProviderSetup
+        onComplete={() => setShowProviderSetup(false)}
+      />
+    );
+  }
+
   return (
     <div className="welcome">
       <div className="welcome-container">
@@ -53,6 +64,17 @@ export default function WelcomeScreen({
           >
             <span className="btn-icon">➕</span>
             <span>New Project</span>
+          </button>
+        </div>
+
+        <div className="welcome-actions">
+          <button
+            className="welcome-btn secondary"
+            onClick={() => setShowProviderSetup(true)}
+            disabled={loading}
+          >
+            <span className="btn-icon">🔑</span>
+            <span>Configure Providers</span>
           </button>
         </div>
 

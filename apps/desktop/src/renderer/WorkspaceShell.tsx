@@ -13,8 +13,24 @@ interface ApiModel {
   id: string;
   providerId: string;
   displayName: string;
-  tier: "free" | "gems_paid";
+  tier: "free" | "gems_paid" | "paid";
   freeStatus: string;
+  contextWindow?: number;
+  capabilities?: {
+    text: boolean;
+    coding: boolean;
+    toolCalling: boolean;
+    vision: boolean;
+    structuredOutput: boolean;
+    longContext: boolean;
+  };
+  costProfile?: {
+    inputCostPerMillion: number;
+    outputCostPerMillion: number;
+    isFree: boolean;
+    paidFallbackPossible: boolean;
+  };
+  isPromotional?: boolean;
 }
 
 export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps) {
@@ -48,7 +64,8 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
           ...data.map((m) => ({
             id: m.id,
             displayName: m.displayName,
-            tier: m.tier,
+            tier: m.tier === "paid" ? "gems_paid" as const : m.tier,
+            description: m.isPromotional ? "Promotional Free" : undefined,
           })),
         ]);
         setModelProviders(Object.fromEntries(data.map((m) => [m.id, m.providerId])));
@@ -87,11 +104,11 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
   // centralized upgrade URL instead. In Electron this goes through the
   // main-process shell; in a plain browser it opens a new tab.
   const handleUpgradeNavigation = useCallback((url: string) => {
-    const api = window.electronAPI;
+    const api = (globalThis as any).electronAPI;
     if (api?.openExternal) {
       void api.openExternal(url);
     } else {
-      window.open(url, "_blank", "noopener");
+      (globalThis as any).window?.open(url, "_blank", "noopener");
     }
   }, []);
 
