@@ -74,8 +74,7 @@ export function useWorkspaceSSE(url: string) {
 
       es.onopen = () => {
         if (aborted) return;
-        es?.close();
-        es = null;
+        clearReconnect();
       };
 
       es.onerror = () => {
@@ -187,12 +186,11 @@ export function useWorkspaceSSE(url: string) {
   const approve = useCallback(
     (decision: "allow_once" | "allow_session" | "deny") => {
       if (!state.pendingApproval) return;
-      fetch(resolveApiPath(url, "/api/send"), {
+      fetch(resolveApiPath(url, `/api/approvals/${state.pendingApproval.id}/resolve`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId: state.pendingApproval.sessionId,
-          approvalId: state.pendingApproval.id,
           decision,
         }),
       }).catch(() => {});
@@ -204,12 +202,11 @@ export function useWorkspaceSSE(url: string) {
   const answerQuestion = useCallback(
     (answer: string) => {
       if (!state.pendingQuestion) return;
-      fetch(resolveApiPath(url, "/api/send"), {
+      fetch(resolveApiPath(url, `/api/questions/${state.pendingQuestion.id}/resolve`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId: state.pendingQuestion.sessionId,
-          questionId: state.pendingQuestion.id,
           answer,
         }),
       }).catch(() => {});

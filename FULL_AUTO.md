@@ -384,13 +384,22 @@ it("should complete a full run-pause-resume-cancel cycle", async () => {
 
 ---
 
+## Execution Hardening (Production)
+
+- **Single authoritative resolution:** `resolveTurnModel()` → `selectModel()` (ForgeZero eligibleModels) or `firewall.verify()` for manual free selections; `gems_paid` gated by `firewall.checkEntitlement`. All inference validated once before streaming; per-tool `firewall.verify` and per-iteration re-validation in `runAgentLoop` ensure expiry/health flips between turns fail closed.
+- **No paid fallback:** `NO_FREE_PROVIDER` is terminal; `ProviderError.retryable` never routes to paid. 429/timeout surface as `turn.failed` with user-facing message.
+- **Canonical identity:** `providerId::modelId` preserved from `firewall.getModel` through `ChatRequest.model` to `provider.streamChat`; Opencode mismatch guard rejects served≠requested.
+- **Fixed model per task:** Model resolved once per turn and reused for loop iterations; failover only via fresh `resolveTurnModel` (ForgeZero+Router) — never `free→paid`.
+- **Cancellation:** `activeTurns` + `abortControllers` map; `pause`/`cancel`/`resume` create fresh AbortController, abort provider stream, tool kill, and prevent duplicate tool execution.
+- **Streaming safety:** `workspace-sse` EventSource holds connection (onopen no longer closes), provider timeout is per-request with `combineSignals`, errors terminate loop without retry-to-paid.
+
 ## Current Limitations
 
 1. **No subagent delegation** — Single agent handles entire task
 2. **No plan visualization** — Plans created but not surfaced in UI
 3. **No checkpoint rollback** — Git checkpoints created but not used for recovery
-4. **No approval queue** — Approvals stored but queue not fully implemented
-5. **No question resolution UI** — Questions blocked but no UI to answer
+4. **No approval queue** — Approvals stored but queue not fully implemented; UI `approve` now hits `/api/approvals/:id/resolve` correctly
+5. **No question resolution UI** — Questions blocked but UI `answerQuestion` now hits `/api/questions/:id/resolve`
 
 ## Future Work
 

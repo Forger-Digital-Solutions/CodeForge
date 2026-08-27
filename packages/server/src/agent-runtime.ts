@@ -517,6 +517,17 @@ export class AgentRuntime {
       return;
     }
 
+    const turnState = this.activeTurns.get(turnId);
+    if (turnState?.providerId && turnState?.modelId) {
+      const rec = this.firewall.getModel(turnState.providerId, turnState.modelId);
+      if (rec && rec.tier !== "gems_paid") {
+        const v = this.firewall.verify(turnState.providerId, turnState.modelId);
+        if (!v.ok) {
+          throw new Error(`Model ${turnState.providerId}::${turnState.modelId} no longer eligible: ${v.error.message}`);
+        }
+      }
+    }
+
     let currentText = "";
     let toolCalls: Array<{ id: string; name: string; arguments: string }> = [];
     let currentToolCall: { id: string; name: string; arguments: string } | null = null;
