@@ -7,7 +7,7 @@ import { EventStore, createSessionPersistence, type SessionRecord, type TurnReco
 import { ForgeZero, createDevelopmentEntitlementProvider } from "@codeforge/forge-zero";
 import type { FreeModelRecord } from "@codeforge/forge-zero";
 import type { ProviderCatalog } from "@codeforge/providers";
-import { InMemoryProviderCatalog } from "@codeforge/providers";
+import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/providers";
 import { runDemoRuntime } from "./demo-runtime.js";
 import { AgentRuntime, createAgentRuntime } from "./agent-runtime.js";
 import { resolveWithinWorkspace } from "./path-security.js";
@@ -50,8 +50,37 @@ export class CodeForgeServer {
     this.providerCatalog = options.providerCatalog ?? new InMemoryProviderCatalog();
     this.useRealRuntime = process.env.CODEFORGE_REAL_RUNTIME === "true";
 
+    // Validate that API keys are available if real runtime is requested
+    if (this.useRealRuntime) {
+      this.validateRealRuntimeConfiguration();
+    }
+
     this.registerFreeModels();
     this.registerGemsModels();
+  }
+
+  private validateRealRuntimeConfiguration(): void {
+    // Check for configured provider API keys
+    const credentialStore = new EnvironmentCredentialStore();
+    
+    // Check for common provider API keys
+    const providerKeys = [
+      "openrouter", // OpenRouter API key
+      // Add other providers here as they are implemented
+    ];
+    
+    const hasAtLeastOneApiKey = providerKeys.some(
+      (providerId) => credentialStore.has(providerId)
+    );
+    
+    if (!hasAtLeastOneApiKey) {
+      console.warn(
+        "⚠️  CODEFORGE_REAL_RUNTIME=true but no provider API keys configured.\n" +
+        "Real runtime mode requires at least one provider API key (e.g., OPENROUTER_API_KEY).\n" +
+        "The server will start but real inference will fail at runtime.\n" +
+        "Set API keys in environment variables or configure credentials in the app."
+      );
+    }
   }
 
   private registerFreeModels(): void {
