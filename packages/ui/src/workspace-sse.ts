@@ -3,6 +3,15 @@ import type { WorkspaceEvent, SessionStatus } from "@codeforge/protocol";
 import { WorkspaceEventSchema, isWorkspaceEvent } from "@codeforge/protocol";
 import type { SessionRecord, TurnRecord, WorkItem } from "@codeforge/sessions";
 
+export interface WorkflowTaskSummary {
+  taskId: string;
+  title: string;
+  status: string;
+  phase: string;
+  progress: number;
+  createdAt: string;
+}
+
 export interface WorkspaceState {
   session: SessionRecord | null;
   turns: TurnRecord[];
@@ -20,6 +29,17 @@ export interface WorkspaceState {
   // Stop/Pause/Resume action states
   actionPending: "none" | "stop" | "pause" | "resume";
   actionError: string | null;
+  // Production autonomous workflow UX — trusted execution signals
+  workflowTasks: WorkflowTaskSummary[];
+  activeTaskId: string | null;
+  activePhase: string;
+  workflowProgress: number;
+  workflowError: string | null;
+  workflowActionPending: "none" | "run" | "cancel";
+  workflowActionError: string | null;
+  lastWorkflowResult: string | null;
+  lastEvidenceId: string | null;
+  lastCheckpointId: string | null;
 }
 
 export const initialWorkspaceState: WorkspaceState = {
@@ -38,7 +58,45 @@ export const initialWorkspaceState: WorkspaceState = {
   commandOutput: "",
   actionPending: "none",
   actionError: null,
+  workflowTasks: [],
+  activeTaskId: null,
+  activePhase: "idle",
+  workflowProgress: 0,
+  workflowError: null,
+  workflowActionPending: "none",
+  workflowActionError: null,
+  lastWorkflowResult: null,
+  lastEvidenceId: null,
+  lastCheckpointId: null,
 };
+
+function phaseToProgress(phase: string): number {
+  const order: Record<string, number> = {
+    received: 5,
+    reconnaissance: 15,
+    understanding: 12,
+    inspecting: 18,
+    building_context: 22,
+    planning: 35,
+    user_input_required: 38,
+    awaiting_approval: 38,
+    implementing: 55,
+    testing: 68,
+    verifying: 68,
+    diagnosing: 72,
+    repairing: 78,
+    reviewing: 88,
+    validating: 94,
+    summarizing: 94,
+    complete: 100,
+    completed: 100,
+    failed_safely: 100,
+    failed: 100,
+    cancelled: 0,
+    idle: 0,
+  };
+  return order[phase] ?? 0;
+}
 
 function resolveApiPath(sseUrl: string, apiPath: string): string {
   if (sseUrl.startsWith("http://") || sseUrl.startsWith("https://")) {
@@ -97,10 +155,14 @@ export function useWorkspaceSSE(url: string) {
             if (parsed.type === "turn.started") {
               next.isRunning = true;
               next.agentStatus = "running";
+              next.workflowError = null;
             }
             if (parsed.type === "turn.completed" || parsed.type === "turn.cancelled" || parsed.type === "turn.failed") {
               next.isRunning = false;
               next.agentStatus = parsed.type === "turn.failed" ? "failed" : "idle";
+              if (parsed.type === "turn.failed") {
+                next.workflowError = (parsed.payload as { error: string }).error ?? "Turn failed";
+              }
             }
             if (parsed.type === "turn.paused") {
               next.isPaused = true;
@@ -139,32 +201,129 @@ export function useWorkspaceSSE(url: string) {
             }
             if (parsed.type === "status.changed") {
               next.agentStatus = parsed.payload.to as SessionStatus;
+              const to = parsed.payload.to as string;
+              if (to !== "idle" && to !== "running") {
+                const prog = phaseToProgress(to);
+                if (prog) {
+                  next.activePhase = to;
+                  next.workflowProgress = prog;
+                }
+              }
             }
-            // Workflow orchestration events — keep UI reactive to the disciplined workflow
-            if (parsed.type === "task.created" || parsed.type === "task.started") {
+            // Workflow orchestration events — production-grade trusted execution signals
+            if (parsed.type === "task.created") {
+              const p = parsed.payload as { taskId: string; title: string; mode: string };
+              const summary: WorkflowTaskSummary = {
+                taskId: p.taskId,
+                title: p.title,
+                status: "received",
+                phase: "received",
+                progress: phaseToProgress("received"),
+                createdAt: parsed.timestamp,
+              };
+              next.workflowTasks = [...prev.workflowTasks.filter((t) => t.taskId !== p.taskId), summary];
+              next.activeTaskId = p.taskId;
+              next.activePhase = "received";
+              next.workflowProgress = phaseToProgress("received");
+              next.workflowError = null;
+              next.workflowActionError = null;
+              next.lastWorkflowResult = null;
               next.isRunning = true;
               next.agentStatus = "running";
             }
-            if (parsed.type === "task.completed" || parsed.type === "task.cancelled") {
+            if (parsed.type === "task.started") {
+              const p = parsed.payload as { taskId: string };
+              next.activeTaskId = p.taskId;
+              next.isRunning = true;
+              next.agentStatus = "running";
+              next.activePhase = "received";
+              next.workflowProgress = phaseToProgress("received");
+              next.workflowTasks = next.workflowTasks.map((t) =>
+                t.taskId === p.taskId ? { ...t, status: "running", phase: "received" } : t,
+              );
+            }
+            if (parsed.type === "task.completed") {
+              const p = parsed.payload as { taskId: string; result: string };
               next.isRunning = false;
-              next.agentStatus = parsed.type === "task.completed" ? "idle" : "cancelled" as SessionStatus;
+              next.agentStatus = "idle";
+              next.activePhase = "complete";
+              next.workflowProgress = 100;
+              next.lastWorkflowResult = p.result;
+              next.workflowActionPending = "none";
+              next.workflowTasks = next.workflowTasks.map((t) =>
+                t.taskId === p.taskId ? { ...t, status: "completed", phase: "completed", progress: 100 } : t,
+              );
+            }
+            if (parsed.type === "task.cancelled") {
+              const p = parsed.payload as { taskId: string; reason?: string };
+              next.isRunning = false;
+              next.agentStatus = "cancelled" as SessionStatus;
+              next.activePhase = "cancelled";
+              next.workflowProgress = 0;
+              next.workflowActionPending = "none";
+              next.workflowTasks = next.workflowTasks.map((t) =>
+                t.taskId === p.taskId ? { ...t, status: "cancelled", phase: "cancelled", progress: 0 } : t,
+              );
+              if (p.reason) next.workflowError = p.reason;
             }
             if (parsed.type === "task.state_changed") {
-              const to = (parsed.payload as { to: string }).to;
+              const p = parsed.payload as { taskId: string; from: string; to: string };
+              const to = p.to;
+              const prog = phaseToProgress(to);
+              next.activePhase = to;
+              if (prog !== 0 || to === "cancelled") next.workflowProgress = prog;
+              // Trustworthy terminal states: surface succinctly
               if (to === "complete" || to === "failed_safely" || to === "cancelled") {
                 next.isRunning = false;
-                next.agentStatus = to === "complete" ? "idle" : to as SessionStatus;
-              } else if (to === "implementing" || to === "testing" || to === "planning" || to === "reconnaissance") {
+                next.agentStatus = to === "complete" ? "idle" : (to as SessionStatus);
+                if (to === "failed_safely") next.workflowError = `Workflow reached ${to}`;
+                if (to === "cancelled") next.workflowError = "Workflow cancelled";
+                next.workflowActionPending = "none";
+              } else if (
+                to === "implementing" ||
+                to === "testing" ||
+                to === "planning" ||
+                to === "reconnaissance" ||
+                to === "user_input_required" ||
+                to === "diagnosing" ||
+                to === "repairing" ||
+                to === "reviewing" ||
+                to === "validating"
+              ) {
                 next.isRunning = true;
                 next.agentStatus = "running";
+                next.workflowError = null;
+              }
+              next.activeTaskId = p.taskId;
+              next.workflowTasks = next.workflowTasks.map((t) =>
+                t.taskId === p.taskId ? { ...t, status: to, phase: to, progress: prog || t.progress } : t,
+              );
+              if (!next.workflowTasks.some((t) => t.taskId === p.taskId)) {
+                next.workflowTasks = [
+                  ...next.workflowTasks,
+                  { taskId: p.taskId, title: next.workflowTasks[0]?.title ?? p.taskId.slice(0, 8), status: to, phase: to, progress: prog, createdAt: parsed.timestamp },
+                ];
               }
             }
-            if (parsed.type === "plan.started" || parsed.type === "plan.updated" || parsed.type === "plan.status_changed") {
-              // WorkItems are hydrated via /api/sessions poll; mark running for plan review
+            if (parsed.type === "plan.started") {
+              next.isRunning = true;
+              next.activePhase = "planning";
+              next.workflowProgress = Math.max(next.workflowProgress, phaseToProgress("planning"));
+            }
+            if (parsed.type === "plan.updated" || parsed.type === "plan.status_changed") {
               next.isRunning = true;
             }
-            if (parsed.type === "validation.completed" || parsed.type === "test.completed" || parsed.type === "review.completed" || parsed.type === "evidence.created") {
-              // Keep running until final task.completed; these are intermediate
+            if (parsed.type === "checkpoint.created") {
+              next.lastCheckpointId = (parsed.payload as { checkpointId: string }).checkpointId;
+            }
+            if (parsed.type === "evidence.created") {
+              next.lastEvidenceId = (parsed.payload as { evidenceId: string }).evidenceId;
+            }
+            if (parsed.type === "turn.failed") {
+              next.workflowError = (parsed.payload as { error: string }).error;
+              next.isRunning = false;
+              next.activePhase = "failed";
+              next.workflowProgress = 100;
             }
             return next;
           });
@@ -196,14 +355,24 @@ export function useWorkspaceSSE(url: string) {
         ? JSON.stringify({ sessionId, message, steer: true, turnId })
         : JSON.stringify({ sessionId, message, turnId });
 
+      setState((prev) => ({ ...prev, workflowError: null, workflowActionError: null }));
       try {
-        await fetch(endpoint, {
+        const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body,
         });
-      } catch {
-        // network error; SSE will reconnect and state remains consistent
+        if (!res.ok) {
+          let msg = `Send failed: ${res.status}`;
+          try {
+            const data = (await res.json()) as { error?: string; message?: string };
+            msg = data.message || data.error || msg;
+          } catch {}
+          setState((prev) => ({ ...prev, workflowError: msg, workflowActionError: msg }));
+        }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Network error — please check your connection";
+        setState((prev) => ({ ...prev, workflowError: msg, workflowActionError: msg }));
       }
     },
     [state.session?.id, url]
@@ -295,18 +464,64 @@ export function useWorkspaceSSE(url: string) {
     async (message: string, sessionId?: string) => {
       const sid = sessionId ?? state.session?.id ?? "default";
       const endpoint = resolveApiPath(url, "/api/workflow/run");
+      setState((prev) => ({ ...prev, workflowActionPending: "run", workflowActionError: null, workflowError: null }));
       try {
-        await fetch(endpoint, {
+        const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sessionId: sid, message }),
         });
-      } catch {
-        // network error; SSE will reconnect
+        if (!res.ok) {
+          let msg = `Workflow start failed: ${res.status}`;
+          try {
+            const data = (await res.json()) as { error?: string; message?: string };
+            msg = data.error || data.message || msg;
+          } catch {}
+          setState((prev) => ({ ...prev, workflowActionError: msg, workflowError: msg, workflowActionPending: "none" }));
+          return;
+        }
+        setState((prev) => ({ ...prev, workflowActionPending: "none" }));
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Network error";
+        setState((prev) => ({ ...prev, workflowActionError: msg, workflowError: msg, workflowActionPending: "none" }));
       }
     },
     [state.session?.id, url]
   );
+
+  const cancelWorkflow = useCallback(
+    async (taskId?: string) => {
+      const tid = taskId ?? state.activeTaskId;
+      if (!tid) return;
+      setState((prev) => ({ ...prev, workflowActionPending: "cancel", workflowActionError: null }));
+      const endpoint = resolveApiPath(url, `/api/workflow/${tid}/cancel`);
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        if (!res.ok) {
+          let msg = `Cancel failed: ${res.status}`;
+          try {
+            const data = (await res.json()) as { error?: string };
+            msg = data.error || msg;
+          } catch {}
+          setState((prev) => ({ ...prev, workflowActionError: msg, workflowActionPending: "none" }));
+          return;
+        }
+        setState((prev) => ({ ...prev, workflowActionPending: "none" }));
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Network error";
+        setState((prev) => ({ ...prev, workflowActionError: msg, workflowActionPending: "none" }));
+      }
+    },
+    [state.activeTaskId, url]
+  );
+
+  const dismissWorkflowError = useCallback(() => {
+    setState((prev) => ({ ...prev, workflowError: null, workflowActionError: null }));
+  }, []);
 
   return {
     state,
@@ -318,5 +533,7 @@ export function useWorkspaceSSE(url: string) {
     pauseTurn,
     resumeTurn,
     runWorkflow,
+    cancelWorkflow,
+    dismissWorkflowError,
   };
 }

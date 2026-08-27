@@ -9,6 +9,7 @@ import Composer from "./Composer.js";
 import ApprovalBar from "./ApprovalBar.js";
 import QuestionBar from "./QuestionBar.js";
 import CommandPalette, { type Command } from "./CommandPalette.js";
+import WorkflowProgress from "./WorkflowProgress.js";
 import "./workspace.css";
 
 export interface WorkspaceAppProps {
@@ -17,7 +18,7 @@ export interface WorkspaceAppProps {
 }
 
 export default function WorkspaceApp({ sseUrl, onSendMessage }: WorkspaceAppProps) {
-  const { state, setState, sendMessage, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn } = useWorkspaceSSE(sseUrl ?? "/api/events");
+  const { state, setState, sendMessage, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError } = useWorkspaceSSE(sseUrl ?? "/api/events");
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   const commands: Command[] = [
@@ -111,11 +112,23 @@ export default function WorkspaceApp({ sseUrl, onSendMessage }: WorkspaceAppProp
     }
   };
 
-  const placeholder = state.isRunning
-    ? "Steer the agent..."
-    : state.pendingQuestion
-      ? "Answer the agent..."
-      : "Ask CodeForge to work on this project...";
+  const placeholder = state.pendingApproval?.tool === "workflow"
+    ? "Review the plan above and approve or deny…"
+    : state.isRunning
+      ? state.activePhase === "awaiting_approval"
+        ? "Awaiting plan approval…"
+        : "Steer the agent…"
+      : state.pendingQuestion
+        ? "Answer the agent..."
+        : "Ask CodeForge to work on this project... try: Fix add function to return a + b";
+
+  const showWorkflowProgress = Boolean(
+    state.activeTaskId ||
+      state.isRunning ||
+      state.workflowError ||
+      state.lastWorkflowResult ||
+      state.pendingApproval?.tool === "workflow",
+  );
 
   return (
     <div className="workspace">
@@ -129,6 +142,15 @@ export default function WorkspaceApp({ sseUrl, onSendMessage }: WorkspaceAppProp
           setState((prev) => ({ ...prev, displayMode: mode }));
         }}
       />
+      {showWorkflowProgress && (
+        <WorkflowProgress state={state} onCancel={() => cancelWorkflow()} onApprove={approve} />
+      )}
+      {(state.workflowError || state.workflowActionError) && !showWorkflowProgress && (
+        <div style={{ margin: "8px 12px", background: "#2b0e0e", border: "1px solid #7f1d1d", color: "#fca5a5", borderRadius: 10, padding: "10px 12px", fontSize: 12, display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
+          <span><strong>Workflow:</strong> {state.workflowError ?? state.workflowActionError}</span>
+          <button className="work-item-btn" onClick={dismissWorkflowError}>Dismiss</button>
+        </div>
+      )}
       <div className="workspace-body">
         <Navigation active={state.leftNav} onSelect={(nav) => setState((prev) => ({ ...prev, leftNav: nav }))} workItems={state.workItems} />
         <Conversation
@@ -150,7 +172,11 @@ export default function WorkspaceApp({ sseUrl, onSendMessage }: WorkspaceAppProp
           workspacePath={state.session?.workspacePath}
         />
       </div>
-      {state.pendingApproval && (
+      {/* Non-workflow approvals still use the floating bar; workflow approvals are handled inside WorkflowProgress but we keep fallback for safety */}
+      {state.pendingApproval && state.pendingApproval.tool !== "workflow" && (
+        <ApprovalBar approval={state.pendingApproval} onApprove={approve} onDeny={() => approve("deny")} />
+      )}
+      {state.pendingApproval?.tool === "workflow" && !showWorkflowProgress && (
         <ApprovalBar approval={state.pendingApproval} onApprove={approve} onDeny={() => approve("deny")} />
       )}
       {state.pendingQuestion && (

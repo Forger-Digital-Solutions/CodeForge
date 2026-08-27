@@ -134,17 +134,17 @@ export class WorkflowService {
     const buildImplementPrompt = (plan: WorkflowPlan, context: ContextBundle, repoMap: RepoMap, intent: TaskIntent): string => {
       const lines: string[] = [];
       lines.push(`You are CodeForge, an autonomous coding agent. Implement the following plan disciplinedly.`);
-      lines.push(`Task: ${intent.title}`);
+      lines.push(`Task: ${redactSecrets(intent.title)}`);
       lines.push(`Type: ${intent.taskType}, Goals: ${intent.goals.join(" | ")}`);
-      lines.push(`\nPlan ${plan.id}: ${plan.title}`);
+      lines.push(`\nPlan ${plan.id}: ${redactSecrets(plan.title)}`);
       lines.push(`Steps:`);
       for (const s of plan.steps.filter((st) => st.status === "queued" || st.status === "active")) {
-        lines.push(`- [${s.kind}:${s.risk}] ${s.description}${s.targetPath ? ` → ${s.targetPath}` : ""}`);
+        lines.push(`- [${s.kind}:${s.risk}] ${redactSecrets(s.description)}${s.targetPath ? ` → ${s.targetPath}` : ""}`);
       }
       lines.push(`\nRelevant files (context): ${context.primaryFiles.join(", ")}`);
       lines.push(`\nContext snippets:`);
       for (const snippet of context.snippets.slice(0, 4)) {
-        lines.push(`\n--- ${snippet.path} (relevance ${snippet.relevance}) ---\n${snippet.preview.slice(0, 1200)}\n`);
+        lines.push(`\n--- ${snippet.path} (relevance ${snippet.relevance}) ---\n${redactSecrets(snippet.preview.slice(0, 1200))}\n`);
       }
       lines.push(`\nInstructions:`);
       lines.push(`- Use read_file to inspect files (hash will be provided).`);
@@ -158,11 +158,11 @@ export class WorkflowService {
     const buildRepairPrompt = (analysis: FailureAnalysis, verification: VerificationResult, context: ContextBundle, intent: TaskIntent): string => {
       const lines: string[] = [];
       lines.push(`Verification failed; diagnose and repair.`);
-      lines.push(`Task: ${intent.title}`);
-      lines.push(`\nVerification output:\n${verification.output.slice(0, 4000)}`);
-      lines.push(`\nFailures: ${verification.failures.map((f) => `${f.test}: ${f.message}`).join("\n").slice(0, 2000)}`);
-      lines.push(`\nDiagnostics:\n${analysis.diagnostics.slice(0, 10).join("\n")}`);
-      lines.push(`\nSuggested repairs: ${JSON.stringify(analysis.suggestedRepairs.slice(0, 3), null, 2)}`);
+      lines.push(`Task: ${redactSecrets(intent.title)}`);
+      lines.push(`\nVerification output:\n${redactSecrets(verification.output.slice(0, 4000))}`);
+      lines.push(`\nFailures: ${redactSecrets(verification.failures.map((f) => `${f.test}: ${f.message}`).join("\n").slice(0, 2000))}`);
+      lines.push(`\nDiagnostics:\n${redactSecrets(analysis.diagnostics.slice(0, 10).join("\n"))}`);
+      lines.push(`\nSuggested repairs: ${redactSecrets(JSON.stringify(analysis.suggestedRepairs.slice(0, 3), null, 2))}`);
       lines.push(`\nRelevant files: ${context.primaryFiles.join(", ")}`);
       lines.push(`\nPlease fix the failures using edit_file with hash protection. Be minimal.`);
       return lines.join("\n");
@@ -316,7 +316,8 @@ export class WorkflowService {
       onEvent: (evt: { type: string; payload: unknown }) => {
         if (evt.type === "workflow.plan_created") {
           const payload = evt.payload as { planId: string; steps: number };
-          adapter.emitPlanStarted(payload.planId, taskId, `Plan for ${request.message.slice(0, 40)}`);
+          const safePlanTitle = redactSecrets(`Plan for ${request.message.slice(0, 40)}`);
+          adapter.emitPlanStarted(payload.planId, taskId, safePlanTitle);
           // Also persist plan as WorkItem
           try {
             this.persistence.upsertWorkItem({
@@ -324,7 +325,7 @@ export class WorkflowService {
               id: payload.planId,
               sessionId,
               turnId,
-              title: `Plan for ${request.message.slice(0, 40)}`,
+              title: safePlanTitle,
               status: "draft",
               steps: [],
               comments: [],
@@ -337,18 +338,20 @@ export class WorkflowService {
         }
       },
       askForApproval: async (plan: WorkflowPlan) => {
-        // Use authoritative ApprovalService
+        // Use authoritative ApprovalService — ensure secrets never leak into approval records
+        const safePlanTitle = redactSecrets(plan.title);
+        const safeDescription = redactSecrets(`Execute plan ${plan.id}: ${safePlanTitle}`);
         const risk = plan.steps.some((s: WorkflowPlan["steps"][number]) => s.risk === "critical") ? "critical" : plan.steps.some((s: WorkflowPlan["steps"][number]) => s.risk === "high") ? "high" : "moderate";
         const { approvalId, promise } = this.approvalService.requestApproval({
           turnId,
           tool: "workflow",
           action: "execute_plan",
-          description: `Execute plan ${plan.id}: ${plan.title}`,
+          description: safeDescription,
           risk,
           scope: workspacePath,
           signal: controller.signal,
         });
-        adapter.emitApprovalRequested(approvalId, "workflow", "execute_plan", `Execute plan ${plan.title}`, risk, workspacePath);
+        adapter.emitApprovalRequested(approvalId, "workflow", "execute_plan", safeDescription, risk, workspacePath);
         // Persist approval as WorkItem
         try {
           this.persistence.upsertWorkItem({
@@ -358,7 +361,7 @@ export class WorkflowService {
             turnId,
             tool: "workflow",
             action: "execute_plan",
-            description: `Execute plan ${plan.title}`,
+            description: safeDescription,
             risk,
             scope: workspacePath,
             createdAt: new Date().toISOString(),
@@ -377,7 +380,7 @@ export class WorkflowService {
             turnId,
             tool: "workflow",
             action: "execute_plan",
-            description: `Execute plan ${plan.title}`,
+            description: safeDescription,
             risk,
             scope: workspacePath,
             decision,
