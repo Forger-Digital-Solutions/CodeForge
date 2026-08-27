@@ -6,13 +6,20 @@ import { WorkspaceEventAdapter, createWorkspaceEventAdapter } from "./workspace-
 import { resolveWithinWorkspace } from "./path-security.js";
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { redactSecrets } from "@codeforge/secrets";
+import { classifyCommand } from "./command-classifier.js";
+import { ApprovalService, type ApprovalRecord } from "./approval-service.js";
+import { getSanitizedEnvForChild } from "./env-filter.js";
+import { searchWorkspace } from "./search-service.js";
+import { replaceExact, sha256 } from "./edit-service.js";
 
 const MAX_FILE_READ_BYTES = 100 * 1024;
 const MAX_FILE_READ_LINES = 400;
 const MAX_LIST_FILES_ENTRIES = 500;
 const MAX_COMMAND_OUTPUT_BYTES = 64 * 1024;
+const DEFAULT_APPROVAL_TIMEOUT_MS = 5 * 60 * 1000;
 
 function truncateOutput(text: string, maxBytes: number, label: string): string {
   if (Buffer.byteLength(text, "utf-8") <= maxBytes) return text;
@@ -73,13 +80,10 @@ export interface AgentRuntimeOptions {
   firewall: ForgeZero;
   providerCatalog: ProviderCatalog;
   workspacePath?: string;
-  /** CodeForge account user id used for entitlement checks on GEMS models. */
   userId?: string;
-  /** Demo mode: skip real provider execution, only track turn state. */
   demoMode?: boolean;
 }
 
-/** Explicit manual model selection for a session (may be a GEMS paid model). */
 export interface ModelSelection {
   providerId: string;
   modelId: string;
@@ -102,6 +106,7 @@ export class AgentRuntime {
   private readonly messageHistory: ChatMessage[] = [];
   private turnCount = 0;
   private maxIterations = 50;
+  private readonly approvalService: ApprovalService;
 
   constructor(options: AgentRuntimeOptions) {
     this.sessionId = options.sessionId;
@@ -112,21 +117,13 @@ export class AgentRuntime {
     this.workspacePath = options.workspacePath;
     this.userId = options.userId ?? "anonymous";
     this.demoMode = options.demoMode ?? false;
+    this.approvalService = new ApprovalService({ defaultTimeoutMs: DEFAULT_APPROVAL_TIMEOUT_MS });
   }
 
-  /**
-   * Manually select a model for subsequent turns. When a GEMS paid model is
-   * selected, every turn is gated by ForgeZero.checkEntitlement and fails
-   * closed if the user is not entitled.
-   */
   setModelSelection(selection: ModelSelection): void {
     this.modelSelection = { providerId: selection.providerId, modelId: selection.modelId };
   }
 
-  /**
-   * Return to ForgeZero auto-routing ("Auto" in the UI). Auto-routing only
-   * ever yields free-tier models, so this is the fail-safe selection state.
-   */
   clearModelSelection(): void {
     this.modelSelection = null;
   }
@@ -149,8 +146,6 @@ export class AgentRuntime {
 
     this.activeTurns.set(turnId, state);
 
-    // The sessions row must exist before the turn insert (turns.sessionId has
-    // a FOREIGN KEY referencing sessions.id).
     this.persistence.upsertSession({
       id: this.sessionId,
       title: userMessage.slice(0, 80),
@@ -167,9 +162,6 @@ export class AgentRuntime {
     const abortController = new AbortController();
     this.abortControllers.set(turnId, abortController);
 
-    // Demo mode: skip real provider execution entirely.
-    // Only track turn state for pause/resume/cancel operations.
-    // The demo-runtime handles emitting demo events separately.
     if (!this.demoMode) {
       this.executeTurn(turnId, userMessage, adapter, abortController.signal).catch((error) => {
         const turnState = this.activeTurns.get(turnId);
@@ -191,14 +183,11 @@ export class AgentRuntime {
     if (!state) {
       throw new Error(`Turn ${turnId} not found`);
     }
-
     if (state.status !== "running") {
       throw new Error(`Turn ${turnId} is not running (status: ${state.status})`);
     }
-
     const adapter = this.createAdapter();
     adapter.emitTurnSteered(turnId, steering);
-
     state.userMessage = steering;
     this.activeTurns.set(turnId, state);
   }
@@ -208,20 +197,16 @@ export class AgentRuntime {
     if (!state) {
       throw new Error(`Turn ${turnId} not found`);
     }
-
     if (state.status !== "running") {
       throw new Error(`Turn ${turnId} is not running`);
     }
-
     const abortController = this.abortControllers.get(turnId);
     if (abortController) {
       abortController.abort();
     }
-
     state.status = "paused";
     this.activeTurns.set(turnId, state);
     this.persistTurn(state);
-
     const adapter = this.createAdapter();
     adapter.emitTurnPaused(turnId);
     adapter.emitStatusChanged("running", "paused");
@@ -232,22 +217,16 @@ export class AgentRuntime {
     if (!state) {
       throw new Error(`Turn ${turnId} not found`);
     }
-
     if (state.status !== "paused") {
       throw new Error(`Turn ${turnId} is not paused`);
     }
-
     const adapter = this.createAdapter();
     adapter.emitTurnResumed(turnId);
     adapter.emitStatusChanged("paused", "running");
-
     state.status = "running";
     this.activeTurns.set(turnId, state);
-
     const abortController = new AbortController();
     this.abortControllers.set(turnId, abortController);
-
-    // Demo mode: skip real provider execution entirely.
     if (!this.demoMode) {
       this.executeTurn(turnId, state.userMessage, adapter, abortController.signal).catch((error) => {
         const turnState = this.activeTurns.get(turnId);
@@ -266,34 +245,63 @@ export class AgentRuntime {
     if (!state) {
       throw new Error(`Turn ${turnId} not found`);
     }
-
     const abortController = this.abortControllers.get(turnId);
     if (abortController) {
       abortController.abort();
     }
-
+    this.approvalService.cancelForTurn(turnId, reason ?? "Turn cancelled");
+    // Also cancel via legacy map
+    for (const [id, req] of Array.from(this.pendingApprovals.entries())) {
+      // legacy entries don't store turnId, but we clear all waiting approvals for this turn's status
+      const turnState = this.activeTurns.get(turnId);
+      if (turnState?.status === "waiting_for_approval") {
+        try { req.resolve("deny"); } catch {}
+        this.pendingApprovals.delete(id);
+      }
+    }
     state.status = "cancelled";
     state.completedAt = new Date();
     this.activeTurns.set(turnId, state);
     this.persistTurn(state);
-
     const adapter = this.createAdapter();
     adapter.emitTurnCancelled(turnId, reason);
     adapter.emitStatusChanged(state.status, "cancelled");
   }
 
   resolveApproval(approvalId: string, decision: "allow_once" | "allow_session" | "deny"): void {
+    // First try new service
+    const rec = this.approvalService.getRecord(approvalId);
+    if (rec) {
+      const result = this.approvalService.resolve(approvalId, decision);
+      const adapter = this.createAdapter();
+      adapter.emitApprovalResolved(approvalId, decision);
+      // If this approval belongs to a waiting turn, transition back to running or handle rejection
+      const turnState = this.findTurnByApprovalRecord(rec);
+      if (turnState && turnState.status === "waiting_for_approval") {
+        if (result.approved) {
+          turnState.status = "running";
+          this.activeTurns.set(turnState.turnId, turnState);
+          adapter.emitStatusChanged("waiting_for_approval", "running");
+        } else if (result.state === "rejected") {
+          // keep waiting -> running so tool can return rejection message; loop continues
+          turnState.status = "running";
+          this.activeTurns.set(turnState.turnId, turnState);
+          adapter.emitStatusChanged("waiting_for_approval", "running");
+        } else if (result.state === "cancelled" || result.state === "expired") {
+          // turn already cancelled; do not resurrect
+        }
+      }
+      return;
+    }
+    // Fallback legacy
     const request = this.pendingApprovals.get(approvalId);
     if (!request) {
       throw new Error(`Approval ${approvalId} not found`);
     }
-
     const adapter = this.createAdapter();
     adapter.emitApprovalResolved(approvalId, decision);
-
     request.resolve(decision);
     this.pendingApprovals.delete(approvalId);
-
     const turnState = this.findTurnByApproval(approvalId);
     if (turnState && turnState.status === "waiting_for_approval") {
       turnState.status = "running";
@@ -307,13 +315,10 @@ export class AgentRuntime {
     if (!request) {
       throw new Error(`Question ${questionId} not found`);
     }
-
     const adapter = this.createAdapter();
     adapter.emitQuestionResolved(questionId, answer);
-
     request.resolve(answer);
     this.pendingQuestions.delete(questionId);
-
     const turnState = this.findTurnByQuestion(questionId);
     if (turnState && turnState.status === "waiting_for_question") {
       turnState.status = "running";
@@ -333,7 +338,7 @@ export class AgentRuntime {
   }
 
   hasPendingApprovals(): boolean {
-    return this.pendingApprovals.size > 0;
+    return this.approvalService.hasPending() || this.pendingApprovals.size > 0;
   }
 
   hasPendingQuestions(): boolean {
@@ -341,6 +346,18 @@ export class AgentRuntime {
   }
 
   getPendingApproval(approvalId: string): ApprovalRequest | undefined {
+    const rec = this.approvalService.getPending(approvalId);
+    if (rec) {
+      return {
+        approvalId: rec.approvalId,
+        tool: rec.tool,
+        action: rec.action,
+        description: rec.description,
+        risk: rec.risk,
+        scope: rec.scope,
+        resolve: () => {},
+      };
+    }
     return this.pendingApprovals.get(approvalId);
   }
 
@@ -349,11 +366,26 @@ export class AgentRuntime {
   }
 
   getAllPendingApprovals(): ApprovalRequest[] {
-    return Array.from(this.pendingApprovals.values());
+    const fromService: ApprovalRequest[] = this.approvalService.getAllPending().map((r) => ({
+      approvalId: r.approvalId,
+      tool: r.tool,
+      action: r.action,
+      description: r.description,
+      risk: r.risk,
+      scope: r.scope,
+      resolve: () => {},
+    }));
+    const legacy = Array.from(this.pendingApprovals.values());
+    return [...fromService, ...legacy];
   }
 
   getAllPendingQuestions(): QuestionRequest[] {
     return Array.from(this.pendingQuestions.values());
+  }
+
+  // Exposed for tests and direct tool invocation hardening
+  getApprovalService(): ApprovalService {
+    return this.approvalService;
   }
 
   private createAdapter(): WorkspaceEventAdapter {
@@ -392,9 +424,6 @@ export class AgentRuntime {
         state.providerId = model.providerId;
         this.activeTurns.set(turnId, state);
 
-        // GEMS paid models are entitlement-gated in the production turn path.
-        // ForgeZero fails closed: unentitled users and entitlement-service
-        // errors both deny execution before any inference happens.
         if (model.tier === "gems_paid") {
           const entitlement = await this.firewall.checkEntitlement(this.userId, model.providerId, model.modelId);
           if (!entitlement.ok) {
@@ -412,13 +441,13 @@ export class AgentRuntime {
       state = this.activeTurns.get(turnId);
       if (!state) return;
 
+      // If turn was cancelled while waiting for approval, do not mark completed
+      if (state.status === "cancelled") return;
+
       state.status = "completed";
       state.completedAt = new Date();
       this.activeTurns.set(turnId, state);
 
-      // Session row (with the resolved model) is written before the turn is
-      // marked completed so observers never see a completed turn against a
-      // stale session row.
       this.persistence.upsertSession({
         id: this.sessionId,
         title: userMessage.slice(0, 80),
@@ -462,12 +491,6 @@ export class AgentRuntime {
     return eligible[0] ?? null;
   }
 
-  /**
-   * Manual selection (e.g. a GEMS model chosen in the UI) wins over
-   * ForgeZero auto-routing. Auto-routing only ever yields free-tier models;
-   * paid models are only reachable through an explicit selection, which is
-   * then gated by checkEntitlement in executeTurn.
-   */
   private resolveTurnModel(): FreeModelRecord | null {
     if (this.modelSelection) {
       const { providerId, modelId } = this.modelSelection;
@@ -623,6 +646,8 @@ export class AgentRuntime {
         const toolResult = await this.executeTool(turnId, tc.id, tc.name, tc.arguments, adapter, signal);
         if (signal.aborted) return;
 
+        // Pipeline: raw -> size limit -> secret redaction -> history
+        // executeTool already returns sanitized bounded result
         this.messageHistory.push({
           role: "tool",
           content: toolResult,
@@ -659,7 +684,7 @@ export class AgentRuntime {
         type: "function",
         function: {
           name: "read_file",
-          description: "Read the contents of a file",
+          description: "Read the contents of a file. Returns content hash for edit protection.",
           parameters: {
             type: "object",
             properties: {
@@ -673,7 +698,7 @@ export class AgentRuntime {
         type: "function",
         function: {
           name: "write_file",
-          description: "Write content to a file",
+          description: "Write content to a file (legacy whole-file). Prefer edit_file for safe patches.",
           parameters: {
             type: "object",
             properties: {
@@ -714,6 +739,55 @@ export class AgentRuntime {
           },
         },
       },
+      {
+        type: "function",
+        function: {
+          name: "search_files",
+          description: "Search workspace for text/regex. Returns structured matches with file, line, preview.",
+          parameters: {
+            type: "object",
+            properties: {
+              query: { type: "string", description: "Search query or regex" },
+              regex: { type: "boolean", description: "Treat query as regex" },
+              caseSensitive: { type: "boolean", description: "Case sensitive" },
+              maxMatches: { type: "number", description: "Max matches to return" },
+            },
+            required: ["query"],
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "edit_file",
+          description: "Safe exact replacement edit with hash protection. Fails if oldText not found exactly or hash stale.",
+          parameters: {
+            type: "object",
+            properties: {
+              path: { type: "string", description: "File path" },
+              oldText: { type: "string", description: "Exact text to replace" },
+              newText: { type: "string", description: "Replacement text" },
+              expectedOccurrences: { type: "number", description: "Expected occurrence count (default 1)" },
+              expectedHash: { type: "string", description: "SHA-256 hash from prior read for stale-edit protection" },
+            },
+            required: ["path", "oldText", "newText"],
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "create_checkpoint",
+          description: "Create a git checkpoint for recovery before significant edits.",
+          parameters: {
+            type: "object",
+            properties: {
+              label: { type: "string", description: "Checkpoint label" },
+            },
+            required: ["label"],
+          },
+        },
+      },
     ];
   }
 
@@ -735,6 +809,43 @@ export class AgentRuntime {
       return `[Blocked by ForgeZero: ${verification.error.message}]`;
     }
 
+    // Validate arguments parse
+    let parsedArgs: unknown;
+    try {
+      parsedArgs = JSON.parse(argsJson);
+    } catch {
+      const msg = `Invalid tool arguments: not JSON`;
+      const safe = redactSecrets(msg);
+      adapter.emitToolExecutionFailed(turnId, toolCallId, toolName, safe);
+      return `Error: ${safe}`;
+    }
+
+    // Risk classification & approval gate (authoritative)
+    const approvalNeeded = this.requiresApproval(toolName, parsedArgs);
+    if (approvalNeeded.requires) {
+      const gateResult = await this.gateWithApproval(
+        turnId,
+        toolName,
+        toolCallId,
+        approvalNeeded,
+        adapter,
+        signal,
+      );
+      if (!gateResult.approved) {
+        const reason = gateResult.reason ?? gateResult.state;
+        if (gateResult.state === "cancelled") {
+          return `[Cancelled: approval ${gateResult.state} - ${reason}]`;
+        }
+        if (gateResult.state === "expired") {
+          return `[Expired: approval timed out]`;
+        }
+        // rejected
+        adapter.emitToolExecutionBlocked(turnId, toolCallId, toolName, `approval_${gateResult.state}`);
+        return `[Blocked: tool requires approval but was ${gateResult.state} (${reason})]`;
+      }
+      // approved -> fall through to execution (exactly once)
+    }
+
     adapter.emitToolExecutionStarted(turnId, toolCallId, toolName, argsJson);
 
     try {
@@ -742,26 +853,55 @@ export class AgentRuntime {
 
       switch (toolName) {
         case "read_file": {
-          const args = JSON.parse(argsJson) as { path: string };
+          const args = parsedArgs as { path: string };
+          if (!args.path || typeof args.path !== "string") throw new Error("path required");
           result = await this.executeReadFile(args.path, adapter, turnId, toolCallId);
           break;
         }
 
         case "write_file": {
-          const args = JSON.parse(argsJson) as { path: string; content: string };
+          const args = parsedArgs as { path: string; content: string };
+          if (!args.path || typeof args.path !== "string") throw new Error("path required");
+          if (typeof args.content !== "string") throw new Error("content required");
           result = await this.executeWriteFile(args.path, args.content, adapter, turnId, toolCallId);
           break;
         }
 
         case "list_files": {
-          const args = JSON.parse(argsJson) as { path: string; recursive?: boolean };
+          const args = parsedArgs as { path: string; recursive?: boolean };
+          if (!args.path || typeof args.path !== "string") throw new Error("path required");
           result = await this.executeListFiles(args.path, args.recursive ?? false, adapter, turnId, toolCallId);
           break;
         }
 
         case "run_command": {
-          const args = JSON.parse(argsJson) as { command: string; cwd?: string };
+          const args = parsedArgs as { command: string; cwd?: string };
+          if (!args.command || typeof args.command !== "string") throw new Error("command required");
+          if (args.command.length > 8192) throw new Error("command too long");
           result = await this.executeRunCommand(args.command, args.cwd, adapter, turnId, toolCallId, signal);
+          break;
+        }
+
+        case "search_files": {
+          const args = parsedArgs as { query: string; regex?: boolean; caseSensitive?: boolean; maxMatches?: number };
+          if (!args.query || typeof args.query !== "string") throw new Error("query required");
+          result = await this.executeSearch(args.query, args.regex, args.caseSensitive, args.maxMatches, adapter, signal);
+          break;
+        }
+
+        case "edit_file": {
+          const args = parsedArgs as { path: string; oldText: string; newText: string; expectedOccurrences?: number; expectedHash?: string };
+          if (!args.path || typeof args.path !== "string") throw new Error("path required");
+          if (typeof args.oldText !== "string") throw new Error("oldText required");
+          if (typeof args.newText !== "string") throw new Error("newText required");
+          result = await this.executeEditFile(args.path, args.oldText, args.newText, args.expectedOccurrences, args.expectedHash, adapter);
+          break;
+        }
+
+        case "create_checkpoint": {
+          const args = parsedArgs as { label: string };
+          if (!args.label || typeof args.label !== "string") throw new Error("label required");
+          result = await this.executeCreateCheckpoint(args.label, adapter);
           break;
         }
 
@@ -778,13 +918,122 @@ export class AgentRuntime {
     } catch (error) {
       const raw = error instanceof Error ? error.message : String(error);
       const errorMessage = redactSecrets(raw);
-      adapter.emitToolExecutionFailed(turnId, toolCallId, toolName, errorMessage);
-      return `Error: ${errorMessage}`;
+      const boundedError = errorMessage.length > MAX_COMMAND_OUTPUT_BYTES
+        ? truncateOutput(errorMessage, MAX_COMMAND_OUTPUT_BYTES, toolName)
+        : errorMessage;
+      adapter.emitToolExecutionFailed(turnId, toolCallId, toolName, boundedError);
+      return `Error: ${boundedError}`;
     }
   }
 
+  private requiresApproval(toolName: string, args: unknown): { requires: boolean; risk: "safe" | "moderate" | "high" | "critical"; reason: string; action: string } {
+    switch (toolName) {
+      case "read_file":
+      case "list_files":
+      case "search_files":
+        return { requires: false, risk: "safe", reason: "read-only", action: "read" };
+      case "write_file":
+      case "edit_file":
+        return { requires: true, risk: "moderate", reason: "file modification", action: "write" };
+      case "create_checkpoint":
+        return { requires: false, risk: "safe", reason: "checkpoint is safe", action: "checkpoint" };
+      case "run_command": {
+        const cmd = (args as { command?: string })?.command ?? "";
+        const cls = classifyCommand(cmd);
+        const requires = cls.requiresApproval;
+        const risk = cls.risk as "safe" | "moderate" | "high" | "critical";
+        return { requires, risk, reason: cls.reasons.join("; ") || cls.category, action: "exec" };
+      }
+      default:
+        return { requires: true, risk: "moderate", reason: "unknown tool requires approval", action: toolName };
+    }
+  }
+
+  private async gateWithApproval(
+    turnId: string,
+    toolName: string,
+    toolCallId: string,
+    approvalNeeded: { risk: "safe" | "moderate" | "high" | "critical"; reason: string; action: string },
+    adapter: WorkspaceEventAdapter,
+    signal: AbortSignal,
+  ): Promise<{ approved: boolean; state: string; reason?: string }> {
+    const turnState = this.activeTurns.get(turnId);
+    if (!turnState) return { approved: false, state: "cancelled", reason: "turn not found" };
+    if (signal.aborted) return { approved: false, state: "cancelled", reason: "turn aborted before approval" };
+
+    const previousStatus = turnState.status;
+    turnState.status = "waiting_for_approval";
+    this.activeTurns.set(turnId, turnState);
+    adapter.emitStatusChanged(previousStatus, "waiting_for_approval");
+
+    const { approvalId, promise } = this.approvalService.requestApproval({
+      turnId,
+      tool: toolName,
+      action: approvalNeeded.action,
+      description: `${toolName}: ${approvalNeeded.reason}`,
+      risk: approvalNeeded.risk,
+      scope: this.workspacePath,
+      signal,
+    });
+
+    // Emit approval requested for UI
+    adapter.emitApprovalRequested(approvalId, toolName, approvalNeeded.action, `${toolName}: ${approvalNeeded.reason}`, approvalNeeded.risk, this.workspacePath);
+
+    // Legacy map for HTTP handler compatibility
+    const legacyResolveHolder: { decision?: string } = {};
+    const legacyPromise = new Promise<string>((resolve) => {
+      this.pendingApprovals.set(approvalId, {
+        approvalId,
+        tool: toolName,
+        action: approvalNeeded.action,
+        description: `${toolName}: ${approvalNeeded.reason}`,
+        risk: approvalNeeded.risk,
+        scope: this.workspacePath,
+        resolve: (decision) => {
+          legacyResolveHolder.decision = decision;
+          resolve(decision);
+        },
+      });
+    });
+
+    // Race the service promise vs legacy resolution via HTTP
+    // The service promise resolves via ApprovalService.resolve(); legacy also needs bridging
+    // We bridge by having resolveApproval call service.resolve which fulfills promise.
+    // So just await service promise; but also need to handle signal cancellation already wired inside service.
+    const result = await promise;
+
+    // Cleanup legacy entry if still present
+    this.pendingApprovals.delete(approvalId);
+
+    // Transition turn back to running if not cancelled
+    const currentTurn = this.activeTurns.get(turnId);
+    if (currentTurn && currentTurn.status === "waiting_for_approval") {
+      if (result.approved) {
+        currentTurn.status = "running";
+        this.activeTurns.set(turnId, currentTurn);
+        adapter.emitStatusChanged("waiting_for_approval", "running");
+      } else if (result.state === "rejected") {
+        currentTurn.status = "running";
+        this.activeTurns.set(turnId, currentTurn);
+        adapter.emitStatusChanged("waiting_for_approval", "running");
+      } else if (result.state === "expired") {
+        currentTurn.status = "running";
+        this.activeTurns.set(turnId, currentTurn);
+        adapter.emitStatusChanged("waiting_for_approval", "running");
+      } else if (result.state === "cancelled") {
+        // Turn cancelled elsewhere; leave status as cancelled if already set
+        const latest = this.activeTurns.get(turnId);
+        if (latest && latest.status === "waiting_for_approval") {
+          // No active cancellation recorded, revert to running so caller sees cancel message
+          // but do not resurrect a truly cancelled turn
+        }
+      }
+    }
+
+    return result as { approved: boolean; state: string; reason?: string };
+  }
+
   private validatePath(requestedPath: string): { valid: boolean; resolvedPath?: string; error?: string } {
-    // Symlink/junction-aware containment check shared by all workspace tools.
     return resolveWithinWorkspace(this.workspacePath ?? "", requestedPath);
   }
 
@@ -806,25 +1055,26 @@ export class AgentRuntime {
       if (!stats.isFile()) {
         return `Error: Not a file: ${filePath}`;
       }
-      if (stats.size > MAX_FILE_READ_BYTES * 4) {
-        // early guard for huge files — still read but will truncate; avoid OOM for multi-MB
-      }
       const raw = fs.readFileSync(resolvedPath, "utf-8");
-      // binary detection: null byte
       if (raw.includes("\0")) {
         adapter.emitFileRead(crypto.randomUUID(), filePath, 0);
         return `Error: Binary file not displayed: ${filePath}`;
       }
+      const hash = sha256(raw);
       const lines = raw.split("\n").length;
       adapter.emitFileRead(crypto.randomUUID(), filePath, lines);
+      let content = raw;
+      let truncatedNotice = "";
       if (raw.split("\n").length > MAX_FILE_READ_LINES || Buffer.byteLength(raw, "utf-8") > MAX_FILE_READ_BYTES) {
         const truncated = raw.split("\n").slice(0, MAX_FILE_READ_LINES).join("\n");
         const bounded = Buffer.byteLength(truncated, "utf-8") > MAX_FILE_READ_BYTES
           ? Buffer.from(truncated, "utf-8").subarray(0, MAX_FILE_READ_BYTES).toString("utf-8")
           : truncated;
-        return `${bounded}\n[TRUNCATED: file exceeded ${MAX_FILE_READ_LINES} lines / ${MAX_FILE_READ_BYTES} bytes; showing first ${MAX_FILE_READ_LINES} lines]`;
+        content = bounded;
+        truncatedNotice = `\n[TRUNCATED: file exceeded ${MAX_FILE_READ_LINES} lines / ${MAX_FILE_READ_BYTES} bytes; showing first ${MAX_FILE_READ_LINES} lines]`;
       }
-      return raw;
+      const safeContent = redactSecrets(content);
+      return `${safeContent}${truncatedNotice}\n[hash:${hash}]`;
     } catch (error) {
       return `Error reading file: ${error instanceof Error ? error.message : String(error)}`;
     }
@@ -849,8 +1099,15 @@ export class AgentRuntime {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-
-      fs.writeFileSync(resolvedPath, content, "utf-8");
+      // Atomic write
+      const tmpName = `.cf-tmp-${crypto.randomUUID()}-${path.basename(resolvedPath)}`;
+      const tmpPath = path.join(dir, tmpName);
+      try {
+        fs.writeFileSync(tmpPath, content, "utf-8");
+        fs.renameSync(tmpPath, resolvedPath);
+      } finally {
+        try { fs.unlinkSync(tmpPath); } catch {}
+      }
       adapter.emitFileWritten(crypto.randomUUID(), filePath, content.length);
       return `Successfully wrote ${content.length} characters to ${filePath}`;
     } catch (error) {
@@ -887,7 +1144,8 @@ export class AgentRuntime {
         const rel = path.relative(resolvedPath, f);
         return fs.statSync(f).isDirectory() ? `${rel}/` : rel;
       });
-      return boundedListOutput(rels, MAX_LIST_FILES_ENTRIES);
+      const out = boundedListOutput(rels, MAX_LIST_FILES_ENTRIES);
+      return redactSecrets(out);
     } catch (error) {
       return `Error listing files: ${error instanceof Error ? error.message : String(error)}`;
     }
@@ -935,10 +1193,19 @@ export class AgentRuntime {
     }
 
     return new Promise((resolve) => {
+      let settled = false;
+      const safeResolve = (val: string) => {
+        if (!settled) {
+          settled = true;
+          resolve(val);
+        }
+      };
       const proc = spawn(command, [], {
         cwd: workDir.resolvedPath,
         shell: true,
         timeout: 60000,
+        env: getSanitizedEnvForChild(),
+        windowsHide: true,
       });
 
       let stdout = "";
@@ -953,20 +1220,112 @@ export class AgentRuntime {
       });
 
       proc.on("close", (code) => {
+        if (signal.aborted) {
+          safeResolve("[Command aborted]");
+          return;
+        }
         const output = stdout || stderr || "(no output)";
-        adapter.emitCommandExecuted(crypto.randomUUID(), command, output, code ?? 0);
-        resolve(`Exit code: ${code ?? 0}\n${output}`);
+        const sanitized = redactSecrets(output);
+        const truncated = Buffer.byteLength(sanitized, "utf-8") > MAX_COMMAND_OUTPUT_BYTES
+          ? truncateOutput(sanitized, MAX_COMMAND_OUTPUT_BYTES, "command")
+          : sanitized;
+        adapter.emitCommandExecuted(crypto.randomUUID(), command, truncated, code ?? 0);
+        safeResolve(`Exit code: ${code ?? 0}\n${truncated}`);
       });
 
       proc.on("error", (error) => {
-        resolve(`Error executing command: ${error.message}`);
+        safeResolve(`Error executing command: ${redactSecrets(error.message)}`);
       });
 
-      signal.addEventListener("abort", () => {
-        proc.kill();
-        resolve("[Command aborted]");
-      });
+      const abortHandler = (): void => {
+        try { proc.kill(); } catch {}
+        safeResolve("[Command aborted]");
+      };
+      if (signal.aborted) {
+        abortHandler();
+      } else {
+        signal.addEventListener("abort", abortHandler, { once: true });
+        proc.on("close", () => signal.removeEventListener("abort", abortHandler));
+      }
     });
+  }
+
+  private async executeSearch(
+    query: string,
+    regex: boolean | undefined,
+    caseSensitive: boolean | undefined,
+    maxMatches: number | undefined,
+    adapter: WorkspaceEventAdapter,
+    signal: AbortSignal,
+  ): Promise<string> {
+    if (!this.workspacePath) return "Error: No workspace path configured";
+    try {
+      const result = await searchWorkspace({
+        query,
+        regex: regex ?? false,
+        caseSensitive: caseSensitive ?? false,
+        maxMatches: Math.min(maxMatches ?? 500, 500),
+        workspacePath: this.workspacePath,
+        signal,
+        timeoutMs: 8000,
+      });
+      const header = `Found ${result.matches.length} matches (${result.filesScanned} files scanned${result.truncated ? `, truncated: ${result.reason}` : ""})`;
+      const lines = result.matches.map((m) => `${m.file}:${m.line}:${m.column}: ${m.preview}`);
+      const out = [header, ...lines].join("\n");
+      const bounded = Buffer.byteLength(out, "utf-8") > MAX_COMMAND_OUTPUT_BYTES
+        ? truncateOutput(out, MAX_COMMAND_OUTPUT_BYTES, "search")
+        : out;
+      return redactSecrets(bounded);
+    } catch (e) {
+      return `Error searching: ${e instanceof Error ? e.message : String(e)}`;
+    }
+  }
+
+  private async executeEditFile(
+    filePath: string,
+    oldText: string,
+    newText: string,
+    expectedOccurrences: number | undefined,
+    expectedHash: string | undefined,
+    adapter: WorkspaceEventAdapter,
+  ): Promise<string> {
+    if (!this.workspacePath) return "Error: No workspace path configured";
+    const result = replaceExact({
+      workspacePath: this.workspacePath,
+      relativePath: filePath,
+      oldText,
+      newText,
+      expectedOccurrences: expectedOccurrences ?? 1,
+      expectedHash,
+    });
+    if (!result.success) {
+      return `Error: ${redactSecrets(result.error ?? "edit failed")}\n[beforeHash:${result.beforeHash}]`;
+    }
+    adapter.emitFileWritten(crypto.randomUUID(), filePath, result.bytesWritten ?? 0);
+    const diff = result.diff ? `\nDiff:\n${result.diff}` : "";
+    return `Edited ${filePath} (before ${result.beforeHash.slice(0, 12)} -> after ${result.afterHash?.slice(0, 12)})${diff}`;
+  }
+
+  private async executeCreateCheckpoint(
+    label: string,
+    adapter: WorkspaceEventAdapter,
+  ): Promise<string> {
+    if (!this.workspacePath) return "Error: No workspace path configured";
+    if (label.length > 200) return "Error: label too long";
+    if (/[;&|`$]/.test(label)) return "Error: invalid characters in label";
+    const { CheckpointService } = await import("./checkpoint-service.js");
+    const svc = new CheckpointService(this.workspacePath);
+    try {
+      const cp = await svc.createCheckpoint({
+        checkpointId: crypto.randomUUID(),
+        label,
+        workspaceRoot: this.workspacePath,
+        adapter,
+      });
+      return `Checkpoint created: ${cp.checkpointId} (${cp.ref}) label="${label}"`;
+    } catch (e) {
+      return `Error creating checkpoint: ${e instanceof Error ? e.message : String(e)}`;
+    }
   }
 
   private persistTurn(state: TurnState): void {
@@ -984,6 +1343,10 @@ export class AgentRuntime {
   }
 
   private findTurnByApproval(approvalId: string): TurnState | undefined {
+    return Array.from(this.activeTurns.values()).find((t) => t.status === "waiting_for_approval");
+  }
+
+  private findTurnByApprovalRecord(_rec: ApprovalRecord): TurnState | undefined {
     return Array.from(this.activeTurns.values()).find((t) => t.status === "waiting_for_approval");
   }
 
