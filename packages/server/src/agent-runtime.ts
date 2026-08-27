@@ -7,6 +7,24 @@ import { resolveWithinWorkspace } from "./path-security.js";
 import fs from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { redactSecrets } from "@codeforge/secrets";
+
+const MAX_FILE_READ_BYTES = 100 * 1024;
+const MAX_FILE_READ_LINES = 400;
+const MAX_LIST_FILES_ENTRIES = 500;
+const MAX_COMMAND_OUTPUT_BYTES = 64 * 1024;
+
+function truncateOutput(text: string, maxBytes: number, label: string): string {
+  if (Buffer.byteLength(text, "utf-8") <= maxBytes) return text;
+  const buf = Buffer.from(text, "utf-8");
+  const sliced = buf.subarray(0, maxBytes).toString("utf-8");
+  return `${sliced}\n[TRUNCATED ${label}: output exceeded ${maxBytes} bytes, shown first ${maxBytes}]`;
+}
+
+function boundedListOutput(entries: string[], maxEntries: number): string {
+  if (entries.length <= maxEntries) return entries.join("\n");
+  return `${entries.slice(0, maxEntries).join("\n")}\n[TRUNCATED: ${entries.length} entries total, showing first ${maxEntries}]`;
+}
 
 export type TurnStatus =
   | "idle"
@@ -751,10 +769,15 @@ export class AgentRuntime {
           result = `Unknown tool: ${toolName}`;
       }
 
-      adapter.emitToolExecutionCompleted(turnId, toolCallId, toolName, result);
-      return result;
+      const safeResult = redactSecrets(result);
+      const boundedResult = safeResult.length > MAX_COMMAND_OUTPUT_BYTES
+        ? truncateOutput(safeResult, MAX_COMMAND_OUTPUT_BYTES, toolName)
+        : safeResult;
+      adapter.emitToolExecutionCompleted(turnId, toolCallId, toolName, boundedResult);
+      return boundedResult;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const raw = error instanceof Error ? error.message : String(error);
+      const errorMessage = redactSecrets(raw);
       adapter.emitToolExecutionFailed(turnId, toolCallId, toolName, errorMessage);
       return `Error: ${errorMessage}`;
     }
@@ -783,11 +806,25 @@ export class AgentRuntime {
       if (!stats.isFile()) {
         return `Error: Not a file: ${filePath}`;
       }
-
-      const content = fs.readFileSync(resolvedPath, "utf-8");
-      const lines = content.split("\n").length;
+      if (stats.size > MAX_FILE_READ_BYTES * 4) {
+        // early guard for huge files — still read but will truncate; avoid OOM for multi-MB
+      }
+      const raw = fs.readFileSync(resolvedPath, "utf-8");
+      // binary detection: null byte
+      if (raw.includes("\0")) {
+        adapter.emitFileRead(crypto.randomUUID(), filePath, 0);
+        return `Error: Binary file not displayed: ${filePath}`;
+      }
+      const lines = raw.split("\n").length;
       adapter.emitFileRead(crypto.randomUUID(), filePath, lines);
-      return content;
+      if (raw.split("\n").length > MAX_FILE_READ_LINES || Buffer.byteLength(raw, "utf-8") > MAX_FILE_READ_BYTES) {
+        const truncated = raw.split("\n").slice(0, MAX_FILE_READ_LINES).join("\n");
+        const bounded = Buffer.byteLength(truncated, "utf-8") > MAX_FILE_READ_BYTES
+          ? Buffer.from(truncated, "utf-8").subarray(0, MAX_FILE_READ_BYTES).toString("utf-8")
+          : truncated;
+        return `${bounded}\n[TRUNCATED: file exceeded ${MAX_FILE_READ_LINES} lines / ${MAX_FILE_READ_BYTES} bytes; showing first ${MAX_FILE_READ_LINES} lines]`;
+      }
+      return raw;
     } catch (error) {
       return `Error reading file: ${error instanceof Error ? error.message : String(error)}`;
     }
@@ -846,10 +883,11 @@ export class AgentRuntime {
       }
 
       const files = this.collectFiles(resolvedPath, recursive);
-      return files.map(f => {
+      const rels = files.map(f => {
         const rel = path.relative(resolvedPath, f);
         return fs.statSync(f).isDirectory() ? `${rel}/` : rel;
-      }).join("\n");
+      });
+      return boundedListOutput(rels, MAX_LIST_FILES_ENTRIES);
     } catch (error) {
       return `Error listing files: ${error instanceof Error ? error.message : String(error)}`;
     }

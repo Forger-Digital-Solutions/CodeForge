@@ -609,6 +609,11 @@ export class CodeForgeServer {
         }
         resolvedRoot = containment.resolvedPath;
       } else {
+        if (!this.activeWorkspacePath && requestedPath) {
+          res.writeHead(403, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "Workspace must be set before browsing filesystem" }));
+          return;
+        }
         resolvedRoot = path.resolve(workspaceRoot);
       }
 
