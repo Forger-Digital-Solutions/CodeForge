@@ -843,8 +843,29 @@ export class CodeForgeServer {
     let safePath = decodeURIComponent(filePath);
     if (safePath === "/" || safePath === "") safePath = "/index.html";
 
-    const fullPath = path.join(this.webDist, safePath);
-    if (!fullPath.startsWith(this.webDist)) {
+    // Canonical containment: resolve + realpath to prevent prefix collision and symlink escape
+    const webReal = (() => {
+      try { return fs.realpathSync(this.webDist); } catch { return path.resolve(this.webDist); }
+    })();
+    const fullPath = path.resolve(path.join(webReal, safePath));
+    const effective = (() => {
+      try { return fs.realpathSync(fullPath); } catch {
+        // File may not exist yet — check parent chain
+        let cur = fullPath;
+        for (;;) {
+          try { return fs.realpathSync(cur); } catch {
+            const parent = path.dirname(cur);
+            if (parent === cur) return fullPath;
+            cur = parent;
+          }
+        }
+      }
+    })();
+    const rel = path.relative(webReal, effective);
+    const escapes = rel === ".." || rel.startsWith(".." + path.sep) || path.isAbsolute(rel);
+    const lexicalRel = path.relative(webReal, fullPath);
+    const lexicalEscapes = lexicalRel === ".." || lexicalRel.startsWith(".." + path.sep) || path.isAbsolute(lexicalRel);
+    if (escapes || lexicalEscapes) {
       res.writeHead(403);
       res.end("Forbidden");
       return;

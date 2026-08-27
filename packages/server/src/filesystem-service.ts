@@ -1,7 +1,10 @@
 import fs from "node:fs/promises";
+import fsSync from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { resolveWithinWorkspace } from "./path-security.js";
+import { redactSecrets } from "@codeforge/secrets";
 
 export interface FileChange {
   changeId: string;
@@ -109,14 +112,13 @@ export class FileSystemService {
     const absolutePath = this.resolvePath(change.path);
 
     try {
-      // Ensure directory exists
       const dir = path.dirname(absolutePath);
       await fs.mkdir(dir, { recursive: true });
 
       if (change.changeType === "deleted") {
         await fs.unlink(absolutePath);
       } else if (change.content !== undefined) {
-        await fs.writeFile(absolutePath, change.content, "utf-8");
+        await this.atomicWrite(absolutePath, change.content);
       }
 
       this.adapter.emitFileChangeApplied(changeId, change.path);
@@ -138,7 +140,7 @@ export class FileSystemService {
 
     try {
       if (change.previousContent !== undefined) {
-        await fs.writeFile(absolutePath, change.previousContent, "utf-8");
+        await this.atomicWrite(absolutePath, change.previousContent);
       } else if (change.changeType === "created") {
         await fs.unlink(absolutePath);
       }
@@ -191,6 +193,19 @@ export class FileSystemService {
     return result.resolvedPath;
   }
 
+  private async atomicWrite(targetPath: string, content: string): Promise<void> {
+    const dir = path.dirname(targetPath);
+    await fs.mkdir(dir, { recursive: true });
+    const tmpName = `.cf-tmp-${crypto.randomUUID()}-${path.basename(targetPath)}`;
+    const tmpPath = path.join(dir, tmpName);
+    await fs.writeFile(tmpPath, content, "utf-8");
+    try {
+      await fs.rename(tmpPath, targetPath);
+    } finally {
+      try { await fs.unlink(tmpPath); } catch {}
+    }
+  }
+
   private computeDiff(
     filePath: string,
     oldContent: string,
@@ -217,20 +232,24 @@ export class FileSystemService {
           inHunk = true;
         }
         if (oldLine !== undefined) {
-          diffLines.push(`-${oldLine}`);
+          diffLines.push(`-${redactSecrets(oldLine)}`);
         }
         if (newLine !== undefined) {
-          diffLines.push(`+${newLine}`);
+          diffLines.push(`+${redactSecrets(newLine)}`);
         }
       } else if (inHunk && oldLine !== undefined) {
-        diffLines.push(` ${oldLine}`);
+        diffLines.push(` ${redactSecrets(oldLine)}`);
       }
     }
 
+    let diff = diffLines.join("\n");
+    if (Buffer.byteLength(diff, "utf-8") > 32 * 1024) {
+      diff = Buffer.from(diff, "utf-8").subarray(0, 32 * 1024).toString("utf-8") + "\n[TRUNCATED diff]";
+    }
     return {
       additions,
       deletions,
-      diff: diffLines.join("\n"),
+      diff,
     };
   }
 }

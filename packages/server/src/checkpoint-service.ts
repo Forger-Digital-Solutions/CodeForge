@@ -1,10 +1,11 @@
-import { exec as execCallback } from "node:child_process";
+import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
+import { getSanitizedEnvForChild } from "./env-filter.js";
 
-const exec = promisify(execCallback);
+const execFile = promisify(execFileCallback);
 
 export interface CheckpointInfo {
   checkpointId: string;
@@ -41,9 +42,10 @@ export class CheckpointService {
       const fileCount = status.modified.length + status.untracked.length;
 
       const ref = `checkpoint-${checkpointId.slice(0, 8)}`;
+      if (!/^[a-zA-Z0-9\-_]+$/.test(ref)) throw new Error("Invalid ref");
 
-      await this.gitCommand(`stash push -m "${ref}" --include-untracked`);
-      await this.gitCommand(`branch ${ref}`);
+      await this.gitCommandArgs(["stash", "push", "-m", ref, "--include-untracked"]);
+      await this.gitCommandArgs(["branch", ref]);
 
       const checkpoint: CheckpointInfo = {
         checkpointId,
@@ -55,7 +57,7 @@ export class CheckpointService {
       };
 
       if (status.modified.length > 0 || status.untracked.length > 0) {
-        await this.gitCommand(`stash pop`);
+        await this.gitCommandArgs(["stash", "pop"]);
       }
 
       this.checkpoints.set(checkpointId, checkpoint);
@@ -96,7 +98,8 @@ export class CheckpointService {
     }
 
     try {
-      await this.gitCommand(`checkout ${checkpoint.ref}`);
+      if (!/^[a-zA-Z0-9\-_]+$/.test(checkpoint.ref)) throw new Error("Invalid checkpoint ref");
+      await this.gitCommandArgs(["checkout", checkpoint.ref]);
 
       adapter.emitCheckpointRestored(checkpointId, restoreType);
     } catch (error) {
@@ -113,8 +116,9 @@ export class CheckpointService {
     }
 
     try {
-      const { stdout: diffStat } = await this.gitCommand(
-        `diff --stat ${checkpoint.ref} HEAD`,
+      if (!/^[a-zA-Z0-9\-_]+$/.test(checkpoint.ref)) throw new Error("Invalid checkpoint ref");
+      const { stdout: diffStat } = await this.gitCommandArgs(
+        ["diff", "--stat", checkpoint.ref, "HEAD"],
         true,
       );
 
@@ -154,7 +158,7 @@ export class CheckpointService {
       return false;
     }
 
-    this.gitCommand(`branch -D ${checkpoint.ref}`).catch(() => {});
+    this.gitCommandArgs(["branch", "-D", checkpoint.ref]).catch(() => {});
 
     this.checkpoints.delete(checkpointId);
     return true;
@@ -162,8 +166,9 @@ export class CheckpointService {
 
   private async getCurrentBranch(): Promise<string> {
     try {
-      const { stdout } = await exec("git rev-parse --abbrev-ref HEAD", {
+      const { stdout } = await execFile("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
         cwd: this.workspaceRoot,
+        env: getSanitizedEnvForChild(),
       });
       return stdout.trim();
     } catch {
@@ -173,8 +178,9 @@ export class CheckpointService {
 
   private async getGitStatus(): Promise<{ branch: string; clean: boolean; modified: string[]; untracked: string[] }> {
     try {
-      const { stdout: statusOut } = await exec("git status --porcelain", {
+      const { stdout: statusOut } = await execFile("git", ["status", "--porcelain"], {
         cwd: this.workspaceRoot,
+        env: getSanitizedEnvForChild(),
       });
 
       const lines = statusOut.trim().split("\n").filter(Boolean);
@@ -210,7 +216,21 @@ export class CheckpointService {
 
   private async gitCommand(command: string, ignoreErrors = false): Promise<{ stdout: string; stderr: string }> {
     try {
-      return await exec(command, { cwd: this.workspaceRoot });
+      const parts = command.split(" ");
+      const cmd = parts[0] ?? "git";
+      const args = parts.slice(1);
+      return await execFile(cmd, args, { cwd: this.workspaceRoot, env: getSanitizedEnvForChild() });
+    } catch (error) {
+      if (ignoreErrors) {
+        return { stdout: "", stderr: "" };
+      }
+      throw error;
+    }
+  }
+
+  private async gitCommandArgs(args: string[], ignoreErrors = false): Promise<{ stdout: string; stderr: string }> {
+    try {
+      return await execFile("git", args, { cwd: this.workspaceRoot, env: getSanitizedEnvForChild() });
     } catch (error) {
       if (ignoreErrors) {
         return { stdout: "", stderr: "" };

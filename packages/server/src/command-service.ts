@@ -1,7 +1,9 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
+import { classifyCommand as classifyViaModule, type RiskLevel as ClassifierRisk } from "./command-classifier.js";
+import { getSanitizedEnvForChild } from "./env-filter.js";
 
-export type RiskLevel = "safe" | "moderate" | "high" | "critical";
+export type RiskLevel = ClassifierRisk;
 
 export interface CommandExecutionOptions {
   commandId: string;
@@ -24,48 +26,9 @@ export interface CommandResult {
 export class CommandService {
   private readonly activeProcesses: Map<string, ChildProcess> = new Map();
 
-  classifyCommand(command: string): { risk: RiskLevel; reasons: string[] } {
-    const highRiskPatterns = [
-      /rm\s+-rf/,
-      /format/,
-      /del\s+\/[sS]/,
-      /sudo/,
-      /chmod\s+777/,
-      />\s*\/dev\//,
-    ];
-
-    const moderateRiskPatterns = [
-      /npm\s+(install|i)\s+([^@]*@)?(http|git\+)/,
-      /pip\s+install\s+--editable/,
-      /curl\s+.*\|\s*(ba)?sh/,
-      /wget.*\|\s*(ba)?sh/,
-    ];
-
-    for (const pattern of highRiskPatterns) {
-      if (pattern.test(command)) {
-        return { risk: "critical", reasons: ["Potentially destructive command"] };
-      }
-    }
-
-    for (const pattern of moderateRiskPatterns) {
-      if (pattern.test(command)) {
-        return { risk: "high", reasons: ["Command may modify system state"] };
-      }
-    }
-
-    if (command.includes("npm run") || command.includes("yarn") || command.includes("pnpm")) {
-      return { risk: "moderate", reasons: ["Build/package command"] };
-    }
-
-    if (command.includes("git")) {
-      return { risk: "moderate", reasons: ["Git operation"] };
-    }
-
-    if (command.includes("ls") || command.includes("cat") || command.includes("grep")) {
-      return { risk: "safe", reasons: ["Read-only operation"] };
-    }
-
-    return { risk: "moderate", reasons: ["Unknown command risk"] };
+  classifyCommand(command: string): { risk: RiskLevel; reasons: string[]; category?: string; requiresApproval?: boolean } {
+    const c = classifyViaModule(command);
+    return { risk: c.risk, reasons: c.reasons, category: c.category, requiresApproval: c.requiresApproval };
   }
 
   async execute(options: CommandExecutionOptions): Promise<CommandResult> {
@@ -79,6 +42,7 @@ export class CommandService {
         cwd,
         shell: true,
         windowsHide: true,
+        env: getSanitizedEnvForChild(),
       });
 
       this.activeProcesses.set(commandId, childProcess);
