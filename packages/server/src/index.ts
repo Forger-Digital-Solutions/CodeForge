@@ -4,7 +4,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { WorkspaceEvent } from "@codeforge/protocol";
 import { EventStore, createSessionPersistence, type SessionRecord, type TurnRecord, type WorkItem } from "@codeforge/sessions";
-import { ForgeZero, createDevelopmentEntitlementProvider } from "@codeforge/forge-zero";
+import {
+  ForgeZero,
+  createDevelopmentEntitlementProvider,
+  createGenericFreeRecord,
+  createMuseSparkRecord,
+} from "@codeforge/forge-zero";
 import type { FreeModelRecord } from "@codeforge/forge-zero";
 import type { ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/providers";
@@ -84,35 +89,10 @@ export class CodeForgeServer {
   }
 
   private registerFreeModels(): void {
-    const model: FreeModelRecord = {
-      providerId: "codeforge",
-      modelId: "free-model-1",
-      displayName: "CodeForge Free Model",
-      freeStatus: "verified_free",
-      contextWindow: 128000,
-      capabilities: {
-        text: true,
-        coding: true,
-        toolCalling: true,
-        vision: false,
-        structuredOutput: true,
-        longContext: true,
-      },
-      costProfile: {
-        inputCostPerMillion: 0,
-        outputCostPerMillion: 0,
-        isFree: true,
-        paidFallbackPossible: false,
-        paidFallbackDisabled: true,
-        source: "official",
-      },
-      // ForgeZero.verifyProviderAccount requires an available/verified health
-      // state; without it auto-routing can never select this model.
-      health: { status: "available", lastCheckedAt: new Date().toISOString() },
-      isRemote: true,
-      isCloudHosted: true,
-    };
-    this.firewall.register(model);
+    const generic = createGenericFreeRecord();
+    this.firewall.register(generic);
+    const museSpark = createMuseSparkRecord();
+    this.firewall.register(museSpark);
   }
 
   /**

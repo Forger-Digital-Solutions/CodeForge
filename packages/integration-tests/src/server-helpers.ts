@@ -66,7 +66,7 @@ export async function sendRequest(
   }
   
   // Return the ok field from the JSON body, not the HTTP status
-  return { ok: body?.ok ?? false, status: response.status, body };
+  return { ok: (body as { ok?: boolean })?.ok ?? false, status: response.status, body };
 }
 
 /**

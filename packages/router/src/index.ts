@@ -127,12 +127,80 @@ export class ForgeRouter {
     let score = 50;
 
     const caps = model.capabilities;
+    const bp = model.benchmarkProfile;
+    const taskLower = req.taskType.toLowerCase();
+    const isAgenticTask =
+      taskLower.includes("agentic") ||
+      taskLower.includes("autonomous") ||
+      taskLower.includes("repository") ||
+      taskLower.includes("repo") ||
+      taskLower.includes("multi-file") ||
+      taskLower.includes("multi_file") ||
+      taskLower.includes("parallel") ||
+      taskLower.includes("subtask") ||
+      taskLower.includes("debugging") ||
+      taskLower.includes("iterative") ||
+      taskLower.includes("long-running") ||
+      taskLower.includes("architecture") ||
+      taskLower.includes("long_horizon") ||
+      taskLower.includes("long-horizon");
+
+    const isSimpleTask =
+      taskLower === "simple" ||
+      taskLower === "text" ||
+      (req.estimatedContextTokens < 4000 &&
+        req.requiredCapabilities.length === 1 &&
+        req.requiredCapabilities[0] === "text");
+
     if (req.requiredCapabilities.includes("coding") && caps.coding) score += 15;
     if (req.requiredCapabilities.includes("toolCalling") && caps.toolCalling) score += 10;
     if (req.estimatedContextTokens > 32000 && caps.longContext) score += 10;
 
     if (model.contextWindow) {
       if (model.contextWindow >= req.estimatedContextTokens * 2) score += 5;
+      if (model.contextWindow >= 200000 && req.estimatedContextTokens > 50000) score += 5;
+    }
+
+    if (bp) {
+      if (req.requiredCapabilities.includes("coding") && bp.coding !== undefined) {
+        score += Math.round(bp.coding * 0.2);
+      }
+      if (req.requiredCapabilities.includes("toolCalling") && bp.toolCalling !== undefined) {
+        score += Math.round(bp.toolCalling * 0.15);
+      }
+      const needsLongContext =
+        req.requiredCapabilities.includes("longContext") || req.estimatedContextTokens > 32000;
+      if (needsLongContext && bp.longContext !== undefined) {
+        score += Math.round(bp.longContext * 0.15);
+      }
+      if (isAgenticTask && bp.reasoning !== undefined) {
+        score += Math.round(bp.reasoning * 0.15);
+      }
+      if (isAgenticTask && bp.coding !== undefined) {
+        score += Math.round(bp.coding * 0.05);
+      }
+      if (isSimpleTask && bp.speed !== undefined) {
+        score += Math.round(bp.speed * 0.2);
+      }
+      if (req.preferredTraits) {
+        for (const [trait, weight] of Object.entries(req.preferredTraits)) {
+          const val =
+            trait === "coding"
+              ? bp.coding
+              : trait === "toolCalling"
+                ? bp.toolCalling
+                : trait === "reasoning"
+                  ? bp.reasoning
+                  : trait === "longContext"
+                    ? bp.longContext
+                    : trait === "speed"
+                      ? bp.speed
+                      : undefined;
+          if (val !== undefined) {
+            score += Math.round(val * 0.1 * weight);
+          }
+        }
+      }
     }
 
     return score;
@@ -140,12 +208,37 @@ export class ForgeRouter {
 
   private getReasons(model: FreeModelRecord, req: RoutingRequest): string[] {
     const reasons: string[] = [];
+    const bp = model.benchmarkProfile;
+    const taskLower = req.taskType.toLowerCase();
+    const isAgenticTask =
+      taskLower.includes("agentic") ||
+      taskLower.includes("autonomous") ||
+      taskLower.includes("repository") ||
+      taskLower.includes("repo");
 
     if (model.capabilities.coding) reasons.push("coding_capable");
     if (model.capabilities.toolCalling) reasons.push("tool_calling");
     if (model.capabilities.longContext) reasons.push("long_context");
     if (model.contextWindow && model.contextWindow >= req.estimatedContextTokens * 2) {
       reasons.push("sufficient_context");
+    }
+    if (bp?.coding !== undefined && bp.coding >= 85 && req.requiredCapabilities.includes("coding")) {
+      reasons.push("high_coding_score");
+    }
+    if (bp?.toolCalling !== undefined && bp.toolCalling >= 85 && req.requiredCapabilities.includes("toolCalling")) {
+      reasons.push("strong_tool_use");
+    }
+    if (bp?.longContext !== undefined && bp.longContext >= 85 && (req.estimatedContextTokens > 32000 || req.requiredCapabilities.includes("longContext"))) {
+      reasons.push("long_context_optimized");
+    }
+    if (bp?.reasoning !== undefined && bp.reasoning >= 85 && isAgenticTask) {
+      reasons.push("agentic_capable");
+    }
+    if (model.contextWindow && model.contextWindow >= 200000) {
+      reasons.push("large_context_window");
+    }
+    if (model.modelId.includes("muse-spark")) {
+      reasons.push("muse_spark_selected");
     }
 
     return reasons;

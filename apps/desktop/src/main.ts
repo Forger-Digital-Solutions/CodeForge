@@ -2,8 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { CodeForgeServer } from "@codeforge/server";
-import type { FreeModelRecord } from "@codeforge/forge-zero";
-import { ForgeZero } from "@codeforge/forge-zero";
+import { ForgeZero, createGenericFreeRecord, createMuseSparkRecord } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog } from "@codeforge/providers";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -75,32 +74,8 @@ async function initializeServer(dbPath: string): Promise<void> {
 }
 
 function registerFreeModels(fw: ForgeZero): void {
-  const model: FreeModelRecord = {
-    providerId: "codeforge",
-    modelId: "free-model-1",
-    displayName: "CodeForge Free Model",
-    freeStatus: "verified_free",
-    contextWindow: 128000,
-    capabilities: {
-      text: true,
-      coding: true,
-      toolCalling: true,
-      vision: false,
-      structuredOutput: true,
-      longContext: true,
-    },
-    costProfile: {
-      inputCostPerMillion: 0,
-      outputCostPerMillion: 0,
-      isFree: true,
-      paidFallbackPossible: false,
-      paidFallbackDisabled: true,
-      source: "official",
-    },
-    isRemote: true,
-    isCloudHosted: true,
-  };
-  fw.register(model);
+  fw.register(createGenericFreeRecord());
+  fw.register(createMuseSparkRecord());
 }
 
 function createWindow(): void {
