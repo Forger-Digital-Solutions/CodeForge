@@ -17,7 +17,7 @@ export interface WorkspaceAppProps {
 }
 
 export default function WorkspaceApp({ sseUrl, onSendMessage }: WorkspaceAppProps) {
-  const { state, setState, sendMessage, approve, answerQuestion } = useWorkspaceSSE(sseUrl ?? "/api/events");
+  const { state, setState, sendMessage, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn } = useWorkspaceSSE(sseUrl ?? "/api/events");
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   const commands: Command[] = [
@@ -77,7 +77,13 @@ export default function WorkspaceApp({ sseUrl, onSendMessage }: WorkspaceAppProp
       label: "Stop Agent",
       description: "Stop the current agent run",
       icon: "⏹",
-      action: () => {},
+      action: () => {
+        // Stop the current running turn
+        const activeTurn = state.turns.find((t) => t.status === "running");
+        if (activeTurn && state.session) {
+          stopTurn(state.session.id, activeTurn.id);
+        }
+      },
       shortcut: "Esc",
     },
   ];
@@ -153,9 +159,27 @@ export default function WorkspaceApp({ sseUrl, onSendMessage }: WorkspaceAppProp
         placeholder={placeholder}
         onSend={handleSend}
         onSteer={(msg) => handleSend(msg, true)}
-        onStop={() => {}}
-        onPause={() => {}}
-        onResume={() => {}}
+        onStop={() => {
+          // Stop the current running turn
+          const activeTurn = state.turns.find((t) => t.status === "running");
+          if (activeTurn && state.session) {
+            stopTurn(state.session.id, activeTurn.id);
+          }
+        }}
+        onPause={() => {
+          // Pause the current running turn
+          const activeTurn = state.turns.find((t) => t.status === "running");
+          if (activeTurn && state.session) {
+            pauseTurn(state.session.id, activeTurn.id);
+          }
+        }}
+        onResume={() => {
+          // Resume the current paused turn
+          const pausedTurn = state.turns.find((t) => t.status === "paused");
+          if (pausedTurn && state.session) {
+            resumeTurn(state.session.id, pausedTurn.id);
+          }
+        }}
         onBackground={() => setState((prev) => ({ ...prev, leftNav: "agents" }))}
         isRunning={state.isRunning}
         isPaused={state.isPaused}

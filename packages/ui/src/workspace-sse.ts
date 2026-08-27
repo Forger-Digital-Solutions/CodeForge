@@ -213,11 +213,62 @@ export function useWorkspaceSSE(url: string) {
     [state.pendingQuestion, url]
   );
 
+  const stopTurn = useCallback(
+    async (sessionId: string, turnId: string) => {
+      const endpoint = resolveApiPath(url, `/api/sessions/${sessionId}/turns/${turnId}/cancel`);
+      try {
+        await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason: "User stopped" }),
+        });
+      } catch {
+        // network error; SSE will reconnect and state remains consistent
+      }
+    },
+    [url]
+  );
+
+  const pauseTurn = useCallback(
+    async (sessionId: string, turnId: string) => {
+      const endpoint = resolveApiPath(url, `/api/sessions/${sessionId}/turns/${turnId}/pause`);
+      try {
+        await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      } catch {
+        // network error; SSE will reconnect and state remains consistent
+      }
+    },
+    [url]
+  );
+
+  const resumeTurn = useCallback(
+    async (sessionId: string, turnId: string) => {
+      const endpoint = resolveApiPath(url, `/api/sessions/${sessionId}/turns/${turnId}/resume`);
+      try {
+        await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      } catch {
+        // network error; SSE will reconnect and state remains consistent
+      }
+    },
+    [url]
+  );
+
   return {
     state,
     setState,
     sendMessage,
     approve,
     answerQuestion,
+    stopTurn,
+    pauseTurn,
+    resumeTurn,
   };
 }
