@@ -2,7 +2,7 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { WorkspaceEvent } from "@codeforge/protocol";
+import { isWorkspaceEvent, type WorkspaceEvent } from "@codeforge/protocol";
 import { EventStore, createSessionPersistence, type SessionRecord, type TurnRecord, type WorkItem } from "@codeforge/sessions";
 import {
   ForgeZero,
@@ -52,6 +52,11 @@ export class CodeForgeServer {
       options.dbPath ? { dbPath: options.dbPath } : undefined,
     );
     this.eventStore = new EventStore();
+    const persistedEvents = this.persistence
+      .listSessions()
+      .flatMap((session) => this.persistence.getEvents(session.id))
+      .filter(isWorkspaceEvent);
+    this.eventStore.hydrate(persistedEvents);
     // Development scaffold: deterministic entitlement scenarios until the real
     // entitlement service exists. GEMS access still fails closed.
     this.firewall = options.firewall ?? new ForgeZero({
@@ -631,36 +636,33 @@ export class CodeForgeServer {
     });
   }
 
+  public setWorkspace(workspacePath: string): void {
+    if (!fs.existsSync(workspacePath)) {
+      throw new Error("Workspace path does not exist");
+    }
+    const stats = fs.statSync(workspacePath);
+    if (!stats.isDirectory()) {
+      throw new Error("Workspace path is not a directory");
+    }
+    this.activeWorkspacePath = workspacePath;
+    this.workflowService.setWorkspacePath(workspacePath);
+    this.runtimes.clear();
+  }
+
   private handleSetWorkspace(req: http.IncomingMessage, res: http.ServerResponse): void {
     let body = "";
     req.on("data", (chunk) => { body += chunk; });
     req.on("end", () => {
       try {
         const data = JSON.parse(body);
-        const workspacePath = data.path;
-        
-        if (!workspacePath || typeof workspacePath !== "string") {
+        const workspacePath = typeof data.path === "string" ? data.path : "";
+        if (!workspacePath) {
           res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-          res.end(JSON.stringify({ error: "Invalid workspace path" }));
+          res.end(JSON.stringify({ error: "path required" }));
           return;
         }
 
-        if (!fs.existsSync(workspacePath)) {
-          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-          res.end(JSON.stringify({ error: "Workspace path does not exist" }));
-          return;
-        }
-
-        const stats = fs.statSync(workspacePath);
-        if (!stats.isDirectory()) {
-          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-          res.end(JSON.stringify({ error: "Workspace path is not a directory" }));
-          return;
-        }
-
-        this.activeWorkspacePath = workspacePath;
-        this.workflowService.setWorkspacePath(workspacePath);
-        this.runtimes.clear();
+        this.setWorkspace(workspacePath);
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
         res.end(JSON.stringify({ ok: true, path: workspacePath }));
       } catch (error) {
@@ -694,6 +696,7 @@ export class CodeForgeServer {
           message,
           workspacePath,
           verificationCommands: Array.isArray(data.verificationCommands) ? data.verificationCommands : undefined,
+          forceHeuristic: data.forceHeuristic === true ? true : undefined,
         });
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
         res.end(JSON.stringify({ ok: true, taskId: result.taskId, turnId: result.turnId }));
@@ -987,18 +990,15 @@ export class CodeForgeServer {
     this.clients.add(res);
 
     const send = (event: WorkspaceEvent) => {
-      const data = `data: ${JSON.stringify(event)}\n\n`;
-      this.clients.forEach((client) => {
-        try { client.write(data); } catch { /* ignore */ }
-      });
+      try {
+        res.write(`id: ${event.seq}\ndata: ${JSON.stringify(event)}\n\n`);
+      } catch {
+        // The close handler owns subscription cleanup.
+      }
     };
 
-    if (lastSeq > 0) {
-      const missed = this.eventStore.getAll({ afterSeq: lastSeq });
-      missed.forEach((event) => {
-        res.write(`data: ${JSON.stringify(event)}\n\n`);
-      });
-    }
+    const missed = this.eventStore.getAll({ afterSeq: lastSeq });
+    missed.forEach(send);
 
     const unsub = this.eventStore.subscribe(send);
     res.on("close", () => {

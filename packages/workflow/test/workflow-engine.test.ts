@@ -7,6 +7,7 @@ import { createWorkflowEngine } from "../src/workflow-engine.js";
 
 describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
   let ws: string;
+  const approvePlan = async () => "allow_once" as const;
   beforeEach(async () => {
     ws = await mkdtemp(join(tmpdir(), "wf-"));
     await mkdir(join(ws, "src"), { recursive: true });
@@ -22,6 +23,7 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
       workspacePath: ws,
       sessionId: "sess-1",
       onPhaseChange: (phase) => phases.push(phase),
+      askForApproval: approvePlan,
       verificationCommands: ["node -e \"const fs=require('fs'); const c=fs.readFileSync('src/calc.ts','utf-8'); if(c.includes('a + b')){console.log('1 passed'); process.exit(0)} else {console.log('1 failed'); console.log('FAIL'); process.exit(1)}\""],
     });
 
@@ -99,6 +101,7 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
     const engine = createWorkflowEngine({
       workspacePath: ws,
       sessionId: "sess-4",
+      askForApproval: approvePlan,
       verificationCommands: ["node -e \"const c=require('fs').readFileSync('src/calc.ts','utf-8'); if(c.includes('a + b')){console.log('1 passed');} else {console.log('1 failed'); process.exit(1)}\""],
       implementer: async (step) => {
         if (step.kind === "edit" && implementCalls === 0) {
@@ -149,6 +152,7 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
     const engine = createWorkflowEngine({
       workspacePath: ws,
       sessionId: "sess-6",
+      askForApproval: approvePlan,
       verificationCommands: [
         "node -e \"const fs=require('fs'); const c=fs.readFileSync('src/calc.ts','utf-8'); if(c.includes('a + b')){console.log('1 passed'); process.exit(0)} else {console.log('1 failed'); process.exit(1)}\"",
       ],
@@ -163,6 +167,7 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
     const engine = createWorkflowEngine({
       workspacePath: ws,
       sessionId: "sess-7",
+      askForApproval: approvePlan,
       verificationCommands: ["node -e \"process.exit(0)\""],
     });
     const result = await engine.run("Fix add");
@@ -177,10 +182,55 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
     const engine = createWorkflowEngine({
       workspacePath: ws,
       sessionId: "sess-8",
+      askForApproval: approvePlan,
       verificationCommands: ["node -e \"process.exit(0)\""],
     });
     const result = await engine.run("Fix add and ensure secrets are redacted");
     expect(result.summary).not.toContain("sk-proj-1234567890");
     if (result.diffSummary) expect(result.diffSummary).not.toContain("sk-proj-1234567890");
+  });
+
+  it("simulates a long logical task through approval, model execution, repair, re-test, and completion", async () => {
+    const phases: string[] = [];
+    const events: string[] = [];
+    const invocations: string[] = [];
+    let approvals = 0;
+    const engine = createWorkflowEngine({
+      workspacePath: ws,
+      sessionId: "sess-long-task",
+      askForApproval: async () => {
+        approvals++;
+        return "allow_once";
+      },
+      onPhaseChange: (phase) => phases.push(phase),
+      onEvent: (event) => events.push(event.type),
+      verificationCommands: [
+        "node -e \"const c=require('fs').readFileSync('src/calc.ts','utf8'); if(c.includes('a + b')){console.log('1 passed')}else{console.log('1 failed');console.log('FAIL src/calc.ts');process.exit(1)}\"",
+      ],
+      agentExecutor: {
+        executePlan: async () => {
+          invocations.push("model-plan");
+          await Promise.resolve();
+          return { success: true, output: "tool proposal completed without a valid fix" };
+        },
+        executeRepair: async () => {
+          invocations.push("model-repair");
+          await writeFile(join(ws, "src", "calc.ts"), "export function add(a: number, b: number): number {\n  return a + b;\n}\n");
+          return { success: true, output: "bounded repair applied" };
+        },
+      },
+    });
+
+    const result = await engine.run("Fix add function through a long autonomous lifecycle");
+    expect(result.status).toBe("completed");
+    expect(result.summary).toContain("Repair attempts: 1");
+    expect(approvals).toBe(1);
+    expect(invocations).toEqual(["model-plan", "model-repair"]);
+    expect(phases.filter((phase) => phase === "verifying")).toHaveLength(2);
+    expect(phases).toContain("repairing");
+    expect(phases.at(-1)).toBe("completed");
+    expect(events).toContain("workflow.implementation_started");
+    expect(events).toContain("workflow.repair_attempted");
+    expect(events.length).toBeLessThan(50);
   });
 });

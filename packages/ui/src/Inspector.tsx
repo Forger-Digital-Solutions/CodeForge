@@ -1,7 +1,13 @@
 import React from "react";
 import type { SessionRecord, WorkItem, TurnRecord } from "@codeforge/sessions";
-import { isWorkItemKind } from "@codeforge/sessions";
 import FileExplorer from "./FileExplorer.js";
+
+function isWorkItemKind<K extends WorkItem["kind"]>(
+  item: WorkItem,
+  kind: K,
+): item is Extract<WorkItem, { kind: K }> {
+  return item.kind === kind;
+}
 
 interface InspectorProps {
   activeTab: string;

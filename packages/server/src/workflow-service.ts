@@ -107,13 +107,13 @@ export class WorkflowService {
     try {
       const sessions = this.persistence.listSessions();
       for (const sess of sessions) {
-        // Running/paused/waiting_for_approval status at startup indicates crash without graceful shutdown
-        if (sess.status === "running" || sess.status === "paused" || sess.status === "waiting_for_approval") {
+        const statusStr = sess.status as string;
+        const isTerminal = statusStr === "completed" || statusStr === "failed" || statusStr === "cancelled" || statusStr === "failed_safely";
+        if (!isTerminal) {
           const turns = this.persistence.getTurns(sess.id);
-          let hasActiveTurn = false;
           for (const turn of turns) {
-            if (turn.status === "running" || turn.status === "paused" || turn.status === "waiting_for_approval") {
-              hasActiveTurn = true;
+            const isTurnTerminal = turn.status === "completed" || turn.status === "failed" || turn.status === "cancelled";
+            if (!isTurnTerminal) {
               try {
                 this.persistence.upsertTurn({
                   ...turn,
@@ -124,25 +124,24 @@ export class WorkflowService {
               } catch {}
             }
           }
-          if (hasActiveTurn) {
+          try {
+            this.persistence.upsertSession({
+              ...sess,
+              status: "failed",
+              updatedAt: new Date().toISOString(),
+            });
             try {
-              this.persistence.upsertSession({
-                ...sess,
-                status: "failed",
-                updatedAt: new Date().toISOString(),
-              });
-              // Also emit a synthetic event for history honesty if possible
-              try {
-                this.persistence.appendEvent({
-                  type: "task.state_changed",
-                  timestamp: new Date().toISOString(),
-                  seq: this.eventStore.getLastSeq() + 1,
-                  sessionId: sess.id,
-                  payload: { taskId: sess.id, from: "running", to: "failed_safely", reason: "recovery_required" },
-                });
-              } catch {}
+              const recoveryEvent = {
+                type: "task.state_changed",
+                timestamp: new Date().toISOString(),
+                seq: this.eventStore.getLastSeq() + 1,
+                sessionId: sess.id,
+                payload: { taskId: sess.id, from: sess.status, to: "failed_safely", reason: "recovery_required" },
+              } as const;
+              this.eventStore.append(recoveryEvent as any);
+              this.persistence.appendEvent(recoveryEvent);
             } catch {}
-          }
+          } catch {}
         }
       }
     } catch {}

@@ -100,8 +100,8 @@ function openBetterSqlite3(dbPath: string): SQLiteDatabase {
       const stmt = raw.prepare(sql);
       return {
         run: (params) => stmt.run(toBetterParams(params)),
-        get: (params) => stmt.get(toBetterParams(params)),
-        all: (params) => stmt.all(toBetterParams(params)),
+        get: (params) => stmt.get(toBetterParams(params)) as Record<string, SQLiteValue> | undefined,
+        all: (params) => stmt.all(toBetterParams(params)) as Array<Record<string, SQLiteValue>>,
       };
     },
     close: () => raw.close(),
@@ -134,4 +134,3 @@ export function openSqliteDatabase(
     }
   }
 }
-

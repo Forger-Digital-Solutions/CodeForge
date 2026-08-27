@@ -9,6 +9,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { redactSecrets } from "@codeforge/secrets";
+import { prepareShellCommand, terminateProcessTree } from "@codeforge/workflow";
 import { classifyCommand } from "./command-classifier.js";
 import { ApprovalService, type ApprovalRecord } from "./approval-service.js";
 import { getSanitizedEnvForChild } from "./env-filter.js";
@@ -1194,58 +1195,86 @@ export class AgentRuntime {
 
     return new Promise((resolve) => {
       let settled = false;
-      const safeResolve = (val: string) => {
-        if (!settled) {
-          settled = true;
-          resolve(val);
-        }
-      };
-      const proc = spawn(command, [], {
+      let stopReason: "timeout" | "aborted" | null = null;
+      let terminationStarted = false;
+      let prepared: ReturnType<typeof prepareShellCommand>;
+      try {
+        prepared = prepareShellCommand(command, getSanitizedEnvForChild(), workDir.resolvedPath);
+      } catch (error) {
+        resolve(`Error executing command: ${redactSecrets(error instanceof Error ? error.message : String(error))}`);
+        return;
+      }
+      const spawnOptions = {
         cwd: workDir.resolvedPath,
-        shell: true,
-        timeout: 60000,
-        env: getSanitizedEnvForChild(),
+        env: prepared.env,
         windowsHide: true,
-      });
+        detached: process.platform !== "win32",
+      };
+      const proc = prepared.shell
+        ? spawn(prepared.command, { ...spawnOptions, shell: true })
+        : spawn(prepared.command, prepared.args, { ...spawnOptions, shell: false });
 
       let stdout = "";
       let stderr = "";
+      const timeout = setTimeout(() => stop("timeout"), 60_000);
 
-      proc.stdout.on("data", (data) => {
-        stdout += data.toString();
-      });
+      const cleanup = (): void => {
+        clearTimeout(timeout);
+        signal.removeEventListener("abort", abortHandler);
+      };
 
-      proc.stderr.on("data", (data) => {
-        stderr += data.toString();
-      });
-
-      proc.on("close", (code) => {
-        if (signal.aborted) {
-          safeResolve("[Command aborted]");
+      const finish = (code: number | null, error?: Error): void => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        if (error && !stopReason) {
+          resolve(`Error executing command: ${redactSecrets(error.message)}`);
           return;
         }
-        const output = stdout || stderr || "(no output)";
+        if (stopReason === "aborted") {
+          resolve("[Command aborted]");
+          return;
+        }
+        if (stopReason === "timeout") {
+          adapter.emitCommandExecuted(crypto.randomUUID(), command, "[Command timed out after 60000 ms]", 124);
+          resolve("Exit code: 124\n[Command timed out after 60000 ms]");
+          return;
+        }
+        const output = [stdout, stderr].filter(Boolean).join("\n") || "(no output)";
         const sanitized = redactSecrets(output);
         const truncated = Buffer.byteLength(sanitized, "utf-8") > MAX_COMMAND_OUTPUT_BYTES
           ? truncateOutput(sanitized, MAX_COMMAND_OUTPUT_BYTES, "command")
           : sanitized;
-        adapter.emitCommandExecuted(crypto.randomUUID(), command, truncated, code ?? 0);
-        safeResolve(`Exit code: ${code ?? 0}\n${truncated}`);
-      });
-
-      proc.on("error", (error) => {
-        safeResolve(`Error executing command: ${redactSecrets(error.message)}`);
-      });
-
-      const abortHandler = (): void => {
-        try { proc.kill(); } catch {}
-        safeResolve("[Command aborted]");
+        const exitCode = code ?? 1;
+        adapter.emitCommandExecuted(crypto.randomUUID(), command, truncated, exitCode);
+        resolve(`Exit code: ${exitCode}\n${truncated}`);
       };
+
+      const stop = (reason: "timeout" | "aborted"): void => {
+        if (settled || terminationStarted) return;
+        terminationStarted = true;
+        stopReason = reason;
+        void terminateProcessTree(proc).finally(() => {
+          setTimeout(() => finish(null), 250);
+        });
+      };
+
+      const abortHandler = (): void => stop("aborted");
+
+      proc.stdout?.on("data", (data) => {
+        stdout += data.toString();
+      });
+
+      proc.stderr?.on("data", (data) => {
+        stderr += data.toString();
+      });
+
+      proc.once("close", (code) => finish(code));
+      proc.once("error", (error) => finish(null, error));
       if (signal.aborted) {
         abortHandler();
       } else {
         signal.addEventListener("abort", abortHandler, { once: true });
-        proc.on("close", () => signal.removeEventListener("abort", abortHandler));
       }
     });
   }

@@ -4,6 +4,7 @@ export * from "./repo-inspector.js";
 export * from "./context-builder.js";
 export * from "./plan-service.js";
 export * from "./verification-service.js";
+export * from "./child-process.js";
 export * from "./failure-analyzer.js";
 export * from "./diff-review.js";
 export * from "./workflow-engine.js";

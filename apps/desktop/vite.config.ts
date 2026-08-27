@@ -11,20 +11,8 @@ export default defineConfig({
       "@codeforge/ui": path.resolve(__dirname, "../../packages/ui/src/index.ts"),
     },
   },
-  optimizeDeps: {
-    exclude: ["@codeforge/sessions"],
-  },
   build: {
     outDir: "../../dist/renderer",
     emptyOutDir: true,
-    rollupOptions: {
-      external: [
-        "node:sqlite",
-        "node:fs",
-        "node:path",
-        "node:module",
-        "@codeforge/sessions",
-      ],
-    },
   },
 });

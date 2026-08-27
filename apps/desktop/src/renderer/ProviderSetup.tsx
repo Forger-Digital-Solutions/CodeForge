@@ -1,25 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-declare global {
-  interface Window {
-    electronAPI?: {
-      selectDirectory: () => Promise<string | null>;
-      getRecentProjects: () => Promise<Array<{ id: string; path: string; name: string; lastOpened: string }>>;
-      openProject: (path: string) => Promise<{ id: string; path: string; name: string; lastOpened: string }>;
-      createProject: () => Promise<{ id: string; path: string; name: string; lastOpened: string } | null>;
-      openExternal: (url: string) => Promise<void>;
-      getVersion: () => Promise<string>;
-      getPlatform: () => Promise<string>;
-      getProviderCredentials: () => Promise<Record<string, string>>;
-      setProviderCredential: (providerId: string, apiKey: string) => Promise<void>;
-      deleteProviderCredential: (providerId: string) => Promise<void>;
-      testProviderConnection: (providerId: string) => Promise<{ status: string; error?: string }>;
-      getOnboardingCompleted: () => Promise<boolean>;
-      setOnboardingCompleted: (completed: boolean) => Promise<void>;
-    };
-  }
-}
-
 const SERVER_BASE_URL = "http://localhost:3210";
 
 interface ApiModel {
@@ -85,12 +65,12 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
     if (!window.electronAPI) return;
 
     try {
-      const credentials = await window.electronAPI.getProviderCredentials();
-      setApiKeys(credentials);
+      const credentialStatus = await window.electronAPI.getProviderCredentialStatus();
+      setApiKeys({});
 
       const states: Record<string, ProviderState> = {};
       for (const provider of PROVIDERS) {
-        const hasCred = !!credentials[provider.providerId];
+        const hasCred = credentialStatus[provider.providerId] === true;
         states[provider.providerId] = {
           status: hasCred ? "not_connected" : "missing_credential",
           hasCredential: hasCred,
@@ -100,7 +80,7 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
       
       // Refresh health for providers with credentials
       for (const provider of PROVIDERS) {
-        if (credentials[provider.providerId]) {
+        if (credentialStatus[provider.providerId]) {
           await refreshProviderHealth(provider.providerId);
         }
       }
@@ -243,7 +223,11 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
 
     setProviderStates((prev) => ({
       ...prev,
-      [providerId]: { ...prev[providerId], status: "testing" },
+      [providerId]: {
+        ...prev[providerId],
+        status: "testing",
+        hasCredential: prev[providerId]?.hasCredential ?? false,
+      },
     }));
 
     try {

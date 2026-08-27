@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, writeFile, rm, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { existsSync } from "node:fs";
+import { prepareShellCommand } from "../src/child-process.js";
 import { runCommand, runVerification } from "../src/verification-service.js";
 
 describe("VerificationService", () => {
@@ -9,7 +11,7 @@ describe("VerificationService", () => {
   beforeEach(async () => {
     ws = await mkdtemp(join(tmpdir(), "verify-"));
   });
-  afterEach(async () => { await rm(ws, { recursive: true, force: true }); });
+  afterEach(async () => { await rm(ws, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 }); });
 
   it("runs successful command", async () => {
     const result = await runCommand({ workspacePath: ws, command: "node -e \"process.exit(0)\"" });
@@ -52,5 +54,52 @@ describe("VerificationService", () => {
     await writeFile(join(ws, "package.json"), JSON.stringify({ name: "test" }));
     const result = await runVerification(ws, ["node -e \"process.exit(0)\""]);
     expect(result.exitCode).toBe(0);
+  });
+
+  it("does not depend on shell PATH to launch Node", async () => {
+    const originalPath = process.env.PATH;
+    const originalMixedPath = process.env.Path;
+    try {
+      process.env.PATH = "C:\\definitely-not-node";
+      process.env.Path = "C:\\definitely-not-node";
+      const result = await runCommand({ workspacePath: ws, command: "node -e \"process.exit(0)\"" });
+      expect(result.exitCode).toBe(0);
+    } finally {
+      process.env.PATH = originalPath;
+      if (originalMixedPath === undefined) delete process.env.Path;
+      else process.env.Path = originalMixedPath;
+    }
+  });
+
+  it("uses packaged Electron as a Node runtime without a global node executable", () => {
+    const prepared = prepareShellCommand(
+      "node -e \"process.exit(0)\"",
+      { PATH: "C:\\Windows\\System32" },
+      ws,
+      { execPath: "C:\\Program Files\\CodeForge\\CodeForge.exe", isElectron: true, platform: "win32" },
+    );
+    expect(prepared.command).toBe("C:\\Program Files\\CodeForge\\CodeForge.exe");
+    expect(prepared.shell).toBe(false);
+    expect(prepared.env.ELECTRON_RUN_AS_NODE).toBe("1");
+    expect(prepared.runtimeKind).toBe("electron-as-node");
+  });
+
+  it("reports timeout deterministically and terminates descendants", async () => {
+    await writeFile(
+      join(ws, "descendant.cjs"),
+      "const fs=require('node:fs'); setTimeout(()=>fs.writeFileSync('descendant-alive.txt','alive'),700); setTimeout(()=>{},5000);",
+    );
+    await writeFile(
+      join(ws, "parent.cjs"),
+      "const {spawn}=require('node:child_process'); spawn(process.execPath,['descendant.cjs'],{stdio:'ignore'}); setTimeout(()=>{},5000);",
+    );
+
+    const result = await runCommand({ workspacePath: ws, command: "node parent.cjs", timeoutMs: 150 });
+    expect(result.exitCode).toBe(124);
+    expect(result.timedOut).toBe(true);
+    expect(result.failed).toBeGreaterThan(0);
+    expect(result.output).toContain("timed out");
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    expect(existsSync(join(ws, "descendant-alive.txt"))).toBe(false);
   });
 });

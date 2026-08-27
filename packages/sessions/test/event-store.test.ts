@@ -164,4 +164,15 @@ describe("EventStore", () => {
     expect(store.getAll()).toHaveLength(0);
     expect(store.getLastSeq()).toBe(0);
   });
+
+  it("hydrates persisted events and continues the global sequence", () => {
+    const store = new EventStore();
+    store.hydrate([
+      makeEvent({ sessionId: "session-1", type: "turn.started", seq: 4 }),
+      makeEvent({ sessionId: "session-1", type: "turn.completed", seq: 5 }),
+    ]);
+    expect(store.getAll().map((event) => event.seq)).toEqual([4, 5]);
+    store.append(makeEvent({ sessionId: "session-1", type: "turn.started", seq: 1 }));
+    expect(store.getLastSeq()).toBe(6);
+  });
 });

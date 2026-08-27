@@ -52,6 +52,16 @@ export class EventStore {
     };
   }
 
+  hydrate(events: WorkspaceEvent[]): void {
+    const bySequence = new Map<number, WorkspaceEvent>();
+    for (const event of events) {
+      if (!Number.isSafeInteger(event.seq) || event.seq <= 0) continue;
+      bySequence.set(event.seq, event);
+    }
+    this.events = [...bySequence.values()].sort((left, right) => left.seq - right.seq);
+    this.seq = this.events.at(-1)?.seq ?? 0;
+  }
+
   clear(): void {
     this.events = [];
     this.seq = 0;

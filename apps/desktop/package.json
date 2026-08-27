@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "npm run build && electron .",
     "build": "npm run build:main && npm run build:renderer",
-    "build:main": "tsc -p tsconfig.main.json",
+    "build:main": "tsc -p tsconfig.main.json && node -e \"require('fs').copyFileSync('src/preload.cjs', 'dist/preload.cjs')\"",
     "build:renderer": "vite build",
     "build:prod": "npm run build && electron-builder",
     "pack": "npm run build && electron-builder --dir",
@@ -48,16 +48,50 @@
     "executableName": "CodeForge",
     "npmRebuild": false,
     "asarUnpack": [
-      "**/*.node",
-      "native-modules/**/*"
+      "**/*.node"
     ],
     "directories": {
+      "app": "../..",
       "output": "release"
     },
+    "extraMetadata": {
+      "name": "codeforge-desktop",
+      "version": "0.1.0",
+      "type": "module",
+      "main": "apps/desktop/dist/main.js",
+      "author": "CodeForge Team",
+      "description": "CodeForge Desktop - AI-powered coding agent for Windows"
+    },
     "files": [
-      "dist/**/*",
-      "node_modules/**/*",
-      "native-modules/**/*",
+      "apps/desktop/dist/**/*",
+      {
+        "from": "packages",
+        "to": "node_modules/@codeforge",
+        "filter": [
+          "*/dist/**/*",
+          "*/package.json",
+          "!*/dist/**/*.ts.map",
+          "!*/dist/**/*.d.ts.map"
+        ]
+      },
+      {
+        "from": "node_modules/zod",
+        "to": "node_modules/zod",
+        "filter": [
+          "**/*",
+          "!**/*.ts.map",
+          "!**/*.d.ts.map"
+        ]
+      },
+      {
+        "from": "node_modules/better-sqlite3",
+        "to": "node_modules/better-sqlite3",
+        "filter": [
+          "package.json",
+          "lib/**/*",
+          "prebuilds/**/*"
+        ]
+      },
       "package.json"
     ],
     "win": {

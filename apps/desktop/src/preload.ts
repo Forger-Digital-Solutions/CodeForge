@@ -22,9 +22,6 @@ const api = {
   getPlatform: (): Promise<string> => {
     return ipcRenderer.invoke("app:getPlatform");
   },
-  getProviderCredentials: (): Promise<Record<string, string>> => {
-    return ipcRenderer.invoke("provider:getCredentials");
-  },
   getProviderCredentialStatus: (): Promise<Record<string, boolean>> => {
     return ipcRenderer.invoke("provider:getCredentialStatus");
   },

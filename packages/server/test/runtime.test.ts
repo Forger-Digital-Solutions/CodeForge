@@ -237,9 +237,27 @@ describe("FileSystemService (in-memory)", () => {
 
 describe("CommandService", () => {
   let commandService: CommandService;
+  let tempDir: string;
+  let eventStore: EventStore;
+  let adapter: WorkspaceEventAdapter;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     commandService = createCommandService();
+    tempDir = await mkdtemp(join(tmpdir(), "codeforge-command-"));
+    eventStore = new EventStore();
+    adapter = createWorkspaceEventAdapter({
+      sessionId: "command-session",
+      eventStore,
+      persistence: {
+        appendEvent: () => {}, upsertSession: () => {}, upsertTurn: () => {},
+        getSession: () => undefined, listSessions: () => [], getTurns: () => [],
+        getWorkItems: () => [], getEvents: () => [], close: () => {},
+      } as unknown as ReturnType<typeof import("@codeforge/sessions").createSessionPersistence>,
+    });
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
   });
 
   it("should classify safe commands", () => {
@@ -255,6 +273,39 @@ describe("CommandService", () => {
   it("should classify build commands as moderate", () => {
     const result = commandService.classifyCommand("npm run build");
     expect(result.risk).toBe("moderate");
+  });
+
+  it("times out once, reports the timeout exit, and releases its active slot", async () => {
+    const result = await commandService.execute({
+      commandId: "timeout-command",
+      command: "node -e \"setTimeout(()=>{},5000)\"",
+      cwd: tempDir,
+      timeoutMs: 100,
+      adapter,
+    });
+    expect(result.exitCode).toBe(124);
+    expect(result.timedOut).toBe(true);
+    expect(result.cancelled).toBe(false);
+    expect(commandService.getActiveCommands()).toEqual([]);
+    expect(eventStore.getAll().filter((event) => event.type === "command.completed")).toHaveLength(1);
+  });
+
+  it("settles a cancel race once and does not mutate after terminal completion", async () => {
+    const pending = commandService.execute({
+      commandId: "cancel-command",
+      command: "node -e \"setTimeout(()=>{},5000)\"",
+      cwd: tempDir,
+      timeoutMs: 5_000,
+      adapter,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(commandService.cancel("cancel-command")).toBe(true);
+    const result = await pending;
+    expect(result.exitCode).toBe(130);
+    expect(result.cancelled).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(eventStore.getAll().filter((event) => event.type === "command.completed")).toHaveLength(1);
+    expect(commandService.getActiveCommands()).toEqual([]);
   });
 });
 

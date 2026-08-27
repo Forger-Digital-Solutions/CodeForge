@@ -82,6 +82,8 @@ export interface VerificationResult {
   exitCode: number;
   command: string;
   failures: Array<{ test: string; message: string; stack?: string }>;
+  timedOut?: boolean;
+  cancelled?: boolean;
 }
 
 export interface FailureAnalysis {

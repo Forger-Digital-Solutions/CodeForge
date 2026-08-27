@@ -2,20 +2,6 @@ import React, { useState, useEffect } from "react";
 import WelcomeScreen from "./WelcomeScreen.js";
 import WorkspaceShell from "./WorkspaceShell.js";
 
-declare global {
-  interface Window {
-    electronAPI?: {
-      selectDirectory: () => Promise<string | null>;
-      getRecentProjects: () => Promise<Array<{ id: string; path: string; name: string; lastOpened: string }>>;
-      openProject: (path: string) => Promise<{ id: string; path: string; name: string; lastOpened: string }>;
-      createProject: () => Promise<{ id: string; path: string; name: string; lastOpened: string } | null>;
-      openExternal: (url: string) => Promise<void>;
-      getVersion: () => Promise<string>;
-      getPlatform: () => Promise<string>;
-    };
-  }
-}
-
 export interface Project {
   id: string;
   path: string;
@@ -30,14 +16,18 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadRecentProjects();
+    loadRecentProjects(true);
   }, []);
 
-  const loadRecentProjects = async () => {
+  const loadRecentProjects = async (restoreMostRecent = false) => {
     if (window.electronAPI) {
       try {
         const recent = await window.electronAPI.getRecentProjects();
         setRecentProjects(recent);
+        if (restoreMostRecent && recent[0]) {
+          await window.electronAPI.openProject(recent[0].path);
+          setCurrentProject(recent[0]);
+        }
       } catch {
         // ignore
       }
@@ -52,9 +42,9 @@ export default function App() {
       if (projectPath) {
         project = await window.electronAPI!.openProject(projectPath);
       } else {
-        project = await window.electronAPI!.selectDirectory();
-        if (project) {
-          project = await window.electronAPI!.openProject(project);
+        const selectedPath = await window.electronAPI!.selectDirectory();
+        if (selectedPath) {
+          project = await window.electronAPI!.openProject(selectedPath);
         }
       }
       if (project) {
@@ -84,7 +74,7 @@ export default function App() {
 
   const handleCloseProject = () => {
     setCurrentProject(null);
-    loadRecentProjects();
+    loadRecentProjects(false);
   };
 
   if (currentProject) {
