@@ -41,7 +41,13 @@ npm run forge -- version
 - `docs/phase-10.6-report.md` — current implementation status (authoritative audit)
 - `docs/research/` — OpenCode/Kilo research and CodeForge architecture decisions
 
-Planned documentation (not yet written): `ARCHITECTURE.md`, `PROVIDERS.md`, `ROUTER.md`, `FULL_AUTO.md`, `GEMS_MODE.md`, `PLUGIN_API.md`.
+Planned documentation (now written):
+- `ARCHITECTURE.md` — system overview and package map
+- `PROVIDERS.md` — provider adapter interface and catalog
+- `ROUTER.md` — model selection and ForgeZero routing
+- `FULL_AUTO.md` — autonomous execution workflow
+- `GEMS_MODE.md` — GEMS premium tier entitlement
+- `PLUGIN_API.md` — plugin system architecture
 
 ## License
 

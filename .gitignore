@@ -16,3 +16,4 @@ coverage/
 !.vscode/settings.json
 .zcode/
 *.bak
+packages/vscode/.vscode-test/

@@ -45,6 +45,11 @@ export default defineConfig({
       "packages/*/src/**/*.test.ts",
       "apps/*/test/**/*.test.ts",
     ],
+    exclude: [
+      // VS Code test-electron tests must run separately (require real VS Code instance)
+      "packages/vscode/src/test/**/*",
+      "packages/vscode/test/suite/**/*",
+    ],
     globals: false,
     testTimeout: 30000,
   },

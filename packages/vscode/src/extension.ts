@@ -1,64 +1,84 @@
 // VS Code extension entry point
 import * as vscode from "vscode";
-import { CodeForgeServer } from "@codeforge/server";
 
-let server: CodeForgeServer | null = null;
+let server: unknown = null;
 
+// Server module loaded dynamically since it's ESM
+type CodeForgeServer = {
+  start: () => Promise<void>;
+  stop: () => void;
+  httpPort: number;
+};
+
+// Sync activate - VS Code expects this to return void or Promise<void>
 export function activate(context: vscode.ExtensionContext): void {
   vscode.window.showInformationMessage("Activating CodeForge extension...");
 
-  const dbPath = context.globalStorageUri.fsPath;
-
-  server = new CodeForgeServer({
-    port: 3210,
-    dbPath,
-  });
-
-  server.start().then(() => {
-    const httpPort = server?.httpPort;
-    if (httpPort) {
-      vscode.window.showInformationMessage(`CodeForge server started on port ${httpPort}`);
-    }
-  }).catch((error: unknown) => {
-    vscode.window.showErrorMessage(
-      `Failed to start CodeForge server: ${error instanceof Error ? error.message : String(error)}`
-    );
-  });
-
+  // Register commands synchronously
   context.subscriptions.push(
     vscode.commands.registerCommand("codeforge.startSession", startSession)
   );
-
   context.subscriptions.push(
     vscode.commands.registerCommand("codeforge.sendMessage", sendMessage)
   );
-
   context.subscriptions.push(
     vscode.commands.registerCommand("codeforge.openWebview", () => openWebview(context))
   );
-
   context.subscriptions.push(
     vscode.commands.registerCommand("codeforge.stopServer", stopServer)
   );
+
+  vscode.window.showInformationMessage("Commands registered successfully");
+
+  // Load server module dynamically (ESM from CJS context)
+  initializeServer(context).catch((error: unknown) => {
+    vscode.window.showErrorMessage(
+      `Failed to initialize server: ${error instanceof Error ? error.message : String(error)}`
+    );
+  });
+}
+
+async function initializeServer(context: vscode.ExtensionContext): Promise<void> {
+  vscode.window.showInformationMessage("Loading server module...");
+  
+  const dbPath = context.globalStorageUri.fsPath;
+
+  // Dynamic import of ESM module from extension (CommonJS context)
+  const { CodeForgeServer } = await import("@codeforge/server");
+  
+  const serverInstance: CodeForgeServer = new CodeForgeServer({
+    port: 3210,
+    dbPath,
+  });
+  server = serverInstance;
+
+  vscode.window.showInformationMessage("CodeForge extension initialized");
+
+  await serverInstance.start();
+  const httpPort = serverInstance.httpPort;
+  if (httpPort) {
+    vscode.window.showInformationMessage(`CodeForge server started on port ${httpPort}`);
+  }
 }
 
 export function deactivate(): void {
-  if (server) {
-    server.stop();
+  if (server && typeof server === "object" && "stop" in server) {
+    (server as CodeForgeServer).stop();
     server = null;
   }
 }
 
 async function startSession(): Promise<void> {
-  if (!server) {
+  if (!server || typeof server !== "object" || !("httpPort" in server)) {
     vscode.window.showErrorMessage("CodeForge server is not running");
     return;
   }
-
+  const httpPort = (server as CodeForgeServer).httpPort;
+  
   const sessionId = crypto.randomUUID();
 
   try {
-    const response = await fetch(`http://localhost:${server.httpPort}/api/send`, {
+    const response = await fetch(`http://localhost:${httpPort}/api/send`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId, message: "Start a new session" }),
@@ -83,11 +103,12 @@ async function startSession(): Promise<void> {
 }
 
 async function sendMessage(): Promise<void> {
-  if (!server) {
+  if (!server || typeof server !== "object" || !("httpPort" in server)) {
     vscode.window.showErrorMessage("CodeForge server is not running");
     return;
   }
-
+  const httpPort = (server as CodeForgeServer).httpPort;
+  
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders || workspaceFolders.length === 0) {
     vscode.window.showErrorMessage("No workspace folder open");
@@ -102,7 +123,7 @@ async function sendMessage(): Promise<void> {
   const workspacePath = folder.uri.fsPath;
 
   try {
-    const setWorkspaceResponse = await fetch(`http://localhost:${server.httpPort}/api/workspace/set`, {
+    const setWorkspaceResponse = await fetch(`http://localhost:${httpPort}/api/workspace/set`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path: workspacePath }),
@@ -130,7 +151,7 @@ async function sendMessage(): Promise<void> {
 
   const sessionId = "vscode-session";
   try {
-    const response = await fetch(`http://localhost:${server.httpPort}/api/send`, {
+    const response = await fetch(`http://localhost:${httpPort}/api/send`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId, message }),
@@ -190,8 +211,8 @@ async function openWebview(context: vscode.ExtensionContext): Promise<void> {
 }
 
 function stopServer(): void {
-  if (server) {
-    server.stop();
+  if (server && typeof server === "object" && "stop" in server) {
+    (server as CodeForgeServer).stop();
     server = null;
     vscode.window.showInformationMessage("CodeForge server stopped");
   } else {
