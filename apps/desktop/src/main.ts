@@ -507,6 +507,9 @@ function verifyCorruptCredentialFailsClosed(): void {
 }
 
 async function runPackagedFullSmoke(workspacePath: string, testSecret: string): Promise<void> {
+  await waitForCondition(async () =>
+    (await evaluateRenderer<string>("document.body.innerText")).includes("Welcome to CodeForge"),
+  );
   const firstRunText = await evaluateRenderer<string>("document.body.innerText");
   if (!firstRunText.includes("Welcome to CodeForge")) throw new Error("Packaged first-run onboarding was not visible");
   if (!firstRunText.includes("OpenCode Zen") || !firstRunText.includes("OpenRouter")) {
