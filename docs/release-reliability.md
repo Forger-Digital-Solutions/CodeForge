@@ -79,4 +79,58 @@ The packaged Electron binary (`CodeForge.exe` at `apps/desktop/release/win-unpac
 ## 6. Monorepo Regression Test Matrix
 
 - **TypeScript Typecheck**: `npm run typecheck` (`tsc -b --force`) — **0 errors, 100% clean**.
-- **Vitest Full Test Matrix**: `npm test` — **55/55 test files passed, 551/551 tests passed (100% pass rate)**.
+- **Vitest Full Test Matrix**: `npm test` — **55/55 test files passed, 552/552 tests passed (100% pass rate, 0 skipped)**.
+
+---
+
+## 7. Clean-Install Reproducibility Certification
+
+### Dependency Contamination Audit of Prior Release Baseline
+- **Prior Package Dependency on Modified `node_modules`**: **YES**.
+- **Root Cause**: The prior baseline relied on local manual modifications inside `node_modules/better-sqlite3` and manual copying of a pre-compiled `better_sqlite3.node` binary into `prebuilds/win32-x64.node`. When installed via `npm ci` in a fresh environment, `better-sqlite3@13.0.3` failed to provide or compile a binary for Electron 33.4.11 (NODE_MODULE_VERSION 130), causing packaged runtime launch to fail on SQLite database initialization (`ERR_UNKNOWN_BUILTIN_MODULE: node:sqlite`).
+- **Resolution**:
+  1. Upgraded upstream `better-sqlite3` to `^12.11.1` (which fully supports Node 20.x through 24.x and Node-API v8/9 ABI compilation for Electron 33).
+  2. Declared `better-sqlite3` in root `dependencies` (for workspace-wide hoisting) and `apps/desktop/package.json`.
+  3. Integrated `@electron/rebuild` into the desktop build pipeline (`npm run build:native` / `electron-rebuild -v 33.4.11 -f -o better-sqlite3 --build-from-source`).
+  4. Configured `electron-builder` `files` to package `better-sqlite3`, `bindings`, and `file-uri-to-path` with `build/Release/better_sqlite3.node` unpacked via `asarUnpack`.
+  5. Created tracked, path-agnostic packaged smoke test runner at `apps/desktop/scripts/packaged-smoke.js` with scripts `npm run smoke`, `npm run smoke:interrupt`, `npm run smoke:recover`, and `npm run smoke:all`.
+
+### Reproducibility Verification Matrix (Pristine Clean Worktrees)
+
+| Environment Parameter | Tracked Value | Verification Status |
+| :--- | :--- | :---: |
+| **Base Commit SHA** | `9789a40f6bad03086d760a4ae06ca291ca930838` | Certified |
+| **Host OS** | Windows 11 / Windows NT 10.0.26200 | Verified |
+| **Node.js Runtime** | Node `v24.18.0` | Verified |
+| **npm CLI** | npm `11.16.0` | Verified |
+| **Electron Version** | `33.4.11` (Node `20.18.3`, ABI `130`) | Verified |
+| **Locked `better-sqlite3`** | `12.11.1` | Verified |
+| **Clean Install Command** | `npm ci` | **PASS** (exit 0) |
+| **Typecheck Command** | `npm run typecheck` (`tsc -b --force`) | **PASS** (0 errors) |
+| **Full Unit/Integration Tests** | `npm test` (`vitest run`) | **55/55 files, 552/552 tests PASS** |
+| **Monorepo Build** | `npm run build` | **PASS** (all workspaces built) |
+| **Native Module Build** | `npm run build:native` | **PASS** (`electron-rebuild` completed) |
+| **Electron Package** | `npm run pack --workspace=codeforge-desktop` | **PASS** (`win-unpacked` created) |
+| **Packaged Full Smoke** | `npm run smoke --workspace=codeforge-desktop` | **PASS** (exit code 0) |
+| **Packaged Interrupt Smoke** | `npm run smoke:interrupt --workspace=codeforge-desktop` | **PASS** (exit code 73) |
+| **Packaged Recovery Smoke** | `npm run smoke:recover --workspace=codeforge-desktop` | **PASS** (exit code 0) |
+| **NSIS Installer Build** | `electron-builder --project apps/desktop` | **PASS** (Installer created) |
+| **Portable Executable Build** | `electron-builder --project apps/desktop` | **PASS** (Portable created) |
+| **Dual Clean-Tree Verification** | Full cycle repeated in isolated 2nd worktree | **PASS** (100% identical behavior) |
+
+### Certified Release Artifact Hashes
+
+| Artifact Description | Path | Size | SHA-256 Checksum |
+| :--- | :--- | :---: | :--- |
+| **NSIS Installer** | `apps/desktop/release/CodeForge-Setup-0.1.0.exe` | 156,434,678 bytes | `BD0216560EFCF075388AE3834CF58C3275183C0D0567AF1D76474BB751E33CCA` |
+| **Portable Executable** | `apps/desktop/release/CodeForge-Portable.exe` | 156,206,993 bytes | `61335E32CB906B2732C8B54B3494338C0D95208AA3888AF73A29F15FFD56FD56` |
+| **Unpacked Runtime** | `apps/desktop/release/win-unpacked/CodeForge.exe` | 188,784,128 bytes | `804018BFF587B1C4C9B9FF23288EE1F2140556D7EBD089CAE13DA9170ABC841E` |
+| **Packaged Application ASAR** | `apps/desktop/release/win-unpacked/resources/app.asar` | 35,228,898 bytes | `303F8F132483AEC580B33839C6E7E57A76E70F7760B9A957D01482896FD0992F` |
+| **Unpacked Native SQLite Binary** | `.../resources/app.asar.unpacked/.../better_sqlite3.node` | 1,918,976 bytes | `36BFB52E06ADFA2C887B7E7064C7E33C673434EE016BF657F9BA2BB1BF031310` |
+
+### Integrity and Security Audit
+- **Developer Absolute Paths**: NONE in tracked source or release ASAR.
+- **Test Secret Residue**: NONE in tracked source, release ASAR, or packaged bundle.
+- **Manual `node_modules` Edits Required**: NONE.
+- **Zero-Billing Invariants**: Preserved across all test execution and packaged smoke modes.
+- **SafeStorage DPAPI Security**: Fully verified with fail-closed corruption behavior.

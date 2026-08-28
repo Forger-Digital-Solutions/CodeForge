@@ -45,10 +45,10 @@ export function detectAvailableSqliteDrivers(): SqliteDriverName[] {
     // Node < 22.5 (e.g. Electron's bundled Node 20)
   }
   try {
-    require_.resolve("better-sqlite3");
+    require_("better-sqlite3");
     available.push("better-sqlite3");
   } catch {
-    // Optional dependency not installed
+    // Optional dependency not installed or native binary not compiled for current runtime
   }
   return available;
 }
@@ -129,8 +129,10 @@ export function openSqliteDatabase(
   } catch (nodeError) {
     try {
       return { db: openBetterSqlite3(dbPath), driver: "better-sqlite3" };
-    } catch {
-      throw nodeError;
+    } catch (betterError) {
+      const nodeMsg = nodeError instanceof Error ? nodeError.message : String(nodeError);
+      const betterMsg = betterError instanceof Error ? betterError.message : String(betterError);
+      throw new Error(`Failed to initialize SQLite persistence with node:sqlite (${nodeMsg}) and better-sqlite3 (${betterMsg})`);
     }
   }
 }

@@ -22,6 +22,7 @@
     "@types/node": "^22.10.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
+    "@electron/rebuild": "^3.7.1",
     "patch-package": "^8.0.1",
     "typescript": "^5.9.3",
     "vitest": "^2.1.9"
@@ -32,6 +33,7 @@
   "dependencies": {
     "@vitejs/plugin-react": "^4.7.0",
     "app-builder-bin": "^5.0.0-alpha.10",
+    "better-sqlite3": "^12.11.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "vite": "^5.4.21",
@@ -39,6 +41,6 @@
   },
   "allowScripts": {
     "electron@33.4.11": true,
-    "better-sqlite3@13.0.3": true
+    "better-sqlite3@12.11.1": true
   }
 }
