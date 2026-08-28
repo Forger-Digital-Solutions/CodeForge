@@ -1,0 +1,279 @@
+# CodeForge — Public Release Consumer Acceptance.
+#
+# This gate proves the LAST missing direction of the release: that the exact
+# bytes a real user downloads from the public GitHub Release install, launch,
+# persist, restart, and uninstall correctly on a fresh Windows runner — and
+# that the portable build launches — WITHOUT rebuilding CodeForge.
+#
+# It never runs npm ci / build / electron-builder / electron-rebuild for the
+# application. It checks out the repo only to reuse two dependency-free Node
+# scripts (verify-release-hashes.mjs and the certified packaged-smoke.js
+# driver); the application bytes come exclusively from the GitHub Release.
+#
+# Runner: windows-2025 (a newer, clean consumer environment). This job only
+# *consumes* the prebuilt binary, so it is not bound by the build toolchain's
+# windows-2022/VS-2022 pin. If a future platform incompatibility on 2025 ever
+# prevents a meaningful consumer test, fall back to windows-2022 and say why.
+name: release-consumer-acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Public release tag to consume"
+        required: true
+        default: "v0.1.0"
+
+permissions:
+  contents: read
+
+jobs:
+  consumer-acceptance:
+    runs-on: windows-2025
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag }}
+      # Authoritative pins for v0.1.0 (ignored for other tags, which are
+      # verified against their own published SHA256SUMS.txt only).
+      V010_SETUP_SHA256: b5b451a4b943a7f5da6542f4aa0227e113025d556eba2c82ab50d8d21a72e4b8
+      V010_PORTABLE_SHA256: ff10ca21ff69f156c81390613fa707e782d714f0f143be202e0d928c74e14195
+      V010_COMMIT: f2bb7164e0517aad5e3355baac183458b7a66db1
+    steps:
+      - name: Checkout (acceptance scripts only — no npm ci)
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify public release metadata
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $rel = gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --json tagName,isDraft,isPrerelease,name | ConvertFrom-Json
+          Write-Host "release: $($rel.name) tag=$($rel.tagName) draft=$($rel.isDraft) prerelease=$($rel.isPrerelease)"
+          if ($rel.isDraft) { throw "Release $env:RELEASE_TAG is a draft — refusing to consume" }
+          if ($rel.tagName -ne $env:RELEASE_TAG) { throw "Tag mismatch: $($rel.tagName) != $env:RELEASE_TAG" }
+
+          # Dereference the tag to its underlying commit.
+          $ref = gh api "repos/$env:GITHUB_REPOSITORY/git/refs/tags/$env:RELEASE_TAG" | ConvertFrom-Json
+          if ($ref.object.type -eq "tag") {
+            $tagObj = gh api "repos/$env:GITHUB_REPOSITORY/git/tags/$($ref.object.sha)" | ConvertFrom-Json
+            $commit = $tagObj.object.sha
+          } else {
+            $commit = $ref.object.sha
+          }
+          Write-Host "tag $env:RELEASE_TAG peels to commit $commit"
+          if ($env:RELEASE_TAG -eq "v0.1.0" -and $commit -ne $env:V010_COMMIT) {
+            throw "v0.1.0 must peel to $env:V010_COMMIT but peels to $commit"
+          }
+          "RELEASE_COMMIT=$commit" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Download public release assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $dir = Join-Path $env:GITHUB_WORKSPACE "public-release"
+          if (Test-Path $dir) { Remove-Item -Recurse -Force $dir }
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          # Pull assets straight from the public Release (NOT actions/download-artifact).
+          gh release download $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --dir $dir --clobber
+          Write-Host "Downloaded public release assets:"
+          Get-ChildItem $dir | ForEach-Object { Write-Host ("  {0}  {1} bytes" -f $_.Name, $_.Length) }
+          "PUBLIC_RELEASE_DIR=$dir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Verify public release SHA-256 (PUBLIC_RELEASE_HASHES_OK)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $dir = $env:PUBLIC_RELEASE_DIR
+          $sums = Join-Path $dir "SHA256SUMS.txt"
+          if (-not (Test-Path $sums)) { throw "SHA256SUMS.txt missing from the public release" }
+          $pins = @()
+          if ($env:RELEASE_TAG -eq "v0.1.0") {
+            $pins = @(
+              "CodeForge-Setup-0.1.0.exe=$($env:V010_SETUP_SHA256)",
+              "CodeForge-Portable.exe=$($env:V010_PORTABLE_SHA256)"
+            )
+          }
+          node apps/desktop/scripts/verify-release-hashes.mjs $dir $sums @pins
+          if ($LASTEXITCODE -ne 0) { throw "Public release hash verification FAILED" }
+
+      - name: Assert launched app receives no CI secrets (PUBLIC_APP_ENV_NO_CI_SECRETS_OK)
+        shell: pwsh
+        run: |
+          # The smoke steps below deliberately carry no GH_TOKEN / provider
+          # secrets, so the launched CodeForge process cannot inherit them.
+          $leaks = @()
+          foreach ($k in @("GITHUB_TOKEN","GH_TOKEN","NPM_TOKEN","OPENAI_API_KEY","ANTHROPIC_API_KEY","OPENROUTER_API_KEY","GEMINI_API_KEY","GROQ_API_KEY","AWS_SECRET_ACCESS_KEY")) {
+            if ([string]::IsNullOrEmpty([Environment]::GetEnvironmentVariable($k))) { continue }
+            $leaks += $k
+          }
+          if ($leaks.Count -gt 0) { throw "CI secret(s) present in the app-launch environment: $($leaks -join ', ')" }
+          Write-Host "PUBLIC_APP_ENV_NO_CI_SECRETS_OK"
+
+      - name: Silent NSIS install (PUBLIC_NSIS_INSTALL_OK)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $setup = Get-ChildItem (Join-Path $env:PUBLIC_RELEASE_DIR "CodeForge-Setup-*.exe") | Select-Object -First 1
+          if (-not $setup) { throw "Installer not found in public release" }
+          Write-Host "Installing (silent, per-user): $($setup.Name)"
+          # electron-builder one-click / per-user NSIS: /S == silent.
+          $p = Start-Process -FilePath $setup.FullName -ArgumentList "/S" -PassThru -Wait
+          Write-Host "installer returned exit code $($p.ExitCode)"
+
+          # Do NOT trust the exit code alone. Poll the HKCU uninstall registry
+          # (electron-builder registers a per-user entry) for the install.
+          $entry = $null
+          for ($i = 0; $i -lt 30; $i++) {
+            $entry = Get-ChildItem "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall" -ErrorAction SilentlyContinue |
+              ForEach-Object { Get-ItemProperty $_.PSPath } |
+              Where-Object { $_.DisplayName -match "CodeForge" } | Select-Object -First 1
+            if ($entry) { break }
+            Start-Sleep -Seconds 2
+          }
+          if (-not $entry) { throw "No HKCU uninstall entry for CodeForge after install" }
+          $installDir = $entry.InstallLocation
+          Write-Host "InstallLocation: $installDir"
+          if (-not $installDir -or -not (Test-Path $installDir)) {
+            # Fallback: search the per-user Programs directory.
+            $found = Get-ChildItem (Join-Path $env:LOCALAPPDATA "Programs") -Recurse -Filter "CodeForge.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if (-not $found) { throw "Installed CodeForge.exe not found" }
+            $installDir = $found.DirectoryName
+          }
+          $exe = Join-Path $installDir "CodeForge.exe"
+          $asar = Join-Path $installDir "resources\app.asar"
+          $native = Join-Path $installDir "resources\app.asar.unpacked\node_modules\better-sqlite3\build\Release\better_sqlite3.node"
+          foreach ($req in @($exe, $asar, $native)) {
+            if (-not (Test-Path $req)) { throw "Missing expected installed payload: $req" }
+            Write-Host "present: $req"
+          }
+
+          # A one-click installer may auto-launch the app; stop any instance so
+          # the controlled smoke owns the runtime.
+          Get-Process -Name "CodeForge" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          Start-Sleep -Seconds 2
+
+          $uninstall = $entry.QuietUninstallString; if (-not $uninstall) { $uninstall = $entry.UninstallString }
+          "CF_INSTALLED_EXE=$exe"        | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "CF_INSTALL_DIR=$installDir"   | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "CF_UNINSTALL_STRING=$uninstall" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "PUBLIC_NSIS_INSTALL_OK"
+
+      - name: Prepare smoke driver workspace
+        shell: pwsh
+        run: |
+          # The certified packaged-smoke.js driver writes evidence under
+          # apps/desktop/release/; create it (electron-builder normally would).
+          New-Item -ItemType Directory -Force (Join-Path $env:GITHUB_WORKSPACE "apps\desktop\release") | Out-Null
+
+      - name: Installed app runtime + persistence + restart smoke
+        shell: pwsh
+        env:
+          CODEFORGE_SMOKE_EXECUTABLE: ${{ env.CF_INSTALLED_EXE }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          Write-Host "Smoking installed executable: $env:CODEFORGE_SMOKE_EXECUTABLE"
+          # full: launch + renderer-ready + welcome/first-run + persistence +
+          #       native SQLite + autonomous repair (no injected-secret leak).
+          node apps/desktop/scripts/packaged-smoke.js full
+          if ($LASTEXITCODE -ne 0) { throw "installed FULL smoke failed" }
+          Write-Host "PUBLIC_INSTALLED_APP_LAUNCH_OK"
+          Write-Host "PUBLIC_INSTALLED_PERSISTENCE_OK"
+          # interrupt + recover: restart safety and recovery with no approval replay.
+          node apps/desktop/scripts/packaged-smoke.js interrupt
+          if ($LASTEXITCODE -ne 0) { throw "installed INTERRUPT smoke failed" }
+          node apps/desktop/scripts/packaged-smoke.js recover
+          if ($LASTEXITCODE -ne 0) { throw "installed RECOVER smoke failed" }
+          # No CodeForge process should survive a clean smoke.
+          $live = Get-Process -Name "CodeForge" -ErrorAction SilentlyContinue
+          if ($live) { $live | Stop-Process -Force -ErrorAction SilentlyContinue; throw "CodeForge still running after smoke" }
+          Write-Host "PUBLIC_INSTALLED_APP_EXIT_OK"
+
+      - name: Silent NSIS uninstall (PUBLIC_NSIS_UNINSTALL_OK)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $us = $env:CF_UNINSTALL_STRING
+          if (-not $us) { throw "No uninstall string captured" }
+          # Parse "<quoted exe>" <args> and force silent.
+          if ($us -match '^\s*"([^"]+)"\s*(.*)$') { $uexe = $Matches[1]; $uargs = $Matches[2] }
+          elseif ($us -match '^\s*(\S+)\s*(.*)$')  { $uexe = $Matches[1]; $uargs = $Matches[2] }
+          else { throw "Unparseable uninstall string: $us" }
+          if ($uargs -notmatch "/S") { $uargs = ("/S " + $uargs).Trim() }
+          Write-Host "Uninstalling: $uexe $uargs"
+          Start-Process -FilePath $uexe -ArgumentList $uargs -PassThru -Wait | Out-Null
+
+          # The electron-builder uninstaller relaunches from temp and returns
+          # early, so poll for actual removal.
+          $exe = $env:CF_INSTALLED_EXE
+          $removed = $false
+          for ($i = 0; $i -lt 30; $i++) {
+            if (-not (Test-Path $exe)) { $removed = $true; break }
+            Start-Sleep -Seconds 2
+          }
+          if (-not $removed) { throw "Installed executable still present after uninstall: $exe" }
+          $entry = Get-ChildItem "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall" -ErrorAction SilentlyContinue |
+            ForEach-Object { Get-ItemProperty $_.PSPath } |
+            Where-Object { $_.DisplayName -match "CodeForge" } | Select-Object -First 1
+          if ($entry) { throw "HKCU uninstall entry still present after uninstall" }
+          if (Get-Process -Name "CodeForge" -ErrorAction SilentlyContinue) { throw "CodeForge process still running after uninstall" }
+          Write-Host "install-dir after uninstall:"
+          if (Test-Path $env:CF_INSTALL_DIR) {
+            Get-ChildItem $env:CF_INSTALL_DIR -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  residual: $($_.FullName)" }
+          } else { Write-Host "  (install directory removed)" }
+          Write-Host "PUBLIC_NSIS_UNINSTALL_OK"
+
+      - name: Portable app launch smoke
+        shell: pwsh
+        env:
+          CODEFORGE_SMOKE_EXECUTABLE: ${{ env.PUBLIC_RELEASE_DIR }}\CodeForge-Portable.exe
+        run: |
+          $ErrorActionPreference = "Stop"
+          if (-not (Test-Path $env:CODEFORGE_SMOKE_EXECUTABLE)) { throw "Portable exe not found" }
+          Write-Host "Smoking portable executable: $env:CODEFORGE_SMOKE_EXECUTABLE"
+          node apps/desktop/scripts/packaged-smoke.js full
+          if ($LASTEXITCODE -ne 0) { throw "portable FULL smoke failed" }
+          Write-Host "PUBLIC_PORTABLE_LAUNCH_OK"
+          $live = Get-Process -Name "CodeForge" -ErrorAction SilentlyContinue
+          if ($live) { $live | Stop-Process -Force -ErrorAction SilentlyContinue; throw "portable CodeForge still running after smoke" }
+          Write-Host "PUBLIC_PORTABLE_EXIT_OK"
+
+      - name: Consumer acceptance summary
+        shell: pwsh
+        run: |
+          Write-Host "==== PUBLIC RELEASE CONSUMER ACCEPTANCE: ALL PHASES PASSED ===="
+          Write-Host "PUBLIC_RELEASE_HASHES_OK"
+          Write-Host "PUBLIC_NSIS_INSTALL_OK"
+          Write-Host "PUBLIC_INSTALLED_APP_LAUNCH_OK"
+          Write-Host "PUBLIC_INSTALLED_PERSISTENCE_OK"
+          Write-Host "PUBLIC_INSTALLED_APP_EXIT_OK"
+          Write-Host "PUBLIC_NSIS_UNINSTALL_OK"
+          Write-Host "PUBLIC_PORTABLE_LAUNCH_OK"
+          Write-Host "PUBLIC_PORTABLE_EXIT_OK"
+
+      - name: Failure diagnostics (non-secret)
+        if: failure()
+        shell: pwsh
+        run: |
+          Write-Host "===== DIAGNOSTICS (non-secret) ====="
+          Write-Host "release tag: $env:RELEASE_TAG   commit: $env:RELEASE_COMMIT"
+          if ($env:PUBLIC_RELEASE_DIR -and (Test-Path $env:PUBLIC_RELEASE_DIR)) {
+            Write-Host "-- downloaded assets --"
+            Get-ChildItem $env:PUBLIC_RELEASE_DIR | ForEach-Object { Write-Host ("  {0} {1} bytes" -f $_.Name, $_.Length) }
+          }
+          if ($env:CF_INSTALL_DIR -and (Test-Path $env:CF_INSTALL_DIR)) {
+            Write-Host "-- install dir contents --"
+            Get-ChildItem $env:CF_INSTALL_DIR -Recurse -ErrorAction SilentlyContinue | Select-Object -First 60 | ForEach-Object { Write-Host "  $($_.FullName)" }
+          }
+          Write-Host "-- CodeForge processes --"
+          Get-Process -Name "CodeForge" -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,StartTime | Format-Table | Out-String | Write-Host
+          $smokeOut = Join-Path $env:GITHUB_WORKSPACE "apps\desktop\release\smoke-result.log"
+          if (Test-Path $smokeOut) {
+            Write-Host "-- last 80 lines of smoke evidence --"
+            Get-Content $smokeOut -Tail 80 | ForEach-Object { Write-Host $_ }
+          }
