@@ -560,11 +560,14 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   smokeRecord("packaged_failure_repair_pass=PASS");
 
   await delay(300);
-  await reloadRenderer();
-  await waitForCondition(async () => {
-    const text = await evaluateRenderer<string>("document.body.innerText");
-    return text.toLowerCase().includes("completed");
-  });
+  for (let reload = 0; reload < 5; reload++) {
+    await reloadRenderer();
+    await waitForCondition(async () => {
+      const text = await evaluateRenderer<string>("document.body.innerText");
+      return text.toLowerCase().includes("completed");
+    });
+  }
+  smokeRecord("packaged_renderer_reload_count=5");
   smokeRecord("packaged_renderer_reload=PASS");
 
   await evaluateRenderer<void>(`window.electronAPI.setProviderCredential("opencode", ${JSON.stringify(testSecret)})`);
@@ -609,6 +612,7 @@ async function runPackagedRecoverySmoke(testSecret: string): Promise<void> {
 
   const credentialStatus = await evaluateRenderer<Record<string, boolean>>(`window.electronAPI.getProviderCredentialStatus()`);
   if (!credentialStatus.opencode) throw new Error("Encrypted credential did not decrypt after restart");
+  if (desktopCredentialStore?.get("opencode") !== testSecret) throw new Error("Restarted credential did not match the encrypted smoke value");
   verifyCredentialPersistence(testSecret);
   verifyCorruptCredentialFailsClosed();
   smokeRecord("credential_restart_decrypt=PASS");
@@ -635,6 +639,7 @@ async function runPackagedSmoke(): Promise<void> {
   if (!workspacePath || !testSecret) throw new Error("Packaged smoke inputs are missing");
   await waitForRenderer();
   smokeRecord(`smoke_mode=${mode}`);
+  smokeRecord(`smoke_run_id=${process.env.CODEFORGE_SMOKE_RUN_ID ?? "missing"}`);
   smokeRecord(`electron_version=${process.versions.electron}`);
   smokeRecord(`electron_node_version=${process.versions.node}`);
   smokeRecord(`app_is_packaged=${app.isPackaged}`);

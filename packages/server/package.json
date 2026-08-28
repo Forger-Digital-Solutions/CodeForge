@@ -23,12 +23,12 @@
     "@codeforge/router": "*",
     "@codeforge/forge-zero": "*",
     "@codeforge/providers": "*",
+    "@codeforge/secrets": "*",
     "@codeforge/tools": "*",
     "@codeforge/permissions": "*",
     "@codeforge/workflow": "*",
     "zod": "^3.24.0"
   }
 }
-
 
 

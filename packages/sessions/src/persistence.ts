@@ -197,10 +197,11 @@ export class SessionPersistence {
     const opened = openSqliteDatabase(absolutePath, { driver: options.driver ?? "auto" });
     this.db = opened.db;
     this.driverName = opened.driver;
-    this.db.exec("PRAGMA journal_mode = WAL");
-    this.db.exec(SCHEMA);
+    try {
+      this.db.exec("PRAGMA journal_mode = WAL");
+      this.db.exec(SCHEMA);
 
-    this.statement("upsertSession", `
+      this.statement("upsertSession", `
       INSERT INTO sessions (id, title, createdAt, updatedAt, status, currentAgentId, currentModelId, currentProviderId, permissionMode, displayMode, branch, workspacePath, taskTitle)
       VALUES ($id, $title, $createdAt, $updatedAt, $status, $currentAgentId, $currentModelId, $currentProviderId, $permissionMode, $displayMode, $branch, $workspacePath, $taskTitle)
       ON CONFLICT(id) DO UPDATE SET
@@ -217,11 +218,11 @@ export class SessionPersistence {
         taskTitle = excluded.taskTitle
     `);
 
-    this.statement("getSession", "SELECT * FROM sessions WHERE id = $id");
-    this.statement("listSessions", "SELECT * FROM sessions ORDER BY updatedAt DESC");
-    this.statement("deleteSession", "DELETE FROM sessions WHERE id = $id");
+      this.statement("getSession", "SELECT * FROM sessions WHERE id = $id");
+      this.statement("listSessions", "SELECT * FROM sessions ORDER BY updatedAt DESC");
+      this.statement("deleteSession", "DELETE FROM sessions WHERE id = $id");
 
-    this.statement("upsertTurn", `
+      this.statement("upsertTurn", `
       INSERT INTO turns (id, sessionId, seq, userMessage, status, agentId, startedAt, completedAt, error)
       VALUES ($id, $sessionId, $seq, $userMessage, $status, $agentId, $startedAt, $completedAt, $error)
       ON CONFLICT(id) DO UPDATE SET
@@ -233,22 +234,26 @@ export class SessionPersistence {
         completedAt = excluded.completedAt,
         error = excluded.error
     `);
-    this.statement("getTurns", "SELECT * FROM turns WHERE sessionId = $sessionId ORDER BY seq ASC");
+      this.statement("getTurns", "SELECT * FROM turns WHERE sessionId = $sessionId ORDER BY seq ASC");
 
-    this.statement("upsertWorkItem", `
+      this.statement("upsertWorkItem", `
       INSERT INTO work_items (id, sessionId, kind, data)
       VALUES ($id, $sessionId, $kind, $data)
       ON CONFLICT(id) DO UPDATE SET
         kind = excluded.kind,
         data = excluded.data
     `);
-    this.statement("getWorkItems", "SELECT * FROM work_items WHERE sessionId = $sessionId");
+      this.statement("getWorkItems", "SELECT * FROM work_items WHERE sessionId = $sessionId");
 
-    this.statement("appendEvent", `
+      this.statement("appendEvent", `
       INSERT INTO events (sessionId, data, createdAt)
       VALUES ($sessionId, $data, $createdAt)
     `);
-    this.statement("getEvents", "SELECT * FROM events WHERE sessionId = $sessionId ORDER BY id ASC");
+      this.statement("getEvents", "SELECT * FROM events WHERE sessionId = $sessionId ORDER BY id ASC");
+    } catch (error) {
+      this.db.close();
+      throw error;
+    }
   }
 
   private statement(name: string, sql: string): SQLiteStatement {

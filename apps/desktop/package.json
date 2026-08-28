@@ -7,15 +7,15 @@
   "main": "./dist/main.js",
   "type": "module",
   "scripts": {
-    "dev": "npm run build && electron .",
-    "build": "npm run build:native && npm run build:main && npm run build:renderer",
-    "build:native": "electron-rebuild -v 33.4.11 -f -o better-sqlite3 --build-from-source",
+    "dev": "npm run build && npm run build:native && electron .",
+    "build": "npm run build:main && npm run build:renderer",
+    "build:native": "node scripts/rebuild-native.mjs",
     "build:main": "tsc -p tsconfig.main.json && node -e \"require('fs').copyFileSync('src/preload.cjs', 'dist/preload.cjs')\"",
     "build:renderer": "vite build",
-    "build:prod": "npm run build && electron-builder",
-    "pack": "npm run build && electron-builder --dir",
-    "dist": "npm run build && electron-builder",
-    "rebuild:native": "electron-rebuild -v 33.4.11 -f -o better-sqlite3 --build-from-source",
+    "build:prod": "npm run dist",
+    "pack": "npm run build && npm run build:native && electron-builder --dir",
+    "dist": "npm run build && npm run build:native && electron-builder",
+    "rebuild:native": "node scripts/rebuild-native.mjs",
     "smoke": "node scripts/packaged-smoke.js full",
     "smoke:interrupt": "node scripts/packaged-smoke.js interrupt",
     "smoke:recover": "node scripts/packaged-smoke.js recover",
@@ -52,8 +52,11 @@
     "productName": "CodeForge",
     "executableName": "CodeForge",
     "npmRebuild": false,
+    "asar": {
+      "smartUnpack": false
+    },
     "asarUnpack": [
-      "**/*.node"
+      "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
     ],
     "directories": {
       "app": "../..",
@@ -69,23 +72,59 @@
     },
     "files": [
       "apps/desktop/dist/**/*",
+      "!apps/desktop/dist/**/*.map",
+      "!apps/desktop/dist/**/*.d.ts",
+      "!apps/desktop/dist/preload.js",
+      "!node_modules/zod/src/**/*",
+      "!node_modules/better-sqlite3/build/**/*",
+      "!node_modules/better-sqlite3/src/**/*",
+      "!node_modules/better-sqlite3/deps/**/*",
+      "!node_modules/better-sqlite3/bin/**/*",
       {
         "from": "packages",
         "to": "node_modules/@codeforge",
         "filter": [
-          "*/dist/**/*",
-          "*/package.json",
-          "!*/dist/**/*.ts.map",
-          "!*/dist/**/*.d.ts.map"
+          "agent/dist/**/*.js",
+          "agent/package.json",
+          "core/dist/**/*.js",
+          "core/package.json",
+          "director/dist/**/*.js",
+          "director/package.json",
+          "forge-zero/dist/**/*.js",
+          "forge-zero/package.json",
+          "model-registry/dist/**/*.js",
+          "model-registry/package.json",
+          "permissions/dist/**/*.js",
+          "permissions/package.json",
+          "protocol/dist/**/*.js",
+          "protocol/package.json",
+          "providers/dist/**/*.js",
+          "providers/package.json",
+          "router/dist/**/*.js",
+          "router/package.json",
+          "secrets/dist/**/*.js",
+          "secrets/package.json",
+          "server/dist/**/*.js",
+          "server/package.json",
+          "sessions/dist/**/*.js",
+          "sessions/package.json",
+          "tools/dist/**/*.js",
+          "tools/package.json",
+          "ui/dist/**/*.js",
+          "ui/package.json",
+          "workflow/dist/**/*.js",
+          "workflow/package.json"
         ]
       },
       {
         "from": "node_modules/zod",
         "to": "node_modules/zod",
         "filter": [
-          "**/*",
-          "!**/*.ts.map",
-          "!**/*.d.ts.map"
+          "package.json",
+          "LICENSE",
+          "**/*.js",
+          "**/*.cjs",
+          "**/*.mjs"
         ]
       },
       {
@@ -93,6 +132,7 @@
         "to": "node_modules/better-sqlite3",
         "filter": [
           "package.json",
+          "LICENSE",
           "lib/**/*",
           "build/Release/better_sqlite3.node"
         ]
@@ -101,14 +141,18 @@
         "from": "node_modules/bindings",
         "to": "node_modules/bindings",
         "filter": [
-          "**/*"
+          "package.json",
+          "LICENSE.md",
+          "bindings.js"
         ]
       },
       {
         "from": "node_modules/file-uri-to-path",
         "to": "node_modules/file-uri-to-path",
         "filter": [
-          "**/*"
+          "package.json",
+          "LICENSE",
+          "index.js"
         ]
       },
       "package.json"

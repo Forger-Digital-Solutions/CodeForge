@@ -9,6 +9,7 @@
   "exclude": ["test", "dist"],
   "references": [
     { "path": "../core" },
+    { "path": "../secrets" },
     { "path": "../protocol" }
   ]
 }

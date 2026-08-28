@@ -61,9 +61,9 @@ function openNodeSqlite(dbPath: string): SQLiteDatabase {
     prepare: (sql) => {
       const stmt = raw.prepare(sql);
       return {
-        run: (params) => stmt.run(params),
-        get: (params) => stmt.get(params),
-        all: (params) => stmt.all(params),
+        run: (params) => params ? stmt.run(params) : stmt.run(),
+        get: (params) => params ? stmt.get(params) : stmt.get(),
+        all: (params) => params ? stmt.all(params) : stmt.all(),
       };
     },
     close: () => raw.close(),

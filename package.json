@@ -19,24 +19,24 @@
     "verify:opencode": "node scripts/verify-opencode.mjs"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
     "@types/node": "^22.10.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "@electron/rebuild": "^3.7.1",
+    "app-builder-bin": "^5.0.0-alpha.10",
     "patch-package": "^8.0.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "typescript": "^5.9.3",
+    "vite": "^5.4.21",
     "vitest": "^2.1.9"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "^4.7.0",
-    "app-builder-bin": "^5.0.0-alpha.10",
     "better-sqlite3": "^12.11.1",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "vite": "^5.4.21",
     "zod": "^3.24.0"
   },
   "allowScripts": {

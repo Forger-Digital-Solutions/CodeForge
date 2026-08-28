@@ -82,6 +82,39 @@ describe("WorkflowService hardening — production autonomous execution", () => 
     await new Promise((r) => setTimeout(r, 600));
   });
 
+  it("enforces the global workflow cap and releases every slot after cancellation", async () => {
+    const started = [] as Array<{ taskId: string }>;
+    for (let index = 0; index < 20; index++) {
+      const response = await fetchJson(`http://localhost:${port}/api/workflow/run`, {
+        sessionId: `global-session-${index}`,
+        message: "Implement a multi file feature that waits for explicit approval",
+        verificationCommands: ["node -e \"process.exit(0)\""],
+      });
+      expect(response.status).toBe(200);
+      started.push(response.body as { taskId: string });
+    }
+
+    const overflow = await fetchJson(`http://localhost:${port}/api/workflow/run`, {
+      sessionId: "global-session-overflow",
+      message: "Fix add function",
+    });
+    expect(overflow.status).toBe(400);
+    expect(JSON.stringify(overflow.body)).toMatch(/too many concurrent workflows/i);
+
+    await Promise.all(started.map(({ taskId }) =>
+      fetchJson(`http://localhost:${port}/api/workflow/${taskId}/cancel`, {}, "POST"),
+    ));
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const afterRelease = await fetchJson(`http://localhost:${port}/api/workflow/run`, {
+      sessionId: "global-session-after-release",
+      message: "Fix add function",
+      verificationCommands: ["node -e \"process.exit(0)\""],
+    });
+    expect(afterRelease.status).toBe(200);
+    await fetchJson(`http://localhost:${port}/api/workflow/${(afterRelease.body as { taskId: string }).taskId}/cancel`, {}, "POST");
+  });
+
   it("redacts secrets in persisted turn and evidence", async () => {
     const secret = "sk-proj-abcdef1234567890";
     const run = await fetchJson(`http://localhost:${port}/api/workflow/run`, {

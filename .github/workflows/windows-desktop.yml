@@ -43,9 +43,6 @@ jobs:
           Write-Host "app-builder.exe version (direct):"
           & $env:APP_BUILDER_TARGET --version
 
-      - name: Compile better-sqlite3 for Electron ABI (CI-only toolchain)
-        run: npm run rebuild:native --workspace=apps/desktop
-
       - name: Typecheck
         run: npm run typecheck
 
@@ -98,6 +95,9 @@ jobs:
           }
           Write-Host "smoke_exit_code=$smokeExitCode"
           exit $smokeExitCode
+
+      - name: Packaged full, interrupt, and recovery smoke
+        run: npm run smoke:all --workspace=codeforge-desktop
 
       - name: Verify artifacts exist before upload
         shell: pwsh

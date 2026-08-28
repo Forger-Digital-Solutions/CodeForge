@@ -169,6 +169,18 @@ describe("SSE reconnect and renderer reconstruction E2E", () => {
     expect(taskEvents.some((event) => event.type === "task.created")).toBe(true);
     expect(taskEvents.some((event) => event.type === "task.completed")).toBe(true);
     expect(new Set(taskEvents.map((event) => event.seq)).size).toBe(taskEvents.length);
+
+    for (let reload = 0; reload < 8; reload++) {
+      const replay = await connectSse(port);
+      clients.push(replay);
+      await replay.waitFor((event) => event.type === "task.completed");
+      const matchingTerminal = replay.events.filter((event) =>
+        event.type === "task.completed" && JSON.stringify(event.payload).includes(taskId),
+      );
+      expect(matchingTerminal).toHaveLength(1);
+      expect(new Set(replay.events.map((event) => event.seq)).size).toBe(replay.events.length);
+      replay.close();
+    }
   });
 
   it("delivers each live event once to each concurrent client", async () => {

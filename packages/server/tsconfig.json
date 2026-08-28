@@ -16,6 +16,7 @@
     { "path": "../providers" },
     { "path": "../tools" },
     { "path": "../permissions" },
+    { "path": "../secrets" },
     { "path": "../workflow" }
   ]
 }

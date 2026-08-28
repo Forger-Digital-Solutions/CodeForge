@@ -151,6 +151,31 @@ describe("Approval gate - states & race handling", () => {
     const late = svc.resolve(approvalId, "allow_once");
     expect(late.approved).toBe(false);
   });
+
+  it("settles 75 approve, deny, cancel, and timeout races at most once", async () => {
+    for (let index = 0; index < 75; index++) {
+      const svc = new ApprovalService({ defaultTimeoutMs: 2 });
+      const turnId = `race-turn-${index}`;
+      const { approvalId, promise } = svc.requestApproval({
+        turnId,
+        tool: "run_command",
+        action: "exec",
+        description: "bounded race",
+        risk: "high",
+      });
+      const actions = index % 4 === 0
+        ? [() => svc.resolve(approvalId, "allow_once"), () => svc.cancelForTurn(turnId), () => svc.resolve(approvalId, "deny")]
+        : index % 4 === 1
+          ? [() => svc.cancelForTurn(turnId), () => svc.resolve(approvalId, "allow_once"), () => svc.resolve(approvalId, "deny")]
+          : index % 4 === 2
+            ? [() => svc.resolve(approvalId, "deny"), () => svc.resolve(approvalId, "allow_once"), () => svc.cancelForTurn(turnId)]
+            : [];
+      const resolutions = await Promise.all(actions.map(async (action) => action()));
+      const result = await promise;
+      expect(resolutions.filter((resolution) => resolution && "approved" in resolution && resolution.approved)).toHaveLength(result.approved ? 1 : 0);
+      expect(svc.resolve(approvalId, "allow_once").approved).toBe(false);
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
