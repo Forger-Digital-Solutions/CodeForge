@@ -6,17 +6,17 @@
 - Final audited source: the local audit commit containing this document (`git rev-parse HEAD`)
 - Audit method: hostile clean-source reproduction, native ABI switching, Windows process races, payload inspection, dual installer builds, installed-app smoke, portable smoke, and packaged interruption/recovery
 
-The audit found and corrected three locally controllable weaknesses: ABI-dependent SQLite skipping, an oversized secret-bearing native-build environment, and a packaged-smoke wrapper that trusted exit codes without validating fresh evidence. It also corrected SQLite initialization handle cleanup and removed unnecessary build/test content from the packaged payload.
+The audit found and corrected six locally controllable weaknesses: ABI-dependent SQLite skipping, an oversized secret-bearing native-build environment, a packaged-smoke wrapper that trusted exit codes without validating fresh evidence, verification-child inheritance of package-manager credentials, a first-run packaged-smoke readiness race, and an assisted per-user NSIS `System.dll` crash. It also corrected SQLite initialization handle cleanup and removed unnecessary build/test content from the packaged payload.
 
 ## Contradictions resolved
 
 ### SQLite skip
 
-Resolved. The release-critical `better-sqlite3` test executes in the compatible runtime regardless of the last native build. The post-Electron-rebuild full suite passed 55/55 files and 555/555 tests with zero skips.
+Resolved. The release-critical `better-sqlite3` test executes in the compatible runtime regardless of the last native build. The post-Electron-rebuild full suite passed 55/55 files and 556/556 tests with zero skips.
 
 ### NSIS failure
 
-Resolved. The original failure reproduced as MSBuild reporting that `node` was not recognized while inheriting an extremely long PATH. The same verbose native-build path also exposed unrelated credential variables. The tracked launcher now uses an absolute Node executable, a 2,048-character bounded tool-prioritized PATH, and a strict environment allowlist. NSIS and portable builds passed twice after deleting release output between builds.
+Resolved. The original build failure reproduced as MSBuild reporting that `node` was not recognized while inheriting an extremely long PATH. The same verbose native-build path also exposed unrelated credential variables. The tracked launcher now uses an absolute Node executable, a 2,048-character bounded tool-prioritized PATH, and a strict environment allowlist. A separate runtime defect in the assisted per-user NSIS template also reproduced as a `System.dll` access violation; the release now uses the compatible one-click per-user configuration. NSIS and portable builds passed twice after deleting release output between builds.
 
 ## Verification matrix
 
@@ -25,7 +25,7 @@ Resolved. The original failure reproduced as MSBuild reporting that `node` was n
 | Fresh `npm ci` | PASS |
 | Typecheck | PASS |
 | Test files | 55/55 PASS |
-| Tests | 555/555 PASS |
+| Tests | 556/556 PASS |
 | Skipped | 0 |
 | Workspace build | PASS |
 | Independent web build | PASS |

@@ -40,7 +40,7 @@ npm run smoke:all --workspace=codeforge-desktop
 npm run dist --workspace=codeforge-desktop
 ```
 
-The audited test result is 55/55 files and 555/555 tests passing with zero skipped tests.
+The audited test result is 55/55 files and 556/556 tests passing with zero skipped tests.
 
 ## Native SQLite build
 
@@ -79,7 +79,7 @@ Set `CODEFORGE_SMOKE_EXECUTABLE` to run the same full assertions against an inst
 - `apps/desktop/release/win-unpacked/CodeForge.exe`
 - `apps/desktop/release/win-unpacked/resources/app.asar`
 
-The audit built NSIS and portable artifacts twice with the release directory removed between runs. A silent per-user NSIS install, full installed-app smoke, and silent uninstall all passed. The portable executable passed the same full smoke.
+The release uses the one-click per-user NSIS configuration because the assisted per-user template can crash in `System.dll` on affected Windows systems. The audit built NSIS and portable artifacts twice with the release directory removed between runs. A silent per-user NSIS install, full installed-app smoke, and silent uninstall all passed. The portable executable passed the same full smoke.
 
 ## Payload policy
 
