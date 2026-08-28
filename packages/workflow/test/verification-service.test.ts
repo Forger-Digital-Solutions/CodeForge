@@ -71,6 +71,21 @@ describe("VerificationService", () => {
     }
   });
 
+  it("does not propagate package-manager credentials to verification commands", async () => {
+    const original = process.env.NPM_TOKEN;
+    process.env.NPM_TOKEN = "verification-test-token";
+    try {
+      const result = await runCommand({
+        workspacePath: ws,
+        command: "node -e \"process.exit(process.env.NPM_TOKEN ? 1 : 0)\"",
+      });
+      expect(result.exitCode).toBe(0);
+    } finally {
+      if (original === undefined) delete process.env.NPM_TOKEN;
+      else process.env.NPM_TOKEN = original;
+    }
+  });
+
   it("uses packaged Electron as a Node runtime without a global node executable", () => {
     const prepared = prepareShellCommand(
       "node -e \"process.exit(0)\"",

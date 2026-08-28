@@ -7,32 +7,16 @@ import { prepareShellCommand, terminateProcessTree } from "./child-process.js";
 const DEFAULT_COMMANDS = ["npm test", "npm run typecheck"];
 
 function getSanitizedEnv(): NodeJS.ProcessEnv {
-  const allowExact = new Set(["PATH", "HOME", "USER", "USERNAME", "SHELL", "TERM", "LANG", "NODE_ENV", "CI", "TMP", "TEMP", "TMPDIR", "SystemRoot", "WINDIR", "NUMBER_OF_PROCESSORS", "PROCESSOR_ARCHITECTURE"]);
-  const denyPrefixes = ["AWS_", "AZURE_", "GCP_", "GOOGLE_", "CLOUDFLARE_"];
-  const denySubstrings = ["SECRET", "PASSWORD", "PRIVATE_KEY", "CREDENTIAL", "AUTH_TOKEN", "ACCESS_TOKEN", "REFRESH_TOKEN", "OPENCODE_API_KEY", "OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "GROQ_API_KEY", "OPENAI_API_KEY"];
+  const allowExact = new Set([
+    "PATH", "Path", "path", "PATHEXT", "ComSpec", "COMSPEC",
+    "HOME", "HOMEDRIVE", "HOMEPATH", "USER", "USERNAME", "USERPROFILE",
+    "SHELL", "TERM", "LANG", "CI", "TMP", "TEMP", "TMPDIR",
+    "SystemDrive", "SystemRoot", "SYSTEMROOT", "WINDIR",
+    "NUMBER_OF_PROCESSORS", "PROCESSOR_ARCHITECTURE",
+  ]);
   const out: NodeJS.ProcessEnv = {};
   for (const [k, v] of Object.entries(process.env)) {
-    if (allowExact.has(k)) {
-      out[k] = v;
-      continue;
-    }
-    if (denyPrefixes.some((p) => k.startsWith(p))) continue;
-    if (denySubstrings.some((s) => k.includes(s))) continue;
-    // allow safe vars by default? keep minimal to reduce exposure; only allow common safe ones
-    if (/^(NPM_|YARN_|PNPM_|NODE_|CODEFORGE_|VITEST_)/.test(k)) {
-      out[k] = v;
-      continue;
-    }
-    // also allow PATH-related
-    if (k === "Path" || k === "PATHEXT") {
-      out[k] = v;
-      continue;
-    }
-    // default deny for unknown env to be safe, but keep PATH etc already handled
-    // For Windows compatibility, keep COMSPEC, etc
-    if (["COMSPEC", "SystemDrive", "ProgramFiles", "ProgramFiles(x86)"].includes(k)) {
-      out[k] = v;
-    }
+    if (v !== undefined && allowExact.has(k)) out[k] = v;
   }
   // Ensure PATH exists
   if (!out.PATH && process.env.PATH) out.PATH = process.env.PATH;
