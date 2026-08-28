@@ -19,7 +19,18 @@ on:
 
 jobs:
   package-windows:
-    runs-on: windows-latest
+    # Pinned to windows-2022 (Visual Studio 2022 / MSVC v143). The
+    # `windows-latest` label now resolves to the windows-2025 image, which ships
+    # only Visual Studio 2026 (major version 18). The native toolchain this
+    # project builds better-sqlite3 with — @electron/node-gyp 10.2.0-electron.1,
+    # pulled in by @electron/rebuild 3.7.x — cannot detect VS 2026: its
+    # find-visualstudio.js getVersionInfo() maps major 15/16/17 to 2017/2019/2022
+    # but has no case for major 18, so it reports `unknown version "undefined"`
+    # and the rebuild dies with "Could not find any Visual Studio installation to
+    # use". VS 2022 is the newest toolchain this node-gyp understands. The native
+    # binding is compiled here and shipped inside the installer, so pinning the
+    # runner affects CI only, never end users.
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
 
