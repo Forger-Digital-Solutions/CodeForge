@@ -28,6 +28,34 @@ export async function runDemoRuntime(options: RuntimeOptions): Promise<void> {
     payload: { from: "idle", to: "running" },
   });
 
+  // DEMO MODE banner — scripted output must NEVER look like genuine cloud inference. This
+  // assistant message states plainly that no real model is running and how to enable one.
+  const demoMsgId = crypto.randomUUID();
+  const demoBanner =
+    "⚠ DEMO MODE — this is a scripted preview, not real model inference. " +
+    "Connect a free provider (Connect OpenRouter / Z.AI / Gemini) to run CodeForge for real at $0.";
+  emit({
+    type: "assistant.message.started",
+    timestamp: new Date().toISOString(),
+    seq: 0,
+    sessionId,
+    payload: { turnId, messageId: demoMsgId, agentId: "demo" },
+  } as WorkspaceEvent);
+  emit({
+    type: "text.delta",
+    timestamp: new Date().toISOString(),
+    seq: 0,
+    sessionId,
+    payload: { turnId, delta: demoBanner, messageId: demoMsgId, agentId: "demo" },
+  } as WorkspaceEvent);
+  emit({
+    type: "assistant.message.completed",
+    timestamp: new Date().toISOString(),
+    seq: 0,
+    sessionId,
+    payload: { turnId, messageId: demoMsgId, text: demoBanner, agentId: "demo" },
+  } as WorkspaceEvent);
+
   emit({
     type: "agent.started",
     timestamp: new Date().toISOString(),

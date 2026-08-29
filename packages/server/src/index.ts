@@ -11,6 +11,7 @@ import {
   PAID_CATALOG,
 } from "@codeforge/forge-zero";
 import type { FreeModelRecord } from "@codeforge/forge-zero";
+import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/providers";
 import { runDemoRuntime } from "./demo-runtime.js";
@@ -282,6 +283,11 @@ export class CodeForgeServer {
 
     if (url.pathname === "/api/models" && req.method === "GET") {
       this.handleModels(res);
+      return;
+    }
+
+    if (url.pathname === "/api/free/top" && req.method === "GET") {
+      this.handleTopFree(res);
       return;
     }
 
@@ -895,8 +901,19 @@ export class CodeForgeServer {
       displayName: m.displayName,
       tier: m.tier ?? "free",
       freeStatus: m.freeStatus,
+      // Free-first taxonomy for the model selector + honest cost UI.
+      accessClass: m.accessClass,
+      authMode: m.authMode,
+      privacyClass: m.privacyClass,
+      family: m.family,
+      deprecated: m.deprecated ?? false,
+      // Verified-free + routable (passes ForgeZero incl. orphan/auth/privacy) → Auto-eligible.
+      verifiedFree: m.freeStatus === "verified_free",
+      eligible: this.firewall.canRouteTo(m.providerId, m.modelId),
       contextWindow: m.contextWindow,
       capabilities: m.capabilities,
+      codingScore: m.codingScore,
+      agentScore: m.agentScore,
       costProfile: m.costProfile ? {
         inputCostPerMillion: m.costProfile.inputCostPerMillion,
         outputCostPerMillion: m.costProfile.outputCostPerMillion,
@@ -907,6 +924,32 @@ export class CodeForgeServer {
     }));
     res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
     res.end(JSON.stringify(models));
+  }
+
+  /**
+   * Live "Top Verified Free" — deterministic ForgeZero/router ranking over the currently
+   * eligible verified-free models. Never hardcoded; reflects connected + verified providers now.
+   */
+  private handleTopFree(res: http.ServerResponse): void {
+    const router = new ForgeRouter({ firewall: this.firewall });
+    const ranked = router.topVerifiedFree(
+      { taskType: "coding", estimatedContextTokens: 16000, requiredCapabilities: ["coding", "toolCalling"] },
+      5,
+    );
+    const out = ranked.map((r, i) => ({
+      rank: i + 1,
+      id: r.model.modelId,
+      providerId: r.model.providerId,
+      displayName: r.model.displayName,
+      accessClass: r.model.accessClass,
+      privacyClass: r.model.privacyClass,
+      contextWindow: r.model.contextWindow,
+      toolCalling: r.model.capabilities.toolCalling,
+      score: r.score,
+      reasons: r.reasons,
+    }));
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify(out));
   }
 
   private handleProviderHealth(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {

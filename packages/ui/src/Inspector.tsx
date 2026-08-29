@@ -19,7 +19,16 @@ interface InspectorProps {
   workspacePath?: string;
 }
 
-const TABS = ["changes", "terminal", "files", "evidence", "overview"];
+// "commands" (not "terminal") — this panel shows executed-command history, not an interactive
+// PTY. Naming it Terminal misrepresented the functionality; renamed for honesty (recovery brief).
+const TABS = ["changes", "commands", "files", "evidence", "overview"];
+const TAB_LABELS: Record<string, string> = {
+  changes: "Changes",
+  commands: "Commands",
+  files: "Files",
+  evidence: "Evidence",
+  overview: "Overview",
+};
 
 export default function Inspector({ activeTab, onTabSelect, session, workItems, turns, isRunning, workspacePath }: InspectorProps) {
   const safeTab = TABS.includes(activeTab) ? activeTab : "changes";
@@ -28,8 +37,8 @@ export default function Inspector({ activeTab, onTabSelect, session, workItems, 
     switch (safeTab) {
       case "changes":
         return renderChanges(workItems);
-      case "terminal":
-        return renderTerminal(workItems);
+      case "commands":
+        return renderCommands(workItems);
       case "files":
         return renderFiles(workspacePath);
       case "evidence":
@@ -52,7 +61,7 @@ export default function Inspector({ activeTab, onTabSelect, session, workItems, 
             role="tab"
             aria-selected={safeTab === tab}
           >
-            {tab}
+            {TAB_LABELS[tab] ?? tab}
           </button>
         ))}
       </div>
@@ -142,10 +151,10 @@ function renderChanges(workItems: WorkItem[]) {
   );
 }
 
-function renderTerminal(workItems: WorkItem[]) {
+function renderCommands(workItems: WorkItem[]) {
   const commands = workItems.filter((w) => isWorkItemKind(w, "command"));
   if (commands.length === 0) {
-    return <div className="panel-empty">No commands yet.</div>;
+    return <div className="panel-empty">No commands run yet.</div>;
   }
   return (
     <div>
