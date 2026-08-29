@@ -120,6 +120,27 @@ function resolveApiPath(sseUrl: string, apiPath: string): string {
   return apiPath;
 }
 
+export function resolveSendSessionId(
+  activeSessionId: string | null | undefined,
+  createSessionId: () => string = () => crypto.randomUUID(),
+): string {
+  return activeSessionId ?? createSessionId();
+}
+
+export function createNewSessionDraft(
+  createSessionId: () => string = () => crypto.randomUUID(),
+  now: () => string = () => new Date().toISOString(),
+): SessionRecord {
+  const timestamp = now();
+  return {
+    id: createSessionId(),
+    title: "New task",
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    status: "idle",
+  };
+}
+
 export function useWorkspaceSSE(url: string) {
   const [state, setState] = useState<WorkspaceState>(initialWorkspaceState);
   // The session this view is following. The SSE stream is scoped to it so events from other
@@ -431,7 +452,11 @@ export function useWorkspaceSSE(url: string) {
 
   const sendMessage = useCallback(
     async (message: string, steer = false) => {
-      const sessionId: string = state.session?.id ?? "default";
+      const sessionId = resolveSendSessionId(state.session?.id);
+      if (!state.session?.id) {
+        activeSessionIdRef.current = sessionId;
+        setActiveSessionId(sessionId);
+      }
       const turnId = crypto.randomUUID();
       const endpoint = resolveApiPath(url, "/api/send");
 
@@ -644,11 +669,38 @@ export function useWorkspaceSSE(url: string) {
   // its durable snapshot. Stale events from the previous session are dropped by the effect reset.
   const selectSession = useCallback(
     (sessionId: string) => {
+      activeSessionIdRef.current = sessionId;
       setActiveSessionId(sessionId);
       void hydrate(sessionId);
     },
     [hydrate],
   );
+
+  const startNewSession = useCallback(() => {
+    const session = createNewSessionDraft();
+    activeSessionIdRef.current = session.id;
+    setActiveSessionId(session.id);
+    setState((prev) => ({
+      ...prev,
+      session,
+      turns: [],
+      workItems: [],
+      events: [],
+      isRunning: false,
+      isPaused: false,
+      pendingApproval: null,
+      pendingQuestion: null,
+      agentStatus: "idle",
+      workflowError: null,
+      workflowActionError: null,
+      activeTaskId: null,
+      activePhase: "idle",
+      workflowProgress: 0,
+      lastWorkflowResult: null,
+      lastEvidenceId: null,
+      lastCheckpointId: null,
+    }));
+  }, []);
 
   return {
     state,
@@ -664,5 +716,6 @@ export function useWorkspaceSSE(url: string) {
     dismissWorkflowError,
     hydrate,
     selectSession,
+    startNewSession,
   };
 }

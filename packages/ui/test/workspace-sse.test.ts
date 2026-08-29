@@ -1,5 +1,34 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import type { SessionRecord, TurnRecord } from "@codeforge/sessions";
+import { createNewSessionDraft, resolveSendSessionId } from "../src/workspace-sse.js";
+
+describe("workspace-sse - task session allocation", () => {
+  it("keeps the active session when adding a turn", () => {
+    const createSessionId = vi.fn(() => "new-session");
+
+    expect(resolveSendSessionId("task-a", createSessionId)).toBe("task-a");
+    expect(createSessionId).not.toHaveBeenCalled();
+  });
+
+  it("allocates a distinct session when New task has cleared the active task", () => {
+    expect(resolveSendSessionId(null, () => "task-b")).toBe("task-b");
+  });
+
+  it("creates an idle draft that owns the next task before it is sent", () => {
+    const draft = createNewSessionDraft(
+      () => "task-b",
+      () => "2026-08-29T22:00:00.000Z",
+    );
+
+    expect(draft).toEqual({
+      id: "task-b",
+      title: "New task",
+      createdAt: "2026-08-29T22:00:00.000Z",
+      updatedAt: "2026-08-29T22:00:00.000Z",
+      status: "idle",
+    });
+  });
+});
 
 // Mock the fetch API
 describe("workspace-sse - state machine constraints", () => {

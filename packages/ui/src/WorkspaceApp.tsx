@@ -42,7 +42,7 @@ export interface WorkspaceAppProps {
   onSendMessage?: (message: string, steer: boolean) => void;
   models?: ModelSelectorItem[];
   selectedModelId?: string | null;
-  onSelectModel?: (model: ModelSelectorItem) => void;
+  onSelectModel?: (model: ModelSelectorItem, sessionId?: string) => void;
   onShowModelDetails?: (model: ModelSelectorItem) => void;
   onUpgradeNavigation?: (url: string) => void;
   modelSections?: ModelSection[];
@@ -68,7 +68,7 @@ export default function WorkspaceApp({
   onOpenSettings,
   onOpenHelp,
 }: WorkspaceAppProps) {
-  const { state, setState, sendMessage, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession } = useWorkspaceSSE(sseUrl ?? "/api/events");
+  const { state, setState, sendMessage, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession, startNewSession } = useWorkspaceSSE(sseUrl ?? "/api/events");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
@@ -104,7 +104,7 @@ export default function WorkspaceApp({
       label: "New Session",
       description: "Start a new coding session",
       icon: "＋",
-      action: () => setState((prev) => ({ ...prev, session: null, turns: [], workItems: [], events: [] })),
+      action: startNewSession,
       shortcut: "Ctrl+N",
     },
     {
@@ -206,7 +206,7 @@ export default function WorkspaceApp({
             sessions={sessions}
             activeSessionId={state.session?.id ?? null}
             onSelectSession={(id) => selectSession(id)}
-            onNewTask={() => setState((prev) => ({ ...prev, session: null, turns: [], workItems: [], events: [] }))}
+            onNewTask={startNewSession}
             projectName={projectName}
             onOpenProjects={onOpenProjects}
             onOpenSettings={onOpenSettings}
@@ -317,7 +317,7 @@ export default function WorkspaceApp({
             isPaused={state.isPaused}
             models={models}
             selectedModelId={selectedModelId}
-            onSelectModel={onSelectModel}
+            onSelectModel={(model) => onSelectModel?.(model, state.session?.id)}
             onShowModelDetails={onShowModelDetails}
             onUpgradeNavigation={onUpgradeNavigation}
             modelSections={modelSections}

@@ -263,7 +263,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
   }, [models, apiModels]);
 
   const handleSelectModel = useCallback(
-    (model: ModelSelectorItem) => {
+    (model: ModelSelectorItem, sessionId?: string) => {
       // Paid-model confirmation: selecting a model that can incur charges is always explicit.
       // Verified-free models never trigger this prompt.
       const apiModel = apiModels.find((m) => m.id === model.id);
@@ -280,7 +280,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId: "default",
+          sessionId: sessionId ?? "default",
           modelId: model.id,
           providerId: modelProviders[model.id] ?? "",
         }),
