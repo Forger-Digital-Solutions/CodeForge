@@ -67,6 +67,15 @@ async function main() {
     } else if (cmd === "focus") {
       const r = await cdp.send("Runtime.evaluate", { expression: `(()=>{const el=document.querySelector(${JSON.stringify(args[0])}); if(!el) return 'NOT_FOUND'; el.focus(); return 'FOCUSED '+(el.tagName);})()`, returnByValue: true });
       console.log(r.result.value);
+    } else if (cmd === "setcred") {
+      // Inject a provider credential via the REAL renderer IPC (encrypts via safeStorage in main).
+      // The key comes from env (CF_CERT_KEY) and is embedded into the CDP eval INSIDE this process,
+      // so it never appears in the invoking shell command or logs.
+      const key = process.env.CF_CERT_KEY || "";
+      if (!key) { console.error("CF_CERT_KEY not set"); process.exit(4); }
+      const expr = `window.electronAPI.setProviderCredential(${JSON.stringify(args[0])}, ${JSON.stringify(key)}).then(()=> 'ok').catch(e=>'ERR:'+e.message)`;
+      const r = await cdp.send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true });
+      console.log(r.result.value);
     } else if (cmd === "insertText") {
       await cdp.send("Input.insertText", { text: args[0] });
       console.log("inserted");
