@@ -51,6 +51,7 @@
     "appId": "app.codeforge.desktop",
     "productName": "CodeForge",
     "executableName": "CodeForge",
+    "icon": "icon.ico",
     "npmRebuild": false,
     "asar": {
       "smartUnpack": false
@@ -60,7 +61,8 @@
     ],
     "directories": {
       "app": "../..",
-      "output": "release"
+      "output": "release",
+      "buildResources": "assets"
     },
     "extraMetadata": {
       "name": "codeforge-desktop",
@@ -158,6 +160,7 @@
       "package.json"
     ],
     "win": {
+      "icon": "icon.ico",
       "target": [
         "nsis",
         "portable"
