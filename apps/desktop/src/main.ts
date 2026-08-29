@@ -11,8 +11,10 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
 }
 
 import { CodeForgeServer } from "@codeforge/server";
-import { ForgeZero, createGenericFreeRecord } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog, createMockProvider, createOpencodeAdapter, createOpenRouterAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent } from "@codeforge/providers";
+import { ForgeZero, createGenericFreeRecord, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
+import { InMemoryProviderCatalog, createMockProvider, createOpencodeAdapter, createOpenRouterAdapter, createProviderAdapterById, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent } from "@codeforge/providers";
+import { NormalizedModelRegistry, discoverAndVerifyFree, type LiveModelInfo } from "@codeforge/model-registry";
+import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,6 +23,11 @@ let mainWindow: BrowserWindow | null = null;
 let firewall: ForgeZero | null = null;
 let providerCatalog: InMemoryProviderCatalog | null = null;
 let desktopCredentialStore: DesktopCredentialStore | null = null;
+let modelRegistry: NormalizedModelRegistry | null = null;
+// Per-provider auth/health signal used by the orphan-model oracle and to exclude
+// invalid-auth providers from routing (a 401 marks a provider auth_required — it is
+// never hammered on every task; the UI prompts to reconnect).
+const providerAuthState = new Map<string, "ok" | "auth_required" | "rate_limited">();
 
 interface ProjectInfo {
   id: string;
@@ -32,7 +39,19 @@ interface ProjectInfo {
 const RECENT_PROJECTS_KEY = "codeforge:recent-projects";
 const PROVIDER_CREDENTIALS_KEY = "codeforge:provider-credentials";
 const ONBOARDING_COMPLETED_KEY = "codeforge:onboarding-completed";
-const ALLOWED_PROVIDER_IDS = new Set(["opencode", "openrouter"]);
+const ALLOWED_PROVIDER_IDS = new Set([
+  "opencode",
+  "openrouter",
+  "zai",
+  "google",
+  "groq",
+  "cloudflare-workers-ai",
+  "cloudflare-account-id",
+  "openai",
+  "anthropic",
+]);
+// Providers CodeForge can build a real adapter for (excludes the cloudflare account-id pseudo-credential).
+const ROUTABLE_PROVIDER_IDS = ["opencode", "openrouter", "zai", "google", "groq", "cloudflare-workers-ai", "openai", "anthropic"] as const;
 const MAX_API_KEY_LENGTH = 512;
 const SETTINGS_FILE = "settings.json";
 const PACKAGED_SMOKE = process.env.CODEFORGE_PACKAGED_SMOKE === "1";
@@ -241,10 +260,9 @@ function getProviderCredentials(): Record<string, string> {
 
 function getProviderCredentialStatus(): Record<string, boolean> {
   const creds = getProviderCredentials();
-  return {
-    opencode: !!creds.opencode,
-    openrouter: !!creds.openrouter,
-  };
+  const status: Record<string, boolean> = {};
+  for (const id of ROUTABLE_PROVIDER_IDS) status[id] = !!creds[id];
+  return status;
 }
 
 function setProviderCredential(providerId: string, apiKey: string): void {
@@ -299,6 +317,71 @@ async function selectDirectory(): Promise<string | null> {
     return null;
   }
   return result.filePaths[0]!;
+}
+
+/**
+ * Orphan-model invariant oracle: a model is routable only if a provider adapter is registered
+ * AND its auth state permits execution. A model whose provider has no adapter (or a 401'd
+ * provider) is excluded from ForgeZero eligibility — never routed, never hammered.
+ */
+const providerOracle: ProviderAvailabilityOracle = {
+  isActive(providerId: string): boolean {
+    if (!providerCatalog?.get(providerId)) return false;
+    return providerAuthState.get(providerId) !== "auth_required";
+  },
+};
+
+/** Build + register a provider adapter by id using the desktop credential store. Idempotent. */
+function registerProviderAdapter(providerId: string): ProviderAdapter | undefined {
+  if (!providerCatalog || !desktopCredentialStore) return undefined;
+  const existing = providerCatalog.get(providerId);
+  if (existing) return existing;
+  let adapter: ProviderAdapter | undefined;
+  if (providerId === "opencode") {
+    adapter = createOpencodeAdapter({ credentialStore: desktopCredentialStore });
+  } else if (providerId === "openrouter") {
+    adapter = createOpenRouterAdapter({ credentialStore: desktopCredentialStore });
+  } else {
+    adapter = createProviderAdapterById(providerId, { credentialStore: desktopCredentialStore });
+  }
+  if (adapter) {
+    providerCatalog.register(adapter);
+    providerAuthState.set(providerId, "ok");
+  }
+  return adapter;
+}
+
+/**
+ * Discover + verify free models from a connected provider's LIVE catalog and register the
+ * verified-free records into ForgeZero. This is the ONLY path that grants "verified free"
+ * — Models.dev facts alone never do. A 401 marks the provider auth_required (excluded from routing).
+ */
+async function discoverProviderFree(providerId: string): Promise<number> {
+  if (!providerCatalog || !firewall || !modelRegistry) return 0;
+  const adapter = providerCatalog.get(providerId);
+  if (!adapter) return 0;
+  try {
+    const models = await adapter.listModels();
+    const live: LiveModelInfo[] = models.map((m) => ({
+      modelId: m.modelId,
+      isFree: m.isFree,
+      displayName: m.displayName,
+      contextWindow: m.contextWindow,
+      toolCalling: m.capabilities.toolCalling,
+      vision: m.capabilities.vision,
+      structuredOutput: m.capabilities.structuredOutput,
+    }));
+    const result = discoverAndVerifyFree(modelRegistry, providerId, live);
+    for (const rec of result.records) firewall.register(rec);
+    providerAuthState.set(providerId, "ok");
+    return result.verifiedCount;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (/\b401\b|auth|unauthor/i.test(msg)) {
+      providerAuthState.set(providerId, "auth_required");
+    }
+    return 0;
+  }
 }
 
 async function initializeServer(dbPath: string): Promise<void> {
@@ -726,12 +809,17 @@ app.whenReady().then(async () => {
   smokeRecord("WHEN_READY_START");
   desktopCredentialStore = new DesktopCredentialStore();
   smokeRecord("WHEN_READY_CRED_STORE_DONE");
-  firewall = new ForgeZero();
+  // Firewall enforces the orphan-model invariant via the provider oracle: a model can be
+  // routed only when a live, authenticated provider adapter backs it.
+  firewall = new ForgeZero({ providerOracle });
   smokeRecord("WHEN_READY_FIREWALL_DONE");
   providerCatalog = new InMemoryProviderCatalog();
   smokeRecord("WHEN_READY_CATALOG_DONE");
   registerPackagedSmokeProvider(providerCatalog);
   smokeRecord("WHEN_READY_SMOKE_PROV_DONE");
+  // Normalized model registry: bundled snapshot immediately (offline-safe); live refresh below.
+  modelRegistry = new NormalizedModelRegistry();
+  modelRegistry.loadSnapshot();
 
   // Register provider adapters with credentials from storage
   const credentials = getProviderCredentials();
@@ -747,14 +835,10 @@ app.whenReady().then(async () => {
   // to the demo runtime, which drives a visible scripted task so the workspace
   // is usable out of the box; connecting OpenCode/OpenRouter switches it to the
   // real runtime.
-  if (credentials.opencode && !PACKAGED_SMOKE) {
-    const opencodeAdapter = createOpencodeAdapter({ credentialStore: desktopCredentialStore });
-    providerCatalog.register(opencodeAdapter);
-  }
-
-  if (credentials.openrouter && !PACKAGED_SMOKE) {
-    const openrouterAdapter = createOpenRouterAdapter({ credentialStore: desktopCredentialStore });
-    providerCatalog.register(openrouterAdapter);
+  if (!PACKAGED_SMOKE) {
+    for (const id of ROUTABLE_PROVIDER_IDS) {
+      if (credentials[id]) registerProviderAdapter(id);
+    }
   }
 
   registerFreeModels(firewall);
@@ -767,6 +851,20 @@ app.whenReady().then(async () => {
 
   createWindow();
   smokeRecord("WHEN_READY_WINDOW_CREATED");
+
+  // Background: refresh the live Models.dev catalog, then discover + verify free models for any
+  // already-connected providers. Failures are non-fatal (snapshot remains); the UI refreshes when
+  // provider-updated fires. Never blocks window paint.
+  if (!PACKAGED_SMOKE && modelRegistry) {
+    void modelRegistry
+      .refresh()
+      .catch(() => {})
+      .finally(() => {
+        for (const id of ROUTABLE_PROVIDER_IDS) {
+          if (providerCatalog?.get(id)) void discoverProviderFree(id);
+        }
+      });
+  }
 
   if (PACKAGED_SMOKE) {
     smokeRecord("WHEN_READY_LAUNCHING_SMOKE");
@@ -872,21 +970,30 @@ ipcMain.handle("provider:setCredential", async (_event, providerId: string, apiK
   setProviderCredential(providerId, apiKey);
   desktopCredentialStore?.reload();
 
-  if (providerCatalog && desktopCredentialStore && !PACKAGED_SMOKE) {
-    if (providerId === "opencode" && apiKey) {
-      const existing = providerCatalog.get("opencode");
-      if (!existing) {
-        const adapter = createOpencodeAdapter({ credentialStore: desktopCredentialStore });
-        providerCatalog.register(adapter);
-      }
-    }
-    if (providerId === "openrouter" && apiKey) {
-      const existing = providerCatalog.get("openrouter");
-      if (!existing) {
-        const adapter = createOpenRouterAdapter({ credentialStore: desktopCredentialStore });
-        providerCatalog.register(adapter);
-      }
-    }
+  // Register the real adapter (BYOK) for any routable provider and discover its verified-free
+  // models. The cloudflare-account-id pseudo-credential is stored but not itself a provider.
+  if (!PACKAGED_SMOKE && (ROUTABLE_PROVIDER_IDS as readonly string[]).includes(providerId)) {
+    registerProviderAdapter(providerId);
+    void discoverProviderFree(providerId);
+  }
+});
+
+/**
+ * Preferred OpenRouter connect path: OAuth PKCE via the system browser + loopback callback.
+ * No API key is ever typed or logged; the resulting user-controlled key is stored encrypted via
+ * safeStorage, the adapter is registered, and free models are discovered + verified immediately.
+ */
+ipcMain.handle("oauth:openrouter:start", async () => {
+  if (PACKAGED_SMOKE) return { ok: false, error: "Unavailable in smoke mode" };
+  try {
+    const key = await runOpenRouterOAuth();
+    setProviderCredential("openrouter", key);
+    desktopCredentialStore?.reload();
+    registerProviderAdapter("openrouter");
+    const verifiedFree = await discoverProviderFree("openrouter");
+    return { ok: true, verifiedFree };
+  } catch (e) {
+    return { ok: false, error: (e instanceof Error ? e.message : String(e)).slice(0, 200) };
   }
 });
 
