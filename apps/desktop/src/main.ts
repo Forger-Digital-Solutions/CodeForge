@@ -996,7 +996,7 @@ ipcMain.handle("provider:setCredential", async (_event, providerId: string, apiK
   // models. The cloudflare-account-id pseudo-credential is stored but not itself a provider.
   if (!PACKAGED_SMOKE && (ROUTABLE_PROVIDER_IDS as readonly string[]).includes(providerId)) {
     registerProviderAdapter(providerId);
-    void discoverProviderFree(providerId);
+    await discoverProviderFree(providerId);
   }
 });
 

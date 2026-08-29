@@ -183,6 +183,9 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
 
   useEffect(() => {
     loadProviderStates();
+    return () => {
+      notifyProviderUpdated();
+    };
   }, []);
 
   // Fetch model counts for each provider
