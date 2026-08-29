@@ -580,6 +580,11 @@ export class AgentRuntime {
     let currentToolCall: { id: string; name: string; arguments: string } | null = null;
     let usage: { inputTokens: number; outputTokens: number; totalTokens?: number } | null = null;
     let finishReason: "stop" | "tool_calls" | "length" | "content_filter" | "error" = "stop";
+    // Assistant message segment boundary for this stream iteration. A turn may produce several
+    // assistant messages interleaved with tool activity; each gets a stable messageId so the
+    // renderer can segment prose and persist the final user-facing text for reload.
+    const messageId = crypto.randomUUID();
+    let assistantMessageStarted = false;
 
     try {
       for await (const event of provider.streamChat(request, signal)) {
@@ -589,8 +594,12 @@ export class AgentRuntime {
 
         switch (event.type) {
           case "text_delta":
+            if (!assistantMessageStarted) {
+              assistantMessageStarted = true;
+              adapter.emitAssistantMessageStarted(turnId, messageId, agentId);
+            }
             currentText += event.delta;
-            adapter.emitTextDelta(turnId, event.delta, agentId);
+            adapter.emitTextDelta(turnId, event.delta, agentId, messageId);
             break;
 
           case "tool_call_started":
@@ -630,6 +639,12 @@ export class AgentRuntime {
         return;
       }
       throw error;
+    }
+
+    // Close the assistant message segment: persist the final user-facing text so the
+    // conversation reconstructs the prose on reload (not just live streaming deltas).
+    if (assistantMessageStarted) {
+      adapter.emitAssistantMessageCompleted(turnId, messageId, currentText, agentId);
     }
 
     if (currentText) {

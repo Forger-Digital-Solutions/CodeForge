@@ -419,10 +419,24 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent);
   }
 
-  emitTextDelta(turnId: string, delta: string, agentId?: string): void {
+  emitTextDelta(turnId: string, delta: string, agentId?: string, messageId?: string): void {
     this.emit({
       type: "text.delta",
-      payload: { turnId, delta, agentId },
+      payload: { turnId, delta, agentId, messageId },
+    } as WorkspaceEvent);
+  }
+
+  emitAssistantMessageStarted(turnId: string, messageId: string, agentId?: string): void {
+    this.emit({
+      type: "assistant.message.started",
+      payload: { turnId, messageId, agentId },
+    } as WorkspaceEvent);
+  }
+
+  emitAssistantMessageCompleted(turnId: string, messageId: string, text: string, agentId?: string): void {
+    this.emit({
+      type: "assistant.message.completed",
+      payload: { turnId, messageId, text, agentId },
     } as WorkspaceEvent);
   }
 

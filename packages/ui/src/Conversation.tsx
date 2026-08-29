@@ -1,18 +1,92 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import type { TurnRecord, WorkItem } from "@codeforge/sessions";
+import type { WorkspaceEvent } from "@codeforge/protocol";
 import InlineComments from "./InlineComments.js";
 import DiffViewer from "./DiffViewer.js";
+import { buildTimeline, type TimelineItem } from "./timeline.js";
 
 interface ConversationProps {
   turns: TurnRecord[];
   workItems: WorkItem[];
   displayMode: string;
+  /** Session event stream — the authoritative source for interleaved user/assistant/tool prose. */
+  events?: WorkspaceEvent[];
   onDisplayModeChange?: (mode: "compact" | "detailed" | "debug") => void;
   isRunning?: boolean;
   /** Sends a starter prompt when the user clicks a suggestion in the empty state. */
   onSuggestedPrompt?: (text: string) => void;
   /** Short context label shown under the empty-state heading, e.g. "CodeForge · main". */
   contextLabel?: string;
+}
+
+/** Renders one reconstructed timeline item: user prompt, assistant prose, or tool activity. */
+const TimelineItemView = ({ item }: { item: TimelineItem }) => {
+  switch (item.kind) {
+    case "user":
+      return (
+        <div className="user-message">
+          <div className="user-message-label">You</div>
+          <div className="user-message-body">{item.text}</div>
+        </div>
+      );
+    case "assistant":
+      return (
+        <div className="assistant-message">
+          <div className="assistant-message-label">CodeForge</div>
+          <div className="assistant-message-body">
+            {item.text}
+            {item.streaming && <span className="assistant-cursor" aria-hidden="true">▍</span>}
+          </div>
+        </div>
+      );
+    case "tool": {
+      const iconClass = item.status === "completed" ? "success" : item.status === "failed" || item.status === "blocked" ? "error" : "running";
+      const iconChar = item.status === "completed" ? "✓" : item.status === "failed" || item.status === "blocked" ? "✕" : "●";
+      return (
+        <div className="activity-block">
+          <div className="activity-header" style={{ cursor: "default" }}>
+            <span className={`activity-icon ${iconClass}`}>{iconChar}</span>
+            <span className="activity-title">{toolLabel(item.toolName)}</span>
+            <span className="activity-meta">{item.status === "blocked" ? (item.error ?? "blocked") : item.status}</span>
+          </div>
+        </div>
+      );
+    }
+    case "file":
+      return (
+        <div className="activity-block">
+          <div className="activity-header" style={{ cursor: "default" }}>
+            <span className={`activity-icon ${item.action === "written" ? "success" : "running"}`}>{item.action === "written" ? "✎" : "◇"}</span>
+            <span className="activity-title">{item.action === "written" ? "Wrote" : "Read"} {item.path}</span>
+            {item.detail && <span className="activity-meta">{item.detail}</span>}
+          </div>
+        </div>
+      );
+    case "command":
+      return (
+        <div className="activity-block">
+          <div className="activity-header" style={{ cursor: "default" }}>
+            <span className={`activity-icon ${item.exitCode === 0 ? "success" : "error"}`}>{item.exitCode === 0 ? "✓" : "✕"}</span>
+            <span className="activity-title">Ran {item.command}</span>
+            <span className="activity-meta">exit {item.exitCode}</span>
+          </div>
+        </div>
+      );
+    default:
+      return null;
+  }
+};
+
+function toolLabel(toolName: string): string {
+  const map: Record<string, string> = {
+    read_file: "Read file",
+    write_file: "Wrote file",
+    edit_file: "Edited file",
+    run_command: "Ran command",
+    search: "Searched",
+    list_files: "Listed files",
+  };
+  return map[toolName] ?? toolName;
 }
 
 const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: string }) => {
@@ -277,9 +351,10 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
   }
 };
 
-export default function Conversation({ turns, workItems, displayMode, onSuggestedPrompt, contextLabel }: ConversationProps) {
+export default function Conversation({ turns, workItems, displayMode, events, onSuggestedPrompt, contextLabel }: ConversationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
+  const timeline = useMemo(() => buildTimeline(events ?? []), [events]);
 
   const handleScroll = () => {
     if (!containerRef.current) return;
@@ -300,7 +375,7 @@ export default function Conversation({ turns, workItems, displayMode, onSuggeste
     if (isNearBottom) {
       scrollToBottom();
     }
-  }, [turns.length, workItems.length]);
+  }, [turns.length, workItems.length, timeline.length, events?.length]);
 
   const renderTurn = (turn: TurnRecord) => (
     <div key={turn.id} className="user-message">
@@ -310,7 +385,10 @@ export default function Conversation({ turns, workItems, displayMode, onSuggeste
   );
 
   const relevantItems = workItems.filter((w) => w.kind !== "context_ref");
-  const isEmpty = turns.length === 0 && relevantItems.length === 0;
+  const isEmpty = timeline.length === 0 && turns.length === 0 && relevantItems.length === 0;
+  // Prefer the event-sourced timeline (correct chronological interleaving of user prompts,
+  // assistant prose, and tool activity). Fall back to turns+workItems only when no events exist.
+  const useTimeline = timeline.length > 0;
 
   return (
     <div
@@ -346,6 +424,17 @@ export default function Conversation({ turns, workItems, displayMode, onSuggeste
               ))}
             </div>
           </div>
+        ) : useTimeline ? (
+          <>
+            {timeline.map((item) => (
+              <TimelineItemView key={item.id} item={item} />
+            ))}
+            {relevantItems
+              .filter((w) => w.kind === "approval" || w.kind === "question")
+              .map((item) => (
+                <WorkItemRenderer key={item.id} item={item} displayMode={displayMode} />
+              ))}
+          </>
         ) : (
           <>
             {turns.map(renderTurn)}

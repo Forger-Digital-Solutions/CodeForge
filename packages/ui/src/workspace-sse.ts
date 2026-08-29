@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import type { WorkspaceEvent, SessionStatus } from "@codeforge/protocol";
 import { WorkspaceEventSchema, isWorkspaceEvent } from "@codeforge/protocol";
 import type { SessionRecord, TurnRecord, WorkItem } from "@codeforge/sessions";
+import { isEventForSession, mergeEvent } from "./session-events.js";
 
 export interface WorkflowTaskSummary {
   taskId: string;
@@ -121,6 +122,11 @@ function resolveApiPath(sseUrl: string, apiPath: string): string {
 
 export function useWorkspaceSSE(url: string) {
   const [state, setState] = useState<WorkspaceState>(initialWorkspaceState);
+  // The session this view is following. The SSE stream is scoped to it so events from other
+  // sessions never enter this view (isolation). Switching updates this and re-subscribes.
+  const [activeSessionId, setActiveSessionId] = useState<string>("default");
+  const activeSessionIdRef = useRef<string>("default");
+  activeSessionIdRef.current = activeSessionId;
   const lastSeqRef = useRef<number>(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydrateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -189,12 +195,20 @@ export function useWorkspaceSSE(url: string) {
     let aborted = false;
     let es: EventSource | null = null;
 
+    // Session changed (or first mount): start this view's event list fresh so no stale events
+    // from the previously-followed session remain, and replay the new session from seq 0.
+    lastSeqRef.current = 0;
+    setState((prev) => ({ ...prev, events: [] }));
+
     const connect = () => {
       if (aborted) return;
       clearReconnect();
 
-      const replayUrl = lastSeqRef.current > 0 ? `${url}?lastSeq=${lastSeqRef.current}` : url;
-      es = new EventSource(replayUrl);
+      const params = new URLSearchParams();
+      params.set("sessionId", activeSessionId);
+      if (lastSeqRef.current > 0) params.set("lastSeq", String(lastSeqRef.current));
+      const sep = url.includes("?") ? "&" : "?";
+      es = new EventSource(`${url}${sep}${params.toString()}`);
 
       es.onopen = () => {
         if (aborted) return;
@@ -213,11 +227,12 @@ export function useWorkspaceSSE(url: string) {
         try {
           const parsed = JSON.parse(event.data);
           if (!isWorkspaceEvent(parsed)) return;
-          if (parsed.seq <= lastSeqRef.current) return;
+          // Session isolation + dedupe: ignore events for other sessions and any already seen.
+          if (!isEventForSession(parsed, activeSessionIdRef.current, lastSeqRef.current)) return;
 
           lastSeqRef.current = parsed.seq;
           setState((prev: WorkspaceState) => {
-            const next = { ...prev, events: [...prev.events, parsed] };
+            const next = { ...prev, events: mergeEvent(prev.events, parsed) };
             if (parsed.type === "turn.started") {
               next.isRunning = true;
               next.agentStatus = "running";
@@ -412,7 +427,7 @@ export function useWorkspaceSSE(url: string) {
         es = null;
       }
     };
-  }, [url, clearReconnect, scheduleHydrate]);
+  }, [url, activeSessionId, clearReconnect, scheduleHydrate]);
 
   const sendMessage = useCallback(
     async (message: string, steer = false) => {
@@ -624,9 +639,12 @@ export function useWorkspaceSSE(url: string) {
     setState((prev) => ({ ...prev, workflowError: null, workflowActionError: null }));
   }, []);
 
-  // Load a different persisted session into the view (task history navigation).
+  // Load a different persisted session into the view (task history navigation). Switching the
+  // active session re-subscribes the SSE stream to that session only (isolation) and re-hydrates
+  // its durable snapshot. Stale events from the previous session are dropped by the effect reset.
   const selectSession = useCallback(
     (sessionId: string) => {
+      setActiveSessionId(sessionId);
       void hydrate(sessionId);
     },
     [hydrate],

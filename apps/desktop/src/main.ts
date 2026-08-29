@@ -11,7 +11,7 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
 }
 
 import { CodeForgeServer } from "@codeforge/server";
-import { ForgeZero, createGenericFreeRecord, createMuseSparkRecord } from "@codeforge/forge-zero";
+import { ForgeZero, createGenericFreeRecord } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider, createOpencodeAdapter, createOpenRouterAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent } from "@codeforge/providers";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -334,8 +334,10 @@ async function initializeServer(dbPath: string): Promise<void> {
 }
 
 function registerFreeModels(fw: ForgeZero): void {
+  // Muse Spark is intentionally NOT registered — it is a promotional model excluded from
+  // normal/default routing (free-first policy). Real free models are discovered from
+  // connected providers and verified by ForgeZero before Auto can route to them.
   fw.register(createGenericFreeRecord());
-  fw.register(createMuseSparkRecord());
 }
 
 function resolveAppIcon(): string | undefined {

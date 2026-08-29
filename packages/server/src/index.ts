@@ -8,7 +8,6 @@ import {
   ForgeZero,
   createDevelopmentEntitlementProvider,
   createGenericFreeRecord,
-  createMuseSparkRecord,
   PAID_CATALOG,
 } from "@codeforge/forge-zero";
 import type { FreeModelRecord } from "@codeforge/forge-zero";
@@ -107,10 +106,11 @@ export class CodeForgeServer {
   }
 
   private registerFreeModels(): void {
+    // Only the generic baseline free record ships by default. Muse Spark is a promotional
+    // model and is intentionally NOT registered into normal routing (free-first policy);
+    // real free models are discovered from connected providers and verified by ForgeZero.
     const generic = createGenericFreeRecord();
     this.firewall.register(generic);
-    const museSpark = createMuseSparkRecord();
-    this.firewall.register(museSpark);
   }
 
   private registerPaidModels(): void {
@@ -980,6 +980,10 @@ export class CodeForgeServer {
   private handleSSE(req: http.IncomingMessage, res: http.ServerResponse): void {
     const url = new URL(req.url || "/", `http://${req.headers.host}`);
     const lastSeq = parseInt(url.searchParams.get("lastSeq") ?? "0", 10) || 0;
+    // Session isolation: when a sessionId is supplied, this stream carries ONLY that
+    // session's events. Events for other sessions never reach this client, so switching
+    // between sessions cannot bleed one conversation's stream into another.
+    const sessionFilter = url.searchParams.get("sessionId");
 
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
@@ -990,6 +994,7 @@ export class CodeForgeServer {
     this.clients.add(res);
 
     const send = (event: WorkspaceEvent) => {
+      if (sessionFilter && event.sessionId !== sessionFilter) return;
       try {
         res.write(`id: ${event.seq}\ndata: ${JSON.stringify(event)}\n\n`);
       } catch {

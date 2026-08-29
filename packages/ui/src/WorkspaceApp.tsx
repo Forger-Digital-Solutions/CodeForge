@@ -264,6 +264,7 @@ export default function WorkspaceApp({
           <Conversation
             turns={state.turns}
             workItems={state.workItems}
+            events={state.events}
             displayMode={state.displayMode}
             onDisplayModeChange={(mode) => {
               setState((prev) => ({ ...prev, displayMode: mode }));

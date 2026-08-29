@@ -480,6 +480,44 @@ html, body, #root {
   color: var(--cf-text);
 }
 
+/* Assistant free-text prose — the agent's narrative, interleaved with tool activity. */
+.assistant-message {
+  padding: 2px 2px 6px;
+  align-self: stretch;
+  max-width: 100%;
+  margin: 2px 0;
+}
+
+.assistant-message-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--cf-text-muted);
+  margin-bottom: 3px;
+  opacity: 0.9;
+}
+
+.assistant-message-body {
+  font-size: 13.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--cf-text);
+}
+
+.assistant-cursor {
+  display: inline-block;
+  margin-left: 1px;
+  color: var(--cf-accent);
+  animation: cf-blink 1s steps(2, start) infinite;
+}
+
+@keyframes cf-blink {
+  to {
+    opacity: 0;
+  }
+}
+
 /* ────────────────────────────────────────────
    ACTIVITY BLOCKS — collapsible timeline items
    ──────────────────────────────────────────── */

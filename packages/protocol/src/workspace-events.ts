@@ -333,6 +333,33 @@ export const TextDeltaSchema = EventBase(
     turnId: z.string(),
     delta: z.string(),
     agentId: z.string().optional(),
+    /** Groups deltas into a single assistant message segment within a turn. */
+    messageId: z.string().optional(),
+  }),
+);
+
+/**
+ * Assistant free-text message boundaries. A turn may contain several assistant messages
+ * interleaved with tool activity (message → tools → message → tools → completion). These
+ * boundaries let the renderer segment prose correctly and persist the final user-facing text.
+ */
+export const AssistantMessageStartedSchema = EventBase(
+  "assistant.message.started",
+  z.object({
+    turnId: z.string(),
+    messageId: z.string(),
+    agentId: z.string().optional(),
+  }),
+);
+
+export const AssistantMessageCompletedSchema = EventBase(
+  "assistant.message.completed",
+  z.object({
+    turnId: z.string(),
+    messageId: z.string(),
+    /** Final user-facing assistant text for this segment (persisted for reload). */
+    text: z.string(),
+    agentId: z.string().optional(),
   }),
 );
 
@@ -494,6 +521,8 @@ export const WorkspaceEventSchema = z.discriminatedUnion("type", [
   StatusChangedSchema,
   DisplayModeChangedSchema,
   TextDeltaSchema,
+  AssistantMessageStartedSchema,
+  AssistantMessageCompletedSchema,
   ToolCallStartedSchema,
   ToolCallCompletedSchema,
   ToolExecutionStartedSchema,
