@@ -76,12 +76,13 @@ describe("resolveModelSelection", () => {
 });
 
 describe("ModelSelector rendering", () => {
-  it("renders paid lock badges for unentitled GEMS models", () => {
+  it("renders paid lock badges for unentitled GEMS models in dropdown", () => {
     const markup = renderToStaticMarkup(
       React.createElement(ModelSelector, {
         models: [freeModel, unentitledGemsModel],
         selectedId: null,
         onSelect: () => {},
+        isOpen: true,
       }),
     );
     expect(markup).toContain("Paid 🔒");
@@ -95,13 +96,14 @@ describe("ModelSelector rendering", () => {
         models: [entitledGemsModel],
         selectedId: null,
         onSelect: () => {},
+        isOpen: true,
       }),
     );
     expect(markup).not.toContain("Paid 🔒");
     expect(markup).not.toContain("aria-disabled");
   });
 
-  it("renders the Auto entry with its description", () => {
+  it("renders the Auto entry in trigger button with its description", () => {
     const auto: ModelSelectorItem = {
       id: "auto",
       displayName: "Auto",
