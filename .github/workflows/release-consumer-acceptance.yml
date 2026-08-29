@@ -37,6 +37,11 @@ jobs:
       V010_SETUP_SHA256: b5b451a4b943a7f5da6542f4aa0227e113025d556eba2c82ab50d8d21a72e4b8
       V010_PORTABLE_SHA256: ff10ca21ff69f156c81390613fa707e782d714f0f143be202e0d928c74e14195
       V010_COMMIT: f2bb7164e0517aad5e3355baac183458b7a66db1
+      # Authoritative pins for v0.2.0 — certified 805195f (graphite/diamond UI)
+      V020_SETUP_SHA256: 61bcb0c8c55ca2636d4b389902385fdd907424b46bbfc4b99500b2082e5da4da
+      V020_PORTABLE_SHA256: b4cf10f62a4c2a381e51369a28e62ecb91a425aa506a603179c05a34ef34b999
+      V020_BLOCKMAP_SHA256: 0dadb9a24abcedcdf032af0648e48266f5a02afe553b01f81f417f13a71f2d10
+      V020_COMMIT: 805195f82a03908b3a02c2b7be7654d2fbc30751
     steps:
       - name: Checkout (acceptance scripts only — no npm ci)
         uses: actions/checkout@v4
@@ -68,6 +73,9 @@ jobs:
           if ($env:RELEASE_TAG -eq "v0.1.0" -and $commit -ne $env:V010_COMMIT) {
             throw "v0.1.0 must peel to $env:V010_COMMIT but peels to $commit"
           }
+          if ($env:RELEASE_TAG -eq "v0.2.0" -and $commit -ne $env:V020_COMMIT) {
+            throw "v0.2.0 must peel to $env:V020_COMMIT but peels to $commit"
+          }
           "RELEASE_COMMIT=$commit" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Download public release assets
@@ -97,6 +105,12 @@ jobs:
             $pins = @(
               "CodeForge-Setup-0.1.0.exe=$($env:V010_SETUP_SHA256)",
               "CodeForge-Portable.exe=$($env:V010_PORTABLE_SHA256)"
+            )
+          } elseif ($env:RELEASE_TAG -eq "v0.2.0") {
+            $pins = @(
+              "CodeForge-Setup-0.2.0.exe=$($env:V020_SETUP_SHA256)",
+              "CodeForge-Portable.exe=$($env:V020_PORTABLE_SHA256)",
+              "CodeForge-Setup-0.2.0.exe.blockmap=$($env:V020_BLOCKMAP_SHA256)"
             )
           }
           node apps/desktop/scripts/verify-release-hashes.mjs $dir $sums @pins
