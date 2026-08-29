@@ -686,8 +686,11 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   smokeRecord("packaged_workspace_restore=PASS");
   smokeRecord("packaged_workspace_escape_blocked=PASS");
 
+  // Run the workflow in the SAME session the renderer follows ("default"). SSE is now scoped
+  // per session (isolation), so the reload-rehydration check below must observe the session the
+  // renderer is actually viewing — mirroring real usage (work happens in the viewed session).
   const workflow = await rendererWorkflowRequest({
-    sessionId: "packaged-workflow",
+    sessionId: "default",
     message: "Fix add function through packaged failure repair pass",
     forceHeuristic: true,
     verificationCommands: [
@@ -695,11 +698,11 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
     ],
   });
   if (workflow.status !== 200) throw new Error(`Packaged workflow start returned ${workflow.status}: ${JSON.stringify(workflow.body)}`);
-  const terminal = await waitForTask(workflow.body.taskId, "packaged-workflow", true);
+  const terminal = await waitForTask(workflow.body.taskId, "default", true);
   if (terminal.phase !== "completed") throw new Error(`Packaged workflow ended in ${terminal.phase}`);
   const fixed = fs.readFileSync(path.join(workspacePath, "src", "calc.ts"), "utf8");
   if (!fixed.includes("a + b")) throw new Error("Packaged workflow did not apply the repaired file content");
-  const session = await apiJson("/api/sessions/packaged-workflow");
+  const session = await apiJson("/api/sessions/default");
   const repairingSeen = JSON.stringify(session.body.events).includes("repairing");
   if (!repairingSeen) throw new Error("Packaged workflow did not traverse bounded repair");
   smokeRecord("packaged_workflow=PASS");
