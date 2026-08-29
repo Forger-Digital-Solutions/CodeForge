@@ -9,10 +9,11 @@
 //   node scripts/cert/cdp.mjs focus "<cssSelector>"      → focuses an element
 //   node scripts/cert/cdp.mjs insertText "<text>"        → types text into the focused element (real input)
 //   node scripts/cert/cdp.mjs key <Enter|Backspace|...> [--shift]  → dispatches a real key event
+const HOST = process.env.CDP_HOST || "127.0.0.1";
 const PORT = process.env.CDP_PORT || 9222;
 
 async function targetWs() {
-  const res = await fetch(`http://localhost:${PORT}/json`);
+  const res = await fetch(`http://${HOST}:${PORT}/json`, { signal: AbortSignal.timeout(5_000) });
   const targets = await res.json();
   const page = targets.find((t) => t.type === "page" && t.webSocketDebuggerUrl);
   if (!page) throw new Error("no page target");
