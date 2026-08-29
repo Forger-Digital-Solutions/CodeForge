@@ -71,6 +71,60 @@ export const initialWorkspaceState: WorkspaceState = {
   lastCheckpointId: null,
 };
 
+export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
+  return {
+    ...state,
+    session: null,
+    turns: [],
+    workItems: [],
+    events: [],
+    isRunning: false,
+    isPaused: false,
+    pendingApproval: null,
+    pendingQuestion: null,
+    agentStatus: "idle",
+    actionPending: "none",
+    actionError: null,
+    workflowTasks: [],
+    activeTaskId: null,
+    activePhase: "idle",
+    workflowProgress: 0,
+    workflowError: null,
+    workflowActionPending: "none",
+    workflowActionError: null,
+    lastWorkflowResult: null,
+    lastEvidenceId: null,
+    lastCheckpointId: null,
+  };
+}
+
+const ACTIVE_SESSION_STORAGE_KEY = "codeforge:active-session-id";
+
+type SessionStorage = Pick<Storage, "getItem" | "setItem">;
+
+function browserStorage(): SessionStorage | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    return window.localStorage;
+  } catch {
+    return undefined;
+  }
+}
+
+export function readRememberedActiveSession(storage: SessionStorage | undefined = browserStorage()): string | undefined {
+  const value = storage?.getItem(ACTIVE_SESSION_STORAGE_KEY);
+  return value && value.length <= 128 ? value : undefined;
+}
+
+export function rememberActiveSession(sessionId: string, storage: SessionStorage | undefined = browserStorage()): void {
+  if (!sessionId || sessionId.length > 128) return;
+  try {
+    storage?.setItem(ACTIVE_SESSION_STORAGE_KEY, sessionId);
+  } catch {
+    // Session restoration is a convenience; persistence remains server-authoritative.
+  }
+}
+
 function phaseToProgress(phase: string): number {
   const order: Record<string, number> = {
     received: 5,
@@ -145,8 +199,9 @@ export function useWorkspaceSSE(url: string) {
   const [state, setState] = useState<WorkspaceState>(initialWorkspaceState);
   // The session this view is following. The SSE stream is scoped to it so events from other
   // sessions never enter this view (isolation). Switching updates this and re-subscribes.
-  const [activeSessionId, setActiveSessionId] = useState<string>("default");
-  const activeSessionIdRef = useRef<string>("default");
+  const initialActiveSessionId = readRememberedActiveSession() ?? "default";
+  const [activeSessionId, setActiveSessionId] = useState<string>(initialActiveSessionId);
+  const activeSessionIdRef = useRef<string>(initialActiveSessionId);
   activeSessionIdRef.current = activeSessionId;
   const lastSeqRef = useRef<number>(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -453,6 +508,7 @@ export function useWorkspaceSSE(url: string) {
   const sendMessage = useCallback(
     async (message: string, steer = false) => {
       const sessionId = resolveSendSessionId(state.session?.id);
+      rememberActiveSession(sessionId);
       if (!state.session?.id) {
         activeSessionIdRef.current = sessionId;
         setActiveSessionId(sessionId);
@@ -669,8 +725,10 @@ export function useWorkspaceSSE(url: string) {
   // its durable snapshot. Stale events from the previous session are dropped by the effect reset.
   const selectSession = useCallback(
     (sessionId: string) => {
+      rememberActiveSession(sessionId);
       activeSessionIdRef.current = sessionId;
       setActiveSessionId(sessionId);
+      setState((prev) => clearSessionScopedState(prev));
       void hydrate(sessionId);
     },
     [hydrate],

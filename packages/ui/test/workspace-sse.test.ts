@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import type { SessionRecord, TurnRecord } from "@codeforge/sessions";
-import { createNewSessionDraft, resolveSendSessionId } from "../src/workspace-sse.js";
+import { clearSessionScopedState, createNewSessionDraft, initialWorkspaceState, readRememberedActiveSession, rememberActiveSession, resolveSendSessionId } from "../src/workspace-sse.js";
 
 describe("workspace-sse - task session allocation", () => {
   it("keeps the active session when adding a turn", () => {
@@ -27,6 +27,35 @@ describe("workspace-sse - task session allocation", () => {
       updatedAt: "2026-08-29T22:00:00.000Z",
       status: "idle",
     });
+  });
+
+  it("restores the remembered UUID-backed task instead of falling back to default", () => {
+    const values = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+    };
+
+    rememberActiveSession("task-a", storage);
+
+    expect(readRememberedActiveSession(storage)).toBe("task-a");
+  });
+
+  it("clears scoped errors and live events before hydrating another task", () => {
+    const switched = clearSessionScopedState({
+      ...initialWorkspaceState,
+      session: { id: "task-a", title: "A", createdAt: "now", updatedAt: "now", status: "running" },
+      events: [{ sessionId: "task-a", seq: 1 } as never],
+      isRunning: true,
+      workflowError: "The provider is rate limited.",
+      activeTaskId: "task-a",
+    });
+
+    expect(switched.session).toBeNull();
+    expect(switched.events).toEqual([]);
+    expect(switched.isRunning).toBe(false);
+    expect(switched.workflowError).toBeNull();
+    expect(switched.activeTaskId).toBeNull();
   });
 });
 

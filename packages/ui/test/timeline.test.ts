@@ -92,6 +92,16 @@ describe("buildTimeline — assistant prose reconstruction", () => {
     const tl = buildTimeline([b, a]);
     expect(tl.map((i) => i.kind)).toEqual(["user", "assistant"]);
   });
+
+  it("renders a user prompt once when a turn-start event is replayed", () => {
+    reset();
+    const first = ev("turn.started", { turnId: "t1", userMessage: "hi" });
+    const replay = ev("turn.started", { turnId: "t1", userMessage: "hi" });
+
+    const tl = buildTimeline([first, replay]);
+
+    expect(tl.filter((item) => item.kind === "user")).toHaveLength(1);
+  });
 });
 
 describe("session isolation", () => {

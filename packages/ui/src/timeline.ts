@@ -34,6 +34,7 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
   const items: TimelineItem[] = [];
   const assistantByMsg = new Map<string, Extract<TimelineItem, { kind: "assistant" }>>();
   const toolByCall = new Map<string, Extract<TimelineItem, { kind: "tool" }>>();
+  const seenUserTurns = new Set<string>();
   // Track the last open assistant message per turn for delta fallback (no messageId case).
   const lastOpenMsgByTurn = new Map<string, string>();
 
@@ -52,7 +53,10 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
     switch (e.type) {
       case "turn.started": {
         const p = e.payload;
-        items.push({ kind: "user", id: `user-${p.turnId}`, seq: e.seq, turnId: p.turnId, text: p.userMessage });
+        if (!seenUserTurns.has(p.turnId)) {
+          seenUserTurns.add(p.turnId);
+          items.push({ kind: "user", id: `user-${p.turnId}`, seq: e.seq, turnId: p.turnId, text: p.userMessage });
+        }
         break;
       }
       case "assistant.message.started": {
