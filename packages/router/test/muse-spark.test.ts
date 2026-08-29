@@ -179,7 +179,9 @@ describe("Muse Spark 1.2 — ForgeRouter integration", () => {
     expect(decision!.model.modelId).toBe("muse-spark-1.2-contributor-free");
     expect(decision!.reasons.length).toBeGreaterThan(3);
     expect(decision!.reasons).toContain("coding_capable");
-    expect(decision!.reasons).toContain("muse_spark_selected");
+    // No model-id favoritism: the router explains selection by capability, not by name.
+    expect(decision!.reasons).not.toContain("muse_spark_selected");
+    expect(decision!.reasons.some((r) => r.startsWith("access_"))).toBe(true);
   });
 
   it("does not hard-code winner: when Muse Spark offline, generic wins even for agentic task", () => {

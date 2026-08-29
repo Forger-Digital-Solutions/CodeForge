@@ -173,16 +173,16 @@ describe("Full-Auto lifecycle audit", () => {
     expect(res.ok).toBe(false);
   });
 
-  it("muse_spark_selected reason does not control score", () => {
+  it("selection is driven by capability score, never by model-id favoritism", () => {
     const fw = new ForgeZero({ context: ctx });
     fw.register(freshMuse() as never);
     fw.register(freshGeneric() as never);
     const router = new ForgeRouter({ firewall: fw });
     const simple = router.route({ taskType: "simple", estimatedContextTokens: 1000, requiredCapabilities: ["text"] });
     const agentic = router.route({ taskType: "agentic-coding", estimatedContextTokens: 80000, requiredCapabilities: ["coding", "toolCalling", "longContext"] });
-    expect(agentic!.reasons).toContain("muse_spark_selected");
+    // No name-based reason exists anymore; winners come from benchmark/capability scoring.
+    expect(agentic!.reasons).not.toContain("muse_spark_selected");
     expect(agentic!.model.modelId).toBe("muse-spark-1.2-contributor-free");
     expect(simple!.model.modelId).toBe("free-model-1");
-    expect(simple!.reasons).not.toContain("muse_spark_selected");
   });
 });
