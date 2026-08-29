@@ -13,7 +13,7 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
 import { CodeForgeServer } from "@codeforge/server";
 import { ForgeZero, createGenericFreeRecord, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider, createOpencodeAdapter, createOpenRouterAdapter, createProviderAdapterById, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent } from "@codeforge/providers";
-import { NormalizedModelRegistry, discoverAndVerifyFree, type LiveModelInfo } from "@codeforge/model-registry";
+import { NormalizedModelRegistry, discoverAndVerifyFree, verifyAllowanceViaProbe, getProviderPolicy, type LiveModelInfo } from "@codeforge/model-registry";
 import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -374,6 +374,25 @@ async function discoverProviderFree(providerId: string): Promise<number> {
     const result = discoverAndVerifyFree(modelRegistry, providerId, live);
     for (const rec of result.records) firewall.register(rec);
     providerAuthState.set(providerId, "ok");
+
+    // Allowance providers (Gemini/Groq/Cloudflare) list paid unit prices, so no $0 model is
+    // found above. Verify their free tier by an actual no-charge probe request instead.
+    if (result.verifiedCount === 0 && getProviderPolicy(providerId)?.hasAllowanceFree) {
+      const probe = async (modelId: string): Promise<{ ok: boolean }> => {
+        try {
+          let ok = false;
+          for await (const ev of adapter.streamChat({ model: modelId, messages: [{ role: "user", content: "hi" }], maxTokens: 5 })) {
+            if (ev.type === "text_delta" || ev.type === "finish") ok = true;
+          }
+          return { ok };
+        } catch {
+          return { ok: false };
+        }
+      };
+      const allowance = await verifyAllowanceViaProbe(modelRegistry, providerId, live, probe);
+      for (const rec of allowance.records) firewall.register(rec);
+      return allowance.verifiedCount;
+    }
     return result.verifiedCount;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

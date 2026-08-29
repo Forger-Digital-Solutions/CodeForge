@@ -416,7 +416,7 @@ export class CodeForgeServer {
               forceHeuristic: data.forceHeuristic === true ? true : undefined,
             });
             res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-            res.end(JSON.stringify({ ok: true, turnId: wf.turnId, taskId: wf.taskId, mode: this.useRealRuntime ? "real-workflow" : "workflow" }));
+            res.end(JSON.stringify({ ok: true, turnId: wf.turnId, taskId: wf.taskId, mode: this.realRuntimeEnabled() ? "real-workflow" : "workflow" }));
             return;
           } catch (e) {
             // Fall through to normal turn on workflow start failure
@@ -433,7 +433,7 @@ export class CodeForgeServer {
         // In demo mode, AgentRuntime skips real provider execution entirely.
         const turnId = await runtime.startTurn(message);
 
-        if (this.useRealRuntime) {
+        if (this.realRuntimeEnabled()) {
           res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ ok: true, turnId, mode: "real" }));
         } else {
@@ -822,7 +822,18 @@ export class CodeForgeServer {
     }
   }
 
+  /**
+   * Real runtime is enabled when it was explicitly forced (constructor/env) OR at least one real
+   * (non-test) provider adapter is registered. This is evaluated DYNAMICALLY so connecting a
+   * provider AFTER boot — the normal first-run flow (fresh profile → OAuth → send) — flips the
+   * server from demo to real without a restart. Test/mock providers never flip it.
+   */
+  private realRuntimeEnabled(): boolean {
+    return this.useRealRuntime || this.providerCatalog.all().some((a) => a.isTestProvider !== true);
+  }
+
   private getOrCreateRuntime(sessionId: string, userId?: string): AgentRuntime {
+    const demoMode = !this.realRuntimeEnabled();
     let runtime = this.runtimes.get(sessionId);
     if (!runtime) {
       runtime = createAgentRuntime({
@@ -833,10 +844,12 @@ export class CodeForgeServer {
         providerCatalog: this.providerCatalog,
         workspacePath: this.activeWorkspacePath ?? undefined,
         userId,
-        // Demo mode: skip real provider execution when useRealRuntime is false
-        demoMode: !this.useRealRuntime,
+        demoMode,
       });
       this.runtimes.set(sessionId, runtime);
+    } else {
+      // A provider may have connected since this runtime was created — re-sync demo/real.
+      runtime.setDemoMode(demoMode);
     }
     return runtime;
   }

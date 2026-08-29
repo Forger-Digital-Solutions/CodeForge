@@ -2,7 +2,7 @@ import type { FreeModelRecord } from "@codeforge/forge-zero";
 import type { CodeForgeOverlay, ModelRecord, NormalizedCapabilities } from "./normalized-types.js";
 import { canonicalId } from "./normalized-types.js";
 import type { NormalizedModelRegistry } from "./registry.js";
-import { verifyZeroUnitFree } from "./overlay.js";
+import { verifyZeroUnitFree, verifyAllowanceFree } from "./overlay.js";
 import { deriveAccessClass, derivePrivacyClass, getProviderPolicy } from "./provider-policy.js";
 
 /** A model as reported by a connected provider's LIVE catalog (adapter.listModels()). */
@@ -94,6 +94,57 @@ export function discoverAndVerifyFree(
     records.push(registry.toFreeModelRecord(record, overlay));
   }
 
+  return { records, overlays, verifiedCount: records.length };
+}
+
+export interface ProbeResult {
+  ok: boolean;
+  error?: string;
+}
+
+const NON_CHAT_RE = /whisper|embed|tts|\bstt\b|lyria|guard|safety|moderation|rerank/i;
+
+/**
+ * Verify an ALLOWANCE provider's free tier by an actual no-charge probe request. Allowance
+ * providers (Gemini, Groq, Cloudflare) list paid unit prices, so $0-pricing verification never
+ * applies — the only honest proof is that the connected account can make a request within its free
+ * quota. We probe ONE representative chat model; on success the account's chat models are marked
+ * FREE_ALLOWANCE-verified. Never awarded from pricing/metadata alone.
+ */
+export async function verifyAllowanceViaProbe(
+  registry: NormalizedModelRegistry,
+  providerId: string,
+  liveModels: LiveModelInfo[],
+  probe: (modelId: string) => Promise<ProbeResult>,
+  opts: { now?: () => Date } = {},
+): Promise<DiscoverResult> {
+  const now = opts.now ?? (() => new Date());
+  const policy = getProviderPolicy(providerId);
+  const records: FreeModelRecord[] = [];
+  const overlays: CodeForgeOverlay[] = [];
+  if (!policy?.hasAllowanceFree) return { records, overlays, verifiedCount: 0 };
+
+  const candidates = liveModels.filter((m) => !NON_CHAT_RE.test(m.modelId));
+  if (candidates.length === 0) return { records, overlays, verifiedCount: 0 };
+
+  const rep =
+    candidates.find((m) => /llama|instant|versatile|gemma|qwen|mixtral|gpt-oss|flash|glm/i.test(m.modelId)) ??
+    candidates[0]!;
+  const result = await probe(rep.modelId);
+  if (!result.ok) return { records, overlays, verifiedCount: 0 };
+
+  // Account confirmed to have free-tier access → verify the chat candidates as FREE_ALLOWANCE.
+  for (const m of candidates) {
+    let record = registry.get(providerId, m.modelId) ?? recordFromLive(providerId, m);
+    if (record.accessClass !== "FREE_ALLOWANCE") {
+      record = { ...record, accessClass: "FREE_ALLOWANCE", privacyClass: derivePrivacyClass(policy, "FREE_ALLOWANCE") };
+    }
+    const overlay = verifyAllowanceFree(record, { probeSucceeded: true, now, method: "live-probe" });
+    if (!overlay) continue;
+    registry.overlay.merge(overlay);
+    overlays.push(overlay);
+    records.push(registry.toFreeModelRecord(record, overlay));
+  }
   return { records, overlays, verifiedCount: records.length };
 }
 

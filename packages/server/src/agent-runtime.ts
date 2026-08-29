@@ -1,4 +1,5 @@
 import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
+import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition } from "@codeforge/providers";
 import type { WorkspaceEvent } from "@codeforge/protocol";
 import type { EventStore, SessionPersistence } from "@codeforge/sessions";
@@ -90,6 +91,49 @@ export interface ModelSelection {
   modelId: string;
 }
 
+/** Sentinel returned by parseToolArgs when arguments are genuinely un-parseable. */
+export const PARSE_FAILED = Symbol("parse_failed");
+
+/**
+ * Parse tool-call arguments tolerantly. Handles well-formed JSON, empty args (→ {}), and the
+ * common small-model mistake of concatenating multiple JSON objects by extracting the FIRST
+ * balanced object. Returns PARSE_FAILED only when nothing usable can be recovered.
+ */
+export function parseToolArgs(argsJson: string): unknown {
+  const trimmed = (argsJson ?? "").trim();
+  if (trimmed === "") return {};
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    // Extract the first balanced {...} object, respecting strings/escapes.
+    const start = trimmed.indexOf("{");
+    if (start === -1) return PARSE_FAILED;
+    let depth = 0;
+    let inStr = false;
+    let esc = false;
+    for (let i = start; i < trimmed.length; i++) {
+      const ch = trimmed[i];
+      if (inStr) {
+        if (esc) esc = false;
+        else if (ch === "\\") esc = true;
+        else if (ch === '"') inStr = false;
+      } else if (ch === '"') inStr = true;
+      else if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) {
+          try {
+            return JSON.parse(trimmed.slice(start, i + 1));
+          } catch {
+            return PARSE_FAILED;
+          }
+        }
+      }
+    }
+    return PARSE_FAILED;
+  }
+}
+
 export class AgentRuntime {
   private readonly sessionId: string;
   private readonly eventStore: EventStore;
@@ -98,7 +142,7 @@ export class AgentRuntime {
   private readonly providerCatalog: ProviderCatalog;
   private readonly workspacePath?: string;
   private readonly userId: string;
-  private readonly demoMode: boolean;
+  private demoMode: boolean;
   private modelSelection: ModelSelection | null = null;
   private readonly activeTurns: Map<string, TurnState> = new Map();
   private readonly pendingApprovals: Map<string, ApprovalRequest> = new Map();
@@ -119,6 +163,14 @@ export class AgentRuntime {
     this.userId = options.userId ?? "anonymous";
     this.demoMode = options.demoMode ?? false;
     this.approvalService = new ApprovalService({ defaultTimeoutMs: DEFAULT_APPROVAL_TIMEOUT_MS });
+  }
+
+  /**
+   * Update demo/real mode after construction. Lets the server flip a session to real execution
+   * once a provider is connected post-boot (the normal first-run flow), without recreating the runtime.
+   */
+  setDemoMode(demoMode: boolean): void {
+    this.demoMode = demoMode;
   }
 
   setModelSelection(selection: ModelSelection): void {
@@ -499,16 +551,21 @@ export class AgentRuntime {
   }
 
   private selectModel(): FreeModelRecord | null {
+    // Auto uses the SAME deterministic ForgeRouter ranking as the "Top Verified Free" list, so
+    // Auto and the UI agree, and Auto prefers capable coding models over tiny/generic free ones.
+    const router = new ForgeRouter({ firewall: this.firewall });
+    const ranked = router.rank({
+      taskType: "coding",
+      estimatedContextTokens: 16000,
+      requiredCapabilities: ["coding", "toolCalling"],
+    });
+    // Highest-ranked verified-free model whose provider adapter is actually registered, so the
+    // turn can execute (never pick an eligible model with no backend — the orphan guard).
+    const best = ranked.find((r) => this.providerCatalog.get(r.model.providerId));
+    if (best) return best.model;
+    // Fallback: any eligible model with a registered provider.
     const eligible = this.firewall.eligibleModels();
-    if (eligible.length === 0) {
-      return null;
-    }
-    // Prefer a verified-free model whose provider adapter is actually registered
-    // so the turn can execute. Otherwise Auto could pick an eligible model with
-    // no backend (e.g. a display-only placeholder) and fail at execution time
-    // with "Provider ... not found in catalog".
-    const withProvider = eligible.find((m) => this.providerCatalog.get(m.providerId));
-    return withProvider ?? eligible[0] ?? null;
+    return eligible.find((m) => this.providerCatalog.get(m.providerId)) ?? null;
   }
 
   private resolveTurnModel(): FreeModelRecord | null {
@@ -629,8 +686,13 @@ export class AgentRuntime {
 
           case "tool_call_completed":
             if (currentToolCall) {
+              // Normalize possibly-malformed arguments (e.g. two JSON objects concatenated by a
+              // small model) BEFORE they enter the message history, so the follow-up provider
+              // request carries valid JSON and the provider does not 400 on the next turn.
+              const parsedTc = parseToolArgs(currentToolCall.arguments);
+              if (parsedTc !== PARSE_FAILED) currentToolCall.arguments = JSON.stringify(parsedTc);
               toolCalls.push(currentToolCall);
-              adapter.emitToolCallCompleted(turnId, event.toolCallId, event.toolName, event.arguments, agentId);
+              adapter.emitToolCallCompleted(turnId, event.toolCallId, event.toolName, currentToolCall.arguments, agentId);
             }
             currentToolCall = null;
             break;
@@ -844,11 +906,11 @@ export class AgentRuntime {
       return `[Blocked by ForgeZero: ${verification.error.message}]`;
     }
 
-    // Validate arguments parse
-    let parsedArgs: unknown;
-    try {
-      parsedArgs = JSON.parse(argsJson);
-    } catch {
+    // Validate arguments parse. Small models sometimes emit slightly malformed tool arguments
+    // (e.g. two JSON objects concatenated); tolerate that by extracting the first valid object
+    // rather than failing the whole turn. Genuinely un-parseable args still error cleanly.
+    const parsedArgs = parseToolArgs(argsJson);
+    if (parsedArgs === PARSE_FAILED) {
       const msg = `Invalid tool arguments: not JSON`;
       const safe = redactSecrets(msg);
       adapter.emitToolExecutionFailed(turnId, toolCallId, toolName, safe);

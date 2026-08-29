@@ -230,6 +230,15 @@ export class ForgeRouter {
       score += Math.round(model.toolReliability * 15);
     }
 
+    // Name/family strength heuristic — only when no empirical score exists yet. Lets Auto prefer
+    // capable coding models over tiny/generic free models on coding tasks, breaking score ties
+    // deterministically instead of alphabetically. id-based, so it stays stable + transparent.
+    if (model.codingScore === undefined && req.requiredCapabilities.includes("coding")) {
+      const idl = `${model.modelId} ${model.family ?? ""}`.toLowerCase();
+      if (/cod(er|e)\b|-code|coding|deepseek|qwen|glm|nemotron|devstral/.test(idl)) score += 8;
+      if (/nano|tiny|guard|safety|lyria|whisper|embed|-1b|-2b|-3b|2\.6b|0\.5b/.test(idl)) score -= 8;
+    }
+
     // Free-class stability: prefer stable native/routed $0 over quota/promo endpoints, all else equal.
     switch (model.accessClass) {
       case "FREE_NATIVE":
