@@ -5,7 +5,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { createServer } from "@codeforge/server";
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 
 function printHelp(): void {
   console.log(`forge ${VERSION} — CodeForge CLI

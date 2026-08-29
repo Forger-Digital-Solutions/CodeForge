@@ -1,6 +1,6 @@
 {
   "name": "codeforge",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "CodeForge — free-first autonomous software engineering agent for Windows, CLI, and editors.",
   "license": "MIT",
