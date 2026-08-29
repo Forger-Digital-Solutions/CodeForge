@@ -9,6 +9,7 @@ import Composer from "./Composer.js";
 import ApprovalBar from "./ApprovalBar.js";
 import QuestionBar from "./QuestionBar.js";
 import CommandPalette, { type Command } from "./CommandPalette.js";
+import WorkflowProgress from "./WorkflowProgress.js";
 import { type ModelSelectorItem } from "./ModelSelector.js";
 import "./workspace.css";
 
@@ -186,6 +187,12 @@ export default function WorkspaceApp({
                 if (pausedTurn && state.session) resumeTurn(state.session.id, pausedTurn.id);
               }}
             />
+          )}
+
+          {(state.activeTaskId || state.isRunning || state.workflowError || state.lastWorkflowResult || state.pendingApproval?.tool === "workflow") && (
+            <div style={{ padding: "8px 12px" }}>
+              <WorkflowProgress state={state} onCancel={() => cancelWorkflow()} onApprove={approve} />
+            </div>
           )}
 
           <Conversation
