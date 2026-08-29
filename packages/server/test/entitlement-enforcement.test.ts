@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { beforeEach, describe, it, expect, vi } from "vitest";
 import { EventStore } from "@codeforge/sessions";
 import {
   ForgeZero,
@@ -38,9 +38,11 @@ function gemsModel(): FreeModelRecord {
   };
 }
 
+const upsertSession = vi.fn();
+
 const stubPersistence = {
   appendEvent: () => {},
-  upsertSession: () => {},
+  upsertSession,
   upsertTurn: () => {},
   getSession: () => undefined,
   listSessions: () => [],
@@ -75,6 +77,10 @@ async function waitForTerminalState(runtime: AgentRuntime, turnId: string): Prom
 }
 
 describe("Entitlement enforcement in the production turn path", () => {
+  beforeEach(() => {
+    upsertSession.mockClear();
+  });
+
   it("denies a free user selecting a GEMS paid model (REQUIRES_SUBSCRIPTION)", async () => {
     const fw = new ForgeZero({ entitlementProvider: createDevelopmentEntitlementProvider() });
     fw.register(gemsModel());
@@ -86,6 +92,7 @@ describe("Entitlement enforcement in the production turn path", () => {
 
     expect(state.status).toBe("failed");
     expect(state.error).toContain("REQUIRES_SUBSCRIPTION");
+    expect(upsertSession.mock.calls.at(-1)?.[0]).toMatchObject({ status: "failed" });
   });
 
   it("allows a paid user selecting a GEMS model and completes the turn", async () => {

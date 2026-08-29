@@ -218,6 +218,36 @@ export class CodeForgeServer {
     this.persistence.upsertTurn(turn);
   }
 
+  private appendDemoEvent(event: WorkspaceEvent): void {
+    this.eventStore.append(event);
+    this.persistence.appendEvent({ ...event, seq: this.eventStore.getLastSeq() });
+
+    const completedAt = new Date().toISOString();
+    if (event.type === "turn.completed" || event.type === "turn.failed" || event.type === "turn.cancelled") {
+      const payload = event.payload as { turnId: string; error?: string };
+      const turn = this.persistence.getTurns(event.sessionId).find((candidate) => candidate.id === payload.turnId);
+      if (turn) {
+        this.persistence.upsertTurn({
+          ...turn,
+          status: event.type === "turn.completed" ? "completed" : event.type === "turn.cancelled" ? "cancelled" : "failed",
+          completedAt,
+          error: event.type === "turn.failed" ? payload.error : undefined,
+        });
+      }
+    }
+
+    if (event.type === "status.changed") {
+      const payload = event.payload as { to: string };
+      const status = payload.to === "completed" || payload.to === "failed" || payload.to === "cancelled"
+        ? payload.to
+        : undefined;
+      const session = status ? this.persistence.getSession(event.sessionId) : undefined;
+      if (session && status) {
+        this.persistence.upsertSession({ ...session, status, updatedAt: completedAt });
+      }
+    }
+  }
+
   private handleRequest(req: http.IncomingMessage, res: http.ServerResponse): void {
     const url = new URL(req.url || "/", `http://${req.headers.host}`);
 
@@ -437,22 +467,10 @@ export class CodeForgeServer {
           res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ ok: true, turnId, mode: "real" }));
         } else {
-          this.eventStore.append({
-            type: "turn.started",
-            timestamp: new Date().toISOString(),
-            seq: this.eventStore.getLastSeq() + 1,
-            sessionId,
-            payload: { turnId, userMessage: message },
-          } as WorkspaceEvent);
-          this.persistSession(sessionId, message);
-          this.persistTurn(sessionId, turnId, message);
           runDemoRuntime({
             sessionId,
             turnId,
-            emit: (event) => {
-              this.eventStore.append(event);
-              this.persistence.appendEvent({ ...event, seq: this.eventStore.getLastSeq() });
-            },
+            emit: (event) => this.appendDemoEvent(event),
           }).catch(() => {});
           res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ ok: true, turnId, mode: "demo" }));

@@ -529,6 +529,19 @@ export class AgentRuntime {
       state.completedAt = new Date();
       this.activeTurns.set(turnId, state);
       this.persistTurn(state);
+      const existingSession = this.persistence.getSession(this.sessionId);
+      this.persistence.upsertSession({
+        ...(existingSession ?? {
+          id: this.sessionId,
+          title: userMessage.slice(0, 80),
+          createdAt: state.startedAt.toISOString(),
+        }),
+        updatedAt: state.completedAt.toISOString(),
+        status: "failed",
+        currentAgentId: agentId,
+        currentModelId: state.modelId,
+        currentProviderId: state.providerId,
+      });
 
       // Invalid-auth / rate-limit exclusion: a 401 (or 429) during real inference marks the
       // provider's models auth_required/rate_limited in ForgeZero, so Auto immediately stops
