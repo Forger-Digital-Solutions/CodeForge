@@ -66,9 +66,11 @@ export interface ProviderCatalog {
 }
 
 export interface ProviderHealthResponse {
-  status: "available" | "rate_limited" | "offline" | "unknown";
+  status: "available" | "degraded" | "auth_required" | "rate_limited" | "offline" | "unknown";
   latencyMs?: number;
   error?: string;
+  /** Epoch millis after which a rate-limited provider may be retried. */
+  retryAfter?: number;
 }
 
 export interface CatalogOptions {
@@ -331,3 +333,19 @@ export class ProviderError extends Error {
 
 export { OpenRouterAdapter, type OpenRouterOptions, createOpenRouterAdapter } from "./openrouter.js";
 export { OpencodeAdapter, type OpencodeOptions, createOpencodeAdapter } from "./opencode.js";
+export {
+  OpenAICompatibleAdapter,
+  type OpenAICompatibleConfig,
+  createOpenAICompatibleAdapter,
+} from "./openai-compatible.js";
+export { AnthropicAdapter, type AnthropicOptions, createAnthropicAdapter } from "./anthropic.js";
+export {
+  createZaiAdapter,
+  createGroqAdapter,
+  createGeminiAdapter,
+  createCloudflareAdapter,
+  createOpenAIAdapter,
+  createProviderAdapterById,
+  type ProviderFactoryOptions,
+} from "./provider-factory.js";
+export * as OpenRouterOAuth from "./openrouter-oauth.js";
