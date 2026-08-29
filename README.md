@@ -24,26 +24,27 @@ silently fall back to paid inference**.
 
 **[⬇ Download the latest release](https://github.com/Forger-Digital-Solutions/CodeForge/releases/latest)** — Windows 10/11 (x64).
 
-Current release: **[v0.1.0](https://github.com/Forger-Digital-Solutions/CodeForge/releases/tag/v0.1.0)**
+Current release: **[v0.2.0](https://github.com/Forger-Digital-Solutions/CodeForge/releases/tag/v0.2.0)** — *Previous: [v0.1.0](https://github.com/Forger-Digital-Solutions/CodeForge/releases/tag/v0.1.0)*
 
 | Build | File | Notes |
 | --- | --- | --- |
-| **Installer** (recommended) | [`CodeForge-Setup-0.1.0.exe`](https://github.com/Forger-Digital-Solutions/CodeForge/releases/download/v0.1.0/CodeForge-Setup-0.1.0.exe) | One-click, per-user install |
-| **Portable** | [`CodeForge-Portable.exe`](https://github.com/Forger-Digital-Solutions/CodeForge/releases/download/v0.1.0/CodeForge-Portable.exe) | No installation required |
-| **Checksums** | [`SHA256SUMS.txt`](https://github.com/Forger-Digital-Solutions/CodeForge/releases/download/v0.1.0/SHA256SUMS.txt) | SHA-256 of every asset |
+| **Installer** (recommended) | [`CodeForge-Setup-0.2.0.exe`](https://github.com/Forger-Digital-Solutions/CodeForge/releases/download/v0.2.0/CodeForge-Setup-0.2.0.exe) | One-click, per-user install |
+| **Portable** | [`CodeForge-Portable.exe`](https://github.com/Forger-Digital-Solutions/CodeForge/releases/download/v0.2.0/CodeForge-Portable.exe) | No installation required |
+| **Checksums** | [`SHA256SUMS.txt`](https://github.com/Forger-Digital-Solutions/CodeForge/releases/download/v0.2.0/SHA256SUMS.txt) | SHA-256 of every asset |
 
 > [!NOTE]
-> **v0.1.0 is not code-signed.** Windows may show a SmartScreen / "unknown publisher"
+> **v0.2.0 is not code-signed.** Windows may show a SmartScreen / "unknown publisher"
 > prompt — choose **More info → Run anyway**. Verify your download first:
 > ```powershell
 > # from the folder containing the downloaded files and SHA256SUMS.txt
-> (Get-FileHash CodeForge-Setup-0.1.0.exe -Algorithm SHA256).Hash.ToLower()
+> (Get-FileHash CodeForge-Setup-0.2.0.exe -Algorithm SHA256).Hash.ToLower()
 > # compare against the value in SHA256SUMS.txt
+> node apps/desktop/scripts/verify-release-hashes.mjs . SHA256SUMS.txt
 > ```
 
 ## Status
 
-**v0.1.0 — released** ([GitHub Release](https://github.com/Forger-Digital-Solutions/CodeForge/releases/tag/v0.1.0)). Built and verified on a GitHub-hosted Windows runner from a certified commit. See `docs/` for architecture and research.
+**v0.2.0 — released** ([GitHub Release](https://github.com/Forger-Digital-Solutions/CodeForge/releases/tag/v0.2.0)). Built and verified on GitHub-hosted Windows runners (`windows-2022` build + `windows-2025` consumer acceptance) from certified commit `805195f`. Graphite/diamond UI, packaged persistence, and free-only security verified. Previous: **v0.1.0 — released** ([GitHub Release](https://github.com/Forger-Digital-Solutions/CodeForge/releases/tag/v0.1.0)). See `docs/` for architecture and research.
 
 ## Quick Start
 
