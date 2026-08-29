@@ -1,5 +1,6 @@
 import type { CredentialStore, ProviderAdapter, ProviderHealthResponse, ProviderModel } from "./index.js";
 import { ProviderError } from "./index.js";
+import { redactSecrets } from "./redact.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
 
 /**
@@ -292,7 +293,9 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     else if (status === 404) code = "MODEL_NOT_FOUND";
     else if (status === 429) { code = "RATE_LIMITED"; retryable = true; }
     else if (status >= 500) { code = "PROVIDER_ERROR"; retryable = true; }
-    return new ProviderError(`${this.providerId} error (${status}): ${body.slice(0, 200)}`, code, retryable);
+    // Providers (e.g. Google) can echo the API key back in error bodies — redact before surfacing.
+    const safe = redactSecrets(body, this.cfg.apiKey ?? this.cfg.credentialStore?.get(this.providerId)).slice(0, 200);
+    return new ProviderError(`${this.providerId} error (${status}): ${safe}`, code, retryable);
   }
 }
 

@@ -1,5 +1,6 @@
 import type { CredentialStore } from "./index.js";
 import { ProviderError, EnvironmentCredentialStore } from "./index.js";
+import { redactSecrets } from "./redact.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
 
 export interface ProviderModel {
@@ -418,7 +419,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
     }
 
     return new ProviderError(
-      `OpenRouter error (${status}): ${body.slice(0, 200)}`,
+      `OpenRouter error (${status}): ${redactSecrets(body, this.credentialStore.get("openrouter")).slice(0, 200)}`,
       code,
       retryable,
     );

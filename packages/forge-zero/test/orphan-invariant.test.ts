@@ -53,6 +53,29 @@ describe("Orphan-model invariant (provider must be registered + authed)", () => 
     expect(fw.eligibleModels()).toHaveLength(1);
   });
 
+  it("markProviderHealth(auth_required) after a 401 excludes the provider; reconnect restores it", () => {
+    const fw = new ForgeZero({ context: { now: () => NOW } });
+    fw.register(freeRecord("openrouter", "a:free"));
+    fw.register(freeRecord("openrouter", "b:free"));
+    expect(fw.eligibleModels()).toHaveLength(2);
+    // A 401 during inference marks the whole provider auth_required → excluded.
+    fw.markProviderHealth("openrouter", "auth_required", { lastError: "Authentication failed" });
+    expect(fw.eligibleModels()).toHaveLength(0);
+    // Reconnect (re-discovery) restores health → eligible again.
+    fw.markProviderHealth("openrouter", "available");
+    expect(fw.eligibleModels()).toHaveLength(2);
+  });
+
+  it("markProviderHealth(rate_limited) excludes until retryAfter elapses", () => {
+    let clock = NOW.getTime();
+    const fw = new ForgeZero({ context: { now: () => new Date(clock) } });
+    fw.register(freeRecord("groq", "x"));
+    fw.markProviderHealth("groq", "rate_limited", { retryAfter: clock + 60000 });
+    expect(fw.eligibleModels()).toHaveLength(0);
+    clock += 61000; // cooldown elapsed
+    expect(fw.eligibleModels()).toHaveLength(1);
+  });
+
   it("oracle marking a provider inactive (e.g. after 401) removes it from routing", () => {
     let openRouterOk = true;
     const oracle: ProviderAvailabilityOracle = { isActive: (id) => (id === "openrouter" ? openRouterOk : true) };

@@ -1,5 +1,6 @@
 import type { CredentialStore, ProviderAdapter, ProviderHealthResponse, ProviderModel } from "./index.js";
 import { ProviderError } from "./index.js";
+import { redactSecrets } from "./redact.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
 
 /**
@@ -281,7 +282,8 @@ export class AnthropicAdapter implements ProviderAdapter {
     else if (status === 404) code = "MODEL_NOT_FOUND";
     else if (status === 429) { code = "RATE_LIMITED"; retryable = true; }
     else if (status >= 500) { code = "PROVIDER_ERROR"; retryable = true; }
-    return new ProviderError(`Anthropic error (${status}): ${body.slice(0, 200)}`, code, retryable);
+    const safe = redactSecrets(body, this.directKey ?? this.credentialStore?.get("anthropic")).slice(0, 200);
+    return new ProviderError(`Anthropic error (${status}): ${safe}`, code, retryable);
   }
 }
 

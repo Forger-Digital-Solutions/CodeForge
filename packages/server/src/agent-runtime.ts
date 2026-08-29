@@ -478,6 +478,20 @@ export class AgentRuntime {
       this.activeTurns.set(turnId, state);
       this.persistTurn(state);
 
+      // Invalid-auth / rate-limit exclusion: a 401 (or 429) during real inference marks the
+      // provider's models auth_required/rate_limited in ForgeZero, so Auto immediately stops
+      // selecting them and the same bad credential is never hammered on the next task. The user
+      // is prompted to reconnect; reconnecting (re-discovery) restores eligibility.
+      const providerId = state.providerId;
+      if (providerId) {
+        const msg = state.error.toLowerCase();
+        if (/\b401\b|invalid api key|unauthor|auth ?error|missing_api_key/.test(msg)) {
+          this.firewall.markProviderHealth(providerId, "auth_required", { lastError: "Authentication failed" });
+        } else if (/\b429\b|rate.?limit/.test(msg)) {
+          this.firewall.markProviderHealth(providerId, "rate_limited", { retryAfter: Date.now() + 60000, lastError: "Rate limited" });
+        }
+      }
+
       adapter.emitTurnFailed(turnId, state.error);
       adapter.emitStatusChanged("running", "failed");
       adapter.emitAgentCompleted(agentId, turnId);

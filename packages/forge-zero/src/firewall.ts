@@ -4,7 +4,7 @@ import {
   ok,
   type Result,
 } from "@codeforge/core";
-import type { FreeModelRecord, PrivacyMode } from "./types.js";
+import type { FreeModelRecord, ModelHealthState, PrivacyMode } from "./types.js";
 import {
   verifyModelEligibility,
   type ProviderAvailabilityOracle,
@@ -58,6 +58,28 @@ export class ForgeZero {
 
   getPrivacyMode(): PrivacyMode | undefined {
     return this.ctx.privacyMode;
+  }
+
+  /**
+   * Mark every registered model of a provider with a health status. Used to exclude an
+   * invalid-auth (401) or rate-limited provider from routing immediately, so Auto never
+   * re-picks it and the same bad credential is not hammered on every task.
+   */
+  markProviderHealth(providerId: string, status: ModelHealthState["status"], extra?: { retryAfter?: number; lastError?: string }): void {
+    const nowIso = this.ctx.now().toISOString();
+    for (const [key, model] of this.models) {
+      if (model.providerId !== providerId) continue;
+      this.models.set(key, {
+        ...model,
+        health: {
+          ...(model.health ?? {}),
+          status,
+          lastCheckedAt: nowIso,
+          ...(extra?.retryAfter !== undefined ? { retryAfter: extra.retryAfter } : {}),
+          ...(extra?.lastError !== undefined ? { lastError: extra.lastError } : {}),
+        },
+      });
+    }
   }
 
   unregister(providerId: string, modelId: string): boolean {

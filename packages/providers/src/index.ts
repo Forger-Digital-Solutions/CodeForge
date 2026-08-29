@@ -349,3 +349,4 @@ export {
   type ProviderFactoryOptions,
 } from "./provider-factory.js";
 export * as OpenRouterOAuth from "./openrouter-oauth.js";
+export { redactSecrets } from "./redact.js";
