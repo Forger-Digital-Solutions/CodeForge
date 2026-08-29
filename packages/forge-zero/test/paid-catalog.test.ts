@@ -34,17 +34,25 @@ describe("Paid catalog packaging", () => {
   it("FREE_CATALOG does not contain paid models", () => {
     expect(FREE_CATALOG.every((m) => m.tier === "free")).toBe(true);
     expect(FREE_CATALOG.find((m) => m.modelId === "meta/muse-spark-1.2")).toBeUndefined();
-    const freeSpark = FREE_CATALOG.find((m) => m.modelId === "muse-spark-1.2-contributor-free");
-    expect(freeSpark!.providerId).toBe("opencode");
-    expect(freeSpark!.costProfile.isFree).toBe(true);
+  });
+
+  it("FREE_CATALOG does NOT ship Muse Spark (removed from normal routing)", () => {
+    // Free-first invariant: the promotional Muse Spark model must never be part of the
+    // shipped/default free catalog. Its record is retained only as a legacy fixture.
+    expect(FREE_CATALOG.some((m) => m.modelId.includes("muse-spark"))).toBe(false);
+    expect(FREE_CATALOG.some((m) => m.family === "muse-spark")).toBe(false);
+    // The generic baseline free model remains available.
+    expect(FREE_CATALOG.some((m) => m.modelId === "free-model-1")).toBe(true);
   });
 
   it("ALL_CATALOG combines free and paid distinct identities", () => {
     expect(ALL_CATALOG.length).toBe(FREE_CATALOG.length + PAID_CATALOG.length);
     const keys = ALL_CATALOG.map((m) => `${m.providerId}::${m.modelId}`);
     expect(new Set(keys).size).toBe(keys.length);
-    expect(keys).toContain("opencode::muse-spark-1.2-contributor-free");
+    // Muse Spark FREE route is no longer shipped; the PAID OpenRouter identity remains distinct.
+    expect(keys).not.toContain("opencode::muse-spark-1.2-contributor-free");
     expect(keys).toContain("openrouter::meta/muse-spark-1.2");
+    expect(keys).toContain("codeforge::free-model-1");
   });
 
   it("ForgeZero excludes paid from eligibleModels", () => {
@@ -53,7 +61,9 @@ describe("Paid catalog packaging", () => {
     const eligibleIds = fw.eligibleModels().map((m) => `${m.providerId}::${m.modelId}`);
     expect(eligibleIds).not.toContain("openrouter::meta/muse-spark-1.2");
     expect(eligibleIds).not.toContain("openrouter::meta/muse-spark-1.2-contributor");
-    expect(eligibleIds).toContain("opencode::muse-spark-1.2-contributor-free");
+    // The shipped free baseline is eligible; the promotional free Muse Spark is not shipped.
+    expect(eligibleIds).toContain("codeforge::free-model-1");
+    expect(eligibleIds).not.toContain("opencode::muse-spark-1.2-contributor-free");
   });
 
   it("Full-Auto never picks paid when free-only", () => {

@@ -4,13 +4,29 @@ import {
   ok,
   type Result,
 } from "@codeforge/core";
-import type { FreeModelRecord } from "./types.js";
-import { verifyModelEligibility, type VerifyContext } from "./verifier.js";
+import type { FreeModelRecord, PrivacyMode } from "./types.js";
+import {
+  verifyModelEligibility,
+  type ProviderAvailabilityOracle,
+  type VerifyContext,
+} from "./verifier.js";
 import type { EntitlementProvider, EntitlementCheckStatus } from "./entitlement.js";
 
 export interface FirewallOptions {
   context?: VerifyContext;
   entitlementProvider?: EntitlementProvider;
+  /** Privacy routing mode applied to all eligibility checks. */
+  privacyMode?: PrivacyMode;
+  /** Oracle enforcing the orphan-model invariant (provider must be active to route). */
+  providerOracle?: ProviderAvailabilityOracle;
+  /** When true, TRIAL/PROMO are excluded from the free pool (ongoing-free policy). */
+  requireOngoingFree?: boolean;
+}
+
+/** Per-call overrides for eligibility (e.g. previewing a stricter privacy mode). */
+export interface EligibilityOptions {
+  privacyMode?: PrivacyMode;
+  requireOngoingFree?: boolean;
 }
 
 export class ForgeZero {
@@ -19,7 +35,14 @@ export class ForgeZero {
   private readonly entitlementProvider?: EntitlementProvider;
 
   constructor(options: FirewallOptions = {}) {
-    this.ctx = options.context ?? { now: () => new Date() };
+    const base = options.context ?? { now: () => new Date() };
+    // Options take precedence over any values already on a supplied context.
+    this.ctx = {
+      now: base.now,
+      privacyMode: options.privacyMode ?? base.privacyMode,
+      providerOracle: options.providerOracle ?? base.providerOracle,
+      requireOngoingFree: options.requireOngoingFree ?? base.requireOngoingFree,
+    };
     this.entitlementProvider = options.entitlementProvider;
   }
 
@@ -40,10 +63,20 @@ export class ForgeZero {
     return [...this.models.values()];
   }
 
-  eligibleModels(): FreeModelRecord[] {
+  private ctxWith(overrides?: EligibilityOptions): VerifyContext {
+    if (!overrides) return this.ctx;
+    return {
+      ...this.ctx,
+      privacyMode: overrides.privacyMode ?? this.ctx.privacyMode,
+      requireOngoingFree: overrides.requireOngoingFree ?? this.ctx.requireOngoingFree,
+    };
+  }
+
+  eligibleModels(overrides?: EligibilityOptions): FreeModelRecord[] {
+    const ctx = this.ctxWith(overrides);
     const result: FreeModelRecord[] = [];
     for (const model of this.models.values()) {
-      const v = verifyModelEligibility(model, this.ctx);
+      const v = verifyModelEligibility(model, ctx);
       if (v.eligible) result.push(model);
     }
     return result;

@@ -40,6 +40,10 @@ export const MUSE_SPARK_1_2: FreeModelRecord = {
   freeStatus: "verified_free",
   freeStatusVerifiedAt: nowIso(),
   tier: "free",
+  accessClass: "FREE_ROUTED",
+  authMode: "API_KEY",
+  privacyClass: "standard",
+  family: "muse-spark",
   contextWindow: 262144,
   capabilities: {
     text: true,
@@ -86,6 +90,10 @@ export const GENERIC_FREE_MODEL: FreeModelRecord = {
   freeStatus: "verified_free",
   freeStatusVerifiedAt: nowIso(),
   tier: "free",
+  accessClass: "FREE_NATIVE",
+  authMode: "NONE",
+  privacyClass: "standard",
+  family: "codeforge",
   contextWindow: 128000,
   capabilities: {
     text: true,
@@ -121,7 +129,14 @@ export const GENERIC_FREE_MODEL: FreeModelRecord = {
   },
 };
 
-export const FREE_CATALOG: FreeModelRecord[] = [GENERIC_FREE_MODEL, MUSE_SPARK_1_2];
+/**
+ * Shipped free catalog. Muse Spark is intentionally EXCLUDED — it is a promotional
+ * model and must not participate in normal/default routing (ForgeZero free-first policy).
+ * Its record + factories are retained below only as legacy migration/test fixtures.
+ * Real free models are discovered dynamically from connected providers (OpenRouter/Z.AI/…)
+ * and verified by ForgeZero, never permanently hardcoded here.
+ */
+export const FREE_CATALOG: FreeModelRecord[] = [GENERIC_FREE_MODEL];
 
 /**
  * Paid Muse Spark — verified via live OpenRouter /models 2026-08-27.
@@ -134,6 +149,10 @@ export const MUSE_SPARK_PAID: FreeModelRecord = {
   displayName: "Muse Spark 1.2 (Paid — OpenRouter)",
   freeStatus: "paid",
   tier: "paid",
+  accessClass: "PAID",
+  authMode: "OAUTH_PKCE",
+  privacyClass: "standard",
+  family: "muse-spark",
   contextWindow: 1048576,
   capabilities: {
     text: true,
@@ -174,6 +193,10 @@ export const MUSE_SPARK_CONTRIBUTOR_PAID: FreeModelRecord = {
   displayName: "Muse Spark 1.2 Contributor (Paid — OpenRouter)",
   freeStatus: "paid",
   tier: "paid",
+  accessClass: "PAID",
+  authMode: "OAUTH_PKCE",
+  privacyClass: "standard",
+  family: "muse-spark",
   contextWindow: 1048576,
   capabilities: {
     text: true,

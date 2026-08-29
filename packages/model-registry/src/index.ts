@@ -15,6 +15,14 @@ export {
   createMuseSparkContributorPaidRecord,
 } from "@codeforge/forge-zero";
 
+// --- Normalized model registry (Phase 1): upstream facts + CodeForge verification overlay ---
+export * from "./normalized-types.js";
+export * from "./provider-policy.js";
+export * from "./models-dev.js";
+export * from "./overlay.js";
+export * from "./registry.js";
+export { MODELS_DEV_SNAPSHOT, MODELS_DEV_SNAPSHOT_CAPTURED_AT } from "./snapshot.js";
+
 /**
  * Packaged model knowledge for CodeForge.
  * Ships with provider adapters, model metadata, routing metadata,
