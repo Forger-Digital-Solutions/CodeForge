@@ -1,5 +1,142 @@
 <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="256" height="256" rx="48" fill="#6366f1"/>
-  <path d="M72 176L112 80H144L184 176H152L144 152H112L104 176H72ZM120 128H136L128 104L120 128Z" fill="white"/>
-  <circle cx="192" cy="64" r="32" fill="#22c55e"/>
+<defs>
+  <radialGradient id="cf-bg-0" cx="50%" cy="50%" r="68%">
+    <stop offset="0%" stop-color="#1e1f24"/>
+    <stop offset="55%" stop-color="#131418"/>
+    <stop offset="100%" stop-color="#08090b"/>
+  </radialGradient>
+  <linearGradient id="cf-rim" x1="8%" y1="8%" x2="92%" y2="92%">
+    <stop offset="0%" stop-color="#f1f2f4"/>
+    <stop offset="18%" stop-color="#c9ccd2"/>
+    <stop offset="42%" stop-color="#a8adb5"/>
+    <stop offset="72%" stop-color="#7d828a"/>
+    <stop offset="100%" stop-color="#c2c6cd"/>
+  </linearGradient>
+  <linearGradient id="cf-rim-inner" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#3a3c42"/>
+    <stop offset="100%" stop-color="#1a1b1e"/>
+  </linearGradient>
+  <linearGradient id="cf-orbit" x1="0%" y1="0%" x2="100%" y2="0%">
+    <stop offset="0%" stop-color="#e6e8ec"/>
+    <stop offset="45%" stop-color="#b8bec7"/>
+    <stop offset="100%" stop-color="#8b9099"/>
+  </linearGradient>
+  <radialGradient id="cf-diamond-face-top" cx="32%" cy="22%" r="85%">
+    <stop offset="0%" stop-color="#ffffff"/>
+    <stop offset="28%" stop-color="#dbe0e6"/>
+    <stop offset="62%" stop-color="#9aa2af"/>
+    <stop offset="100%" stop-color="#5c6575"/>
+  </radialGradient>
+  <radialGradient id="cf-diamond-face-left" cx="20%" cy="35%" r="90%">
+    <stop offset="0%" stop-color="#f2f4f7"/>
+    <stop offset="35%" stop-color="#b9c0cc"/>
+    <stop offset="100%" stop-color="#3e4552"/>
+  </radialGradient>
+  <radialGradient id="cf-diamond-face-right" cx="78%" cy="30%" r="90%">
+    <stop offset="0%" stop-color="#ffffff"/>
+    <stop offset="30%" stop-color="#c8d0dc"/>
+    <stop offset="100%" stop-color="#4a5261"/>
+  </radialGradient>
+  <radialGradient id="cf-sphere" cx="32%" cy="28%" r="75%">
+    <stop offset="0%" stop-color="#ffffff"/>
+    <stop offset="18%" stop-color="#e8ecf0"/>
+    <stop offset="48%" stop-color="#a9b0bc"/>
+    <stop offset="100%" stop-color="#5a6474"/>
+  </radialGradient>
+  <radialGradient id="cf-sphere-dark" cx="32%" cy="28%" r="75%">
+    <stop offset="0%" stop-color="#f1f3f5"/>
+    <stop offset="45%" stop-color="#9aa2b1"/>
+    <stop offset="100%" stop-color="#3a404c"/>
+  </radialGradient>
+</defs>
+
+<!-- outer metallic rim -->
+<circle cx="128" cy="128" r="127" fill="none" stroke="url(#cf-rim)" stroke-width="3"/>
+<circle cx="128" cy="128" r="124.5" fill="none" stroke="#0a0a0c" stroke-width="1.2" opacity="0.9"/>
+<!-- main dark disc -->
+<circle cx="128" cy="128" r="122" fill="url(#cf-bg-0)"/>
+<!-- subtle inner vignette -->
+<circle cx="128" cy="128" r="122" fill="none" stroke="url(#cf-rim-inner)" stroke-width="1" opacity="0.35"/>
+
+<!-- faint concentric guides (very subtle) -->
+<circle cx="128" cy="128" r="98" fill="none" stroke="#2e2f35" stroke-width="0.7" opacity="0.35"/>
+<circle cx="128" cy="128" r="72" fill="none" stroke="#2e2f35" stroke-width="0.6" opacity="0.25"/>
+<!-- dotted orbit guides -->
+<circle cx="128" cy="128" r="98" fill="none" stroke="#3a3d44" stroke-width="0.7" stroke-dasharray="1 7" opacity="0.35"/>
+<circle cx="128" cy="128" r="56" fill="none" stroke="#3a3d44" stroke-width="0.6" stroke-dasharray="1 8" opacity="0.28"/>
+
+<!-- orbits — three intersecting ellipses -->
+<g fill="none" stroke-linecap="round">
+  <!-- orbit 1: steep diagonal -->
+  <ellipse cx="128" cy="128" rx="108" ry="46" transform="rotate(-18 128 128)" stroke="url(#cf-orbit)" stroke-width="4.2" opacity="0.98"/>
+  <ellipse cx="128" cy="128" rx="108" ry="46" transform="rotate(-18 128 128)" stroke="#0a0b0d" stroke-width="1" opacity="0.35"/>
+  <!-- orbit 2: opposite diagonal -->
+  <ellipse cx="128" cy="128" rx="108" ry="40" transform="rotate(42 128 128)" stroke="url(#cf-orbit)" stroke-width="3.8" opacity="0.95"/>
+  <!-- orbit 3: more horizontal, slightly behind -->
+  <ellipse cx="128" cy="128" rx="102" ry="36" transform="rotate(78 128 128)" stroke="#a8adb5" stroke-width="3.2" opacity="0.9"/>
+  <ellipse cx="128" cy="128" rx="102" ry="36" transform="rotate(78 128 128)" stroke="#d6dae0" stroke-width="0.7" opacity="0.45"/>
+</g>
+
+<!-- diamond shadow / base -->
+<path d="M 128 204 L 102 152 L 78 106 L 128 56 L 178 106 L 154 152 Z" fill="#06070a" opacity="0.42"/>
+
+<!-- diamond facets — faceted gem at center -->
+<!-- top table -->
+<path d="M 128 56 L 178 106 L 128 118 L 78 106 Z" fill="url(#cf-diamond-face-top)" stroke="rgba(255,255,255,0.55)" stroke-width="0.6"/>
+<!-- upper left facet -->
+<path d="M 78 106 L 128 118 L 102 152 L 78 106" fill="#8f99ab" stroke="rgba(255,255,255,0.22)" stroke-width="0.5"/>
+<path d="M 78 106 L 102 152 L 128 204 L 128 118 L 78 106" fill="url(#cf-diamond-face-left)" stroke="rgba(255,255,255,0.18)" stroke-width="0.5"/>
+<!-- upper right facet -->
+<path d="M 178 106 L 128 118 L 154 152 L 178 106" fill="#b8c0ce" stroke="rgba(255,255,255,0.22)" stroke-width="0.5"/>
+<path d="M 178 106 L 154 152 L 128 204 L 128 118 L 178 106" fill="url(#cf-diamond-face-right)" stroke="rgba(255,255,255,0.2)" stroke-width="0.5"/>
+<!-- center keel highlight -->
+<path d="M 128 118 L 128 204 L 102 152 Z" fill="#2f3542" opacity="0.92"/>
+<path d="M 128 118 L 154 152 L 128 204 Z" fill="#e8ecf2" opacity="0.96"/>
+<!-- front face split highlights -->
+<path d="M 128 118 L 102 152 L 128 162 Z" fill="#d4dae6" opacity="0.85"/>
+<path d="M 128 118 L 128 162 L 154 152 Z" fill="#f7f8fa" opacity="0.98"/>
+<!-- top edge bevel -->
+<path d="M 78 106 L 128 118 L 178 106" fill="none" stroke="#ffffff" stroke-width="0.9" opacity="0.55"/>
+<!-- central bright point -->
+<circle cx="128" cy="118.5" r="1.6" fill="#ffffff" opacity="0.95"/>
+<g opacity="0.9">
+  <path d="M 128 116 L 128 121 M 125.5 118.5 L 130.5 118.5" stroke="#ffffff" stroke-width="0.6" stroke-linecap="round"/>
+</g>
+
+<!-- orbiting spheres — metallic planets -->
+<!-- large sphere top-right on orbit -->
+<g>
+  <circle cx="192.5" cy="57.5" r="21.5" fill="#07080a" opacity="0.45"/>
+  <circle cx="192.5" cy="57.5" r="20" fill="url(#cf-sphere)" stroke="#d6dae0" stroke-width="0.7"/>
+  <circle cx="192.5" cy="57.5" r="20" fill="none" stroke="#ffffff" stroke-width="0.6" opacity="0.22"/>
+  <ellipse cx="186.5" cy="50.5" rx="6.5" ry="4.2" fill="#ffffff" opacity="0.42"/>
+</g>
+<!-- large sphere left -->
+<g>
+  <circle cx="42.5" cy="130.5" r="21" fill="#07080a" opacity="0.45"/>
+  <circle cx="42.5" cy="130.5" r="19.2" fill="url(#cf-sphere)" stroke="#d6dae0" stroke-width="0.7"/>
+  <ellipse cx="36.2" cy="123.2" rx="6.2" ry="4" fill="#ffffff" opacity="0.42"/>
+</g>
+<!-- medium sphere bottom-right on orbit -->
+<g>
+  <circle cx="196.2" cy="194.2" r="17.2" fill="#07080a" opacity="0.42"/>
+  <circle cx="196.2" cy="194.2" r="15.8" fill="url(#cf-sphere)" stroke="#d6dae0" stroke-width="0.6"/>
+  <ellipse cx="190.8" cy="187.8" rx="5.2" ry="3.4" fill="#ffffff" opacity="0.40"/>
+</g>
+<!-- small spheres -->
+<g>
+  <circle cx="77.8" cy="76.2" r="7.8" fill="url(#cf-sphere-dark)" stroke="#c2c6cd" stroke-width="0.5"/>
+  <circle cx="76.2" cy="74.2" r="2" fill="#ffffff" opacity="0.38"/>
+</g>
+<g>
+  <circle cx="222.8" cy="139.2" r="6.2" fill="url(#cf-sphere-dark)" stroke="#c2c6cd" stroke-width="0.45"/>
+  <circle cx="221.6" cy="137.4" r="1.5" fill="#ffffff" opacity="0.36"/>
+</g>
+<g>
+  <circle cx="66.8" cy="206.2" r="6.5" fill="url(#cf-sphere-dark)" stroke="#c2c6cd" stroke-width="0.45"/>
+  <circle cx="65.2" cy="204.0" r="1.6" fill="#ffffff" opacity="0.36"/>
+</g>
+
+<!-- subtle outer glow on diamond -->
+<ellipse cx="128" cy="204" rx="26" ry="6" fill="#000000" opacity="0.28"/>
 </svg>

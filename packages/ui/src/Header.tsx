@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import type { SessionRecord } from "@codeforge/sessions";
 import type { SessionStatus } from "@codeforge/protocol";
 
@@ -7,82 +7,79 @@ interface HeaderProps {
   agentStatus: SessionStatus;
   isRunning: boolean;
   isPaused: boolean;
-  displayMode: string;
-  onDisplayModeChange: (mode: "compact" | "detailed" | "debug") => void;
+  activePhase?: string;
+  workflowProgress?: number;
+  onStop?: () => void;
+  onPause?: () => void;
+  onResume?: () => void;
 }
 
-export default function Header({ session, agentStatus, isRunning, isPaused, displayMode, onDisplayModeChange }: HeaderProps) {
-  const statusLabel: string = isRunning ? (isPaused ? "Paused" : "Running") : agentStatus === "failed" ? "Failed" : agentStatus === "completed" ? "Complete" : "Idle";
-  const statusClass: string = isRunning ? (isPaused ? "paused" : "running") : agentStatus === "failed" ? "failed" : "idle";
+export default function Header({
+  session,
+  agentStatus,
+  isRunning,
+  isPaused,
+  activePhase,
+  workflowProgress,
+  onStop,
+  onPause,
+  onResume,
+}: HeaderProps) {
+  const [elapsed, setElapsed] = useState(0);
 
-  const sessionLabel: React.ReactNode = session ? <>{session.title}</> : null;
-  const branchLabel: React.ReactNode = session?.branch ? <>{session.branch}</> : null;
-  const agentLabel: React.ReactNode = session?.currentAgentId ? <>{session.currentAgentId}</> : null;
-  const modelLabel: React.ReactNode = session?.currentModelId ? <>{session.currentModelId}</> : null;
-  const permLabel: React.ReactNode = session?.permissionMode ? <>{session.permissionMode}</> : null;
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (isRunning && !isPaused) {
+      interval = setInterval(() => {
+        setElapsed((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setElapsed(0);
+    }
+    return () => clearInterval(interval);
+  }, [isRunning, isPaused]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
+  const statusDotClass = isRunning ? (isPaused ? "paused" : "running") : (agentStatus === "failed" ? "failed" : "idle");
+  const phaseInfo = isRunning && activePhase ? ` · ${activePhase.replace(/_/g, " ")}` : "";
+  const progressInfo = workflowProgress !== undefined ? ` · ${workflowProgress}%` : "";
+
+  if (!session) return null;
 
   return (
-    <header className="workspace-header">
-      <div className="workspace-header-brand">
-        <div className="logo">CF</div>
-        <span>CodeForge</span>
+    <div className="task-header">
+      <span className="task-header-title">{session.taskTitle || session.title || "Active Task"}</span>
+      <div className="task-header-status">
+        <span className={`nav-status-dot ${statusDotClass}`} />
+        <span>
+          {isRunning ? (isPaused ? "Paused" : "Running") : agentStatus === "completed" ? "Completed" : "Idle"}
+          {phaseInfo}
+          {progressInfo}
+        </span>
+        {isRunning && !isPaused && <span style={{ fontFamily: "var(--cf-font-mono)" }}>{formatTime(elapsed)}</span>}
       </div>
-      <div className="workspace-header-meta">
-        {session && (
-          <>
-            <div className="meta-item">
-              <span className="label">Session</span>
-              <span>{sessionLabel}</span>
-            </div>
-            {session.branch && (
-              <div className="meta-item">
-                <span className="label">Branch</span>
-                <span>{branchLabel}</span>
-              </div>
-            )}
-            {session.currentAgentId && (
-              <div className="meta-item">
-                <span className="label">Agent</span>
-                <span>{agentLabel}</span>
-              </div>
-            )}
-            {session.currentModelId && (
-              <div className="meta-item">
-                <span className="label">Model</span>
-                <span>{modelLabel}</span>
-              </div>
-            )}
-            {session.permissionMode && (
-              <div className="meta-item">
-                <span className="label">Permission</span>
-                <span>{permLabel}</span>
-              </div>
-            )}
-          </>
+      <div style={{ display: "flex", gap: 6, marginLeft: "auto" }}>
+        {isRunning && !isPaused && onPause && (
+          <button type="button" className="task-header-btn" onClick={onPause}>
+            Pause
+          </button>
+        )}
+        {isRunning && isPaused && onResume && (
+          <button type="button" className="task-header-btn" onClick={onResume}>
+            Resume
+          </button>
+        )}
+        {isRunning && onStop && (
+          <button type="button" className="task-header-btn danger" onClick={onStop}>
+            Stop
+          </button>
         )}
       </div>
-      <div className="workspace-header-status">
-        <div className={`status-dot ${statusClass}`} />
-        <span>{statusLabel}</span>
-        <select
-          value={displayMode}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onDisplayModeChange(e.target.value as "compact" | "detailed" | "debug")}
-          style={{
-            background: "var(--bg-tertiary)",
-            border: "1px solid var(--border)",
-            color: "var(--text-secondary)",
-            borderRadius: "var(--radius)",
-            padding: "3px 8px",
-            fontSize: "11px",
-            fontFamily: "var(--font-sans)",
-            cursor: "pointer",
-          }}
-        >
-          <option value="compact">Compact</option>
-          <option value="detailed">Detailed</option>
-          <option value="debug">Debug</option>
-        </select>
-      </div>
-    </header>
+    </div>
   );
 }

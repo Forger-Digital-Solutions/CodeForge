@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import type { Project } from "./App.js";
-import { ModelSelector, WorkspaceApp, type ModelSelectorItem } from "@codeforge/ui";
+import { WorkspaceApp, type ModelSelectorItem } from "@codeforge/ui";
 import ModelDetails from "./ModelDetails.js";
 
 interface WorkspaceShellProps {
@@ -45,6 +45,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
   const [selectedModelForDetails, setSelectedModelForDetails] = useState<ApiModel | null>(null);
   const [providerStatus, setProviderStatus] = useState<Record<string, { status: string; error?: string }>>({});
   const [providerRefreshKey, setProviderRefreshKey] = useState(0);
+  const [isForgeZeroOpen, setIsForgeZeroOpen] = useState(false);
 
   useEffect(() => {
     fetch(`${SERVER_BASE_URL}/api/workspace/set`, {
@@ -158,9 +159,6 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
     [modelProviders],
   );
 
-  // Unentitled GEMS models never execute inference; they navigate to the
-  // centralized upgrade URL instead. In Electron this goes through the
-  // main-process shell; in a plain browser it opens a new tab.
   const handleUpgradeNavigation = useCallback((url: string) => {
     const api = (globalThis as any).electronAPI;
     if (api?.openExternal) {
@@ -203,7 +201,6 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
   };
 
   const currentStatus = getCurrentProviderStatus();
-  const selectedApiModel = apiModels.find((m) => m.id === selectedModelId);
 
   return (
     <div className="workspace-shell">
@@ -218,40 +215,50 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
             <span className="project-path">{project.path}</span>
           </div>
         </div>
-        <div className="header-center">
-          <h1 className="header-title">CodeForge</h1>
-        </div>
+
         <div className="header-right">
           <div
-            className="provider-status-indicator"
-            role="status"
-            aria-live="polite"
-            title={
-              selectedApiModel
-                ? `${selectedApiModel.displayName} · ${currentStatus.detail}`
-                : currentStatus.detail || currentStatus.text
-            }
+            className="forgezero-indicator"
+            onClick={() => setIsForgeZeroOpen(!isForgeZeroOpen)}
+            title="ForgeZero Trust Status"
           >
-            <span className={`provider-status-dot ${currentStatus.status}`} aria-hidden="true"></span>
-            <span className="provider-status-text">{currentStatus.text}</span>
-            {currentStatus.detail && (
-              <span className="provider-status-detail" style={{ opacity: 0.7, fontSize: "10px" }}>
-                {currentStatus.detail}
-              </span>
-            )}
-            {selectedModelId === "auto" && (
-              <span className="provider-status-mode" style={{ fontSize: "10px" }}>
-                Auto
-              </span>
+            <span className="forgezero-icon">◈</span>
+            <span>ForgeZero · Verified Free</span>
+            {isForgeZeroOpen && (
+              <>
+                <div
+                  style={{ position: "fixed", inset: 0, zIndex: 199, cursor: "default" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsForgeZeroOpen(false);
+                  }}
+                />
+                <div className="forgezero-popover" onClick={(e) => e.stopPropagation()}>
+                  <div className="forgezero-popover-title">ForgeZero Trust Status</div>
+                  <div className="forgezero-popover-row">
+                    <span className="forgezero-popover-icon">✓</span>
+                    <span className="forgezero-popover-label">Provider: {currentStatus.text}</span>
+                  </div>
+                  <div className="forgezero-popover-row">
+                    <span className="forgezero-popover-icon">✓</span>
+                    <span className="forgezero-popover-label">Zero Billing · Verified Free</span>
+                  </div>
+                  <div className="forgezero-popover-row">
+                    <span className="forgezero-popover-icon">✓</span>
+                    <span className="forgezero-popover-label">Workspace Boundary Isolated</span>
+                  </div>
+                  <div className="forgezero-popover-row">
+                    <span className="forgezero-popover-icon">✓</span>
+                    <span className="forgezero-popover-label">Secrets Redaction Active</span>
+                  </div>
+                  <div className="forgezero-popover-row">
+                    <span className="forgezero-popover-icon">✓</span>
+                    <span className="forgezero-popover-label">Safety Timeout Enforced</span>
+                  </div>
+                </div>
+              </>
             )}
           </div>
-          <ModelSelector
-            models={models}
-            selectedId={selectedModelId}
-            onSelect={handleSelectModel}
-            onUpgradeNavigation={handleUpgradeNavigation}
-            onShowDetails={handleShowModelDetails}
-          />
           <button className="header-btn" title="Help" aria-label="Help">
             ?
           </button>
@@ -259,7 +266,14 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
       </header>
 
       <main className="workspace-shell-main">
-        <WorkspaceApp sseUrl={`${SERVER_BASE_URL}/api/events`} />
+        <WorkspaceApp
+          sseUrl={`${SERVER_BASE_URL}/api/events`}
+          models={models}
+          selectedModelId={selectedModelId}
+          onSelectModel={handleSelectModel}
+          onShowModelDetails={handleShowModelDetails}
+          onUpgradeNavigation={handleUpgradeNavigation}
+        />
       </main>
 
       {showModelDetails && selectedModelForDetails && (

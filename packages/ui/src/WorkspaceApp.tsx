@@ -9,17 +9,32 @@ import Composer from "./Composer.js";
 import ApprovalBar from "./ApprovalBar.js";
 import QuestionBar from "./QuestionBar.js";
 import CommandPalette, { type Command } from "./CommandPalette.js";
-import WorkflowProgress from "./WorkflowProgress.js";
+import { type ModelSelectorItem } from "./ModelSelector.js";
 import "./workspace.css";
 
 export interface WorkspaceAppProps {
   sseUrl?: string;
   onSendMessage?: (message: string, steer: boolean) => void;
+  models?: ModelSelectorItem[];
+  selectedModelId?: string | null;
+  onSelectModel?: (model: ModelSelectorItem) => void;
+  onShowModelDetails?: (model: ModelSelectorItem) => void;
+  onUpgradeNavigation?: (url: string) => void;
 }
 
-export default function WorkspaceApp({ sseUrl, onSendMessage }: WorkspaceAppProps) {
+export default function WorkspaceApp({
+  sseUrl,
+  onSendMessage,
+  models,
+  selectedModelId,
+  onSelectModel,
+  onShowModelDetails,
+  onUpgradeNavigation
+}: WorkspaceAppProps) {
   const { state, setState, sendMessage, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError } = useWorkspaceSSE(sseUrl ?? "/api/events");
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
 
   const commands: Command[] = [
     {
@@ -79,7 +94,6 @@ export default function WorkspaceApp({ sseUrl, onSendMessage }: WorkspaceAppProp
       description: "Stop the current agent run",
       icon: "⏹",
       action: () => {
-        // Stop the current running turn
         const activeTurn = state.turns.find((t) => t.status === "running");
         if (activeTurn && state.session) {
           stopTurn(state.session.id, activeTurn.id);
@@ -122,95 +136,115 @@ export default function WorkspaceApp({ sseUrl, onSendMessage }: WorkspaceAppProp
         ? "Answer the agent..."
         : "Ask CodeForge to work on this project... try: Fix add function to return a + b";
 
-  const showWorkflowProgress = Boolean(
-    state.activeTaskId ||
-      state.isRunning ||
-      state.workflowError ||
-      state.lastWorkflowResult ||
-      state.pendingApproval?.tool === "workflow",
-  );
-
   return (
     <div className="workspace">
-      <Header
-        session={state.session}
-        agentStatus={state.agentStatus}
-        isRunning={state.isRunning}
-        isPaused={state.isPaused}
-        displayMode={state.displayMode}
-        onDisplayModeChange={(mode) => {
-          setState((prev) => ({ ...prev, displayMode: mode }));
-        }}
-      />
-      {showWorkflowProgress && (
-        <WorkflowProgress state={state} onCancel={() => cancelWorkflow()} onApprove={approve} />
-      )}
-      {(state.workflowError || state.workflowActionError) && !showWorkflowProgress && (
-        <div style={{ margin: "8px 12px", background: "#2b0e0e", border: "1px solid #7f1d1d", color: "#fca5a5", borderRadius: 10, padding: "10px 12px", fontSize: 12, display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
-          <span><strong>Workflow:</strong> {state.workflowError ?? state.workflowActionError}</span>
-          <button className="work-item-btn" onClick={dismissWorkflowError}>Dismiss</button>
-        </div>
-      )}
       <div className="workspace-body">
-        <Navigation active={state.leftNav} onSelect={(nav) => setState((prev) => ({ ...prev, leftNav: nav }))} workItems={state.workItems} />
-        <Conversation
-          turns={state.turns}
-          workItems={state.workItems}
-          displayMode={state.displayMode}
-          onDisplayModeChange={(mode) => {
-            setState((prev) => ({ ...prev, displayMode: mode }));
-          }}
-          isRunning={state.isRunning}
-        />
-        <Inspector
-          activeTab={state.activeTab}
-          onTabSelect={(tab) => setState((prev) => ({ ...prev, activeTab: tab }))}
-          session={state.session}
-          workItems={state.workItems}
-          turns={state.turns}
-          isRunning={state.isRunning}
-          workspacePath={state.session?.workspacePath}
-        />
+        {!sidebarCollapsed && (
+          <Navigation
+            active={state.leftNav}
+            onSelect={(nav) => setState((prev) => ({ ...prev, leftNav: nav }))}
+            workItems={state.workItems}
+            onNewTask={() => setState((prev) => ({ ...prev, session: null, turns: [], workItems: [], events: [] }))}
+          />
+        )}
+
+        <div className="workspace-center">
+          <button
+            className="panel-toggle panel-toggle-left"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            {sidebarCollapsed ? "▶" : "◀"}
+          </button>
+
+          <button
+            className="panel-toggle panel-toggle-right"
+            onClick={() => setInspectorCollapsed(!inspectorCollapsed)}
+            title={inspectorCollapsed ? "Expand Inspector" : "Collapse Inspector"}
+          >
+            {inspectorCollapsed ? "◀" : "▶"}
+          </button>
+
+          {state.session && (
+            <Header
+              session={state.session}
+              agentStatus={state.agentStatus}
+              isRunning={state.isRunning}
+              isPaused={state.isPaused}
+              activePhase={state.activePhase}
+              workflowProgress={state.workflowProgress}
+              onStop={() => {
+                const activeTurn = state.turns.find((t) => t.status === "running");
+                if (activeTurn && state.session) stopTurn(state.session.id, activeTurn.id);
+              }}
+              onPause={() => {
+                const activeTurn = state.turns.find((t) => t.status === "running");
+                if (activeTurn && state.session) pauseTurn(state.session.id, activeTurn.id);
+              }}
+              onResume={() => {
+                const pausedTurn = state.turns.find((t) => t.status === "paused");
+                if (pausedTurn && state.session) resumeTurn(state.session.id, pausedTurn.id);
+              }}
+            />
+          )}
+
+          <Conversation
+            turns={state.turns}
+            workItems={state.workItems}
+            displayMode={state.displayMode}
+            onDisplayModeChange={(mode) => {
+              setState((prev) => ({ ...prev, displayMode: mode }));
+            }}
+            isRunning={state.isRunning}
+          />
+
+          {state.pendingApproval && (
+            <ApprovalBar approval={state.pendingApproval} onApprove={approve} onDeny={() => approve("deny")} />
+          )}
+          {state.pendingQuestion && (
+            <QuestionBar question={state.pendingQuestion} onAnswer={answerQuestion} />
+          )}
+
+          <Composer
+            placeholder={placeholder}
+            onSend={handleSend}
+            onSteer={(msg) => handleSend(msg, true)}
+            onStop={() => {
+              const activeTurn = state.turns.find((t) => t.status === "running");
+              if (activeTurn && state.session) stopTurn(state.session.id, activeTurn.id);
+            }}
+            onPause={() => {
+              const activeTurn = state.turns.find((t) => t.status === "running");
+              if (activeTurn && state.session) pauseTurn(state.session.id, activeTurn.id);
+            }}
+            onResume={() => {
+              const pausedTurn = state.turns.find((t) => t.status === "paused");
+              if (pausedTurn && state.session) resumeTurn(state.session.id, pausedTurn.id);
+            }}
+            onBackground={() => setState((prev) => ({ ...prev, leftNav: "agents" }))}
+            isRunning={state.isRunning}
+            isPaused={state.isPaused}
+            models={models}
+            selectedModelId={selectedModelId}
+            onSelectModel={onSelectModel}
+            onShowModelDetails={onShowModelDetails}
+            onUpgradeNavigation={onUpgradeNavigation}
+          />
+        </div>
+
+        {!inspectorCollapsed && (
+          <Inspector
+            activeTab={state.activeTab}
+            onTabSelect={(tab) => setState((prev) => ({ ...prev, activeTab: tab }))}
+            session={state.session}
+            workItems={state.workItems}
+            turns={state.turns}
+            isRunning={state.isRunning}
+            workspacePath={state.session?.workspacePath}
+          />
+        )}
       </div>
-      {/* Non-workflow approvals still use the floating bar; workflow approvals are handled inside WorkflowProgress but we keep fallback for safety */}
-      {state.pendingApproval && state.pendingApproval.tool !== "workflow" && (
-        <ApprovalBar approval={state.pendingApproval} onApprove={approve} onDeny={() => approve("deny")} />
-      )}
-      {state.pendingApproval?.tool === "workflow" && !showWorkflowProgress && (
-        <ApprovalBar approval={state.pendingApproval} onApprove={approve} onDeny={() => approve("deny")} />
-      )}
-      {state.pendingQuestion && (
-        <QuestionBar question={state.pendingQuestion} onAnswer={answerQuestion} />
-      )}
-      <Composer
-        placeholder={placeholder}
-        onSend={handleSend}
-        onSteer={(msg) => handleSend(msg, true)}
-        onStop={() => {
-          // Stop the current running turn
-          const activeTurn = state.turns.find((t) => t.status === "running");
-          if (activeTurn && state.session) {
-            stopTurn(state.session.id, activeTurn.id);
-          }
-        }}
-        onPause={() => {
-          // Pause the current running turn
-          const activeTurn = state.turns.find((t) => t.status === "running");
-          if (activeTurn && state.session) {
-            pauseTurn(state.session.id, activeTurn.id);
-          }
-        }}
-        onResume={() => {
-          // Resume the current paused turn
-          const pausedTurn = state.turns.find((t) => t.status === "paused");
-          if (pausedTurn && state.session) {
-            resumeTurn(state.session.id, pausedTurn.id);
-          }
-        }}
-        onBackground={() => setState((prev) => ({ ...prev, leftNav: "agents" }))}
-        isRunning={state.isRunning}
-        isPaused={state.isPaused}
-      />
+
       <CommandPalette
         isOpen={paletteOpen}
         onClose={() => setPaletteOpen(false)}

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import SlashCommands, { SLASH_COMMANDS } from "./SlashCommands.js";
+import { ModelSelector, type ModelSelectorItem } from "./ModelSelector.js";
 
 interface ComposerProps {
   placeholder: string;
@@ -11,9 +12,28 @@ interface ComposerProps {
   onBackground: () => void;
   isRunning: boolean;
   isPaused: boolean;
+  models?: ModelSelectorItem[];
+  selectedModelId?: string | null;
+  onSelectModel?: (model: ModelSelectorItem) => void;
+  onShowModelDetails?: (model: ModelSelectorItem) => void;
+  onUpgradeNavigation?: (url: string) => void;
 }
 
-export default function Composer({ placeholder, onSend, onSteer, onStop, onPause, onResume, onBackground, isRunning, isPaused }: ComposerProps) {
+export default function Composer({
+  placeholder,
+  onSend,
+  onSteer,
+  onStop,
+  onPause,
+  onResume,
+  isRunning,
+  isPaused,
+  models,
+  selectedModelId,
+  onSelectModel,
+  onShowModelDetails,
+  onUpgradeNavigation,
+}: ComposerProps) {
   const [input, setInput] = useState("");
   const [showCommands, setShowCommands] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -83,7 +103,11 @@ export default function Composer({ placeholder, onSend, onSteer, onStop, onPause
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (showCommands) {
-      const commands = input.endsWith("/") ? SLASH_COMMANDS : SLASH_COMMANDS.filter((c) => c.command.startsWith(`/${input.split(/\s+/).pop() ?? ""}`.toLowerCase()));
+      const commands = input.endsWith("/")
+        ? SLASH_COMMANDS
+        : SLASH_COMMANDS.filter((c) =>
+            c.command.startsWith(`/${input.split(/\s+/).pop() ?? ""}`.toLowerCase()),
+          );
       if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter" || e.key === "Escape") {
         e.preventDefault();
         if (e.key === "Enter" && commands.length > 0) {
@@ -109,38 +133,45 @@ export default function Composer({ placeholder, onSend, onSteer, onStop, onPause
   const currentFilter = input.split(/\s+/).pop() ?? "";
 
   return (
-    <div className="workspace-composer">
+    <div className="workspace-composer" style={{ position: "relative" }}>
       {isPaused && (
-        <div style={{ marginBottom: 8, display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ fontSize: 12, color: "var(--warning)" }}>Paused</span>
-          <button className="composer-btn" onClick={onResume}>Resume</button>
-          <button className="composer-btn danger" onClick={onStop}>Stop</button>
+        <div className="composer-status">
+          <span className="composer-status-dot paused" />
+          <span style={{ fontSize: 11, color: "var(--cf-warning)" }}>Paused</span>
+          <button type="button" className="btn-sm" onClick={onResume}>Resume</button>
+          <button type="button" className="btn-sm danger" onClick={onStop}>Stop</button>
         </div>
       )}
       {isRunning && !isPaused && (
-        <div style={{ marginBottom: 8, display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ fontSize: 12, color: "var(--success)" }}>Running</span>
-          <button className="composer-btn" onClick={onPause}>Pause</button>
-          <button className="composer-btn" onClick={onBackground}>Background</button>
-          <button className="composer-btn danger" onClick={onStop}>Stop</button>
+        <div className="composer-status">
+          <span className="composer-status-dot running" />
+          <span style={{ fontSize: 11, color: "var(--cf-success)" }}>Agent working</span>
+          <button type="button" className="btn-sm" onClick={onPause}>Pause</button>
+          <button type="button" className="btn-sm danger" onClick={onStop}>Stop</button>
         </div>
       )}
       <div className="composer-input-row">
         <textarea
           ref={textareaRef}
-          className={isRunning ? "steering-input" : "composer-input"}
+          className={`composer-input ${isRunning ? "steering" : ""}`}
           placeholder={placeholder}
           value={input}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           rows={1}
         />
-        <div className="composer-actions">
-          <button className="composer-btn primary" onClick={handleSubmit} disabled={!input.trim()}>
-            {isRunning ? "Steer" : "Send"}
-          </button>
-        </div>
+        <button
+          type="button"
+          className={`composer-btn ${input.trim() ? "primary" : ""}`}
+          onClick={handleSubmit}
+          disabled={!input.trim()}
+          title={isRunning ? "Steer (Ctrl+Enter)" : "Send (Ctrl+Enter)"}
+          style={{ minWidth: 40, height: 38, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}
+        >
+          ↑
+        </button>
       </div>
+
       {showCommands && (
         <SlashCommands
           onSelect={(command) => {
@@ -160,8 +191,22 @@ export default function Composer({ placeholder, onSend, onSteer, onStop, onPause
           filter={currentFilter.startsWith("/") ? currentFilter : undefined}
         />
       )}
-      <div style={{ marginTop: 6, fontSize: 10, color: "var(--text-muted)" }}>
-        Ctrl+Enter to send · Esc to stop · / for commands
+
+      <div className="composer-toolbar">
+        <div className="composer-toolbar-left">
+          {models && models.length > 0 && (
+            <ModelSelector
+              models={models}
+              selectedId={selectedModelId ?? "auto"}
+              onSelect={onSelectModel ?? (() => {})}
+              onShowDetails={onShowModelDetails}
+              onUpgradeNavigation={onUpgradeNavigation}
+            />
+          )}
+        </div>
+        <div className="composer-toolbar-right">
+          Ctrl+Enter to send · Esc to stop · / for commands
+        </div>
       </div>
     </div>
   );

@@ -59,27 +59,25 @@ export default function SlashCommands({ onSelect, filter }: SlashCommandsProps) 
   if (filtered.length === 0) {
     return (
       <div className="slash-commands" onKeyDown={handleKeyDown}>
-        <div style={{ padding: "8px 12px", color: "var(--text-muted)", fontSize: 12 }}>No matching commands</div>
+        <div style={{ padding: "8px 12px", color: "var(--cf-text-muted)", fontSize: 11 }}>No matching commands</div>
       </div>
     );
   }
 
   return (
-    <div className="slash-commands" onKeyDown={handleKeyDown}>
-      <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--text-muted)", borderBottom: "1px solid var(--border)" }}>
-        Commands
-      </div>
+    <div className="slash-commands" ref={listRef} onKeyDown={handleKeyDown}>
       {filtered.map((cmd, idx) => (
-        <div
+        <button
           key={cmd.command}
-          className={`slash-command-item ${idx === selectedIndex ? "selected" : ""}`}
+          type="button"
+          className="slash-command"
+          style={{ background: idx === selectedIndex ? "var(--cf-bg-hover)" : "transparent" }}
           onMouseEnter={() => setSelectedIndex(idx)}
           onClick={() => onSelect(cmd.command)}
         >
-          <span className="slash-command-icon">{cmd.icon}</span>
           <span className="slash-command-name">{cmd.command}</span>
           <span className="slash-command-desc">{cmd.description}</span>
-        </div>
+        </button>
       ))}
     </div>
   );

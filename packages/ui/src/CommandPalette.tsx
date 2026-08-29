@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 
 export interface Command {
   id: string;
@@ -18,10 +18,10 @@ interface CommandPaletteProps {
 export default function CommandPalette({ commands, isOpen, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const filtered = query
-    ? commands.filter((cmd) => cmd.label.toLowerCase().includes(query.toLowerCase()))
+    ? commands.filter((cmd) => cmd.label.toLowerCase().includes(query.toLowerCase()) || cmd.description.toLowerCase().includes(query.toLowerCase()))
     : commands;
 
   useEffect(() => {
@@ -75,44 +75,40 @@ export default function CommandPalette({ commands, isOpen, onClose }: CommandPal
   return (
     <div className="command-palette-overlay" onClick={onClose}>
       <div className="command-palette" onClick={(e) => e.stopPropagation()} onKeyDown={handleKeyDown}>
-        <div className="command-palette-header">
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type a command..."
-            autoFocus
-          />
-          <button className="command-palette-close" onClick={onClose}>×</button>
-        </div>
+        <input
+          ref={inputRef}
+          type="text"
+          className="command-palette-input"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Type a command or search..."
+          autoFocus
+        />
         <div className="command-palette-list">
           {filtered.length === 0 && (
-            <div style={{ padding: "12px 16px", color: "var(--text-muted)", fontSize: 12 }}>No commands found</div>
+            <div style={{ padding: "12px 16px", color: "var(--cf-text-muted)", fontSize: 12 }}>
+              No matching commands
+            </div>
           )}
           {filtered.map((cmd, idx) => (
-            <div
+            <button
               key={cmd.id}
-              className={`command-palette-item ${idx === selectedIndex ? "selected" : ""}`}
+              type="button"
+              className={`command-palette-item ${idx === selectedIndex ? "active" : ""}`}
               onMouseEnter={() => setSelectedIndex(idx)}
               onClick={() => {
                 cmd.action();
                 onClose();
               }}
             >
-              <span className="command-palette-icon">{cmd.icon}</span>
-              <div className="command-palette-content">
-                <div className="command-palette-label">{cmd.label}</div>
-                <div className="command-palette-desc">{cmd.description}</div>
+              <span className="command-palette-item-icon">{cmd.icon}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="command-palette-item-label">{cmd.label}</div>
+                <div className="command-palette-item-desc">{cmd.description}</div>
               </div>
-              {cmd.shortcut && <span className="command-palette-shortcut">{cmd.shortcut}</span>}
-            </div>
+              {cmd.shortcut && <span className="command-palette-item-shortcut">{cmd.shortcut}</span>}
+            </button>
           ))}
-        </div>
-        <div className="command-palette-footer">
-          <span>↑↓ to navigate</span>
-          <span>↵ to select</span>
-          <span>esc to close</span>
         </div>
       </div>
     </div>

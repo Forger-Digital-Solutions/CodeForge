@@ -28,41 +28,43 @@ export default function InlineComments({ comments, onAdd, onResolve, placeholder
   const unresolved = comments.filter((c) => !c.resolved);
 
   return (
-    <div style={{ marginTop: 10, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
+    <div className="inline-comments">
       {unresolved.length > 0 && (
-        <div style={{ marginBottom: 10 }}>
+        <div style={{ marginBottom: 8, display: "flex", flexDirection: "column", gap: 4 }}>
           {unresolved.map((c) => (
-            <div key={c.id} style={{ marginBottom: 8, padding: "6px 10px", background: "var(--bg-secondary)", borderRadius: "var(--radius)", fontSize: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-                <strong style={{ color: "var(--accent)" }}>{c.author}</strong>
-                <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{new Date(c.createdAt).toLocaleString()}</span>
+            <div key={c.id} className="inline-comment">
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                  <span className="inline-comment-author">{c.author}</span>
+                  <span style={{ fontSize: 10, color: "var(--cf-text-muted)" }}>
+                    {new Date(c.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </div>
+                <div className="inline-comment-text">{c.text}</div>
               </div>
-              <div style={{ color: "var(--text-secondary)" }}>{c.text}</div>
               {onResolve && (
-                <button className="work-item-btn" style={{ marginTop: 4, padding: "2px 8px", fontSize: 11 }} onClick={() => onResolve(c.id)}>Resolve</button>
+                <button
+                  className="btn-sm"
+                  style={{ padding: "2px 6px", fontSize: 10, alignSelf: "flex-start" }}
+                  onClick={() => onResolve(c.id)}
+                >
+                  Resolve
+                </button>
               )}
             </div>
           ))}
         </div>
       )}
-      <form onSubmit={handleSubmit} style={{ display: "flex", gap: 8 }}>
+      <form onSubmit={handleSubmit} className="inline-comment-input">
         <input
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={placeholder}
-          style={{
-            flex: 1,
-            background: "var(--bg-tertiary)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius)",
-            padding: "6px 10px",
-            color: "var(--text-primary)",
-            fontSize: 12,
-            outline: "none",
-          }}
         />
-        <button type="submit" className="work-item-btn primary" disabled={!text.trim()} style={{ padding: "6px 12px" }}>Add</button>
+        <button type="submit" className="btn-sm primary" disabled={!text.trim()}>
+          Comment
+        </button>
       </form>
     </div>
   );

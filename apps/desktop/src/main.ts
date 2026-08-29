@@ -354,7 +354,7 @@ function createWindow(): void {
       sandbox: true,
     },
     show: false,
-    backgroundColor: "#1e1e2e",
+    backgroundColor: "#1a1b1e",
   });
 
   mainWindow.once("ready-to-show", () => {
