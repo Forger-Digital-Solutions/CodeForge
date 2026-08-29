@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Consumer-side verification of PUBLIC GitHub Release assets against their
  * published SHA-256 checksums.
