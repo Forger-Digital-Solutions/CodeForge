@@ -291,6 +291,17 @@ export class CodeForgeServer {
       return;
     }
 
+    if (url.pathname === "/api/privacy-mode" && req.method === "GET") {
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ mode: this.firewall.getPrivacyMode() ?? "STANDARD" }));
+      return;
+    }
+
+    if (url.pathname === "/api/privacy-mode" && req.method === "POST") {
+      this.handleSetPrivacyMode(req, res);
+      return;
+    }
+
     if (url.pathname === "/api/model-selection" && req.method === "POST") {
       this.handleModelSelection(req, res);
       return;
@@ -950,6 +961,28 @@ export class CodeForgeServer {
     }));
     res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
     res.end(JSON.stringify(out));
+  }
+
+  private handleSetPrivacyMode(req: http.IncomingMessage, res: http.ServerResponse): void {
+    let body = "";
+    req.on("data", (c) => { body += c; if (body.length > 4096) req.destroy(); });
+    req.on("end", () => {
+      try {
+        const data = JSON.parse(body) as { mode?: string };
+        const valid = new Set(["STRICT", "STANDARD", "MAXIMUM_FREE"]);
+        if (!data.mode || !valid.has(data.mode)) {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "Invalid privacy mode" }));
+          return;
+        }
+        this.firewall.setPrivacyMode(data.mode as "STRICT" | "STANDARD" | "MAXIMUM_FREE");
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ ok: true, mode: data.mode }));
+      } catch {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: "Invalid JSON" }));
+      }
+    });
   }
 
   private handleProviderHealth(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {

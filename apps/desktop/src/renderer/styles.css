@@ -999,3 +999,35 @@ body {
 .model-details-btn:hover {
   background: var(--cf-accent-hover);
 }
+
+/* Free-first provider connect + privacy routing controls */
+.provider-oauth {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--cf-border-subtle, rgba(255,255,255,0.08));
+}
+.provider-oauth .provider-btn.primary {
+  width: 100%;
+}
+.privacy-mode-control {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  background: var(--cf-bg-raised, rgba(255,255,255,0.03));
+  border: 1px solid var(--cf-border-subtle, rgba(255,255,255,0.08));
+  border-radius: 10px;
+}
+.privacy-mode-control label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--cf-text, #e6e8ec);
+}
+.privacy-mode-control select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--cf-bg, #0f1115);
+  color: var(--cf-text, #e6e8ec);
+  border: 1px solid var(--cf-border-subtle, rgba(255,255,255,0.12));
+}

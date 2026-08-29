@@ -27,6 +27,13 @@ interface ApiModel {
   displayName: string;
   tier: "free" | "gems_paid" | "paid";
   freeStatus: string;
+  accessClass?: string;
+  authMode?: string;
+  privacyClass?: string;
+  verifiedFree?: boolean;
+  eligible?: boolean;
+  codingScore?: number;
+  agentScore?: number;
   contextWindow?: number;
   capabilities?: {
     text: boolean;
@@ -45,37 +52,66 @@ interface ApiModel {
   isPromotional?: boolean;
 }
 
-// Models hidden from the user-facing selector. Muse Spark is a third-party
-// promotional free model — CodeForge still routes to it under "Auto · Best
-// Verified Free", but it is never advertised as its own selectable/hero row.
+// Muse Spark is a promotional model excluded from normal routing entirely — hide any stray record.
 const HIDDEN_MODEL_RE = /muse[-\s]?spark/i;
-
-// The provider groups CodeForge presents. Anthropic / OpenAI / Z.AI appear even
-// with no runtime model yet, shown honestly as "not connected" rather than
-// hidden or faked as available.
-const PLACEHOLDER_PROVIDER_SECTIONS: ModelSection[] = [
-  { sectionId: "anthropic", sectionLabel: "ANTHROPIC", models: [], note: "Not connected · BYOK coming soon" },
-  { sectionId: "openai", sectionLabel: "OPENAI", models: [], note: "Not connected · integration coming soon" },
-  { sectionId: "zai", sectionLabel: "Z.AI", models: [], note: "Not connected · integration coming soon" },
-];
-
-// Map a real catalog model to a user-facing section, or null to hide it.
-function catalogSectionFor(providerId: string, tier: string): string | null {
-  if (providerId === "codeforge") return tier === "gems_paid" ? "GEMS" : "VERIFIED FREE";
-  if (providerId === "anthropic") return "ANTHROPIC";
-  if (providerId === "openai") return "OPENAI";
-  if (providerId === "zai") return "Z.AI";
-  return null; // opencode / openrouter (Muse Spark) are hidden from the selector
+function isHiddenModel(id: string): boolean {
+  return HIDDEN_MODEL_RE.test(id);
 }
 
-const SECTION_ORDER = ["CODEFORGE", "VERIFIED FREE", "GEMS", "ANTHROPIC", "OPENAI", "Z.AI"];
+// Provider → user-facing section label. Order follows the spec's model dropdown structure.
+const PROVIDER_SECTION: Record<string, string> = {
+  zai: "Z.AI",
+  openrouter: "OPENROUTER",
+  google: "GOOGLE",
+  groq: "GROQ",
+  "cloudflare-workers-ai": "CLOUDFLARE",
+  anthropic: "ANTHROPIC",
+  openai: "OPENAI",
+};
+
+const SECTION_ORDER = [
+  "CODEFORGE",
+  "TOP VERIFIED FREE",
+  "GEMS",
+  "Z.AI",
+  "OPENROUTER",
+  "GOOGLE",
+  "GROQ",
+  "CLOUDFLARE",
+  "ANTHROPIC",
+  "OPENAI",
+];
 function getSectionOrder(sectionLabel: string): number {
   const idx = SECTION_ORDER.indexOf(sectionLabel);
   return idx === -1 ? 99 : idx;
 }
 
-function isHiddenModel(id: string): boolean {
-  return HIDDEN_MODEL_RE.test(id);
+// Honest access-status badge from the CodeForge access class.
+function accessBadge(m: ApiModel): string {
+  switch (m.accessClass) {
+    case "FREE_NATIVE":
+      return "Free";
+    case "FREE_ROUTED":
+      return "Free · routed";
+    case "FREE_ALLOWANCE":
+      return "Free · allowance";
+    case "FREE_PROMO":
+      return "Promo";
+    case "TRIAL":
+      return "Trial";
+    case "PAID": {
+      const inC = m.costProfile?.inputCostPerMillion;
+      const outC = m.costProfile?.outputCostPerMillion;
+      return inC != null && outC != null ? `Paid · $${inC}/$${outC} per 1M` : "Paid";
+    }
+    default:
+      return m.costProfile?.isFree ? "Free" : "Paid";
+  }
+}
+
+function isPaidAccess(m: ApiModel | undefined): boolean {
+  if (!m) return false;
+  return m.accessClass === "PAID" || m.accessClass === "TRIAL";
 }
 
 export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps) {
@@ -119,8 +155,10 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
         ...visible.map((m) => ({
           id: m.id,
           displayName: m.displayName,
-          tier: m.tier === "paid" ? ("gems_paid" as const) : m.tier,
-          description: m.costProfile?.isFree ? "Free" : undefined,
+          // Only first-party GEMS are entitlement-locked; provider paid models stay selectable
+          // (a paid-confirmation dialog gates the actual charge). Honest badge via accessBadge.
+          tier: m.tier === "gems_paid" ? ("gems_paid" as const) : ("free" as const),
+          description: accessBadge(m),
         })),
       ];
       setModels(modelItems);
@@ -161,45 +199,82 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
     };
   }, [refreshModelsAndHealth]);
 
-  // Group models into user-facing sections for the ModelSelector.
+  // Build the model dropdown to the free-first structure:
+  // CODEFORGE (Auto) · TOP VERIFIED FREE (#1–5, live) · GEMS · per-provider (free-first, honest badges).
   const modelSections = useMemo((): ModelSection[] => {
-    const sectionMap = new Map<string, ModelSelectorItem[]>();
-    sectionMap.set("CODEFORGE", []);
+    const toItem = (m: ApiModel): ModelSelectorItem => ({
+      id: m.id,
+      displayName: m.displayName,
+      tier: m.tier === "gems_paid" ? "gems_paid" : "free",
+      description: accessBadge(m),
+    });
+    const autoItem: ModelSelectorItem =
+      models.find((m) => m.id === "auto") ?? { id: "auto", displayName: "Auto", tier: "free", description: "Best Verified Free" };
 
-    for (const model of models) {
-      if (model.id === "auto") {
-        sectionMap.get("CODEFORGE")!.push(model);
-        continue;
-      }
-      const apiModel = apiModels.find((m) => m.id === model.id);
-      const providerId = apiModel?.providerId ?? modelProviders[model.id] ?? "";
-      const tier = apiModel?.tier ?? model.tier;
-      const sectionLabel = catalogSectionFor(providerId, tier);
-      if (!sectionLabel) continue; // hidden from user-facing selector
-      if (!sectionMap.has(sectionLabel)) sectionMap.set(sectionLabel, []);
-      sectionMap.get(sectionLabel)!.push(model);
+    const visible = apiModels.filter((m) => !isHiddenModel(m.id));
+    const sections: ModelSection[] = [{ sectionId: "codeforge", sectionLabel: "CODEFORGE", models: [autoItem] }];
+
+    // TOP VERIFIED FREE — eligible + verified-free, ranked by empirical scores. Live-derived.
+    const topFree = [...visible]
+      .filter((m) => m.eligible && m.verifiedFree)
+      .sort(
+        (a, b) =>
+          (b.codingScore ?? b.agentScore ?? 0) - (a.codingScore ?? a.agentScore ?? 0) ||
+          a.id.localeCompare(b.id),
+      )
+      .slice(0, 5);
+    if (topFree.length > 0) {
+      sections.push({
+        sectionId: "top-verified-free",
+        sectionLabel: "TOP VERIFIED FREE",
+        models: topFree.map((m, i) => ({ ...toItem(m), displayName: `#${i + 1} · ${m.displayName}` })),
+      });
     }
 
-    const catalogSections: ModelSection[] = Array.from(sectionMap.entries())
-      .filter(([, sectionModels]) => sectionModels.length > 0)
-      .map(([sectionLabel, sectionModels]) => ({
-        sectionId: sectionLabel.toLowerCase().replace(/\s+/g, "-"),
-        sectionLabel,
-        models: sectionModels,
-      }));
+    const gems = visible.filter((m) => m.tier === "gems_paid");
+    if (gems.length > 0) sections.push({ sectionId: "gems", sectionLabel: "GEMS", models: gems.map(toItem) });
 
-    // Present provider groups that have no runtime model yet as honest,
-    // non-selectable "not connected" sections instead of hiding them.
-    const present = new Set(catalogSections.map((s) => s.sectionLabel));
-    const placeholders = PLACEHOLDER_PROVIDER_SECTIONS.filter((s) => !present.has(s.sectionLabel));
+    const byProvider = new Map<string, ApiModel[]>();
+    for (const m of visible) {
+      if (m.tier === "gems_paid") continue;
+      const label = PROVIDER_SECTION[m.providerId];
+      if (!label) continue;
+      if (!byProvider.has(label)) byProvider.set(label, []);
+      byProvider.get(label)!.push(m);
+    }
+    for (const [label, list] of byProvider) {
+      list.sort(
+        (a, b) =>
+          Number(!!b.costProfile?.isFree) - Number(!!a.costProfile?.isFree) ||
+          a.displayName.localeCompare(b.displayName),
+      );
+      sections.push({ sectionId: label.toLowerCase().replace(/\s+/g, "-"), sectionLabel: label, models: list.map(toItem) });
+    }
 
-    return [...catalogSections, ...placeholders].sort(
-      (a, b) => getSectionOrder(a.sectionLabel) - getSectionOrder(b.sectionLabel),
-    );
-  }, [models, apiModels, modelProviders]);
+    // Honest "not connected" rows for providers with no models yet (never faked as available).
+    const present = new Set(sections.map((s) => s.sectionLabel));
+    for (const [pid, label] of Object.entries(PROVIDER_SECTION)) {
+      if (present.has(label)) continue;
+      const note = pid === "openrouter" ? "Not connected · Connect with OAuth in Settings" : "Not connected · add API key in Settings";
+      sections.push({ sectionId: label.toLowerCase().replace(/\s+/g, "-"), sectionLabel: label, models: [], note });
+    }
+
+    return sections.sort((a, b) => getSectionOrder(a.sectionLabel) - getSectionOrder(b.sectionLabel));
+  }, [models, apiModels]);
 
   const handleSelectModel = useCallback(
     (model: ModelSelectorItem) => {
+      // Paid-model confirmation: selecting a model that can incur charges is always explicit.
+      // Verified-free models never trigger this prompt.
+      const apiModel = apiModels.find((m) => m.id === model.id);
+      if (isPaidAccess(apiModel)) {
+        const badge = apiModel ? accessBadge(apiModel) : "Paid";
+        const ok = window.confirm(
+          `${model.displayName} may incur charges from your provider (${badge}).\n\n` +
+            "This is a paid/trial model — CodeForge Free Mode will not select it automatically.\n\nUse this paid model?",
+        );
+        if (!ok) return;
+      }
       setSelectedModelId(model.id);
       fetch(`${SERVER_BASE_URL}/api/model-selection`, {
         method: "POST",
@@ -244,7 +319,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
           setSelectedModelId("auto");
         });
     },
-    [modelProviders],
+    [modelProviders, apiModels],
   );
 
   const handleUpgradeNavigation = useCallback((url: string) => {

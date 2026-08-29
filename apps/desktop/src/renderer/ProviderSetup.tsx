@@ -23,25 +23,73 @@ interface ProviderConfig {
   setupHelp: string;
   hasFreeModels: boolean;
   hasPaidModels: boolean;
+  /** Supports the one-click OAuth connect path (no API key typed). */
+  oauth?: boolean;
 }
 
 const PROVIDERS: ProviderConfig[] = [
   {
+    providerId: "openrouter",
+    displayName: "OpenRouter",
+    description: "Free ($0 routed) + paid models · one-click OAuth connect",
+    authEnv: "OPENROUTER_API_KEY",
+    setupHelp: "Connect with OAuth (recommended) or paste a key from https://openrouter.ai/keys",
+    hasFreeModels: true,
+    hasPaidModels: true,
+    oauth: true,
+  },
+  {
+    providerId: "zai",
+    displayName: "Z.AI",
+    description: "Direct GLM provider · free glm-4.5-flash / glm-4.7-flash ($0) + paid coding models",
+    authEnv: "ZHIPU_API_KEY",
+    setupHelp: "Get your API key at https://z.ai (Z.AI API keys)",
+    hasFreeModels: true,
+    hasPaidModels: true,
+  },
+  {
+    providerId: "google",
+    displayName: "Google Gemini",
+    description: "Free allowance tier (quota-limited) · vision-capable Flash models",
+    authEnv: "GEMINI_API_KEY",
+    setupHelp: "Get a free key at https://aistudio.google.com/apikey (free tier may train on prompts)",
+    hasFreeModels: true,
+    hasPaidModels: true,
+  },
+  {
+    providerId: "groq",
+    displayName: "Groq",
+    description: "Fast free developer allowance · Llama / GPT-OSS models",
+    authEnv: "GROQ_API_KEY",
+    setupHelp: "Get a free key at https://console.groq.com/keys",
+    hasFreeModels: true,
+    hasPaidModels: true,
+  },
+  {
     providerId: "opencode",
     displayName: "OpenCode Zen",
-    description: "Cloud AI provider with verified free models",
+    description: "Cloud AI provider (routed free models)",
     authEnv: "OPENCODE_API_KEY",
     setupHelp: "Get your API key at https://opencode.ai/auth",
     hasFreeModels: true,
     hasPaidModels: false,
   },
   {
-    providerId: "openrouter",
-    displayName: "OpenRouter",
-    description: "Cloud AI provider with paid and free models",
-    authEnv: "OPENROUTER_API_KEY",
-    setupHelp: "Get your API key at https://openrouter.ai/keys",
-    hasFreeModels: true,
+    providerId: "anthropic",
+    displayName: "Anthropic",
+    description: "Paid (trial credits only) · Claude models — never in free routing",
+    authEnv: "ANTHROPIC_API_KEY",
+    setupHelp: "Get your API key at https://console.anthropic.com/settings/keys",
+    hasFreeModels: false,
+    hasPaidModels: true,
+  },
+  {
+    providerId: "openai",
+    displayName: "OpenAI",
+    description: "Paid only (no free API tier) · GPT models",
+    authEnv: "OPENAI_API_KEY",
+    setupHelp: "Get your API key at https://platform.openai.com/api-keys",
+    hasFreeModels: false,
     hasPaidModels: true,
   },
 ];
@@ -60,6 +108,25 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
   const [providerStates, setProviderStates] = useState<Record<string, ProviderState>>({});
   const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
   const [showApiKeys, setShowApiKeys] = useState<Record<string, boolean>>({});
+  const [privacyMode, setPrivacyMode] = useState<string>("STANDARD");
+
+  useEffect(() => {
+    fetch("http://localhost:3210/api/privacy-mode")
+      .then((r) => r.json())
+      .then((d: { mode?: string }) => { if (d.mode) setPrivacyMode(d.mode); })
+      .catch(() => {});
+  }, []);
+
+  const updatePrivacyMode = (mode: string) => {
+    setPrivacyMode(mode);
+    fetch("http://localhost:3210/api/privacy-mode", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode }),
+    })
+      .then(() => notifyProviderUpdated())
+      .catch(() => {});
+  };
 
   const loadProviderStates = async () => {
     if (!window.electronAPI) return;
@@ -195,6 +262,29 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
     }
   };
 
+  const [oauthPending, setOauthPending] = useState<string | null>(null);
+
+  const handleConnectOAuth = async (providerId: string) => {
+    const api = window.electronAPI as (typeof window.electronAPI & { connectOpenRouter?: () => Promise<{ ok: boolean; verifiedFree?: number; error?: string }> }) | undefined;
+    if (!api?.connectOpenRouter) return;
+    setOauthPending(providerId);
+    setProviderStates((prev) => ({ ...prev, [providerId]: { ...prev[providerId], status: "testing", hasCredential: prev[providerId]?.hasCredential ?? false } }));
+    try {
+      const result = await api.connectOpenRouter();
+      if (result.ok) {
+        setProviderStates((prev) => ({ ...prev, [providerId]: { status: "connected", hasCredential: true, freeModelCount: result.verifiedFree } }));
+        await refreshProviderHealth(providerId);
+        notifyProviderUpdated();
+      } else {
+        setProviderStates((prev) => ({ ...prev, [providerId]: { status: "error", error: result.error || "Authorization failed", hasCredential: prev[providerId]?.hasCredential ?? false } }));
+      }
+    } catch (err) {
+      setProviderStates((prev) => ({ ...prev, [providerId]: { status: "error", error: err instanceof Error ? err.message : "Authorization failed", hasCredential: prev[providerId]?.hasCredential ?? false } }));
+    } finally {
+      setOauthPending(null);
+    }
+  };
+
   const handleDeleteCredential = async (providerId: string) => {
     if (!window.electronAPI) return;
 
@@ -292,7 +382,24 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
         <div className="provider-setup-header">
           <h1 className="provider-setup-title">Configure Providers</h1>
           <p className="provider-setup-subtitle">
-            Connect cloud AI providers to use free and paid models
+            Connect a free provider to code at $0 — no CodeForge account required. Credentials stay on this device.
+          </p>
+        </div>
+
+        <div className="privacy-mode-control">
+          <label htmlFor="privacy-mode">Privacy routing</label>
+          <select
+            id="privacy-mode"
+            value={privacyMode}
+            onChange={(e) => updatePrivacyMode(e.target.value)}
+          >
+            <option value="STRICT">Strict · no provider training/retention</option>
+            <option value="STANDARD">Standard · normal provider retention</option>
+            <option value="MAXIMUM_FREE">Maximum Free · allow weaker-retention free endpoints</option>
+          </select>
+          <p className="provider-help">
+            ForgeZero excludes endpoints that violate this mode from Auto routing (e.g. Gemini's
+            free tier may train on prompts, so it is excluded under Strict).
           </p>
         </div>
 
@@ -362,6 +469,22 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
                     </span>
                   )}
                 </div>
+
+                {provider.oauth && (
+                  <div className="provider-oauth">
+                    <button
+                      type="button"
+                      className="provider-btn primary"
+                      onClick={() => handleConnectOAuth(provider.providerId)}
+                      disabled={oauthPending === provider.providerId}
+                    >
+                      {oauthPending === provider.providerId ? "Waiting for browser…" : `Connect ${provider.displayName} with OAuth`}
+                    </button>
+                    <p className="provider-help">
+                      Recommended · opens your browser to authorize. No API key to copy. Or use the manual key below.
+                    </p>
+                  </div>
+                )}
 
                 <div className="provider-credentials">
                   <label htmlFor={`api-key-${provider.providerId}`}>

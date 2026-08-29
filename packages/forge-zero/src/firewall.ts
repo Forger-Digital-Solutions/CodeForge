@@ -31,7 +31,7 @@ export interface EligibilityOptions {
 
 export class ForgeZero {
   private readonly models = new Map<string, FreeModelRecord>();
-  private readonly ctx: VerifyContext;
+  private ctx: VerifyContext;
   private readonly entitlementProvider?: EntitlementProvider;
 
   constructor(options: FirewallOptions = {}) {
@@ -49,6 +49,15 @@ export class ForgeZero {
   register(model: FreeModelRecord): void {
     const key = this.key(model.providerId, model.modelId);
     this.models.set(key, model);
+  }
+
+  /** Set the active privacy routing mode. Excludes endpoints whose privacyClass it disallows. */
+  setPrivacyMode(mode: PrivacyMode): void {
+    this.ctx = { ...this.ctx, privacyMode: mode };
+  }
+
+  getPrivacyMode(): PrivacyMode | undefined {
+    return this.ctx.privacyMode;
   }
 
   unregister(providerId: string, modelId: string): boolean {
