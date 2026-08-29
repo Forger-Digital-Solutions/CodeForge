@@ -10,8 +10,32 @@ import ApprovalBar from "./ApprovalBar.js";
 import QuestionBar from "./QuestionBar.js";
 import CommandPalette, { type Command } from "./CommandPalette.js";
 import WorkflowProgress from "./WorkflowProgress.js";
-import { type ModelSelectorItem } from "./ModelSelector.js";
+import { type ModelSelectorItem, type ModelSection } from "./ModelSelector.js";
 import "./workspace.css";
+
+/** Turn provider/runtime errors into concise, actionable guidance. */
+export function humanizeError(msg: string): string {
+  const m = msg.toLowerCase();
+  if (m.includes("401") || m.includes("invalid api key") || m.includes("autherror") || m.includes("unauthorized"))
+    return "Provider authentication failed — your API key is invalid or expired. Update it in Settings → Providers.";
+  if (m.includes("403")) return "Access denied by the provider. Check your API key permissions in Settings → Providers.";
+  if (m.includes("429") || m.includes("rate limit")) return "The provider is rate limited. Wait a moment and try again.";
+  if (m.includes("not found in catalog") || m.includes("no free provider") || m.includes("no verified free"))
+    return "No verified free model is available. Connect a provider in Settings → Providers.";
+  if (m.includes("payment") || m.includes("paid model")) return "That model requires a paid plan. Choose a verified free model or connect a provider.";
+  if (m.includes("timeout")) return "The request timed out — the provider may be slow or unavailable. Try again.";
+  if (m.includes("network") || m.includes("failed to fetch") || m.includes("econn")) return "Network error — check your connection and that the CodeForge server is running.";
+  if (m.includes("no workspace")) return "No workspace is set. Open a project folder first.";
+  return msg.length > 200 ? `${msg.slice(0, 200)}…` : msg;
+}
+
+export interface SessionSummary {
+  id: string;
+  title?: string;
+  taskTitle?: string;
+  status?: string;
+  updatedAt?: string;
+}
 
 export interface WorkspaceAppProps {
   sseUrl?: string;
@@ -21,6 +45,12 @@ export interface WorkspaceAppProps {
   onSelectModel?: (model: ModelSelectorItem) => void;
   onShowModelDetails?: (model: ModelSelectorItem) => void;
   onUpgradeNavigation?: (url: string) => void;
+  modelSections?: ModelSection[];
+  projectName?: string;
+  projectBranch?: string;
+  onOpenProjects?: () => void;
+  onOpenSettings?: () => void;
+  onOpenHelp?: () => void;
 }
 
 export default function WorkspaceApp({
@@ -30,12 +60,43 @@ export default function WorkspaceApp({
   selectedModelId,
   onSelectModel,
   onShowModelDetails,
-  onUpgradeNavigation
+  onUpgradeNavigation,
+  modelSections,
+  projectName,
+  projectBranch,
+  onOpenProjects,
+  onOpenSettings,
+  onOpenHelp,
 }: WorkspaceAppProps) {
-  const { state, setState, sendMessage, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError } = useWorkspaceSSE(sseUrl ?? "/api/events");
+  const { state, setState, sendMessage, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession } = useWorkspaceSSE(sseUrl ?? "/api/events");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
+  const [sessions, setSessions] = useState<SessionSummary[]>([]);
+
+  const apiOrigin = React.useMemo(() => {
+    const u = sseUrl ?? "";
+    if (u.startsWith("http://") || u.startsWith("https://")) {
+      try { return new URL(u).origin; } catch { return ""; }
+    }
+    return "";
+  }, [sseUrl]);
+
+  const refreshSessions = useCallback(async () => {
+    if (!apiOrigin) return;
+    try {
+      const res = await fetch(`${apiOrigin}/api/sessions`);
+      if (!res.ok) return;
+      const data = (await res.json()) as SessionSummary[];
+      if (Array.isArray(data)) setSessions(data);
+    } catch {
+      // server may still be starting
+    }
+  }, [apiOrigin]);
+
+  React.useEffect(() => {
+    refreshSessions();
+  }, [refreshSessions, state.session?.id, state.isRunning]);
 
   const commands: Command[] = [
     {
@@ -142,10 +203,15 @@ export default function WorkspaceApp({
       <div className="workspace-body">
         {!sidebarCollapsed && (
           <Navigation
-            active={state.leftNav}
-            onSelect={(nav) => setState((prev) => ({ ...prev, leftNav: nav }))}
-            workItems={state.workItems}
+            sessions={sessions}
+            activeSessionId={state.session?.id ?? null}
+            onSelectSession={(id) => selectSession(id)}
             onNewTask={() => setState((prev) => ({ ...prev, session: null, turns: [], workItems: [], events: [] }))}
+            projectName={projectName}
+            onOpenProjects={onOpenProjects}
+            onOpenSettings={onOpenSettings}
+            onOpenHelp={onOpenHelp}
+            workItems={state.workItems}
           />
         )}
 
@@ -203,6 +269,8 @@ export default function WorkspaceApp({
               setState((prev) => ({ ...prev, displayMode: mode }));
             }}
             isRunning={state.isRunning}
+            onSuggestedPrompt={(text) => handleSend(text)}
+            contextLabel={projectName ? `CodeForge · ${projectName}${projectBranch ? ` · ${projectBranch}` : ""}` : undefined}
           />
 
           {state.pendingApproval && (
@@ -210,6 +278,21 @@ export default function WorkspaceApp({
           )}
           {state.pendingQuestion && (
             <QuestionBar question={state.pendingQuestion} onAnswer={answerQuestion} />
+          )}
+
+          {state.workflowError && (
+            <div className="workspace-error-banner" role="alert">
+              <span className="workspace-error-icon" aria-hidden="true">⚠</span>
+              <span className="workspace-error-text">{humanizeError(state.workflowError)}</span>
+              <button
+                type="button"
+                className="workspace-error-dismiss"
+                onClick={dismissWorkflowError}
+                aria-label="Dismiss error"
+              >
+                ×
+              </button>
+            </div>
           )}
 
           <Composer
@@ -236,6 +319,7 @@ export default function WorkspaceApp({
             onSelectModel={onSelectModel}
             onShowModelDetails={onShowModelDetails}
             onUpgradeNavigation={onUpgradeNavigation}
+            modelSections={modelSections}
           />
         </div>
 

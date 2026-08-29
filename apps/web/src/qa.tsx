@@ -28,9 +28,8 @@ const sampleModels = [
   { id: "auto", displayName: "Auto", tier: "free", description: "Best Verified Free Model" },
   { id: "opencode/qwen-2.5-coder", displayName: "Qwen 2.5 Coder 32B", tier: "free", description: "Free" },
   { id: "openrouter/deepseek-v3", displayName: "DeepSeek V3", tier: "free", description: "Free" },
-  { id: "openrouter/llama-3.3-70b", displayName: "Llama 3.3 70B", tier: "free", description: "Promotional Free" },
-  { id: "gems/topaz", displayName: "Topaz (Claude Sonnet)", tier: "gems_paid", entitlementStatus: "requires_subscription" },
-  { id: "gems/garnet", displayName: "Garnet (GPT-4o)", tier: "gems_paid", entitlementStatus: "requires_subscription" },
+  { id: "codeforge/topaz", displayName: "Topaz", tier: "gems_paid", entitlementStatus: "requires_subscription" },
+  { id: "codeforge/garnet", displayName: "Garnet", tier: "gems_paid", entitlementStatus: "requires_subscription" },
 ] as any;
 
 const project = { name: "codeforge-web", path: "G:\\CodeForge" };
@@ -63,7 +62,6 @@ function Shell({ children, forgeZeroOpen }: { children: React.ReactNode; forgeZe
         <div className="header-left">
           <button className="header-back" title="Back to projects">←</button>
           <div className="header-project">
-            <span className="project-icon">📁</span>
             <span className="project-name">{project.name}</span>
             <span className="project-path">{project.path}</span>
           </div>
@@ -121,7 +119,17 @@ function Layout(opts: LayoutOpts) {
     <Shell forgeZeroOpen={forgeZeroOpen}>
       <div className="workspace">
         <div className="workspace-body">
-          <Navigation active={navActive} onSelect={noop} workItems={workItems} onNewTask={noop} />
+          <Navigation
+            sessions={session ? [{ id: session.id, title: session.title, taskTitle: session.taskTitle, status: session.status, updatedAt: now }] : []}
+            activeSessionId={session?.id ?? null}
+            onSelectSession={noop}
+            onNewTask={noop}
+            projectName={project.name}
+            onOpenProjects={noop}
+            onOpenSettings={noop}
+            onOpenHelp={noop}
+            workItems={workItems}
+          />
           <div className="workspace-center">
             <button className="panel-toggle panel-toggle-left" title="Collapse Sidebar">◀</button>
             <button className="panel-toggle panel-toggle-right" title="Collapse Inspector">▶</button>
@@ -138,7 +146,7 @@ function Layout(opts: LayoutOpts) {
                 onResume={noop}
               />
             )}
-            <Conversation turns={turns} workItems={workItems} displayMode="detailed" isRunning={isRunning} />
+            <Conversation turns={turns} workItems={workItems} displayMode="detailed" isRunning={isRunning} contextLabel={`CodeForge · ${project.name}`} />
             {pendingApproval && <ApprovalBar approval={pendingApproval} onApprove={noop} onDeny={noop} />}
             {pendingQuestion && <QuestionBar question={pendingQuestion} onAnswer={noop} />}
             {modelSelectorOpen ? (
@@ -151,7 +159,7 @@ function Layout(opts: LayoutOpts) {
                   <div className="composer-toolbar-left">
                     <ModelSelector models={sampleModels} selectedId="auto" onSelect={noop} onShowDetails={noop} isOpen />
                   </div>
-                  <div className="composer-toolbar-right">Ctrl+Enter to send · Esc to stop · / for commands</div>
+                  <div className="composer-toolbar-right">Enter to send · Shift+Enter for newline · Esc to stop · / for commands</div>
                 </div>
               </div>
             ) : (

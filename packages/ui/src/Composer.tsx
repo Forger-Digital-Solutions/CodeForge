@@ -1,6 +1,30 @@
 import React, { useState, useRef, useEffect } from "react";
 import SlashCommands, { SLASH_COMMANDS } from "./SlashCommands.js";
-import { ModelSelector, type ModelSelectorItem } from "./ModelSelector.js";
+import { ModelSelector, type ModelSelectorItem, type ModelSection } from "./ModelSelector.js";
+
+/** A prompt is sendable only when it has non-whitespace content. */
+export function isComposerSendable(input: string): boolean {
+  return input.trim().length > 0;
+}
+
+/**
+ * Whether an Enter keypress in the composer should submit the prompt.
+ * Enter sends; Shift+Enter inserts a newline; Enter is never a submit while an
+ * IME composition is active (isComposing, or keyCode 229 for browsers that omit
+ * the flag). This is the single source of truth shared by the textarea handler.
+ */
+export function shouldSubmitOnEnter(e: {
+  key: string;
+  shiftKey: boolean;
+  isComposing?: boolean;
+  keyCode?: number;
+}): boolean {
+  if (e.key !== "Enter") return false;
+  if (e.shiftKey) return false;
+  if (e.isComposing) return false;
+  if (e.keyCode === 229) return false;
+  return true;
+}
 
 interface ComposerProps {
   placeholder: string;
@@ -17,6 +41,7 @@ interface ComposerProps {
   onSelectModel?: (model: ModelSelectorItem) => void;
   onShowModelDetails?: (model: ModelSelectorItem) => void;
   onUpgradeNavigation?: (url: string) => void;
+  modelSections?: ModelSection[];
 }
 
 export default function Composer({
@@ -26,6 +51,7 @@ export default function Composer({
   onStop,
   onPause,
   onResume,
+  onBackground,
   isRunning,
   isPaused,
   models,
@@ -33,6 +59,7 @@ export default function Composer({
   onSelectModel,
   onShowModelDetails,
   onUpgradeNavigation,
+  modelSections,
 }: ComposerProps) {
   const [input, setInput] = useState("");
   const [showCommands, setShowCommands] = useState(false);
@@ -54,7 +81,7 @@ export default function Composer({
   };
 
   const handleSubmit = () => {
-    if (!input.trim()) return;
+    if (!isComposerSendable(input)) return;
     const trimmed = input.trim();
     const slashMatch = trimmed.match(/^\/(\w+)(?:\s+(.*))?$/);
     if (slashMatch) {
@@ -120,7 +147,9 @@ export default function Composer({
         return;
       }
     }
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+    // Enter sends; Shift+Enter inserts a newline; IME composition never submits.
+    const native = e.nativeEvent as unknown as { isComposing?: boolean; keyCode?: number };
+    if (shouldSubmitOnEnter({ key: e.key, shiftKey: e.shiftKey, isComposing: native?.isComposing, keyCode: native?.keyCode })) {
       e.preventDefault();
       handleSubmit();
     }
@@ -162,10 +191,10 @@ export default function Composer({
         />
         <button
           type="button"
-          className={`composer-btn ${input.trim() ? "primary" : ""}`}
+          className={`composer-btn ${isComposerSendable(input) ? "primary" : ""}`}
           onClick={handleSubmit}
-          disabled={!input.trim()}
-          title={isRunning ? "Steer (Ctrl+Enter)" : "Send (Ctrl+Enter)"}
+          disabled={!isComposerSendable(input)}
+          title={isRunning ? "Steer (Enter)" : "Send (Enter)"}
           style={{ minWidth: 40, height: 38, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}
         >
           ↑
@@ -201,11 +230,12 @@ export default function Composer({
               onSelect={onSelectModel ?? (() => {})}
               onShowDetails={onShowModelDetails}
               onUpgradeNavigation={onUpgradeNavigation}
+              modelSections={modelSections}
             />
           )}
         </div>
         <div className="composer-toolbar-right">
-          Ctrl+Enter to send · Esc to stop · / for commands
+          Enter to send · Shift+Enter for newline · Esc to stop · / for commands
         </div>
       </div>
     </div>

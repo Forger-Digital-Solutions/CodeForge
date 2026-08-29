@@ -29,7 +29,7 @@ const PROVIDERS: ProviderConfig[] = [
   {
     providerId: "opencode",
     displayName: "OpenCode Zen",
-    description: "Cloud AI provider with promotional free models",
+    description: "Cloud AI provider with verified free models",
     authEnv: "OPENCODE_API_KEY",
     setupHelp: "Get your API key at https://opencode.ai/auth",
     hasFreeModels: true,
@@ -326,10 +326,14 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
 
                 <div className="provider-models">
                   {state?.freeModelCount !== undefined && state.freeModelCount > 0 && (
-                    <span className="provider-badge free">{state.freeModelCount} Free models</span>
+                    <span className="provider-badge free">
+                      {state.freeModelCount} free {state.freeModelCount === 1 ? "model" : "models"}
+                    </span>
                   )}
                   {state?.paidModelCount !== undefined && state.paidModelCount > 0 && (
-                    <span className="provider-badge paid">{state.paidModelCount} Paid models</span>
+                    <span className="provider-badge paid">
+                      {state.paidModelCount} paid {state.paidModelCount === 1 ? "model" : "models"}
+                    </span>
                   )}
                   {state?.freeModelCount === 0 && state?.paidModelCount === 0 && (
                     <span className="provider-badge">No models available</span>

@@ -6,6 +6,7 @@ import {
   isModelUsable,
   resolveModelSelection,
   type ModelSelectorItem,
+  type ModelSection,
 } from "../src/ModelSelector.js";
 import { DEFAULT_UPGRADE_URL, getUpgradeUrl } from "../src/upgrade-url.js";
 
@@ -85,7 +86,7 @@ describe("ModelSelector rendering", () => {
         isOpen: true,
       }),
     );
-    expect(markup).toContain("Paid 🔒");
+    expect(markup).toContain("Unavailable");
     expect(markup).toContain("aria-disabled=\"true\"");
     expect(markup).toContain("Free");
   });
@@ -99,7 +100,7 @@ describe("ModelSelector rendering", () => {
         isOpen: true,
       }),
     );
-    expect(markup).not.toContain("Paid 🔒");
+    expect(markup).not.toContain("Unavailable");
     expect(markup).not.toContain("aria-disabled");
   });
 
@@ -120,6 +121,76 @@ describe("ModelSelector rendering", () => {
     expect(markup).toContain("Auto");
     expect(markup).toContain("Best Free Model");
     expect(markup).toContain("aria-selected=\"true\"");
+  });
+});
+
+describe("ModelSelector section information architecture", () => {
+  const sections: ModelSection[] = [
+    {
+      sectionId: "codeforge",
+      sectionLabel: "CODEFORGE",
+      models: [{ id: "auto", displayName: "Auto", tier: "free", description: "Best Verified Free" }],
+    },
+    {
+      sectionId: "verified-free",
+      sectionLabel: "VERIFIED FREE",
+      models: [{ id: "free-model-1", displayName: "CodeForge Free Model", tier: "free", description: "Free" }],
+    },
+    {
+      sectionId: "gems",
+      sectionLabel: "GEMS",
+      models: [
+        { id: "topaz", displayName: "Topaz", tier: "gems_paid" },
+        { id: "sapphire", displayName: "Sapphire", tier: "gems_paid" },
+        { id: "peridot", displayName: "Peridot", tier: "gems_paid" },
+        { id: "garnet", displayName: "Garnet", tier: "gems_paid" },
+      ],
+    },
+    { sectionId: "anthropic", sectionLabel: "ANTHROPIC", models: [], note: "Not connected · BYOK coming soon" },
+    { sectionId: "openai", sectionLabel: "OPENAI", models: [], note: "Not connected · integration coming soon" },
+    { sectionId: "zai", sectionLabel: "Z.AI", models: [], note: "Not connected · integration coming soon" },
+  ];
+
+  function renderSelector(): string {
+    return renderToStaticMarkup(
+      React.createElement(ModelSelector, {
+        models: sections.flatMap((s) => s.models),
+        selectedId: "auto",
+        onSelect: () => {},
+        isOpen: true,
+        modelSections: sections,
+      }),
+    );
+  }
+
+  it("renders CODEFORGE, VERIFIED FREE, GEMS, ANTHROPIC, OPENAI and Z.AI groups in order", () => {
+    const markup = renderSelector();
+    const order = ["CODEFORGE", "VERIFIED FREE", "GEMS", "ANTHROPIC", "OPENAI", "Z.AI"];
+    let cursor = -1;
+    for (const label of order) {
+      const at = markup.indexOf(label);
+      expect(at, `section ${label} present`).toBeGreaterThan(-1);
+      expect(at, `section ${label} in order`).toBeGreaterThan(cursor);
+      cursor = at;
+    }
+  });
+
+  it("groups all four GEMS (Topaz, Sapphire, Peridot, Garnet) together", () => {
+    const markup = renderSelector();
+    for (const gem of ["Topaz", "Sapphire", "Peridot", "Garnet"]) {
+      expect(markup).toContain(gem);
+    }
+  });
+
+  it("shows honest 'not connected' notes for providers without a connected model", () => {
+    const markup = renderSelector();
+    expect(markup).toContain("Not connected");
+  });
+
+  it("never surfaces the promotional Muse Spark model in the selector", () => {
+    const markup = renderSelector();
+    expect(markup).not.toMatch(/muse\s*spark/i);
+    expect(markup).not.toContain("Promotional Free");
   });
 });
 

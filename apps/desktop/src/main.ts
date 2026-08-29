@@ -306,8 +306,7 @@ async function initializeServer(dbPath: string): Promise<void> {
   try {
     const hasCredentials = !!providerCatalog && (
       providerCatalog.get("opencode") ||
-      providerCatalog.get("openrouter") ||
-      providerCatalog.get("codeforge")
+      providerCatalog.get("openrouter")
     );
     smokeRecord(`INIT_SERVER_HAS_CREDS_${Boolean(hasCredentials)}`);
     server = new CodeForgeServer({
@@ -339,14 +338,34 @@ function registerFreeModels(fw: ForgeZero): void {
   fw.register(createMuseSparkRecord());
 }
 
+function resolveAppIcon(): string | undefined {
+  const candidates = [
+    path.join(__dirname, "..", "assets", "icon.ico"),
+    path.join(__dirname, "..", "assets", "icon.png"),
+    path.join(__dirname, "assets", "icon.ico"),
+    path.join(__dirname, "assets", "icon.png"),
+    process.resourcesPath ? path.join(process.resourcesPath, "assets", "icon.ico") : "",
+  ];
+  for (const candidate of candidates) {
+    try {
+      if (candidate && fs.existsSync(candidate)) return candidate;
+    } catch {
+      // ignore and try next candidate
+    }
+  }
+  return undefined;
+}
+
 function createWindow(): void {
   smokeRecord("CREATE_WINDOW_START");
+  const iconPath = resolveAppIcon();
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
     minWidth: 900,
     minHeight: 600,
     title: "CodeForge",
+    ...(iconPath ? { icon: iconPath } : {}),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -354,7 +373,7 @@ function createWindow(): void {
       sandbox: true,
     },
     show: false,
-    backgroundColor: "#1a1b1e",
+    backgroundColor: "#0f1012",
   });
 
   mainWindow.once("ready-to-show", () => {
@@ -362,18 +381,57 @@ function createWindow(): void {
     mainWindow?.show();
   });
 
+  // Handle in-window navigation (plain <a href> clicks, form submissions, etc.)
+  // The renderer is a single-page app: internal navigation stays in-window, and any
+  // external link is opened in the user's real browser via the OS instead of
+  // replacing the app. Without the shell.openExternal() call here, external links
+  // were silently swallowed (preventDefault with no handoff) — the "dead links" bug.
   mainWindow.webContents.on("will-navigate", (event, url) => {
     try {
       const parsed = new URL(url);
       const allowedOrigin = "http://localhost:3210";
       const isFile = parsed.protocol === "file:";
       const isAllowedHttp = parsed.origin === allowedOrigin;
-      if (!isFile && !isAllowedHttp) {
-        event.preventDefault();
-        shell.openExternal(url);
+
+      // Allow internal navigation (file: or localhost:3210) to proceed in-window.
+      if (isFile || isAllowedHttp) {
+        return;
       }
+
+      // Everything else must never replace the app window.
+      event.preventDefault();
+
+      // Hand safe external links (https, or http on localhost) to the OS browser.
+      if (parsed.protocol === "https:" || (parsed.protocol === "http:" && parsed.hostname === "localhost")) {
+        void shell.openExternal(url);
+      }
+      // All other schemes (javascript:, data:, file: to elsewhere, etc.) are dropped.
     } catch {
       event.preventDefault();
+    }
+  });
+
+  // Handle window.open() and target="_blank" links
+  mainWindow.webContents.setWindowOpenHandler(({ url, disposition }) => {
+    try {
+      const parsed = new URL(url);
+      const allowedOrigin = "http://localhost:3210";
+      const isFile = parsed.protocol === "file:";
+      const isAllowedHttp = parsed.origin === allowedOrigin;
+
+      // Allow internal navigation in new window
+      if (isFile || isAllowedHttp) {
+        return { action: "allow" };
+      }
+
+      // Only allow https: (and http: for localhost) for external links
+      if (parsed.protocol === "https:" || (parsed.protocol === "http:" && parsed.hostname === "localhost")) {
+        shell.openExternal(url);
+      }
+      // Deny all other schemes (javascript:, data:, etc.)
+      return { action: "deny" };
+    } catch {
+      return { action: "deny" };
     }
   });
 
@@ -672,21 +730,31 @@ app.whenReady().then(async () => {
   smokeRecord("WHEN_READY_CATALOG_DONE");
   registerPackagedSmokeProvider(providerCatalog);
   smokeRecord("WHEN_READY_SMOKE_PROV_DONE");
-  
+
   // Register provider adapters with credentials from storage
   const credentials = getProviderCredentials();
   smokeRecord("WHEN_READY_CREDS_LOADED");
-  
+
+  // NOTE: Do NOT register a scripted/mock provider for "codeforge" here.
+  // createMockProvider() is a test-only adapter and ForgeZero's provider
+  // isolation guard (assertRegistrable) refuses to register it outside test
+  // mode — doing so threw TestProviderIsolationError and crashed startup before
+  // the window opened. The free/GEMS/paid model *records* are still registered
+  // with the firewall (registerFreeModels / server catalog) so the model
+  // selector populates. With no real provider credentials the server falls back
+  // to the demo runtime, which drives a visible scripted task so the workspace
+  // is usable out of the box; connecting OpenCode/OpenRouter switches it to the
+  // real runtime.
   if (credentials.opencode && !PACKAGED_SMOKE) {
     const opencodeAdapter = createOpencodeAdapter({ credentialStore: desktopCredentialStore });
     providerCatalog.register(opencodeAdapter);
   }
-  
+
   if (credentials.openrouter && !PACKAGED_SMOKE) {
     const openrouterAdapter = createOpenRouterAdapter({ credentialStore: desktopCredentialStore });
     providerCatalog.register(openrouterAdapter);
   }
-  
+
   registerFreeModels(firewall);
   smokeRecord("WHEN_READY_MODELS_REGISTERED");
 

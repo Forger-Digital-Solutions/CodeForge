@@ -8,7 +8,11 @@ interface ConversationProps {
   workItems: WorkItem[];
   displayMode: string;
   onDisplayModeChange?: (mode: "compact" | "detailed" | "debug") => void;
-  isRunning: boolean;
+  isRunning?: boolean;
+  /** Sends a starter prompt when the user clicks a suggestion in the empty state. */
+  onSuggestedPrompt?: (text: string) => void;
+  /** Short context label shown under the empty-state heading, e.g. "CodeForge · main". */
+  contextLabel?: string;
 }
 
 const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: string }) => {
@@ -273,7 +277,7 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
   }
 };
 
-export default function Conversation({ turns, workItems, displayMode }: ConversationProps) {
+export default function Conversation({ turns, workItems, displayMode, onSuggestedPrompt, contextLabel }: ConversationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
 
@@ -300,12 +304,13 @@ export default function Conversation({ turns, workItems, displayMode }: Conversa
 
   const renderTurn = (turn: TurnRecord) => (
     <div key={turn.id} className="user-message">
-      <div className="user-message-label">USER</div>
+      <div className="user-message-label">You</div>
       <div className="user-message-body">{turn.userMessage}</div>
     </div>
   );
 
   const relevantItems = workItems.filter((w) => w.kind !== "context_ref");
+  const isEmpty = turns.length === 0 && relevantItems.length === 0;
 
   return (
     <div
@@ -315,17 +320,30 @@ export default function Conversation({ turns, workItems, displayMode }: Conversa
       style={{ position: "relative" }}
     >
       <div className="conversation-inner">
-        {turns.length === 0 && relevantItems.length === 0 ? (
+        {isEmpty ? (
           <div className="empty-state">
             <div className="empty-state-title">What should we work on?</div>
             <div className="empty-state-subtitle">
               Describe a bug to fix, feature to build, or task to accomplish.
             </div>
+            {contextLabel && <div className="empty-state-context">{contextLabel}</div>}
             <div className="suggested-prompts">
-              <button type="button" className="suggested-prompt">Explore this repository</button>
-              <button type="button" className="suggested-prompt">Create an implementation plan</button>
-              <button type="button" className="suggested-prompt">Review the current architecture</button>
-              <button type="button" className="suggested-prompt">Run the test suite</button>
+              {[
+                "Explain this repository structure",
+                "Create an implementation plan",
+                "Review the current architecture",
+                "Run the test suite and report results",
+              ].map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  className="suggested-prompt"
+                  onClick={() => onSuggestedPrompt?.(prompt)}
+                  disabled={!onSuggestedPrompt}
+                >
+                  {prompt}
+                </button>
+              ))}
             </div>
           </div>
         ) : (

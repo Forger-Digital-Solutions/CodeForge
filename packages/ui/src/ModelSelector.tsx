@@ -17,6 +17,18 @@ export interface ModelSelectorItem {
   entitlementStatus?: ModelEntitlementStatus;
 }
 
+export interface ModelSection {
+  sectionId: string;
+  sectionLabel: string;
+  models: ModelSelectorItem[];
+  /**
+   * Shown as a muted, non-selectable row when the group has no usable models
+   * yet — e.g. a provider whose BYOK/integration is not connected. Keeps the
+   * information architecture honest instead of hiding the provider entirely.
+   */
+  note?: string;
+}
+
 export interface ModelSelectionIntent {
   allowed: boolean;
   navigateToUpgrade: boolean;
@@ -49,6 +61,7 @@ export interface ModelSelectorProps {
   disabled?: boolean;
   onShowDetails?: (model: ModelSelectorItem) => void;
   isOpen?: boolean;
+  modelSections?: ModelSection[];
 }
 
 export function ModelSelector({
@@ -60,6 +73,7 @@ export function ModelSelector({
   disabled,
   onShowDetails,
   isOpen: controlledIsOpen,
+  modelSections,
 }: ModelSelectorProps): React.ReactElement {
   const url = upgradeUrl ?? getUpgradeUrl();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
@@ -94,8 +108,20 @@ export function ModelSelector({
       : selectedModel.displayName
     : "Auto · Verified Free";
 
-  const freeModels = models.filter((m) => m.tier === "free");
-  const paidModels = models.filter((m) => m.tier === "gems_paid");
+  const sections: ModelSection[] = modelSections?.length
+    ? modelSections
+    : [
+        {
+          sectionId: "free",
+          sectionLabel: "Free / Verified",
+          models: models.filter((m) => m.tier === "free"),
+        },
+        {
+          sectionId: "paid",
+          sectionLabel: "Premium / BYOK",
+          models: models.filter((m) => m.tier === "gems_paid"),
+        },
+      ].filter((s) => s.models.length > 0);
 
   return (
     <div className="model-selector">
@@ -119,10 +145,17 @@ export function ModelSelector({
             onClick={() => setInternalIsOpen(false)}
           />
           <div className="model-dropdown" role="listbox" aria-label="Model selection">
-            {freeModels.length > 0 && (
-              <>
-                <div className="model-dropdown-section">Free / Verified</div>
-                {freeModels.map((model) => {
+            {sections.map((section) => {
+              if (section.models.length === 0 && !section.note) return null;
+              return (
+              <div key={section.sectionId}>
+                <div className="model-dropdown-section">{section.sectionLabel}</div>
+                {section.models.length === 0 && section.note && (
+                  <div className="model-option disabled" aria-disabled="true">
+                    <span className="model-option-note">{section.note}</span>
+                  </div>
+                )}
+                {section.models.map((model) => {
                   const locked = !isModelUsable(model);
                   return (
                     <div
@@ -141,50 +174,11 @@ export function ModelSelector({
                         {model.description && (
                           <span className="model-option-desc">{model.description}</span>
                         )}
-                        {!locked && !model.description && (
+                        {!locked && !model.description && model.tier === "free" && (
                           <span className="model-option-badge free">Free</span>
                         )}
-                        {onShowDetails && model.id !== "auto" && (
-                          <button
-                            type="button"
-                            className="model-option-details"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onShowDetails(model);
-                            }}
-                            title="View model details"
-                          >
-                            ℹ
-                          </button>
-                        )}
-                      </span>
-                    </div>
-                  );
-                })}
-              </>
-            )}
-            {paidModels.length > 0 && (
-              <>
-                <div className="model-dropdown-section" style={{ marginTop: freeModels.length > 0 ? 4 : 0 }}>Premium / BYOK</div>
-                {paidModels.map((model) => {
-                  const locked = !isModelUsable(model);
-                  return (
-                    <div
-                      key={model.id}
-                      role="option"
-                      tabIndex={locked || disabled ? -1 : 0}
-                      aria-selected={model.id === selectedId}
-                      aria-disabled={locked || disabled ? true : undefined}
-                      title={locked ? `${model.displayName} requires an upgraded plan` : undefined}
-                      className={`model-option ${model.id === selectedId ? "selected" : ""} ${locked ? "locked" : ""}`}
-                      onClick={() => handleSelect(model)}
-                      onKeyDown={(e) => handleOptionKeyDown(e, model)}
-                    >
-                      <span className="model-option-name">{model.displayName}</span>
-                      <span className="model-option-meta">
-                        {locked && <span className="model-option-badge paid">Paid 🔒</span>}
-                        {!locked && model.description && (
-                          <span className="model-option-desc">{model.description}</span>
+                        {locked && model.tier === "gems_paid" && (
+                          <span className="model-option-badge paid">Unavailable</span>
                         )}
                         {onShowDetails && model.id !== "auto" && (
                           <button
@@ -203,8 +197,9 @@ export function ModelSelector({
                     </div>
                   );
                 })}
-              </>
-            )}
+              </div>
+              );
+            })}
           </div>
         </>
       )}

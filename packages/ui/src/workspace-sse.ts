@@ -98,6 +98,20 @@ function phaseToProgress(phase: string): number {
   return order[phase] ?? 0;
 }
 
+/**
+ * Merge authoritative server turns with locally-added optimistic turns.
+ * Optimistic turns (id prefixed "local-") are shown immediately on send and
+ * dropped once the server reports a turn with the same user message, so the
+ * conversation never double-renders the prompt.
+ */
+function mergeServerTurns(serverTurns: TurnRecord[], prevTurns: TurnRecord[]): TurnRecord[] {
+  const serverMessages = new Set(serverTurns.map((t) => t.userMessage));
+  const pendingOptimistic = prevTurns.filter(
+    (t) => t.id.startsWith("local-") && !serverMessages.has(t.userMessage),
+  );
+  return [...serverTurns, ...pendingOptimistic];
+}
+
 function resolveApiPath(sseUrl: string, apiPath: string): string {
   if (sseUrl.startsWith("http://") || sseUrl.startsWith("https://")) {
     return `${new URL(sseUrl).origin}${apiPath}`;
@@ -109,12 +123,64 @@ export function useWorkspaceSSE(url: string) {
   const [state, setState] = useState<WorkspaceState>(initialWorkspaceState);
   const lastSeqRef = useRef<number>(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hydrateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hydrateRef = useRef<(sessionId?: string) => void>(() => {});
 
   const clearReconnect = useCallback(() => {
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current);
       reconnectTimerRef.current = null;
     }
+  }, []);
+
+  // Pull the authoritative conversation snapshot (session + turns + work items)
+  // from the server. SSE only carries live *signals*; the durable content the
+  // conversation and inspector render is fetched here so both actually populate.
+  const hydrate = useCallback(
+    async (sessionIdOverride?: string) => {
+      const sessionId = sessionIdOverride ?? state.session?.id ?? "default";
+      try {
+        const res = await fetch(resolveApiPath(url, `/api/sessions/${sessionId}`));
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          session?: SessionRecord | null;
+          turns?: TurnRecord[];
+          workItems?: WorkItem[];
+        };
+        setState((prev) => ({
+          ...prev,
+          session: data.session ?? prev.session,
+          turns: Array.isArray(data.turns) ? mergeServerTurns(data.turns, prev.turns) : prev.turns,
+          workItems: Array.isArray(data.workItems) ? data.workItems : prev.workItems,
+        }));
+      } catch {
+        // Server may still be starting; keep current state and retry on next event.
+      }
+    },
+    [state.session?.id, url],
+  );
+
+  // Stable ref to the latest hydrate so the SSE handler can trigger it without
+  // tearing down the EventSource each time the session id changes.
+  hydrateRef.current = hydrate;
+
+  const scheduleHydrate = useCallback(() => {
+    if (hydrateTimerRef.current) return;
+    hydrateTimerRef.current = setTimeout(() => {
+      hydrateTimerRef.current = null;
+      hydrateRef.current();
+    }, 120);
+  }, []);
+
+  // Hydrate once on mount so the conversation is populated before any event.
+  useEffect(() => {
+    hydrateRef.current();
+    return () => {
+      if (hydrateTimerRef.current) {
+        clearTimeout(hydrateTimerRef.current);
+        hydrateTimerRef.current = null;
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -327,6 +393,9 @@ export function useWorkspaceSSE(url: string) {
             }
             return next;
           });
+          // An event fired: re-pull the authoritative turns/work items so the
+          // conversation and inspector reflect what the agent actually did.
+          scheduleHydrate();
         } catch {
           // ignore malformed events
         }
@@ -343,7 +412,7 @@ export function useWorkspaceSSE(url: string) {
         es = null;
       }
     };
-  }, [url, clearReconnect]);
+  }, [url, clearReconnect, scheduleHydrate]);
 
   const sendMessage = useCallback(
     async (message: string, steer = false) => {
@@ -355,7 +424,24 @@ export function useWorkspaceSSE(url: string) {
         ? JSON.stringify({ sessionId, message, steer: true, turnId })
         : JSON.stringify({ sessionId, message, turnId });
 
-      setState((prev) => ({ ...prev, workflowError: null, workflowActionError: null }));
+      // Optimistically render the user's message so pressing Enter has an
+      // immediate, visible effect; hydration reconciles it with the server turn.
+      const optimisticTurn: TurnRecord = {
+        id: `local-${turnId}`,
+        sessionId,
+        seq: 0,
+        userMessage: message,
+        status: "running",
+        startedAt: new Date().toISOString(),
+      };
+      setState((prev) => ({
+        ...prev,
+        turns: [...prev.turns, optimisticTurn],
+        isRunning: true,
+        workflowError: null,
+        workflowActionError: null,
+      }));
+
       try {
         const res = await fetch(endpoint, {
           method: "POST",
@@ -368,14 +454,29 @@ export function useWorkspaceSSE(url: string) {
             const data = (await res.json()) as { error?: string; message?: string };
             msg = data.message || data.error || msg;
           } catch {}
-          setState((prev) => ({ ...prev, workflowError: msg, workflowActionError: msg }));
+          // Roll back the optimistic turn and surface the failure.
+          setState((prev) => ({
+            ...prev,
+            turns: prev.turns.filter((t) => t.id !== optimisticTurn.id),
+            isRunning: false,
+            workflowError: msg,
+            workflowActionError: msg,
+          }));
+          return;
         }
+        void hydrate(sessionId);
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Network error — please check your connection";
-        setState((prev) => ({ ...prev, workflowError: msg, workflowActionError: msg }));
+        setState((prev) => ({
+          ...prev,
+          turns: prev.turns.filter((t) => t.id !== optimisticTurn.id),
+          isRunning: false,
+          workflowError: msg,
+          workflowActionError: msg,
+        }));
       }
     },
-    [state.session?.id, url]
+    [state.session?.id, url, hydrate]
   );
 
   const approve = useCallback(
@@ -523,6 +624,14 @@ export function useWorkspaceSSE(url: string) {
     setState((prev) => ({ ...prev, workflowError: null, workflowActionError: null }));
   }, []);
 
+  // Load a different persisted session into the view (task history navigation).
+  const selectSession = useCallback(
+    (sessionId: string) => {
+      void hydrate(sessionId);
+    },
+    [hydrate],
+  );
+
   return {
     state,
     setState,
@@ -535,5 +644,7 @@ export function useWorkspaceSSE(url: string) {
     runWorkflow,
     cancelWorkflow,
     dismissWorkflowError,
+    hydrate,
+    selectSession,
   };
 }

@@ -1,33 +1,35 @@
 :root {
-  --cf-bg-base: #1a1b1e;
-  --cf-bg-raised: #212226;
-  --cf-bg-overlay: #2a2b30;
-  --cf-bg-hover: #33343a;
-  --cf-bg-input: #18191c;
+  /* Deep neutral graphite ladder — restrained, developer-tool surfaces. */
+  --cf-bg-base: #0f1012;
+  --cf-bg-raised: #16171a;
+  --cf-bg-overlay: #1c1d21;
+  --cf-bg-hover: #23252a;
+  --cf-bg-input: #0b0c0e;
 
-  --cf-text: #e4e5e9;
-  --cf-text-secondary: #9ca0a8;
-  --cf-text-muted: #5c6068;
+  --cf-text: #e6e7ea;
+  --cf-text-secondary: #9a9ea7;
+  --cf-text-muted: #63666e;
 
-  --cf-accent: #4f8fff;
-  --cf-accent-hover: #6aa0ff;
-  --cf-accent-muted: rgba(79, 143, 255, 0.12);
+  /* Accent used sparingly — a calmer blue than the previous dashboard tone. */
+  --cf-accent: #5b8cff;
+  --cf-accent-hover: #7aa2ff;
+  --cf-accent-muted: rgba(91, 140, 255, 0.13);
 
-  --cf-success: #2dd36f;
-  --cf-success-muted: rgba(45, 211, 111, 0.12);
-  --cf-warning: #f5a623;
-  --cf-warning-muted: rgba(245, 166, 35, 0.12);
-  --cf-danger: #ef4444;
-  --cf-danger-muted: rgba(239, 68, 68, 0.12);
+  --cf-success: #3ecf83;
+  --cf-success-muted: rgba(62, 207, 131, 0.12);
+  --cf-warning: #e5a13a;
+  --cf-warning-muted: rgba(229, 161, 58, 0.12);
+  --cf-danger: #ef4d4d;
+  --cf-danger-muted: rgba(239, 77, 77, 0.12);
 
-  --cf-border: #2e2f35;
-  --cf-border-subtle: #252630;
+  --cf-border: #24262c;
+  --cf-border-subtle: #1a1c20;
 
   --cf-font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --cf-font-mono: "Cascadia Code", "SF Mono", "Fira Code", "Consolas", monospace;
 
-  --cf-radius: 4px;
-  --cf-radius-md: 6px;
+  --cf-radius: 5px;
+  --cf-radius-md: 7px;
 }
 
 * {
@@ -95,43 +97,84 @@ html, body, #root {
 }
 
 .nav-brand-logo {
-  width: 20px;
-  height: 20px;
-  background: var(--cf-accent);
-  border-radius: var(--cf-radius);
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-  color: #fff;
   flex-shrink: 0;
 }
 
 .nav-brand-name {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 13.5px;
+  font-weight: 650;
   color: var(--cf-text);
   letter-spacing: -0.01em;
 }
 
 .nav-new-task {
-  margin: 8px 12px;
-  padding: 6px 12px;
-  background: var(--cf-accent);
-  border: none;
-  border-radius: var(--cf-radius);
-  color: #fff;
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 6px 10px 8px;
+  padding: 7px 12px;
+  background: var(--cf-bg-hover);
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  color: var(--cf-text);
+  font-size: 12.5px;
   font-weight: 600;
   font-family: var(--cf-font);
   cursor: pointer;
-  text-align: center;
-  transition: background 0.1s;
+  transition: background 0.12s, border-color 0.12s;
 }
 
 .nav-new-task:hover {
-  background: var(--cf-accent-hover);
+  background: #2a2d33;
+  border-color: #34373e;
+}
+
+.nav-new-task svg { opacity: 0.85; }
+
+/* Sidebar: project row, task history, empty state */
+.nav-empty {
+  padding: 4px 16px 8px;
+  font-size: 12px;
+  color: var(--cf-text-muted);
+}
+
+.nav-project .nav-project-switch {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--cf-text-muted);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.nav-project:hover .nav-project-switch { opacity: 1; }
+
+.nav-task {
+  gap: 8px;
+}
+
+.nav-task-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cf-text-muted);
+  flex-shrink: 0;
+}
+
+.nav-task-dot.running {
+  background: var(--cf-success);
+  box-shadow: 0 0 0 3px var(--cf-success-muted);
+}
+
+.nav-task .nav-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nav-section {
@@ -185,12 +228,16 @@ html, body, #root {
 }
 
 .nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 16px;
-  text-align: center;
-  font-size: 11px;
-  opacity: 0.7;
+  height: 16px;
+  color: var(--cf-text-secondary);
   flex-shrink: 0;
 }
+
+.nav-item.active .nav-icon { color: var(--cf-accent); }
 
 .nav-label {
   flex: 1;
@@ -407,26 +454,30 @@ html, body, #root {
    ──────────────────────────────────────────── */
 
 .user-message {
-  padding: 10px 14px;
+  padding: 9px 13px;
   background: var(--cf-bg-raised);
   border-radius: var(--cf-radius-md);
   border: 1px solid var(--cf-border-subtle);
+  align-self: flex-end;
+  max-width: 88%;
+  margin: 2px 0;
 }
 
 .user-message-label {
   font-size: 10px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--cf-text-muted);
-  margin-bottom: 4px;
+  letter-spacing: 0.02em;
+  color: var(--cf-accent);
+  margin-bottom: 3px;
+  opacity: 0.9;
 }
 
 .user-message-body {
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 13.5px;
+  line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-word;
+  color: var(--cf-text);
 }
 
 /* ────────────────────────────────────────────
@@ -1053,7 +1104,13 @@ html, body, #root {
 }
 
 .model-option-badge.free { color: var(--cf-success); }
-.model-option-badge.paid { color: var(--cf-warning); }
+.model-option-badge.paid {
+  color: var(--cf-text-muted);
+  background: var(--cf-bg-hover);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
 
 .model-option-details {
   display: flex;
@@ -2088,3 +2145,98 @@ html, body, #root {
   font-size: 12px;
   padding: 8px 0;
 }
+
+/* ────────────────────────────────────────────
+   Recovery additions — model notes, settings modal, empty-state context
+   ──────────────────────────────────────────── */
+
+/* Model dropdown: honest "not connected" provider note row */
+.model-option.disabled {
+  cursor: default;
+  opacity: 0.8;
+}
+.model-option.disabled:hover { background: transparent; }
+.model-option-note {
+  font-size: 11.5px;
+  color: var(--cf-text-muted);
+}
+
+/* Empty-state context line, e.g. "CodeForge · project · branch" */
+.empty-state-context {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--cf-text-muted);
+  font-family: var(--cf-font-mono);
+}
+
+/* Settings modal (hosts ProviderSetup) */
+.settings-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 24px;
+}
+.settings-modal {
+  width: 100%;
+  max-width: 760px;
+  max-height: 86vh;
+  background: var(--cf-bg-raised);
+  border: 1px solid var(--cf-border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+.settings-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cf-border-subtle);
+  flex-shrink: 0;
+}
+.settings-modal-title { font-size: 14px; font-weight: 650; }
+.settings-modal-close {
+  background: none;
+  border: none;
+  color: var(--cf-text-secondary);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 6px;
+  border-radius: 4px;
+}
+.settings-modal-close:hover { color: var(--cf-text); background: var(--cf-bg-hover); }
+.settings-modal-body { overflow-y: auto; }
+
+/* Actionable error banner (turn/provider failures) above the composer */
+.workspace-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 16px 8px;
+  padding: 8px 12px;
+  background: var(--cf-danger-muted);
+  border: 1px solid rgba(239, 77, 77, 0.35);
+  border-radius: var(--cf-radius-md);
+  font-size: 12.5px;
+  color: var(--cf-text);
+}
+.workspace-error-icon { color: var(--cf-danger); flex-shrink: 0; }
+.workspace-error-text { flex: 1; line-height: 1.45; }
+.workspace-error-dismiss {
+  background: none;
+  border: none;
+  color: var(--cf-text-secondary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+.workspace-error-dismiss:hover { color: var(--cf-text); }

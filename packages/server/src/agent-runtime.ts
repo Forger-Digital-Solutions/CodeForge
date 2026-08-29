@@ -489,7 +489,12 @@ export class AgentRuntime {
     if (eligible.length === 0) {
       return null;
     }
-    return eligible[0] ?? null;
+    // Prefer a verified-free model whose provider adapter is actually registered
+    // so the turn can execute. Otherwise Auto could pick an eligible model with
+    // no backend (e.g. a display-only placeholder) and fail at execution time
+    // with "Provider ... not found in catalog".
+    const withProvider = eligible.find((m) => this.providerCatalog.get(m.providerId));
+    return withProvider ?? eligible[0] ?? null;
   }
 
   private resolveTurnModel(): FreeModelRecord | null {

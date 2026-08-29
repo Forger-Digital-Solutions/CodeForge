@@ -18,8 +18,10 @@ export {
   resolveModelSelection,
   type ModelSelectorItem,
   type ModelSelectorProps,
+  type ModelSection,
   type ModelTier,
   type ModelEntitlementStatus,
   type ModelSelectionIntent,
 } from "./ModelSelector.js";
+export type { SessionSummary } from "./WorkspaceApp.js";
 export { getUpgradeUrl, DEFAULT_UPGRADE_URL } from "./upgrade-url.js";

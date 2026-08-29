@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import type { Project } from "./App.js";
-import { WorkspaceApp, type ModelSelectorItem } from "@codeforge/ui";
+import { WorkspaceApp, type ModelSelectorItem, type ModelSection } from "@codeforge/ui";
 import ModelDetails from "./ModelDetails.js";
+import ProviderSetup from "./ProviderSetup.js";
 
 interface WorkspaceShellProps {
   project: Project;
@@ -9,6 +10,16 @@ interface WorkspaceShellProps {
 }
 
 const SERVER_BASE_URL = "http://localhost:3210";
+const HELP_URL = "https://github.com/Forger-Digital-Solutions/CodeForge";
+
+function openExternalLink(url: string): void {
+  const api = (globalThis as { electronAPI?: { openExternal?: (u: string) => Promise<void> } }).electronAPI;
+  if (api?.openExternal) {
+    void api.openExternal(url);
+  } else {
+    window.open(url, "_blank", "noopener");
+  }
+}
 
 interface ApiModel {
   id: string;
@@ -34,6 +45,39 @@ interface ApiModel {
   isPromotional?: boolean;
 }
 
+// Models hidden from the user-facing selector. Muse Spark is a third-party
+// promotional free model — CodeForge still routes to it under "Auto · Best
+// Verified Free", but it is never advertised as its own selectable/hero row.
+const HIDDEN_MODEL_RE = /muse[-\s]?spark/i;
+
+// The provider groups CodeForge presents. Anthropic / OpenAI / Z.AI appear even
+// with no runtime model yet, shown honestly as "not connected" rather than
+// hidden or faked as available.
+const PLACEHOLDER_PROVIDER_SECTIONS: ModelSection[] = [
+  { sectionId: "anthropic", sectionLabel: "ANTHROPIC", models: [], note: "Not connected · BYOK coming soon" },
+  { sectionId: "openai", sectionLabel: "OPENAI", models: [], note: "Not connected · integration coming soon" },
+  { sectionId: "zai", sectionLabel: "Z.AI", models: [], note: "Not connected · integration coming soon" },
+];
+
+// Map a real catalog model to a user-facing section, or null to hide it.
+function catalogSectionFor(providerId: string, tier: string): string | null {
+  if (providerId === "codeforge") return tier === "gems_paid" ? "GEMS" : "VERIFIED FREE";
+  if (providerId === "anthropic") return "ANTHROPIC";
+  if (providerId === "openai") return "OPENAI";
+  if (providerId === "zai") return "Z.AI";
+  return null; // opencode / openrouter (Muse Spark) are hidden from the selector
+}
+
+const SECTION_ORDER = ["CODEFORGE", "VERIFIED FREE", "GEMS", "ANTHROPIC", "OPENAI", "Z.AI"];
+function getSectionOrder(sectionLabel: string): number {
+  const idx = SECTION_ORDER.indexOf(sectionLabel);
+  return idx === -1 ? 99 : idx;
+}
+
+function isHiddenModel(id: string): boolean {
+  return HIDDEN_MODEL_RE.test(id);
+}
+
 export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps) {
   const [models, setModels] = useState<ModelSelectorItem[]>([
     { id: "auto", displayName: "Auto", tier: "free", description: "Best Verified Free Model" },
@@ -46,6 +90,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
   const [providerStatus, setProviderStatus] = useState<Record<string, { status: string; error?: string }>>({});
   const [providerRefreshKey, setProviderRefreshKey] = useState(0);
   const [isForgeZeroOpen, setIsForgeZeroOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     fetch(`${SERVER_BASE_URL}/api/workspace/set`, {
@@ -64,15 +109,21 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
       const data = (await response.json()) as ApiModel[];
       if (!Array.isArray(data)) return;
       setApiModels(data);
-      setModels([
-        { id: "auto", displayName: "Auto", tier: "free", description: "Best Verified Free Model" },
-        ...data.map((m) => ({
+
+      // Build the user-facing model list. Muse Spark (promotional third-party
+      // free model) is filtered out here — "Auto" still routes to it, but it is
+      // never surfaced as its own selectable/hero row.
+      const visible = data.filter((m) => !isHiddenModel(m.id));
+      const modelItems: ModelSelectorItem[] = [
+        { id: "auto", displayName: "Auto", tier: "free", description: "Best Verified Free" },
+        ...visible.map((m) => ({
           id: m.id,
           displayName: m.displayName,
           tier: m.tier === "paid" ? ("gems_paid" as const) : m.tier,
-          description: m.isPromotional ? "Promotional Free" : m.costProfile?.isFree ? "Free" : undefined,
+          description: m.costProfile?.isFree ? "Free" : undefined,
         })),
-      ]);
+      ];
+      setModels(modelItems);
       setModelProviders(Object.fromEntries(data.map((m) => [m.id, m.providerId])));
 
       const uniqueProviders = [...new Set(data.map((m) => m.providerId))];
@@ -109,6 +160,43 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
       window.removeEventListener("codeforge:provider-updated", onProviderUpdate as EventListener);
     };
   }, [refreshModelsAndHealth]);
+
+  // Group models into user-facing sections for the ModelSelector.
+  const modelSections = useMemo((): ModelSection[] => {
+    const sectionMap = new Map<string, ModelSelectorItem[]>();
+    sectionMap.set("CODEFORGE", []);
+
+    for (const model of models) {
+      if (model.id === "auto") {
+        sectionMap.get("CODEFORGE")!.push(model);
+        continue;
+      }
+      const apiModel = apiModels.find((m) => m.id === model.id);
+      const providerId = apiModel?.providerId ?? modelProviders[model.id] ?? "";
+      const tier = apiModel?.tier ?? model.tier;
+      const sectionLabel = catalogSectionFor(providerId, tier);
+      if (!sectionLabel) continue; // hidden from user-facing selector
+      if (!sectionMap.has(sectionLabel)) sectionMap.set(sectionLabel, []);
+      sectionMap.get(sectionLabel)!.push(model);
+    }
+
+    const catalogSections: ModelSection[] = Array.from(sectionMap.entries())
+      .filter(([, sectionModels]) => sectionModels.length > 0)
+      .map(([sectionLabel, sectionModels]) => ({
+        sectionId: sectionLabel.toLowerCase().replace(/\s+/g, "-"),
+        sectionLabel,
+        models: sectionModels,
+      }));
+
+    // Present provider groups that have no runtime model yet as honest,
+    // non-selectable "not connected" sections instead of hiding them.
+    const present = new Set(catalogSections.map((s) => s.sectionLabel));
+    const placeholders = PLACEHOLDER_PROVIDER_SECTIONS.filter((s) => !present.has(s.sectionLabel));
+
+    return [...catalogSections, ...placeholders].sort(
+      (a, b) => getSectionOrder(a.sectionLabel) - getSectionOrder(b.sectionLabel),
+    );
+  }, [models, apiModels, modelProviders]);
 
   const handleSelectModel = useCallback(
     (model: ModelSelectorItem) => {
@@ -160,12 +248,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
   );
 
   const handleUpgradeNavigation = useCallback((url: string) => {
-    const api = (globalThis as any).electronAPI;
-    if (api?.openExternal) {
-      void api.openExternal(url);
-    } else {
-      (globalThis as any).window?.open(url, "_blank", "noopener");
-    }
+    openExternalLink(url);
   }, []);
 
   const handleShowModelDetails = useCallback((model: ModelSelectorItem) => {
@@ -210,7 +293,6 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
             ←
           </button>
           <div className="header-project">
-            <span className="project-icon">📁</span>
             <span className="project-name">{project.name}</span>
             <span className="project-path">{project.path}</span>
           </div>
@@ -219,10 +301,19 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
         <div className="header-right">
           <div
             className="forgezero-indicator"
+            role="button"
+            tabIndex={0}
             onClick={() => setIsForgeZeroOpen(!isForgeZeroOpen)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setIsForgeZeroOpen((v) => !v);
+              }
+            }}
+            aria-expanded={isForgeZeroOpen}
             title="ForgeZero Trust Status"
           >
-            <span className="forgezero-icon">◈</span>
+            <span className="forgezero-icon" aria-hidden="true">◈</span>
             <span>ForgeZero · Verified Free</span>
             {isForgeZeroOpen && (
               <>
@@ -259,7 +350,12 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
               </>
             )}
           </div>
-          <button className="header-btn" title="Help" aria-label="Help">
+          <button
+            className="header-btn"
+            title="Help & documentation"
+            aria-label="Help and documentation"
+            onClick={() => openExternalLink(HELP_URL)}
+          >
             ?
           </button>
         </div>
@@ -273,6 +369,11 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
           onSelectModel={handleSelectModel}
           onShowModelDetails={handleShowModelDetails}
           onUpgradeNavigation={handleUpgradeNavigation}
+          modelSections={modelSections}
+          projectName={project.name}
+          onOpenProjects={onClose}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenHelp={() => openExternalLink(HELP_URL)}
         />
       </main>
 
@@ -281,6 +382,32 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
           model={selectedModelForDetails}
           onClose={handleCloseModelDetails}
         />
+      )}
+
+      {isSettingsOpen && (
+        <div className="settings-modal-overlay" onClick={() => setIsSettingsOpen(false)}>
+          <div
+            className="settings-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Settings"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="settings-modal-header">
+              <span className="settings-modal-title">Settings</span>
+              <button
+                className="settings-modal-close"
+                onClick={() => setIsSettingsOpen(false)}
+                aria-label="Close settings"
+              >
+                ×
+              </button>
+            </div>
+            <div className="settings-modal-body">
+              <ProviderSetup />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
