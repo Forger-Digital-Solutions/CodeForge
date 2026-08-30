@@ -3,6 +3,7 @@ import { createHmac } from "node:crypto";
 import { createGenericFreeRecord } from "@codeforge/forge-zero";
 import type { ProviderAdapter, StreamEvent } from "@codeforge/providers";
 import { CodeForgeCloudServer } from "../src/index.js";
+import { startCloudLogin, completeGitHubCallback, exchangeDesktopCode } from "../../../tests/helpers/cloud-login.js";
 
 // Mock streaming provider
 class MockStreamingProvider implements ProviderAdapter {
@@ -133,28 +134,15 @@ describe("CodeForge Cloud Server API End-to-End", () => {
   });
 
   it("completes full server-authoritative auth lifecycle, account queries, and hosted inference streaming", async () => {
-    // 1. Auth Start
-    const startRes = await fetch(`${baseUrl}/v1/auth/start`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ redirectUri: "http://127.0.0.1:8765/auth/callback" }),
-    });
-    expect(startRes.status).toBe(200);
-    const startData = await startRes.json();
-    expect(startData.state).toBeDefined();
-    expect(startData.codeVerifier).toBeDefined();
+    // 1-3. Desktop PKCE start → GitHub callback → single-use desktop code exchange.
+    const start = await startCloudLogin(baseUrl, { loopbackPort: 8765 });
+    expect(start.state).toBeDefined();
+    expect(start.cloudCallbackUrl).toContain("/v1/auth/github/callback");
+    // The desktop never receives a GitHub PKCE verifier.
+    expect(JSON.stringify(start)).not.toContain("gitHubCodeVerifier");
 
-    // 2. Auth Exchange (Server exchanges code with GitHub and consumes transaction)
-    const exchangeRes = await fetch(`${baseUrl}/v1/auth/exchange`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code: "code_alice_1",
-        state: startData.state,
-        codeVerifier: startData.codeVerifier,
-        redirectUri: "http://127.0.0.1:8765/auth/callback",
-      }),
-    });
+    const { code: desktopCode } = await completeGitHubCallback(baseUrl, start);
+    const exchangeRes = await exchangeDesktopCode(baseUrl, start, desktopCode);
     expect(exchangeRes.status).toBe(200);
     const authTokens = await exchangeRes.json();
     expect(authTokens.isNewUser).toBe(true);

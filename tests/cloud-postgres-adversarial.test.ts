@@ -9,6 +9,7 @@ import { CloudFirewallManager, GatewayService } from "@codeforge/cloud-gateway";
 import { CodeForgeCloudServer } from "codeforge-cloud-api";
 import { createGenericFreeRecord } from "@codeforge/forge-zero";
 import type { ProviderAdapter, StreamEvent } from "@codeforge/providers";
+import { loginToCloud, exchangeDesktopCode, createMockGitHubFetch } from "./helpers/cloud-login.js";
 
 const TEST_PG = process.env.CODEFORGE_TEST_POSTGRES_URL || process.env.DATABASE_URL;
 
@@ -418,6 +419,7 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("Postgres Runtime — Deep Adv
     const server = new CodeForgeCloudServer({
       jwtSecret: "cert-postgres-e2e-jwt-secret-32-chars-long",
       databaseUrl: TEST_PG,
+      fetchFn: createMockGitHubFetch({ id: 90210, login: "pg_e2e_user", name: "PG E2E User" }),
       stripeConfig: {
         secretKey: "sk_test_mock_e2e_pg",
         webhookSecret: "whsec_mock_e2e_pg",
@@ -436,15 +438,17 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("Postgres Runtime — Deep Adv
       expect(ready.status).toBe("ready");
       expect(ready.database).toBe("connected");
 
-      // 2. Start OAuth
+      // 2. Full server-brokered OAuth against real PostgreSQL: the oauth_transactions row, the
+      //    single-use desktop_auth_codes row, and its atomic consumption all round-trip through
+      //    Postgres here, not just SQLite.
+      const login = await loginToCloud(baseUrl, { loopbackPort: 8765 });
+      expect(login.accessToken).toBeDefined();
+      expect(login.isNewUser).toBe(true);
 
-      const startRes = await (await fetch(`${baseUrl}/v1/auth/start`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ redirectUri: "http://127.0.0.1:8765/auth/callback" }),
-      })).json();
-
-      expect(startRes.state).toBeDefined();
+      // Replaying the consumed desktop code against Postgres must fail.
+      const replay = await exchangeDesktopCode(baseUrl, login.start, login.desktopCode);
+      expect(replay.status).toBe(400);
+      expect((await replay.json()).error).toContain("already consumed");
 
       // 3. Create a test user directly in Postgres
       const user = await server.db.createUser({ displayName: "PG E2E User", primaryIdentity: `github:pge2e-${randomUUID()}` });

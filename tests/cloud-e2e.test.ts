@@ -4,6 +4,7 @@ import { CodeForgeCloudServer } from "codeforge-cloud-api";
 import { HostedProviderAdapter } from "@codeforge/providers";
 import { createGenericFreeRecord } from "@codeforge/forge-zero";
 import type { ProviderAdapter, StreamEvent } from "@codeforge/providers";
+import { startCloudLogin, completeGitHubCallback, exchangeDesktopCode } from "./helpers/cloud-login.js";
 
 // Mock upstream free LLM provider on cloud server
 class MockCloudUpstreamProvider implements ProviderAdapter {
@@ -93,27 +94,15 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
   });
 
   it("completes full certified cloud flow: Zero-Setup Sign-in -> Free Inference -> Metering -> Stripe Pro Upgrade -> Cancellation", async () => {
-    // 1. Desktop starts PKCE flow
-    const startRes = await fetch(`${cloudUrl}/v1/auth/start`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ redirectUri: "http://127.0.0.1:8765/auth/callback" }),
-    });
-    const start = await startRes.json();
+    // 1. Desktop starts the flow with its own PKCE challenge.
+    const start = await startCloudLogin(cloudUrl, { loopbackPort: 8765 });
     expect(start.state).toBeDefined();
-    expect(start.codeVerifier).toBeDefined();
+    expect(start.cloudCallbackUrl).toContain("/v1/auth/github/callback");
 
-    // 2. Browser callback arrives & Desktop exchanges code for tokens
-    const exchangeRes = await fetch(`${cloudUrl}/v1/auth/exchange`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code: "code_dev_123",
-        state: start.state,
-        codeVerifier: start.codeVerifier,
-        redirectUri: "http://127.0.0.1:8765/auth/callback",
-      }),
-    });
+    // 2. Browser completes GitHub authorization at the Cloud callback, which redirects to the
+    //    loopback listener with a single-use code; the desktop then redeems it.
+    const { code: desktopCode } = await completeGitHubCallback(cloudUrl, start);
+    const exchangeRes = await exchangeDesktopCode(cloudUrl, start, desktopCode);
     const authData = await exchangeRes.json();
     expect(authData.isNewUser).toBe(true);
     expect(authData.accessToken).toBeDefined();

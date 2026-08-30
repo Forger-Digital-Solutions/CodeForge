@@ -1,5 +1,9 @@
 export * from "./server.js";
 export * from "./config.js";
+export * from "./staging-contract.js";
+export * from "./staging-preflight.js";
+export * from "./remote-probe.js";
+export * from "./certification-receipt.js";
 
 async function main() {
   const { loadCloudRuntimeConfig, describeConfig } = await import("./config.js");
@@ -34,6 +38,7 @@ async function main() {
     jwtSecret: config.jwtSecret,
     gitHubClientId: config.gitHub.clientId,
     gitHubClientSecret: config.gitHub.clientSecret,
+    publicUrl: config.publicUrl,
     stripeConfig: config.stripe,
     firewallManager,
     providerRegistry,

@@ -12,15 +12,22 @@ import { CloudFirewallManager, GatewayService, type HostedInferenceRequest, type
 const MAX_BODY_BYTES = 1024 * 1024; // 1 MiB max payload
 
 // Boundary Zod Schemas
+//
+// The desktop supplies its own PKCE challenge here. There is deliberately no default redirectUri:
+// a login attempt must name the exact loopback listener it opened, and that value is then validated
+// against the loopback policy in @codeforge/cloud-auth before it is ever stored or redirected to.
 const AuthStartSchema = z.object({
-  redirectUri: z.string().url().default("http://127.0.0.1:8765/auth/callback"),
+  redirectUri: z.string().url(),
+  codeChallenge: z.string().min(43).max(128),
   deviceName: z.string().max(255).optional(),
 });
 
+// Exchange of the single-use desktop authorization code. `state` is accepted for client-side
+// correlation but carries no authority — the code itself is the only thing the server trusts.
 const AuthExchangeSchema = z.object({
   code: z.string().min(1),
-  state: z.string().min(1),
-  codeVerifier: z.string().min(1),
+  codeVerifier: z.string().min(43).max(128),
+  state: z.string().min(1).optional(),
   redirectUri: z.string().url().optional(),
   deviceName: z.string().max(255).optional(),
 });
@@ -77,6 +84,11 @@ export interface CodeForgeCloudServerConfig {
   jwtSecret?: string;
   gitHubClientId?: string;
   gitHubClientSecret?: string;
+  /**
+   * The deployment's public base URL. The GitHub OAuth callback is derived from it, so authentication
+   * cannot start without it. Defaults to the loopback bind address for local development.
+   */
+  publicUrl?: string;
   stripeConfig?: StripeConfig;
   firewallManager?: CloudFirewallManager;
   /** Operator kill switches / spend limits applied when this server owns its firewall manager. */
@@ -166,11 +178,20 @@ export class CodeForgeCloudServer {
     this.providerRegistry = config.providerRegistry;
     this.discoverOnStart = config.discoverOnStart ?? true;
 
+    // Development default: the loopback origin this server is about to bind. Staging/production
+    // always pass an explicit HTTPS origin from CODEFORGE_PUBLIC_URL (validated in config.ts).
+    const publicUrl = config.publicUrl ?? (isProduction ? undefined : `http://127.0.0.1:${config.port ?? 3220}`);
+    if (isProduction && !publicUrl) {
+      throw new Error("Missing CODEFORGE_PUBLIC_URL for production cloud server.");
+    }
+
     this.auth = new AuthService({
       db: this.db,
       jwtSecret,
       gitHubClientId,
       gitHubClientSecret: config.gitHubClientSecret,
+      publicUrl,
+      allowInsecurePublicUrl: !isProduction,
       fetchFn: config.fetchFn,
     });
 
@@ -368,6 +389,24 @@ export class CodeForgeCloudServer {
     };
   }
 
+  /**
+   * Terminal browser page for a failed OAuth callback. Deliberately static: the message is a fixed
+   * string, so nothing attacker-influenced is ever reflected into the response body.
+   */
+  private sendAuthErrorPage(res: http.ServerResponse, message: string): void {
+    const body = `<!doctype html><html><head><meta charset="utf-8"><title>CodeForge Cloud</title></head><body style="font-family:system-ui,sans-serif;background:#0f1115;color:#e6e8ec;display:grid;place-items:center;height:100vh;margin:0"><div style="text-align:center;padding:2rem"><h2>CodeForge sign-in failed</h2><p style="color:#9ca3af">${message}</p><p style="color:#9ca3af">Return to CodeForge and try connecting again.</p></div></body></html>`;
+    res.writeHead(400, {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      Pragma: "no-cache",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "Referrer-Policy": "no-referrer",
+      "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
+    });
+    res.end(body);
+  }
+
   private sendJson(res: http.ServerResponse, status: number, data: unknown, origin?: string): void {
     res.writeHead(status, {
       "Content-Type": "application/json; charset=utf-8",
@@ -477,18 +516,54 @@ export class CodeForgeCloudServer {
       if (url.pathname === "/v1/auth/start" && method === "POST") {
         const body = await this.readJson(req, AuthStartSchema);
         const result = await this.auth.startOAuth({
-          redirectUri: body.redirectUri ?? "http://127.0.0.1:8765/auth/callback",
+          redirectUri: body.redirectUri,
+          codeChallenge: body.codeChallenge,
           deviceName: body.deviceName,
         });
         this.sendJson(res, 200, result, corsOrigin);
         return;
       }
 
+      // GitHub authorization-server callback. This is the ONE URL registered in the GitHub OAuth
+      // App. It never emits a session credential: it redirects to the loopback URI recorded in the
+      // server-side transaction, carrying a single-use authorization code.
+      if (url.pathname === "/v1/auth/github/callback" && method === "GET") {
+        const oauthError = url.searchParams.get("error");
+        if (oauthError) {
+          // GitHub reported a failure (e.g. access_denied). Render it; do not redirect anywhere,
+          // because a failed attempt has no validated destination.
+          this.sendAuthErrorPage(res, "GitHub authorization was not completed.");
+          return;
+        }
+
+        try {
+          const result = await this.auth.handleGitHubCallback({
+            code: url.searchParams.get("code") ?? "",
+            state: url.searchParams.get("state") ?? "",
+          });
+          // 302 to the server-validated loopback target. `Location` is derived entirely from the
+          // stored transaction, so no request parameter can steer this redirect.
+          res.writeHead(302, {
+            Location: result.redirectTo,
+            "Cache-Control": "no-store, no-cache, must-revalidate",
+            Pragma: "no-cache",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY",
+            "Referrer-Policy": "no-referrer",
+          });
+          res.end();
+        } catch {
+          // Never echo the failure reason into a browser-rendered page: it is attacker-influenced
+          // input and the detail is of no use to a legitimate user.
+          this.sendAuthErrorPage(res, "This CodeForge sign-in link is invalid or has already been used.");
+        }
+        return;
+      }
+
       if (url.pathname === "/v1/auth/exchange" && method === "POST") {
         const body = await this.readJson(req, AuthExchangeSchema);
-        const result = await this.auth.handleOAuthCallback({
+        const result = await this.auth.exchangeDesktopAuthCode({
           code: body.code,
-          state: body.state,
           codeVerifier: body.codeVerifier,
           redirectUri: body.redirectUri,
           deviceName: body.deviceName,
@@ -601,11 +676,20 @@ export class CodeForgeCloudServer {
         res.flushHeaders();
 
         const abortController = new AbortController();
-        req.on("close", () => {
+        // A client that goes away mid-stream must stop the upstream inference, or the Cloud keeps
+        // paying a provider to generate tokens nobody will ever read.
+        //
+        // The signal has to come from the RESPONSE, not the request: by this point the request body
+        // has been fully consumed, so `req` is already complete and its 'close' does not track the
+        // client at all. `res` emits 'close' when the connection is terminated — including
+        // prematurely — and `writableEnded` distinguishes "we finished" from "they left".
+        const abortOnDisconnect = () => {
           if (!res.writableEnded) {
             abortController.abort(new Error("Client disconnected"));
           }
-        });
+        };
+        res.on("close", abortOnDisconnect);
+        req.on("aborted", abortOnDisconnect);
 
         try {
           await this.gateway.executeHostedInference(

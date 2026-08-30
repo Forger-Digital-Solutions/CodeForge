@@ -10,6 +10,7 @@ const prodBase = {
   STRIPE_WEBHOOK_SECRET: "whsec_prod",
   CODEFORGE_CLOUD_DB_DRIVER: "postgres",
   DATABASE_URL: "postgres://user:pass@host:5432/db",
+  CODEFORGE_PUBLIC_URL: "https://cloud.codeforge.test",
 };
 
 describe("loadCloudRuntimeConfig", () => {
@@ -48,6 +49,24 @@ describe("loadCloudRuntimeConfig", () => {
 
   it("requires Stripe test credentials in production", () => {
     expect(() => loadCloudRuntimeConfig({ ...prodBase, STRIPE_WEBHOOK_SECRET: undefined })).toThrow(/STRIPE/);
+  });
+
+  it("requires a valid public HTTPS URL in staging/production", () => {
+    // GitHub redirects to `${publicUrl}/v1/auth/github/callback`, so a deployment without it can
+    // never complete a login — that has to fail at boot, not at first sign-in.
+    expect(() => loadCloudRuntimeConfig({ ...prodBase, CODEFORGE_PUBLIC_URL: undefined })).toThrow(/CODEFORGE_PUBLIC_URL/);
+    expect(() => loadCloudRuntimeConfig({ ...prodBase, CODEFORGE_PUBLIC_URL: "not-a-url" })).toThrow(/absolute URL/);
+    expect(() => loadCloudRuntimeConfig({ ...prodBase, CODEFORGE_PUBLIC_URL: "http://cloud.example.com" })).toThrow(/HTTPS/);
+    expect(() => loadCloudRuntimeConfig({ ...prodBase, CODEFORGE_PUBLIC_URL: "https://u:p@cloud.example.com" })).toThrow(/credentials/);
+    expect(() => loadCloudRuntimeConfig({ ...prodBase, CODEFORGE_PUBLIC_URL: "https://cloud.example.com/?x=1" })).toThrow(/query string/);
+
+    // Trailing slashes are normalized away so the derived callback URL is stable.
+    expect(loadCloudRuntimeConfig({ ...prodBase, CODEFORGE_PUBLIC_URL: "https://cloud.example.com/" }).publicUrl).toBe("https://cloud.example.com");
+  });
+
+  it("permits a plain-http loopback public URL only outside staging/production", () => {
+    expect(loadCloudRuntimeConfig({ CODEFORGE_PUBLIC_URL: "http://127.0.0.1:3220" }).publicUrl).toBe("http://127.0.0.1:3220");
+    expect(() => loadCloudRuntimeConfig({ ...prodBase, CODEFORGE_PUBLIC_URL: "http://127.0.0.1:3220" })).toThrow(/HTTPS/);
   });
 
   it("accepts a complete production configuration", () => {

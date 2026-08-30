@@ -19,6 +19,7 @@ import type {
   AccountSettingsRecord,
   AbuseEventRecord,
   OAuthTransactionRecord,
+  DesktopAuthCodeRecord,
   FeatureKey,
 } from "./types.js";
 
@@ -312,6 +313,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       userAgent: row.user_agent ? String(row.user_agent) : undefined,
       expiresAt: String(row.expires_at),
       revokedAt: row.revoked_at ? String(row.revoked_at) : null,
+      revokedReason: (row.revoked_reason ? String(row.revoked_reason) : null) as DeviceSessionRecord["revokedReason"],
       createdAt: String(row.created_at),
       lastSeenAt: String(row.last_seen_at),
     };
@@ -326,14 +328,16 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     this.db.prepare(`UPDATE device_sessions SET last_seen_at = @now WHERE id = @id`).run({ id, now });
   }
 
-  async revokeDeviceSession(id: string): Promise<void> {
+  async revokeDeviceSession(id: string, reason: "rotated" | "logout" | "breach" = "logout"): Promise<void> {
     const now = new Date().toISOString();
-    this.db.prepare(`UPDATE device_sessions SET revoked_at = @now WHERE id = @id`).run({ id, now });
+    this.db.prepare(`UPDATE device_sessions SET revoked_at = @now, revoked_reason = @reason WHERE id = @id`).run({ id, now, reason });
   }
 
   private revokeAllUserDeviceSessionsSync(userId: string): void {
     const now = new Date().toISOString();
-    this.db.prepare(`UPDATE device_sessions SET revoked_at = @now WHERE user_id = @userId AND revoked_at IS NULL`).run({ userId, now });
+    this.db
+      .prepare(`UPDATE device_sessions SET revoked_at = @now, revoked_reason = 'breach' WHERE user_id = @userId AND revoked_at IS NULL`)
+      .run({ userId, now });
   }
 
   async revokeAllUserDeviceSessions(userId: string): Promise<void> {
@@ -353,9 +357,15 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       throw new Error("Invalid refresh token");
     }
     if (session.revokedAt) {
-      // Possible token reuse / breach: revoke all sessions for safety
-      this.revokeAllUserDeviceSessionsSync(session.userId);
-      throw new Error("Device session has been revoked (replay detected)");
+      // Reuse of a ROTATED token means a second party holds a token this device already spent —
+      // that is the OAuth refresh-token replay signal, so the entire session family is revoked.
+      // Reuse of a token the user explicitly LOGGED OUT is just a stale client catching up; killing
+      // every other device for that would sign the account out everywhere on a benign event.
+      if (session.revokedReason === "rotated") {
+        this.revokeAllUserDeviceSessionsSync(session.userId);
+        throw new Error("Device session has been revoked (replay detected)");
+      }
+      throw new Error("Device session has been revoked");
     }
     if (new Date(session.expiresAt).getTime() < Date.now()) {
       throw new Error("Device session has expired");
@@ -369,7 +379,9 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     // Revoke old session and insert new session atomically
     return this.txSync(() => {
       const now = new Date().toISOString();
-      this.db.prepare(`UPDATE device_sessions SET revoked_at = @now WHERE id = @id`).run({ id: session.id, now });
+      this.db
+        .prepare(`UPDATE device_sessions SET revoked_at = @now, revoked_reason = 'rotated' WHERE id = @id`)
+        .run({ id: session.id, now });
 
       const newSession = this.createDeviceSessionSync({
         userId: user.id,
@@ -1185,6 +1197,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     codeChallenge: string;
     redirectUri: string;
     deviceName?: string;
+    gitHubCodeVerifier?: string;
     expiresInSeconds?: number;
   }): Promise<OAuthTransactionRecord> {
     const now = new Date();
@@ -1193,6 +1206,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       id: randomUUID(),
       state: params.state,
       codeChallenge: params.codeChallenge,
+      gitHubCodeVerifier: params.gitHubCodeVerifier,
       redirectUri: params.redirectUri,
       deviceName: params.deviceName,
       expiresAt: expires.toISOString(),
@@ -1201,12 +1215,13 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     };
 
     this.db.prepare(`
-      INSERT INTO oauth_transactions (id, state, code_challenge, redirect_uri, device_name, expires_at, used_at, created_at)
-      VALUES (@id, @state, @codeChallenge, @redirectUri, @deviceName, @expiresAt, @usedAt, @createdAt)
+      INSERT INTO oauth_transactions (id, state, code_challenge, github_code_verifier, redirect_uri, device_name, expires_at, used_at, created_at)
+      VALUES (@id, @state, @codeChallenge, @gitHubCodeVerifier, @redirectUri, @deviceName, @expiresAt, @usedAt, @createdAt)
     `).run({
       id: record.id,
       state: record.state,
       codeChallenge: record.codeChallenge,
+      gitHubCodeVerifier: record.gitHubCodeVerifier ?? null,
       redirectUri: record.redirectUri,
       deviceName: record.deviceName ?? null,
       expiresAt: record.expiresAt,
@@ -1224,6 +1239,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       id: String(row.id),
       state: String(row.state),
       codeChallenge: String(row.code_challenge),
+      gitHubCodeVerifier: row.github_code_verifier ? String(row.github_code_verifier) : undefined,
       redirectUri: String(row.redirect_uri),
       deviceName: row.device_name ? String(row.device_name) : undefined,
       expiresAt: String(row.expires_at),
@@ -1255,6 +1271,92 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       throw new Error("OAuth transaction already consumed (replay detected)");
     }
     return { ...tx, usedAt: now };
+  }
+
+  // --- Desktop Authorization Codes (single-use OAuth→desktop handoff) ---
+
+  async createDesktopAuthCode(params: {
+    codeHash: string;
+    userId: string;
+    codeChallenge: string;
+    redirectUri: string;
+    deviceName?: string;
+    isNewUser?: boolean;
+    expiresInSeconds?: number;
+  }): Promise<DesktopAuthCodeRecord> {
+    const now = new Date();
+    const expires = new Date(now.getTime() + (params.expiresInSeconds ?? 120) * 1000);
+    const record: DesktopAuthCodeRecord = {
+      id: randomUUID(),
+      codeHash: params.codeHash,
+      userId: params.userId,
+      codeChallenge: params.codeChallenge,
+      redirectUri: params.redirectUri,
+      deviceName: params.deviceName,
+      isNewUser: params.isNewUser ?? false,
+      expiresAt: expires.toISOString(),
+      usedAt: null,
+      createdAt: now.toISOString(),
+    };
+
+    this.db.prepare(`
+      INSERT INTO desktop_auth_codes (id, code_hash, user_id, code_challenge, redirect_uri, device_name, is_new_user, expires_at, used_at, created_at)
+      VALUES (@id, @codeHash, @userId, @codeChallenge, @redirectUri, @deviceName, @isNewUser, @expiresAt, NULL, @createdAt)
+    `).run({
+      id: record.id,
+      codeHash: record.codeHash,
+      userId: record.userId,
+      codeChallenge: record.codeChallenge,
+      redirectUri: record.redirectUri,
+      deviceName: record.deviceName ?? null,
+      isNewUser: record.isNewUser ? 1 : 0,
+      expiresAt: record.expiresAt,
+      createdAt: record.createdAt,
+    });
+
+    return record;
+  }
+
+  private mapDesktopAuthCodeRow(row: Record<string, unknown>): DesktopAuthCodeRecord {
+    return {
+      id: String(row.id),
+      codeHash: String(row.code_hash),
+      userId: String(row.user_id),
+      codeChallenge: String(row.code_challenge),
+      redirectUri: String(row.redirect_uri),
+      deviceName: row.device_name ? String(row.device_name) : undefined,
+      isNewUser: Number(row.is_new_user) === 1,
+      expiresAt: String(row.expires_at),
+      usedAt: row.used_at ? String(row.used_at) : null,
+      createdAt: String(row.created_at),
+    };
+  }
+
+  async getDesktopAuthCode(codeHash: string): Promise<DesktopAuthCodeRecord | undefined> {
+    const row = this.db.prepare(`SELECT * FROM desktop_auth_codes WHERE code_hash = @codeHash`).get({ codeHash }) as Record<string, unknown> | undefined;
+    return row ? this.mapDesktopAuthCodeRow(row) : undefined;
+  }
+
+  async consumeDesktopAuthCode(codeHash: string): Promise<DesktopAuthCodeRecord> {
+    const row = this.db.prepare(`SELECT * FROM desktop_auth_codes WHERE code_hash = @codeHash`).get({ codeHash }) as Record<string, unknown> | undefined;
+    if (!row) {
+      throw new Error("Desktop authorization code not found");
+    }
+    const record = this.mapDesktopAuthCodeRow(row);
+    if (record.usedAt) {
+      throw new Error("Desktop authorization code already consumed (replay detected)");
+    }
+    if (new Date(record.expiresAt).getTime() < Date.now()) {
+      throw new Error("Desktop authorization code expired");
+    }
+
+    // Single-use: only the caller that flips used_at from NULL wins the row.
+    const now = new Date().toISOString();
+    const result = this.db.prepare(`UPDATE desktop_auth_codes SET used_at = @now WHERE code_hash = @codeHash AND used_at IS NULL`).run({ codeHash, now });
+    if (Number(result.changes) === 0) {
+      throw new Error("Desktop authorization code already consumed (replay detected)");
+    }
+    return { ...record, usedAt: now };
   }
 
   // --- Billing Webhook Events ---

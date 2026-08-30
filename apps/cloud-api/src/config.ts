@@ -15,6 +15,13 @@ export interface CloudRuntimeConfig {
   host: string;
   port: number;
 
+  /**
+   * The deployment's public base URL (scheme + host, no trailing slash). This is the origin GitHub
+   * redirects back to, so it is REQUIRED in staging/production and must be HTTPS there. It is not a
+   * secret; it is authoritative configuration, which is exactly why it may not come from a client.
+   */
+  publicUrl?: string;
+
   database: {
     driver: "sqlite" | "postgres";
     /** Postgres connection string (postgres driver only). */
@@ -63,6 +70,7 @@ const EnvSchema = z.object({
   NODE_ENV: z.string().optional(),
   HOST: z.string().optional(),
   PORT: z.string().optional(),
+  CODEFORGE_PUBLIC_URL: z.string().optional(),
   CODEFORGE_CLOUD_DB_DRIVER: z.enum(["sqlite", "postgres"]).optional(),
   DATABASE_URL: z.string().optional(),
   CODEFORGE_CLOUD_DB_SSL: z.string().optional(),
@@ -175,6 +183,30 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
     throw new CloudConfigError("JWT_SECRET must be at least 32 cryptographically strong characters (and not the test default) in staging/production.");
   }
 
+  // --- Public URL -----------------------------------------------------------------------------
+  // GitHub redirects to `${publicUrl}/v1/auth/github/callback`, so a staging/production deployment
+  // without a valid public HTTPS origin cannot complete authentication at all — fail at boot rather
+  // than at the first login attempt.
+  let publicUrl: string | undefined;
+  if (e.CODEFORGE_PUBLIC_URL) {
+    let parsedPublic: URL;
+    try {
+      parsedPublic = new URL(e.CODEFORGE_PUBLIC_URL);
+    } catch {
+      throw new CloudConfigError("CODEFORGE_PUBLIC_URL must be an absolute URL (e.g. https://cloud.example.com).");
+    }
+    const isLoopbackPublic = parsedPublic.hostname === "127.0.0.1" || parsedPublic.hostname === "localhost";
+    if (parsedPublic.protocol !== "https:" && !(parsedPublic.protocol === "http:" && !isProdLike && isLoopbackPublic)) {
+      throw new CloudConfigError("CODEFORGE_PUBLIC_URL must use HTTPS (plain http is permitted only for loopback development).");
+    }
+    if (parsedPublic.username || parsedPublic.password || parsedPublic.search || parsedPublic.hash) {
+      throw new CloudConfigError("CODEFORGE_PUBLIC_URL must not contain credentials, a query string, or a fragment.");
+    }
+    publicUrl = `${parsedPublic.protocol}//${parsedPublic.host}${parsedPublic.pathname.replace(/\/+$/, "")}`;
+  } else if (isProdLike) {
+    throw new CloudConfigError("CODEFORGE_PUBLIC_URL is required in staging/production — it is the origin GitHub redirects back to.");
+  }
+
   // --- GitHub OAuth ---------------------------------------------------------------------------
   const gitHub = { clientId: e.GITHUB_CLIENT_ID, clientSecret: e.GITHUB_CLIENT_SECRET };
   if (isProdLike && (!gitHub.clientId || !gitHub.clientSecret)) {
@@ -213,6 +245,7 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
     environment,
     host: e.HOST ?? "127.0.0.1",
     port: parseNum(e.PORT, 3220),
+    publicUrl,
     database,
     jwtSecret,
     gitHub,
@@ -235,6 +268,7 @@ export function describeConfig(config: CloudRuntimeConfig): string {
     `db=${config.database.driver}`,
     `dbTls=${config.database.ssl ?? false}`,
     `host=${config.host}:${config.port}`,
+    `publicUrl=${config.publicUrl ?? "unset"}`,
     `github=${config.gitHub.clientId ? "configured" : "absent"}`,
     `stripe=${config.stripe.secretKey.startsWith("sk_test") ? "test-mode" : config.stripe.secretKey ? "configured" : "absent"}`,
     `providers=[${providers.join(",") || "none"}]`,

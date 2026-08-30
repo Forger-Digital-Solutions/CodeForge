@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { ProviderAdapter, ProviderModel, StreamEvent, ChatRequest } from "@codeforge/providers";
 import { CloudFirewallManager, CloudProviderRegistry, MapCredentialStore } from "@codeforge/cloud-gateway";
 import { CodeForgeCloudServer } from "../src/index.js";
+import { loginToCloud } from "../../../tests/helpers/cloud-login.js";
 
 // A server provider key that must NEVER cross the cloud→desktop boundary.
 const PROVIDER_SECRET = "sk-or-SERVER_SECRET_SENTINEL_7f3a";
@@ -103,16 +104,7 @@ describe("Zero-setup real hosted capacity (deterministic, injected provider)", (
 
   it("runs a zero-provider-key hosted inference through Auto and settles usage", async () => {
     // Sign in (no provider account, no provider key from the user).
-    const start = await (await fetch(`${baseUrl}/v1/auth/start`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ redirectUri: "http://127.0.0.1:8765/auth/callback" }),
-    })).json();
-    const tokens = await (await fetch(`${baseUrl}/v1/auth/exchange`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code: "c1", state: start.state, codeVerifier: start.codeVerifier, redirectUri: "http://127.0.0.1:8765/auth/callback" }),
-    })).json();
+    const tokens = await loginToCloud(baseUrl, { loopbackPort: 8765 });
     const auth = { Authorization: `Bearer ${tokens.accessToken}` };
 
     const inf = await fetch(`${baseUrl}/v1/hosted/inference`, {

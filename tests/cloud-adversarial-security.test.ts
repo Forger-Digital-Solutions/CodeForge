@@ -5,6 +5,7 @@ import { CloudDatabase } from "@codeforge/cloud-db";
 import { AuthService, signAccessToken, verifyAccessToken } from "@codeforge/cloud-auth";
 import { StripeBillingService } from "@codeforge/cloud-billing";
 import { EntitlementService } from "@codeforge/cloud-entitlements";
+import { startCloudLogin, completeGitHubCallback, exchangeDesktopCode, loginToCloud, createDesktopPkce } from "./helpers/cloud-login.js";
 
 describe("Phase 56 — P0 Adversarial Security Certification", () => {
   let server: CodeForgeCloudServer;
@@ -60,7 +61,7 @@ describe("Phase 56 — P0 Adversarial Security Certification", () => {
         code: "fake_code",
         state: "fake_state",
         expectedState: "fake_state",
-        codeVerifier: "fake_verifier",
+        codeVerifier: "f".repeat(64),
         mockProfile: {
           id: 1,
           login: "torvalds",
@@ -81,35 +82,63 @@ describe("Phase 56 — P0 Adversarial Security Certification", () => {
   });
 
   it("rejects arbitrary OAuth redirect targets before they can become server-authoritative transactions", async () => {
+    const { codeChallenge } = createDesktopPkce();
     for (const redirectUri of [
       "https://attacker.example/auth/callback",
       "http://localhost:8765/auth/callback",
       "http://127.0.0.1:8765/other",
       "http://127.0.0.1:8765/auth/callback?redirect=https://attacker.example",
+      "http://127.0.0.1/auth/callback",
+      "http://[::1]:8765/auth/callback",
+      "http://127.0.0.1@attacker.example:8765/auth/callback",
+      "http://192.168.0.10:8765/auth/callback",
     ]) {
       const res = await fetch(`${baseUrl}/v1/auth/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ redirectUri }),
+        body: JSON.stringify({ redirectUri, codeChallenge }),
       });
-      expect(res.status).toBe(400);
+      expect(res.status, `expected rejection for ${redirectUri}`).toBe(400);
       expect((await res.json()).authUrl).toBeUndefined();
     }
   });
 
+  it("never lets callback input steer the GitHub-callback redirect (no open redirector)", async () => {
+    const start = await startCloudLogin(baseUrl, { loopbackPort: 49152 });
+
+    // Hostile parameters piggy-backed on the authorization-server callback are ignored entirely:
+    // the destination comes from the server-side transaction, not the request.
+    const res = await fetch(
+      `${baseUrl}/v1/auth/github/callback?code=gh_code&state=${encodeURIComponent(start.state)}` +
+        `&redirect_uri=${encodeURIComponent("https://attacker.example/steal")}` +
+        `&redirectUri=${encodeURIComponent("https://attacker.example/steal")}` +
+        `&next=${encodeURIComponent("https://attacker.example/steal")}`,
+      { redirect: "manual" },
+    );
+    expect(res.status).toBe(302);
+    const location = res.headers.get("location")!;
+    expect(new URL(location).host).toBe("127.0.0.1:49152");
+    expect(location).not.toContain("attacker.example");
+  });
+
+  it("returns a static error page — never a redirect — for an invalid or replayed GitHub callback", async () => {
+    const res = await fetch(`${baseUrl}/v1/auth/github/callback?code=x&state=unknown_state`, { redirect: "manual" });
+    expect(res.status).toBe(400);
+    expect(res.headers.get("location")).toBeNull();
+    const text = await res.text();
+    expect(text).not.toContain("unknown_state");
+    expect(text).toContain("CodeForge sign-in failed");
+
+    // GitHub-reported failures also terminate without a redirect.
+    const denied = await fetch(`${baseUrl}/v1/auth/github/callback?error=access_denied&state=whatever`, { redirect: "manual" });
+    expect(denied.status).toBe(400);
+    expect(denied.headers.get("location")).toBeNull();
+  });
+
   it("does not honor forged forwarding headers unless the deployment explicitly trusts its proxy", async () => {
     const spoofedIp = "203.0.113.42";
-    const start = await (await fetch(`${baseUrl}/v1/auth/start`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Forwarded-For": spoofedIp },
-      body: JSON.stringify({ redirectUri: "http://127.0.0.1:8765/auth/callback" }),
-    })).json();
-    const exchange = await (await fetch(`${baseUrl}/v1/auth/exchange`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Forwarded-For": spoofedIp },
-      body: JSON.stringify({ code: "code_no_proxy", state: start.state, codeVerifier: start.codeVerifier, redirectUri: "http://127.0.0.1:8765/auth/callback" }),
-    })).json();
-    expect(exchange.session.ipAddress).not.toBe(spoofedIp);
+    const exchange = await loginToCloud(baseUrl, { loopbackPort: 8765, headers: { "X-Forwarded-For": spoofedIp } });
+    expect((exchange as unknown as { session: { ipAddress?: string } }).session.ipAddress).not.toBe(spoofedIp);
 
     const proxiedServer = new CodeForgeCloudServer({
       jwtSecret,
@@ -125,115 +154,80 @@ describe("Phase 56 — P0 Adversarial Security Certification", () => {
     const proxiedPort = await proxiedServer.start(0);
     try {
       const proxiedBaseUrl = `http://127.0.0.1:${proxiedPort}`;
-      const proxiedStart = await (await fetch(`${proxiedBaseUrl}/v1/auth/start`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Forwarded-For": `${spoofedIp}, 198.51.100.7` },
-        body: JSON.stringify({ redirectUri: "http://127.0.0.1:8765/auth/callback" }),
-      })).json();
-      const proxiedExchange = await (await fetch(`${proxiedBaseUrl}/v1/auth/exchange`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Forwarded-For": `${spoofedIp}, 198.51.100.7` },
-        body: JSON.stringify({ code: "code_trusted_proxy", state: proxiedStart.state, codeVerifier: proxiedStart.codeVerifier, redirectUri: "http://127.0.0.1:8765/auth/callback" }),
-      })).json();
-      expect(proxiedExchange.session.ipAddress).toBe(spoofedIp);
+      const proxiedExchange = await loginToCloud(proxiedBaseUrl, {
+        loopbackPort: 8765,
+        headers: { "X-Forwarded-For": `${spoofedIp}, 198.51.100.7` },
+      });
+      expect((proxiedExchange as unknown as { session: { ipAddress?: string } }).session.ipAddress).toBe(spoofedIp);
     } finally {
       await proxiedServer.stop();
     }
   });
 
 
-  it("enforces server-owned OAuth transactions, rejecting unknown state, wrong PKCE, and expired state", async () => {
-    // 1. Unknown state
-    const resUnknown = await fetch(`${baseUrl}/v1/auth/exchange`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code: "code_1",
-        state: "completely_unknown_state_uuid",
-        codeVerifier: "verifier_123",
-      }),
-    });
+  it("enforces server-owned OAuth transactions, rejecting unknown state and wrong PKCE", async () => {
+    // 1. Unknown state at the GitHub callback
+    const resUnknown = await fetch(`${baseUrl}/v1/auth/github/callback?code=code_1&state=completely_unknown_state_uuid`, { redirect: "manual" });
     expect(resUnknown.status).toBe(400);
-    expect((await resUnknown.json()).error).toContain("OAuth transaction not found");
 
-    // 2. Start valid transaction
-    const startRes = await fetch(`${baseUrl}/v1/auth/start`, {
+    // 2. Unknown desktop code at the exchange
+    const resUnknownCode = await fetch(`${baseUrl}/v1/auth/exchange`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ redirectUri: "http://127.0.0.1:8765/auth/callback" }),
+      body: JSON.stringify({ code: "cfa_not_a_real_code", codeVerifier: "v".repeat(64) }),
     });
-    const startData = await startRes.json();
+    expect(resUnknownCode.status).toBe(400);
+    expect((await resUnknownCode.json()).error).toContain("not found");
 
-    // 3. Wrong PKCE verifier against server challenge
+    // 3. Valid transaction, but the exchange presents the wrong desktop PKCE verifier
+    const start = await startCloudLogin(baseUrl, { loopbackPort: 8765 });
+    const { code } = await completeGitHubCallback(baseUrl, start);
     const resWrongPkce = await fetch(`${baseUrl}/v1/auth/exchange`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        code: "code_1",
-        state: startData.state,
-        codeVerifier: "wrong_code_verifier_that_does_not_match_challenge",
-        redirectUri: "http://127.0.0.1:8765/auth/callback",
+        code,
+        codeVerifier: createDesktopPkce().codeVerifier, // valid shape, wrong attempt
+        redirectUri: start.redirectUri,
       }),
     });
     expect(resWrongPkce.status).toBe(400);
     expect((await resWrongPkce.json()).error).toContain("PKCE");
   });
 
-  it("enforces single-use OAuth transaction consumption (replaying state fails)", async () => {
-    const startRes = await fetch(`${baseUrl}/v1/auth/start`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ redirectUri: "http://127.0.0.1:8765/auth/callback" }),
-    });
-    const startData = await startRes.json();
+  it("enforces single-use desktop authorization codes (replay fails)", async () => {
+    const start = await startCloudLogin(baseUrl, { loopbackPort: 8765 });
+    const { code } = await completeGitHubCallback(baseUrl, start);
 
-    // First consumption succeeds
-    const firstRes = await fetch(`${baseUrl}/v1/auth/exchange`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code: "code_first",
-        state: startData.state,
-        codeVerifier: startData.codeVerifier,
-        redirectUri: "http://127.0.0.1:8765/auth/callback",
-      }),
-    });
+    const firstRes = await exchangeDesktopCode(baseUrl, start, code);
     expect(firstRes.status).toBe(200);
 
-    // Second consumption (replay) is rejected
-    const replayRes = await fetch(`${baseUrl}/v1/auth/exchange`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code: "code_first",
-        state: startData.state,
-        codeVerifier: startData.codeVerifier,
-        redirectUri: "http://127.0.0.1:8765/auth/callback",
-      }),
-    });
+    const replayRes = await exchangeDesktopCode(baseUrl, start, code);
     expect(replayRes.status).toBe(400);
     expect((await replayRes.json()).error).toContain("already consumed");
   });
 
-  it("enforces atomic refresh token rotation and rejects replaying consumed refresh tokens", async () => {
-    const startRes = await fetch(`${baseUrl}/v1/auth/start`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ redirectUri: "http://127.0.0.1:8765/auth/callback" }),
-    });
-    const startData = await startRes.json();
+  it("enforces single-use OAuth state at the GitHub callback (replaying state fails)", async () => {
+    const start = await startCloudLogin(baseUrl, { loopbackPort: 8765 });
+    await completeGitHubCallback(baseUrl, start);
 
-    const authRes = await fetch(`${baseUrl}/v1/auth/exchange`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code: "code_rot",
-        state: startData.state,
-        codeVerifier: startData.codeVerifier,
-        redirectUri: "http://127.0.0.1:8765/auth/callback",
-      }),
-    });
-    const authData = await authRes.json();
+    const replay = await fetch(`${baseUrl}/v1/auth/github/callback?code=gh&state=${encodeURIComponent(start.state)}`, { redirect: "manual" });
+    expect(replay.status).toBe(400);
+    expect(replay.headers.get("location")).toBeNull();
+  });
+
+  it("lets exactly one concurrent exchange of a captured desktop code succeed", async () => {
+    const start = await startCloudLogin(baseUrl, { loopbackPort: 8765 });
+    const { code } = await completeGitHubCallback(baseUrl, start);
+
+    const responses = await Promise.all(Array.from({ length: 6 }, () => exchangeDesktopCode(baseUrl, start, code)));
+    const statuses = responses.map((r) => r.status);
+    expect(statuses.filter((s) => s === 200)).toHaveLength(1);
+    expect(statuses.filter((s) => s !== 200)).toHaveLength(5);
+  });
+
+  it("enforces atomic refresh token rotation and rejects replaying consumed refresh tokens", async () => {
+    const authData = await loginToCloud(baseUrl, { loopbackPort: 8765 });
 
     // 1. First refresh succeeds and rotates token
     const refresh1 = await fetch(`${baseUrl}/v1/auth/refresh`, {

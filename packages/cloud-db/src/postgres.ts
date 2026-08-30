@@ -19,6 +19,7 @@ import type {
   AccountSettingsRecord,
   AbuseEventRecord,
   OAuthTransactionRecord,
+  DesktopAuthCodeRecord,
   FeatureKey,
 } from "./types.js";
 
@@ -138,6 +139,19 @@ export class PostgresCloudDatabase implements ICloudDatabase {
   }
 
   /**
+   * Read-only diagnostic escape hatch for deployment validation tooling (schema introspection, TLS
+   * posture, migration state). It is deliberately NOT part of {@link ICloudDatabase}: business logic
+   * must go through the typed contract, so only driver-specific operational tooling reaches for this.
+   */
+  async diagnosticQuery<T extends Record<string, unknown> = Record<string, unknown>>(
+    sql: string,
+    params: unknown[] = [],
+  ): Promise<{ rows: T[] }> {
+    const res = await this.pool.query(sql, params);
+    return { rows: res.rows as T[] };
+  }
+
+  /**
    * Helper to execute a sequence of queries within a dedicated connection transaction.
    * Automatically executes BEGIN, COMMIT, and ROLLBACK upon error.
    */
@@ -193,6 +207,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       userAgent: row.user_agent ? String(row.user_agent) : undefined,
       expiresAt: String(row.expires_at),
       revokedAt: row.revoked_at ? String(row.revoked_at) : null,
+      revokedReason: (row.revoked_reason ? String(row.revoked_reason) : null) as DeviceSessionRecord["revokedReason"],
       createdAt: String(row.created_at),
       lastSeenAt: String(row.last_seen_at),
     };
@@ -326,8 +341,24 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       id: String(row.id),
       state: String(row.state),
       codeChallenge: String(row.code_challenge),
+      gitHubCodeVerifier: row.github_code_verifier ? String(row.github_code_verifier) : undefined,
       redirectUri: String(row.redirect_uri),
       deviceName: row.device_name ? String(row.device_name) : undefined,
+      expiresAt: String(row.expires_at),
+      usedAt: row.used_at ? String(row.used_at) : null,
+      createdAt: String(row.created_at),
+    };
+  }
+
+  private mapDesktopAuthCodeRow(row: Record<string, unknown>): DesktopAuthCodeRecord {
+    return {
+      id: String(row.id),
+      codeHash: String(row.code_hash),
+      userId: String(row.user_id),
+      codeChallenge: String(row.code_challenge),
+      redirectUri: String(row.redirect_uri),
+      deviceName: row.device_name ? String(row.device_name) : undefined,
+      isNewUser: Number(row.is_new_user) === 1,
       expiresAt: String(row.expires_at),
       usedAt: row.used_at ? String(row.used_at) : null,
       createdAt: String(row.created_at),
@@ -487,14 +518,17 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     await this.pool.query(`UPDATE device_sessions SET last_seen_at = $1 WHERE id = $2`, [now, id]);
   }
 
-  async revokeDeviceSession(id: string): Promise<void> {
+  async revokeDeviceSession(id: string, reason: "rotated" | "logout" | "breach" = "logout"): Promise<void> {
     const now = new Date().toISOString();
-    await this.pool.query(`UPDATE device_sessions SET revoked_at = $1 WHERE id = $2`, [now, id]);
+    await this.pool.query(`UPDATE device_sessions SET revoked_at = $1, revoked_reason = $2 WHERE id = $3`, [now, reason, id]);
   }
 
   async revokeAllUserDeviceSessions(userId: string): Promise<void> {
     const now = new Date().toISOString();
-    await this.pool.query(`UPDATE device_sessions SET revoked_at = $1 WHERE user_id = $2 AND revoked_at IS NULL`, [now, userId]);
+    await this.pool.query(
+      `UPDATE device_sessions SET revoked_at = $1, revoked_reason = 'breach' WHERE user_id = $2 AND revoked_at IS NULL`,
+      [now, userId],
+    );
   }
 
   async rotateDeviceSession(params: {
@@ -512,10 +546,19 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       }
       const session = this.mapDeviceSessionRow(sessionRes.rows[0]);
       if (session.revokedAt) {
-        // Token reuse / replay detected: revoke all sessions for this user
-        const now = new Date().toISOString();
-        await client.query(`UPDATE device_sessions SET revoked_at = $1 WHERE user_id = $2 AND revoked_at IS NULL`, [now, session.userId]);
-        throw new Error("Device session has been revoked (replay detected)");
+        // Reuse of a ROTATED token means a second party holds a token this device already spent —
+        // the OAuth refresh-token replay signal, so the entire session family is revoked. Reuse of a
+        // token the user explicitly LOGGED OUT is just a stale client, and must not sign the account
+        // out on every other device.
+        if (session.revokedReason === "rotated") {
+          const now = new Date().toISOString();
+          await client.query(
+            `UPDATE device_sessions SET revoked_at = $1, revoked_reason = 'breach' WHERE user_id = $2 AND revoked_at IS NULL`,
+            [now, session.userId],
+          );
+          throw new Error("Device session has been revoked (replay detected)");
+        }
+        throw new Error("Device session has been revoked");
       }
       if (new Date(session.expiresAt).getTime() < Date.now()) {
         throw new Error("Device session has expired");
@@ -528,7 +571,10 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       const user = this.mapUserRow(userRes.rows[0]);
 
       const now = new Date().toISOString();
-      const revokeRes = await client.query(`UPDATE device_sessions SET revoked_at = $1 WHERE id = $2 AND revoked_at IS NULL`, [now, session.id]);
+      const revokeRes = await client.query(
+        `UPDATE device_sessions SET revoked_at = $1, revoked_reason = 'rotated' WHERE id = $2 AND revoked_at IS NULL`,
+        [now, session.id],
+      );
       if (revokeRes.rowCount === 0) {
         throw new Error("Device session has been revoked (replay detected)");
       }
@@ -1272,6 +1318,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     codeChallenge: string;
     redirectUri: string;
     deviceName?: string;
+    gitHubCodeVerifier?: string;
     expiresInSeconds?: number;
   }): Promise<OAuthTransactionRecord> {
     const now = new Date();
@@ -1280,6 +1327,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       id: randomUUID(),
       state: params.state,
       codeChallenge: params.codeChallenge,
+      gitHubCodeVerifier: params.gitHubCodeVerifier,
       redirectUri: params.redirectUri,
       deviceName: params.deviceName,
       expiresAt: expires.toISOString(),
@@ -1287,9 +1335,9 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       createdAt: now.toISOString(),
     };
     await this.pool.query(
-      `INSERT INTO oauth_transactions (id, state, code_challenge, redirect_uri, device_name, expires_at, used_at, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [record.id, record.state, record.codeChallenge, record.redirectUri, record.deviceName ?? null, record.expiresAt, null, record.createdAt],
+      `INSERT INTO oauth_transactions (id, state, code_challenge, github_code_verifier, redirect_uri, device_name, expires_at, used_at, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [record.id, record.state, record.codeChallenge, record.gitHubCodeVerifier ?? null, record.redirectUri, record.deviceName ?? null, record.expiresAt, null, record.createdAt],
     );
     return record;
   }
@@ -1321,6 +1369,80 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       throw new Error("OAuth transaction already consumed (replay detected)");
     }
     return this.mapOAuthTransactionRow(res.rows[0]);
+  }
+
+  // --- Desktop Authorization Codes (single-use OAuth→desktop handoff) ---
+
+  async createDesktopAuthCode(params: {
+    codeHash: string;
+    userId: string;
+    codeChallenge: string;
+    redirectUri: string;
+    deviceName?: string;
+    isNewUser?: boolean;
+    expiresInSeconds?: number;
+  }): Promise<DesktopAuthCodeRecord> {
+    const now = new Date();
+    const expires = new Date(now.getTime() + (params.expiresInSeconds ?? 120) * 1000);
+    const record: DesktopAuthCodeRecord = {
+      id: randomUUID(),
+      codeHash: params.codeHash,
+      userId: params.userId,
+      codeChallenge: params.codeChallenge,
+      redirectUri: params.redirectUri,
+      deviceName: params.deviceName,
+      isNewUser: params.isNewUser ?? false,
+      expiresAt: expires.toISOString(),
+      usedAt: null,
+      createdAt: now.toISOString(),
+    };
+    await this.pool.query(
+      `INSERT INTO desktop_auth_codes (id, code_hash, user_id, code_challenge, redirect_uri, device_name, is_new_user, expires_at, used_at, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NULL, $9)`,
+      [
+        record.id,
+        record.codeHash,
+        record.userId,
+        record.codeChallenge,
+        record.redirectUri,
+        record.deviceName ?? null,
+        record.isNewUser ? 1 : 0,
+        record.expiresAt,
+        record.createdAt,
+      ],
+    );
+    return record;
+  }
+
+  async getDesktopAuthCode(codeHash: string): Promise<DesktopAuthCodeRecord | undefined> {
+    const res = await this.pool.query(`SELECT * FROM desktop_auth_codes WHERE code_hash = $1`, [codeHash]);
+    if (res.rows.length === 0) return undefined;
+    return this.mapDesktopAuthCodeRow(res.rows[0]);
+  }
+
+  async consumeDesktopAuthCode(codeHash: string): Promise<DesktopAuthCodeRecord> {
+    const existing = await this.getDesktopAuthCode(codeHash);
+    if (!existing) {
+      throw new Error("Desktop authorization code not found");
+    }
+    if (new Date(existing.expiresAt).getTime() < Date.now()) {
+      throw new Error("Desktop authorization code expired");
+    }
+
+    // Single-use: the conditional UPDATE is the authority. Under concurrent exchanges exactly one
+    // caller matches `used_at IS NULL` and gets a row back; every other one gets zero rows.
+    const now = new Date().toISOString();
+    const res = await this.pool.query(
+      `UPDATE desktop_auth_codes
+       SET used_at = $1
+       WHERE code_hash = $2 AND used_at IS NULL
+       RETURNING *`,
+      [now, codeHash],
+    );
+    if (res.rows.length === 0) {
+      throw new Error("Desktop authorization code already consumed (replay detected)");
+    }
+    return this.mapDesktopAuthCodeRow(res.rows[0]);
   }
 
   // --- Billing Webhook Events ---

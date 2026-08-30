@@ -450,6 +450,71 @@ END $$;
 `;
 
 
+// Migration 003 completes the server-brokered OAuth architecture:
+//   * oauth_transactions.github_code_verifier holds the SERVER-owned GitHub PKCE verifier, which is
+//     never handed to a client. The pre-existing code_challenge column now unambiguously holds the
+//     DESKTOP client's PKCE challenge.
+//   * desktop_auth_codes stores single-use, PKCE-bound, short-lived handoff codes (hashed, never in
+//     plaintext) so a successful GitHub authorization is redirected back to the desktop loopback as a
+//     valueless one-time code instead of a reusable session token in a URL.
+//   * device_sessions.revoked_reason distinguishes a session that was ROTATED (whose reuse means the
+//     token was stolen, and must revoke the whole family) from one the user explicitly LOGGED OUT
+//     (whose reuse is just a stale client, and must revoke nothing else). Without that distinction a
+//     logout on one machine silently signs the account out everywhere.
+const MIGRATION_3_SQLITE = `
+ALTER TABLE oauth_transactions ADD COLUMN github_code_verifier TEXT;
+
+ALTER TABLE device_sessions ADD COLUMN revoked_reason TEXT;
+
+CREATE TABLE IF NOT EXISTS desktop_auth_codes (
+  id TEXT PRIMARY KEY,
+  code_hash TEXT NOT NULL UNIQUE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  code_challenge TEXT NOT NULL,
+  redirect_uri TEXT NOT NULL,
+  device_name TEXT,
+  is_new_user INTEGER NOT NULL DEFAULT 0,
+  expires_at TEXT NOT NULL,
+  used_at TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_desktop_auth_codes_hash ON desktop_auth_codes(code_hash);
+CREATE INDEX IF NOT EXISTS idx_desktop_auth_codes_user_id ON desktop_auth_codes(user_id);
+`;
+
+const MIGRATION_3_POSTGRES = `
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'oauth_transactions' AND column_name = 'github_code_verifier'
+  ) THEN
+    ALTER TABLE oauth_transactions ADD COLUMN github_code_verifier TEXT;
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'device_sessions' AND column_name = 'revoked_reason'
+  ) THEN
+    ALTER TABLE device_sessions ADD COLUMN revoked_reason VARCHAR(32);
+  END IF;
+END $$;
+
+CREATE TABLE IF NOT EXISTS desktop_auth_codes (
+  id VARCHAR(64) PRIMARY KEY,
+  code_hash VARCHAR(128) NOT NULL UNIQUE,
+  user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  code_challenge VARCHAR(255) NOT NULL,
+  redirect_uri TEXT NOT NULL,
+  device_name VARCHAR(255),
+  is_new_user INTEGER NOT NULL DEFAULT 0,
+  expires_at VARCHAR(64) NOT NULL,
+  used_at VARCHAR(64),
+  created_at VARCHAR(64) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_desktop_auth_codes_hash ON desktop_auth_codes(code_hash);
+CREATE INDEX IF NOT EXISTS idx_desktop_auth_codes_user_id ON desktop_auth_codes(user_id);
+`;
+
 export const MIGRATIONS: MigrationDefinition[] = [
   {
     version: 1,
@@ -464,6 +529,13 @@ export const MIGRATIONS: MigrationDefinition[] = [
     sqliteUp: MIGRATION_2_SQLITE,
     postgresUp: MIGRATION_2_POSTGRES,
     checksum: computeChecksum(MIGRATION_2_SQLITE),
+  },
+  {
+    version: 3,
+    name: "003_server_brokered_oauth",
+    sqliteUp: MIGRATION_3_SQLITE,
+    postgresUp: MIGRATION_3_POSTGRES,
+    checksum: computeChecksum(MIGRATION_3_SQLITE),
   },
 ];
 

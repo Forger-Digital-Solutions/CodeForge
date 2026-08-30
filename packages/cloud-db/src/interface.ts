@@ -15,6 +15,7 @@ import type {
   AccountSettingsRecord,
   AbuseEventRecord,
   OAuthTransactionRecord,
+  DesktopAuthCodeRecord,
   FeatureKey,
 } from "./types.js";
 
@@ -50,7 +51,11 @@ export interface ICloudDatabase {
   createDeviceSession(params: { userId: string; deviceName?: string; refreshTokenHash: string; ipAddress?: string; userAgent?: string; expiresInSeconds?: number }): Promise<DeviceSessionRecord>;
   getDeviceSessionByTokenHash(refreshTokenHash: string): Promise<DeviceSessionRecord | undefined>;
   updateDeviceSessionLastSeen(id: string): Promise<void>;
-  revokeDeviceSession(id: string): Promise<void>;
+  /**
+   * Revoke one session. The reason is recorded because reuse of a ROTATED token is a breach signal
+   * (revoke the family) while reuse of a LOGGED-OUT token is not (revoke nothing else).
+   */
+  revokeDeviceSession(id: string, reason?: "rotated" | "logout" | "breach"): Promise<void>;
   revokeAllUserDeviceSessions(userId: string): Promise<void>;
   /**
    * Atomically rotate a refresh token: validate the old session (rejecting revoked/expired tokens and
@@ -138,9 +143,26 @@ export interface ICloudDatabase {
   getOrCreateCurrentUsagePeriod(userId: string, allowanceAmount?: number, now?: Date): Promise<{ period: UsagePeriodRecord; grantedNewAllowance: boolean }>;
 
   // OAuth Transactions
-  createOAuthTransaction(params: { state: string; codeChallenge: string; redirectUri: string; deviceName?: string; expiresInSeconds?: number }): Promise<OAuthTransactionRecord>;
+  /**
+   * Record a pending authorization attempt. `codeChallenge` is the DESKTOP client's PKCE challenge;
+   * `gitHubCodeVerifier` is the server-owned GitHub PKCE verifier and must never leave the server.
+   */
+  createOAuthTransaction(params: { state: string; codeChallenge: string; redirectUri: string; deviceName?: string; gitHubCodeVerifier?: string; expiresInSeconds?: number }): Promise<OAuthTransactionRecord>;
   getOAuthTransaction(state: string): Promise<OAuthTransactionRecord | undefined>;
   consumeOAuthTransaction(state: string): Promise<OAuthTransactionRecord>;
+
+  // Desktop authorization codes (single-use OAuth→desktop handoff)
+  /**
+   * Mint a one-time desktop authorization code. Only `codeHash` (SHA-256 of the code) is persisted.
+   * The code carries no authority by itself — it must be exchanged with the matching PKCE verifier.
+   */
+  createDesktopAuthCode(params: { codeHash: string; userId: string; codeChallenge: string; redirectUri: string; deviceName?: string; isNewUser?: boolean; expiresInSeconds?: number }): Promise<DesktopAuthCodeRecord>;
+  getDesktopAuthCode(codeHash: string): Promise<DesktopAuthCodeRecord | undefined>;
+  /**
+   * Atomically consume a desktop authorization code. Exactly one caller can win the row: a second
+   * exchange (including a concurrent one) throws, so a captured code can never be replayed.
+   */
+  consumeDesktopAuthCode(codeHash: string): Promise<DesktopAuthCodeRecord>;
 
   // Webhooks
   isWebhookProcessed(stripeEventId: string): Promise<boolean>;
