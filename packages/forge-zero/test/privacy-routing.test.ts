@@ -46,7 +46,7 @@ const makePrivacyModel = (
 
 describe("Privacy Routing — STRICT, STANDARD, and MAXIMUM_FREE Modes", () => {
   it("filters eligibility strictly based on active privacy mode", () => {
-    const fw = new ForgeZero();
+    const fw = new ForgeZero({ context: { now: () => now } });
     const strictModel = makePrivacyModel("groq", "strict-model", "strict");
     const standardModel = makePrivacyModel("openrouter", "standard-model", "standard");
     const permissiveModel = makePrivacyModel("cloudflare", "permissive-model", "permissive");
