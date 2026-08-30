@@ -190,6 +190,36 @@ export class UsageEngine {
     };
   }
 
+  /**
+   * Reclaim credits locked by reservations that were created but never committed or released — the
+   * classic crash-recovery case where the process died mid-inference. Each stale reservation (older
+   * than `timeoutMs`, still 'reserved') is released and its credits refunded to the ledger, so a
+   * user's balance is never locked forever. Safe to run at startup and on an interval; committed and
+   * already-released reservations are untouched. Returns how many were reclaimed and the total refund.
+   */
+  reconcileStaleReservations(opts: { now?: Date; timeoutMs?: number } = {}): { reconciled: number; refundedCredits: number } {
+    const now = opts.now ?? new Date();
+    const timeoutMs = opts.timeoutMs ?? 10 * 60 * 1000; // 10 minutes
+    const cutoffIso = new Date(now.getTime() - timeoutMs).toISOString();
+    const stale = this.db.listStaleReservations(cutoffIso);
+    let reconciled = 0;
+    let refundedCredits = 0;
+    for (const res of stale) {
+      try {
+        const { refundedCredits: refund } = this.releaseReservation({
+          userId: res.userId,
+          requestId: res.requestId,
+          reason: "Stale reservation reclaimed after crash/timeout",
+        });
+        reconciled++;
+        refundedCredits += refund;
+      } catch {
+        // A concurrent commit/release may have already settled it — skip and continue.
+      }
+    }
+    return { reconciled, refundedCredits };
+  }
+
   getUserUsageSummary(userId: string): { creditBalance: number; recentEvents: UsageEventRecord[] } {
     const creditBalance = this.db.getCreditBalance(userId);
     const recentEvents = this.db.listUsageEvents(userId, 20);

@@ -16,6 +16,7 @@
     { "path": "../forge-zero" },
     { "path": "../router" },
     { "path": "../providers" },
+    { "path": "../model-registry" },
     { "path": "../protocol" }
   ]
 }

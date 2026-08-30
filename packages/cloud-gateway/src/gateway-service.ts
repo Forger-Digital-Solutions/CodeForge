@@ -117,18 +117,40 @@ export class GatewayService {
       let selectedProviderId = request.providerId;
       let selectedModelId = request.modelId;
 
-      if (!selectedModelId || selectedModelId === "auto") {
+      // Apply the account's privacy routing mode (STRICT / STANDARD / MAXIMUM_FREE) so the setting
+      // genuinely constrains which endpoints are eligible — not a decorative control.
+      const privacyMode = this.db?.getAccountSettings(userId).privacyMode;
+      const privacyEligible = () =>
+        privacyMode ? this.firewallManager.firewall.eligibleModels({ privacyMode }) : this.firewallManager.firewall.eligibleModels();
+
+      if (!selectedModelId || selectedModelId === "auto" || selectedModelId === "codeforge-auto") {
         const decision = this.firewallManager.router.route({
           taskType: request.taskType || "coding",
           estimatedContextTokens: request.estimatedContextTokens || 4000,
           requiredCapabilities: ["text", "coding"],
+          privacyMode,
         });
         if (!decision) {
           throw new Error("No verified free model is currently available in the CodeForge Cloud pool");
         }
         selectedProviderId = decision.model.providerId;
         selectedModelId = decision.model.modelId;
+      } else if (!selectedProviderId) {
+        // Exact model requested WITHOUT a providerId (desktop sends the bare modelId). Resolve it
+        // against the privacy-filtered eligible pool — never silently substitute a different model.
+        const matches = privacyEligible().filter((m) => m.modelId === selectedModelId);
+        if (matches.length === 0) {
+          throw new Error(`Requested hosted model '${selectedModelId}' is not currently available`);
+        }
+        selectedProviderId = matches[0]!.providerId;
       } else if (selectedProviderId) {
+        // Exact provider+model: enforce the account's privacy mode in addition to base eligibility.
+        if (privacyMode && selectedProviderId !== "gems") {
+          const allowed = privacyEligible().some((m) => m.providerId === selectedProviderId && m.modelId === selectedModelId);
+          if (!allowed) {
+            throw new Error(`Model ${selectedProviderId}::${selectedModelId} is not permitted under your ${privacyMode} privacy mode`);
+          }
+        }
         // GEMS check: GEMS models are offline until real inference backend
         if (selectedProviderId === "gems") {
           throw new Error("GEMS models are currently unavailable (offline)");
@@ -139,10 +161,10 @@ export class GatewayService {
           throw new Error(`Model ${selectedProviderId}::${selectedModelId} is not eligible for hosted inference: ${verification.error.message}`);
         }
 
-        // If user is Free, ensure model is actually free
-        if (permission.planId === "free" && !verification.value.costProfile.isFree) {
-          throw new Error("Free tier users cannot execute paid hosted models");
-        }
+        // A successful ForgeZero verification already means the model is free-eligible for the Free
+        // tier — including FREE_ALLOWANCE models (Groq/Gemini) whose costProfile.isFree is false
+        // because they list paid unit prices but grant a verified free allowance. We therefore trust
+        // verify.ok rather than re-checking costProfile.isFree (which wrongly rejected allowance free).
       }
 
       if (!selectedProviderId || !selectedModelId) {

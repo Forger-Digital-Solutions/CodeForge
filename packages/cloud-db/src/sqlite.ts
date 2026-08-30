@@ -87,6 +87,14 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     this.initSchema();
   }
 
+  /**
+   * Idempotent no-op: SQLite schema is created synchronously in the constructor. Present so callers
+   * can uniformly `await db.init()` across drivers before serving traffic (Postgres does real work here).
+   */
+  init(): void {
+    // no-op — schema already initialized in constructor
+  }
+
   private initSchema(): void {
     // 1. Run migrations with checksum validation
     this.db.exec(`
@@ -790,6 +798,25 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     `).run({ requestId, actualCredits, now });
 
     return this.getReservationByRequestId(requestId)!;
+  }
+
+  listStaleReservations(cutoffIso: string): ReservationRecord[] {
+    const rows = this.db
+      .prepare(`SELECT * FROM reservations WHERE status = 'reserved' AND created_at < @cutoff ORDER BY created_at ASC`)
+      .all({ cutoff: cutoffIso }) as Record<string, unknown>[];
+    return rows.map((row) => ({
+      id: String(row.id),
+      requestId: String(row.request_id),
+      userId: String(row.user_id),
+      providerId: String(row.provider_id),
+      modelId: String(row.model_id),
+      reservedCredits: Number(row.reserved_credits),
+      actualCredits: Number(row.actual_credits),
+      status: row.status as ReservationRecord["status"],
+      createdAt: String(row.created_at),
+      committedAt: row.committed_at ? String(row.committed_at) : null,
+      releasedAt: row.released_at ? String(row.released_at) : null,
+    }));
   }
 
   releaseReservation(requestId: string, userId: string): ReservationRecord {

@@ -19,6 +19,13 @@ import type {
 } from "./types.js";
 
 export interface ICloudDatabase {
+  /**
+   * Initialize the database schema (run pending migrations, seed default plans). MUST be awaited
+   * before serving traffic. SQLite initializes synchronously in its constructor and this is an
+   * idempotent no-op; Postgres performs asynchronous schema creation here, so this is the ONLY
+   * place a fresh Postgres database gets its tables. Failing to await it is a fail-closed boot error.
+   */
+  init(): void | Promise<void>;
   close(): void | Promise<void>;
 
   // Users & Identities
@@ -66,6 +73,8 @@ export interface ICloudDatabase {
   getReservationByRequestId(requestId: string): ReservationRecord | undefined;
   commitReservation(requestId: string, userId: string, actualCredits: number): ReservationRecord;
   releaseReservation(requestId: string, userId: string): ReservationRecord;
+  /** Reservations still in 'reserved' state created before the cutoff — candidates for stale recovery. */
+  listStaleReservations(cutoffIso: string): ReservationRecord[];
 
   // Hosted Requests
   createHostedRequest(req: { id: string; userId: string; providerId: string; modelId: string; estimatedCredits: number }): HostedRequestRecord;

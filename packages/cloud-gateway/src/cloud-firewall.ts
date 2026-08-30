@@ -1,4 +1,4 @@
-import { ForgeZero, type FreeModelRecord } from "@codeforge/forge-zero";
+import { ForgeZero, FREE_ACCESS_CLASSES, type AccessClass, type FreeModelRecord, type ModelHealthState, type PrivacyMode, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
 import { InMemoryProviderCatalog, type ProviderAdapter } from "@codeforge/providers";
 
@@ -75,16 +75,36 @@ export const GEMS_MODELS: FreeModelRecord[] = [
   },
 ];
 
+export interface CloudFirewallManagerOptions {
+  killSwitches?: Partial<CloudKillSwitchConfig>;
+  /** Global privacy routing mode applied to hosted-free eligibility. Default: undefined (all classes). */
+  privacyMode?: PrivacyMode;
+}
+
 export class CloudFirewallManager {
   public readonly firewall: ForgeZero;
   public readonly router: ForgeRouter;
   public readonly providerCatalog: InMemoryProviderCatalog;
   private killSwitches: CloudKillSwitchConfig;
+  /** Per-provider auth/health state feeding the orphan-model oracle. */
+  private readonly providerState = new Map<string, "ok" | "auth_required">();
 
-  constructor(options?: { killSwitches?: Partial<CloudKillSwitchConfig> }) {
-    this.firewall = new ForgeZero();
-    this.router = new ForgeRouter({ firewall: this.firewall });
+  constructor(options?: CloudFirewallManagerOptions) {
     this.providerCatalog = new InMemoryProviderCatalog();
+
+    // Orphan-model invariant: a hosted model is routable only when a provider adapter is registered
+    // AND its credential still authenticates. A model whose provider has no adapter (GEMS, or a
+    // provider whose key was revoked) is excluded from ForgeZero eligibility — never routed.
+    const providerOracle: ProviderAvailabilityOracle = {
+      isActive: (providerId: string): boolean => {
+        if (!this.providerCatalog.get(providerId)) return false;
+        return this.providerState.get(providerId) !== "auth_required";
+      },
+    };
+
+    // Hosted Free is owner-sponsored ongoing free: exclude TRIAL/PROMO from the pool (fail-closed).
+    this.firewall = new ForgeZero({ providerOracle, requireOngoingFree: true, privacyMode: options?.privacyMode });
+    this.router = new ForgeRouter({ firewall: this.firewall });
     this.killSwitches = { ...DEFAULT_KILL_SWITCH_CONFIG, ...(options?.killSwitches ?? {}) };
 
     // Register GEMS models (always present in catalog, offline until real inference engine)
@@ -105,8 +125,35 @@ export class CloudFirewallManager {
     this.firewall.register(model);
   }
 
+  /** Model ids currently registered under a provider (excludes GEMS first-party records). */
+  listProviderModelIds(providerId: string): string[] {
+    return this.firewall
+      .allModels()
+      .filter((m) => m.providerId === providerId && m.tier !== "gems_paid")
+      .map((m) => m.modelId);
+  }
+
+  /** Remove a model from the pool — used to reconcile away capacity that is no longer verified-free. */
+  unregisterModel(providerId: string, modelId: string): boolean {
+    return this.firewall.unregister(providerId, modelId);
+  }
+
   registerProvider(adapter: ProviderAdapter): void {
     this.providerCatalog.register(adapter);
+    if (!this.providerState.has(adapter.providerId)) {
+      this.providerState.set(adapter.providerId, "ok");
+    }
+  }
+
+  /**
+   * Mark a provider's live health. Flips every one of its registered model records to `status`
+   * (so a 401/429 provider is immediately excluded from routing) and updates the orphan oracle's
+   * auth state. Health ages back to eligible once `retryAfter` elapses (rate limits) or a later
+   * successful discovery re-marks it available.
+   */
+  markProviderHealth(providerId: string, status: ModelHealthState["status"], extra?: { retryAfter?: number; lastError?: string }): void {
+    this.firewall.markProviderHealth(providerId, status, extra);
+    this.providerState.set(providerId, status === "auth_required" ? "auth_required" : "ok");
   }
 
   listHostedModels(): Array<{
@@ -120,9 +167,16 @@ export class CloudFirewallManager {
     isEligibleFree: boolean;
   }> {
     const records = this.firewall.allModels();
+    // Authoritative eligibility: a model is free-eligible only if it passes the full ForgeZero
+    // verification (cost/allowance/health/orphan/privacy) — never a naive isFree flag, which would
+    // mis-report FREE_ALLOWANCE models (Groq/Gemini) as paid and hide real capacity.
+    const eligibleKeys = new Set(this.firewall.eligibleModels().map((m) => `${m.providerId}::${m.modelId}`));
     return records.map((m) => {
       const status = m.health?.status ?? "available";
-      const isFree = m.costProfile?.isFree ?? false;
+      const isFreeClass =
+        m.tier !== "gems_paid" &&
+        ((m.accessClass !== undefined && FREE_ACCESS_CLASSES.includes(m.accessClass as AccessClass)) ||
+          (m.accessClass === undefined && (m.costProfile?.isFree ?? false)));
       return {
         providerId: m.providerId,
         modelId: m.modelId,
@@ -130,8 +184,8 @@ export class CloudFirewallManager {
         availability: status,
         capabilities: m.capabilities as Record<string, boolean>,
         contextWindow: m.contextWindow ?? 128000,
-        accessClass: m.tier === "gems_paid" ? ("gems_paid" as const) : isFree ? ("free" as const) : ("paid" as const),
-        isEligibleFree: isFree && status === "available",
+        accessClass: m.tier === "gems_paid" ? ("gems_paid" as const) : isFreeClass ? ("free" as const) : ("paid" as const),
+        isEligibleFree: eligibleKeys.has(`${m.providerId}::${m.modelId}`) && m.tier !== "gems_paid",
       };
     });
   }

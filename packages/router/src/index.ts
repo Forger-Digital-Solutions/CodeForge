@@ -1,4 +1,4 @@
-import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
+import type { ForgeZero, FreeModelRecord, PrivacyMode } from "@codeforge/forge-zero";
 import type { ExecutionModelSelection, ResolvedModel, PremiumFamily } from "@codeforge/director";
 import { err, ok, type Result } from "@codeforge/core";
 import { CodeForgeError } from "@codeforge/core";
@@ -8,6 +8,8 @@ export interface RoutingRequest {
   estimatedContextTokens: number;
   requiredCapabilities: string[];
   preferredTraits?: Record<string, number>;
+  /** Privacy routing mode to apply for this request (e.g. an account's setting). */
+  privacyMode?: PrivacyMode;
 }
 
 export interface RoutingDecision {
@@ -40,7 +42,7 @@ export class ForgeRouter {
    * Ordering is stable: score desc, then modelId asc as a tiebreak — same inputs → same order.
    */
   rank(req: RoutingRequest): RankedModel[] {
-    const eligible = this.firewall.eligibleModels();
+    const eligible = req.privacyMode ? this.firewall.eligibleModels({ privacyMode: req.privacyMode }) : this.firewall.eligibleModels();
     return eligible
       .map((model) => ({ model, score: this.scoreModel(model, req), reasons: this.getReasons(model, req) }))
       .sort((a, b) => b.score - a.score || a.model.modelId.localeCompare(b.model.modelId));

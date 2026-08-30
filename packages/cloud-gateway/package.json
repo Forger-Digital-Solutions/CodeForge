@@ -25,6 +25,7 @@
     "@codeforge/forge-zero": "*",
     "@codeforge/router": "*",
     "@codeforge/providers": "*",
+    "@codeforge/model-registry": "*",
     "@codeforge/protocol": "*",
     "zod": "^3.24.0"
   }

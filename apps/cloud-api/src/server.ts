@@ -7,7 +7,7 @@ import { AuthService } from "@codeforge/cloud-auth";
 import { EntitlementService } from "@codeforge/cloud-entitlements";
 import { UsageEngine } from "@codeforge/cloud-usage";
 import { StripeBillingService, type StripeConfig } from "@codeforge/cloud-billing";
-import { CloudFirewallManager, GatewayService, type HostedInferenceRequest, type HostedStreamEvent } from "@codeforge/cloud-gateway";
+import { CloudFirewallManager, GatewayService, type HostedInferenceRequest, type HostedStreamEvent, type CloudProviderRegistry, type CloudKillSwitchConfig } from "@codeforge/cloud-gateway";
 
 const MAX_BODY_BYTES = 1024 * 1024; // 1 MiB max payload
 
@@ -78,6 +78,16 @@ export interface CodeForgeCloudServerConfig {
   gitHubClientSecret?: string;
   stripeConfig?: StripeConfig;
   firewallManager?: CloudFirewallManager;
+  /** Operator kill switches / spend limits applied when this server owns its firewall manager. */
+  killSwitches?: Partial<CloudKillSwitchConfig>;
+  /**
+   * Real server-owned hosted capacity. When provided (and discoverOnStart is not false), the server
+   * discovers verified-free models from configured providers at startup. Omit to run with no hosted
+   * capacity (deterministic tests register models directly instead).
+   */
+  providerRegistry?: CloudProviderRegistry;
+  /** Whether to run provider discovery during start(). Default true when a registry is provided. */
+  discoverOnStart?: boolean;
   fetchFn?: typeof fetch;
   allowedOrigins?: string[];
   maxRequestsPerMinute?: number;
@@ -92,6 +102,8 @@ export class CodeForgeCloudServer {
   public readonly billing: StripeBillingService;
   public readonly firewallManager: CloudFirewallManager;
   public readonly gateway: GatewayService;
+  public readonly providerRegistry?: CloudProviderRegistry;
+  private readonly discoverOnStart: boolean;
   private readonly allowedOrigins: Set<string>;
   private readonly rateLimits = new Map<string, { count: number; resetAt: number }>();
   private readonly maxRequestsPerMinute: number;
@@ -143,7 +155,9 @@ export class CodeForgeCloudServer {
 
     this.entitlements = new EntitlementService(this.db);
     this.usage = new UsageEngine(this.db);
-    this.firewallManager = config.firewallManager ?? new CloudFirewallManager();
+    this.firewallManager = config.firewallManager ?? new CloudFirewallManager({ killSwitches: config.killSwitches });
+    this.providerRegistry = config.providerRegistry;
+    this.discoverOnStart = config.discoverOnStart ?? true;
 
     this.auth = new AuthService({
       db: this.db,
@@ -171,6 +185,31 @@ export class CodeForgeCloudServer {
 
   async start(port = 0, host?: string): Promise<number> {
     const bindHost = host ?? this.host;
+    // Fail closed: initialize the database schema (async for Postgres) BEFORE accepting traffic.
+    await this.db.init();
+
+    // Crash recovery: reclaim credits locked by reservations from a previous process that died
+    // mid-inference. In-memory execution leases are already gone after a restart, so only persisted
+    // reservations need reconciling.
+    try {
+      const recovered = this.usage.reconcileStaleReservations();
+      if (recovered.reconciled > 0) {
+        console.log(`[CodeForge Cloud API] reclaimed ${recovered.reconciled} stale reservation(s), refunded ${recovered.refundedCredits} credits`);
+      }
+    } catch {
+      // Non-fatal — never block boot on reconciliation.
+    }
+
+    // Discover real server-owned hosted capacity before serving. Non-fatal: a provider failure is
+    // captured in the capacity report and the server still starts (Direct/BYOK stays independent).
+    if (this.providerRegistry && this.discoverOnStart) {
+      try {
+        await this.providerRegistry.discover({ force: true });
+      } catch {
+        // Discovery never throws by contract; guard defensively so boot is deterministic.
+      }
+    }
+
     return new Promise<number>((resolve, reject) => {
       this.server.listen(port, bindHost, () => {
         const addr = this.server.address() as AddressInfo;
@@ -187,6 +226,16 @@ export class CodeForgeCloudServer {
         void Promise.resolve(this.db.close()).then(() => resolve());
       });
     });
+  }
+
+  /**
+   * Kick a TTL-guarded capacity refresh in the background. Non-blocking and error-swallowing so a
+   * health/models poll never stalls on provider I/O; the registry itself enforces the refresh TTL,
+   * so frequent polls do not hammer provider APIs.
+   */
+  private triggerLazyRefresh(): void {
+    if (!this.providerRegistry) return;
+    void this.providerRegistry.discover().catch(() => {});
   }
 
   private checkRateLimit(key: string): boolean {
@@ -322,10 +371,18 @@ export class CodeForgeCloudServer {
       }
 
       if (url.pathname === "/health/ready" && method === "GET") {
+        this.triggerLazyRefresh();
         const hostedModels = this.firewallManager.listHostedModels();
         const availableFreeCount = hostedModels.filter((m) => m.isEligibleFree).length;
         const killSwitches = this.firewallManager.getKillSwitches();
         const hostedInferenceReady = killSwitches.hostedInferenceEnabled && availableFreeCount > 0;
+        const providerCapacity = this.providerRegistry
+          ? this.providerRegistry.getReports().map((r) => ({
+              providerId: r.providerId,
+              status: r.status,
+              verifiedFreeCount: r.verifiedFreeCount,
+            }))
+          : undefined;
 
         this.sendJson(
           res,
@@ -335,7 +392,9 @@ export class CodeForgeCloudServer {
             database: "connected",
             hostedInferenceReady,
             availableModelsCount: hostedModels.length,
+            availableFreeCount,
             killSwitches,
+            ...(providerCapacity ? { providerCapacity } : {}),
           },
           corsOrigin,
         );
@@ -360,6 +419,7 @@ export class CodeForgeCloudServer {
       }
 
       if (url.pathname === "/v1/hosted/models" && method === "GET") {
+        this.triggerLazyRefresh();
         const models = this.firewallManager.listHostedModels();
         this.sendJson(res, 200, models, corsOrigin);
         return;

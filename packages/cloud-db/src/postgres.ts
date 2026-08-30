@@ -32,6 +32,8 @@ export interface PostgresCloudDatabaseOptions {
 export class PostgresCloudDatabase implements ICloudDatabase {
   private readonly pool: pg.Pool;
   private readonly isCustomPool: boolean;
+  private initialized = false;
+  private initPromise?: Promise<void>;
 
   constructor(options: PostgresCloudDatabaseOptions = {}) {
     const connectionString = options.connectionString || process.env.DATABASE_URL;
@@ -45,6 +47,21 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       this.pool = new Pool({ connectionString });
       this.isCustomPool = false;
     }
+  }
+
+  /**
+   * Public boot hook (ICloudDatabase.init). Runs the async schema migration exactly once, even under
+   * concurrent callers. Without this a fresh Postgres database would have no tables and every query
+   * would fail — the server MUST await this before it starts listening.
+   */
+  async init(): Promise<void> {
+    if (this.initialized) return;
+    if (!this.initPromise) {
+      this.initPromise = this.initSchema().then(() => {
+        this.initialized = true;
+      });
+    }
+    return this.initPromise;
   }
 
   async initSchema(): Promise<void> {
@@ -244,6 +261,10 @@ export class PostgresCloudDatabase implements ICloudDatabase {
   }
 
   releaseReservation(requestId: string, userId: string): ReservationRecord {
+    throw new Error("PostgreSQL operations require async execution.");
+  }
+
+  listStaleReservations(cutoffIso: string): ReservationRecord[] {
     throw new Error("PostgreSQL operations require async execution.");
   }
 

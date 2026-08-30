@@ -1,0 +1,79 @@
+# CodeForge Cloud — CI for the hosted platform (apps/cloud-api + cloud-* packages).
+#
+# The default job is fully DETERMINISTIC and requires NO secrets: it typechecks, builds, and runs the
+# cloud-critical suites (unit, adversarial security, concurrency ledger, failure matrix, provider
+# registry, config) plus the full test run. Real provider/staging smokes are a separate manual,
+# secret-gated job so pull requests never need real credentials.
+name: cloud-ci
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["master", "main", "feat/codeforge-cloud"]
+    paths:
+      - "apps/cloud-api/**"
+      - "packages/cloud-*/**"
+      - "packages/forge-zero/**"
+      - "packages/router/**"
+      - "packages/providers/**"
+      - "packages/model-registry/**"
+      - ".github/workflows/cloud-ci.yml"
+  pull_request:
+    paths:
+      - "apps/cloud-api/**"
+      - "packages/cloud-*/**"
+      - "packages/forge-zero/**"
+      - "packages/router/**"
+      - "packages/providers/**"
+      - "packages/model-registry/**"
+
+jobs:
+  cloud-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22" # node:sqlite (>= 22.5) is the cloud DB driver
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
+      - name: Cloud-critical suites
+        run: >-
+          npx vitest run
+          apps/cloud-api
+          packages/cloud-db
+          packages/cloud-usage
+          packages/cloud-gateway
+          tests/cloud-adversarial-security.test.ts
+          tests/cloud-concurrency-ledger.test.ts
+          tests/cloud-failure-matrix.test.ts
+      - name: Full test suite
+        run: npm test
+
+  # Manual only, and each step self-skips when its credential secret is absent. Never runs on PRs.
+  real-staging-smoke:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Build
+        run: npm run build
+      - name: Real hosted inference smoke (free-safe, $0)
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          if [ -z "$OPENROUTER_API_KEY" ] && [ -z "$GROQ_API_KEY" ]; then
+            echo "No free-safe provider secret configured — skipping real smoke."
+            exit 0
+          fi
+          node scripts/cloud/real-hosted-smoke.mjs

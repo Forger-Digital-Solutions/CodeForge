@@ -1,0 +1,56 @@
+# CodeForge Cloud API — Render Blueprint (staging)
+#
+# Why Render for free-safe staging:
+#   - Free web service tier requires NO credit card, supports HTTPS and long-lived
+#     HTTP/SSE connections (needed for /v1/hosted/inference streaming), and injects
+#     secrets from the dashboard (never from this file).
+#   - Free managed Postgres gives production-truth persistence (not an ephemeral SQLite file).
+#   - Caveat: free web services spin down after ~15 min idle → a cold start (~30-60s) delays
+#     the first request. Acceptable for staging; use a paid instance (or Fly.io) for production.
+#
+# Secrets marked `sync: false` are set in the Render dashboard, never committed here.
+# This file is a deployment ARTIFACT — applying it requires a Render account (external).
+
+services:
+  - type: web
+    name: codeforge-cloud-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.cloud
+    plan: free
+    healthCheckPath: /health/live
+    autoDeploy: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CODEFORGE_CLOUD_ENV
+        value: staging
+      - key: HOST
+        value: 0.0.0.0
+      - key: CODEFORGE_CLOUD_DB_DRIVER
+        value: postgres
+      - key: DATABASE_URL
+        fromDatabase:
+          name: codeforge-cloud-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true # Render generates a strong 32+ char secret
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: STRIPE_SECRET_KEY # TEST-mode key only; live keys are refused at boot
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRO_PRICE_ID
+        sync: false
+      - key: STRIPE_CREDIT_PRICE_ID
+        sync: false
+      - key: OPENROUTER_API_KEY # server-owned Hosted Free capacity ($0 :free routes)
+        sync: false
+      - key: GROQ_API_KEY # server-owned Hosted Free capacity (free allowance)
+        sync: false
+
+databases:
+  - name: codeforge-cloud-db
+    plan: free

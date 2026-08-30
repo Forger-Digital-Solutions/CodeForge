@@ -1,6 +1,8 @@
 import type { CredentialStore } from "./index.js";
 import { OpenAICompatibleAdapter, type OpenAICompatibleConfig } from "./openai-compatible.js";
 import { AnthropicAdapter } from "./anthropic.js";
+import { createOpenRouterAdapter } from "./openrouter.js";
+import { createOpencodeAdapter } from "./opencode.js";
 import type { ProviderAdapter } from "./index.js";
 
 export interface ProviderFactoryOptions {
@@ -90,6 +92,12 @@ export function createProviderAdapterById(providerId: string, opts: ProviderFact
       return createOpenAIAdapter(opts);
     case "anthropic":
       return new AnthropicAdapter({ credentialStore: opts.credentialStore, apiKey: opts.apiKey, timeoutMs: opts.timeoutMs });
+    case "openrouter":
+      // OpenRouter gateway (dedicated adapter: OAuth-aware, attribution headers, models cache).
+      return createOpenRouterAdapter({ credentialStore: opts.credentialStore, timeoutMs: opts.timeoutMs });
+    case "opencode":
+      // OpenCode Zen gateway (dedicated adapter).
+      return createOpencodeAdapter({ credentialStore: opts.credentialStore, timeoutMs: opts.timeoutMs });
     default:
       return undefined;
   }
