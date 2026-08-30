@@ -191,6 +191,9 @@ jobs:
       - name: Remote probe against the running container
         run: |
           npm ci --no-audit --no-fund
+          # `npm run build --workspaces` is not dependency-aware, so compile the TypeScript project
+          # graph first (the same ordering Dockerfile.cloud relies on).
+          npx tsc -b
           npm run build
           npm run cloud:remote:probe -- --url http://127.0.0.1:3220 --allow-insecure --json remote-probe.json
 

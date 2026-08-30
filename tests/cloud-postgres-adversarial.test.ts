@@ -416,10 +416,13 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("Postgres Runtime — Deep Adv
   });
 
   it("Phase 34: Real PostgreSQL Full Product E2E via Cloud Server", async () => {
+    const pgE2eGitHubId = Math.floor(Math.random() * 1_000_000_000);
     const server = new CodeForgeCloudServer({
       jwtSecret: "cert-postgres-e2e-jwt-secret-32-chars-long",
       databaseUrl: TEST_PG,
-      fetchFn: createMockGitHubFetch({ id: 90210, login: "pg_e2e_user", name: "PG E2E User" }),
+      // Unique per run: this suite executes more than once against the same CI database, so a
+      // fixed GitHub id would make the second run resolve to an existing account.
+      fetchFn: createMockGitHubFetch({ id: pgE2eGitHubId, login: `pg_e2e_user_${pgE2eGitHubId}`, name: "PG E2E User" }),
       stripeConfig: {
         secretKey: "sk_test_mock_e2e_pg",
         webhookSecret: "whsec_mock_e2e_pg",
