@@ -4,6 +4,8 @@ import type { WorkspaceEvent } from "@codeforge/protocol";
 import InlineComments from "./InlineComments.js";
 import DiffViewer from "./DiffViewer.js";
 import { buildTimeline, type TimelineItem } from "./timeline.js";
+import { parseAssistantContent, parseInlineSpans, reasoningSummary } from "./assistant-content.js";
+import { describeToolTarget, summarizeToolResult, hasToolDetail } from "./tool-activity.js";
 
 interface ConversationProps {
   turns: TurnRecord[];
@@ -18,6 +20,103 @@ interface ConversationProps {
   /** Short context label shown under the empty-state heading, e.g. "CodeForge · main". */
   contextLabel?: string;
 }
+
+/** Inline `code` and **strong** within a prose paragraph. */
+const InlineProse = ({ text }: { text: string }) => (
+  <>
+    {parseInlineSpans(text).map((s, i) =>
+      s.kind === "code" ? (
+        <code key={i} className="assistant-inline-code">{s.text}</code>
+      ) : s.kind === "strong" ? (
+        <strong key={i}>{s.text}</strong>
+      ) : (
+        <span key={i}>{s.text}</span>
+      ),
+    )}
+  </>
+);
+
+/**
+ * Assistant prose, given the structure it actually has: reasoning folded away behind a summary,
+ * code as code, and the answer itself in plain sight. Reasoning starts collapsed because it is the
+ * model's working, not its reply — available on demand, never competing with the answer.
+ */
+const AssistantProse = ({ text }: { text: string }) => {
+  const blocks = parseAssistantContent(text);
+  return (
+    <>
+      {blocks.map((b, i) => {
+        if (b.kind === "reasoning") return <ReasoningBlock key={i} text={b.text} open={b.open} />;
+        if (b.kind === "code") {
+          return (
+            <div key={i} className="assistant-code">
+              <div className="assistant-code-head">
+                <span className="assistant-code-lang">{b.language ?? "code"}</span>
+              </div>
+              <pre className="assistant-code-body"><code>{b.code}</code></pre>
+            </div>
+          );
+        }
+        return (
+          <p key={i} className="assistant-paragraph">
+            <InlineProse text={b.text} />
+          </p>
+        );
+      })}
+    </>
+  );
+};
+
+const ReasoningBlock = ({ text, open }: { text: string; open: boolean }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className={`assistant-reasoning${open ? " streaming" : ""}`}>
+      <button type="button" className="assistant-reasoning-toggle" onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
+        <span className="assistant-reasoning-caret" aria-hidden="true">{expanded ? "▾" : "▸"}</span>
+        <span>{reasoningSummary(text, open)}</span>
+      </button>
+      {expanded && <div className="assistant-reasoning-body">{text}</div>}
+    </div>
+  );
+};
+
+/**
+ * One line of tool activity: what ran, what it ran on, and what came back — the three things a
+ * user needs to follow the agent's work. Running calls animate; finished calls carry their result
+ * inline and expand to the full output only on request, so a long transcript stays scannable.
+ */
+const ToolActivity = ({ item }: { item: Extract<TimelineItem, { kind: "tool" }> }) => {
+  const [expanded, setExpanded] = useState(false);
+  const running = item.status === "running";
+  const bad = item.status === "failed" || item.status === "blocked";
+  const iconClass = item.status === "completed" ? "success" : bad ? "error" : "running";
+  const iconChar = item.status === "completed" ? "✓" : bad ? "✕" : "●";
+
+  const target = describeToolTarget(item.toolName, item.argsJson);
+  const summary = summarizeToolResult(item);
+  const detail = item.error ?? item.result;
+  const expandable = hasToolDetail(item);
+
+  return (
+    <div className={`activity-block${running ? " running" : ""}`}>
+      <div
+        className="activity-header"
+        style={{ cursor: expandable ? "pointer" : "default" }}
+        onClick={expandable ? () => setExpanded((v) => !v) : undefined}
+      >
+        <span className={`activity-icon ${iconClass}`}>{iconChar}</span>
+        <span className="activity-title">
+          {toolLabel(item.toolName)}
+          {target && <span className="activity-target">{target}</span>}
+        </span>
+        {summary && <span className={`activity-meta${bad ? " error" : ""}`}>{summary}</span>}
+        {running && <span className="activity-meta">running…</span>}
+        {expandable && <span className="activity-caret" aria-hidden="true">{expanded ? "▾" : "▸"}</span>}
+      </div>
+      {expanded && detail && <pre className="activity-detail">{detail}</pre>}
+    </div>
+  );
+};
 
 /** Renders one reconstructed timeline item: user prompt, assistant prose, or tool activity. */
 const TimelineItemView = ({ item }: { item: TimelineItem }) => {
@@ -34,24 +133,13 @@ const TimelineItemView = ({ item }: { item: TimelineItem }) => {
         <div className="assistant-message">
           <div className="assistant-message-label">CodeForge</div>
           <div className="assistant-message-body">
-            {item.text}
+            <AssistantProse text={item.text} />
             {item.streaming && <span className="assistant-cursor" aria-hidden="true">▍</span>}
           </div>
         </div>
       );
-    case "tool": {
-      const iconClass = item.status === "completed" ? "success" : item.status === "failed" || item.status === "blocked" ? "error" : "running";
-      const iconChar = item.status === "completed" ? "✓" : item.status === "failed" || item.status === "blocked" ? "✕" : "●";
-      return (
-        <div className="activity-block">
-          <div className="activity-header" style={{ cursor: "default" }}>
-            <span className={`activity-icon ${iconClass}`}>{iconChar}</span>
-            <span className="activity-title">{toolLabel(item.toolName)}</span>
-            <span className="activity-meta">{item.status === "blocked" ? (item.error ?? "blocked") : item.status}</span>
-          </div>
-        </div>
-      );
-    }
+    case "tool":
+      return <ToolActivity item={item} />;
     case "file":
       return (
         <div className="activity-block">
