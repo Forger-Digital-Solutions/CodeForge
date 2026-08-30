@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["test", "dist"],
+  "references": [
+    { "path": "../core" },
+    { "path": "../cloud-db" },
+    { "path": "../cloud-auth" },
+    { "path": "../cloud-entitlements" },
+    { "path": "../cloud-usage" },
+    { "path": "../forge-zero" },
+    { "path": "../router" },
+    { "path": "../providers" },
+    { "path": "../protocol" }
+  ]
+}

@@ -29,14 +29,20 @@ const packages = [
   "ui",
   "shared",
   "vscode",
-  "integration-tests",
   "workflow",
+  "cloud-db",
+  "cloud-auth",
+  "cloud-entitlements",
+  "cloud-usage",
+  "cloud-billing",
+  "cloud-gateway",
 ];
 
 const aliases: Record<string, string | string[]> = {};
 for (const pkg of packages) {
   aliases[`@codeforge/${pkg}`] = resolve(__dirname, `packages/${pkg}/src`);
 }
+aliases["codeforge-cloud-api"] = resolve(__dirname, "apps/cloud-api/src");
 
 export default defineConfig({
   test: {
@@ -45,6 +51,7 @@ export default defineConfig({
       "packages/*/test/**/*.test.tsx",
       "packages/*/src/**/*.test.ts",
       "apps/*/test/**/*.test.ts",
+      "tests/**/*.test.ts",
     ],
     exclude: [
       // VS Code test-electron tests must run separately (require real VS Code instance)

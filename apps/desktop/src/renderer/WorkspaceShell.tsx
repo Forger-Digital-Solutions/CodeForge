@@ -1,24 +1,16 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { WorkspaceApp, type ModelSection } from "@codeforge/ui";
 import type { Project } from "./App.js";
-import { WorkspaceApp, type ModelSelectorItem, type ModelSection } from "@codeforge/ui";
+import type { ModelSelectorItem } from "@codeforge/ui";
 import ModelDetails from "./ModelDetails.js";
 import ProviderSetup from "./ProviderSetup.js";
+
+const SERVER_BASE_URL = "http://localhost:3210";
+const HELP_URL = "https://github.com/codeforge/codeforge#readme";
 
 interface WorkspaceShellProps {
   project: Project;
   onClose: () => void;
-}
-
-const SERVER_BASE_URL = "http://localhost:3210";
-const HELP_URL = "https://github.com/Forger-Digital-Solutions/CodeForge";
-
-function openExternalLink(url: string): void {
-  const api = (globalThis as { electronAPI?: { openExternal?: (u: string) => Promise<void> } }).electronAPI;
-  if (api?.openExternal) {
-    void api.openExternal(url);
-  } else {
-    window.open(url, "_blank", "noopener");
-  }
 }
 
 interface ApiModel {
@@ -28,12 +20,6 @@ interface ApiModel {
   tier: "free" | "gems_paid" | "paid";
   freeStatus: string;
   accessClass?: string;
-  authMode?: string;
-  privacyClass?: string;
-  verifiedFree?: boolean;
-  eligible?: boolean;
-  codingScore?: number;
-  agentScore?: number;
   contextWindow?: number;
   capabilities?: {
     text: boolean;
@@ -60,6 +46,7 @@ function isHiddenModel(id: string): boolean {
 
 // Provider → user-facing section label. Order follows the spec's model dropdown structure.
 const PROVIDER_SECTION: Record<string, string> = {
+  "codeforge-cloud": "CODEFORGE CLOUD (INCLUDED)",
   zai: "Z.AI",
   openrouter: "OPENROUTER",
   google: "GOOGLE",
@@ -70,6 +57,7 @@ const PROVIDER_SECTION: Record<string, string> = {
 };
 
 const SECTION_ORDER = [
+  "CODEFORGE CLOUD (INCLUDED)",
   "CODEFORGE",
   "TOP VERIFIED FREE",
   "GEMS",
@@ -109,11 +97,6 @@ function accessBadge(m: ApiModel): string {
   }
 }
 
-function isPaidAccess(m: ApiModel | undefined): boolean {
-  if (!m) return false;
-  return m.accessClass === "PAID" || m.accessClass === "TRIAL";
-}
-
 export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps) {
   const [models, setModels] = useState<ModelSelectorItem[]>([
     { id: "auto", displayName: "Auto", tier: "free", description: "Best Verified Free Model" },
@@ -124,19 +107,28 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
   const [showModelDetails, setShowModelDetails] = useState(false);
   const [selectedModelForDetails, setSelectedModelForDetails] = useState<ApiModel | null>(null);
   const [providerStatus, setProviderStatus] = useState<Record<string, { status: string; error?: string }>>({});
-  const [providerRefreshKey, setProviderRefreshKey] = useState(0);
   const [isForgeZeroOpen, setIsForgeZeroOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [cloudAccount, setCloudAccount] = useState<any>(null);
+  const [isQuotaExhaustedOpen, setIsQuotaExhaustedOpen] = useState(false);
 
   useEffect(() => {
     fetch(`${SERVER_BASE_URL}/api/workspace/set`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path: project.path }),
-    }).catch(() => {
-      // Server may still be starting; workspace tools fail closed until set succeeds
-    });
+    }).catch(() => {});
+    loadCloudAccount();
   }, [project.path]);
+
+  const loadCloudAccount = async () => {
+    try {
+      if (window.electronAPI?.getCloudAccount) {
+        const acc = await window.electronAPI.getCloudAccount();
+        setCloudAccount(acc);
+      }
+    } catch {}
+  };
 
   const refreshModelsAndHealth = useCallback(async () => {
     try {
@@ -146,17 +138,12 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
       if (!Array.isArray(data)) return;
       setApiModels(data);
 
-      // Build the user-facing model list. Muse Spark (promotional third-party
-      // free model) is filtered out here — "Auto" still routes to it, but it is
-      // never surfaced as its own selectable/hero row.
       const visible = data.filter((m) => !isHiddenModel(m.id));
       const modelItems: ModelSelectorItem[] = [
         { id: "auto", displayName: "Auto", tier: "free", description: "Best Verified Free" },
         ...visible.map((m) => ({
           id: m.id,
           displayName: m.displayName,
-          // Only first-party GEMS are entitlement-locked; provider paid models stay selectable
-          // (a paid-confirmation dialog gates the actual charge). Honest badge via accessBadge.
           tier: m.tier === "gems_paid" ? ("gems_paid" as const) : ("free" as const),
           description: accessBadge(m),
         })),
@@ -170,174 +157,112 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
           const res = await fetch(`${SERVER_BASE_URL}/api/providers/${providerId}/health`);
           const health = await res.json();
           setProviderStatus((prev) => ({ ...prev, [providerId]: health }));
-        } catch {
-          // ignore
-        }
+        } catch {}
       }
-    } catch {
-      // Selector falls back to Auto; server may still be starting
-    }
+    } catch {}
   }, []);
 
   useEffect(() => {
     refreshModelsAndHealth();
-  }, [refreshModelsAndHealth, providerRefreshKey]);
-
-  useEffect(() => {
-    const onFocus = () => refreshModelsAndHealth();
-    const onVisibility = () => {
-      if (document.visibilityState === "visible") refreshModelsAndHealth();
-    };
-    window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onVisibility);
-    const onProviderUpdate = () => setProviderRefreshKey((k) => k + 1);
-    window.addEventListener("codeforge:provider-updated", onProviderUpdate as EventListener);
-    return () => {
-      window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("codeforge:provider-updated", onProviderUpdate as EventListener);
-    };
+    const interval = setInterval(refreshModelsAndHealth, 15000);
+    return () => clearInterval(interval);
   }, [refreshModelsAndHealth]);
 
-  // Build the model dropdown to the free-first structure:
-  // CODEFORGE (Auto) · TOP VERIFIED FREE (#1–5, live) · GEMS · per-provider (free-first, honest badges).
+  useEffect(() => {
+    const handleProviderUpdated = () => {
+      refreshModelsAndHealth();
+      loadCloudAccount();
+    };
+    window.addEventListener("codeforge:provider-updated", handleProviderUpdated);
+    return () => window.removeEventListener("codeforge:provider-updated", handleProviderUpdated);
+  }, [refreshModelsAndHealth]);
+
   const modelSections = useMemo((): ModelSection[] => {
-    const toItem = (m: ApiModel): ModelSelectorItem => ({
-      id: m.id,
-      displayName: m.displayName,
-      tier: m.tier === "gems_paid" ? "gems_paid" : "free",
-      description: accessBadge(m),
-    });
-    const autoItem: ModelSelectorItem =
-      models.find((m) => m.id === "auto") ?? { id: "auto", displayName: "Auto", tier: "free", description: "Best Verified Free" };
+    const sectionMap = new Map<string, ModelSelectorItem[]>();
+    const topVerified: ModelSelectorItem[] = [];
+    const gemsModels: ModelSelectorItem[] = [];
 
-    const visible = apiModels.filter((m) => !isHiddenModel(m.id));
-    const sections: ModelSection[] = [{ sectionId: "codeforge", sectionLabel: "CODEFORGE", models: [autoItem] }];
+    const autoItem = models.find((m) => m.id === "auto") ?? {
+      id: "auto",
+      displayName: "Auto",
+      tier: "free" as const,
+      description: "Best Verified Free Model",
+    };
+    sectionMap.set("CODEFORGE", [autoItem]);
 
-    // TOP VERIFIED FREE — eligible + verified-free, ranked by empirical scores. Live-derived.
-    const topFree = [...visible]
-      .filter((m) => m.eligible && m.verifiedFree)
-      .sort(
-        (a, b) =>
-          (b.codingScore ?? b.agentScore ?? 0) - (a.codingScore ?? a.agentScore ?? 0) ||
-          a.id.localeCompare(b.id),
-      )
-      .slice(0, 5);
-    if (topFree.length > 0) {
-      sections.push({
-        sectionId: "top-verified-free",
-        sectionLabel: "TOP VERIFIED FREE",
-        models: topFree.map((m, i) => ({ ...toItem(m), displayName: `#${i + 1} · ${m.displayName}` })),
-      });
-    }
+    for (const m of apiModels) {
+      if (isHiddenModel(m.id)) continue;
+      const isFree = m.costProfile?.isFree || m.freeStatus === "verified_free" || m.isPromotional;
+      const selectorItem: ModelSelectorItem = {
+        id: m.id,
+        displayName: m.displayName,
+        tier: m.tier === "gems_paid" ? "gems_paid" : "free",
+        description: accessBadge(m),
+      };
 
-    const gems = visible.filter((m) => m.tier === "gems_paid");
-    if (gems.length > 0) sections.push({ sectionId: "gems", sectionLabel: "GEMS", models: gems.map(toItem) });
-
-    const byProvider = new Map<string, ApiModel[]>();
-    for (const m of visible) {
-      if (m.tier === "gems_paid") continue;
-      const label = PROVIDER_SECTION[m.providerId];
-      if (!label) continue;
-      if (!byProvider.has(label)) byProvider.set(label, []);
-      byProvider.get(label)!.push(m);
-    }
-    for (const [label, list] of byProvider) {
-      list.sort(
-        (a, b) =>
-          Number(!!b.costProfile?.isFree) - Number(!!a.costProfile?.isFree) ||
-          a.displayName.localeCompare(b.displayName),
-      );
-      sections.push({ sectionId: label.toLowerCase().replace(/\s+/g, "-"), sectionLabel: label, models: list.map(toItem) });
-    }
-
-    // Honest "not connected" rows for providers with no models yet (never faked as available).
-    const present = new Set(sections.map((s) => s.sectionLabel));
-    for (const [pid, label] of Object.entries(PROVIDER_SECTION)) {
-      if (present.has(label)) continue;
-      const note = pid === "openrouter" ? "Not connected · Connect with OAuth in Settings" : "Not connected · add API key in Settings";
-      sections.push({ sectionId: label.toLowerCase().replace(/\s+/g, "-"), sectionLabel: label, models: [], note });
-    }
-
-    return sections.sort((a, b) => getSectionOrder(a.sectionLabel) - getSectionOrder(b.sectionLabel));
-  }, [models, apiModels]);
-
-  const handleSelectModel = useCallback(
-    (model: ModelSelectorItem, sessionId?: string) => {
-      // Paid-model confirmation: selecting a model that can incur charges is always explicit.
-      // Verified-free models never trigger this prompt.
-      const apiModel = apiModels.find((m) => m.id === model.id);
-      if (isPaidAccess(apiModel)) {
-        const badge = apiModel ? accessBadge(apiModel) : "Paid";
-        const ok = window.confirm(
-          `${model.displayName} may incur charges from your provider (${badge}).\n\n` +
-            "This is a paid/trial model — CodeForge Free Mode will not select it automatically.\n\nUse this paid model?",
-        );
-        if (!ok) return;
+      if (m.providerId === "codeforge-cloud") {
+        const existing = sectionMap.get("CODEFORGE CLOUD (INCLUDED)") || [];
+        existing.push(selectorItem);
+        sectionMap.set("CODEFORGE CLOUD (INCLUDED)", existing);
+      } else if (m.tier === "gems_paid") {
+        gemsModels.push(selectorItem);
+      } else if (isFree && topVerified.length < 5) {
+        topVerified.push(selectorItem);
+      } else {
+        const secName = PROVIDER_SECTION[m.providerId] || m.providerId.toUpperCase();
+        const existing = sectionMap.get(secName) || [];
+        existing.push(selectorItem);
+        sectionMap.set(secName, existing);
       }
-      setSelectedModelId(model.id);
-      fetch(`${SERVER_BASE_URL}/api/model-selection`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: sessionId ?? "default",
-          modelId: model.id,
-          providerId: modelProviders[model.id] ?? "",
-        }),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            response
-              .json()
-              .then((data) => {
-                const errorCode = data.error || "MODEL_SELECTION_FAILED";
-                const userMessages: Record<string, string> = {
-                  MODEL_NOT_FOUND: "The selected model is no longer available. Please select a different model.",
-                  MODEL_SELECTION_INVALID: "Invalid model selection. Please try again.",
-                  NO_FREE_PROVIDER:
-                    "No verified free model is currently available. Connect a provider with free models.",
-                  FREE_TIER_EXPIRED:
-                    "This promotional free model is no longer verified as free. Please select a different model.",
-                  CREDENTIAL_MISSING: "Provider API key is missing. Please configure credentials.",
-                  CREDENTIAL_INVALID: "Provider API key is invalid. Please check your credentials.",
-                  AUTH_ERROR: "Provider authentication failed. Check your API key.",
-                  PROVIDER_OFFLINE: "Provider is currently unavailable. Please try again.",
-                  PAYMENT_REQUIRED:
-                    "Paid model selected while in Free Mode — CodeForge blocked the request.",
-                  RATE_LIMITED: "Provider is rate limited. Try again shortly.",
-                };
-                alert(userMessages[errorCode] || "Failed to select model. Please try again.");
-              })
-              .catch(() => {
-                alert("Failed to select model. Please try again.");
-              });
-            setSelectedModelId("auto");
-          }
-        })
-        .catch(() => {
-          alert("Network error — please check your connection.");
-          setSelectedModelId("auto");
-        });
-    },
-    [modelProviders, apiModels],
-  );
+    }
 
-  const handleUpgradeNavigation = useCallback((url: string) => {
-    openExternalLink(url);
-  }, []);
+    if (topVerified.length > 0) sectionMap.set("TOP VERIFIED FREE", topVerified);
+    if (gemsModels.length > 0) sectionMap.set("GEMS", gemsModels);
 
-  const handleShowModelDetails = useCallback((model: ModelSelectorItem) => {
-    const apiModel = apiModels.find(m => m.id === model.id);
-    if (apiModel) {
-      setSelectedModelForDetails(apiModel);
+    const sections: ModelSection[] = [];
+    const sortedKeys = Array.from(sectionMap.keys()).sort((a, b) => getSectionOrder(a) - getSectionOrder(b));
+    for (const key of sortedKeys) {
+      const items = sectionMap.get(key);
+      if (items && items.length > 0) {
+        sections.push({ label: key, items });
+      }
+    }
+    return sections;
+  }, [apiModels, models]);
+
+  const handleSelectModel = (modelId: string) => {
+    setSelectedModelId(modelId);
+    fetch(`${SERVER_BASE_URL}/api/model/select`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ modelId, providerId: modelProviders[modelId] }),
+    }).catch(() => {});
+  };
+
+  const handleShowModelDetails = (modelId: string) => {
+    const found = apiModels.find((m) => m.id === modelId);
+    if (found) {
+      setSelectedModelForDetails(found);
       setShowModelDetails(true);
     }
-  }, [apiModels]);
+  };
 
-  const handleCloseModelDetails = useCallback(() => {
+  const handleCloseModelDetails = () => {
     setShowModelDetails(false);
     setSelectedModelForDetails(null);
-  }, []);
+  };
+
+  const handleUpgradeNavigation = () => {
+    setIsQuotaExhaustedOpen(true);
+  };
+
+  const openExternalLink = (url: string) => {
+    if (window.electronAPI?.openExternal) {
+      window.electronAPI.openExternal(url);
+    } else {
+      window.open(url, "_blank");
+    }
+  };
 
   const getCurrentProviderStatus = () => {
     const selected = apiModels.find((m) => m.id === selectedModelId);
@@ -374,6 +299,32 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
         </div>
 
         <div className="header-right">
+          {cloudAccount ? (
+            <button
+              className="header-btn cloud-account-btn"
+              style={{ background: "rgba(56, 189, 248, 0.12)", border: "1px solid rgba(56, 189, 248, 0.35)", color: "#38bdf8", padding: "4px 10px", borderRadius: "14px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
+              onClick={() => setIsQuotaExhaustedOpen(true)}
+              title="CodeForge Cloud Account"
+            >
+              <span>✦ {cloudAccount.user?.displayName || "Cloud User"}</span>
+              <span style={{ opacity: 0.5 }}>|</span>
+              <span>{cloudAccount.planName} ({Math.round(cloudAccount.creditBalance / 1000)}k)</span>
+            </button>
+          ) : (
+            <button
+              className="header-btn cloud-signin-btn"
+              style={{ background: "#0284c7", color: "#fff", border: "none", padding: "4px 10px", borderRadius: "14px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}
+              onClick={async () => {
+                if (window.electronAPI?.signInWithCloud) {
+                  const res = await window.electronAPI.signInWithCloud();
+                  if (res.ok) await loadCloudAccount();
+                }
+              }}
+            >
+              ✦ Start Free Cloud
+            </button>
+          )}
+
           <div
             className="forgezero-indicator"
             role="button"
@@ -469,7 +420,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
             onClick={(e) => e.stopPropagation()}
           >
             <div className="settings-modal-header">
-              <span className="settings-modal-title">Settings</span>
+              <span className="settings-modal-title">Settings & Providers</span>
               <button
                 className="settings-modal-close"
                 onClick={() => setIsSettingsOpen(false)}
@@ -480,6 +431,117 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
             </div>
             <div className="settings-modal-body">
               <ProviderSetup />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isQuotaExhaustedOpen && (
+        <div className="settings-modal-overlay" onClick={() => setIsQuotaExhaustedOpen(false)}>
+          <div
+            className="settings-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="CodeForge Cloud Account"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "480px" }}
+          >
+            <div className="settings-modal-header">
+              <span className="settings-modal-title">✦ CodeForge Cloud Account</span>
+              <button
+                className="settings-modal-close"
+                onClick={() => setIsQuotaExhaustedOpen(false)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="settings-modal-body" style={{ padding: "16px 20px" }}>
+              {cloudAccount ? (
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: "15px" }}>{cloudAccount.user?.displayName}</div>
+                      <div style={{ color: "#9ca3af", fontSize: "13px" }}>Plan: <strong>{cloudAccount.planName}</strong></div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: "18px", fontWeight: "bold", color: "#38bdf8" }}>
+                        {(cloudAccount.creditBalance).toLocaleString()}
+                      </div>
+                      <div style={{ color: "#9ca3af", fontSize: "11px" }}>Available Credits</div>
+                    </div>
+                  </div>
+
+                  {cloudAccount.planId === "free" ? (
+                    <div style={{ background: "#1f2937", borderRadius: "8px", padding: "14px", marginBottom: "16px" }}>
+                      <div style={{ fontWeight: 600, marginBottom: "4px" }}>Upgrade to CodeForge Pro</div>
+                      <p style={{ color: "#9ca3af", fontSize: "13px", margin: "0 0 10px 0" }}>
+                        Get 5,000,000 monthly credits, high-speed priority routing, and premium model access for $20/month.
+                      </p>
+                      <button
+                        style={{ width: "100%", background: "#0284c7", color: "#fff", padding: "8px", borderRadius: "6px", border: "none", fontWeight: 600, cursor: "pointer" }}
+                        onClick={() => window.electronAPI?.openCloudCheckout?.()}
+                      >
+                        Upgrade to Pro ($20/mo)
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ background: "#1f2937", borderRadius: "8px", padding: "14px", marginBottom: "16px" }}>
+                      <div style={{ fontWeight: 600, marginBottom: "4px", color: "#38bdf8" }}>Pro Subscription Active</div>
+                      <p style={{ color: "#9ca3af", fontSize: "13px", margin: "0 0 10px 0" }}>
+                        Manage payment method, invoices, or billing settings in the Stripe Customer Portal.
+                      </p>
+                      <button
+                        style={{ width: "100%", background: "#374151", color: "#fff", padding: "8px", borderRadius: "6px", border: "none", fontWeight: 600, cursor: "pointer" }}
+                        onClick={() => window.electronAPI?.openCloudPortal?.()}
+                      >
+                        Manage Subscription
+                      </button>
+                    </div>
+                  )}
+
+                  <div style={{ borderTop: "1px solid #374151", paddingTop: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <button
+                      style={{ background: "transparent", border: "none", color: "#9ca3af", cursor: "pointer", fontSize: "13px", textDecoration: "underline" }}
+                      onClick={() => {
+                        setIsQuotaExhaustedOpen(false);
+                        setIsSettingsOpen(true);
+                      }}
+                    >
+                      Switch to BYOK Direct Mode
+                    </button>
+                    <button
+                      style={{ background: "transparent", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "13px" }}
+                      onClick={async () => {
+                        await window.electronAPI?.logoutCloud?.();
+                        setCloudAccount(null);
+                        setIsQuotaExhaustedOpen(false);
+                        await refreshModelsAndHealth();
+                      }}
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <p style={{ color: "#9ca3af", fontSize: "14px" }}>
+                    Sign in with GitHub to access zero-setup hosted AI inference with 500,000 monthly credits.
+                  </p>
+                  <button
+                    style={{ width: "100%", background: "#0284c7", color: "#fff", padding: "10px", borderRadius: "6px", border: "none", fontWeight: 600, cursor: "pointer" }}
+                    onClick={async () => {
+                      const res = await window.electronAPI?.signInWithCloud?.();
+                      if (res?.ok) {
+                        await loadCloudAccount();
+                        await refreshModelsAndHealth();
+                      }
+                    }}
+                  >
+                    Sign In with GitHub
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

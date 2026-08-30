@@ -16,6 +16,8 @@
     "clean": "npm run clean --workspaces --if-present",
     "postinstall": "patch-package",
     "forge": "node packages/cli/dist/index.js",
+    "cloud:dev": "node apps/cloud-api/dist/index.js",
+    "cloud:build": "npm run build --workspace=codeforge-cloud-api",
     "verify:opencode": "node scripts/verify-opencode.mjs"
   },
   "devDependencies": {

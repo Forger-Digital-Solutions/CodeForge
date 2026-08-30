@@ -1,0 +1,31 @@
+{
+  "name": "@codeforge/cloud-gateway",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --force",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@codeforge/core": "*",
+    "@codeforge/cloud-db": "*",
+    "@codeforge/cloud-auth": "*",
+    "@codeforge/cloud-entitlements": "*",
+    "@codeforge/cloud-usage": "*",
+    "@codeforge/forge-zero": "*",
+    "@codeforge/router": "*",
+    "@codeforge/providers": "*",
+    "@codeforge/protocol": "*",
+    "zod": "^3.24.0"
+  }
+}

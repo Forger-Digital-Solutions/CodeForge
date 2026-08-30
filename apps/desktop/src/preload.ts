@@ -43,6 +43,25 @@ const api = {
   setOnboardingCompleted: (completed: boolean): Promise<void> => {
     return ipcRenderer.invoke("onboarding:setCompleted", completed);
   },
+  // --- CodeForge Cloud APIs ---
+  signInWithCloud: (mockProfile?: any): Promise<{ ok: boolean; user?: any; error?: string }> => {
+    return ipcRenderer.invoke("cloud:auth:start", mockProfile);
+  },
+  getCloudAccount: (): Promise<any> => {
+    return ipcRenderer.invoke("cloud:account:get");
+  },
+  logoutCloud: (): Promise<void> => {
+    return ipcRenderer.invoke("cloud:auth:logout");
+  },
+  openCloudCheckout: (): Promise<void> => {
+    return ipcRenderer.invoke("cloud:billing:checkout");
+  },
+  openCloudPortal: (): Promise<void> => {
+    return ipcRenderer.invoke("cloud:billing:portal");
+  },
+  getCloudUsage: (): Promise<any> => {
+    return ipcRenderer.invoke("cloud:usage:get");
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);

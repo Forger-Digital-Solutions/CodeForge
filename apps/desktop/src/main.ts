@@ -12,9 +12,10 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
 
 import { CodeForgeServer } from "@codeforge/server";
 import { ForgeZero, createGenericFreeRecord, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog, createMockProvider, createOpencodeAdapter, createOpenRouterAdapter, createProviderAdapterById, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent } from "@codeforge/providers";
+import { InMemoryProviderCatalog, createMockProvider, createOpencodeAdapter, createOpenRouterAdapter, createProviderAdapterById, HostedProviderAdapter, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent } from "@codeforge/providers";
 import { NormalizedModelRegistry, discoverAndVerifyFree, verifyAllowanceViaProbe, getProviderPolicy, type LiveModelInfo } from "@codeforge/model-registry";
 import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
+import { runCodeForgeCloudAuth, type CloudAuthResult } from "./cloud-auth-flow.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -39,6 +40,10 @@ interface ProjectInfo {
 const RECENT_PROJECTS_KEY = "codeforge:recent-projects";
 const PROVIDER_CREDENTIALS_KEY = "codeforge:provider-credentials";
 const ONBOARDING_COMPLETED_KEY = "codeforge:onboarding-completed";
+const CLOUD_ACCESS_TOKEN_KEY = "codeforge:cloud-access-token";
+const CLOUD_REFRESH_TOKEN_KEY = "codeforge:cloud-refresh-token";
+const CLOUD_USER_KEY = "codeforge:cloud-user";
+const CLOUD_API_URL = (process.env.CODEFORGE_CLOUD_URL || "http://127.0.0.1:3220").replace(/\/$/, "");
 const ALLOWED_PROVIDER_IDS = new Set([
   "opencode",
   "openrouter",
@@ -306,6 +311,78 @@ function setOnboardingCompleted(completed: boolean): void {
   const settings = readSettings();
   settings[ONBOARDING_COMPLETED_KEY] = completed;
   writeSettingsAtomic(settings);
+}
+
+function getStoredCloudTokens(): { accessToken?: string; refreshToken?: string; user?: any } {
+  const settings = readSettings();
+  const rawAccess = settings[CLOUD_ACCESS_TOKEN_KEY];
+  const rawRefresh = settings[CLOUD_REFRESH_TOKEN_KEY];
+  const rawUser = settings[CLOUD_USER_KEY];
+  return {
+    accessToken: typeof rawAccess === "string" ? decryptCredential(rawAccess) : undefined,
+    refreshToken: typeof rawRefresh === "string" ? decryptCredential(rawRefresh) : undefined,
+    user: typeof rawUser === "object" && rawUser !== null ? rawUser : undefined,
+  };
+}
+
+function saveCloudTokens(accessToken: string, refreshToken: string, user: any): void {
+  const settings = readSettings();
+  settings[CLOUD_ACCESS_TOKEN_KEY] = encryptCredential(accessToken);
+  settings[CLOUD_REFRESH_TOKEN_KEY] = encryptCredential(refreshToken);
+  settings[CLOUD_USER_KEY] = user;
+  writeSettingsAtomic(settings);
+}
+
+function clearCloudTokens(): void {
+  const settings = readSettings();
+  delete settings[CLOUD_ACCESS_TOKEN_KEY];
+  delete settings[CLOUD_REFRESH_TOKEN_KEY];
+  delete settings[CLOUD_USER_KEY];
+  writeSettingsAtomic(settings);
+}
+
+function registerCloudAdapter(): void {
+  if (!providerCatalog || !firewall) return;
+  const cloudAdapter = new HostedProviderAdapter({
+    cloudApiUrl: CLOUD_API_URL,
+    getAccessToken: () => {
+      const tokens = getStoredCloudTokens();
+      return tokens.accessToken ?? null;
+    },
+  });
+  providerCatalog.register(cloudAdapter);
+  providerAuthState.set("codeforge-cloud", "ok");
+
+  // Register verified free cloud models in ForgeZero
+  firewall.register({
+    providerId: "codeforge-cloud",
+    modelId: "codeforge-auto",
+    displayName: "CodeForge Auto · Included Free (Cloud)",
+    tier: "free",
+    freeStatus: "verified_free",
+    freeStatusVerifiedAt: new Date().toISOString(),
+    isRemote: true,
+    isCloudHosted: true,
+    contextWindow: 128000,
+    capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
+    costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, freeTierVerifiedAt: new Date().toISOString(), paidFallbackPossible: false, paidFallbackDisabled: true, source: "codeforge:cloud" },
+    health: { status: "available", lastCheckedAt: new Date().toISOString() },
+  });
+
+  firewall.register({
+    providerId: "codeforge-cloud",
+    modelId: "qwen/qwen3.6-27b",
+    displayName: "Qwen 3.6 27B · Included Free (Cloud)",
+    tier: "free",
+    freeStatus: "verified_free",
+    freeStatusVerifiedAt: new Date().toISOString(),
+    isRemote: true,
+    isCloudHosted: true,
+    contextWindow: 128000,
+    capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
+    costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, freeTierVerifiedAt: new Date().toISOString(), paidFallbackPossible: false, paidFallbackDisabled: true, source: "codeforge:cloud" },
+    health: { status: "available", lastCheckedAt: new Date().toISOString() },
+  });
 }
 
 async function selectDirectory(): Promise<string | null> {
@@ -861,6 +938,10 @@ app.whenReady().then(async () => {
     for (const id of ROUTABLE_PROVIDER_IDS) {
       if (credentials[id]) registerProviderAdapter(id);
     }
+    const cloudTokens = getStoredCloudTokens();
+    if (cloudTokens.accessToken) {
+      registerCloudAdapter();
+    }
   }
 
   registerFreeModels(firewall);
@@ -1056,3 +1137,120 @@ ipcMain.handle("onboarding:setCompleted", async (_event, completed: boolean) => 
   if (typeof completed !== "boolean") throw new Error("Invalid onboarding value");
   setOnboardingCompleted(completed);
 });
+
+// --- CodeForge Cloud IPC Handlers ---
+
+ipcMain.handle("cloud:auth:start", async (_event, mockProfile?: any) => {
+  try {
+    const result = await runCodeForgeCloudAuth({
+      cloudApiUrl: CLOUD_API_URL,
+      mockProfile,
+    });
+    saveCloudTokens(result.accessToken, result.refreshToken, result.user);
+    registerCloudAdapter();
+    return { ok: true, user: result.user };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: msg };
+  }
+});
+
+ipcMain.handle("cloud:account:get", async () => {
+  const tokens = getStoredCloudTokens();
+  if (!tokens.accessToken) return null;
+
+  try {
+    const res = await fetch(`${CLOUD_API_URL}/v1/account`, {
+      headers: { Authorization: `Bearer ${tokens.accessToken}` },
+    });
+    if (res.status === 401 && tokens.refreshToken) {
+      const refreshRes = await fetch(`${CLOUD_API_URL}/v1/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: tokens.refreshToken }),
+      });
+      if (refreshRes.ok) {
+        const data = (await refreshRes.json()) as any;
+        saveCloudTokens(data.accessToken, data.refreshToken, data.user);
+        const retryRes = await fetch(`${CLOUD_API_URL}/v1/account`, {
+          headers: { Authorization: `Bearer ${data.accessToken}` },
+        });
+        if (retryRes.ok) return await retryRes.json();
+      }
+    }
+    if (res.ok) {
+      return await res.json();
+    }
+    return null;
+  } catch {
+    return null;
+  }
+});
+
+ipcMain.handle("cloud:auth:logout", async () => {
+  const tokens = getStoredCloudTokens();
+  if (tokens.refreshToken) {
+    try {
+      await fetch(`${CLOUD_API_URL}/v1/auth/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: tokens.refreshToken }),
+      });
+    } catch {}
+  }
+  clearCloudTokens();
+  providerAuthState.delete("codeforge-cloud");
+});
+
+ipcMain.handle("cloud:billing:checkout", async () => {
+  const tokens = getStoredCloudTokens();
+  if (!tokens.accessToken) throw new Error("Must be logged in to CodeForge Cloud");
+  const res = await fetch(`${CLOUD_API_URL}/v1/billing/checkout`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${tokens.accessToken}`,
+    },
+    body: JSON.stringify({
+      planId: "pro",
+      successUrl: "https://codeforge.dev/app/billing/success",
+      cancelUrl: "https://codeforge.dev/app/billing/cancel",
+    }),
+  });
+  if (!res.ok) throw new Error(`Failed to create checkout session: HTTP ${res.status}`);
+  const data = (await res.json()) as { checkoutUrl?: string };
+  if (data.checkoutUrl) {
+    await shell.openExternal(data.checkoutUrl);
+  }
+});
+
+ipcMain.handle("cloud:billing:portal", async () => {
+  const tokens = getStoredCloudTokens();
+  if (!tokens.accessToken) throw new Error("Must be logged in to CodeForge Cloud");
+  const res = await fetch(`${CLOUD_API_URL}/v1/billing/portal`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${tokens.accessToken}`,
+    },
+    body: JSON.stringify({
+      returnUrl: "https://codeforge.dev/app/billing/portal",
+    }),
+  });
+  if (!res.ok) throw new Error(`Failed to create portal session: HTTP ${res.status}`);
+  const data = (await res.json()) as { portalUrl?: string };
+  if (data.portalUrl) {
+    await shell.openExternal(data.portalUrl);
+  }
+});
+
+ipcMain.handle("cloud:usage:get", async () => {
+  const tokens = getStoredCloudTokens();
+  if (!tokens.accessToken) return null;
+  const res = await fetch(`${CLOUD_API_URL}/v1/usage`, {
+    headers: { Authorization: `Bearer ${tokens.accessToken}` },
+  });
+  if (res.ok) return await res.json();
+  return null;
+});
+

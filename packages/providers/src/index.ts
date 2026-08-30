@@ -350,3 +350,5 @@ export {
 } from "./provider-factory.js";
 export * as OpenRouterOAuth from "./openrouter-oauth.js";
 export { redactSecrets } from "./redact.js";
+export { HostedProviderAdapter, type HostedProviderOptions } from "./hosted.js";
+
