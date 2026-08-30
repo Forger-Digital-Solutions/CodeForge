@@ -182,6 +182,42 @@ describe("desktop Cloud endpoint resolution", () => {
     });
   });
 
+  describe("the renderer has no way to supply a Cloud URL at all", () => {
+    // The strongest form of the guarantee is structural: not "the renderer's URL is ignored" but
+    // "there is no channel through which a renderer could send one". These assertions fail the
+    // moment someone adds a parameter to a Cloud IPC channel.
+    const preloadSource = readFileSync(resolve(here, "..", "src", "preload.ts"), "utf8");
+    const mainSource = readFileSync(resolve(here, "..", "src", "main.ts"), "utf8");
+
+    it("exposes no preload Cloud API that forwards an argument", () => {
+      const cloudInvocations = [...preloadSource.matchAll(/ipcRenderer\.invoke\(\s*"(cloud:[^"]+)"([^)]*)\)/g)];
+      expect(cloudInvocations.length, "expected the preload to expose Cloud channels").toBeGreaterThan(0);
+
+      for (const [, channel, extraArgs] of cloudInvocations) {
+        expect(extraArgs.trim(), `preload channel '${channel}' forwards an argument to the main process`).toBe("");
+      }
+    });
+
+    it("registers no main-process Cloud IPC handler that reads a request payload", () => {
+      const handlers = [...mainSource.matchAll(/ipcMain\.handle\(\s*"(cloud:[^"]+)"\s*,\s*async\s*\(([^)]*)\)/g)];
+      expect(handlers.length, "expected main to register Cloud IPC handlers").toBeGreaterThan(0);
+
+      for (const [, channel, params] of handlers) {
+        // A zero-argument handler cannot be influenced by the renderer, even by a compromised one.
+        expect(params.trim(), `Cloud IPC handler '${channel}' accepts renderer-supplied arguments`).toBe("");
+      }
+    });
+
+    it("resolves the endpoint exactly once, from the manifest, in the main process", () => {
+      expect(mainSource).toContain("resolveCloudEndpoint({");
+      expect(mainSource).toContain("const CLOUD_API_URL = RESOLVED_CLOUD_ENDPOINT.url;");
+      // No other assignment may reintroduce an environment-derived endpoint.
+      const cloudUrlAssignments = [...mainSource.matchAll(/const\s+CLOUD_API_URL\s*=/g)];
+      expect(cloudUrlAssignments).toHaveLength(1);
+      expect(mainSource).not.toMatch(/CLOUD_API_URL\s*=\s*.*process\.env/);
+    });
+  });
+
   it("describes the resolution in a log-safe line", () => {
     const line = describeCloudEndpoint(resolveCloudEndpoint({ manifest: PRODUCTION_MANIFEST, env: HOSTILE_OVERRIDE, isPackaged: true }));
     expect(line).toContain("channel=production");
