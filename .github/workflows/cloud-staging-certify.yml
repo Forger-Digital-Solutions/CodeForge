@@ -1,0 +1,159 @@
+# CodeForge Cloud — real staging certification.
+#
+# Manual only, and gated on GitHub Environment secrets that do not exist until a real staging
+# deployment does. This workflow is DELIBERATELY NOT REQUIRED: making it required while its external
+# resources are absent would turn a missing account into a permanently red build.
+#
+# Every step self-skips when its secret is absent, so an accidental dispatch is a no-op rather than a
+# confusing failure. Nothing here is ever billable: Stripe stays in test mode and hosted capacity is
+# limited to verified-$0 models.
+name: cloud-staging-certify
+
+on:
+  workflow_dispatch:
+    inputs:
+      staging_url:
+        description: "Public HTTPS URL of the staging deployment (overrides the environment secret)"
+        required: false
+        type: string
+      validate_database:
+        description: "Also run PostgreSQL deployment validation against DATABASE_URL"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    # A GitHub Environment scopes the secrets and can require an approval before they are exposed.
+    environment: codeforge-cloud-staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Resolve staging target
+        id: target
+        env:
+          SECRET_STAGING_URL: ${{ secrets.CODEFORGE_STAGING_URL }}
+          INPUT_STAGING_URL: ${{ inputs.staging_url }}
+        run: |
+          URL="${INPUT_STAGING_URL:-$SECRET_STAGING_URL}"
+          if [ -z "$URL" ]; then
+            echo "No staging URL configured (input or CODEFORGE_STAGING_URL secret) — nothing to certify."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            # The URL is not a secret, but it is masked anyway so it cannot appear in a log that is
+            # later shared more widely than the environment that holds it.
+            echo "::add-mask::$URL"
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "staging_url=$URL" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Staging preflight
+        if: steps.target.outputs.configured == 'true'
+        env:
+          NODE_ENV: production
+          CODEFORGE_CLOUD_ENV: staging
+          CODEFORGE_PUBLIC_URL: ${{ steps.target.outputs.staging_url }}
+          HOST: 0.0.0.0
+          CODEFORGE_TRUST_PROXY: "true"
+          CODEFORGE_CLOUD_DB_DRIVER: postgres
+          CODEFORGE_CLOUD_DB_SSL: "true"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GITHUB_CLIENT_ID: ${{ secrets.CODEFORGE_GITHUB_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.CODEFORGE_GITHUB_CLIENT_SECRET }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: npm run cloud:staging:preflight
+
+      # Direct database validation is opt-in: it writes (namespaced, self-cleaning) fixtures, and an
+      # operator should choose to point it at a live database rather than have CI decide.
+      - name: PostgreSQL deployment validation
+        if: steps.target.outputs.configured == 'true' && inputs.validate_database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL secret absent — skipping database validation."
+            exit 0
+          fi
+          npm run cloud:pg:validate -- --url "$DATABASE_URL" --json pg-validate.json
+
+      - name: Remote deployment probe
+        if: steps.target.outputs.configured == 'true'
+        run: npm run cloud:remote:probe -- --url "${{ steps.target.outputs.staging_url }}" --json remote-probe.json
+
+      - name: Remote certification
+        if: steps.target.outputs.configured == 'true'
+        env:
+          NODE_ENV: production
+          CODEFORGE_CLOUD_ENV: staging
+          CODEFORGE_PUBLIC_URL: ${{ steps.target.outputs.staging_url }}
+          HOST: 0.0.0.0
+          CODEFORGE_TRUST_PROXY: "true"
+          CODEFORGE_CLOUD_DB_DRIVER: postgres
+          CODEFORGE_CLOUD_DB_SSL: "true"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GITHUB_CLIENT_ID: ${{ secrets.CODEFORGE_GITHUB_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.CODEFORGE_GITHUB_CLIENT_SECRET }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          # A session captured from a previously completed, real GitHub authorization. Without it the
+          # login-dependent stages report BLOCKED — they are never faked.
+          CODEFORGE_STAGING_ACCESS_TOKEN: ${{ secrets.CODEFORGE_STAGING_ACCESS_TOKEN }}
+          CODEFORGE_STAGING_REFRESH_TOKEN: ${{ secrets.CODEFORGE_STAGING_REFRESH_TOKEN }}
+        run: >-
+          npm run cloud:certify:staging --
+          --url "${{ steps.target.outputs.staging_url }}"
+          --json staging-certification.json
+          --md staging-certification.md
+
+      - name: Verify artifacts carry no secrets
+        if: always()
+        run: |
+          # Defense in depth. The receipt writer already validates, redacts, and scans before writing;
+          # this re-checks the bytes that are about to be uploaded as a shareable artifact.
+          node -e '
+            const fs = require("fs");
+            const patterns = [
+              /sk_live_/, /rk_live_/, /\bghp_[A-Za-z0-9]{16,}/, /\bgithub_pat_[A-Za-z0-9_]{20,}/,
+              /\bsk-or-[A-Za-z0-9-]{16,}/, /\bgsk_[A-Za-z0-9]{16,}/, /\bwhsec_[A-Za-z0-9_]{8,}/,
+              /(postgres|postgresql):\/\/[^\s"\x27]*:[^\s"\x27@]*@/, /BEGIN [A-Z ]*PRIVATE KEY/,
+            ];
+            let failures = 0;
+            for (const file of ["staging-certification.json", "staging-certification.md", "remote-probe.json", "pg-validate.json"]) {
+              if (!fs.existsSync(file)) continue;
+              const text = fs.readFileSync(file, "utf8");
+              for (const pattern of patterns) {
+                if (pattern.test(text)) { console.error(`SECRET-SHAPED MATERIAL in ${file}: ${pattern}`); failures++; }
+              }
+            }
+            if (failures > 0) process.exit(1);
+            console.log("certification artifacts are free of secret-shaped material");
+          '
+
+      - name: Upload certification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-certification
+          path: |
+            staging-certification.json
+            staging-certification.md
+            remote-probe.json
+            pg-validate.json
+          if-no-files-found: ignore

@@ -2,8 +2,9 @@
 #
 # The default job is fully DETERMINISTIC and requires NO secrets: it typechecks, builds, and runs the
 # cloud-critical suites (unit, adversarial security, concurrency ledger, failure matrix, provider
-# registry, config) plus the full test run. Real provider/staging smokes are a separate manual,
-# secret-gated job so pull requests never need real credentials.
+# registry, config, and every launch-invariant certification) plus the full test run. Real
+# provider/staging smokes are separate manual, secret-gated jobs so pull requests never need real
+# credentials.
 name: cloud-ci
 
 on:
@@ -12,22 +13,30 @@ on:
     branches: ["master", "main", "feat/codeforge-cloud"]
     paths:
       - "apps/cloud-api/**"
+      - "apps/desktop/src/cloud-**"
+      - "apps/desktop/cloud-endpoints.json"
       - "packages/cloud-*/**"
       - "packages/forge-zero/**"
       - "packages/router/**"
       - "packages/providers/**"
       - "packages/model-registry/**"
       - "packages/workflow/**"
+      - "scripts/cloud/**"
+      - "tests/**"
       - ".github/workflows/cloud-ci.yml"
   pull_request:
     paths:
       - "apps/cloud-api/**"
+      - "apps/desktop/src/cloud-**"
+      - "apps/desktop/cloud-endpoints.json"
       - "packages/cloud-*/**"
       - "packages/forge-zero/**"
       - "packages/router/**"
       - "packages/providers/**"
       - "packages/model-registry/**"
       - "packages/workflow/**"
+      - "scripts/cloud/**"
+      - "tests/**"
 
 jobs:
   cloud-verify:
@@ -59,6 +68,39 @@ jobs:
         run: npm run typecheck
       - name: Build
         run: npm run build
+
+      # Every guarantee this phase closed, run explicitly so a regression names itself rather than
+      # disappearing into a bulk run.
+      - name: OAuth architecture, redirect hardening, and replay protection
+        run: npx vitest run packages/cloud-auth
+
+      - name: Staging tooling (config contract, preflight, remote probe, receipt schema)
+        run: npx vitest run apps/cloud-api/test/staging-tooling.test.ts
+
+      - name: Desktop Cloud endpoint control
+        run: npx vitest run apps/desktop/test/cloud-endpoint.test.ts
+
+      - name: Production identity-bypass guard
+        run: npx vitest run tests/production-auth-bypass-guard.test.ts
+
+      - name: Direct/BYOK independence during Cloud outage
+        run: npx vitest run tests/direct-byok-cloud-outage.test.ts
+
+      - name: Two-client server authority (SQLite + real PostgreSQL)
+        run: npx vitest run tests/two-client-authority.test.ts
+
+      - name: Reservation-before-provider ordering
+        run: npx vitest run tests/reservation-ordering.test.ts
+
+      - name: Exact-model contract end to end
+        run: npx vitest run tests/exact-model-contract.test.ts
+
+      - name: GEMS identity firewall
+        run: npx vitest run tests/gems-identity-firewall.test.ts
+
+      - name: Local reverse-proxy SSE certification
+        run: npx vitest run tests/reverse-proxy-sse.test.ts
+
       - name: Cloud-critical suites (SQLite + Real PostgreSQL)
         run: >-
           npx vitest run
@@ -70,9 +112,101 @@ jobs:
           tests/cloud-concurrency-ledger.test.ts
           tests/cloud-failure-matrix.test.ts
           tests/cloud-postgres-adversarial.test.ts
+
       - name: Full test suite
         run: npm test
 
+      # The launch tooling must run, not merely compile. These invocations assert the tools behave
+      # correctly on an INCOMPLETE environment — the state every deployment starts from.
+      - name: Staging preflight fails closed on an incomplete environment
+        run: |
+          set +e
+          npm run cloud:staging:preflight
+          code=$?
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "::error::staging preflight passed with no staging configuration present"
+            exit 1
+          fi
+          echo "staging preflight correctly returned non-zero ($code) for an incomplete environment"
+
+      - name: Launch checklist reports remaining external actions
+        run: |
+          set +e
+          npm run cloud:launch:checklist
+          code=$?
+          set -e
+          echo "launch checklist reported $code unresolved item(s)"
+
+      - name: PostgreSQL deployment validation against the CI database
+        run: npm run cloud:pg:validate -- --url "$CODEFORGE_TEST_POSTGRES_URL"
+
+  # Builds the deployment image and proves it actually boots and serves against real PostgreSQL.
+  # No secrets: the image is exercised with throwaway staging-shaped configuration.
+  docker-runtime-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build the Cloud image
+        run: docker build -f Dockerfile.cloud -t codeforge-cloud-api:ci .
+
+      - name: Start PostgreSQL
+        run: |
+          docker network create codeforge-ci-net
+          docker run -d --name codeforge-ci-pg --network codeforge-ci-net \
+            -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=cipassword -e POSTGRES_DB=codeforge_ci \
+            postgres:16-alpine
+          for i in $(seq 1 30); do
+            if docker exec codeforge-ci-pg pg_isready -U postgres >/dev/null 2>&1; then break; fi
+            sleep 2
+          done
+
+      - name: Run the Cloud container against real PostgreSQL
+        run: |
+          docker run -d --name codeforge-ci-api --network codeforge-ci-net -p 3220:3220 \
+            -e NODE_ENV=production \
+            -e CODEFORGE_CLOUD_ENV=staging \
+            -e CODEFORGE_PUBLIC_URL=https://codeforge-ci.example.com \
+            -e HOST=0.0.0.0 -e PORT=3220 \
+            -e CODEFORGE_TRUST_PROXY=true \
+            -e CODEFORGE_CLOUD_DB_DRIVER=postgres \
+            -e DATABASE_URL="postgresql://postgres:cipassword@codeforge-ci-pg:5432/codeforge_ci" \
+            -e CODEFORGE_CLOUD_DB_SSL=false \
+            -e JWT_SECRET="codeforge-ci-throwaway-signing-secret-0123456789" \
+            -e GITHUB_CLIENT_ID="Iv1.codeforgeci" \
+            -e GITHUB_CLIENT_SECRET="codeforge-ci-throwaway-client-secret" \
+            -e STRIPE_SECRET_KEY="sk_test_codeforge_ci" \
+            -e STRIPE_WEBHOOK_SECRET="whsec_codeforge_ci" \
+            codeforge-cloud-api:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3220/health/live >/dev/null 2>&1; then break; fi
+            sleep 2
+          done
+          docker logs codeforge-ci-api
+
+      - name: Remote probe against the running container
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          npm run cloud:remote:probe -- --url http://127.0.0.1:3220 --allow-insecure --json remote-probe.json
+
+      - name: Upload probe receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-runtime-probe
+          path: remote-probe.json
+          if-no-files-found: ignore
+
+      - name: Teardown
+        if: always()
+        run: |
+          docker rm -f codeforge-ci-api codeforge-ci-pg || true
+          docker network rm codeforge-ci-net || true
 
   # Manual only, and each step self-skips when its credential secret is absent. Never runs on PRs.
   real-staging-smoke:

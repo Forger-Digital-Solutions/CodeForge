@@ -110,17 +110,47 @@ included-usage policy before deployment; do not create a resource that can bill 
 
 ---
 
-## 4. GitHub OAuth (desktop loopback flow)
+## 4. GitHub OAuth (server-brokered confidential-client flow)
 
-CodeForge Cloud is the OAuth transaction authority (PKCE `state` + `code_challenge` are minted and
-consumed server-side). The desktop uses an ephemeral loopback redirect
-(`http://127.0.0.1:<port>/auth/callback`). Configure the GitHub OAuth App callback as
-`http://127.0.0.1/auth/callback` — GitHub permits the native-app loopback flow to use a dynamically
-assigned port. CodeForge accepts only `http://127.0.0.1:<port>/auth/callback`, with no credentials,
-query, or fragment, so callers cannot turn the API into an OAuth redirector. Do not configure the
-staging API URL as the GitHub callback for this flow. Access tokens are short-lived JWTs; refresh
-tokens rotate on every use and are stored by the desktop in the OS keychain (SafeStorage) — never in
-the renderer.
+CodeForge Cloud is a **confidential client**: it holds the GitHub client secret, and the desktop
+never sees it. There are three distinct callbacks, and only one of them is registered with GitHub.
+
+| Concept | Value | Registered with GitHub? |
+|---------|-------|-------------------------|
+| GitHub authorization callback | `https://<CODEFORGE_PUBLIC_URL>/v1/auth/github/callback` | **Yes — this exact URL** |
+| Cloud OAuth callback endpoint | `GET /v1/auth/github/callback` | same as above |
+| Desktop loopback completion | `http://127.0.0.1:<ephemeral port>/auth/callback` | **No — never** |
+
+**Register only the public HTTPS Cloud callback.** The desktop loopback is deliberately not
+registered and is never sent to GitHub: GitHub matches a registered callback by scheme, host **and
+port**, and the desktop binds a fresh ephemeral port per login attempt, so it could not be registered
+in advance.
+
+The flow:
+
+1. The desktop generates its **own** PKCE pair and opens a loopback listener, then calls
+   `POST /v1/auth/start` with the redirect URI and its code challenge.
+2. The Cloud validates the loopback URI against a strict policy (scheme `http`, host literal
+   `127.0.0.1`, path exactly `/auth/callback`, non-privileged port, no credentials/query/fragment),
+   generates a **separate, server-owned** PKCE pair for the GitHub leg, persists the transaction, and
+   returns the GitHub authorize URL.
+3. GitHub redirects to the public Cloud callback. The Cloud consumes the transaction (single-use),
+   exchanges the code with its client secret and server-owned verifier, provisions the account, and
+   mints a **single-use, PKCE-bound, 120-second desktop authorization code**.
+4. The Cloud 302s to the loopback URI *recorded in the transaction* — never to anything from the
+   request — carrying only that one-time code.
+5. The desktop redeems it at `POST /v1/auth/exchange` with the verifier that never left the process.
+
+No reusable credential is ever placed in a URL, so nothing of value survives in browser history,
+referrer headers, or platform access logs. Access tokens are short-lived JWTs; refresh tokens rotate
+on every use and are stored by the desktop in the OS keychain (SafeStorage) — never in the renderer.
+
+Refresh-token reuse is distinguished by revocation reason: reusing a **rotated** token is treated as
+theft and revokes the whole session family, while reusing a token from an explicit **logout** revokes
+nothing else — so signing out on one machine does not sign the account out everywhere.
+
+Run `npm run cloud:staging:preflight` to print the exact callback URL to register, derived from your
+configured `CODEFORGE_PUBLIC_URL`.
 
 ---
 
