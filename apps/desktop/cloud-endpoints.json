@@ -1,0 +1,7 @@
+{
+  "$comment": "Build-time CodeForge Cloud endpoint manifest. The packaging pipeline rewrites `channel` and fills the matching endpoint for staging/production releases. The renderer never reads this file, and a packaged staging/production build ignores CODEFORGE_CLOUD_URL entirely. Staging/production endpoints are intentionally absent until a real deployment exists: a build for those channels must fail closed rather than fall back to a local address.",
+  "channel": "development",
+  "endpoints": {
+    "development": "http://127.0.0.1:3220"
+  }
+}

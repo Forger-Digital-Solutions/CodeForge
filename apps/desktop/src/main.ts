@@ -16,6 +16,13 @@ import { InMemoryProviderCatalog, createMockProvider, createOpencodeAdapter, cre
 import { NormalizedModelRegistry, discoverAndVerifyFree, verifyAllowanceViaProbe, getProviderPolicy, type LiveModelInfo } from "@codeforge/model-registry";
 import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
 import { runCodeForgeCloudAuth, type CloudAuthResult } from "./cloud-auth-flow.js";
+import {
+  resolveCloudEndpoint,
+  parseCloudEndpointManifest,
+  describeCloudEndpoint,
+  CloudEndpointError,
+  type CloudEndpointManifest,
+} from "./cloud-endpoint.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -43,7 +50,41 @@ const ONBOARDING_COMPLETED_KEY = "codeforge:onboarding-completed";
 const CLOUD_ACCESS_TOKEN_KEY = "codeforge:cloud-access-token";
 const CLOUD_REFRESH_TOKEN_KEY = "codeforge:cloud-refresh-token";
 const CLOUD_USER_KEY = "codeforge:cloud-user";
-const CLOUD_API_URL = (process.env.CODEFORGE_CLOUD_URL || process.env.CODEFORGE_CLOUD_API_URL || "http://127.0.0.1:3220").replace(/\/$/, "");
+/**
+ * Resolve the Cloud endpoint ONCE, in the main process, from the build manifest. The renderer has no
+ * IPC channel that accepts a Cloud URL, and a packaged staging/production build ignores the
+ * environment override entirely — so privileged authentication and accounting traffic cannot be
+ * redirected by anything the user or a page can reach.
+ */
+function loadCloudEndpointManifest(): CloudEndpointManifest {
+  // Packaged builds read the manifest from the app resources; from source it sits next to package.json.
+  const candidates = [
+    path.join(app.getAppPath(), "cloud-endpoints.json"),
+    path.join(__dirname, "..", "cloud-endpoints.json"),
+    path.join(__dirname, "..", "..", "cloud-endpoints.json"),
+  ];
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(candidate)) {
+        return parseCloudEndpointManifest(JSON.parse(fs.readFileSync(candidate, "utf8")));
+      }
+    } catch (err) {
+      // A manifest that exists but is malformed is a build error, not something to shrug off:
+      // guessing the endpoint is exactly the failure mode this module exists to prevent.
+      throw new CloudEndpointError(`Invalid CodeForge Cloud endpoint manifest at ${candidate}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+  // No manifest at all: treat this as a development checkout.
+  return { channel: "development", endpoints: {} };
+}
+
+const RESOLVED_CLOUD_ENDPOINT = resolveCloudEndpoint({
+  manifest: loadCloudEndpointManifest(),
+  env: process.env,
+  isPackaged: app.isPackaged,
+});
+const CLOUD_API_URL = RESOLVED_CLOUD_ENDPOINT.url;
+console.log(`[CodeForge] cloud endpoint ${describeCloudEndpoint(RESOLVED_CLOUD_ENDPOINT)}`);
 const ALLOWED_PROVIDER_IDS = new Set([
   "opencode",
   "openrouter",

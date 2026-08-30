@@ -20,7 +20,8 @@
     "smoke:interrupt": "node scripts/packaged-smoke.js interrupt",
     "smoke:recover": "node scripts/packaged-smoke.js recover",
     "smoke:all": "node scripts/packaged-smoke.js full && node scripts/packaged-smoke.js interrupt && node scripts/packaged-smoke.js recover",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "build:channel": "node scripts/set-build-channel.mjs"
   },
   "dependencies": {
     "@codeforge/ui": "*",
@@ -75,6 +76,7 @@
     },
     "files": [
       "apps/desktop/dist/**/*",
+      "apps/desktop/cloud-endpoints.json",
       "!apps/desktop/dist/**/*.map",
       "!apps/desktop/dist/**/*.d.ts",
       "!apps/desktop/dist/preload.js",
