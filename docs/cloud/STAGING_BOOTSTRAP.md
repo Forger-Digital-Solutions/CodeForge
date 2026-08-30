@@ -74,7 +74,9 @@ work. What the platform must provide:
 
 [`render.yaml`](../../render.yaml) is the canonical Render Blueprint. It creates only the free Web
 Service; supply a durable Neon or Supabase connection string as `DATABASE_URL` during the initial
-Blueprint prompt. Confirm that Render's current free-tier terms yourself before applying it.
+Blueprint prompt. On Render, the server uses the actual runtime-assigned `RENDER_EXTERNAL_URL` for
+its OAuth origin, so no hostname is predicted during Blueprint creation. Confirm Render's current
+free-tier terms yourself before applying it.
 
 ## 2. Obtain persistent PostgreSQL
 
@@ -100,7 +102,7 @@ Set these in your platform's secret store. Never commit them, and never bake the
 |----------|-------|
 | `NODE_ENV` | `production` |
 | `CODEFORGE_CLOUD_ENV` | `staging` |
-| `CODEFORGE_PUBLIC_URL` | the deployment's public HTTPS origin, e.g. `https://cloud.example.com` |
+| `CODEFORGE_PUBLIC_URL` | the deployment's public HTTPS origin, e.g. `https://cloud.example.com`; Render uses its runtime `RENDER_EXTERNAL_URL` when this is unset |
 | `HOST` | `0.0.0.0` |
 | `CODEFORGE_TRUST_PROXY` | `true` behind a platform proxy, `false` otherwise — must be explicit |
 | `CODEFORGE_CLOUD_DB_DRIVER` | `postgres` |

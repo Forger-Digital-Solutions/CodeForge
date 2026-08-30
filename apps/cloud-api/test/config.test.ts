@@ -70,6 +70,15 @@ describe("loadCloudRuntimeConfig", () => {
     expect(loadCloudRuntimeConfig({ ...prodBase, CODEFORGE_PUBLIC_URL: "https://cloud.example.com/" }).publicUrl).toBe("https://cloud.example.com");
   });
 
+  it("uses Render's runtime-assigned HTTPS URL without predicting a hostname", () => {
+    const config = loadCloudRuntimeConfig({
+      ...prodBase,
+      CODEFORGE_PUBLIC_URL: undefined,
+      RENDER_EXTERNAL_URL: "https://actual-render-host.onrender.com",
+    });
+    expect(config.publicUrl).toBe("https://actual-render-host.onrender.com");
+  });
+
   it("permits a plain-http loopback public URL only outside staging/production", () => {
     expect(loadCloudRuntimeConfig({ CODEFORGE_PUBLIC_URL: "http://127.0.0.1:3220" }).publicUrl).toBe("http://127.0.0.1:3220");
     expect(() => loadCloudRuntimeConfig({ ...prodBase, CODEFORGE_PUBLIC_URL: "http://127.0.0.1:3220" })).toThrow(/HTTPS/);

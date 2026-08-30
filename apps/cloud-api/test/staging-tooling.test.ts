@@ -117,6 +117,15 @@ describe("staging preflight", () => {
     expect(callback?.message).toContain("https://codeforge-cloud.example.com/v1/auth/github/callback");
   });
 
+  it("accepts Render's runtime-assigned public URL without a predicted hostname", () => {
+    const env = { ...COMPLETE_STAGING_ENV };
+    delete env.CODEFORGE_PUBLIC_URL;
+    env.RENDER_EXTERNAL_URL = "https://actual-render-host.onrender.com";
+    const report = runStagingPreflight(env);
+    expect(report.ok, formatPreflightReport(report)).toBe(true);
+    expect(report.checks.find((c) => c.id === "public_url.https")?.message).toContain("RENDER_EXTERNAL_URL");
+  });
+
   it("NEVER prints a secret value, in any check or in the rendered report", () => {
     const report = runStagingPreflight(COMPLETE_STAGING_ENV);
     const rendered = formatPreflightReport(report);

@@ -101,13 +101,14 @@ export function runStagingPreflight(env: Env = process.env): PreflightReport {
   }
 
   // --- Public URL & OAuth callback ----------------------------------------------------------
-  const publicUrlRaw = env.CODEFORGE_PUBLIC_URL;
+  const publicUrlRaw = env.CODEFORGE_PUBLIC_URL ?? env.RENDER_EXTERNAL_URL;
   if (!publicUrlRaw) {
-    fail("public_url.present", "CODEFORGE_PUBLIC_URL is not set");
+    fail("public_url.present", "CODEFORGE_PUBLIC_URL is not set (and Render did not supply RENDER_EXTERNAL_URL)");
   } else {
     try {
       const callbackUrl = buildCloudGitHubCallbackUrl(publicUrlRaw, { requireHttps: true });
-      pass("public_url.https", `CODEFORGE_PUBLIC_URL is a valid HTTPS origin (${new URL(publicUrlRaw).origin})`);
+      const source = env.CODEFORGE_PUBLIC_URL ? "CODEFORGE_PUBLIC_URL" : "RENDER_EXTERNAL_URL";
+      pass("public_url.https", `${source} is a valid HTTPS origin (${new URL(publicUrlRaw).origin})`);
       pass("oauth.callback_url", `GitHub OAuth App callback must be registered as: ${callbackUrl}`);
     } catch (err) {
       fail("public_url.https", redactSecrets(err instanceof Error ? err.message : String(err)));
@@ -240,7 +241,11 @@ export function runStagingPreflight(env: Env = process.env): PreflightReport {
   // --- Contract completeness ----------------------------------------------------------------------
   // Anything the contract marks `required` and that no dedicated check above already covered.
   const covered = new Set(checks.map((c) => c.id));
-  const uncoveredRequired = STAGING_CONFIG_CONTRACT.filter((v) => v.requirement === "required" && !present(env, v.name)).map((v) => v.name);
+  const uncoveredRequired = STAGING_CONFIG_CONTRACT.filter((v) => {
+    if (v.requirement !== "required") return false;
+    if (v.name === "CODEFORGE_PUBLIC_URL") return !present(env, "CODEFORGE_PUBLIC_URL") && !present(env, "RENDER_EXTERNAL_URL");
+    return !present(env, v.name);
+  }).map((v) => v.name);
   if (uncoveredRequired.length === 0) {
     pass("contract.required_complete", `all ${STAGING_CONFIG_CONTRACT.filter((v) => v.requirement === "required").length} required contract variables are present`);
   } else {

@@ -72,6 +72,7 @@ const EnvSchema = z.object({
   HOST: z.string().optional(),
   PORT: z.string().optional(),
   CODEFORGE_PUBLIC_URL: z.string().optional(),
+  RENDER_EXTERNAL_URL: z.string().optional(),
   CODEFORGE_CLOUD_DB_DRIVER: z.enum(["sqlite", "postgres"]).optional(),
   DATABASE_URL: z.string().optional(),
   CODEFORGE_CLOUD_DB_SSL: z.string().optional(),
@@ -189,10 +190,14 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
   // without a valid public HTTPS origin cannot complete authentication at all — fail at boot rather
   // than at the first login attempt.
   let publicUrl: string | undefined;
-  if (e.CODEFORGE_PUBLIC_URL) {
+  // Render supplies its assigned HTTPS URL only at runtime. Honor it as a platform-specific
+  // fallback so the first deploy never needs to predict an onrender.com hostname; all other
+  // platforms still provide CODEFORGE_PUBLIC_URL explicitly.
+  const configuredPublicUrl = e.CODEFORGE_PUBLIC_URL ?? e.RENDER_EXTERNAL_URL;
+  if (configuredPublicUrl) {
     let parsedPublic: URL;
     try {
-      parsedPublic = new URL(e.CODEFORGE_PUBLIC_URL);
+      parsedPublic = new URL(configuredPublicUrl);
     } catch {
       throw new CloudConfigError("CODEFORGE_PUBLIC_URL must be an absolute URL (e.g. https://cloud.example.com).");
     }
