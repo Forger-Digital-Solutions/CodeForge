@@ -135,7 +135,6 @@ describe("staging preflight", () => {
     ["JWT_SECRET", "session.secret_present"],
     ["GITHUB_CLIENT_ID", "oauth.client_id"],
     ["GITHUB_CLIENT_SECRET", "oauth.client_secret"],
-    ["STRIPE_WEBHOOK_SECRET", "stripe.webhook_secret"],
     ["CODEFORGE_TRUST_PROXY", "network.trust_proxy"],
   ])("fails when %s is missing", (variable, expectedCheckId) => {
     const env = { ...COMPLETE_STAGING_ENV };
@@ -144,6 +143,21 @@ describe("staging preflight", () => {
 
     expect(report.ok).toBe(false);
     expect(report.checks.find((c) => c.id === expectedCheckId)?.status).toBe("FAIL");
+  });
+
+  it("permits staging Hosted Free without Stripe, but rejects a partial Stripe configuration", () => {
+    const noStripe = { ...COMPLETE_STAGING_ENV };
+    delete noStripe.STRIPE_SECRET_KEY;
+    delete noStripe.STRIPE_WEBHOOK_SECRET;
+    const absent = runStagingPreflight(noStripe);
+    expect(absent.ok, formatPreflightReport(absent)).toBe(true);
+    expect(absent.checks.find((c) => c.id === "stripe.disabled")?.status).toBe("PASS");
+
+    const partial = { ...COMPLETE_STAGING_ENV };
+    delete partial.STRIPE_WEBHOOK_SECRET;
+    const partialReport = runStagingPreflight(partial);
+    expect(partialReport.ok).toBe(false);
+    expect(partialReport.checks.find((c) => c.id === "stripe.configuration_complete")?.status).toBe("FAIL");
   });
 
   it("fails a live Stripe key regardless of everything else being correct", () => {

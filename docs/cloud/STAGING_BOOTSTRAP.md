@@ -72,8 +72,9 @@ work. What the platform must provide:
 - an inbound port from `PORT`, with the process bound to `0.0.0.0`
 - persistent enough uptime for a login to complete
 
-`deploy/render.yaml` is an **example manifest** for one such platform. Confirm that platform's current
-free-tier terms yourself before applying it; do not assume any vendor remains free.
+[`render.yaml`](../../render.yaml) is the canonical Render Blueprint. It creates only the free Web
+Service; supply a durable Neon or Supabase connection string as `DATABASE_URL` during the initial
+Blueprint prompt. Confirm that Render's current free-tier terms yourself before applying it.
 
 ## 2. Obtain persistent PostgreSQL
 
@@ -108,8 +109,8 @@ Set these in your platform's secret store. Never commit them, and never bake the
 | `JWT_SECRET` | 32+ random characters — **secret**. Rotating it signs everyone out |
 | `GITHUB_CLIENT_ID` | from step 5 |
 | `GITHUB_CLIENT_SECRET` | from step 5 — **secret** |
-| `STRIPE_SECRET_KEY` | **`sk_test_…` only.** Live keys are refused at boot — **secret** |
-| `STRIPE_WEBHOOK_SECRET` | test-mode webhook signing secret — **secret** |
+| `STRIPE_SECRET_KEY` | optional — **`sk_test_…` only**, and only when Stripe test billing is deliberately enabled — **secret** |
+| `STRIPE_WEBHOOK_SECRET` | optional companion to `STRIPE_SECRET_KEY` — **secret** |
 
 **Strongly recommended** — without at least one, Hosted Free reports unavailable:
 
@@ -172,7 +173,7 @@ npm run cloud:staging:preflight
 ```
 
 Validates the whole configuration contract before traffic: public URL, database TLS, session secret
-strength, OAuth credentials, Stripe test-mode, provider capacity, trust-proxy explicitness, and CORS
+strength, OAuth credentials, optional Stripe test-mode, provider capacity, trust-proxy explicitness, and CORS
 safety. It prints the exact GitHub callback URL to register, returns non-zero on any unsafe or
 incomplete configuration, and **never prints a secret value** — secret variables are reported by
 presence and length only.

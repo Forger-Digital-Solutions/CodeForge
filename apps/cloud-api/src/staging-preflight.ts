@@ -183,20 +183,20 @@ export function runStagingPreflight(env: Env = process.env): PreflightReport {
     fail("oauth.client_secret", "GITHUB_CLIENT_SECRET is not set");
   }
 
-  // --- Stripe (test mode) -----------------------------------------------------------------------
-  if (present(env, "STRIPE_SECRET_KEY")) {
+  // --- Stripe (optional, test mode only) ---------------------------------------------------------
+  const hasStripeSecretKey = present(env, "STRIPE_SECRET_KEY");
+  const hasStripeWebhookSecret = present(env, "STRIPE_WEBHOOK_SECRET");
+  if (!hasStripeSecretKey && !hasStripeWebhookSecret) {
+    pass("stripe.disabled", "Stripe TEST billing is not configured; Hosted Free remains available without billing infrastructure");
+  } else if (!hasStripeSecretKey || !hasStripeWebhookSecret) {
+    fail("stripe.configuration_complete", "Stripe billing requires both STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET when configured");
+  } else if (hasStripeSecretKey) {
     if (env.STRIPE_SECRET_KEY!.startsWith("sk_test_") || env.STRIPE_SECRET_KEY!.startsWith("rk_test_")) {
       pass("stripe.test_mode", "Stripe secret key is a TEST-mode key");
     } else {
       fail("stripe.test_mode", "STRIPE_SECRET_KEY is not a recognizable test-mode key (expected sk_test_/rk_test_ prefix)");
     }
-  } else {
-    fail("stripe.key_present", "STRIPE_SECRET_KEY is not set");
-  }
-  if (present(env, "STRIPE_WEBHOOK_SECRET")) {
     pass("stripe.webhook_secret", "Stripe webhook signing secret present");
-  } else {
-    fail("stripe.webhook_secret", "STRIPE_WEBHOOK_SECRET is not set");
   }
 
   // --- Server-owned Hosted Free capacity ---------------------------------------------------------

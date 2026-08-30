@@ -55,7 +55,7 @@ See [`.env.example`](../.env.example) for the full annotated list. Server-side e
 | `CODEFORGE_CLOUD_DB_SSL` | non-loopback postgres | certificate-validated TLS; staging/production reject a remote URL that disables or weakens TLS |
 | `JWT_SECRET` | yes | ≥ 32 strong chars (not the dev default) |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | yes | GitHub OAuth app |
-| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | yes | **TEST mode only** — live keys are refused at boot |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | optional, together | **TEST mode only** — billing endpoints stay disabled when absent; live keys are refused at boot |
 | `OPENROUTER_API_KEY`, `GROQ_API_KEY`, … | ≥ 1 for Hosted Free | server-owned provider keys (never sent to clients) |
 | `CODEFORGE_HOSTED_INFERENCE_ENABLED` / `CODEFORGE_HOSTED_FREE_ENABLED` | no | operator kill switches (default on) |
 | `CODEFORGE_MAX_REQUEST_COST_USD` / `CODEFORGE_GLOBAL_DAILY_SPEND_LIMIT_USD` | no | owner-spend firewall caps |
@@ -103,10 +103,10 @@ provided at run time, never baked into the image.
 
 ### Platform (Render)
 
-[`deploy/render.yaml`](../deploy/render.yaml) is a staging blueprint, not a completed deployment.
-Render currently offers free web and Postgres instances, but the database expires after 30 days and
-has no backups or managed connection pooling. Confirm the current plan terms and the workspace's
-included-usage policy before deployment; do not create a resource that can bill the owner.
+[`render.yaml`](../render.yaml) is a staging Blueprint for the public Docker runtime, not a completed
+deployment. It intentionally requires an external durable PostgreSQL `DATABASE_URL` rather than
+provisioning a Render database. Confirm the current plan terms and the workspace's included-usage
+policy before deployment; do not create a resource that can bill the owner.
 
 ---
 

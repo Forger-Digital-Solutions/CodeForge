@@ -77,7 +77,11 @@ const providerKeys = ["OPENROUTER_API_KEY", "GROQ_API_KEY"].filter(has);
 add(providerKeys.length > 0 ? "PASS" : "FAIL", "Provider server credential", providerKeys.join(", ") || "OPENROUTER_API_KEY and/or GROQ_API_KEY", true);
 
 const stripeReady = has("STRIPE_SECRET_KEY") && has("STRIPE_WEBHOOK_SECRET");
-add(stripeReady ? "PASS" : "FAIL", "Stripe TEST-mode credentials", "STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET", true);
+add(
+  "PASS",
+  "Stripe TEST-mode billing",
+  stripeReady ? "configured (optional; TEST mode only)" : "not configured (optional; Hosted Free remains available)",
+);
 
 // --- Output -------------------------------------------------------------------------------------
 const width = Math.max(...rows.map((r) => r.label.length));

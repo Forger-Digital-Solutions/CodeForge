@@ -89,7 +89,11 @@ export interface CodeForgeCloudServerConfig {
    * cannot start without it. Defaults to the loopback bind address for local development.
    */
   publicUrl?: string;
-  stripeConfig?: StripeConfig;
+  /**
+   * Stripe TEST-mode configuration. Set this to null to explicitly disable billing, including in
+   * local tests. Hosted Free stays independent of this integration.
+   */
+  stripeConfig?: StripeConfig | null;
   firewallManager?: CloudFirewallManager;
   /** Operator kill switches / spend limits applied when this server owns its firewall manager. */
   killSwitches?: Partial<CloudKillSwitchConfig>;
@@ -115,7 +119,7 @@ export class CodeForgeCloudServer {
   public readonly auth: AuthService;
   public readonly entitlements: EntitlementService;
   public readonly usage: UsageEngine;
-  public readonly billing: StripeBillingService;
+  public readonly billing?: StripeBillingService;
   public readonly firewallManager: CloudFirewallManager;
   public readonly gateway: GatewayService;
   public readonly providerRegistry?: CloudProviderRegistry;
@@ -145,15 +149,20 @@ export class CodeForgeCloudServer {
       throw new Error("Missing GITHUB_CLIENT_SECRET for production cloud server.");
     }
 
-    const stripeConfig = config.stripeConfig ?? {
-      secretKey: isProduction ? (process.env.STRIPE_SECRET_KEY as string) : "sk_test_mock_123",
-      webhookSecret: isProduction ? (process.env.STRIPE_WEBHOOK_SECRET as string) : "whsec_mock_456",
-      proPriceId: isProduction ? (process.env.STRIPE_PRO_PRICE_ID as string) : "price_pro_test",
-      creditPackPriceId: isProduction ? (process.env.STRIPE_CREDIT_PRICE_ID as string) : "price_credits_test",
-    };
+    const stripeConfig =
+      config.stripeConfig === undefined
+        ? isProduction && !process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_WEBHOOK_SECRET
+          ? undefined
+          : {
+              secretKey: isProduction ? (process.env.STRIPE_SECRET_KEY as string) : "sk_test_mock_123",
+              webhookSecret: isProduction ? (process.env.STRIPE_WEBHOOK_SECRET as string) : "whsec_mock_456",
+              proPriceId: isProduction ? (process.env.STRIPE_PRO_PRICE_ID as string) : "price_pro_test",
+              creditPackPriceId: isProduction ? (process.env.STRIPE_CREDIT_PRICE_ID as string) : "price_credits_test",
+            }
+        : config.stripeConfig;
 
-    if (isProduction && (!stripeConfig.secretKey || !stripeConfig.webhookSecret)) {
-      throw new Error("Missing Stripe test-mode credentials for production cloud server.");
+    if (stripeConfig && (!stripeConfig.secretKey || !stripeConfig.webhookSecret)) {
+      throw new Error("Stripe billing requires both test-mode credentials when configured.");
     }
 
     this.host = config.host ?? "127.0.0.1";
@@ -195,7 +204,7 @@ export class CodeForgeCloudServer {
       fetchFn: config.fetchFn,
     });
 
-    this.billing = new StripeBillingService(this.db, this.entitlements, stripeConfig);
+    this.billing = stripeConfig ? new StripeBillingService(this.db, this.entitlements, stripeConfig) : undefined;
 
     this.gateway = new GatewayService({
       firewallManager: this.firewallManager,
@@ -492,7 +501,7 @@ export class CodeForgeCloudServer {
             apiVersion: "1.0.0",
             serverVersion: "0.2.0",
             hostedInferenceReady: availableFreeCount > 0,
-            features: ["HOSTED_FREE", "STRIPE_BILLING", "DYNAMIC_MODELS"],
+            features: ["HOSTED_FREE", "DYNAMIC_MODELS", ...(this.billing ? ["STRIPE_BILLING"] : [])],
           },
           corsOrigin,
         );
@@ -621,6 +630,10 @@ export class CodeForgeCloudServer {
 
       // 5. Billing Endpoints
       if (url.pathname === "/v1/billing/checkout" && method === "POST") {
+        if (!this.billing) {
+          this.sendJson(res, 503, { error: "Stripe billing is not configured for this deployment" }, corsOrigin);
+          return;
+        }
         const userId = this.authenticateRequest(req);
         const body = await this.readJson(req, BillingCheckoutSchema);
         const session = await this.billing.createCheckoutSession({
@@ -634,6 +647,10 @@ export class CodeForgeCloudServer {
       }
 
       if (url.pathname === "/v1/billing/portal" && method === "POST") {
+        if (!this.billing) {
+          this.sendJson(res, 503, { error: "Stripe billing is not configured for this deployment" }, corsOrigin);
+          return;
+        }
         const userId = this.authenticateRequest(req);
         const body = await this.readJson(req, BillingPortalSchema);
         const session = await this.billing.createCustomerPortalSession({
@@ -645,6 +662,10 @@ export class CodeForgeCloudServer {
       }
 
       if (url.pathname === "/v1/billing/webhook" && method === "POST") {
+        if (!this.billing) {
+          this.sendJson(res, 503, { error: "Stripe billing is not configured for this deployment" }, corsOrigin);
+          return;
+        }
         const rawBody = await this.readRawBody(req);
         const sigHeader = (req.headers["stripe-signature"] as string) || "";
         const isValid = this.billing.verifyWebhookSignature(rawBody, sigHeader);

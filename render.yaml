@@ -1,0 +1,47 @@
+# CodeForge Cloud API — Render Free staging Blueprint.
+#
+# This creates only the public Docker runtime. Persistent PostgreSQL is supplied separately by
+# Neon or Supabase through the encrypted DATABASE_URL field; no short-lived Render database is
+# provisioned by this Blueprint.
+services:
+  - type: web
+    name: codeforge-cloud-staging
+    runtime: docker
+    repo: https://github.com/Forger-Digital-Solutions/CodeForge.git
+    branch: feat/codeforge-cloud
+    dockerfilePath: ./Dockerfile.cloud
+    plan: free
+    healthCheckPath: /health/live
+    autoDeploy: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CODEFORGE_CLOUD_ENV
+        value: staging
+      - key: HOST
+        value: 0.0.0.0
+      - key: CODEFORGE_REQUEST_TIMEOUT_MS
+        value: "60000"
+      - key: CODEFORGE_CLOUD_DB_DRIVER
+        value: postgres
+      - key: CODEFORGE_CLOUD_DB_SSL
+        value: "true"
+      - key: CODEFORGE_TRUST_PROXY
+        value: "true"
+      # Render assigns the final hostname during creation. Supply its HTTPS origin at the
+      # initial Blueprint prompt; this is the GitHub OAuth callback origin.
+      - key: CODEFORGE_PUBLIC_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      # At least one server-owned provider credential is required before Hosted Free is ready.
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false

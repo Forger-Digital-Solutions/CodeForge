@@ -39,7 +39,8 @@ export interface CloudRuntimeConfig {
     clientSecret?: string;
   };
 
-  stripe: {
+  /** Optional Stripe TEST-mode billing integration. Hosted Free does not depend on it. */
+  stripe?: {
     secretKey: string;
     webhookSecret: string;
     proPriceId: string;
@@ -213,20 +214,35 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
     throw new CloudConfigError("GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are required in staging/production.");
   }
 
-  // --- Stripe (TEST MODE ONLY) ----------------------------------------------------------------
-  const secretKey = e.STRIPE_SECRET_KEY ?? (isProdLike ? "" : "sk_test_mock_123");
-  if (/^(sk|rk)_live_/.test(secretKey)) {
+  // --- Stripe (optional, TEST MODE ONLY) ------------------------------------------------------
+  // Hosted Free must remain usable without billing infrastructure. If an operator enables Stripe
+  // separately, require a complete TEST-mode configuration rather than accepting a partial one.
+  const hasStripeSecretKey = Boolean(e.STRIPE_SECRET_KEY);
+  const hasStripeWebhookSecret = Boolean(e.STRIPE_WEBHOOK_SECRET);
+  if (e.STRIPE_SECRET_KEY && /^(sk|rk)_live_/.test(e.STRIPE_SECRET_KEY)) {
     throw new CloudConfigError("Live Stripe keys (sk_live_/rk_live_) are refused. CodeForge Cloud runs in Stripe TEST MODE only.");
   }
-  if (isProdLike && (!secretKey || !e.STRIPE_WEBHOOK_SECRET)) {
-    throw new CloudConfigError("STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET (test-mode) are required in staging/production.");
+  if (hasStripeSecretKey !== hasStripeWebhookSecret) {
+    throw new CloudConfigError("Stripe billing requires both STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET when it is configured.");
   }
-  const stripe = {
-    secretKey,
-    webhookSecret: e.STRIPE_WEBHOOK_SECRET ?? "whsec_mock_456",
-    proPriceId: e.STRIPE_PRO_PRICE_ID ?? "price_pro_test",
-    creditPackPriceId: e.STRIPE_CREDIT_PRICE_ID ?? "price_credits_test",
-  };
+  if (e.STRIPE_SECRET_KEY && !/^(sk|rk)_test_/.test(e.STRIPE_SECRET_KEY)) {
+    throw new CloudConfigError("STRIPE_SECRET_KEY must be a Stripe TEST-mode key (sk_test_/rk_test_) when billing is configured.");
+  }
+  const stripe = hasStripeSecretKey
+    ? {
+        secretKey: e.STRIPE_SECRET_KEY!,
+        webhookSecret: e.STRIPE_WEBHOOK_SECRET!,
+        proPriceId: e.STRIPE_PRO_PRICE_ID ?? "price_pro_test",
+        creditPackPriceId: e.STRIPE_CREDIT_PRICE_ID ?? "price_credits_test",
+      }
+    : isProdLike
+      ? undefined
+      : {
+          secretKey: "sk_test_mock_123",
+          webhookSecret: "whsec_mock_456",
+          proPriceId: "price_pro_test",
+          creditPackPriceId: "price_credits_test",
+        };
 
   // --- Kill switches / spend firewall ---------------------------------------------------------
   const killSwitches: CloudKillSwitchConfig = {
@@ -270,7 +286,7 @@ export function describeConfig(config: CloudRuntimeConfig): string {
     `host=${config.host}:${config.port}`,
     `publicUrl=${config.publicUrl ?? "unset"}`,
     `github=${config.gitHub.clientId ? "configured" : "absent"}`,
-    `stripe=${config.stripe.secretKey.startsWith("sk_test") ? "test-mode" : config.stripe.secretKey ? "configured" : "absent"}`,
+    `stripe=${config.stripe ? "test-mode" : "disabled"}`,
     `providers=[${providers.join(",") || "none"}]`,
     `hostedInference=${config.killSwitches.hostedInferenceEnabled}`,
     `hostedFree=${config.killSwitches.hostedFreeEnabled}`,

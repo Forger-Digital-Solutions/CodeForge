@@ -47,8 +47,14 @@ describe("loadCloudRuntimeConfig", () => {
     expect(() => loadCloudRuntimeConfig({ ...prodBase, GITHUB_CLIENT_SECRET: undefined })).toThrow(/GITHUB_CLIENT/);
   });
 
-  it("requires Stripe test credentials in production", () => {
-    expect(() => loadCloudRuntimeConfig({ ...prodBase, STRIPE_WEBHOOK_SECRET: undefined })).toThrow(/STRIPE/);
+  it("does not require Stripe for the production Hosted Free path", () => {
+    const config = loadCloudRuntimeConfig({ ...prodBase, STRIPE_SECRET_KEY: undefined, STRIPE_WEBHOOK_SECRET: undefined });
+    expect(config.stripe).toBeUndefined();
+  });
+
+  it("requires a complete Stripe TEST-mode configuration when billing is enabled", () => {
+    expect(() => loadCloudRuntimeConfig({ ...prodBase, STRIPE_WEBHOOK_SECRET: undefined })).toThrow(/both STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET/);
+    expect(() => loadCloudRuntimeConfig({ ...prodBase, STRIPE_SECRET_KEY: "sk_not_test" })).toThrow(/TEST-mode/);
   });
 
   it("requires a valid public HTTPS URL in staging/production", () => {

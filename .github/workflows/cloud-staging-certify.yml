@@ -5,8 +5,8 @@
 # resources are absent would turn a missing account into a permanently red build.
 #
 # Every step self-skips when its secret is absent, so an accidental dispatch is a no-op rather than a
-# confusing failure. Nothing here is ever billable: Stripe stays in test mode and hosted capacity is
-# limited to verified-$0 models.
+# confusing failure. Nothing here is ever billable: Stripe billing is optional and, when configured,
+# remains in test mode; hosted capacity is limited to verified-$0 models.
 name: cloud-staging-certify
 
 on:
@@ -26,7 +26,7 @@ jobs:
   certify:
     runs-on: ubuntu-latest
     # A GitHub Environment scopes the secrets and can require an approval before they are exposed.
-    environment: codeforge-cloud-staging
+    environment: staging
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,10 +42,10 @@ jobs:
       - name: Resolve staging target
         id: target
         env:
-          SECRET_STAGING_URL: ${{ secrets.CODEFORGE_STAGING_URL }}
+          STAGING_URL_VARIABLE: ${{ vars.CODEFORGE_PUBLIC_URL }}
           INPUT_STAGING_URL: ${{ inputs.staging_url }}
         run: |
-          URL="${INPUT_STAGING_URL:-$SECRET_STAGING_URL}"
+          URL="${INPUT_STAGING_URL:-$STAGING_URL_VARIABLE}"
           if [ -z "$URL" ]; then
             echo "No staging URL configured (input or CODEFORGE_STAGING_URL secret) — nothing to certify."
             echo "configured=false" >> "$GITHUB_OUTPUT"

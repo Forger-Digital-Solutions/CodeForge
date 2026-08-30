@@ -247,4 +247,26 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     // Pro balance is now 5.5M credits
     expect(await server.db.getCreditBalance(user.id)).toBe(5_500_000);
   });
+
+  it("keeps the Hosted Free surface available when optional Stripe billing is disabled", async () => {
+    const noBillingServer = new CodeForgeCloudServer({
+      jwtSecret: "cloud-no-billing-jwt-secret-32-characters",
+      stripeConfig: null,
+    });
+    const noBillingPort = await noBillingServer.start(0);
+    const noBillingUrl = `http://127.0.0.1:${noBillingPort}`;
+
+    try {
+      const meta = await fetch(`${noBillingUrl}/v1/meta`);
+      expect(meta.status).toBe(200);
+      const metadata = (await meta.json()) as { features: string[] };
+      expect(metadata.features).toContain("HOSTED_FREE");
+      expect(metadata.features).not.toContain("STRIPE_BILLING");
+
+      const checkout = await fetch(`${noBillingUrl}/v1/billing/checkout`, { method: "POST" });
+      expect(checkout.status).toBe(503);
+    } finally {
+      await noBillingServer.stop();
+    }
+  });
 });

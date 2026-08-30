@@ -77,9 +77,9 @@ export const STAGING_CONFIG_CONTRACT: readonly StagingConfigVariable[] = [
     example: "<github oauth app client secret>",
   },
 
-  // --- Stripe (TEST MODE ONLY) ----------------------------------------------------------------
-  { name: "STRIPE_SECRET_KEY", requirement: "required", secret: true, description: "Stripe TEST-mode secret key. Live keys (sk_live_/rk_live_) are refused at boot.", example: "sk_test_..." },
-  { name: "STRIPE_WEBHOOK_SECRET", requirement: "required", secret: true, description: "Stripe webhook signing secret (test mode).", example: "whsec_..." },
+  // --- Stripe (optional, TEST MODE ONLY) -------------------------------------------------------
+  { name: "STRIPE_SECRET_KEY", requirement: "optional", secret: true, description: "Optional Stripe TEST-mode key. Configure it only with STRIPE_WEBHOOK_SECRET; Hosted Free does not depend on billing.", example: "sk_test_..." },
+  { name: "STRIPE_WEBHOOK_SECRET", requirement: "optional", secret: true, description: "Optional Stripe test webhook signing secret. Configure it only with STRIPE_SECRET_KEY.", example: "whsec_..." },
   { name: "STRIPE_PRO_PRICE_ID", requirement: "optional", secret: false, description: "Stripe test price id for the Pro plan.", example: "price_..." },
   { name: "STRIPE_CREDIT_PRICE_ID", requirement: "optional", secret: false, description: "Stripe test price id for credit packs.", example: "price_..." },
 
