@@ -40,9 +40,38 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
   let cloudUrl: string;
   const webhookSecret = "whsec_test_certification_secret";
 
+  const createMockGitHubFetch = () => {
+    return async (url: string | URL | Request, init?: RequestInit) => {
+      const urlStr = url.toString();
+      if (urlStr.includes("login/oauth/access_token")) {
+        return new Response(JSON.stringify({ access_token: "gho_mock_access_token_octo", token_type: "bearer", scope: "read:user user:email" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (urlStr.includes("api.github.com/user")) {
+        return new Response(
+          JSON.stringify({
+            id: 424242,
+            login: "octodev",
+            name: "Octo Developer",
+            avatar_url: "https://github.com/octodev.png",
+            email: "octodev@codeforge.dev",
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+      return new Response("Not found", { status: 404 });
+    };
+  };
+
   beforeEach(async () => {
     cloudServer = new CodeForgeCloudServer({
       jwtSecret: "cert-jwt-secret-key-32-chars-long",
+      fetchFn: createMockGitHubFetch() as typeof fetch,
       stripeConfig: {
         secretKey: "sk_test_mock_cert",
         webhookSecret,
@@ -81,15 +110,8 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
       body: JSON.stringify({
         code: "code_dev_123",
         state: start.state,
-        expectedState: start.state,
         codeVerifier: start.codeVerifier,
-        mockProfile: {
-          id: 424242,
-          login: "octodev",
-          name: "Octo Developer",
-          avatar_url: "https://github.com/octodev.png",
-          email: "octodev@codeforge.dev",
-        },
+        redirectUri: "http://127.0.0.1:8765/auth/callback",
       }),
     });
     const authData = await exchangeRes.json();

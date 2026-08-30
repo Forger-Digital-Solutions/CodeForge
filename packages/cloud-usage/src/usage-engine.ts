@@ -1,5 +1,4 @@
-import { randomUUID } from "node:crypto";
-import { CloudDatabase, type UsageEventRecord } from "@codeforge/cloud-db";
+import type { ICloudDatabase, UsageEventRecord } from "@codeforge/cloud-db";
 import { calculateTokensAndCredits } from "./types.js";
 
 export interface ReserveBudgetParams {
@@ -13,8 +12,8 @@ export interface ReserveBudgetParams {
 export interface CommitUsageParams {
   userId: string;
   requestId: string;
-  reservationId: string;
-  estimatedCredits: number;
+  reservationId?: string;
+  estimatedCredits?: number;
   sessionId?: string;
   turnId?: string;
   providerId: string;
@@ -28,38 +27,68 @@ export interface CommitUsageParams {
 }
 
 export class UsageEngine {
-  private readonly db: CloudDatabase;
+  private readonly db: ICloudDatabase;
 
-  constructor(db: CloudDatabase) {
+  constructor(db: ICloudDatabase) {
     this.db = db;
   }
 
   reserveBudget(params: ReserveBudgetParams): { reservationId: string; reservedCredits: number; balanceAfter: number } {
-    const currentBalance = this.db.getCreditBalance(params.userId);
-    if (currentBalance < params.estimatedCredits) {
-      throw new Error(`Insufficient credits to reserve request. Balance: ${currentBalance}, Estimated required: ${params.estimatedCredits}`);
+    // 1. Check account-level spend limit if configured
+    const settings = this.db.getAccountSettings(params.userId);
+    if (settings.spendLimitUsd > 0) {
+      const currentSpend = this.db.getUserBillingPeriodSpendUsd(params.userId);
+      if (currentSpend >= settings.spendLimitUsd) {
+        throw new Error(`Account monthly spend limit of $${settings.spendLimitUsd.toFixed(2)} reached (current: $${currentSpend.toFixed(2)})`);
+      }
     }
 
-    const reservationId = randomUUID();
+    // Check if reservation already exists for this requestId (Idempotency)
+    const existing = this.db.getReservationByRequestId(params.requestId);
+    if (existing) {
+      if (existing.userId !== params.userId) {
+        throw new Error("Request ID is already associated with another user account");
+      }
+      return {
+        reservationId: existing.id,
+        reservedCredits: existing.reservedCredits,
+        balanceAfter: this.db.getCreditBalance(params.userId),
+      };
+    }
+
+    // 2. Authoritatively create reservation in DB
+    const reservation = this.db.createReservation({
+      requestId: params.requestId,
+      userId: params.userId,
+      providerId: params.providerId,
+      modelId: params.modelId,
+      reservedCredits: params.estimatedCredits,
+    });
+
+    // 3. Atomically deduct reservation from ledger
     const ledger = this.db.appendLedgerEvent({
       userId: params.userId,
       amount: -params.estimatedCredits,
       eventType: "CREDIT_RESERVED",
       requestId: params.requestId,
       description: `Budget reservation for request ${params.requestId}`,
-      metadata: { reservationId, providerId: params.providerId, modelId: params.modelId },
+      metadata: { reservationId: reservation.id, providerId: params.providerId, modelId: params.modelId },
     });
 
-    this.db.createHostedRequest({
-      id: params.requestId,
-      userId: params.userId,
-      providerId: params.providerId,
-      modelId: params.modelId,
-      estimatedCredits: params.estimatedCredits,
-    });
+    // Maintain backward-compatible hosted_requests record
+    const existingReq = this.db.getHostedRequest(params.requestId);
+    if (!existingReq) {
+      this.db.createHostedRequest({
+        id: params.requestId,
+        userId: params.userId,
+        providerId: params.providerId,
+        modelId: params.modelId,
+        estimatedCredits: params.estimatedCredits,
+      });
+    }
 
     return {
-      reservationId,
+      reservationId: reservation.id,
       reservedCredits: params.estimatedCredits,
       balanceAfter: ledger.balanceAfter,
     };
@@ -75,7 +104,10 @@ export class UsageEngine {
     const actualCredits = calculation.credits;
     const providerCostUsd = params.providerCostUsd ?? calculation.estimatedCostUsd;
 
-    // Record detailed usage event
+    // 1. Authoritatively commit reservation in DB
+    const reservation = this.db.commitReservation(params.requestId, params.userId, actualCredits);
+
+    // 2. Record detailed usage event
     this.db.recordUsageEvent({
       requestId: params.requestId,
       userId: params.userId,
@@ -93,8 +125,8 @@ export class UsageEngine {
       status: "completed",
     });
 
-    // Settle difference between reservation and actual usage
-    const diff = params.estimatedCredits - actualCredits;
+    // 3. Settle difference between reserved and actual credits
+    const diff = reservation.reservedCredits - actualCredits;
     let balanceAfter = this.db.getCreditBalance(params.userId);
 
     if (diff > 0) {
@@ -105,24 +137,28 @@ export class UsageEngine {
         eventType: "CREDIT_RELEASED",
         requestId: params.requestId,
         description: `Release unused reservation for ${params.requestId}`,
-        metadata: { estimatedCredits: params.estimatedCredits, actualCredits },
+        metadata: { reservedCredits: reservation.reservedCredits, actualCredits },
       });
       balanceAfter = release.balanceAfter;
     } else if (diff < 0) {
-      // Charge additional credits beyond estimate
-      const extraCharge = Math.abs(diff);
-      const charge = this.db.appendLedgerEvent({
-        userId: params.userId,
-        amount: -extraCharge,
-        eventType: "CREDIT_USED",
-        requestId: params.requestId,
-        description: `Additional usage settlement for ${params.requestId}`,
-        metadata: { estimatedCredits: params.estimatedCredits, actualCredits },
-      });
-      balanceAfter = charge.balanceAfter;
+      // Charge additional credits beyond estimate if balance allows
+      const extraCharge = Math.min(Math.abs(diff), balanceAfter);
+      if (extraCharge > 0) {
+        const charge = this.db.appendLedgerEvent({
+          userId: params.userId,
+          amount: -extraCharge,
+          eventType: "CREDIT_USED",
+          requestId: params.requestId,
+          description: `Additional usage settlement for ${params.requestId}`,
+          metadata: { reservedCredits: reservation.reservedCredits, actualCredits },
+        });
+        balanceAfter = charge.balanceAfter;
+      }
     }
 
-    this.db.updateHostedRequest(params.requestId, "completed", actualCredits);
+    try {
+      this.db.updateHostedRequest(params.requestId, "completed", actualCredits);
+    } catch {}
 
     return {
       actualCredits,
@@ -131,19 +167,25 @@ export class UsageEngine {
     };
   }
 
-  releaseReservation(params: { userId: string; requestId: string; estimatedCredits: number; reason?: string }): { refundedCredits: number; balanceAfter: number } {
+  releaseReservation(params: { userId: string; requestId: string; estimatedCredits?: number; reason?: string }): { refundedCredits: number; balanceAfter: number } {
+    // 1. Authoritatively release reservation in DB
+    const reservation = this.db.releaseReservation(params.requestId, params.userId);
+
+    // 2. Refund reserved credits to ledger
     const release = this.db.appendLedgerEvent({
       userId: params.userId,
-      amount: params.estimatedCredits,
+      amount: reservation.reservedCredits,
       eventType: "CREDIT_RELEASED",
       requestId: params.requestId,
       description: `Cancel and release reservation: ${params.reason ?? "Request failed"}`,
     });
 
-    this.db.updateHostedRequest(params.requestId, "failed", 0);
+    try {
+      this.db.updateHostedRequest(params.requestId, "failed", 0);
+    } catch {}
 
     return {
-      refundedCredits: params.estimatedCredits,
+      refundedCredits: reservation.reservedCredits,
       balanceAfter: release.balanceAfter,
     };
   }

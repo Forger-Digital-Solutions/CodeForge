@@ -24,10 +24,15 @@ export interface ExchangeGitHubCodeOptions {
   redirectUri?: string;
   codeVerifier: string;
   fetchFn?: typeof fetch;
+  timeoutMs?: number;
 }
 
 export async function exchangeGitHubCode(options: ExchangeGitHubCodeOptions): Promise<{ accessToken: string; tokenType: string; scope: string }> {
   const fetchFn = options.fetchFn ?? fetch;
+  const timeoutMs = options.timeoutMs ?? 15000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
   const body: Record<string, string> = {
     client_id: options.clientId,
     code: options.code,
@@ -36,29 +41,34 @@ export async function exchangeGitHubCode(options: ExchangeGitHubCodeOptions): Pr
   if (options.clientSecret) body.client_secret = options.clientSecret;
   if (options.redirectUri) body.redirect_uri = options.redirectUri;
 
-  const res = await fetchFn("https://github.com/login/oauth/access_token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+  try {
+    const res = await fetchFn("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
 
-  if (!res.ok) {
-    throw new Error(`GitHub token exchange failed: HTTP ${res.status}`);
+    if (!res.ok) {
+      throw new Error(`GitHub token exchange failed: HTTP ${res.status}`);
+    }
+
+    const data = (await res.json()) as { access_token?: string; token_type?: string; scope?: string; error?: string; error_description?: string };
+    if (data.error || !data.access_token) {
+      throw new Error(`GitHub OAuth error: ${data.error_description || data.error || "No access token returned"}`);
+    }
+
+    return {
+      accessToken: data.access_token,
+      tokenType: data.token_type ?? "bearer",
+      scope: data.scope ?? "",
+    };
+  } finally {
+    clearTimeout(timer);
   }
-
-  const data = (await res.json()) as { access_token?: string; token_type?: string; scope?: string; error?: string; error_description?: string };
-  if (data.error || !data.access_token) {
-    throw new Error(`GitHub OAuth error: ${data.error_description || data.error || "No access token returned"}`);
-  }
-
-  return {
-    accessToken: data.access_token,
-    tokenType: data.token_type ?? "bearer",
-    scope: data.scope ?? "",
-  };
 }
 
 export interface GitHubUserProfile {
@@ -69,18 +79,30 @@ export interface GitHubUserProfile {
   email?: string;
 }
 
-export async function fetchGitHubUserProfile(accessToken: string, fetchFn: typeof fetch = fetch): Promise<GitHubUserProfile> {
-  const res = await fetchFn("https://api.github.com/user", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "User-Agent": "CodeForge-Cloud",
-      Accept: "application/vnd.github+json",
-    },
-  });
+export async function fetchGitHubUserProfile(
+  accessToken: string,
+  fetchFn: typeof fetch = fetch,
+  timeoutMs = 15000,
+): Promise<GitHubUserProfile> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch GitHub user profile: HTTP ${res.status}`);
+  try {
+    const res = await fetchFn("https://api.github.com/user", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "User-Agent": "CodeForge-Cloud",
+        Accept: "application/vnd.github+json",
+      },
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch GitHub user profile: HTTP ${res.status}`);
+    }
+
+    return (await res.json()) as GitHubUserProfile;
+  } finally {
+    clearTimeout(timer);
   }
-
-  return (await res.json()) as GitHubUserProfile;
 }

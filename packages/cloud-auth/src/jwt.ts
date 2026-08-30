@@ -31,6 +31,9 @@ export function signAccessToken(
   expiresInSeconds = 3600, // 1 hour access token
   issuer = "codeforge-cloud",
 ): string {
+  if (!secret || secret.length < 16) {
+    throw new Error("JWT secret must be at least 16 characters long.");
+  }
   const header = { alg: "HS256", typ: "JWT" };
   const now = Math.floor(Date.now() / 1000);
   const fullPayload: AccessTokenPayload = {
@@ -62,6 +65,17 @@ export function verifyAccessToken(token: string, secret: string, issuer = "codef
     throw new Error("Invalid JWT token structure");
   }
 
+  let header: { alg?: string; typ?: string };
+  try {
+    header = JSON.parse(base64UrlDecode(headerB64));
+  } catch {
+    throw new Error("Invalid JWT header encoding");
+  }
+
+  if (header.alg !== "HS256") {
+    throw new Error(`Unsupported JWT algorithm: ${header.alg}. HS256 required.`);
+  }
+
   const signatureInput = `${headerB64}.${payloadB64}`;
   const expectedSignature = createHmac("sha256", secret).update(signatureInput).digest();
   const expectedSignatureB64 = base64UrlEncode(expectedSignature);
@@ -73,7 +87,20 @@ export function verifyAccessToken(token: string, secret: string, issuer = "codef
     throw new Error("Invalid JWT signature");
   }
 
-  const payload = JSON.parse(base64UrlDecode(payloadB64)) as AccessTokenPayload;
+  let payload: AccessTokenPayload;
+  try {
+    payload = JSON.parse(base64UrlDecode(payloadB64)) as AccessTokenPayload;
+  } catch {
+    throw new Error("Invalid JWT payload encoding");
+  }
+
+  if (!payload.sub) {
+    throw new Error("JWT payload missing required subject (sub)");
+  }
+  if (!payload.sid) {
+    throw new Error("JWT payload missing required session id (sid)");
+  }
+
   const now = Math.floor(Date.now() / 1000);
   if (payload.exp && payload.exp < now) {
     throw new Error("JWT token has expired");

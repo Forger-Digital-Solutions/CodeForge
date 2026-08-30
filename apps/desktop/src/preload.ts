@@ -44,8 +44,8 @@ const api = {
     return ipcRenderer.invoke("onboarding:setCompleted", completed);
   },
   // --- CodeForge Cloud APIs ---
-  signInWithCloud: (mockProfile?: any): Promise<{ ok: boolean; user?: any; error?: string }> => {
-    return ipcRenderer.invoke("cloud:auth:start", mockProfile);
+  signInWithCloud: (): Promise<{ ok: boolean; user?: any; error?: string }> => {
+    return ipcRenderer.invoke("cloud:auth:start");
   },
   getCloudAccount: (): Promise<any> => {
     return ipcRenderer.invoke("cloud:account:get");

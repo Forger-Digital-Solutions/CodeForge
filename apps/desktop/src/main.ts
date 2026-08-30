@@ -349,6 +349,23 @@ function registerCloudAdapter(): void {
       const tokens = getStoredCloudTokens();
       return tokens.accessToken ?? null;
     },
+    onAuthExpired: async () => {
+      const tokens = getStoredCloudTokens();
+      if (!tokens.refreshToken) return null;
+      try {
+        const refreshRes = await fetch(`${CLOUD_API_URL}/v1/auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken: tokens.refreshToken }),
+        });
+        if (refreshRes.ok) {
+          const data = (await refreshRes.json()) as any;
+          saveCloudTokens(data.accessToken, data.refreshToken, data.user);
+          return data.accessToken;
+        }
+      } catch {}
+      return null;
+    },
   });
   providerCatalog.register(cloudAdapter);
   providerAuthState.set("codeforge-cloud", "ok");
@@ -1140,11 +1157,10 @@ ipcMain.handle("onboarding:setCompleted", async (_event, completed: boolean) => 
 
 // --- CodeForge Cloud IPC Handlers ---
 
-ipcMain.handle("cloud:auth:start", async (_event, mockProfile?: any) => {
+ipcMain.handle("cloud:auth:start", async () => {
   try {
     const result = await runCodeForgeCloudAuth({
       cloudApiUrl: CLOUD_API_URL,
-      mockProfile,
     });
     saveCloudTokens(result.accessToken, result.refreshToken, result.user);
     registerCloudAdapter();

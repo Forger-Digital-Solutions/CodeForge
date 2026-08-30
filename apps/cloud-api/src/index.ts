@@ -1,17 +1,23 @@
 export * from "./server.js";
 
 async function main() {
+  const host = process.env.HOST || "127.0.0.1";
   const port = parseInt(process.env.PORT || "3220", 10);
-  const server = new (await import("./server.js")).CodeForgeCloudServer({
+  const driver = (process.env.CODEFORGE_CLOUD_DB_DRIVER as "sqlite" | "postgres") || "sqlite";
+
+  const { CodeForgeCloudServer } = await import("./server.js");
+  const server = new CodeForgeCloudServer({
+    host,
     port,
-    dbPath: process.env.DATABASE_URL,
+    driver,
+    databaseUrl: process.env.DATABASE_URL,
     jwtSecret: process.env.JWT_SECRET,
     gitHubClientId: process.env.GITHUB_CLIENT_ID,
     gitHubClientSecret: process.env.GITHUB_CLIENT_SECRET,
   });
 
-  const actualPort = await server.start(port);
-  console.log(`[CodeForge Cloud API] running on http://127.0.0.1:${actualPort}`);
+  const actualPort = await server.start(port, host);
+  console.log(`[CodeForge Cloud API] running on http://${host}:${actualPort}`);
 
   const shutdown = async () => {
     console.log("[CodeForge Cloud API] shutting down...");

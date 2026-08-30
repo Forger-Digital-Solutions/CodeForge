@@ -5,6 +5,7 @@ import type { ProviderAdapter, ProviderModel, ProviderHealthResponse } from "./i
 export interface HostedProviderOptions {
   cloudApiUrl?: string;
   getAccessToken?: () => Promise<string | null> | string | null;
+  onAuthExpired?: () => Promise<string | null>;
   fetchFn?: typeof fetch;
 }
 
@@ -13,11 +14,13 @@ export class HostedProviderAdapter implements ProviderAdapter {
   readonly isTestProvider = false;
   private readonly cloudApiUrl: string;
   private readonly getAccessToken?: () => Promise<string | null> | string | null;
+  private readonly onAuthExpired?: () => Promise<string | null>;
   private readonly fetchFn: typeof fetch;
 
   constructor(options: HostedProviderOptions = {}) {
     this.cloudApiUrl = (options.cloudApiUrl ?? "http://127.0.0.1:3220").replace(/\/$/, "");
     this.getAccessToken = options.getAccessToken;
+    this.onAuthExpired = options.onAuthExpired;
     this.fetchFn = options.fetchFn ?? fetch;
   }
 
@@ -27,33 +30,61 @@ export class HostedProviderAdapter implements ProviderAdapter {
       if (!res.ok) {
         return { status: "offline", error: `HTTP ${res.status}` };
       }
-      return { status: "available" };
+      const data = (await res.json()) as { hostedInferenceReady?: boolean };
+      return { status: data.hostedInferenceReady ? "available" : "offline" };
     } catch (err) {
       return { status: "offline", error: err instanceof Error ? err.message : String(err) };
     }
   }
 
   async listModels(): Promise<ProviderModel[]> {
+    try {
+      const res = await this.fetchFn(`${this.cloudApiUrl}/v1/hosted/models`);
+      if (res.ok) {
+        const models = (await res.json()) as Array<{
+          providerId: string;
+          modelId: string;
+          displayName: string;
+          availability: "available" | "offline" | "degraded";
+          capabilities: Record<string, boolean>;
+          contextWindow: number;
+          accessClass: "free" | "paid" | "gems_paid";
+          isEligibleFree: boolean;
+        }>;
+
+        return [
+          {
+            modelId: "codeforge-auto",
+            displayName: "CodeForge Auto · Included Free (Cloud)",
+            contextWindow: 128000,
+            capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
+            isFree: true,
+            freeStatus: "verified_free",
+          },
+          ...models.map((m) => ({
+            modelId: m.modelId,
+            displayName: `${m.displayName} · Included Free (Cloud)`,
+            contextWindow: m.contextWindow || 128000,
+            capabilities: {
+              text: m.capabilities?.text ?? true,
+              coding: m.capabilities?.coding ?? true,
+              toolCalling: m.capabilities?.toolCalling ?? true,
+              vision: m.capabilities?.vision ?? false,
+              structuredOutput: m.capabilities?.structuredOutput ?? true,
+              longContext: m.capabilities?.longContext ?? true,
+            },
+            isFree: m.accessClass === "free",
+            freeStatus: (m.isEligibleFree ? "verified_free" : "unknown") as ProviderModel["freeStatus"],
+          })),
+        ];
+      }
+    } catch {}
+
+    // Fallback if cloud API is offline
     return [
       {
         modelId: "codeforge-auto",
         displayName: "CodeForge Auto · Included Free (Cloud)",
-        contextWindow: 128000,
-        capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
-        isFree: true,
-        freeStatus: "verified_free",
-      },
-      {
-        modelId: "qwen/qwen3.6-27b",
-        displayName: "Qwen 3.6 27B · Included Free (Cloud)",
-        contextWindow: 128000,
-        capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
-        isFree: true,
-        freeStatus: "verified_free",
-      },
-      {
-        modelId: "llama-3.3-70b-versatile",
-        displayName: "Llama 3.3 70B · Included Free (Cloud)",
         contextWindow: 128000,
         capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
         isFree: true,
@@ -99,15 +130,7 @@ export class HostedProviderAdapter implements ProviderAdapter {
   }
 
   async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
-    const token = this.getAccessToken ? await this.getAccessToken() : null;
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "text/event-stream",
-    };
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
+    let token = this.getAccessToken ? await this.getAccessToken() : null;
     const messages = req.messages.map((m) => ({
       role: m.role as "system" | "user" | "assistant",
       content: m.content,
@@ -120,12 +143,33 @@ export class HostedProviderAdapter implements ProviderAdapter {
       taskType: "coding",
     });
 
-    const res = await this.fetchFn(`${this.cloudApiUrl}/v1/hosted/inference`, {
-      method: "POST",
-      headers,
-      body,
-      signal,
-    });
+    const makeRequest = async (authToken: string | null) => {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Accept: "text/event-stream",
+      };
+      if (authToken) {
+        headers["Authorization"] = `Bearer ${authToken}`;
+      }
+
+      return this.fetchFn(`${this.cloudApiUrl}/v1/hosted/inference`, {
+        method: "POST",
+        headers,
+        body,
+        signal,
+      });
+    };
+
+    let res = await makeRequest(token);
+
+    // Auth recovery: if 401 and onAuthExpired provided, refresh token and retry ONCE
+    if (res.status === 401 && this.onAuthExpired) {
+      const newToken = await this.onAuthExpired();
+      if (newToken) {
+        token = newToken;
+        res = await makeRequest(token);
+      }
+    }
 
     if (!res.ok) {
       const errText = await res.text();

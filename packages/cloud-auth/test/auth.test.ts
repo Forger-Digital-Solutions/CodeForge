@@ -1,25 +1,39 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { CloudDatabase } from "@codeforge/cloud-db";
-import {
-  generatePkcePair,
-  verifyPkce,
-  signAccessToken,
-  verifyAccessToken,
-  AuthService,
-} from "../src/index.js";
+import { AuthService, generatePkcePair, signAccessToken, verifyAccessToken } from "../src/index.js";
 
-describe("Cloud Auth System", () => {
+describe("AuthService", () => {
   let db: CloudDatabase;
   let auth: AuthService;
-  const jwtSecret = "super-secret-jwt-key-for-testing-123456";
+  const jwtSecret = "super-secret-jwt-key-32-chars-long";
+
+  const createMockGitHubFetch = (profile = { id: 12345, login: "alice", name: "Alice", avatar_url: "https://example.com/alice.png", email: "alice@example.com" }) => {
+    return async (url: string | URL | Request, init?: RequestInit) => {
+      const urlStr = url.toString();
+      if (urlStr.includes("login/oauth/access_token")) {
+        return new Response(JSON.stringify({ access_token: "gho_mock_access_token_123", token_type: "bearer", scope: "read:user user:email" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (urlStr.includes("api.github.com/user")) {
+        return new Response(JSON.stringify(profile), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return new Response("Not found", { status: 404 });
+    };
+  };
 
   beforeEach(() => {
     db = new CloudDatabase({ dbPath: ":memory:" });
     auth = new AuthService({
       db,
       jwtSecret,
-      gitHubClientId: "gh_client_123",
-      gitHubClientSecret: "gh_secret_456",
+      gitHubClientId: "gh_client_test_id",
+      gitHubClientSecret: "gh_client_test_secret",
+      fetchFn: createMockGitHubFetch() as typeof fetch,
     });
   });
 
@@ -27,118 +41,127 @@ describe("Cloud Auth System", () => {
     db.close();
   });
 
-  it("generates and verifies PKCE challenges", () => {
-    const pkce = generatePkcePair();
-    expect(pkce.method).toBe("S256");
-    expect(pkce.codeVerifier.length).toBeGreaterThanOrEqual(43);
-    expect(pkce.codeChallenge.length).toBeGreaterThan(0);
+  it("completes server-authoritative OAuth PKCE exchange and grants initial Free tier allowance", async () => {
+    const start = auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback", deviceName: "Test Device" });
+    expect(start.state).toBeDefined();
+    expect(start.codeVerifier).toBeDefined();
 
-    expect(verifyPkce(pkce.codeVerifier, pkce.codeChallenge)).toBe(true);
-    expect(verifyPkce("tampered_verifier", pkce.codeChallenge)).toBe(false);
-  });
-
-  it("signs and verifies JWT access tokens and rejects expired or tampered tokens", () => {
-    const token = signAccessToken(
-      { sub: "user-123", sid: "session-456", planId: "free", displayName: "Alice" },
-      jwtSecret,
-      3600,
-    );
-    expect(token).toBeDefined();
-
-    const payload = verifyAccessToken(token, jwtSecret);
-    expect(payload.sub).toBe("user-123");
-    expect(payload.sid).toBe("session-456");
-    expect(payload.displayName).toBe("Alice");
-
-    // Rejects tampered token
-    const tampered = token.slice(0, -5) + "abcde";
-    expect(() => verifyAccessToken(tampered, jwtSecret)).toThrow(/signature/i);
-
-    // Rejects expired token
-    const expiredToken = signAccessToken(
-      { sub: "user-123", sid: "session-456" },
-      jwtSecret,
-      -10, // expired 10 seconds ago
-    );
-    expect(() => verifyAccessToken(expiredToken, jwtSecret)).toThrow(/expired/i);
-  });
-
-  it("executes full GitHub OAuth callback, provisions Free tier idempotently, and issues tokens", async () => {
-    const oauthStart = auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
-    expect(oauthStart.authUrl).toContain("client_id=gh_client_123");
-    expect(oauthStart.authUrl).toContain(`code_challenge=${oauthStart.codeChallenge}`);
-
-    // Simulate successful OAuth callback for a new user
-    const loginResult = await auth.handleOAuthCallback({
-      code: "valid_code_1",
-      state: oauthStart.state,
-      expectedState: oauthStart.state,
-      codeVerifier: oauthStart.codeVerifier,
-      mockProfile: {
-        id: 98765,
-        login: "dev_alice",
-        name: "Alice Developer",
-        avatar_url: "https://github.com/alice.png",
-        email: "alice@example.com",
-      },
+    const result = await auth.handleOAuthCallback({
+      code: "valid_github_code",
+      state: start.state,
+      codeVerifier: start.codeVerifier,
+      redirectUri: "http://127.0.0.1:8765/auth/callback",
     });
 
-    expect(loginResult.isNewUser).toBe(true);
-    expect(loginResult.user.displayName).toBe("Alice Developer");
-    expect(loginResult.accessToken).toBeDefined();
-    expect(loginResult.refreshToken).toBeDefined();
+    expect(result.isNewUser).toBe(true);
+    expect(result.user.displayName).toBe("Alice");
+    expect(result.accessToken).toBeDefined();
+    expect(result.refreshToken).toBeDefined();
 
-    // Verify default Free tier entitlement & initial credit balance
-    const account = auth.getAccount(loginResult.user.id);
+    const account = auth.getAccount(result.user.id);
     expect(account.planId).toBe("free");
     expect(account.creditBalance).toBe(500_000);
     expect(account.entitlements.some((e) => e.featureKey === "HOSTED_FREE")).toBe(true);
-
-    // Second login with same GitHub profile should be idempotent (NO duplicate credits)
-    const secondLogin = await auth.handleOAuthCallback({
-      code: "valid_code_2",
-      state: oauthStart.state,
-      expectedState: oauthStart.state,
-      codeVerifier: oauthStart.codeVerifier,
-      mockProfile: {
-        id: 98765,
-        login: "dev_alice",
-        name: "Alice Developer",
-      },
-    });
-    expect(secondLogin.isNewUser).toBe(false);
-    expect(secondLogin.user.id).toBe(loginResult.user.id);
-
-    const accountAfterSecondLogin = auth.getAccount(loginResult.user.id);
-    expect(accountAfterSecondLogin.creditBalance).toBe(500_000); // strictly unchanged
   });
 
-  it("rotates refresh tokens and handles session revocation on logout", () => {
-    const oauthStart = auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
-    let loginResult!: Awaited<ReturnType<typeof auth.handleOAuthCallback>>;
+  it("rejects unknown, tampered, or already consumed OAuth transactions", async () => {
+    const start = auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
 
-    // Setup user
-    return auth
-      .handleOAuthCallback({
-        code: "code_1",
-        state: oauthStart.state,
-        expectedState: oauthStart.state,
-        codeVerifier: oauthStart.codeVerifier,
-        mockProfile: { id: 112233, login: "bob" },
-      })
-      .then((res) => {
-        loginResult = res;
-        // Refresh token
-        const refreshResult = auth.refreshSession({ refreshToken: loginResult.refreshToken });
-        expect(refreshResult.accessToken).toBeDefined();
-        expect(refreshResult.refreshToken).not.toBe(loginResult.refreshToken);
+    // Wrong state
+    await expect(
+      auth.handleOAuthCallback({
+        code: "some_code",
+        state: "wrong_state",
+        codeVerifier: start.codeVerifier,
+      }),
+    ).rejects.toThrow(/not found/);
 
-        // Old refresh token is now revoked
-        expect(() => auth.refreshSession({ refreshToken: loginResult.refreshToken })).toThrow(/revoked/i);
+    // Wrong PKCE code verifier
+    await expect(
+      auth.handleOAuthCallback({
+        code: "some_code",
+        state: start.state,
+        codeVerifier: "invalid_verifier_that_does_not_match_challenge",
+      }),
+    ).rejects.toThrow(/PKCE/);
 
-        // Logout revokes new refresh token
-        auth.logout(refreshResult.refreshToken);
-        expect(() => auth.refreshSession({ refreshToken: refreshResult.refreshToken })).toThrow(/revoked/i);
-      });
+    // First valid consumption succeeds
+    const start2 = auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
+    await auth.handleOAuthCallback({
+      code: "some_code",
+      state: start2.state,
+      codeVerifier: start2.codeVerifier,
+    });
+
+    // Replay of same state fails (single-use consumption)
+    await expect(
+      auth.handleOAuthCallback({
+        code: "some_code",
+        state: start2.state,
+        codeVerifier: start2.codeVerifier,
+      }),
+    ).rejects.toThrow(/already consumed/);
+  });
+
+  it("rotates refresh token and detects token reuse", async () => {
+    const start = auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
+    const initial = await auth.handleOAuthCallback({
+      code: "code_1",
+      state: start.state,
+      codeVerifier: start.codeVerifier,
+    });
+
+    // Refresh rotation
+    const rotated = auth.refreshSession({ refreshToken: initial.refreshToken });
+    expect(rotated.refreshToken).not.toBe(initial.refreshToken);
+
+    // Validating new access token
+    const payload = auth.verifyToken(rotated.accessToken);
+    expect(payload.sub).toBe(initial.user.id);
+
+    // Replay of old refresh token fails and detects breach
+    expect(() => {
+      auth.refreshSession({ refreshToken: initial.refreshToken });
+    }).toThrow(/replay detected/);
+  });
+
+  it("handles user logout by revoking device session", async () => {
+    const start = auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
+    const authResult = await auth.handleOAuthCallback({
+      code: "code_logout",
+      state: start.state,
+      codeVerifier: start.codeVerifier,
+    });
+
+    auth.logout(authResult.refreshToken);
+
+    expect(() => {
+      auth.refreshSession({ refreshToken: authResult.refreshToken });
+    }).toThrow(/revoked/);
+  });
+
+  it("verifies and rejects tampered or expired JWT access tokens", () => {
+    const token = signAccessToken(
+      { sub: "user-123", sid: "sess-456", planId: "free", displayName: "User" },
+      jwtSecret,
+      3600,
+    );
+
+    const verified = verifyAccessToken(token, jwtSecret);
+    expect(verified.sub).toBe("user-123");
+    expect(verified.sid).toBe("sess-456");
+
+    // Tampered token
+    const parts = token.split(".");
+    const tampered = `${parts[0]}.${parts[1]}.tamperedSignature`;
+    expect(() => verifyAccessToken(tampered, jwtSecret)).toThrow(/Invalid JWT signature/);
+
+    // Expired token
+    const expiredToken = signAccessToken(
+      { sub: "user-123", sid: "sess-456" },
+      jwtSecret,
+      -10, // expired 10s ago
+    );
+    expect(() => verifyAccessToken(expiredToken, jwtSecret)).toThrow(/expired/);
   });
 });

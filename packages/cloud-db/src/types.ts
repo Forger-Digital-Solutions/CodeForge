@@ -1,5 +1,19 @@
 import { z } from "zod";
 
+export const FeatureKeySchema = z.enum([
+  "HOSTED_FREE",
+  "HOSTED_PAID",
+  "PREMIUM_MODELS",
+  "GEMS_READY",
+  "HIGH_CONTEXT",
+  "HIGH_CONCURRENCY",
+  "PRIORITY_ROUTING",
+  "CLOUD_JOBS",
+  "DIRECT_PROVIDERS",
+  "COMMUNITY_MODELS",
+]);
+export type FeatureKey = z.infer<typeof FeatureKeySchema>;
+
 export const UserRecordSchema = z.object({
   id: z.string().uuid(),
   displayName: z.string().min(1),
@@ -41,7 +55,7 @@ export const PlanRecordSchema = z.object({
   monthlyCreditAllowance: z.number().int().nonnegative(),
   maxConcurrentTasks: z.number().int().positive(),
   maxTaskSpendCredits: z.number().int().positive(),
-  features: z.array(z.string()).default([]),
+  features: z.array(FeatureKeySchema).default([]),
   createdAt: z.string(),
 });
 export type PlanRecord = z.infer<typeof PlanRecordSchema>;
@@ -64,7 +78,7 @@ export type SubscriptionRecord = z.infer<typeof SubscriptionRecordSchema>;
 export const EntitlementRecordSchema = z.object({
   id: z.string().uuid(),
   userId: z.string().uuid(),
-  featureKey: z.string(),
+  featureKey: FeatureKeySchema,
   grantedValue: z.string().default("true"),
   expiresAt: z.string().nullable().optional(),
   createdAt: z.string(),
@@ -99,7 +113,7 @@ export type CreditLedgerRecord = z.infer<typeof CreditLedgerRecordSchema>;
 
 export const UsageEventRecordSchema = z.object({
   id: z.string().uuid(),
-  requestId: z.string().uuid(),
+  requestId: z.string(),
   userId: z.string().uuid(),
   sessionId: z.string().optional(),
   turnId: z.string().optional(),
@@ -129,8 +143,26 @@ export const UsagePeriodRecordSchema = z.object({
 });
 export type UsagePeriodRecord = z.infer<typeof UsagePeriodRecordSchema>;
 
-export const HostedRequestRecordSchema = z.object({
+export const ReservationStatusSchema = z.enum(["reserved", "committed", "released"]);
+export type ReservationStatus = z.infer<typeof ReservationStatusSchema>;
+
+export const ReservationRecordSchema = z.object({
   id: z.string().uuid(),
+  requestId: z.string(),
+  userId: z.string().uuid(),
+  providerId: z.string(),
+  modelId: z.string(),
+  reservedCredits: z.number().int().nonnegative(),
+  actualCredits: z.number().int().nonnegative().default(0),
+  status: ReservationStatusSchema,
+  createdAt: z.string(),
+  committedAt: z.string().nullable().optional(),
+  releasedAt: z.string().nullable().optional(),
+});
+export type ReservationRecord = z.infer<typeof ReservationRecordSchema>;
+
+export const HostedRequestRecordSchema = z.object({
+  id: z.string(),
   userId: z.string().uuid(),
   status: z.enum(["pending", "in_progress", "completed", "failed", "cancelled"]),
   estimatedCredits: z.number().int().nonnegative(),
@@ -173,3 +205,23 @@ export const AbuseEventRecordSchema = z.object({
   createdAt: z.string(),
 });
 export type AbuseEventRecord = z.infer<typeof AbuseEventRecordSchema>;
+
+export const OAuthTransactionRecordSchema = z.object({
+  id: z.string().uuid(),
+  state: z.string(),
+  codeChallenge: z.string(),
+  redirectUri: z.string(),
+  deviceName: z.string().optional(),
+  expiresAt: z.string(),
+  usedAt: z.string().nullable().optional(),
+  createdAt: z.string(),
+});
+export type OAuthTransactionRecord = z.infer<typeof OAuthTransactionRecordSchema>;
+
+export const SchemaMigrationRecordSchema = z.object({
+  version: z.number().int().positive(),
+  name: z.string(),
+  checksum: z.string(),
+  appliedAt: z.string(),
+});
+export type SchemaMigrationRecord = z.infer<typeof SchemaMigrationRecordSchema>;

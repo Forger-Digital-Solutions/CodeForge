@@ -7,7 +7,6 @@ export interface CodeForgeCloudAuthOptions {
   timeoutMs?: number;
   openExternal?: (url: string) => Promise<void>;
   fetchFn?: typeof fetch;
-  mockProfile?: any;
 }
 
 export interface CloudAuthResult {
@@ -95,10 +94,8 @@ export function runCodeForgeCloudAuth(opts: CodeForgeCloudAuthOptions = {}): Pro
             body: JSON.stringify({
               code,
               state,
-              expectedState: startData.state,
               codeVerifier: startData.codeVerifier,
               redirectUri,
-              mockProfile: opts.mockProfile,
             }),
           });
 
@@ -138,13 +135,7 @@ export function runCodeForgeCloudAuth(opts: CodeForgeCloudAuthOptions = {}): Pro
             authUrl: string;
           };
 
-          // If in test mode with mockProfile, simulate local redirect directly
-          if (opts.mockProfile) {
-            const mockUrl = `${redirectUri}?code=mock_code&state=${startData.state}`;
-            await fetchFn(mockUrl);
-          } else {
-            await openExternal(startData.authUrl);
-          }
+          await openExternal(startData.authUrl);
         } catch (err) {
           finishReject(err instanceof Error ? err : new Error(String(err)));
         }

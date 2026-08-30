@@ -1,6 +1,6 @@
 import { ForgeZero, type FreeModelRecord } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
-import { InMemoryProviderCatalog } from "@codeforge/providers";
+import { InMemoryProviderCatalog, type ProviderAdapter } from "@codeforge/providers";
 
 export interface CloudKillSwitchConfig {
   hostedInferenceEnabled: boolean;
@@ -103,5 +103,36 @@ export class CloudFirewallManager {
 
   registerModel(model: FreeModelRecord): void {
     this.firewall.register(model);
+  }
+
+  registerProvider(adapter: ProviderAdapter): void {
+    this.providerCatalog.register(adapter);
+  }
+
+  listHostedModels(): Array<{
+    providerId: string;
+    modelId: string;
+    displayName: string;
+    availability: string;
+    capabilities: Record<string, boolean>;
+    contextWindow: number;
+    accessClass: "free" | "paid" | "gems_paid";
+    isEligibleFree: boolean;
+  }> {
+    const records = this.firewall.allModels();
+    return records.map((m) => {
+      const status = m.health?.status ?? "available";
+      const isFree = m.costProfile?.isFree ?? false;
+      return {
+        providerId: m.providerId,
+        modelId: m.modelId,
+        displayName: m.displayName,
+        availability: status,
+        capabilities: m.capabilities as Record<string, boolean>,
+        contextWindow: m.contextWindow ?? 128000,
+        accessClass: m.tier === "gems_paid" ? ("gems_paid" as const) : isFree ? ("free" as const) : ("paid" as const),
+        isEligibleFree: isFree && status === "available",
+      };
+    });
   }
 }

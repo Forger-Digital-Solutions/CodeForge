@@ -1,10 +1,11 @@
-import { CloudDatabase } from "@codeforge/cloud-db";
+import type { ICloudDatabase } from "@codeforge/cloud-db";
+import { CANONICAL_FREE_FEATURES, CANONICAL_PRO_FEATURES } from "@codeforge/cloud-db";
 import type { FeatureKey, TaskExecutionPermission } from "./types.js";
 
 export class EntitlementService {
-  private readonly db: CloudDatabase;
+  private readonly db: ICloudDatabase;
 
-  constructor(db: CloudDatabase) {
+  constructor(db: ICloudDatabase) {
     this.db = db;
   }
 
@@ -121,21 +122,20 @@ export class EntitlementService {
     if (!plan) return;
 
     if (planId === "pro") {
-      this.db.setEntitlement(userId, "HOSTED_FREE", "true");
-      this.db.setEntitlement(userId, "HOSTED_PAID", "true");
-      this.db.setEntitlement(userId, "PREMIUM_MODELS", "true");
-      this.db.setEntitlement(userId, "PRIORITY_ROUTING", "true");
-      this.db.setEntitlement(userId, "GEMS_READY", "true");
-      this.db.setEntitlement(userId, "HIGH_CONCURRENCY", "true");
+      for (const feat of CANONICAL_PRO_FEATURES) {
+        this.db.setEntitlement(userId, feat, "true");
+      }
     } else {
-      // Free plan
-      this.db.setEntitlement(userId, "HOSTED_FREE", "true");
-      this.db.setEntitlement(userId, "DIRECT_PROVIDERS", "true");
-      this.db.removeEntitlement(userId, "HOSTED_PAID");
-      this.db.removeEntitlement(userId, "PREMIUM_MODELS");
-      this.db.removeEntitlement(userId, "PRIORITY_ROUTING");
-      this.db.removeEntitlement(userId, "GEMS_READY");
-      this.db.removeEntitlement(userId, "HIGH_CONCURRENCY");
+      // Free plan: grant free features, revoke pro-only features
+      for (const feat of CANONICAL_FREE_FEATURES) {
+        this.db.setEntitlement(userId, feat, "true");
+      }
+      const freeSet = new Set<FeatureKey>(CANONICAL_FREE_FEATURES);
+      for (const feat of CANONICAL_PRO_FEATURES) {
+        if (!freeSet.has(feat)) {
+          this.db.removeEntitlement(userId, feat);
+        }
+      }
     }
   }
 }

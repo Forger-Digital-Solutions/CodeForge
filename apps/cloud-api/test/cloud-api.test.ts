@@ -38,9 +38,38 @@ describe("CodeForge Cloud Server API End-to-End", () => {
   let baseUrl: string;
   const webhookSecret = "whsec_test_12345";
 
+  const createMockGitHubFetch = () => {
+    return async (url: string | URL | Request, init?: RequestInit) => {
+      const urlStr = url.toString();
+      if (urlStr.includes("login/oauth/access_token")) {
+        return new Response(JSON.stringify({ access_token: "gho_mock_access_token_123", token_type: "bearer", scope: "read:user user:email" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (urlStr.includes("api.github.com/user")) {
+        return new Response(
+          JSON.stringify({
+            id: 554433,
+            login: "alice_cloud",
+            name: "Alice Cloud",
+            avatar_url: "https://github.com/alice.png",
+            email: "alice@example.com",
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+      return new Response("Not found", { status: 404 });
+    };
+  };
+
   beforeEach(async () => {
     server = new CodeForgeCloudServer({
       jwtSecret: "test-jwt-secret-32-character-long",
+      fetchFn: createMockGitHubFetch() as typeof fetch,
       stripeConfig: {
         secretKey: "sk_test_123",
         webhookSecret,
@@ -61,7 +90,7 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     await server.stop();
   });
 
-  it("serves live and ready health endpoints", async () => {
+  it("serves live, ready, meta, and models endpoints", async () => {
     const liveRes = await fetch(`${baseUrl}/health/live`);
     expect(liveRes.status).toBe(200);
     const live = await liveRes.json();
@@ -72,9 +101,21 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     const ready = await readyRes.json();
     expect(ready.status).toBe("ready");
     expect(ready.database).toBe("connected");
+    expect(ready.hostedInferenceReady).toBe(true);
+
+    const metaRes = await fetch(`${baseUrl}/v1/meta`);
+    expect(metaRes.status).toBe(200);
+    const meta = await metaRes.json();
+    expect(meta.apiVersion).toBe("1.0.0");
+
+    const modelsRes = await fetch(`${baseUrl}/v1/hosted/models`);
+    expect(modelsRes.status).toBe(200);
+    const models = await modelsRes.json();
+    expect(Array.isArray(models)).toBe(true);
+    expect(models.length).toBeGreaterThan(0);
   });
 
-  it("completes full auth lifecycle, account queries, and hosted inference streaming", async () => {
+  it("completes full server-authoritative auth lifecycle, account queries, and hosted inference streaming", async () => {
     // 1. Auth Start
     const startRes = await fetch(`${baseUrl}/v1/auth/start`, {
       method: "POST",
@@ -86,22 +127,15 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     expect(startData.state).toBeDefined();
     expect(startData.codeVerifier).toBeDefined();
 
-    // 2. Auth Exchange
+    // 2. Auth Exchange (Server exchanges code with GitHub and consumes transaction)
     const exchangeRes = await fetch(`${baseUrl}/v1/auth/exchange`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         code: "code_alice_1",
         state: startData.state,
-        expectedState: startData.state,
         codeVerifier: startData.codeVerifier,
-        mockProfile: {
-          id: 554433,
-          login: "alice_cloud",
-          name: "Alice Cloud",
-          avatar_url: "https://github.com/alice.png",
-          email: "alice@example.com",
-        },
+        redirectUri: "http://127.0.0.1:8765/auth/callback",
       }),
     });
     expect(exchangeRes.status).toBe(200);
