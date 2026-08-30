@@ -90,12 +90,42 @@ const evidence = {
 const started = Date.now();
 
 // --- 1. Preflight ---------------------------------------------------------------------------------
+// The preflight grades a DEPLOYMENT's configuration contract against a process environment. When
+// this harness certifies a REMOTE target, the local process environment is NOT the deployment's
+// environment — the operator's shell legitimately holds none of the server's secrets, and loading
+// them locally would be worse practice, not better — so running it here grades the wrong machine.
+//
+// It therefore runs only when the environment at hand really is a deployment environment (the host
+// itself, or a shell with the deployment env loaded), or when the target is local. Otherwise it is
+// reported SKIP, with the reason, and does not gate the verdict. No assertion inside the
+// preflight is relaxed by this scoping; only the environment it is applied to. Configuration
+// assurance for a remote target comes from the remote_probe stage, which interrogates the running
+// deployment itself.
+let preflightTargetIsLocal = false;
 try {
-  const preflightMod = await import(pathToFileURL(resolve(repoRoot, "apps/cloud-api/dist/staging-preflight.js")).href);
-  const report = preflightMod.runStagingPreflight(process.env);
-  stage("preflight", report.ok ? "PASS" : "FAIL", `${report.passed} passed, ${report.failed} failed`);
-} catch (err) {
-  stage("preflight", "FAIL", String(err?.message ?? err));
+  const host = new URL(baseUrl).hostname;
+  preflightTargetIsLocal = host === "localhost" || host === "127.0.0.1" || host === "::1";
+} catch {
+  preflightTargetIsLocal = false;
+}
+const preflightEnvTier = (process.env.CODEFORGE_CLOUD_ENV ?? "").trim();
+const preflightEnvIsDeployment = preflightEnvTier === "staging" || preflightEnvTier === "production";
+
+if (!preflightTargetIsLocal && !preflightEnvIsDeployment) {
+  stage(
+    "preflight",
+    "SKIP",
+    `not applicable to a remote target: this process is not the deployment environment ` +
+      `(CODEFORGE_CLOUD_ENV='${preflightEnvTier || "unset"}'); ${baseUrl} is graded remotely by remote_probe`,
+  );
+} else {
+  try {
+    const preflightMod = await import(pathToFileURL(resolve(repoRoot, "apps/cloud-api/dist/staging-preflight.js")).href);
+    const report = preflightMod.runStagingPreflight(process.env);
+    stage("preflight", report.ok ? "PASS" : "FAIL", `${report.passed} passed, ${report.failed} failed`);
+  } catch (err) {
+    stage("preflight", "FAIL", String(err?.message ?? err));
+  }
 }
 
 // --- 2. Remote probe (health, TLS, security, auth enforcement, OAuth readiness) ---------------------
@@ -444,6 +474,7 @@ try {
 const failed = stages.filter((s) => s.status === "FAIL").length;
 const blocked = stages.filter((s) => s.status === "BLOCKED").length;
 const passed = stages.filter((s) => s.status === "PASS").length;
+const skipped = stages.filter((s) => s.status === "SKIP").length;
 
 let verdict;
 if (failed > 0) {
@@ -493,7 +524,7 @@ const receipt = {
 };
 
 console.log("");
-console.log(`${passed} passed, ${failed} failed, ${blocked} blocked — ${Math.round((Date.now() - started) / 1000)}s`);
+console.log(`${passed} passed, ${failed} failed, ${blocked} blocked, ${skipped} skipped — ${Math.round((Date.now() - started) / 1000)}s`);
 console.log(`VERDICT: ${verdict}`);
 
 // Serialization applies schema validation, redaction, and a final secret scan. If it throws, the
@@ -526,7 +557,7 @@ if (mdPath) {
     "| --- | --- | --- |",
     ...stages.map((s) => `| \`${s.id}\` | ${s.status} | ${(s.detail ?? "").replace(/\|/g, "\\|")} |`),
     "",
-    `${passed} passed, ${failed} failed, ${blocked} blocked.`,
+    `${passed} passed, ${failed} failed, ${blocked} blocked, ${skipped} skipped.`,
     "",
     "> Secret values are excluded by construction: this document is generated from a receipt that is",
     "> schema-validated, redacted, and scanned before it is written.",
