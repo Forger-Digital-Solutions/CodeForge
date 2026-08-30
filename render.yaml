@@ -26,9 +26,8 @@ services:
         value: postgres
       - key: CODEFORGE_CLOUD_DB_SSL
         value: "true"
-      # Keep Node's standard trust store and add the Supabase CA from Render's secret file.
-      - key: NODE_EXTRA_CA_CERTS
-        value: /etc/secrets/prod-ca-2021.crt
+      # Docker image extends Node's trust store with the public Supabase Root 2021 CA.
+      # PostgreSQL certificate verification remains enabled.
       - key: CODEFORGE_TRUST_PROXY
         value: "true"
       # The server uses Render's runtime-assigned RENDER_EXTERNAL_URL until a custom public
