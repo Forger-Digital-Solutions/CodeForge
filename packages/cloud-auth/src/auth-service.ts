@@ -7,6 +7,7 @@ import type {
   AccountSettingsRecord,
 } from "@codeforge/cloud-db";
 import { generatePkcePair, generateState, verifyPkce } from "./pkce.js";
+import { normalizeDesktopLoopbackRedirectUri } from "./redirect-uri.js";
 import { signAccessToken, verifyAccessToken, generateRefreshToken, hashRefreshToken, type AccessTokenPayload } from "./jwt.js";
 import { buildGitHubAuthUrl, exchangeGitHubCode, fetchGitHubUserProfile } from "./github-oauth.js";
 
@@ -50,6 +51,7 @@ export class AuthService {
   }
 
   async startOAuth(options: { redirectUri: string; deviceName?: string }): Promise<{ state: string; codeVerifier: string; codeChallenge: string; authUrl: string }> {
+    const redirectUri = normalizeDesktopLoopbackRedirectUri(options.redirectUri);
     const pkce = generatePkcePair();
     const state = generateState();
 
@@ -57,14 +59,14 @@ export class AuthService {
     await this.db.createOAuthTransaction({
       state,
       codeChallenge: pkce.codeChallenge,
-      redirectUri: options.redirectUri,
+      redirectUri,
       deviceName: options.deviceName,
       expiresInSeconds: 600, // 10 minutes
     });
 
     const authUrl = buildGitHubAuthUrl({
       clientId: this.gitHubClientId,
-      redirectUri: options.redirectUri,
+      redirectUri,
       state,
       codeChallenge: pkce.codeChallenge,
     });
@@ -93,8 +95,8 @@ export class AuthService {
     const tx = await this.db.consumeOAuthTransaction(options.state);
 
     // 2. Validate redirect URI binding if provided
-    if (options.redirectUri && tx.redirectUri !== options.redirectUri) {
-      throw new Error(`OAuth redirect URI mismatch: expected ${tx.redirectUri}, received ${options.redirectUri}`);
+    if (options.redirectUri && tx.redirectUri !== normalizeDesktopLoopbackRedirectUri(options.redirectUri)) {
+      throw new Error("OAuth redirect URI mismatch");
     }
 
     // 3. Verify PKCE challenge against codeVerifier
@@ -264,4 +266,3 @@ export class AuthService {
     };
   }
 }
-

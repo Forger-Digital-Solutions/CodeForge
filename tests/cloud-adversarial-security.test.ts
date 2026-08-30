@@ -80,6 +80,67 @@ describe("Phase 56 — P0 Adversarial Security Certification", () => {
     expect(user).toBeUndefined();
   });
 
+  it("rejects arbitrary OAuth redirect targets before they can become server-authoritative transactions", async () => {
+    for (const redirectUri of [
+      "https://attacker.example/auth/callback",
+      "http://localhost:8765/auth/callback",
+      "http://127.0.0.1:8765/other",
+      "http://127.0.0.1:8765/auth/callback?redirect=https://attacker.example",
+    ]) {
+      const res = await fetch(`${baseUrl}/v1/auth/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ redirectUri }),
+      });
+      expect(res.status).toBe(400);
+      expect((await res.json()).authUrl).toBeUndefined();
+    }
+  });
+
+  it("does not honor forged forwarding headers unless the deployment explicitly trusts its proxy", async () => {
+    const spoofedIp = "203.0.113.42";
+    const start = await (await fetch(`${baseUrl}/v1/auth/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Forwarded-For": spoofedIp },
+      body: JSON.stringify({ redirectUri: "http://127.0.0.1:8765/auth/callback" }),
+    })).json();
+    const exchange = await (await fetch(`${baseUrl}/v1/auth/exchange`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Forwarded-For": spoofedIp },
+      body: JSON.stringify({ code: "code_no_proxy", state: start.state, codeVerifier: start.codeVerifier, redirectUri: "http://127.0.0.1:8765/auth/callback" }),
+    })).json();
+    expect(exchange.session.ipAddress).not.toBe(spoofedIp);
+
+    const proxiedServer = new CodeForgeCloudServer({
+      jwtSecret,
+      trustProxy: true,
+      fetchFn: createMockGitHubFetch() as typeof fetch,
+      stripeConfig: {
+        secretKey: "sk_test_mock_adv",
+        webhookSecret,
+        proPriceId: "price_pro_adv",
+        creditPackPriceId: "price_credits_adv",
+      },
+    });
+    const proxiedPort = await proxiedServer.start(0);
+    try {
+      const proxiedBaseUrl = `http://127.0.0.1:${proxiedPort}`;
+      const proxiedStart = await (await fetch(`${proxiedBaseUrl}/v1/auth/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Forwarded-For": `${spoofedIp}, 198.51.100.7` },
+        body: JSON.stringify({ redirectUri: "http://127.0.0.1:8765/auth/callback" }),
+      })).json();
+      const proxiedExchange = await (await fetch(`${proxiedBaseUrl}/v1/auth/exchange`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Forwarded-For": `${spoofedIp}, 198.51.100.7` },
+        body: JSON.stringify({ code: "code_trusted_proxy", state: proxiedStart.state, codeVerifier: proxiedStart.codeVerifier, redirectUri: "http://127.0.0.1:8765/auth/callback" }),
+      })).json();
+      expect(proxiedExchange.session.ipAddress).toBe(spoofedIp);
+    } finally {
+      await proxiedServer.stop();
+    }
+  });
+
 
   it("enforces server-owned OAuth transactions, rejecting unknown state, wrong PKCE, and expired state", async () => {
     // 1. Unknown state
@@ -264,4 +325,3 @@ describe("Phase 56 — P0 Adversarial Security Certification", () => {
     }).rejects.toThrow(/Unauthorized access/);
   });
 });
-

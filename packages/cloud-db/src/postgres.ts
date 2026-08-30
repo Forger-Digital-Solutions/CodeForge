@@ -23,9 +23,13 @@ import type {
 } from "./types.js";
 
 const { Pool } = pg;
+const MIGRATION_LOCK_NAMESPACE = 1_807_468_221;
+const MIGRATION_LOCK_KEY = 1_247_271_903;
 
 export interface PostgresCloudDatabaseOptions {
   connectionString?: string;
+  /** Enables certificate-validated TLS for remote PostgreSQL connections. */
+  ssl?: boolean;
   pool?: pg.Pool;
 }
 
@@ -46,6 +50,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     } else {
       this.pool = new Pool({
         connectionString,
+        ssl: options.ssl === undefined ? undefined : options.ssl ? { rejectUnauthorized: true } : false,
         max: 20,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 10000,
@@ -76,6 +81,10 @@ export class PostgresCloudDatabase implements ICloudDatabase {
   async initSchema(): Promise<void> {
     const client = await this.pool.connect();
     try {
+      // Multiple Cloud instances can boot against a brand-new database at once. PostgreSQL's
+      // IF NOT EXISTS is not sufficient for concurrent CREATE TABLE statements, so serialize the
+      // whole migration + seed pass with a transaction-independent advisory lock on this session.
+      await client.query("SELECT pg_advisory_lock($1, $2)", [MIGRATION_LOCK_NAMESPACE, MIGRATION_LOCK_KEY]);
       await client.query(`
         CREATE TABLE IF NOT EXISTS schema_migrations (
           version INTEGER PRIMARY KEY,
@@ -114,7 +123,11 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         );
       }
     } finally {
-      client.release();
+      try {
+        await client.query("SELECT pg_advisory_unlock($1, $2)", [MIGRATION_LOCK_NAMESPACE, MIGRATION_LOCK_KEY]);
+      } finally {
+        client.release();
+      }
     }
   }
 

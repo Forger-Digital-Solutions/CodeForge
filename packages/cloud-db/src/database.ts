@@ -8,6 +8,7 @@ export interface CloudDatabaseConfig {
   driver?: CloudDatabaseDriver;
   dbPath?: string;
   databaseUrl?: string;
+  databaseSsl?: boolean;
 }
 
 export class CloudDatabase extends SQLiteCloudDatabase {
@@ -25,7 +26,7 @@ export function createCloudDatabase(config: CloudDatabaseConfig = {}): ICloudDat
     if (!rawDbUrl) {
       throw new Error("CODEFORGE_CLOUD_DB_DRIVER is 'postgres' but DATABASE_URL is missing.");
     }
-    return new PostgresCloudDatabase({ connectionString: rawDbUrl });
+    return new PostgresCloudDatabase({ connectionString: rawDbUrl, ssl: config.databaseSsl });
   }
 
   if (driver === "sqlite") {

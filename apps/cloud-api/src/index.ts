@@ -29,6 +29,7 @@ async function main() {
     port: config.port,
     driver: config.database.driver,
     databaseUrl: config.database.url,
+    databaseSsl: config.database.ssl,
     dbPath: config.database.path,
     jwtSecret: config.jwtSecret,
     gitHubClientId: config.gitHub.clientId,
@@ -39,6 +40,7 @@ async function main() {
     allowedOrigins: config.allowedOrigins,
     maxRequestsPerMinute: config.rateLimits.maxRequestsPerMinute,
     requestTimeoutMs: config.requestTimeoutMs,
+    trustProxy: config.trustProxy,
   });
 
   const actualPort = await server.start(config.port, config.host);

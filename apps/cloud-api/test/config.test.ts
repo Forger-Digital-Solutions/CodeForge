@@ -55,7 +55,21 @@ describe("loadCloudRuntimeConfig", () => {
     expect(config.environment).toBe("production");
     expect(config.database.driver).toBe("postgres");
     expect(config.database.url).toContain("postgres://");
+    expect(config.database.ssl).toBe(true);
     expect(config.gitHub.clientId).toBe("gh_prod_id");
+  });
+
+  it("requires certificate-validated TLS for remote PostgreSQL in staging and production", () => {
+    expect(() => loadCloudRuntimeConfig({ ...prodBase, CODEFORGE_CLOUD_DB_SSL: "false" })).toThrow(/requires CODEFORGE_CLOUD_DB_SSL=true/);
+    expect(() => loadCloudRuntimeConfig({ ...prodBase, DATABASE_URL: "postgres://user:pass@host:5432/db?sslmode=disable" })).toThrow(/must not disable or weaken TLS/);
+  });
+
+  it("allows an explicitly local PostgreSQL development connection without TLS", () => {
+    const config = loadCloudRuntimeConfig({
+      CODEFORGE_CLOUD_DB_DRIVER: "postgres",
+      DATABASE_URL: "postgres://user:pass@127.0.0.1:5432/codeforge",
+    });
+    expect(config.database.ssl).toBe(false);
   });
 
   it("honors operator kill-switch and spend-limit overrides", () => {
@@ -69,6 +83,11 @@ describe("loadCloudRuntimeConfig", () => {
     expect(config.killSwitches.globalDailySpendLimitUsd).toBe(0.05);
     expect(config.rateLimits.maxRequestsPerMinute).toBe(30);
     expect(config.requestTimeoutMs).toBe(45000);
+  });
+
+  it("requires an explicit boolean when proxy trust is configured", () => {
+    expect(() => loadCloudRuntimeConfig({ CODEFORGE_TRUST_PROXY: "maybe" })).toThrow(/CODEFORGE_TRUST_PROXY/);
+    expect(loadCloudRuntimeConfig({ CODEFORGE_TRUST_PROXY: "true" }).trustProxy).toBe(true);
   });
 
   it("resolves server provider credentials from env", () => {

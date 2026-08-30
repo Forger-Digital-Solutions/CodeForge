@@ -64,6 +64,22 @@ describe("AuthService", () => {
     expect(account.entitlements.some((e) => e.featureKey === "HOSTED_FREE")).toBe(true);
   });
 
+  it("only permits the CodeForge desktop loopback callback shape", async () => {
+    await expect(auth.startOAuth({ redirectUri: "https://attacker.example/auth/callback" })).rejects.toThrow(/127\.0\.0\.1/);
+    await expect(auth.startOAuth({ redirectUri: "http://localhost:8765/auth/callback" })).rejects.toThrow(/127\.0\.0\.1/);
+    await expect(auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/other" })).rejects.toThrow(/127\.0\.0\.1/);
+
+    const start = await auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
+    await expect(
+      auth.handleOAuthCallback({
+        code: "some_code",
+        state: start.state,
+        codeVerifier: start.codeVerifier,
+        redirectUri: "https://attacker.example/auth/callback",
+      }),
+    ).rejects.toThrow(/127\.0\.0\.1/);
+  });
+
   it("rejects unknown, tampered, or already consumed OAuth transactions", async () => {
     const start = await auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
 
@@ -165,4 +181,3 @@ describe("AuthService", () => {
     expect(() => verifyAccessToken(expiredToken, jwtSecret)).toThrow(/expired/);
   });
 });
-

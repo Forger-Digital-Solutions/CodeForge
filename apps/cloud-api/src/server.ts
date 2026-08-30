@@ -1,6 +1,6 @@
 import http from "node:http";
 import { URL } from "node:url";
-import type { AddressInfo } from "node:net";
+import { isIP, type AddressInfo } from "node:net";
 import { z } from "zod";
 import { CloudDatabase, createCloudDatabase, type ICloudDatabase } from "@codeforge/cloud-db";
 import { AuthService } from "@codeforge/cloud-auth";
@@ -72,6 +72,7 @@ export interface CodeForgeCloudServerConfig {
   db?: ICloudDatabase;
   dbPath?: string;
   databaseUrl?: string;
+  databaseSsl?: boolean;
   driver?: "sqlite" | "postgres";
   jwtSecret?: string;
   gitHubClientId?: string;
@@ -92,6 +93,8 @@ export interface CodeForgeCloudServerConfig {
   allowedOrigins?: string[];
   maxRequestsPerMinute?: number;
   requestTimeoutMs?: number;
+  /** Only honor proxy forwarding headers when an upstream proxy is explicitly trusted. */
+  trustProxy?: boolean;
 }
 
 export class CodeForgeCloudServer {
@@ -108,6 +111,7 @@ export class CodeForgeCloudServer {
   private readonly allowedOrigins: Set<string>;
   private readonly rateLimits = new Map<string, { count: number; resetAt: number }>();
   private readonly maxRequestsPerMinute: number;
+  private readonly trustProxy: boolean;
   private actualPort = 0;
   private host: string;
 
@@ -143,6 +147,7 @@ export class CodeForgeCloudServer {
     this.host = config.host ?? "127.0.0.1";
     this.allowedOrigins = new Set(config.allowedOrigins ?? ["http://127.0.0.1", "http://localhost", "https://codeforge.dev"]);
     this.maxRequestsPerMinute = config.maxRequestsPerMinute ?? 120;
+    this.trustProxy = config.trustProxy ?? false;
 
     if (config.db) {
       this.db = config.db;
@@ -151,6 +156,7 @@ export class CodeForgeCloudServer {
         driver: config.driver,
         dbPath: config.dbPath,
         databaseUrl: config.databaseUrl,
+        databaseSsl: config.databaseSsl,
       });
     }
 
@@ -328,10 +334,28 @@ export class CodeForgeCloudServer {
   private getCorsOrigin(req: http.IncomingMessage): string | undefined {
     const origin = req.headers.origin;
     if (!origin) return undefined;
-    if (this.allowedOrigins.has(origin) || origin.startsWith("http://127.0.0.1:") || origin.startsWith("http://localhost:")) {
+    if (this.allowedOrigins.has(origin) || this.isDesktopLoopbackOrigin(origin)) {
       return origin;
     }
     return undefined;
+  }
+
+  private isDesktopLoopbackOrigin(origin: string): boolean {
+    try {
+      const url = new URL(origin);
+      return url.origin === origin && url.protocol === "http:" && (url.hostname === "127.0.0.1" || url.hostname === "localhost") && Boolean(url.port);
+    } catch {
+      return false;
+    }
+  }
+
+  private getClientIp(req: http.IncomingMessage): string {
+    const socketIp = req.socket.remoteAddress || "127.0.0.1";
+    if (!this.trustProxy) return socketIp;
+
+    const forwarded = req.headers["x-forwarded-for"];
+    const firstForwarded = (Array.isArray(forwarded) ? forwarded[0] : forwarded)?.split(",")[0]?.trim();
+    return firstForwarded && isIP(firstForwarded) !== 0 ? firstForwarded : socketIp;
   }
 
   private corsHeaders(origin?: string): Record<string, string> {
@@ -361,7 +385,7 @@ export class CodeForgeCloudServer {
     const url = new URL(req.url || "/", `http://${req.headers.host || "127.0.0.1"}`);
     const method = req.method?.toUpperCase();
     const corsOrigin = this.getCorsOrigin(req);
-    const clientIp = req.socket.remoteAddress || "127.0.0.1";
+    const clientIp = this.getClientIp(req);
 
     // CORS preflight
     if (method === "OPTIONS") {

@@ -52,6 +52,7 @@ See [`.env.example`](../.env.example) for the full annotated list. Server-side e
 | `CODEFORGE_CLOUD_DB_DRIVER` | yes | `postgres` for staging; `sqlite` is only suitable for local single-process development |
 | `CODEFORGE_CLOUD_DB_PATH` | local sqlite only | persistent file path — **never `:memory:`** in staging/prod |
 | `DATABASE_URL` | postgres | Postgres connection string |
+| `CODEFORGE_CLOUD_DB_SSL` | non-loopback postgres | certificate-validated TLS; staging/production reject a remote URL that disables or weakens TLS |
 | `JWT_SECRET` | yes | ≥ 32 strong chars (not the dev default) |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | yes | GitHub OAuth app |
 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | yes | **TEST mode only** — live keys are refused at boot |
@@ -115,9 +116,11 @@ CodeForge Cloud is the OAuth transaction authority (PKCE `state` + `code_challen
 consumed server-side). The desktop uses an ephemeral loopback redirect
 (`http://127.0.0.1:<port>/auth/callback`). Configure the GitHub OAuth App callback as
 `http://127.0.0.1/auth/callback` — GitHub permits the native-app loopback flow to use a dynamically
-assigned port. Do not configure the staging API URL as the GitHub callback for this flow. Access
-tokens are short-lived JWTs; refresh tokens rotate on every use and are stored by the desktop in the
-OS keychain (SafeStorage) — never in the renderer.
+assigned port. CodeForge accepts only `http://127.0.0.1:<port>/auth/callback`, with no credentials,
+query, or fragment, so callers cannot turn the API into an OAuth redirector. Do not configure the
+staging API URL as the GitHub callback for this flow. Access tokens are short-lived JWTs; refresh
+tokens rotate on every use and are stored by the desktop in the OS keychain (SafeStorage) — never in
+the renderer.
 
 ---
 
@@ -128,8 +131,9 @@ OS keychain (SafeStorage) — never in the renderer.
   default plans; a checksum mismatch stops boot.
 - **SQLite is development-only.** Prod-like configuration rejects `:memory:`, but a persistent local
   SQLite file is not a substitute for remote PostgreSQL persistence or multi-instance authority.
-- The current Postgres pool has a maximum of 20 connections per Cloud instance. Keep the total pool
-  maximum below the database connection ceiling, including operational headroom.
+- The current Postgres pool has a maximum of 20 connections per Cloud instance. Non-loopback
+  staging/production connections use certificate-validated TLS. Keep the total pool maximum below
+  the database connection ceiling, including operational headroom.
 
 ---
 

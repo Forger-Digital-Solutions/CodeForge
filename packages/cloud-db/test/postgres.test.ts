@@ -76,6 +76,30 @@ describe("PostgresCloudDatabase — async schema init (boot-fix)", () => {
 // Proves migrations, a credit round-trip, and restart persistence against a genuine server.
 const REAL_PG = process.env.CODEFORGE_TEST_POSTGRES_URL || process.env.DATABASE_URL;
 describe.skipIf(!REAL_PG?.startsWith("postgres"))("PostgresCloudDatabase — real server integration", () => {
+  it("serializes independent instance initialization against a fresh schema", async () => {
+    const { randomUUID } = await import("node:crypto");
+    const schema = `codeforge_migration_${randomUUID().replaceAll("-", "")}`;
+    const pgModule = await import("pg");
+    const adminPool = new pgModule.default.Pool({ connectionString: REAL_PG });
+    const safeSchema = `"${schema}"`;
+
+    try {
+      await adminPool.query(`CREATE SCHEMA ${safeSchema}`);
+      const schemaUrl = new URL(REAL_PG!);
+      schemaUrl.searchParams.set("options", `-c search_path=${schema}`);
+      const first = new PostgresCloudDatabase({ connectionString: schemaUrl.toString() });
+      const second = new PostgresCloudDatabase({ connectionString: schemaUrl.toString() });
+
+      await Promise.all([first.init(), second.init()]);
+      const migrations = await adminPool.query(`SELECT version FROM ${safeSchema}.schema_migrations ORDER BY version`);
+      expect(migrations.rows.map((row) => row.version)).toEqual(MIGRATIONS.map((migration) => migration.version));
+      await Promise.all([first.close(), second.close()]);
+    } finally {
+      await adminPool.query(`DROP SCHEMA IF EXISTS ${safeSchema} CASCADE`);
+      await adminPool.end();
+    }
+  });
+
   it("initializes schema, persists a user + ledger, and survives a reconnect", async () => {
     const db1 = new PostgresCloudDatabase({ connectionString: REAL_PG });
     await db1.init();

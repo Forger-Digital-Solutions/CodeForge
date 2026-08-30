@@ -19,6 +19,8 @@ export interface CloudRuntimeConfig {
     driver: "sqlite" | "postgres";
     /** Postgres connection string (postgres driver only). */
     url?: string;
+    /** Certificate-validated TLS for a non-loopback Postgres connection. */
+    ssl?: boolean;
     /** SQLite file path (sqlite driver only). `:memory:` is refused outside development. */
     path?: string;
   };
@@ -43,6 +45,9 @@ export interface CloudRuntimeConfig {
     maxRequestsPerMinute: number;
   };
 
+  /** Honor X-Forwarded-For only when the deployment proxy is explicitly trusted. */
+  trustProxy: boolean;
+
   requestTimeoutMs: number;
 
   allowedOrigins: string[];
@@ -60,6 +65,7 @@ const EnvSchema = z.object({
   PORT: z.string().optional(),
   CODEFORGE_CLOUD_DB_DRIVER: z.enum(["sqlite", "postgres"]).optional(),
   DATABASE_URL: z.string().optional(),
+  CODEFORGE_CLOUD_DB_SSL: z.string().optional(),
   CODEFORGE_CLOUD_DB_PATH: z.string().optional(),
   JWT_SECRET: z.string().optional(),
   GITHUB_CLIENT_ID: z.string().optional(),
@@ -73,6 +79,7 @@ const EnvSchema = z.object({
   CODEFORGE_MAX_REQUEST_COST_USD: z.string().optional(),
   CODEFORGE_GLOBAL_DAILY_SPEND_LIMIT_USD: z.string().optional(),
   CODEFORGE_MAX_REQUESTS_PER_MINUTE: z.string().optional(),
+  CODEFORGE_TRUST_PROXY: z.string().optional(),
   CODEFORGE_REQUEST_TIMEOUT_MS: z.string().optional(),
   CODEFORGE_ALLOWED_ORIGINS: z.string().optional(),
   CODEFORGE_LOG_LEVEL: z.enum(["debug", "info", "warn", "error", "silent"]).optional(),
@@ -81,6 +88,29 @@ const EnvSchema = z.object({
 function parseBool(v: string | undefined, dflt: boolean): boolean {
   if (v === undefined) return dflt;
   return /^(1|true|yes|on)$/i.test(v.trim());
+}
+
+function parseOptionalBool(name: string, value: string | undefined): boolean | undefined {
+  if (value === undefined) return undefined;
+  if (/^(1|true|yes|on)$/i.test(value.trim())) return true;
+  if (/^(0|false|no|off)$/i.test(value.trim())) return false;
+  throw new CloudConfigError(`${name} must be a boolean value.`);
+}
+
+function parsePostgresUrl(databaseUrl: string): URL {
+  try {
+    const parsed = new URL(databaseUrl);
+    if (parsed.protocol !== "postgres:" && parsed.protocol !== "postgresql:") {
+      throw new Error("unsupported protocol");
+    }
+    return parsed;
+  } catch {
+    throw new CloudConfigError("DATABASE_URL must be a valid postgres:// or postgresql:// URL.");
+  }
+}
+
+function isLoopbackDatabase(url: URL): boolean {
+  return url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "::1";
 }
 
 function parseNum(v: string | undefined, dflt: number): number {
@@ -116,7 +146,18 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
   const database: CloudRuntimeConfig["database"] = { driver };
   if (driver === "postgres") {
     if (!e.DATABASE_URL) throw new CloudConfigError("CODEFORGE_CLOUD_DB_DRIVER=postgres requires DATABASE_URL.");
+    const parsedDatabaseUrl = parsePostgresUrl(e.DATABASE_URL);
+    const requestedSslMode = parsedDatabaseUrl.searchParams.get("sslmode")?.toLowerCase();
+    const explicitSsl = parseOptionalBool("CODEFORGE_CLOUD_DB_SSL", e.CODEFORGE_CLOUD_DB_SSL);
+    if (isProdLike && (requestedSslMode === "disable" || requestedSslMode === "allow" || requestedSslMode === "prefer" || requestedSslMode === "no-verify")) {
+      throw new CloudConfigError("DATABASE_URL must not disable or weaken TLS in staging/production.");
+    }
+    const ssl = explicitSsl ?? !isLoopbackDatabase(parsedDatabaseUrl);
+    if (isProdLike && !isLoopbackDatabase(parsedDatabaseUrl) && !ssl) {
+      throw new CloudConfigError("Remote PostgreSQL in staging/production requires CODEFORGE_CLOUD_DB_SSL=true with certificate validation.");
+    }
     database.url = e.DATABASE_URL;
+    database.ssl = ssl;
   } else {
     const path = e.CODEFORGE_CLOUD_DB_PATH ?? (e.DATABASE_URL && !e.DATABASE_URL.startsWith("postgres") ? e.DATABASE_URL : undefined);
     // Production-truth: a staging/production deployment must not run on an ephemeral in-memory DB.
@@ -182,6 +223,7 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
     allowedOrigins: allowedOrigins.length > 0 ? allowedOrigins : ["http://127.0.0.1", "http://localhost", "https://codeforge.dev"],
     logLevel: e.CODEFORGE_LOG_LEVEL ?? (isProdLike ? "info" : "debug"),
     providerCredentials: resolveCloudProviderCredentials(env),
+    trustProxy: parseOptionalBool("CODEFORGE_TRUST_PROXY", e.CODEFORGE_TRUST_PROXY) ?? false,
   };
 }
 
@@ -191,6 +233,7 @@ export function describeConfig(config: CloudRuntimeConfig): string {
   return [
     `env=${config.environment}`,
     `db=${config.database.driver}`,
+    `dbTls=${config.database.ssl ?? false}`,
     `host=${config.host}:${config.port}`,
     `github=${config.gitHub.clientId ? "configured" : "absent"}`,
     `stripe=${config.stripe.secretKey.startsWith("sk_test") ? "test-mode" : config.stripe.secretKey ? "configured" : "absent"}`,
@@ -198,6 +241,7 @@ export function describeConfig(config: CloudRuntimeConfig): string {
     `hostedInference=${config.killSwitches.hostedInferenceEnabled}`,
     `hostedFree=${config.killSwitches.hostedFreeEnabled}`,
     `dailyLimitUsd=${config.killSwitches.globalDailySpendLimitUsd}`,
+    `trustProxy=${config.trustProxy}`,
     `logLevel=${config.logLevel}`,
   ].join(" ");
 }
