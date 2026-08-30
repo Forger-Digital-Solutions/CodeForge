@@ -904,7 +904,9 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     reservedCredits: number;
     description?: string;
     metadata?: Record<string, unknown>;
+    maxConcurrentTasks?: number;
   }): Promise<{ reservation: ReservationRecord; balanceAfter: number; created: boolean }> {
+
     const existing = this.getReservationByRequestIdSync(params.requestId);
     if (existing) {
       if (existing.userId !== params.userId) {
@@ -922,6 +924,18 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
         return { reservation: existingInTx, balanceAfter: this.getCreditBalanceSync(params.userId), created: false };
       }
 
+      if (params.maxConcurrentTasks !== undefined && params.maxConcurrentTasks > 0) {
+        const active = this.getActiveReservationCountSync(params.userId);
+        if (active >= params.maxConcurrentTasks) {
+          throw new Error(`Concurrent task limit reached (active: ${active}, limit: ${params.maxConcurrentTasks})`);
+        }
+      }
+
+      const balance = this.getCreditBalanceSync(params.userId);
+      if (balance < params.reservedCredits) {
+        throw new Error(`Insufficient credit balance for reservation (available: ${balance}, required: ${params.reservedCredits})`);
+      }
+
       const reservation = this.insertReservationSync(params);
       const ledger = this.appendLedgerSync({
         userId: params.userId,
@@ -933,8 +947,8 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       });
       return { reservation, balanceAfter: ledger.balanceAfter, created: true };
     });
-
   }
+
 
   async settleReservation(params: {
     requestId: string;
@@ -1414,8 +1428,13 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     }
   }
 
-  async getActiveReservationCount(userId: string): Promise<number> {
+  private getActiveReservationCountSync(userId: string): number {
     const row = this.db.prepare(`SELECT COUNT(*) as count FROM reservations WHERE user_id = @userId AND status = 'reserved'`).get({ userId }) as { count?: number } | undefined;
     return Number(row?.count ?? 0);
   }
+
+  async getActiveReservationCount(userId: string): Promise<number> {
+    return this.getActiveReservationCountSync(userId);
+  }
 }
+

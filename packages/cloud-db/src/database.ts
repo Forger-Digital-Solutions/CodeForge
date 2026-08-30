@@ -17,8 +17,9 @@ export class CloudDatabase extends SQLiteCloudDatabase {
 }
 
 export function createCloudDatabase(config: CloudDatabaseConfig = {}): ICloudDatabase {
-  const driver = config.driver ?? (process.env.CODEFORGE_CLOUD_DB_DRIVER as CloudDatabaseDriver) ?? "sqlite";
   const rawDbUrl = config.databaseUrl ?? process.env.DATABASE_URL;
+  const driver = config.driver ?? (process.env.CODEFORGE_CLOUD_DB_DRIVER as CloudDatabaseDriver) ?? (rawDbUrl && (rawDbUrl.startsWith("postgres://") || rawDbUrl.startsWith("postgresql://")) ? "postgres" : "sqlite");
+
 
   if (driver === "postgres") {
     if (!rawDbUrl) {

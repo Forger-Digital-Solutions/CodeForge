@@ -7,6 +7,7 @@ export interface ReserveBudgetParams {
   requestId: string;
   providerId: string;
   modelId: string;
+  maxConcurrentTasks?: number;
 }
 
 export interface CommitUsageParams {
@@ -43,14 +44,16 @@ export class UsageEngine {
       }
     }
 
-    // 2. Atomically reserve credits in DB (handles idempotency, row locking, and ledger deduction)
+    // 2. Atomically reserve credits and enforce concurrency in DB (handles idempotency, row locking, and ledger deduction)
     const { reservation, balanceAfter } = await this.db.reserveCredits({
       requestId: params.requestId,
       userId: params.userId,
       providerId: params.providerId,
       modelId: params.modelId,
       reservedCredits: params.estimatedCredits,
+      maxConcurrentTasks: params.maxConcurrentTasks,
     });
+
 
     // Maintain backward-compatible hosted_requests record
     try {

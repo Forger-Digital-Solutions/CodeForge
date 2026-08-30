@@ -429,6 +429,27 @@ CREATE TABLE IF NOT EXISTS oauth_transactions (
 CREATE INDEX IF NOT EXISTS idx_oauth_transactions_state ON oauth_transactions(state);
 `;
 
+const MIGRATION_2_SQLITE = `
+-- SQLite utilizes implicit rowid for monotonic ordering.
+-- No-op statement for migration version parity.
+SELECT 1;
+`;
+
+const MIGRATION_2_POSTGRES = `
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'credit_ledger' AND column_name = 'seq'
+  ) THEN
+    CREATE SEQUENCE IF NOT EXISTS credit_ledger_seq_seq;
+    ALTER TABLE credit_ledger ADD COLUMN seq BIGINT DEFAULT nextval('credit_ledger_seq_seq');
+    CREATE INDEX IF NOT EXISTS idx_credit_ledger_user_seq ON credit_ledger(user_id, seq DESC);
+  END IF;
+END $$;
+`;
+
+
 export const MIGRATIONS: MigrationDefinition[] = [
   {
     version: 1,
@@ -437,7 +458,15 @@ export const MIGRATIONS: MigrationDefinition[] = [
     postgresUp: MIGRATION_1_POSTGRES,
     checksum: computeChecksum(MIGRATION_1_SQLITE),
   },
+  {
+    version: 2,
+    name: "002_credit_ledger_monotonic_seq",
+    sqliteUp: MIGRATION_2_SQLITE,
+    postgresUp: MIGRATION_2_POSTGRES,
+    checksum: computeChecksum(MIGRATION_2_SQLITE),
+  },
 ];
+
 
 export const CANONICAL_FREE_FEATURES: FeatureKey[] = ["HOSTED_FREE", "DIRECT_PROVIDERS", "COMMUNITY_MODELS"];
 export const CANONICAL_PRO_FEATURES: FeatureKey[] = [

@@ -960,6 +960,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     reservedCredits: number;
     description?: string;
     metadata?: Record<string, unknown>;
+    maxConcurrentTasks?: number;
   }): Promise<{ reservation: ReservationRecord; balanceAfter: number; created: boolean }> {
     const existing = await this.getReservationByRequestId(params.requestId);
     if (existing) {
@@ -971,7 +972,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     }
 
     return this.withTx(async (client) => {
-      // Lock the user row to serialize ledger operations per user and prevent concurrent overspend
+      // Lock the user row to serialize ledger operations per user and prevent concurrent overspend / race conditions
       await client.query(`SELECT id FROM users WHERE id = $1 FOR UPDATE`, [params.userId]);
 
       const existingInTx = await this.getReservationByRequestIdWithClient(client, params.requestId);
@@ -981,6 +982,17 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         }
         const balance = await this.getCreditBalanceWithClient(client, params.userId);
         return { reservation: existingInTx, balanceAfter: balance, created: false };
+      }
+
+      if (params.maxConcurrentTasks !== undefined && params.maxConcurrentTasks > 0) {
+        const activeRes = await client.query(
+          `SELECT COUNT(*) FROM reservations WHERE user_id = $1 AND status = 'reserved'`,
+          [params.userId],
+        );
+        const activeCount = Number(activeRes.rows[0].count);
+        if (activeCount >= params.maxConcurrentTasks) {
+          throw new Error(`Concurrent task limit reached (active: ${activeCount}, limit: ${params.maxConcurrentTasks})`);
+        }
       }
 
       const reservation = await this.insertReservationWithClient(client, params);
@@ -996,6 +1008,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       return { reservation, balanceAfter: ledger.balanceAfter, created: true };
     });
   }
+
 
   async settleReservation(params: {
     requestId: string;

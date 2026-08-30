@@ -185,14 +185,16 @@ export class GatewayService {
         }
       }
 
-      // 4. Two-phase budget reservation in ledger
+      // 4. Two-phase budget reservation & atomic DB concurrency admission in ledger
       const reservation = await this.usageEngine.reserveBudget({
         userId,
         estimatedCredits,
         requestId: request.requestId,
         providerId: selectedProviderId,
         modelId: selectedModelId,
+        maxConcurrentTasks: maxConcurrent,
       });
+
       reservationCreated = true;
 
       const startTime = Date.now();

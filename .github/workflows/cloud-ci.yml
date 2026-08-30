@@ -30,6 +30,22 @@ on:
 jobs:
   cloud-verify:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: codeforge_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      CODEFORGE_TEST_POSTGRES_URL: postgresql://postgres:postgrespassword@localhost:5432/codeforge_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,7 +57,7 @@ jobs:
         run: npm run typecheck
       - name: Build
         run: npm run build
-      - name: Cloud-critical suites
+      - name: Cloud-critical suites (SQLite + Real PostgreSQL)
         run: >-
           npx vitest run
           apps/cloud-api
@@ -51,8 +67,10 @@ jobs:
           tests/cloud-adversarial-security.test.ts
           tests/cloud-concurrency-ledger.test.ts
           tests/cloud-failure-matrix.test.ts
+          tests/cloud-postgres-adversarial.test.ts
       - name: Full test suite
         run: npm test
+
 
   # Manual only, and each step self-skips when its credential secret is absent. Never runs on PRs.
   real-staging-smoke:

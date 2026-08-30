@@ -104,7 +104,17 @@ export interface ICloudDatabase {
    * CREDIT_RESERVED ledger debit as one unit — a concurrent duplicate requestId returns the existing
    * reservation without a second debit, and concurrent distinct requests can never overspend.
    */
-  reserveCredits(params: { requestId: string; userId: string; providerId: string; modelId: string; reservedCredits: number; description?: string; metadata?: Record<string, unknown> }): Promise<{ reservation: ReservationRecord; balanceAfter: number; created: boolean }>;
+  reserveCredits(params: {
+    requestId: string;
+    userId: string;
+    providerId: string;
+    modelId: string;
+    reservedCredits: number;
+    description?: string;
+    metadata?: Record<string, unknown>;
+    maxConcurrentTasks?: number;
+  }): Promise<{ reservation: ReservationRecord; balanceAfter: number; created: boolean }>;
+
   /**
    * Atomically settle a reserved request: transition reserved→committed exactly once and reconcile the
    * difference between reserved and actual credits (refund excess, or charge the bounded remainder).
