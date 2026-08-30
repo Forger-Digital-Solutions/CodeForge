@@ -150,7 +150,12 @@ export function prepareShellCommand(
   context: RuntimeContext = {},
 ): PreparedShellCommand {
   const platform = context.platform ?? process.platform;
-  const runtimeExecutable = path.resolve(context.execPath ?? process.execPath);
+  const configuredRuntime = context.execPath ?? process.execPath;
+  // The desktop can prepare a Windows Electron command while tests/automation run on another host.
+  // path.resolve() on a POSIX host would corrupt an absolute Windows path into a workspace-relative one.
+  const runtimeExecutable = platform === "win32" && path.win32.isAbsolute(configuredRuntime)
+    ? configuredRuntime
+    : path.resolve(configuredRuntime);
   const isElectron = context.isElectron ?? Boolean(process.versions.electron);
   let childEnv = { ...env };
   delete childEnv.ELECTRON_RUN_AS_NODE;
