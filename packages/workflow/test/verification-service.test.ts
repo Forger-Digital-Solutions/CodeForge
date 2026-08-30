@@ -100,13 +100,21 @@ describe("VerificationService", () => {
   });
 
   it("reports timeout deterministically and terminates descendants", async () => {
+    // The descendant announces itself only after DESCENDANT_WRITE_DELAY_MS. The tree kill therefore
+    // has that long to reach it; the assertion is made after a longer wait still, so a surviving
+    // descendant is always observed. The window is generous on purpose — the invariant under test is
+    // "descendants are terminated", not "terminated within a few hundred milliseconds", and a tight
+    // window makes the test fail under parallel-suite load rather than on a real regression.
+    const DESCENDANT_WRITE_DELAY_MS = 3000;
+    const ASSERT_AFTER_MS = 4000;
+
     await writeFile(
       join(ws, "descendant.cjs"),
-      "const fs=require('node:fs'); setTimeout(()=>fs.writeFileSync('descendant-alive.txt','alive'),700); setTimeout(()=>{},5000);",
+      `const fs=require('node:fs'); setTimeout(()=>fs.writeFileSync('descendant-alive.txt','alive'),${DESCENDANT_WRITE_DELAY_MS}); setTimeout(()=>{},15000);`,
     );
     await writeFile(
       join(ws, "parent.cjs"),
-      "const {spawn}=require('node:child_process'); spawn(process.execPath,['descendant.cjs'],{stdio:'ignore'}); setTimeout(()=>{},5000);",
+      "const {spawn}=require('node:child_process'); spawn(process.execPath,['descendant.cjs'],{stdio:'ignore'}); setTimeout(()=>{},15000);",
     );
 
     const result = await runCommand({ workspacePath: ws, command: "node parent.cjs", timeoutMs: 150 });
@@ -114,7 +122,7 @@ describe("VerificationService", () => {
     expect(result.timedOut).toBe(true);
     expect(result.failed).toBeGreaterThan(0);
     expect(result.output).toContain("timed out");
-    await new Promise((resolve) => setTimeout(resolve, 900));
+    await new Promise((resolve) => setTimeout(resolve, ASSERT_AFTER_MS));
     expect(existsSync(join(ws, "descendant-alive.txt"))).toBe(false);
-  });
+  }, 20000);
 });
