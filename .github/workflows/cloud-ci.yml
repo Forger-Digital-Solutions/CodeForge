@@ -17,6 +17,7 @@ on:
       - "packages/router/**"
       - "packages/providers/**"
       - "packages/model-registry/**"
+      - "packages/workflow/**"
       - ".github/workflows/cloud-ci.yml"
   pull_request:
     paths:
@@ -26,6 +27,7 @@ on:
       - "packages/router/**"
       - "packages/providers/**"
       - "packages/model-registry/**"
+      - "packages/workflow/**"
 
 jobs:
   cloud-verify:
