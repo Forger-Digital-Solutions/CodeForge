@@ -202,8 +202,8 @@ describe("CodeForge Cloud Server API End-to-End", () => {
   });
 
   it("processes Stripe webhook signatures and activates Pro subscriptions", async () => {
-    const user = server.db.createUser({ displayName: "Stripe User", primaryIdentity: "github:999888" });
-    server.db.appendLedgerEvent({ userId: user.id, amount: 500_000, eventType: "FREE_ALLOWANCE_GRANTED" });
+    const user = await server.db.createUser({ displayName: "Stripe User", primaryIdentity: "github:999888" });
+    await server.db.appendLedgerEvent({ userId: user.id, amount: 500_000, eventType: "FREE_ALLOWANCE_GRANTED" });
 
     const event = {
       id: "evt_stripe_test_1",
@@ -238,6 +238,7 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     expect(data.action).toBe("pro_subscription_activated");
 
     // Pro balance is now 5.5M credits
-    expect(server.db.getCreditBalance(user.id)).toBe(5_500_000);
+    expect(await server.db.getCreditBalance(user.id)).toBe(5_500_000);
   });
 });
+

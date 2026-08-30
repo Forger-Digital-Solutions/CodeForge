@@ -57,9 +57,9 @@ describe("GatewayService Hardening", () => {
   });
 
   it("executes hosted inference, emits exactly one terminal event, and settles ledger", async () => {
-    const user = db.createUser({ displayName: "Tester", primaryIdentity: "github:123" });
-    db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
-    db.setEntitlement(user.id, "HOSTED_FREE", "true");
+    const user = await db.createUser({ displayName: "Tester", primaryIdentity: "github:123" });
+    await db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
+    await db.setEntitlement(user.id, "HOSTED_FREE", "true");
 
     const events: HostedStreamEvent[] = [];
     const result = await gateway.executeHostedInference(
@@ -80,14 +80,14 @@ describe("GatewayService Hardening", () => {
     expect(terminalEvents).toHaveLength(1);
     expect(terminalEvents[0]?.type).toBe("turn.completed");
 
-    const balance = db.getCreditBalance(user.id);
+    const balance = await db.getCreditBalance(user.id);
     expect(balance).toBeLessThan(500_000);
   });
 
   it("enforces server-side execution lease and rejects concurrency exceeding plan limit", async () => {
-    const user = db.createUser({ displayName: "ConcurrentUser", primaryIdentity: "github:456" });
-    db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
-    db.setEntitlement(user.id, "HOSTED_FREE", "true");
+    const user = await db.createUser({ displayName: "ConcurrentUser", primaryIdentity: "github:456" });
+    await db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
+    await db.setEntitlement(user.id, "HOSTED_FREE", "true");
 
     // Start request 1 (active)
     const p1 = gateway.executeHostedInference(
@@ -118,9 +118,9 @@ describe("GatewayService Hardening", () => {
   });
 
   it("enforces operator kill switches before calling provider", async () => {
-    const user = db.createUser({ displayName: "KillUser", primaryIdentity: "github:789" });
-    db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
-    db.setEntitlement(user.id, "HOSTED_FREE", "true");
+    const user = await db.createUser({ displayName: "KillUser", primaryIdentity: "github:789" });
+    await db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
+    await db.setEntitlement(user.id, "HOSTED_FREE", "true");
 
     // 1. Disable hosted free kill switch
     firewallManager.setKillSwitches({ hostedFreeEnabled: false });
@@ -155,3 +155,4 @@ describe("GatewayService Hardening", () => {
     ).rejects.toThrow(/Hosted inference is currently disabled/);
   });
 });
+

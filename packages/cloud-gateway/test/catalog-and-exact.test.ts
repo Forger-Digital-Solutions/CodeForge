@@ -47,9 +47,10 @@ describe("Exact hosted model selection by bare modelId (no providerId)", () => {
     fm.registerProvider(new Prov("groq"));
     const gateway = new GatewayService({ firewallManager: fm, entitlementService: new EntitlementService(db), usageEngine: new UsageEngine(db), db });
 
-    const user = db.createUser({ displayName: "Exact User", primaryIdentity: "github:exact-1" });
-    db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
-    db.setEntitlement(user.id, "HOSTED_FREE", "true");
+    const user = await db.createUser({ displayName: "Exact User", primaryIdentity: "github:exact-1" });
+    await db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
+    await db.setEntitlement(user.id, "HOSTED_FREE", "true");
+
 
     const events: string[] = [];
     await gateway.executeHostedInference(

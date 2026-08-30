@@ -27,17 +27,17 @@ describe("Cloud Usage Engine", () => {
     expect(res.estimatedCostUsd).toBeGreaterThan(0);
   });
 
-  it("performs two-phase reservation, settles exact difference, and tracks usage idempotently", () => {
-    const user = db.createUser({ displayName: "Coder", primaryIdentity: "github:888" });
-    db.appendLedgerEvent({
+  it("performs two-phase reservation, settles exact difference, and tracks usage idempotently", async () => {
+    const user = await db.createUser({ displayName: "Coder", primaryIdentity: "github:888" });
+    await db.appendLedgerEvent({
       userId: user.id,
       amount: 100_000,
       eventType: "FREE_ALLOWANCE_GRANTED",
     });
-    expect(db.getCreditBalance(user.id)).toBe(100_000);
+    expect(await db.getCreditBalance(user.id)).toBe(100_000);
 
     // 1. Reserve 10,000 credits
-    const reservation = engine.reserveBudget({
+    const reservation = await engine.reserveBudget({
       userId: user.id,
       estimatedCredits: 10_000,
       requestId: "req-abc-123",
@@ -46,10 +46,10 @@ describe("Cloud Usage Engine", () => {
     });
     expect(reservation.reservedCredits).toBe(10_000);
     expect(reservation.balanceAfter).toBe(90_000);
-    expect(db.getCreditBalance(user.id)).toBe(90_000);
+    expect(await db.getCreditBalance(user.id)).toBe(90_000);
 
     // 2. Commit actual usage (e.g. 1000 input, 200 output = 1000 + 400 = 1400 credits)
-    const commit = engine.commitUsage({
+    const commit = await engine.commitUsage({
       userId: user.id,
       requestId: "req-abc-123",
       reservationId: reservation.reservationId,
@@ -63,23 +63,23 @@ describe("Cloud Usage Engine", () => {
     expect(commit.actualCredits).toBe(1400);
     // Initial 100k - actual 1400 = 98,600
     expect(commit.balanceAfter).toBe(98_600);
-    expect(db.getCreditBalance(user.id)).toBe(98_600);
+    expect(await db.getCreditBalance(user.id)).toBe(98_600);
 
-    const summary = engine.getUserUsageSummary(user.id);
+    const summary = await engine.getUserUsageSummary(user.id);
     expect(summary.creditBalance).toBe(98_600);
     expect(summary.recentEvents).toHaveLength(1);
     expect(summary.recentEvents[0]?.creditsConsumed).toBe(1400);
   });
 
-  it("releases entire reservation on failed or cancelled requests", () => {
-    const user = db.createUser({ displayName: "Coder 2", primaryIdentity: "github:999" });
-    db.appendLedgerEvent({
+  it("releases entire reservation on failed or cancelled requests", async () => {
+    const user = await db.createUser({ displayName: "Coder 2", primaryIdentity: "github:999" });
+    await db.appendLedgerEvent({
       userId: user.id,
       amount: 50_000,
       eventType: "FREE_ALLOWANCE_GRANTED",
     });
 
-    const res = engine.reserveBudget({
+    const res = await engine.reserveBudget({
       userId: user.id,
       estimatedCredits: 5_000,
       requestId: "req-failed-1",
@@ -88,7 +88,7 @@ describe("Cloud Usage Engine", () => {
     });
     expect(res.balanceAfter).toBe(45_000);
 
-    const release = engine.releaseReservation({
+    const release = await engine.releaseReservation({
       userId: user.id,
       requestId: "req-failed-1",
       estimatedCredits: 5_000,
@@ -97,6 +97,7 @@ describe("Cloud Usage Engine", () => {
 
     expect(release.refundedCredits).toBe(5_000);
     expect(release.balanceAfter).toBe(50_000);
-    expect(db.getCreditBalance(user.id)).toBe(50_000);
+    expect(await db.getCreditBalance(user.id)).toBe(50_000);
   });
 });
+

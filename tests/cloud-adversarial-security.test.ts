@@ -76,9 +76,10 @@ describe("Phase 56 — P0 Adversarial Security Certification", () => {
     expect(body.error).toBeDefined();
 
     // User "torvalds" was NOT created in DB
-    const user = server.db.getUserByPrimaryIdentity("github:1");
+    const user = await server.db.getUserByPrimaryIdentity("github:1");
     expect(user).toBeUndefined();
   });
+
 
   it("enforces server-owned OAuth transactions, rejecting unknown state, wrong PKCE, and expired state", async () => {
     // 1. Unknown state
@@ -239,12 +240,12 @@ describe("Phase 56 — P0 Adversarial Security Certification", () => {
     expect(text).not.toContain(sentinelSecret);
   });
 
-  it("rejects cross-user reservation spoofing", () => {
-    const userA = server.db.createUser({ displayName: "User A", primaryIdentity: "github:1001" });
-    const userB = server.db.createUser({ displayName: "User B", primaryIdentity: "github:1002" });
+  it("rejects cross-user reservation spoofing", async () => {
+    const userA = await server.db.createUser({ displayName: "User A", primaryIdentity: "github:1001" });
+    const userB = await server.db.createUser({ displayName: "User B", primaryIdentity: "github:1002" });
 
     // User A creates reservation
-    server.db.createReservation({
+    await server.db.createReservation({
       requestId: "req-shared-id",
       userId: userA.id,
       providerId: "codeforge",
@@ -253,13 +254,14 @@ describe("Phase 56 — P0 Adversarial Security Certification", () => {
     });
 
     // User B attempts to commit User A's reservation -> strictly DENIED
-    expect(() => {
-      server.db.commitReservation("req-shared-id", userB.id, 5000);
-    }).toThrow(/Unauthorized access/);
+    await expect(async () => {
+      await server.db.commitReservation("req-shared-id", userB.id, 5000);
+    }).rejects.toThrow(/Unauthorized access/);
 
     // User B attempts to release User A's reservation -> strictly DENIED
-    expect(() => {
-      server.db.releaseReservation("req-shared-id", userB.id);
-    }).toThrow(/Unauthorized access/);
+    await expect(async () => {
+      await server.db.releaseReservation("req-shared-id", userB.id);
+    }).rejects.toThrow(/Unauthorized access/);
   });
 });
+

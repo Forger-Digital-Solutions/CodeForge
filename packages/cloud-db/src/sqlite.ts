@@ -79,6 +79,13 @@ export interface SQLiteCloudDatabaseOptions {
   dbPath?: string;
 }
 
+/**
+ * Embedded synchronous backend. Implements the async {@link ICloudDatabase} contract with fully
+ * synchronous method bodies wrapped in resolved promises. Because a body never awaits, each public
+ * operation runs to completion in a single event-loop tick — so it stays atomic with respect to every
+ * other operation even though callers `await` it, which is exactly what keeps the credit ledger and
+ * reservation state machine race-free without a server round-trip.
+ */
 export class SQLiteCloudDatabase implements ICloudDatabase {
   private readonly db: SQLiteDatabase;
 
@@ -91,7 +98,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
    * Idempotent no-op: SQLite schema is created synchronously in the constructor. Present so callers
    * can uniformly `await db.init()` across drivers before serving traffic (Postgres does real work here).
    */
-  init(): void {
+  async init(): Promise<void> {
     // no-op — schema already initialized in constructor
   }
 
@@ -135,15 +142,30 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     }
   }
 
-  close(): void {
+  async close(): Promise<void> {
     try {
       this.db.close();
     } catch {}
   }
 
+  /** Synchronous transaction wrapper — makes a multi-statement mutation atomic (rolls back on throw). */
+  private txSync<T>(fn: () => T): T {
+    this.db.exec("BEGIN");
+    try {
+      const result = fn();
+      this.db.exec("COMMIT");
+      return result;
+    } catch (e) {
+      try {
+        this.db.exec("ROLLBACK");
+      } catch {}
+      throw e;
+    }
+  }
+
   // --- Users & Identities ---
 
-  createUser(params: { displayName: string; avatarUrl?: string; primaryIdentity: string; id?: string }): UserRecord {
+  async createUser(params: { displayName: string; avatarUrl?: string; primaryIdentity: string; id?: string }): Promise<UserRecord> {
     const now = new Date().toISOString();
     const id = params.id ?? randomUUID();
     const user: UserRecord = {
@@ -168,7 +190,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return user;
   }
 
-  getUserById(id: string): UserRecord | undefined {
+  private getUserByIdSync(id: string): UserRecord | undefined {
     const row = this.db.prepare(`SELECT * FROM users WHERE id = @id`).get({ id }) as Record<string, unknown> | undefined;
     if (!row) return undefined;
     return {
@@ -181,7 +203,11 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     };
   }
 
-  getUserByPrimaryIdentity(primaryIdentity: string): UserRecord | undefined {
+  async getUserById(id: string): Promise<UserRecord | undefined> {
+    return this.getUserByIdSync(id);
+  }
+
+  async getUserByPrimaryIdentity(primaryIdentity: string): Promise<UserRecord | undefined> {
     const row = this.db.prepare(`SELECT * FROM users WHERE primary_identity = @primaryIdentity`).get({ primaryIdentity }) as Record<string, unknown> | undefined;
     if (!row) return undefined;
     return {
@@ -194,7 +220,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     };
   }
 
-  createIdentity(params: { userId: string; provider: "github" | "email"; providerUserId: string; providerEmail?: string; id?: string }): IdentityRecord {
+  async createIdentity(params: { userId: string; provider: "github" | "email"; providerUserId: string; providerEmail?: string; id?: string }): Promise<IdentityRecord> {
     const now = new Date().toISOString();
     const id = params.id ?? randomUUID();
     const identity: IdentityRecord = {
@@ -221,7 +247,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return identity;
   }
 
-  getIdentityByProvider(provider: string, providerUserId: string): IdentityRecord | undefined {
+  async getIdentityByProvider(provider: string, providerUserId: string): Promise<IdentityRecord | undefined> {
     const row = this.db.prepare(`SELECT * FROM identities WHERE provider = @provider AND provider_user_id = @providerUserId`).get({ provider, providerUserId }) as Record<string, unknown> | undefined;
     if (!row) return undefined;
     return {
@@ -237,7 +263,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
 
   // --- Device Sessions & Rotation ---
 
-  createDeviceSession(params: { userId: string; deviceName?: string; refreshTokenHash: string; ipAddress?: string; userAgent?: string; expiresInSeconds?: number }): DeviceSessionRecord {
+  private createDeviceSessionSync(params: { userId: string; deviceName?: string; refreshTokenHash: string; ipAddress?: string; userAgent?: string; expiresInSeconds?: number }): DeviceSessionRecord {
     const now = new Date();
     const expires = new Date(now.getTime() + (params.expiresInSeconds ?? 30 * 24 * 60 * 60) * 1000);
     const session: DeviceSessionRecord = {
@@ -270,7 +296,11 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return session;
   }
 
-  getDeviceSessionByTokenHash(refreshTokenHash: string): DeviceSessionRecord | undefined {
+  async createDeviceSession(params: { userId: string; deviceName?: string; refreshTokenHash: string; ipAddress?: string; userAgent?: string; expiresInSeconds?: number }): Promise<DeviceSessionRecord> {
+    return this.createDeviceSessionSync(params);
+  }
+
+  private getDeviceSessionByTokenHashSync(refreshTokenHash: string): DeviceSessionRecord | undefined {
     const row = this.db.prepare(`SELECT * FROM device_sessions WHERE refresh_token_hash = @refreshTokenHash`).get({ refreshTokenHash }) as Record<string, unknown> | undefined;
     if (!row) return undefined;
     return {
@@ -287,66 +317,76 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     };
   }
 
-  updateDeviceSessionLastSeen(id: string): void {
+  async getDeviceSessionByTokenHash(refreshTokenHash: string): Promise<DeviceSessionRecord | undefined> {
+    return this.getDeviceSessionByTokenHashSync(refreshTokenHash);
+  }
+
+  async updateDeviceSessionLastSeen(id: string): Promise<void> {
     const now = new Date().toISOString();
     this.db.prepare(`UPDATE device_sessions SET last_seen_at = @now WHERE id = @id`).run({ id, now });
   }
 
-  revokeDeviceSession(id: string): void {
+  async revokeDeviceSession(id: string): Promise<void> {
     const now = new Date().toISOString();
     this.db.prepare(`UPDATE device_sessions SET revoked_at = @now WHERE id = @id`).run({ id, now });
   }
 
-  revokeAllUserDeviceSessions(userId: string): void {
+  private revokeAllUserDeviceSessionsSync(userId: string): void {
     const now = new Date().toISOString();
     this.db.prepare(`UPDATE device_sessions SET revoked_at = @now WHERE user_id = @userId AND revoked_at IS NULL`).run({ userId, now });
   }
 
-  rotateDeviceSession(params: {
+  async revokeAllUserDeviceSessions(userId: string): Promise<void> {
+    this.revokeAllUserDeviceSessionsSync(userId);
+  }
+
+  async rotateDeviceSession(params: {
     oldTokenHash: string;
     newRefreshTokenHash: string;
     deviceName?: string;
     ipAddress?: string;
     userAgent?: string;
     expiresInSeconds?: number;
-  }): { user: UserRecord; session: DeviceSessionRecord } {
-    const session = this.getDeviceSessionByTokenHash(params.oldTokenHash);
+  }): Promise<{ user: UserRecord; session: DeviceSessionRecord }> {
+    const session = this.getDeviceSessionByTokenHashSync(params.oldTokenHash);
     if (!session) {
       throw new Error("Invalid refresh token");
     }
     if (session.revokedAt) {
       // Possible token reuse / breach: revoke all sessions for safety
-      this.revokeAllUserDeviceSessions(session.userId);
+      this.revokeAllUserDeviceSessionsSync(session.userId);
       throw new Error("Device session has been revoked (replay detected)");
     }
     if (new Date(session.expiresAt).getTime() < Date.now()) {
       throw new Error("Device session has expired");
     }
 
-    const user = this.getUserById(session.userId);
+    const user = this.getUserByIdSync(session.userId);
     if (!user) {
       throw new Error("User associated with session not found");
     }
 
     // Revoke old session and insert new session atomically
-    const now = new Date().toISOString();
-    this.db.prepare(`UPDATE device_sessions SET revoked_at = @now WHERE id = @id`).run({ id: session.id, now });
+    return this.txSync(() => {
+      const now = new Date().toISOString();
+      this.db.prepare(`UPDATE device_sessions SET revoked_at = @now WHERE id = @id`).run({ id: session.id, now });
 
-    const newSession = this.createDeviceSession({
-      userId: user.id,
-      deviceName: params.deviceName ?? session.deviceName,
-      refreshTokenHash: params.newRefreshTokenHash,
-      ipAddress: params.ipAddress ?? session.ipAddress,
-      userAgent: params.userAgent ?? session.userAgent,
-      expiresInSeconds: params.expiresInSeconds,
+      const newSession = this.createDeviceSessionSync({
+        userId: user.id,
+        deviceName: params.deviceName ?? session.deviceName,
+        refreshTokenHash: params.newRefreshTokenHash,
+        ipAddress: params.ipAddress ?? session.ipAddress,
+        userAgent: params.userAgent ?? session.userAgent,
+        expiresInSeconds: params.expiresInSeconds,
+      });
+
+      return { user, session: newSession };
     });
-
-    return { user, session: newSession };
   }
 
   // --- Plans & Subscriptions ---
 
-  getPlan(id: string): PlanRecord | undefined {
+  async getPlan(id: string): Promise<PlanRecord | undefined> {
     const row = this.db.prepare(`SELECT * FROM plans WHERE id = @id`).get({ id }) as Record<string, unknown> | undefined;
     if (!row) return undefined;
     return {
@@ -360,7 +400,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     };
   }
 
-  listPlans(): PlanRecord[] {
+  async listPlans(): Promise<PlanRecord[]> {
     const rows = this.db.prepare(`SELECT * FROM plans`).all() as Array<Record<string, unknown>>;
     return rows.map((row) => ({
       id: String(row.id),
@@ -373,9 +413,13 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     }));
   }
 
-  getSubscriptionByUserId(userId: string): SubscriptionRecord | undefined {
+  private getSubscriptionByUserIdSync(userId: string): SubscriptionRecord | undefined {
     const row = this.db.prepare(`SELECT * FROM subscriptions WHERE user_id = @userId`).get({ userId }) as Record<string, unknown> | undefined;
     if (!row) return undefined;
+    return this.mapSubscriptionRow(row);
+  }
+
+  private mapSubscriptionRow(row: Record<string, unknown>): SubscriptionRecord {
     return {
       id: String(row.id),
       userId: String(row.user_id),
@@ -391,45 +435,25 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     };
   }
 
-  getSubscriptionByStripeCustomerId(stripeCustomerId: string): SubscriptionRecord | undefined {
+  async getSubscriptionByUserId(userId: string): Promise<SubscriptionRecord | undefined> {
+    return this.getSubscriptionByUserIdSync(userId);
+  }
+
+  async getSubscriptionByStripeCustomerId(stripeCustomerId: string): Promise<SubscriptionRecord | undefined> {
     const row = this.db.prepare(`SELECT * FROM subscriptions WHERE stripe_customer_id = @stripeCustomerId`).get({ stripeCustomerId }) as Record<string, unknown> | undefined;
     if (!row) return undefined;
-    return {
-      id: String(row.id),
-      userId: String(row.user_id),
-      planId: String(row.plan_id),
-      stripeCustomerId: row.stripe_customer_id ? String(row.stripe_customer_id) : undefined,
-      stripeSubscriptionId: row.stripe_subscription_id ? String(row.stripe_subscription_id) : undefined,
-      status: row.status as SubscriptionRecord["status"],
-      currentPeriodStart: String(row.current_period_start),
-      currentPeriodEnd: String(row.current_period_end),
-      cancelAtPeriodEnd: Boolean(row.cancel_at_period_end),
-      createdAt: String(row.created_at),
-      updatedAt: String(row.updated_at),
-    };
+    return this.mapSubscriptionRow(row);
   }
 
-  getSubscriptionByStripeSubscriptionId(stripeSubscriptionId: string): SubscriptionRecord | undefined {
+  async getSubscriptionByStripeSubscriptionId(stripeSubscriptionId: string): Promise<SubscriptionRecord | undefined> {
     const row = this.db.prepare(`SELECT * FROM subscriptions WHERE stripe_subscription_id = @stripeSubscriptionId`).get({ stripeSubscriptionId }) as Record<string, unknown> | undefined;
     if (!row) return undefined;
-    return {
-      id: String(row.id),
-      userId: String(row.user_id),
-      planId: String(row.plan_id),
-      stripeCustomerId: row.stripe_customer_id ? String(row.stripe_customer_id) : undefined,
-      stripeSubscriptionId: row.stripe_subscription_id ? String(row.stripe_subscription_id) : undefined,
-      status: row.status as SubscriptionRecord["status"],
-      currentPeriodStart: String(row.current_period_start),
-      currentPeriodEnd: String(row.current_period_end),
-      cancelAtPeriodEnd: Boolean(row.cancel_at_period_end),
-      createdAt: String(row.created_at),
-      updatedAt: String(row.updated_at),
-    };
+    return this.mapSubscriptionRow(row);
   }
 
-  upsertSubscription(sub: Omit<SubscriptionRecord, "id" | "createdAt" | "updatedAt"> & { id?: string }): SubscriptionRecord {
+  async upsertSubscription(sub: Omit<SubscriptionRecord, "id" | "createdAt" | "updatedAt"> & { id?: string }): Promise<SubscriptionRecord> {
     const now = new Date().toISOString();
-    const existing = this.getSubscriptionByUserId(sub.userId);
+    const existing = this.getSubscriptionByUserIdSync(sub.userId);
     const id = existing?.id ?? sub.id ?? randomUUID();
     const record: SubscriptionRecord = {
       id,
@@ -470,12 +494,12 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       updatedAt: record.updatedAt,
     });
     // Return true database row
-    return this.getSubscriptionByUserId(sub.userId)!;
+    return this.getSubscriptionByUserIdSync(sub.userId)!;
   }
 
   // --- Entitlements ---
 
-  getEntitlements(userId: string): EntitlementRecord[] {
+  async getEntitlements(userId: string): Promise<EntitlementRecord[]> {
     const rows = this.db.prepare(`SELECT * FROM entitlements WHERE user_id = @userId`).all({ userId }) as Array<Record<string, unknown>>;
     return rows.map((row) => ({
       id: String(row.id),
@@ -488,15 +512,15 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     }));
   }
 
-  hasEntitlement(userId: string, featureKey: FeatureKey | string): boolean {
+  async hasEntitlement(userId: string, featureKey: FeatureKey | string): Promise<boolean> {
     const row = this.db.prepare(`
-      SELECT * FROM entitlements 
+      SELECT * FROM entitlements
       WHERE user_id = @userId AND feature_key = @featureKey AND (expires_at IS NULL OR expires_at > @now)
     `).get({ userId, featureKey, now: new Date().toISOString() });
     return !!row;
   }
 
-  setEntitlement(userId: string, featureKey: FeatureKey | string, grantedValue = "true", expiresAt?: string | null): EntitlementRecord {
+  async setEntitlement(userId: string, featureKey: FeatureKey | string, grantedValue = "true", expiresAt?: string | null): Promise<EntitlementRecord> {
     const now = new Date().toISOString();
     const id = randomUUID();
     this.db.prepare(`
@@ -528,23 +552,27 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     };
   }
 
-  removeEntitlement(userId: string, featureKey: FeatureKey | string): void {
+  async removeEntitlement(userId: string, featureKey: FeatureKey | string): Promise<void> {
     this.db.prepare(`DELETE FROM entitlements WHERE user_id = @userId AND feature_key = @featureKey`).run({ userId, featureKey });
   }
 
   // --- Credit Ledger ---
 
-  getCreditBalance(userId: string): number {
+  private getCreditBalanceSync(userId: string): number {
     const row = this.db.prepare(`
-      SELECT balance_after FROM credit_ledger 
-      WHERE user_id = @userId 
-      ORDER BY rowid DESC 
+      SELECT balance_after FROM credit_ledger
+      WHERE user_id = @userId
+      ORDER BY rowid DESC
       LIMIT 1
     `).get({ userId }) as { balance_after?: number } | undefined;
     return row?.balance_after ?? 0;
   }
 
-  appendLedgerEvent(params: {
+  async getCreditBalance(userId: string): Promise<number> {
+    return this.getCreditBalanceSync(userId);
+  }
+
+  private appendLedgerSync(params: {
     userId: string;
     amount: number;
     eventType: CreditEventType;
@@ -552,7 +580,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     description?: string;
     metadata?: Record<string, unknown>;
   }): CreditLedgerRecord {
-    const currentBalance = this.getCreditBalance(params.userId);
+    const currentBalance = this.getCreditBalanceSync(params.userId);
     const newBalance = currentBalance + params.amount;
     if (newBalance < 0) {
       throw new Error(`Insufficient credit balance. Current: ${currentBalance}, required: ${Math.abs(params.amount)}`);
@@ -589,11 +617,22 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return record;
   }
 
-  listLedgerEvents(userId: string, limit = 50): CreditLedgerRecord[] {
+  async appendLedgerEvent(params: {
+    userId: string;
+    amount: number;
+    eventType: CreditEventType;
+    requestId?: string;
+    description?: string;
+    metadata?: Record<string, unknown>;
+  }): Promise<CreditLedgerRecord> {
+    return this.appendLedgerSync(params);
+  }
+
+  async listLedgerEvents(userId: string, limit = 50): Promise<CreditLedgerRecord[]> {
     const rows = this.db.prepare(`
-      SELECT * FROM credit_ledger 
-      WHERE user_id = @userId 
-      ORDER BY rowid DESC 
+      SELECT * FROM credit_ledger
+      WHERE user_id = @userId
+      ORDER BY rowid DESC
       LIMIT @limit
     `).all({ userId, limit }) as Array<Record<string, unknown>>;
     return rows.map((row) => ({
@@ -611,7 +650,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
 
   // --- Usage Events ---
 
-  recordUsageEvent(event: Omit<UsageEventRecord, "id" | "createdAt"> & { id?: string }): UsageEventRecord {
+  private recordUsageEventSync(event: Omit<UsageEventRecord, "id" | "createdAt"> & { id?: string }): UsageEventRecord {
     const now = new Date().toISOString();
     const id = event.id ?? randomUUID();
     const record: UsageEventRecord = {
@@ -658,11 +697,15 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return record;
   }
 
-  listUsageEvents(userId: string, limit = 50): UsageEventRecord[] {
+  async recordUsageEvent(event: Omit<UsageEventRecord, "id" | "createdAt"> & { id?: string }): Promise<UsageEventRecord> {
+    return this.recordUsageEventSync(event);
+  }
+
+  async listUsageEvents(userId: string, limit = 50): Promise<UsageEventRecord[]> {
     const rows = this.db.prepare(`
-      SELECT * FROM usage_events 
-      WHERE user_id = @userId 
-      ORDER BY rowid DESC 
+      SELECT * FROM usage_events
+      WHERE user_id = @userId
+      ORDER BY rowid DESC
       LIMIT @limit
     `).all({ userId, limit }) as Array<Record<string, unknown>>;
     return rows.map((row) => ({
@@ -685,7 +728,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     }));
   }
 
-  getDailyProviderSpendUsd(sinceIsoString?: string): number {
+  async getDailyProviderSpendUsd(sinceIsoString?: string): Promise<number> {
     const since = sinceIsoString ?? new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const row = this.db.prepare(`
       SELECT SUM(provider_cost_usd) as total_spend FROM usage_events
@@ -694,7 +737,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return row?.total_spend ?? 0.0;
   }
 
-  getUserBillingPeriodSpendUsd(userId: string, sinceIsoString?: string): number {
+  async getUserBillingPeriodSpendUsd(userId: string, sinceIsoString?: string): Promise<number> {
     const since = sinceIsoString ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const row = this.db.prepare(`
       SELECT SUM(provider_cost_usd) as total_spend FROM usage_events
@@ -703,24 +746,31 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return row?.total_spend ?? 0.0;
   }
 
-  // --- Authoritative Reservations ---
+  // --- Authoritative Reservations (low-level) ---
 
-  createReservation(params: {
-    id?: string;
-    requestId: string;
-    userId: string;
-    providerId: string;
-    modelId: string;
-    reservedCredits: number;
-  }): ReservationRecord {
-    const existing = this.getReservationByRequestId(params.requestId);
-    if (existing) {
-      if (existing.userId !== params.userId) {
-        throw new Error("Request ID is already associated with another user account");
-      }
-      return existing;
-    }
+  private getReservationByRequestIdSync(requestId: string): ReservationRecord | undefined {
+    const row = this.db.prepare(`SELECT * FROM reservations WHERE request_id = @requestId`).get({ requestId }) as Record<string, unknown> | undefined;
+    if (!row) return undefined;
+    return this.mapReservationRow(row);
+  }
 
+  private mapReservationRow(row: Record<string, unknown>): ReservationRecord {
+    return {
+      id: String(row.id),
+      requestId: String(row.request_id),
+      userId: String(row.user_id),
+      providerId: String(row.provider_id),
+      modelId: String(row.model_id),
+      reservedCredits: Number(row.reserved_credits),
+      actualCredits: Number(row.actual_credits),
+      status: row.status as ReservationRecord["status"],
+      createdAt: String(row.created_at),
+      committedAt: row.committed_at ? String(row.committed_at) : null,
+      releasedAt: row.released_at ? String(row.released_at) : null,
+    };
+  }
+
+  private insertReservationSync(params: { id?: string; requestId: string; userId: string; providerId: string; modelId: string; reservedCredits: number }): ReservationRecord {
     const now = new Date().toISOString();
     const id = params.id ?? randomUUID();
     const record: ReservationRecord = {
@@ -757,26 +807,30 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return record;
   }
 
-  getReservationByRequestId(requestId: string): ReservationRecord | undefined {
-    const row = this.db.prepare(`SELECT * FROM reservations WHERE request_id = @requestId`).get({ requestId }) as Record<string, unknown> | undefined;
-    if (!row) return undefined;
-    return {
-      id: String(row.id),
-      requestId: String(row.request_id),
-      userId: String(row.user_id),
-      providerId: String(row.provider_id),
-      modelId: String(row.model_id),
-      reservedCredits: Number(row.reserved_credits),
-      actualCredits: Number(row.actual_credits),
-      status: row.status as ReservationRecord["status"],
-      createdAt: String(row.created_at),
-      committedAt: row.committed_at ? String(row.committed_at) : null,
-      releasedAt: row.released_at ? String(row.released_at) : null,
-    };
+  async createReservation(params: {
+    id?: string;
+    requestId: string;
+    userId: string;
+    providerId: string;
+    modelId: string;
+    reservedCredits: number;
+  }): Promise<ReservationRecord> {
+    const existing = this.getReservationByRequestIdSync(params.requestId);
+    if (existing) {
+      if (existing.userId !== params.userId) {
+        throw new Error("Request ID is already associated with another user account");
+      }
+      return existing;
+    }
+    return this.insertReservationSync(params);
   }
 
-  commitReservation(requestId: string, userId: string, actualCredits: number): ReservationRecord {
-    const res = this.getReservationByRequestId(requestId);
+  async getReservationByRequestId(requestId: string): Promise<ReservationRecord | undefined> {
+    return this.getReservationByRequestIdSync(requestId);
+  }
+
+  private commitReservationSync(requestId: string, userId: string, actualCredits: number): ReservationRecord {
+    const res = this.getReservationByRequestIdSync(requestId);
     if (!res) {
       throw new Error(`Reservation for request ${requestId} not found`);
     }
@@ -792,35 +846,27 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
 
     const now = new Date().toISOString();
     this.db.prepare(`
-      UPDATE reservations 
+      UPDATE reservations
       SET status = 'committed', actual_credits = @actualCredits, committed_at = @now
-      WHERE request_id = @requestId
+      WHERE request_id = @requestId AND status = 'reserved'
     `).run({ requestId, actualCredits, now });
 
-    return this.getReservationByRequestId(requestId)!;
+    return this.getReservationByRequestIdSync(requestId)!;
   }
 
-  listStaleReservations(cutoffIso: string): ReservationRecord[] {
+  async commitReservation(requestId: string, userId: string, actualCredits: number): Promise<ReservationRecord> {
+    return this.commitReservationSync(requestId, userId, actualCredits);
+  }
+
+  async listStaleReservations(cutoffIso: string): Promise<ReservationRecord[]> {
     const rows = this.db
       .prepare(`SELECT * FROM reservations WHERE status = 'reserved' AND created_at < @cutoff ORDER BY created_at ASC`)
       .all({ cutoff: cutoffIso }) as Record<string, unknown>[];
-    return rows.map((row) => ({
-      id: String(row.id),
-      requestId: String(row.request_id),
-      userId: String(row.user_id),
-      providerId: String(row.provider_id),
-      modelId: String(row.model_id),
-      reservedCredits: Number(row.reserved_credits),
-      actualCredits: Number(row.actual_credits),
-      status: row.status as ReservationRecord["status"],
-      createdAt: String(row.created_at),
-      committedAt: row.committed_at ? String(row.committed_at) : null,
-      releasedAt: row.released_at ? String(row.released_at) : null,
-    }));
+    return rows.map((row) => this.mapReservationRow(row));
   }
 
-  releaseReservation(requestId: string, userId: string): ReservationRecord {
-    const res = this.getReservationByRequestId(requestId);
+  private releaseReservationSync(requestId: string, userId: string): ReservationRecord {
+    const res = this.getReservationByRequestIdSync(requestId);
     if (!res) {
       throw new Error(`Reservation for request ${requestId} not found`);
     }
@@ -836,17 +882,149 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
 
     const now = new Date().toISOString();
     this.db.prepare(`
-      UPDATE reservations 
+      UPDATE reservations
       SET status = 'released', released_at = @now
-      WHERE request_id = @requestId
+      WHERE request_id = @requestId AND status = 'reserved'
     `).run({ requestId, now });
 
-    return this.getReservationByRequestId(requestId)!;
+    return this.getReservationByRequestIdSync(requestId)!;
+  }
+
+  async releaseReservation(requestId: string, userId: string): Promise<ReservationRecord> {
+    return this.releaseReservationSync(requestId, userId);
+  }
+
+  // --- Authoritative Reservations (atomic compound money operations) ---
+
+  async reserveCredits(params: {
+    requestId: string;
+    userId: string;
+    providerId: string;
+    modelId: string;
+    reservedCredits: number;
+    description?: string;
+    metadata?: Record<string, unknown>;
+  }): Promise<{ reservation: ReservationRecord; balanceAfter: number; created: boolean }> {
+    const existing = this.getReservationByRequestIdSync(params.requestId);
+    if (existing) {
+      if (existing.userId !== params.userId) {
+        throw new Error("Request ID is already associated with another user account");
+      }
+      return { reservation: existing, balanceAfter: this.getCreditBalanceSync(params.userId), created: false };
+    }
+
+    return this.txSync(() => {
+      const existingInTx = this.getReservationByRequestIdSync(params.requestId);
+      if (existingInTx) {
+        if (existingInTx.userId !== params.userId) {
+          throw new Error("Request ID is already associated with another user account");
+        }
+        return { reservation: existingInTx, balanceAfter: this.getCreditBalanceSync(params.userId), created: false };
+      }
+
+      const reservation = this.insertReservationSync(params);
+      const ledger = this.appendLedgerSync({
+        userId: params.userId,
+        amount: -params.reservedCredits,
+        eventType: "CREDIT_RESERVED",
+        requestId: params.requestId,
+        description: params.description ?? `Budget reservation for request ${params.requestId}`,
+        metadata: { reservationId: reservation.id, providerId: params.providerId, modelId: params.modelId, ...(params.metadata ?? {}) },
+      });
+      return { reservation, balanceAfter: ledger.balanceAfter, created: true };
+    });
+
+  }
+
+  async settleReservation(params: {
+    requestId: string;
+    userId: string;
+    actualCredits: number;
+    settleDescription?: string;
+  }): Promise<{ reservation: ReservationRecord; transitioned: boolean; balanceAfter: number }> {
+    const res = this.getReservationByRequestIdSync(params.requestId);
+    if (!res) {
+      throw new Error(`Reservation for request ${params.requestId} not found`);
+    }
+    if (res.userId !== params.userId) {
+      throw new Error("Unauthorized access to reservation from different user");
+    }
+    if (res.status === "released") {
+      throw new Error(`Cannot commit reservation ${params.requestId} because it has already been released`);
+    }
+    if (res.status === "committed") {
+      return { reservation: res, transitioned: false, balanceAfter: this.getCreditBalanceSync(params.userId) };
+    }
+
+    return this.txSync(() => {
+      const reservation = this.commitReservationSync(params.requestId, params.userId, params.actualCredits);
+      const diff = reservation.reservedCredits - params.actualCredits;
+      let balanceAfter = this.getCreditBalanceSync(params.userId);
+
+      if (diff > 0) {
+        const release = this.appendLedgerSync({
+          userId: params.userId,
+          amount: diff,
+          eventType: "CREDIT_RELEASED",
+          requestId: params.requestId,
+          description: params.settleDescription ?? `Release unused reservation for ${params.requestId}`,
+          metadata: { reservedCredits: reservation.reservedCredits, actualCredits: params.actualCredits },
+        });
+        balanceAfter = release.balanceAfter;
+      } else if (diff < 0) {
+        const extraCharge = Math.min(Math.abs(diff), balanceAfter);
+        if (extraCharge > 0) {
+          const charge = this.appendLedgerSync({
+            userId: params.userId,
+            amount: -extraCharge,
+            eventType: "CREDIT_USED",
+            requestId: params.requestId,
+            description: `Additional usage settlement for ${params.requestId}`,
+            metadata: { reservedCredits: reservation.reservedCredits, actualCredits: params.actualCredits },
+          });
+          balanceAfter = charge.balanceAfter;
+        }
+      }
+
+      return { reservation, transitioned: true, balanceAfter };
+    });
+  }
+
+  async releaseReservationCredits(params: {
+    requestId: string;
+    userId: string;
+    reason?: string;
+  }): Promise<{ reservation: ReservationRecord; transitioned: boolean; refundedCredits: number; balanceAfter: number }> {
+    const res = this.getReservationByRequestIdSync(params.requestId);
+    if (!res) {
+      throw new Error(`Reservation for request ${params.requestId} not found`);
+    }
+    if (res.userId !== params.userId) {
+      throw new Error("Unauthorized access to reservation from different user");
+    }
+    if (res.status === "committed") {
+      throw new Error(`Cannot release reservation ${params.requestId} because it has already been committed`);
+    }
+    if (res.status === "released") {
+      return { reservation: res, transitioned: false, refundedCredits: res.reservedCredits, balanceAfter: this.getCreditBalanceSync(params.userId) };
+    }
+
+    return this.txSync(() => {
+      const reservation = this.releaseReservationSync(params.requestId, params.userId);
+      const release = this.appendLedgerSync({
+        userId: params.userId,
+        amount: reservation.reservedCredits,
+        eventType: "CREDIT_RELEASED",
+        requestId: params.requestId,
+        description: `Cancel and release reservation: ${params.reason ?? "Request failed"}`,
+      });
+      return { reservation, transitioned: true, refundedCredits: reservation.reservedCredits, balanceAfter: release.balanceAfter };
+    });
   }
 
   // --- Hosted Requests ---
 
-  createHostedRequest(req: { id: string; userId: string; providerId: string; modelId: string; estimatedCredits: number }): HostedRequestRecord {
+  async createHostedRequest(req: { id: string; userId: string; providerId: string; modelId: string; estimatedCredits: number }): Promise<HostedRequestRecord> {
     const now = new Date().toISOString();
     const record: HostedRequestRecord = {
       id: req.id,
@@ -862,6 +1040,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     this.db.prepare(`
       INSERT INTO hosted_requests (id, user_id, status, estimated_credits, actual_credits, provider_id, model_id, created_at, completed_at)
       VALUES (@id, @userId, @status, @estimatedCredits, @actualCredits, @providerId, @modelId, @createdAt, @completedAt)
+      ON CONFLICT(id) DO NOTHING
     `).run({
       id: record.id,
       userId: record.userId,
@@ -876,7 +1055,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return record;
   }
 
-  getHostedRequest(id: string): HostedRequestRecord | undefined {
+  private getHostedRequestSync(id: string): HostedRequestRecord | undefined {
     const row = this.db.prepare(`SELECT * FROM hosted_requests WHERE id = @id`).get({ id }) as Record<string, unknown> | undefined;
     if (!row) return undefined;
     return {
@@ -892,8 +1071,12 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     };
   }
 
-  updateHostedRequest(id: string, status: HostedRequestRecord["status"], actualCredits = 0): void {
-    const existing = this.getHostedRequest(id);
+  async getHostedRequest(id: string): Promise<HostedRequestRecord | undefined> {
+    return this.getHostedRequestSync(id);
+  }
+
+  async updateHostedRequest(id: string, status: HostedRequestRecord["status"], actualCredits = 0): Promise<void> {
+    const existing = this.getHostedRequestSync(id);
     if (existing) {
       if (existing.status === "completed" && (status === "failed" || status === "cancelled")) {
         throw new Error(`Illegal state transition from ${existing.status} to ${status}`);
@@ -904,18 +1087,18 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     }
     const now = new Date().toISOString();
     this.db.prepare(`
-      UPDATE hosted_requests 
-      SET status = @status, actual_credits = @actualCredits, completed_at = @now 
+      UPDATE hosted_requests
+      SET status = @status, actual_credits = @actualCredits, completed_at = @now
       WHERE id = @id
     `).run({ id, status, actualCredits, now });
   }
 
   // --- Usage Periods ---
 
-  getOrCreateCurrentUsagePeriod(userId: string, allowanceAmount = 500_000, now: Date = new Date()): { period: UsagePeriodRecord; grantedNewAllowance: boolean } {
+  async getOrCreateCurrentUsagePeriod(userId: string, allowanceAmount = 500_000, now: Date = new Date()): Promise<{ period: UsagePeriodRecord; grantedNewAllowance: boolean }> {
     const nowIso = now.toISOString();
     const activeRow = this.db.prepare(`
-      SELECT * FROM usage_periods 
+      SELECT * FROM usage_periods
       WHERE user_id = @userId AND period_start <= @nowIso AND period_end > @nowIso
       ORDER BY period_start DESC LIMIT 1
     `).get({ userId, nowIso }) as Record<string, unknown> | undefined;
@@ -936,58 +1119,60 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       };
     }
 
-    // Create new usage period (e.g. 30 days) and grant recurring allowance
-    const periodStart = nowIso;
-    const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
-    const id = randomUUID();
+    return this.txSync(() => {
+      // Create new usage period (e.g. 30 days) and grant recurring allowance
+      const periodStart = nowIso;
+      const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      const id = randomUUID();
 
-    this.db.prepare(`
-      INSERT INTO usage_periods (id, user_id, period_start, period_end, free_allowance_granted, credits_used, created_at, updated_at)
-      VALUES (@id, @userId, @periodStart, @periodEnd, @freeAllowanceGranted, 0, @nowIso, @nowIso)
-    `).run({
-      id,
-      userId,
-      periodStart,
-      periodEnd,
-      freeAllowanceGranted: allowanceAmount,
-      nowIso,
-    });
-
-    if (allowanceAmount > 0) {
-      this.appendLedgerEvent({
+      this.db.prepare(`
+        INSERT INTO usage_periods (id, user_id, period_start, period_end, free_allowance_granted, credits_used, created_at, updated_at)
+        VALUES (@id, @userId, @periodStart, @periodEnd, @freeAllowanceGranted, 0, @nowIso, @nowIso)
+      `).run({
+        id,
         userId,
-        amount: allowanceAmount,
-        eventType: "FREE_ALLOWANCE_GRANTED",
-        description: `Monthly Free Tier Allowance for period ${periodStart.slice(0, 10)} to ${periodEnd.slice(0, 10)}`,
-        metadata: { usagePeriodId: id },
+        periodStart,
+        periodEnd,
+        freeAllowanceGranted: allowanceAmount,
+        nowIso,
       });
-    }
 
-    const newRow = this.db.prepare(`SELECT * FROM usage_periods WHERE id = @id`).get({ id }) as Record<string, unknown>;
-    return {
-      period: {
-        id: String(newRow.id),
-        userId: String(newRow.user_id),
-        periodStart: String(newRow.period_start),
-        periodEnd: String(newRow.period_end),
-        freeAllowanceGranted: Number(newRow.free_allowance_granted),
-        creditsUsed: Number(newRow.credits_used),
-        createdAt: String(newRow.created_at),
-        updatedAt: String(newRow.updated_at),
-      },
-      grantedNewAllowance: true,
-    };
+      if (allowanceAmount > 0) {
+        this.appendLedgerSync({
+          userId,
+          amount: allowanceAmount,
+          eventType: "FREE_ALLOWANCE_GRANTED",
+          description: `Monthly Free Tier Allowance for period ${periodStart.slice(0, 10)} to ${periodEnd.slice(0, 10)}`,
+          metadata: { usagePeriodId: id },
+        });
+      }
+
+      const newRow = this.db.prepare(`SELECT * FROM usage_periods WHERE id = @id`).get({ id }) as Record<string, unknown>;
+      return {
+        period: {
+          id: String(newRow.id),
+          userId: String(newRow.user_id),
+          periodStart: String(newRow.period_start),
+          periodEnd: String(newRow.period_end),
+          freeAllowanceGranted: Number(newRow.free_allowance_granted),
+          creditsUsed: Number(newRow.credits_used),
+          createdAt: String(newRow.created_at),
+          updatedAt: String(newRow.updated_at),
+        },
+        grantedNewAllowance: true,
+      };
+    });
   }
 
   // --- OAuth Transactions ---
 
-  createOAuthTransaction(params: {
+  async createOAuthTransaction(params: {
     state: string;
     codeChallenge: string;
     redirectUri: string;
     deviceName?: string;
     expiresInSeconds?: number;
-  }): OAuthTransactionRecord {
+  }): Promise<OAuthTransactionRecord> {
     const now = new Date();
     const expires = new Date(now.getTime() + (params.expiresInSeconds ?? 600) * 1000);
     const record: OAuthTransactionRecord = {
@@ -1018,7 +1203,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return record;
   }
 
-  getOAuthTransaction(state: string): OAuthTransactionRecord | undefined {
+  private getOAuthTransactionSync(state: string): OAuthTransactionRecord | undefined {
     const row = this.db.prepare(`SELECT * FROM oauth_transactions WHERE state = @state`).get({ state }) as Record<string, unknown> | undefined;
     if (!row) return undefined;
     return {
@@ -1033,8 +1218,12 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     };
   }
 
-  consumeOAuthTransaction(state: string): OAuthTransactionRecord {
-    const tx = this.getOAuthTransaction(state);
+  async getOAuthTransaction(state: string): Promise<OAuthTransactionRecord | undefined> {
+    return this.getOAuthTransactionSync(state);
+  }
+
+  async consumeOAuthTransaction(state: string): Promise<OAuthTransactionRecord> {
+    const tx = this.getOAuthTransactionSync(state);
     if (!tx) {
       throw new Error("OAuth transaction not found");
     }
@@ -1045,24 +1234,46 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       throw new Error("OAuth transaction expired");
     }
 
+    // Single-use consumption: only the caller that flips used_at from NULL wins the row.
     const now = new Date().toISOString();
-    this.db.prepare(`UPDATE oauth_transactions SET used_at = @now WHERE state = @state`).run({ state, now });
+    const result = this.db.prepare(`UPDATE oauth_transactions SET used_at = @now WHERE state = @state AND used_at IS NULL`).run({ state, now });
+    if (Number(result.changes) === 0) {
+      throw new Error("OAuth transaction already consumed (replay detected)");
+    }
     return { ...tx, usedAt: now };
   }
 
   // --- Billing Webhook Events ---
 
-  isWebhookProcessed(stripeEventId: string): boolean {
+  async isWebhookProcessed(stripeEventId: string): Promise<boolean> {
     const row = this.db.prepare(`SELECT * FROM billing_webhook_events WHERE stripe_event_id = @stripeEventId AND status = 'processed'`).get({ stripeEventId });
     return !!row;
   }
 
-  recordWebhookEvent(params: {
+  async claimWebhookEvent(params: { stripeEventId: string; eventType: string }): Promise<{ claimed: boolean }> {
+    const now = new Date().toISOString();
+    const id = randomUUID();
+    // Atomic claim: exactly one caller inserts the row; every duplicate delivery conflicts and is skipped.
+    const result = this.db.prepare(`
+      INSERT INTO billing_webhook_events (id, stripe_event_id, event_type, processed_at, status, payload, created_at)
+      VALUES (@id, @stripeEventId, @eventType, @processedAt, 'processed', NULL, @createdAt)
+      ON CONFLICT(stripe_event_id) DO NOTHING
+    `).run({
+      id,
+      stripeEventId: params.stripeEventId,
+      eventType: params.eventType,
+      processedAt: now,
+      createdAt: now,
+    });
+    return { claimed: Number(result.changes) > 0 };
+  }
+
+  async recordWebhookEvent(params: {
     stripeEventId: string;
     eventType: string;
     status: "processed" | "failed" | "ignored";
     payload?: Record<string, unknown>;
-  }): BillingWebhookEventRecord {
+  }): Promise<BillingWebhookEventRecord> {
     const now = new Date().toISOString();
     const id = randomUUID();
     const record: BillingWebhookEventRecord = {
@@ -1095,7 +1306,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
 
   // --- Account Settings ---
 
-  getAccountSettings(userId: string): AccountSettingsRecord {
+  private getAccountSettingsSync(userId: string): AccountSettingsRecord {
     const row = this.db.prepare(`SELECT * FROM account_settings WHERE user_id = @userId`).get({ userId }) as Record<string, unknown> | undefined;
     if (row) {
       return {
@@ -1121,6 +1332,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     this.db.prepare(`
       INSERT INTO account_settings (id, user_id, privacy_mode, auto_top_up_enabled, spend_limit_usd, created_at, updated_at)
       VALUES (@id, @userId, @privacyMode, @autoTopUpEnabled, @spendLimitUsd, @createdAt, @updatedAt)
+      ON CONFLICT(user_id) DO NOTHING
     `).run({
       id: record.id,
       userId: record.userId,
@@ -1133,8 +1345,12 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return record;
   }
 
-  upsertAccountSettings(settings: Partial<AccountSettingsRecord> & { userId: string }): AccountSettingsRecord {
-    const current = this.getAccountSettings(settings.userId);
+  async getAccountSettings(userId: string): Promise<AccountSettingsRecord> {
+    return this.getAccountSettingsSync(userId);
+  }
+
+  async upsertAccountSettings(settings: Partial<AccountSettingsRecord> & { userId: string }): Promise<AccountSettingsRecord> {
+    const current = this.getAccountSettingsSync(settings.userId);
     const now = new Date().toISOString();
     const updated: AccountSettingsRecord = {
       ...current,
@@ -1158,12 +1374,12 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
     });
-    return this.getAccountSettings(settings.userId);
+    return this.getAccountSettingsSync(settings.userId);
   }
 
   // --- Abuse Events ---
 
-  recordAbuseEvent(params: { userId?: string; ipAddress?: string; eventType: string; details?: string }): AbuseEventRecord {
+  async recordAbuseEvent(params: { userId?: string; ipAddress?: string; eventType: string; details?: string }): Promise<AbuseEventRecord> {
     const now = new Date().toISOString();
     const record: AbuseEventRecord = {
       id: randomUUID(),
@@ -1185,5 +1401,21 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       createdAt: record.createdAt,
     });
     return record;
+  }
+
+  // --- Health & Concurrency ---
+
+  async ping(): Promise<boolean> {
+    try {
+      this.db.prepare("SELECT 1").get();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async getActiveReservationCount(userId: string): Promise<number> {
+    const row = this.db.prepare(`SELECT COUNT(*) as count FROM reservations WHERE user_id = @userId AND status = 'reserved'`).get({ userId }) as { count?: number } | undefined;
+    return Number(row?.count ?? 0);
   }
 }

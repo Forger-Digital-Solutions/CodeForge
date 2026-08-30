@@ -145,19 +145,19 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
     expect(chatResponse.usage.totalTokens).toBeGreaterThan(0);
 
     // 5. Verify usage metered & credit balance accurately decremented in ledger
-    const balanceAfterTurn = cloudServer.db.getCreditBalance(authData.user.id);
+    const balanceAfterTurn = await cloudServer.db.getCreditBalance(authData.user.id);
     expect(balanceAfterTurn).toBeLessThan(500_000);
     expect(balanceAfterTurn).toBeGreaterThan(490_000);
 
     // 6. Test Quota Exhaustion Guard
     // Simulate consuming all remaining credits
-    cloudServer.db.appendLedgerEvent({
+    await cloudServer.db.appendLedgerEvent({
       userId: authData.user.id,
       amount: -balanceAfterTurn, // bring balance to exactly 0
       eventType: "ADMIN_ADJUSTMENT",
       description: "Simulate quota exhaustion",
     });
-    expect(cloudServer.db.getCreditBalance(authData.user.id)).toBe(0);
+    expect(await cloudServer.db.getCreditBalance(authData.user.id)).toBe(0);
 
     // Next inference attempt must FAIL CLOSED before calling provider
     await expect(
@@ -200,7 +200,7 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
     expect(webhookResult.action).toBe("pro_subscription_activated");
 
     // 8. Account is now Pro with 5,000,000 credits and can run inference again!
-    const upgradedBalance = cloudServer.db.getCreditBalance(authData.user.id);
+    const upgradedBalance = await cloudServer.db.getCreditBalance(authData.user.id);
     expect(upgradedBalance).toBe(5_000_000);
 
     const proChatResponse = await hostedAdapter.chat({
@@ -220,7 +220,7 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
     });
     const dupResult = await duplicateWebhookRes.json();
     expect(dupResult.action).toBe("duplicate_skipped");
-    expect(cloudServer.db.getCreditBalance(authData.user.id)).toBeLessThan(5_000_000);
+    expect(await cloudServer.db.getCreditBalance(authData.user.id)).toBeLessThan(5_000_000);
 
     // 10. Cancellation webhook downgrades user cleanly back to Free plan
     const cancelEvent = {
@@ -248,8 +248,9 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
     const cancelResult = await cancelRes.json();
     expect(cancelResult.action).toBe("subscription_canceled");
 
-    const subAfterCancel = cloudServer.db.getSubscriptionByUserId(authData.user.id);
+    const subAfterCancel = await cloudServer.db.getSubscriptionByUserId(authData.user.id);
     expect(subAfterCancel?.planId).toBe("free");
     expect(subAfterCancel?.status).toBe("canceled");
   });
 });
+

@@ -77,7 +77,7 @@ export class GatewayService {
     }
 
     if (this.db) {
-      const dailySpend = this.db.getDailyProviderSpendUsd();
+      const dailySpend = await this.db.getDailyProviderSpendUsd();
       if (dailySpend >= killSwitches.globalDailySpendLimitUsd) {
         const err = `Global daily provider spend limit of $${killSwitches.globalDailySpendLimitUsd.toFixed(2)} reached (current: $${dailySpend.toFixed(2)})`;
         emitTerminalEvent({ type: "turn.failed", turnId, error: err });
@@ -85,9 +85,12 @@ export class GatewayService {
       }
     }
 
-    // 2. Entitlement & Concurrency Check
-    const activeCount = this.activeUserLeases.get(userId)?.size ?? 0;
-    const permission = this.entitlementService.evaluateTaskExecution({
+    // 2. Entitlement & Multi-Instance DB-Authoritative Concurrency Check
+    const activeDbCount = this.db ? await this.db.getActiveReservationCount(userId) : 0;
+    const activeLocalCount = this.activeUserLeases.get(userId)?.size ?? 0;
+    const activeCount = Math.max(activeDbCount, activeLocalCount);
+
+    const permission = await this.entitlementService.evaluateTaskExecution({
       userId,
       requestedEstimatedCredits: 5_000,
       activeConcurrency: activeCount,
@@ -105,7 +108,7 @@ export class GatewayService {
       throw new Error(err);
     }
 
-    // Acquire execution lease
+    // Acquire execution lease (process-local optimization guard)
     const maxConcurrent = permission.planId === "pro" ? 4 : 1;
     this.acquireLease(userId, request.requestId, maxConcurrent);
 
@@ -119,7 +122,8 @@ export class GatewayService {
 
       // Apply the account's privacy routing mode (STRICT / STANDARD / MAXIMUM_FREE) so the setting
       // genuinely constrains which endpoints are eligible — not a decorative control.
-      const privacyMode = this.db?.getAccountSettings(userId).privacyMode;
+      const settings = this.db ? await this.db.getAccountSettings(userId) : undefined;
+      const privacyMode = settings?.privacyMode;
       const privacyEligible = () =>
         privacyMode ? this.firewallManager.firewall.eligibleModels({ privacyMode }) : this.firewallManager.firewall.eligibleModels();
 
@@ -182,7 +186,7 @@ export class GatewayService {
       }
 
       // 4. Two-phase budget reservation in ledger
-      const reservation = this.usageEngine.reserveBudget({
+      const reservation = await this.usageEngine.reserveBudget({
         userId,
         estimatedCredits,
         requestId: request.requestId,
@@ -255,7 +259,7 @@ export class GatewayService {
       });
 
       // 5. Commit actual usage in ledger & reconcile difference
-      const commit = this.usageEngine.commitUsage({
+      const commit = await this.usageEngine.commitUsage({
         userId,
         requestId: request.requestId,
         reservationId: reservation.reservationId,
@@ -287,7 +291,7 @@ export class GatewayService {
       const errorMsg = err instanceof Error ? err.message : String(err);
       if (reservationCreated) {
         try {
-          this.usageEngine.releaseReservation({
+          await this.usageEngine.releaseReservation({
             userId,
             requestId: request.requestId,
             estimatedCredits,
@@ -302,3 +306,4 @@ export class GatewayService {
     }
   }
 }
+

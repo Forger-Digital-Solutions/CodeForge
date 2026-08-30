@@ -64,20 +64,21 @@ describe("PostgresCloudDatabase — async schema init (boot-fix)", () => {
 
 // Real Postgres integration — runs ONLY when a disposable/staging DATABASE_URL is provided.
 // Proves migrations, a credit round-trip, and restart persistence against a genuine server.
-const REAL_PG = process.env.CODEFORGE_TEST_POSTGRES_URL;
-describe.skipIf(!REAL_PG)("PostgresCloudDatabase — real server integration", () => {
+const REAL_PG = process.env.CODEFORGE_TEST_POSTGRES_URL || process.env.DATABASE_URL;
+describe.skipIf(!REAL_PG?.startsWith("postgres"))("PostgresCloudDatabase — real server integration", () => {
   it("initializes schema, persists a user + ledger, and survives a reconnect", async () => {
     const db1 = new PostgresCloudDatabase({ connectionString: REAL_PG });
     await db1.init();
-    const user = await (db1 as unknown as { createUserAsync: Function }).createUserAsync({ displayName: "PG Tester", primaryIdentity: `github:${Date.now()}` });
+    const user = await db1.createUser({ displayName: "PG Tester", primaryIdentity: `github:${Date.now()}` });
     expect(user.id).toBeTruthy();
     await db1.close();
 
     // Reconnect (simulated restart) — schema + data must persist.
     const db2 = new PostgresCloudDatabase({ connectionString: REAL_PG });
     await db2.init();
-    const again = await (db2 as unknown as { getUserByIdAsync: Function }).getUserByIdAsync(user.id);
+    const again = await db2.getUserById(user.id);
     expect(again?.displayName).toBe("PG Tester");
     await db2.close();
   });
 });
+

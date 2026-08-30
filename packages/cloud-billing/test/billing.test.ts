@@ -66,9 +66,9 @@ describe("StripeBillingService", () => {
     expect(billing.verifyWebhookSignature(payload, `t=${oldTime},v1=${oldTimeSig}`)).toBe(false);
   });
 
-  it("activates Pro subscription, grants allowance, and handles recurring renewal invoices idempotently", () => {
-    const user = db.createUser({ displayName: "Pro Subscriber", primaryIdentity: "github:888" });
-    db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
+  it("activates Pro subscription, grants allowance, and handles recurring renewal invoices idempotently", async () => {
+    const user = await db.createUser({ displayName: "Pro Subscriber", primaryIdentity: "github:888" });
+    await db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
 
     // 1. Initial checkout
     const checkoutEvent = {
@@ -85,15 +85,15 @@ describe("StripeBillingService", () => {
       },
     };
 
-    const res1 = billing.handleWebhookEvent(checkoutEvent);
+    const res1 = await billing.handleWebhookEvent(checkoutEvent);
     expect(res1.action).toBe("pro_subscription_activated");
-    expect(db.getCreditBalance(user.id)).toBe(5_500_000);
-    expect(entitlements.hasFeature(user.id, "HOSTED_PAID")).toBe(true);
+    expect(await db.getCreditBalance(user.id)).toBe(5_500_000);
+    expect(await entitlements.hasFeature(user.id, "HOSTED_PAID")).toBe(true);
 
     // Duplicate delivery is skipped
-    const dupRes = billing.handleWebhookEvent(checkoutEvent);
+    const dupRes = await billing.handleWebhookEvent(checkoutEvent);
     expect(dupRes.action).toBe("duplicate_skipped");
-    expect(db.getCreditBalance(user.id)).toBe(5_500_000);
+    expect(await db.getCreditBalance(user.id)).toBe(5_500_000);
 
     // 2. Monthly recurring renewal invoice
     const renewalInvoiceEvent = {
@@ -120,9 +120,9 @@ describe("StripeBillingService", () => {
       },
     };
 
-    const res2 = billing.handleWebhookEvent(renewalInvoiceEvent);
+    const res2 = await billing.handleWebhookEvent(renewalInvoiceEvent);
     expect(res2.action).toBe("pro_subscription_renewed");
-    expect(db.getCreditBalance(user.id)).toBe(10_500_000);
+    expect(await db.getCreditBalance(user.id)).toBe(10_500_000);
 
     // 3. Cancellation webhook downgrades user cleanly
     const cancelEvent = {
@@ -136,9 +136,10 @@ describe("StripeBillingService", () => {
       },
     };
 
-    const res3 = billing.handleWebhookEvent(cancelEvent);
+    const res3 = await billing.handleWebhookEvent(cancelEvent);
     expect(res3.action).toBe("subscription_canceled");
-    expect(entitlements.hasFeature(user.id, "HOSTED_PAID")).toBe(false);
-    expect(entitlements.hasFeature(user.id, "HOSTED_FREE")).toBe(true);
+    expect(await entitlements.hasFeature(user.id, "HOSTED_PAID")).toBe(false);
+    expect(await entitlements.hasFeature(user.id, "HOSTED_FREE")).toBe(true);
   });
 });
+

@@ -24,7 +24,7 @@ describe("Per-account privacy mode genuinely constrains hosted routing", () => {
   let gateway: GatewayService;
   let userId: string;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     db = new CloudDatabase({ dbPath: ":memory:" });
     const firewallManager = new CloudFirewallManager();
     gateway = new GatewayService({ firewallManager, entitlementService: new EntitlementService(db), usageEngine: new UsageEngine(db), db });
@@ -33,23 +33,23 @@ describe("Per-account privacy mode genuinely constrains hosted routing", () => {
     firewallManager.registerModel(createGenericFreeRecord({ providerId: "standard-prov", modelId: "std-free", privacyClass: "standard" }));
     firewallManager.registerProvider(new OkProvider());
 
-    const user = db.createUser({ displayName: "Privacy User", primaryIdentity: "github:priv-1" });
+    const user = await db.createUser({ displayName: "Privacy User", primaryIdentity: "github:priv-1" });
     userId = user.id;
-    db.getOrCreateCurrentUsagePeriod(userId, 500_000);
-    db.setEntitlement(userId, "HOSTED_FREE", "true");
+    await db.getOrCreateCurrentUsagePeriod(userId, 500_000);
+    await db.setEntitlement(userId, "HOSTED_FREE", "true");
   });
 
   afterEach(() => db.close());
 
   it("STRICT mode excludes standard-privacy endpoints (fails closed to no free capacity)", async () => {
-    db.upsertAccountSettings({ userId, privacyMode: "STRICT" });
+    await db.upsertAccountSettings({ userId, privacyMode: "STRICT" });
     await expect(
       gateway.executeHostedInference(userId, { requestId: "p-strict", messages: [{ role: "user", content: "hi" }], modelId: "auto" }, () => {}),
     ).rejects.toThrow(/No verified free model/);
   });
 
   it("STANDARD mode permits standard-privacy endpoints", async () => {
-    db.upsertAccountSettings({ userId, privacyMode: "STANDARD" });
+    await db.upsertAccountSettings({ userId, privacyMode: "STANDARD" });
     const result = await gateway.executeHostedInference(
       userId,
       { requestId: "p-standard", messages: [{ role: "user", content: "hi" }], modelId: "auto" },
@@ -58,3 +58,4 @@ describe("Per-account privacy mode genuinely constrains hosted routing", () => {
     expect(result.fullText).toBe("hi");
   });
 });
+

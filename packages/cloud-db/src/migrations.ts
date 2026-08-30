@@ -303,6 +303,11 @@ CREATE TABLE IF NOT EXISTS entitlements (
 CREATE INDEX IF NOT EXISTS idx_entitlements_user_id ON entitlements(user_id);
 
 CREATE TABLE IF NOT EXISTS credit_ledger (
+  -- seq is a Postgres-only monotonic ordering column standing in for SQLite's implicit rowid, so the
+  -- authoritative "latest balance" read is unambiguous even when two events share a millisecond
+  -- timestamp. It does not exist in the SQLite schema and does not affect the migration checksum
+  -- (which is computed from the SQLite DDL), so existing SQLite databases are unaffected.
+  seq BIGSERIAL,
   id VARCHAR(64) PRIMARY KEY,
   user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   amount BIGINT NOT NULL,
@@ -314,6 +319,7 @@ CREATE TABLE IF NOT EXISTS credit_ledger (
   created_at VARCHAR(64) NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_credit_ledger_user_id ON credit_ledger(user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_ledger_user_seq ON credit_ledger(user_id, seq DESC);
 CREATE INDEX IF NOT EXISTS idx_credit_ledger_request_id ON credit_ledger(request_id);
 
 CREATE TABLE IF NOT EXISTS usage_events (

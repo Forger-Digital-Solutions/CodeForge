@@ -33,31 +33,18 @@ export class UsageEngine {
     this.db = db;
   }
 
-  reserveBudget(params: ReserveBudgetParams): { reservationId: string; reservedCredits: number; balanceAfter: number } {
+  async reserveBudget(params: ReserveBudgetParams): Promise<{ reservationId: string; reservedCredits: number; balanceAfter: number }> {
     // 1. Check account-level spend limit if configured
-    const settings = this.db.getAccountSettings(params.userId);
+    const settings = await this.db.getAccountSettings(params.userId);
     if (settings.spendLimitUsd > 0) {
-      const currentSpend = this.db.getUserBillingPeriodSpendUsd(params.userId);
+      const currentSpend = await this.db.getUserBillingPeriodSpendUsd(params.userId);
       if (currentSpend >= settings.spendLimitUsd) {
         throw new Error(`Account monthly spend limit of $${settings.spendLimitUsd.toFixed(2)} reached (current: $${currentSpend.toFixed(2)})`);
       }
     }
 
-    // Check if reservation already exists for this requestId (Idempotency)
-    const existing = this.db.getReservationByRequestId(params.requestId);
-    if (existing) {
-      if (existing.userId !== params.userId) {
-        throw new Error("Request ID is already associated with another user account");
-      }
-      return {
-        reservationId: existing.id,
-        reservedCredits: existing.reservedCredits,
-        balanceAfter: this.db.getCreditBalance(params.userId),
-      };
-    }
-
-    // 2. Authoritatively create reservation in DB
-    const reservation = this.db.createReservation({
+    // 2. Atomically reserve credits in DB (handles idempotency, row locking, and ledger deduction)
+    const { reservation, balanceAfter } = await this.db.reserveCredits({
       requestId: params.requestId,
       userId: params.userId,
       providerId: params.providerId,
@@ -65,36 +52,29 @@ export class UsageEngine {
       reservedCredits: params.estimatedCredits,
     });
 
-    // 3. Atomically deduct reservation from ledger
-    const ledger = this.db.appendLedgerEvent({
-      userId: params.userId,
-      amount: -params.estimatedCredits,
-      eventType: "CREDIT_RESERVED",
-      requestId: params.requestId,
-      description: `Budget reservation for request ${params.requestId}`,
-      metadata: { reservationId: reservation.id, providerId: params.providerId, modelId: params.modelId },
-    });
-
     // Maintain backward-compatible hosted_requests record
-    const existingReq = this.db.getHostedRequest(params.requestId);
-    if (!existingReq) {
-      this.db.createHostedRequest({
-        id: params.requestId,
-        userId: params.userId,
-        providerId: params.providerId,
-        modelId: params.modelId,
-        estimatedCredits: params.estimatedCredits,
-      });
-    }
+    try {
+      const existingReq = await this.db.getHostedRequest(params.requestId);
+      if (!existingReq) {
+        await this.db.createHostedRequest({
+          id: params.requestId,
+          userId: params.userId,
+          providerId: params.providerId,
+          modelId: params.modelId,
+          estimatedCredits: params.estimatedCredits,
+        });
+      }
+    } catch {}
+
 
     return {
       reservationId: reservation.id,
-      reservedCredits: params.estimatedCredits,
-      balanceAfter: ledger.balanceAfter,
+      reservedCredits: reservation.reservedCredits,
+      balanceAfter,
     };
   }
 
-  commitUsage(params: CommitUsageParams): { actualCredits: number; providerCostUsd: number; balanceAfter: number } {
+  async commitUsage(params: CommitUsageParams): Promise<{ actualCredits: number; providerCostUsd: number; balanceAfter: number }> {
     const calculation = calculateTokensAndCredits({
       inputTokens: params.inputTokens,
       outputTokens: params.outputTokens,
@@ -104,61 +84,36 @@ export class UsageEngine {
     const actualCredits = calculation.credits;
     const providerCostUsd = params.providerCostUsd ?? calculation.estimatedCostUsd;
 
-    // 1. Authoritatively commit reservation in DB
-    const reservation = this.db.commitReservation(params.requestId, params.userId, actualCredits);
-
-    // 2. Record detailed usage event
-    this.db.recordUsageEvent({
+    // 1. Authoritatively settle reservation in DB (atomic transition + ledger reconciliation)
+    const { transitioned, balanceAfter } = await this.db.settleReservation({
       requestId: params.requestId,
       userId: params.userId,
-      sessionId: params.sessionId,
-      turnId: params.turnId,
-      providerId: params.providerId,
-      modelId: params.modelId,
-      accessClass: params.accessClass,
-      inputTokens: params.inputTokens,
-      outputTokens: params.outputTokens,
-      cachedTokens: params.cachedTokens ?? 0,
-      providerCostUsd,
-      creditsConsumed: actualCredits,
-      latencyMs: params.latencyMs ?? 0,
-      status: "completed",
+      actualCredits,
     });
 
-    // 3. Settle difference between reserved and actual credits
-    const diff = reservation.reservedCredits - actualCredits;
-    let balanceAfter = this.db.getCreditBalance(params.userId);
-
-    if (diff > 0) {
-      // Refund excess reserved credits
-      const release = this.db.appendLedgerEvent({
-        userId: params.userId,
-        amount: diff,
-        eventType: "CREDIT_RELEASED",
+    // 2. Record detailed usage event only if this caller performed the state transition (idempotency)
+    if (transitioned) {
+      await this.db.recordUsageEvent({
         requestId: params.requestId,
-        description: `Release unused reservation for ${params.requestId}`,
-        metadata: { reservedCredits: reservation.reservedCredits, actualCredits },
+        userId: params.userId,
+        sessionId: params.sessionId,
+        turnId: params.turnId,
+        providerId: params.providerId,
+        modelId: params.modelId,
+        accessClass: params.accessClass,
+        inputTokens: params.inputTokens,
+        outputTokens: params.outputTokens,
+        cachedTokens: params.cachedTokens ?? 0,
+        providerCostUsd,
+        creditsConsumed: actualCredits,
+        latencyMs: params.latencyMs ?? 0,
+        status: "completed",
       });
-      balanceAfter = release.balanceAfter;
-    } else if (diff < 0) {
-      // Charge additional credits beyond estimate if balance allows
-      const extraCharge = Math.min(Math.abs(diff), balanceAfter);
-      if (extraCharge > 0) {
-        const charge = this.db.appendLedgerEvent({
-          userId: params.userId,
-          amount: -extraCharge,
-          eventType: "CREDIT_USED",
-          requestId: params.requestId,
-          description: `Additional usage settlement for ${params.requestId}`,
-          metadata: { reservedCredits: reservation.reservedCredits, actualCredits },
-        });
-        balanceAfter = charge.balanceAfter;
-      }
-    }
 
-    try {
-      this.db.updateHostedRequest(params.requestId, "completed", actualCredits);
-    } catch {}
+      try {
+        await this.db.updateHostedRequest(params.requestId, "completed", actualCredits);
+      } catch {}
+    }
 
     return {
       actualCredits,
@@ -167,26 +122,23 @@ export class UsageEngine {
     };
   }
 
-  releaseReservation(params: { userId: string; requestId: string; estimatedCredits?: number; reason?: string }): { refundedCredits: number; balanceAfter: number } {
-    // 1. Authoritatively release reservation in DB
-    const reservation = this.db.releaseReservation(params.requestId, params.userId);
-
-    // 2. Refund reserved credits to ledger
-    const release = this.db.appendLedgerEvent({
-      userId: params.userId,
-      amount: reservation.reservedCredits,
-      eventType: "CREDIT_RELEASED",
+  async releaseReservation(params: { userId: string; requestId: string; estimatedCredits?: number; reason?: string }): Promise<{ refundedCredits: number; balanceAfter: number }> {
+    // 1. Authoritatively release reservation and refund credits in DB
+    const { refundedCredits, balanceAfter, transitioned } = await this.db.releaseReservationCredits({
       requestId: params.requestId,
-      description: `Cancel and release reservation: ${params.reason ?? "Request failed"}`,
+      userId: params.userId,
+      reason: params.reason,
     });
 
-    try {
-      this.db.updateHostedRequest(params.requestId, "failed", 0);
-    } catch {}
+    if (transitioned) {
+      try {
+        await this.db.updateHostedRequest(params.requestId, "failed", 0);
+      } catch {}
+    }
 
     return {
-      refundedCredits: reservation.reservedCredits,
-      balanceAfter: release.balanceAfter,
+      refundedCredits,
+      balanceAfter,
     };
   }
 
@@ -197,16 +149,16 @@ export class UsageEngine {
    * user's balance is never locked forever. Safe to run at startup and on an interval; committed and
    * already-released reservations are untouched. Returns how many were reclaimed and the total refund.
    */
-  reconcileStaleReservations(opts: { now?: Date; timeoutMs?: number } = {}): { reconciled: number; refundedCredits: number } {
+  async reconcileStaleReservations(opts: { now?: Date; timeoutMs?: number } = {}): Promise<{ reconciled: number; refundedCredits: number }> {
     const now = opts.now ?? new Date();
     const timeoutMs = opts.timeoutMs ?? 10 * 60 * 1000; // 10 minutes
     const cutoffIso = new Date(now.getTime() - timeoutMs).toISOString();
-    const stale = this.db.listStaleReservations(cutoffIso);
+    const stale = await this.db.listStaleReservations(cutoffIso);
     let reconciled = 0;
     let refundedCredits = 0;
     for (const res of stale) {
       try {
-        const { refundedCredits: refund } = this.releaseReservation({
+        const { refundedCredits: refund } = await this.releaseReservation({
           userId: res.userId,
           requestId: res.requestId,
           reason: "Stale reservation reclaimed after crash/timeout",
@@ -220,12 +172,13 @@ export class UsageEngine {
     return { reconciled, refundedCredits };
   }
 
-  getUserUsageSummary(userId: string): { creditBalance: number; recentEvents: UsageEventRecord[] } {
-    const creditBalance = this.db.getCreditBalance(userId);
-    const recentEvents = this.db.listUsageEvents(userId, 20);
+  async getUserUsageSummary(userId: string): Promise<{ creditBalance: number; recentEvents: UsageEventRecord[] }> {
+    const creditBalance = await this.db.getCreditBalance(userId);
+    const recentEvents = await this.db.listUsageEvents(userId, 20);
     return {
       creditBalance,
       recentEvents,
     };
   }
 }
+

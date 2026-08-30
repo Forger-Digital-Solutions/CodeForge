@@ -20,7 +20,7 @@ export class StripeBillingService {
   }
 
   async createCheckoutSession(options: StripeCheckoutSessionOptions, fetchFn: typeof fetch = fetch): Promise<{ sessionId: string; checkoutUrl: string }> {
-    const user = this.db.getUserById(options.userId);
+    const user = await this.db.getUserById(options.userId);
     if (!user) {
       throw new Error("User not found for checkout session");
     }
@@ -63,7 +63,7 @@ export class StripeBillingService {
   }
 
   async createCustomerPortalSession(options: StripeCustomerPortalOptions, fetchFn: typeof fetch = fetch): Promise<{ portalUrl: string }> {
-    const subscription = this.db.getSubscriptionByUserId(options.userId);
+    const subscription = await this.db.getSubscriptionByUserId(options.userId);
     if (!subscription?.stripeCustomerId) {
       throw new Error("No Stripe customer found for this account");
     }
@@ -129,9 +129,13 @@ export class StripeBillingService {
     }
   }
 
-  handleWebhookEvent(event: StripeWebhookPayload): { processed: boolean; action: string } {
-    // Idempotency check at database level
-    if (this.db.isWebhookProcessed(event.id)) {
+  async handleWebhookEvent(event: StripeWebhookPayload): Promise<{ processed: boolean; action: string }> {
+    // Atomic claim at database level (exactly one delivery wins the race)
+    const { claimed } = await this.db.claimWebhookEvent({
+      stripeEventId: event.id,
+      eventType: event.type,
+    });
+    if (!claimed) {
       return { processed: true, action: "duplicate_skipped" };
     }
 
@@ -148,7 +152,7 @@ export class StripeBillingService {
         const userId = session.client_reference_id;
         if (userId) {
           if (session.mode === "subscription") {
-            this.db.upsertSubscription({
+            await this.db.upsertSubscription({
               userId,
               planId: "pro",
               stripeCustomerId: session.customer,
@@ -158,8 +162,8 @@ export class StripeBillingService {
               currentPeriodEnd: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
               cancelAtPeriodEnd: false,
             });
-            this.entitlementService.syncSubscriptionEntitlements(userId, "pro");
-            this.db.appendLedgerEvent({
+            await this.entitlementService.syncSubscriptionEntitlements(userId, "pro");
+            await this.db.appendLedgerEvent({
               userId,
               amount: 5_000_000,
               eventType: "SUBSCRIPTION_ALLOWANCE_GRANTED",
@@ -169,7 +173,7 @@ export class StripeBillingService {
             action = "pro_subscription_activated";
           } else if (session.mode === "payment") {
             // One-time credit pack purchase (1,000,000 credits)
-            this.db.appendLedgerEvent({
+            await this.db.appendLedgerEvent({
               userId,
               amount: 1_000_000,
               eventType: "CREDIT_PURCHASED",
@@ -191,24 +195,24 @@ export class StripeBillingService {
           lines?: { data?: Array<{ period?: { start: number; end: number } }> };
         };
         if (invoice.subscription) {
-          const existing = this.db.getSubscriptionByStripeSubscriptionId(invoice.subscription);
+          const existing = await this.db.getSubscriptionByStripeSubscriptionId(invoice.subscription);
           if (existing) {
             // Determine period dates from invoice
             const periodData = invoice.lines?.data?.[0]?.period;
             const periodStart = periodData?.start ? new Date(periodData.start * 1000).toISOString() : new Date().toISOString();
             const periodEnd = periodData?.end ? new Date(periodData.end * 1000).toISOString() : new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString();
 
-            this.db.upsertSubscription({
+            await this.db.upsertSubscription({
               ...existing,
               status: "active",
               currentPeriodStart: periodStart,
               currentPeriodEnd: periodEnd,
             });
-            this.entitlementService.syncSubscriptionEntitlements(existing.userId, "pro");
+            await this.entitlementService.syncSubscriptionEntitlements(existing.userId, "pro");
 
             // Grant Pro monthly allowance for renewal cycle
             if (invoice.billing_reason === "subscription_cycle" || invoice.billing_reason === "subscription_create") {
-              this.db.appendLedgerEvent({
+              await this.db.appendLedgerEvent({
                 userId: existing.userId,
                 amount: 5_000_000,
                 eventType: "SUBSCRIPTION_ALLOWANCE_GRANTED",
@@ -233,10 +237,10 @@ export class StripeBillingService {
           current_period_end: number;
           cancel_at_period_end: boolean;
         };
-        const existing = this.db.getSubscriptionByStripeSubscriptionId(sub.id);
+        const existing = await this.db.getSubscriptionByStripeSubscriptionId(sub.id);
         if (existing) {
           const status = sub.status === "active" || sub.status === "trialing" ? "active" : "past_due";
-          this.db.upsertSubscription({
+          await this.db.upsertSubscription({
             userId: existing.userId,
             planId: "pro",
             stripeCustomerId: sub.customer,
@@ -253,9 +257,9 @@ export class StripeBillingService {
 
       case "customer.subscription.deleted": {
         const sub = event.data.object as { id: string };
-        const existing = this.db.getSubscriptionByStripeSubscriptionId(sub.id);
+        const existing = await this.db.getSubscriptionByStripeSubscriptionId(sub.id);
         if (existing) {
-          this.db.upsertSubscription({
+          await this.db.upsertSubscription({
             userId: existing.userId,
             planId: "free",
             stripeCustomerId: existing.stripeCustomerId,
@@ -265,7 +269,7 @@ export class StripeBillingService {
             currentPeriodEnd: existing.currentPeriodEnd,
             cancelAtPeriodEnd: false,
           });
-          this.entitlementService.syncSubscriptionEntitlements(existing.userId, "free");
+          await this.entitlementService.syncSubscriptionEntitlements(existing.userId, "free");
           action = "subscription_canceled";
         }
         break;
@@ -274,9 +278,9 @@ export class StripeBillingService {
       case "invoice.payment_failed": {
         const invoice = event.data.object as { subscription?: string };
         if (invoice.subscription) {
-          const existing = this.db.getSubscriptionByStripeSubscriptionId(invoice.subscription);
+          const existing = await this.db.getSubscriptionByStripeSubscriptionId(invoice.subscription);
           if (existing) {
-            this.db.upsertSubscription({
+            await this.db.upsertSubscription({
               ...existing,
               status: "past_due",
             });
@@ -287,7 +291,7 @@ export class StripeBillingService {
       }
     }
 
-    this.db.recordWebhookEvent({
+    await this.db.recordWebhookEvent({
       stripeEventId: event.id,
       eventType: event.type,
       status: "processed",
@@ -297,3 +301,4 @@ export class StripeBillingService {
     return { processed: true, action };
   }
 }
+

@@ -192,7 +192,7 @@ export class CodeForgeCloudServer {
     // mid-inference. In-memory execution leases are already gone after a restart, so only persisted
     // reservations need reconciling.
     try {
-      const recovered = this.usage.reconcileStaleReservations();
+      const recovered = await this.usage.reconcileStaleReservations();
       if (recovered.reconciled > 0) {
         console.log(`[CodeForge Cloud API] reclaimed ${recovered.reconciled} stale reservation(s), refunded ${recovered.refundedCredits} credits`);
       }
@@ -372,10 +372,11 @@ export class CodeForgeCloudServer {
 
       if (url.pathname === "/health/ready" && method === "GET") {
         this.triggerLazyRefresh();
+        const dbConnected = await this.db.ping();
         const hostedModels = this.firewallManager.listHostedModels();
         const availableFreeCount = hostedModels.filter((m) => m.isEligibleFree).length;
         const killSwitches = this.firewallManager.getKillSwitches();
-        const hostedInferenceReady = killSwitches.hostedInferenceEnabled && availableFreeCount > 0;
+        const hostedInferenceReady = dbConnected && killSwitches.hostedInferenceEnabled && availableFreeCount > 0;
         const providerCapacity = this.providerRegistry
           ? this.providerRegistry.getReports().map((r) => ({
               providerId: r.providerId,
@@ -384,12 +385,13 @@ export class CodeForgeCloudServer {
             }))
           : undefined;
 
+        const statusCode = dbConnected ? 200 : 503;
         this.sendJson(
           res,
-          200,
+          statusCode,
           {
-            status: "ready",
-            database: "connected",
+            status: dbConnected ? "ready" : "not_ready",
+            database: dbConnected ? "connected" : "disconnected",
             hostedInferenceReady,
             availableModelsCount: hostedModels.length,
             availableFreeCount,
@@ -434,7 +436,7 @@ export class CodeForgeCloudServer {
       // 2. Auth Endpoints
       if (url.pathname === "/v1/auth/start" && method === "POST") {
         const body = await this.readJson(req, AuthStartSchema);
-        const result = this.auth.startOAuth({
+        const result = await this.auth.startOAuth({
           redirectUri: body.redirectUri ?? "http://127.0.0.1:8765/auth/callback",
           deviceName: body.deviceName,
         });
@@ -459,7 +461,7 @@ export class CodeForgeCloudServer {
 
       if (url.pathname === "/v1/auth/refresh" && method === "POST") {
         const body = await this.readJson(req, AuthRefreshSchema);
-        const result = this.auth.refreshSession({
+        const result = await this.auth.refreshSession({
           refreshToken: body.refreshToken,
           ipAddress: clientIp,
           userAgent: req.headers["user-agent"],
@@ -470,7 +472,7 @@ export class CodeForgeCloudServer {
 
       if (url.pathname === "/v1/auth/logout" && method === "POST") {
         const body = await this.readJson(req, AuthLogoutSchema);
-        this.auth.logout(body.refreshToken);
+        await this.auth.logout(body.refreshToken);
         this.sendJson(res, 200, { ok: true }, corsOrigin);
         return;
       }
@@ -478,7 +480,7 @@ export class CodeForgeCloudServer {
       // 3. Account Endpoints (Authenticated)
       if (url.pathname === "/v1/account" && method === "GET") {
         const userId = this.authenticateRequest(req);
-        const account = this.auth.getAccount(userId);
+        const account = await this.auth.getAccount(userId);
         this.sendJson(res, 200, account, corsOrigin);
         return;
       }
@@ -486,7 +488,7 @@ export class CodeForgeCloudServer {
       if (url.pathname === "/v1/account/settings" && method === "POST") {
         const userId = this.authenticateRequest(req);
         const body = await this.readJson(req, AccountSettingsSchema);
-        const updated = this.db.upsertAccountSettings({
+        const updated = await this.db.upsertAccountSettings({
           userId,
           ...body,
         });
@@ -497,7 +499,7 @@ export class CodeForgeCloudServer {
       // 4. Usage Endpoints (Authenticated)
       if (url.pathname === "/v1/usage" && method === "GET") {
         const userId = this.authenticateRequest(req);
-        const summary = this.usage.getUserUsageSummary(userId);
+        const summary = await this.usage.getUserUsageSummary(userId);
         this.sendJson(res, 200, summary, corsOrigin);
         return;
       }
@@ -536,10 +538,11 @@ export class CodeForgeCloudServer {
           return;
         }
         const event = JSON.parse(rawBody);
-        const result = this.billing.handleWebhookEvent(event);
+        const result = await this.billing.handleWebhookEvent(event);
         this.sendJson(res, 200, result, corsOrigin);
         return;
       }
+
 
       // 6. Hosted Inference Endpoint (Authenticated & Streaming SSE)
       if (url.pathname === "/v1/hosted/inference" && method === "POST") {

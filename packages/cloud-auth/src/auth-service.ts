@@ -49,12 +49,12 @@ export class AuthService {
     this.defaultFetchFn = config.fetchFn ?? fetch;
   }
 
-  startOAuth(options: { redirectUri: string; deviceName?: string }): { state: string; codeVerifier: string; codeChallenge: string; authUrl: string } {
+  async startOAuth(options: { redirectUri: string; deviceName?: string }): Promise<{ state: string; codeVerifier: string; codeChallenge: string; authUrl: string }> {
     const pkce = generatePkcePair();
     const state = generateState();
 
     // Persist server-authoritative OAuth transaction
-    this.db.createOAuthTransaction({
+    await this.db.createOAuthTransaction({
       state,
       codeChallenge: pkce.codeChallenge,
       redirectUri: options.redirectUri,
@@ -90,7 +90,7 @@ export class AuthService {
     const fetchFn = options.fetchFn ?? this.defaultFetchFn;
 
     // 1. Server-side transaction validation & single-use consumption
-    const tx = this.db.consumeOAuthTransaction(options.state);
+    const tx = await this.db.consumeOAuthTransaction(options.state);
 
     // 2. Validate redirect URI binding if provided
     if (options.redirectUri && tx.redirectUri !== options.redirectUri) {
@@ -115,17 +115,17 @@ export class AuthService {
     const profile = await fetchGitHubUserProfile(exchange.accessToken, fetchFn);
 
     const primaryIdentity = `github:${profile.id}`;
-    let user = this.db.getUserByPrimaryIdentity(primaryIdentity);
+    let user = await this.db.getUserByPrimaryIdentity(primaryIdentity);
     let isNewUser = false;
 
     if (!user) {
       isNewUser = true;
-      user = this.db.createUser({
+      user = await this.db.createUser({
         displayName: profile.name || profile.login,
         avatarUrl: profile.avatar_url,
         primaryIdentity,
       });
-      this.db.createIdentity({
+      await this.db.createIdentity({
         userId: user.id,
         provider: "github",
         providerUserId: String(profile.id),
@@ -133,10 +133,10 @@ export class AuthService {
       });
 
       // Default Free Tier Provisioning (IDEMPOTENT)
-      this.db.setEntitlement(user.id, "HOSTED_FREE", "true");
-      this.db.setEntitlement(user.id, "DIRECT_PROVIDERS", "true");
-      this.db.setEntitlement(user.id, "COMMUNITY_MODELS", "true");
-      this.db.upsertSubscription({
+      await this.db.setEntitlement(user.id, "HOSTED_FREE", "true");
+      await this.db.setEntitlement(user.id, "DIRECT_PROVIDERS", "true");
+      await this.db.setEntitlement(user.id, "COMMUNITY_MODELS", "true");
+      await this.db.upsertSubscription({
         userId: user.id,
         planId: "free",
         status: "active",
@@ -146,16 +146,16 @@ export class AuthService {
       });
 
       // Initial monthly usage period & allowance
-      this.db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
+      await this.db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
     } else {
       // Existing user login: check if monthly period renewal is due
-      this.db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
+      await this.db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
     }
 
     // Create device session with rotating refresh token
     const refreshToken = generateRefreshToken();
     const refreshTokenHash = hashRefreshToken(refreshToken);
-    const session = this.db.createDeviceSession({
+    const session = await this.db.createDeviceSession({
       userId: user.id,
       deviceName: options.deviceName ?? tx.deviceName ?? "CodeForge Desktop",
       refreshTokenHash,
@@ -164,7 +164,7 @@ export class AuthService {
       expiresInSeconds: this.refreshTokenExpiresInSeconds,
     });
 
-    const subscription = this.db.getSubscriptionByUserId(user.id);
+    const subscription = await this.db.getSubscriptionByUserId(user.id);
     const accessToken = signAccessToken(
       {
         sub: user.id,
@@ -185,16 +185,16 @@ export class AuthService {
     };
   }
 
-  refreshSession(options: {
+  async refreshSession(options: {
     refreshToken: string;
     ipAddress?: string;
     userAgent?: string;
-  }): { user: UserRecord; session: DeviceSessionRecord; accessToken: string; refreshToken: string } {
+  }): Promise<{ user: UserRecord; session: DeviceSessionRecord; accessToken: string; refreshToken: string }> {
     const oldHash = hashRefreshToken(options.refreshToken);
     const newRefreshToken = generateRefreshToken();
     const newHash = hashRefreshToken(newRefreshToken);
 
-    const { user, session: newSession } = this.db.rotateDeviceSession({
+    const { user, session: newSession } = await this.db.rotateDeviceSession({
       oldTokenHash: oldHash,
       newRefreshTokenHash: newHash,
       ipAddress: options.ipAddress,
@@ -203,9 +203,9 @@ export class AuthService {
     });
 
     // Check if new monthly period has begun
-    this.db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
+    await this.db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
 
-    const subscription = this.db.getSubscriptionByUserId(user.id);
+    const subscription = await this.db.getSubscriptionByUserId(user.id);
     const accessToken = signAccessToken(
       {
         sub: user.id,
@@ -225,11 +225,11 @@ export class AuthService {
     };
   }
 
-  logout(refreshToken: string): void {
+  async logout(refreshToken: string): Promise<void> {
     const tokenHash = hashRefreshToken(refreshToken);
-    const session = this.db.getDeviceSessionByTokenHash(tokenHash);
+    const session = await this.db.getDeviceSessionByTokenHash(tokenHash);
     if (session) {
-      this.db.revokeDeviceSession(session.id);
+      await this.db.revokeDeviceSession(session.id);
     }
   }
 
@@ -237,21 +237,21 @@ export class AuthService {
     return verifyAccessToken(accessToken, this.jwtSecret);
   }
 
-  getAccount(userId: string): AuthAccountSnapshot {
-    const user = this.db.getUserById(userId);
+  async getAccount(userId: string): Promise<AuthAccountSnapshot> {
+    const user = await this.db.getUserById(userId);
     if (!user) {
       throw new Error("User not found");
     }
 
     // Check usage period to ensure recurring allowance is up-to-date
-    this.db.getOrCreateCurrentUsagePeriod(userId, 500_000);
+    await this.db.getOrCreateCurrentUsagePeriod(userId, 500_000);
 
-    const subscription = this.db.getSubscriptionByUserId(userId);
+    const subscription = await this.db.getSubscriptionByUserId(userId);
     const planId = subscription?.planId ?? "free";
-    const plan = this.db.getPlan(planId);
-    const entitlements = this.db.getEntitlements(userId);
-    const creditBalance = this.db.getCreditBalance(userId);
-    const settings = this.db.getAccountSettings(userId);
+    const plan = await this.db.getPlan(planId);
+    const entitlements = await this.db.getEntitlements(userId);
+    const creditBalance = await this.db.getCreditBalance(userId);
+    const settings = await this.db.getAccountSettings(userId);
 
     return {
       user,
@@ -264,3 +264,4 @@ export class AuthService {
     };
   }
 }
+

@@ -53,9 +53,9 @@ describe("Phase 58 — Cloud Failure Matrix & Fallback Isolation", () => {
   });
 
   it("handles upstream 503 failure cleanly: releases reservation, refunds balance, and emits exactly one turn.failed event", async () => {
-    const user = db.createUser({ displayName: "Fail User", primaryIdentity: "github:9000" });
-    db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
-    db.setEntitlement(user.id, "HOSTED_FREE", "true");
+    const user = await db.createUser({ displayName: "Fail User", primaryIdentity: "github:9000" });
+    await db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
+    await db.setEntitlement(user.id, "HOSTED_FREE", "true");
 
     const events: HostedStreamEvent[] = [];
 
@@ -78,13 +78,14 @@ describe("Phase 58 — Cloud Failure Matrix & Fallback Isolation", () => {
     expect(terminalEvents[0]?.type).toBe("turn.failed");
 
     // Balance must be fully refunded back to 500,000
-    const finalBalance = db.getCreditBalance(user.id);
+    const finalBalance = await db.getCreditBalance(user.id);
     expect(finalBalance).toBe(500_000);
 
     // Reservation status is released
-    const res = db.getReservationByRequestId("req-fail-upstream-1");
+    const res = await db.getReservationByRequestId("req-fail-upstream-1");
     expect(res?.status).toBe("released");
   });
+
 
   it("ensures Direct / BYOK providers are completely independent and functional even when Cloud is completely offline", async () => {
     // 1. Cloud adapter targeting dead port
@@ -111,11 +112,11 @@ describe("Phase 58 — Cloud Failure Matrix & Fallback Isolation", () => {
     expect(groq.providerId).toBe("groq");
   });
 
-  it("fails closed on database errors during entitlement evaluation", () => {
+  it("fails closed on database errors during entitlement evaluation", async () => {
     // Close DB to simulate database failure / outage
     db.close();
 
-    const permission = entitlementService.evaluateTaskExecution({
+    const permission = await entitlementService.evaluateTaskExecution({
       userId: "any-user",
       requestedEstimatedCredits: 1000,
     });
@@ -125,3 +126,4 @@ describe("Phase 58 — Cloud Failure Matrix & Fallback Isolation", () => {
     expect(permission.reason).toContain("fail closed");
   });
 });
+

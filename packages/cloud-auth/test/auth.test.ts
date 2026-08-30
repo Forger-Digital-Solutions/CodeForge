@@ -42,7 +42,7 @@ describe("AuthService", () => {
   });
 
   it("completes server-authoritative OAuth PKCE exchange and grants initial Free tier allowance", async () => {
-    const start = auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback", deviceName: "Test Device" });
+    const start = await auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback", deviceName: "Test Device" });
     expect(start.state).toBeDefined();
     expect(start.codeVerifier).toBeDefined();
 
@@ -58,14 +58,14 @@ describe("AuthService", () => {
     expect(result.accessToken).toBeDefined();
     expect(result.refreshToken).toBeDefined();
 
-    const account = auth.getAccount(result.user.id);
+    const account = await auth.getAccount(result.user.id);
     expect(account.planId).toBe("free");
     expect(account.creditBalance).toBe(500_000);
     expect(account.entitlements.some((e) => e.featureKey === "HOSTED_FREE")).toBe(true);
   });
 
   it("rejects unknown, tampered, or already consumed OAuth transactions", async () => {
-    const start = auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
+    const start = await auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
 
     // Wrong state
     await expect(
@@ -86,7 +86,7 @@ describe("AuthService", () => {
     ).rejects.toThrow(/PKCE/);
 
     // First valid consumption succeeds
-    const start2 = auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
+    const start2 = await auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
     await auth.handleOAuthCallback({
       code: "some_code",
       state: start2.state,
@@ -104,7 +104,7 @@ describe("AuthService", () => {
   });
 
   it("rotates refresh token and detects token reuse", async () => {
-    const start = auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
+    const start = await auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
     const initial = await auth.handleOAuthCallback({
       code: "code_1",
       state: start.state,
@@ -112,7 +112,7 @@ describe("AuthService", () => {
     });
 
     // Refresh rotation
-    const rotated = auth.refreshSession({ refreshToken: initial.refreshToken });
+    const rotated = await auth.refreshSession({ refreshToken: initial.refreshToken });
     expect(rotated.refreshToken).not.toBe(initial.refreshToken);
 
     // Validating new access token
@@ -120,24 +120,24 @@ describe("AuthService", () => {
     expect(payload.sub).toBe(initial.user.id);
 
     // Replay of old refresh token fails and detects breach
-    expect(() => {
-      auth.refreshSession({ refreshToken: initial.refreshToken });
-    }).toThrow(/replay detected/);
+    await expect(async () => {
+      await auth.refreshSession({ refreshToken: initial.refreshToken });
+    }).rejects.toThrow(/replay detected/);
   });
 
   it("handles user logout by revoking device session", async () => {
-    const start = auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
+    const start = await auth.startOAuth({ redirectUri: "http://127.0.0.1:8765/auth/callback" });
     const authResult = await auth.handleOAuthCallback({
       code: "code_logout",
       state: start.state,
       codeVerifier: start.codeVerifier,
     });
 
-    auth.logout(authResult.refreshToken);
+    await auth.logout(authResult.refreshToken);
 
-    expect(() => {
-      auth.refreshSession({ refreshToken: authResult.refreshToken });
-    }).toThrow(/revoked/);
+    await expect(async () => {
+      await auth.refreshSession({ refreshToken: authResult.refreshToken });
+    }).rejects.toThrow(/revoked/);
   });
 
   it("verifies and rejects tampered or expired JWT access tokens", () => {
@@ -165,3 +165,4 @@ describe("AuthService", () => {
     expect(() => verifyAccessToken(expiredToken, jwtSecret)).toThrow(/expired/);
   });
 });
+
