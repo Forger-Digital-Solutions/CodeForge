@@ -43,6 +43,25 @@ const api = {
   setOnboardingCompleted: (completed) => {
     return ipcRenderer.invoke("onboarding:setCompleted", completed);
   },
+  // --- CodeForge Cloud APIs ---
+  signInWithCloud: () => {
+    return ipcRenderer.invoke("cloud:auth:start");
+  },
+  getCloudAccount: () => {
+    return ipcRenderer.invoke("cloud:account:get");
+  },
+  logoutCloud: () => {
+    return ipcRenderer.invoke("cloud:auth:logout");
+  },
+  openCloudCheckout: () => {
+    return ipcRenderer.invoke("cloud:billing:checkout");
+  },
+  openCloudPortal: () => {
+    return ipcRenderer.invoke("cloud:billing:portal");
+  },
+  getCloudUsage: () => {
+    return ipcRenderer.invoke("cloud:usage:get");
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);
