@@ -13,8 +13,13 @@
 //
 // Exits 0 on success, 3 when no free-safe provider credential is present (SKIP, not a failure).
 
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { CodeForgeCloudServer } from "../../apps/cloud-api/dist/index.js";
 import { CloudFirewallManager, CloudProviderRegistry, resolveCloudProviderCredentials } from "@codeforge/cloud-gateway";
+
+function base64Url(buf) {
+  return buf.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
 
 const { store, providerIds } = resolveCloudProviderCredentials(process.env);
 // Free-safe providers only (never OpenAI/Anthropic paid-only).
@@ -56,8 +61,32 @@ try {
   if (eligible.length === 0) throw new Error("No verified-free models discovered from real providers");
 
   // Sign in (GitHub mocked) — no provider account or key from the user.
-  const start = await (await fetch(`${base}/v1/auth/start`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ redirectUri: "http://127.0.0.1:8765/auth/callback" }) })).json();
-  const tokens = await (await fetch(`${base}/v1/auth/exchange`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: "c", state: start.state, codeVerifier: start.codeVerifier, redirectUri: "http://127.0.0.1:8765/auth/callback" }) })).json();
+  const codeVerifier = base64Url(randomBytes(32));
+  const codeChallenge = base64Url(createHash("sha256").update(codeVerifier).digest());
+  const redirectUri = "http://127.0.0.1:8765/auth/callback";
+
+  const startRes = await fetch(`${base}/v1/auth/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ redirectUri, codeChallenge }),
+  });
+  const start = await startRes.json();
+
+  const cbRes = await fetch(`${base}/v1/auth/github/callback?code=mock_gh_code&state=${encodeURIComponent(start.state)}`, {
+    redirect: "manual",
+  });
+  const loc = cbRes.headers.get("location");
+  if (!loc) throw new Error("OAuth callback did not return a redirect");
+  const desktopCode = new URL(loc).searchParams.get("code");
+  if (!desktopCode) throw new Error("OAuth callback redirect missing desktop authorization code");
+
+  const exchangeRes = await fetch(`${base}/v1/auth/exchange`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code: desktopCode, codeVerifier, state: start.state, redirectUri }),
+  });
+  const tokens = await exchangeRes.json();
+  if (!tokens.accessToken) throw new Error(`OAuth exchange failed: ${JSON.stringify(tokens)}`);
   const auth = { Authorization: `Bearer ${tokens.accessToken}` };
 
   const before = await (await fetch(`${base}/v1/usage`, { headers: auth })).json();
