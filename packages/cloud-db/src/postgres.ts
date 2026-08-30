@@ -52,6 +52,10 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       });
       this.isCustomPool = false;
     }
+
+    // An idle connection error is emitted by pg's pool; leaving it unhandled terminates Node.
+    // Individual operations still fail closed and readiness reports the database as unavailable.
+    this.pool.on?.("error", () => {});
   }
 
   /**
@@ -1466,4 +1470,3 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     return parseInt(res.rows[0]?.count ?? "0", 10);
   }
 }
-

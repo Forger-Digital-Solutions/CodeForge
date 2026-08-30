@@ -8,6 +8,7 @@ import { MIGRATIONS, DEFAULT_PLANS } from "../src/migrations.js";
  */
 function makeFakePool() {
   const queries: string[] = [];
+  let errorListener: ((error: Error) => void) | undefined;
   const client = {
     query: async (sql: string, _params?: unknown[]) => {
       queries.push(sql);
@@ -22,9 +23,12 @@ function makeFakePool() {
       queries.push(sql);
       return { rows: [] as unknown[] };
     },
+    on: (event: string, listener: (error: Error) => void) => {
+      if (event === "error") errorListener = listener;
+    },
     end: async () => {},
   };
-  return { pool: pool as unknown as import("pg").Pool, queries };
+  return { pool: pool as unknown as import("pg").Pool, queries, emitPoolError: (error: Error) => errorListener?.(error) };
 }
 
 describe("PostgresCloudDatabase — async schema init (boot-fix)", () => {
@@ -60,6 +64,12 @@ describe("PostgresCloudDatabase — async schema init (boot-fix)", () => {
     // migration, not three times that.
     expect(queries.filter((q) => q.includes("INSERT INTO schema_migrations")).length).toBe(MIGRATIONS.length);
   });
+
+  it("handles idle pool errors without terminating the API process", () => {
+    const { pool, emitPoolError } = makeFakePool();
+    new PostgresCloudDatabase({ pool });
+    expect(() => emitPoolError(new Error("connection reset"))).not.toThrow();
+  });
 });
 
 // Real Postgres integration — runs ONLY when a disposable/staging DATABASE_URL is provided.
@@ -81,4 +91,3 @@ describe.skipIf(!REAL_PG?.startsWith("postgres"))("PostgresCloudDatabase — rea
     await db2.close();
   });
 });
-

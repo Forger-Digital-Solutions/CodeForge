@@ -52,6 +52,8 @@ export class HostedProviderAdapter implements ProviderAdapter {
           isEligibleFree: boolean;
         }>;
 
+        const eligible = models.filter((m) => m.isEligibleFree && m.accessClass === "free");
+        if (eligible.length === 0) return [];
         return [
           {
             modelId: "codeforge-auto",
@@ -61,8 +63,8 @@ export class HostedProviderAdapter implements ProviderAdapter {
             isFree: true,
             freeStatus: "verified_free",
           },
-          ...models.map((m) => ({
-            modelId: m.modelId,
+          ...eligible.map((m) => ({
+            modelId: `${m.providerId}::${m.modelId}`,
             displayName: `${m.displayName} · Included Free (Cloud)`,
             contextWindow: m.contextWindow || 128000,
             capabilities: {
@@ -80,17 +82,7 @@ export class HostedProviderAdapter implements ProviderAdapter {
       }
     } catch {}
 
-    // Fallback if cloud API is offline
-    return [
-      {
-        modelId: "codeforge-auto",
-        displayName: "CodeForge Auto · Included Free (Cloud)",
-        contextWindow: 128000,
-        capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
-        isFree: true,
-        freeStatus: "verified_free",
-      },
-    ];
+    return [];
   }
 
   async chat(req: ChatRequest): Promise<ChatResponse> {
@@ -136,10 +128,14 @@ export class HostedProviderAdapter implements ProviderAdapter {
       content: m.content,
     }));
 
+    const separator = req.model.indexOf("::");
+    const exactProviderId = separator > 0 ? req.model.slice(0, separator) : undefined;
+    const exactModelId = separator > 0 ? req.model.slice(separator + 2) : req.model;
     const body = JSON.stringify({
       requestId: randomUUID(),
       messages,
-      modelId: req.model === "codeforge-auto" ? "auto" : req.model,
+      modelId: req.model === "codeforge-auto" ? "auto" : exactModelId,
+      ...(exactProviderId ? { providerId: exactProviderId } : {}),
       taskType: "coding",
     });
 

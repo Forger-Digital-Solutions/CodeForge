@@ -187,7 +187,9 @@ export async function runCommand(options: RunOptions): Promise<VerificationResul
     };
 
     const abortHandler = (): void => stop("aborted");
-    proc.once("close", (code) => finish(code));
+    proc.once("close", (code) => {
+      if (!terminationStarted) finish(code);
+    });
     proc.once("error", (error) => finish(null, error));
     timeout = setTimeout(() => stop("timeout"), timeoutMs);
     if (signal?.aborted) {

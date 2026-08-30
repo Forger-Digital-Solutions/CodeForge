@@ -9,15 +9,6 @@ async function main() {
   const config = loadCloudRuntimeConfig(process.env);
   console.log(`[CodeForge Cloud API] config: ${describeConfig(config)}`);
 
-  // Honest DB-runtime status: the synchronous request path is wired to SQLite (node:sqlite) only.
-  // The Postgres driver has a real schema/migration layer but its data methods are async-only, so a
-  // Postgres-backed server initializes its schema then throws on the first request. Warn loudly.
-  if (config.database.driver === "postgres") {
-    console.warn(
-      "[CodeForge Cloud API] WARNING: CODEFORGE_CLOUD_DB_DRIVER=postgres — schema/migrations are supported, but the synchronous request path is not yet wired to the async Postgres driver, so hosted requests will fail. Use CODEFORGE_CLOUD_DB_DRIVER=sqlite with a persistent CODEFORGE_CLOUD_DB_PATH for a runnable deployment.",
-    );
-  }
-
   // The firewall manager owns the operator kill switches + verified-model pool. Build it up front so
   // the same instance backs both the capacity registry (which registers discovered models) and the
   // server (which routes against them).
@@ -47,6 +38,7 @@ async function main() {
     providerRegistry,
     allowedOrigins: config.allowedOrigins,
     maxRequestsPerMinute: config.rateLimits.maxRequestsPerMinute,
+    requestTimeoutMs: config.requestTimeoutMs,
   });
 
   const actualPort = await server.start(config.port, config.host);

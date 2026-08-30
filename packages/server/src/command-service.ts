@@ -133,7 +133,9 @@ export class CommandService {
       });
 
       childProcess.once("error", (error) => finish(null, error));
-      childProcess.once("close", (code) => finish(code));
+      childProcess.once("close", (code) => {
+        if (!terminationStarted) finish(code);
+      });
     });
   }
 

@@ -60,12 +60,13 @@ in the DB, not signed with `JWT_SECRET`). Rotate during low traffic; expect a br
 
 - **Migrations** run automatically at boot (`init()` before the server listens; checksummed — a
   mismatch aborts start rather than corrupting data).
-- **Driver**: SQLite is runtime-wired; keep `CODEFORGE_CLOUD_DB_PATH` on a **persistent** volume.
-  Postgres is schema-ready but not yet runtime-wired (see deployment guide §5) — do not switch staging
-  to Postgres yet.
-- **Backup (staging)**: snapshot the SQLite file / persistent volume on your platform's schedule. The
-  file is the single source of truth for users, sessions, subscriptions, credit ledger, reservations,
-  usage periods, and webhook history.
+- **Driver**: PostgreSQL is the staging runtime. The Cloud server waits for async initialization and
+  checked migrations before listening. SQLite remains for local single-process development only.
+- **Pool**: the runtime configures at most 20 Postgres connections per Cloud instance. Keep total pool
+  capacity below the managed database connection limit with operational headroom.
+- **Backup (staging)**: verify the provider's actual backup capability before claiming recovery. Render
+  Free Postgres currently provides no backups and expires after 30 days, so it is unsuitable for
+  durable production data without a separately authorized recovery plan.
 - **Restart recovery**: on boot the server reclaims stale credit reservations left by a previous
   process that died mid-inference (older than 10 min, still `reserved`) — credits are refunded so a
   balance is never locked forever. In-memory execution leases vanish on restart, so account concurrency
@@ -101,5 +102,6 @@ recovers automatically. To add headroom, configure an additional free provider k
 
 ## Release-readiness reminder
 
-Staging-ready ≠ production-released. Do **not** enable live Stripe, configure production billing, push
-public DNS, or announce a public service without separate authorization.
+Deployment-ready configuration ≠ deployed staging certification or production release. Do **not**
+enable live Stripe, configure production billing, push public DNS, or announce a public service without
+separate authorization.

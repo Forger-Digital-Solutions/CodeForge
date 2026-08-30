@@ -113,6 +113,23 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     const models = await modelsRes.json();
     expect(Array.isArray(models)).toBe(true);
     expect(models.length).toBeGreaterThan(0);
+
+    expect(readyRes.headers.get("cache-control")).toContain("no-store");
+    expect(readyRes.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(readyRes.headers.get("referrer-policy")).toBe("no-referrer");
+
+    const allowed = await fetch(`${baseUrl}/v1/meta`, { headers: { Origin: "http://127.0.0.1:4555" } });
+    expect(allowed.headers.get("access-control-allow-origin")).toBe("http://127.0.0.1:4555");
+    expect(allowed.headers.get("vary")).toBe("Origin");
+
+    const denied = await fetch(`${baseUrl}/v1/meta`, { headers: { Origin: "https://untrusted.example" } });
+    expect(denied.headers.get("access-control-allow-origin")).toBeNull();
+
+    const deniedPreflight = await fetch(`${baseUrl}/v1/hosted/inference`, {
+      method: "OPTIONS",
+      headers: { Origin: "https://untrusted.example" },
+    });
+    expect(deniedPreflight.status).toBe(403);
   });
 
   it("completes full server-authoritative auth lifecycle, account queries, and hosted inference streaming", async () => {
@@ -167,6 +184,8 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     });
     expect(inferenceRes.status).toBe(200);
     expect(inferenceRes.headers.get("content-type")).toContain("text/event-stream");
+    expect(inferenceRes.headers.get("x-accel-buffering")).toBe("no");
+    expect(inferenceRes.headers.get("referrer-policy")).toBe("no-referrer");
 
     const sseBody = await inferenceRes.text();
     expect(sseBody).toContain("assistant.message.started");
@@ -241,4 +260,3 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     expect(await server.db.getCreditBalance(user.id)).toBe(5_500_000);
   });
 });
-

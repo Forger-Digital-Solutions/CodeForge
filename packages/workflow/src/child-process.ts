@@ -1,4 +1,4 @@
-import { spawn, type ChildProcess } from "node:child_process";
+import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -226,7 +226,22 @@ function waitForClose(child: ChildProcess, timeoutMs: number): Promise<void> {
   });
 }
 
+function waitForSpawn(child: ChildProcess): Promise<void> {
+  if (child.pid || child.exitCode !== null || child.signalCode !== null) return Promise.resolve();
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, 100);
+    const done = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    child.once("spawn", done);
+    child.once("error", done);
+    child.once("close", done);
+  });
+}
+
 export async function terminateProcessTree(child: ChildProcess): Promise<void> {
+  await waitForSpawn(child);
   const pid = child.pid;
   if (!pid || child.exitCode !== null || child.signalCode !== null) return;
 
@@ -234,33 +249,19 @@ export async function terminateProcessTree(child: ChildProcess): Promise<void> {
     const systemRoot = process.env.SystemRoot ?? process.env.WINDIR ?? "C:\\Windows";
     const taskkill = path.join(systemRoot, "System32", "taskkill.exe");
     const closed = waitForClose(child, TERMINATION_GRACE_MS);
-    await new Promise<void>((resolve) => {
-      let settled = false;
-      const finish = (): void => {
-        if (settled) return;
-        settled = true;
-        resolve();
-      };
-      const killer = spawn(taskkill, ["/pid", String(pid), "/T", "/F"], {
+    try {
+      const killed = spawnSync(taskkill, ["/pid", String(pid), "/T", "/F"], {
         windowsHide: true,
         stdio: "ignore",
       });
-      const timer = setTimeout(() => {
-        try { killer.kill(); } catch {}
-        finish();
-      }, TERMINATION_GRACE_MS);
-      killer.once("error", () => {
-        clearTimeout(timer);
+      if (killed.error || killed.status !== 0) {
         try { child.kill(); } catch {}
-        finish();
-      });
-      killer.once("close", () => {
-        clearTimeout(timer);
-        finish();
-      });
-    });
+      }
+    } catch {
+      try { child.kill(); } catch {}
+    }
     await closed;
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 250));
     return;
   }
 

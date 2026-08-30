@@ -1,12 +1,9 @@
 # CodeForge Cloud API — Render Blueprint (staging)
 #
-# Why Render for free-safe staging:
-#   - Free web service tier requires NO credit card, supports HTTPS and long-lived
-#     HTTP/SSE connections (needed for /v1/hosted/inference streaming), and injects
-#     secrets from the dashboard (never from this file).
-#   - Free managed Postgres gives production-truth persistence (not an ephemeral SQLite file).
-#   - Caveat: free web services spin down after ~15 min idle → a cold start (~30-60s) delays
-#     the first request. Acceptable for staging; use a paid instance (or Fly.io) for production.
+# This is a deployment-ready staging blueprint, not proof of a deployed service.
+# Render's current free Postgres tier has a 30-day expiry and no backups or managed pooling.
+# Confirm current plan terms, workspace allowance, and an existing zero-cost authorization before
+# applying this file. Never create a billable resource for this project.
 #
 # Secrets marked `sync: false` are set in the Render dashboard, never committed here.
 # This file is a deployment ARTIFACT — applying it requires a Render account (external).
@@ -26,6 +23,8 @@ services:
         value: staging
       - key: HOST
         value: 0.0.0.0
+      - key: CODEFORGE_REQUEST_TIMEOUT_MS
+        value: "60000"
       - key: CODEFORGE_CLOUD_DB_DRIVER
         value: postgres
       - key: DATABASE_URL

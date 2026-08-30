@@ -82,6 +82,10 @@ describe("GatewayService Hardening", () => {
 
     const balance = await db.getCreditBalance(user.id);
     expect(balance).toBeLessThan(500_000);
+
+    const usage = await db.listUsageEvents(user.id);
+    expect(usage).toHaveLength(1);
+    expect(usage[0]?.providerCostUsd).toBe(0);
   });
 
   it("enforces server-side execution lease and rejects concurrency exceeding plan limit", async () => {
@@ -155,4 +159,3 @@ describe("GatewayService Hardening", () => {
     ).rejects.toThrow(/Hosted inference is currently disabled/);
   });
 });
-

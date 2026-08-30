@@ -1,11 +1,12 @@
-# CodeForge Cloud — Deployment Guide (Staging)
+# CodeForge Cloud — Deployment-Readiness Guide
 
 CodeForge Cloud is the optional hosted lane that lets a user run AI inference with **zero setup** — no
 provider account, no provider API key, no local model. It is an *additional* execution lane: Direct /
 BYOK provider paths remain fully functional whether the cloud is reachable or not.
 
-This guide covers running the cloud API (`apps/cloud-api`) for **staging**. It does not authorize a
-production launch, live Stripe, public DNS, or public announcement.
+This guide describes the deployment configuration and checks required before creating a staging
+environment. It is not evidence that a remote staging environment has been deployed or certified.
+It does not authorize a production launch, live Stripe, public DNS, or public announcement.
 
 ---
 
@@ -21,7 +22,7 @@ Desktop (HostedProviderAdapter) ──HTTPS──▶ CodeForge Cloud API (apps/c
              refresh rotation)          Auto routing, metering)         webhooks, credit packs)
                     │                         │
                     ▼                         ▼
-             CloudDatabase (SQLite)     CloudProviderRegistry ──▶ real provider adapters
+             CloudDatabase (PostgreSQL) CloudProviderRegistry ──▶ real provider adapters
                                         (server-owned keys:        (OpenRouter / Groq / Z.AI /
                                          discovers verified-free    Cloudflare / Gemini …)
                                          models at startup)
@@ -48,8 +49,8 @@ See [`.env.example`](../.env.example) for the full annotated list. Server-side e
 | --- | --- | --- |
 | `CODEFORGE_CLOUD_ENV` | yes | `development` \| `staging` \| `production` (enables fail-closed checks) |
 | `HOST` / `PORT` | no | bind address / port (default `127.0.0.1:3220`; use `0.0.0.0` in a container) |
-| `CODEFORGE_CLOUD_DB_DRIVER` | yes | `sqlite` (runnable) \| `postgres` (schema-ready, see §5) |
-| `CODEFORGE_CLOUD_DB_PATH` | sqlite | persistent file path — **never `:memory:`** in staging/prod |
+| `CODEFORGE_CLOUD_DB_DRIVER` | yes | `postgres` for staging; `sqlite` is only suitable for local single-process development |
+| `CODEFORGE_CLOUD_DB_PATH` | local sqlite only | persistent file path — **never `:memory:`** in staging/prod |
 | `DATABASE_URL` | postgres | Postgres connection string |
 | `JWT_SECRET` | yes | ≥ 32 strong chars (not the dev default) |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | yes | GitHub OAuth app |
@@ -72,7 +73,7 @@ error rather than degrading silently. A redacted, secret-free summary is logged 
 npm ci
 npm run build
 NODE_ENV=production CODEFORGE_CLOUD_ENV=staging HOST=127.0.0.1 PORT=3320 \
-  CODEFORGE_CLOUD_DB_DRIVER=sqlite CODEFORGE_CLOUD_DB_PATH=./data/codeforge.db \
+  CODEFORGE_CLOUD_DB_DRIVER=postgres DATABASE_URL=postgresql://... \
   JWT_SECRET="<32+ char secret>" \
   GITHUB_CLIENT_ID=... GITHUB_CLIENT_SECRET=... \
   STRIPE_SECRET_KEY=sk_test_... STRIPE_WEBHOOK_SECRET=whsec_... \
@@ -101,8 +102,10 @@ provided at run time, never baked into the image.
 
 ### Platform (Render)
 
-[`deploy/render.yaml`](../deploy/render.yaml) is a ready blueprint (free web service + free Postgres,
-no credit card). Note the free-tier cold-start caveat and the Postgres status in §5.
+[`deploy/render.yaml`](../deploy/render.yaml) is a staging blueprint, not a completed deployment.
+Render currently offers free web and Postgres instances, but the database expires after 30 days and
+has no backups or managed connection pooling. Confirm the current plan terms and the workspace's
+included-usage policy before deployment; do not create a resource that can bill the owner.
 
 ---
 
@@ -110,25 +113,23 @@ no credit card). Note the free-tier cold-start caveat and the Postgres status in
 
 CodeForge Cloud is the OAuth transaction authority (PKCE `state` + `code_challenge` are minted and
 consumed server-side). The desktop uses an ephemeral loopback redirect
-(`http://127.0.0.1:<port>/auth/callback`). Configure the GitHub OAuth app's callback to the cloud's
-public callback and keep redirect binding strict. Access tokens are short-lived JWTs; refresh tokens
-rotate on every use and are stored by the desktop in the OS keychain (SafeStorage) — never in the
-renderer.
+(`http://127.0.0.1:<port>/auth/callback`). Configure the GitHub OAuth App callback as
+`http://127.0.0.1/auth/callback` — GitHub permits the native-app loopback flow to use a dynamically
+assigned port. Do not configure the staging API URL as the GitHub callback for this flow. Access
+tokens are short-lived JWTs; refresh tokens rotate on every use and are stored by the desktop in the
+OS keychain (SafeStorage) — never in the renderer.
 
 ---
 
-## 5. Database status (important)
+## 5. PostgreSQL runtime and migrations
 
-- **SQLite (`node:sqlite`) is the runtime-wired driver.** Use a **persistent** `CODEFORGE_CLOUD_DB_PATH`
-  in staging/production (a persistent volume/disk). `:memory:` is refused for prod-like envs.
-- **PostgreSQL is schema-ready but not yet runtime-wired.** The migration layer is real and verified
-  (checksummed migrations, `init()` runs them before serving). However, the request-handling services
-  use the **synchronous** database interface, and the Postgres driver implements those methods as
-  async-only (the sync methods throw). A Postgres-backed server therefore initializes its schema and
-  then fails on the first request. Selecting `CODEFORGE_CLOUD_DB_DRIVER=postgres` prints a loud startup
-  warning. **Do not** run staging on Postgres until the request path is converted to async and tested
-  against a real Postgres instance (set `CODEFORGE_TEST_POSTGRES_URL` to run the gated integration
-  test in `packages/cloud-db/test/postgres.test.ts`).
+- **PostgreSQL is the staging runtime.** The request path is async end-to-end and `server.start()`
+  completes database initialization before accepting traffic. Migrations are checksummed and seed the
+  default plans; a checksum mismatch stops boot.
+- **SQLite is development-only.** Prod-like configuration rejects `:memory:`, but a persistent local
+  SQLite file is not a substitute for remote PostgreSQL persistence or multi-instance authority.
+- The current Postgres pool has a maximum of 20 connections per Cloud instance. Keep the total pool
+  maximum below the database connection ceiling, including operational headroom.
 
 ---
 
@@ -137,7 +138,7 @@ renderer.
 | Endpoint | Meaning |
 | --- | --- |
 | `GET /health/live` | process is up (no DB/provider dependency) — use for platform liveness |
-| `GET /health/ready` | `hostedInferenceReady`, `availableFreeCount`, per-provider `providerCapacity`, kill-switch state |
+| `GET /health/ready` | database connectivity, `hostedInferenceReady`, `availableFreeCount`, per-provider `providerCapacity`, kill-switch state |
 | `GET /v1/meta` | API version, server version, feature flags |
 | `GET /v1/hosted/models` | live catalog derived from discovered capacity (`isEligibleFree`, `accessClass`, provider) |
 
@@ -151,6 +152,12 @@ it never claims capacity it does not have.
 Logs never contain prompt content, provider keys, JWT secrets, or refresh tokens. Errors are sanitized
 (`sk_*`, `ghp_*`, `cfr_*` patterns redacted). The startup summary is redacted. Keep `CODEFORGE_LOG_LEVEL`
 at `info` in staging.
+
+The API responds with `Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, and
+`Referrer-Policy: no-referrer`. CORS is origin-allowlisted and uses bearer tokens rather than cookies;
+unauthorized browser origins receive no CORS grant. SSE responses set `X-Accel-Buffering: no` and
+`Cache-Control: no-transform`, but a deployed platform proxy must still be tested for progressive
+streaming and idle timeout behavior.
 
 ---
 

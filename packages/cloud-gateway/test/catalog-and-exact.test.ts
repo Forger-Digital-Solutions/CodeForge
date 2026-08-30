@@ -43,7 +43,14 @@ describe("Exact hosted model selection by bare modelId (no providerId)", () => {
   it("resolves a bare modelId to its provider and never substitutes another model", async () => {
     const db = new CloudDatabase({ dbPath: ":memory:" });
     const fm = new CloudFirewallManager();
-    fm.registerModel(createGenericFreeRecord({ providerId: "groq", modelId: "exact-target" }));
+    fm.registerModel(
+      createGenericFreeRecord({
+        providerId: "groq",
+        modelId: "exact-target",
+        accessClass: "FREE_ALLOWANCE",
+        costProfile: { inputCostPerMillion: 0.05, outputCostPerMillion: 0.08, isFree: false, paidFallbackPossible: false, paidFallbackDisabled: true, source: "groq:allowance", freeTierVerifiedAt: new Date().toISOString() },
+      }),
+    );
     fm.registerProvider(new Prov("groq"));
     const gateway = new GatewayService({ firewallManager: fm, entitlementService: new EntitlementService(db), usageEngine: new UsageEngine(db), db });
 
@@ -59,6 +66,7 @@ describe("Exact hosted model selection by bare modelId (no providerId)", () => {
       (e) => { if (e.type === "assistant.message.started") events.push(`${e.provider}::${e.model}`); },
     );
     expect(events[0]).toBe("groq::exact-target");
+    expect((await db.listUsageEvents(user.id))[0]?.providerCostUsd).toBe(0);
 
     // An unknown exact model is reported unavailable, never silently swapped.
     await expect(

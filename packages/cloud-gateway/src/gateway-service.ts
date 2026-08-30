@@ -159,24 +159,23 @@ export class GatewayService {
         if (selectedProviderId === "gems") {
           throw new Error("GEMS models are currently unavailable (offline)");
         }
-
-        const verification = this.firewallManager.firewall.verify(selectedProviderId, selectedModelId);
-        if (!verification.ok) {
-          throw new Error(`Model ${selectedProviderId}::${selectedModelId} is not eligible for hosted inference: ${verification.error.message}`);
-        }
-
-        // A successful ForgeZero verification already means the model is free-eligible for the Free
-        // tier — including FREE_ALLOWANCE models (Groq/Gemini) whose costProfile.isFree is false
-        // because they list paid unit prices but grant a verified free allowance. We therefore trust
-        // verify.ok rather than re-checking costProfile.isFree (which wrongly rejected allowance free).
       }
 
       if (!selectedProviderId || !selectedModelId) {
         throw new Error("Could not resolve an eligible model for hosted request");
       }
 
-      // Check max request cost ceiling
+      // Verify the final selection even after Auto routing or bare-model resolution.
       const verifiedModel = this.firewallManager.firewall.getModel(selectedProviderId, selectedModelId);
+      if (!verifiedModel) {
+        throw new Error(`Model ${selectedProviderId}::${selectedModelId} is not present in the ForgeZero catalog`);
+      }
+      const verification = this.firewallManager.firewall.verify(selectedProviderId, selectedModelId);
+      if (!verification.ok) {
+        throw new Error(`Model ${selectedProviderId}::${selectedModelId} is not eligible for hosted inference: ${verification.error.message}`);
+      }
+
+      // Check the ceiling for allowance-based free capacity that exposes nominal paid rates.
       if (verifiedModel && !verifiedModel.costProfile.isFree) {
         const estimatedTokens = (request.estimatedContextTokens || 4000) + 2000;
         const estCost = (estimatedTokens / 1_000_000) * (verifiedModel.costProfile.inputCostPerMillion || 1.0);
@@ -273,6 +272,8 @@ export class GatewayService {
         inputTokens,
         outputTokens,
         latencyMs: Date.now() - startTime,
+        accessClass: verifiedModel.accessClass,
+        providerCostUsd: 0,
       });
 
       onEvent({
@@ -308,4 +309,3 @@ export class GatewayService {
     }
   }
 }
-

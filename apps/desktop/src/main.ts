@@ -43,7 +43,7 @@ const ONBOARDING_COMPLETED_KEY = "codeforge:onboarding-completed";
 const CLOUD_ACCESS_TOKEN_KEY = "codeforge:cloud-access-token";
 const CLOUD_REFRESH_TOKEN_KEY = "codeforge:cloud-refresh-token";
 const CLOUD_USER_KEY = "codeforge:cloud-user";
-const CLOUD_API_URL = (process.env.CODEFORGE_CLOUD_URL || "http://127.0.0.1:3220").replace(/\/$/, "");
+const CLOUD_API_URL = (process.env.CODEFORGE_CLOUD_URL || process.env.CODEFORGE_CLOUD_API_URL || "http://127.0.0.1:3220").replace(/\/$/, "");
 const ALLOWED_PROVIDER_IDS = new Set([
   "opencode",
   "openrouter",
@@ -341,65 +341,61 @@ function clearCloudTokens(): void {
   writeSettingsAtomic(settings);
 }
 
-function registerCloudAdapter(): void {
+async function registerCloudAdapter(): Promise<void> {
   if (!providerCatalog || !firewall) return;
-  const cloudAdapter = new HostedProviderAdapter({
-    cloudApiUrl: CLOUD_API_URL,
-    getAccessToken: () => {
-      const tokens = getStoredCloudTokens();
-      return tokens.accessToken ?? null;
-    },
-    onAuthExpired: async () => {
-      const tokens = getStoredCloudTokens();
-      if (!tokens.refreshToken) return null;
-      try {
-        const refreshRes = await fetch(`${CLOUD_API_URL}/v1/auth/refresh`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken: tokens.refreshToken }),
-        });
-        if (refreshRes.ok) {
-          const data = (await refreshRes.json()) as any;
-          saveCloudTokens(data.accessToken, data.refreshToken, data.user);
-          return data.accessToken;
-        }
-      } catch {}
-      return null;
-    },
-  });
-  providerCatalog.register(cloudAdapter);
+  const existing = providerCatalog.get("codeforge-cloud");
+  const cloudAdapter = existing instanceof HostedProviderAdapter
+    ? existing
+    : new HostedProviderAdapter({
+        cloudApiUrl: CLOUD_API_URL,
+        getAccessToken: () => {
+          const tokens = getStoredCloudTokens();
+          return tokens.accessToken ?? null;
+        },
+        onAuthExpired: async () => {
+          const tokens = getStoredCloudTokens();
+          if (!tokens.refreshToken) return null;
+          try {
+            const refreshRes = await fetch(`${CLOUD_API_URL}/v1/auth/refresh`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ refreshToken: tokens.refreshToken }),
+            });
+            if (refreshRes.ok) {
+              const data = (await refreshRes.json()) as any;
+              saveCloudTokens(data.accessToken, data.refreshToken, data.user);
+              return data.accessToken;
+            }
+          } catch {}
+          return null;
+        },
+      });
+  if (!(existing instanceof HostedProviderAdapter)) providerCatalog.register(cloudAdapter);
   providerAuthState.set("codeforge-cloud", "ok");
 
-  // Register verified free cloud models in ForgeZero
-  firewall.register({
-    providerId: "codeforge-cloud",
-    modelId: "codeforge-auto",
-    displayName: "CodeForge Auto · Included Free (Cloud)",
-    tier: "free",
-    freeStatus: "verified_free",
-    freeStatusVerifiedAt: new Date().toISOString(),
-    isRemote: true,
-    isCloudHosted: true,
-    contextWindow: 128000,
-    capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
-    costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, freeTierVerifiedAt: new Date().toISOString(), paidFallbackPossible: false, paidFallbackDisabled: true, source: "codeforge:cloud" },
-    health: { status: "available", lastCheckedAt: new Date().toISOString() },
-  });
+  for (const model of firewall.allModels()) {
+    if (model.providerId === "codeforge-cloud") firewall.unregister(model.providerId, model.modelId);
+  }
 
-  firewall.register({
-    providerId: "codeforge-cloud",
-    modelId: "qwen/qwen3.6-27b",
-    displayName: "Qwen 3.6 27B · Included Free (Cloud)",
-    tier: "free",
-    freeStatus: "verified_free",
-    freeStatusVerifiedAt: new Date().toISOString(),
-    isRemote: true,
-    isCloudHosted: true,
-    contextWindow: 128000,
-    capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
-    costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, freeTierVerifiedAt: new Date().toISOString(), paidFallbackPossible: false, paidFallbackDisabled: true, source: "codeforge:cloud" },
-    health: { status: "available", lastCheckedAt: new Date().toISOString() },
-  });
+  const now = new Date().toISOString();
+  const models = await cloudAdapter.listModels();
+  for (const model of models) {
+    if (!model.isFree || model.freeStatus !== "verified_free") continue;
+    firewall.register({
+      providerId: "codeforge-cloud",
+      modelId: model.modelId,
+      displayName: model.displayName,
+      tier: "free",
+      freeStatus: "verified_free",
+      freeStatusVerifiedAt: now,
+      isRemote: true,
+      isCloudHosted: true,
+      contextWindow: model.contextWindow,
+      capabilities: model.capabilities,
+      costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, freeTierVerifiedAt: now, paidFallbackPossible: false, paidFallbackDisabled: true, source: "codeforge:cloud" },
+      health: { status: "available", lastCheckedAt: now },
+    });
+  }
 }
 
 async function selectDirectory(): Promise<string | null> {
@@ -957,7 +953,7 @@ app.whenReady().then(async () => {
     }
     const cloudTokens = getStoredCloudTokens();
     if (cloudTokens.accessToken) {
-      registerCloudAdapter();
+      await registerCloudAdapter();
     }
   }
 
@@ -1163,7 +1159,7 @@ ipcMain.handle("cloud:auth:start", async () => {
       cloudApiUrl: CLOUD_API_URL,
     });
     saveCloudTokens(result.accessToken, result.refreshToken, result.user);
-    registerCloudAdapter();
+    await registerCloudAdapter();
     return { ok: true, user: result.user };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -1216,6 +1212,11 @@ ipcMain.handle("cloud:auth:logout", async () => {
   }
   clearCloudTokens();
   providerAuthState.delete("codeforge-cloud");
+  if (firewall) {
+    for (const model of firewall.allModels()) {
+      if (model.providerId === "codeforge-cloud") firewall.unregister(model.providerId, model.modelId);
+    }
+  }
 });
 
 ipcMain.handle("cloud:billing:checkout", async () => {
@@ -1269,4 +1270,3 @@ ipcMain.handle("cloud:usage:get", async () => {
   if (res.ok) return await res.json();
   return null;
 });
-

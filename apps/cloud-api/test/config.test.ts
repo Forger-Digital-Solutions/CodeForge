@@ -63,10 +63,12 @@ describe("loadCloudRuntimeConfig", () => {
       CODEFORGE_HOSTED_FREE_ENABLED: "false",
       CODEFORGE_GLOBAL_DAILY_SPEND_LIMIT_USD: "0.05",
       CODEFORGE_MAX_REQUESTS_PER_MINUTE: "30",
+      CODEFORGE_REQUEST_TIMEOUT_MS: "45000",
     });
     expect(config.killSwitches.hostedFreeEnabled).toBe(false);
     expect(config.killSwitches.globalDailySpendLimitUsd).toBe(0.05);
     expect(config.rateLimits.maxRequestsPerMinute).toBe(30);
+    expect(config.requestTimeoutMs).toBe(45000);
   });
 
   it("resolves server provider credentials from env", () => {

@@ -6,6 +6,10 @@ node_modules/
 dist/
 **/dist/
 build/
+**/release/
+**/.vscode-test/
+coverage/
+**/coverage/
 
 # Test files
 **/*.test.ts

@@ -91,6 +91,7 @@ export interface CodeForgeCloudServerConfig {
   fetchFn?: typeof fetch;
   allowedOrigins?: string[];
   maxRequestsPerMinute?: number;
+  requestTimeoutMs?: number;
 }
 
 export class CodeForgeCloudServer {
@@ -174,6 +175,7 @@ export class CodeForgeCloudServer {
       entitlementService: this.entitlements,
       usageEngine: this.usage,
       db: this.db,
+      inferenceTimeoutMs: config.requestTimeoutMs,
     });
 
     this.server = http.createServer((req, res) => this.handleRequest(req, res));
@@ -323,25 +325,34 @@ export class CodeForgeCloudServer {
     return payload.sub;
   }
 
-  private getCorsOrigin(req: http.IncomingMessage): string {
+  private getCorsOrigin(req: http.IncomingMessage): string | undefined {
     const origin = req.headers.origin;
-    if (!origin) return "*";
+    if (!origin) return undefined;
     if (this.allowedOrigins.has(origin) || origin.startsWith("http://127.0.0.1:") || origin.startsWith("http://localhost:")) {
       return origin;
     }
-    return "null";
+    return undefined;
   }
 
-  private sendJson(res: http.ServerResponse, status: number, data: unknown, origin = "*"): void {
+  private corsHeaders(origin?: string): Record<string, string> {
+    if (!origin) return {};
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Headers": "Authorization, Content-Type, stripe-signature",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      Vary: "Origin",
+    };
+  }
+
+  private sendJson(res: http.ServerResponse, status: number, data: unknown, origin?: string): void {
     res.writeHead(status, {
-      "Content-Type": "application/json",
+      "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store, no-cache, must-revalidate",
       Pragma: "no-cache",
       "X-Content-Type-Options": "nosniff",
       "X-Frame-Options": "DENY",
-      "Access-Control-Allow-Origin": origin,
-      "Access-Control-Allow-Headers": "Authorization, Content-Type, stripe-signature",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Referrer-Policy": "no-referrer",
+      ...this.corsHeaders(origin),
     });
     res.end(JSON.stringify(data));
   }
@@ -354,10 +365,15 @@ export class CodeForgeCloudServer {
 
     // CORS preflight
     if (method === "OPTIONS") {
+      if (req.headers.origin && !corsOrigin) {
+        this.sendJson(res, 403, { error: "Origin is not allowed" });
+        return;
+      }
       res.writeHead(204, {
-        "Access-Control-Allow-Origin": corsOrigin,
-        "Access-Control-Allow-Headers": "Authorization, Content-Type, stripe-signature",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "no-referrer",
+        ...this.corsHeaders(corsOrigin),
       });
       res.end();
       return;
@@ -553,9 +569,12 @@ export class CodeForgeCloudServer {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache, no-transform",
           Connection: "keep-alive",
-          "Access-Control-Allow-Origin": corsOrigin,
           "X-Content-Type-Options": "nosniff",
+          "Referrer-Policy": "no-referrer",
+          "X-Accel-Buffering": "no",
+          ...this.corsHeaders(corsOrigin),
         });
+        res.flushHeaders();
 
         const abortController = new AbortController();
         req.on("close", () => {

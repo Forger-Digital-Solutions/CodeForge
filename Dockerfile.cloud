@@ -32,7 +32,19 @@ COPY apps ./apps
 
 # Full install (workspaces), then compile. patch-package runs via postinstall.
 RUN npm ci
-RUN npm run build
+
+# `npm run build --workspaces` does not guarantee a dependency-aware order.
+# Build the TypeScript project graph first, then the Cloud-only packages in
+# their explicit dependency order so this remains reproducible from a clean
+# image layer.
+RUN npx tsc -b \
+    && npm run build --workspace=@codeforge/cloud-db \
+    && npm run build --workspace=@codeforge/cloud-auth \
+    && npm run build --workspace=@codeforge/cloud-entitlements \
+    && npm run build --workspace=@codeforge/cloud-usage \
+    && npm run build --workspace=@codeforge/cloud-billing \
+    && npm run build --workspace=@codeforge/cloud-gateway \
+    && npm run build --workspace=codeforge-cloud-api
 
 # Drop dev-only dependencies (electron, vite, react, typescript, …) from node_modules for the runner.
 RUN npm prune --omit=dev
