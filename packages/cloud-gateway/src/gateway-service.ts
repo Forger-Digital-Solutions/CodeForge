@@ -244,6 +244,14 @@ export class GatewayService {
             outputTokens = chunk.usage.outputTokens ?? outputTokens;
           }
         }
+
+        // A cooperative adapter stops yielding on abort instead of throwing, so the loop above can
+        // exit normally for a request that actually timed out or was cancelled. Without this check
+        // the turn would be settled and reported as `turn.completed` — charging the user for a
+        // truncated answer and hiding the timeout. Fail closed on the signal, not on the loop shape.
+        if (combinedSignal.aborted) {
+          throw new Error(combinedSignal.reason ? String(combinedSignal.reason) : "Inference was aborted");
+        }
       } finally {
         clearTimeout(timeoutTimer);
       }
