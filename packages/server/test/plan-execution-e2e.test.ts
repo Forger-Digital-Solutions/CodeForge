@@ -102,10 +102,15 @@ describe("autonomous plan execution — approve / reject / cancel", () => {
   const sessionUrl = (id: string) => `http://localhost:${port}/api/sessions/${id}`;
   const readCalc = () => fs.readFileSync(join(ws, "src/calc.js"), "utf-8");
 
+  // Run the suite directly rather than through `npm test`. It is the same real check on the same
+  // real file — it genuinely fails before the edit and passes after — but its outcome depends only
+  // on node, not on how a particular machine's npm is installed.
+  const VERIFY = ["node test/calc.test.js"];
+
   it("the workspace's verification genuinely fails before the fix", async () => {
     // Guards the test itself: if this passed on the buggy file, a later "PASS" would prove nothing.
     const { runVerification, verificationFailed } = await import("@codeforge/workflow");
-    const before = await runVerification(ws, ["npm test"]);
+    const before = await runVerification(ws, VERIFY);
     expect(verificationFailed(before)).toBe(true);
   }, 30000);
 
@@ -114,6 +119,7 @@ describe("autonomous plan execution — approve / reject / cancel", () => {
     const run = await api(`http://localhost:${port}/api/workflow/run`, {
       sessionId: "approve-sess",
       message: "Fix the add function in src/calc.js so it correctly adds two numbers.",
+      verificationCommands: VERIFY,
     });
     expect(run.status).toBe(200);
     const { taskId } = run.body as { taskId: string };
@@ -155,7 +161,7 @@ describe("autonomous plan execution — approve / reject / cancel", () => {
 
     // Verification actually ran, and passed on the fixed file.
     const { runVerification, verificationPassed } = await import("@codeforge/workflow");
-    const verified = await runVerification(ws, ["npm test"]);
+    const verified = await runVerification(ws, VERIFY);
     expect(verificationPassed(verified)).toBe(true);
 
     // No approval outlives the workflow.
@@ -163,11 +169,48 @@ describe("autonomous plan execution — approve / reject / cancel", () => {
     expect(approvalsSeen.size).toBeGreaterThan(0);
   }, 60000);
 
+  it("completes an approved edit in a workspace that has nothing to verify", async () => {
+    // The exact shape that produced the original report: a real package.json with NO test script,
+    // and no verification commands supplied. `npm test` there exits non-zero with
+    // `Missing script: "test"`, which used to be read as a failing build — so a correct, approved
+    // edit finished "failed" with no evidence and no checkpoint. Availability is decided from the
+    // manifest before anything runs, so this assertion holds on any machine.
+    await writeFile(join(ws, "package.json"), JSON.stringify({ name: "plan-exec", type: "module" }, null, 2));
+    await startServer();
+
+    const run = await api(`http://localhost:${port}/api/workflow/run`, {
+      sessionId: "noverify-sess",
+      message: "Fix the add function in src/calc.js so it correctly adds two numbers.",
+    });
+    const { taskId } = run.body as { taskId: string };
+
+    let task: any;
+    for (let i = 0; i < 50; i++) {
+      await new Promise((r) => setTimeout(r, 300));
+      const sess = await api(sessionUrl("noverify-sess"), undefined, "GET");
+      for (const a of (sess.body?.pendingApprovals ?? []) as Array<{ approvalId: string }>) {
+        await api(`http://localhost:${port}/api/approvals/${a.approvalId}/resolve`, { decision: "allow_once" });
+      }
+      const wf = await api(`http://localhost:${port}/api/workflow/${taskId}`, undefined, "GET");
+      task = wf.body?.task;
+      if (task && ["completed", "failed", "cancelled"].includes(task.phase)) break;
+    }
+
+    expect(readCalc()).toContain("a + b");
+    expect(task.phase).toBe("completed");
+
+    const sess = await api(sessionUrl("noverify-sess"), undefined, "GET");
+    const types = ((sess.body?.events ?? []) as Array<{ type: string }>).map((e) => e.type);
+    expect(types).toContain("evidence.created");
+    expect(types).toContain("checkpoint.created");
+  }, 60000);
+
   it("reject: the file is untouched and the workflow does not claim success", async () => {
     await startServer();
     const run = await api(`http://localhost:${port}/api/workflow/run`, {
       sessionId: "reject-sess",
       message: "Fix the add function in src/calc.js so it correctly adds two numbers.",
+      verificationCommands: VERIFY,
     });
     const { taskId } = run.body as { taskId: string };
 
@@ -198,6 +241,7 @@ describe("autonomous plan execution — approve / reject / cancel", () => {
     const run = await api(`http://localhost:${port}/api/workflow/run`, {
       sessionId: "cancel-sess",
       message: "Fix the add function in src/calc.js so it correctly adds two numbers.",
+      verificationCommands: VERIFY,
     });
     const { taskId } = run.body as { taskId: string };
 
