@@ -23,7 +23,9 @@
     "cloud:pg:validate": "node scripts/cloud/pg-validate.mjs",
     "cloud:remote:probe": "node scripts/cloud/remote-probe.mjs",
     "cloud:certify:staging": "node scripts/cloud/certify-staging.mjs",
-    "cloud:launch:checklist": "node scripts/cloud/launch-checklist.mjs"
+    "cloud:launch:checklist": "node scripts/cloud/launch-checklist.mjs",
+    "repo-intelligence:certify": "node scripts/repository-intelligence-certify.mjs",
+    "repo-intelligence:ab": "node scripts/repository-intelligence-ab.mjs"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.7.0",

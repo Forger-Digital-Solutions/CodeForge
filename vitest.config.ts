@@ -12,6 +12,7 @@ const packages = [
   "director",
   "tools",
   "sessions",
+  "repo-intelligence",
   "context",
   "git",
   "permissions",
