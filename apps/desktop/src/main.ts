@@ -17,6 +17,12 @@ import { NormalizedModelRegistry, discoverAndVerifyFree, verifyAllowanceViaProbe
 import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
 import { runCodeForgeCloudAuth, type CloudAuthResult } from "./cloud-auth-flow.js";
 import {
+  installSingleInstanceGuard,
+  activateWindow,
+  bindErrorCode,
+  describeStartupFailure,
+} from "./single-instance.js";
+import {
   resolveCloudEndpoint,
   parseCloudEndpointManifest,
   describeCloudEndpoint,
@@ -101,6 +107,8 @@ const ROUTABLE_PROVIDER_IDS = ["opencode", "openrouter", "zai", "google", "groq"
 const MAX_API_KEY_LENGTH = 512;
 const SETTINGS_FILE = "settings.json";
 const PACKAGED_SMOKE = process.env.CODEFORGE_PACKAGED_SMOKE === "1";
+/** Port the local CodeForge API binds to; the renderer and the VS Code extension both target it. */
+const LOCAL_SERVER_PORT = 3210;
 
 function smokeRecord(line: string): void {
   const outputPath = process.env.CODEFORGE_SMOKE_OUT;
@@ -543,7 +551,7 @@ async function initializeServer(dbPath: string): Promise<void> {
     );
     smokeRecord(`INIT_SERVER_HAS_CREDS_${Boolean(hasCredentials)}`);
     server = new CodeForgeServer({
-      port: 3210,
+      port: LOCAL_SERVER_PORT,
       dbPath,
       firewall: firewall ?? undefined,
       providerCatalog: providerCatalog ?? undefined,
@@ -958,7 +966,7 @@ async function runPackagedSmoke(): Promise<void> {
   app.exit(0);
 }
 
-app.whenReady().then(async () => {
+async function startPrimaryInstance(): Promise<void> {
   smokeRecord("WHEN_READY_START");
   desktopCredentialStore = new DesktopCredentialStore();
   smokeRecord("WHEN_READY_CRED_STORE_DONE");
@@ -1036,7 +1044,61 @@ app.whenReady().then(async () => {
       createWindow();
     }
   });
+}
+
+/**
+ * Bring the running primary instance forward. This is what a second launch gets instead of a
+ * second application: the existing window is un-minimized, un-hidden and focused, and no user
+ * state is touched.
+ */
+function focusPrimaryWindow(): void {
+  const target = mainWindow && !mainWindow.isDestroyed()
+    ? mainWindow
+    : BrowserWindow.getAllWindows().find((win) => !win.isDestroyed());
+  activateWindow(target);
+}
+
+/**
+ * A predictable local-server bind failure must not reach the user as Electron's raw
+ * "A JavaScript error occurred in the main process" dialog. Report it in the app's own terms and
+ * exit — the local API is what the workspace talks to, so continuing without it would only
+ * present a broken window.
+ */
+function handleStartupFailure(error: unknown): void {
+  const code = bindErrorCode(error);
+  const detail = error instanceof Error ? error.message : String(error);
+  smokeRecord(`STARTUP_FAILED ${code ?? "UNKNOWN"} ${detail}`);
+  console.error(`[CodeForge] startup failed (${code ?? "UNKNOWN"}): ${detail}`);
+
+  if (PACKAGED_SMOKE) {
+    app.exit(1);
+    return;
+  }
+
+  const message = describeStartupFailure(error, LOCAL_SERVER_PORT);
+  try {
+    dialog.showErrorBox("CodeForge could not start", message);
+  } catch {
+    // A failure before Electron can draw a dialog still has the console diagnostic above.
+  }
+  app.exit(1);
+}
+
+// Single-instance ownership is settled before anything that assumes this process is the only
+// CodeForge: the local server bind, IPC ownership and the primary window all live inside
+// startPrimaryInstance(), which a losing process never registers. Electron scopes the lock to the
+// user-data directory, so separate --user-data-dir profiles (the packaged smoke suites) still run
+// independently.
+const IS_PRIMARY_INSTANCE = installSingleInstanceGuard({
+  app,
+  startPrimary: startPrimaryInstance,
+  onSecondInstance: () => {
+    smokeRecord("SECOND_INSTANCE_ACTIVATED");
+    focusPrimaryWindow();
+  },
+  onStartupFailure: handleStartupFailure,
 });
+if (!IS_PRIMARY_INSTANCE) smokeRecord("SECOND_INSTANCE_EXIT");
 
 app.on("window-all-closed", () => {
   if (server) {

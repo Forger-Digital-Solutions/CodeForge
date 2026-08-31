@@ -172,8 +172,24 @@ export class CodeForgeServer {
   async start(): Promise<void> {
     this.server = http.createServer((req, res) => this.handleRequest(req, res));
     const server = this.server;
-    await new Promise<void>((resolveListen) => {
-      server.listen(this.port, () => resolveListen());
+    // A bind failure (EADDRINUSE when another CodeForge already owns the port, EACCES on a
+    // privileged one) arrives as an 'error' event. Without a listener Node re-throws it as an
+    // uncaught exception, which in Electron surfaced as a raw "A JavaScript error occurred in
+    // the main process" dialog. Surface it as a rejection the caller can act on instead, and
+    // drop the dead handle so nothing mistakes this server for a listening one.
+    await new Promise<void>((resolveListen, rejectListen) => {
+      const onError = (err: Error) => {
+        server.removeListener("listening", onListening);
+        if (this.server === server) this.server = null;
+        rejectListen(err);
+      };
+      const onListening = () => {
+        server.removeListener("error", onError);
+        resolveListen();
+      };
+      server.once("error", onError);
+      server.once("listening", onListening);
+      server.listen(this.port);
     });
     const address = server.address();
     if (typeof address === "object" && address !== null) {
