@@ -545,10 +545,11 @@ async function discoverProviderFree(providerId: string): Promise<number> {
 async function initializeServer(dbPath: string): Promise<void> {
   smokeRecord("INIT_SERVER_START");
   try {
-    const hasCredentials = !!providerCatalog && (
+    const hasCredentials = PACKAGED_SMOKE || (!!providerCatalog && (
       providerCatalog.get("opencode") ||
-      providerCatalog.get("openrouter")
-    );
+      providerCatalog.get("openrouter") ||
+      providerCatalog.get("codeforge")
+    ));
     smokeRecord(`INIT_SERVER_HAS_CREDS_${Boolean(hasCredentials)}`);
     server = new CodeForgeServer({
       port: LOCAL_SERVER_PORT,
@@ -838,11 +839,37 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   await evaluateRenderer<void>(`window.electronAPI.openProject(${JSON.stringify(workspacePath)})`);
   await reloadRenderer();
   await waitForCondition(async () => (await evaluateRenderer<string>("document.body.innerText")).toLowerCase().includes(path.basename(workspacePath).toLowerCase()));
+  smokeRecord("packaged_workspace_name_visible=PASS");
   await waitForCondition(async () => (await apiJson("/api/workspace/tree")).status === 200);
+  smokeRecord("packaged_workspace_tree_ready=PASS");
+  let lastIndexStatus: any;
+  try {
+    await waitForCondition(async () => {
+      const index = await apiJson("/api/repository-index/status");
+      lastIndexStatus = index.body;
+      return index.status === 200 && ["READY", "DEGRADED"].includes(index.body?.state);
+    }, 30_000);
+  } catch (error) {
+    smokeRecord(`packaged_repository_status_diagnostic=${JSON.stringify(lastIndexStatus)}`);
+    throw error;
+  }
+  smokeRecord("packaged_repository_status_terminal=PASS");
+  const indexStatus = await apiJson("/api/repository-index/status");
+  smokeRecord(`packaged_repository_status=${JSON.stringify(indexStatus.body)}`);
+  if ((indexStatus.body?.fileCount ?? 0) < 258 || (indexStatus.body?.symbolCount ?? 0) < 257) throw new Error("Packaged substantial repository index did not contain workspace structure");
+  const indexQuery = await apiJson("/api/repository-index/search?q=add");
+  if (indexQuery.status !== 200 || !indexQuery.body?.items?.some((item: { path?: string }) => item.path === "src/calc.ts")) throw new Error("Packaged repository search did not return the known implementation");
+  const shellText = await evaluateRenderer<string>("document.body.innerText");
+  smokeRecord("packaged_repository_query_known_answer=PASS");
+  if (!shellText.includes("Repository Intelligence") || !shellText.includes("Local structural index")) throw new Error("Packaged repository status UX was not visible");
   const escape = await apiJson(`/api/workspace/tree?path=${encodeURIComponent(path.dirname(workspacePath))}`);
   if (escape.status !== 403) throw new Error(`Workspace escape returned ${escape.status}`);
   smokeRecord("packaged_workspace_restore=PASS");
   smokeRecord("packaged_workspace_escape_blocked=PASS");
+  smokeRecord("packaged_repository_index_ready=PASS");
+  smokeRecord("packaged_repository_search=PASS");
+  smokeRecord("packaged_repository_index_ui_responsive=PASS");
+  smokeRecord("packaged_substantial_repository=PASS");
 
   // Run the workflow in the SAME session the renderer follows ("default"). SSE is now scoped
   // per session (isolation), so the reload-rehydration check below must observe the session the

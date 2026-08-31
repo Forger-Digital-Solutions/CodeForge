@@ -40,8 +40,14 @@ if (mode === 'full') {
   try { rmSync(smokeProfile, { recursive: true, force: true }); } catch {}
   try { rmSync(smokeWorkspace, { recursive: true, force: true }); } catch {}
   mkdirSync(join(smokeWorkspace, 'src'), { recursive: true });
-  writeFileSync(join(smokeWorkspace, 'src', 'calc.ts'), 'export const add = (a: number, b: number) => a - b;\n');
+  writeFileSync(join(smokeWorkspace, 'src', 'calc.ts'), 'export function add(a: number, b: number): number {\n  return a - b;\n}\n');
   writeFileSync(join(smokeWorkspace, 'package.json'), JSON.stringify({ name: 'smoke-test', type: 'module' }, null, 2));
+  const noiseRoot = join(smokeWorkspace, 'packages', 'noise', 'src');
+  mkdirSync(noiseRoot, { recursive: true });
+  const noiseLines = Array.from({ length: 199 }, (_, index) => `// deterministic distraction line ${index}`).join('\n');
+  for (let index = 0; index < 256; index++) {
+    writeFileSync(join(noiseRoot, `module-${String(index).padStart(4, '0')}.ts`), `${noiseLines}\nexport const distraction${index} = ${index};\n`);
+  }
   try { rmSync(smokeOut, { force: true }); } catch {}
 }
 

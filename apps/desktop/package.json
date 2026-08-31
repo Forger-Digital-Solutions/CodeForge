@@ -105,6 +105,8 @@
           "protocol/package.json",
           "providers/dist/**/*.js",
           "providers/package.json",
+          "repo-intelligence/dist/**/*.js",
+          "repo-intelligence/package.json",
           "router/dist/**/*.js",
           "router/package.json",
           "secrets/dist/**/*.js",
@@ -115,10 +117,21 @@
           "sessions/package.json",
           "tools/dist/**/*.js",
           "tools/package.json",
+          "context/dist/**/*.js",
+          "context/package.json",
           "ui/dist/**/*.js",
           "ui/package.json",
           "workflow/dist/**/*.js",
           "workflow/package.json"
+        ]
+      },
+      {
+        "from": "node_modules/typescript",
+        "to": "node_modules/typescript",
+        "filter": [
+          "package.json",
+          "LICENSE.txt",
+          "lib/**/*.js"
         ]
       },
       {

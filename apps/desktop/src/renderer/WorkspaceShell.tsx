@@ -38,6 +38,16 @@ interface ApiModel {
   isPromotional?: boolean;
 }
 
+interface RepositoryIndexStatus {
+  state: "NOT_INDEXED" | "INDEXING" | "READY" | "STALE" | "DEGRADED" | "ERROR";
+  enabled?: boolean;
+  fileCount?: number;
+  symbolCount?: number;
+  sizeBytes?: number;
+  local?: boolean;
+  progress?: { filesProcessed: number; filesDiscovered: number };
+}
+
 // Muse Spark is a promotional model excluded from normal routing entirely — hide any stray record.
 const HIDDEN_MODEL_RE = /muse[-\s]?spark/i;
 function isHiddenModel(id: string): boolean {
@@ -111,6 +121,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [cloudAccount, setCloudAccount] = useState<any>(null);
   const [isQuotaExhaustedOpen, setIsQuotaExhaustedOpen] = useState(false);
+  const [repositoryIndex, setRepositoryIndex] = useState<RepositoryIndexStatus>({ state: "NOT_INDEXED" });
 
   useEffect(() => {
     fetch(`${SERVER_BASE_URL}/api/workspace/set`, {
@@ -120,6 +131,33 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
     }).catch(() => {});
     loadCloudAccount();
   }, [project.path]);
+
+  useEffect(() => {
+    let active = true;
+    const refreshIndex = async () => {
+      try {
+        const response = await fetch(`${SERVER_BASE_URL}/api/repository-index/status`);
+        if (response.ok && active) setRepositoryIndex(await response.json() as RepositoryIndexStatus);
+      } catch {}
+    };
+    void refreshIndex();
+    const interval = setInterval(refreshIndex, repositoryIndex.state === "INDEXING" ? 1000 : 5000);
+    return () => { active = false; clearInterval(interval); };
+  }, [project.path, repositoryIndex.state]);
+
+  const setRepositoryIndexEnabled = async (enabled: boolean) => {
+    const response = await fetch(`${SERVER_BASE_URL}/api/repository-index/settings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled }),
+    });
+    if (response.ok) setRepositoryIndex((current) => ({ ...current, enabled, state: enabled ? "INDEXING" : "NOT_INDEXED" }));
+  };
+
+  const rebuildRepositoryIndex = async () => {
+    const response = await fetch(`${SERVER_BASE_URL}/api/repository-index/rebuild`, { method: "POST" });
+    if (response.ok) setRepositoryIndex((current) => ({ ...current, state: "INDEXING" }));
+  };
 
   const loadCloudAccount = async () => {
     try {
@@ -224,13 +262,14 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
     for (const key of sortedKeys) {
       const items = sectionMap.get(key);
       if (items && items.length > 0) {
-        sections.push({ label: key, items });
+        sections.push({ sectionId: key.toLowerCase().replace(/[^a-z0-9]+/g, "-"), sectionLabel: key, models: items });
       }
     }
     return sections;
   }, [apiModels, models]);
 
-  const handleSelectModel = (modelId: string) => {
+  const handleSelectModel = (model: ModelSelectorItem) => {
+    const modelId = model.id;
     setSelectedModelId(modelId);
     fetch(`${SERVER_BASE_URL}/api/model/select`, {
       method: "POST",
@@ -239,7 +278,8 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
     }).catch(() => {});
   };
 
-  const handleShowModelDetails = (modelId: string) => {
+  const handleShowModelDetails = (model: ModelSelectorItem) => {
+    const modelId = model.id;
     const found = apiModels.find((m) => m.id === modelId);
     if (found) {
       setSelectedModelForDetails(found);
@@ -295,6 +335,22 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
           <div className="header-project">
             <span className="project-name">{project.name}</span>
             <span className="project-path">{project.path}</span>
+            <span className={`repository-index-status repository-index-${repositoryIndex.state.toLowerCase()}`} title="Repository indexing is local; raw source is not uploaded to build the index.">
+              Repository Intelligence · {repositoryIndex.state === "INDEXING" && repositoryIndex.progress
+                ? `Indexing ${repositoryIndex.progress.filesProcessed.toLocaleString()} / ${repositoryIndex.progress.filesDiscovered.toLocaleString()}`
+                : repositoryIndex.state === "READY" || repositoryIndex.state === "DEGRADED"
+                  ? `${repositoryIndex.state === "READY" ? "Ready" : "Degraded"} · ${(repositoryIndex.fileCount ?? 0).toLocaleString()} files · ${(repositoryIndex.symbolCount ?? 0).toLocaleString()} symbols`
+                  : repositoryIndex.state}
+              {repositoryIndex.local ? " · Local structural index" : ""}
+            </span>
+            <span className="repository-index-actions">
+              <button type="button" onClick={() => void setRepositoryIndexEnabled(repositoryIndex.enabled === false)}>
+                {repositoryIndex.enabled === false ? "Enable index" : "Disable index"}
+              </button>
+              <button type="button" disabled={repositoryIndex.enabled === false || repositoryIndex.state === "INDEXING"} onClick={() => void rebuildRepositoryIndex()}>
+                Rebuild
+              </button>
+            </span>
           </div>
         </div>
 
