@@ -1,0 +1,444 @@
+{
+  "schemaVersion": "1.0.0",
+  "document": "CodeForge Cloud — Global Staging Certification",
+  "verdict": {
+    "token": "CODEFORGE_CLOUD_GLOBAL_STAGING_CERTIFIED",
+    "answer": "YES — CERTIFIED",
+    "certified": true
+  },
+  "certificationTimestampUtc": "2026-08-31T12:22:47Z",
+  "repository": {
+    "sha": "85bb4efe06b33dc49804c9107d4c5e875c09f6d2",
+    "shortSha": "85bb4ef",
+    "branch": "feat/codeforge-cloud",
+    "workingTree": "clean",
+    "applicationSourceChanged": false
+  },
+  "runtime": {
+    "servingSha": "85bb4efe06b33dc49804c9107d4c5e875c09f6d2",
+    "previousServingSha": "d925819",
+    "shaAdvanceImpact": "none",
+    "equivalenceProof": {
+      "cloudApiTreeObjectIdentical": true,
+      "cloudApiTreeObject": "4d5710585e2ad1ed07f217822a3d89cac696b085",
+      "dockerfileCloudUnchanged": true,
+      "renderYamlUnchanged": true,
+      "changedPackages": ["server", "ui", "workflow"],
+      "cloudApiTransitiveClosureSize": 16,
+      "intersectionWithChangedPackages": 0
+    }
+  },
+  "deployment": {
+    "provider": "Render",
+    "serviceName": "codeforge-cloud-staging",
+    "serviceId": "srv-daa481tg1s2s73c3htsg",
+    "deployId": "dep-daalod8n74is73bbt54g",
+    "status": "live",
+    "finishedAtUtc": "2026-08-31T10:50:57Z",
+    "trigger": "explicit",
+    "polledByExactDeployId": true,
+    "plan": "free",
+    "suspended": false,
+    "publicUrl": "https://codeforge-cloud-staging.onrender.com",
+    "entrypoint": "apps/cloud-api/dist/index.js",
+    "dockerfile": "Dockerfile.cloud",
+    "healthChecks": {
+      "/health/live": 200,
+      "/health/ready": 200,
+      "/v1/meta": 200,
+      "/v1/hosted/models": 200
+    },
+    "readyPayload": {
+      "status": "ready",
+      "database": "connected",
+      "availableModelsCount": 34,
+      "availableFreeCount": 30
+    },
+    "startupConfig": {
+      "env": "staging",
+      "db": "postgres",
+      "dbTls": true,
+      "github": "configured",
+      "stripe": "disabled",
+      "providers": ["openrouter", "groq"]
+    },
+    "logAudit": {
+      "requiredPositiveMarkers": 5,
+      "requiredPositiveMarkersFound": 5,
+      "forbiddenPatternsChecked": 9,
+      "forbiddenPatternsPresent": 0
+    },
+    "evidenceClass": "REAL REMOTE"
+  },
+  "database": {
+    "provider": "Supabase",
+    "plan": "Free",
+    "engine": "PostgreSQL",
+    "version": "17.6",
+    "region": "us-east-1",
+    "connectionType": "Session pooler",
+    "port": 5432,
+    "tls": {
+      "certificateVerificationEnforced": true,
+      "rejectUnauthorized": true,
+      "caPinned": true,
+      "sniSet": true,
+      "prohibitedRelaxationsPresent": false
+    },
+    "failClosed": {
+      "firstAttempt": {
+        "result": "INVALID",
+        "reason": "A Render environment-variable update alone does not restart the running container, so the probe observed a still-healthy process holding its original connection. Result discarded as proving nothing."
+      },
+      "correctedAttempt": {
+        "result": "PASS",
+        "method": "Each phase explicitly triggers a deploy and polls that exact deploy ID to a terminal state before probing.",
+        "evidenceClass": "REAL REMOTE"
+      }
+    },
+    "evidenceClass": "REAL REMOTE"
+  },
+  "migrations": {
+    "expected": 3,
+    "present": 3,
+    "checksumsMatched": 3,
+    "records": [
+      {
+        "version": 1,
+        "name": "001_initial_cloud_schema",
+        "checksum": "58f208efe2a8c9740349e819d33b1afbddf5f70d42171478feaf5e4a748d8882",
+        "checksumMatch": true
+      },
+      {
+        "version": 2,
+        "name": "002_credit_ledger_monotonic_seq",
+        "checksum": "e368259df2215c3acf930a2d055d58a37e8e4dce30daf8f1392bc05afba1bcbf",
+        "checksumMatch": true
+      },
+      {
+        "version": 3,
+        "name": "003_server_brokered_oauth",
+        "checksum": "d84f792009518beeb1ca6b32c702816eda6096489dd84148c54e8b110a9da4f2",
+        "checksumMatch": true
+      }
+    ],
+    "evidenceClass": "REAL REMOTE"
+  },
+  "durableState": {
+    "anonymizedUserSetFingerprint": "8533038eb54b9b7ff9fcc75c3809a41d",
+    "fingerprintUnchangedAcrossRotation": true,
+    "ledgerMonotonic": true,
+    "ledgerSeqMin": 1,
+    "ledgerSeqMax": 27,
+    "tables": {
+      "users": { "before": 1, "after": 1 },
+      "identities": { "before": 1, "after": 1 },
+      "entitlements": { "before": 3, "after": 3 },
+      "schema_migrations": { "before": 3, "after": 3 },
+      "credit_ledger": { "before": 25, "after": 27 },
+      "usage_events": { "before": 12, "after": 13 },
+      "hosted_requests": { "before": 12, "after": 13 }
+    },
+    "growthAttributableToSinglePostRotationRequest": true,
+    "redeployPersistence": {
+      "result": "PASS",
+      "tableFingerprintsCompared": 7,
+      "identicalBeforeAfterRedeployAndOutage": true,
+      "evidenceClass": "REAL REMOTE / CARRIED FORWARD"
+    },
+    "evidenceClass": "REAL REMOTE"
+  },
+  "oauth": {
+    "flow": "server-brokered-github-pkce",
+    "codeChallengeMethod": "S256",
+    "realHumanAuthorization": true,
+    "tokenFabricatedOrMinted": false,
+    "sessionEstablishedPostRotation": true,
+    "checks": {
+      "realLoginExchange": "PASS",
+      "logout": "PASS (HTTP 200)",
+      "refreshAfterLogoutRejected": "PASS (HTTP 401)",
+      "authorizationCodeReplayRejected": "PASS (HTTP 401)"
+    },
+    "evidenceClass": "REAL REMOTE"
+  },
+  "hostedFree": {
+    "zeroSetupFlow": {
+      "apiKeyRequired": false,
+      "paymentMethodRequired": false,
+      "configurationRequired": false,
+      "verifiedFreeModels": 30,
+      "totalCatalogModels": 34,
+      "freeCapacityServerVerified": true
+    },
+    "postRotationRequest": {
+      "requestId": "df8a0b52-5848-4858-b4ce-81e26a805ddf",
+      "turnId": "1399d8ab-82d3-418d-bad3-61f1a6ea2988",
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "routing": "exact",
+      "fallbackReachable": false,
+      "isEligibleFree": true,
+      "accessClassCatalog": "free",
+      "accessClassRecorded": "FREE_ALLOWANCE",
+      "providerCostUsd": 0,
+      "inputTokens": 78,
+      "outputTokens": 53,
+      "cachedTokens": 0,
+      "latencyMs": 280,
+      "status": "completed",
+      "completionText": "ROTATION_OK",
+      "evidenceClass": "REAL REMOTE"
+    }
+  },
+  "accounting": {
+    "serverAuthoritative": true,
+    "clientCanAssertBalance": false,
+    "reservationCredits": 5000,
+    "releasedCredits": 4816,
+    "settledCredits": 184,
+    "arithmeticBalances": true,
+    "ledgerEntries": [
+      { "seq": 26, "eventType": "CREDIT_RESERVED", "amount": -5000, "balanceAfter": 491257 },
+      { "seq": 27, "eventType": "CREDIT_RELEASED", "amount": 4816, "balanceAfter": 496073 }
+    ],
+    "actualCreditsOnRequestRow": 184,
+    "creditsConsumedOnUsageEvent": 184,
+    "note": "Credits meter usage; providerCostUsd is 0 because the model is genuinely free.",
+    "evidenceClass": "REAL REMOTE"
+  },
+  "sse": {
+    "progressive": true,
+    "terminalEvent": "turn.completed",
+    "eventSequence": [
+      "assistant.message.started",
+      "assistant.message.delta",
+      "assistant.message.delta",
+      "assistant.message.delta",
+      "assistant.message.completed",
+      "usage.updated",
+      "turn.completed"
+    ],
+    "usageDeliveredInBandBeforeTermination": true,
+    "evidenceClass": "REAL REMOTE"
+  },
+  "privacy": {
+    "result": "PASS",
+    "checksTotal": 7,
+    "checksPassed": 7,
+    "checkIds": [
+      "privacy.session",
+      "privacy.account_readable",
+      "privacy.set_strict",
+      "privacy.strict_constrains_routing",
+      "privacy.set_standard",
+      "privacy.standard_restores_capacity",
+      "privacy.no_secret_shaped_leak"
+    ],
+    "correctionNote": "An earlier informal summary circulated '17/17'; that figure is unsupported by surviving receipts and is corrected to the verifiable count of 7.",
+    "evidenceClass": "REAL REMOTE / CARRIED FORWARD"
+  },
+  "remoteSecurityProbe": {
+    "result": "PASS",
+    "checksTotal": 21,
+    "checksPassed": 21,
+    "checksFailed": 0,
+    "coverage": [
+      "target.https", "target.dns", "target.tls_certificate",
+      "health.live", "health.ready", "capacity.hosted_free", "meta", "models",
+      "security.header.x-content-type-options", "security.header.referrer-policy",
+      "security.header.cache-control", "auth.required/v1/account", "auth.required/v1/usage",
+      "auth.forged_token", "oauth.ready", "oauth.no_verifier_leak", "oauth.open_redirect",
+      "cors.untrusted_origin", "limits.payload", "errors.normalized", "sse.auth_required"
+    ],
+    "evidenceClass": "REAL REMOTE / CARRIED FORWARD"
+  },
+  "concurrency": {
+    "twoClientAuthority": "PASS",
+    "detail": "One of two simultaneous same-account requests completed; the server arbitrates, not the client.",
+    "evidenceClass": "REAL REMOTE / CARRIED FORWARD"
+  },
+  "directByok": {
+    "result": "PASS",
+    "testsPassed": 6,
+    "testsTotal": 6,
+    "invariant": "Direct and BYOK remain fully functional while CodeForge Cloud is unreachable; a non-responding Cloud never stalls them.",
+    "evidenceClass": "REAL REMOTE + local suite"
+  },
+  "gems": {
+    "result": "PASS",
+    "testsPassed": 9,
+    "testsTotal": 9,
+    "failClosed": true,
+    "gemsModelsOffline": 4,
+    "nonGemsProviderCalls": 0,
+    "invariant": "GEMS unavailable without a real GEMS backend; identity firewall isolates it.",
+    "evidenceClass": "local suite + REAL REMOTE catalog"
+  },
+  "autonomousWorkflow": {
+    "result": "PASS",
+    "capabilities": ["plan", "edit", "verification", "evidence", "checkpoint"],
+    "detail": "Real workflow-to-agent integration, including delegation to a ForgeZero-verified free model and a repair loop re-entering the agent after verification failure.",
+    "evidenceClass": "local real-execution suite"
+  },
+  "packagedDesktop": {
+    "result": "PASS",
+    "assertionsPassed": 21,
+    "assertionsFailed": 0,
+    "singleInstanceEnforced": true,
+    "coverage": [
+      "single-instance startup",
+      "encrypted credential round-trip",
+      "credential plaintext absence",
+      "corrupt credential fails closed",
+      "restart with no approval replay",
+      "restart decrypt"
+    ],
+    "evidenceClass": "PACKAGED REAL LOCAL"
+  },
+  "tests": {
+    "testFilesPassed": 108,
+    "testFilesSkipped": 1,
+    "testFilesTotal": 109,
+    "testsPassed": 995,
+    "testsSkipped": 21,
+    "testsTotal": 1016,
+    "testsFailed": 0,
+    "skipReason": "Expected conditional PostgreSQL skips; suites self-skip when CODEFORGE_TEST_POSTGRES_URL is unset.",
+    "typecheck": "PASS",
+    "build": "PASS",
+    "measuredAtSha": "85bb4efe06b33dc49804c9107d4c5e875c09f6d2"
+  },
+  "ci": {
+    "provider": "GitHub Actions",
+    "runs": [
+      {
+        "runId": "33382159039",
+        "workflow": "cloud-ci",
+        "headSha": "85bb4efe06b33dc49804c9107d4c5e875c09f6d2",
+        "conclusion": "success",
+        "jobs": {
+          "cloud-verify": "success",
+          "real-staging-smoke": "success",
+          "docker-runtime-smoke": "success"
+        }
+      },
+      {
+        "runId": "33382159655",
+        "workflow": "cloud-ci",
+        "headSha": "85bb4efe06b33dc49804c9107d4c5e875c09f6d2",
+        "conclusion": "success",
+        "jobs": {
+          "cloud-verify": "success",
+          "real-staging-smoke": "skipped",
+          "docker-runtime-smoke": "success"
+        }
+      }
+    ],
+    "evidenceClass": "CI"
+  },
+  "credentialRotation": {
+    "renderApiKey": {
+      "wasActiveBeforeRotation": true,
+      "beforeAuthResult": "HTTP 200",
+      "revoked": true,
+      "afterAuthResult": "HTTP 401 unauthorized",
+      "stillAuthenticates": false,
+      "replacementRetained": true,
+      "replacementAuthResult": "HTTP 200 PASS",
+      "evidenceClass": "REAL REMOTE"
+    },
+    "postgresPassword": {
+      "wasActiveBeforeRotation": true,
+      "beforeAuthResult": "connection succeeded",
+      "rotated": true,
+      "afterAuthResult": "SQLSTATE 28P01 password authentication failed",
+      "stillAuthenticates": false,
+      "newCredentialAuthResult": "authentication success",
+      "newCredentialTlsVerified": true,
+      "evidenceClass": "REAL REMOTE"
+    },
+    "renderDatabaseUrlUpdated": true,
+    "onlyDatabaseUrlChanged": true,
+    "preservedEnvVars": {
+      "CODEFORGE_CLOUD_DB_DRIVER": "postgres",
+      "CODEFORGE_CLOUD_DB_SSL": "true"
+    },
+    "envVarCountBefore": 13,
+    "envVarCountAfter": 13,
+    "mutationsAttemptedWithCompromisedCredentials": 0
+  },
+  "securityCleanup": {
+    "workingTree": "clean",
+    "trackedRepository": "clean",
+    "buildOutput": "clean",
+    "capturedLogs": "clean",
+    "temporaryCredentialFilesRemoved": 8,
+    "activeExposedCredentialsFound": 0,
+    "patternsScanned": [
+      "Render API keys",
+      "PostgreSQL connection strings with embedded credentials",
+      "GitHub tokens and PATs",
+      "GitHub client secrets",
+      "JWT secrets",
+      "OpenRouter keys",
+      "Groq keys",
+      "Stripe live keys",
+      "OAuth access/refresh tokens"
+    ],
+    "triageClasses": ["placeholder", "test fixture", "hash", "spent one-time OAuth code", "active credential"],
+    "classesFound": ["placeholder", "test fixture", "hash", "spent one-time OAuth code"],
+    "incidentalFinding": {
+      "description": "A temporary local file held plaintext values for four additional live secrets (GitHub client secret, Groq key, OpenRouter key, JWT secret).",
+      "exposureScope": "local temporary directory only; never published or committed",
+      "remediation": "file deleted; final scan clean",
+      "rotationOfThoseFourSecrets": "available at owner discretion; not a certification gate"
+    }
+  },
+  "cost": {
+    "render": "Free",
+    "renderPostgresInstances": 0,
+    "renderKeyValueInstances": 0,
+    "supabase": "Free",
+    "paidAiUsd": 0.0,
+    "stripeLiveUsd": 0.0,
+    "ownerCashUsd": 0.0,
+    "paidUpgradeRequired": false,
+    "creditCardRequired": false
+  },
+  "blockers": {
+    "repository": 0,
+    "external": 0,
+    "knownActiveLeakedCredentials": 0
+  },
+  "artifact_hashes": {
+    "algorithm": "sha256",
+    "markdown_sha256": "bc83ea363f143d09f4d9cd4ec85da117e8bbbc4b3f533ebea62b9c338e632c8c",
+    "markdown_path": "docs/certification/CODEFORGE_CLOUD_GLOBAL_STAGING_CERTIFICATION.md",
+    "json_path": "docs/certification/codeforge-cloud-global-staging-certification.json",
+    "json_sha256_note": "This file's own digest is published in the commit message introducing these artifacts, avoiding circular reference."
+  },
+  "scopeNotes": [
+    "Certification covers the staging deployment at the stated SHA; it is not a production certification and makes no availability or uptime guarantee.",
+    "CARRIED FORWARD items were certified against runtime d925819 and are retained because the cloud runtime was proven byte-identical across the SHA advance.",
+    "Free-capacity counts reflect live upstream provider availability at certification time and vary as providers change catalogues.",
+    "real-staging-smoke was skipped by conditional guard in CI run 33382159655 and passed in run 33382159039."
+  ],
+  "sanitization": {
+    "containsSecrets": false,
+    "excluded": [
+      "Render API keys",
+      "DATABASE_URL values",
+      "PostgreSQL passwords",
+      "GitHub client secret",
+      "JWT secret",
+      "OpenRouter/Groq keys",
+      "OAuth access/refresh tokens",
+      "authorization codes",
+      "raw user prompts",
+      "raw repository code",
+      "sensitive account identifiers"
+    ],
+    "identifiersPolicy": "Account identity represented only as an anonymized set fingerprint."
+  }
+}
