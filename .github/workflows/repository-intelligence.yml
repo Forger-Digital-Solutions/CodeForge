@@ -1,0 +1,60 @@
+name: repository-intelligence
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/repository-intelligence.yml"
+      - "apps/desktop/**"
+      - "packages/context/**"
+      - "packages/repo-intelligence/**"
+      - "packages/server/**"
+      - "packages/sessions/**"
+      - "packages/workflow/**"
+      - "scripts/repository-intelligence-*.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+  push:
+    paths:
+      - ".github/workflows/repository-intelligence.yml"
+      - "apps/desktop/**"
+      - "packages/context/**"
+      - "packages/repo-intelligence/**"
+      - "packages/server/**"
+      - "packages/sessions/**"
+      - "packages/workflow/**"
+      - "scripts/repository-intelligence-*.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+
+jobs:
+  certify:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install workspace dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Repository intelligence and context tests
+        run: npx vitest run packages/repo-intelligence packages/context packages/workflow/test/repo-inspector.test.ts packages/server/test/runtime.test.ts packages/server/test/repository-index-api.test.ts
+
+      - name: Full regression
+        run: npm test
+
+      - name: Build all workspaces
+        run: npm run build
+
+      - name: Seeded 100K certification tier
+        run: node scripts/repository-intelligence-certify.mjs --tier=100K

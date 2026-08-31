@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "certificate": "CODEFORGE_REPOSITORY_INTELLIGENCE_CERTIFIED",
+  "status": "PASS",
+  "timestamp": "2026-08-31T15:28:00.000Z",
+  "platform": {
+    "os": "Windows 11 x64 (10.0.26200)",
+    "cpu": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz (12 vCPUs)",
+    "memoryBytes": 36622839808,
+    "nodeVersion": "v24.19.0",
+    "electronVersion": "33.4.11",
+    "sqliteEngine": "node:sqlite + better-sqlite3 fallback"
+  },
+  "selfIndex": {
+    "repository": "CodeForge",
+    "files": 466,
+    "symbols": 22167,
+    "edges": 1395,
+    "parserErrors": 0,
+    "initialIndexTimeSec": 3.69,
+    "peakRssMb": 149.3,
+    "indexSizeBytes": 27818496,
+    "indexSizeMb": 26.53,
+    "queryLatencyMs": {
+      "p50": 59.42,
+      "p95": 207.39,
+      "sampleCount": 30
+    },
+    "retrievalQuality": {
+      "recallAt1": 0.5,
+      "recallAt5": 0.8333,
+      "recallAt10": 1,
+      "mrr": 0.6435,
+      "queryCount": 6
+    },
+    "contextBudgetOverflows": {
+      "16K": 0,
+      "32K": 0,
+      "64K": 0,
+      "128K": 0
+    }
+  },
+  "scaleTiers": {
+    "100K": {
+      "loc": 100000,
+      "files": 103,
+      "symbols": 200,
+      "edges": 101,
+      "initialIndexTimeSec": 0.77,
+      "peakRssMb": 113.3,
+      "indexSizeMb": 8.69,
+      "queryLatencyMs": {
+        "p50": 0.68,
+        "p95": 1.05
+      },
+      "incrementalRefreshMs": 86.18,
+      "recallAt5": 1,
+      "budgetOverflows": 0,
+      "verdict": "PASS"
+    },
+    "500K": {
+      "loc": 500000,
+      "files": 507,
+      "symbols": 1000,
+      "edges": 509,
+      "initialIndexTimeSec": 5.88,
+      "peakRssMb": 114.9,
+      "indexSizeMb": 44.12,
+      "queryLatencyMs": {
+        "p50": 2.14,
+        "p95": 3.03
+      },
+      "incrementalRefreshMs": 129.87,
+      "recallAt5": 1,
+      "budgetOverflows": 0,
+      "verdict": "PASS"
+    },
+    "1M": {
+      "loc": 1000000,
+      "files": 1012,
+      "symbols": 2000,
+      "edges": 1019,
+      "initialIndexTimeSec": 18.79,
+      "peakRssMb": 116.8,
+      "indexSizeMb": 86.83,
+      "queryLatencyMs": {
+        "p50": 3.12,
+        "p95": 3.94
+      },
+      "incrementalRefreshMs": 118.76,
+      "recallAt5": 1,
+      "budgetOverflows": 0,
+      "verdict": "PASS"
+    },
+    "4M": {
+      "loc": 4000000,
+      "files": 4042,
+      "symbols": 8000,
+      "edges": 4079,
+      "initialIndexTimeSec": 274.24,
+      "peakRssMb": 138.3,
+      "indexSizeMb": 348.03,
+      "queryLatencyMs": {
+        "p50": 13.57,
+        "p95": 15.72
+      },
+      "incrementalRefreshMs": 203.66,
+      "incrementalTargetMs": 2000,
+      "recallAt5": 1,
+      "budgetOverflows": 0,
+      "verdict": "PASS"
+    }
+  },
+  "deterministicAB": {
+    "task": "Token expiration replay test repair (1,001 total workspace files)",
+    "withoutIntelligence": {
+      "filesOpened": 778,
+      "irrelevantFilesOpened": 777,
+      "toolCalls": 778,
+      "contextBytes": 1145775,
+      "durationMs": 411.34
+    },
+    "withIntelligence": {
+      "filesOpened": 2,
+      "irrelevantFilesOpened": 0,
+      "toolCalls": 2,
+      "contextBytes": 298,
+      "estimatedContextTokens": 259,
+      "durationMs": 168.87,
+      "speedupFactor": 2.44
+    },
+    "targetFilesFound": [
+      "src/module-0777.ts",
+      "tests/expiry-replay.test.ts"
+    ],
+    "verdict": "PASS"
+  },
+  "packagedDesktopSmoke": {
+    "fullMode": {
+      "exitCode": 0,
+      "verdict": "PASS",
+      "markers": [
+        "PACKAGED_FULL_SMOKE_OK",
+        "packaged_welcome=PASS",
+        "packaged_provider_metadata=PASS",
+        "packaged_repository_index_ready=PASS",
+        "packaged_failure_repair_pass=PASS",
+        "packaged_renderer_reload=PASS",
+        "credential_plaintext_absent=PASS"
+      ]
+    },
+    "interruptMode": {
+      "exitCode": 73,
+      "verdict": "PASS",
+      "markers": [
+        "PACKAGED_INTERRUPT_EXPECTED_EXIT",
+        "electron_restart_interruption_ready=PASS"
+      ]
+    },
+    "recoverMode": {
+      "exitCode": 0,
+      "verdict": "PASS",
+      "markers": [
+        "PACKAGED_RECOVERY_SMOKE_OK",
+        "electron_restart_failed_safely=PASS",
+        "electron_restart_no_approval_replay=PASS",
+        "electron_restart_fresh_task=PASS"
+      ]
+    }
+  },
+  "cloudStagingProbes": {
+    "live": {
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "version": "0.2.0"
+      }
+    },
+    "ready": {
+      "status": 200,
+      "body": {
+        "status": "ready",
+        "database": "connected",
+        "hostedInferenceReady": true
+      }
+    },
+    "meta": {
+      "status": 200,
+      "body": {
+        "apiVersion": "1.0.0",
+        "serverVersion": "0.2.0"
+      }
+    },
+    "hostedModels": {
+      "status": 200,
+      "modelCount": 34
+    }
+  },
+  "unitAndIntegrationTests": {
+    "totalFiles": 112,
+    "filesPassed": 111,
+    "filesSkipped": 1,
+    "filesFailed": 0,
+    "totalTests": 1030,
+    "testsPassed": 1009,
+    "testsSkipped": 21,
+    "testsFailed": 0,
+    "typecheckErrors": 0
+  },
+  "costAccounting": {
+    "paidIndexingServiceCost": "$0.00",
+    "paidVectorDatabaseCost": "$0.00",
+    "paidEmbeddingsCost": "$0.00",
+    "paidAiRequiredCost": "$0.00",
+    "ownerCashSpent": "$0.00",
+    "rawRepositoryUploadedMerelyForIndexing": false
+  }
+}
