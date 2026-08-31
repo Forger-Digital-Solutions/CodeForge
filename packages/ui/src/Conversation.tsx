@@ -345,24 +345,31 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
 
     case "approval": {
       const a = item as Extract<WorkItem, { kind: "approval" }>;
+      // This is the transcript's RECORD of an approval, not a second place to make the decision.
+      // It previously rendered Allow/Deny buttons with no handlers attached — a control that looked
+      // live, did nothing when pressed, and gave no hint why. The live decision has exactly one
+      // home (ApprovalBar); here we show only what was asked and what was decided.
+      const outcome = a.decision
+        ? a.decision === "deny"
+          ? { label: "Denied", cls: "denied" }
+          : { label: a.decision === "allow_session" ? "Allowed for session" : "Allowed", cls: "allowed" }
+        : { label: "Awaiting your decision", cls: "pending" };
       return (
-        <div className="approval-card">
-          <div className="approval-header">Approval Required</div>
-          <div className="approval-body">
-            <strong>Run:</strong> <code>{a.action}</code>
-            <br />
+        <div className={`approval-record ${outcome.cls}`}>
+          <div className="approval-record-head">
+            <span className="approval-record-title">
+              <strong>{a.tool}</strong> · <code>{a.action}</code>
+            </span>
+            <span className={`approval-record-state ${outcome.cls}`}>{outcome.label}</span>
+          </div>
+          <div className="approval-record-body">
             {a.description}
             {a.scope && (
               <>
                 <br />
-                <strong>Scope:</strong> <code>{a.scope}</code>
+                <span className="approval-record-scope">Scope: <code>{a.scope}</code></span>
               </>
             )}
-          </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            <button type="button" className="btn-sm primary">Allow Once</button>
-            <button type="button" className="btn-sm">Allow for Session</button>
-            <button type="button" className="btn-sm danger">Deny</button>
           </div>
         </div>
       );

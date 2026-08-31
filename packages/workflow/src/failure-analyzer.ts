@@ -45,6 +45,18 @@ function inferRepairs(output: string): Array<{ file: string; oldText: string; ne
 }
 
 export function analyzeFailures(result: VerificationResult): FailureAnalysis {
+  // A workspace with no verification command has produced no failures to analyse. Treating "nothing
+  // ran" as a failure would send the repair loop chasing a defect that does not exist and fail an
+  // otherwise-good change.
+  if (result.notConfigured) {
+    return {
+      hasFailures: false,
+      summary: "No verification command is configured for this workspace; nothing was verified.",
+      diagnostics: [],
+      suggestedRepairs: [],
+      isRepairable: false,
+    };
+  }
   const hasFailures = result.failed > 0 || result.exitCode !== 0;
   const diagnostics = extractDiagnostics(result.output);
   const suggestedRepairs = hasFailures ? inferRepairs(result.output) : [];

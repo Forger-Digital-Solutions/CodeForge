@@ -159,15 +159,29 @@ export class WorkflowService {
   ): NonNullable<import("@codeforge/workflow").WorkflowEngineOptions["agentExecutor"]> {
     const getRuntime = this.getOrCreateRuntime!;
     const waitForTurn = async (runtime: AgentRuntime, turnId: string): Promise<{ status: string; turn?: ReturnType<AgentRuntime["getTurn"]> }> => {
-      const start = Date.now();
+      // This budget bounds how long the AGENT may work. Time the turn spends parked on a human
+      // decision is not the agent working, so it is excluded: otherwise a user who takes longer than
+      // the budget to read an approval has their workflow declared failed for having thought about
+      // it, which is exactly the wrong incentive on the one gate that exists for safety.
+      //
+      // The wait is still bounded — ApprovalService owns that bound and expires the approval on its
+      // own timeout, which resolves the promise and lets the turn finish. Nothing here is unbounded
+      // and no timeout protection is removed.
       const timeoutMs = 120_000;
-      while (Date.now() - start < timeoutMs) {
+      let workingMs = 0;
+      let lastTick = Date.now();
+      while (workingMs < timeoutMs) {
         if (signal.aborted) {
           try { await runtime.cancelTurn(turnId, "Workflow cancelled"); } catch {}
           return { status: "cancelled" };
         }
         const turn = runtime.getTurn(turnId);
+        const now = Date.now();
+        const elapsed = now - lastTick;
+        lastTick = now;
+
         if (!turn) {
+          workingMs += elapsed;
           await new Promise((r) => setTimeout(r, 100));
           continue;
         }
@@ -175,12 +189,13 @@ export class WorkflowService {
           return { status: turn.status, turn };
         }
         if (turn.status === "waiting_for_approval") {
-          // The runtime stays paused until an explicit user decision reaches its
-          // ApprovalService through the normal API/UI route. A workflow must not
-          // manufacture an approval on the user's behalf.
+          // Paused on the user, not stalled: do not charge this to the working budget. The runtime
+          // stays paused until an explicit user decision reaches its ApprovalService through the
+          // normal API/UI route. A workflow must not manufacture an approval on the user's behalf.
           await new Promise((r) => setTimeout(r, 100));
           continue;
         }
+        workingMs += elapsed;
         await new Promise((r) => setTimeout(r, 200));
       }
       return { status: "failed" };
@@ -454,6 +469,11 @@ export class WorkflowService {
     const promise = engine.run(request.message).then(
       (result: WorkflowResult) => {
         clearWorkflowTimeout();
+        // A workflow that has reached a terminal state must not leave a live approval behind it.
+        // An approval outliving its workflow is an orphan: it still holds a resolver that could
+        // admit a tool execution for work nobody is waiting on any more, and it renders as a card
+        // that looks actionable but has nothing left to act on.
+        try { this.approvalService.cancelForTurn(turnId, "Workflow finished before this approval was answered"); } catch {}
         // Redact secrets in summary/diff for safe persistence/display
         const safeSummary = redactSecrets(result.summary);
         const safeDiff = result.diffSummary ? redactSecrets(result.diffSummary) : undefined;
@@ -519,6 +539,8 @@ export class WorkflowService {
       },
       (error: unknown) => {
         clearWorkflowTimeout();
+        // Same invariant on the failure path: no approval survives the workflow that requested it.
+        try { this.approvalService.cancelForTurn(turnId, "Workflow failed before this approval was answered"); } catch {}
         const raw = error instanceof Error ? error.message : String(error);
         const msg = redactSecrets(raw);
         adapter.emitTurnFailed(turnId, msg);

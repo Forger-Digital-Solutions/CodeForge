@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { prepareShellCommand } from "../src/child-process.js";
-import { runCommand, runVerification } from "../src/verification-service.js";
+import { runCommand, runVerification, verificationPassed, verificationFailed } from "../src/verification-service.js";
 
 describe("VerificationService", () => {
   let ws: string;
@@ -125,4 +125,83 @@ describe("VerificationService", () => {
     await new Promise((resolve) => setTimeout(resolve, ASSERT_AFTER_MS));
     expect(existsSync(join(ws, "descendant-alive.txt"))).toBe(false);
   }, 20000);
+});
+
+/**
+ * "Nothing to verify" and "verification failed" are different facts.
+ *
+ * `npm test` in a project with no `test` script exits NON-ZERO with `Missing script: "test"`, which
+ * is indistinguishable from a failing suite if you only look at the exit code. That is how a
+ * correct, approved edit in a project with no tests ended up failing the whole workflow: the edit
+ * landed, npm errored because there was nothing to run, and the engine read that as a broken build.
+ *
+ * These tests pin both halves of the distinction — the absent case must not fail the workflow, and
+ * a genuinely failing command must still fail it.
+ */
+describe("verification availability vs failure", () => {
+  let ws: string;
+  beforeEach(async () => {
+    ws = await mkdtemp(join(tmpdir(), "verify-avail-"));
+  });
+  afterEach(async () => {
+    await rm(ws, { recursive: true, force: true });
+  });
+
+  it("reports notConfigured when package.json has no test script", async () => {
+    await writeFile(join(ws, "package.json"), JSON.stringify({ name: "x", type: "module" }));
+    const result = await runVerification(ws);
+    expect(result.notConfigured).toBe(true);
+    expect(result.failed).toBe(0);
+    // Not a pass either: nothing ran, so nothing passed.
+    expect(verificationPassed(result)).toBe(false);
+    expect(verificationFailed(result)).toBe(false);
+  });
+
+  it("reports notConfigured when there is no package.json at all", async () => {
+    const result = await runVerification(ws);
+    expect(result.notConfigured).toBe(true);
+    expect(verificationPassed(result)).toBe(false);
+    expect(verificationFailed(result)).toBe(false);
+  });
+
+  it("still runs — and still passes — a script that exists", async () => {
+    await writeFile(
+      join(ws, "package.json"),
+      JSON.stringify({ name: "x", scripts: { test: "node -e \"process.exit(0)\"" } }),
+    );
+    const result = await runVerification(ws, ["npm test"]);
+    expect(result.notConfigured).toBeFalsy();
+    expect(result.exitCode).toBe(0);
+    expect(verificationPassed(result)).toBe(true);
+    expect(verificationFailed(result)).toBe(false);
+  });
+
+  it("still FAILS a script that exists and fails — availability is never forgiveness", async () => {
+    await writeFile(
+      join(ws, "package.json"),
+      JSON.stringify({ name: "x", scripts: { test: "node -e \"process.exit(1)\"" } }),
+    );
+    const result = await runVerification(ws, ["npm test"]);
+    expect(result.notConfigured).toBeFalsy();
+    expect(result.exitCode).not.toBe(0);
+    expect(verificationPassed(result)).toBe(false);
+    expect(verificationFailed(result)).toBe(true);
+  });
+
+  it("runs a non-npm command verbatim rather than guessing at availability", async () => {
+    const result = await runVerification(ws, ["node -e \"process.exit(0)\""]);
+    expect(result.notConfigured).toBeFalsy();
+    expect(verificationPassed(result)).toBe(true);
+  });
+
+  it("falls through an unavailable command to an available one", async () => {
+    await writeFile(
+      join(ws, "package.json"),
+      JSON.stringify({ name: "x", scripts: { typecheck: "node -e \"process.exit(0)\"" } }),
+    );
+    const result = await runVerification(ws, ["npm test", "npm run typecheck"]);
+    expect(result.notConfigured).toBeFalsy();
+    expect(result.command).toContain("typecheck");
+    expect(verificationPassed(result)).toBe(true);
+  });
 });

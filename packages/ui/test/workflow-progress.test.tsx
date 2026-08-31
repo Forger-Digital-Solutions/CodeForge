@@ -58,7 +58,13 @@ describe("WorkflowProgress — compact workflow stages", () => {
     expect(html).toContain("Completed");
   });
 
-  it("shows approval panel when workflow approval is pending", () => {
+  /**
+   * This panel reports that the workflow is parked on a decision; it must NOT offer a second set of
+   * approval buttons. Rendering the same approval as several independent cards — this panel, the
+   * approval bar, and the transcript — made one decision look like three, and left the user unsure
+   * which one the agent was actually waiting on. The decision lives in ApprovalBar alone.
+   */
+  it("reports that it is awaiting a decision without duplicating the approval control", () => {
     const state = makeState({
       isRunning: true,
       activeTaskId: "task-abc",
@@ -76,11 +82,13 @@ describe("WorkflowProgress — compact workflow stages", () => {
       },
     });
     const html = markupFor(state);
-    expect(html).toContain("Plan Approval Required");
+    // It says what is being waited on...
     expect(html).toContain("execute_plan");
-    expect(html).toContain("Approve Plan");
-    expect(html).toContain("Allow Session");
-    expect(html).toContain("Deny");
+    expect(html).toContain("Waiting for your decision");
+    // ...and offers no competing way to decide it.
+    expect(html).not.toContain("Approve Plan");
+    expect(html).not.toContain("Allow Session");
+    expect(html).not.toContain("Deny");
   });
 
   it("renders terminal completed status correctly", () => {

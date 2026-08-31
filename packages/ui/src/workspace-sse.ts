@@ -23,6 +23,14 @@ export interface WorkspaceState {
   leftNav: string;
   isRunning: boolean;
   isPaused: boolean;
+  /**
+   * Every approval currently awaiting a decision, keyed by the backend's approval id and in the
+   * order the server asked. A plan approval and a later file-write approval are two different
+   * decisions about two different side effects, so they cannot share one slot: with a single slot,
+   * resolving one silently erased the other's card, and a second request overwrote the first.
+   */
+  pendingApprovals: Array<Extract<WorkItem, { kind: "approval" }>>;
+  /** The approval currently being asked about — always the head of `pendingApprovals`. */
   pendingApproval: Extract<WorkItem, { kind: "approval" }> | null;
   pendingQuestion: Extract<WorkItem, { kind: "question" }> | null;
   agentStatus: SessionStatus;
@@ -53,6 +61,7 @@ export const initialWorkspaceState: WorkspaceState = {
   leftNav: "sessions",
   isRunning: false,
   isPaused: false,
+  pendingApprovals: [],
   pendingApproval: null,
   pendingQuestion: null,
   agentStatus: "idle",
@@ -80,6 +89,7 @@ export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
     events: [],
     isRunning: false,
     isPaused: false,
+    pendingApprovals: [],
     pendingApproval: null,
     pendingQuestion: null,
     agentStatus: "idle",
@@ -123,6 +133,33 @@ export function rememberActiveSession(sessionId: string, storage: SessionStorage
   } catch {
     // Session restoration is a convenience; persistence remains server-authoritative.
   }
+}
+
+export type PendingApproval = Extract<WorkItem, { kind: "approval" }>;
+
+/**
+ * Add an approval to the pending queue, keyed by the backend's approval id.
+ *
+ * Idempotent by construction. The same `approval.requested` can legitimately arrive more than once
+ * — SSE replay after a reconnect, a re-subscribe, a double-mounted effect — and every arrival must
+ * converge on the SAME single entry. Appending blindly is what turns one decision into a stack of
+ * identical cards, none of which the user can tell apart.
+ */
+export function upsertPendingApproval(queue: PendingApproval[], approval: PendingApproval): PendingApproval[] {
+  return queue.some((a) => a.id === approval.id)
+    ? queue.map((a) => (a.id === approval.id ? approval : a))
+    : [...queue, approval];
+}
+
+/**
+ * Remove exactly the approval that was resolved.
+ *
+ * Scoped by id on purpose: a plan approval and a later write approval are two different decisions,
+ * and clearing the whole queue when one resolves used to drop a card the backend was still waiting
+ * on — leaving the workflow looking stalled with nothing left to click.
+ */
+export function removePendingApproval(queue: PendingApproval[], approvalId: string): PendingApproval[] {
+  return queue.filter((a) => a.id !== approvalId);
 }
 
 function phaseToProgress(phase: string): number {
@@ -228,13 +265,45 @@ export function useWorkspaceSSE(url: string) {
           session?: SessionRecord | null;
           turns?: TurnRecord[];
           workItems?: WorkItem[];
+          pendingApprovals?: Array<{
+            approvalId: string;
+            tool: string;
+            action: string;
+            description: string;
+            risk: string;
+            scope?: string;
+          }>;
         };
-        setState((prev) => ({
-          ...prev,
-          session: data.session ?? prev.session,
-          turns: Array.isArray(data.turns) ? mergeServerTurns(data.turns, prev.turns) : prev.turns,
-          workItems: Array.isArray(data.workItems) ? data.workItems : prev.workItems,
-        }));
+        setState((prev) => {
+          // The server is authoritative about what is still awaiting a decision. Adopting its list
+          // wholesale is what makes a reload survive an in-flight approval: a card the backend is
+          // still waiting on reappears exactly once, and one it has already resolved does not come
+          // back. Deriving it from replayed events instead would resurrect settled approvals.
+          const pendingApprovals = Array.isArray(data.pendingApprovals)
+            ? data.pendingApprovals.map(
+                (a) =>
+                  ({
+                    kind: "approval",
+                    id: a.approvalId,
+                    sessionId,
+                    tool: a.tool,
+                    action: a.action,
+                    description: a.description,
+                    risk: a.risk,
+                    scope: a.scope,
+                    createdAt: new Date().toISOString(),
+                  }) as Extract<WorkItem, { kind: "approval" }>,
+              )
+            : prev.pendingApprovals;
+          return {
+            ...prev,
+            session: data.session ?? prev.session,
+            turns: Array.isArray(data.turns) ? mergeServerTurns(data.turns, prev.turns) : prev.turns,
+            workItems: Array.isArray(data.workItems) ? data.workItems : prev.workItems,
+            pendingApprovals,
+            pendingApproval: pendingApprovals[0] ?? null,
+          };
+        });
       } catch {
         // Server may still be starting; keep current state and retry on next event.
       }
@@ -328,7 +397,7 @@ export function useWorkspaceSSE(url: string) {
               next.isPaused = false;
             }
             if (parsed.type === "approval.requested") {
-              next.pendingApproval = {
+              const approval = {
                 kind: "approval",
                 id: parsed.payload.approvalId,
                 sessionId: parsed.sessionId,
@@ -338,10 +407,13 @@ export function useWorkspaceSSE(url: string) {
                 risk: parsed.payload.risk,
                 scope: parsed.payload.scope,
                 createdAt: parsed.timestamp,
-              };
+              } as PendingApproval;
+              next.pendingApprovals = upsertPendingApproval(next.pendingApprovals, approval);
+              next.pendingApproval = next.pendingApprovals[0] ?? null;
             }
             if (parsed.type === "approval.resolved") {
-              next.pendingApproval = null;
+              next.pendingApprovals = removePendingApproval(next.pendingApprovals, parsed.payload.approvalId);
+              next.pendingApproval = next.pendingApprovals[0] ?? null;
             }
             if (parsed.type === "question.requested") {
               next.pendingQuestion = {
@@ -576,19 +648,29 @@ export function useWorkspaceSSE(url: string) {
   );
 
   const approve = useCallback(
-    (decision: "allow_once" | "allow_session" | "deny") => {
-      if (!state.pendingApproval) return;
-      fetch(resolveApiPath(url, `/api/approvals/${state.pendingApproval.id}/resolve`), {
+    (decision: "allow_once" | "allow_session" | "deny", approvalId?: string) => {
+      const target = approvalId
+        ? state.pendingApprovals.find((a) => a.id === approvalId)
+        : state.pendingApproval;
+      if (!target) return;
+      fetch(resolveApiPath(url, `/api/approvals/${target.id}/resolve`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId: state.pendingApproval.sessionId,
+          sessionId: target.sessionId,
           decision,
         }),
       }).catch(() => {});
-      setState((prev: WorkspaceState) => ({ ...prev, pendingApproval: null }));
+      // Drop only the approval just decided. The authoritative resolution still arrives as
+      // `approval.resolved`; removing it here just stops the user clicking the same card twice
+      // while that round trip is in flight. Executing at most once is enforced by the backend,
+      // never by this optimistic update.
+      setState((prev: WorkspaceState) => {
+        const pendingApprovals = prev.pendingApprovals.filter((a) => a.id !== target.id);
+        return { ...prev, pendingApprovals, pendingApproval: pendingApprovals[0] ?? null };
+      });
     },
-    [state.pendingApproval, url]
+    [state.pendingApproval, state.pendingApprovals, url]
   );
 
   const answerQuestion = useCallback(
@@ -746,6 +828,7 @@ export function useWorkspaceSSE(url: string) {
       events: [],
       isRunning: false,
       isPaused: false,
+      pendingApprovals: [],
       pendingApproval: null,
       pendingQuestion: null,
       agentStatus: "idle",

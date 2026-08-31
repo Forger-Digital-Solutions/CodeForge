@@ -200,23 +200,66 @@ export async function runCommand(options: RunOptions): Promise<VerificationResul
   });
 }
 
+/**
+ * Whether a verification command can run in this workspace at all.
+ *
+ * `npm test` in a project with no `test` script exits NON-ZERO with `Missing script: "test"`. Read
+ * as a result that is indistinguishable from a genuine test failure — which is how a successful edit
+ * in a project that simply has no test suite ends up failing the whole workflow.
+ *
+ * "Nothing to run" and "it ran and failed" are different facts and must not collapse into one. This
+ * answers only the first, from the manifest, before anything is executed. It never inspects the
+ * outcome of a command, so a real failing test can never be reclassified as unavailable.
+ */
+function commandIsAvailable(workspacePath: string, command: string): boolean {
+  const npm = command.trim().match(/^npm\s+(?:run\s+(\S+)|(test|start))\b/);
+  if (!npm) return true; // Not an npm script; assume the operator meant it and let it run.
+
+  const manifestPath = path.join(workspacePath, "package.json");
+  if (!fs.existsSync(manifestPath)) return false;
+
+  const scriptName = npm[1] ?? npm[2];
+  if (!scriptName) return true;
+  // `npm start` has a documented default (node server.js); `npm test` does not.
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8")) as { scripts?: Record<string, unknown> };
+    return typeof manifest.scripts?.[scriptName] === "string";
+  } catch {
+    // A manifest we cannot parse is a genuine problem, but it is not this function's to diagnose:
+    // let the command run and report what actually happens.
+    return true;
+  }
+}
+
+/** An honest "nothing was verified" result — neither a pass nor a failure. */
+function notConfiguredResult(commands: string[]): VerificationResult {
+  return {
+    passed: 0,
+    failed: 0,
+    skipped: 0,
+    durationMs: 0,
+    output: `No verification command is configured for this workspace (tried: ${commands.join(", ") || "none"}).`,
+    exitCode: 0,
+    command: "",
+    failures: [],
+    notConfigured: true,
+  };
+}
+
 export async function runVerification(
   workspacePath: string,
   commands: string[] = DEFAULT_COMMANDS,
   options: { signal?: AbortSignal; timeoutMs?: number } = {},
 ): Promise<VerificationResult> {
-  // Try commands in order, return first that exists; if none, return synthetic pass
   let lastResult: VerificationResult | null = null;
   for (const cmd of commands) {
-    // Cheap check: if command is npm test and no package.json, skip
-    if (cmd.includes("npm") && !fs.existsSync(path.join(workspacePath, "package.json"))) {
-      continue;
-    }
+    // Skip commands this workspace cannot run. Skipping is NOT forgiveness: a command that runs and
+    // fails is still returned immediately below so the caller can diagnose and repair it.
+    if (!commandIsAvailable(workspacePath, cmd)) continue;
     try {
       const result = await runCommand({ workspacePath, command: cmd, signal: options.signal, timeoutMs: options.timeoutMs });
       lastResult = result;
-      // If command succeeded (exit 0) and has passed, return it
-      // If failed, return immediately so caller can diagnose
+      // Whether it passed or failed, this workspace really did verify — report it verbatim.
       return result;
     } catch (e) {
       lastResult = {
@@ -232,18 +275,21 @@ export async function runVerification(
     }
   }
   if (lastResult) return lastResult;
-  return {
-    passed: 1,
-    failed: 0,
-    skipped: 0,
-    durationMs: 0,
-    output: "No verification command applicable; synthetic pass",
-    exitCode: 0,
-    command: commands[0] ?? "noop",
-    failures: [],
-  };
+  return notConfiguredResult(commands);
 }
 
+/**
+ * True only when verification actually RAN and passed. A workspace with nothing to run has not
+ * passed anything, so it must not claim it did — the workflow reports honestly that it could not
+ * verify, rather than presenting an unverified edit as a verified one.
+ */
 export function verificationPassed(result: VerificationResult): boolean {
+  if (result.notConfigured) return false;
   return result.exitCode === 0 && result.failed === 0;
+}
+
+/** True when verification ran and produced a real failure that should block completion. */
+export function verificationFailed(result: VerificationResult): boolean {
+  if (result.notConfigured) return false;
+  return result.exitCode !== 0 || result.failed > 0;
 }

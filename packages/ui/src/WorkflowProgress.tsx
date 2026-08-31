@@ -115,24 +115,19 @@ export default function WorkflowProgress({ state, onCancel, onApprove, expanded:
         </div>
       )}
 
+      {/*
+        The decision itself belongs to exactly one control — ApprovalBar. This panel reports that
+        the workflow is parked and why, but offers no second set of buttons: rendering the same
+        approval as several independent cards made one decision look like several, and left the
+        user unsure which one the agent was actually waiting on.
+      */}
       {showApproval && (
-        <div className="approval-card" style={{ marginTop: 8 }}>
-          <div className="approval-header">Plan Approval Required</div>
-          <div className="approval-body">
-            <code>{pendingApproval.action}</code> {pendingApproval.description}
-            {pendingApproval.scope && (
-              <>
-                <br />
-                <span style={{ fontSize: 10, color: "var(--cf-text-muted)" }}>Scope: </span>
-                <code>{pendingApproval.scope}</code>
-              </>
-            )}
-          </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            <button type="button" className="btn-sm primary" onClick={() => onApprove("allow_once")}>Approve Plan</button>
-            <button type="button" className="btn-sm" onClick={() => onApprove("allow_session")}>Allow Session</button>
-            <button type="button" className="btn-sm danger" onClick={() => onApprove("deny")}>Deny</button>
-          </div>
+        <div className="workflow-awaiting" style={{ marginTop: 8 }}>
+          <span className="workflow-awaiting-dot" aria-hidden="true">●</span>
+          <span>
+            Waiting for your decision on <code>{pendingApproval.action}</code> — see the approval
+            prompt below.
+          </span>
         </div>
       )}
     </div>

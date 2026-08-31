@@ -653,13 +653,21 @@ export class WorkflowEngine {
     parts.push(`# Workflow Summary for "${intent.title}"`);
     parts.push(`Task type: ${intent.taskType}, risk: ${intent.risk}`);
     parts.push(`Plan: ${plan.id} — ${plan.steps.filter((s) => s.status === "completed").length}/${plan.steps.length} steps completed`);
-    parts.push(`Verification: ${verification.passed} passed, ${verification.failed} failed, exit ${verification.exitCode} — ${passed ? "PASS" : "FAIL"}`);
+    // "Nothing to verify" is reported as exactly that. Printing it as a PASS would present an
+    // unverified change as a verified one.
+    parts.push(
+      verification.notConfigured
+        ? `Verification: NOT RUN — no verification command is configured for this workspace`
+        : `Verification: ${verification.passed} passed, ${verification.failed} failed, exit ${verification.exitCode} — ${passed ? "PASS" : "FAIL"}`,
+    );
     if (repairAttempts > 0) parts.push(`Repair attempts: ${repairAttempts}`);
     parts.push(`Review: ${review.summary}`);
     if (review.diffs.length) parts.push(`Changed files: ${review.diffs.map((d) => d.path).join(", ")}`);
-    const outcome = passed
-      ? "Completed successfully"
-      : `Failed safely after ${repairAttempts} repair attempt(s)`;
+    const outcome = verification.notConfigured
+      ? "Completed — changes applied, but nothing was verified"
+      : passed
+        ? "Completed successfully"
+        : `Failed safely after ${repairAttempts} repair attempt(s)`;
     parts.push(`\nOutcome: ${outcome}`);
     return parts.join("\n");
   }

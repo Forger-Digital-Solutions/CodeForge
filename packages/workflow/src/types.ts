@@ -84,6 +84,12 @@ export interface VerificationResult {
   failures: Array<{ test: string; message: string; stack?: string }>;
   timedOut?: boolean;
   cancelled?: boolean;
+  /**
+   * No verification command could run in this workspace (e.g. no `test` script). Distinct from a
+   * failure: nothing was executed, so there is no result to pass or fail. Consumers must not read
+   * this as a pass.
+   */
+  notConfigured?: boolean;
 }
 
 export interface FailureAnalysis {

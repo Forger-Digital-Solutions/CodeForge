@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import type { SessionRecord, TurnRecord } from "@codeforge/sessions";
-import { clearSessionScopedState, createNewSessionDraft, initialWorkspaceState, readRememberedActiveSession, rememberActiveSession, resolveSendSessionId } from "../src/workspace-sse.js";
+import { clearSessionScopedState, createNewSessionDraft, initialWorkspaceState, readRememberedActiveSession, rememberActiveSession, resolveSendSessionId, upsertPendingApproval, removePendingApproval, type PendingApproval } from "../src/workspace-sse.js";
 
 describe("workspace-sse - task session allocation", () => {
   it("keeps the active session when adding a turn", () => {
@@ -295,5 +295,79 @@ describe("workspace-sse - state management expectations", () => {
     
     expect(stateWithError.actionError).toBe("Turn is not paused");
     expect(stateWithError.actionPending).toBe("none");
+  });
+});
+
+/**
+ * One logical approval must render as exactly one card.
+ *
+ * The packaged app showed three cards for a single plan approval and, once a second approval
+ * existed, resolving either one blanked the other — because pending approvals lived in a single
+ * slot that every `approval.requested` overwrote and every `approval.resolved` cleared. These tests
+ * pin the queue's two invariants: idempotent by backend id, and removal scoped to the id resolved.
+ */
+describe("workspace-sse - pending approval queue", () => {
+  const approval = (id: string, action = "write"): PendingApproval =>
+    ({
+      kind: "approval",
+      id,
+      sessionId: "s1",
+      tool: "edit_file",
+      action,
+      description: `Edit via ${id}`,
+      risk: "moderate",
+      createdAt: "2026-08-30T00:00:00.000Z",
+    }) as PendingApproval;
+
+  it("adds one entry for one approval", () => {
+    expect(upsertPendingApproval([], approval("a"))).toHaveLength(1);
+  });
+
+  it("is idempotent when the same approval id arrives repeatedly", () => {
+    let q: PendingApproval[] = [];
+    q = upsertPendingApproval(q, approval("a"));
+    q = upsertPendingApproval(q, approval("a"));
+    q = upsertPendingApproval(q, approval("a"));
+    expect(q).toHaveLength(1);
+    expect(q[0]!.id).toBe("a");
+  });
+
+  it("refreshes an existing entry in place rather than appending a second card", () => {
+    let q = upsertPendingApproval([], approval("a"));
+    q = upsertPendingApproval(q, { ...approval("a"), description: "updated" });
+    expect(q).toHaveLength(1);
+    expect(q[0]!.description).toBe("updated");
+  });
+
+  it("keeps two genuinely different approvals distinguishable", () => {
+    let q = upsertPendingApproval([], approval("a", "write-a"));
+    q = upsertPendingApproval(q, approval("b", "write-b"));
+    expect(q.map((x) => x.id)).toEqual(["a", "b"]);
+  });
+
+  it("removes only the approval that was resolved", () => {
+    let q = upsertPendingApproval([], approval("a"));
+    q = upsertPendingApproval(q, approval("b"));
+    q = removePendingApproval(q, "a");
+    expect(q.map((x) => x.id)).toEqual(["b"]);
+  });
+
+  it("ignores a resolution for an approval it does not hold", () => {
+    const q = upsertPendingApproval([], approval("a"));
+    expect(removePendingApproval(q, "unknown").map((x) => x.id)).toEqual(["a"]);
+  });
+
+  it("is safe to resolve the same approval twice", () => {
+    let q = upsertPendingApproval([], approval("a"));
+    q = removePendingApproval(q, "a");
+    q = removePendingApproval(q, "a");
+    expect(q).toHaveLength(0);
+  });
+
+  it("preserves order so the head is the approval the agent is waiting on", () => {
+    let q = upsertPendingApproval([], approval("first"));
+    q = upsertPendingApproval(q, approval("second"));
+    expect(q[0]!.id).toBe("first");
+    expect(removePendingApproval(q, "first")[0]!.id).toBe("second");
   });
 });
