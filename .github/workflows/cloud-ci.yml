@@ -262,6 +262,12 @@ jobs:
           node-version: "22"
       - name: Install
         run: npm ci --no-audit --no-fund
+      # `npm run build` walks the workspaces in declaration order, so @codeforge/cli compiles
+      # before @codeforge/director and packages/router cannot resolve the director types yet.
+      # `tsc -b` follows project references instead and emits the declarations in dependency
+      # order — the same reason cloud-verify typechecks before it builds.
+      - name: Typecheck
+        run: npm run typecheck
       - name: Build
         run: npm run build
       - name: Real hosted inference smoke (free-safe, $0)
