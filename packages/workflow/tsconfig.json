@@ -10,6 +10,7 @@
   "references": [
     { "path": "../core" },
     { "path": "../protocol" },
-    { "path": "../sessions" }
+    { "path": "../sessions" },
+    { "path": "../repo-intelligence" }
   ]
 }

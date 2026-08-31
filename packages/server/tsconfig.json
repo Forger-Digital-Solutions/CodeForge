@@ -16,6 +16,8 @@
     { "path": "../providers" },
     { "path": "../tools" },
     { "path": "../permissions" },
+    { "path": "../repo-intelligence" },
+    { "path": "../context" },
     { "path": "../secrets" },
     { "path": "../workflow" }
   ]

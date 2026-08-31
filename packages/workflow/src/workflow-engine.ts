@@ -610,7 +610,18 @@ export class WorkflowEngine {
     // Look at verification failures and try to fix first file with edit heuristic
     if (verification.failures.length === 0 && analysis.diagnostics.length === 0) return { success: false };
 
+    // Extract file paths from failures and diagnostics
+    const extractedFromFailures: string[] = [];
+    const fileRegex = /(?:FAIL|Error|in|at)\s+([a-zA-Z0-9_\-./\\]+\.[a-zA-Z0-9]+)/gi;
+    for (const d of [...analysis.diagnostics, ...verification.failures.map((f) => f.message), verification.output]) {
+      let m: RegExpExecArray | null;
+      while ((m = fileRegex.exec(d)) !== null) {
+        if (m[1]) extractedFromFailures.push(m[1].trim());
+      }
+    }
+
     const candidateFiles = Array.from(new Set([
+      ...extractedFromFailures,
       ...analysis.suggestedRepairs.map((r) => r.file).filter((f): f is string => Boolean(f)),
       ...context.primaryFiles,
       ...repoMap.files.map((f) => f.relativePath),

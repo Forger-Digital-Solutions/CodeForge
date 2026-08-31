@@ -16,6 +16,8 @@ import { ApprovalService, type ApprovalRecord } from "./approval-service.js";
 import { getSanitizedEnvForChild } from "./env-filter.js";
 import { searchWorkspace } from "./search-service.js";
 import { replaceExact, sha256 } from "./edit-service.js";
+import { createRepositoryIntelligence } from "@codeforge/repo-intelligence";
+import { buildContextPack } from "@codeforge/context";
 
 const MAX_FILE_READ_BYTES = 100 * 1024;
 const MAX_FILE_READ_LINES = 400;
@@ -778,6 +780,7 @@ export class AgentRuntime {
     const parts: string[] = [
       "You are CodeForge, an autonomous software engineering agent.",
       "You help users with coding tasks by reading files, writing code, and executing commands.",
+      "Before finalizing a plan, use the repository intelligence tools to locate relevant symbols, dependencies, dependents, and tests. Use targeted retrieval again when implementation or verification reveals new relationships.",
       "Always think step by step and explain your reasoning.",
     ];
 
@@ -866,6 +869,7 @@ export class AgentRuntime {
           },
         },
       },
+      ...this.getRepositoryTools(),
       {
         type: "function",
         function: {
@@ -899,6 +903,89 @@ export class AgentRuntime {
         },
       },
     ];
+  }
+
+  private getRepositoryTools(): ToolDefinition[] {
+    const queryParameters = {
+      type: "object" as const,
+      properties: {
+        query: { type: "string", description: "Identifier, symbol, path, or task query" },
+        limit: { type: "number", description: "Maximum results, capped at 200" },
+      },
+      required: ["query"],
+    };
+    const pathParameters = {
+      type: "object" as const,
+      properties: {
+        path: { type: "string", description: "Workspace-relative indexed path" },
+        limit: { type: "number", description: "Maximum results, capped at 200" },
+      },
+      required: ["path"],
+    };
+    return [
+      { type: "function", function: { name: "repo_search", description: "Rank relevant repository files using symbols, paths, lexical matches, Git state, and related tests.", parameters: queryParameters } },
+      { type: "function", function: { name: "repo_symbol", description: "Search structurally indexed symbols and definitions.", parameters: queryParameters } },
+      { type: "function", function: { name: "repo_references", description: "Find high-confidence definitions and explicitly classified approximate references.", parameters: queryParameters } },
+      { type: "function", function: { name: "repo_dependencies", description: "Find imports and package dependencies of a file.", parameters: pathParameters } },
+      { type: "function", function: { name: "repo_dependents", description: "Find indexed files that depend on a file.", parameters: pathParameters } },
+      { type: "function", function: { name: "repo_tests", description: "Find tests related to an implementation file with confidence reasons.", parameters: pathParameters } },
+      { type: "function", function: { name: "repo_context", description: "Build a fresh, deduplicated, provenance-rich context pack within a hard model context budget.", parameters: { type: "object", properties: { query: { type: "string" }, contextWindow: { type: "number", description: "Model context window; 16000 to 1000000" }, limit: { type: "number" } }, required: ["query"] } } },
+      { type: "function", function: { name: "repo_index_status", description: "Return local repository index health, counts, schema, and cache size.", parameters: { type: "object", properties: {} } } },
+    ];
+  }
+
+  private async executeRepositoryTool(toolName: string, args: Record<string, unknown>, signal: AbortSignal): Promise<string> {
+    if (!this.workspacePath) throw new Error("No workspace path configured");
+    const intelligence = createRepositoryIntelligence();
+    try {
+      await intelligence.openWorkspace(this.workspacePath);
+      const initial = intelligence.status();
+      if (toolName !== "repo_index_status") {
+        if (initial.fileCount === 0 || initial.state === "NOT_INDEXED" || initial.state === "ERROR") await intelligence.indexWorkspace(signal);
+        else await intelligence.refresh(undefined, signal);
+      }
+      const limit = Math.min(200, Math.max(1, typeof args.limit === "number" ? Math.floor(args.limit) : 50));
+      const query = typeof args.query === "string" ? args.query : "";
+      const requestedPath = typeof args.path === "string" ? args.path : "";
+      let output: unknown;
+      switch (toolName) {
+        case "repo_search":
+          if (!query) throw new Error("query required");
+          output = await intelligence.findRelevantContext(query, { limit });
+          break;
+        case "repo_symbol":
+          if (!query) throw new Error("query required");
+          output = await intelligence.searchSymbols(query, { limit });
+          break;
+        case "repo_references":
+          if (!query) throw new Error("query required");
+          output = await intelligence.findReferences(query, { limit });
+          break;
+        case "repo_dependencies":
+          if (!requestedPath) throw new Error("path required");
+          output = await intelligence.findDependencies(requestedPath, { limit });
+          break;
+        case "repo_dependents":
+          if (!requestedPath) throw new Error("path required");
+          output = await intelligence.findDependents(requestedPath, { limit });
+          break;
+        case "repo_tests":
+          if (!requestedPath) throw new Error("path required");
+          output = await intelligence.findRelatedTests(requestedPath, { limit });
+          break;
+        case "repo_context": {
+          if (!query) throw new Error("query required");
+          const contextWindow = Math.min(1_000_000, Math.max(16_000, typeof args.contextWindow === "number" ? Math.floor(args.contextWindow) : 32_000));
+          output = await buildContextPack(query, intelligence, { contextWindow, maxCandidates: limit });
+          break;
+        }
+        default:
+          output = intelligence.status();
+      }
+      return JSON.stringify(output);
+    } finally {
+      await intelligence.closeWorkspace();
+    }
   }
 
   private async executeTool(
@@ -999,6 +1086,18 @@ export class AgentRuntime {
           break;
         }
 
+        case "repo_search":
+        case "repo_symbol":
+        case "repo_references":
+        case "repo_dependencies":
+        case "repo_dependents":
+        case "repo_tests":
+        case "repo_context":
+        case "repo_index_status": {
+          result = await this.executeRepositoryTool(toolName, parsedArgs as Record<string, unknown>, signal);
+          break;
+        }
+
         case "edit_file": {
           const args = parsedArgs as { path: string; oldText: string; newText: string; expectedOccurrences?: number; expectedHash?: string };
           if (!args.path || typeof args.path !== "string") throw new Error("path required");
@@ -1041,6 +1140,14 @@ export class AgentRuntime {
       case "read_file":
       case "list_files":
       case "search_files":
+      case "repo_search":
+      case "repo_symbol":
+      case "repo_references":
+      case "repo_dependencies":
+      case "repo_dependents":
+      case "repo_tests":
+      case "repo_context":
+      case "repo_index_status":
         return { requires: false, risk: "safe", reason: "read-only", action: "read" };
       case "write_file":
       case "edit_file":

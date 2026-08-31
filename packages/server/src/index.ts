@@ -1,5 +1,6 @@
 import http from "node:http";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { isWorkspaceEvent, type WorkspaceEvent } from "@codeforge/protocol";
@@ -18,6 +19,7 @@ import { runDemoRuntime } from "./demo-runtime.js";
 import { AgentRuntime, createAgentRuntime } from "./agent-runtime.js";
 import { resolveWithinWorkspace } from "./path-security.js";
 import { createWorkflowService, type WorkflowService } from "./workflow-service.js";
+import { createRepositoryIntelligence, REPOSITORY_INDEX_VERSION, REPOSITORY_PARSER_VERSION, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -44,6 +46,9 @@ export class CodeForgeServer {
   private useRealRuntime: boolean;
   private activeWorkspacePath: string | null = null;
   private workflowService: WorkflowService;
+  private repositoryIntelligence: RepositoryIntelligence | null = null;
+  private repositoryIndexEnabled = true;
+  private repositoryIndexSnapshot: Record<string, unknown> = { state: "NOT_INDEXED", enabled: true, indexVersion: REPOSITORY_INDEX_VERSION, parserVersion: REPOSITORY_PARSER_VERSION };
 
   constructor(options: ServerOptions = {}) {
     this.port = options.port ?? 3210;
@@ -207,6 +212,9 @@ export class CodeForgeServer {
       server.closeAllConnections();
     }
     this.clients.clear();
+    const repoIntel = this.repositoryIntelligence;
+    this.repositoryIntelligence = null;
+    await repoIntel?.closeWorkspace();
     this.persistence.close();
   }
 
@@ -324,6 +332,32 @@ export class CodeForgeServer {
 
     if (url.pathname === "/api/workspace/tree" && req.method === "GET") {
       this.handleWorkspaceTree(req, res, url);
+      return;
+    }
+
+    if (url.pathname === "/api/repository-index/status" && req.method === "GET") {
+      this.handleRepositoryIndexStatus(res);
+      return;
+    }
+
+    if (url.pathname === "/api/repository-index/rebuild" && req.method === "POST") {
+      this.handleRepositoryIndexRebuild(res);
+      return;
+    }
+
+    if (url.pathname === "/api/repository-index/settings" && req.method === "GET") {
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ enabled: this.repositoryIndexEnabled }));
+      return;
+    }
+
+    if (url.pathname === "/api/repository-index/settings" && req.method === "POST") {
+      this.handleRepositoryIndexSettings(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/repository-index/search" && req.method === "GET") {
+      void this.handleRepositoryIndexSearch(res, url);
       return;
     }
 
@@ -698,6 +732,104 @@ export class CodeForgeServer {
     this.activeWorkspacePath = workspacePath;
     this.workflowService.setWorkspacePath(workspacePath);
     this.runtimes.clear();
+    this.startRepositoryIndex(workspacePath);
+  }
+
+  private startRepositoryIndex(workspacePath: string): void {
+    const previous = this.repositoryIntelligence;
+    if (previous) void previous.closeWorkspace();
+    if (!this.repositoryIndexEnabled) {
+      this.repositoryIntelligence = null;
+      this.repositoryIndexSnapshot = { state: "NOT_INDEXED", enabled: false, root: workspacePath, indexVersion: REPOSITORY_INDEX_VERSION, parserVersion: REPOSITORY_PARSER_VERSION, local: true };
+      return;
+    }
+    const intelligence = createRepositoryIntelligence({
+      cacheRoot: process.env.CODEFORGE_REPOSITORY_INDEX_ROOT ?? (process.env.VITEST ? path.join(os.tmpdir(), "codeforge-test-repository-indexes") : undefined),
+      onProgress: (progress) => {
+        if (this.repositoryIntelligence !== intelligence) return;
+        this.repositoryIndexSnapshot = { ...this.repositoryIndexSnapshot, state: progress.phase === "ready" ? "READY" : "INDEXING", progress, enabled: true, local: true };
+      },
+    });
+    this.repositoryIntelligence = intelligence;
+    this.repositoryIndexSnapshot = { state: "INDEXING", enabled: true, root: workspacePath, indexVersion: REPOSITORY_INDEX_VERSION, parserVersion: REPOSITORY_PARSER_VERSION, local: true };
+    void intelligence.openWorkspace(workspacePath).then(async () => {
+      if (this.repositoryIntelligence !== intelligence) return;
+      const current = intelligence.status();
+      if (current.fileCount === 0 || current.state === "NOT_INDEXED" || current.state === "ERROR") await intelligence.indexWorkspace();
+      else await intelligence.refresh();
+      if (this.repositoryIntelligence !== intelligence) return;
+      if (!process.env.VITEST) intelligence.startWatching();
+      if (this.repositoryIntelligence === intelligence) this.repositoryIndexSnapshot = { ...intelligence.status(), enabled: true, local: true };
+    }).catch((error) => {
+      if (this.repositoryIntelligence === intelligence) this.repositoryIndexSnapshot = { ...this.repositoryIndexSnapshot, state: "ERROR", error: error instanceof Error ? error.message : String(error), local: true };
+    });
+  }
+
+  private handleRepositoryIndexStatus(res: http.ServerResponse): void {
+    let status = this.repositoryIndexSnapshot;
+    try { if (this.repositoryIntelligence) status = { ...this.repositoryIntelligence.status(), enabled: this.repositoryIndexEnabled, local: true }; } catch {}
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify(status));
+  }
+
+  private handleRepositoryIndexRebuild(res: http.ServerResponse): void {
+    if (!this.repositoryIndexEnabled) {
+      res.writeHead(409, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Repository indexing is disabled" }));
+      return;
+    }
+    if (!this.activeWorkspacePath) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "No workspace set" }));
+      return;
+    }
+    this.startRepositoryIndex(this.activeWorkspacePath);
+    res.writeHead(202, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify({ ok: true, state: "INDEXING" }));
+  }
+
+  private handleRepositoryIndexSettings(req: http.IncomingMessage, res: http.ServerResponse): void {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += String(chunk);
+      if (body.length > 1_024) req.destroy();
+    });
+    req.on("end", async () => {
+      try {
+        const parsed = JSON.parse(body) as { enabled?: unknown };
+        if (typeof parsed.enabled !== "boolean") throw new Error("enabled must be a boolean");
+        this.repositoryIndexEnabled = parsed.enabled;
+        if (parsed.enabled && this.activeWorkspacePath) this.startRepositoryIndex(this.activeWorkspacePath);
+        if (!parsed.enabled) {
+          const previous = this.repositoryIntelligence;
+          this.repositoryIntelligence = null;
+          await previous?.closeWorkspace();
+          this.repositoryIndexSnapshot = { state: "NOT_INDEXED", enabled: false, root: this.activeWorkspacePath, indexVersion: REPOSITORY_INDEX_VERSION, parserVersion: REPOSITORY_PARSER_VERSION, local: true };
+        }
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ enabled: this.repositoryIndexEnabled }));
+      } catch (error) {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+      }
+    });
+  }
+
+  private async handleRepositoryIndexSearch(res: http.ServerResponse, url: URL): Promise<void> {
+    const query = url.searchParams.get("q")?.trim() ?? "";
+    if (!query || query.length > 4_096 || !this.repositoryIntelligence) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: !this.repositoryIntelligence ? "No workspace index" : "Valid q required" }));
+      return;
+    }
+    try {
+      const result = await this.repositoryIntelligence.findRelevantContext(query, { limit: 50 });
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify(result));
+    } catch (error) {
+      res.writeHead(503, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+    }
   }
 
   private handleSetWorkspace(req: http.IncomingMessage, res: http.ServerResponse): void {

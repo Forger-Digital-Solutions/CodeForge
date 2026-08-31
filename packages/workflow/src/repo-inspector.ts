@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import os from "node:os";
+import { createRepositoryIntelligence } from "@codeforge/repo-intelligence";
 import type { RepoMap, TaskIntent } from "./types.js";
 
 const MAX_FILE_READ_BYTES = 100 * 1024;
@@ -132,6 +134,42 @@ export async function inspectRepository(
     throw new Error(`Workspace not found: ${workspacePath}`);
   }
   if (options.signal?.aborted) throw new Error("Inspection aborted");
+
+  try {
+    const intelligence = createRepositoryIntelligence({
+      cacheRoot: process.env.CODEFORGE_REPOSITORY_INDEX_ROOT ?? (process.env.VITEST ? path.join(os.tmpdir(), "codeforge-test-repository-indexes") : undefined),
+    });
+    await intelligence.openWorkspace(workspacePath);
+    const initial = intelligence.status();
+    if (initial.fileCount === 0 || initial.state === "NOT_INDEXED" || initial.state === "ERROR") await intelligence.indexWorkspace(options.signal);
+    else await intelligence.refresh(undefined, options.signal);
+    const relevant = await intelligence.findRelevantContext(`${intent.title}\n${intent.keywords.join(" ")}`, { limit: Math.min(options.maxMatches ?? MAX_MATCHES, 200) });
+    const indexedFiles = (await intelligence.listFiles({ limit: 200 })).items;
+    const readFiles: RepoMap["readFiles"] = [];
+    for (const match of relevant.items.slice(0, 10)) {
+      const metadata = await intelligence.getFile(match.path);
+      if (!metadata || metadata.binary || metadata.sensitive || metadata.size > 2 * 1024 * 1024) continue;
+      const full = path.resolve(workspacePath, match.path);
+      const containment = path.relative(path.resolve(workspacePath), full);
+      if (containment.startsWith("..") || path.isAbsolute(containment)) continue;
+      try {
+        const raw = fs.readFileSync(full, "utf8");
+        const lines = raw.split(/\r?\n/);
+        const content = lines.slice(0, MAX_FILE_READ_LINES).join("\n").slice(0, MAX_FILE_READ_BYTES).replace(/sk-[A-Za-z0-9\-_]{10,}/g, "[REDACTED]");
+        readFiles.push({ path: match.path, content, hash: metadata.hash, lines: metadata.lines, truncated: content.length < raw.length });
+      } catch {}
+    }
+    const repoMap: RepoMap = {
+      workspacePath,
+      files: indexedFiles.map((file) => ({ path: path.join(workspacePath, file.path), relativePath: file.path, size: file.size, lines: file.lines })),
+      searchedMatches: relevant.items.map((match) => ({ file: match.path, line: match.line ?? match.symbol?.startLine ?? 1, column: match.column ?? 1, preview: match.preview ?? match.symbol?.signature ?? match.reasons.join(", ") })),
+      readFiles,
+    };
+    await intelligence.closeWorkspace();
+    return repoMap;
+  } catch (error) {
+    if (options.signal?.aborted) throw error;
+  }
 
   const allFiles = collectFiles(workspacePath);
   const fileInfos = allFiles

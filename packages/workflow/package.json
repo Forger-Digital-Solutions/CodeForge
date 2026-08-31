@@ -19,6 +19,7 @@
   "dependencies": {
     "@codeforge/core": "*",
     "@codeforge/protocol": "*",
+    "@codeforge/repo-intelligence": "*",
     "@codeforge/sessions": "*",
     "zod": "^3.24.0"
   }

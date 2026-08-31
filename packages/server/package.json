@@ -26,6 +26,8 @@
     "@codeforge/secrets": "*",
     "@codeforge/tools": "*",
     "@codeforge/permissions": "*",
+    "@codeforge/repo-intelligence": "*",
+    "@codeforge/context": "*",
     "@codeforge/workflow": "*",
     "zod": "^3.24.0"
   }
