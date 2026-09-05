@@ -954,7 +954,7 @@ async function runPackagedRecoverySmoke(testSecret: string): Promise<void> {
   const fresh = await rendererWorkflowRequest({
     sessionId: "packaged-fresh",
     message: "Document current add function after restart recovery",
-    useWorkflow: true,
+    executionMode: "agent",
     forceHeuristic: true,
     verificationCommands: ["node -e \"process.exit(0)\""],
   }, "/api/send");

@@ -515,6 +515,261 @@ CREATE INDEX IF NOT EXISTS idx_desktop_auth_codes_hash ON desktop_auth_codes(cod
 CREATE INDEX IF NOT EXISTS idx_desktop_auth_codes_user_id ON desktop_auth_codes(user_id);
 `;
 
+// Migration 004 adds CF-11B: GitHub App installation, repository authorization keyed on GitHub's
+// immutable numeric repository id, one-time callback state, and publication records carrying a
+// fencing token so a stale executor can never finalize over a newer one.
+const MIGRATION_4_SQLITE = `
+CREATE TABLE IF NOT EXISTS github_installations (
+  id TEXT PRIMARY KEY,
+  installation_id INTEGER NOT NULL UNIQUE,
+  github_account_id INTEGER NOT NULL,
+  account_login TEXT NOT NULL,
+  account_type TEXT NOT NULL CHECK(account_type IN ('User', 'Organization')),
+  codeforge_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  repository_selection TEXT NOT NULL CHECK(repository_selection IN ('all', 'selected')),
+  status TEXT NOT NULL CHECK(status IN ('active', 'suspended', 'revoked')) DEFAULT 'active',
+  revoked_at TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_github_installations_codeforge_user_id ON github_installations(codeforge_user_id);
+
+CREATE TABLE IF NOT EXISTS github_repository_authorizations (
+  id TEXT PRIMARY KEY,
+  installation_id TEXT NOT NULL REFERENCES github_installations(id) ON DELETE CASCADE,
+  repository_id INTEGER NOT NULL UNIQUE,
+  owner TEXT NOT NULL,
+  name TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  private INTEGER NOT NULL DEFAULT 0,
+  authorization_state TEXT NOT NULL CHECK(authorization_state IN ('authorized', 'revoked', 'deleted')) DEFAULT 'authorized',
+  observed_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_github_repo_auth_installation_id ON github_repository_authorizations(installation_id);
+
+CREATE TABLE IF NOT EXISTS github_app_callback_states (
+  id TEXT PRIMARY KEY,
+  state TEXT NOT NULL UNIQUE,
+  codeforge_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  device_session_id TEXT,
+  expires_at TEXT NOT NULL,
+  consumed_at TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_github_callback_states_expires_at ON github_app_callback_states(expires_at);
+
+CREATE TABLE IF NOT EXISTS publications (
+  id TEXT PRIMARY KEY,
+  delivery_id TEXT NOT NULL,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  repository_id INTEGER NOT NULL,
+  installation_id TEXT NOT NULL REFERENCES github_installations(id) ON DELETE CASCADE,
+  target_branch TEXT NOT NULL,
+  base_sha TEXT NOT NULL,
+  target_sha TEXT NOT NULL,
+  certified_head TEXT NOT NULL,
+  certified_tree TEXT NOT NULL,
+  artifact_sha256 TEXT NOT NULL,
+  artifact_bytes INTEGER NOT NULL,
+  artifact_state TEXT NOT NULL CHECK(artifact_state IN ('pending', 'stored')) DEFAULT 'pending',
+  artifact_key TEXT,
+  state TEXT NOT NULL CHECK(state IN ('awaiting_artifact', 'artifact_uploaded', 'validating', 'validated', 'waiting_for_lease', 'authorizing', 'checking_target', 'pushing', 'pushed', 'creating_pr', 'pr_created', 'completed', 'failed_retryable', 'failed_permanent', 'authorization_revoked', 'target_diverged')) DEFAULT 'awaiting_artifact',
+  lease_owner TEXT,
+  lease_expires_at TEXT,
+  lease_fence INTEGER NOT NULL DEFAULT 0,
+  push_ref TEXT,
+  pull_request_number INTEGER,
+  pull_request_url TEXT,
+  pull_request_node_id TEXT,
+  error_code TEXT,
+  failure_reason TEXT,
+  attempt_count INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  completed_at TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_publications_user_delivery ON publications(user_id, delivery_id);
+CREATE INDEX IF NOT EXISTS idx_publications_user_id ON publications(user_id);
+CREATE INDEX IF NOT EXISTS idx_publications_repository_id ON publications(repository_id);
+CREATE INDEX IF NOT EXISTS idx_publications_installation_id ON publications(installation_id);
+CREATE INDEX IF NOT EXISTS idx_publications_state ON publications(state);
+`;
+
+const MIGRATION_4_POSTGRES = `
+CREATE TABLE IF NOT EXISTS github_installations (
+  id VARCHAR(64) PRIMARY KEY,
+  installation_id BIGINT NOT NULL UNIQUE,
+  github_account_id BIGINT NOT NULL,
+  account_login VARCHAR(255) NOT NULL,
+  account_type VARCHAR(32) NOT NULL CHECK(account_type IN ('User', 'Organization')),
+  codeforge_user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  repository_selection VARCHAR(32) NOT NULL CHECK(repository_selection IN ('all', 'selected')),
+  status VARCHAR(32) NOT NULL CHECK(status IN ('active', 'suspended', 'revoked')) DEFAULT 'active',
+  revoked_at VARCHAR(64),
+  created_at VARCHAR(64) NOT NULL,
+  updated_at VARCHAR(64) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_github_installations_codeforge_user_id ON github_installations(codeforge_user_id);
+
+CREATE TABLE IF NOT EXISTS github_repository_authorizations (
+  id VARCHAR(64) PRIMARY KEY,
+  installation_id VARCHAR(64) NOT NULL REFERENCES github_installations(id) ON DELETE CASCADE,
+  repository_id BIGINT NOT NULL UNIQUE,
+  owner VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  full_name VARCHAR(511) NOT NULL,
+  private BOOLEAN NOT NULL DEFAULT false,
+  authorization_state VARCHAR(32) NOT NULL CHECK(authorization_state IN ('authorized', 'revoked', 'deleted')) DEFAULT 'authorized',
+  observed_at VARCHAR(64) NOT NULL,
+  created_at VARCHAR(64) NOT NULL,
+  updated_at VARCHAR(64) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_github_repo_auth_installation_id ON github_repository_authorizations(installation_id);
+
+CREATE TABLE IF NOT EXISTS github_app_callback_states (
+  id VARCHAR(64) PRIMARY KEY,
+  state VARCHAR(255) NOT NULL UNIQUE,
+  codeforge_user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  device_session_id VARCHAR(64),
+  expires_at VARCHAR(64) NOT NULL,
+  consumed_at VARCHAR(64),
+  created_at VARCHAR(64) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_github_callback_states_expires_at ON github_app_callback_states(expires_at);
+
+CREATE TABLE IF NOT EXISTS publications (
+  id VARCHAR(64) PRIMARY KEY,
+  delivery_id VARCHAR(255) NOT NULL,
+  user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  repository_id BIGINT NOT NULL,
+  installation_id VARCHAR(64) NOT NULL REFERENCES github_installations(id) ON DELETE CASCADE,
+  target_branch VARCHAR(255) NOT NULL,
+  base_sha VARCHAR(64) NOT NULL,
+  target_sha VARCHAR(64) NOT NULL,
+  certified_head VARCHAR(64) NOT NULL,
+  certified_tree VARCHAR(64) NOT NULL,
+  artifact_sha256 VARCHAR(64) NOT NULL,
+  artifact_bytes BIGINT NOT NULL,
+  artifact_state VARCHAR(32) NOT NULL CHECK(artifact_state IN ('pending', 'stored')) DEFAULT 'pending',
+  artifact_key VARCHAR(255),
+  state VARCHAR(64) NOT NULL CHECK(state IN ('awaiting_artifact', 'artifact_uploaded', 'validating', 'validated', 'waiting_for_lease', 'authorizing', 'checking_target', 'pushing', 'pushed', 'creating_pr', 'pr_created', 'completed', 'failed_retryable', 'failed_permanent', 'authorization_revoked', 'target_diverged')) DEFAULT 'awaiting_artifact',
+  lease_owner VARCHAR(255),
+  lease_expires_at VARCHAR(64),
+  lease_fence BIGINT NOT NULL DEFAULT 0,
+  push_ref VARCHAR(511),
+  pull_request_number INTEGER,
+  pull_request_url TEXT,
+  pull_request_node_id VARCHAR(255),
+  error_code VARCHAR(128),
+  failure_reason TEXT,
+  attempt_count INTEGER NOT NULL DEFAULT 0,
+  created_at VARCHAR(64) NOT NULL,
+  updated_at VARCHAR(64) NOT NULL,
+  completed_at VARCHAR(64)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_publications_user_delivery ON publications(user_id, delivery_id);
+CREATE INDEX IF NOT EXISTS idx_publications_user_id ON publications(user_id);
+CREATE INDEX IF NOT EXISTS idx_publications_repository_id ON publications(repository_id);
+CREATE INDEX IF NOT EXISTS idx_publications_installation_id ON publications(installation_id);
+CREATE INDEX IF NOT EXISTS idx_publications_state ON publications(state);
+`;
+
+// Migration 003 shipped before these two columns were present in every deployed
+// migration body. A stamped database must be repaired by a new, idempotent migration;
+// rewriting migration 003 would let the migration ledger mask the missing schema.
+const MIGRATION_5_SQLITE = `
+SELECT 1;
+`;
+
+const MIGRATION_5_POSTGRES = `
+ALTER TABLE oauth_transactions ADD COLUMN IF NOT EXISTS github_code_verifier TEXT;
+ALTER TABLE device_sessions ADD COLUMN IF NOT EXISTS revoked_reason VARCHAR(32);
+`;
+
+const MIGRATION_6_SQLITE = `
+CREATE TABLE IF NOT EXISTS verification_plans (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  workspace_id TEXT NOT NULL,
+  policy_version TEXT NOT NULL,
+  input_state_hash TEXT NOT NULL,
+  scope TEXT NOT NULL,
+  payload_json TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS verification_attempts (
+  id TEXT PRIMARY KEY,
+  plan_id TEXT NOT NULL REFERENCES verification_plans(id),
+  run_id TEXT NOT NULL,
+  verifier_id TEXT NOT NULL,
+  verifier_version TEXT NOT NULL,
+  status TEXT NOT NULL,
+  started_at TEXT NOT NULL,
+  finished_at TEXT,
+  exit_code INTEGER,
+  payload_json TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS verification_evidence (
+  id TEXT PRIMARY KEY,
+  attempt_id TEXT NOT NULL UNIQUE REFERENCES verification_attempts(id),
+  plan_id TEXT NOT NULL REFERENCES verification_plans(id),
+  run_id TEXT NOT NULL,
+  verifier_id TEXT NOT NULL,
+  verifier_version TEXT NOT NULL,
+  input_state_hash TEXT NOT NULL,
+  status TEXT NOT NULL,
+  output_digest TEXT NOT NULL,
+  output_truncated INTEGER NOT NULL,
+  payload_json TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_verification_attempts_plan ON verification_attempts(plan_id);
+CREATE INDEX IF NOT EXISTS idx_verification_evidence_plan ON verification_evidence(plan_id);
+`;
+
+const MIGRATION_6_POSTGRES = `
+CREATE TABLE IF NOT EXISTS verification_plans (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  workspace_id TEXT NOT NULL,
+  policy_version TEXT NOT NULL,
+  input_state_hash TEXT NOT NULL,
+  scope TEXT NOT NULL,
+  payload_json TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS verification_attempts (
+  id TEXT PRIMARY KEY,
+  plan_id TEXT NOT NULL REFERENCES verification_plans(id),
+  run_id TEXT NOT NULL,
+  verifier_id TEXT NOT NULL,
+  verifier_version TEXT NOT NULL,
+  status TEXT NOT NULL,
+  started_at TEXT NOT NULL,
+  finished_at TEXT,
+  exit_code INTEGER,
+  payload_json TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS verification_evidence (
+  id TEXT PRIMARY KEY,
+  attempt_id TEXT NOT NULL UNIQUE REFERENCES verification_attempts(id),
+  plan_id TEXT NOT NULL REFERENCES verification_plans(id),
+  run_id TEXT NOT NULL,
+  verifier_id TEXT NOT NULL,
+  verifier_version TEXT NOT NULL,
+  input_state_hash TEXT NOT NULL,
+  status TEXT NOT NULL,
+  output_digest TEXT NOT NULL,
+  output_truncated BOOLEAN NOT NULL,
+  payload_json TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_verification_attempts_plan ON verification_attempts(plan_id);
+CREATE INDEX IF NOT EXISTS idx_verification_evidence_plan ON verification_evidence(plan_id);
+`;
+
 export const MIGRATIONS: MigrationDefinition[] = [
   {
     version: 1,
@@ -536,6 +791,27 @@ export const MIGRATIONS: MigrationDefinition[] = [
     sqliteUp: MIGRATION_3_SQLITE,
     postgresUp: MIGRATION_3_POSTGRES,
     checksum: computeChecksum(MIGRATION_3_SQLITE),
+  },
+  {
+    version: 4,
+    name: "004_cf11b_publication_github_app",
+    sqliteUp: MIGRATION_4_SQLITE,
+    postgresUp: MIGRATION_4_POSTGRES,
+    checksum: computeChecksum(MIGRATION_4_SQLITE),
+  },
+  {
+    version: 5,
+    name: "005_repair_server_brokered_oauth_columns",
+    sqliteUp: MIGRATION_5_SQLITE,
+    postgresUp: MIGRATION_5_POSTGRES,
+    checksum: computeChecksum(MIGRATION_5_SQLITE),
+  },
+  {
+    version: 6,
+    name: "006_cf16r2_forgeverify_evidence",
+    sqliteUp: MIGRATION_6_SQLITE,
+    postgresUp: MIGRATION_6_POSTGRES,
+    checksum: computeChecksum(MIGRATION_6_SQLITE),
   },
 ];
 

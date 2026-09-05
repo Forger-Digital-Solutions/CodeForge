@@ -55,6 +55,89 @@ export interface RepositoryEdge {
   reason: string;
 }
 
+declare const __brand: unique symbol;
+export type Brand<T, B> = T & { readonly [__brand]: B };
+
+export type RetrievalScore = Brand<number, "RetrievalScore">;
+export type RelevanceScore = Brand<number, "RelevanceScore">;
+export type SymbolConfidence = Brand<"high" | "medium" | "low", "SymbolConfidence">;
+
+export function asRetrievalScore(n: number): RetrievalScore {
+  return n as RetrievalScore;
+}
+export function asRelevanceScore(n: number): RelevanceScore {
+  return n as RelevanceScore;
+}
+export function asSymbolConfidence(c: "high" | "medium" | "low"): SymbolConfidence {
+  return c as SymbolConfidence;
+}
+
+export type ImpactEstimate = Brand<{
+  changedPath: string;
+  candidateDependents: string[];
+  candidateTests: string[];
+  depth: number;
+  truncated: boolean;
+  unresolvedEdges: number;
+  reason: string;
+}, "ImpactEstimate">;
+
+export type BlastRadiusEstimate = Brand<{
+  targetPath: string;
+  candidateDependents: string[];
+  candidateTests: string[];
+  depth: number;
+  truncated: boolean;
+  unresolvedEdges: number;
+  confidence: SymbolConfidence;
+  reasons: string[];
+}, "BlastRadiusEstimate">;
+
+export interface ImpactCandidates {
+  changedPaths: string[];
+  candidateDependents: string[];
+  candidateTests: string[];
+  maxDepthReached: number;
+  truncated: boolean;
+  unresolvedEdges: number;
+  evidence: Array<{ path: string; reason: string; depth: number }>;
+}
+
+export interface FileSummary {
+  path: string;
+  language: string;
+  size: number;
+  lines: number;
+  hash: string;
+  exports: RepositorySymbol[];
+  imports: string[];
+  symbols: RepositorySymbol[];
+  sensitive: boolean;
+  binary: boolean;
+}
+
+export interface ModuleSummary {
+  prefix: string;
+  files: string[];
+  symbols: RepositorySymbol[];
+  packageDependencies: string[];
+  internalDependencies: string[];
+  relatedTests: string[];
+}
+
+export interface RepositorySummary {
+  root: string;
+  fileCount: number;
+  symbolCount: number;
+  edgeCount: number;
+  packages: string[];
+  languages: Record<string, number>;
+  entryPoints: string[];
+  testLayout: string[];
+  indexState: RepositoryIndexState;
+  generation: number;
+}
+
 export interface RepositoryMatch {
   path: string;
   line?: number;
@@ -101,6 +184,10 @@ export interface IndexStatus {
   symbolCount: number;
   edgeCount: number;
   errorCount: number;
+  generation: number;
+  filesParsed?: number;
+  cacheHits?: number;
+  bytesRead?: number;
   lastSuccessfulUpdate?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -113,6 +200,10 @@ export interface RefreshResult {
   deleted: string[];
   unchanged: number;
   durationMs: number;
+  generation: number;
+  filesParsed: number;
+  cacheHits: number;
+  bytesRead: number;
 }
 
 export interface RepositoryIntelligenceOptions {
@@ -141,11 +232,17 @@ export interface RepositoryIntelligence {
   searchText(query: string, options?: QueryOptions): Promise<QueryPage<RepositoryMatch>>;
   searchSymbols(query: string, options?: QueryOptions): Promise<QueryPage<RepositorySymbol>>;
   getSymbol(id: string): Promise<RepositorySymbol | undefined>;
+  getDefinition(symbolIdOrName: string): Promise<RepositorySymbol | undefined>;
   findReferences(symbolIdOrName: string, options?: QueryOptions): Promise<QueryPage<RepositoryMatch>>;
   findDependencies(path: string, options?: QueryOptions): Promise<QueryPage<RepositoryEdge>>;
   findDependents(path: string, options?: QueryOptions): Promise<QueryPage<RepositoryEdge>>;
   findRelatedTests(path: string, options?: QueryOptions): Promise<QueryPage<RepositoryMatch>>;
   findRelevantContext(task: string, options?: QueryOptions & { mentionedPaths?: string[] }): Promise<QueryPage<RepositoryMatch>>;
+  getFileSummary(path: string): Promise<FileSummary | undefined>;
+  getModuleSummary(pathPrefix: string): Promise<ModuleSummary>;
+  getImpactCandidates(changedPaths: string[], options?: QueryOptions & { maxDepth?: number }): Promise<ImpactCandidates>;
+  estimateBlastRadius(changedPaths: string[], options?: QueryOptions & { maxDepth?: number }): Promise<BlastRadiusEstimate>;
+  getRepositorySummary(): Promise<RepositorySummary>;
   startWatching(): void;
   stopWatching(): void;
   closeWorkspace(): Promise<void>;

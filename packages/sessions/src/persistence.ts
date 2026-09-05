@@ -95,7 +95,7 @@ CREATE INDEX IF NOT EXISTS idx_turns_sessionId ON turns(sessionId);
 
 CREATE TABLE IF NOT EXISTS work_items (
   id TEXT PRIMARY KEY,
-  sessionId TEXT NOT NULL,
+  sessionId TEXT,
   kind TEXT NOT NULL,
   data TEXT NOT NULL,
   FOREIGN KEY (sessionId) REFERENCES sessions(id) ON DELETE CASCADE
@@ -235,6 +235,7 @@ export class SessionPersistence {
         error = excluded.error
     `);
       this.statement("getTurns", "SELECT * FROM turns WHERE sessionId = $sessionId ORDER BY seq ASC");
+      this.statement("getTurn", "SELECT * FROM turns WHERE id = $id");
 
       this.statement("upsertWorkItem", `
       INSERT INTO work_items (id, sessionId, kind, data)
@@ -243,7 +244,15 @@ export class SessionPersistence {
         kind = excluded.kind,
         data = excluded.data
     `);
+      this.statement("insertImmutableWorkItem", `
+      INSERT INTO work_items (id, sessionId, kind, data)
+      VALUES ($id, $sessionId, $kind, $data)
+      ON CONFLICT(id) DO NOTHING
+    `);
       this.statement("getWorkItems", "SELECT * FROM work_items WHERE sessionId = $sessionId");
+      this.statement("getWorkItem", "SELECT * FROM work_items WHERE id = $id");
+      this.statement("getWorkItemsByKind", "SELECT * FROM work_items WHERE kind = $kind");
+      this.statement("getAllWorkItems", "SELECT * FROM work_items");
 
       this.statement("appendEvent", `
       INSERT INTO events (sessionId, data, createdAt)
@@ -327,18 +336,53 @@ export class SessionPersistence {
     return rows.map(parseTurn);
   }
 
+  getTurn(id: string): TurnRecord | undefined {
+    const row = this.get<StoredTurn>("getTurn", { $id: id });
+    return row ? parseTurn(row) : undefined;
+  }
+
   upsertWorkItem(item: WorkItem): void {
     const safeItem = sanitizeForPersistence(item);
     this.run("upsertWorkItem", {
       $id: safeItem.id,
-      $sessionId: safeItem.sessionId,
+      $sessionId: safeItem.sessionId ?? null,
       $kind: safeItem.kind,
       $data: JSON.stringify(safeItem),
     });
   }
 
+  /** Terminal audit records are append-only; duplicate persistence is idempotent rather than mutable. */
+  insertImmutableWorkItem(item: WorkItem): boolean {
+    if (item.kind !== "verification" || (item.recordType !== "plan" && item.recordType !== "evidence")) {
+      throw new Error("Only immutable ForgeVerify plan or evidence records may use append-only persistence.");
+    }
+    const safeItem = sanitizeForPersistence(item);
+    const result = this.statements.get("insertImmutableWorkItem")!.run({
+      $id: safeItem.id,
+      $sessionId: safeItem.sessionId,
+      $kind: safeItem.kind,
+      $data: JSON.stringify(safeItem),
+    });
+    return Number(result.changes) === 1;
+  }
+
   getWorkItems(sessionId: string): WorkItem[] {
     const rows = this.all<StoredWorkItem>("getWorkItems", { $sessionId: sessionId });
+    return rows.map((row) => JSON.parse(row.data) as WorkItem);
+  }
+
+  getWorkItem(id: string): WorkItem | undefined {
+    const row = this.get<StoredWorkItem>("getWorkItem", { $id: id });
+    return row ? (JSON.parse(row.data) as WorkItem) : undefined;
+  }
+
+  getWorkItemsByKind(kind: string): WorkItem[] {
+    const rows = this.all<StoredWorkItem>("getWorkItemsByKind", { $kind: kind });
+    return rows.map((row) => JSON.parse(row.data) as WorkItem);
+  }
+
+  getAllWorkItems(): WorkItem[] {
+    const rows = this.all<StoredWorkItem>("getAllWorkItems", {});
     return rows.map((row) => JSON.parse(row.data) as WorkItem);
   }
 

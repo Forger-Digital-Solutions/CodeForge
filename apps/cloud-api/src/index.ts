@@ -4,6 +4,12 @@ export * from "./staging-contract.js";
 export * from "./staging-preflight.js";
 export * from "./remote-probe.js";
 export * from "./certification-receipt.js";
+export * from "./publication-errors.js";
+export * from "./artifact-store.js";
+export * from "./publication-executor.js";
+export * from "./publication-service.js";
+export * from "./git-transport.js";
+export * from "./github-pr-client.js";
 
 async function main() {
   const { loadCloudRuntimeConfig, describeConfig } = await import("./config.js");
@@ -38,6 +44,12 @@ async function main() {
     jwtSecret: config.jwtSecret,
     gitHubClientId: config.gitHub.clientId,
     gitHubClientSecret: config.gitHub.clientSecret,
+    ...(config.gitHub.app
+      ? {
+          gitHubAppConfig: { appId: config.gitHub.app.appId, privateKeyPem: config.gitHub.app.privateKeyPem },
+          ...(config.gitHub.app.installationUrl ? { gitHubAppInstallationUrl: config.gitHub.app.installationUrl } : {}),
+        }
+      : {}),
     publicUrl: config.publicUrl,
     stripeConfig: config.stripe,
     firewallManager,

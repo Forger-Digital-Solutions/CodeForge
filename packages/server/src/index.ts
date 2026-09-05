@@ -3,7 +3,13 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { isWorkspaceEvent, type WorkspaceEvent } from "@codeforge/protocol";
+import {
+  MISSING_EXECUTION_MODE_FALLBACK,
+  SendRequestSchema,
+  isWorkspaceEvent,
+  type ExecutionMode,
+  type WorkspaceEvent,
+} from "@codeforge/protocol";
 import { EventStore, createSessionPersistence, type SessionRecord, type TurnRecord, type WorkItem } from "@codeforge/sessions";
 import {
   ForgeZero,
@@ -19,6 +25,15 @@ import { runDemoRuntime } from "./demo-runtime.js";
 import { AgentRuntime, createAgentRuntime } from "./agent-runtime.js";
 import { resolveWithinWorkspace } from "./path-security.js";
 import { createWorkflowService, type WorkflowService } from "./workflow-service.js";
+import { WorkspaceService, createWorkspaceService } from "./workspace-service.js";
+import { AutonomousRunOrchestrator, createAutonomousRunOrchestrator, type AutonomousRun } from "./autonomous-orchestrator.js";
+import { ParallelAutonomousRunOrchestrator, createParallelAutonomousRunOrchestrator } from "./parallel-orchestrator.js";
+import { MissionSupervisor, createMissionSupervisor } from "./mission-supervisor.js";
+import type { MissionSteering } from "./mission-state.js";
+import { DeliveryService, createDeliveryService } from "./delivery-service.js";
+import { CloudPublicationBridge, createCloudPublicationBridge } from "./cloud-publication-bridge.js";
+import { CloudPublicationClient, CloudPublicationError } from "./cloud-publication-client.js";
+import { createWorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { createRepositoryIntelligence, REPOSITORY_INDEX_VERSION, REPOSITORY_PARSER_VERSION, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -31,10 +46,29 @@ export interface ServerOptions {
   providerCatalog?: ProviderCatalog;
   firewall?: ForgeZero;
   useRealRuntime?: boolean;
+  /**
+   * Interface to bind. Defaults to loopback: this server has no authentication, so binding it to
+   * a routable interface would expose the agent's control plane — including approval resolution —
+   * to the local network. The hosted deployment uses its own server (apps/cloud-api) and is not
+   * affected by this default.
+   */
+  host?: string;
+  /** Overrides where isolated worktrees are created. Construction-time only. */
+  worktreeParentDir?: string;
+  /**
+   * CF-11B: base URL of the CodeForge Cloud API that performs privileged publication. Publication
+   * is unavailable without it — Desktop has no local path that can push or open a pull request.
+   */
+  cloudApiUrl?: string;
+  /** Supplies the Cloud identity token. Never a GitHub credential. */
+  getCloudAuthToken?: () => string | undefined | Promise<string | undefined>;
+  /** Test seam for the Cloud transport. */
+  cloudFetch?: typeof fetch;
 }
 
 export class CodeForgeServer {
   private port: number;
+  private readonly host: string;
   private webDist: string;
   private eventStore: EventStore;
   private server: http.Server | null = null;
@@ -45,6 +79,12 @@ export class CodeForgeServer {
   private runtimes: Map<string, AgentRuntime> = new Map();
   private useRealRuntime: boolean;
   private activeWorkspacePath: string | null = null;
+  private workspaceService: WorkspaceService;
+  private orchestrator: AutonomousRunOrchestrator;
+  private parallelOrchestrators: Map<string, ParallelAutonomousRunOrchestrator> = new Map();
+  private missionSupervisors: Map<string, MissionSupervisor> = new Map();
+  private deliveryService: DeliveryService;
+  private publicationBridge: CloudPublicationBridge;
   private workflowService: WorkflowService;
   private repositoryIntelligence: RepositoryIntelligence | null = null;
   private repositoryIndexEnabled = true;
@@ -52,6 +92,7 @@ export class CodeForgeServer {
 
   constructor(options: ServerOptions = {}) {
     this.port = options.port ?? 3210;
+    this.host = options.host ?? process.env.CODEFORGE_BIND_HOST ?? "127.0.0.1";
     this.webDist = options.webDist ?? path.join(__dirname, "..", "web", "dist");
     this.persistence = createSessionPersistence(
       options.dbPath ? { dbPath: options.dbPath } : undefined,
@@ -78,29 +119,67 @@ export class CodeForgeServer {
     this.registerFreeModels();
     this.registerPaidModels();
     this.registerGemsModels();
+    this.workspaceService = createWorkspaceService({
+      persistence: this.persistence,
+      ...(options.worktreeParentDir ? { worktreeParentDir: options.worktreeParentDir } : {}),
+    });
+    this.deliveryService = createDeliveryService({
+      workspaceService: this.workspaceService,
+      persistence: this.persistence,
+      getAgentRuntime: (sessionId) => this.getOrCreateRuntime(sessionId),
+      findMission: (missionId) => {
+        const stored = this.persistence.getWorkItem(missionId);
+        return stored?.kind === "mission" && stored.sessionId ? this.getMissionSupervisor(stored.sessionId).getMission(missionId) : undefined;
+      },
+      onEvent: (event) => { this.eventStore.append({ ...event, seq: 0 } as unknown as WorkspaceEvent); },
+    });
+    // CF-11B: the desktop publication path is Cloud-authoritative. When no Cloud API is
+    // configured the bridge reports that authorization is required; it never falls back to a
+    // local privileged push.
+    const cloudApiUrl = options.cloudApiUrl ?? process.env.CODEFORGE_CLOUD_API_URL;
+    this.publicationBridge = createCloudPublicationBridge({
+      persistence: this.persistence,
+      getDelivery: (id) => this.deliveryService.getDelivery(id),
+      ...(cloudApiUrl
+        ? {
+            client: new CloudPublicationClient({
+              cloudApiUrl,
+              getAuthToken: options.getCloudAuthToken ?? (() => process.env.CODEFORGE_CLOUD_TOKEN),
+              workspaceService: this.workspaceService,
+              getDelivery: (id) => this.deliveryService.getDelivery(id),
+              ...(options.cloudFetch ? { fetchFn: options.cloudFetch } : {}),
+            }),
+          }
+        : {}),
+    });
+    this.orchestrator = createAutonomousRunOrchestrator({
+      workspaceService: this.workspaceService,
+      persistence: this.persistence,
+    });
     this.workflowService = createWorkflowService({
       eventStore: this.eventStore,
       persistence: this.persistence,
       workspacePath: this.activeWorkspacePath ?? undefined,
+      workspaceService: this.workspaceService,
       getOrCreateRuntime: (sessionId: string, userId?: string) => this.getOrCreateRuntime(sessionId, userId),
-      useRealRuntime: this.useRealRuntime,
+      useRealRuntime: () => this.realRuntimeEnabled(),
     });
   }
 
   private validateRealRuntimeConfiguration(): void {
     // Check for configured provider API keys
     const credentialStore = new EnvironmentCredentialStore();
-    
+
     // Check for common provider API keys
     const providerKeys = [
       "openrouter", // OpenRouter API key
       "opencode", // OpenCode Zen API key
     ];
-    
+
     const hasAtLeastOneApiKey = providerKeys.some(
       (providerId) => credentialStore.has(providerId)
     );
-    
+
     if (!hasAtLeastOneApiKey) {
       console.warn(
         "⚠️  CODEFORGE_REAL_RUNTIME=true but no provider API keys configured.\n" +
@@ -194,7 +273,7 @@ export class CodeForgeServer {
       };
       server.once("error", onError);
       server.once("listening", onListening);
-      server.listen(this.port);
+      server.listen(this.port, this.host);
     });
     const address = server.address();
     if (typeof address === "object" && address !== null) {
@@ -257,6 +336,12 @@ export class CodeForgeServer {
           completedAt,
           error: event.type === "turn.failed" ? payload.error : undefined,
         });
+      }
+      const runtime = this.runtimes.get(event.sessionId);
+      const turnState = runtime?.getTurn(payload.turnId);
+      if (turnState) {
+        turnState.status = event.type === "turn.completed" ? "completed" : event.type === "turn.cancelled" ? "cancelled" : "failed";
+        turnState.completedAt = new Date();
       }
     }
 
@@ -446,8 +531,120 @@ export class CodeForgeServer {
       return;
     }
 
-    if (url.pathname === "/api/workflow" && req.method === "GET") {
+    if ((url.pathname === "/api/workflow" || url.pathname === "/api/workflow/list") && req.method === "GET") {
       this.handleWorkflowList(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/orchestrator/run" && req.method === "POST") {
+      this.handleOrchestratorRun(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/orchestrator/list" && req.method === "GET") {
+      this.handleOrchestratorList(res);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/orchestrator\/[^/]+$/) && req.method === "GET") {
+      this.handleOrchestratorGet(req, res, url.pathname);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/orchestrator\/[^/]+\/cancel$/) && req.method === "POST") {
+      this.handleOrchestratorCancel(req, res, url.pathname);
+      return;
+    }
+
+    if (url.pathname === "/api/missions" && req.method === "POST") {
+      this.handleMissionCreate(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/missions" && req.method === "GET") {
+      this.handleMissionList(res, url.searchParams.get("sessionId") ?? undefined);
+      return;
+    }
+
+    const missionAction = url.pathname.match(/^\/api\/missions\/([^/]+)\/(pause|resume|cancel|steer)$/);
+    if (missionAction && req.method === "POST") {
+      this.handleMissionAction(req, res, missionAction[1]!, missionAction[2]!);
+      return;
+    }
+
+    const missionView = url.pathname.match(/^\/api\/missions\/([^/]+)\/(plan|milestones|evidence)$/);
+    if (missionView && req.method === "GET") {
+      this.handleMissionView(res, missionView[1]!, missionView[2]!);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/missions\/[^/]+$/) && req.method === "GET") {
+      this.handleMissionGet(res, url.pathname.split("/").pop()!);
+      return;
+    }
+
+    if (url.pathname === "/api/deliveries" && req.method === "POST") {
+      this.handleDeliveryCreate(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/deliveries" && req.method === "GET") {
+      this.sendJson(res, 200, this.deliveryService.listDeliveries(url.searchParams.get("sessionId") ?? undefined));
+      return;
+    }
+
+    const deliveryView = url.pathname.match(/^\/api\/deliveries\/([^/]+)\/(review-package|manifest)$/);
+    if (deliveryView && req.method === "GET") {
+      this.handleDeliveryView(res, deliveryView[1]!, deliveryView[2]!);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/deliveries\/[^/]+\/cancel$/) && req.method === "POST") {
+      const id = url.pathname.split("/")[3]!;
+      const ok = this.deliveryService.cancelDelivery(id);
+      this.sendJson(res, ok ? 200 : 409, { ok });
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/deliveries\/[^/]+\/resume$/) && req.method === "POST") {
+      const id = url.pathname.split("/")[3]!;
+      const delivery = this.deliveryService.getDelivery(id);
+      if (!delivery) { this.sendJson(res, 404, { ok: false, error: "Delivery not found" }); return; }
+      if (["ready", "blocked", "cancelled", "failed"].includes(delivery.status)) { this.sendJson(res, 409, { ok: false }); return; }
+      void this.deliveryService.resumeDelivery(id).catch(() => undefined);
+      this.sendJson(res, 202, { ok: true });
+      return;
+    }
+
+    const publicationRoute = url.pathname.match(/^\/api\/deliveries\/([^/]+)\/publication(?:\/(authorization|retry|refresh))?$/);
+    if (publicationRoute) {
+      this.handlePublication(req, res, publicationRoute[1]!, publicationRoute[2]);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/deliveries\/[^/]+$/) && req.method === "GET") {
+      const delivery = this.deliveryService.getDelivery(url.pathname.split("/").pop()!);
+      this.sendJson(res, delivery ? 200 : 404, delivery ?? { error: "Delivery not found" });
+      return;
+    }
+
+    if (url.pathname === "/api/parallel-runs" && req.method === "POST") {
+      this.handleParallelRun(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/parallel-runs" && req.method === "GET") {
+      this.handleParallelRunList(res, url.searchParams.get("sessionId") ?? undefined);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/parallel-runs\/[^/]+\/cancel$/) && req.method === "POST") {
+      this.handleParallelRunCancel(res, url.pathname);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/parallel-runs\/[^/]+$/) && req.method === "GET") {
+      this.handleParallelRunGet(res, url.pathname);
       return;
     }
 
@@ -464,14 +661,59 @@ export class CodeForgeServer {
     this.serveStatic(req, res, url.pathname);
   }
 
-  private shouldUseWorkflow(message: string): boolean {
-    if (!this.activeWorkspacePath) return false;
-    if (!message || typeof message !== "string" || !message.trim()) return false;
-    // Heuristic: coding tasks contain verbs like fix, implement, add, create, refactor, etc.
-    // For real autonomous execution, any non-trivial message with workspace should go via workflow
-    // when useRealRuntime or when explicitly requested via data.useWorkflow
-    const lower = message.toLowerCase();
-    return /(fix|implement|add|create|build|refactor|update|change|modify|feature|bug|test|repair|implement|create)/.test(lower) && message.trim().length > 10;
+  private appendExecutionEvent(
+    sessionId: string,
+    type: "execution.requested" | "execution.start_failed",
+    payload: Record<string, unknown>,
+  ): void {
+    const event = {
+      type,
+      timestamp: new Date().toISOString(),
+      seq: this.eventStore.getLastSeq() + 1,
+      sessionId,
+      payload,
+    } as WorkspaceEvent;
+    this.eventStore.append(event);
+    this.persistence.appendEvent(event);
+  }
+
+  private classifyExecutionStartError(
+    mode: ExecutionMode,
+    error: unknown,
+  ): { code: string; message: string; status: number } {
+    const raw = error instanceof Error ? error.message : String(error);
+    const explicitCode = error && typeof error === "object" && "code" in error
+      ? String((error as { code: unknown }).code)
+      : "";
+
+    if (explicitCode === "WORKSPACE_LEASE_CONFLICT" || raw.includes("WORKSPACE_LEASE_CONFLICT")) {
+      return { code: "WORKSPACE_LEASE_CONFLICT", message: "Workspace is already in use by another autonomous run.", status: 409 };
+    }
+    if (raw.includes("already running for this session")) {
+      return { code: "SESSION_BUSY", message: "An autonomous run is already active for this session.", status: 409 };
+    }
+    if (raw.includes("Too many concurrent workflows")) {
+      return { code: "WORKFLOW_CONCURRENCY_LIMIT", message: "The autonomous workflow concurrency limit has been reached.", status: 429 };
+    }
+    if (raw.includes("Message too long")) {
+      return { code: "INVALID_WORKFLOW_REQUEST", message: "The workflow request message is too long.", status: 400 };
+    }
+    if (raw.includes("workspace") || raw.includes("Workspace")) {
+      return { code: "WORKSPACE_UNAVAILABLE", message: "The selected workspace is unavailable.", status: 409 };
+    }
+    if (raw.includes("provider") || raw.includes("Provider") || raw.includes("verified free model")) {
+      return { code: "PROVIDER_UNAVAILABLE", message: "No eligible provider is available for this request.", status: 503 };
+    }
+    return mode === "agent"
+      ? { code: "WORKFLOW_START_FAILED", message: "The autonomous workflow could not start.", status: 500 }
+      : { code: "CHAT_START_FAILED", message: "The chat turn could not start.", status: 500 };
+  }
+
+  private markSessionFailed(sessionId: string): void {
+    const session = this.persistence.getSession(sessionId);
+    if (session) {
+      this.persistence.upsertSession({ ...session, status: "failed", updatedAt: new Date().toISOString() });
+    }
   }
 
   private handleSend(req: http.IncomingMessage, res: http.ServerResponse): void {
@@ -479,13 +721,68 @@ export class CodeForgeServer {
     req.on("data", (chunk) => { body += chunk; });
     req.on("end", async () => {
       try {
-        const data = JSON.parse(body);
+        const rawData: unknown = JSON.parse(body);
+        const parsed = SendRequestSchema.safeParse(rawData);
+        if (!parsed.success) {
+          const invalidMode = parsed.error.issues.some((issue) => issue.path[0] === "executionMode");
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({
+            error: invalidMode ? "INVALID_EXECUTION_MODE" : "INVALID_SEND_REQUEST",
+            message: invalidMode ? "executionMode must be either chat or agent." : "The send request is invalid.",
+          }));
+          return;
+        }
+        const data = parsed.data;
         const sessionId = data.sessionId ?? "default";
-        const message: string = data.message ?? "";
-        const wantsWorkflow = data.useWorkflow === true || (this.activeWorkspacePath && this.shouldUseWorkflow(message));
+        const message = data.message;
 
-        if (wantsWorkflow && this.activeWorkspacePath) {
-          // Real autonomous workflow path: Understand → Inspect → Plan → Approval → Implement (via AgentRuntime) → Verify → Repair → Review
+        // Handle steer flag from UI or API caller
+        if (data.steer === true) {
+          const runtime = this.runtimes.get(sessionId);
+          if (!runtime) {
+            res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+            res.end(JSON.stringify({
+              error: "SESSION_NOT_FOUND",
+              message: `Session ${sessionId} not found`,
+            }));
+            return;
+          }
+          const activeTurns = runtime.getActiveTurns();
+          const targetTurn = (data.turnId ? runtime.getTurn(data.turnId) : null) ?? activeTurns[0];
+
+          if (!targetTurn || (targetTurn.status !== "running" && targetTurn.status !== "paused" && targetTurn.status !== "waiting_for_approval" && targetTurn.status !== "waiting_for_question")) {
+            res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+            res.end(JSON.stringify({
+              error: "NO_ACTIVE_TURN",
+              message: `No active turn to steer in session ${sessionId}`,
+            }));
+            return;
+          }
+
+          await runtime.steerTurn(targetTurn.turnId, message);
+          res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ ok: true, turnId: targetTurn.turnId, steered: true }));
+          return;
+        }
+
+        const executionMode = data.executionMode ?? MISSING_EXECUTION_MODE_FALLBACK;
+        const requestId = data.turnId ?? crypto.randomUUID();
+        this.persistSession(sessionId, message);
+        this.appendExecutionEvent(sessionId, "execution.requested", {
+          requestId,
+          executionMode,
+          runtime: executionMode === "agent" ? "workflow" : "chat",
+        });
+
+        if (executionMode === "agent") {
+          if (!this.activeWorkspacePath) {
+            const failure = this.classifyExecutionStartError(executionMode, new Error("No workspace path configured for workflow"));
+            this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode, code: failure.code, message: failure.message });
+            this.markSessionFailed(sessionId);
+            res.writeHead(failure.status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+            res.end(JSON.stringify({ error: failure.code, message: failure.message, executionMode, requestId }));
+            return;
+          }
           try {
             const wf = await this.workflowService.startWorkflow({
               sessionId,
@@ -496,11 +793,15 @@ export class CodeForgeServer {
               forceHeuristic: data.forceHeuristic === true ? true : undefined,
             });
             res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-            res.end(JSON.stringify({ ok: true, turnId: wf.turnId, taskId: wf.taskId, mode: this.realRuntimeEnabled() ? "real-workflow" : "workflow" }));
+            res.end(JSON.stringify({ ok: true, turnId: wf.turnId, taskId: wf.taskId, executionMode, runtime: "workflow" }));
             return;
           } catch (e) {
-            // Fall through to normal turn on workflow start failure
-            console.warn("Workflow start failed, falling back to turn:", e instanceof Error ? e.message : String(e));
+            const failure = this.classifyExecutionStartError(executionMode, e);
+            this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode, code: failure.code, message: failure.message });
+            this.markSessionFailed(sessionId);
+            res.writeHead(failure.status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+            res.end(JSON.stringify({ error: failure.code, message: failure.message, executionMode, requestId }));
+            return;
           }
         }
 
@@ -509,13 +810,34 @@ export class CodeForgeServer {
           typeof data.userId === "string" && data.userId ? data.userId : undefined,
         );
 
+        // Check if turn already running (single active turn per session)
+        const activeTurns = runtime.getActiveTurns();
+        if (activeTurns.length > 0) {
+          res.writeHead(409, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({
+            error: "CONCURRENT_TURN_REJECTED",
+            message: `A turn (${activeTurns[0]!.turnId}) is already running for session ${sessionId}. Steer or wait for it to complete.`,
+          }));
+          return;
+        }
+
         // Start the turn in the runtime (tracks state for pause/resume/cancel)
         // In demo mode, AgentRuntime skips real provider execution entirely.
-        const turnId = await runtime.startTurn(message);
+        let turnId: string;
+        try {
+          turnId = await runtime.startTurn(message);
+        } catch (error) {
+          const failure = this.classifyExecutionStartError(executionMode, error);
+          this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode, code: failure.code, message: failure.message });
+          this.markSessionFailed(sessionId);
+          res.writeHead(failure.status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: failure.code, message: failure.message, executionMode, requestId }));
+          return;
+        }
 
         if (this.realRuntimeEnabled()) {
           res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-          res.end(JSON.stringify({ ok: true, turnId, mode: "real" }));
+          res.end(JSON.stringify({ ok: true, turnId, executionMode, runtime: "chat", mode: "real" }));
         } else {
           runDemoRuntime({
             sessionId,
@@ -523,7 +845,7 @@ export class CodeForgeServer {
             emit: (event) => this.appendDemoEvent(event),
           }).catch(() => {});
           res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-          res.end(JSON.stringify({ ok: true, turnId, mode: "demo" }));
+          res.end(JSON.stringify({ ok: true, turnId, executionMode, runtime: "chat", mode: "demo" }));
         }
       } catch (error) {
         res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
@@ -549,7 +871,7 @@ export class CodeForgeServer {
       res.end(JSON.stringify({ error: "Session not found" }));
       return;
     }
-    
+
     runtime.pauseTurn(turnId ?? "")
       .then(() => {
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
@@ -575,7 +897,7 @@ export class CodeForgeServer {
       res.end(JSON.stringify({ error: "Session not found" }));
       return;
     }
-    
+
     runtime.resumeTurn(turnId ?? "")
       .then(() => {
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
@@ -863,6 +1185,7 @@ export class CodeForgeServer {
         const data = JSON.parse(body);
         const sessionId = typeof data.sessionId === "string" && data.sessionId ? data.sessionId : "default";
         const message = typeof data.message === "string" ? data.message : "";
+        const requestId = typeof data.turnId === "string" && data.turnId ? data.turnId : crypto.randomUUID();
         if (!message.trim()) {
           res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ error: "message required" }));
@@ -870,10 +1193,17 @@ export class CodeForgeServer {
         }
         const workspacePath = typeof data.workspacePath === "string" && data.workspacePath ? data.workspacePath : this.activeWorkspacePath ?? undefined;
         if (!workspacePath) {
-          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-          res.end(JSON.stringify({ error: "No workspace set" }));
+          this.persistSession(sessionId, message);
+          this.appendExecutionEvent(sessionId, "execution.requested", { requestId, executionMode: "agent", runtime: "workflow" });
+          const failure = this.classifyExecutionStartError("agent", new Error("No workspace set"));
+          this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode: "agent", code: failure.code, message: failure.message });
+          this.markSessionFailed(sessionId);
+          res.writeHead(failure.status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: failure.code, message: failure.message, executionMode: "agent", requestId }));
           return;
         }
+        this.persistSession(sessionId, message);
+        this.appendExecutionEvent(sessionId, "execution.requested", { requestId, executionMode: "agent", runtime: "workflow" });
         const result = await this.workflowService.startWorkflow({
           sessionId,
           message,
@@ -882,10 +1212,21 @@ export class CodeForgeServer {
           forceHeuristic: data.forceHeuristic === true ? true : undefined,
         });
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-        res.end(JSON.stringify({ ok: true, taskId: result.taskId, turnId: result.turnId }));
+        res.end(JSON.stringify({ ok: true, taskId: result.taskId, turnId: result.turnId, executionMode: "agent", runtime: "workflow" }));
       } catch (error) {
-        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-        res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+        if (error instanceof SyntaxError) {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "INVALID_WORKFLOW_REQUEST", message: "The workflow request is invalid." }));
+          return;
+        }
+        const data = (() => { try { return JSON.parse(body) as Record<string, unknown>; } catch { return {}; } })();
+        const sessionId = typeof data.sessionId === "string" && data.sessionId ? data.sessionId : "default";
+        const requestId = typeof data.turnId === "string" && data.turnId ? data.turnId : crypto.randomUUID();
+        const failure = this.classifyExecutionStartError("agent", error);
+        this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode: "agent", code: failure.code, message: failure.message });
+        this.markSessionFailed(sessionId);
+        res.writeHead(failure.status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: failure.code, message: failure.message, executionMode: "agent", requestId }));
       }
     });
   }
@@ -933,6 +1274,327 @@ export class CodeForgeServer {
       res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
       res.end(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }));
     });
+  }
+
+  private handleOrchestratorRun(req: http.IncomingMessage, res: http.ServerResponse): void {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const data = JSON.parse(body || "{}");
+        const goal = data.goal || data.message;
+        const sessionId = data.sessionId || `sess-${crypto.randomUUID()}`;
+        const workspacePath = data.workspacePath || this.activeWorkspacePath;
+        if (!workspacePath) {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "No workspace path specified" }));
+          return;
+        }
+        if (!goal) {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "Goal is required" }));
+          return;
+        }
+        const adapter = createWorkspaceEventAdapter({
+          sessionId,
+          eventStore: this.eventStore,
+          persistence: this.persistence,
+        });
+        void this.orchestrator.startRun({
+          sessionId,
+          workspacePath,
+          goal,
+          verificationCommands: data.verificationCommands,
+          adapter,
+        });
+        const run = this.orchestrator.getAllRuns().find((r: AutonomousRun) => r.goal === goal && r.sessionId === sessionId);
+        const runId = run ? run.id : `run-${crypto.randomUUID()}`;
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ ok: true, runId }));
+      } catch (err: unknown) {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }));
+      }
+    });
+  }
+
+  private handleOrchestratorGet(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+    const match = pathname.match(/^\/api\/orchestrator\/([^/]+)$/);
+    const runId = match?.[1];
+    const run = runId ? this.orchestrator.getRun(runId) : undefined;
+    if (!run) {
+      res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Run not found" }));
+      return;
+    }
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify(run));
+  }
+
+  private handleOrchestratorCancel(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+    const match = pathname.match(/^\/api\/orchestrator\/([^/]+)\/cancel$/);
+    const runId = match?.[1];
+    if (!runId) {
+      res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Invalid run id" }));
+      return;
+    }
+    const cancelled = this.orchestrator.cancelRun(runId);
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify({ ok: cancelled }));
+  }
+
+  private handleOrchestratorList(res: http.ServerResponse): void {
+    const runs = this.orchestrator.getAllRuns();
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify(runs));
+  }
+
+  private getMissionSupervisor(sessionId: string): MissionSupervisor {
+    const existing = this.missionSupervisors.get(sessionId);
+    if (existing) return existing;
+    const supervisor = createMissionSupervisor({
+      workspaceService: this.workspaceService,
+      agentRuntime: this.getOrCreateRuntime(sessionId),
+      persistence: this.persistence,
+      parallelOrchestrator: this.getParallelOrchestrator(sessionId),
+      onEvent: (event) => {
+        this.eventStore.append({ ...event, seq: 0 } as unknown as WorkspaceEvent);
+      },
+    });
+    this.missionSupervisors.set(sessionId, supervisor);
+    return supervisor;
+  }
+
+  private findMission(missionId: string): { sessionId: string; supervisor: MissionSupervisor } | undefined {
+    const stored = this.persistence.getWorkItem(missionId);
+    if (!stored || stored.kind !== "mission") return undefined;
+    return { sessionId: stored.sessionId!, supervisor: this.getMissionSupervisor(stored.sessionId!) };
+  }
+
+  private readJsonBody(req: http.IncomingMessage): Promise<Record<string, unknown>> {
+    return new Promise((resolve, reject) => {
+      let body = "";
+      req.on("data", (chunk) => { body += chunk; });
+      req.on("end", () => {
+        try { resolve(JSON.parse(body || "{}") as Record<string, unknown>); } catch (error) { reject(error); }
+      });
+      req.on("error", reject);
+    });
+  }
+
+  private sendJson(res: http.ServerResponse, status: number, body: unknown): void {
+    res.writeHead(status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify(body));
+  }
+
+  private handleMissionCreate(req: http.IncomingMessage, res: http.ServerResponse): void {
+    void this.readJsonBody(req).then((data) => {
+      const sessionId = typeof data.sessionId === "string" && data.sessionId ? data.sessionId : `sess-${crypto.randomUUID()}`;
+      const workspacePath = typeof data.workspacePath === "string" && data.workspacePath ? data.workspacePath : this.activeWorkspacePath;
+      const goal = typeof data.goal === "string" ? data.goal : "";
+      if (!workspacePath || !goal) {
+        this.sendJson(res, 400, { error: !workspacePath ? "No workspace path specified" : "Goal is required" });
+        return;
+      }
+      const supervisor = this.getMissionSupervisor(sessionId);
+      const missionId = `mission-${crypto.randomUUID()}`;
+      // Fire-and-forget: the mission is long-horizon and is observed through its durable state.
+      void supervisor.startMission({
+        missionId, sessionId, workspacePath, goal,
+        ...(typeof data.userInstructions === "string" ? { userInstructions: data.userInstructions } : {}),
+        ...(Array.isArray(data.explicitExclusions) ? { explicitExclusions: data.explicitExclusions as string[] } : {}),
+        ...(typeof data.budget === "object" && data.budget ? { budget: data.budget as Record<string, number> } : {}),
+      }).catch(() => undefined);
+      this.sendJson(res, 202, { ok: true, sessionId, missionId });
+    }).catch((error: unknown) => {
+      this.sendJson(res, 400, { error: error instanceof Error ? error.message : String(error) });
+    });
+  }
+
+  private handleDeliveryCreate(req: http.IncomingMessage, res: http.ServerResponse): void {
+    void this.readJsonBody(req).then((data) => {
+      if (typeof data.missionId !== "string" || !data.missionId) { this.sendJson(res, 400, { error: "missionId is required" }); return; }
+      const stored = this.persistence.getWorkItem(data.missionId);
+      const mission = stored?.kind === "mission" && stored.sessionId ? this.getMissionSupervisor(stored.sessionId).getMission(data.missionId) : undefined;
+      if (!mission || mission.status !== "completed" || !mission.finalRevision || mission.acceptanceCriteria.some((criterion) => criterion.mandatory && criterion.status !== "proven")) {
+        this.sendJson(res, 409, { error: "DELIVERY_SOURCE_NOT_CERTIFIED" });
+        return;
+      }
+      const deliveryId = `delivery-${crypto.randomUUID()}`;
+      // Delivery runs locally and durably; the response only exposes its identifier, never a remote URL.
+      void this.deliveryService.createDelivery({ missionId: data.missionId, deliveryId }).catch(() => undefined);
+      this.sendJson(res, 202, { ok: true, deliveryId });
+    }).catch((error: unknown) => this.sendJson(res, 400, { error: error instanceof Error ? error.message : String(error) }));
+  }
+
+  private handleDeliveryView(res: http.ServerResponse, deliveryId: string, view: string): void {
+    const delivery = this.deliveryService.getDelivery(deliveryId);
+    if (!delivery) { this.sendJson(res, 404, { error: "Delivery not found" }); return; }
+    if (view === "review-package") { this.sendJson(res, delivery.reviewPackage ? 200 : 409, delivery.reviewPackage ?? { error: "Review package not ready" }); return; }
+    this.sendJson(res, 200, {
+      id: delivery.id, missionId: delivery.missionId, status: delivery.status, sourceRevision: delivery.sourceRevision,
+      deliveryBranch: delivery.deliveryBranch, deliveryRevision: delivery.deliveryRevision, sourceTree: delivery.sourceTree,
+      deliveryTree: delivery.deliveryTree, commits: delivery.commits, verification: delivery.verification,
+      policySnapshotId: delivery.policySnapshot?.id, policyDigest: delivery.policySnapshot?.digest,
+    });
+  }
+
+  /**
+   * CF-11B publication surface. Desktop can start a Cloud publication, read Cloud-authoritative
+   * status, and retry. There is deliberately no local push, no local PR creation, and no way for a
+   * client to supply a repository URL, a ref, a SHA, or a PR identity.
+   */
+  private handlePublication(req: http.IncomingMessage, res: http.ServerResponse, deliveryId: string, action?: string): void {
+    if (req.method === "GET") {
+      if (action === "authorization") {
+        void this.publicationBridge.describeAuthorization(deliveryId)
+          .then((result) => this.sendJson(res, 200, result))
+          .catch((error: unknown) => this.sendPublicationFailure(res, error));
+        return;
+      }
+      void this.publicationBridge.refresh(deliveryId)
+        .then((record) => this.sendJson(res, record ? 200 : 404, record ?? { error: "Publication not found" }))
+        .catch((error: unknown) => this.sendPublicationFailure(res, error));
+      return;
+    }
+    if (req.method !== "POST") { this.sendJson(res, 405, { error: "Method not allowed" }); return; }
+    void this.readJsonBody(req).then((body) => {
+      // Server-owned identity: none of these may ever be client input.
+      if (Object.keys(body).some((key) => ["remoteBranch", "remoteSha", "prNumber", "prUrl", "state", "approved", "pushed", "repository", "repositoryId", "targetBranch", "remoteName", "remoteUrl", "pushRef", "certifiedHead", "certifiedTree", "token"].includes(key))) {
+        this.sendJson(res, 400, { error: "PUBLICATION_SERVER_OWNED_FIELDS" }); return;
+      }
+      if (action === "retry") {
+        void this.publicationBridge.retry(deliveryId)
+          .then((record) => this.sendJson(res, 200, record))
+          .catch((error: unknown) => this.sendPublicationFailure(res, error));
+        return;
+      }
+      if (action && action !== "refresh") { this.sendJson(res, 404, { error: "Unknown publication action" }); return; }
+      void this.publicationBridge.publish(deliveryId)
+        .then((record) => this.sendJson(res, 201, record))
+        .catch((error: unknown) => this.sendPublicationFailure(res, error));
+    }).catch((error: unknown) => this.sendPublicationFailure(res, error));
+  }
+
+  private sendPublicationFailure(res: http.ServerResponse, error: unknown): void {
+    if (error instanceof CloudPublicationError) { this.sendJson(res, error.status && error.status >= 400 && error.status < 600 ? error.status : 409, { error: String(error.code) }); return; }
+    this.sendJson(res, 409, { error: error instanceof Error ? error.message : String(error) });
+  }
+
+  private handleMissionList(res: http.ServerResponse, sessionId?: string): void {
+    const missions = this.persistence.getWorkItemsByKind("mission").filter((item) => !sessionId || item.sessionId === sessionId);
+    this.sendJson(res, 200, missions);
+  }
+
+  private handleMissionGet(res: http.ServerResponse, missionId: string): void {
+    const found = this.findMission(missionId);
+    const mission = found?.supervisor.getMission(missionId);
+    if (!mission) { this.sendJson(res, 404, { error: "Mission not found" }); return; }
+    this.sendJson(res, 200, mission);
+  }
+
+  private handleMissionView(res: http.ServerResponse, missionId: string, view: string): void {
+    const found = this.findMission(missionId);
+    const mission = found?.supervisor.getMission(missionId);
+    if (!mission) { this.sendJson(res, 404, { error: "Mission not found" }); return; }
+    if (view === "plan") { this.sendJson(res, 200, { currentPlanVersion: mission.currentPlanVersion, planVersions: mission.planVersions }); return; }
+    if (view === "milestones") { this.sendJson(res, 200, mission.milestones); return; }
+    this.sendJson(res, 200, { acceptance: mission.acceptanceCriteria, evidence: mission.evidence, assumptions: mission.assumptions, memory: mission.memory });
+  }
+
+  private handleMissionAction(req: http.IncomingMessage, res: http.ServerResponse, missionId: string, action: string): void {
+    const found = this.findMission(missionId);
+    if (!found) { this.sendJson(res, 404, { error: "Mission not found" }); return; }
+    const { supervisor } = found;
+    if (action === "pause") { const ok = supervisor.pauseMission(missionId); this.sendJson(res, ok ? 200 : 409, { ok }); return; }
+    if (action === "cancel") { const ok = supervisor.cancelMission(missionId); this.sendJson(res, ok ? 200 : 409, { ok }); return; }
+    if (action === "resume") {
+      const mission = supervisor.getMission(missionId);
+      if (!mission || !["paused", "executing", "planning", "evaluating", "replanning", "analyzing", "created"].includes(mission.status)) { this.sendJson(res, 409, { ok: false }); return; }
+      void supervisor.resumeMission(missionId).catch(() => undefined);
+      this.sendJson(res, 202, { ok: true });
+      return;
+    }
+    void this.readJsonBody(req).then((data) => {
+      const type = typeof data.type === "string" ? data.type : "";
+      if (!["clarification", "priority_change", "acceptance_change", "scope_reduction", "replan_request", "pause", "resume", "cancel"].includes(type)) {
+        this.sendJson(res, 400, { error: "Unsupported steering type" });
+        return;
+      }
+      // Steering arrives only through this authenticated product surface; repository and model
+      // text can never reach it.
+      const steering = supervisor.steerMission(missionId, {
+        type: type as MissionSteering["type"],
+        ...(typeof data.message === "string" ? { message: data.message } : {}),
+        ...(Array.isArray(data.addedAcceptanceCriteria) ? { addedAcceptanceCriteria: data.addedAcceptanceCriteria as MissionSteering["addedAcceptanceCriteria"] } : {}),
+        ...(Array.isArray(data.removedMilestoneIds) ? { removedMilestoneIds: data.removedMilestoneIds as string[] } : {}),
+      });
+      this.sendJson(res, steering ? 200 : 409, steering ? { ok: true, steering } : { ok: false });
+    }).catch((error: unknown) => {
+      this.sendJson(res, 400, { error: error instanceof Error ? error.message : String(error) });
+    });
+  }
+
+  private getParallelOrchestrator(sessionId: string): ParallelAutonomousRunOrchestrator {
+    const existing = this.parallelOrchestrators.get(sessionId);
+    if (existing) return existing;
+    const orchestrator = createParallelAutonomousRunOrchestrator({
+      workspaceService: this.workspaceService,
+      agentRuntime: this.getOrCreateRuntime(sessionId),
+      persistence: this.persistence,
+      onEvent: (event) => {
+        this.eventStore.append({ ...event, seq: 0 } as unknown as WorkspaceEvent);
+      },
+    });
+    this.parallelOrchestrators.set(sessionId, orchestrator);
+    return orchestrator;
+  }
+
+  private handleParallelRun(req: http.IncomingMessage, res: http.ServerResponse): void {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const data = JSON.parse(body || "{}") as { sessionId?: string; workspacePath?: string; goal?: string; verificationCommands?: string[] };
+        const sessionId = data.sessionId ?? `sess-${crypto.randomUUID()}`;
+        const workspacePath = data.workspacePath ?? this.activeWorkspacePath;
+        if (!workspacePath || !data.goal) throw new Error(!workspacePath ? "No workspace path specified" : "Goal is required");
+        const orchestrator = this.getParallelOrchestrator(sessionId);
+        void orchestrator.startRun({ sessionId, workspacePath, goal: data.goal, verificationCommands: data.verificationCommands });
+        res.writeHead(202, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ ok: true, sessionId }));
+      } catch (error) {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+      }
+    });
+  }
+
+  private findParallelRun(runId: string): { sessionId: string; orchestrator: ParallelAutonomousRunOrchestrator } | undefined {
+    const stored = this.persistence.getWorkItem(runId);
+    if (!stored || stored.kind !== "parallel_run") return undefined;
+    return { sessionId: stored.sessionId, orchestrator: this.getParallelOrchestrator(stored.sessionId) };
+  }
+
+  private handleParallelRunGet(res: http.ServerResponse, pathname: string): void {
+    const runId = pathname.match(/^\/api\/parallel-runs\/([^/]+)$/)?.[1];
+    const found = runId ? this.findParallelRun(runId) : undefined;
+    const run = found && runId ? found.orchestrator.getRun(runId) : undefined;
+    if (!run) { res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }); res.end(JSON.stringify({ error: "Parallel run not found" })); return; }
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }); res.end(JSON.stringify(run));
+  }
+
+  private handleParallelRunList(res: http.ServerResponse, sessionId?: string): void {
+    const runs = this.persistence.getWorkItemsByKind("parallel_run").filter((item) => !sessionId || item.sessionId === sessionId);
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }); res.end(JSON.stringify(runs));
+  }
+
+  private handleParallelRunCancel(res: http.ServerResponse, pathname: string): void {
+    const runId = pathname.match(/^\/api\/parallel-runs\/([^/]+)\/cancel$/)?.[1];
+    const found = runId ? this.findParallelRun(runId) : undefined;
+    const cancelled = Boolean(found && runId && found.orchestrator.cancelRun(runId));
+    res.writeHead(cancelled ? 200 : 409, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }); res.end(JSON.stringify({ ok: cancelled }));
   }
 
   private handleWorkspaceTree(req: http.IncomingMessage, res: http.ServerResponse, url: URL): void {
@@ -1195,18 +1857,18 @@ export class CodeForgeServer {
 
   private buildFileTree(dirPath: string, rootPath: string, depth: number = 0): Array<{ name: string; path: string; type: "file" | "directory"; children?: unknown[] }> {
     if (depth > 20) return [];
-    
+
     const entries: Array<{ name: string; path: string; type: "file" | "directory"; children?: unknown[] }> = [];
-    
+
     try {
       const items = fs.readdirSync(dirPath, { withFileTypes: true });
-      
+
       for (const item of items) {
         if (item.name.startsWith(".") && item.name !== ".git") continue;
-        
+
         const itemPath = path.join(dirPath, item.name);
         const relativePath = path.relative(rootPath, itemPath);
-        
+
         if (item.isDirectory()) {
           entries.push({
             name: item.name,
@@ -1330,6 +1992,18 @@ export * from "./filesystem-service.js";
 export * from "./command-service.js";
 export * from "./validation-service.js";
 export * from "./checkpoint-service.js";
+export * from "./workspace-service.js";
+export * from "./subagent-manager.js";
+export * from "./integration-service.js";
+export * from "./autonomous-orchestrator.js";
+export * from "./parallel-workstreams.js";
+export * from "./parallel-state.js";
+export * from "./parallel-orchestrator.js";
+export * from "./mission-state.js";
+export * from "./mission-supervisor.js";
+export * from "./publication-artifact.js";
+export * from "./cloud-publication-client.js";
+export * from "./cloud-publication-bridge.js";
 export function createServer(options?: ServerOptions): CodeForgeServer {
   return new CodeForgeServer(options);
 }

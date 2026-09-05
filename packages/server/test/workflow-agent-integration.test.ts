@@ -116,7 +116,7 @@ describe("Workflow ↔ AgentRuntime Real Integration", () => {
     expect(completed).toBe(true);
   });
 
-  it("workflow via /api/send is routed to real autonomous execution when workspace set and coding intent", async () => {
+  it("explicit Agent mode via /api/send is routed to real autonomous execution", async () => {
     const catalog = new InMemoryProviderCatalog();
     const currentHash = sha256(fs.readFileSync(join(ws, "src", "calc.ts"), "utf-8"));
     catalog.register(createMockProvider({
@@ -140,12 +140,13 @@ describe("Workflow ↔ AgentRuntime Real Integration", () => {
     const sendRes = await fetchJson(`http://localhost:${port}/api/send`, {
       sessionId: "send-workflow-sess",
       message: "Fix add function to return a + b",
-      useWorkflow: true,
+      executionMode: "agent",
     });
     expect(sendRes.status).toBe(200);
-    const body = sendRes.body as { ok: boolean; taskId?: string; turnId: string; mode: string };
+    const body = sendRes.body as { ok: boolean; taskId?: string; turnId: string; executionMode: string; runtime: string };
     expect(body.ok).toBe(true);
-    expect(body.mode).toContain("workflow");
+    expect(body.executionMode).toBe("agent");
+    expect(body.runtime).toBe("workflow");
 
     for (let i = 0; i < 25; i++) {
       await new Promise((r) => setTimeout(r, 400));

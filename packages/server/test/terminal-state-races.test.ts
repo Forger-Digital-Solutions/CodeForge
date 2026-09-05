@@ -18,7 +18,7 @@ describe("WorkflowEngine terminal-state races", () => {
     rmSync(workspacePath, { recursive: true, force: true });
   });
 
-  it("keeps completed terminal when cancellation arrives late and emits it once", async () => {
+  it("keeps its terminal phase when cancellation arrives late and emits it once", async () => {
     const controller = new AbortController();
     const phases: string[] = [];
     const engine = createWorkflowEngine({
@@ -33,9 +33,13 @@ describe("WorkflowEngine terminal-state races", () => {
     const result = await engine.run("Fix the add function that incorrectly returns a - b instead of a + b");
     controller.abort();
 
-    expect(result.status).toBe("completed");
-    expect(engine.getTask().phase).toBe("completed");
-    expect(phases.filter((phase) => phase === "completed")).toHaveLength(1);
+    // No verification command is configured, so the gate settles this run at `blocked`. What this
+    // test guards is unchanged: the terminal phase is immutable, emitted exactly once, and a late
+    // abort cannot overwrite it.
+    expect(result.status).toBe("blocked");
+    expect(engine.getTask().phase).toBe("blocked");
+    expect(phases.filter((phase) => phase === "blocked")).toHaveLength(1);
+    expect(phases).not.toContain("completed");
     expect(phases).not.toContain("cancelled");
   });
 

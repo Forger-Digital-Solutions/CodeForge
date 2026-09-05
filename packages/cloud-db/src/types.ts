@@ -266,3 +266,168 @@ export const SchemaMigrationRecordSchema = z.object({
   appliedAt: z.string(),
 });
 export type SchemaMigrationRecord = z.infer<typeof SchemaMigrationRecordSchema>;
+
+// CF-11B: GitHub App Installation & Repository Authorization
+
+export const GitHubInstallationRecordSchema = z.object({
+  id: z.string().uuid(),
+  installationId: z.number().int().positive(),
+  githubAccountId: z.number().int().positive(),
+  accountLogin: z.string(),
+  accountType: z.enum(["User", "Organization"]),
+  codeForgeUserId: z.string().uuid(),
+  repositorySelection: z.enum(["all", "selected"]),
+  status: z.enum(["active", "suspended", "revoked"]),
+  revokedAt: z.string().nullable().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type GitHubInstallationRecord = z.infer<typeof GitHubInstallationRecordSchema>;
+export type GitHubInstallationStatus = GitHubInstallationRecord["status"];
+
+/**
+ * Authorization is keyed on GitHub's immutable numeric repository id. Owner/name are cached
+ * display metadata only: a rename keeps the row (same id), and a different repository that later
+ * reuses the old owner/name gets a different id and therefore no inherited authorization.
+ */
+export const GitHubRepositoryAuthorizationRecordSchema = z.object({
+  id: z.string().uuid(),
+  installationId: z.string().uuid(),
+  repositoryId: z.number().int().positive(),
+  owner: z.string(),
+  name: z.string(),
+  fullName: z.string(),
+  private: z.boolean(),
+  authorizationState: z.enum(["authorized", "revoked", "deleted"]),
+  observedAt: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type GitHubRepositoryAuthorizationRecord = z.infer<typeof GitHubRepositoryAuthorizationRecordSchema>;
+export type GitHubRepositoryAuthorizationState = GitHubRepositoryAuthorizationRecord["authorizationState"];
+
+export const GitHubAppCallbackStateRecordSchema = z.object({
+  id: z.string().uuid(),
+  state: z.string(),
+  codeForgeUserId: z.string().uuid(),
+  deviceSessionId: z.string().nullable().optional(),
+  expiresAt: z.string(),
+  consumedAt: z.string().nullable().optional(),
+  createdAt: z.string(),
+});
+export type GitHubAppCallbackStateRecord = z.infer<typeof GitHubAppCallbackStateRecordSchema>;
+
+// CF-11B: Publication Records
+
+export const PublicationStateSchema = z.enum([
+  "awaiting_artifact",
+  "artifact_uploaded",
+  "validating",
+  "validated",
+  "waiting_for_lease",
+  "authorizing",
+  "checking_target",
+  "pushing",
+  "pushed",
+  "creating_pr",
+  "pr_created",
+  "completed",
+  "failed_retryable",
+  "failed_permanent",
+  "authorization_revoked",
+  "target_diverged",
+]);
+export type PublicationState = z.infer<typeof PublicationStateSchema>;
+
+/** States after which no further remote mutation may be attempted. */
+export const TERMINAL_PUBLICATION_STATES: readonly PublicationState[] = [
+  "completed",
+  "failed_permanent",
+  "authorization_revoked",
+  "target_diverged",
+];
+
+export const PublicationArtifactStateSchema = z.enum(["pending", "stored"]);
+export type PublicationArtifactState = z.infer<typeof PublicationArtifactStateSchema>;
+
+export const PublicationRecordSchema = z.object({
+  id: z.string().uuid(),
+  deliveryId: z.string(),
+  userId: z.string().uuid(),
+  repositoryId: z.number().int().positive(),
+  installationId: z.string().uuid(),
+  targetBranch: z.string(),
+  baseSha: z.string(),
+  targetSha: z.string(),
+  certifiedHead: z.string(),
+  certifiedTree: z.string(),
+  artifactSha256: z.string(),
+  artifactBytes: z.number().int().nonnegative(),
+  artifactState: PublicationArtifactStateSchema,
+  /** Server-controlled storage key. Never derived from client input, never the bundle bytes. */
+  artifactKey: z.string().nullable().optional(),
+  state: PublicationStateSchema,
+  leaseOwner: z.string().nullable().optional(),
+  leaseExpiresAt: z.string().nullable().optional(),
+  /** Monotonic fencing token. A worker whose fence is stale can no longer write. */
+  leaseFence: z.number().int().nonnegative(),
+  pushRef: z.string().nullable().optional(),
+  pullRequestNumber: z.number().int().nullable().optional(),
+  pullRequestUrl: z.string().nullable().optional(),
+  pullRequestNodeId: z.string().nullable().optional(),
+  errorCode: z.string().nullable().optional(),
+  failureReason: z.string().nullable().optional(),
+  attemptCount: z.number().int().nonnegative().default(0),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  completedAt: z.string().nullable().optional(),
+});
+export type PublicationRecord = z.infer<typeof PublicationRecordSchema>;
+
+export interface PublicationLease {
+  publicationId: string;
+  owner: string;
+  fence: number;
+  expiresAt: string;
+}
+
+export type VerificationRecordStatus = "pending" | "running" | "passed" | "failed" | "cancelled" | "timed_out" | "infra_error" | "interrupted";
+
+export interface CloudVerificationPlanRecord {
+  id: string;
+  runId: string;
+  workspaceId: string;
+  policyVersion: string;
+  inputStateHash: string;
+  scope: string;
+  payload: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface CloudVerificationAttemptRecord {
+  id: string;
+  planId: string;
+  runId: string;
+  verifierId: string;
+  verifierVersion: string;
+  status: VerificationRecordStatus;
+  startedAt: string;
+  finishedAt?: string;
+  exitCode?: number;
+  payload: Record<string, unknown>;
+}
+
+export interface CloudVerificationEvidenceRecord {
+  id: string;
+  attemptId: string;
+  planId: string;
+  runId: string;
+  verifierId: string;
+  verifierVersion: string;
+  inputStateHash: string;
+  status: Exclude<VerificationRecordStatus, "pending" | "running">;
+  outputDigest: string;
+  outputTruncated: boolean;
+  payload: Record<string, unknown>;
+  createdAt: string;
+}

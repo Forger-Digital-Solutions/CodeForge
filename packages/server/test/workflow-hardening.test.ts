@@ -48,6 +48,7 @@ describe("WorkflowService hardening — production autonomous execution", () => 
     const long = "a".repeat(10001);
     const res = await fetchJson(`http://localhost:${port}/api/workflow/run`, { sessionId: "sess-long", message: long });
     expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ error: "INVALID_WORKFLOW_REQUEST" });
     expect(JSON.stringify(res.body)).toMatch(/too long/i);
   });
 
@@ -57,8 +58,8 @@ describe("WorkflowService hardening — production autonomous execution", () => 
       message: "Fix add function",
       workspacePath: join(ws, "nonexistent-dir-xyz"),
     });
-    expect(res.status).toBe(400);
-    expect(JSON.stringify(res.body)).toMatch(/does not exist|Invalid workspace/i);
+    expect(res.status).toBe(409);
+    expect(res.body).toMatchObject({ error: "WORKSPACE_UNAVAILABLE" });
   });
 
   it("rejects concurrent workflows per session (max 1)", async () => {
@@ -74,8 +75,8 @@ describe("WorkflowService hardening — production autonomous execution", () => 
       message: "Fix add function again",
       verificationCommands: ["node -e \"process.exit(0)\""],
     });
-    expect(second.status).toBe(400);
-    expect(JSON.stringify(second.body)).toMatch(/already running/i);
+    expect(second.status).toBe(409);
+    expect(second.body).toMatchObject({ error: "SESSION_BUSY" });
     // Cleanup: cancel first to avoid leakage
     const body = first.body as { taskId: string };
     await fetchJson(`http://localhost:${port}/api/workflow/${body.taskId}/cancel`, {}, "POST");
@@ -84,9 +85,18 @@ describe("WorkflowService hardening — production autonomous execution", () => 
 
   it("enforces the global workflow cap and releases every slot after cancellation", async () => {
     const started = [] as Array<{ taskId: string }>;
+    const extraWsDirs = [] as string[];
+
     for (let index = 0; index < 20; index++) {
+      const distinctWs = await mkdtemp(join(tmpdir(), `wf-cap-${index}-`));
+      extraWsDirs.push(distinctWs);
+      await writeFile(join(distinctWs, "package.json"), JSON.stringify({ type: "module" }));
+      await mkdir(join(distinctWs, "src"), { recursive: true });
+      await writeFile(join(distinctWs, "src", "calc.ts"), "export function add(a:number,b:number){return a-b}");
+
       const response = await fetchJson(`http://localhost:${port}/api/workflow/run`, {
         sessionId: `global-session-${index}`,
+        workspacePath: distinctWs,
         message: "Implement a multi file feature that waits for explicit approval",
         verificationCommands: ["node -e \"process.exit(0)\""],
       });
@@ -94,25 +104,38 @@ describe("WorkflowService hardening — production autonomous execution", () => 
       started.push(response.body as { taskId: string });
     }
 
+    const overflowWs = await mkdtemp(join(tmpdir(), "wf-cap-overflow-"));
+    extraWsDirs.push(overflowWs);
+    await writeFile(join(overflowWs, "package.json"), JSON.stringify({ type: "module" }));
     const overflow = await fetchJson(`http://localhost:${port}/api/workflow/run`, {
       sessionId: "global-session-overflow",
+      workspacePath: overflowWs,
       message: "Fix add function",
     });
-    expect(overflow.status).toBe(400);
-    expect(JSON.stringify(overflow.body)).toMatch(/too many concurrent workflows/i);
+    expect(overflow.status).toBe(429);
+    expect(overflow.body).toMatchObject({ error: "WORKFLOW_CONCURRENCY_LIMIT" });
 
     await Promise.all(started.map(({ taskId }) =>
       fetchJson(`http://localhost:${port}/api/workflow/${taskId}/cancel`, {}, "POST"),
     ));
     await new Promise((resolve) => setTimeout(resolve, 300));
 
+    const afterReleaseWs = await mkdtemp(join(tmpdir(), "wf-cap-after-"));
+    extraWsDirs.push(afterReleaseWs);
+    await writeFile(join(afterReleaseWs, "package.json"), JSON.stringify({ type: "module" }));
     const afterRelease = await fetchJson(`http://localhost:${port}/api/workflow/run`, {
       sessionId: "global-session-after-release",
+      workspacePath: afterReleaseWs,
       message: "Fix add function",
       verificationCommands: ["node -e \"process.exit(0)\""],
     });
     expect(afterRelease.status).toBe(200);
     await fetchJson(`http://localhost:${port}/api/workflow/${(afterRelease.body as { taskId: string }).taskId}/cancel`, {}, "POST");
+
+    // Clean up temporary workspaces
+    for (const dir of extraWsDirs) {
+      await rm(dir, { recursive: true, force: true }).catch(() => {});
+    }
   });
 
   it("redacts secrets in persisted turn and evidence", async () => {

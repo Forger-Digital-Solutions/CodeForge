@@ -24,10 +24,14 @@ afterEach(async () => {
   }
 });
 
-/** Bind an ephemeral port so the test never depends on 3210 being free on the machine. */
+/**
+ * Bind an ephemeral port so the test never depends on 3210 being free on the machine. It must
+ * occupy loopback specifically — that is the interface CodeForgeServer binds by default, and a
+ * squatter on a different interface is not the port conflict this test exists to reproduce.
+ */
 async function occupyEphemeralPort(): Promise<number> {
   squatter = http.createServer(() => {});
-  await new Promise<void>((resolve) => squatter!.listen(0, () => resolve()));
+  await new Promise<void>((resolve) => squatter!.listen(0, "127.0.0.1", () => resolve()));
   const address = squatter.address();
   if (typeof address !== "object" || address === null) throw new Error("no ephemeral port");
   return address.port;

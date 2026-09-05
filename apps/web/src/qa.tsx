@@ -17,6 +17,8 @@ import {
   ModelSelector,
   ApprovalBar,
   QuestionBar,
+  ForgeWorkingIndicator,
+  ActivityIcon,
 } from "@codeforge/ui";
 import "../../../packages/ui/src/workspace.css";
 import "../../../apps/desktop/src/renderer/styles.css";
@@ -95,6 +97,7 @@ interface LayoutOpts {
   modelSelectorOpen?: boolean;
   pendingApproval?: any;
   pendingQuestion?: any;
+  eventStreamConnected?: boolean;
 }
 
 function Layout(opts: LayoutOpts) {
@@ -113,6 +116,7 @@ function Layout(opts: LayoutOpts) {
     modelSelectorOpen = false,
     pendingApproval = null,
     pendingQuestion = null,
+    eventStreamConnected = true,
   } = opts;
 
   return (
@@ -147,6 +151,16 @@ function Layout(opts: LayoutOpts) {
               />
             )}
             <Conversation turns={turns} workItems={workItems} displayMode="detailed" isRunning={isRunning} contextLabel={`CodeForge · ${project.name}`} />
+            <ForgeWorkingIndicator active={isRunning && !isPaused && activePhase !== "awaiting_approval" && !pendingApproval && eventStreamConnected} />
+            {isRunning && !pendingApproval && activePhase !== "awaiting_approval" && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px 6px", color: "#777", fontSize: 10 }} aria-label="Forge icon size samples">
+                {[14, 16, 18].map((size) => (
+                  <span key={size} style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>
+                    <ActivityIcon kind="forge" state="active" size={size as 14 | 16 | 18} />{size}px
+                  </span>
+                ))}
+              </div>
+            )}
             {pendingApproval && <ApprovalBar approval={pendingApproval} onApprove={noop} onDeny={noop} />}
             {pendingQuestion && <QuestionBar question={pendingQuestion} onAnswer={noop} />}
             {modelSelectorOpen ? (

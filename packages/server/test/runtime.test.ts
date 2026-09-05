@@ -324,6 +324,16 @@ describe("CheckpointService (in-memory)", () => {
 
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), "codeforge-test-"));
+    const { execFileSync } = await import("node:child_process");
+    execFileSync("git", ["init", "-b", "main"], { cwd: tempDir });
+    execFileSync("git", ["config", "user.name", "Test"], { cwd: tempDir });
+    execFileSync("git", ["config", "user.email", "test@test.com"], { cwd: tempDir });
+    execFileSync("git", ["config", "core.autocrlf", "false"], { cwd: tempDir });
+    const { writeFile } = await import("node:fs/promises");
+    await writeFile(join(tempDir, "README.md"), "# Test\n");
+    execFileSync("git", ["add", "."], { cwd: tempDir });
+    execFileSync("git", ["commit", "-m", "init"], { cwd: tempDir });
+
     eventStore = new EventStore();
     adapter = createWorkspaceEventAdapter({
       sessionId: "test-session",

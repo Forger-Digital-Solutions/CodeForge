@@ -56,6 +56,42 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
     expect(result.checkpointId).toBeDefined();
   });
 
+  it("refuses to report completion when nothing was verified", async () => {
+    const phases: string[] = [];
+    const engine = createWorkflowEngine({
+      workspacePath: ws,
+      sessionId: "sess-unverified",
+      onPhaseChange: (phase) => phases.push(phase),
+      askForApproval: approvePlan,
+      verificationCommands: [],
+    });
+
+    const result = await engine.run("Fix the add function that incorrectly returns a - b instead of a + b");
+
+    expect(result.verification!.notConfigured).toBe(true);
+    expect(result.status).toBe("blocked");
+    expect(result.phase).toBe("blocked");
+    expect(phases).not.toContain("completed");
+    expect(result.completion!.outcome).toBe("blocked");
+    expect(result.completion!.blockers.map((b) => b.code)).toContain("verification_not_run");
+  });
+
+  it("surfaces the gate decision on a completed run", async () => {
+    const engine = createWorkflowEngine({
+      workspacePath: ws,
+      sessionId: "sess-gate-pass",
+      askForApproval: approvePlan,
+      verificationCommands: ["node -e \"const c=require('fs').readFileSync('src/calc.ts','utf-8'); if(c.includes('a + b')){console.log('1 passed'); process.exit(0)} else {console.log('1 failed'); process.exit(1)}\""],
+    });
+
+    const result = await engine.run("Fix the add function that incorrectly returns a - b instead of a + b");
+
+    expect(result.status).toBe("completed");
+    expect(result.completion).toBeDefined();
+    expect(result.completion!.outcome).toBe("completed");
+    expect(result.completion!.blockers).toHaveLength(0);
+  });
+
   it("asks for approval when plan requires it", async () => {
     let approvalRequested = false;
     const engine = createWorkflowEngine({
@@ -70,7 +106,10 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
 
     const result = await engine.run("Implement multi file feature for provider routing across several modules");
     expect(approvalRequested).toBe(true);
-    expect(result.status).toBe("completed");
+    // The heuristic implementer has no edit for this request, so it changes nothing while still
+    // marking its edit step complete. The completion gate must not let that reach `completed`.
+    expect(result.status).toBe("blocked");
+    expect(result.completion!.blockers.map((b) => b.code)).toContain("no_effective_change");
   });
 
   it("respects deny decision", async () => {

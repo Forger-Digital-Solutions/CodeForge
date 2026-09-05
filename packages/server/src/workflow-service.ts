@@ -11,17 +11,25 @@ import {
   type WorkflowResult,
 } from "@codeforge/workflow";
 import type { WorkflowPlan, ContextBundle, RepoMap, FailureAnalysis, VerificationResult, TaskIntent } from "@codeforge/workflow";
+import type { ForgeVerifyObserver, VerificationAttempt, VerificationEvidence, VerificationPlan } from "@codeforge/workflow";
 import type { AgentRuntime } from "./agent-runtime.js";
 import { redactSecrets } from "@codeforge/secrets";
+import { WorkspaceService, createWorkspaceService, type WorkspaceLease } from "./workspace-service.js";
 
 export interface WorkflowServiceOptions {
   eventStore: EventStore;
   persistence: SessionPersistence;
   workspacePath?: string;
+  workspaceService?: WorkspaceService;
   /** Factory for AgentRuntime per session — connects workflow to real execution pipeline */
   getOrCreateRuntime?: (sessionId: string, userId?: string) => AgentRuntime;
   /** When true, Implement/Repair phases delegate to AgentRuntime (real LLM + tools); else heuristic */
-  useRealRuntime?: boolean;
+  /**
+   * Boolean or predicate. A predicate is re-evaluated per run so a provider connected AFTER boot
+   * flips the workflow to the real agent, exactly as the turn path already does. A stale `false`
+   * here silently routes real work to the heuristic implementer.
+   */
+  useRealRuntime?: boolean | (() => boolean);
 }
 
 export interface WorkflowRunRequest {
@@ -38,6 +46,16 @@ const MAX_CONCURRENT_PER_SESSION = 1;
 const MAX_WORKFLOWS_GLOBAL = 20;
 const WORKFLOW_TIMEOUT_MS = 10 * 60 * 1000;
 const MAX_WORKSPACE_PATH_LENGTH = 1024;
+
+/** A persisted running process has no trustworthy terminal result after a service restart. */
+function recoverInterruptedForgeVerifyAttempts(persistence: SessionPersistence, sessionId: string): void {
+  const now = new Date().toISOString();
+  for (const item of persistence.getWorkItems(sessionId)) {
+    if (item.kind !== "verification" || item.recordType !== "attempt" || item.status !== "running") continue;
+    const payload = { ...item.payload, status: "interrupted", finishedAt: now, terminationReason: "restart" };
+    persistence.upsertWorkItem({ ...item, status: "interrupted", payload, updatedAt: now });
+  }
+}
 
 function validateWorkspacePath(workspacePath: string): { valid: boolean; resolved?: string; error?: string } {
   if (typeof workspacePath !== "string" || workspacePath.length === 0 || workspacePath.length > MAX_WORKSPACE_PATH_LENGTH) {
@@ -84,22 +102,69 @@ function isActivePhase(phase: string): boolean {
   return ACTIVE_PHASES.has(phase);
 }
 
+function sanitizeInspectionText(value: string, limit = 2_000): string {
+  const redacted = redactSecrets(value)
+    .replace(/\b(?:[A-Z][A-Z0-9_]*(?:TOKEN|SECRET|API(?:_|-)?KEY|PASSWORD)|AUTHORIZATION)\s*=\s*[^\s;&]+/gi, "[REDACTED]")
+    .replace(/--(?:token|api(?:_|-)?key|secret|password|authorization)(?:=|\s+)\S+/gi, "[REDACTED]");
+  return redacted.length > limit ? `${redacted.slice(0, limit)}\n[TRUNCATED]` : redacted;
+}
+
+function safeVerificationAttempt(result: VerificationResult, attempt: number) {
+  const report = result as VerificationResult & { verifiers?: Array<{
+    id: string;
+    kind: "test" | "typecheck" | "build" | "lint" | "custom";
+    command: string;
+    required: boolean;
+    status: "passed" | "failed" | "not_configured" | "timed_out" | "cancelled";
+    passed: number;
+    failed: number;
+    skipped: number;
+    exitCode: number;
+    durationMs: number;
+    failures: Array<{ message: string }>;
+  }> };
+  return {
+    attempt,
+    notConfigured: result.notConfigured === true,
+    passed: result.passed,
+    failed: result.failed,
+    skipped: result.skipped,
+    durationMs: result.durationMs,
+    verifiers: (report.verifiers ?? []).map((verifier) => ({
+      id: verifier.id,
+      kind: verifier.kind,
+      command: sanitizeInspectionText(verifier.command, 500),
+      required: verifier.required,
+      status: verifier.status,
+      passed: verifier.passed,
+      failed: verifier.failed,
+      skipped: verifier.skipped,
+      exitCode: verifier.exitCode,
+      durationMs: verifier.durationMs,
+      ...(verifier.failures[0]?.message ? { failureSummary: sanitizeInspectionText(verifier.failures[0].message, 500) } : {}),
+    })),
+  };
+}
+
 export class WorkflowService {
   private readonly eventStore: EventStore;
   private readonly persistence: SessionPersistence;
   private readonly approvalService: ApprovalService;
+  private readonly workspaceService: WorkspaceService;
   private readonly workflows: Map<string, { engine: WorkflowEngine; controller: AbortController; promise: Promise<WorkflowResult>; task: WorkflowTask }> = new Map();
   private defaultWorkspacePath?: string;
   private readonly getOrCreateRuntime?: (sessionId: string, userId?: string) => AgentRuntime;
-  private readonly useRealRuntime: boolean;
+  private readonly isRealRuntimeEnabled: () => boolean;
 
   constructor(options: WorkflowServiceOptions) {
     this.eventStore = options.eventStore;
     this.persistence = options.persistence;
     this.defaultWorkspacePath = options.workspacePath;
+    this.workspaceService = options.workspaceService ?? createWorkspaceService({ persistence: options.persistence });
     this.approvalService = new ApprovalService({ defaultTimeoutMs: 5 * 60 * 1000 });
     this.getOrCreateRuntime = options.getOrCreateRuntime;
-    this.useRealRuntime = options.useRealRuntime ?? false;
+    const realRuntime = options.useRealRuntime ?? false;
+    this.isRealRuntimeEnabled = typeof realRuntime === "function" ? realRuntime : () => realRuntime;
     this.recoverStalePersistedState();
   }
 
@@ -249,7 +314,7 @@ export class WorkflowService {
         const prompt = buildImplementPrompt(plan, context, repoMap, intent);
         adapter.emitAgentStarted(`agent-${plan.id.slice(0, 8)}`, "Builder", plan.id);
         const runtime = getRuntime(sessionId, userId);
-        const turnId = await runtime.startTurn(prompt);
+        const turnId = await runtime.startTurn(prompt, adapter);
         const result = await waitForTurn(runtime, turnId);
         if (result.status === "completed") {
           adapter.emitAgentCompleted(`agent-${plan.id.slice(0, 8)}`, plan.id);
@@ -270,7 +335,7 @@ export class WorkflowService {
       ): Promise<{ success: boolean; output: string; turnId?: string }> => {
         const prompt = buildRepairPrompt(analysis, verification, context, intent);
         const runtime = getRuntime(sessionId, userId);
-        const turnId = await runtime.startTurn(prompt);
+        const turnId = await runtime.startTurn(prompt, adapter);
         const result = await waitForTurn(runtime, turnId);
         if (result.status === "completed") return { success: true, output: `Repair turn ${turnId} completed`, turnId };
         return { success: false, output: `Repair turn ${turnId} ${result.status}` };
@@ -280,6 +345,7 @@ export class WorkflowService {
 
   async startWorkflow(request: WorkflowRunRequest): Promise<{ taskId: string; turnId: string }> {
     const sessionId = request.sessionId;
+    recoverInterruptedForgeVerifyAttempts(this.persistence, sessionId);
     const rawWorkspacePath = request.workspacePath ?? this.defaultWorkspacePath;
     if (!rawWorkspacePath) {
       throw new Error("No workspace path configured for workflow");
@@ -309,14 +375,17 @@ export class WorkflowService {
       throw new Error("Message too long");
     }
 
+    const taskId = crypto.randomUUID();
+    const turnId = crypto.randomUUID();
     const adapter = createWorkspaceEventAdapter({
       sessionId,
+      runId: taskId,
       eventStore: this.eventStore,
       persistence: this.persistence,
     });
 
-    const taskId = crypto.randomUUID();
-    const turnId = crypto.randomUUID();
+    // Acquire exclusive write lease for this workspace (throws WORKSPACE_LEASE_CONFLICT on conflict)
+    const lease = this.workspaceService.acquireLease(workspacePath, taskId, "write");
 
     // Emit task lifecycle events immediately (redact secrets in title)
     const redactedTitle = redactSecrets(request.message.slice(0, 80));
@@ -339,9 +408,44 @@ export class WorkflowService {
     // Ensure timeout is cleared when workflow settles
     const clearWorkflowTimeout = () => clearTimeout(workflowTimeout);
 
-    const shouldUseRealAgent = !request.forceHeuristic && this.useRealRuntime && !!this.getOrCreateRuntime;
+    const shouldUseRealAgent = !request.forceHeuristic && this.isRealRuntimeEnabled() && !!this.getOrCreateRuntime;
     const agentExecutor = shouldUseRealAgent ? this.createAgentExecutor(sessionId, request.userId, controller.signal, adapter) : undefined;
 
+    const repairAttempts: Array<{ attempt: number; summary: string }> = [];
+    const persistForgeVerify = (recordType: "plan" | "attempt" | "evidence", id: string, planId: string, value: VerificationPlan | VerificationAttempt | VerificationEvidence): void => {
+      const createdAt = "createdAt" in value ? value.createdAt : value.startedAt;
+      const updatedAt = "finishedAt" in value && value.finishedAt ? value.finishedAt : createdAt;
+      const item = {
+        kind: "verification",
+        id,
+        sessionId,
+        runId: taskId,
+        recordType,
+        planId,
+        ...("verifierId" in value ? { verifierId: value.verifierId } : {}),
+        ...("status" in value ? { status: value.status } : {}),
+        payload: JSON.parse(JSON.stringify(value)) as Record<string, unknown>,
+        createdAt,
+        updatedAt,
+      } as import("@codeforge/sessions").WorkItem;
+      if (recordType === "plan" || recordType === "evidence") this.persistence.insertImmutableWorkItem(item);
+      else this.persistence.upsertWorkItem(item);
+    };
+    const verificationObserver: ForgeVerifyObserver = {
+      planCreated: (plan) => {
+        persistForgeVerify("plan", plan.planId, plan.planId, plan);
+        adapter.emitForgeVerifyPlanCreated(taskId, plan.planId, plan.policyVersion, plan.verifiers.filter((verifier) => verifier.requirement === "required").map((verifier) => verifier.verifierId));
+      },
+      attemptStarted: (attempt) => {
+        persistForgeVerify("attempt", attempt.attemptId, attempt.planId, attempt);
+        adapter.emitForgeVerifyAttemptStarted(taskId, attempt.planId, attempt.attemptId, attempt.verifierId);
+      },
+      attemptTerminal: (attempt) => persistForgeVerify("attempt", attempt.attemptId, attempt.planId, attempt),
+      evidenceCreated: (evidence) => {
+        persistForgeVerify("evidence", evidence.evidenceId, evidence.planId, evidence);
+        adapter.emitForgeVerifyEvidenceCreated(taskId, evidence.planId, evidence.attemptId, evidence.evidenceId, evidence.verifierId, evidence.status, evidence.elapsedMs, evidence.outputTruncated);
+      },
+    };
     // Snapshot adapter for phase transitions
     const engine = createWorkflowEngine({
       workspacePath,
@@ -350,6 +454,7 @@ export class WorkflowService {
       turnId,
       signal: controller.signal,
       verificationCommands: request.verificationCommands,
+      verificationObserver,
       agentExecutor,
       onPhaseChange: (phase: string, task: WorkflowTask) => {
         // Map workflow phases to TaskStatus for task.state_changed
@@ -366,6 +471,7 @@ export class WorkflowService {
           reviewing: "reviewing",
           summarizing: "validating",
           completed: "complete",
+          blocked: "blocked",
           failed: "failed_safely",
           cancelled: "cancelled",
         };
@@ -407,6 +513,29 @@ export class WorkflowService {
           } catch {}
         } else if (evt.type === "workflow.approval_requested") {
           // Handled via askForApproval below
+        } else if (evt.type === "workflow.verification_started") {
+          const payload = evt.payload as { attempt: number };
+          adapter.emitWorkflowVerificationStarted(taskId, payload.attempt);
+        } else if (evt.type === "workflow.verification_completed") {
+          const payload = evt.payload as { attempt: number; verification: VerificationResult };
+          const safeAttempt = safeVerificationAttempt(payload.verification, payload.attempt);
+          adapter.emitWorkflowVerificationCompleted(taskId, payload.attempt, safeAttempt);
+        } else if (evt.type === "workflow.repair_attempted") {
+          const payload = evt.payload as { attempt: number; analysis: FailureAnalysis };
+          const summary = sanitizeInspectionText(payload.analysis.summary, 500);
+          repairAttempts.push({ attempt: payload.attempt, summary });
+          adapter.emitWorkflowRepairAttempted(taskId, payload.attempt, summary);
+        } else if (evt.type === "workflow.review_finished") {
+          const payload = evt.payload as {
+            approved: boolean;
+            diffCount: number;
+            findings: Array<{ code: string; severity: "blocking" | "advisory"; path: string; message: string }>;
+          };
+          adapter.emitWorkflowReviewCompleted(taskId, payload.approved, payload.findings.map((finding) => ({
+            ...finding,
+            path: sanitizeInspectionText(finding.path, 500),
+            message: sanitizeInspectionText(finding.message, 500),
+          })), payload.diffCount);
         }
       },
       askForApproval: async (plan: WorkflowPlan) => {
@@ -478,10 +607,101 @@ export class WorkflowService {
         const safeSummary = redactSecrets(result.summary);
         const safeDiff = result.diffSummary ? redactSecrets(result.diffSummary) : undefined;
         const safeResult = { ...result, summary: safeSummary, diffSummary: safeDiff };
-        if (safeResult.status === "completed") {
-          adapter.emitTaskCompleted(taskId, safeResult.summary);
-          adapter.emitStatusChanged("running", "completed");
-          // Evidence and checkpoint as artifacts
+        if (safeResult.completion) {
+          adapter.emitWorkflowCompletionDecided(
+            taskId,
+            safeResult.completion.outcome,
+            sanitizeInspectionText(safeResult.completion.rationale, 1_000),
+            safeResult.completion.blockers.map((blocker) => ({
+              code: blocker.code,
+              severity: blocker.severity,
+              message: sanitizeInspectionText(blocker.message, 500),
+            })),
+          );
+        }
+
+        // Capture the terminal evidence once, at the run boundary. Reopening this record never
+        // reads the mutable workspace, so unrelated user edits after completion cannot rewrite a
+        // historical diff or verification receipt.
+        try {
+          const verificationAttempts = (safeResult.verificationAttempts ?? (safeResult.verification ? [safeResult.verification] : []))
+            .map((verification, index) => safeVerificationAttempt(verification, index + 1));
+          const forgeVerify = (safeResult.verification as import("@codeforge/workflow").VerificationReport | undefined)?.forgeVerify;
+          const inspection = {
+            kind: "run_inspection" as const,
+            id: taskId,
+            sessionId,
+            runId: taskId,
+            turnId,
+            executionMode: "agent" as const,
+            taskTitle: sanitizeInspectionText(task.title, 500),
+            status: safeResult.status === "requires_approval" ? "failed" : safeResult.status,
+            phase: safeResult.phase,
+            workspace: { id: taskId, kind: "local" as const, checkpointId: safeResult.checkpointId },
+            diffs: (safeResult.review?.diffs ?? []).map((diff) => ({
+              path: sanitizeInspectionText(diff.path, 1_000),
+              changeType: diff.changeType,
+              additions: Math.max(0, diff.additions),
+              deletions: Math.max(0, diff.deletions),
+              diff: diff.binary ? "" : sanitizeInspectionText(diff.diff, 32 * 1024),
+              ...(diff.binary ? { binary: true } : {}),
+              ...(diff.beforeSize !== undefined ? { beforeSize: diff.beforeSize } : {}),
+              ...(diff.afterSize !== undefined ? { afterSize: diff.afterSize } : {}),
+              ...(diff.truncated ? { truncated: true } : {}),
+            })),
+            verificationAttempts,
+            ...(forgeVerify ? {
+              verification: {
+                planId: forgeVerify.plan.planId,
+                policyVersion: forgeVerify.plan.policyVersion,
+                requiredCount: forgeVerify.summary.requiredCount,
+                satisfiedCount: forgeVerify.summary.satisfiedCount,
+                missingCount: forgeVerify.summary.missingCount,
+                staleCount: forgeVerify.summary.staleCount,
+                verificationComplete: forgeVerify.summary.verificationComplete,
+                missingRequiredVerifiers: [...forgeVerify.summary.missingRequiredVerifiers],
+                evidence: forgeVerify.evidence.map((evidence) => ({
+                  evidenceId: evidence.evidenceId,
+                  verifierId: evidence.verifierId,
+                  status: evidence.status,
+                  durationMs: evidence.elapsedMs,
+                  outputTruncated: evidence.outputTruncated,
+                })),
+              },
+            } : {}),
+            repairs: repairAttempts,
+            ...(safeResult.review ? {
+              review: {
+                approved: safeResult.review.approved,
+                findings: safeResult.review.findings.map((finding) => ({
+                  code: finding.code,
+                  severity: finding.severity,
+                  path: sanitizeInspectionText(finding.path, 1_000),
+                  message: sanitizeInspectionText(finding.message, 1_000),
+                })),
+              },
+            } : {}),
+            ...(safeResult.completion ? {
+              completion: {
+                outcome: safeResult.completion.outcome,
+                rationale: sanitizeInspectionText(safeResult.completion.rationale, 1_000),
+                blockers: safeResult.completion.blockers.map((blocker) => ({
+                  code: blocker.code,
+                  severity: blocker.severity,
+                  message: sanitizeInspectionText(blocker.message, 500),
+                })),
+              },
+            } : {}),
+            startedAt: task.createdAt,
+            completedAt: new Date().toISOString(),
+            createdAt: task.createdAt,
+            updatedAt: new Date().toISOString(),
+          };
+          this.persistence.upsertWorkItem(inspection as unknown as import("@codeforge/sessions").WorkItem);
+        } catch {}
+        // Evidence belongs to any run that reached a considered verdict — a run held back by the
+        // completion gate is exactly when the user most needs to see what was done and why.
+        if (safeResult.status === "completed" || safeResult.status === "blocked") {
           if (safeResult.evidenceId) {
             adapter.emitEvidenceCreated(safeResult.evidenceId, safeResult.summary.slice(0, 500), [
               { kind: "file", ref: safeDiff?.slice(0, 100) ?? "workflow" },
@@ -501,8 +721,17 @@ export class WorkflowService {
           if (safeResult.checkpointId) {
             adapter.emitCheckpointCreated(safeResult.checkpointId, `Workflow ${taskId.slice(0, 8)}`, safeResult.review?.diffs.length ?? 0);
           }
+        }
+
+        if (safeResult.status === "completed") {
+          adapter.emitTaskCompleted(taskId, safeResult.summary);
+          adapter.emitStatusChanged("running", "completed");
           // Final turn-like completion for compatibility
           adapter.emitTurnCompleted(turnId, safeResult.summary);
+        } else if (safeResult.status === "blocked") {
+          adapter.emitTaskStateChanged(taskId, "implementing", "blocked");
+          adapter.emitTurnFailed(turnId, safeResult.summary);
+          adapter.emitStatusChanged("running", "failed");
         } else if (safeResult.status === "failed") {
           adapter.emitTaskStateChanged(taskId, "implementing", "failed_safely");
           adapter.emitTurnFailed(turnId, safeResult.summary);
@@ -555,8 +784,14 @@ export class WorkflowService {
       },
     );
 
-    // Ensure timeout and promise cleanup on settle
-    promise.finally(clearWorkflowTimeout).catch(() => clearWorkflowTimeout());
+    // Ensure timeout and lease cleanup on settle
+    const cleanup = () => {
+      clearWorkflowTimeout();
+      try {
+        this.workspaceService.releaseLease(lease.leaseId, taskId);
+      } catch {}
+    };
+    promise.finally(cleanup).catch(() => cleanup());
 
     this.workflows.set(taskId, { engine, controller, promise, task: engine.getTask() });
 

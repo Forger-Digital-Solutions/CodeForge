@@ -37,6 +37,12 @@ export interface CloudRuntimeConfig {
   gitHub: {
     clientId?: string;
     clientSecret?: string;
+    /** Optional GitHub App authority for Cloud-only publication. Both fields are required together. */
+    app?: {
+      appId: string;
+      privateKeyPem: string;
+      installationUrl?: string;
+    };
   };
 
   /** Optional Stripe TEST-mode billing integration. Hosted Free does not depend on it. */
@@ -80,6 +86,9 @@ const EnvSchema = z.object({
   JWT_SECRET: z.string().optional(),
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
+  GITHUB_APP_ID: z.string().optional(),
+  GITHUB_APP_PRIVATE_KEY: z.string().optional(),
+  GITHUB_APP_INSTALLATION_URL: z.string().optional(),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PRO_PRICE_ID: z.string().optional(),
@@ -214,7 +223,19 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
   }
 
   // --- GitHub OAuth ---------------------------------------------------------------------------
-  const gitHub = { clientId: e.GITHUB_CLIENT_ID, clientSecret: e.GITHUB_CLIENT_SECRET };
+  // --- GitHub App publication authority --------------------------------------------------------
+  const appId = e.GITHUB_APP_ID?.trim();
+  const privateKeyPem = e.GITHUB_APP_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  if (Boolean(appId) !== Boolean(privateKeyPem)) {
+    throw new CloudConfigError("GITHUB_APP_ID and GITHUB_APP_PRIVATE_KEY must be configured together for Cloud publication.");
+  }
+  if (appId && (!/^\d+$/.test(appId) || !privateKeyPem?.includes("BEGIN"))) {
+    throw new CloudConfigError("GitHub App publication configuration is invalid.");
+  }
+  const gitHubApp = appId && privateKeyPem
+    ? { appId, privateKeyPem, ...(e.GITHUB_APP_INSTALLATION_URL ? { installationUrl: e.GITHUB_APP_INSTALLATION_URL } : {}) }
+    : undefined;
+  const gitHub = { clientId: e.GITHUB_CLIENT_ID, clientSecret: e.GITHUB_CLIENT_SECRET, ...(gitHubApp ? { app: gitHubApp } : {}) };
   if (isProdLike && (!gitHub.clientId || !gitHub.clientSecret)) {
     throw new CloudConfigError("GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are required in staging/production.");
   }
@@ -291,6 +312,7 @@ export function describeConfig(config: CloudRuntimeConfig): string {
     `host=${config.host}:${config.port}`,
     `publicUrl=${config.publicUrl ?? "unset"}`,
     `github=${config.gitHub.clientId ? "configured" : "absent"}`,
+    `githubAppPublication=${config.gitHub.app ? "configured" : "disabled"}`,
     `stripe=${config.stripe ? "test-mode" : "disabled"}`,
     `providers=[${providers.join(",") || "none"}]`,
     `hostedInference=${config.killSwitches.hostedInferenceEnabled}`,

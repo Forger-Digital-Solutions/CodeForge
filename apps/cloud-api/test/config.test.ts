@@ -47,6 +47,15 @@ describe("loadCloudRuntimeConfig", () => {
     expect(() => loadCloudRuntimeConfig({ ...prodBase, GITHUB_CLIENT_SECRET: undefined })).toThrow(/GITHUB_CLIENT/);
   });
 
+  it("enables Cloud publication only with a complete GitHub App authority and never exposes its key in startup output", () => {
+    expect(() => loadCloudRuntimeConfig({ ...prodBase, GITHUB_APP_ID: "123" })).toThrow(/GITHUB_APP_ID and GITHUB_APP_PRIVATE_KEY/);
+    const key = "-----BEGIN PRIVATE KEY-----\\nsynthetic-only\\n-----END PRIVATE KEY-----";
+    const config = loadCloudRuntimeConfig({ ...prodBase, GITHUB_APP_ID: "123", GITHUB_APP_PRIVATE_KEY: key, GITHUB_APP_INSTALLATION_URL: "https://github.com/apps/codeforge/installations/new" });
+    expect(config.gitHub.app).toMatchObject({ appId: "123", installationUrl: "https://github.com/apps/codeforge/installations/new" });
+    expect(config.gitHub.app?.privateKeyPem).toContain("\n");
+    expect(describeConfig(config)).not.toContain("synthetic-only");
+  });
+
   it("does not require Stripe for the production Hosted Free path", () => {
     const config = loadCloudRuntimeConfig({ ...prodBase, STRIPE_SECRET_KEY: undefined, STRIPE_WEBHOOK_SECRET: undefined });
     expect(config.stripe).toBeUndefined();

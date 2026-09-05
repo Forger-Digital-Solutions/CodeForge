@@ -14,6 +14,7 @@ export type WorkflowPhase =
   | "reviewing"
   | "summarizing"
   | "completed"
+  | "blocked"
   | "failed"
   | "cancelled";
 
@@ -73,6 +74,36 @@ export interface WorkflowPlan {
   updatedAt: string;
 }
 
+export type VerifierKind = "test" | "typecheck" | "build" | "lint" | "custom";
+
+export interface Verifier {
+  id: string;
+  kind: VerifierKind;
+  command: string;
+  cwd?: string;
+  required: boolean;
+  timeoutMs?: number;
+  source: "discovered" | "configured" | "default";
+}
+
+export interface VerifierRunResult {
+  id: string;
+  kind: VerifierKind;
+  command: string;
+  required: boolean;
+  status: "passed" | "failed" | "not_configured" | "timed_out" | "cancelled" | "infra_error" | "interrupted";
+  passed: number;
+  failed: number;
+  skipped: number;
+  exitCode: number;
+  durationMs: number;
+  output: string;
+  failures: Array<{ test: string; message: string; stack?: string }>;
+  timedOut?: boolean;
+  cancelled?: boolean;
+  notConfigured?: boolean;
+}
+
 export interface VerificationResult {
   passed: number;
   failed: number;
@@ -81,6 +112,7 @@ export interface VerificationResult {
   output: string;
   exitCode: number;
   command: string;
+  cwd?: string;
   failures: Array<{ test: string; message: string; stack?: string }>;
   timedOut?: boolean;
   cancelled?: boolean;
@@ -90,6 +122,17 @@ export interface VerificationResult {
    * this as a pass.
    */
   notConfigured?: boolean;
+}
+
+export interface VerificationReport extends VerificationResult {
+  verifiers: VerifierRunResult[];
+  requiredPassed: boolean;
+  hasFailures: boolean;
+  advisories: VerifierRunResult[];
+  overallStatus: "passed" | "failed" | "blocked";
+  summary: string;
+  /** The canonical structured evidence used by the completion gate when present. */
+  forgeVerify?: import("./forge-verify.js").ForgeVerifyExecution;
 }
 
 export interface FailureAnalysis {
@@ -108,11 +151,28 @@ export interface DiffEntry {
   diff: string;
   beforeHash: string;
   afterHash: string;
+  /** Binary contents are never placed in the product evidence stream. */
+  binary?: boolean;
+  beforeSize?: number;
+  afterSize?: number;
+  /** The stored patch is deliberately bounded for UI safety. */
+  truncated?: boolean;
+}
+
+export type ReviewFindingSeverity = "blocking" | "advisory";
+
+export interface ReviewFinding {
+  code: "sensitive_file" | "oversized_diff";
+  severity: ReviewFindingSeverity;
+  path: string;
+  message: string;
 }
 
 export interface ReviewDecision {
   approved: boolean;
   issues: string[];
+  /** Structured form of `issues`; the completion gate reads severity from here, not from prose. */
+  findings: ReviewFinding[];
   diffs: DiffEntry[];
   summary: string;
 }
@@ -136,15 +196,20 @@ export interface WorkflowTask {
 
 export interface WorkflowResult {
   taskId: string;
-  status: "completed" | "failed" | "cancelled" | "requires_approval";
+  status: "completed" | "blocked" | "failed" | "cancelled" | "requires_approval";
   phase: WorkflowPhase;
   summary: string;
   plan?: WorkflowPlan;
   verification?: VerificationResult;
+  /** Every actual verification attempt, retained so repair never rewrites a failed history. */
+  verificationAttempts?: VerificationResult[];
   review?: ReviewDecision;
+  /** Why the runtime allowed or refused completion. Present on every non-cancelled terminal result. */
+  completion?: import("./completion-gate.js").CompletionGateDecision;
   evidenceId?: string;
   checkpointId?: string;
   diffSummary?: string;
+  verificationRecommendation?: import("@codeforge/forge-green").VerificationRecommendation;
 }
 
 export interface ApprovalRequest {
@@ -164,6 +229,9 @@ export type WorkflowEventType =
   | "workflow.approval_requested"
   | "workflow.implementation_started"
   | "workflow.verification_started"
+  | "workflow.verification_completed"
+  | "workflow.review_finished"
+  | "workflow.completion_blocked"
   | "workflow.repair_attempted";
 
 export interface WorkflowEvent {

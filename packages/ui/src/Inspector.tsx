@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import type { WorkspaceEvent } from "@codeforge/protocol";
 import type { SessionRecord, WorkItem, TurnRecord } from "@codeforge/sessions";
 import FileExplorer from "./FileExplorer.js";
+import RunInspection from "./RunInspection.js";
 
 function isWorkItemKind<K extends WorkItem["kind"]>(
   item: WorkItem,
@@ -15,14 +17,18 @@ interface InspectorProps {
   session: SessionRecord | null;
   workItems: WorkItem[];
   turns: TurnRecord[];
+  events?: WorkspaceEvent[];
   isRunning: boolean;
   workspacePath?: string;
+  activeTaskId?: string | null;
+  startFailure?: { code: string; message: string };
 }
 
 // "commands" (not "terminal") — this panel shows executed-command history, not an interactive
 // PTY. Naming it Terminal misrepresented the functionality; renamed for honesty (recovery brief).
-const TABS = ["changes", "commands", "files", "evidence", "overview"];
+const TABS = ["run", "changes", "commands", "files", "evidence", "overview"];
 const TAB_LABELS: Record<string, string> = {
+  run: "Run",
   changes: "Changes",
   commands: "Commands",
   files: "Files",
@@ -30,11 +36,13 @@ const TAB_LABELS: Record<string, string> = {
   overview: "Overview",
 };
 
-export default function Inspector({ activeTab, onTabSelect, session, workItems, turns, isRunning, workspacePath }: InspectorProps) {
+export default function Inspector({ activeTab, onTabSelect, session, workItems, turns, events = [], isRunning, workspacePath, activeTaskId, startFailure }: InspectorProps) {
   const safeTab = TABS.includes(activeTab) ? activeTab : "changes";
 
   const renderTabContent = () => {
     switch (safeTab) {
+      case "run":
+        return <RunInspection events={events} workItems={workItems} preferredRunId={activeTaskId} startFailure={startFailure} />;
       case "changes":
         return renderChanges(workItems);
       case "commands":

@@ -7,7 +7,13 @@ import { buildContext } from "./context-builder.js";
 import { createPlan, planRequiresApproval, updatePlanStatus } from "./plan-service.js";
 import { runVerification, verificationPassed } from "./verification-service.js";
 import { analyzeFailures } from "./failure-analyzer.js";
-import { reviewDiff, formatDiffSummary } from "./diff-review.js";
+import { reviewDiff, formatDiffSummary, type BeforeSnapshot } from "./diff-review.js";
+import {
+  evaluateCompletion,
+  formatCompletionDecision,
+  type CompletionGateDecision,
+  type CompletionPolicy,
+} from "./completion-gate.js";
 import type {
   ContextBundle,
   FailureAnalysis,
@@ -21,6 +27,8 @@ import type {
   WorkflowTask,
 } from "./types.js";
 import type { TaskStatus } from "@codeforge/protocol";
+import { createForgeGreenAdvisor, type ForgeGreenAdvisor, type VerificationRecommendation } from "@codeforge/forge-green";
+import type { ForgeVerifyObserver } from "./forge-verify.js";
 
 function sha256(text: string): string {
   return crypto.createHash("sha256").update(text, "utf-8").digest("hex");
@@ -72,6 +80,11 @@ export interface WorkflowEngineOptions {
   signal?: AbortSignal;
   maxRepairAttempts?: number;
   verificationCommands?: string[];
+  /** Durable trusted sink for ForgeVerify plan, attempt, and evidence lifecycle records. */
+  verificationObserver?: ForgeVerifyObserver;
+  /** Overrides for the deterministic completion gate. Defaults require real verification. */
+  completionPolicy?: Partial<CompletionPolicy>;
+  forgeGreen?: ForgeGreenAdvisor;
   onPhaseChange?: (phase: WorkflowPhase, task: WorkflowTask) => void;
   onEvent?: (event: { type: string; phase: WorkflowPhase; payload: unknown }) => void;
   askForApproval?: (plan: WorkflowPlan) => Promise<"allow_once" | "allow_session" | "deny">;
@@ -112,27 +125,33 @@ export class WorkflowEngine {
   private readonly sessionId: string;
   private readonly maxRepairAttempts: number;
   private readonly verificationCommands?: string[];
+  private readonly verificationObserver?: ForgeVerifyObserver;
+  private readonly completionPolicy?: Partial<CompletionPolicy>;
   private readonly signal?: AbortSignal;
   private readonly onPhaseChange?: WorkflowEngineOptions["onPhaseChange"];
   private readonly onEvent?: WorkflowEngineOptions["onEvent"];
   private readonly askForApproval?: WorkflowEngineOptions["askForApproval"];
   private readonly implementer?: WorkflowEngineOptions["implementer"];
   private readonly agentExecutor?: WorkflowEngineOptions["agentExecutor"];
+  private readonly forgeGreen: ForgeGreenAdvisor;
   private task: WorkflowTask;
   private phase: WorkflowPhase = "received";
-  private beforeSnapshots: Map<string, string> = new Map();
+  private beforeSnapshots: Map<string, BeforeSnapshot> = new Map();
 
   constructor(options: WorkflowEngineOptions) {
     this.workspacePath = path.resolve(options.workspacePath);
     this.sessionId = options.sessionId;
     this.maxRepairAttempts = options.maxRepairAttempts ?? MAX_REPAIR_ATTEMPTS;
     this.verificationCommands = options.verificationCommands;
+    this.verificationObserver = options.verificationObserver;
+    this.completionPolicy = options.completionPolicy;
     this.signal = options.signal;
     this.onPhaseChange = options.onPhaseChange;
     this.onEvent = options.onEvent;
     this.askForApproval = options.askForApproval;
     this.implementer = options.implementer;
     this.agentExecutor = options.agentExecutor;
+    this.forgeGreen = options.forgeGreen ?? createForgeGreenAdvisor();
     const now = new Date().toISOString();
     this.task = {
       id: options.taskId ?? crypto.randomUUID(),
@@ -153,7 +172,7 @@ export class WorkflowEngine {
     return { ...this.task };
   }
 
-  private readonly TERMINAL_PHASES = new Set<WorkflowPhase>(["completed", "failed", "cancelled"]);
+  private readonly TERMINAL_PHASES = new Set<WorkflowPhase>(["completed", "blocked", "failed", "cancelled"]);
 
   private setPhase(phase: WorkflowPhase, status?: TaskStatus): void {
     // Terminal states are immutable — once reached, no further transitions allowed
@@ -275,8 +294,16 @@ export class WorkflowEngine {
       // 7. Run Verification
       this.setPhase("verifying", "testing");
       this.ensureNotAborted();
-      let verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal });
-      this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { verification } });
+      const verificationRecommendation: VerificationRecommendation = this.forgeGreen.recommendVerification({
+        changedPaths: [...new Set(plan.steps.filter((step) => step.kind === "edit" || step.kind === "write").map((step) => step.targetPath).filter((target): target is string => Boolean(target)))],
+        candidateTests: repoMap.files.map((file) => file.relativePath).filter((file) => /(?:^|[\\/])(?:test|tests|spec|__tests__)(?:[\\/]|\.|$)/i.test(file)),
+        analysisAvailable: true,
+      });
+      let verificationAttempt = 1;
+      this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { attempt: verificationAttempt, recommendation: verificationRecommendation } });
+      let verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver });
+      const verificationAttempts: VerificationResult[] = [verification];
+      this.onEvent?.({ type: "workflow.verification_completed", phase: this.phase, payload: { attempt: verificationAttempt, verification } });
 
       // 8. Analyze Failures
       this.setPhase("diagnosing", "diagnosing");
@@ -296,40 +323,72 @@ export class WorkflowEngine {
         }
         // Re-test
         this.setPhase("verifying", "testing");
-        verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal });
+        verificationAttempt++;
+        this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { attempt: verificationAttempt, recommendation: verificationRecommendation } });
+        verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver });
+        verificationAttempts.push(verification);
+        this.onEvent?.({ type: "workflow.verification_completed", phase: this.phase, payload: { attempt: verificationAttempt, verification } });
         analysis = analyzeFailures(verification);
         if (!analysis.hasFailures) break;
       }
 
-      // If still failing after repair attempts, we still proceed to review but mark verification
       // 10. Review Diff
       this.setPhase("reviewing", "reviewing");
       this.ensureNotAborted();
       const review = await reviewDiff(this.workspacePath, { beforeSnapshots: this.beforeSnapshots, signal: this.signal });
       const diffSummary = formatDiffSummary(review.diffs);
 
-      // 11. Summarize Result
+      this.onEvent?.({
+        type: "workflow.review_finished",
+        phase: this.phase,
+        payload: { approved: review.approved, findings: review.findings, diffCount: review.diffs.length },
+      });
+
+      // 11. Summarize Result — the completion gate, not this method, decides the outcome.
       this.setPhase("summarizing", "validating");
       const evidenceId = crypto.randomUUID();
       const checkpointId = crypto.randomUUID();
       const passed = verificationPassed(verification);
-      const summary = this.buildSummary(intent, plan, verification, analysis, review, passed, attempts);
 
-      if (!passed && analysis.hasFailures) {
-        // Even if verification failed, we still produce evidence but mark as failed_safely if unrepairable
-        const finalPhase: WorkflowPhase = "failed";
-        this.setPhase(finalPhase, "failed_safely");
+      const decision = evaluateCompletion({
+        plan,
+        verification,
+        verificationSummary: (verification as import("./types.js").VerificationReport).forgeVerify?.summary,
+        analysis,
+        review,
+        policy: this.completionPolicy,
+        budgetExhausted: analysis.hasFailures && attempts >= this.maxRepairAttempts,
+        budgetDetail:
+          attempts > 0 ? `Exhausted ${attempts}/${this.maxRepairAttempts} repair attempts` : undefined,
+      });
+
+      const summary = [
+        this.buildSummary(intent, plan, verification, analysis, review, passed, attempts),
+        formatCompletionDecision(decision),
+      ].join("\n");
+
+      if (decision.outcome !== "completed") {
+        this.onEvent?.({
+          type: "workflow.completion_blocked",
+          phase: this.phase,
+          payload: { outcome: decision.outcome, blockers: decision.blockers, rationale: decision.rationale },
+        });
+        const finalPhase: WorkflowPhase = decision.outcome === "failed" ? "failed" : "blocked";
+        this.setPhase(finalPhase, decision.outcome === "failed" ? "failed_safely" : "blocked");
         return {
           taskId: this.task.id,
-          status: passed ? "completed" : "failed",
+          status: decision.outcome,
           phase: finalPhase,
           summary,
           plan,
           verification,
+          verificationAttempts,
           review,
+          completion: decision,
           evidenceId,
           checkpointId,
           diffSummary,
+          verificationRecommendation,
         };
       }
 
@@ -341,10 +400,13 @@ export class WorkflowEngine {
         summary,
         plan,
         verification,
+        verificationAttempts,
         review,
+        completion: decision,
         evidenceId,
         checkpointId,
         diffSummary,
+        verificationRecommendation,
       };
     } catch (error) {
       if (this.signal?.aborted || (error instanceof Error && error.message === "Workflow cancelled")) {
@@ -380,11 +442,21 @@ export class WorkflowEngine {
           if (e.isDirectory()) walk(full);
           else if (e.isFile()) {
             try {
-              const content = fs.readFileSync(full, "utf-8");
-              if (content.includes("\0")) continue;
-              const rel = path.relative(this.workspacePath, full);
-              if (Buffer.byteLength(content, "utf-8") < 500 * 1024) {
-                this.beforeSnapshots.set(rel, content);
+              const content = fs.readFileSync(full);
+              // Evidence paths are logical repository paths, never host-specific renderer paths.
+              const rel = path.relative(this.workspacePath, full).split(path.sep).join("/");
+              if (content.byteLength < 500 * 1024) {
+                const hash = crypto.createHash("sha256").update(content).digest("hex");
+                if (content.includes(0)) {
+                  this.beforeSnapshots.set(rel, { kind: "binary", size: content.byteLength, hash });
+                } else {
+                  this.beforeSnapshots.set(rel, {
+                    kind: "text",
+                    content: content.toString("utf-8"),
+                    size: content.byteLength,
+                    hash,
+                  });
+                }
               }
             } catch {}
           }

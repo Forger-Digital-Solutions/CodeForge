@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import type { ExecutionMode } from "@codeforge/protocol";
 import SlashCommands, { SLASH_COMMANDS } from "./SlashCommands.js";
 import { ModelSelector, type ModelSelectorItem, type ModelSection } from "./ModelSelector.js";
 
@@ -42,6 +43,8 @@ interface ComposerProps {
   onShowModelDetails?: (model: ModelSelectorItem) => void;
   onUpgradeNavigation?: (url: string) => void;
   modelSections?: ModelSection[];
+  executionMode?: ExecutionMode;
+  onExecutionModeChange?: (mode: ExecutionMode) => void;
 }
 
 export default function Composer({
@@ -60,6 +63,8 @@ export default function Composer({
   onShowModelDetails,
   onUpgradeNavigation,
   modelSections,
+  executionMode = "agent",
+  onExecutionModeChange,
 }: ComposerProps) {
   const [input, setInput] = useState("");
   const [showCommands, setShowCommands] = useState(false);
@@ -223,6 +228,26 @@ export default function Composer({
 
       <div className="composer-toolbar">
         <div className="composer-toolbar-left">
+          <div className="execution-mode-selector" role="group" aria-label="Execution mode">
+            <button
+              type="button"
+              className={`execution-mode-option ${executionMode === "agent" ? "selected" : ""}`}
+              aria-pressed={executionMode === "agent"}
+              onClick={() => onExecutionModeChange?.("agent")}
+              title="Agent runs the full autonomous workflow with approval and verification gates"
+            >
+              Agent
+            </button>
+            <button
+              type="button"
+              className={`execution-mode-option ${executionMode === "chat" ? "selected" : ""}`}
+              aria-pressed={executionMode === "chat"}
+              onClick={() => onExecutionModeChange?.("chat")}
+              title="Chat starts a conversational runtime turn"
+            >
+              Chat
+            </button>
+          </div>
           {models && models.length > 0 && (
             <ModelSelector
               models={models}

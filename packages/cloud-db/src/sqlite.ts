@@ -21,6 +21,17 @@ import type {
   OAuthTransactionRecord,
   DesktopAuthCodeRecord,
   FeatureKey,
+  GitHubInstallationRecord,
+  GitHubInstallationStatus,
+  GitHubRepositoryAuthorizationRecord,
+  GitHubRepositoryAuthorizationState,
+  GitHubAppCallbackStateRecord,
+  PublicationRecord,
+  PublicationState,
+  PublicationLease,
+  CloudVerificationPlanRecord,
+  CloudVerificationAttemptRecord,
+  CloudVerificationEvidenceRecord,
 } from "./types.js";
 
 const require_ = createRequire(import.meta.url);
@@ -147,6 +158,56 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     try {
       this.db.close();
     } catch {}
+  }
+
+  async createVerificationPlan(record: CloudVerificationPlanRecord): Promise<CloudVerificationPlanRecord> {
+    this.db.prepare(`INSERT INTO verification_plans (id, run_id, workspace_id, policy_version, input_state_hash, scope, payload_json, created_at) VALUES (@id,@runId,@workspaceId,@policyVersion,@inputStateHash,@scope,@payload,@createdAt) ON CONFLICT(id) DO NOTHING`).run({ id: record.id, runId: record.runId, workspaceId: record.workspaceId, policyVersion: record.policyVersion, inputStateHash: record.inputStateHash, scope: record.scope, payload: JSON.stringify(record.payload), createdAt: record.createdAt });
+    return (await this.getVerificationPlan(record.id)) ?? record;
+  }
+
+  async getVerificationPlan(id: string): Promise<CloudVerificationPlanRecord | undefined> {
+    const row = this.db.prepare(`SELECT * FROM verification_plans WHERE id=@id`).get({ id }) as Record<string, unknown> | undefined;
+    return row ? { id: String(row.id), runId: String(row.run_id), workspaceId: String(row.workspace_id), policyVersion: String(row.policy_version), inputStateHash: String(row.input_state_hash), scope: String(row.scope), payload: JSON.parse(String(row.payload_json)) as Record<string, unknown>, createdAt: String(row.created_at) } : undefined;
+  }
+
+  async createVerificationAttempt(record: CloudVerificationAttemptRecord): Promise<CloudVerificationAttemptRecord> {
+    this.db.prepare(`INSERT INTO verification_attempts (id, plan_id, run_id, verifier_id, verifier_version, status, started_at, finished_at, exit_code, payload_json) VALUES (@id,@planId,@runId,@verifierId,@verifierVersion,@status,@startedAt,@finishedAt,@exitCode,@payload) ON CONFLICT(id) DO NOTHING`).run({ id: record.id, planId: record.planId, runId: record.runId, verifierId: record.verifierId, verifierVersion: record.verifierVersion, status: record.status, startedAt: record.startedAt, finishedAt: record.finishedAt ?? null, exitCode: record.exitCode ?? null, payload: JSON.stringify(record.payload) });
+    return (await this.listVerificationAttempts(record.planId)).find((attempt) => attempt.id === record.id) ?? record;
+  }
+
+  async terminalizeVerificationAttempt(id: string, status: Exclude<CloudVerificationAttemptRecord["status"], "pending" | "running">, finishedAt: string, exitCode?: number): Promise<CloudVerificationAttemptRecord> {
+    const current = this.db.prepare(`SELECT * FROM verification_attempts WHERE id=@id`).get({ id }) as Record<string, unknown> | undefined;
+    if (!current) throw new Error(`Unknown verification attempt ${id}`);
+    const currentStatus = String(current.status) as CloudVerificationAttemptRecord["status"];
+    const terminal = new Set<CloudVerificationAttemptRecord["status"]>(["passed", "failed", "cancelled", "timed_out", "infra_error", "interrupted"]);
+    if (terminal.has(currentStatus)) {
+      if (currentStatus !== status) throw new Error("Terminal verification attempt is immutable");
+    } else {
+      this.db.prepare(`UPDATE verification_attempts SET status=@status, finished_at=@finishedAt, exit_code=@exitCode WHERE id=@id AND status IN ('pending','running')`).run({ id, status, finishedAt, exitCode: exitCode ?? null });
+    }
+    const row = this.db.prepare(`SELECT * FROM verification_attempts WHERE id=@id`).get({ id }) as Record<string, unknown>;
+    return { id: String(row.id), planId: String(row.plan_id), runId: String(row.run_id), verifierId: String(row.verifier_id), verifierVersion: String(row.verifier_version), status: String(row.status) as CloudVerificationAttemptRecord["status"], startedAt: String(row.started_at), ...(row.finished_at ? { finishedAt: String(row.finished_at) } : {}), ...(row.exit_code !== null ? { exitCode: Number(row.exit_code) } : {}), payload: JSON.parse(String(row.payload_json)) as Record<string, unknown> };
+  }
+
+  async createVerificationEvidence(record: CloudVerificationEvidenceRecord): Promise<CloudVerificationEvidenceRecord> {
+    this.db.prepare(`INSERT INTO verification_evidence (id, attempt_id, plan_id, run_id, verifier_id, verifier_version, input_state_hash, status, output_digest, output_truncated, payload_json, created_at) VALUES (@id,@attemptId,@planId,@runId,@verifierId,@verifierVersion,@inputStateHash,@status,@outputDigest,@outputTruncated,@payload,@createdAt) ON CONFLICT(attempt_id) DO NOTHING`).run({ id: record.id, attemptId: record.attemptId, planId: record.planId, runId: record.runId, verifierId: record.verifierId, verifierVersion: record.verifierVersion, inputStateHash: record.inputStateHash, status: record.status, outputDigest: record.outputDigest, outputTruncated: record.outputTruncated ? 1 : 0, payload: JSON.stringify(record.payload), createdAt: record.createdAt });
+    const row = this.db.prepare(`SELECT * FROM verification_evidence WHERE attempt_id=@attemptId`).get({ attemptId: record.attemptId }) as Record<string, unknown>;
+    return { id: String(row.id), attemptId: String(row.attempt_id), planId: String(row.plan_id), runId: String(row.run_id), verifierId: String(row.verifier_id), verifierVersion: String(row.verifier_version), inputStateHash: String(row.input_state_hash), status: String(row.status) as CloudVerificationEvidenceRecord["status"], outputDigest: String(row.output_digest), outputTruncated: Boolean(row.output_truncated), payload: JSON.parse(String(row.payload_json)) as Record<string, unknown>, createdAt: String(row.created_at) };
+  }
+
+  async listVerificationAttempts(planId: string): Promise<CloudVerificationAttemptRecord[]> {
+    const rows = this.db.prepare(`SELECT * FROM verification_attempts WHERE plan_id=@planId ORDER BY started_at, id`).all({ planId }) as Array<Record<string, unknown>>;
+    return rows.map((row) => ({ id: String(row.id), planId: String(row.plan_id), runId: String(row.run_id), verifierId: String(row.verifier_id), verifierVersion: String(row.verifier_version), status: String(row.status) as CloudVerificationAttemptRecord["status"], startedAt: String(row.started_at), ...(row.finished_at ? { finishedAt: String(row.finished_at) } : {}), ...(row.exit_code !== null ? { exitCode: Number(row.exit_code) } : {}), payload: JSON.parse(String(row.payload_json)) as Record<string, unknown> }));
+  }
+
+  async listVerificationEvidence(planId: string): Promise<CloudVerificationEvidenceRecord[]> {
+    const rows = this.db.prepare(`SELECT * FROM verification_evidence WHERE plan_id=@planId ORDER BY created_at, id`).all({ planId }) as Array<Record<string, unknown>>;
+    return rows.map((row) => ({ id: String(row.id), attemptId: String(row.attempt_id), planId: String(row.plan_id), runId: String(row.run_id), verifierId: String(row.verifier_id), verifierVersion: String(row.verifier_version), inputStateHash: String(row.input_state_hash), status: String(row.status) as CloudVerificationEvidenceRecord["status"], outputDigest: String(row.output_digest), outputTruncated: Boolean(row.output_truncated), payload: JSON.parse(String(row.payload_json)) as Record<string, unknown>, createdAt: String(row.created_at) }));
+  }
+
+  async recoverInterruptedVerificationAttempts(planId?: string): Promise<number> {
+    const result = this.db.prepare(`UPDATE verification_attempts SET status='interrupted', finished_at=@finishedAt WHERE status='running' ${planId ? "AND plan_id=@planId" : ""}`).run(planId ? { finishedAt: new Date().toISOString(), planId } : { finishedAt: new Date().toISOString() });
+    return Number(result.changes);
   }
 
   /** Synchronous transaction wrapper — makes a multi-statement mutation atomic (rolls back on throw). */
@@ -1538,5 +1599,529 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
   async getActiveReservationCount(userId: string): Promise<number> {
     return this.getActiveReservationCountSync(userId);
   }
-}
 
+  // --- CF-11B: GitHub App Installation & Authorization ---
+
+  private mapInstallationRow(row: Record<string, unknown>): GitHubInstallationRecord {
+    return {
+      id: String(row.id),
+      installationId: Number(row.installation_id),
+      githubAccountId: Number(row.github_account_id),
+      accountLogin: String(row.account_login),
+      accountType: row.account_type as "User" | "Organization",
+      codeForgeUserId: String(row.codeforge_user_id),
+      repositorySelection: row.repository_selection as "all" | "selected",
+      status: row.status as GitHubInstallationStatus,
+      revokedAt: row.revoked_at ? String(row.revoked_at) : null,
+      createdAt: String(row.created_at),
+      updatedAt: String(row.updated_at),
+    };
+  }
+
+  async createGitHubInstallation(params: {
+    installationId: number;
+    githubAccountId: number;
+    accountLogin: string;
+    accountType: "User" | "Organization";
+    codeForgeUserId: string;
+    repositorySelection: "all" | "selected";
+  }): Promise<GitHubInstallationRecord> {
+    const now = new Date().toISOString();
+    const record: GitHubInstallationRecord = {
+      id: randomUUID(),
+      installationId: params.installationId,
+      githubAccountId: params.githubAccountId,
+      accountLogin: params.accountLogin,
+      accountType: params.accountType,
+      codeForgeUserId: params.codeForgeUserId,
+      repositorySelection: params.repositorySelection,
+      status: "active",
+      revokedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.db.prepare(`
+      INSERT INTO github_installations (id, installation_id, github_account_id, account_login, account_type, codeforge_user_id, repository_selection, status, revoked_at, created_at, updated_at)
+      VALUES (@id, @installationId, @githubAccountId, @accountLogin, @accountType, @codeForgeUserId, @repositorySelection, @status, NULL, @createdAt, @updatedAt)
+    `).run({
+      id: record.id,
+      installationId: record.installationId,
+      githubAccountId: record.githubAccountId,
+      accountLogin: record.accountLogin,
+      accountType: record.accountType,
+      codeForgeUserId: record.codeForgeUserId,
+      repositorySelection: record.repositorySelection,
+      status: record.status,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+    });
+    return record;
+  }
+
+  async getGitHubInstallationById(id: string): Promise<GitHubInstallationRecord | undefined> {
+    const row = this.db.prepare(`SELECT * FROM github_installations WHERE id = @id`).get({ id }) as Record<string, unknown> | undefined;
+    return row ? this.mapInstallationRow(row) : undefined;
+  }
+
+  async getGitHubInstallationByInstallationId(installationId: number): Promise<GitHubInstallationRecord | undefined> {
+    if (!Number.isSafeInteger(installationId)) return undefined;
+    const row = this.db.prepare(`SELECT * FROM github_installations WHERE installation_id = @installationId`).get({ installationId }) as Record<string, unknown> | undefined;
+    return row ? this.mapInstallationRow(row) : undefined;
+  }
+
+  async listGitHubInstallationsByUser(codeForgeUserId: string): Promise<GitHubInstallationRecord[]> {
+    const rows = this.db.prepare(`SELECT * FROM github_installations WHERE codeforge_user_id = @codeForgeUserId ORDER BY created_at ASC`).all({ codeForgeUserId }) as Array<Record<string, unknown>>;
+    return rows.map((row) => this.mapInstallationRow(row));
+  }
+
+  async updateGitHubInstallationStatus(id: string, status: GitHubInstallationStatus): Promise<void> {
+    const now = new Date().toISOString();
+    this.db.prepare(`UPDATE github_installations SET status = @status, revoked_at = @revokedAt, updated_at = @now WHERE id = @id`)
+      .run({ id, status, revokedAt: status === "revoked" ? now : null, now });
+  }
+
+  async updateGitHubInstallationAccount(params: {
+    id: string;
+    githubAccountId: number;
+    accountLogin: string;
+    accountType: "User" | "Organization";
+    repositorySelection: "all" | "selected";
+  }): Promise<void> {
+    const now = new Date().toISOString();
+    this.db.prepare(`
+      UPDATE github_installations
+      SET github_account_id = @githubAccountId, account_login = @accountLogin, account_type = @accountType, repository_selection = @repositorySelection, updated_at = @now
+      WHERE id = @id
+    `).run({ ...params, now });
+  }
+
+  private mapRepositoryAuthorizationRow(row: Record<string, unknown>): GitHubRepositoryAuthorizationRecord {
+    return {
+      id: String(row.id),
+      installationId: String(row.installation_id),
+      repositoryId: Number(row.repository_id),
+      owner: String(row.owner),
+      name: String(row.name),
+      fullName: String(row.full_name),
+      private: Boolean(row.private),
+      authorizationState: row.authorization_state as GitHubRepositoryAuthorizationState,
+      observedAt: String(row.observed_at),
+      createdAt: String(row.created_at),
+      updatedAt: String(row.updated_at),
+    };
+  }
+
+  async createGitHubRepositoryAuthorization(params: {
+    installationId: string;
+    repositoryId: number;
+    owner: string;
+    name: string;
+    fullName: string;
+    private: boolean;
+  }): Promise<GitHubRepositoryAuthorizationRecord> {
+    const now = new Date().toISOString();
+    const record: GitHubRepositoryAuthorizationRecord = {
+      id: randomUUID(),
+      installationId: params.installationId,
+      repositoryId: params.repositoryId,
+      owner: params.owner,
+      name: params.name,
+      fullName: params.fullName,
+      private: params.private,
+      authorizationState: "authorized",
+      observedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.db.prepare(`
+      INSERT INTO github_repository_authorizations (id, installation_id, repository_id, owner, name, full_name, private, authorization_state, observed_at, created_at, updated_at)
+      VALUES (@id, @installationId, @repositoryId, @owner, @name, @fullName, @private, @authorizationState, @observedAt, @createdAt, @updatedAt)
+    `).run({
+      id: record.id,
+      installationId: record.installationId,
+      repositoryId: record.repositoryId,
+      owner: record.owner,
+      name: record.name,
+      fullName: record.fullName,
+      private: record.private ? 1 : 0,
+      authorizationState: record.authorizationState,
+      observedAt: record.observedAt,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+    });
+    return record;
+  }
+
+  async getGitHubRepositoryAuthorization(repositoryId: number): Promise<GitHubRepositoryAuthorizationRecord | undefined> {
+    if (!Number.isSafeInteger(repositoryId)) return undefined;
+    const row = this.db.prepare(`SELECT * FROM github_repository_authorizations WHERE repository_id = @repositoryId`).get({ repositoryId }) as Record<string, unknown> | undefined;
+    return row ? this.mapRepositoryAuthorizationRow(row) : undefined;
+  }
+
+  async listGitHubRepositoryAuthorizations(installationId: string): Promise<GitHubRepositoryAuthorizationRecord[]> {
+    const rows = this.db.prepare(`SELECT * FROM github_repository_authorizations WHERE installation_id = @installationId ORDER BY created_at ASC`).all({ installationId }) as Array<Record<string, unknown>>;
+    return rows.map((row) => this.mapRepositoryAuthorizationRow(row));
+  }
+
+  async updateGitHubRepositoryAuthorizationState(id: string, state: GitHubRepositoryAuthorizationState): Promise<void> {
+    const now = new Date().toISOString();
+    this.db.prepare(`UPDATE github_repository_authorizations SET authorization_state = @state, updated_at = @now WHERE id = @id`).run({ id, state, now });
+  }
+
+  async updateGitHubRepositoryAuthorizationMetadata(params: {
+    id: string;
+    installationId: string;
+    owner: string;
+    name: string;
+    fullName: string;
+    private: boolean;
+  }): Promise<void> {
+    const now = new Date().toISOString();
+    this.db.prepare(`
+      UPDATE github_repository_authorizations
+      SET installation_id = @installationId, owner = @owner, name = @name, full_name = @fullName, private = @private, observed_at = @now, updated_at = @now
+      WHERE id = @id
+    `).run({ id: params.id, installationId: params.installationId, owner: params.owner, name: params.name, fullName: params.fullName, private: params.private ? 1 : 0, now });
+  }
+
+  private mapCallbackStateRow(row: Record<string, unknown>): GitHubAppCallbackStateRecord {
+    return {
+      id: String(row.id),
+      state: String(row.state),
+      codeForgeUserId: String(row.codeforge_user_id),
+      deviceSessionId: row.device_session_id ? String(row.device_session_id) : null,
+      expiresAt: String(row.expires_at),
+      consumedAt: row.consumed_at ? String(row.consumed_at) : null,
+      createdAt: String(row.created_at),
+    };
+  }
+
+  async createGitHubAppCallbackState(params: {
+    state: string;
+    codeForgeUserId: string;
+    deviceSessionId?: string;
+    expiresInSeconds?: number;
+  }): Promise<GitHubAppCallbackStateRecord> {
+    const now = new Date().toISOString();
+    const record: GitHubAppCallbackStateRecord = {
+      id: randomUUID(),
+      state: params.state,
+      codeForgeUserId: params.codeForgeUserId,
+      deviceSessionId: params.deviceSessionId ?? null,
+      expiresAt: new Date(Date.now() + (params.expiresInSeconds ?? 600) * 1000).toISOString(),
+      consumedAt: null,
+      createdAt: now,
+    };
+    this.db.prepare(`
+      INSERT INTO github_app_callback_states (id, state, codeforge_user_id, device_session_id, expires_at, consumed_at, created_at)
+      VALUES (@id, @state, @codeForgeUserId, @deviceSessionId, @expiresAt, NULL, @createdAt)
+    `).run({
+      id: record.id,
+      state: record.state,
+      codeForgeUserId: record.codeForgeUserId,
+      deviceSessionId: record.deviceSessionId ?? null,
+      expiresAt: record.expiresAt,
+      createdAt: record.createdAt,
+    });
+    return record;
+  }
+
+  async getGitHubAppCallbackState(state: string): Promise<GitHubAppCallbackStateRecord | undefined> {
+    const row = this.db.prepare(`SELECT * FROM github_app_callback_states WHERE state = @state`).get({ state }) as Record<string, unknown> | undefined;
+    return row ? this.mapCallbackStateRow(row) : undefined;
+  }
+
+  /**
+   * Single conditional UPDATE: expiry and prior consumption are both part of the predicate, so a
+   * replay (or two racing callbacks) can never both observe an unconsumed row.
+   */
+  async consumeGitHubAppCallbackState(state: string): Promise<GitHubAppCallbackStateRecord | undefined> {
+    const now = new Date().toISOString();
+    const row = this.db.prepare(`
+      UPDATE github_app_callback_states
+      SET consumed_at = @now
+      WHERE state = @state AND consumed_at IS NULL AND expires_at > @now
+      RETURNING *
+    `).get({ state, now }) as Record<string, unknown> | undefined;
+    return row ? this.mapCallbackStateRow(row) : undefined;
+  }
+
+  async deleteExpiredGitHubAppCallbackStates(cutoffIso: string): Promise<number> {
+    const result = this.db.prepare(`DELETE FROM github_app_callback_states WHERE expires_at <= @cutoff`).run({ cutoff: cutoffIso });
+    return Number(result.changes ?? 0);
+  }
+
+  // --- CF-11B: Publication Records ---
+
+  private mapPublicationRow(row: Record<string, unknown>): PublicationRecord {
+    return {
+      id: String(row.id),
+      deliveryId: String(row.delivery_id),
+      userId: String(row.user_id),
+      repositoryId: Number(row.repository_id),
+      installationId: String(row.installation_id),
+      targetBranch: String(row.target_branch),
+      baseSha: String(row.base_sha),
+      targetSha: String(row.target_sha),
+      certifiedHead: String(row.certified_head),
+      certifiedTree: String(row.certified_tree),
+      artifactSha256: String(row.artifact_sha256),
+      artifactBytes: Number(row.artifact_bytes),
+      artifactState: row.artifact_state as PublicationRecord["artifactState"],
+      artifactKey: row.artifact_key ? String(row.artifact_key) : null,
+      state: row.state as PublicationState,
+      leaseOwner: row.lease_owner ? String(row.lease_owner) : null,
+      leaseExpiresAt: row.lease_expires_at ? String(row.lease_expires_at) : null,
+      leaseFence: Number(row.lease_fence ?? 0),
+      pushRef: row.push_ref ? String(row.push_ref) : null,
+      pullRequestNumber: row.pull_request_number === null || row.pull_request_number === undefined ? null : Number(row.pull_request_number),
+      pullRequestUrl: row.pull_request_url ? String(row.pull_request_url) : null,
+      pullRequestNodeId: row.pull_request_node_id ? String(row.pull_request_node_id) : null,
+      errorCode: row.error_code ? String(row.error_code) : null,
+      failureReason: row.failure_reason ? String(row.failure_reason) : null,
+      attemptCount: Number(row.attempt_count ?? 0),
+      createdAt: String(row.created_at),
+      updatedAt: String(row.updated_at),
+      completedAt: row.completed_at ? String(row.completed_at) : null,
+    };
+  }
+
+  async createPublication(params: {
+    deliveryId: string;
+    userId: string;
+    repositoryId: number;
+    installationId: string;
+    targetBranch: string;
+    baseSha: string;
+    targetSha: string;
+    certifiedHead: string;
+    certifiedTree: string;
+    artifactSha256: string;
+    artifactBytes: number;
+  }): Promise<PublicationRecord> {
+    const now = new Date().toISOString();
+    const record: PublicationRecord = {
+      id: randomUUID(),
+      deliveryId: params.deliveryId,
+      userId: params.userId,
+      repositoryId: params.repositoryId,
+      installationId: params.installationId,
+      targetBranch: params.targetBranch,
+      baseSha: params.baseSha,
+      targetSha: params.targetSha,
+      certifiedHead: params.certifiedHead,
+      certifiedTree: params.certifiedTree,
+      artifactSha256: params.artifactSha256,
+      artifactBytes: params.artifactBytes,
+      artifactState: "pending",
+      artifactKey: null,
+      state: "awaiting_artifact",
+      leaseOwner: null,
+      leaseExpiresAt: null,
+      leaseFence: 0,
+      pushRef: null,
+      pullRequestNumber: null,
+      pullRequestUrl: null,
+      pullRequestNodeId: null,
+      errorCode: null,
+      failureReason: null,
+      attemptCount: 0,
+      createdAt: now,
+      updatedAt: now,
+      completedAt: null,
+    };
+    this.db.prepare(`
+      INSERT INTO publications (id, delivery_id, user_id, repository_id, installation_id, target_branch, base_sha, target_sha, certified_head, certified_tree, artifact_sha256, artifact_bytes, artifact_state, artifact_key, state, lease_owner, lease_expires_at, lease_fence, push_ref, pull_request_number, pull_request_url, pull_request_node_id, error_code, failure_reason, attempt_count, created_at, updated_at, completed_at)
+      VALUES (@id, @deliveryId, @userId, @repositoryId, @installationId, @targetBranch, @baseSha, @targetSha, @certifiedHead, @certifiedTree, @artifactSha256, @artifactBytes, 'pending', NULL, 'awaiting_artifact', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, @createdAt, @updatedAt, NULL)
+    `).run({
+      id: record.id,
+      deliveryId: record.deliveryId,
+      userId: record.userId,
+      repositoryId: record.repositoryId,
+      installationId: record.installationId,
+      targetBranch: record.targetBranch,
+      baseSha: record.baseSha,
+      targetSha: record.targetSha,
+      certifiedHead: record.certifiedHead,
+      certifiedTree: record.certifiedTree,
+      artifactSha256: record.artifactSha256,
+      artifactBytes: record.artifactBytes,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+    });
+    return record;
+  }
+
+  async getPublicationById(id: string): Promise<PublicationRecord | undefined> {
+    const row = this.db.prepare(`SELECT * FROM publications WHERE id = @id`).get({ id }) as Record<string, unknown> | undefined;
+    return row ? this.mapPublicationRow(row) : undefined;
+  }
+
+  async getPublicationByDeliveryId(userId: string, deliveryId: string): Promise<PublicationRecord | undefined> {
+    const row = this.db.prepare(`SELECT * FROM publications WHERE user_id = @userId AND delivery_id = @deliveryId`).get({ userId, deliveryId }) as Record<string, unknown> | undefined;
+    return row ? this.mapPublicationRow(row) : undefined;
+  }
+
+  async listPublicationsByUser(userId: string): Promise<PublicationRecord[]> {
+    const rows = this.db.prepare(`SELECT * FROM publications WHERE user_id = @userId ORDER BY created_at DESC`).all({ userId }) as Array<Record<string, unknown>>;
+    return rows.map((row) => this.mapPublicationRow(row));
+  }
+
+  async markPublicationArtifactStored(params: { publicationId: string; artifactKey: string }): Promise<boolean> {
+    const now = new Date().toISOString();
+    const result = this.db.prepare(`
+      UPDATE publications
+      SET artifact_state = 'stored', artifact_key = @artifactKey, state = 'artifact_uploaded', updated_at = @now
+      WHERE id = @publicationId AND artifact_state = 'pending' AND state = 'awaiting_artifact'
+    `).run({ publicationId: params.publicationId, artifactKey: params.artifactKey, now });
+    return Number(result.changes ?? 0) === 1;
+  }
+
+  async acquirePublicationLease(params: { publicationId: string; owner: string; leaseDurationMs: number }): Promise<PublicationLease | undefined> {
+    const now = new Date().toISOString();
+    const expiresAt = new Date(Date.now() + params.leaseDurationMs).toISOString();
+    const row = this.db.prepare(`
+      UPDATE publications
+      SET lease_owner = @owner, lease_expires_at = @expiresAt, lease_fence = lease_fence + 1, updated_at = @now
+      WHERE id = @publicationId
+        AND state NOT IN ('completed', 'failed_permanent', 'authorization_revoked', 'target_diverged')
+        AND (lease_owner IS NULL OR lease_expires_at IS NULL OR lease_expires_at <= @now)
+      RETURNING *
+    `).get({ publicationId: params.publicationId, owner: params.owner, expiresAt, now }) as Record<string, unknown> | undefined;
+    if (!row) return undefined;
+    const record = this.mapPublicationRow(row);
+    return { publicationId: record.id, owner: params.owner, fence: record.leaseFence, expiresAt };
+  }
+
+  async renewPublicationLease(params: { publicationId: string; owner: string; fence: number; leaseDurationMs: number }): Promise<boolean> {
+    const now = new Date().toISOString();
+    const expiresAt = new Date(Date.now() + params.leaseDurationMs).toISOString();
+    const result = this.db.prepare(`
+      UPDATE publications SET lease_expires_at = @expiresAt, updated_at = @now
+      WHERE id = @publicationId AND lease_owner = @owner AND lease_fence = @fence
+    `).run({ publicationId: params.publicationId, owner: params.owner, fence: params.fence, expiresAt, now });
+    return Number(result.changes ?? 0) === 1;
+  }
+
+  async releasePublicationLease(params: { publicationId: string; owner: string; fence: number }): Promise<boolean> {
+    const now = new Date().toISOString();
+    const result = this.db.prepare(`
+      UPDATE publications SET lease_owner = NULL, lease_expires_at = NULL, updated_at = @now
+      WHERE id = @publicationId AND lease_owner = @owner AND lease_fence = @fence
+    `).run({ publicationId: params.publicationId, owner: params.owner, fence: params.fence, now });
+    return Number(result.changes ?? 0) === 1;
+  }
+
+  async updatePublicationState(params: {
+    publicationId: string;
+    owner: string;
+    fence: number;
+    state: PublicationState;
+    errorCode?: string | null;
+    failureReason?: string | null;
+  }): Promise<boolean> {
+    const now = new Date().toISOString();
+    const allowedPreviousStates = this.allowedPublicationPredecessors(params.state);
+    if (!allowedPreviousStates.length) return false;
+    const statePredicates = allowedPreviousStates.map((_, index) => `@previousState${index}`).join(", ");
+    const result = this.db.prepare(`
+      UPDATE publications
+      SET state = @state, error_code = @errorCode, failure_reason = @failureReason, updated_at = @now
+      WHERE id = @publicationId AND lease_owner = @owner AND lease_fence = @fence
+        AND state NOT IN ('completed', 'failed_permanent', 'authorization_revoked', 'target_diverged')
+        AND state IN (${statePredicates})
+    `).run({
+      publicationId: params.publicationId,
+      owner: params.owner,
+      fence: params.fence,
+      state: params.state,
+      errorCode: params.errorCode ?? null,
+      failureReason: params.failureReason ?? null,
+      now,
+      ...Object.fromEntries(allowedPreviousStates.map((state, index) => [`previousState${index}`, state])),
+    });
+    return Number(result.changes ?? 0) === 1;
+  }
+
+  async recordPublicationPush(params: { publicationId: string; owner: string; fence: number; pushRef: string }): Promise<boolean> {
+    const now = new Date().toISOString();
+    const result = this.db.prepare(`
+      UPDATE publications SET push_ref = @pushRef, state = 'pushed', updated_at = @now
+      WHERE id = @publicationId AND lease_owner = @owner AND lease_fence = @fence
+        AND state NOT IN ('completed', 'failed_permanent', 'authorization_revoked', 'target_diverged')
+        AND state = 'pushing'
+    `).run({ publicationId: params.publicationId, owner: params.owner, fence: params.fence, pushRef: params.pushRef, now });
+    return Number(result.changes ?? 0) === 1;
+  }
+
+  async recordPublicationPullRequest(params: {
+    publicationId: string;
+    owner: string;
+    fence: number;
+    pullRequestNumber: number;
+    pullRequestUrl: string;
+    pullRequestNodeId?: string;
+  }): Promise<boolean> {
+    const now = new Date().toISOString();
+    const result = this.db.prepare(`
+      UPDATE publications
+      SET pull_request_number = @pullRequestNumber, pull_request_url = @pullRequestUrl, pull_request_node_id = @pullRequestNodeId, state = 'pr_created', updated_at = @now
+      WHERE id = @publicationId AND lease_owner = @owner AND lease_fence = @fence
+        AND state NOT IN ('completed', 'failed_permanent', 'authorization_revoked', 'target_diverged')
+        AND state = 'creating_pr'
+    `).run({
+      publicationId: params.publicationId,
+      owner: params.owner,
+      fence: params.fence,
+      pullRequestNumber: params.pullRequestNumber,
+      pullRequestUrl: params.pullRequestUrl,
+      pullRequestNodeId: params.pullRequestNodeId ?? null,
+      now,
+    });
+    return Number(result.changes ?? 0) === 1;
+  }
+
+  async completePublication(params: { publicationId: string; owner: string; fence: number }): Promise<boolean> {
+    const now = new Date().toISOString();
+    const result = this.db.prepare(`
+      UPDATE publications
+      SET state = 'completed', completed_at = @now, lease_owner = NULL, lease_expires_at = NULL, error_code = NULL, failure_reason = NULL, updated_at = @now
+      WHERE id = @publicationId AND lease_owner = @owner AND lease_fence = @fence
+        AND state NOT IN ('completed', 'failed_permanent', 'authorization_revoked', 'target_diverged')
+        AND state = 'pr_created'
+        AND push_ref IS NOT NULL AND pull_request_number IS NOT NULL
+    `).run({ publicationId: params.publicationId, owner: params.owner, fence: params.fence, now });
+    return Number(result.changes ?? 0) === 1;
+  }
+
+  async incrementPublicationAttempt(id: string): Promise<void> {
+    const now = new Date().toISOString();
+    this.db.prepare(`UPDATE publications SET attempt_count = attempt_count + 1, updated_at = @now WHERE id = @id`).run({ id, now });
+  }
+
+  async listReclaimablePublications(nowIso: string): Promise<PublicationRecord[]> {
+    const rows = this.db.prepare(`
+      SELECT * FROM publications
+      WHERE state NOT IN ('completed', 'failed_permanent', 'authorization_revoked', 'target_diverged', 'awaiting_artifact')
+        AND lease_owner IS NOT NULL
+        AND (lease_expires_at IS NULL OR lease_expires_at <= @now)
+      ORDER BY created_at ASC
+    `).all({ now: nowIso }) as Array<Record<string, unknown>>;
+    return rows.map((row) => this.mapPublicationRow(row));
+  }
+
+  private allowedPublicationPredecessors(next: PublicationState): PublicationState[] {
+    if (["failed_retryable", "failed_permanent", "authorization_revoked", "target_diverged"].includes(next)) {
+      return ["artifact_uploaded", "validating", "validated", "authorizing", "checking_target", "pushing", "pushed", "creating_pr", "pr_created", "failed_retryable"];
+    }
+    switch (next) {
+      case "validating": return ["artifact_uploaded", "validating", "validated", "authorizing", "checking_target", "pushing", "pushed", "creating_pr", "pr_created", "failed_retryable"];
+      case "validated": return ["validating", "validated"];
+      case "authorizing": return ["validated", "authorizing"];
+      case "checking_target": return ["authorizing", "checking_target"];
+      case "pushing": return ["checking_target", "pushing"];
+      case "creating_pr": return ["pushed", "creating_pr"];
+      default: return [];
+    }
+  }
+}

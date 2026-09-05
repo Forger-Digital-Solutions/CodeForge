@@ -118,12 +118,15 @@ describe("Workflow Server Integration", () => {
       await new Promise((r) => setTimeout(r, 500));
       const getRes = await fetchJson(`http://localhost:${port}/api/workflow/${taskId}`, undefined, "GET");
       const data = getRes.body as { task: { status: string; phase: string } };
-      if (data.task.status === "complete" || data.task.status === "completed" || data.task.status === "failed" || data.task.phase === "completed") break;
+      if (["complete", "completed", "blocked", "failed"].includes(data.task.status) || ["completed", "blocked"].includes(data.task.phase)) break;
     }
     const final = await fetchJson(`http://localhost:${port}/api/workflow/${taskId}`, undefined, "GET");
     const finalBody = final.body as { task: { status: string; phase: string } };
-    expect(["complete", "completed"]).toContain(finalBody.task.status);
-    expect(finalBody.task.phase).toBe("completed");
+    // Resolving the approval unblocks execution, which is what this test guards. The heuristic
+    // implementer has no edit for this request, so it changes nothing and the completion gate
+    // settles the run at `blocked` instead of reporting an unearned success.
+    expect(finalBody.task.status).toBe("blocked");
+    expect(finalBody.task.phase).toBe("blocked");
   });
 
   it("workflow cancel works", async () => {

@@ -3,11 +3,13 @@ import { URL } from "node:url";
 import { isIP, type AddressInfo } from "node:net";
 import { z } from "zod";
 import { CloudDatabase, createCloudDatabase, type ICloudDatabase } from "@codeforge/cloud-db";
-import { AuthService } from "@codeforge/cloud-auth";
+import { AuthService, GitHubAppAuthorizationService, GitHubAuthorizationError, type GitHubAppConfiguration } from "@codeforge/cloud-auth";
 import { EntitlementService } from "@codeforge/cloud-entitlements";
 import { UsageEngine } from "@codeforge/cloud-usage";
 import { StripeBillingService, type StripeConfig } from "@codeforge/cloud-billing";
 import { CloudFirewallManager, GatewayService, type HostedInferenceRequest, type HostedStreamEvent, type CloudProviderRegistry, type CloudKillSwitchConfig } from "@codeforge/cloud-gateway";
+import { PublicationService } from "./publication-service.js";
+import { PublicationError, PUBLICATION_ERROR_CODES, publicationErrorStatus, isPublicationErrorCode } from "./publication-errors.js";
 
 const MAX_BODY_BYTES = 1024 * 1024; // 1 MiB max payload
 
@@ -53,6 +55,29 @@ const BillingCheckoutSchema = z.object({
 
 const BillingPortalSchema = z.object({
   returnUrl: z.string().url(),
+});
+
+// CF-11B: GitHub App authorization + publication schemas.
+const GitHubAppAuthCallbackSchema = z.object({
+  state: z.string().min(16).max(512),
+  installationId: z.number().int().positive(),
+});
+
+const SHA1 = z.string().regex(/^[0-9a-f]{40}$/);
+
+const PublicationCreateSchema = z.object({
+  deliveryId: z.string().min(1).max(200),
+  repositoryId: z.number().int().positive(),
+  targetBranch: z.string().min(1).max(200),
+  baseSha: SHA1,
+  targetSha: SHA1,
+  certifiedHead: SHA1,
+  certifiedTree: SHA1,
+  artifactSha256: z.string().regex(/^[0-9a-f]{64}$/),
+  // The service owns the canonical structured ARTIFACT_TOO_LARGE contract. Keeping the transport
+  // schema numeric-only ensures oversized declarations reach that boundary instead of degrading
+  // into a generic validation message.
+  artifactBytes: z.number().int().positive(),
 });
 
 const HostedInferenceSchema = z.object({
@@ -111,6 +136,15 @@ export interface CodeForgeCloudServerConfig {
   requestTimeoutMs?: number;
   /** Only honor proxy forwarding headers when an upstream proxy is explicitly trusted. */
   trustProxy?: boolean;
+  /**
+   * CF-11B: GitHub App configuration for publication authorization. The private key lives only in
+   * this process; supplying it is what enables the publication routes at all.
+   */
+  gitHubAppConfig?: GitHubAppConfiguration;
+  /** GitHub App installation/setup URL used to start repository authorization. */
+  gitHubAppInstallationUrl?: string;
+  /** Filesystem root for bounded publication artifact staging. */
+  publicationArtifactDir?: string;
 }
 
 export class CodeForgeCloudServer {
@@ -123,6 +157,8 @@ export class CodeForgeCloudServer {
   public readonly firewallManager: CloudFirewallManager;
   public readonly gateway: GatewayService;
   public readonly providerRegistry?: CloudProviderRegistry;
+  public readonly gitHubAppAuth?: GitHubAppAuthorizationService;
+  public readonly publicationService?: PublicationService;
   private readonly discoverOnStart: boolean;
   private readonly allowedOrigins: Set<string>;
   private readonly rateLimits = new Map<string, { count: number; resetAt: number }>();
@@ -214,6 +250,22 @@ export class CodeForgeCloudServer {
       inferenceTimeoutMs: config.requestTimeoutMs,
     });
 
+    // CF-11B: publication is available only when a Cloud-side GitHub App is configured. The App
+    // private key never leaves this process, and no route below can mint a credential without it.
+    if (config.gitHubAppConfig) {
+      this.gitHubAppAuth = new GitHubAppAuthorizationService({
+        db: this.db,
+        appConfig: config.gitHubAppConfig,
+        ...(config.gitHubAppInstallationUrl ? { installationUrl: config.gitHubAppInstallationUrl } : {}),
+      });
+      this.publicationService = new PublicationService({
+        db: this.db,
+        authorization: this.gitHubAppAuth,
+        appConfig: config.gitHubAppConfig,
+        ...(config.publicationArtifactDir ? { artifactStorageDir: config.publicationArtifactDir } : {}),
+      });
+    }
+
     this.server = http.createServer((req, res) => this.handleRequest(req, res));
   }
 
@@ -225,6 +277,12 @@ export class CodeForgeCloudServer {
     const bindHost = host ?? this.host;
     // Fail closed: initialize the database schema (async for Postgres) BEFORE accepting traffic.
     await this.db.init();
+    if (this.publicationService) {
+      await this.publicationService.init();
+      // Safe recovery is entirely durable and reacquires a new fenced lease before it can mutate a
+      // remote. A newly restarted worker never trusts an in-memory checkpoint or persisted token.
+      await this.publicationService.recoverAbandonedPublications().catch(() => undefined);
+    }
 
     // Crash recovery: reclaim credits locked by reservations from a previous process that died
     // mid-inference. In-memory execution leases are already gone after a restart, so only persisted
@@ -414,6 +472,44 @@ export class CodeForgeCloudServer {
       "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
     });
     res.end(body);
+  }
+
+  private requireGitHubAppAuth(res: http.ServerResponse, corsOrigin?: string): GitHubAppAuthorizationService | undefined {
+    if (!this.gitHubAppAuth) {
+      this.sendJson(res, 503, { error: "GitHub App authorization is not configured", code: "GITHUB_APP_NOT_CONFIGURED" }, corsOrigin);
+      return undefined;
+    }
+    return this.gitHubAppAuth;
+  }
+
+  private requirePublicationService(res: http.ServerResponse, corsOrigin?: string): PublicationService | undefined {
+    if (!this.publicationService) {
+      this.sendJson(res, 503, { error: "Publication service is not configured", code: "PUBLICATION_NOT_CONFIGURED" }, corsOrigin);
+      return undefined;
+    }
+    return this.publicationService;
+  }
+
+  /**
+   * Publication failures are reported as a stable code only. Upstream GitHub bodies and Git
+   * subprocess output are never reachable from here, so nothing sensitive can be reflected.
+   */
+  private sendPublicationError(res: http.ServerResponse, error: unknown, corsOrigin?: string): void {
+    if (error instanceof PublicationError) {
+      this.sendJson(res, publicationErrorStatus(error.code), { error: error.code, code: error.code, retryable: error.retryable }, corsOrigin);
+      return;
+    }
+    if (error instanceof GitHubAuthorizationError) {
+      const status = error.code === "GITHUB_TEMPORARY_FAILURE" ? 503 : error.code === "INSTALLATION_OWNED_BY_OTHER_USER" || error.code === "AUTHORIZATION_USER_MISMATCH" ? 403 : 400;
+      this.sendJson(res, status, { error: error.code, code: error.code }, corsOrigin);
+      return;
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    if (isPublicationErrorCode(message)) {
+      this.sendJson(res, publicationErrorStatus(message), { error: message, code: message }, corsOrigin);
+      return;
+    }
+    throw error;
   }
 
   private sendJson(res: http.ServerResponse, status: number, data: unknown, origin?: string): void {
@@ -735,6 +831,131 @@ export class CodeForgeCloudServer {
         return;
       }
 
+      // 7. CF-11B: GitHub App repository authorization. Identity OAuth is unchanged and remains
+      //    identity-only; write access is granted exclusively by installing the GitHub App.
+      if (url.pathname === "/v1/github-app/authorizations/start" && method === "POST") {
+        const service = this.requireGitHubAppAuth(res, corsOrigin);
+        if (!service) return;
+        const userId = this.authenticateRequest(req);
+        this.sendJson(res, 200, await service.startAuthorization(userId), corsOrigin);
+        return;
+      }
+
+      if (url.pathname === "/v1/github-app/authorizations/callback" && method === "POST") {
+        const service = this.requireGitHubAppAuth(res, corsOrigin);
+        if (!service) return;
+        const userId = this.authenticateRequest(req);
+        const body = await this.readJson(req, GitHubAppAuthCallbackSchema);
+        try {
+          const result = await service.handleCallback({ state: body.state, installationId: body.installationId, expectedUserId: userId });
+          this.sendJson(res, 200, {
+            installation: { id: result.installation.id, installationId: result.installation.installationId, accountLogin: result.installation.accountLogin, accountType: result.installation.accountType, status: result.installation.status },
+            repositories: result.repositories.map((item) => ({ repositoryId: item.repositoryId, fullName: item.fullName, private: item.private, authorizationState: item.authorizationState })),
+          }, corsOrigin);
+        } catch (error) {
+          this.sendPublicationError(res, error, corsOrigin);
+        }
+        return;
+      }
+
+      if (url.pathname === "/v1/github-app/installations" && method === "GET") {
+        const service = this.requireGitHubAppAuth(res, corsOrigin);
+        if (!service) return;
+        const userId = this.authenticateRequest(req);
+        const installations = await service.listUserInstallations(userId);
+        this.sendJson(res, 200, installations.map((item) => ({ id: item.id, installationId: item.installationId, accountLogin: item.accountLogin, accountType: item.accountType, status: item.status, repositorySelection: item.repositorySelection })), corsOrigin);
+        return;
+      }
+
+      if (url.pathname === "/v1/github-app/repositories" && method === "GET") {
+        const service = this.requireGitHubAppAuth(res, corsOrigin);
+        if (!service) return;
+        const userId = this.authenticateRequest(req);
+        const repositoryId = url.searchParams.get("repositoryId");
+        if (repositoryId !== null) {
+          const parsed = Number(repositoryId);
+          if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+            this.sendJson(res, 400, { error: PUBLICATION_ERROR_CODES.REPOSITORY_NOT_AUTHORIZED, code: PUBLICATION_ERROR_CODES.REPOSITORY_NOT_AUTHORIZED }, corsOrigin);
+            return;
+          }
+          const view = await service.describeRepositoryAuthorization(userId, parsed);
+          this.sendJson(res, 200, view ?? { repositoryId: parsed, authorized: false, authorizationState: "unknown" }, corsOrigin);
+          return;
+        }
+        this.sendJson(res, 200, await service.listUserRepositoryAuthorizations(userId), corsOrigin);
+        return;
+      }
+
+      // 8. CF-11B: publication lifecycle. Every route is authenticated and ownership-scoped.
+      if (url.pathname === "/v1/publications" && method === "POST") {
+        const service = this.requirePublicationService(res, corsOrigin);
+        if (!service) return;
+        const userId = this.authenticateRequest(req);
+        const body = await this.readJson(req, PublicationCreateSchema);
+        try {
+          const publication = await service.createPublication(userId, body);
+          this.sendJson(res, 201, await service.getStatus(userId, publication.id), corsOrigin);
+        } catch (error) {
+          this.sendPublicationError(res, error, corsOrigin);
+        }
+        return;
+      }
+
+      const artifactRoute = url.pathname.match(/^\/v1\/publications\/([^/]+)\/artifact$/);
+      if (artifactRoute && method === "POST") {
+        const service = this.requirePublicationService(res, corsOrigin);
+        if (!service) return;
+        const userId = this.authenticateRequest(req);
+        try {
+          // The body streams straight into bounded storage: bundle bytes never become a JSON
+          // payload, are never logged, and never reach SQL.
+          this.sendJson(res, 200, await service.uploadArtifact(userId, artifactRoute[1]!, req), corsOrigin);
+        } catch (error) {
+          req.resume();
+          this.sendPublicationError(res, error, corsOrigin);
+        }
+        return;
+      }
+
+      const executeRoute = url.pathname.match(/^\/v1\/publications\/([^/]+)\/execute$/);
+      if (executeRoute && method === "POST") {
+        const service = this.requirePublicationService(res, corsOrigin);
+        if (!service) return;
+        const userId = this.authenticateRequest(req);
+        try {
+          this.sendJson(res, 200, await service.execute(userId, executeRoute[1]!), corsOrigin);
+        } catch (error) {
+          this.sendPublicationError(res, error, corsOrigin);
+        }
+        return;
+      }
+
+      const retryRoute = url.pathname.match(/^\/v1\/publications\/([^/]+)\/retry$/);
+      if (retryRoute && method === "POST") {
+        const service = this.requirePublicationService(res, corsOrigin);
+        if (!service) return;
+        const userId = this.authenticateRequest(req);
+        try {
+          this.sendJson(res, 200, await service.retry(userId, retryRoute[1]!), corsOrigin);
+        } catch (error) {
+          this.sendPublicationError(res, error, corsOrigin);
+        }
+        return;
+      }
+
+      const statusRoute = url.pathname.match(/^\/v1\/publications\/([^/]+)$/);
+      if (statusRoute && method === "GET") {
+        const service = this.requirePublicationService(res, corsOrigin);
+        if (!service) return;
+        const userId = this.authenticateRequest(req);
+        try {
+          this.sendJson(res, 200, await service.getStatus(userId, statusRoute[1]!), corsOrigin);
+        } catch (error) {
+          this.sendPublicationError(res, error, corsOrigin);
+        }
+        return;
+      }
+
       this.sendJson(res, 404, { error: "Endpoint not found" }, corsOrigin);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -747,6 +968,11 @@ export class CodeForgeCloudServer {
         .replace(/sk_[a-zA-Z0-9_]+/g, "[REDACTED_STRIPE_KEY]")
         .replace(/ghp_[a-zA-Z0-9_]+/g, "[REDACTED_GITHUB_KEY]")
         .replace(/cfr_[a-zA-Z0-9_]+/g, "[REDACTED_REFRESH_TOKEN]");
+
+      if (isAuthError) {
+        this.sendJson(res, status, { error: sanitizedMsg, code: PUBLICATION_ERROR_CODES.UNAUTHENTICATED }, corsOrigin);
+        return;
+      }
 
       this.sendJson(res, status, { error: sanitizedMsg }, corsOrigin);
     }

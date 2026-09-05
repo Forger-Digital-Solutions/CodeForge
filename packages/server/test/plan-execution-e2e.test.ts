@@ -140,7 +140,7 @@ describe("autonomous plan execution — approve / reject / cancel", () => {
       }
       const wf = await api(`http://localhost:${port}/api/workflow/${taskId}`, undefined, "GET");
       task = wf.body?.task;
-      if (task && ["completed", "failed", "cancelled"].includes(task.phase)) break;
+      if (task && ["completed", "blocked", "failed", "cancelled"].includes(task.phase)) break;
     }
 
     // The edit landed, exactly once.
@@ -169,12 +169,11 @@ describe("autonomous plan execution — approve / reject / cancel", () => {
     expect(approvalsSeen.size).toBeGreaterThan(0);
   }, 60000);
 
-  it("completes an approved edit in a workspace that has nothing to verify", async () => {
-    // The exact shape that produced the original report: a real package.json with NO test script,
-    // and no verification commands supplied. `npm test` there exits non-zero with
-    // `Missing script: "test"`, which used to be read as a failing build — so a correct, approved
-    // edit finished "failed" with no evidence and no checkpoint. Availability is decided from the
-    // manifest before anything runs, so this assertion holds on any machine.
+  it("applies an approved edit but refuses to claim success when there is nothing to verify", async () => {
+    // A real package.json with NO test script and no verification commands supplied. `npm test`
+    // there exits non-zero with `Missing script: "test"`, which must not be read as a failing
+    // build. The edit still applies and still produces evidence — but with nothing verified the
+    // completion gate holds the run at `blocked` rather than reporting an unproven success.
     await writeFile(join(ws, "package.json"), JSON.stringify({ name: "plan-exec", type: "module" }, null, 2));
     await startServer();
 
@@ -197,7 +196,7 @@ describe("autonomous plan execution — approve / reject / cancel", () => {
     }
 
     expect(readCalc()).toContain("a + b");
-    expect(task.phase).toBe("completed");
+    expect(task.phase).toBe("blocked");
 
     const sess = await api(sessionUrl("noverify-sess"), undefined, "GET");
     const types = ((sess.body?.events ?? []) as Array<{ type: string }>).map((e) => e.type);

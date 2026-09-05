@@ -3,6 +3,14 @@ import fs from "node:fs";
 import path from "node:path";
 import type { VerificationResult } from "./types.js";
 import { prepareShellCommand, terminateProcessTree } from "./child-process.js";
+import {
+  adaptTrustedLegacyVerifiers,
+  createVerificationPlan,
+  createVerifierRegistry,
+  executeVerificationPlan,
+  type ForgeVerifyObserver,
+  type VerificationPolicy,
+} from "./forge-verify.js";
 
 const DEFAULT_COMMANDS = ["npm test", "npm run typecheck"];
 
@@ -47,6 +55,14 @@ function parseTestOutput(output: string): { passed: number; failed: number; skip
   if (passMatch) passed = parseInt(passMatch[1] ?? "0", 10);
   if (failMatch) failed = parseInt(failMatch[1] ?? "0", 10);
   if (skipMatch) skipped = parseInt(skipMatch[1] ?? "0", 10);
+
+  // Node's built-in test runner reports counters as `pass N`, `fail N`, and `skipped N`.
+  const nodePassMatch = output.match(/\bpass\s+(\d+)\b/i);
+  const nodeFailMatch = output.match(/\bfail\s+(\d+)\b/i);
+  const nodeSkipMatch = output.match(/\bskipped\s+(\d+)\b/i);
+  if (!passMatch && nodePassMatch) passed = parseInt(nodePassMatch[1] ?? "0", 10);
+  if (!failMatch && nodeFailMatch) failed = parseInt(nodeFailMatch[1] ?? "0", 10);
+  if (!skipMatch && nodeSkipMatch) skipped = parseInt(nodeSkipMatch[1] ?? "0", 10);
 
   // Fallback: look for FAIL / PASS per test file
   if (passed === 0 && failed === 0) {
@@ -211,7 +227,7 @@ export async function runCommand(options: RunOptions): Promise<VerificationResul
  * answers only the first, from the manifest, before anything is executed. It never inspects the
  * outcome of a command, so a real failing test can never be reclassified as unavailable.
  */
-function commandIsAvailable(workspacePath: string, command: string): boolean {
+export function commandIsAvailable(workspacePath: string, command: string): boolean {
   const npm = command.trim().match(/^npm\s+(?:run\s+(\S+)|(test|start))\b/);
   if (!npm) return true; // Not an npm script; assume the operator meant it and let it run.
 
@@ -231,9 +247,126 @@ function commandIsAvailable(workspacePath: string, command: string): boolean {
   }
 }
 
+export function classifyVerifier(command: string): { kind: import("./types.js").VerifierKind; required: boolean } {
+  const lower = command.toLowerCase().trim();
+  if (/\b(test|jest|vitest|mocha|pytest)\b|\bcargo test\b|\bgo test\b/.test(lower)) {
+    return { kind: "test", required: true };
+  }
+  if (/\b(typecheck|tsc|pyright|mypy)\b|\bnpm run check\b|\bcargo check\b/.test(lower)) {
+    return { kind: "typecheck", required: true };
+  }
+  if (/\b(build|compile|bundle)\b/.test(lower) && !/\.js\b|\.ts\b/.test(lower)) {
+    return { kind: "build", required: true };
+  }
+  if (/\b(lint|eslint|prettier|flake8|ruff|clippy)\b/.test(lower)) {
+    return { kind: "lint", required: false };
+  }
+  return { kind: "custom", required: true };
+}
+
+export function discoverVerifiers(workspacePath: string, configuredCommands?: string[]): import("./types.js").Verifier[] {
+  if (configuredCommands && configuredCommands.length > 0) {
+    const list: import("./types.js").Verifier[] = [];
+    for (let i = 0; i < configuredCommands.length; i++) {
+      const cmd = configuredCommands[i]!.trim();
+      if (!cmd) continue;
+      const { kind, required } = classifyVerifier(cmd);
+      list.push({
+        id: `verifier-${i + 1}-${kind}`,
+        kind,
+        command: cmd,
+        required,
+        source: "configured",
+      });
+    }
+    return list;
+  }
+
+  const manifestPath = path.join(workspacePath, "package.json");
+  if (!fs.existsSync(manifestPath)) {
+    return [];
+  }
+
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8")) as { scripts?: Record<string, unknown> };
+    const scripts = manifest.scripts ?? {};
+    const verifiers: import("./types.js").Verifier[] = [];
+
+    // 1. Test verifier (required)
+    if (typeof scripts.test === "string" && !scripts.test.includes("no test specified")) {
+      verifiers.push({
+        id: "test",
+        kind: "test",
+        command: "npm test",
+        required: true,
+        source: "discovered",
+      });
+    }
+
+    // 2. Typecheck verifier (required)
+    if (typeof scripts.typecheck === "string") {
+      verifiers.push({
+        id: "typecheck",
+        kind: "typecheck",
+        command: "npm run typecheck",
+        required: true,
+        source: "discovered",
+      });
+    } else if (typeof scripts.tsc === "string") {
+      verifiers.push({
+        id: "typecheck",
+        kind: "typecheck",
+        command: "npm run tsc",
+        required: true,
+        source: "discovered",
+      });
+    } else if (typeof scripts.check === "string") {
+      verifiers.push({
+        id: "typecheck",
+        kind: "typecheck",
+        command: "npm run check",
+        required: true,
+        source: "discovered",
+      });
+    }
+
+    // 3. Build verifier (required)
+    if (typeof scripts.build === "string") {
+      verifiers.push({
+        id: "build",
+        kind: "build",
+        command: "npm run build",
+        required: true,
+        source: "discovered",
+      });
+    }
+
+    // 4. Lint verifier (advisory)
+    if (typeof scripts.lint === "string") {
+      verifiers.push({
+        id: "lint",
+        kind: "lint",
+        command: "npm run lint",
+        required: false,
+        source: "discovered",
+      });
+    }
+
+    return verifiers;
+  } catch {
+    return [];
+  }
+}
+
 /** An honest "nothing was verified" result — neither a pass nor a failure. */
-function notConfiguredResult(commands: string[]): VerificationResult {
+function notConfiguredReport(commands: string[]): import("./types.js").VerificationReport {
   return {
+    verifiers: [],
+    requiredPassed: false,
+    hasFailures: false,
+    advisories: [],
+    overallStatus: "blocked",
+    summary: `No verification command is configured for this workspace (tried: ${commands.join(", ") || "none"}).`,
     passed: 0,
     failed: 0,
     skipped: 0,
@@ -248,48 +381,111 @@ function notConfiguredResult(commands: string[]): VerificationResult {
 
 export async function runVerification(
   workspacePath: string,
-  commands: string[] = DEFAULT_COMMANDS,
-  options: { signal?: AbortSignal; timeoutMs?: number } = {},
-): Promise<VerificationResult> {
-  let lastResult: VerificationResult | null = null;
-  for (const cmd of commands) {
-    // Skip commands this workspace cannot run. Skipping is NOT forgiveness: a command that runs and
-    // fails is still returned immediately below so the caller can diagnose and repair it.
-    if (!commandIsAvailable(workspacePath, cmd)) continue;
-    try {
-      const result = await runCommand({ workspacePath, command: cmd, signal: options.signal, timeoutMs: options.timeoutMs });
-      lastResult = result;
-      // Whether it passed or failed, this workspace really did verify — report it verbatim.
-      return result;
-    } catch (e) {
-      lastResult = {
-        passed: 0,
-        failed: 1,
-        skipped: 0,
-        durationMs: 0,
-        output: e instanceof Error ? redact(e.message) : String(e),
-        exitCode: 1,
-        command: cmd,
-        failures: [{ test: cmd, message: e instanceof Error ? e.message : String(e) }],
-      };
+  commandsOrVerifiers: string[] | import("./types.js").Verifier[] = DEFAULT_COMMANDS,
+  options: { signal?: AbortSignal; timeoutMs?: number; runId?: string; observer?: ForgeVerifyObserver } = {},
+): Promise<import("./types.js").VerificationReport> {
+  let verifiers: import("./types.js").Verifier[] = [];
+  if (Array.isArray(commandsOrVerifiers) && commandsOrVerifiers.length > 0) {
+    if (typeof commandsOrVerifiers[0] === "string") {
+      const isDefault = commandsOrVerifiers.length === 2 && commandsOrVerifiers[0] === "npm test" && commandsOrVerifiers[1] === "npm run typecheck";
+      if (isDefault) {
+        verifiers = discoverVerifiers(workspacePath);
+      } else {
+        verifiers = discoverVerifiers(workspacePath, commandsOrVerifiers as string[]);
+      }
+    } else {
+      verifiers = commandsOrVerifiers as import("./types.js").Verifier[];
     }
+  } else {
+    verifiers = discoverVerifiers(workspacePath);
   }
-  if (lastResult) return lastResult;
-  return notConfiguredResult(commands);
+
+  // Filter only available commands in workspace
+  const availableVerifiers = verifiers.filter((v) => commandIsAvailable(workspacePath, v.command));
+
+  if (availableVerifiers.length === 0) {
+    return notConfiguredReport(verifiers.map((v) => v.command));
+  }
+
+  const definitions = adaptTrustedLegacyVerifiers(workspacePath, availableVerifiers.map((verifier) => ({ ...verifier, timeoutMs: verifier.timeoutMs ?? options.timeoutMs })));
+  const registry = createVerifierRegistry(definitions);
+  const policy: VerificationPolicy = { version: "legacy-workflow-policy-v1" as VerificationPolicy["version"] };
+  const plan = createVerificationPlan(registry, policy, { runId: options.runId ?? `legacy-${Date.now()}`, workspacePath, scope: "workspace" });
+  const execution = await executeVerificationPlan(registry, plan, undefined, { signal: options.signal, observer: options.observer });
+  const runResults = availableVerifiers.map((verifier, index) => {
+    const planned = plan.verifiers[index]!;
+    const evidence = execution.evidence.find((item) => item.verifierId === planned.verifierId);
+    const parsed = parseTestOutput(evidence?.outputExcerpt ?? "");
+    const status = evidence?.status ?? "infra_error";
+    const passed = status === "passed" ? Math.max(parsed.passed, 1) : parsed.passed;
+    const failed = status === "passed" ? parsed.failed : Math.max(parsed.failed, 1);
+    return {
+      id: verifier.id,
+      kind: verifier.kind,
+      command: verifier.command,
+      required: verifier.required,
+      status,
+      passed,
+      failed,
+      skipped: parsed.skipped,
+      exitCode: evidence?.exitCode ?? 1,
+      durationMs: evidence?.elapsedMs ?? 0,
+      output: evidence?.outputExcerpt ?? "Verifier did not create evidence.",
+      failures: status === "passed" ? parsed.failures : [{ test: verifier.id, message: evidence?.outputExcerpt || `Verifier ended ${status}.` }],
+      timedOut: status === "timed_out",
+      cancelled: status === "cancelled",
+    } satisfies import("./types.js").VerifierRunResult;
+  });
+  const totalPassed = runResults.reduce((total, result) => total + result.passed, 0);
+  const totalFailed = runResults.reduce((total, result) => total + result.failed, 0);
+  const totalSkipped = runResults.reduce((total, result) => total + result.skipped, 0);
+  const totalDurationMs = runResults.reduce((total, result) => total + result.durationMs, 0);
+  const allOutputs = runResults.map((result) => `=== [${result.id.toUpperCase()}] ${result.command} ===\n${result.output}`);
+  const allFailures = runResults.flatMap((result) => result.failures);
+  const requiredPassed = execution.summary.verificationComplete;
+  const hasFailures = runResults.some((result) => result.status !== "passed");
+  const advisories = runResults.filter((result) => !result.required && result.status !== "passed");
+  const overallStatus = !requiredPassed ? "failed" : "passed";
+
+  const summary = `ForgeVerify: ${runResults.filter((r) => r.status === "passed").length}/${runResults.length} verifiers passed (${requiredPassed ? "all required passed" : "required verifier failed"}).`;
+
+  return {
+    verifiers: runResults,
+    requiredPassed,
+    hasFailures,
+    advisories,
+    overallStatus,
+    summary,
+    passed: totalPassed,
+    failed: totalFailed,
+    skipped: totalSkipped,
+    durationMs: totalDurationMs,
+    output: allOutputs.join("\n\n"),
+    exitCode: requiredPassed ? 0 : 1,
+    command: availableVerifiers.map((v) => v.command).join(" && "),
+    failures: allFailures,
+    forgeVerify: { plan, ...execution },
+  };
 }
 
 /**
- * True only when verification actually RAN and passed. A workspace with nothing to run has not
- * passed anything, so it must not claim it did — the workflow reports honestly that it could not
- * verify, rather than presenting an unverified edit as a verified one.
+ * True only when verification actually RAN and passed all required verifiers.
  */
 export function verificationPassed(result: VerificationResult): boolean {
   if (result.notConfigured) return false;
+  const report = result as unknown as import("./types.js").VerificationReport;
+  if (report.verifiers && Array.isArray(report.verifiers)) {
+    return report.requiredPassed === true;
+  }
   return result.exitCode === 0 && result.failed === 0;
 }
 
 /** True when verification ran and produced a real failure that should block completion. */
 export function verificationFailed(result: VerificationResult): boolean {
   if (result.notConfigured) return false;
+  const report = result as unknown as import("./types.js").VerificationReport;
+  if (report.verifiers && Array.isArray(report.verifiers)) {
+    return report.requiredPassed === false;
+  }
   return result.exitCode !== 0 || result.failed > 0;
 }

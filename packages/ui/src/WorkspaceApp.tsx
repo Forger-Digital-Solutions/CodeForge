@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
+import type { ExecutionMode } from "@codeforge/protocol";
 import type { WorkspaceState } from "./workspace-sse.js";
-import { useWorkspaceSSE } from "./workspace-sse.js";
+import { readRememberedExecutionMode, rememberExecutionMode, useWorkspaceSSE } from "./workspace-sse.js";
 import Header from "./Header.js";
 import Navigation from "./Navigation.js";
 import Conversation from "./Conversation.js";
@@ -11,6 +12,8 @@ import QuestionBar from "./QuestionBar.js";
 import CommandPalette, { type Command } from "./CommandPalette.js";
 import WorkflowProgress from "./WorkflowProgress.js";
 import { type ModelSelectorItem, type ModelSection } from "./ModelSelector.js";
+import { ForgeWorkingIndicator } from "./activity-icons.js";
+import { isForgeWorkActive } from "./forge-activity.js";
 import "./workspace.css";
 
 /** Turn provider/runtime errors into concise, actionable guidance. */
@@ -39,7 +42,7 @@ export interface SessionSummary {
 
 export interface WorkspaceAppProps {
   sseUrl?: string;
-  onSendMessage?: (message: string, steer: boolean) => void;
+  onSendMessage?: (message: string, steer: boolean, executionMode: ExecutionMode) => void;
   models?: ModelSelectorItem[];
   selectedModelId?: string | null;
   onSelectModel?: (model: ModelSelectorItem, sessionId?: string) => void;
@@ -68,11 +71,12 @@ export default function WorkspaceApp({
   onOpenSettings,
   onOpenHelp,
 }: WorkspaceAppProps) {
-  const { state, setState, sendMessage, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession, startNewSession } = useWorkspaceSSE(sseUrl ?? "/api/events");
+  const { state, setState, sendMessage, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession, startNewSession, hydrate } = useWorkspaceSSE(sseUrl ?? "/api/events");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
+  const [executionMode, setExecutionMode] = useState<ExecutionMode>(() => readRememberedExecutionMode());
 
   const apiOrigin = React.useMemo(() => {
     const u = sseUrl ?? "";
@@ -81,6 +85,25 @@ export default function WorkspaceApp({
     }
     return "";
   }, [sseUrl]);
+
+  // CF-11B: publication is a single Cloud request. The desktop UI never pushes or opens a PR, and
+  // it never marks a delivery published on its own — it re-hydrates and shows Cloud's state.
+  const publishDelivery = useCallback(async (deliveryId: string) => {
+    if (!apiOrigin) return;
+    await fetch(`${apiOrigin}/api/deliveries/${encodeURIComponent(deliveryId)}/publication`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    hydrate();
+  }, [apiOrigin, hydrate]);
+  const retryPublication = useCallback(async (deliveryId: string) => {
+    if (!apiOrigin) return;
+    await fetch(`${apiOrigin}/api/deliveries/${encodeURIComponent(deliveryId)}/publication/retry`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    hydrate();
+  }, [apiOrigin, hydrate]);
+  const authorizeRepository = useCallback(async (deliveryId: string) => {
+    if (!apiOrigin) return;
+    // Read-only: reports whether Cloud already authorizes this repository. No credential crosses here.
+    await fetch(`${apiOrigin}/api/deliveries/${encodeURIComponent(deliveryId)}/publication/authorization`);
+    hydrate();
+  }, [apiOrigin, hydrate]);
 
   const refreshSessions = useCallback(async () => {
     if (!apiOrigin) return;
@@ -181,11 +204,17 @@ export default function WorkspaceApp({
   }, [handleGlobalKeyDown]);
 
   const handleSend = (message: string, steer = false) => {
+    const requestMode = executionMode;
     if (onSendMessage) {
-      onSendMessage(message, steer);
+      onSendMessage(message, steer, requestMode);
     } else {
-      sendMessage(message, steer);
+      sendMessage(message, steer, requestMode);
     }
+  };
+
+  const handleExecutionModeChange = (mode: ExecutionMode) => {
+    setExecutionMode(mode);
+    rememberExecutionMode(mode);
   };
 
   const placeholder = state.pendingApproval?.tool === "workflow"
@@ -197,6 +226,12 @@ export default function WorkspaceApp({
       : state.pendingQuestion
         ? "Answer the agent..."
         : "Ask CodeForge to work on this project... try: Fix add function to return a + b";
+
+  const startFailureEvent = [...state.events].reverse().find((event) => event.type === "execution.start_failed");
+  const startFailure = startFailureEvent?.type === "execution.start_failed"
+    ? { code: startFailureEvent.payload.code, message: startFailureEvent.payload.message }
+    : undefined;
+  const forgeWorkActive = isForgeWorkActive(state);
 
   return (
     <div className="workspace">
@@ -255,9 +290,9 @@ export default function WorkspaceApp({
             />
           )}
 
-          {(state.activeTaskId || state.isRunning || state.workflowError || state.lastWorkflowResult || state.pendingApproval?.tool === "workflow") && (
+          {(state.activeTaskId || state.isRunning || state.workflowError || state.lastWorkflowResult || state.pendingApproval?.tool === "workflow" || state.workItems.some((item) => item.kind === "change_delivery" || item.kind === "cloud_publication")) && (
             <div style={{ padding: "8px 12px" }}>
-              <WorkflowProgress state={state} onCancel={() => cancelWorkflow()} onApprove={approve} />
+              <WorkflowProgress state={state} onCancel={() => cancelWorkflow()} onApprove={approve} onPublishDelivery={publishDelivery} onRetryPublication={retryPublication} onAuthorizeRepository={authorizeRepository} />
             </div>
           )}
 
@@ -273,6 +308,8 @@ export default function WorkspaceApp({
             onSuggestedPrompt={(text) => handleSend(text)}
             contextLabel={projectName ? `CodeForge · ${projectName}${projectBranch ? ` · ${projectBranch}` : ""}` : undefined}
           />
+
+          <ForgeWorkingIndicator active={forgeWorkActive} />
 
           {state.pendingApproval && (
             <ApprovalBar approval={state.pendingApproval} onApprove={approve} onDeny={() => approve("deny")} />
@@ -321,6 +358,8 @@ export default function WorkspaceApp({
             onShowModelDetails={onShowModelDetails}
             onUpgradeNavigation={onUpgradeNavigation}
             modelSections={modelSections}
+            executionMode={executionMode}
+            onExecutionModeChange={handleExecutionModeChange}
           />
         </div>
 
@@ -331,8 +370,11 @@ export default function WorkspaceApp({
             session={state.session}
             workItems={state.workItems}
             turns={state.turns}
+            events={state.events}
             isRunning={state.isRunning}
             workspacePath={state.session?.workspacePath}
+            activeTaskId={state.activeTaskId}
+            startFailure={startFailure}
           />
         )}
       </div>

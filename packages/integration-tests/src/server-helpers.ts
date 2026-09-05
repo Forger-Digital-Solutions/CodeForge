@@ -94,7 +94,7 @@ export async function cancelTurn(port: number, sessionId: string, turnId: string
  * Send a message to start a turn.
  */
 export async function sendMessage(port: number, sessionId: string, message: string): Promise<{ ok: boolean; status: number; turnId?: string }> {
-  const response = await sendRequest(port, "/api/send", { sessionId, message });
+  const response = await sendRequest(port, "/api/send", { sessionId, message, executionMode: "chat" });
   if (response.ok && response.body && typeof response.body === "object" && "turnId" in response.body) {
     return { ok: true, status: 200, turnId: response.body.turnId as string };
   }

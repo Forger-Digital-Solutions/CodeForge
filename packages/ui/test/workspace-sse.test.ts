@@ -1,8 +1,64 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import type { SessionRecord, TurnRecord } from "@codeforge/sessions";
-import { clearSessionScopedState, createNewSessionDraft, initialWorkspaceState, readRememberedActiveSession, rememberActiveSession, resolveSendSessionId, upsertPendingApproval, removePendingApproval, type PendingApproval } from "../src/workspace-sse.js";
+import { applyExecutionLifecycleEvent, clearSessionScopedState, createNewSessionDraft, createSendRequest, executionStartFailureMessage, initialWorkspaceState, mergeHydratedEvents, readRememberedActiveSession, readRememberedExecutionMode, rememberActiveSession, rememberExecutionMode, resolveSendSessionId, upsertPendingApproval, removePendingApproval, type PendingApproval } from "../src/workspace-sse.js";
 
 describe("workspace-sse - task session allocation", () => {
+  it("persists only a canonical execution selection and fails corrupted storage to Agent", () => {
+    const values = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+    };
+    expect(readRememberedExecutionMode(storage)).toBe("agent");
+    rememberExecutionMode("chat", storage);
+    expect(readRememberedExecutionMode(storage)).toBe("chat");
+    values.set("codeforge:execution-mode", "banana");
+    expect(readRememberedExecutionMode(storage)).toBe("agent");
+  });
+
+  it("snapshots mode into each request and omits mode from steering", () => {
+    let selectedMode: "agent" | "chat" = "agent";
+    const runA = createSendRequest("session", "passive wording", "request-a", selectedMode);
+    selectedMode = "chat";
+    const runB = createSendRequest("session", "fix it", "request-b", selectedMode);
+    const steering = createSendRequest("session", "continue", "request-a", selectedMode, true);
+    expect(runA.executionMode).toBe("agent");
+    expect(runB.executionMode).toBe("chat");
+    expect(steering.executionMode).toBeUndefined();
+    expect(steering.steer).toBe(true);
+  });
+
+  it("labels startup failures by their selected domain", () => {
+    expect(executionStartFailureMessage("agent", "Workspace unavailable")).toBe("Agent could not start\nWorkspace unavailable");
+    expect(executionStartFailureMessage("chat", "Provider unavailable")).toBe("Chat could not start\nProvider unavailable");
+  });
+
+  it("renders a persisted Agent startup failure as a failed-to-start UI state", () => {
+    const requested = applyExecutionLifecycleEvent(initialWorkspaceState, {
+      type: "execution.requested",
+      timestamp: "2026-09-01T00:00:00.000Z",
+      seq: 1,
+      sessionId: "session",
+      payload: { requestId: "request", executionMode: "agent", runtime: "workflow" },
+    });
+    expect(requested.activeExecutionMode).toBe("agent");
+
+    const failed = applyExecutionLifecycleEvent({ ...requested, isRunning: true }, {
+      type: "execution.start_failed",
+      timestamp: "2026-09-01T00:00:01.000Z",
+      seq: 2,
+      sessionId: "session",
+      payload: { requestId: "request", executionMode: "agent", code: "WORKSPACE_UNAVAILABLE", message: "The selected workspace is unavailable." },
+    });
+    expect(failed).toMatchObject({
+      activeExecutionMode: null,
+      isRunning: false,
+      agentStatus: "failed",
+      activePhase: "failed_to_start",
+      workflowError: "Agent could not start\nThe selected workspace is unavailable.",
+    });
+  });
+
   it("keeps the active session when adding a turn", () => {
     const createSessionId = vi.fn(() => "new-session");
 
@@ -56,6 +112,20 @@ describe("workspace-sse - task session allocation", () => {
     expect(switched.isRunning).toBe(false);
     expect(switched.workflowError).toBeNull();
     expect(switched.activeTaskId).toBeNull();
+  });
+
+  it("reconstructs persisted events in sequence order and deduplicates an SSE replay", () => {
+    const second = {
+      type: "task.started", sessionId: "task-a", seq: 2, timestamp: "2026-09-04T00:00:02.000Z",
+      payload: { taskId: "run-a" },
+    };
+    const first = {
+      type: "task.created", sessionId: "task-a", runId: "run-a", seq: 1, timestamp: "2026-09-04T00:00:01.000Z",
+      payload: { taskId: "run-a", title: "Run", mode: "autonomous" },
+    };
+    const hydrated = mergeHydratedEvents([second as never], [first, second], "task-a");
+    expect(hydrated.map((event) => event.seq)).toEqual([1, 2]);
+    expect(hydrated).toHaveLength(2);
   });
 });
 

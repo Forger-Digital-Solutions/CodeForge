@@ -12,14 +12,19 @@ interface DiffViewerProps {
   fileName?: string;
 }
 
-export function parseDiff(diff: string, fileName?: string): { file: string; lines: DiffLine[] } {
-  const rawLines = diff.replace(/\n$/, "").split("\n");
+const MAX_DIFF_CHARS = 512_000;
+const MAX_RENDERED_LINES = 2_000;
+
+export function parseDiff(diff: string, fileName?: string): { file: string; lines: DiffLine[]; truncated: boolean } {
+  const source = diff.length > MAX_DIFF_CHARS ? diff.slice(0, MAX_DIFF_CHARS) : diff;
+  const rawLines = source.replace(/\n$/, "").split("\n");
+  const truncated = diff.length > MAX_DIFF_CHARS || rawLines.length > MAX_RENDERED_LINES;
   let file = fileName ?? "unknown";
   const lines: DiffLine[] = [];
   let oldLine = 1;
   let newLine = 1;
 
-  for (const raw of rawLines) {
+  for (const raw of rawLines.slice(0, MAX_RENDERED_LINES)) {
     // Skip file/index headers — they carry no reviewable content.
     if (raw.startsWith("+++ ")) {
       const m = raw.match(/^\+\+\+ b\/(.+)$/);
@@ -51,16 +56,16 @@ export function parseDiff(diff: string, fileName?: string): { file: string; line
       newLine++;
     }
   }
-  return { file, lines };
+  return { file, lines, truncated };
 }
 
 export default function DiffViewer({ diff, fileName }: DiffViewerProps) {
   const [showDiff, setShowDiff] = useState(false);
-  const { file, lines } = parseDiff(diff, fileName);
+  const { file, lines, truncated } = parseDiff(diff, fileName);
 
   if (!showDiff) {
     return (
-      <button className="btn-sm" onClick={() => setShowDiff(true)}>
+      <button className="btn-sm" onClick={() => setShowDiff(true)} aria-expanded={false}>
         View Diff
       </button>
     );
@@ -74,6 +79,7 @@ export default function DiffViewer({ diff, fileName }: DiffViewerProps) {
           className="btn-sm"
           style={{ padding: "1px 6px", fontSize: 10, marginLeft: "auto" }}
           onClick={() => setShowDiff(false)}
+          aria-expanded={true}
         >
           Hide
         </button>
@@ -95,6 +101,7 @@ export default function DiffViewer({ diff, fileName }: DiffViewerProps) {
             )}
           </div>
         ))}
+        {truncated ? <div className="diff-truncated">Diff is bounded to the first {MAX_RENDERED_LINES} lines for responsive review.</div> : null}
       </div>
     </div>
   );

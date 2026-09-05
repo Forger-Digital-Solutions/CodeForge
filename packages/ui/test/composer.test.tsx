@@ -42,6 +42,46 @@ describe("isComposerSendable", () => {
 });
 
 describe("Composer rendering", () => {
+  it("renders an accessible explicit mode selector with Agent selected by default", () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(Composer, {
+        placeholder: "Ask CodeForge…",
+        onSend: noop,
+        onSteer: noop,
+        onStop: noop,
+        onPause: noop,
+        onResume: noop,
+        onBackground: noop,
+        isRunning: false,
+        isPaused: false,
+      }),
+    );
+    expect(markup).toContain('role="group"');
+    expect(markup).toContain('aria-label="Execution mode"');
+    expect(markup).toContain('aria-pressed="true"');
+    expect(markup).toContain("Agent");
+    expect(markup).toContain("Chat");
+  });
+
+  it("renders Chat as the selected mode without changing model selection", () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(Composer, {
+        placeholder: "Ask CodeForge…",
+        onSend: noop,
+        onSteer: noop,
+        onStop: noop,
+        onPause: noop,
+        onResume: noop,
+        onBackground: noop,
+        isRunning: false,
+        isPaused: false,
+        executionMode: "chat",
+      }),
+    );
+    expect(markup).toContain('execution-mode-option selected" aria-pressed="true"');
+    expect(markup).toContain("Chat");
+  });
+
   it("advertises Enter to send and Shift+Enter for newline (not Ctrl+Enter)", () => {
     const markup = renderToStaticMarkup(
       React.createElement(Composer, {

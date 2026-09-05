@@ -17,6 +17,17 @@ import type {
   OAuthTransactionRecord,
   DesktopAuthCodeRecord,
   FeatureKey,
+  GitHubInstallationRecord,
+  GitHubInstallationStatus,
+  GitHubRepositoryAuthorizationRecord,
+  GitHubRepositoryAuthorizationState,
+  GitHubAppCallbackStateRecord,
+  PublicationRecord,
+  PublicationState,
+  PublicationLease,
+  CloudVerificationPlanRecord,
+  CloudVerificationAttemptRecord,
+  CloudVerificationEvidenceRecord,
 } from "./types.js";
 
 /**
@@ -184,4 +195,128 @@ export interface ICloudDatabase {
 
   // Abuse
   recordAbuseEvent(params: { userId?: string; ipAddress?: string; eventType: string; details?: string }): Promise<AbuseEventRecord>;
+
+  // CF-11B: GitHub App Installation & Authorization
+  createGitHubInstallation(params: {
+    installationId: number;
+    githubAccountId: number;
+    accountLogin: string;
+    accountType: "User" | "Organization";
+    codeForgeUserId: string;
+    repositorySelection: "all" | "selected";
+  }): Promise<GitHubInstallationRecord>;
+  /** Lookup by CodeForge's own row id (the value stored on publications.installation_id). */
+  getGitHubInstallationById(id: string): Promise<GitHubInstallationRecord | undefined>;
+  /** Lookup by GitHub's numeric installation id. */
+  getGitHubInstallationByInstallationId(installationId: number): Promise<GitHubInstallationRecord | undefined>;
+  listGitHubInstallationsByUser(codeForgeUserId: string): Promise<GitHubInstallationRecord[]>;
+  updateGitHubInstallationStatus(id: string, status: GitHubInstallationStatus): Promise<void>;
+  updateGitHubInstallationAccount(params: {
+    id: string;
+    githubAccountId: number;
+    accountLogin: string;
+    accountType: "User" | "Organization";
+    repositorySelection: "all" | "selected";
+  }): Promise<void>;
+
+  createGitHubRepositoryAuthorization(params: {
+    installationId: string;
+    repositoryId: number;
+    owner: string;
+    name: string;
+    fullName: string;
+    private: boolean;
+  }): Promise<GitHubRepositoryAuthorizationRecord>;
+  /** Authorization is addressed only by GitHub's immutable numeric repository id. */
+  getGitHubRepositoryAuthorization(repositoryId: number): Promise<GitHubRepositoryAuthorizationRecord | undefined>;
+  listGitHubRepositoryAuthorizations(installationId: string): Promise<GitHubRepositoryAuthorizationRecord[]>;
+  updateGitHubRepositoryAuthorizationState(id: string, state: GitHubRepositoryAuthorizationState): Promise<void>;
+  /** Refreshes cached display metadata (rename) and re-binds the row to the observing installation. */
+  updateGitHubRepositoryAuthorizationMetadata(params: {
+    id: string;
+    installationId: string;
+    owner: string;
+    name: string;
+    fullName: string;
+    private: boolean;
+  }): Promise<void>;
+
+  createGitHubAppCallbackState(params: {
+    state: string;
+    codeForgeUserId: string;
+    deviceSessionId?: string;
+    expiresInSeconds?: number;
+  }): Promise<GitHubAppCallbackStateRecord>;
+  getGitHubAppCallbackState(state: string): Promise<GitHubAppCallbackStateRecord | undefined>;
+  /**
+   * Atomically marks the state consumed. Returns undefined when the state is unknown, expired, or
+   * already consumed, so a replay can never be mistaken for a first use.
+   */
+  consumeGitHubAppCallbackState(state: string): Promise<GitHubAppCallbackStateRecord | undefined>;
+  deleteExpiredGitHubAppCallbackStates(cutoffIso: string): Promise<number>;
+
+  // CF-11B: Publication Records
+  createPublication(params: {
+    deliveryId: string;
+    userId: string;
+    repositoryId: number;
+    installationId: string;
+    targetBranch: string;
+    baseSha: string;
+    targetSha: string;
+    certifiedHead: string;
+    certifiedTree: string;
+    artifactSha256: string;
+    artifactBytes: number;
+  }): Promise<PublicationRecord>;
+  getPublicationById(id: string): Promise<PublicationRecord | undefined>;
+  getPublicationByDeliveryId(userId: string, deliveryId: string): Promise<PublicationRecord | undefined>;
+  listPublicationsByUser(userId: string): Promise<PublicationRecord[]>;
+  /** One-way transition guarded on `awaiting_artifact`; a stored artifact can never be replaced. */
+  markPublicationArtifactStored(params: { publicationId: string; artifactKey: string }): Promise<boolean>;
+
+  /**
+   * Atomically claims execution ownership. Succeeds only when the publication is non-terminal and
+   * the current lease is absent or expired. Every success bumps the fence.
+   */
+  acquirePublicationLease(params: {
+    publicationId: string;
+    owner: string;
+    leaseDurationMs: number;
+  }): Promise<PublicationLease | undefined>;
+  renewPublicationLease(params: { publicationId: string; owner: string; fence: number; leaseDurationMs: number }): Promise<boolean>;
+  releasePublicationLease(params: { publicationId: string; owner: string; fence: number }): Promise<boolean>;
+
+  /** Every mutation below is fenced: a worker that lost the lease cannot write. */
+  updatePublicationState(params: {
+    publicationId: string;
+    owner: string;
+    fence: number;
+    state: PublicationState;
+    errorCode?: string | null;
+    failureReason?: string | null;
+  }): Promise<boolean>;
+  recordPublicationPush(params: { publicationId: string; owner: string; fence: number; pushRef: string }): Promise<boolean>;
+  recordPublicationPullRequest(params: {
+    publicationId: string;
+    owner: string;
+    fence: number;
+    pullRequestNumber: number;
+    pullRequestUrl: string;
+    pullRequestNodeId?: string;
+  }): Promise<boolean>;
+  completePublication(params: { publicationId: string; owner: string; fence: number }): Promise<boolean>;
+  incrementPublicationAttempt(id: string): Promise<void>;
+  /** Publications whose lease has expired mid-execution and are eligible for takeover. */
+  listReclaimablePublications(nowIso: string): Promise<PublicationRecord[]>;
+
+  // CF-16R2: ForgeVerify durable evidence (append-only source of truth)
+  createVerificationPlan(record: CloudVerificationPlanRecord): Promise<CloudVerificationPlanRecord>;
+  getVerificationPlan(id: string): Promise<CloudVerificationPlanRecord | undefined>;
+  createVerificationAttempt(record: CloudVerificationAttemptRecord): Promise<CloudVerificationAttemptRecord>;
+  terminalizeVerificationAttempt(id: string, status: Exclude<CloudVerificationAttemptRecord["status"], "pending" | "running">, finishedAt: string, exitCode?: number): Promise<CloudVerificationAttemptRecord>;
+  createVerificationEvidence(record: CloudVerificationEvidenceRecord): Promise<CloudVerificationEvidenceRecord>;
+  listVerificationAttempts(planId: string): Promise<CloudVerificationAttemptRecord[]>;
+  listVerificationEvidence(planId: string): Promise<CloudVerificationEvidenceRecord[]>;
+  recoverInterruptedVerificationAttempts(planId?: string): Promise<number>;
 }

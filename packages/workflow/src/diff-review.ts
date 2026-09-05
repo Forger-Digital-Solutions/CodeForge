@@ -2,7 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
-import type { DiffEntry, ReviewDecision } from "./types.js";
+import type { DiffEntry, ReviewDecision, ReviewFinding } from "./types.js";
+
+/** A bounded pre-run snapshot. Binary content is identified and hashed but never retained as text. */
+export type BeforeSnapshot =
+  | { kind: "text"; content: string; size: number; hash: string }
+  | { kind: "binary"; size: number; hash: string };
 
 function sha256(text: string): string {
   return crypto.createHash("sha256").update(text, "utf-8").digest("hex");
@@ -15,7 +20,7 @@ function redact(text: string): string {
     .replace(/AKIA[0-9A-Z]{16}/g, "[REDACTED]");
 }
 
-function computeDiff(relativePath: string, oldContent: string, newContent: string): string {
+function computeDiff(relativePath: string, oldContent: string, newContent: string): { diff: string; truncated: boolean } {
   const oldLines = oldContent.split("\n");
   const newLines = newContent.split("\n");
   const diffLines: string[] = [`--- a/${relativePath}`, `+++ b/${relativePath}`];
@@ -29,11 +34,22 @@ function computeDiff(relativePath: string, oldContent: string, newContent: strin
     }
   }
   let diff = diffLines.join("\n");
+  let truncated = false;
   diff = redact(diff);
   if (Buffer.byteLength(diff, "utf-8") > 32 * 1024) {
     diff = Buffer.from(diff, "utf-8").subarray(0, 32 * 1024).toString("utf-8") + "\n[TRUNCATED diff]";
+    truncated = true;
   }
-  return diff;
+  return { diff, truncated };
+}
+
+function isBinary(content: Buffer): boolean {
+  return content.includes(0);
+}
+
+function asSnapshot(content: string | BeforeSnapshot): BeforeSnapshot {
+  if (typeof content !== "string") return content;
+  return { kind: "text", content, size: Buffer.byteLength(content, "utf-8"), hash: sha256(content) };
 }
 
 function getGitDiff(workspacePath: string): string | null {
@@ -65,7 +81,7 @@ function getGitStatusFiles(workspacePath: string): Array<{ path: string; status:
 
 export async function reviewDiff(
   workspacePath: string,
-  options: { beforeSnapshots?: Map<string, string>; signal?: AbortSignal } = {},
+  options: { beforeSnapshots?: Map<string, string | BeforeSnapshot>; signal?: AbortSignal } = {},
 ): Promise<ReviewDecision> {
   if (options.signal?.aborted) throw new Error("Review aborted");
 
@@ -75,32 +91,56 @@ export async function reviewDiff(
 
   // If we have before snapshots, compute precise diffs regardless of git status (temp workspaces may not be git repos)
   if (options.beforeSnapshots) {
-    for (const [relPath, beforeContent] of options.beforeSnapshots.entries()) {
+    for (const [relPath, storedBefore] of options.beforeSnapshots.entries()) {
+      const before = asSnapshot(storedBefore);
       const full = path.join(workspacePath, relPath);
-      let afterContent = "";
+      let after: Buffer | undefined;
       let changeType: DiffEntry["changeType"] = "modified";
       try {
         if (fs.existsSync(full)) {
-          afterContent = fs.readFileSync(full, "utf-8");
+          after = fs.readFileSync(full);
         } else {
           changeType = "deleted";
         }
       } catch {
         continue;
       }
-      if (beforeContent === afterContent) continue;
-      const beforeHash = sha256(beforeContent);
-      const afterHash = sha256(afterContent);
-      const diff = computeDiff(relPath, beforeContent, afterContent);
-      const additions = afterContent.split("\n").length - beforeContent.split("\n").length;
+
+      const afterIsBinary = after ? isBinary(after) : false;
+      const afterHash = after ? crypto.createHash("sha256").update(after).digest("hex") : sha256("");
+      const afterSize = after?.byteLength ?? 0;
+      if (before.hash === afterHash) continue;
+
+      if (before.kind === "binary" || afterIsBinary) {
+        diffs.push({
+          path: relPath,
+          changeType,
+          additions: 0,
+          deletions: 0,
+          diff: "",
+          beforeHash: before.hash,
+          afterHash,
+          binary: true,
+          beforeSize: before.size,
+          afterSize,
+        });
+        continue;
+      }
+
+      const afterContent = after ? after.toString("utf-8") : "";
+      const computed = computeDiff(relPath, before.content, afterContent);
+      const additions = afterContent.split("\n").length - before.content.split("\n").length;
       diffs.push({
         path: relPath,
         changeType,
         additions: Math.max(0, additions),
         deletions: Math.max(0, -additions),
-        diff,
-        beforeHash,
+        diff: computed.diff,
+        beforeHash: before.hash,
         afterHash,
+        beforeSize: before.size,
+        afterSize,
+        truncated: computed.truncated,
       });
     }
     // Detect new files not in snapshots
@@ -109,15 +149,35 @@ export async function reviewDiff(
         if (options.beforeSnapshots.has(sf.path)) continue;
         const full = path.join(workspacePath, sf.path);
         try {
-          const after = fs.readFileSync(full, "utf-8");
+          const after = fs.readFileSync(full);
+          if (isBinary(after)) {
+            diffs.push({
+              path: sf.path,
+              changeType: "created",
+              additions: 0,
+              deletions: 0,
+              diff: "",
+              beforeHash: sha256(""),
+              afterHash: crypto.createHash("sha256").update(after).digest("hex"),
+              binary: true,
+              beforeSize: 0,
+              afterSize: after.byteLength,
+            });
+            continue;
+          }
+          const afterContent = after.toString("utf-8");
+          const computed = computeDiff(sf.path, "", afterContent);
           diffs.push({
             path: sf.path,
             changeType: "created",
-            additions: after.split("\n").length,
+            additions: afterContent.split("\n").length,
             deletions: 0,
-            diff: computeDiff(sf.path, "", after),
+            diff: computed.diff,
             beforeHash: sha256(""),
-            afterHash: sha256(after),
+            afterHash: crypto.createHash("sha256").update(after).digest("hex"),
+            beforeSize: 0,
+            afterSize: after.byteLength,
+            truncated: computed.truncated,
           });
         } catch {}
       }
@@ -136,16 +196,21 @@ export async function reviewDiff(
   }
 
   const issues: string[] = [];
+  const findings: ReviewFinding[] = [];
   // Basic checks
   for (const d of diffs) {
     if (d.diff.includes("[REDACTED]")) {
       // not an issue; redaction is expected
     }
     if (d.diff.length > 30 * 1024) {
-      issues.push(`Large diff in ${d.path} (${d.diff.length} bytes) — consider splitting`);
+      const message = `Large diff in ${d.path} (${d.diff.length} bytes) — consider splitting`;
+      issues.push(message);
+      findings.push({ code: "oversized_diff", severity: "advisory", path: d.path, message });
     }
     if (d.path.includes("secret") || d.path.includes(".env")) {
-      issues.push(`Sensitive file modified: ${d.path}`);
+      const message = `Sensitive file modified: ${d.path}`;
+      issues.push(message);
+      findings.push({ code: "sensitive_file", severity: "blocking", path: d.path, message });
     }
   }
 
@@ -154,7 +219,7 @@ export async function reviewDiff(
     ? "No diffs"
     : `${diffs.length} file(s) changed, ${issues.length} issue(s) — ${approved ? "approved" : "needs attention"}`;
 
-  return { approved, issues, diffs, summary };
+  return { approved, issues, findings, diffs, summary };
 }
 
 export function formatDiffSummary(diffs: DiffEntry[]): string {

@@ -18,8 +18,10 @@
   },
   "dependencies": {
     "@codeforge/core": "*",
+    "@codeforge/agent": "*",
     "@codeforge/protocol": "*",
     "@codeforge/repo-intelligence": "*",
+    "@codeforge/forge-green": "*",
     "zod": "^3.24.0"
   }
 }

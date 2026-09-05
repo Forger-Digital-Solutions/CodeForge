@@ -1,30 +1,46 @@
 import type { WorkspaceEvent } from "@codeforge/protocol";
 import type { EventStore, SessionPersistence } from "@codeforge/sessions";
+import { redactSecrets } from "@codeforge/secrets";
+
+const MAX_SAFE_EVENT_TEXT = 32 * 1024;
+
+function safeEventText(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  const redacted = redactSecrets(value);
+  return redacted.length <= MAX_SAFE_EVENT_TEXT ? redacted : `${redacted.slice(0, MAX_SAFE_EVENT_TEXT)}\n[truncated]`;
+}
 
 export interface WorkspaceEventAdapterOptions {
   sessionId: string;
+  /** Present only for a bounded autonomous workflow/agent run. */
+  runId?: string;
   eventStore: EventStore;
   persistence: SessionPersistence;
 }
 
 export class WorkspaceEventAdapter {
   private readonly sessionId: string;
+  private readonly runId?: string;
   private readonly eventStore: EventStore;
   private readonly persistence: SessionPersistence;
-  private seq: number = 0;
 
   constructor(options: WorkspaceEventAdapterOptions) {
     this.sessionId = options.sessionId;
+    this.runId = options.runId;
     this.eventStore = options.eventStore;
     this.persistence = options.persistence;
   }
 
   emit(event: Omit<WorkspaceEvent, "seq" | "sessionId" | "timestamp">): void {
+    // EventStore owns the process-wide sequence. Persisting a per-adapter counter made a reload
+    // ambiguous as soon as a session had more than one turn; reserve the same next sequence that
+    // EventStore will assign synchronously so SSE and durable replay are identical.
     const fullEvent: WorkspaceEvent = {
       ...event,
-      seq: ++this.seq,
+      seq: this.eventStore.getLastSeq() + 1,
       sessionId: this.sessionId,
       timestamp: new Date().toISOString(),
+      ...(this.runId ? { runId: this.runId } : {}),
     } as WorkspaceEvent;
 
     this.eventStore.append(fullEvent);
@@ -143,9 +159,19 @@ export class WorkspaceEventAdapter {
     description?: string,
     diff?: string,
   ): void {
+    const safeDescription = safeEventText(description);
+    const safeDiff = safeEventText(diff);
     this.emit({
       type: "file.change_proposed",
-      payload: { changeId, path, changeType, additions, deletions, description, diff },
+      payload: {
+        changeId,
+        path,
+        changeType,
+        additions,
+        deletions,
+        ...(safeDescription !== undefined ? { description: safeDescription } : {}),
+        ...(safeDiff !== undefined ? { diff: safeDiff } : {}),
+      },
     } as WorkspaceEvent);
   }
 
@@ -357,6 +383,95 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent);
   }
 
+  emitWorkflowVerificationStarted(taskId: string, attempt: number): void {
+    this.emit({
+      type: "workflow.verification_started",
+      payload: { taskId, attempt },
+    } as WorkspaceEvent);
+  }
+
+  emitWorkflowVerificationCompleted(
+    taskId: string,
+    attempt: number,
+    result: {
+      notConfigured?: boolean;
+      passed: number;
+      failed: number;
+      skipped: number;
+      durationMs: number;
+      verifiers?: Array<{
+        id: string;
+        kind: "test" | "typecheck" | "build" | "lint" | "custom";
+        command: string;
+        required: boolean;
+        status: "passed" | "failed" | "not_configured" | "timed_out" | "cancelled" | "infra_error" | "interrupted";
+        passed: number;
+        failed: number;
+        skipped: number;
+        exitCode: number;
+        durationMs: number;
+        failureSummary?: string;
+      }>;
+    },
+  ): void {
+    this.emit({
+      type: "workflow.verification_completed",
+      payload: {
+        taskId,
+        attempt,
+        notConfigured: result.notConfigured === true,
+        passed: result.passed,
+        failed: result.failed,
+        skipped: result.skipped,
+        durationMs: result.durationMs,
+        verifiers: result.verifiers ?? [],
+      },
+    } as WorkspaceEvent);
+  }
+
+  emitForgeVerifyPlanCreated(taskId: string, planId: string, policyVersion: string, requiredVerifierIds: string[]): void {
+    this.emit({ type: "forgeverify.plan_created", payload: { taskId, planId, policyVersion, requiredVerifierIds } });
+  }
+
+  emitForgeVerifyAttemptStarted(taskId: string, planId: string, attemptId: string, verifierId: string): void {
+    this.emit({ type: "forgeverify.attempt_started", payload: { taskId, planId, attemptId, verifierId } });
+  }
+
+  emitForgeVerifyEvidenceCreated(taskId: string, planId: string, attemptId: string, evidenceId: string, verifierId: string, status: "passed" | "failed" | "cancelled" | "timed_out" | "infra_error" | "interrupted", durationMs: number, outputTruncated: boolean): void {
+    this.emit({ type: "forgeverify.evidence_created", payload: { taskId, planId, attemptId, evidenceId, verifierId, status, durationMs, outputTruncated } });
+  }
+
+  emitWorkflowRepairAttempted(taskId: string, attempt: number, summary: string): void {
+    this.emit({
+      type: "workflow.repair_attempted",
+      payload: { taskId, attempt, summary },
+    } as WorkspaceEvent);
+  }
+
+  emitWorkflowReviewCompleted(
+    taskId: string,
+    approved: boolean,
+    findings: Array<{ code: string; severity: "blocking" | "advisory"; path: string; message: string }>,
+    diffCount: number,
+  ): void {
+    this.emit({
+      type: "workflow.review_completed",
+      payload: { taskId, approved, findings, diffCount },
+    } as WorkspaceEvent);
+  }
+
+  emitWorkflowCompletionDecided(
+    taskId: string,
+    outcome: "completed" | "blocked" | "failed",
+    rationale: string,
+    blockers: Array<{ code: string; severity: string; message: string }>,
+  ): void {
+    this.emit({
+      type: "workflow.completion_decided",
+      payload: { taskId, outcome, rationale, blockers },
+    } as WorkspaceEvent);
+  }
+
   emitReviewStarted(taskId: string): void {
     this.emit({
       type: "review.started",
@@ -450,35 +565,35 @@ export class WorkspaceEventAdapter {
   emitToolCallCompleted(turnId: string, toolCallId: string, toolName: string, argsJson: string, agentId?: string): void {
     this.emit({
       type: "tool.call_completed",
-      payload: { turnId, toolCallId, toolName, argsJson, agentId },
+      payload: { turnId, toolCallId, toolName, argsJson: safeEventText(argsJson) ?? "", agentId },
     } as WorkspaceEvent);
   }
 
   emitToolExecutionStarted(turnId: string, toolCallId: string, toolName: string, argsJson: string): void {
     this.emit({
       type: "tool.execution_started",
-      payload: { turnId, toolCallId, toolName, argsJson },
+      payload: { turnId, toolCallId, toolName, argsJson: safeEventText(argsJson) ?? "" },
     } as WorkspaceEvent);
   }
 
   emitToolExecutionCompleted(turnId: string, toolCallId: string, toolName: string, result: string): void {
     this.emit({
       type: "tool.execution_completed",
-      payload: { turnId, toolCallId, toolName, result },
+      payload: { turnId, toolCallId, toolName, result: safeEventText(result) ?? "" },
     } as WorkspaceEvent);
   }
 
   emitToolExecutionFailed(turnId: string, toolCallId: string, toolName: string, error: string): void {
     this.emit({
       type: "tool.execution_failed",
-      payload: { turnId, toolCallId, toolName, error },
+      payload: { turnId, toolCallId, toolName, error: safeEventText(error) ?? "" },
     } as WorkspaceEvent);
   }
 
   emitToolExecutionBlocked(turnId: string, toolCallId: string, toolName: string, reason: string): void {
     this.emit({
       type: "tool.execution_blocked",
-      payload: { turnId, toolCallId, toolName, reason },
+      payload: { turnId, toolCallId, toolName, reason: safeEventText(reason) ?? "" },
     } as WorkspaceEvent);
   }
 
@@ -504,7 +619,7 @@ export class WorkspaceEventAdapter {
   }
 
   getSeq(): number {
-    return this.seq;
+    return this.eventStore.getLastSeq();
   }
 }
 

@@ -2,11 +2,12 @@ import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition } from "@codeforge/providers";
 import type { WorkspaceEvent } from "@codeforge/protocol";
-import type { EventStore, SessionPersistence } from "@codeforge/sessions";
+import type { EventStore, SessionPersistence, WorkItem } from "@codeforge/sessions";
 import { WorkspaceEventAdapter, createWorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { resolveWithinWorkspace } from "./path-security.js";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { redactSecrets } from "@codeforge/secrets";
@@ -16,8 +17,131 @@ import { ApprovalService, type ApprovalRecord } from "./approval-service.js";
 import { getSanitizedEnvForChild } from "./env-filter.js";
 import { searchWorkspace } from "./search-service.js";
 import { replaceExact, sha256 } from "./edit-service.js";
-import { createRepositoryIntelligence } from "@codeforge/repo-intelligence";
-import { buildContextPack } from "@codeforge/context";
+import { createRepositoryIntelligence, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
+import { buildContextPack, ContextAssembler, createContextAssembler } from "@codeforge/context";
+import { createForgeGreenAdvisor, type EfficiencyReceipt, type ForgeGreenAdvisor } from "@codeforge/forge-green";
+import {
+  ERROR_CODES,
+  ROLE_PROMPTS,
+  DEFAULT_EXECUTION_BUDGETS,
+  type AgentPermissions,
+  type AgentExecutionBudget,
+  type AgentUsage,
+  type AgentStopReason,
+  type AgentFinding,
+  type AgentEvidenceRef,
+  type AgentRoleType,
+  type AgentModelSelection,
+  type StructuredOutputKind,
+  type StructuredAgentResult,
+  type ReviewResult,
+  validateStructuredAgentResult,
+  formatUntrustedData,
+} from "@codeforge/agent";
+import { ToolBroker, ToolRegistry, createToolBroker, type ToolExecutionRecord } from "@codeforge/tools";
+import { ModelExecutionAdapter, createModelExecutionAdapter, normalizeProviderError } from "./model-execution-adapter.js";
+
+export interface AgentRuntimeRequest {
+  runId: string;
+  agentId: string;
+  role: AgentRoleType | string;
+  goal: string;
+  workspaceId: string;
+  workspacePath: string;
+  permissions: AgentPermissions;
+  modelSelection?: AgentModelSelection;
+  executionBudget?: AgentExecutionBudget;
+  signal?: AbortSignal;
+  initialContext?: string;
+  reviewFeedback?: string;
+  taskPlan?: string;
+  explorerEvidence?: AgentEvidenceRef[];
+  findings?: AgentFinding[];
+  diff?: string;
+  verificationEvidence?: string;
+  authorityState?: string;
+  userId?: string;
+  adapter?: WorkspaceEventAdapter;
+  customToolExecutor?: (name: string, args: Record<string, unknown>) => Promise<string | undefined>;
+  structuredOutput?: StructuredOutputKind;
+  maxStructuredOutputRepairs?: number;
+}
+
+export interface AgentContextMetrics {
+  candidateFileCount: number;
+  candidateSymbolCount: number;
+  selectedFileCount: number;
+  selectedEvidenceCount: number;
+  contextBytes: number;
+  estimatedInputTokens: number;
+  contextMaximum: number;
+  reservedOutputTokens: number;
+  repositoryGeneration?: number;
+  contextHash?: string;
+  reasonCodes?: string[];
+  efficiencyReceipt?: EfficiencyReceipt;
+}
+
+export interface AgentRuntimeResult {
+  status: "completed" | "blocked" | "cancelled" | "failed";
+  summary: string;
+  findings: AgentFinding[];
+  evidence: AgentEvidenceRef[];
+  toolExecutions: ToolExecutionRecord[];
+  usage: AgentUsage;
+  stopReason: AgentStopReason;
+  filesChanged: string[];
+  error?: string;
+  structuredData?: StructuredAgentResult;
+  contextMetrics?: AgentContextMetrics;
+}
+
+export type DurableToolExecutionState = "requested" | "started" | "completed" | "observation_recorded" | "failed" | "cancelled";
+export type ToolExecutionClass = "read_only" | "write" | "command" | "network";
+export type RecoveryDisposition = "safe_to_retry" | "requires_revalidation" | "already_completed" | "unknown_side_effect" | "blocked";
+
+export interface DurableToolExecutionRecord {
+  kind: "agent_tool_execution";
+  id: string;
+  sessionId?: string;
+  runId: string;
+  agentId: string;
+  turnId: string;
+  toolName: string;
+  argumentsHash: string;
+  executionClass: ToolExecutionClass;
+  state: DurableToolExecutionState;
+  recoveryDisposition: RecoveryDisposition;
+  startedAt?: string;
+  completedAt?: string;
+  resultHash?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function classifyToolRecovery(record: Pick<DurableToolExecutionRecord, "executionClass" | "state">): RecoveryDisposition {
+  if (record.state === "observation_recorded") return "already_completed";
+  if (record.state === "completed") return record.executionClass === "read_only" ? "already_completed" : "requires_revalidation";
+  if (record.state === "requested") return "safe_to_retry";
+  if (record.state === "started") {
+    if (record.executionClass === "read_only") return "safe_to_retry";
+    if (record.executionClass === "write") return "requires_revalidation";
+    return "unknown_side_effect";
+  }
+  return "blocked";
+}
+
+/** Reclassifies durable records after a restart; it never executes a tool. */
+export function recoverDurableToolExecutions(persistence: SessionPersistence, runId?: string): DurableToolExecutionRecord[] {
+  const records = persistence.getWorkItemsByKind("agent_tool_execution")
+    .filter((item) => !runId || (item as unknown as DurableToolExecutionRecord).runId === runId) as unknown as DurableToolExecutionRecord[];
+  return records.map((record) => {
+    const recoveryDisposition = classifyToolRecovery(record);
+    const recovered = { ...record, recoveryDisposition, updatedAt: new Date().toISOString() };
+    persistence.upsertWorkItem(recovered as unknown as WorkItem);
+    return recovered;
+  });
+}
 
 const MAX_FILE_READ_BYTES = 100 * 1024;
 const MAX_FILE_READ_LINES = 400;
@@ -58,6 +182,11 @@ export interface TurnState {
   agentId?: string;
   modelId?: string;
   providerId?: string;
+  /**
+   * Set when the loop stopped because it ran out of iterations rather than because the agent
+   * finished. Exhausting a budget is not success and must never complete the turn.
+   */
+  budgetExhausted?: boolean;
 }
 
 export interface ApprovalRequest {
@@ -86,6 +215,8 @@ export interface AgentRuntimeOptions {
   workspacePath?: string;
   userId?: string;
   demoMode?: boolean;
+  repositoryIntelligenceFactory?: () => RepositoryIntelligence;
+  forgeGreen?: ForgeGreenAdvisor;
 }
 
 export interface ModelSelection {
@@ -147,6 +278,7 @@ export class AgentRuntime {
   private demoMode: boolean;
   private modelSelection: ModelSelection | null = null;
   private readonly activeTurns: Map<string, TurnState> = new Map();
+  private readonly pendingSteeringByTurn: Map<string, string[]> = new Map();
   private readonly pendingApprovals: Map<string, ApprovalRequest> = new Map();
   private readonly pendingQuestions: Map<string, QuestionRequest> = new Map();
   private readonly abortControllers: Map<string, AbortController> = new Map();
@@ -154,6 +286,8 @@ export class AgentRuntime {
   private turnCount = 0;
   private maxIterations = 50;
   private readonly approvalService: ApprovalService;
+  private readonly repositoryIntelligenceFactory: () => RepositoryIntelligence;
+  private readonly forgeGreen: ForgeGreenAdvisor;
 
   constructor(options: AgentRuntimeOptions) {
     this.sessionId = options.sessionId;
@@ -163,7 +297,13 @@ export class AgentRuntime {
     this.providerCatalog = options.providerCatalog;
     this.workspacePath = options.workspacePath;
     this.userId = options.userId ?? "anonymous";
+    this.forgeGreen = options.forgeGreen ?? createForgeGreenAdvisor({ enabled: process.env.CODEFORGE_FORGREEN !== "0" });
     this.demoMode = options.demoMode ?? false;
+    this.repositoryIntelligenceFactory = options.repositoryIntelligenceFactory ?? (() => createRepositoryIntelligence({
+      cacheRoot: path.join(os.tmpdir(), "codeforge-repository-indexes"),
+      maxFiles: 25_000,
+      maxFileBytes: MAX_FILE_READ_BYTES,
+    }));
     this.approvalService = new ApprovalService({ defaultTimeoutMs: DEFAULT_APPROVAL_TIMEOUT_MS });
   }
 
@@ -173,6 +313,14 @@ export class AgentRuntime {
    */
   setDemoMode(demoMode: boolean): void {
     this.demoMode = demoMode;
+    if (!demoMode) {
+      for (const t of this.activeTurns.values()) {
+        if (t.status === "running" && !t.agentId) {
+          t.status = "completed";
+          t.completedAt = new Date();
+        }
+      }
+    }
   }
 
   setModelSelection(selection: ModelSelection): void {
@@ -187,7 +335,530 @@ export class AgentRuntime {
     return this.modelSelection ? { ...this.modelSelection } : null;
   }
 
-  async startTurn(userMessage: string): Promise<string> {
+  /**
+   * Execute an autonomous agent invocation independently of high-level orchestrator.
+   * Runs the full role-specific context assembly, provider execution, tool brokering,
+   * loop detection, budget governance, and structured result extraction.
+   */
+  async executeAgentRun(req: AgentRuntimeRequest): Promise<AgentRuntimeResult> {
+    const budget: AgentExecutionBudget =
+      req.executionBudget ??
+      DEFAULT_EXECUTION_BUDGETS[req.role] ??
+      DEFAULT_EXECUTION_BUDGETS.default!;
+
+    const toolBroker = createToolBroker();
+    const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen);
+    const contextAssembler = createContextAssembler(budget.maxContextTokens, this.forgeGreen);
+    const adapter = req.adapter ?? this.createAdapter();
+
+    const toolExecutions: ToolExecutionRecord[] = [];
+    const changedFiles = new Set<string>();
+    const findings: AgentFinding[] = [];
+    const evidence: AgentEvidenceRef[] = [];
+    const toolCallHistory: string[] = [];
+    let intelligence: RepositoryIntelligence | undefined;
+
+    const totalUsage: AgentUsage = {
+      inputTokens: 0,
+      outputTokens: 0,
+      requestCount: 0,
+      toolCount: 0,
+    };
+
+    if (!this.persistence.getSession(this.sessionId)) {
+      this.persistence.upsertSession({
+        id: this.sessionId,
+        title: redactSecrets(req.goal.slice(0, 80)),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: "running",
+      });
+    }
+
+    adapter.emitAgentStarted(req.agentId, req.role, req.runId);
+
+    try {
+      if (req.signal?.aborted) {
+        throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent run cancelled before start.`);
+      }
+
+      // 1. Context Assembly
+      let indexStatus: ReturnType<RepositoryIntelligence["status"]> | undefined;
+      try {
+        intelligence = this.repositoryIntelligenceFactory();
+        await intelligence.openWorkspace(req.workspacePath);
+        indexStatus = intelligence.status();
+        if (indexStatus.fileCount === 0 || indexStatus.state === "NOT_INDEXED" || indexStatus.state === "ERROR") {
+          await intelligence.indexWorkspace(req.signal);
+        } else {
+          await intelligence.refresh(undefined, req.signal);
+        }
+        indexStatus = intelligence.status();
+      } catch {
+        // Fallback: If repository intelligence is unavailable, broken, or unsupported,
+        // degrade gracefully to safe conventional execution without throwing
+        intelligence = undefined;
+      }
+
+      const assembled = await contextAssembler.assemble({
+        role: req.role,
+        goal: req.goal,
+        workspacePath: req.workspacePath,
+        contextWindow: budget.maxContextTokens,
+        intelligence,
+        explorerEvidence: req.explorerEvidence,
+        findings: req.findings,
+        diff: req.diff,
+        verificationEvidence: req.verificationEvidence,
+        taskPlan: req.taskPlan,
+        authorityState: req.authorityState,
+      });
+
+      if (assembled.evidence) {
+        for (const ev of assembled.evidence) {
+          evidence.push({
+            kind: ev.source,
+            ref: ev.path ?? ev.symbol ?? req.workspacePath,
+            description: ev.reasons?.join(", ") ?? "Context evidence",
+          });
+        }
+      }
+
+      const messages: ChatMessage[] = [
+        { role: "system", content: assembled.systemPrompt },
+        { role: "user", content: assembled.contextPrompt },
+      ];
+
+      if (req.initialContext) {
+        messages.push({
+          role: "user",
+          content: `Additional run context:\n${formatUntrustedData(req.initialContext, "run context")}`,
+        });
+      }
+
+      if (req.reviewFeedback) {
+        messages.push({
+          role: "user",
+          content: `Structured Review Findings to address:\n${req.reviewFeedback}`,
+        });
+      }
+
+      let turnCount = 0;
+      let toolCallCount = 0;
+      let writeCallCount = 0;
+      let commandCallCount = 0;
+      let finalSummary = "";
+      let stopReason: AgentStopReason = "completed";
+      let structuredData: StructuredAgentResult | undefined;
+      let structuredRepairs = 0;
+      const expectedStructuredOutput = req.structuredOutput;
+      const maxStructuredOutputRepairs = Math.max(0, req.maxStructuredOutputRepairs ?? 1);
+      const contextMetrics: AgentContextMetrics = {
+        candidateFileCount: indexStatus?.fileCount ?? 0,
+        candidateSymbolCount: indexStatus?.symbolCount ?? 0,
+        selectedFileCount: assembled.receipt?.retrievedFiles.length ?? assembled.evidence.filter((item) => item.source === "file" || item.source === "search").length,
+        selectedEvidenceCount: assembled.evidence.length,
+        contextBytes: Buffer.byteLength(messages.map((message) => message.content).join("\n"), "utf8"),
+        estimatedInputTokens: assembled.tokenEstimate,
+        contextMaximum: budget.maxContextTokens,
+        reservedOutputTokens: assembled.budget.reservedOutput,
+        repositoryGeneration: assembled.receipt?.repositoryGeneration ?? indexStatus?.generation ?? 1,
+        contextHash: assembled.receipt?.contextHash,
+        reasonCodes: assembled.receipt?.reasonCodes,
+        efficiencyReceipt: assembled.efficiencyReceipt,
+      };
+
+      // 2. Multi-turn Model & Tool Loop
+      while (turnCount < budget.maxModelTurns) {
+        if (req.signal?.aborted) {
+          throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
+        }
+
+        turnCount++;
+        totalUsage.requestCount++;
+        const modelTurnId = `${req.runId}:${req.agentId}:${turnCount}`;
+        const modelTurnCreatedAt = new Date().toISOString();
+        const persistModelTurn = (state: "created" | "provider_request_started" | "provider_response_completed" | "tool_requests_decoded" | "agent_result_completed" | "failed" | "cancelled") => {
+          this.persistence.upsertWorkItem({
+            kind: "agent_model_turn",
+            id: `agent-model-turn-${sha256(modelTurnId)}`,
+            sessionId: this.sessionId,
+            runId: req.runId,
+            agentId: req.agentId,
+            turnId: modelTurnId,
+            state,
+            createdAt: modelTurnCreatedAt,
+            updatedAt: new Date().toISOString(),
+          } as unknown as WorkItem);
+        };
+        persistModelTurn("created");
+
+        // Get tools available for this role
+        const availableTools = toolBroker.getRegistry().getForRole(req.role, req.permissions);
+
+        // Execute model request
+        let response;
+        try {
+          persistModelTurn("provider_request_started");
+          response = await modelAdapter.execute({
+            modelSelection: req.modelSelection ?? (this.modelSelection ? { providerId: this.modelSelection.providerId, modelId: this.modelSelection.modelId } : undefined),
+            messages,
+            tools: availableTools,
+            signal: req.signal,
+            userId: req.userId ?? this.userId,
+            authorityState: req.authorityState ?? "canonical",
+            dedupeScope: req.runId,
+          });
+          persistModelTurn("provider_response_completed");
+        } catch (err: unknown) {
+          const norm = normalizeProviderError(err);
+          throw new Error(`[${norm.code}] ${norm.message}`);
+        }
+
+        totalUsage.inputTokens += response.usage.inputTokens;
+        totalUsage.outputTokens += response.usage.outputTokens;
+        totalUsage.provider = response.providerId;
+        totalUsage.model = response.modelId;
+        contextMetrics.efficiencyReceipt = this.forgeGreen.createReceipt({
+          workspaceId: req.workspaceId,
+          repositoryGeneration: contextMetrics.repositoryGeneration ?? 1,
+          requestedTokens: contextMetrics.estimatedInputTokens,
+          deliveredTokens: contextMetrics.estimatedInputTokens,
+          reasonCodes: [
+            ...(response.optimization?.duplicateSuppressed ? ["duplicate_request_suppressed" as const] : []),
+            ...(response.optimization?.promptPrefixCacheHit ? ["stable_prefix_reused" as const] : []),
+          ],
+        });
+
+        if (response.text) {
+          finalSummary = response.text;
+          messages.push({ role: "assistant", content: response.text });
+        }
+
+        // If no tools requested -> Assistant finished
+        if (!response.toolCalls || response.toolCalls.length === 0) {
+          if (expectedStructuredOutput) {
+            const validation = validateStructuredAgentResult(expectedStructuredOutput, finalSummary);
+            if (!validation.success) {
+              if (structuredRepairs < maxStructuredOutputRepairs && turnCount < budget.maxModelTurns) {
+                structuredRepairs++;
+                messages.push({
+                  role: "user",
+                  content: `Your prior response was rejected: ${validation.error}. Return only a valid JSON object for the required ${expectedStructuredOutput} schema.`,
+                });
+                continue;
+              }
+              const error = ERROR_CODES.AGENT_INVALID_STRUCTURED_OUTPUT;
+              adapter.emitTurnFailed(req.runId, `${error}: ${validation.error}`);
+              return {
+                status: "blocked",
+                summary: `${error}: ${validation.error}`,
+                findings,
+                evidence,
+                toolExecutions,
+                usage: totalUsage,
+                stopReason: "error",
+                filesChanged: Array.from(changedFiles),
+                error,
+                contextMetrics,
+              };
+            }
+            structuredData = validation.data;
+          }
+          persistModelTurn("agent_result_completed");
+          stopReason = "completed";
+          break;
+        }
+
+        persistModelTurn("tool_requests_decoded");
+
+        // Tool calls requested
+        const assistantToolMessage: ChatMessage = {
+          role: "assistant",
+          content: response.text || "",
+          toolCalls: response.toolCalls.map((tc) => ({
+            id: tc.id,
+            type: "function" as const,
+            function: { name: tc.name, arguments: tc.arguments },
+          })),
+        };
+        messages.push(assistantToolMessage);
+
+        for (const tc of response.toolCalls) {
+          if (req.signal?.aborted) {
+            throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
+          }
+
+          // Budget checks
+          if (toolCallCount >= budget.maxToolCalls) {
+            stopReason = "budget_exhausted";
+            break;
+          }
+
+          const toolDef = toolBroker.getRegistry().get(tc.name);
+          const roleIsReadOnly = req.role === "explorer" || req.role === "planner" || req.role === "reviewer";
+          if (toolDef && !toolDef.readOnly && !roleIsReadOnly && req.permissions.write) {
+            if (budget.maxWriteToolCalls !== undefined && writeCallCount >= budget.maxWriteToolCalls) {
+              stopReason = "budget_exhausted";
+              break;
+            }
+          }
+          if (tc.name === "run_command" && !roleIsReadOnly && req.permissions.executeCommand) {
+            if (budget.maxCommandExecutions !== undefined && commandCallCount >= budget.maxCommandExecutions) {
+              stopReason = "budget_exhausted";
+              break;
+            }
+          }
+
+          // Loop Detection Check: Fingerprint
+          const fingerprint = `${tc.name}:${tc.arguments.trim()}`;
+          toolCallHistory.push(fingerprint);
+
+          // Check if last 3 identical
+          const historyLen = toolCallHistory.length;
+          if (historyLen >= 3) {
+            const last3 = toolCallHistory.slice(-3);
+            if (last3[0] === last3[1] && last3[1] === last3[2]) {
+              const err = `[${ERROR_CODES.AGENT_TOOL_LOOP_DETECTED}] Deterministic loop detected: tool "${tc.name}" called 3 consecutive times with identical arguments.`;
+              adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.AGENT_TOOL_LOOP_DETECTED);
+              stopReason = "tool_loop_detected";
+              return {
+                status: "blocked",
+                summary: err,
+                findings,
+                evidence,
+                toolExecutions,
+                usage: totalUsage,
+                stopReason,
+                filesChanged: Array.from(changedFiles),
+                error: ERROR_CODES.AGENT_TOOL_LOOP_DETECTED,
+              };
+            }
+          }
+
+          // Check 6-turn oscillation (A-B-A-B-A-B)
+          if (historyLen >= 6) {
+            const last6 = toolCallHistory.slice(-6);
+            if (last6[0] === last6[2] && last6[2] === last6[4] && last6[1] === last6[3] && last6[3] === last6[5] && last6[0] !== last6[1]) {
+              const err = `[${ERROR_CODES.AGENT_TOOL_LOOP_DETECTED}] Deterministic tool oscillation loop detected between "${last6[0]}" and "${last6[1]}".`;
+              adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.AGENT_TOOL_LOOP_DETECTED);
+              stopReason = "tool_loop_detected";
+              return {
+                status: "blocked",
+                summary: err,
+                findings,
+                evidence,
+                toolExecutions,
+                usage: totalUsage,
+                stopReason,
+                filesChanged: Array.from(changedFiles),
+                error: ERROR_CODES.AGENT_TOOL_LOOP_DETECTED,
+              };
+            }
+          }
+
+          adapter.emitToolCallStarted(req.runId, tc.id, tc.name, req.agentId);
+          adapter.emitToolExecutionStarted(req.runId, tc.id, tc.name, tc.arguments);
+
+          const toolDefForDurability = toolBroker.getRegistry().get(tc.name);
+          const executionClass: ToolExecutionClass = tc.name === "run_command"
+            ? "command"
+            : toolDefForDurability?.readOnly ? "read_only"
+            : "write";
+          const executionId = `agent-tool-${sha256(`${req.runId}\0${req.agentId}\0${modelTurnId}\0${tc.id}\0${tc.name}\0${tc.arguments}`)}`;
+          const now = new Date().toISOString();
+          const durableExecution: DurableToolExecutionRecord = {
+            kind: "agent_tool_execution",
+            id: executionId,
+            sessionId: this.sessionId,
+            runId: req.runId,
+            agentId: req.agentId,
+            turnId: modelTurnId,
+            toolName: tc.name,
+            argumentsHash: sha256(tc.arguments),
+            executionClass,
+            state: "requested",
+            recoveryDisposition: "safe_to_retry",
+            createdAt: now,
+            updatedAt: now,
+          };
+          this.persistence.upsertWorkItem(durableExecution as unknown as WorkItem);
+          durableExecution.state = "started";
+          durableExecution.startedAt = new Date().toISOString();
+          durableExecution.recoveryDisposition = classifyToolRecovery(durableExecution);
+          durableExecution.updatedAt = durableExecution.startedAt;
+          this.persistence.upsertWorkItem(durableExecution as unknown as WorkItem);
+
+          const toolExec = await toolBroker.executeTool(
+            { name: tc.name, arguments: tc.arguments },
+            {
+              workspacePath: req.workspacePath,
+              permissions: req.permissions,
+              role: req.role,
+              runId: req.runId,
+              agentId: req.agentId,
+              signal: req.signal,
+              customExecutor: async (name, args) => {
+                if (name.startsWith("repo_")) {
+                  return this.executeRepositoryTool(name, args, req.signal ?? new AbortController().signal, req.workspacePath, intelligence);
+                }
+                return req.customToolExecutor?.(name, args);
+              },
+            },
+          );
+
+          toolExecutions.push(toolExec);
+          durableExecution.state = toolExec.success ? "completed" : "failed";
+          durableExecution.completedAt = new Date().toISOString();
+          durableExecution.resultHash = sha256(toolExec.output);
+          durableExecution.recoveryDisposition = classifyToolRecovery(durableExecution);
+          durableExecution.updatedAt = durableExecution.completedAt;
+          this.persistence.upsertWorkItem(durableExecution as unknown as WorkItem);
+          toolCallCount++;
+          totalUsage.toolCount++;
+          if (toolDef && !toolDef.readOnly) writeCallCount++;
+          if (tc.name === "run_command") commandCallCount++;
+
+          if (toolExec.success && (tc.name === "write_file" || tc.name === "edit_file")) {
+            const parsedArgs = parseToolArgs(tc.arguments);
+            if (typeof parsedArgs === "object" && parsedArgs && "path" in parsedArgs) {
+              changedFiles.add(String((parsedArgs as { path: string }).path));
+            }
+          }
+
+          if (toolExec.success) {
+            adapter.emitToolExecutionCompleted(req.runId, tc.id, tc.name, toolExec.output);
+          } else {
+            adapter.emitToolExecutionFailed(req.runId, tc.id, tc.name, toolExec.error ?? toolExec.output);
+          }
+
+          messages.push({
+            role: "tool",
+            content: toolExec.output,
+            toolCallId: tc.id,
+          });
+          durableExecution.state = "observation_recorded";
+          durableExecution.recoveryDisposition = classifyToolRecovery(durableExecution);
+          durableExecution.updatedAt = new Date().toISOString();
+          this.persistence.upsertWorkItem(durableExecution as unknown as WorkItem);
+
+          // Permission and confinement violations are authority-boundary
+          // failures, not ordinary tool errors. Stop this run rather than
+          // granting an adversarial model further attempts at the boundary.
+          if (!toolExec.success && (
+            toolExec.error === ERROR_CODES.TOOL_PERMISSION_DENIED ||
+            toolExec.error === ERROR_CODES.TOOL_PATH_ESCAPE ||
+            toolExec.error === ERROR_CODES.TOOL_WORKSPACE_ESCAPE ||
+            toolExec.error === ERROR_CODES.TOOL_SENSITIVE_PATH_DENIED
+          )) {
+            stopReason = "error";
+            return {
+              status: "blocked",
+              summary: toolExec.output,
+              findings,
+              evidence,
+              toolExecutions,
+              usage: totalUsage,
+              stopReason,
+              filesChanged: Array.from(changedFiles),
+              error: toolExec.error,
+            };
+          }
+        }
+
+        if (stopReason === "budget_exhausted") {
+          break;
+        }
+      }
+
+      if (turnCount >= budget.maxModelTurns && stopReason !== "completed") {
+        stopReason = "budget_exhausted";
+      }
+
+      // 3. Extract role-specific data. Review authority is only accepted from a validated schema.
+      if (expectedStructuredOutput === "reviewer" && structuredData) {
+        const review = structuredData as ReviewResult;
+        findings.push(...review.findings);
+        finalSummary = review.summary;
+      } else if (expectedStructuredOutput === "explorer" && structuredData) {
+        const explored = structuredData as import("@codeforge/agent").ExplorerResult;
+        findings.push(...explored.findings);
+        evidence.push(...explored.evidence);
+      } else if (req.role === "explorer") {
+        findings.push({
+          id: `explore-${crypto.randomUUID().slice(0, 8)}`,
+          severity: "advisory",
+          category: "architecture",
+          message: finalSummary.slice(0, 300) || "Exploration completed",
+          evidence: Array.from(changedFiles).join(", "),
+        });
+      }
+
+      const status = stopReason === "completed"
+        ? (expectedStructuredOutput === "reviewer" && (structuredData as ReviewResult | undefined)?.verdict === "revision_required" ? "blocked" : "completed")
+        : "blocked";
+
+      const result: AgentRuntimeResult = {
+        status,
+        summary: finalSummary || `Agent ${req.role} ${status}`,
+        findings,
+        evidence,
+        toolExecutions,
+        usage: totalUsage,
+        stopReason,
+        filesChanged: Array.from(changedFiles),
+        structuredData,
+        contextMetrics,
+      };
+
+      if (status === "completed") {
+        adapter.emitAgentCompleted(req.agentId, req.runId);
+      } else {
+        adapter.emitTurnFailed(req.runId, result.summary);
+      }
+
+      return result;
+    } catch (err: unknown) {
+      const isCancelled = req.signal?.aborted || (err instanceof Error && err.message.includes(ERROR_CODES.AGENT_CANCELLED));
+      const status = isCancelled ? "cancelled" : "failed";
+      const errorMsg = err instanceof Error ? err.message : String(err);
+
+      adapter.emitTurnFailed(req.runId, errorMsg);
+
+      return {
+        status,
+        summary: `Agent ${req.role} ${status}: ${errorMsg}`,
+        findings,
+        evidence,
+        toolExecutions,
+        usage: totalUsage,
+        stopReason: isCancelled ? "cancelled" : "error",
+        filesChanged: Array.from(changedFiles),
+        error: errorMsg,
+      };
+    } finally {
+      await intelligence?.closeWorkspace().catch(() => undefined);
+    }
+  }
+
+  async startTurn(userMessage: string, eventAdapter?: WorkspaceEventAdapter): Promise<string> {
+    // Single-turn exclusivity per session for real active turns
+    if (this.demoMode) {
+      for (const t of this.activeTurns.values()) {
+        if (t.status === "running") {
+          t.status = "completed";
+          t.completedAt = new Date();
+        }
+      }
+    } else {
+      const running = Array.from(this.activeTurns.values()).find(
+        (t) => t.status === "running" || t.status === "paused" || t.status === "waiting_for_approval" || t.status === "waiting_for_question",
+      );
+      if (running) {
+        throw new Error(`A turn (${running.turnId}) is already active in session ${this.sessionId}. Steer the active turn or wait for it to complete.`);
+      }
+    }
+
     const turnId = crypto.randomUUID();
     this.turnCount++;
 
@@ -210,7 +881,9 @@ export class AgentRuntime {
     });
     this.persistTurn(state);
 
-    const adapter = this.createAdapter();
+    // A workflow supplies its run-scoped adapter. Ordinary Chat keeps its existing session-scoped
+    // adapter, so the UI never mistakes a chat tool call for autonomous workflow evidence.
+    const adapter = eventAdapter ?? this.createAdapter();
     adapter.emitStatusChanged("idle", "running");
     adapter.emitTurnStarted(turnId, userMessage);
 
@@ -238,9 +911,14 @@ export class AgentRuntime {
     if (!state) {
       throw new Error(`Turn ${turnId} not found`);
     }
-    if (state.status !== "running") {
-      throw new Error(`Turn ${turnId} is not running (status: ${state.status})`);
+    const isTerminal = state.status === "completed" || state.status === "failed" || state.status === "cancelled";
+    if (isTerminal) {
+      throw new Error(`Cannot steer turn ${turnId} in terminal state ${state.status}`);
     }
+    const pending = this.pendingSteeringByTurn.get(turnId) ?? [];
+    pending.push(steering);
+    this.pendingSteeringByTurn.set(turnId, pending);
+
     const adapter = this.createAdapter();
     adapter.emitTurnSteered(turnId, steering);
     state.userMessage = steering;
@@ -305,6 +983,7 @@ export class AgentRuntime {
       abortController.abort();
     }
     this.approvalService.cancelForTurn(turnId, reason ?? "Turn cancelled");
+    this.pendingSteeringByTurn.delete(turnId);
     // Also cancel via legacy map
     for (const [id, req] of Array.from(this.pendingApprovals.entries())) {
       // legacy entries don't store turnId, but we clear all waiting approvals for this turn's status
@@ -499,6 +1178,20 @@ export class AgentRuntime {
       // If turn was cancelled while waiting for approval, do not mark completed
       if (state.status === "cancelled") return;
 
+      // Running out of iterations is not finishing. Reporting it as success is the exact
+      // fake-completion this runtime must never produce.
+      if (state.budgetExhausted) {
+        const reason = `Stopped after ${this.maxIterations} iterations without finishing. The task is incomplete and unverified.`;
+        state.status = "failed";
+        state.completedAt = new Date();
+        state.error = reason;
+        this.activeTurns.set(turnId, state);
+        this.persistTurn(state);
+        adapter.emitTurnFailed(turnId, reason);
+        adapter.emitStatusChanged("running", "failed");
+        return;
+      }
+
       state.status = "completed";
       state.completedAt = new Date();
       this.activeTurns.set(turnId, state);
@@ -641,8 +1334,30 @@ export class AgentRuntime {
     signal: AbortSignal,
     iteration: number,
   ): Promise<void> {
+    // Safe steering boundary: drain queued steering instructions for this turn before model inference
+    const pendingSteering = this.pendingSteeringByTurn.get(turnId) ?? [];
+    if (pendingSteering.length > 0) {
+      this.pendingSteeringByTurn.set(turnId, []);
+      for (const steeringText of pendingSteering) {
+        const steeringMessage: ChatMessage = {
+          role: "user",
+          content: `[User Steering Instruction]: ${steeringText}`,
+        };
+        this.messageHistory.push(steeringMessage);
+      }
+      request = {
+        ...request,
+        messages: [...this.messageHistory],
+      };
+    }
+
     if (iteration >= this.maxIterations) {
       adapter.emitTextDelta(turnId, "\n[Maximum iterations reached. Stopping.]");
+      const budgetState = this.activeTurns.get(turnId);
+      if (budgetState) {
+        budgetState.budgetExhausted = true;
+        this.activeTurns.set(turnId, budgetState);
+      }
       return;
     }
 
@@ -929,16 +1644,25 @@ export class AgentRuntime {
       { type: "function", function: { name: "repo_dependencies", description: "Find imports and package dependencies of a file.", parameters: pathParameters } },
       { type: "function", function: { name: "repo_dependents", description: "Find indexed files that depend on a file.", parameters: pathParameters } },
       { type: "function", function: { name: "repo_tests", description: "Find tests related to an implementation file with confidence reasons.", parameters: pathParameters } },
+      { type: "function", function: { name: "repo_impact", description: "Advisory blast-radius and impact candidate analysis for changed paths (does not grant execution or verification authority).", parameters: { type: "object", properties: { paths: { type: "array", items: { type: "string" }, description: "Workspace-relative paths of modified files" }, path: { type: "string", description: "Single modified file path" }, maxDepth: { type: "number", description: "Graph traversal depth, default 3, max 10" }, limit: { type: "number", description: "Maximum candidates, capped at 200" } } } } },
+      { type: "function", function: { name: "repo_file_summary", description: "Get structured summary of an indexed file (symbols, exports, imports, language, size).", parameters: pathParameters } },
       { type: "function", function: { name: "repo_context", description: "Build a fresh, deduplicated, provenance-rich context pack within a hard model context budget.", parameters: { type: "object", properties: { query: { type: "string" }, contextWindow: { type: "number", description: "Model context window; 16000 to 1000000" }, limit: { type: "number" } }, required: ["query"] } } },
       { type: "function", function: { name: "repo_index_status", description: "Return local repository index health, counts, schema, and cache size.", parameters: { type: "object", properties: {} } } },
     ];
   }
 
-  private async executeRepositoryTool(toolName: string, args: Record<string, unknown>, signal: AbortSignal): Promise<string> {
-    if (!this.workspacePath) throw new Error("No workspace path configured");
-    const intelligence = createRepositoryIntelligence();
+  private async executeRepositoryTool(
+    toolName: string,
+    args: Record<string, unknown>,
+    signal: AbortSignal,
+    workspacePath: string = this.workspacePath ?? "",
+    existingIntelligence?: RepositoryIntelligence,
+  ): Promise<string> {
+    if (!workspacePath) throw new Error("No workspace path configured");
+    const intelligence = existingIntelligence ?? createRepositoryIntelligence();
+    const ownsIntelligence = existingIntelligence === undefined;
     try {
-      await intelligence.openWorkspace(this.workspacePath);
+      if (ownsIntelligence) await intelligence.openWorkspace(workspacePath);
       const initial = intelligence.status();
       if (toolName !== "repo_index_status") {
         if (initial.fileCount === 0 || initial.state === "NOT_INDEXED" || initial.state === "ERROR") await intelligence.indexWorkspace(signal);
@@ -973,6 +1697,16 @@ export class AgentRuntime {
           if (!requestedPath) throw new Error("path required");
           output = await intelligence.findRelatedTests(requestedPath, { limit });
           break;
+        case "repo_impact": {
+          const rawPaths = Array.isArray(args.paths) ? (args.paths as string[]) : requestedPath ? [requestedPath] : [];
+          const maxDepth = typeof args.maxDepth === "number" ? Math.min(10, Math.max(1, Math.floor(args.maxDepth))) : 3;
+          output = await intelligence.getImpactCandidates(rawPaths, { limit, maxDepth });
+          break;
+        }
+        case "repo_file_summary":
+          if (!requestedPath) throw new Error("path required");
+          output = await intelligence.getFileSummary(requestedPath);
+          break;
         case "repo_context": {
           if (!query) throw new Error("query required");
           const contextWindow = Math.min(1_000_000, Math.max(16_000, typeof args.contextWindow === "number" ? Math.floor(args.contextWindow) : 32_000));
@@ -984,7 +1718,7 @@ export class AgentRuntime {
       }
       return JSON.stringify(output);
     } finally {
-      await intelligence.closeWorkspace();
+      if (ownsIntelligence) await intelligence.closeWorkspace();
     }
   }
 

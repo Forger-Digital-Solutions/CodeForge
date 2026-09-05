@@ -24,6 +24,12 @@ zero-billing firewall (`ForgeZero`) that prohibits paid inference and local LLM 
 3. **Client/server.** `forge serve` is the runtime; CLI/Desktop/VS Code are thin clients.
 4. **Runtime correctness beats UI completeness.**
 5. **Fail closed.** If free status cannot be verified, do not route to the model.
+6. **Completion is enforced, not asserted.** `evaluateCompletion` in
+   `packages/workflow/src/completion-gate.ts` is the only authority that may move a run to
+   `completed`. A run that verified nothing, changed nothing it claimed to change, or ran out of
+   budget terminates as `blocked` — a terminal state that is never success. Do not add a code path
+   that reaches `completed` without passing the gate, and do not relax a gate policy to make a
+   test green.
 
 ## Technology
 

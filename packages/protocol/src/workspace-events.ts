@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ExecutionModeSchema } from "./api.js";
 import {
   TaskCreatedSchema,
   TaskStartedSchema,
@@ -29,6 +30,11 @@ const EventBase = <T extends string, S extends z.ZodType>(type: T, schema: S) =>
     timestamp: z.string().datetime(),
     seq: z.number().int().nonnegative(),
     sessionId: z.string(),
+    /**
+     * A durable execution boundary. Chat events intentionally omit this; Agent evidence is
+     * always attached to the workflow/run that produced it so historical sessions cannot mix.
+     */
+    runId: z.string().min(1).max(128).optional(),
     payload: schema,
   });
 
@@ -62,6 +68,103 @@ export const TurnFailedSchema = EventBase(
 export const TurnCompletedSchema = EventBase(
   "turn.completed",
   z.object({ turnId: z.string(), result: z.string().optional() }),
+);
+
+export const ExecutionRequestedSchema = EventBase(
+  "execution.requested",
+  z.object({
+    requestId: z.string(),
+    executionMode: ExecutionModeSchema,
+    runtime: z.enum(["chat", "workflow"]),
+  }),
+);
+
+export const ExecutionStartFailedSchema = EventBase(
+  "execution.start_failed",
+  z.object({
+    requestId: z.string(),
+    executionMode: ExecutionModeSchema,
+    code: z.string(),
+    message: z.string(),
+  }),
+);
+
+const WorkflowVerifierResultSchema = z.object({
+  id: z.string(),
+  kind: z.enum(["test", "typecheck", "build", "lint", "custom"]),
+  command: z.string(),
+  required: z.boolean(),
+  status: z.enum(["passed", "failed", "not_configured", "timed_out", "cancelled", "infra_error", "interrupted"]),
+  passed: z.number().int().nonnegative(),
+  failed: z.number().int().nonnegative(),
+  skipped: z.number().int().nonnegative(),
+  exitCode: z.number().int(),
+  durationMs: z.number().nonnegative(),
+  failureSummary: z.string().optional(),
+});
+
+export const WorkflowVerificationStartedSchema = EventBase(
+  "workflow.verification_started",
+  z.object({ taskId: z.string(), attempt: z.number().int().positive() }),
+);
+
+export const WorkflowVerificationCompletedSchema = EventBase(
+  "workflow.verification_completed",
+  z.object({
+    taskId: z.string(),
+    attempt: z.number().int().positive(),
+    notConfigured: z.boolean(),
+    passed: z.number().int().nonnegative(),
+    failed: z.number().int().nonnegative(),
+    skipped: z.number().int().nonnegative(),
+    durationMs: z.number().nonnegative(),
+    verifiers: z.array(WorkflowVerifierResultSchema),
+  }),
+);
+
+export const ForgeVerifyPlanCreatedSchema = EventBase(
+  "forgeverify.plan_created",
+  z.object({ taskId: z.string(), planId: z.string(), policyVersion: z.string(), requiredVerifierIds: z.array(z.string()) }),
+);
+
+export const ForgeVerifyAttemptStartedSchema = EventBase(
+  "forgeverify.attempt_started",
+  z.object({ taskId: z.string(), planId: z.string(), attemptId: z.string(), verifierId: z.string() }),
+);
+
+export const ForgeVerifyEvidenceCreatedSchema = EventBase(
+  "forgeverify.evidence_created",
+  z.object({ taskId: z.string(), planId: z.string(), attemptId: z.string(), evidenceId: z.string(), verifierId: z.string(), status: z.enum(["passed", "failed", "cancelled", "timed_out", "infra_error", "interrupted"]), durationMs: z.number().nonnegative(), outputTruncated: z.boolean() }),
+);
+
+export const WorkflowRepairAttemptedSchema = EventBase(
+  "workflow.repair_attempted",
+  z.object({ taskId: z.string(), attempt: z.number().int().positive(), summary: z.string() }),
+);
+
+export const WorkflowReviewCompletedSchema = EventBase(
+  "workflow.review_completed",
+  z.object({
+    taskId: z.string(),
+    approved: z.boolean(),
+    findings: z.array(z.object({
+      code: z.string(),
+      severity: z.enum(["blocking", "advisory"]),
+      path: z.string(),
+      message: z.string(),
+    })),
+    diffCount: z.number().int().nonnegative(),
+  }),
+);
+
+export const WorkflowCompletionDecidedSchema = EventBase(
+  "workflow.completion_decided",
+  z.object({
+    taskId: z.string(),
+    outcome: z.enum(["completed", "blocked", "failed"]),
+    rationale: z.string(),
+    blockers: z.array(z.object({ code: z.string(), severity: z.string(), message: z.string() })),
+  }),
 );
 
 export const PlanStartedSchema = EventBase(
@@ -489,6 +592,16 @@ export const WorkspaceEventSchema = z.discriminatedUnion("type", [
   TurnCancelledSchema,
   TurnFailedSchema,
   TurnCompletedSchema,
+  ExecutionRequestedSchema,
+  ExecutionStartFailedSchema,
+  WorkflowVerificationStartedSchema,
+  WorkflowVerificationCompletedSchema,
+  ForgeVerifyPlanCreatedSchema,
+  ForgeVerifyAttemptStartedSchema,
+  ForgeVerifyEvidenceCreatedSchema,
+  WorkflowRepairAttemptedSchema,
+  WorkflowReviewCompletedSchema,
+  WorkflowCompletionDecidedSchema,
   PlanStartedSchema,
   PlanUpdatedSchema,
   PlanStatusChangedSchema,

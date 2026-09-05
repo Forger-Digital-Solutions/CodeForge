@@ -6,6 +6,7 @@ const EventBase = <T extends string, S extends z.ZodType>(type: T, schema: S) =>
     timestamp: z.string().datetime(),
     seq: z.number().int().nonnegative(),
     sessionId: z.string(),
+    runId: z.string().min(1).max(128).optional(),
     payload: schema,
   });
 

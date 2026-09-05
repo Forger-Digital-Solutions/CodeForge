@@ -81,7 +81,7 @@ async function startSession(): Promise<void> {
     const response = await fetch(`http://localhost:${httpPort}/api/send`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId, message: "Start a new session" }),
+      body: JSON.stringify({ sessionId, message: "Start a new session", executionMode: "chat" }),
     });
 
     if (response.ok) {
@@ -149,12 +149,21 @@ async function sendMessage(): Promise<void> {
     return;
   }
 
+  const selectedMode = await vscode.window.showQuickPick(
+    [
+      { label: "Agent", description: "Run the full autonomous workflow", mode: "agent" as const },
+      { label: "Chat", description: "Start a conversational turn", mode: "chat" as const },
+    ],
+    { placeHolder: "Choose the execution mode" },
+  );
+  if (!selectedMode) return;
+
   const sessionId = "vscode-session";
   try {
     const response = await fetch(`http://localhost:${httpPort}/api/send`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId, message }),
+      body: JSON.stringify({ sessionId, message, executionMode: selectedMode.mode }),
     });
 
     if (response.ok) {

@@ -12,6 +12,7 @@
     { "path": "packages/tools" },
     { "path": "packages/sessions" },
     { "path": "packages/repo-intelligence" },
+    { "path": "packages/forge-green" },
     { "path": "packages/context" },
     { "path": "packages/git" },
     { "path": "packages/permissions" },

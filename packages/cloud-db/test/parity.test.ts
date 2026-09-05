@@ -433,6 +433,23 @@ export function defineDatabaseParityTests(suiteName: string, getDb: () => Promis
       expect(event.id).toBeDefined();
       expect(event.eventType).toBe("RATE_LIMIT_EXCEEDED");
     });
+
+    it("persists ForgeVerify plans, attempts, and immutable evidence", async () => {
+      const now = new Date().toISOString();
+      const planId = `plan-${randomUUID()}`;
+      const attemptId = `attempt-${randomUUID()}`;
+      const evidenceId = `evidence-${randomUUID()}`;
+      const plan = await db.createVerificationPlan({ id: planId, runId: "run-parity", workspaceId: "workspace-parity", policyVersion: "policy-v1", inputStateHash: "state-v1", scope: "workspace", payload: { required: ["tests.unit"] }, createdAt: now });
+      expect((await db.getVerificationPlan(planId))?.policyVersion).toBe(plan.policyVersion);
+      await db.createVerificationAttempt({ id: attemptId, planId, runId: "run-parity", verifierId: "tests.unit", verifierVersion: "1", status: "running", startedAt: now, payload: {} });
+      const terminal = await db.terminalizeVerificationAttempt(attemptId, "passed", new Date().toISOString(), 0);
+      expect(terminal.status).toBe("passed");
+      const evidence = await db.createVerificationEvidence({ id: evidenceId, attemptId, planId, runId: "run-parity", verifierId: "tests.unit", verifierVersion: "1", inputStateHash: "state-v1", status: "passed", outputDigest: "digest", outputTruncated: false, payload: { evidenceHash: "hash" }, createdAt: now });
+      expect((await db.createVerificationEvidence({ ...evidence, id: `duplicate-${randomUUID()}` })).id).toBe(evidence.id);
+      expect((await db.listVerificationAttempts(planId))).toHaveLength(1);
+      expect((await db.listVerificationEvidence(planId))).toHaveLength(1);
+      await expect(db.terminalizeVerificationAttempt(attemptId, "failed", new Date().toISOString(), 1)).rejects.toThrow(/immutable/i);
+    });
   });
 }
 

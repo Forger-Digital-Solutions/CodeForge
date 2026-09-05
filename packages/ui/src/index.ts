@@ -10,6 +10,8 @@ export { default as DiffViewer } from "./DiffViewer.js";
 export { default as InlineComments } from "./InlineComments.js";
 export { default as FileExplorer } from "./FileExplorer.js";
 export { default as WorkflowProgress } from "./WorkflowProgress.js";
+export { default as RunInspection } from "./RunInspection.js";
+export { projectRunInspection, selectInspectableRunId, dedupeRunEvents } from "./run-inspection.js";
 export { useWorkspaceSSE } from "./workspace-sse.js";
 export type { WorkspaceState, WorkflowTaskSummary } from "./workspace-sse.js";
 export {
@@ -25,3 +27,6 @@ export {
 } from "./ModelSelector.js";
 export type { SessionSummary } from "./WorkspaceApp.js";
 export { getUpgradeUrl, DEFAULT_UPGRADE_URL } from "./upgrade-url.js";
+export { ActivityIcon, ForgeWorkingIndicator, activityLabel, resolveActivityKind } from "./activity-icons.js";
+export type { ActivityKind, ActivityState, ForgeWorkingIndicatorProps } from "./activity-icons.js";
+export { isForgeWorkActive } from "./forge-activity.js";

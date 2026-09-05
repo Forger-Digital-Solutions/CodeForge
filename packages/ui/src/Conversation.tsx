@@ -6,6 +6,7 @@ import DiffViewer from "./DiffViewer.js";
 import { buildTimeline, type TimelineItem } from "./timeline.js";
 import { parseAssistantContent, parseInlineSpans, reasoningSummary } from "./assistant-content.js";
 import { describeToolTarget, summarizeToolResult, hasToolDetail } from "./tool-activity.js";
+import { ActivityIcon, activityLabel, resolveActivityKind, type ActivityState } from "./activity-icons.js";
 
 interface ConversationProps {
   turns: TurnRecord[];
@@ -89,8 +90,8 @@ const ToolActivity = ({ item }: { item: Extract<TimelineItem, { kind: "tool" }> 
   const [expanded, setExpanded] = useState(false);
   const running = item.status === "running";
   const bad = item.status === "failed" || item.status === "blocked";
-  const iconClass = item.status === "completed" ? "success" : bad ? "error" : "running";
-  const iconChar = item.status === "completed" ? "✓" : bad ? "✕" : "●";
+  const activityState: ActivityState = item.status === "completed" ? "completed" : item.status === "blocked" ? "blocked" : bad ? "failed" : "active";
+  const activityKind = resolveActivityKind(item.toolName);
 
   const target = describeToolTarget(item.toolName, item.argsJson);
   const summary = summarizeToolResult(item);
@@ -104,13 +105,13 @@ const ToolActivity = ({ item }: { item: Extract<TimelineItem, { kind: "tool" }> 
         style={{ cursor: expandable ? "pointer" : "default" }}
         onClick={expandable ? () => setExpanded((v) => !v) : undefined}
       >
-        <span className={`activity-icon ${iconClass}`}>{iconChar}</span>
+        <ActivityIcon kind={bad ? "error" : activityKind} state={activityState} />
         <span className="activity-title">
-          {toolLabel(item.toolName)}
+          {activityLabel(activityKind)}
           {target && <span className="activity-target">{target}</span>}
         </span>
         {summary && <span className={`activity-meta${bad ? " error" : ""}`}>{summary}</span>}
-        {running && <span className="activity-meta">running…</span>}
+        {running && <span className="activity-meta">Working</span>}
         {expandable && <span className="activity-caret" aria-hidden="true">{expanded ? "▾" : "▸"}</span>}
       </div>
       {expanded && detail && <pre className="activity-detail">{detail}</pre>}
@@ -144,7 +145,7 @@ const TimelineItemView = ({ item }: { item: TimelineItem }) => {
       return (
         <div className="activity-block">
           <div className="activity-header" style={{ cursor: "default" }}>
-            <span className={`activity-icon ${item.action === "written" ? "success" : "running"}`}>{item.action === "written" ? "✎" : "◇"}</span>
+            <ActivityIcon kind={item.action === "written" ? "edit" : "read"} state="completed" />
             <span className="activity-title">{item.action === "written" ? "Wrote" : "Read"} {item.path}</span>
             {item.detail && <span className="activity-meta">{item.detail}</span>}
           </div>
@@ -154,7 +155,7 @@ const TimelineItemView = ({ item }: { item: TimelineItem }) => {
       return (
         <div className="activity-block">
           <div className="activity-header" style={{ cursor: "default" }}>
-            <span className={`activity-icon ${item.exitCode === 0 ? "success" : "error"}`}>{item.exitCode === 0 ? "✓" : "✕"}</span>
+            <ActivityIcon kind={item.exitCode === 0 ? "success" : "error"} state={item.exitCode === 0 ? "completed" : "failed"} />
             <span className="activity-title">Ran {item.command}</span>
             <span className="activity-meta">exit {item.exitCode}</span>
           </div>
@@ -165,18 +166,6 @@ const TimelineItemView = ({ item }: { item: TimelineItem }) => {
   }
 };
 
-function toolLabel(toolName: string): string {
-  const map: Record<string, string> = {
-    read_file: "Read file",
-    write_file: "Wrote file",
-    edit_file: "Edited file",
-    run_command: "Ran command",
-    search: "Searched",
-    list_files: "Listed files",
-  };
-  return map[toolName] ?? toolName;
-}
-
 const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: string }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
@@ -185,15 +174,14 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
   switch (item.kind) {
     case "activity": {
       const a = item as Extract<WorkItem, { kind: "activity" }>;
-      const iconClass = a.status === "completed" ? "success" : a.status === "failed" ? "error" : "running";
-      const iconChar = a.status === "completed" ? "✓" : a.status === "failed" ? "✕" : "●";
+      const iconState: ActivityState = a.status === "completed" ? "completed" : a.status === "failed" ? "failed" : "active";
       return (
         <div className="activity-block">
           <button type="button" className="activity-header" onClick={toggle}>
             <span className={`activity-chevron ${!isCollapsed ? "open" : ""}`}>›</span>
-            <span className={`activity-icon ${iconClass}`}>{iconChar}</span>
+            <ActivityIcon kind="generic" state={iconState} />
             <span className="activity-title">{a.title}</span>
-            {a.durationMs ? <span className="activity-meta">{a.durationMs}ms</span> : null}
+            {a.durationMs ? <span className="activity-meta activity-elapsed">{a.durationMs}ms</span> : null}
           </button>
           {!isCollapsed && (
             <div className="activity-body">
@@ -217,14 +205,12 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
         <div className="activity-block">
           <button type="button" className="activity-header" onClick={toggle}>
             <span className={`activity-chevron ${!isCollapsed ? "open" : ""}`}>›</span>
-            <span className={`activity-icon ${isFailed ? "error" : isRunning ? "running" : "success"}`}>
-              {isFailed ? "✕" : isRunning ? "●" : "✓"}
-            </span>
+            <ActivityIcon kind={isFailed ? "error" : isRunning ? "execute" : "success"} state={isFailed ? "failed" : isRunning ? "active" : "completed"} />
             <span className="activity-title">Ran {c.command}</span>
             <span className="activity-meta">
               {isRunning ? "Running" : isFailed ? `Exit ${c.exitCode ?? 1}` : "Passed"}
-              {c.durationMs ? ` · ${c.durationMs}ms` : ""}
             </span>
+            {c.durationMs ? <span className="activity-meta activity-elapsed">{c.durationMs}ms</span> : null}
           </button>
           {!isCollapsed && (
             <div className="activity-body">
@@ -256,11 +242,12 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
         <div className="activity-block">
           <button type="button" className="activity-header" onClick={toggle}>
             <span className={`activity-chevron ${!isCollapsed ? "open" : ""}`}>›</span>
-            <span className={`activity-icon ${f.changeType === "created" ? "success" : f.changeType === "deleted" ? "error" : "running"}`}>
-              {f.changeType === "created" ? "+" : f.changeType === "deleted" ? "−" : "✎"}
-            </span>
+            <ActivityIcon kind={f.changeType === "created" ? "create" : f.changeType === "deleted" ? "delete" : "edit"} state={f.changeType === "deleted" ? "failed" : "completed"} />
             <span className="activity-title">Edited {f.path}</span>
-            <span className="activity-meta">+{f.additions} −{f.deletions}</span>
+            <span className="activity-meta activity-diff-stats">
+              <span className="activity-stat activity-stat-additions">+{f.additions}</span>{" "}
+              <span className="activity-stat activity-stat-deletions">−{f.deletions}</span>
+            </span>
           </button>
           {!isCollapsed && (
             <div className="activity-body">
@@ -284,9 +271,7 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
         <div className="activity-block">
           <button type="button" className="activity-header" onClick={toggle}>
             <span className={`activity-chevron ${!isCollapsed ? "open" : ""}`}>›</span>
-            <span className={`activity-icon ${isFailed ? "error" : "success"}`}>
-              {isFailed ? "✕" : "✓"}
-            </span>
+            <ActivityIcon kind={isFailed ? "error" : "test"} state={isFailed ? "failed" : "completed"} />
             <span className="activity-title">{t.name || "Test Suite"}</span>
             <span className="activity-meta">
               {t.passed} passed{t.failed > 0 ? ` · ${t.failed} failed` : ""}
@@ -397,7 +382,7 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
       return (
         <div className="activity-block">
           <div className="activity-header" style={{ cursor: "default" }}>
-            <span className="activity-icon" style={{ color: "var(--cf-accent)" }}>◉</span>
+            <ActivityIcon kind="git" state="completed" />
             <span className="activity-title">Checkpoint: {c.label}</span>
             <span className="activity-meta">{c.id.slice(0, 8)}</span>
           </div>
@@ -410,7 +395,7 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
       return (
         <div className="activity-block">
           <div className="activity-header" style={{ cursor: "default" }}>
-            <span className="activity-icon" style={{ color: "var(--cf-success)" }}>◈</span>
+            <ActivityIcon kind="verify" state="completed" />
             <span className="activity-title">Evidence: {e.conclusion}</span>
           </div>
         </div>
@@ -422,7 +407,7 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
       return (
         <div className="activity-block">
           <div className="activity-header" style={{ cursor: "default" }}>
-            <span className="activity-icon" style={{ color: "var(--cf-accent)" }}>◆</span>
+            <ActivityIcon kind="create" state="completed" />
             <span className="activity-title">{a.title}</span>
             <span className="activity-meta">{a.type}</span>
           </div>

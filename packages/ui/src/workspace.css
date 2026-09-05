@@ -649,16 +649,44 @@ html, body, #root {
 }
 
 .activity-icon {
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 16px;
+  height: 16px;
   text-align: center;
   flex-shrink: 0;
 }
 
-.activity-icon.success { color: var(--cf-success); }
-.activity-icon.error { color: var(--cf-danger); }
-.activity-icon.running { color: var(--cf-accent); }
-.activity-icon.pending { color: var(--cf-text-muted); }
+.activity-icon svg { display: block; }
+.activity-icon-success,
+.activity-icon-state-completed { color: var(--cf-success); }
+.activity-icon-error,
+.activity-icon-state-failed,
+.activity-icon-state-blocked { color: var(--cf-danger); }
+.activity-icon-state-active { color: var(--cf-accent); }
+.activity-icon-state-pending,
+.activity-icon-state-static { color: var(--cf-text-muted); }
+
+/* Semantic accents keep the feed scannable without turning it into a rainbow UI. */
+.activity-icon-search { color: #e5b454; }
+.activity-icon-read { color: #7cb7ff; }
+.activity-icon-reason { color: #c084fc; }
+.activity-icon-plan { color: #f59e0b; }
+.activity-icon-edit { color: #f0b35c; }
+.activity-icon-create { color: #5eead4; }
+.activity-icon-delete { color: #fb7185; }
+.activity-icon-execute { color: #67e8f9; }
+.activity-icon-fetch { color: #60a5fa; }
+.activity-icon-test { color: #a3e635; }
+.activity-icon-verify { color: #5eead4; }
+.activity-icon-git { color: #f472b6; }
+.activity-icon-commit { color: #fbbf24; }
+.activity-icon-error { color: var(--cf-danger); }
+.activity-icon-waiting { color: #fbbf24; }
+.activity-icon-parallel { color: #a78bfa; }
+.activity-icon-success { color: var(--cf-success); }
+.activity-icon-generic { color: var(--cf-text-muted); }
 
 .activity-title {
   flex: 1;
@@ -682,6 +710,18 @@ html, body, #root {
   color: var(--cf-danger);
 }
 
+.activity-elapsed {
+  color: #c084fc;
+}
+
+.activity-diff-stats {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.activity-stat-additions { color: var(--cf-success); }
+.activity-stat-deletions { color: var(--cf-danger); }
+
 /* The target is what distinguishes one call from the next; the tool name is the repeated part. */
 .activity-target {
   margin-left: 6px;
@@ -697,17 +737,68 @@ html, body, #root {
 }
 
 /* A running call should be visibly alive without drawing the eye off the answer. */
-.activity-block.running .activity-icon {
-  animation: cf-activity-pulse 1.1s ease-in-out infinite;
+.activity-icon-state-active:not(.activity-icon-forge) { opacity: 0.88; }
+
+/* One shared status row owns the animation; historical tool rows stay paint-static. */
+.forge-working-indicator {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  margin: 2px 12px 6px;
+  padding: 5px 9px;
+  border-left: 2px solid var(--cf-accent);
+  color: var(--cf-text-secondary);
+  font-size: 11.5px;
 }
 
-@keyframes cf-activity-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+.forge-working-indicator .activity-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--cf-accent);
+}
+
+.forge-working-label {
+  letter-spacing: 0.01em;
+}
+
+.forge-working-indicator .forge-spark {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: forge-spark-out 1.15s ease-out infinite;
+}
+
+.forge-working-indicator .forge-spark-two { animation-delay: 140ms; }
+.forge-working-indicator .forge-spark-three { animation-delay: 260ms; }
+.forge-working-indicator .forge-nozzle { animation: forge-point 1.15s ease-in-out infinite; }
+
+@keyframes forge-point {
+  0%, 100% { opacity: 0.7; }
+  42%, 64% { opacity: 1; }
+}
+
+@keyframes forge-spark-out {
+  0%, 22% { opacity: 0; transform: translate(0, 0) scale(0.7); }
+  42% { opacity: 1; }
+  78%, 100% { opacity: 0; transform: translate(1px, -1px) scale(1); }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .activity-block.running .activity-icon { animation: none; }
+  .forge-working-indicator .forge-spark,
+  .forge-working-indicator .forge-nozzle { animation: none; }
+  .forge-working-indicator .forge-spark { opacity: 0.75; }
 }
 
 .activity-detail {
@@ -1122,6 +1213,34 @@ html, body, #root {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.execution-mode-selector {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--cf-border);
+  border-radius: 6px;
+  background: var(--cf-bg-base);
+}
+
+.execution-mode-option {
+  border: 0;
+  border-radius: 4px;
+  padding: 3px 8px;
+  color: var(--cf-text-muted);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.execution-mode-option.selected {
+  color: var(--cf-text);
+  background: var(--cf-bg-hover);
+}
+
+.execution-mode-option:focus-visible {
+  outline: 2px solid var(--cf-accent);
+  outline-offset: 1px;
 }
 
 .composer-toolbar-right {
@@ -2480,3 +2599,75 @@ html, body, #root {
   font-size: 11px;
   color: var(--cf-text-muted);
 }
+
+/* Run inspection keeps the main transcript compact while preserving the evidence behind a run. */
+.run-inspection {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--cf-text-secondary);
+}
+
+.run-inspection-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--cf-text);
+  font-weight: 600;
+}
+
+.run-inspection details {
+  border-top: 1px solid var(--cf-border);
+  padding-top: 7px;
+}
+
+.run-inspection summary {
+  color: var(--cf-text);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.run-inspection-grid {
+  display: grid;
+  grid-template-columns: minmax(76px, 0.45fr) minmax(0, 1fr);
+  gap: 4px 8px;
+  margin: 8px 0 0;
+}
+
+.run-inspection-grid dt { color: var(--cf-text-muted); }
+.run-inspection-grid dd { margin: 0; overflow-wrap: anywhere; }
+.run-inspection-code, .run-inspection-agent-id, .run-inspection-verifier code { font-family: var(--cf-font-mono); font-size: 11px; }
+
+.run-inspection-status {
+  display: inline-block;
+  color: var(--cf-text-secondary);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.run-inspection-status[data-status="completed"],
+.run-inspection-status[data-status="passed"],
+.run-inspection-status[data-status="approved"] { color: var(--cf-success); }
+
+.run-inspection-status[data-status="failed"],
+.run-inspection-status[data-status="blocked"],
+.run-inspection-status[data-status="denied"] { color: var(--cf-danger); }
+
+.run-inspection-status[data-status="running"],
+.run-inspection-status[data-status="starting"],
+.run-inspection-status[data-status="verifying"],
+.run-inspection-status[data-status="repairing"],
+.run-inspection-status[data-status="reviewing"],
+.run-inspection-status[data-status="waiting_for_approval"] { color: var(--cf-accent); }
+
+.run-inspection-certified { color: var(--cf-success); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+.run-inspection-list, .run-inspection-tree { display: grid; gap: 5px; margin: 8px 0 0; padding-left: 16px; }
+.run-inspection-tree .run-inspection-tree { border-left: 1px solid var(--cf-border); margin-top: 4px; }
+.run-inspection-agent-role { color: var(--cf-text); margin-left: 5px; }
+.run-inspection-agent-id, .run-inspection-secondary { color: var(--cf-text-muted); margin-left: 4px; overflow-wrap: anywhere; }
+.run-inspection-error { color: var(--cf-danger); margin-top: 3px; overflow-wrap: anywhere; }
+.run-inspection-file { color: var(--cf-text); background: none; border: none; padding: 0; text-align: left; font-family: var(--cf-font-mono); cursor: pointer; text-decoration: underline; }
+.run-inspection-file[aria-pressed="true"] { color: var(--cf-accent); }
+.run-inspection-verifier { margin: 5px 0 0 8px; overflow-wrap: anywhere; }
+.diff-truncated { color: var(--cf-text-muted); padding: 8px; font-size: 11px; }

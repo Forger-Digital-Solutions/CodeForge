@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { WorkspaceEvent, SessionStatus } from "@codeforge/protocol";
-import { WorkspaceEventSchema, isWorkspaceEvent } from "@codeforge/protocol";
+import type { ExecutionMode, SendRequest, WorkspaceEvent, SessionStatus } from "@codeforge/protocol";
+import { DEFAULT_EXECUTION_MODE, ExecutionModeSchema, WorkspaceEventSchema, isWorkspaceEvent } from "@codeforge/protocol";
 import type { SessionRecord, TurnRecord, WorkItem } from "@codeforge/sessions";
 import { isEventForSession, mergeEvent } from "./session-events.js";
 
@@ -23,6 +23,8 @@ export interface WorkspaceState {
   leftNav: string;
   isRunning: boolean;
   isPaused: boolean;
+  /** True only while the authoritative SSE execution stream is connected. */
+  isEventStreamConnected: boolean;
   /**
    * Every approval currently awaiting a decision, keyed by the backend's approval id and in the
    * order the server asked. A plan approval and a later file-write approval are two different
@@ -49,6 +51,7 @@ export interface WorkspaceState {
   lastWorkflowResult: string | null;
   lastEvidenceId: string | null;
   lastCheckpointId: string | null;
+  activeExecutionMode: ExecutionMode | null;
 }
 
 export const initialWorkspaceState: WorkspaceState = {
@@ -61,6 +64,7 @@ export const initialWorkspaceState: WorkspaceState = {
   leftNav: "sessions",
   isRunning: false,
   isPaused: false,
+  isEventStreamConnected: false,
   pendingApprovals: [],
   pendingApproval: null,
   pendingQuestion: null,
@@ -78,6 +82,7 @@ export const initialWorkspaceState: WorkspaceState = {
   lastWorkflowResult: null,
   lastEvidenceId: null,
   lastCheckpointId: null,
+  activeExecutionMode: null,
 };
 
 export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
@@ -89,6 +94,7 @@ export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
     events: [],
     isRunning: false,
     isPaused: false,
+    isEventStreamConnected: false,
     pendingApprovals: [],
     pendingApproval: null,
     pendingQuestion: null,
@@ -105,10 +111,12 @@ export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
     lastWorkflowResult: null,
     lastEvidenceId: null,
     lastCheckpointId: null,
+    activeExecutionMode: null,
   };
 }
 
 const ACTIVE_SESSION_STORAGE_KEY = "codeforge:active-session-id";
+const EXECUTION_MODE_STORAGE_KEY = "codeforge:execution-mode";
 
 type SessionStorage = Pick<Storage, "getItem" | "setItem">;
 
@@ -133,6 +141,55 @@ export function rememberActiveSession(sessionId: string, storage: SessionStorage
   } catch {
     // Session restoration is a convenience; persistence remains server-authoritative.
   }
+}
+
+export function readRememberedExecutionMode(storage: SessionStorage | undefined = browserStorage()): ExecutionMode {
+  const parsed = ExecutionModeSchema.safeParse(storage?.getItem(EXECUTION_MODE_STORAGE_KEY));
+  return parsed.success ? parsed.data : DEFAULT_EXECUTION_MODE;
+}
+
+export function rememberExecutionMode(mode: ExecutionMode, storage: SessionStorage | undefined = browserStorage()): void {
+  try {
+    storage?.setItem(EXECUTION_MODE_STORAGE_KEY, mode);
+  } catch {
+    // The selected mode still applies to the current renderer when storage is unavailable.
+  }
+}
+
+export function createSendRequest(
+  sessionId: string,
+  message: string,
+  turnId: string,
+  executionMode: ExecutionMode,
+  steer = false,
+): SendRequest {
+  return steer
+    ? { sessionId, message, turnId, steer: true }
+    : { sessionId, message, turnId, executionMode };
+}
+
+export function executionStartFailureMessage(mode: ExecutionMode, message: string): string {
+  return `${mode === "agent" ? "Agent" : "Chat"} could not start\n${message}`;
+}
+
+export function applyExecutionLifecycleEvent(state: WorkspaceState, event: WorkspaceEvent): WorkspaceState {
+  if (event.type === "execution.requested") {
+    return { ...state, activeExecutionMode: event.payload.executionMode };
+  }
+  if (event.type === "execution.start_failed") {
+    const workflowError = executionStartFailureMessage(event.payload.executionMode, event.payload.message);
+    return {
+      ...state,
+      activeExecutionMode: null,
+      isRunning: false,
+      agentStatus: "failed",
+      activePhase: "failed_to_start",
+      workflowActionPending: "none",
+      workflowError,
+      workflowActionError: workflowError,
+    };
+  }
+  return state;
 }
 
 export type PendingApproval = Extract<WorkItem, { kind: "approval" }>;
@@ -204,6 +261,23 @@ function mergeServerTurns(serverTurns: TurnRecord[], prevTurns: TurnRecord[]): T
   return [...serverTurns, ...pendingOptimistic];
 }
 
+/**
+ * Durable events are the reload source of truth. Keep the server sequence order and collapse a
+ * replay by `(sessionId, seq)` before any run projection sees it; neither timestamps nor payload
+ * text are safe event identities when concurrent workers are active.
+ */
+export function mergeHydratedEvents(existing: WorkspaceEvent[], incoming: unknown[], sessionId: string): WorkspaceEvent[] {
+  const bySequence = new Map<number, WorkspaceEvent>();
+  for (const event of existing) {
+    if (event.sessionId === sessionId) bySequence.set(event.seq, event);
+  }
+  for (const candidate of incoming) {
+    const parsed = WorkspaceEventSchema.safeParse(candidate);
+    if (parsed.success && parsed.data.sessionId === sessionId) bySequence.set(parsed.data.seq, parsed.data);
+  }
+  return [...bySequence.values()].sort((left, right) => left.seq - right.seq);
+}
+
 function resolveApiPath(sseUrl: string, apiPath: string): string {
   if (sseUrl.startsWith("http://") || sseUrl.startsWith("https://")) {
     return `${new URL(sseUrl).origin}${apiPath}`;
@@ -265,6 +339,7 @@ export function useWorkspaceSSE(url: string) {
           session?: SessionRecord | null;
           turns?: TurnRecord[];
           workItems?: WorkItem[];
+          events?: unknown[];
           pendingApprovals?: Array<{
             approvalId: string;
             tool: string;
@@ -295,11 +370,16 @@ export function useWorkspaceSSE(url: string) {
                   }) as Extract<WorkItem, { kind: "approval" }>,
               )
             : prev.pendingApprovals;
+          const events = Array.isArray(data.events)
+            ? mergeHydratedEvents(prev.events, data.events, sessionId)
+            : prev.events;
+          lastSeqRef.current = Math.max(lastSeqRef.current, events.at(-1)?.seq ?? 0);
           return {
             ...prev,
             session: data.session ?? prev.session,
             turns: Array.isArray(data.turns) ? mergeServerTurns(data.turns, prev.turns) : prev.turns,
             workItems: Array.isArray(data.workItems) ? data.workItems : prev.workItems,
+            events,
             pendingApprovals,
             pendingApproval: pendingApprovals[0] ?? null,
           };
@@ -344,6 +424,7 @@ export function useWorkspaceSSE(url: string) {
     // from the previously-followed session remain, and replay the new session from seq 0.
     lastSeqRef.current = 0;
     setState((prev) => ({ ...prev, events: [] }));
+    setState((prev) => ({ ...prev, isEventStreamConnected: false }));
 
     const connect = () => {
       if (aborted) return;
@@ -358,10 +439,12 @@ export function useWorkspaceSSE(url: string) {
       es.onopen = () => {
         if (aborted) return;
         clearReconnect();
+        setState((prev) => ({ ...prev, isEventStreamConnected: true }));
       };
 
       es.onerror = () => {
         if (aborted || !es) return;
+        setState((prev) => ({ ...prev, isEventStreamConnected: false }));
         es.close();
         es = null;
         reconnectTimerRef.current = setTimeout(connect, 1000);
@@ -377,7 +460,7 @@ export function useWorkspaceSSE(url: string) {
 
           lastSeqRef.current = parsed.seq;
           setState((prev: WorkspaceState) => {
-            const next = { ...prev, events: mergeEvent(prev.events, parsed) };
+            let next = applyExecutionLifecycleEvent({ ...prev, events: mergeEvent(prev.events, parsed) }, parsed);
             if (parsed.type === "turn.started") {
               next.isRunning = true;
               next.agentStatus = "running";
@@ -482,6 +565,7 @@ export function useWorkspaceSSE(url: string) {
               next.workflowTasks = next.workflowTasks.map((t) =>
                 t.taskId === p.taskId ? { ...t, status: "completed", phase: "completed", progress: 100 } : t,
               );
+              next.activeExecutionMode = null;
             }
             if (parsed.type === "task.cancelled") {
               const p = parsed.payload as { taskId: string; reason?: string };
@@ -570,6 +654,7 @@ export function useWorkspaceSSE(url: string) {
     return () => {
       aborted = true;
       clearReconnect();
+      setState((prev) => ({ ...prev, isEventStreamConnected: false }));
       if (es) {
         es.close();
         es = null;
@@ -578,7 +663,7 @@ export function useWorkspaceSSE(url: string) {
   }, [url, activeSessionId, clearReconnect, scheduleHydrate]);
 
   const sendMessage = useCallback(
-    async (message: string, steer = false) => {
+    async (message: string, steer = false, executionMode: ExecutionMode = DEFAULT_EXECUTION_MODE) => {
       const sessionId = resolveSendSessionId(state.session?.id);
       rememberActiveSession(sessionId);
       if (!state.session?.id) {
@@ -588,9 +673,8 @@ export function useWorkspaceSSE(url: string) {
       const turnId = crypto.randomUUID();
       const endpoint = resolveApiPath(url, "/api/send");
 
-      const body = steer
-        ? JSON.stringify({ sessionId, message, steer: true, turnId })
-        : JSON.stringify({ sessionId, message, turnId });
+      const request = createSendRequest(sessionId, message, turnId, executionMode, steer);
+      const body = JSON.stringify(request);
 
       // Optimistically render the user's message so pressing Enter has an
       // immediate, visible effect; hydration reconciles it with the server turn.
@@ -619,8 +703,9 @@ export function useWorkspaceSSE(url: string) {
         if (!res.ok) {
           let msg = `Send failed: ${res.status}`;
           try {
-            const data = (await res.json()) as { error?: string; message?: string };
+            const data = (await res.json()) as { error?: string; message?: string; executionMode?: ExecutionMode };
             msg = data.message || data.error || msg;
+            if (!steer) msg = executionStartFailureMessage(data.executionMode ?? executionMode, msg);
           } catch {}
           // Roll back the optimistic turn and surface the failure.
           setState((prev) => ({

@@ -8,8 +8,15 @@ import { detectLanguage, parseStructuredFallback, parseTypeScript } from "./lang
 import {
   REPOSITORY_INDEX_VERSION,
   REPOSITORY_PARSER_VERSION,
+  asRelevanceScore,
+  asRetrievalScore,
+  asSymbolConfidence,
+  type BlastRadiusEstimate,
+  type FileSummary,
+  type ImpactCandidates,
   type IndexProgress,
   type IndexStatus,
+  type ModuleSummary,
   type QueryOptions,
   type QueryPage,
   type RefreshResult,
@@ -18,9 +25,12 @@ import {
   type RepositoryIntelligence,
   type RepositoryIntelligenceOptions,
   type RepositoryMatch,
+  type RepositorySummary,
   type RepositorySymbol,
   type WorkspaceIdentity,
 } from "./types.js";
+
+const SHARED_CONTENT_PARSE_CACHE = new Map<string, { symbols: RepositorySymbol[]; edges: RepositoryEdge[]; error?: string }>();
 
 const DEFAULT_MAX_FILE_BYTES = 2 * 1024 * 1024;
 const DEFAULT_MAX_FILES = 1_000_000;
@@ -169,6 +179,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       this.writeMeta("parser_version", REPOSITORY_PARSER_VERSION);
       this.writeMeta("workspace_id", this.identity.id);
       this.writeMeta("repository_fingerprint", this.identity.repositoryFingerprint);
+      if (!this.meta("generation")) this.writeMeta("generation", "1");
       this.state = this.meta("state") as IndexStatus["state"] || "NOT_INDEXED";
     } catch (error) {
       this.recoverCorruption(error);
@@ -185,6 +196,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       this.writeMeta("parser_version", REPOSITORY_PARSER_VERSION);
       this.writeMeta("workspace_id", this.identity?.id ?? "unknown");
       this.writeMeta("state", "NOT_INDEXED");
+      this.writeMeta("generation", "1");
       this.state = "NOT_INDEXED";
     } catch (recovery) {
       throw new Error(`Repository index recovery failed after ${String(original)}: ${String(recovery)}`);
@@ -306,6 +318,13 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
     let symbolsIndexed = 0;
     let edgesIndexed = 0;
     let errors = 0;
+    let filesParsed = 0;
+    let cacheHits = 0;
+    let bytesRead = 0;
+    const currentHead = execGit(identity.realRoot, ["rev-parse", "HEAD"]);
+    const storedHead = this.meta("head");
+    const headChanged = Boolean(storedHead && currentHead && storedHead !== currentHead);
+
     db.exec("BEGIN IMMEDIATE");
     try {
       for (const removed of deleted) this.deleteFile(removed, true);
@@ -318,7 +337,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
         if (!absolute) continue;
         const stat = fs.statSync(absolute);
         const previous = existing.get(relativePath);
-        if (previous && previous.size === stat.size && previous.mtimeMs === stat.mtimeMs) { unchanged++; processed++; continue; }
+        if (!headChanged && previous && previous.size === stat.size && previous.mtimeMs === stat.mtimeMs) { unchanged++; processed++; continue; }
         const extension = path.extname(relativePath).toLowerCase();
         const generated = normalizeRelative(relativePath).split("/").some((segment) => GENERATED_SEGMENTS.has(segment));
         const sensitive = SENSITIVE_NAMES.test(relativePath);
@@ -328,7 +347,8 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
         try { fs.readSync(handle, prefix, 0, prefix.length, 0); } finally { fs.closeSync(handle); }
         const binary = BINARY_EXTENSIONS.has(extension) || binaryPrefix(prefix);
         const hash = tooLarge ? sha256(Buffer.concat([prefix, Buffer.from(`:${stat.size}`)])) : sha256(fs.readFileSync(absolute));
-        if (previous?.hash === hash) {
+        bytesRead += stat.size;
+        if (!headChanged && previous?.hash === hash) {
           db.prepare("UPDATE files SET mtime_ms=$mtime,size=$size,git_status=$git WHERE path=$path").run({ $mtime: stat.mtimeMs, $size: stat.size, $git: discovery.gitStatus ?? null, $path: relativePath });
           unchanged++; processed++; continue;
         }
@@ -343,13 +363,36 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
           content = fs.readFileSync(absolute, "utf8");
           if (content.includes("\0")) {
             parserStatus = "skipped";
+          } else if (SHARED_CONTENT_PARSE_CACHE.has(hash)) {
+            const cached = SHARED_CONTENT_PARSE_CACHE.get(hash)!;
+            cacheHits++;
+            symbols = cached.symbols.map((s) => ({
+              ...s,
+              path: relativePath,
+              id: sha256([relativePath, s.kind, s.qualifiedName, String(s.startLine)].join("\0")),
+            }));
+            edges = cached.edges.map((e) => ({
+              ...e,
+              sourcePath: relativePath,
+              id: sha256([e.kind, relativePath, e.specifier ?? e.targetPath ?? ""].join("\0")),
+            }));
+            parserError = cached.error;
+            parserStatus = cached.error ? "error" : "parsed";
           } else if (["typescript", "typescriptreact", "javascript", "javascriptreact"].includes(language)) {
+            filesParsed++;
             const parsed = parseTypeScript(relativePath, content, knownPaths);
             symbols = parsed.symbols; edges = parsed.edges; parserError = parsed.error;
             parserStatus = parsed.error ? "error" : "parsed";
+            if (SHARED_CONTENT_PARSE_CACHE.size < 50_000) {
+              SHARED_CONTENT_PARSE_CACHE.set(hash, { symbols, edges, error: parserError });
+            }
           } else {
+            filesParsed++;
             symbols = parseStructuredFallback(relativePath, language, content);
             parserStatus = symbols.length ? "fallback" : "parsed";
+            if (SHARED_CONTENT_PARSE_CACHE.size < 50_000) {
+              SHARED_CONTENT_PARSE_CACHE.set(hash, { symbols, edges: [], error: undefined });
+            }
           }
         }
         if (parserError) errors++;
@@ -370,7 +413,9 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       this.insertPackageEdges();
       const now = new Date().toISOString();
       const branch = execGit(identity.realRoot, ["branch", "--show-current"]);
-      const head = execGit(identity.realRoot, ["rev-parse", "HEAD"]);
+      const head = currentHead ?? execGit(identity.realRoot, ["rev-parse", "HEAD"]);
+      const nextGen = (Number(this.meta("generation")) || 0) + 1;
+      this.writeMeta("generation", String(nextGen));
       this.writeMeta("branch", branch ?? ""); this.writeMeta("head", head ?? "");
       this.writeMeta("updated_at", now); if (!this.meta("created_at")) this.writeMeta("created_at", now);
       this.writeMeta("last_successful_update", now);
@@ -378,7 +423,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       this.writeMeta("state", this.state);
       db.exec("COMMIT");
       this.progress("ready", targets.length, targets.length, symbolsIndexed, edgesIndexed, errors, started);
-      return { added, changed, deleted, unchanged, durationMs: Date.now() - started };
+      return { added, changed, deleted, unchanged, durationMs: Date.now() - started, generation: nextGen, filesParsed, cacheHits, bytesRead };
     } catch (error) {
       db.exec("ROLLBACK");
       this.state = signal?.aborted ? "STALE" : "ERROR";
@@ -442,7 +487,23 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
     const { db, identity } = this.ensureOpen();
     const counts = db.prepare("SELECT (SELECT count(*) FROM files) file_count,(SELECT count(*) FROM symbols) symbol_count,(SELECT count(*) FROM edges) edge_count,(SELECT count(*) FROM files WHERE parser_status='error') error_count").get() as Row;
     let sizeBytes = 0; try { sizeBytes = fs.statSync(this.indexPath).size; } catch {}
-    return { state: this.state, workspaceId: identity.id, root: identity.root, indexPath: this.indexPath, indexVersion: REPOSITORY_INDEX_VERSION, parserVersion: REPOSITORY_PARSER_VERSION, fileCount: Number(counts.file_count), symbolCount: Number(counts.symbol_count), edgeCount: Number(counts.edge_count), errorCount: Number(counts.error_count), lastSuccessfulUpdate: this.meta("last_successful_update"), createdAt: this.meta("created_at"), updatedAt: this.meta("updated_at"), sizeBytes };
+    return {
+      state: this.state,
+      workspaceId: identity.id,
+      root: identity.root,
+      indexPath: this.indexPath,
+      indexVersion: REPOSITORY_INDEX_VERSION,
+      parserVersion: REPOSITORY_PARSER_VERSION,
+      fileCount: Number(counts.file_count),
+      symbolCount: Number(counts.symbol_count),
+      edgeCount: Number(counts.edge_count),
+      errorCount: Number(counts.error_count),
+      generation: Number(this.meta("generation")) || 1,
+      lastSuccessfulUpdate: this.meta("last_successful_update"),
+      createdAt: this.meta("created_at"),
+      updatedAt: this.meta("updated_at"),
+      sizeBytes,
+    };
   }
 
   async searchFiles(query: string, options: QueryOptions = {}): Promise<QueryPage<RepositoryMatch>> {
@@ -565,6 +626,198 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       return testLike && !asksForTests ? { ...match, score: match.score - 35, reasons: [...match.reasons, "test_deprioritized_for_implementation_query"] } : match;
     }).sort((a, b) => b.score - a.score || a.path.localeCompare(b.path));
     return page(ranked, options);
+  }
+
+  async getDefinition(symbolIdOrName: string): Promise<RepositorySymbol | undefined> {
+    let symbol = await this.getSymbol(symbolIdOrName);
+    if (!symbol) {
+      const results = await this.searchSymbols(symbolIdOrName, { limit: 10 });
+      symbol = results.items.find((s) => s.name === symbolIdOrName || s.qualifiedName === symbolIdOrName) ?? results.items[0];
+    }
+    return symbol;
+  }
+
+  async getFileSummary(filePath: string): Promise<FileSummary | undefined> {
+    const file = await this.getFile(filePath);
+    if (!file) return undefined;
+    const symbols = (this.db!.prepare("SELECT * FROM symbols WHERE path=$path ORDER BY start_line").all({ $path: file.path }) as Row[]).map(rowSymbol);
+    const edges = (this.db!.prepare("SELECT * FROM edges WHERE source_path=$path AND kind='imports'").all({ $path: file.path }) as Row[]).map(rowEdge);
+    return {
+      path: file.path,
+      language: file.language,
+      size: file.size,
+      lines: file.lines,
+      hash: file.hash,
+      exports: symbols.filter((s) => s.exported),
+      imports: [...new Set(edges.map((e) => e.targetPath ?? e.specifier ?? "").filter(Boolean))],
+      symbols,
+      sensitive: file.sensitive,
+      binary: file.binary,
+    };
+  }
+
+  async getModuleSummary(pathPrefix: string): Promise<ModuleSummary> {
+    const normPrefix = normalizeRelative(pathPrefix).replace(/\/+$/, "");
+    const fileRows = this.db!.prepare("SELECT path FROM files WHERE path=$prefix OR path LIKE $prefixPattern").all({
+      $prefix: normPrefix,
+      $prefixPattern: `${normPrefix}/%`,
+    }) as Row[];
+    const files = fileRows.map((r) => String(r.path));
+    const symbolRows = this.db!.prepare("SELECT * FROM symbols WHERE path=$prefix OR path LIKE $prefixPattern LIMIT 500").all({
+      $prefix: normPrefix,
+      $prefixPattern: `${normPrefix}/%`,
+    }) as Row[];
+    const symbols = symbolRows.map(rowSymbol);
+    const edgeRows = this.db!.prepare("SELECT * FROM edges WHERE source_path=$prefix OR source_path LIKE $prefixPattern LIMIT 1000").all({
+      $prefix: normPrefix,
+      $prefixPattern: `${normPrefix}/%`,
+    }) as Row[];
+    const edges = edgeRows.map(rowEdge);
+    const internalDeps = new Set<string>();
+    const packageDeps = new Set<string>();
+    for (const edge of edges) {
+      if (edge.kind === "package_dependency" && edge.specifier) {
+        packageDeps.add(edge.specifier);
+      } else if (edge.kind === "imports" && edge.targetPath) {
+        if (!edge.targetPath.startsWith(`${normPrefix}/`)) {
+          internalDeps.add(edge.targetPath);
+        }
+      }
+    }
+    const relatedTests = new Set<string>();
+    for (const file of files.slice(0, 50)) {
+      const tests = await this.findRelatedTests(file, { limit: 10 });
+      for (const t of tests.items) relatedTests.add(t.path);
+    }
+    return {
+      prefix: normPrefix,
+      files,
+      symbols,
+      packageDependencies: [...packageDeps],
+      internalDependencies: [...internalDeps],
+      relatedTests: [...relatedTests],
+    };
+  }
+
+  async getImpactCandidates(
+    changedPaths: string[],
+    options: QueryOptions & { maxDepth?: number } = {},
+  ): Promise<ImpactCandidates> {
+    const maxDepth = Math.min(10, Math.max(1, options.maxDepth ?? 3));
+    const limit = Math.min(MAX_QUERY_LIMIT, Math.max(1, options.limit ?? DEFAULT_LIMIT));
+    const visited = new Set<string>();
+    const dependents = new Set<string>();
+    const tests = new Set<string>();
+    const evidence: Array<{ path: string; reason: string; depth: number }> = [];
+    let truncated = false;
+    let unresolvedEdges = 0;
+    let maxDepthReached = 0;
+
+    let currentLevel = changedPaths.map(normalizeRelative);
+    for (const p of currentLevel) visited.add(p);
+
+    for (let depth = 1; depth <= maxDepth; depth++) {
+      if (currentLevel.length === 0) break;
+      maxDepthReached = depth;
+      const nextLevel = new Set<string>();
+
+      for (const targetPath of currentLevel) {
+        const rows = this.db!.prepare(
+          "SELECT source_path, kind, reason FROM edges WHERE target_path=$path LIMIT 150",
+        ).all({ $path: targetPath }) as Row[];
+
+        if (rows.length >= 150) truncated = true;
+
+        for (const row of rows) {
+          const sourcePath = String(row.source_path);
+          const kind = String(row.kind);
+          const isTest = kind === "test_for" || /(?:^|\/)(?:test|tests|__tests__)\/|\.(?:test|spec)\./i.test(sourcePath);
+
+          if (isTest) {
+            tests.add(sourcePath);
+            evidence.push({ path: sourcePath, reason: `test_of_depth_${depth}_dependency`, depth });
+          } else {
+            dependents.add(sourcePath);
+            evidence.push({ path: sourcePath, reason: `dependent_depth_${depth}`, depth });
+            if (!visited.has(sourcePath)) {
+              visited.add(sourcePath);
+              if (nextLevel.size < limit) {
+                nextLevel.add(sourcePath);
+              } else {
+                truncated = true;
+              }
+            }
+          }
+        }
+
+        const unresolved = this.db!.prepare(
+          "SELECT count(*) cnt FROM edges WHERE source_path=$path AND target_path IS NULL",
+        ).get({ $path: targetPath }) as Row | undefined;
+        if (unresolved) unresolvedEdges += Number(unresolved.cnt);
+      }
+
+      currentLevel = [...nextLevel];
+    }
+
+    return {
+      changedPaths: changedPaths.map(normalizeRelative),
+      candidateDependents: [...dependents].slice(0, limit),
+      candidateTests: [...tests].slice(0, limit),
+      maxDepthReached,
+      truncated: truncated || dependents.size > limit || tests.size > limit,
+      unresolvedEdges,
+      evidence: evidence.slice(0, limit * 2),
+    };
+  }
+
+  async estimateBlastRadius(
+    changedPaths: string[],
+    options: QueryOptions & { maxDepth?: number } = {},
+  ): Promise<BlastRadiusEstimate> {
+    const candidates = await this.getImpactCandidates(changedPaths, options);
+    const total = candidates.candidateDependents.length + candidates.candidateTests.length;
+    const confidence = asSymbolConfidence(
+      candidates.unresolvedEdges > 5 || candidates.truncated ? "low" : total > 20 ? "medium" : "high",
+    );
+    return {
+      targetPath: candidates.changedPaths[0] ?? "",
+      candidateDependents: candidates.candidateDependents,
+      candidateTests: candidates.candidateTests,
+      depth: candidates.maxDepthReached,
+      truncated: candidates.truncated,
+      unresolvedEdges: candidates.unresolvedEdges,
+      confidence,
+      reasons: [
+        `found ${candidates.candidateDependents.length} dependents and ${candidates.candidateTests.length} tests`,
+        candidates.truncated ? "blast_radius_truncated_at_limit" : "blast_radius_within_bounds",
+        candidates.unresolvedEdges > 0 ? `${candidates.unresolvedEdges}_unresolved_edges` : "all_edges_resolved",
+      ],
+    } as BlastRadiusEstimate;
+  }
+
+  async getRepositorySummary(): Promise<RepositorySummary> {
+    const status = this.status();
+    const packageRows = this.db!.prepare("SELECT DISTINCT specifier FROM edges WHERE kind='package_dependency' AND specifier IS NOT NULL").all() as Row[];
+    const packages = packageRows.map((r) => String(r.specifier));
+    const langRows = this.db!.prepare("SELECT language, count(*) cnt FROM files GROUP BY language").all() as Row[];
+    const languages: Record<string, number> = {};
+    for (const r of langRows) languages[String(r.language)] = Number(r.cnt);
+    const entryRows = this.db!.prepare("SELECT path FROM files WHERE path LIKE '%index.ts' OR path LIKE '%main.ts' OR path LIKE '%index.js' OR path LIKE '%main.js'").all() as Row[];
+    const entryPoints = entryRows.map((r) => String(r.path));
+    const testRows = this.db!.prepare("SELECT DISTINCT source_path FROM edges WHERE kind='test_for' OR source_path LIKE '%.test.%' LIMIT 100").all() as Row[];
+    const testLayout = testRows.map((r) => String(r.source_path));
+    return {
+      root: status.root,
+      fileCount: status.fileCount,
+      symbolCount: status.symbolCount,
+      edgeCount: status.edgeCount,
+      packages,
+      languages,
+      entryPoints,
+      testLayout,
+      indexState: status.state,
+      generation: status.generation,
+    };
   }
 
   startWatching(): void {
