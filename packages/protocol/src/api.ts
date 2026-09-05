@@ -79,6 +79,20 @@ export const SendRequestSchema = z.object({
 });
 export type SendRequest = z.infer<typeof SendRequestSchema>;
 
+export const UserIntentHoldPolicySchema = z.enum(["expensive_actions_only", "always", "off"]);
+export type UserIntentHoldPolicy = z.infer<typeof UserIntentHoldPolicySchema>;
+
+export const USER_INTENT_HOLD_QUIET_GRACE_MS = 1_500;
+
+export const UserIntentHoldRequestSchema = z.object({
+  sessionId: z.string().min(1).max(128),
+  runId: z.string().min(1).max(128).optional(),
+  turnId: z.string().min(1).max(128).optional(),
+  action: z.enum(["request", "release"]),
+  generation: z.number().int().positive().optional(),
+});
+export type UserIntentHoldRequest = z.infer<typeof UserIntentHoldRequestSchema>;
+
 export const PermissionDecisionSchema = z.enum(["allow", "ask", "deny"]);
 export type PermissionDecision = z.infer<typeof PermissionDecisionSchema>;
 

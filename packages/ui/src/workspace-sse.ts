@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { ExecutionMode, SendRequest, WorkspaceEvent, SessionStatus } from "@codeforge/protocol";
+import type { ExecutionMode, SendRequest, WorkspaceEvent, SessionStatus, UserIntentHoldRequest } from "@codeforge/protocol";
 import { DEFAULT_EXECUTION_MODE, ExecutionModeSchema, WorkspaceEventSchema, isWorkspaceEvent } from "@codeforge/protocol";
 import type { SessionRecord, TurnRecord, WorkItem } from "@codeforge/sessions";
 import { isEventForSession, mergeEvent } from "./session-events.js";
@@ -52,6 +52,9 @@ export interface WorkspaceState {
   lastEvidenceId: string | null;
   lastCheckpointId: string | null;
   activeExecutionMode: ExecutionMode | null;
+  executionState: "running" | "user_intent_hold" | "steer_queued" | "reconciling_steer";
+  holdReason: string | null;
+  steerQueued: boolean;
 }
 
 export const initialWorkspaceState: WorkspaceState = {
@@ -83,6 +86,9 @@ export const initialWorkspaceState: WorkspaceState = {
   lastEvidenceId: null,
   lastCheckpointId: null,
   activeExecutionMode: null,
+  executionState: "running",
+  holdReason: null,
+  steerQueued: false,
 };
 
 export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
@@ -112,6 +118,9 @@ export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
     lastEvidenceId: null,
     lastCheckpointId: null,
     activeExecutionMode: null,
+    executionState: "running",
+    holdReason: null,
+    steerQueued: false,
   };
 }
 
@@ -166,6 +175,22 @@ export function createSendRequest(
   return steer
     ? { sessionId, message, turnId, steer: true }
     : { sessionId, message, turnId, executionMode };
+}
+
+export function createUserIntentHoldRequest(
+  sessionId: string,
+  active: boolean,
+  runId?: string,
+  turnId?: string,
+  generation?: number,
+): UserIntentHoldRequest {
+  return {
+    sessionId,
+    action: active ? "request" : "release",
+    ...(runId ? { runId } : {}),
+    ...(turnId ? { turnId } : {}),
+    ...(generation !== undefined ? { generation } : {}),
+  };
 }
 
 export function executionStartFailureMessage(mode: ExecutionMode, message: string): string {
@@ -382,6 +407,14 @@ export function useWorkspaceSSE(url: string) {
             events,
             pendingApprovals,
             pendingApproval: pendingApprovals[0] ?? null,
+            ...(Array.isArray(data.workItems) && data.workItems.find((item) => item.kind === "user_intent_hold")
+              ? (() => {
+                  const hold = data.workItems!.find((item) => item.kind === "user_intent_hold");
+                  return hold && hold.kind === "user_intent_hold"
+                    ? { executionState: hold.state, holdReason: hold.reason, steerQueued: hold.queuedSteers.length > 0 }
+                    : {};
+                })()
+              : {}),
           };
         });
       } catch {
@@ -465,6 +498,27 @@ export function useWorkspaceSSE(url: string) {
               next.isRunning = true;
               next.agentStatus = "running";
               next.workflowError = null;
+            }
+            if (parsed.type === "user_intent_hold.entered") {
+              next.executionState = "user_intent_hold";
+              next.holdReason = parsed.payload.reason;
+            }
+            if (parsed.type === "user_intent_hold.released") {
+              next.executionState = "running";
+              next.holdReason = parsed.payload.reason;
+              next.steerQueued = false;
+            }
+            if (parsed.type === "user_intent_steer.queued") {
+              next.executionState = "steer_queued";
+              next.holdReason = "user_steer_queued";
+              next.steerQueued = true;
+            }
+            if (parsed.type === "user_intent_steer.reconciliation_started") {
+              next.executionState = "reconciling_steer";
+            }
+            if (parsed.type === "user_intent_steer.reconciliation_completed") {
+              next.executionState = "running";
+              next.steerQueued = false;
             }
             if (parsed.type === "turn.completed" || parsed.type === "turn.cancelled" || parsed.type === "turn.failed") {
               next.isRunning = false;
@@ -732,6 +786,22 @@ export function useWorkspaceSSE(url: string) {
     [state.session?.id, url, hydrate]
   );
 
+  const requestUserIntentHold = useCallback(async (active: boolean): Promise<boolean> => {
+    const sessionId = state.session?.id ?? activeSessionIdRef.current;
+    const activeTurn = state.turns.find((turn) => turn.status === "running");
+    const body = createUserIntentHoldRequest(sessionId, active, activeTurn?.id, activeTurn?.id);
+    try {
+      const res = await fetch(resolveApiPath(url, `/api/sessions/${sessionId}/intent-hold`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }, [state.session?.id, state.turns, url]);
+
   const approve = useCallback(
     (decision: "allow_once" | "allow_session" | "deny", approvalId?: string) => {
       const target = approvalId
@@ -932,6 +1002,7 @@ export function useWorkspaceSSE(url: string) {
     state,
     setState,
     sendMessage,
+    requestUserIntentHold,
     approve,
     answerQuestion,
     stopTurn,

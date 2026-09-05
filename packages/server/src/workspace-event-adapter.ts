@@ -96,6 +96,26 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent);
   }
 
+  emitUserIntentHoldEntered(runId: string, generation: number, reason: "user_composer_active" | "user_steer_queued" | "awaiting_inflight_completion", turnId?: string): void {
+    this.emit({ type: "user_intent_hold.entered", payload: { runId, generation, reason, ...(turnId ? { turnId } : {}) } } as WorkspaceEvent);
+  }
+
+  emitUserIntentHoldReleased(runId: string, generation: number, reason: "draft_cleared" | "user_intent_hold_disabled" | "reconciled" | "stale_lease"): void {
+    this.emit({ type: "user_intent_hold.released", payload: { runId, generation, reason } } as WorkspaceEvent);
+  }
+
+  emitUserIntentSteerQueued(runId: string, turnId: string, steerId: string, position: number): void {
+    this.emit({ type: "user_intent_steer.queued", payload: { runId, turnId, steerId, position } } as WorkspaceEvent);
+  }
+
+  emitUserIntentReconciliationStarted(runId: string, turnId: string, steerIds: string[]): void {
+    this.emit({ type: "user_intent_steer.reconciliation_started", payload: { runId, turnId, steerIds } } as WorkspaceEvent);
+  }
+
+  emitUserIntentReconciliationCompleted(runId: string, turnId: string, steerIds: string[]): void {
+    this.emit({ type: "user_intent_steer.reconciliation_completed", payload: { runId, turnId, steerIds } } as WorkspaceEvent);
+  }
+
   emitAgentStarted(agentId: string, role: string, taskId: string): void {
     this.emit({
       type: "agent.started",

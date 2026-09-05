@@ -30,3 +30,15 @@ Missing, stale, corrupt, ambiguous, timed-out, or unavailable efficiency analysi
 `EfficiencyReceipt` records bounded, inspectable work quantities: context requested/delivered tokens, tokens avoided, cache hits, duplicate requests avoided, fallback use, reason codes, repository generation, and policy version. It does not expose a universal green score and makes no carbon, energy, or emissions claim.
 
 Blast-radius false-negative auditing and acceptance-level sufficiency auditing remain separate concerns. A prior pass, cache hit, retrieval score, impact estimate, or flaky classification cannot certify current verification or completion.
+
+## CF-17 UserIntentHold
+
+The interactive-work-avoidance path is a scheduling optimization layered below trusted execution: `composer transition → server hold acknowledgement → dispatch barrier → existing AgentRuntime / ForgeVerify authorities`.
+
+The composer sends only a bounded `request` or `release` transition. Unsubmitted draft text is never included in the hold request, persisted hold record, SSE event, run projection, or ForgeGreen receipt. Submitted steers remain ordinary durable user messages and are queued in order with an idempotency identity.
+
+`UserIntentHoldController` persists a run/session checkpoint, hold generation, state, and submitted steer queue. Generation-checked releases prevent a late client from releasing a newer hold. The barrier waits only at future model, tool, subagent, verifier, delivery, or publication dispatch boundaries; already-started processes and transactions are not aborted. Existing permission, cancellation, ForgeVerify, Completion Gate, delivery, and publication authorities remain unchanged.
+
+The default desktop policy is `Expensive actions only`; `Always` and `Off` are stored through the existing desktop settings modal. The local composer uses one centralized 1.5-second quiet-grace policy and sends no per-keystroke network events. A stale hold lease is recoverable, while queued submitted steers remain durable until reconciliation.
+
+Interactive receipts expose only deterministic measurements: hold count/duration and dispatches actually blocked at an eligible boundary. No duration-only savings and no energy/carbon conversion are claimed.

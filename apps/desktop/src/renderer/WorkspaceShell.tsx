@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { WorkspaceApp, type ModelSection } from "@codeforge/ui";
 import type { Project } from "./App.js";
 import type { ModelSelectorItem } from "@codeforge/ui";
+import type { UserIntentHoldPolicy } from "@codeforge/protocol";
 import ModelDetails from "./ModelDetails.js";
 import ProviderSetup from "./ProviderSetup.js";
 
 const SERVER_BASE_URL = "http://localhost:3210";
 const HELP_URL = "https://github.com/codeforge/codeforge#readme";
+const USER_INTENT_HOLD_POLICY_KEY = "codeforge:user-intent-hold-policy";
 
 interface WorkspaceShellProps {
   project: Project;
@@ -119,6 +121,10 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
   const [providerStatus, setProviderStatus] = useState<Record<string, { status: string; error?: string }>>({});
   const [isForgeZeroOpen, setIsForgeZeroOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [userIntentHoldPolicy, setUserIntentHoldPolicy] = useState<UserIntentHoldPolicy>(() => {
+    const value = window.localStorage.getItem(USER_INTENT_HOLD_POLICY_KEY);
+    return value === "always" || value === "off" || value === "expensive_actions_only" ? value : "expensive_actions_only";
+  });
   const [cloudAccount, setCloudAccount] = useState<any>(null);
   const [isQuotaExhaustedOpen, setIsQuotaExhaustedOpen] = useState(false);
   const [repositoryIndex, setRepositoryIndex] = useState<RepositoryIndexStatus>({ state: "NOT_INDEXED" });
@@ -456,6 +462,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
           onOpenProjects={onClose}
           onOpenSettings={() => setIsSettingsOpen(true)}
           onOpenHelp={() => openExternalLink(HELP_URL)}
+          userIntentHoldPolicy={userIntentHoldPolicy}
         />
       </main>
 
@@ -486,6 +493,25 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
               </button>
             </div>
             <div className="settings-modal-body">
+              <div style={{ marginBottom: 18 }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>Pause Agent while typing</div>
+                <div style={{ fontSize: 12, color: "var(--cf-text-muted)", marginBottom: 8 }}>
+                  Hold new Agent actions while you prepare a steer. Already-running commands continue unless you explicitly cancel them.
+                </div>
+                <select
+                  aria-label="Pause Agent while typing"
+                  value={userIntentHoldPolicy}
+                  onChange={(event) => {
+                    const value = event.target.value as UserIntentHoldPolicy;
+                    setUserIntentHoldPolicy(value);
+                    window.localStorage.setItem(USER_INTENT_HOLD_POLICY_KEY, value);
+                  }}
+                >
+                  <option value="expensive_actions_only">Expensive actions only</option>
+                  <option value="always">Always</option>
+                  <option value="off">Off</option>
+                </select>
+              </div>
               <ProviderSetup />
             </div>
           </div>

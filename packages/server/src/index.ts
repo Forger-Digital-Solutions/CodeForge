@@ -35,6 +35,7 @@ import { CloudPublicationBridge, createCloudPublicationBridge } from "./cloud-pu
 import { CloudPublicationClient, CloudPublicationError } from "./cloud-publication-client.js";
 import { createWorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { createRepositoryIntelligence, REPOSITORY_INDEX_VERSION, REPOSITORY_PARSER_VERSION, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
+import { UserIntentHoldController } from "./user-intent-hold.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -89,6 +90,7 @@ export class CodeForgeServer {
   private repositoryIntelligence: RepositoryIntelligence | null = null;
   private repositoryIndexEnabled = true;
   private repositoryIndexSnapshot: Record<string, unknown> = { state: "NOT_INDEXED", enabled: true, indexVersion: REPOSITORY_INDEX_VERSION, parserVersion: REPOSITORY_PARSER_VERSION };
+  private readonly userIntentHold: UserIntentHoldController;
 
   constructor(options: ServerOptions = {}) {
     this.port = options.port ?? 3210;
@@ -103,6 +105,7 @@ export class CodeForgeServer {
       .flatMap((session) => this.persistence.getEvents(session.id))
       .filter(isWorkspaceEvent);
     this.eventStore.hydrate(persistedEvents);
+    this.userIntentHold = new UserIntentHoldController({ eventStore: this.eventStore, persistence: this.persistence });
     // Development scaffold: deterministic entitlement scenarios until the real
     // entitlement service exists. GEMS access still fails closed.
     this.firewall = options.firewall ?? new ForgeZero({
@@ -163,6 +166,7 @@ export class CodeForgeServer {
       workspaceService: this.workspaceService,
       getOrCreateRuntime: (sessionId: string, userId?: string) => this.getOrCreateRuntime(sessionId, userId),
       useRealRuntime: () => this.realRuntimeEnabled(),
+      userIntentHold: this.userIntentHold,
     });
   }
 
@@ -377,6 +381,11 @@ export class CodeForgeServer {
 
     if (url.pathname === "/api/send" && req.method === "POST") {
       this.handleSend(req, res);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/sessions\/[^/]+\/intent-hold$/) && req.method === "POST") {
+      this.handleIntentHold(req, res, url.pathname);
       return;
     }
 
@@ -759,7 +768,7 @@ export class CodeForgeServer {
             return;
           }
 
-          await runtime.steerTurn(targetTurn.turnId, message);
+          await runtime.steerTurn(targetTurn.turnId, message, data.turnId);
           res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ ok: true, turnId: targetTurn.turnId, steered: true }));
           return;
@@ -953,7 +962,7 @@ export class CodeForgeServer {
           res.end(JSON.stringify({ error: "Session not found" }));
           return;
         }
-        await runtime.steerTurn(turnId ?? "", data.steering ?? "");
+        await runtime.steerTurn(turnId ?? "", data.steering ?? "", typeof data.steerId === "string" ? data.steerId : undefined);
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
         res.end(JSON.stringify({ ok: true }));
       } catch (error) {
@@ -961,6 +970,29 @@ export class CodeForgeServer {
         res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
       }
     });
+  }
+
+  private handleIntentHold(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+    const match = pathname.match(/\/api\/sessions\/([^/]+)\/intent-hold$/);
+    const sessionId = match?.[1];
+    if (!sessionId) { this.sendJson(res, 400, { error: "Invalid session" }); return; }
+    void this.readJsonBody(req).then((data) => {
+      this.userIntentHold.recoverStaleHolds();
+      const action = data.action === "release" ? "release" : data.action === "request" ? "request" : undefined;
+      if (!action) { this.sendJson(res, 400, { error: "action must be request or release" }); return; }
+      const runtime = this.runtimes.get(sessionId);
+      const active = runtime?.getActiveTurns().find((turn) => turn.status === "running" || turn.status === "paused" || turn.status === "waiting_for_approval" || turn.status === "waiting_for_question");
+      const runId = typeof data.runId === "string" && data.runId ? data.runId : active?.turnId ?? sessionId;
+      const turnId = typeof data.turnId === "string" && data.turnId ? data.turnId : active?.turnId;
+      if (action === "request") {
+        const snapshot = this.userIntentHold.request(sessionId, runId, turnId);
+        this.sendJson(res, 200, { ok: true, active: true, generation: snapshot.generation, state: snapshot.state });
+        return;
+      }
+      const generation = typeof data.generation === "number" ? data.generation : undefined;
+      const released = this.userIntentHold.release(sessionId, generation, "draft_cleared");
+      this.sendJson(res, released ? 200 : 409, { ok: released, released });
+    }).catch((error: unknown) => this.sendJson(res, 400, { error: error instanceof Error ? error.message : String(error) }));
   }
 
   private handleResolveApproval(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
@@ -1673,6 +1705,7 @@ export class CodeForgeServer {
         workspacePath: this.activeWorkspacePath ?? undefined,
         userId,
         demoMode,
+        userIntentHold: this.userIntentHold,
       });
       this.runtimes.set(sessionId, runtime);
     } else {

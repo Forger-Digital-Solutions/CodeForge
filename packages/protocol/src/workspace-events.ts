@@ -70,6 +70,45 @@ export const TurnCompletedSchema = EventBase(
   z.object({ turnId: z.string(), result: z.string().optional() }),
 );
 
+export const UserIntentHoldEnteredSchema = EventBase(
+  "user_intent_hold.entered",
+  z.object({
+    runId: z.string(),
+    turnId: z.string().optional(),
+    generation: z.number().int().positive(),
+    reason: z.enum(["user_composer_active", "user_steer_queued", "awaiting_inflight_completion"]),
+  }),
+);
+
+export const UserIntentHoldReleasedSchema = EventBase(
+  "user_intent_hold.released",
+  z.object({
+    runId: z.string(),
+    generation: z.number().int().positive(),
+    reason: z.enum(["draft_cleared", "user_intent_hold_disabled", "reconciled", "stale_lease"]),
+  }),
+);
+
+export const UserIntentSteerQueuedSchema = EventBase(
+  "user_intent_steer.queued",
+  z.object({
+    runId: z.string(),
+    turnId: z.string(),
+    steerId: z.string(),
+    position: z.number().int().nonnegative(),
+  }),
+);
+
+export const UserIntentReconciliationStartedSchema = EventBase(
+  "user_intent_steer.reconciliation_started",
+  z.object({ runId: z.string(), turnId: z.string(), steerIds: z.array(z.string()) }),
+);
+
+export const UserIntentReconciliationCompletedSchema = EventBase(
+  "user_intent_steer.reconciliation_completed",
+  z.object({ runId: z.string(), turnId: z.string(), steerIds: z.array(z.string()) }),
+);
+
 export const ExecutionRequestedSchema = EventBase(
   "execution.requested",
   z.object({
@@ -592,6 +631,11 @@ export const WorkspaceEventSchema = z.discriminatedUnion("type", [
   TurnCancelledSchema,
   TurnFailedSchema,
   TurnCompletedSchema,
+  UserIntentHoldEnteredSchema,
+  UserIntentHoldReleasedSchema,
+  UserIntentSteerQueuedSchema,
+  UserIntentReconciliationStartedSchema,
+  UserIntentReconciliationCompletedSchema,
   ExecutionRequestedSchema,
   ExecutionStartFailedSchema,
   WorkflowVerificationStartedSchema,

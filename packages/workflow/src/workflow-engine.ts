@@ -85,6 +85,8 @@ export interface WorkflowEngineOptions {
   /** Overrides for the deterministic completion gate. Defaults require real verification. */
   completionPolicy?: Partial<CompletionPolicy>;
   forgeGreen?: ForgeGreenAdvisor;
+  /** Timing-only hook used by a client scheduler; it cannot alter verification authority. */
+  beforeVerificationDispatch?: () => Promise<void>;
   onPhaseChange?: (phase: WorkflowPhase, task: WorkflowTask) => void;
   onEvent?: (event: { type: string; phase: WorkflowPhase; payload: unknown }) => void;
   askForApproval?: (plan: WorkflowPlan) => Promise<"allow_once" | "allow_session" | "deny">;
@@ -133,6 +135,7 @@ export class WorkflowEngine {
   private readonly askForApproval?: WorkflowEngineOptions["askForApproval"];
   private readonly implementer?: WorkflowEngineOptions["implementer"];
   private readonly agentExecutor?: WorkflowEngineOptions["agentExecutor"];
+  private readonly beforeVerificationDispatch?: WorkflowEngineOptions["beforeVerificationDispatch"];
   private readonly forgeGreen: ForgeGreenAdvisor;
   private task: WorkflowTask;
   private phase: WorkflowPhase = "received";
@@ -151,6 +154,7 @@ export class WorkflowEngine {
     this.askForApproval = options.askForApproval;
     this.implementer = options.implementer;
     this.agentExecutor = options.agentExecutor;
+    this.beforeVerificationDispatch = options.beforeVerificationDispatch;
     this.forgeGreen = options.forgeGreen ?? createForgeGreenAdvisor();
     const now = new Date().toISOString();
     this.task = {
@@ -301,6 +305,7 @@ export class WorkflowEngine {
       });
       let verificationAttempt = 1;
       this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { attempt: verificationAttempt, recommendation: verificationRecommendation } });
+      await this.beforeVerificationDispatch?.();
       let verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver });
       const verificationAttempts: VerificationResult[] = [verification];
       this.onEvent?.({ type: "workflow.verification_completed", phase: this.phase, payload: { attempt: verificationAttempt, verification } });
@@ -325,6 +330,7 @@ export class WorkflowEngine {
         this.setPhase("verifying", "testing");
         verificationAttempt++;
         this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { attempt: verificationAttempt, recommendation: verificationRecommendation } });
+        await this.beforeVerificationDispatch?.();
         verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver });
         verificationAttempts.push(verification);
         this.onEvent?.({ type: "workflow.verification_completed", phase: this.phase, payload: { attempt: verificationAttempt, verification } });

@@ -532,6 +532,38 @@ export const WorkItemSchema = z.discriminatedUnion("kind", [
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
   }),
+  z.object({
+    kind: z.literal("user_intent_hold"),
+    id: z.string(),
+    sessionId: z.string(),
+    runId: z.string(),
+    turnId: z.string().optional(),
+    state: z.enum(["running", "user_intent_hold", "steer_queued", "reconciling_steer"]),
+    reason: z.enum(["user_composer_active", "user_steer_queued", "awaiting_inflight_completion", "draft_cleared", "user_intent_hold_disabled", "reconciled", "stale_lease"]),
+    generation: z.number().int().positive(),
+    enteredAt: z.string().datetime().optional(),
+    releasedAt: z.string().datetime().optional(),
+    checkpoint: z.object({
+      runId: z.string(),
+      workItemId: z.string().optional(),
+      currentPlanStep: z.string().optional(),
+      completedSteps: z.array(z.string()),
+      pendingSteps: z.array(z.string()),
+      activeExecution: z.object({ executionId: z.string(), kind: z.enum(["tool", "verifier", "subagent", "model", "other"]) }).optional(),
+      workspaceGeneration: z.number().int().nonnegative(),
+      stateHash: z.string().optional(),
+      enteredAt: z.string().datetime(),
+      reason: z.literal("user_intent_hold"),
+    }).optional(),
+    queuedSteers: z.array(z.object({
+      steerId: z.string(),
+      turnId: z.string(),
+      message: z.string(),
+      submittedAt: z.string().datetime(),
+    })),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  }),
 ]);
 export type WorkItem = z.infer<typeof WorkItemSchema>;
 export type WorkItemKind = WorkItem["kind"];

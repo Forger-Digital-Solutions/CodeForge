@@ -13,6 +13,7 @@ import {
 import type { WorkflowPlan, ContextBundle, RepoMap, FailureAnalysis, VerificationResult, TaskIntent } from "@codeforge/workflow";
 import type { ForgeVerifyObserver, VerificationAttempt, VerificationEvidence, VerificationPlan } from "@codeforge/workflow";
 import type { AgentRuntime } from "./agent-runtime.js";
+import type { UserIntentHoldController } from "./user-intent-hold.js";
 import { redactSecrets } from "@codeforge/secrets";
 import { WorkspaceService, createWorkspaceService, type WorkspaceLease } from "./workspace-service.js";
 
@@ -30,6 +31,7 @@ export interface WorkflowServiceOptions {
    * here silently routes real work to the heuristic implementer.
    */
   useRealRuntime?: boolean | (() => boolean);
+  userIntentHold?: UserIntentHoldController;
 }
 
 export interface WorkflowRunRequest {
@@ -155,6 +157,7 @@ export class WorkflowService {
   private defaultWorkspacePath?: string;
   private readonly getOrCreateRuntime?: (sessionId: string, userId?: string) => AgentRuntime;
   private readonly isRealRuntimeEnabled: () => boolean;
+  private readonly userIntentHold?: UserIntentHoldController;
 
   constructor(options: WorkflowServiceOptions) {
     this.eventStore = options.eventStore;
@@ -165,6 +168,7 @@ export class WorkflowService {
     this.getOrCreateRuntime = options.getOrCreateRuntime;
     const realRuntime = options.useRealRuntime ?? false;
     this.isRealRuntimeEnabled = typeof realRuntime === "function" ? realRuntime : () => realRuntime;
+    this.userIntentHold = options.userIntentHold;
     this.recoverStalePersistedState();
   }
 
@@ -456,6 +460,9 @@ export class WorkflowService {
       verificationCommands: request.verificationCommands,
       verificationObserver,
       agentExecutor,
+      beforeVerificationDispatch: this.userIntentHold
+        ? () => this.userIntentHold!.waitForDispatch(sessionId, "verifier")
+        : undefined,
       onPhaseChange: (phase: string, task: WorkflowTask) => {
         // Map workflow phases to TaskStatus for task.state_changed
         const statusMap: Record<string, string> = {

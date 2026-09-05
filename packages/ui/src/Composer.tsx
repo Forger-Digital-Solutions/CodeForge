@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import type { ExecutionMode } from "@codeforge/protocol";
+import { USER_INTENT_HOLD_QUIET_GRACE_MS, type ExecutionMode } from "@codeforge/protocol";
 import SlashCommands, { SLASH_COMMANDS } from "./SlashCommands.js";
 import { ModelSelector, type ModelSelectorItem, type ModelSection } from "./ModelSelector.js";
 
@@ -45,6 +45,8 @@ interface ComposerProps {
   modelSections?: ModelSection[];
   executionMode?: ExecutionMode;
   onExecutionModeChange?: (mode: ExecutionMode) => void;
+  onComposerActivity?: (active: boolean) => void;
+  executionState?: "running" | "user_intent_hold" | "steer_queued" | "reconciling_steer";
 }
 
 export default function Composer({
@@ -65,10 +67,17 @@ export default function Composer({
   modelSections,
   executionMode = "agent",
   onExecutionModeChange,
+  onComposerActivity,
+  executionState = "running",
 }: ComposerProps) {
   const [input, setInput] = useState("");
   const [showCommands, setShowCommands] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const holdReleaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (holdReleaseTimerRef.current) clearTimeout(holdReleaseTimerRef.current);
+  }, []);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -79,7 +88,24 @@ export default function Composer({
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
+    const wasEmpty = input.length === 0;
     setInput(value);
+    if (holdReleaseTimerRef.current) {
+      clearTimeout(holdReleaseTimerRef.current);
+      holdReleaseTimerRef.current = null;
+    }
+    if (isRunning && wasEmpty && value.length > 0) onComposerActivity?.(true);
+    if (isRunning && value.length === 0 && input.length > 0) {
+      holdReleaseTimerRef.current = setTimeout(() => {
+        holdReleaseTimerRef.current = null;
+        onComposerActivity?.(false);
+      }, USER_INTENT_HOLD_QUIET_GRACE_MS);
+    } else if (isRunning && value.length > 0) {
+      holdReleaseTimerRef.current = setTimeout(() => {
+        holdReleaseTimerRef.current = null;
+        onComposerActivity?.(false);
+      }, USER_INTENT_HOLD_QUIET_GRACE_MS);
+    }
     const parts = value.split(/\s+/);
     const lastWord = parts[parts.length - 1] ?? "";
     setShowCommands(lastWord.startsWith("/") || value.endsWith("/"));
@@ -176,7 +202,13 @@ export default function Composer({
           <button type="button" className="btn-sm danger" onClick={onStop}>Stop</button>
         </div>
       )}
-      {isRunning && !isPaused && (
+      {isRunning && !isPaused && executionState === "user_intent_hold" && (
+        <div className="composer-status" role="status" aria-live="polite">
+          <span className="composer-status-dot paused" />
+          <span style={{ fontSize: 11, color: "var(--cf-warning)" }}>Waiting for your steer…</span>
+        </div>
+      )}
+      {isRunning && !isPaused && executionState !== "user_intent_hold" && (
         <div className="composer-status">
           <span className="composer-status-dot running" />
           <span style={{ fontSize: 11, color: "var(--cf-success)" }}>Agent working</span>

@@ -22,6 +22,7 @@ export type ForgeGreenReasonCode =
   | "analysis_unavailable"
   | "stale_generation_rejected"
   | "corrupt_cache_rejected"
+  | "user_intent_hold"
   | "forgegreen_disabled";
 
 export interface ContextCacheIdentity {
@@ -63,6 +64,17 @@ export interface EfficiencyReceipt {
   reasonCodes: ForgeGreenReasonCode[];
   policyVersion: string;
   promptCacheAccounting: "unavailable";
+  interactiveEfficiency?: InteractiveEfficiencyMetrics;
+}
+
+export interface InteractiveEfficiencyMetrics {
+  userIntentHoldCount: number;
+  userIntentHoldDurationMs: number;
+  modelDispatchesAvoided: number;
+  toolDispatchesAvoided: number;
+  subagentDispatchesAvoided: number;
+  verifierDispatchesAvoided: number;
+  speculativeStepsAvoided: number;
 }
 
 export interface ForgeGreenSnapshot {
@@ -141,6 +153,15 @@ export class ForgeGreenAdvisor {
   private promptPrefixHits = 0;
   private duplicateRequestsAvoided = 0;
   private fallbackCount = 0;
+  private readonly interactiveMetrics: InteractiveEfficiencyMetrics = {
+    userIntentHoldCount: 0,
+    userIntentHoldDurationMs: 0,
+    modelDispatchesAvoided: 0,
+    toolDispatchesAvoided: 0,
+    subagentDispatchesAvoided: 0,
+    verifierDispatchesAvoided: 0,
+    speculativeStepsAvoided: 0,
+  };
 
   constructor(options: ForgeGreenOptions = {}) {
     this.enabled = options.enabled ?? true;
@@ -261,6 +282,25 @@ export class ForgeGreenAdvisor {
     this.fallbackCount++;
   }
 
+  recordUserIntentHold(durationMs = 0): void {
+    if (!this.enabled) return;
+    this.interactiveMetrics.userIntentHoldCount++;
+    this.interactiveMetrics.userIntentHoldDurationMs += Math.max(0, durationMs);
+  }
+
+  recordAvoidedDispatch(kind: "model" | "tool" | "subagent" | "verifier" | "other"): void {
+    if (!this.enabled) return;
+    if (kind === "model") this.interactiveMetrics.modelDispatchesAvoided++;
+    else if (kind === "tool") this.interactiveMetrics.toolDispatchesAvoided++;
+    else if (kind === "subagent") this.interactiveMetrics.subagentDispatchesAvoided++;
+    else if (kind === "verifier") this.interactiveMetrics.verifierDispatchesAvoided++;
+    else this.interactiveMetrics.speculativeStepsAvoided++;
+  }
+
+  interactiveEfficiency(): InteractiveEfficiencyMetrics {
+    return { ...this.interactiveMetrics };
+  }
+
   snapshot(): ForgeGreenSnapshot {
     return {
       enabled: this.enabled,
@@ -272,7 +312,7 @@ export class ForgeGreenAdvisor {
     };
   }
 
-  createReceipt(input: { workspaceId: string; repositoryGeneration: number; requestedTokens?: number; deliveredTokens?: number; fallbackUsed?: boolean; reasonCodes?: ForgeGreenReasonCode[]; recommendedVerification?: string[]; canonicalVerificationExecuted?: string[] }): EfficiencyReceipt {
+  createReceipt(input: { workspaceId: string; repositoryGeneration: number; requestedTokens?: number; deliveredTokens?: number; fallbackUsed?: boolean; reasonCodes?: ForgeGreenReasonCode[]; recommendedVerification?: string[]; canonicalVerificationExecuted?: string[]; interactiveEfficiency?: InteractiveEfficiencyMetrics }): EfficiencyReceipt {
     const snapshot = this.snapshot();
     return {
       receiptId: hash(stableJson({ input, snapshot, policyVersion: this.policyVersion })).slice(0, 24),
@@ -292,6 +332,7 @@ export class ForgeGreenAdvisor {
       reasonCodes: [...new Set(input.reasonCodes ?? [])],
       policyVersion: this.policyVersion,
       promptCacheAccounting: "unavailable",
+      ...(input.interactiveEfficiency ? { interactiveEfficiency: input.interactiveEfficiency } : {}),
     };
   }
 }

@@ -40,6 +40,7 @@ import {
 } from "@codeforge/agent";
 import { ToolBroker, ToolRegistry, createToolBroker, type ToolExecutionRecord } from "@codeforge/tools";
 import { ModelExecutionAdapter, createModelExecutionAdapter, normalizeProviderError } from "./model-execution-adapter.js";
+import type { UserIntentHoldController } from "./user-intent-hold.js";
 
 export interface AgentRuntimeRequest {
   runId: string;
@@ -65,6 +66,7 @@ export interface AgentRuntimeRequest {
   customToolExecutor?: (name: string, args: Record<string, unknown>) => Promise<string | undefined>;
   structuredOutput?: StructuredOutputKind;
   maxStructuredOutputRepairs?: number;
+  userIntentHold?: UserIntentHoldController;
 }
 
 export interface AgentContextMetrics {
@@ -217,6 +219,7 @@ export interface AgentRuntimeOptions {
   demoMode?: boolean;
   repositoryIntelligenceFactory?: () => RepositoryIntelligence;
   forgeGreen?: ForgeGreenAdvisor;
+  userIntentHold?: UserIntentHoldController;
 }
 
 export interface ModelSelection {
@@ -288,6 +291,8 @@ export class AgentRuntime {
   private readonly approvalService: ApprovalService;
   private readonly repositoryIntelligenceFactory: () => RepositoryIntelligence;
   private readonly forgeGreen: ForgeGreenAdvisor;
+  private readonly userIntentHold?: UserIntentHoldController;
+  private readonly processedSteerIds = new Map<string, Set<string>>();
 
   constructor(options: AgentRuntimeOptions) {
     this.sessionId = options.sessionId;
@@ -298,6 +303,7 @@ export class AgentRuntime {
     this.workspacePath = options.workspacePath;
     this.userId = options.userId ?? "anonymous";
     this.forgeGreen = options.forgeGreen ?? createForgeGreenAdvisor({ enabled: process.env.CODEFORGE_FORGREEN !== "0" });
+    this.userIntentHold = options.userIntentHold;
     this.demoMode = options.demoMode ?? false;
     this.repositoryIntelligenceFactory = options.repositoryIntelligenceFactory ?? (() => createRepositoryIntelligence({
       cacheRoot: path.join(os.tmpdir(), "codeforge-repository-indexes"),
@@ -477,6 +483,7 @@ export class AgentRuntime {
         turnCount++;
         totalUsage.requestCount++;
         const modelTurnId = `${req.runId}:${req.agentId}:${turnCount}`;
+        await this.userIntentHold?.waitForDispatch(this.sessionId, "model");
         const modelTurnCreatedAt = new Date().toISOString();
         const persistModelTurn = (state: "created" | "provider_request_started" | "provider_response_completed" | "tool_requests_decoded" | "agent_result_completed" | "failed" | "cancelled") => {
           this.persistence.upsertWorkItem({
@@ -528,6 +535,7 @@ export class AgentRuntime {
             ...(response.optimization?.duplicateSuppressed ? ["duplicate_request_suppressed" as const] : []),
             ...(response.optimization?.promptPrefixCacheHit ? ["stable_prefix_reused" as const] : []),
           ],
+          ...(this.userIntentHold ? { interactiveEfficiency: this.userIntentHold.metrics(this.sessionId) } : {}),
         });
 
         if (response.text) {
@@ -906,7 +914,11 @@ export class AgentRuntime {
     return turnId;
   }
 
-  async steerTurn(turnId: string, steering: string): Promise<void> {
+  async steerTurn(turnId: string, steering: string, steerId?: string): Promise<void> {
+    return this.queueSteer(turnId, steering, steerId);
+  }
+
+  async queueSteer(turnId: string, steering: string, steerId?: string): Promise<void> {
     const state = this.activeTurns.get(turnId);
     if (!state) {
       throw new Error(`Turn ${turnId} not found`);
@@ -915,9 +927,16 @@ export class AgentRuntime {
     if (isTerminal) {
       throw new Error(`Cannot steer turn ${turnId} in terminal state ${state.status}`);
     }
+    const id = steerId ?? crypto.randomUUID();
+    const processed = this.processedSteerIds.get(turnId) ?? new Set<string>();
+    if (processed.has(id)) return;
+    processed.add(id);
+    this.processedSteerIds.set(turnId, processed);
     const pending = this.pendingSteeringByTurn.get(turnId) ?? [];
     pending.push(steering);
     this.pendingSteeringByTurn.set(turnId, pending);
+
+    this.userIntentHold?.queueSteer(this.sessionId, turnId, turnId, steering, id);
 
     const adapter = this.createAdapter();
     adapter.emitTurnSteered(turnId, steering);
@@ -1334,9 +1353,12 @@ export class AgentRuntime {
     signal: AbortSignal,
     iteration: number,
   ): Promise<void> {
+    await this.userIntentHold?.waitForDispatch(this.sessionId, "model");
     // Safe steering boundary: drain queued steering instructions for this turn before model inference
     const pendingSteering = this.pendingSteeringByTurn.get(turnId) ?? [];
     if (pendingSteering.length > 0) {
+      const queued = this.userIntentHold?.queuedSteers(this.sessionId).filter((steer) => steer.turnId === turnId) ?? [];
+      this.userIntentHold?.beginReconciliation(this.sessionId, turnId, queued.map((steer) => steer.steerId));
       this.pendingSteeringByTurn.set(turnId, []);
       for (const steeringText of pendingSteering) {
         const steeringMessage: ChatMessage = {
@@ -1349,6 +1371,9 @@ export class AgentRuntime {
         ...request,
         messages: [...this.messageHistory],
       };
+      this.userIntentHold?.completeReconciliation(this.sessionId, turnId, queued.map((steer) => steer.steerId));
+      const state = this.activeTurns.get(turnId);
+      if (state) this.persistTurn(state);
     }
 
     if (iteration >= this.maxIterations) {
@@ -1457,6 +1482,11 @@ export class AgentRuntime {
       this.messageHistory.push({ role: "assistant", content: currentText });
     }
 
+    if (toolCalls.length === 0 && this.userIntentHold?.hasQueuedSteer(this.sessionId)) {
+      await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, iteration + 1);
+      return;
+    }
+
     if (toolCalls.length > 0) {
       const assistantMessage: ChatMessage = {
         role: "assistant",
@@ -1470,6 +1500,11 @@ export class AgentRuntime {
       this.messageHistory.push(assistantMessage);
 
       for (const tc of toolCalls) {
+        if (this.userIntentHold?.hasQueuedSteer(this.sessionId)) {
+          await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, iteration + 1);
+          return;
+        }
+        await this.userIntentHold?.waitForDispatch(this.sessionId, "tool");
         const toolResult = await this.executeTool(turnId, tc.id, tc.name, tc.arguments, adapter, signal);
         if (signal.aborted) return;
 
@@ -1488,6 +1523,8 @@ export class AgentRuntime {
       };
 
       await this.runAgentLoop(turnId, agentId, provider, nextRequest, adapter, signal, iteration + 1);
+    } else {
+      await this.userIntentHold?.waitForDispatch(this.sessionId, "other");
     }
   }
 

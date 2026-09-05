@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import type { ExecutionMode } from "@codeforge/protocol";
+import type { ExecutionMode, UserIntentHoldPolicy } from "@codeforge/protocol";
 import type { WorkspaceState } from "./workspace-sse.js";
 import { readRememberedExecutionMode, rememberExecutionMode, useWorkspaceSSE } from "./workspace-sse.js";
 import Header from "./Header.js";
@@ -54,6 +54,7 @@ export interface WorkspaceAppProps {
   onOpenProjects?: () => void;
   onOpenSettings?: () => void;
   onOpenHelp?: () => void;
+  userIntentHoldPolicy?: UserIntentHoldPolicy;
 }
 
 export default function WorkspaceApp({
@@ -70,8 +71,9 @@ export default function WorkspaceApp({
   onOpenProjects,
   onOpenSettings,
   onOpenHelp,
+  userIntentHoldPolicy = "expensive_actions_only",
 }: WorkspaceAppProps) {
-  const { state, setState, sendMessage, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession, startNewSession, hydrate } = useWorkspaceSSE(sseUrl ?? "/api/events");
+  const { state, setState, sendMessage, requestUserIntentHold, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession, startNewSession, hydrate } = useWorkspaceSSE(sseUrl ?? "/api/events");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
@@ -360,6 +362,10 @@ export default function WorkspaceApp({
             modelSections={modelSections}
             executionMode={executionMode}
             onExecutionModeChange={handleExecutionModeChange}
+            executionState={state.executionState}
+            onComposerActivity={(active) => {
+              if (userIntentHoldPolicy !== "off" && (state.activeExecutionMode === "agent" || state.activeTaskId)) void requestUserIntentHold(active);
+            }}
           />
         </div>
 

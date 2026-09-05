@@ -14,6 +14,7 @@ import {
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 import { createAgentRuntime, AgentRuntime } from "../src/agent-runtime.js";
 import { ERROR_CODES } from "@codeforge/agent";
+import { UserIntentHoldController } from "../src/user-intent-hold.js";
 
 class DeterministicScriptedProvider implements ProviderAdapter {
   readonly providerId: string;
@@ -25,6 +26,8 @@ class DeterministicScriptedProvider implements ProviderAdapter {
     this.providerId = providerId;
     this.responses = responses;
   }
+
+  get calls(): number { return this.callCount; }
 
   async listModels(): Promise<ProviderModel[]> {
     return [
@@ -321,5 +324,30 @@ describe("AgentRuntime — Production Invocation & Lifecycle Certification (CF-0
 
     expect(result.status).toBe("failed");
     expect(result.error).toContain(ERROR_CODES.PROVIDER_MODEL_UNAVAILABLE);
+  });
+
+  it("holds a real Agent model boundary without aborting the invocation", async () => {
+    const catalog = new InMemoryProviderCatalog();
+    const provider = new DeterministicScriptedProvider("test-provider", [
+      async function* () {
+        yield { type: "text_delta", delta: "held then resumed" };
+        yield { type: "finish", finishReason: "stop" };
+      },
+    ]);
+    catalog.register(provider);
+    persistence.upsertSession({ id: "hold-session", title: "hold", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "running" });
+    const holds = new UserIntentHoldController({ eventStore, persistence });
+    holds.request("hold-session", "run-hold", "turn-hold");
+    const runtime = createAgentRuntime({ sessionId: "hold-session", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: tmpDir, userIntentHold: holds });
+    const resultPromise = runtime.executeAgentRun({
+      runId: "run-hold", agentId: "coder", role: "coder", goal: "Wait for user steer", workspaceId: "ws-1", workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: false, executeCommand: false, network: false },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    expect(provider.calls).toBe(0);
+    holds.release("hold-session", 1);
+    const result = await resultPromise;
+    expect(result.status).toBe("completed");
+    expect(provider.calls).toBe(1);
   });
 });
