@@ -559,6 +559,17 @@ export class AgentRuntime {
           await intelligence.refresh(undefined, req.signal);
         }
         indexStatus = intelligence.status();
+        // FG-2: observational repository-analysis metrics flow into the existing
+        // ForgeGreen efficiency ledger rather than a second telemetry system.
+        const refreshMetrics = intelligence.lastRefreshMetrics();
+        if (refreshMetrics) {
+          ledger.recordRepositoryRefresh({
+            filesParsed: refreshMetrics.filesParsed,
+            filesReused: refreshMetrics.unchanged,
+            parseCacheHits: refreshMetrics.cacheHits,
+            invalidations: refreshMetrics.invalidatedDependents.length,
+          });
+        }
       } catch {
         // Fallback: If repository intelligence is unavailable, broken, or unsupported,
         // degrade gracefully to safe conventional execution without throwing
@@ -2055,6 +2066,8 @@ export class AgentRuntime {
       { type: "function", function: { name: "repo_dependents", description: "Find indexed files that depend on a file.", parameters: pathParameters } },
       { type: "function", function: { name: "repo_tests", description: "Find tests related to an implementation file with confidence reasons.", parameters: pathParameters } },
       { type: "function", function: { name: "repo_impact", description: "Advisory blast-radius and impact candidate analysis for changed paths (does not grant execution or verification authority).", parameters: { type: "object", properties: { paths: { type: "array", items: { type: "string" }, description: "Workspace-relative paths of modified files" }, path: { type: "string", description: "Single modified file path" }, maxDepth: { type: "number", description: "Graph traversal depth, default 3, max 10" }, limit: { type: "number", description: "Maximum candidates, capped at 200" } } } } },
+      { type: "function", function: { name: "repo_callees", description: "Static call candidates inside one indexed file, with provenance and preserved ambiguity.", parameters: pathParameters } },
+      { type: "function", function: { name: "repo_callers", description: "Candidate callers of a symbol by name or id, with provenance and preserved ambiguity.", parameters: queryParameters } },
       { type: "function", function: { name: "repo_file_summary", description: "Get structured summary of an indexed file (symbols, exports, imports, language, size).", parameters: pathParameters } },
       { type: "function", function: { name: "repo_context", description: "Build a fresh, deduplicated, provenance-rich context pack within a hard model context budget.", parameters: { type: "object", properties: { query: { type: "string" }, contextWindow: { type: "number", description: "Model context window; 16000 to 1000000" }, limit: { type: "number" } }, required: ["query"] } } },
       { type: "function", function: { name: "repo_index_status", description: "Return local repository index health, counts, schema, and cache size.", parameters: { type: "object", properties: {} } } },
@@ -2126,6 +2139,14 @@ export class AgentRuntime {
           output = await intelligence.getImpactCandidates(rawPaths, { limit, maxDepth });
           break;
         }
+        case "repo_callees":
+          if (!requestedPath) throw new Error("path required");
+          output = await intelligence.getCallGraph(requestedPath);
+          break;
+        case "repo_callers":
+          if (!query) throw new Error("query required");
+          output = await intelligence.findCallers(query);
+          break;
         case "repo_file_summary":
           if (!requestedPath) throw new Error("path required");
           output = await intelligence.getFileSummary(requestedPath);
@@ -2156,8 +2177,10 @@ export class AgentRuntime {
   /**
    * FG-1D canonical cache identity for a repository analysis. File-local analyses
    * (repo_file_summary) key on the target file's content hash + parser/index version, so an
-   * unrelated edit elsewhere provably cannot invalidate them. Graph- and corpus-scoped
-   * analyses include the index generation: any refresh invalidates them, which is
+   * unrelated edit elsewhere provably cannot invalidate them. Graph-scoped analyses include
+   * the graph revision, which advances only when symbol/edge/call records actually changed —
+   * a comments-only edit does not invalidate them. Content-sensitive lexical/corpus analyses
+   * include the index generation: any content refresh invalidates them, which is
    * conservative (recompute) rather than ever risking a stale reuse.
    */
   private async canonicalRepositoryCacheIdentity(
@@ -2168,7 +2191,7 @@ export class AgentRuntime {
     limit: number,
   ) {
     if (!this.forgeGreenCacheStore) return undefined;
-    const supported = new Set(["repo_search", "repo_symbol", "repo_references", "repo_dependencies", "repo_dependents", "repo_tests", "repo_impact", "repo_file_summary", "repo_context"]);
+    const supported = new Set(["repo_search", "repo_symbol", "repo_references", "repo_dependencies", "repo_dependents", "repo_tests", "repo_impact", "repo_file_summary", "repo_context", "repo_callers", "repo_callees"]);
     if (!supported.has(toolName)) return undefined;
     const status = intelligence.status();
     if (!status.workspaceId) return undefined;
@@ -2188,7 +2211,13 @@ export class AgentRuntime {
       }
       return undefined;
     }
-    return { ...base, scopeDigest: `${status.indexVersion}:${status.parserVersion}:generation-${status.generation}` };
+    const graphScoped = new Set(["repo_dependencies", "repo_dependents", "repo_tests", "repo_impact", "repo_symbol", "repo_callers", "repo_callees"]);
+    return {
+      ...base,
+      scopeDigest: graphScoped.has(toolName)
+        ? `${status.indexVersion}:${status.parserVersion}:graphgen-${status.graphGeneration}`
+        : `${status.indexVersion}:${status.parserVersion}:generation-${status.generation}`,
+    };
   }
 
   private async executeTool(

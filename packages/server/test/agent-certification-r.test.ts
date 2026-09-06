@@ -31,6 +31,7 @@ function largeRepositoryIntelligence(root: string): RepositoryIntelligence {
   return {
     openWorkspace: async () => ({ id: "synthetic-large", root }), indexWorkspace: async () => status(), refresh: async () => ({ added: [], changed: [], deleted: [], unchanged: 100_000, durationMs: 0 }), status,
     findRelevantContext: async () => ({ items: candidates, total: 100_000, truncated: true }),
+    lastRefreshMetrics: () => undefined,
     searchFiles: empty, listFiles: empty, getFile: async () => undefined, searchText: empty, searchSymbols: empty, getSymbol: async () => undefined,
     findReferences: empty, findDependencies: empty, findDependents: empty, findRelatedTests: empty, startWatching: () => undefined, stopWatching: () => undefined, closeWorkspace: async () => undefined,
   } as unknown as RepositoryIntelligence;

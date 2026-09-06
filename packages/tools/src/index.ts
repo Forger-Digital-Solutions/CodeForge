@@ -396,6 +396,67 @@ export const BUILT_IN_TOOL_DEFINITIONS: Record<string, ToolDefinition> = {
     readOnly: true,
     executionClass: "repo",
   },
+  repo_impact: {
+    name: "repo_impact",
+    description: "Advisory impact candidates and blast radius for changed paths. Does not grant execution or verification authority.",
+    parameters: {
+      type: "object",
+      properties: {
+        paths: { type: "array", items: { type: "string" }, description: "Workspace-relative paths of modified files" },
+        path: { type: "string", description: "Single modified file path" },
+        maxDepth: { type: "number", description: "Graph traversal depth, default 3, max 10" },
+        limit: { type: "number", description: "Max results" },
+      },
+    },
+    requiredPermission: "read",
+    readOnly: true,
+    executionClass: "repo",
+  },
+  repo_file_summary: {
+    name: "repo_file_summary",
+    description: "Structured summary of an indexed file: symbols, exports, imports, language, size.",
+    parameters: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "Workspace-relative file path" },
+        limit: { type: "number", description: "Max results" },
+      },
+      required: ["path"],
+    },
+    requiredPermission: "read",
+    readOnly: true,
+    executionClass: "repo",
+  },
+  repo_callees: {
+    name: "repo_callees",
+    description: "Static call candidates inside one indexed file with edge provenance and preserved ambiguity.",
+    parameters: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "Workspace-relative file path" },
+        limit: { type: "number", description: "Max results" },
+      },
+      required: ["path"],
+    },
+    requiredPermission: "read",
+    readOnly: true,
+    executionClass: "repo",
+  },
+  repo_callers: {
+    name: "repo_callers",
+    description: "Candidate callers of a symbol by name or id, with edge provenance and preserved ambiguity.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Symbol name or id" },
+        limit: { type: "number", description: "Max results" },
+      },
+      required: ["query"],
+    },
+    requiredPermission: "read",
+    readOnly: true,
+    executionClass: "repo",
+  },
   repo_context: {
     name: "repo_context",
     description: "Build a fresh, deduplicated context pack within a token budget.",

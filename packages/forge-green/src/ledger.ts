@@ -24,7 +24,8 @@ export type ForgeGreenMechanism =
   | "canonical_analysis_cache"
   | "context_reuse"
   | "request_dedupe"
-  | "fallback";
+  | "fallback"
+  | "repository_intelligence";
 
 export interface EfficiencyLedgerEvent {
   mechanism: ForgeGreenMechanism;
@@ -47,6 +48,14 @@ export interface ForgeGreenLedgerTotals {
   avoidedModelRequests: number;
   avoidedToolDispatches: number;
   fallbackEvents: number;
+  /** FG-2: files reparsed by repository intelligence (work done). */
+  repositoryFilesReparsed: number;
+  /** FG-2: files whose persisted intelligence was reused without reparsing (work avoided). */
+  repositoryFilesReused: number;
+  /** FG-2: content-addressed parse-cache hits inside repository intelligence. */
+  repositoryParseCacheHits: number;
+  /** FG-2: dependents re-resolved because a resolved dependency target was deleted. */
+  repositoryInvalidations: number;
 }
 
 export interface ForgeGreenLedgerIdentity {
@@ -88,6 +97,10 @@ function emptyTotals(): ForgeGreenLedgerTotals {
     avoidedModelRequests: 0,
     avoidedToolDispatches: 0,
     fallbackEvents: 0,
+    repositoryFilesReparsed: 0,
+    repositoryFilesReused: 0,
+    repositoryParseCacheHits: 0,
+    repositoryInvalidations: 0,
   };
 }
 
@@ -136,6 +149,13 @@ export class ForgeGreenLedgerCollector {
       case "fallback":
         this.totals.fallbackEvents += 1;
         break;
+      case "repository_intelligence":
+        if (event.reason === "files_parsed") this.totals.repositoryFilesReparsed += quantity;
+        else if (event.reason === "files_reused") this.totals.repositoryFilesReused += quantity;
+        else if (event.reason === "parse_cache_hits") this.totals.repositoryParseCacheHits += quantity;
+        else if (event.reason === "dependent_revalidation") this.totals.repositoryInvalidations += quantity;
+        else if (event.measurement === "unknown") this.noteUnknown();
+        break;
     }
   }
 
@@ -178,6 +198,14 @@ export class ForgeGreenLedgerCollector {
 
   recordCanonicalCacheInvalidation(reason: string): void {
     this.record({ mechanism: "canonical_analysis_cache", measurement: "measured", quantity: 1, unit: "count", reason: `invalidated:${reason.slice(0, 80)}` });
+  }
+
+  /** FG-2: observational repository-analysis metrics from the latest refresh or full index. */
+  recordRepositoryRefresh(metrics: { filesParsed: number; filesReused: number; parseCacheHits: number; invalidations: number }): void {
+    if (metrics.filesParsed > 0) this.record({ mechanism: "repository_intelligence", measurement: "measured", quantity: metrics.filesParsed, unit: "count", reason: "files_parsed" });
+    if (metrics.filesReused > 0) this.record({ mechanism: "repository_intelligence", measurement: "measured", quantity: metrics.filesReused, unit: "count", reason: "files_reused" });
+    if (metrics.parseCacheHits > 0) this.record({ mechanism: "repository_intelligence", measurement: "measured", quantity: metrics.parseCacheHits, unit: "count", reason: "parse_cache_hits" });
+    if (metrics.invalidations > 0) this.record({ mechanism: "repository_intelligence", measurement: "measured", quantity: metrics.invalidations, unit: "count", reason: "dependent_revalidation" });
   }
 
   recordRequestDeduped(): void {
