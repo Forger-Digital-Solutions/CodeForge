@@ -29,14 +29,14 @@ describe("CF-09 long-horizon security boundaries", () => {
   });
 
   afterEach(async () => {
-    harness?.persistence.close();
+    await harness?.persistence.close();
     if (repoDir) await fs.rm(repoDir, { recursive: true, force: true });
     await fs.rm(worktreeDir, { recursive: true, force: true });
   });
 
   it("keeps a wave-1 Coder's private context out of every later mission surface", async () => {
     repoDir = await createRepo(SMALL_REPO, "cf09-sec-repo-");
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: scriptFromSpec({ missionId: "small", goal: GOAL, criteria: SMALL_CRITERIA, plans: [{ milestones: smallMilestones() }], reviewer: () => reviewerPass() }),
     });
@@ -69,18 +69,18 @@ describe("CF-09 long-horizon security boundaries", () => {
       JSON.stringify(mission.waves),
       JSON.stringify(harness.missionEvents),
       JSON.stringify(harness.parallelEvents),
-      JSON.stringify(harness.persistence.getEvents(SESSION)),
-      JSON.stringify(harness.persistence.getAllWorkItems()),
+      JSON.stringify(await harness.persistence.getEvents(SESSION)),
+      JSON.stringify(await harness.persistence.getAllWorkItems()),
       JSON.stringify(result),
     ];
     for (const serialized of surfaces) expect(serialized).not.toContain(CODER_PRIVATE);
     // Positive control: the durable mission surfaces really are populated.
-    expect(JSON.stringify(harness.persistence.getAllWorkItems())).toContain("s-one");
+    expect(JSON.stringify(await harness.persistence.getAllWorkItems())).toContain("s-one");
   }, 300_000);
 
   it("gives repository text no authority over mission intent, acceptance, or budget", async () => {
     repoDir = await createRepo({ ...SMALL_REPO, "INSTRUCTIONS.md": INJECTION, "src/one.mjs": `${SMALL_REPO["src/one.mjs"]}// ${INJECTION.split("\n").join(" ")}\n` }, "cf09-inject-repo-");
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: scriptFromSpec({ missionId: "small", goal: GOAL, criteria: SMALL_CRITERIA, plans: [{ milestones: smallMilestones() }], reviewer: () => reviewerPass() }),
     });
@@ -108,7 +108,7 @@ describe("CF-09 long-horizon security boundaries", () => {
   it("refuses a Replanner roadmap that invents acceptance criteria or drops the objective", async () => {
     repoDir = await createRepo(SMALL_REPO, "cf09-replanner-repo-");
     // The second milestone fails for real, and the Replanner then answers with a hostile roadmap.
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: (context) => {
         const base = scriptFromSpec({
@@ -145,7 +145,7 @@ describe("CF-09 long-horizon security boundaries", () => {
 
   it("ignores a Coder or Explorer that claims acceptance or self-verifies an assumption", async () => {
     repoDir = await createRepo(SMALL_REPO, "cf09-selfcert-repo-");
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: (context) => {
         const base = scriptFromSpec({

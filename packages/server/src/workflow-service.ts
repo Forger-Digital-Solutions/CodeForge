@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createWorkspaceEventAdapter, type WorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { ApprovalService } from "./approval-service.js";
-import type { EventStore, SessionPersistence } from "@codeforge/sessions";
+import type { EventStore, ISessionPersistence } from "@codeforge/sessions";
 import {
   createWorkflowEngine,
   type WorkflowEngine,
@@ -19,7 +19,7 @@ import { WorkspaceService, createWorkspaceService, type WorkspaceLease } from ".
 
 export interface WorkflowServiceOptions {
   eventStore: EventStore;
-  persistence: SessionPersistence;
+  persistence: ISessionPersistence;
   workspacePath?: string;
   workspaceService?: WorkspaceService;
   /** Factory for AgentRuntime per session — connects workflow to real execution pipeline */
@@ -50,12 +50,12 @@ const WORKFLOW_TIMEOUT_MS = 10 * 60 * 1000;
 const MAX_WORKSPACE_PATH_LENGTH = 1024;
 
 /** A persisted running process has no trustworthy terminal result after a service restart. */
-function recoverInterruptedForgeVerifyAttempts(persistence: SessionPersistence, sessionId: string): void {
+async function recoverInterruptedForgeVerifyAttempts(persistence: ISessionPersistence, sessionId: string): Promise<void> {
   const now = new Date().toISOString();
-  for (const item of persistence.getWorkItems(sessionId)) {
+  for (const item of await persistence.getWorkItems(sessionId)) {
     if (item.kind !== "verification" || item.recordType !== "attempt" || item.status !== "running") continue;
     const payload = { ...item.payload, status: "interrupted", finishedAt: now, terminationReason: "restart" };
-    persistence.upsertWorkItem({ ...item, status: "interrupted", payload, updatedAt: now });
+    await persistence.upsertWorkItem({ ...item, status: "interrupted", payload, updatedAt: now });
   }
 }
 
@@ -150,7 +150,7 @@ function safeVerificationAttempt(result: VerificationResult, attempt: number) {
 
 export class WorkflowService {
   private readonly eventStore: EventStore;
-  private readonly persistence: SessionPersistence;
+  private readonly persistence: ISessionPersistence;
   private readonly approvalService: ApprovalService;
   private readonly workspaceService: WorkspaceService;
   private readonly workflows: Map<string, { engine: WorkflowEngine; controller: AbortController; promise: Promise<WorkflowResult>; task: WorkflowTask }> = new Map();
@@ -169,48 +169,32 @@ export class WorkflowService {
     const realRuntime = options.useRealRuntime ?? false;
     this.isRealRuntimeEnabled = typeof realRuntime === "function" ? realRuntime : () => realRuntime;
     this.userIntentHold = options.userIntentHold;
-    this.recoverStalePersistedState();
   }
 
-  private recoverStalePersistedState(): void {
+  /** Must be awaited once after construction — reclassifies persisted state before serving. */
+  async init(): Promise<void> {
+    await this.recoverStalePersistedState();
+  }
+
+  private async recoverStalePersistedState(): Promise<void> {
     try {
-      const sessions = this.persistence.listSessions();
+      const sessions = await this.persistence.listSessions();
       for (const sess of sessions) {
         const statusStr = sess.status as string;
         const isTerminal = statusStr === "completed" || statusStr === "failed" || statusStr === "cancelled" || statusStr === "failed_safely";
         if (!isTerminal) {
-          const turns = this.persistence.getTurns(sess.id);
-          for (const turn of turns) {
-            const isTurnTerminal = turn.status === "completed" || turn.status === "failed" || turn.status === "cancelled";
-            if (!isTurnTerminal) {
-              try {
-                this.persistence.upsertTurn({
-                  ...turn,
-                  status: "failed",
-                  completedAt: new Date().toISOString(),
-                  error: "Recovery required: server restarted during active execution. No duplicate execution will occur; inspect workspace and retry if needed.",
-                });
-              } catch {}
-            }
-          }
+          // A turn record contains durable user intent and may be owned by AgentRuntime rather
+          // than a workflow. Failing it here destroys the information needed for the runtime's
+          // explicit hydrate/classify/replan path. Preserve the turn facts and put only the
+          // session in a visible recovery hold; no continuation is resumed from this method.
           try {
-            this.persistence.upsertSession({
+            await this.persistence.upsertSession({
               ...sess,
-              status: "failed",
+              status: "recovering",
               updatedAt: new Date().toISOString(),
             });
-            try {
-              const recoveryEvent = {
-                type: "task.state_changed",
-                timestamp: new Date().toISOString(),
-                seq: this.eventStore.getLastSeq() + 1,
-                sessionId: sess.id,
-                payload: { taskId: sess.id, from: sess.status, to: "failed_safely", reason: "recovery_required" },
-              } as const;
-              this.eventStore.append(recoveryEvent as any);
-              this.persistence.appendEvent(recoveryEvent);
-            } catch {}
           } catch {}
+          await recoverInterruptedForgeVerifyAttempts(this.persistence, sess.id);
         }
       }
     } catch {}
@@ -416,7 +400,7 @@ export class WorkflowService {
     const agentExecutor = shouldUseRealAgent ? this.createAgentExecutor(sessionId, request.userId, controller.signal, adapter) : undefined;
 
     const repairAttempts: Array<{ attempt: number; summary: string }> = [];
-    const persistForgeVerify = (recordType: "plan" | "attempt" | "evidence", id: string, planId: string, value: VerificationPlan | VerificationAttempt | VerificationEvidence): void => {
+    const persistForgeVerify = async (recordType: "plan" | "attempt" | "evidence", id: string, planId: string, value: VerificationPlan | VerificationAttempt | VerificationEvidence): Promise<void> => {
       const createdAt = "createdAt" in value ? value.createdAt : value.startedAt;
       const updatedAt = "finishedAt" in value && value.finishedAt ? value.finishedAt : createdAt;
       const item = {
@@ -432,22 +416,22 @@ export class WorkflowService {
         createdAt,
         updatedAt,
       } as import("@codeforge/sessions").WorkItem;
-      if (recordType === "plan" || recordType === "evidence") this.persistence.insertImmutableWorkItem(item);
-      else this.persistence.upsertWorkItem(item);
+      if (recordType === "plan" || recordType === "evidence") await this.persistence.insertImmutableWorkItem(item);
+      else await this.persistence.upsertWorkItem(item);
     };
     const verificationObserver: ForgeVerifyObserver = {
-      planCreated: (plan) => {
-        persistForgeVerify("plan", plan.planId, plan.planId, plan);
-        adapter.emitForgeVerifyPlanCreated(taskId, plan.planId, plan.policyVersion, plan.verifiers.filter((verifier) => verifier.requirement === "required").map((verifier) => verifier.verifierId));
+      planCreated: async (plan) => {
+        await persistForgeVerify("plan", plan.planId, plan.planId, plan);
+        await adapter.emitForgeVerifyPlanCreated(taskId, plan.planId, plan.policyVersion, plan.verifiers.filter((verifier) => verifier.requirement === "required").map((verifier) => verifier.verifierId));
       },
-      attemptStarted: (attempt) => {
-        persistForgeVerify("attempt", attempt.attemptId, attempt.planId, attempt);
-        adapter.emitForgeVerifyAttemptStarted(taskId, attempt.planId, attempt.attemptId, attempt.verifierId);
+      attemptStarted: async (attempt) => {
+        await persistForgeVerify("attempt", attempt.attemptId, attempt.planId, attempt);
+        await adapter.emitForgeVerifyAttemptStarted(taskId, attempt.planId, attempt.attemptId, attempt.verifierId);
       },
       attemptTerminal: (attempt) => persistForgeVerify("attempt", attempt.attemptId, attempt.planId, attempt),
-      evidenceCreated: (evidence) => {
-        persistForgeVerify("evidence", evidence.evidenceId, evidence.planId, evidence);
-        adapter.emitForgeVerifyEvidenceCreated(taskId, evidence.planId, evidence.attemptId, evidence.evidenceId, evidence.verifierId, evidence.status, evidence.elapsedMs, evidence.outputTruncated);
+      evidenceCreated: async (evidence) => {
+        await persistForgeVerify("evidence", evidence.evidenceId, evidence.planId, evidence);
+        await adapter.emitForgeVerifyEvidenceCreated(taskId, evidence.planId, evidence.attemptId, evidence.evidenceId, evidence.verifierId, evidence.status, evidence.elapsedMs, evidence.outputTruncated);
       },
     };
     // Snapshot adapter for phase transitions
@@ -485,44 +469,45 @@ export class WorkflowService {
         const to = statusMap[phase] ?? phase;
         adapter.emitTaskStateChanged(taskId, task.phase, to);
         adapter.emitStatusChanged(task.phase, phase);
-        // Persist session status
-        try {
-          this.persistence.upsertSession({
-            id: sessionId,
-            title: task.title,
-            createdAt: task.createdAt,
-            updatedAt: new Date().toISOString(),
-            status: (to as unknown as "running") ?? "running",
-            taskTitle: task.title,
-            workspacePath,
-          });
-        } catch {}
+        // Persist session status — phase telemetry, so best-effort by design
+        this.persistence.upsertSession({
+          id: sessionId,
+          title: task.title,
+          createdAt: task.createdAt,
+          updatedAt: new Date().toISOString(),
+          status: (to as unknown as "running") ?? "running",
+          taskTitle: task.title,
+          workspacePath,
+        }).catch(() => {});
       },
       onEvent: (evt: { type: string; payload: unknown }) => {
         if (evt.type === "workflow.plan_created") {
           const payload = evt.payload as { planId: string; steps: number };
           const safePlanTitle = redactSecrets(`Plan for ${request.message.slice(0, 40)}`);
           adapter.emitPlanStarted(payload.planId, taskId, safePlanTitle);
-          // Also persist plan as WorkItem
-          try {
-            this.persistence.upsertWorkItem({
-              kind: "plan",
-              id: payload.planId,
-              sessionId,
-              turnId,
-              title: safePlanTitle,
-              status: "draft",
-              steps: [],
-              comments: [],
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            } as unknown as import("@codeforge/sessions").WorkItem);
-          } catch {}
+          // Also persist plan as WorkItem — best-effort progress record
+          this.persistence.upsertWorkItem({
+            kind: "plan",
+            id: payload.planId,
+            sessionId,
+            turnId,
+            title: safePlanTitle,
+            status: "draft",
+            steps: [],
+            comments: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          } as unknown as import("@codeforge/sessions").WorkItem).catch(() => {});
         } else if (evt.type === "workflow.approval_requested") {
           // Handled via askForApproval below
         } else if (evt.type === "workflow.verification_started") {
           const payload = evt.payload as { attempt: number };
           adapter.emitWorkflowVerificationStarted(taskId, payload.attempt);
+        } else if (evt.type === "workflow.plan_revised") {
+          // CF-17: a consumed steer superseded the plan revision; announce it durably so the UI
+          // and the event journal reflect that previous verification authority is now stale.
+          const payload = evt.payload as { planId: string; fromRevision: number; toRevision: number };
+          void adapter.emitPlanStatusChanged(payload.planId, "superseded").catch(() => {});
         } else if (evt.type === "workflow.verification_completed") {
           const payload = evt.payload as { attempt: number; verification: VerificationResult };
           const safeAttempt = safeVerificationAttempt(payload.verification, payload.attempt);
@@ -562,7 +547,7 @@ export class WorkflowService {
         adapter.emitApprovalRequested(approvalId, "workflow", "execute_plan", safeDescription, risk, workspacePath);
         // Persist approval as WorkItem
         try {
-          this.persistence.upsertWorkItem({
+          await this.persistence.upsertWorkItem({
             kind: "approval",
             id: approvalId,
             sessionId,
@@ -580,8 +565,8 @@ export class WorkflowService {
         // Cleanup legacy persistence? Update work item decision
         try {
           const decision = result.approved ? "allow_once" as const : "deny" as const;
-          adapter.emitApprovalResolved(approvalId, decision);
-          this.persistence.upsertWorkItem({
+          await adapter.emitApprovalResolved(approvalId, decision);
+          await this.persistence.upsertWorkItem({
             kind: "approval",
             id: approvalId,
             sessionId,
@@ -603,7 +588,7 @@ export class WorkflowService {
     // Track
     const task: WorkflowTask = engine.getTask();
     const promise = engine.run(request.message).then(
-      (result: WorkflowResult) => {
+      async (result: WorkflowResult) => {
         clearWorkflowTimeout();
         // A workflow that has reached a terminal state must not leave a live approval behind it.
         // An approval outliving its workflow is an orphan: it still holds a resolver that could
@@ -615,7 +600,7 @@ export class WorkflowService {
         const safeDiff = result.diffSummary ? redactSecrets(result.diffSummary) : undefined;
         const safeResult = { ...result, summary: safeSummary, diffSummary: safeDiff };
         if (safeResult.completion) {
-          adapter.emitWorkflowCompletionDecided(
+          await adapter.emitWorkflowCompletionDecided(
             taskId,
             safeResult.completion.outcome,
             sanitizeInspectionText(safeResult.completion.rationale, 1_000),
@@ -704,7 +689,7 @@ export class WorkflowService {
             createdAt: task.createdAt,
             updatedAt: new Date().toISOString(),
           };
-          this.persistence.upsertWorkItem(inspection as unknown as import("@codeforge/sessions").WorkItem);
+          await this.persistence.upsertWorkItem(inspection as unknown as import("@codeforge/sessions").WorkItem);
         } catch {}
         // Evidence belongs to any run that reached a considered verdict — a run held back by the
         // completion gate is exactly when the user most needs to see what was done and why.
@@ -714,7 +699,7 @@ export class WorkflowService {
               { kind: "file", ref: safeDiff?.slice(0, 100) ?? "workflow" },
             ]);
             try {
-              this.persistence.upsertWorkItem({
+              await this.persistence.upsertWorkItem({
                 kind: "evidence",
                 id: safeResult.evidenceId,
                 sessionId,
@@ -734,24 +719,24 @@ export class WorkflowService {
           adapter.emitTaskCompleted(taskId, safeResult.summary);
           adapter.emitStatusChanged("running", "completed");
           // Final turn-like completion for compatibility
-          adapter.emitTurnCompleted(turnId, safeResult.summary);
+          await adapter.emitTurnCompleted(turnId, safeResult.summary);
         } else if (safeResult.status === "blocked") {
           adapter.emitTaskStateChanged(taskId, "implementing", "blocked");
-          adapter.emitTurnFailed(turnId, safeResult.summary);
+          await adapter.emitTurnFailed(turnId, safeResult.summary);
           adapter.emitStatusChanged("running", "failed");
         } else if (safeResult.status === "failed") {
           adapter.emitTaskStateChanged(taskId, "implementing", "failed_safely");
-          adapter.emitTurnFailed(turnId, safeResult.summary);
+          await adapter.emitTurnFailed(turnId, safeResult.summary);
           adapter.emitStatusChanged("running", "failed");
         } else if (safeResult.status === "cancelled") {
           adapter.emitTaskCancelled(taskId, safeResult.summary);
-          adapter.emitTurnCancelled(turnId, safeResult.summary);
+          await adapter.emitTurnCancelled(turnId, safeResult.summary);
           adapter.emitStatusChanged("running", "cancelled");
         }
         // Persist final session status (redacted)
         try {
           const safeMsg = redactSecrets(request.message.slice(0, 80));
-          this.persistence.upsertSession({
+          await this.persistence.upsertSession({
             id: sessionId,
             title: safeMsg,
             createdAt: task.createdAt,
@@ -760,7 +745,7 @@ export class WorkflowService {
             taskTitle: safeMsg,
             workspacePath,
           });
-          this.persistence.upsertTurn({
+          await this.persistence.upsertTurn({
             id: turnId,
             sessionId,
             seq: this.eventStore.getLastSeq(),
@@ -773,13 +758,13 @@ export class WorkflowService {
         } catch {}
         return safeResult;
       },
-      (error: unknown) => {
+      async (error: unknown) => {
         clearWorkflowTimeout();
         // Same invariant on the failure path: no approval survives the workflow that requested it.
         try { this.approvalService.cancelForTurn(turnId, "Workflow failed before this approval was answered"); } catch {}
         const raw = error instanceof Error ? error.message : String(error);
         const msg = redactSecrets(raw);
-        adapter.emitTurnFailed(turnId, msg);
+        await adapter.emitTurnFailed(turnId, msg);
         adapter.emitTaskStateChanged(taskId, "running", "failed_safely");
         adapter.emitStatusChanged("running", "failed");
         return {
@@ -804,7 +789,7 @@ export class WorkflowService {
 
     // Also persist initial turn as running (redacted)
     try {
-      this.persistence.upsertTurn({
+      await this.persistence.upsertTurn({
         id: turnId,
         sessionId,
         seq: this.eventStore.getLastSeq(),
@@ -821,6 +806,38 @@ export class WorkflowService {
     const entry = this.workflows.get(taskId);
     if (!entry) return undefined;
     return { task: entry.engine.getTask(), promise: entry.promise };
+  }
+
+  /**
+   * CF-17: accepts a user steer for a running workflow. Exactly-once acceptance is durable —
+   * a `steer_receipt` work item with a unique id is inserted through `insertIfAbsent`, so a
+   * retried delivery can never reach the engine twice, across restarts or concurrent requests.
+   * The steer text carries no authority: at the engine's post-verification safe boundary it only
+   * increments the plan revision and forces fresh ForgeVerify verification for that revision.
+   */
+  async steerWorkflow(taskId: string, sessionId: string, message: string, steerId?: string): Promise<{ ok: boolean; duplicate?: boolean; error?: string }> {
+    const entry = this.workflows.get(taskId);
+    if (!entry) return { ok: false, error: "WORKFLOW_NOT_FOUND" };
+    const resolvedSteerId = steerId ?? `steer-${crypto.randomUUID()}`;
+    const now = new Date().toISOString();
+    const receipt = {
+      kind: "steer_receipt",
+      id: `steer-receipt-${sessionId}-${resolvedSteerId}`,
+      sessionId,
+      steerId: resolvedSteerId,
+      turnId: entry.task.turnId,
+      message: redactSecrets(message),
+      createdAt: now,
+      updatedAt: now,
+    } as unknown as import("@codeforge/sessions").WorkItem;
+    const accepted = await this.persistence.insertIfAbsent(receipt);
+    if (!accepted) return { ok: true, duplicate: true };
+    try {
+      entry.engine.steer(redactSecrets(message), resolvedSteerId);
+    } catch (error) {
+      return { ok: false, error: error instanceof Error ? error.message : String(error) };
+    }
+    return { ok: true };
   }
 
   listWorkflows(): WorkflowTask[] {

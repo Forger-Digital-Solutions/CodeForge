@@ -5,7 +5,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { getSanitizedEnvForChild } from "./env-filter.js";
-import type { SessionPersistence } from "@codeforge/sessions";
+import type { ISessionPersistence } from "@codeforge/sessions";
 
 const execFile = promisify(execFileCallback);
 
@@ -52,14 +52,23 @@ export interface RestoreResult {
 
 export class CheckpointService {
   private readonly workspaceRoot: string;
-  private readonly persistence?: SessionPersistence;
+  private readonly persistence?: ISessionPersistence;
   private readonly checkpoints: Map<string, CheckpointInfo> = new Map();
 
-  constructor(workspaceRoot: string, persistence?: SessionPersistence) {
+  constructor(workspaceRoot: string, persistence?: ISessionPersistence) {
     this.workspaceRoot = path.resolve(workspaceRoot);
     this.persistence = persistence;
+  }
+
+  /**
+   * Must be awaited once before first use to eagerly warm the in-memory checkpoint cache from
+   * durable storage. Not required for correctness: `getCheckpoint`/`getAllCheckpoints` lazily
+   * hydrate on demand, but callers that construct a `CheckpointService` directly (rather than via
+   * `createCheckpointService`) should still prefer calling this when they can.
+   */
+  async init(): Promise<void> {
     if (this.persistence) {
-      this.loadPersistedCheckpoints();
+      await this.loadPersistedCheckpoints();
     }
   }
 
@@ -184,7 +193,7 @@ export class CheckpointService {
           stagedPaths: status.staged,
           untrackedPaths: status.untracked,
           createdAt: now.toISOString(),
-        } as unknown as import("@codeforge/sessions").WorkItem);
+        } as unknown as import("@codeforge/sessions").WorkItem).catch(() => {});
       } catch {}
     }
 
@@ -202,10 +211,10 @@ export class CheckpointService {
   /**
    * Load persisted checkpoints from SessionPersistence catalog.
    */
-  loadPersistedCheckpoints(): void {
+  async loadPersistedCheckpoints(): Promise<void> {
     if (!this.persistence) return;
     try {
-      const items = this.persistence.getWorkItemsByKind("checkpoint");
+      const items = await this.persistence.getWorkItemsByKind("checkpoint");
       for (const item of items) {
         if (item.kind === "checkpoint" && item.id) {
           const raw = item as unknown as {
@@ -462,14 +471,10 @@ export class CheckpointService {
   }
 
   getCheckpoint(checkpointId: string): CheckpointInfo | undefined {
-    if (!this.checkpoints.has(checkpointId)) {
-      this.loadPersistedCheckpoints();
-    }
     return this.checkpoints.get(checkpointId);
   }
 
   getAllCheckpoints(): CheckpointInfo[] {
-    this.loadPersistedCheckpoints();
     return Array.from(this.checkpoints.values()).sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
     );
@@ -588,6 +593,6 @@ export class CheckpointService {
   }
 }
 
-export function createCheckpointService(workspaceRoot: string, persistence?: SessionPersistence): CheckpointService {
+export function createCheckpointService(workspaceRoot: string, persistence?: ISessionPersistence): CheckpointService {
   return new CheckpointService(workspaceRoot, persistence);
 }

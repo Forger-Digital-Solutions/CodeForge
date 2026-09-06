@@ -70,6 +70,12 @@ export interface WorkflowPlan {
   taskId: string;
   status: "draft" | "review" | "approved" | "rejected" | "superseded" | "completed";
   steps: PlanStep[];
+  /**
+   * CF-17: the authoritative execution revision. Revision 1 is the original approved plan; a
+   * material user steer consumed at a safe boundary increments it, and completion must bind to
+   * verification evidence produced for exactly this revision.
+   */
+  revision?: number;
   createdAt: string;
   updatedAt: string;
 }

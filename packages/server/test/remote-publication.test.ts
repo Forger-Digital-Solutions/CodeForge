@@ -60,47 +60,47 @@ describe("CF-11 controlled remote delivery", () => {
   it("publishes exactly the certified SHA to a real bare remote and creates one PR through HTTP", async () => {
     const h = await harness(); expect(h.ready.status).toBe("ready"); const fake = await fakeGitHub(h.ready.deliveryRevision!);
     const service = createRemotePublicationService({ persistence: h.state, workspaceService: h.workspaces, getDelivery: (id) => h.delivery.getDelivery(id), resolveRepository: () => repo, pullRequests: new GitHubPullRequestClient(() => "cf11-synthetic-token", fetch, fake.url) });
-    const created = await service.createPublication(h.ready.id); const authorized = service.authorize(created.id, "user-1"); const result = await service.resume(authorized.id);
-    expect(result.status).toBe("remote_pr_ready"); expect(result.receipt?.publishedSha).toBe(h.ready.deliveryRevision); expect(result.pr?.number).toBe(41); expect(await git(h.root, ["ls-remote", "origin", `refs/heads/${result.remoteBranch}`])).toContain(h.ready.deliveryRevision!); expect(await git(h.root, ["ls-remote", "origin", "refs/heads/main"])).toContain(await git(h.root, ["rev-parse", `${h.ready.commits[0]!.sha!}^`])); expect(fake.creates).toBe(1); expect(JSON.stringify(result)).not.toContain("cf11-synthetic-token"); await fake.close(); h.state.close();
+    const created = await service.createPublication(h.ready.id); const authorized = await service.authorize(created.id, "user-1"); const result = await service.resume(authorized.id);
+    expect(result.status).toBe("remote_pr_ready"); expect(result.receipt?.publishedSha).toBe(h.ready.deliveryRevision); expect(result.pr?.number).toBe(41); expect(await git(h.root, ["ls-remote", "origin", `refs/heads/${result.remoteBranch}`])).toContain(h.ready.deliveryRevision!); expect(await git(h.root, ["ls-remote", "origin", "refs/heads/main"])).toContain(await git(h.root, ["rev-parse", `${h.ready.commits[0]!.sha!}^`])); expect(fake.creates).toBe(1); expect(JSON.stringify(result)).not.toContain("cf11-synthetic-token"); await fake.close(); await h.state.close();
   });
 
   it("reconciles both crash windows without duplicate push or pull request", async () => {
     const h = await harness(); const fake = await fakeGitHub(h.ready.deliveryRevision!); let stopAfterPush = true;
     const first = createRemotePublicationService({ persistence: h.state, workspaceService: h.workspaces, getDelivery: (id) => h.delivery.getDelivery(id), resolveRepository: () => repo, pullRequests: new GitHubPullRequestClient(() => "cf11-synthetic-token", fetch, fake.url), afterPush: () => { if (stopAfterPush) throw new Error("PROCESS_TERMINATED"); } });
-    const publication = await first.createPublication(h.ready.id); first.authorize(publication.id, "user-1"); await expect(first.resume(publication.id)).rejects.toThrow("PROCESS_TERMINATED"); const branch = first.getPublication(publication.id)!.remoteBranch; expect(await git(h.root, ["ls-remote", "origin", `refs/heads/${branch}`])).toContain(h.ready.deliveryRevision!);
+    const publication = await first.createPublication(h.ready.id); await first.authorize(publication.id, "user-1"); await expect(first.resume(publication.id)).rejects.toThrow("PROCESS_TERMINATED"); const branch = (await first.getPublication(publication.id))!.remoteBranch; expect(await git(h.root, ["ls-remote", "origin", `refs/heads/${branch}`])).toContain(h.ready.deliveryRevision!);
     stopAfterPush = false; let stopAfterPr = true; const second = createRemotePublicationService({ persistence: h.state, workspaceService: h.workspaces, getDelivery: (id) => h.delivery.getDelivery(id), resolveRepository: () => repo, pullRequests: new GitHubPullRequestClient(() => "cf11-synthetic-token", fetch, fake.url), afterPullRequestCreated: () => { if (stopAfterPr) throw new Error("PROCESS_TERMINATED"); } });
     await expect(second.resume(publication.id)).rejects.toThrow("PROCESS_TERMINATED"); expect(fake.creates).toBe(1);
     stopAfterPr = false; const third = createRemotePublicationService({ persistence: h.state, workspaceService: h.workspaces, getDelivery: (id) => h.delivery.getDelivery(id), resolveRepository: () => repo, pullRequests: new GitHubPullRequestClient(() => "cf11-synthetic-token", fetch, fake.url) }); const result = await third.resume(publication.id);
-    expect(result.status).toBe("remote_pr_ready"); expect(fake.creates).toBe(1); expect(fake.lookups).toBeGreaterThan(1); await fake.close(); h.state.close();
+    expect(result.status).toBe("remote_pr_ready"); expect(fake.creates).toBe(1); expect(fake.lookups).toBeGreaterThan(1); await fake.close(); await h.state.close();
   });
 
   it("fails closed before branch mutation when the remote target advances", async () => {
     const h = await harness(); const fake = await fakeGitHub(h.ready.deliveryRevision!); await fs.writeFile(path.join(h.root, "advanced.txt"), "remote advance\n"); await execFile("git", ["add", "."], { cwd: h.root }); await execFile("git", ["commit", "-m", "advance local actor"], { cwd: h.root }); const advanced = await git(h.root, ["rev-parse", "HEAD"]); await execFile("git", ["push", "origin", `${advanced}:refs/heads/main`], { cwd: h.root });
-    const service = createRemotePublicationService({ persistence: h.state, workspaceService: h.workspaces, getDelivery: (id) => h.delivery.getDelivery(id), resolveRepository: () => repo, pullRequests: new GitHubPullRequestClient(() => "cf11-synthetic-token", fetch, fake.url) }); const p = await service.createPublication(h.ready.id); service.authorize(p.id, "user-1"); const result = await service.resume(p.id);
-    expect(result.status).toBe("remote_diverged"); expect(result.error).toBe("REMOTE_TARGET_DIVERGED"); expect(await git(h.root, ["ls-remote", "origin", `refs/heads/${result.remoteBranch}`])).toBe(""); expect(fake.creates).toBe(0); await fake.close(); h.state.close();
+    const service = createRemotePublicationService({ persistence: h.state, workspaceService: h.workspaces, getDelivery: (id) => h.delivery.getDelivery(id), resolveRepository: () => repo, pullRequests: new GitHubPullRequestClient(() => "cf11-synthetic-token", fetch, fake.url) }); const p = await service.createPublication(h.ready.id); await service.authorize(p.id, "user-1"); const result = await service.resume(p.id);
+    expect(result.status).toBe("remote_diverged"); expect(result.error).toBe("REMOTE_TARGET_DIVERGED"); expect(await git(h.root, ["ls-remote", "origin", `refs/heads/${result.remoteBranch}`])).toBe(""); expect(fake.creates).toBe(0); await fake.close(); await h.state.close();
   });
 
   it("rejects unexpected remote branch history without force-pushing or creating a PR", async () => {
     const h = await harness(); const fake = await fakeGitHub(h.ready.deliveryRevision!);
     const service = createRemotePublicationService({ persistence: h.state, workspaceService: h.workspaces, getDelivery: (id) => h.delivery.getDelivery(id), resolveRepository: () => repo, pullRequests: new GitHubPullRequestClient(() => "cf11-synthetic-token", fetch, fake.url) }); const publication = await service.createPublication(h.ready.id);
-    const unexpected = await git(h.root, ["rev-parse", `${h.ready.commits[0]!.sha!}^`]); await execFile("git", ["push", "origin", `${unexpected}:refs/heads/${publication.remoteBranch}`], { cwd: h.root }); service.authorize(publication.id, "user-1"); const result = await service.resume(publication.id);
-    expect(result.status).toBe("remote_diverged"); expect(result.error).toBe("REMOTE_BRANCH_DIVERGED"); expect(await git(h.root, ["ls-remote", "origin", `refs/heads/${publication.remoteBranch}`])).toContain(unexpected); expect(fake.creates).toBe(0); await fake.close(); h.state.close();
+    const unexpected = await git(h.root, ["rev-parse", `${h.ready.commits[0]!.sha!}^`]); await execFile("git", ["push", "origin", `${unexpected}:refs/heads/${publication.remoteBranch}`], { cwd: h.root }); await service.authorize(publication.id, "user-1"); const result = await service.resume(publication.id);
+    expect(result.status).toBe("remote_diverged"); expect(result.error).toBe("REMOTE_BRANCH_DIVERGED"); expect(await git(h.root, ["ls-remote", "origin", `refs/heads/${publication.remoteBranch}`])).toContain(unexpected); expect(fake.creates).toBe(0); await fake.close(); await h.state.close();
   });
 
   it("requires explicit authorization and cancellation before push leaves the remote untouched", async () => {
     const h = await harness(); const service = createRemotePublicationService({ persistence: h.state, workspaceService: h.workspaces, getDelivery: (id) => h.delivery.getDelivery(id), resolveRepository: () => repo, pullRequests: new GitHubPullRequestClient(() => "cf11-synthetic-token", fetch, "http://127.0.0.1:1") }); const publication = await service.createPublication(h.ready.id);
-    expect((await service.resume(publication.id)).status).toBe("authorization_required"); expect(service.cancel(publication.id)).toBe(true); expect(service.cancel(publication.id)).toBe(false); expect(await git(h.root, ["ls-remote", "origin", `refs/heads/${publication.remoteBranch}`])).toBe(""); h.state.close();
+    expect((await service.resume(publication.id)).status).toBe("authorization_required"); expect(await service.cancel(publication.id)).toBe(true); expect(await service.cancel(publication.id)).toBe(false); expect(await git(h.root, ["ls-remote", "origin", `refs/heads/${publication.remoteBranch}`])).toBe(""); await h.state.close();
   });
 
   it("fails before any Git remote mutation when no publication credential authority is configured", async () => {
     const h = await harness();
     const service = createRemotePublicationService({ persistence: h.state, workspaceService: h.workspaces, getDelivery: (id) => h.delivery.getDelivery(id), resolveRepository: () => repo });
     const publication = await service.createPublication(h.ready.id);
-    service.authorize(publication.id, "user-1");
+    await service.authorize(publication.id, "user-1");
     const result = await service.resume(publication.id);
     expect(result.status).toBe("blocked");
     expect(result.error).toBe("REMOTE_AUTH_FAILED");
     expect(await git(h.root, ["ls-remote", "origin", `refs/heads/${result.remoteBranch}`])).toBe("");
-    h.state.close();
+    await h.state.close();
   });
 });

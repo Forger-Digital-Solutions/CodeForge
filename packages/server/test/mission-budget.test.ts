@@ -28,13 +28,13 @@ describe("CF-09 mission budgets and loop detection are hard limits", () => {
   });
 
   afterEach(async () => {
-    harness?.persistence.close();
+    await harness?.persistence.close();
     await fs.rm(repoDir, { recursive: true, force: true });
     await fs.rm(worktreeDir, { recursive: true, force: true });
   });
 
   it("stops replanning at the configured replan ceiling", async () => {
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: scriptFromSpec({
         missionId: "small", goal: GOAL, criteria: SMALL_CRITERIA,
@@ -64,7 +64,7 @@ describe("CF-09 mission budgets and loop detection are hard limits", () => {
   }, 300_000);
 
   it("detects an equivalent replan cycle instead of running forever", async () => {
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: scriptFromSpec({
         missionId: "small", goal: GOAL, criteria: SMALL_CRITERIA,
@@ -90,7 +90,7 @@ describe("CF-09 mission budgets and loop detection are hard limits", () => {
   }, 300_000);
 
   it("refuses to dispatch a new wave once the aggregate ceiling is reached", async () => {
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: scriptFromSpec({ missionId: "small", goal: GOAL, criteria: SMALL_CRITERIA, plans: [{ milestones: smallMilestones() }], reviewer: () => reviewerPass() }),
     });

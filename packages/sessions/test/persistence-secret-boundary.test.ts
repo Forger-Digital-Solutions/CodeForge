@@ -8,13 +8,13 @@ describe("SessionPersistence secret boundary", () => {
     for (const store of stores.splice(0)) store.close();
   });
 
-  it("redacts known secrets in sessions, turns, work items, and persisted events", () => {
+  it("redacts known secrets in sessions, turns, work items, and persisted events", async () => {
     const store = createSessionPersistence({ dbPath: ":memory:" });
     stores.push(store);
     const secretText = "sk-proj-super-secret-value OPENCODE_API_KEY=secret OPENROUTER_API_KEY=secret AWS_SECRET_ACCESS_KEY=secret Bearer abcdefghijklmnop password=supersecret";
     const now = new Date().toISOString();
 
-    store.upsertSession({
+    await store.upsertSession({
       id: "secret-session",
       title: secretText,
       taskTitle: secretText,
@@ -22,7 +22,7 @@ describe("SessionPersistence secret boundary", () => {
       updatedAt: now,
       status: "running",
     } satisfies SessionRecord);
-    store.upsertTurn({
+    await store.upsertTurn({
       id: "secret-turn",
       sessionId: "secret-session",
       seq: 0,
@@ -30,7 +30,7 @@ describe("SessionPersistence secret boundary", () => {
       error: secretText,
       status: "failed",
     } satisfies TurnRecord);
-    store.upsertWorkItem({
+    await store.upsertWorkItem({
       kind: "evidence",
       id: "secret-evidence",
       sessionId: "secret-session",
@@ -38,13 +38,13 @@ describe("SessionPersistence secret boundary", () => {
       references: [{ kind: "file", ref: secretText }],
       createdAt: now,
     } satisfies WorkItem);
-    store.appendEvent({ sessionId: "secret-session", type: "task.state_changed", payload: { detail: secretText } });
+    await store.appendEvent({ sessionId: "secret-session", type: "task.state_changed", payload: { detail: secretText } });
 
     const persisted = JSON.stringify({
-      session: store.getSession("secret-session"),
-      turns: store.getTurns("secret-session"),
-      workItems: store.getWorkItems("secret-session"),
-      events: store.getEvents("secret-session"),
+      session: await store.getSession("secret-session"),
+      turns: await store.getTurns("secret-session"),
+      workItems: await store.getWorkItems("secret-session"),
+      events: await store.getEvents("secret-session"),
     });
 
     expect(persisted).toContain("[REDACTED]");

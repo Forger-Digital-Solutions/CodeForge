@@ -19,7 +19,8 @@ export type CompletionBlockerCode =
   | "review_rejected"
   | "no_effective_change"
   | "budget_exhausted"
-  | "plan_steps_unfinished";
+  | "plan_steps_unfinished"
+  | "verification_not_current";
 
 export type CompletionBlockerSeverity = "blocking" | "advisory";
 
@@ -62,6 +63,14 @@ export interface CompletionGateInput {
   budgetDetail?: string;
   /** ForgeVerify evidence is evaluated before legacy reports and remains distinct from completion. */
   verificationSummary?: VerificationSummary;
+  /**
+   * CF-17 completion binding: `verifiedExecutionRevision` is the execution/plan revision the
+   * ForgeVerify evidence was produced for; `currentExecutionRevision` is the authoritative
+   * revision after any steering. Verification of revision N can never authorize completion of
+   * revision N+1 — the gate blocks instead of silently reusing stale authority.
+   */
+  currentExecutionRevision?: number;
+  verifiedExecutionRevision?: number;
 }
 
 /**
@@ -270,6 +279,18 @@ export function evaluateCompletion(input: CompletionGateInput): CompletionGateDe
   candidates.push(...collectReviewBlockers(input.review, policy));
   candidates.push(...collectChangeBlockers(input.plan, input.review, policy));
   candidates.push(...collectPlanBlockers(input.plan, policy));
+
+  if (
+    input.currentExecutionRevision !== undefined &&
+    input.verifiedExecutionRevision !== undefined &&
+    input.currentExecutionRevision !== input.verifiedExecutionRevision
+  ) {
+    candidates.push({
+      code: "verification_not_current",
+      severity: "blocking",
+      message: `Verification covers execution revision ${input.verifiedExecutionRevision}, but the authoritative plan revision is ${input.currentExecutionRevision}. The revision change requires fresh verification before completion.`,
+    });
+  }
 
   const blockers = candidates.filter((b) => b.severity === "blocking");
   const advisories = candidates.filter((b) => b.severity === "advisory");

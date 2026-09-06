@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
-import type { SessionPersistence } from "@codeforge/sessions";
+import type { ISessionPersistence } from "@codeforge/sessions";
 import type { AcceptanceCriteriaResult, AgentEvidenceRef, AgentFinding, ExplorerResult, MissionPlanResult, ReviewResult } from "@codeforge/agent";
 import { runVerification, type VerificationResult } from "@codeforge/workflow";
 import type { AgentRuntime, AgentRuntimeResult } from "./agent-runtime.js";
@@ -32,7 +32,7 @@ export type TargetDriftClass = "NO_DRIFT" | "SAFE_ADDITIVE_DRIFT" | "REPLAN_REQU
 export interface MissionSupervisorOptions {
   workspaceService: WorkspaceService;
   agentRuntime: AgentRuntime;
-  persistence?: SessionPersistence;
+  persistence?: ISessionPersistence;
   integrationService?: IntegrationService;
   parallelOrchestrator?: ParallelAutonomousRunOrchestrator;
   checkpointServiceFactory?: (workspaceRoot: string) => CheckpointService;
@@ -90,11 +90,16 @@ export class MissionSupervisor {
     this.checkpointFactory = options.checkpointServiceFactory ?? ((root) => new CheckpointService(root, options.persistence));
   }
 
+  /** Must be awaited to observe missions persisted by a previous process before synchronous reads. */
+  async init(): Promise<void> {
+    await this.store.init();
+  }
+
   getMission(missionId: string): AutonomousMission | undefined { return this.store.get(missionId); }
   private liveMission(missionId: string): AutonomousMission | undefined { return this.activeMissions.get(missionId) ?? this.store.get(missionId); }
   listMissions(sessionId?: string): AutonomousMission[] { return this.store.list(sessionId); }
 
-  private save(mission: AutonomousMission): void { mission.updatedAt = new Date().toISOString(); this.store.save(mission); }
+  private async save(mission: AutonomousMission): Promise<void> { mission.updatedAt = new Date().toISOString(); await this.store.save(mission); }
   private emit(mission: AutonomousMission, type: string, payload: Record<string, unknown> = {}, extra: { milestoneId?: string; wave?: number } = {}): void { this.store.emit(mission, type, payload, extra); }
   private async git(cwd: string, args: string[]) { return execFile("git", args, { cwd, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } }); }
 
@@ -139,8 +144,8 @@ export class MissionSupervisor {
       const target = await this.options.workspaceService.registerLocalWorkspace(input.workspacePath);
       const baseRevision = (await this.git(target.rootPath, ["rev-parse", "HEAD"])).stdout.trim();
       const now = new Date().toISOString();
-      if (this.options.persistence && !this.options.persistence.getSession(input.sessionId)) {
-        this.options.persistence.upsertSession({ id: input.sessionId, title: input.goal.slice(0, 80), createdAt: now, updatedAt: now, status: "running" });
+      if (this.options.persistence && !(await this.options.persistence.getSession(input.sessionId))) {
+        await this.options.persistence.upsertSession({ id: input.sessionId, title: input.goal.slice(0, 80), createdAt: now, updatedAt: now, status: "running" });
       }
       const budget: MissionBudget = { ...DEFAULT_MISSION_BUDGET, ...input.budget };
       const intentSeed: Omit<MissionIntent, "digest"> = {
@@ -163,7 +168,7 @@ export class MissionSupervisor {
         budget, usage: emptyMissionUsage(), evidence: [], memory: emptyMissionMemory(),
         createdAt: now, updatedAt: now,
       };
-      this.save(mission);
+      await this.save(mission);
       this.activeMissions.set(missionId, mission);
       this.emit(mission, "mission.created", { goal: input.goal });
 
@@ -175,18 +180,18 @@ export class MissionSupervisor {
       mission.missionWorkspaceId = missionWorkspace.id;
       mission.missionBranch = missionWorkspace.branch;
       mission.memory.missionSummary = `Mission: ${input.goal}`;
-      this.save(mission);
+      await this.save(mission);
 
       const compiled = await this.compileAcceptanceCriteria(mission, missionWorkspace, controller.signal);
-      if (!compiled) return this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_ACCEPTANCE_COMPILATION_FAILED, startedAt);
+      if (!compiled) return await this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_ACCEPTANCE_COMPILATION_FAILED, startedAt);
 
       const planned = await this.createInitialPlan(mission, missionWorkspace, controller.signal);
-      if (!planned) return this.terminate(mission, "blocked", mission.error ?? MISSION_ERRORS.MISSION_PLANNER_FAILED, startedAt);
+      if (!planned) return await this.terminate(mission, "blocked", mission.error ?? MISSION_ERRORS.MISSION_PLANNER_FAILED, startedAt);
 
       return await this.drive(mission, controller.signal, startedAt, input.privateAgentContext);
     } catch (error) {
       if (!mission) throw error;
-      return this.terminate(mission, controller.signal.aborted ? "cancelled" : "failed", controller.signal.aborted ? MISSION_ERRORS.MISSION_CANCELLED : error instanceof Error ? error.message : String(error), startedAt);
+      return await this.terminate(mission, controller.signal.aborted ? "cancelled" : "failed", controller.signal.aborted ? MISSION_ERRORS.MISSION_CANCELLED : error instanceof Error ? error.message : String(error), startedAt);
     } finally {
       input.signal?.removeEventListener("abort", onAbort);
       this.activeControllers.delete(missionId);
@@ -203,25 +208,25 @@ export class MissionSupervisor {
     const mission = this.store.get(missionId);
     if (!mission) throw new Error("MISSION_NOT_FOUND");
     if (TERMINAL_MISSION_STATUSES.includes(mission.status)) return this.result(mission);
-    if (!verifyMissionIntent(mission.intent)) return this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_RECOVERY_REVALIDATION_REQUIRED, Date.now());
+    if (!verifyMissionIntent(mission.intent)) return await this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_RECOVERY_REVALIDATION_REQUIRED, Date.now());
     const missionWorkspace = this.missionWorkspace(mission);
     if (!missionWorkspace || !existsSync(missionWorkspace.rootPath)) {
-      return this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_RECOVERY_REVALIDATION_REQUIRED, Date.now());
+      return await this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_RECOVERY_REVALIDATION_REQUIRED, Date.now());
     }
     const head = (await this.git(missionWorkspace.rootPath, ["rev-parse", "HEAD"]).catch(() => ({ stdout: "" }))).stdout.trim();
     const expected = [...mission.milestones].reverse().find((milestone) => milestone.status === "completed" && milestone.resultRevision)?.resultRevision ?? mission.baseRevision;
-    if (!head || head !== expected) return this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_RECOVERY_REVALIDATION_REQUIRED, Date.now());
+    if (!head || head !== expected) return await this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_RECOVERY_REVALIDATION_REQUIRED, Date.now());
     for (const milestone of mission.milestones) {
       if (milestone.status === "completed" && milestone.checkpointId) {
         const checkpoints = this.checkpointFactory(missionWorkspace.rootPath);
         const valid = await checkpoints.validateCheckpointRef(milestone.checkpointId).catch(() => undefined);
-        if (!valid) return this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_RECOVERY_REVALIDATION_REQUIRED, Date.now());
+        if (!valid) return await this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_RECOVERY_REVALIDATION_REQUIRED, Date.now());
       }
     }
     mission.memory = markMemoryStaleness(mission.memory, head);
     // Clear the pause durably: the drive loop re-reads the record and would otherwise re-pause.
     mission.pauseRequested = false;
-    this.save(mission);
+    await this.save(mission);
     this.emit(mission, "mission.resumed", {
       recoveredPlanVersion: mission.currentPlanVersion, head,
       completedMilestones: mission.milestones.filter((milestone) => milestone.status === "completed").map((milestone) => milestone.id),
@@ -242,24 +247,24 @@ export class MissionSupervisor {
   }
 
   /** Pause stops new dispatch at the next safe boundary; in-flight work finishes deterministically. */
-  pauseMission(missionId: string, message?: string): boolean {
+  async pauseMission(missionId: string, message?: string): Promise<boolean> {
     const mission = this.liveMission(missionId);
     if (!mission || TERMINAL_MISSION_STATUSES.includes(mission.status)) return false;
     mission.pauseRequested = true;
     mission.steering.push({ id: `steer-${crypto.randomUUID().slice(0, 8)}`, missionId, type: "pause", ...(message ? { message } : {}), createdAt: new Date().toISOString() });
     if (mission.status === "created" || mission.status === "planning" || mission.status === "analyzing") mission.status = "paused";
-    this.save(mission);
+    await this.save(mission);
     this.emit(mission, "mission.paused", { requestedDuring: mission.status });
     return true;
   }
 
-  cancelMission(missionId: string): boolean {
+  async cancelMission(missionId: string): Promise<boolean> {
     const mission = this.liveMission(missionId);
     if (!mission || TERMINAL_MISSION_STATUSES.includes(mission.status)) return false;
     const controller = this.activeControllers.get(missionId);
     for (const wave of mission.waves) if (wave.parallelRunId) this.parallel.cancelRun(wave.parallelRunId);
     if (controller && !controller.signal.aborted) controller.abort(new Error(MISSION_ERRORS.MISSION_CANCELLED));
-    else { mission.status = "cancelled"; mission.error = MISSION_ERRORS.MISSION_CANCELLED; this.save(mission); this.emit(mission, "mission.cancelled", {}); }
+    else { mission.status = "cancelled"; mission.error = MISSION_ERRORS.MISSION_CANCELLED; await this.save(mission); this.emit(mission, "mission.cancelled", {}); }
     return true;
   }
 
@@ -267,7 +272,7 @@ export class MissionSupervisor {
    * Trusted user steering.  Only this entry point may extend mission intent or acceptance
    * criteria; repository files, tool output and model text never reach it.
    */
-  steerMission(missionId: string, steering: Omit<MissionSteering, "id" | "missionId" | "createdAt"> & { id?: string }): MissionSteering | undefined {
+  async steerMission(missionId: string, steering: Omit<MissionSteering, "id" | "missionId" | "createdAt"> & { id?: string }): Promise<MissionSteering | undefined> {
     const mission = this.liveMission(missionId);
     if (!mission || TERMINAL_MISSION_STATUSES.includes(mission.status)) return undefined;
     const record: MissionSteering = {
@@ -295,9 +300,9 @@ export class MissionSupervisor {
     }
     mission.memory.steeringSummaries.push(`${record.type}: ${(record.message ?? "").slice(0, 160)}`);
     mission.memory = compactMissionMemory(mission.memory);
-    this.save(mission);
+    await this.save(mission);
     this.emit(mission, record.type === "cancel" ? "mission.cancelled" : "mission.steered", { steeringId: record.id, type: record.type });
-    if (record.type === "cancel") this.cancelMission(missionId);
+    if (record.type === "cancel") await this.cancelMission(missionId);
     return record;
   }
 
@@ -321,7 +326,7 @@ export class MissionSupervisor {
   // ---------------------------------------------------------------- planning
 
   private async compileAcceptanceCriteria(mission: AutonomousMission, workspace: ForgeWorkspace, signal: AbortSignal): Promise<boolean> {
-    mission.status = "analyzing"; this.save(mission);
+    mission.status = "analyzing"; await this.save(mission);
     const run = await this.options.agentRuntime.executeAgentRun({
       runId: `${mission.id}:acceptance`, agentId: "mission-planner", role: "mission-planner",
       goal: `Compile acceptance criteria for mission: ${mission.originalGoal}`,
@@ -332,13 +337,13 @@ export class MissionSupervisor {
     });
     this.recordAgentUsage(mission, [run]);
     const compiled = run.structuredData as AcceptanceCriteriaResult | undefined;
-    if (run.status !== "completed" || !compiled) { mission.error = MISSION_ERRORS.MISSION_ACCEPTANCE_COMPILATION_FAILED; this.save(mission); return false; }
+    if (run.status !== "completed" || !compiled) { mission.error = MISSION_ERRORS.MISSION_ACCEPTANCE_COMPILATION_FAILED; await this.save(mission); return false; }
     mission.acceptanceCriteria = compiled.criteria.map((criterion) => ({
       id: criterion.id, description: criterion.description, mandatory: criterion.mandatory,
       status: "unproven", evidence: [], introducedInIntentVersion: 1,
     }));
     this.reviseIntent(mission, { acceptanceCriteriaIds: mission.acceptanceCriteria.map((criterion) => criterion.id) });
-    this.save(mission);
+    await this.save(mission);
     this.emit(mission, "mission.acceptance.updated", { criteria: mission.acceptanceCriteria.map((criterion) => criterion.id) });
     return true;
   }
@@ -354,7 +359,7 @@ export class MissionSupervisor {
   }
 
   private async createInitialPlan(mission: AutonomousMission, workspace: ForgeWorkspace, signal: AbortSignal): Promise<boolean> {
-    mission.status = "planning"; this.save(mission);
+    mission.status = "planning"; await this.save(mission);
     const run = await this.options.agentRuntime.executeAgentRun({
       runId: `${mission.id}:plan:1`, agentId: "mission-planner", role: "mission-planner",
       goal: `Mission roadmap for: ${mission.originalGoal}`,
@@ -365,12 +370,12 @@ export class MissionSupervisor {
     });
     this.recordAgentUsage(mission, [run]);
     const proposed = run.structuredData as MissionPlanResult | undefined;
-    if (run.status !== "completed" || !proposed) { mission.error = MISSION_ERRORS.MISSION_PLANNER_FAILED; this.save(mission); return false; }
+    if (run.status !== "completed" || !proposed) { mission.error = MISSION_ERRORS.MISSION_PLANNER_FAILED; await this.save(mission); return false; }
     return this.applyPlanVersion(mission, proposed, undefined);
   }
 
   /** Validates and installs a model-proposed roadmap. The runtime owns every status transition. */
-  private applyPlanVersion(mission: AutonomousMission, proposed: MissionPlanResult, reason: ReplanTrigger | undefined): boolean {
+  private async applyPlanVersion(mission: AutonomousMission, proposed: MissionPlanResult, reason: ReplanTrigger | undefined): Promise<boolean> {
     const version = mission.currentPlanVersion + 1;
     const milestones: MissionMilestone[] = proposed.milestones.map((milestone) => ({
       id: milestone.id, title: milestone.title, objective: milestone.objective,
@@ -381,7 +386,7 @@ export class MissionSupervisor {
     const validation = validateMilestoneRoadmap(milestones, mission.budget, mission.acceptanceCriteria.map((criterion) => criterion.id));
     if (!validation.valid) {
       mission.error = `${MISSION_ERRORS.MISSION_PLAN_INVALID}: ${validation.error}`;
-      this.save(mission);
+      await this.save(mission);
       this.emit(mission, reason ? "mission.replan.blocked" : "mission.plan.validated", { valid: false, error: validation.error });
       return false;
     }
@@ -422,7 +427,7 @@ export class MissionSupervisor {
       mission.assumptions.push({ id: assumption.id, statement: assumption.statement, status: "unverified", evidence: [], declaredInPlanVersion: version });
       this.emit(mission, "mission.assumption.created", { assumptionId: assumption.id });
     }
-    this.save(mission);
+    await this.save(mission);
     this.emit(mission, reason ? "mission.plan.replaced" : "mission.plan.created", { version, order: validation.order, ...(diff ? { diff } : {}) });
     this.emit(mission, "mission.plan.validated", { version, valid: true, order: validation.order });
     return true;
@@ -456,14 +461,14 @@ export class MissionSupervisor {
     if (mission.pauseRequested) return false;
     const budget = checkMissionBudget(mission, "replan");
     for (const warning of budget.warnings) this.emit(mission, "mission.budget.warning", { warning, ratio: BUDGET_WARNING_RATIO });
-    if (!budget.ok) { mission.error = budget.code!; this.save(mission); this.emit(mission, "mission.replan.blocked", { code: budget.code, detail: budget.detail }); return false; }
+    if (!budget.ok) { mission.error = budget.code!; await this.save(mission); this.emit(mission, "mission.replan.blocked", { code: budget.code, detail: budget.detail }); return false; }
 
     const triggerKey = replanFingerprint(trigger, []);
     // Idempotent transition: an event replay after restart must not create a second plan version.
     const existing = mission.planVersions.find((version) => version.parentVersion === mission.currentPlanVersion && version.reason && replanFingerprint(version.reason, []) === triggerKey);
     if (existing) { this.emit(mission, "mission.replan.blocked", { code: MISSION_ERRORS.MISSION_DUPLICATE_REPLAN, version: existing.version }); return false; }
 
-    mission.status = "replanning"; this.save(mission);
+    mission.status = "replanning"; await this.save(mission);
     this.emit(mission, "mission.replan.requested", { trigger: trigger.type });
     this.emit(mission, "mission.replan.started", { trigger: trigger.type, fromVersion: mission.currentPlanVersion });
 
@@ -485,23 +490,23 @@ export class MissionSupervisor {
     });
     this.recordAgentUsage(mission, [run]);
     const proposed = run.structuredData as MissionPlanResult | undefined;
-    if (run.status !== "completed" || !proposed) { mission.error = MISSION_ERRORS.MISSION_REPLANNER_FAILED; this.save(mission); this.emit(mission, "mission.replan.blocked", { code: MISSION_ERRORS.MISSION_REPLANNER_FAILED }); return false; }
+    if (run.status !== "completed" || !proposed) { mission.error = MISSION_ERRORS.MISSION_REPLANNER_FAILED; await this.save(mission); this.emit(mission, "mission.replan.blocked", { code: MISSION_ERRORS.MISSION_REPLANNER_FAILED }); return false; }
 
     // Mission-level loop detection: an equivalent (trigger, roadmap shape) cycle is not progress.
     const candidateMilestones = proposed.milestones.map((milestone) => ({ ...milestone, status: "pending" as const, planVersion: 0, waveIds: [], evidence: [] }));
     const fingerprint = replanFingerprint(trigger, candidateMilestones);
     if (mission.planVersions.some((version) => version.fingerprint === fingerprint)) {
       mission.error = MISSION_ERRORS.MISSION_REPLAN_LOOP_DETECTED;
-      this.save(mission);
+      await this.save(mission);
       this.emit(mission, "mission.replan.blocked", { code: MISSION_ERRORS.MISSION_REPLAN_LOOP_DETECTED, fingerprint });
       return false;
     }
     const intentBefore = mission.intent.digest;
     if (!this.applyPlanVersion(mission, proposed, trigger)) return false;
     // The Replanner is read-only over intent: any drift here is a fail-closed condition.
-    if (mission.intent.digest !== intentBefore) { mission.error = MISSION_ERRORS.MISSION_RECOVERY_REVALIDATION_REQUIRED; this.save(mission); return false; }
+    if (mission.intent.digest !== intentBefore) { mission.error = MISSION_ERRORS.MISSION_RECOVERY_REVALIDATION_REQUIRED; await this.save(mission); return false; }
     mission.usage.replans++;
-    this.save(mission);
+    await this.save(mission);
     this.emit(mission, "mission.replan.completed", { version: mission.currentPlanVersion, trigger: trigger.type });
     return true;
   }
@@ -510,47 +515,47 @@ export class MissionSupervisor {
 
   private async drive(mission: AutonomousMission, signal: AbortSignal, startedAt: number, privateAgentContext?: PrivateAgentContext): Promise<AutonomousMissionResult> {
     for (;;) {
-      if (signal.aborted) return this.terminate(mission, "cancelled", MISSION_ERRORS.MISSION_CANCELLED, startedAt);
+      if (signal.aborted) return await this.terminate(mission, "cancelled", MISSION_ERRORS.MISSION_CANCELLED, startedAt);
       const live = this.store.get(mission.id);
       if (live?.pauseRequested) mission.pauseRequested = true;
       if (live?.steering.length && live.steering.length !== mission.steering.length) mission.steering = live.steering;
       if (live?.acceptanceCriteria.length && live.intent.version > mission.intent.version) {
         mission.intent = live.intent; mission.intentHistory = live.intentHistory; mission.acceptanceCriteria = live.acceptanceCriteria;
       }
-      if (mission.pauseRequested) { mission.status = "paused"; this.save(mission); this.emit(mission, "mission.paused", { atWave: mission.currentWave }); return this.result(mission, MISSION_ERRORS.MISSION_PAUSED); }
+      if (mission.pauseRequested) { mission.status = "paused"; await this.save(mission); this.emit(mission, "mission.paused", { atWave: mission.currentWave }); return this.result(mission, MISSION_ERRORS.MISSION_PAUSED); }
 
       const pendingSteering = mission.steering.find((entry) => !entry.appliedAt && ["clarification", "priority_change", "acceptance_change", "scope_reduction", "replan_request"].includes(entry.type));
       if (pendingSteering) {
         pendingSteering.appliedAt = new Date().toISOString();
-        this.save(mission);
+        await this.save(mission);
         const replanned = await this.requestReplan(mission, { type: "human_steering", steeringId: pendingSteering.id }, signal);
         pendingSteering.resultingPlanVersion = mission.currentPlanVersion;
-        this.save(mission);
-        if (!replanned) return this.terminate(mission, "blocked", mission.error ?? MISSION_ERRORS.MISSION_REPLAN_LIMIT, startedAt);
+        await this.save(mission);
+        if (!replanned) return await this.terminate(mission, "blocked", mission.error ?? MISSION_ERRORS.MISSION_REPLAN_LIMIT, startedAt);
         continue;
       }
 
       const next = this.nextReadyMilestone(mission);
       if (!next) {
         const outstanding = mission.milestones.filter((milestone) => milestone.status !== "completed" && milestone.status !== "cancelled");
-        if (outstanding.length) return this.terminate(mission, "blocked", mission.error ?? MISSION_ERRORS.MISSION_MILESTONE_BLOCKED, startedAt, outstanding.map((milestone) => milestone.id).join(","));
+        if (outstanding.length) return await this.terminate(mission, "blocked", mission.error ?? MISSION_ERRORS.MISSION_MILESTONE_BLOCKED, startedAt, outstanding.map((milestone) => milestone.id).join(","));
         // An exhausted wave budget must not prevent evaluating work that already finished.
         return await this.finalAcceptance(mission, signal, startedAt);
       }
 
       const budget = checkMissionBudget(mission, "wave");
       for (const warning of budget.warnings) this.emit(mission, "mission.budget.warning", { warning });
-      if (!budget.ok) return this.terminate(mission, "blocked", budget.code!, startedAt, budget.detail);
+      if (!budget.ok) return await this.terminate(mission, "blocked", budget.code!, startedAt, budget.detail);
 
       const drift = await this.classifyTargetDrift(mission);
-      if (drift.classification === "PROMOTION_CONFLICT") return this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_REPOSITORY_DRIFT, startedAt, drift.actual);
+      if (drift.classification === "PROMOTION_CONFLICT") return await this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_REPOSITORY_DRIFT, startedAt, drift.actual);
       if (drift.classification === "REPLAN_REQUIRED" && !mission.driftHandledRevisions.includes(drift.actual)) {
         // Replan once per distinct target revision; a second identical drift is decided by the
         // final promotion gate rather than by an unbounded replan cycle.
         this.emit(mission, "mission.repository.drift", { classification: drift.classification, expected: drift.expected, actual: drift.actual, overlappingPaths: drift.overlappingPaths });
-        mission.driftHandledRevisions.push(drift.actual); this.save(mission);
+        mission.driftHandledRevisions.push(drift.actual); await this.save(mission);
         const replanned = await this.requestReplan(mission, { type: "repository_divergence", expected: drift.expected, actual: drift.actual }, signal);
-        if (!replanned) return this.terminate(mission, "blocked", mission.error ?? MISSION_ERRORS.MISSION_REPOSITORY_DRIFT, startedAt);
+        if (!replanned) return await this.terminate(mission, "blocked", mission.error ?? MISSION_ERRORS.MISSION_REPOSITORY_DRIFT, startedAt);
         continue;
       }
       if (drift.classification === "SAFE_ADDITIVE_DRIFT") this.emit(mission, "mission.repository.drift", { classification: drift.classification, expected: drift.expected, actual: drift.actual });
@@ -558,17 +563,17 @@ export class MissionSupervisor {
       const assumptionTrigger = await this.evaluateAssumptions(mission, next, signal);
       if (assumptionTrigger) {
         const replanned = await this.requestReplan(mission, assumptionTrigger, signal);
-        if (!replanned) return this.terminate(mission, "blocked", mission.error ?? MISSION_ERRORS.MISSION_ASSUMPTION_INVALIDATED, startedAt);
+        if (!replanned) return await this.terminate(mission, "blocked", mission.error ?? MISSION_ERRORS.MISSION_ASSUMPTION_INVALIDATED, startedAt);
         continue;
       }
 
       const wave = await this.executeMilestoneWave(mission, next, signal, privateAgentContext);
-      if (signal.aborted) return this.terminate(mission, "cancelled", MISSION_ERRORS.MISSION_CANCELLED, startedAt);
+      if (signal.aborted) return await this.terminate(mission, "cancelled", MISSION_ERRORS.MISSION_CANCELLED, startedAt);
       if (wave.status === "completed") continue;
-      if (wave.status === "cancelled") return this.terminate(mission, "cancelled", MISSION_ERRORS.MISSION_CANCELLED, startedAt);
-      if (!wave.replanTrigger) return this.terminate(mission, "blocked", wave.error ?? MISSION_ERRORS.MISSION_MILESTONE_BLOCKED, startedAt);
+      if (wave.status === "cancelled") return await this.terminate(mission, "cancelled", MISSION_ERRORS.MISSION_CANCELLED, startedAt);
+      if (!wave.replanTrigger) return await this.terminate(mission, "blocked", wave.error ?? MISSION_ERRORS.MISSION_MILESTONE_BLOCKED, startedAt);
       const replanned = await this.requestReplan(mission, wave.replanTrigger, signal);
-      if (!replanned) return this.terminate(mission, "blocked", mission.error ?? MISSION_ERRORS.MISSION_MILESTONE_BLOCKED, startedAt);
+      if (!replanned) return await this.terminate(mission, "blocked", mission.error ?? MISSION_ERRORS.MISSION_MILESTONE_BLOCKED, startedAt);
     }
   }
 
@@ -636,15 +641,15 @@ export class MissionSupervisor {
       this.emit(mission, assumption.status === "verified" ? "mission.assumption.verified" : "mission.assumption.invalidated", { assumptionId: assumption.id, evidence: citation });
       if (assumption.status === "invalidated") invalidated = assumption;
     }
-    this.save(mission);
+    await this.save(mission);
     return invalidated ? { type: "assumption_invalidated", assumptionId: invalidated.id } : undefined;
   }
 
   // ---------------------------------------------------------------- waves
 
   /** Classifies a recovered parallel dispatch without ever blindly respawning active work. */
-  classifyWorkstreamRecovery(runId: string): Record<string, WorkstreamRecoveryClass> {
-    const run = this.parallel.getRun(runId);
+  async classifyWorkstreamRecovery(runId: string): Promise<Record<string, WorkstreamRecoveryClass>> {
+    const run = await this.parallel.getRun(runId);
     const classes: Record<string, WorkstreamRecoveryClass> = {};
     for (const dispatch of run?.dispatches ?? []) {
       const result = run?.workstreams.find((workstream) => workstream.workstreamId === dispatch.workstreamId);
@@ -664,13 +669,13 @@ export class MissionSupervisor {
 
     // Stable dispatch identity: a restart consumes the existing run instead of dispatching twice.
     const existingWave = mission.waves.find((wave) => wave.dispatchId === dispatchId);
-    const existingRun = this.parallel.getRun(runId);
+    const existingRun = await this.parallel.getRun(runId);
     if (existingWave && existingWave.status === "completed") {
       this.emit(mission, "mission.wave.completed", { duplicateSuppressed: true, dispatchId }, { milestoneId: milestone.id, wave: existingWave.wave });
       return existingWave;
     }
     if (existingRun && !["completed", "blocked", "cancelled", "failed"].includes(existingRun.status)) {
-      this.emit(mission, "mission.wave.recovered", { dispatchId, recovery: this.classifyWorkstreamRecovery(runId) }, { milestoneId: milestone.id });
+      this.emit(mission, "mission.wave.recovered", { dispatchId, recovery: await this.classifyWorkstreamRecovery(runId) }, { milestoneId: milestone.id });
     }
 
     mission.currentWave++;
@@ -679,7 +684,7 @@ export class MissionSupervisor {
     mission.status = "executing"; mission.usage.waves++;
     const pending: MissionWaveResult = { wave, planVersion: mission.currentPlanVersion, milestoneId: milestone.id, dispatchId, parallelRunId: runId, status: "failed", provenCriteria: [], invalidatedCriteria: [], evidence: [] };
     mission.waves = [...mission.waves.filter((entry) => entry.dispatchId !== dispatchId), pending];
-    this.save(mission);
+    await this.save(mission);
     this.emit(mission, "mission.milestone.started", { objective: milestone.objective }, { milestoneId: milestone.id, wave });
     this.emit(mission, "mission.wave.started", { dispatchId, runId, planVersion: mission.currentPlanVersion }, { milestoneId: milestone.id, wave });
 
@@ -722,7 +727,7 @@ export class MissionSupervisor {
     // Persist the outcome before announcing it, so a crash between the two cannot lose a
     // certified milestone or resurrect one that never finished.
     mission.waves = [...mission.waves.filter((entry) => entry.dispatchId !== dispatchId), result];
-    this.save(mission);
+    await this.save(mission);
     if (result.status === "completed") {
       this.emit(mission, "mission.milestone.completed", { revision: result.resultingRevision, checkpointId: milestone.checkpointId, provenCriteria: result.provenCriteria }, { milestoneId: milestone.id, wave });
       this.emit(mission, "mission.wave.completed", { dispatchId, revision: result.resultingRevision }, { milestoneId: milestone.id, wave });
@@ -796,17 +801,17 @@ export class MissionSupervisor {
   // ---------------------------------------------------------------- final gate
 
   private async finalAcceptance(mission: AutonomousMission, signal: AbortSignal, startedAt: number): Promise<AutonomousMissionResult> {
-    mission.status = "evaluating"; this.save(mission);
+    mission.status = "evaluating"; await this.save(mission);
     const workspace = this.missionWorkspace(mission)!;
 
     const unproven = unprovenMandatoryCriteria(mission);
-    if (unproven.length) return this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_ACCEPTANCE_UNPROVEN, startedAt, unproven.map((criterion) => criterion.id).join(","));
+    if (unproven.length) return await this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_ACCEPTANCE_UNPROVEN, startedAt, unproven.map((criterion) => criterion.id).join(","));
 
     const commands = [...new Set(mission.milestones.flatMap((milestone) => milestone.verificationCommands ?? []))];
     const verification = await this.runVerification(workspace.rootPath, commands, signal, mission.id, mission.sessionId);
     mission.usage.verificationRuns += commands.length;
     this.emit(mission, "mission.final_verification.completed", { passed: !verification.some((result) => result.failed > 0), commands });
-    if (verification.some((result) => result.failed > 0)) return this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_FINAL_VERIFICATION_FAILED, startedAt);
+    if (verification.some((result) => result.failed > 0)) return await this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_FINAL_VERIFICATION_FAILED, startedAt);
 
     const finalReview = await this.options.agentRuntime.executeAgentRun({
       runId: `${mission.id}:final-review`, agentId: "reviewer", role: "reviewer",
@@ -826,24 +831,24 @@ export class MissionSupervisor {
     const review = finalReview.structuredData as ReviewResult | undefined;
     this.emit(mission, "mission.final_review.completed", { passed: finalReview.status === "completed" && review?.verdict === "pass", findingIds: (review?.findings ?? []).map((finding) => finding.id) });
     if (finalReview.status !== "completed" || review?.verdict !== "pass") {
-      const result = this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_FINAL_REVIEW_BLOCKED, startedAt);
+      const result = await this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_FINAL_REVIEW_BLOCKED, startedAt);
       return { ...result, findings: review?.findings ?? finalReview.findings };
     }
 
     const drift = await this.classifyTargetDrift(mission);
-    if (drift.classification !== "NO_DRIFT") return this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_REPOSITORY_DRIFT, startedAt, drift.classification);
+    if (drift.classification !== "NO_DRIFT") return await this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_REPOSITORY_DRIFT, startedAt, drift.classification);
 
-    mission.status = "executing"; this.save(mission);
+    mission.status = "executing"; await this.save(mission);
     const promotion = await this.integrationService.integrate({
       targetWorkspaceId: mission.workspaceId, isolatedWorktreeId: workspace.id,
       expectedBaseSha: mission.baseRevision, runId: mission.id,
       reviewFindings: review.findings, verificationResults: verification,
       commitMessage: `Autonomous mission: ${mission.originalGoal}`,
     });
-    if (promotion.status !== "integrated") return this.terminate(mission, "blocked", promotion.code ?? "MISSION_PROMOTION_BLOCKED", startedAt);
+    if (promotion.status !== "integrated") return await this.terminate(mission, "blocked", promotion.code ?? "MISSION_PROMOTION_BLOCKED", startedAt);
     mission.finalRevision = promotion.finalRevision;
     this.emit(mission, "mission.promotion.completed", { finalRevision: promotion.finalRevision });
-    return this.terminate(mission, "completed", undefined, startedAt);
+    return await this.terminate(mission, "completed", undefined, startedAt);
   }
 
   private async runVerification(cwd: string, commands: string[], signal: AbortSignal, runId?: string, sessionId?: string): Promise<VerificationResult[]> {
@@ -867,11 +872,11 @@ export class MissionSupervisor {
 
   // ---------------------------------------------------------------- results
 
-  private terminate(mission: AutonomousMission, status: AutonomousMission["status"], error: string | undefined, startedAt: number, detail?: string): AutonomousMissionResult {
+  private async terminate(mission: AutonomousMission, status: AutonomousMission["status"], error: string | undefined, startedAt: number, detail?: string): Promise<AutonomousMissionResult> {
     mission.status = status;
     mission.error = error ? (detail ? `${error}: ${detail}` : error) : undefined;
     mission.usage.wallClockMs += Date.now() - startedAt;
-    this.save(mission);
+    await this.save(mission);
     this.emit(mission, status === "completed" ? "mission.completed" : status === "cancelled" ? "mission.cancelled" : status === "paused" ? "mission.paused" : "mission.blocked", { error: mission.error });
     return this.result(mission, mission.error);
   }

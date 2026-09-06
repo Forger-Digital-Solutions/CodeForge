@@ -273,7 +273,7 @@ describe("ForgeWorkspaces — Structured Identity, Leases & Git Worktrees", () =
       runId: "run-restart-test",
     });
 
-    persistenceA.close();
+    await persistenceA.close();
 
     // Re-open with new persistence B and new workspace service B
     const persistenceB = createSessionPersistence({ dbPath: dbFile });
@@ -281,6 +281,7 @@ describe("ForgeWorkspaces — Structured Identity, Leases & Git Worktrees", () =
       persistence: persistenceB,
       worktreeParentDir: worktreeBaseDir,
     });
+    await wsServiceB.init();
 
     const recoveredParent = wsServiceB.getWorkspace(parentWs.id);
     expect(recoveredParent).toBeDefined();
@@ -291,6 +292,6 @@ describe("ForgeWorkspaces — Structured Identity, Leases & Git Worktrees", () =
     expect(recoveredWt?.kind).toBe("git-worktree");
     expect(recoveredWt?.status).toBe("ready");
 
-    persistenceB.close();
+    await persistenceB.close();
   });
 });

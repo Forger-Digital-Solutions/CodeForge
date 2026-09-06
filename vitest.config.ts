@@ -61,6 +61,9 @@ export default defineConfig({
     ],
     globals: false,
     testTimeout: 30000,
+    // Spawned-process hooks (real server fixtures) can exceed the 10s default while a cold
+    // machine or a cold WSL2 PostgreSQL host boots underneath them; the assertions are unchanged.
+    hookTimeout: 60_000,
   },
   resolve: {
     alias: aliases,

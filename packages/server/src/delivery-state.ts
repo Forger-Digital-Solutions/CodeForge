@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import type { SessionPersistence, WorkItem } from "@codeforge/sessions";
+import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 
 export const DELIVERY_ERRORS = {
   DELIVERY_SOURCE_NOT_CERTIFIED: "DELIVERY_SOURCE_NOT_CERTIFIED",
@@ -174,10 +174,10 @@ export function validCommitTitle(title: string): boolean {
 }
 
 export class DeliveryStore {
-  constructor(private readonly persistence?: SessionPersistence, private readonly onEvent?: (event: DeliveryEvent) => void) {}
+  constructor(private readonly persistence?: ISessionPersistence, private readonly onEvent?: (event: DeliveryEvent) => void | Promise<void>) {}
 
-  save(delivery: ChangeDelivery): void {
-    this.persistence?.upsertWorkItem({
+  async save(delivery: ChangeDelivery): Promise<void> {
+    await this.persistence?.upsertWorkItem({
       kind: "change_delivery", id: delivery.id, sessionId: delivery.sessionId, missionId: delivery.missionId,
       workspaceId: delivery.workspaceId, status: delivery.status, sourceRevision: delivery.sourceRevision,
       targetRevision: delivery.targetRevision, deliveryJson: JSON.stringify({
@@ -190,8 +190,8 @@ export class DeliveryStore {
     } as unknown as WorkItem);
   }
 
-  get(id: string): ChangeDelivery | undefined {
-    const item = this.persistence?.getWorkItem(id) as unknown as (WorkItem & Record<string, unknown>) | undefined;
+  async get(id: string): Promise<ChangeDelivery | undefined> {
+    const item = await this.persistence?.getWorkItem(id) as unknown as (WorkItem & Record<string, unknown>) | undefined;
     if (!item || item.kind !== "change_delivery") return undefined;
     const detail = typeof item.deliveryJson === "string" ? JSON.parse(item.deliveryJson) as Partial<ChangeDelivery> : {};
     return {
@@ -206,14 +206,15 @@ export class DeliveryStore {
     };
   }
 
-  list(sessionId?: string): ChangeDelivery[] {
-    const items = sessionId ? this.persistence?.getWorkItems(sessionId) ?? [] : this.persistence?.getWorkItemsByKind("change_delivery") ?? [];
-    return items.filter((item) => item.kind === "change_delivery").map((item) => this.get(item.id)!).filter(Boolean);
+  async list(sessionId?: string): Promise<ChangeDelivery[]> {
+    const items = sessionId ? await this.persistence?.getWorkItems(sessionId) ?? [] : await this.persistence?.getWorkItemsByKind("change_delivery") ?? [];
+    const resolved = await Promise.all(items.filter((item) => item.kind === "change_delivery").map((item) => this.get(item.id)));
+    return resolved.filter((item): item is ChangeDelivery => Boolean(item));
   }
 
-  emit(delivery: ChangeDelivery, type: string, payload: Record<string, unknown> = {}): void {
+  async emit(delivery: ChangeDelivery, type: string, payload: Record<string, unknown> = {}): Promise<void> {
     const event: DeliveryEvent = { type, sessionId: delivery.sessionId, deliveryId: delivery.id, timestamp: new Date().toISOString(), payload };
-    this.persistence?.appendEvent(event);
-    this.onEvent?.(event);
+    await this.persistence?.appendEvent(event);
+    await this.onEvent?.(event);
   }
 }

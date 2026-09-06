@@ -49,7 +49,7 @@ describe("CheckpointService — Real Immutable Git Snapshots & Recovery", () => 
   });
 
   afterEach(async () => {
-    persistence.close();
+    await persistence.close();
     await rm(ws, { recursive: true, force: true });
   });
 
@@ -254,7 +254,7 @@ describe("CheckpointService — Real Immutable Git Snapshots & Recovery", () => 
     const svc2 = createCheckpointService(ws, persistence);
 
     // In a fresh instance, verify we can register/restore using the recorded checkpoint
-    const workItems = persistence.getWorkItems("sess-1");
+    const workItems = await persistence.getWorkItems("sess-1");
     const checkpointItem = workItems.find((w) => w.id === "chk-persist-1");
     expect(checkpointItem).toBeDefined();
 

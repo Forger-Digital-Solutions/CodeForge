@@ -64,7 +64,7 @@ describe("CF-09 long-horizon mission end to end", () => {
   beforeEach(async () => {
     repoDir = await createRepo(FEATURE_FLAG_REPO, "cf09-e2e-repo-");
     worktreeDir = await fs.mkdtemp(path.join(os.tmpdir(), "cf09-e2e-wt-"));
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: scriptFromSpec({ missionId: "flags", goal: GOAL, criteria: CRITERIA, plans: MISSION_PLANS, reviewer: () => reviewerPass() }),
     });

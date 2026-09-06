@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import type { SessionPersistence, WorkItem } from "@codeforge/sessions";
+import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import type { RemoteRepositoryIdentity, RemotePullRequest } from "./github-pr-client.js";
 
 export const PUBLICATION_ERRORS = {
@@ -25,9 +25,17 @@ export function publicationBinding(deliveryId: string, head: string, tree: strin
 export function remoteBranchFor(publicationId: string, deliveryId: string): string { const safe = deliveryId.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 80) || "delivery"; return `codeforge/delivery/${safe}-${publicationId.replace(/[^A-Za-z0-9]/g, "").slice(-12)}`; }
 
 export class RemotePublicationStore {
-  constructor(private readonly persistence?: SessionPersistence) {}
-  save(value: RemotePublication): void { this.persistence?.upsertWorkItem({ kind: "remote_publication", id: value.id, sessionId: value.sessionId, deliveryId: value.deliveryId, workspaceId: value.workspaceId, status: value.status, publicationJson: JSON.stringify(value), ...(value.error ? { error: value.error } : {}), createdAt: value.createdAt, updatedAt: value.updatedAt } as unknown as WorkItem); }
-  get(id: string): RemotePublication | undefined { const item = this.persistence?.getWorkItem(id) as (WorkItem & Record<string, unknown>) | undefined; if (!item || item.kind !== "remote_publication" || typeof item.publicationJson !== "string") return undefined; return JSON.parse(item.publicationJson) as RemotePublication; }
-  findByDelivery(deliveryId: string): RemotePublication | undefined { return (this.persistence?.getWorkItemsByKind("remote_publication") ?? []).map((item) => this.get(item.id)).find((item) => item?.deliveryId === deliveryId); }
-  list(deliveryId?: string): RemotePublication[] { return (this.persistence?.getWorkItemsByKind("remote_publication") ?? []).map((item) => this.get(item.id)).filter((item): item is RemotePublication => Boolean(item) && (!deliveryId || item!.deliveryId === deliveryId)); }
+  constructor(private readonly persistence?: ISessionPersistence) {}
+  async save(value: RemotePublication): Promise<void> { await this.persistence?.upsertWorkItem({ kind: "remote_publication", id: value.id, sessionId: value.sessionId, deliveryId: value.deliveryId, workspaceId: value.workspaceId, status: value.status, publicationJson: JSON.stringify(value), ...(value.error ? { error: value.error } : {}), createdAt: value.createdAt, updatedAt: value.updatedAt } as unknown as WorkItem); }
+  async get(id: string): Promise<RemotePublication | undefined> { const item = await this.persistence?.getWorkItem(id) as (WorkItem & Record<string, unknown>) | undefined; if (!item || item.kind !== "remote_publication" || typeof item.publicationJson !== "string") return undefined; return JSON.parse(item.publicationJson) as RemotePublication; }
+  async findByDelivery(deliveryId: string): Promise<RemotePublication | undefined> {
+    const items = await this.persistence?.getWorkItemsByKind("remote_publication") ?? [];
+    const resolved = await Promise.all(items.map((item) => this.get(item.id)));
+    return resolved.find((item) => item?.deliveryId === deliveryId);
+  }
+  async list(deliveryId?: string): Promise<RemotePublication[]> {
+    const items = await this.persistence?.getWorkItemsByKind("remote_publication") ?? [];
+    const resolved = await Promise.all(items.map((item) => this.get(item.id)));
+    return resolved.filter((item): item is RemotePublication => Boolean(item) && (!deliveryId || item!.deliveryId === deliveryId));
+  }
 }

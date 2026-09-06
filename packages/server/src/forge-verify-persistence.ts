@@ -1,4 +1,4 @@
-import type { SessionPersistence, WorkItem } from "@codeforge/sessions";
+import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import type { ForgeVerifyObserver, VerificationAttempt, VerificationEvidence, VerificationPlan } from "@codeforge/workflow";
 
 type VerificationWorkItem = Extract<WorkItem, { kind: "verification" }>;
@@ -9,19 +9,19 @@ function item(sessionId: string, recordType: VerificationWorkItem["recordType"],
 }
 
 /** Persists ForgeVerify's structured records without making terminal evidence mutable. */
-export function createForgeVerifyPersistenceObserver(persistence: SessionPersistence, sessionId: string): ForgeVerifyObserver {
+export function createForgeVerifyPersistenceObserver(persistence: ISessionPersistence, sessionId: string): ForgeVerifyObserver {
   return {
-    planCreated: (plan: VerificationPlan) => {
-      persistence.insertImmutableWorkItem(item(sessionId, "plan", plan.planId, plan.planId, plan.runId, plan as unknown as Record<string, unknown>));
+    planCreated: async (plan: VerificationPlan) => {
+      await persistence.insertImmutableWorkItem(item(sessionId, "plan", plan.planId, plan.planId, plan.runId, plan as unknown as Record<string, unknown>));
     },
-    attemptStarted: (attempt: VerificationAttempt) => {
-      persistence.upsertWorkItem(item(sessionId, "attempt", attempt.attemptId, attempt.planId, attempt.runId, attempt as unknown as Record<string, unknown>, attempt.status));
+    attemptStarted: async (attempt: VerificationAttempt) => {
+      await persistence.upsertWorkItem(item(sessionId, "attempt", attempt.attemptId, attempt.planId, attempt.runId, attempt as unknown as Record<string, unknown>, attempt.status));
     },
-    attemptTerminal: (attempt: VerificationAttempt) => {
-      persistence.upsertWorkItem(item(sessionId, "attempt", attempt.attemptId, attempt.planId, attempt.runId, attempt as unknown as Record<string, unknown>, attempt.status));
+    attemptTerminal: async (attempt: VerificationAttempt) => {
+      await persistence.upsertWorkItem(item(sessionId, "attempt", attempt.attemptId, attempt.planId, attempt.runId, attempt as unknown as Record<string, unknown>, attempt.status));
     },
-    evidenceCreated: (evidence: VerificationEvidence) => {
-      persistence.insertImmutableWorkItem(item(sessionId, "evidence", evidence.evidenceId, evidence.planId, evidence.runId, evidence as unknown as Record<string, unknown>, evidence.status));
+    evidenceCreated: async (evidence: VerificationEvidence) => {
+      await persistence.insertImmutableWorkItem(item(sessionId, "evidence", evidence.evidenceId, evidence.planId, evidence.runId, evidence as unknown as Record<string, unknown>, evidence.status));
     },
   };
 }

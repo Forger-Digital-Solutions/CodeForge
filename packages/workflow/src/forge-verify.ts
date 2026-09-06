@@ -55,6 +55,8 @@ export interface VerificationPolicyInput {
   changedPaths?: readonly string[];
   deliveryIntent?: boolean;
   publicationIntent?: boolean;
+  /** CF-17: the authoritative execution/plan revision this verification plan is bound to. */
+  executionRevision?: number;
 }
 
 export interface PlannedVerifier {
@@ -72,6 +74,8 @@ export interface VerificationPlan {
   inputStateHash: VerificationInputStateHash;
   scope: "workspace" | "integration" | "publication";
   verifiers: readonly PlannedVerifier[];
+  /** CF-17: execution/plan revision the completion decision must bind to. */
+  executionRevision?: number;
   createdAt: string;
 }
 
@@ -283,7 +287,7 @@ export function createVerificationPlan(registry: VerifierRegistry, policy: Verif
     const requirement: VerifierRequirement = requiredByPolicy ? "required" : policyRequirement ?? definition.defaultRequirement;
     return { verifierId: definition.id, verifierVersion: definition.version, definitionDigest: definitionDigest(definition), requirement };
   });
-  return Object.freeze({ planId: randomUUID() as VerificationPlanId, runId: input.runId, policyVersion: policy.version, workspacePath: path.resolve(input.workspacePath), inputStateHash: state, scope: input.scope, verifiers: Object.freeze(verifiers), createdAt: new Date().toISOString() });
+  return Object.freeze({ planId: randomUUID() as VerificationPlanId, runId: input.runId, policyVersion: policy.version, workspacePath: path.resolve(input.workspacePath), inputStateHash: state, scope: input.scope, verifiers: Object.freeze(verifiers), ...(input.executionRevision !== undefined ? { executionRevision: input.executionRevision } : {}), createdAt: new Date().toISOString() });
 }
 
 export class VerificationEvidenceStore {

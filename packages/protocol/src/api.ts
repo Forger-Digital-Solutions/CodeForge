@@ -71,6 +71,7 @@ export const SendRequestSchema = z.object({
   sessionId: z.string().min(1).max(128).optional(),
   message: z.string(),
   turnId: z.string().min(1).max(128).optional(),
+  steerId: z.string().min(1).max(128).optional(),
   executionMode: ExecutionModeSchema.optional(),
   steer: z.boolean().optional(),
   userId: z.string().min(1).max(128).optional(),

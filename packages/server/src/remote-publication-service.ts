@@ -1,7 +1,7 @@
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import crypto from "node:crypto";
-import type { SessionPersistence } from "@codeforge/sessions";
+import type { ISessionPersistence } from "@codeforge/sessions";
 import type { ChangeDelivery } from "./delivery-state.js";
 import type { WorkspaceService } from "./workspace-service.js";
 import { validateSafeBranchName } from "./workspace-service.js";
@@ -14,9 +14,9 @@ const TERMINAL = new Set(["remote_pr_ready", "blocked", "failed", "cancelled", "
 const SAFE_REMOTE_NAME = /^[A-Za-z0-9._-]{1,80}$/;
 
 export interface RemotePublicationServiceOptions {
-  persistence?: SessionPersistence;
+  persistence?: ISessionPersistence;
   workspaceService: WorkspaceService;
-  getDelivery: (id: string) => ChangeDelivery | undefined;
+  getDelivery: (id: string) => Promise<ChangeDelivery | undefined>;
   /** Credential retrieval is deliberately separate from durable publication data. */
   getGitHubToken?: () => Promise<string> | string;
   pullRequests?: RemotePullRequestProvider;
@@ -43,13 +43,13 @@ export class RemotePublicationService {
     this.providers = options.pullRequests ?? new GitHubPullRequestClient(options.getGitHubToken ?? (() => ""));
   }
 
-  getPublication(id: string): RemotePublication | undefined { return this.store.get(id); }
-  getPublicationForDelivery(deliveryId: string): RemotePublication | undefined { return this.store.findByDelivery(deliveryId); }
-  listPublications(deliveryId?: string): RemotePublication[] { return this.store.list(deliveryId); }
+  async getPublication(id: string): Promise<RemotePublication | undefined> { return await this.store.get(id); }
+  async getPublicationForDelivery(deliveryId: string): Promise<RemotePublication | undefined> { return await this.store.findByDelivery(deliveryId); }
+  async listPublications(deliveryId?: string): Promise<RemotePublication[]> { return await this.store.list(deliveryId); }
 
   async createPublication(deliveryId: string): Promise<RemotePublication> {
-    const delivery = this.assertDelivery(deliveryId);
-    const existing = this.store.findByDelivery(deliveryId);
+    const delivery = await this.assertDelivery(deliveryId);
+    const existing = await this.store.findByDelivery(deliveryId);
     if (existing) return existing;
     const workspace = this.options.workspaceService.getWorkspace(delivery.workspaceId);
     if (!workspace?.branch || !delivery.deliveryBranch || !delivery.deliveryRevision || !delivery.deliveryTree) throw failure(PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY);
@@ -73,29 +73,29 @@ export class RemotePublicationService {
     const repository = this.options.resolveRepository?.(remoteUrl, publication.remoteName) ?? normalizeGitHubRemote(remoteUrl);
     if (!repository) throw failure(PUBLICATION_ERRORS.REMOTE_UNSUPPORTED);
     publication.remoteUrl = remoteUrl; publication.repository = repository;
-    this.save(publication); return publication;
+    await this.save(publication); return publication;
   }
 
-  authorize(publicationId: string, actorId: string): RemotePublication {
-    const publication = this.require(publicationId);
+  async authorize(publicationId: string, actorId: string): Promise<RemotePublication> {
+    const publication = await this.require(publicationId);
     if (publication.status !== "local_ready" && publication.status !== "authorization_required") throw failure(PUBLICATION_ERRORS.PUBLICATION_AUTHORIZATION_STALE);
-    const delivery = this.assertDelivery(publication.deliveryId);
+    const delivery = await this.assertDelivery(publication.deliveryId);
     if (!actorId || actorId.length > 160) throw failure(PUBLICATION_ERRORS.PUBLICATION_AUTHORIZATION_STALE);
     publication.authorization = { actorId, nonce: crypto.randomUUID(), authorizedAt: new Date().toISOString(), binding: publicationBinding(delivery.id, delivery.deliveryRevision!, delivery.deliveryTree!, `${publication.repository?.canonical ?? ""}:${publication.targetBranch}`) };
-    publication.status = "remote_authorized"; publication.error = undefined; this.save(publication); return publication;
+    publication.status = "remote_authorized"; publication.error = undefined; await this.save(publication); return publication;
   }
 
-  cancel(publicationId: string): boolean {
-    const publication = this.store.get(publicationId);
+  async cancel(publicationId: string): Promise<boolean> {
+    const publication = await this.store.get(publicationId);
     if (!publication || TERMINAL.has(publication.status)) return false;
     this.active.get(publicationId)?.abort(PUBLICATION_ERRORS.PUBLICATION_CANCELLED);
-    publication.status = "cancelled"; publication.error = PUBLICATION_ERRORS.PUBLICATION_CANCELLED; this.save(publication); return true;
+    publication.status = "cancelled"; publication.error = PUBLICATION_ERRORS.PUBLICATION_CANCELLED; await this.save(publication); return true;
   }
 
   async resume(publicationId: string): Promise<RemotePublication> {
-    const publication = this.require(publicationId);
+    const publication = await this.require(publicationId);
     if (TERMINAL.has(publication.status)) return publication;
-    if (!publication.authorization) { publication.status = "authorization_required"; this.save(publication); return publication; }
+    if (!publication.authorization) { publication.status = "authorization_required"; await this.save(publication); return publication; }
     if (this.active.has(publicationId)) throw failure(PUBLICATION_ERRORS.PUBLICATION_LEASE_CONFLICT);
     const controller = new AbortController(); this.active.set(publicationId, controller);
     try { await this.publish(publication, controller.signal); }
@@ -103,7 +103,7 @@ export class RemotePublicationService {
       // A process-loss seam deliberately leaves the last durable record untouched so a recreated
       // service must reconcile the external side effect instead of trusting in-memory progress.
       if (error instanceof Error && error.message === "PROCESS_TERMINATED") throw error;
-      if (!TERMINAL.has(publication.status)) this.fail(publication, this.errorCode(error));
+      if (!TERMINAL.has(publication.status)) await this.fail(publication, this.errorCode(error));
     }
     finally { this.active.delete(publicationId); }
     return publication;
@@ -111,7 +111,7 @@ export class RemotePublicationService {
 
   private async publish(publication: RemotePublication, signal: AbortSignal): Promise<void> {
     this.throwIfCancelled(signal);
-    const delivery = this.assertDelivery(publication.deliveryId);
+    const delivery = await this.assertDelivery(publication.deliveryId);
     const workspace = this.options.workspaceService.getWorkspace(delivery.deliveryWorkspaceId ?? "");
     if (!workspace) throw failure(PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY);
     const binding = publicationBinding(delivery.id, delivery.deliveryRevision!, delivery.deliveryTree!, `${publication.repository?.canonical ?? ""}:${publication.targetBranch}`);
@@ -200,8 +200,8 @@ export class RemotePublicationService {
   private async deliveryBase(cwd: string, delivery: ChangeDelivery, signal: AbortSignal): Promise<string> { return (await this.git(cwd, ["rev-parse", `${delivery.commits[0]!.sha!}^`], signal)).trim(); }
   private async remoteSha(cwd: string, remote: string, branch: string, signal: AbortSignal): Promise<string | undefined> { const value = (await this.git(cwd, ["ls-remote", "--heads", remote, `refs/heads/${branch}`], signal)).trim(); return value ? value.split(/\s+/)[0] : undefined; }
   private receipt(publication: RemotePublication, delivery: ChangeDelivery): RemotePublicationReceipt { return { publicationId: publication.id, deliveryId: delivery.id, repository: publication.repository!.canonical, targetBranch: publication.targetBranch, capturedTargetSha: publication.capturedTargetSha!, remoteBranch: publication.remoteBranch, publishedSha: publication.expectedRemoteSha, publishedTree: publication.localDeliveryTree, verificationReceipt: `${delivery.id}:verification`, reviewReceipt: delivery.reviewerRunId ?? `${delivery.id}:review`, secretGateReceipt: `${delivery.id}:secret-gate-passed`, prProvider: "github", prNumber: publication.pr!.number, prUrl: publication.pr!.url, createdAt: new Date().toISOString(), terminalState: "remote_pr_ready" }; }
-  private assertDelivery(id: string): ChangeDelivery { const delivery = this.options.getDelivery(id); if (!delivery) throw failure(PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY); if (delivery.status !== "ready") throw failure(PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY); return delivery; }
-  private require(id: string): RemotePublication { const publication = this.store.get(id); if (!publication) throw failure(PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY); return publication; }
+  private async assertDelivery(id: string): Promise<ChangeDelivery> { const delivery = await this.options.getDelivery(id); if (!delivery) throw failure(PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY); if (delivery.status !== "ready") throw failure(PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY); return delivery; }
+  private async require(id: string): Promise<RemotePublication> { const publication = await this.store.get(id); if (!publication) throw failure(PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY); return publication; }
   private async git(cwd: string, args: string[], signal?: AbortSignal): Promise<string> { return (await execFile("git", args, { cwd, signal, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } })).stdout; }
   private throwIfCancelled(signal: AbortSignal): void { if (signal.aborted) throw failure(PUBLICATION_ERRORS.PUBLICATION_CANCELLED); }
   private errorCode(error: unknown): PublicationErrorCode { const code = (error as { code?: unknown })?.code; if (isCode(code)) return code; if (error instanceof GitHubClientError) return error.code; return PUBLICATION_ERRORS.REMOTE_PR_CREATE_FAILED; }

@@ -12,7 +12,7 @@ import {
   type StructuredOutputKind,
 } from "@codeforge/agent";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
-import type { SessionPersistence } from "@codeforge/sessions";
+import type { ISessionPersistence } from "@codeforge/sessions";
 import type { WorkspaceService } from "./workspace-service.js";
 import { redactSecrets } from "@codeforge/secrets";
 
@@ -58,13 +58,13 @@ export interface ChildRun {
 }
 
 export interface SubagentManagerOptions {
-  persistence?: SessionPersistence;
+  persistence?: ISessionPersistence;
   workspaceService?: WorkspaceService;
   agentRuntime?: AgentRuntime;
 }
 
 export class SubagentManager {
-  private readonly persistence?: SessionPersistence;
+  private readonly persistence?: ISessionPersistence;
   private readonly workspaceService?: WorkspaceService;
   private readonly agentRuntime?: AgentRuntime;
   private readonly activeChildren: Map<string, ChildRun> = new Map(); // childRunId -> ChildRun

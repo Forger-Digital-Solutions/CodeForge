@@ -5,7 +5,7 @@ import { existsSync, realpathSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
-import type { SessionPersistence } from "@codeforge/sessions";
+import type { ISessionPersistence } from "@codeforge/sessions";
 import { getSanitizedEnvForChild } from "./env-filter.js";
 import { CheckpointService } from "./checkpoint-service.js";
 
@@ -54,7 +54,7 @@ export interface CreateWorktreeOptions {
 }
 
 export interface WorkspaceServiceOptions {
-  persistence?: SessionPersistence;
+  persistence?: ISessionPersistence;
   worktreeParentDir?: string;
   checkpointServiceFactory?: (workspaceRoot: string) => CheckpointService;
 }
@@ -85,7 +85,7 @@ export function getCanonicalWorkspacePath(rawPath: string): string {
 }
 
 export class WorkspaceService {
-  private readonly persistence?: SessionPersistence;
+  private readonly persistence?: ISessionPersistence;
   private readonly worktreeBaseDir: string;
   private readonly checkpointServiceFactory: (workspaceRoot: string) => CheckpointService;
 
@@ -115,8 +115,13 @@ export class WorkspaceService {
     }
 
     if (this.persistence) {
-      this.loadPersistedWorkspaces();
+      this.loadPersistedWorkspaces().catch(() => {});
     }
+  }
+
+  /** Must be awaited to guarantee persisted workspaces are visible to synchronous getters. */
+  async init(): Promise<void> {
+    await this.loadPersistedWorkspaces();
   }
 
   /**
@@ -497,34 +502,26 @@ export class WorkspaceService {
   }
 
   getWorkspace(workspaceId: string): ForgeWorkspace | undefined {
-    if (!this.workspaces.has(workspaceId)) {
-      this.loadPersistedWorkspaces();
-    }
     return this.workspaces.get(workspaceId);
   }
 
   getWorkspaceByPath(rawPath: string): ForgeWorkspace | undefined {
     const canonical = getCanonicalWorkspacePath(rawPath);
-    let id = this.pathToWorkspaceId.get(canonical);
-    if (!id) {
-      this.loadPersistedWorkspaces();
-      id = this.pathToWorkspaceId.get(canonical);
-    }
+    const id = this.pathToWorkspaceId.get(canonical);
     return id ? this.workspaces.get(id) : undefined;
   }
 
   getAllWorkspaces(): ForgeWorkspace[] {
-    this.loadPersistedWorkspaces();
     return Array.from(this.workspaces.values());
   }
 
   /**
    * Rehydrate persisted workspaces and detect orphaned or missing worktrees across restarts.
    */
-  loadPersistedWorkspaces(): void {
+  async loadPersistedWorkspaces(): Promise<void> {
     if (!this.persistence) return;
     try {
-      const items = this.persistence.getWorkItemsByKind("workspace");
+      const items = await this.persistence.getWorkItemsByKind("workspace");
       for (const item of items) {
         if (item.kind === "workspace" && item.id) {
           const raw = item as unknown as {
@@ -596,7 +593,7 @@ export class WorkspaceService {
         status: workspace.status,
         createdAt: workspace.createdAt,
         updatedAt: workspace.updatedAt,
-      } as unknown as import("@codeforge/sessions").WorkItem);
+      } as unknown as import("@codeforge/sessions").WorkItem).catch(() => {});
     } catch {}
   }
 

@@ -37,8 +37,8 @@ describe("CF-09 mission restart recovery", () => {
   });
 
   afterEach(async () => {
-    try { live?.close(); } catch {}
-    try { crashed?.close(); } catch {}
+    try { await live?.close(); } catch {}
+    try { await crashed?.close(); } catch {}
     live = undefined; crashed = undefined;
     await fs.rm(repoDir, { recursive: true, force: true });
     await fs.rm(worktreeDir, { recursive: true, force: true });
@@ -48,14 +48,14 @@ describe("CF-09 mission restart recovery", () => {
   /** Runs a mission until the durable store dies at `crashEvent`, exactly as a killed process would. */
   async function crashDuring(crashEvent: string, script: (context: ScriptContext) => unknown, provider: MissionProvider): Promise<void> {
     crashed = createSessionPersistence({ dbPath });
-    const harness = createHarness({ repoDir, worktreeDir, sessionId: SESSION, script, provider, persistence: crashOnEvent(crashed, crashEvent) });
+    const harness = await createHarness({ repoDir, worktreeDir, sessionId: SESSION, script, provider, persistence: crashOnEvent(crashed, crashEvent) });
     await expect(harness.supervisor.startMission({ sessionId: SESSION, workspacePath: repoDir, goal: GOAL, missionId: MISSION_ID })).rejects.toThrow(/PROCESS_TERMINATED/);
-    crashed.close(); crashed = undefined;
+    await crashed.close(); crashed = undefined;
   }
 
-  function freshHarness(script: (context: ScriptContext) => unknown, provider: MissionProvider): MissionHarness {
+  async function freshHarness(script: (context: ScriptContext) => unknown, provider: MissionProvider): Promise<MissionHarness> {
     live = createSessionPersistence({ dbPath });
-    return createHarness({ repoDir, worktreeDir, sessionId: SESSION, script, provider, persistence: live });
+    return await createHarness({ repoDir, worktreeDir, sessionId: SESSION, script, provider, persistence: live });
   }
 
   /** Counts Coder *dispatches* (each run's first turn), not every provider round trip. */
@@ -70,12 +70,12 @@ describe("CF-09 mission restart recovery", () => {
     await crashDuring("mission.plan.validated", script, provider);
 
     const beforeResume = createSessionPersistence({ dbPath });
-    const persisted = beforeResume.getWorkItem(MISSION_ID) as unknown as { status: string; currentPlanVersion: number };
+    const persisted = await beforeResume.getWorkItem(MISSION_ID) as unknown as { status: string; currentPlanVersion: number };
     expect(persisted.status).toBe("planning");
     expect(persisted.currentPlanVersion).toBe(1);
-    beforeResume.close();
+    await beforeResume.close();
 
-    const harness = freshHarness(script, provider);
+    const harness = await freshHarness(script, provider);
     const result = await harness.supervisor.resumeMission(MISSION_ID);
     const mission = harness.supervisor.getMission(MISSION_ID)!;
 
@@ -93,7 +93,7 @@ describe("CF-09 mission restart recovery", () => {
     await crashDuring("workstream.completed", script, provider);
     expect(coderDispatches(provider, "one-write")).toBe(1);
 
-    const harness = freshHarness(script, provider);
+    const harness = await freshHarness(script, provider);
     const result = await harness.supervisor.resumeMission(MISSION_ID);
     const mission = harness.supervisor.getMission(MISSION_ID)!;
 
@@ -116,7 +116,7 @@ describe("CF-09 mission restart recovery", () => {
     expect(coderDispatches(provider, "one-write")).toBe(1);
     expect(coderDispatches(provider, "two-write")).toBe(0);
 
-    const harness = freshHarness(script, provider);
+    const harness = await freshHarness(script, provider);
     const mission0 = harness.supervisor.getMission(MISSION_ID)!;
     expect(mission0.milestones.find((milestone) => milestone.id === "s-one")?.status).toBe("completed");
     const preservedRevision = mission0.milestones.find((milestone) => milestone.id === "s-one")!.resultRevision;
@@ -146,7 +146,7 @@ describe("CF-09 mission restart recovery", () => {
     const provider = new MissionProvider(script);
     await crashDuring("mission.replan.completed", script, provider);
 
-    const harness = freshHarness(script, provider);
+    const harness = await freshHarness(script, provider);
     const mission0 = harness.supervisor.getMission(MISSION_ID)!;
     expect(mission0.currentPlanVersion).toBe(2);
     expect(mission0.usage.replans).toBe(1);

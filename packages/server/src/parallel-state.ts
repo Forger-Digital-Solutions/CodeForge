@@ -1,4 +1,4 @@
-import type { SessionPersistence, WorkItem } from "@codeforge/sessions";
+import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import type { EngineeringPlan, ContractState, WorkstreamResult } from "./parallel-workstreams.js";
 
 /** How a dispatched worktree was classified once the parent run reached a terminal state. */
@@ -65,11 +65,11 @@ export interface ParallelEvent {
 }
 
 export class ParallelRunStore {
-  constructor(private readonly persistence?: SessionPersistence, private readonly onEvent?: (event: ParallelEvent) => void) {}
+  constructor(private readonly persistence?: ISessionPersistence, private readonly onEvent?: (event: ParallelEvent) => void) {}
 
-  save(run: DurableParallelRun): void {
+  async save(run: DurableParallelRun): Promise<void> {
     if (!this.persistence) return;
-    this.persistence.upsertWorkItem({
+    await this.persistence.upsertWorkItem({
       kind: "parallel_run", id: run.id, sessionId: run.sessionId, workspaceId: run.workspaceId,
       goal: run.goal, status: run.status, baseRevision: run.baseRevision,
       ...(run.plan ? { planJson: JSON.stringify(run.plan) } : {}),
@@ -83,8 +83,8 @@ export class ParallelRunStore {
     } as WorkItem);
   }
 
-  get(runId: string): DurableParallelRun | undefined {
-    const item = this.persistence?.getWorkItem(runId);
+  async get(runId: string): Promise<DurableParallelRun | undefined> {
+    const item = await this.persistence?.getWorkItem(runId);
     if (!item || item.kind !== "parallel_run") return undefined;
     const workstreamState = item.workstreamsJson ? JSON.parse(item.workstreamsJson) as WorkstreamResult[] | { results?: WorkstreamResult[]; dispatches?: DurableParallelRun["dispatches"] } : [];
     const results = Array.isArray(workstreamState) ? workstreamState : workstreamState.results ?? [];
@@ -104,14 +104,16 @@ export class ParallelRunStore {
     };
   }
 
-  list(sessionId?: string): DurableParallelRun[] {
-    const items = sessionId ? this.persistence?.getWorkItems(sessionId) ?? [] : this.persistence?.getWorkItemsByKind("parallel_run") ?? [];
-    return items.filter((item) => item.kind === "parallel_run").map((item) => this.get(item.id)!).filter(Boolean);
+  async list(sessionId?: string): Promise<DurableParallelRun[]> {
+    const items = sessionId ? (await this.persistence?.getWorkItems(sessionId)) ?? [] : (await this.persistence?.getWorkItemsByKind("parallel_run")) ?? [];
+    const candidates = items.filter((item) => item.kind === "parallel_run");
+    const resolved = await Promise.all(candidates.map((item) => this.get(item.id)));
+    return resolved.filter((run): run is DurableParallelRun => Boolean(run));
   }
 
-  emit(run: DurableParallelRun, type: string, payload: Record<string, unknown> = {}, workstreamId?: string): void {
+  async emit(run: DurableParallelRun, type: string, payload: Record<string, unknown> = {}, workstreamId?: string): Promise<void> {
     const event: ParallelEvent = { type, sessionId: run.sessionId, runId: run.id, ...(workstreamId ? { workstreamId } : {}), timestamp: new Date().toISOString(), payload };
-    this.persistence?.appendEvent(event);
+    await this.persistence?.appendEvent(event);
     this.onEvent?.(event);
   }
 }

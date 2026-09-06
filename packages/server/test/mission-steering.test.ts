@@ -28,14 +28,14 @@ describe("CF-09 human steering is durable and authoritative", () => {
   });
 
   afterEach(async () => {
-    harness?.persistence.close();
+    await harness?.persistence.close();
     await fs.rm(repoDir, { recursive: true, force: true });
     await fs.rm(worktreeDir, { recursive: true, force: true });
   });
 
   it("turns a user clarification into a bounded replan that preserves completed work", async () => {
     let missionId = "";
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: (context) => {
         const base = scriptFromSpec({
@@ -80,7 +80,7 @@ describe("CF-09 human steering is durable and authoritative", () => {
 
   it("starts a newly added acceptance criterion unproven and refuses to complete without evidence", async () => {
     let missionId = "";
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: (context) => {
         const base = scriptFromSpec({
@@ -123,7 +123,7 @@ describe("CF-09 human steering is durable and authoritative", () => {
   it("stops removed scope without destroying earlier certified work", async () => {
     let missionId = "";
     const onlyFirst: MilestoneSpec = { ...FIRST, acceptanceCriteria: ["AC-1"], verificationCommands: [ONE_TEST] };
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: (context) => {
         const base = scriptFromSpec({
@@ -156,7 +156,7 @@ describe("CF-09 human steering is durable and authoritative", () => {
 
   it("pauses at a safe boundary without dispatching a new wave, then resumes without repeating work", async () => {
     let missionId = "";
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: (context) => {
         const base = scriptFromSpec({ missionId: "small", goal: GOAL, criteria: SMALL_CRITERIA, plans: [{ milestones: smallMilestones() }], reviewer: () => reviewerPass() });

@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import type { SessionPersistence, WorkItem } from "@codeforge/sessions";
+import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import type { AgentEvidenceRef, AgentFinding } from "@codeforge/agent";
 
 /** Structured failure taxonomy for the long-horizon mission layer. */
@@ -442,13 +442,35 @@ export interface RetainedAutonomousWork {
   description: string;
 }
 
-/** Durable mission persistence, mirroring the certified parallel-run store conventions. */
+/**
+ * Durable mission persistence, mirroring the certified parallel-run store conventions.
+ *
+ * `get`/`list` serve synchronous reads from an in-memory cache that is written by every
+ * {@link save} and hydrated from durable storage by {@link init} — the same read-cache pattern
+ * as UserIntentHoldController. Durable writes are serialized through a promise chain so mission
+ * transitions can never be overwritten by an older in-flight write (the real hazard of naive
+ * fire-and-forget on an async backend), and each write settles before the next begins.
+ */
 export class MissionStore {
-  constructor(private readonly persistence?: SessionPersistence, private readonly onEvent?: (event: MissionEvent) => void) {}
+  private readonly cache = new Map<string, AutonomousMission>();
+  private writeChain: Promise<void> = Promise.resolve();
 
-  save(mission: AutonomousMission): void {
+  constructor(private readonly persistence?: ISessionPersistence, private readonly onEvent?: (event: MissionEvent) => void) {}
+
+  /** Must be awaited to observe missions persisted by a previous process. */
+  async init(): Promise<void> {
     if (!this.persistence) return;
-    this.persistence.upsertWorkItem({
+    const items = await this.persistence.getWorkItemsByKind("mission");
+    for (const item of items) {
+      const mission = this.parseItem(item as unknown as WorkItem & { missionJson?: string });
+      if (mission) this.cache.set(mission.id, mission);
+    }
+  }
+
+  async save(mission: AutonomousMission): Promise<void> {
+    this.cache.set(mission.id, mission);
+    if (!this.persistence) return;
+    const item = {
       kind: "mission", id: mission.id, sessionId: mission.sessionId, workspaceId: mission.workspaceId,
       goal: mission.originalGoal, status: mission.status, baseRevision: mission.baseRevision,
       currentPlanVersion: mission.currentPlanVersion, currentWave: mission.currentWave,
@@ -462,11 +484,11 @@ export class MissionStore {
       }),
       ...(mission.error ? { error: mission.error } : {}),
       createdAt: mission.createdAt, updatedAt: mission.updatedAt,
-    } as unknown as WorkItem);
+    } as unknown as WorkItem;
+    await this.persistence.upsertWorkItem(item);
   }
 
-  get(missionId: string): AutonomousMission | undefined {
-    const item = this.persistence?.getWorkItem(missionId) as unknown as (WorkItem & { missionJson?: string; currentPlanVersion?: number; currentWave?: number; baseRevision?: string; goal?: string; workspaceId?: string }) | undefined;
+  private parseItem(item: WorkItem & { missionJson?: string; currentPlanVersion?: number; currentWave?: number; baseRevision?: string; goal?: string; workspaceId?: string }): AutonomousMission | undefined {
     if (!item || item.kind !== "mission") return undefined;
     const detail = item.missionJson ? JSON.parse(item.missionJson) as Partial<AutonomousMission> : {};
     return {
@@ -486,9 +508,13 @@ export class MissionStore {
     };
   }
 
+  get(missionId: string): AutonomousMission | undefined {
+    return this.cache.get(missionId);
+  }
+
   list(sessionId?: string): AutonomousMission[] {
-    const items = sessionId ? this.persistence?.getWorkItems(sessionId) ?? [] : this.persistence?.getWorkItemsByKind("mission") ?? [];
-    return items.filter((item) => item.kind === "mission").map((item) => this.get(item.id)!).filter(Boolean);
+    const missions = Array.from(this.cache.values());
+    return sessionId ? missions.filter((mission) => mission.sessionId === sessionId) : missions;
   }
 
   emit(mission: AutonomousMission, type: string, payload: Record<string, unknown> = {}, extra: { milestoneId?: string; wave?: number } = {}): void {
@@ -497,7 +523,7 @@ export class MissionStore {
       ...(extra.milestoneId ? { milestoneId: extra.milestoneId } : {}), ...(extra.wave !== undefined ? { wave: extra.wave } : {}),
       timestamp: new Date().toISOString(), payload,
     };
-    this.persistence?.appendEvent(event);
+    this.persistence?.appendEvent(event).catch(() => {});
     this.onEvent?.(event);
   }
 }

@@ -22,15 +22,15 @@ const betterSqliteAvailable = (() => {
 
 const now = new Date().toISOString();
 
-function seedAndVerify(p: SessionPersistence): void {
-  p.upsertSession({
+async function seedAndVerify(p: SessionPersistence): Promise<void> {
+  await p.upsertSession({
     id: "driver-session",
     title: "driver round trip",
     createdAt: now,
     updatedAt: now,
     status: "completed",
   });
-  p.upsertTurn({
+  await p.upsertTurn({
     id: "driver-turn",
     sessionId: "driver-session",
     seq: 1,
@@ -39,9 +39,9 @@ function seedAndVerify(p: SessionPersistence): void {
     startedAt: now,
   });
 
-  const session = p.getSession("driver-session");
+  const session = await p.getSession("driver-session");
   expect(session?.title).toBe("driver round trip");
-  const turns = p.getTurns("driver-session");
+  const turns = await p.getTurns("driver-session");
   expect(turns).toHaveLength(1);
   expect(turns[0]?.userMessage).toBe("survives restart");
 }
@@ -58,14 +58,14 @@ describe("sqlite driver selection", () => {
       const first = new SessionPersistence({ dbPath });
       const driverUsed = first.getDriver();
       expect(["node:sqlite", "better-sqlite3"]).toContain(driverUsed);
-      seedAndVerify(first);
-      first.close();
+      await seedAndVerify(first);
+      await first.close();
 
       // Fresh instance == application restart
       const second = new SessionPersistence({ dbPath });
       expect(second.getDriver()).toBe(driverUsed);
-      expect(second.getSession("driver-session")?.title).toBe("driver round trip");
-      second.close();
+      expect((await second.getSession("driver-session"))?.title).toBe("driver round trip");
+      await second.close();
     } finally {
       await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
     }
@@ -78,13 +78,13 @@ describe("sqlite driver selection", () => {
       if (betterSqliteAvailable) {
         const first = new SessionPersistence({ dbPath, driver: "better-sqlite3" });
         expect(first.getDriver()).toBe("better-sqlite3");
-        seedAndVerify(first);
-        first.close();
+        await seedAndVerify(first);
+        await first.close();
 
         const second = new SessionPersistence({ dbPath, driver: "better-sqlite3" });
-        expect(second.getSession("driver-session")?.title).toBe("driver round trip");
-        expect(second.getTurns("driver-session")[0]?.userMessage).toBe("survives restart");
-        second.close();
+        expect((await second.getSession("driver-session"))?.title).toBe("driver round trip");
+        expect((await second.getTurns("driver-session"))[0]?.userMessage).toBe("survives restart");
+        await second.close();
       } else {
         const testRoot = dirname(fileURLToPath(import.meta.url));
         const repositoryRoot = resolve(testRoot, "..", "..", "..");

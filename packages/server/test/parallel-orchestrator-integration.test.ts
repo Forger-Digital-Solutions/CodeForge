@@ -72,7 +72,7 @@ describe("CF-08 real concurrent worktree orchestration", () => {
     const latch = new Latch(); const catalog = new InMemoryProviderCatalog(); catalog.register(new ParallelProvider(latch)); const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord());
     const workspaceService = createWorkspaceService({ persistence, worktreeParentDir: worktreeDir }); const runtime = createAgentRuntime({ sessionId: "parallel-session", eventStore: new EventStore(), persistence, firewall, providerCatalog: catalog, workspacePath: repoDir }); const orchestrator = createParallelAutonomousRunOrchestrator({ workspaceService, agentRuntime: runtime, persistence });
     const pending = orchestrator.startRun({ sessionId: "parallel-session", workspacePath: repoDir, goal: "Add multiply and slugify" });
-    await latch.waitForBoth(); expect(latch.ids()).toEqual(["math", "string"]); expect(orchestrator.listRuns("parallel-session")[0]?.workstreams).toHaveLength(0);
+    await latch.waitForBoth(); expect(latch.ids()).toEqual(["math", "string"]); expect((await orchestrator.listRuns("parallel-session"))[0]?.workstreams).toHaveLength(0);
     latch.continue(); const result = await pending;
     expect(result.status).toBe("completed"); expect(result.workstreams).toHaveLength(2);
     const [math, string] = result.workstreams.sort((left, right) => left.workstreamId.localeCompare(right.workstreamId));

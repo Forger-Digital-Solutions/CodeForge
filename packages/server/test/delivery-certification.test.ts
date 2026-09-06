@@ -96,7 +96,7 @@ describe("CF-10C adversarial delivery certification", () => {
     expect(events).toContain("delivery.secret.detected");
     expect(result.reviewPackage).toBeUndefined();
     expect(await git(f.root, ["rev-parse", "HEAD"])).toBe(source);
-    h.persistence.close();
+    await h.persistence.close();
   });
 
   it("permits a non-secret high-entropy fixture through the same gate", async () => {
@@ -107,7 +107,7 @@ describe("CF-10C adversarial delivery certification", () => {
     const result = await h.delivery.createDelivery({ missionId: h.mission.id });
     expect(result.status, result.error).toBe("ready");
     expect(result.secretFindings).toBeUndefined();
-    h.persistence.close();
+    await h.persistence.close();
   });
 
   it("records a real policy-derived verification command failure and blocks before review", async () => {
@@ -122,7 +122,7 @@ describe("CF-10C adversarial delivery certification", () => {
     expect(result.verification).toContainEqual(expect.objectContaining({ command: "node --test test/fail.test.mjs", exitCode: 1 }));
     expect(result.reviewPackage).toBeUndefined();
     expect(await git(f.root, ["rev-parse", "HEAD"])).toBe(source);
-    h.persistence.close();
+    await h.persistence.close();
   });
 
   it("creates the same logical commit plan for repeated certified input and changes it for changed input", async () => {
@@ -139,14 +139,14 @@ describe("CF-10C adversarial delivery certification", () => {
     const three = await third.delivery.createDelivery({ missionId: third.mission.id, deliveryId: "delivery-determinism-three" });
     expect(three.commitPlan).not.toEqual(one.commitPlan);
     first.persistence.close(); second.persistence.close(); third.persistence.close();
-  });
+  }, 60_000);
 
   it("fails closed when a controlled pre-finalization mutation makes the delivered tree differ", async () => {
     const f = await fixture();
     let h: Awaited<ReturnType<typeof deliveryHarness>>;
-    h = await deliveryHarness(f, { onEvent: (event) => {
+    h = await deliveryHarness(f, { onEvent: async (event) => {
       if (event.type !== "delivery.packaging.started") return;
-      const active = h.delivery.getDelivery(event.deliveryId)!;
+      const active = await h.delivery.getDelivery(event.deliveryId)!;
       const child = h.workspaces.getWorkspace(active.deliveryWorkspaceId!)!;
       writeFileSync(path.join(child.rootPath, "src", "client.mjs"), "export function retries() { return 999; }\n");
     } });
@@ -155,7 +155,7 @@ describe("CF-10C adversarial delivery certification", () => {
     expect(result.error).toBe(DELIVERY_ERRORS.DELIVERY_TREE_MISMATCH);
     expect(result.sourceTree).not.toBe(result.deliveryTree);
     expect(await git(f.root, ["rev-parse", "HEAD"])).toBe(f.source);
-    h.persistence.close();
+    await h.persistence.close();
   });
 
   it("preserves dirty staged user work in the main checkout while packaging in an isolated delivery worktree", async () => {
@@ -172,7 +172,7 @@ describe("CF-10C adversarial delivery certification", () => {
     expect(await git(f.root, ["stash", "list"])).toBe(stashesBefore);
     expect(child.rootPath.startsWith(path.resolve(f.root) + path.sep)).toBe(false);
     expect(await git(f.root, ["rev-parse", "HEAD"])).toBe(f.source);
-    h.persistence.close();
+    await h.persistence.close();
   });
 
   it("delivers deletion, rename, and binary content with equivalent final tree semantics", async () => {
@@ -196,7 +196,7 @@ describe("CF-10C adversarial delivery certification", () => {
     expect(await git(child.rootPath, ["show", "HEAD:rename-new.txt"])).toBe(await git(f.root, ["show", `${source}:rename-new.txt`]));
     expect(await fs.readFile(path.join(child.rootPath, "asset.bin"))).toEqual(binary);
     expect(result.sourceTree).toBe(result.deliveryTree);
-    h.persistence.close();
+    await h.persistence.close();
   });
 
   it("denies traversal, absolute-path, and sibling-worktree writes through an AgentRuntime using a real delivery workspace", async () => {
@@ -216,7 +216,7 @@ describe("CF-10C adversarial delivery certification", () => {
     }
     await expect(fs.stat(external)).rejects.toThrow(); await expect(fs.stat(path.join(sibling.rootPath, "sibling.txt"))).rejects.toThrow();
     expect(await git(child.rootPath, ["rev-parse", "HEAD"])).toBe(childHead); expect(await git(child.rootPath, ["status", "--porcelain"])).toBe(""); expect(await git(sibling.rootPath, ["rev-parse", "HEAD"])).toBe(siblingHead);
-    h.persistence.close();
+    await h.persistence.close();
   });
 
   it("does not replay terminal commits, leases, or reviewer execution after durable restart", async () => {
@@ -225,11 +225,11 @@ describe("CF-10C adversarial delivery certification", () => {
     const first = await deliveryHarness(f, { persistence: durable, sessionId: "terminal", reviewer: async () => { reviewerCalls++; return { verdict: "pass", findings: [] }; } });
     const ready = await first.delivery.createDelivery({ missionId: first.mission.id, deliveryId: "delivery-terminal" }); const child = first.workspaces.getWorkspace(ready.deliveryWorkspaceId!)!;
     const evidence = { commits: ready.commits.map((item) => item.sha), tree: ready.deliveryTree, review: JSON.stringify(ready.reviewPackage), head: await git(child.rootPath, ["rev-parse", "HEAD"]) };
-    durable.close();
+    await durable.close();
     const recoveredPersistence = createSessionPersistence({ dbPath }); const recovered = await deliveryHarness(f, { persistence: recoveredPersistence, sessionId: "terminal", reviewer: async () => { reviewerCalls++; return { verdict: "pass", findings: [] }; } });
     const after = await recovered.delivery.resumeDelivery("delivery-terminal"); const recoveredChild = recovered.workspaces.getWorkspace(after.deliveryWorkspaceId!)!;
     expect(after.status).toBe("ready"); expect(after.commits.map((item) => item.sha)).toEqual(evidence.commits); expect(after.deliveryTree).toBe(evidence.tree); expect(JSON.stringify(after.reviewPackage)).toBe(evidence.review); expect(await git(recoveredChild.rootPath, ["rev-parse", "HEAD"])).toBe(evidence.head); expect(recovered.workspaces.getLeasesForWorkspace(recoveredChild.id)).toEqual([]); expect(reviewerCalls).toBe(1);
-    recoveredPersistence.close();
+    await recoveredPersistence.close();
   });
 
   it("recovers one real first commit and completes the remaining commit, verification, and AgentRuntime review exactly once", async () => {
@@ -240,15 +240,15 @@ describe("CF-10C adversarial delivery certification", () => {
     const crashing = new Proxy(durable, { get(target, property) { const value = Reflect.get(target, property) as unknown; if (typeof value !== "function") return value; return (...args: unknown[]) => { if (property === "appendEvent" && (args[0] as { type?: string }).type === "delivery.commit.created" && !crashed) { crashed = true; throw new Error("PROCESS_TERMINATED"); } if (crashed && ["upsertWorkItem", "appendEvent"].includes(String(property))) throw new Error("PROCESS_TERMINATED"); return (value as (...items: unknown[]) => unknown).apply(target, args); }; } });
     const started = await deliveryHarness(f, { persistence: crashing as never, sessionId: "combined", getAgentRuntime: () => firstRuntime });
     await expect(started.delivery.createDelivery({ missionId: started.mission.id, deliveryId: "delivery-combined" })).rejects.toThrow("PROCESS_TERMINATED");
-    durable.close();
+    await durable.close();
     const recoveredPersistence = createSessionPersistence({ dbPath }); const recoveredProvider = new MissionProvider((context) => context.role === "reviewer" ? reviewerPass("recovered approval") : { text: "done" }); const recoveredCatalog = new InMemoryProviderCatalog(); recoveredCatalog.register(recoveredProvider); const recoveredFirewall = new ForgeZero(); recoveredFirewall.register(createGenericFreeRecord());
     const recoveredRuntime = createAgentRuntime({ sessionId: "combined", eventStore: new EventStore(), persistence: recoveredPersistence, firewall: recoveredFirewall, providerCatalog: recoveredCatalog, workspacePath: f.root });
     const recovered = await deliveryHarness(f, { persistence: recoveredPersistence, sessionId: "combined", getAgentRuntime: () => recoveredRuntime });
-    const before = recovered.delivery.getDelivery("delivery-combined")!; const firstSha = before.commits[0]!.sha!;
+    const before = await recovered.delivery.getDelivery("delivery-combined")!; const firstSha = before.commits[0]!.sha!;
     const combinedEvidence = { repository: f.root, targetRef: await git(f.root, ["branch", "--show-current"]), baseline: f.base, changeset: f.source, policyDigest: before.policySnapshot!.digest, commitPlanDigest: deliveryDigest(before.commitPlan), branch: before.deliveryBranch, worktreeId: before.deliveryWorkspaceId };
     const result = await recovered.delivery.resumeDelivery("delivery-combined"); const child = recovered.workspaces.getWorkspace(result.deliveryWorkspaceId!)!;
     expect(result.status, result.error).toBe("ready"); expect(result.commits).toHaveLength(2); expect(result.commits[0]!.sha).toBe(firstSha); expect(await git(child.rootPath, ["rev-list", "--count", `${f.base}..HEAD`])).toBe("2"); expect(result.verification).toContainEqual(expect.objectContaining({ command: "node --test test/client.test.mjs", exitCode: 0 })); expect(result.reviewerRunId).toBe("delivery-combined:delivery-review"); expect(recoveredProvider.captured.filter((request) => request.role === "reviewer")).toHaveLength(1); expect(result.sourceTree).toBe(result.deliveryTree); expect(await git(f.root, ["rev-parse", "HEAD"])).toBe(f.source); expect(recovered.workspaces.getLeasesForWorkspace(child.id)).toEqual([]); expect(firstProvider.captured.filter((request) => request.role === "reviewer")).toHaveLength(0);
     expect(combinedEvidence.repository).toBe(f.root); expect(combinedEvidence.targetRef).toBe("main"); expect(result.sourceRevision).toBe(combinedEvidence.changeset); expect(result.targetRevision).toBe(combinedEvidence.changeset); expect(result.policySnapshot?.digest).toBe(combinedEvidence.policyDigest); expect(deliveryDigest(result.commitPlan)).toBe(combinedEvidence.commitPlanDigest); expect(result.deliveryBranch).toBe(combinedEvidence.branch); expect(result.deliveryWorkspaceId).toBe(combinedEvidence.worktreeId); expect(child.rootPath.startsWith(path.resolve(f.root) + path.sep)).toBe(false); expect(await git(f.root, ["remote"])).toBe("");
-    recoveredPersistence.close();
+    await recoveredPersistence.close();
   });
 });

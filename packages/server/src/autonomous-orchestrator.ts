@@ -33,7 +33,7 @@ import {
   createIntegrationService,
   type IntegrationFailureCode,
 } from "./integration-service.js";
-import type { SessionPersistence } from "@codeforge/sessions";
+import type { ISessionPersistence } from "@codeforge/sessions";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { runVerification, verificationPassed as forgeVerificationPassed, type VerificationResult } from "@codeforge/workflow";
 import { redactSecrets } from "@codeforge/secrets";
@@ -146,7 +146,7 @@ export interface OrchestratorRunOptions {
 
 export interface OrchestratorOptions {
   workspaceService: WorkspaceService;
-  persistence?: SessionPersistence;
+  persistence?: ISessionPersistence;
   subagentManager?: SubagentManager;
   integrationService?: IntegrationService;
   checkpointServiceFactory?: (repoRoot: string) => CheckpointService;
@@ -155,7 +155,7 @@ export interface OrchestratorOptions {
 
 export class AutonomousRunOrchestrator {
   private readonly workspaceService: WorkspaceService;
-  private readonly persistence?: SessionPersistence;
+  private readonly persistence?: ISessionPersistence;
   private readonly subagentManager: SubagentManager;
   private readonly integrationService: IntegrationService;
   private readonly checkpointServiceFactory: (repoRoot: string) => CheckpointService;
@@ -249,7 +249,7 @@ export class AutonomousRunOrchestrator {
         error: run.error,
         createdAt: run.startedAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      } as unknown as import("@codeforge/sessions").WorkItem);
+      } as unknown as import("@codeforge/sessions").WorkItem).catch(() => {});
     } catch {}
   }
 
@@ -371,8 +371,8 @@ export class AutonomousRunOrchestrator {
     // Ensure session exists in persistence for foreign key integrity
     if (this.persistence && sessionId) {
       try {
-        if (!this.persistence.getSession(sessionId)) {
-          this.persistence.upsertSession({
+        if (!(await this.persistence.getSession(sessionId))) {
+          await this.persistence.upsertSession({
             id: sessionId,
             title: redactSecrets(goal.slice(0, 80)),
             status: "running",
@@ -785,7 +785,7 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
     let blocked = 0;
 
     try {
-      const items = this.persistence.getWorkItemsByKind("autonomous_run");
+      const items = await this.persistence.getWorkItemsByKind("autonomous_run");
       for (const item of items) {
         if (item.kind === "autonomous_run" && item.id) {
           const raw = item as unknown as {

@@ -167,12 +167,12 @@ describe("CF-10 autonomous change delivery", () => {
     const mission = { id: "mission-recovery", sessionId: "cf10-recovery", workspaceId: workspace.id, status: "completed", finalRevision: source, baseRevision: base, acceptanceCriteria: [{ id: "AC-1", mandatory: true, status: "proven" }] };
     const first = createDeliveryService({ workspaceService: firstWorkspaces, persistence: crashing as never, findMission: () => mission as never });
     await expect(first.createDelivery({ missionId: mission.id, deliveryId: "delivery-recovery" })).rejects.toThrow("PROCESS_TERMINATED");
-    durable.close();
+    await durable.close();
 
     const recoveredPersistence = createSessionPersistence({ dbPath });
     const recoveredWorkspaces = createWorkspaceService({ persistence: recoveredPersistence, worktreeParentDir: worktrees });
     const recovered = createDeliveryService({ workspaceService: recoveredWorkspaces, persistence: recoveredPersistence, findMission: () => mission as never });
-    const before = recovered.getDelivery("delivery-recovery")!;
+    const before = await recovered.getDelivery("delivery-recovery")!;
     expect(before.status).toBe("packaging");
     expect(before.commits).toHaveLength(1);
     const firstSha = before.commits[0]!.sha!;
@@ -183,7 +183,7 @@ describe("CF-10 autonomous change delivery", () => {
     const child = recoveredWorkspaces.getWorkspace(result.deliveryWorkspaceId!)!;
     expect((await git(child.rootPath, ["rev-list", "--count", `${base}..HEAD`]))).toBe("2");
     expect(result.sourceTree).toBe(result.deliveryTree);
-    recoveredPersistence.close();
+    await recoveredPersistence.close();
   });
 
   it("holds an exclusive delivery lease through active verification and cancellation stops further delivery progress", async () => {
@@ -194,14 +194,14 @@ describe("CF-10 autonomous change delivery", () => {
     const { workspaceService, delivery } = service("completed", slowSource);
     await workspaceService.registerLocalWorkspace(root);
     const running = delivery.createDelivery({ missionId: "mission-real", deliveryId: "delivery-cancel" });
-    let active = delivery.getDelivery("delivery-cancel");
-    for (let attempt = 0; attempt < 100 && active?.status !== "verifying"; attempt++) { await new Promise((resolve) => setTimeout(resolve, 25)); active = delivery.getDelivery("delivery-cancel"); }
+    let active = await delivery.getDelivery("delivery-cancel");
+    for (let attempt = 0; attempt < 100 && active?.status !== "verifying"; attempt++) { await new Promise((resolve) => setTimeout(resolve, 25)); active = await delivery.getDelivery("delivery-cancel"); }
     expect(active?.status).toBe("verifying");
     const child = workspaceService.getWorkspace(active!.deliveryWorkspaceId!)!;
     expect(workspaceService.getLeasesForWorkspace(child.id)).toHaveLength(1);
     expect(() => workspaceService.acquireLease(child.id, "competing-delivery", "write")).toThrow("WORKSPACE_LEASE_CONFLICT");
     const commitsBefore = active!.commits.length;
-    expect(delivery.cancelDelivery("delivery-cancel")).toBe(true);
+    expect(await delivery.cancelDelivery("delivery-cancel")).toBe(true);
     const result = await running;
     expect(result.status).toBe("cancelled");
     expect(result.commits).toHaveLength(commitsBefore);
@@ -224,7 +224,7 @@ describe("CF-10 autonomous change delivery", () => {
     expect(result.status).toBe("ready");
     expect(result.reviewerRunId).toContain(":delivery-review");
     expect(provider.captured.some((request) => request.role === "reviewer" && request.payload.includes("delivery reviewed") === false)).toBe(true);
-    persistence.close();
+    await persistence.close();
   });
 
   it("records an AgentRuntime reviewer write attempt as a denial without mutating the delivery worktree", async () => {
@@ -245,6 +245,6 @@ describe("CF-10 autonomous change delivery", () => {
     const child = workspaceService.getWorkspace(result.deliveryWorkspaceId!)!;
     await expect(fs.stat(path.join(child.rootPath, "reviewer-escape.mjs"))).rejects.toThrow();
     expect((await git(child.rootPath, ["rev-list", "--count", `${base}..HEAD`]))).toBe("2");
-    persistence.close();
+    await persistence.close();
   });
 });

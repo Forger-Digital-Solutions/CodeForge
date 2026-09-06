@@ -4,7 +4,7 @@ import { createEventStore, createSessionPersistence } from "@codeforge/sessions"
 import { createWorkspaceEventAdapter } from "../src/workspace-event-adapter.js";
 
 describe("WorkspaceEventAdapter run evidence", () => {
-  it("uses one durable global sequence and attaches the workflow run to every emitted fact", () => {
+  it("uses one durable global sequence and attaches the workflow run to every emitted fact", async () => {
     const eventStore = createEventStore();
     const persistence = createSessionPersistence({ dbPath: ":memory:" });
     const workflow = createWorkspaceEventAdapter({ sessionId: "session", runId: "run-a", eventStore, persistence });
@@ -24,7 +24,7 @@ describe("WorkspaceEventAdapter run evidence", () => {
     chat.emitTurnStarted("chat-turn", "hello");
 
     const live = eventStore.getBySession("session");
-    const persisted = persistence.getEvents("session");
+    const persisted = await persistence.getEvents("session");
     expect(live.map((event) => event.seq)).toEqual([1, 2, 3]);
     expect(persisted.map((event) => (event as { seq: number }).seq)).toEqual([1, 2, 3]);
     expect(live[0]?.runId).toBe("run-a");
@@ -32,23 +32,23 @@ describe("WorkspaceEventAdapter run evidence", () => {
     expect(live[2]?.runId).toBeUndefined();
     expect(WorkspaceEventSchema.safeParse(persisted[1]).success).toBe(true);
 
-    persistence.close();
+    await persistence.close();
   });
 
-  it("redacts and bounds persisted Agent evidence before it reaches SSE or reload storage", () => {
+  it("redacts and bounds persisted Agent evidence before it reaches SSE or reload storage", async () => {
     const eventStore = createEventStore();
     const persistence = createSessionPersistence({ dbPath: ":memory:" });
     const adapter = createWorkspaceEventAdapter({ sessionId: "session", runId: "run-a", eventStore, persistence });
     const secret = "sk-proj-12345678901234567890";
 
-    adapter.emitFileChangeProposed("change", "src/example.ts", "modified", 1, 1, `Uses ${secret}`, `+const key = '${secret}'`);
+    await adapter.emitFileChangeProposed("change", "src/example.ts", "modified", 1, 1, `Uses ${secret}`, `+const key = '${secret}'`);
     adapter.emitToolExecutionStarted("turn", "tool", "run_command", JSON.stringify({ token: secret }));
     adapter.emitToolExecutionCompleted("turn", "tool", "run_command", secret);
     adapter.emitToolExecutionCompleted("turn", "large-tool", "run_command", "safe-output-".repeat(4_000));
 
-    const durableEvidence = JSON.stringify([...eventStore.getBySession("session"), ...persistence.getEvents("session")]);
+    const durableEvidence = JSON.stringify([...eventStore.getBySession("session"), ...(await persistence.getEvents("session"))]);
     expect(durableEvidence).not.toContain(secret);
     expect(durableEvidence).toContain("[truncated]");
-    persistence.close();
+    await persistence.close();
   });
 });

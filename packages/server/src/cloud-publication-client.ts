@@ -92,7 +92,7 @@ export interface CloudPublicationClientConfig {
   /** Cloud identity token. Returns undefined when the user is not signed in to CodeForge Cloud. */
   getAuthToken: () => string | undefined | Promise<string | undefined>;
   workspaceService: WorkspaceService;
-  getDelivery: (id: string) => ChangeDelivery | undefined;
+  getDelivery: (id: string) => Promise<ChangeDelivery | undefined>;
   fetchFn?: typeof fetch;
   requestTimeoutMs?: number;
 }
@@ -116,7 +116,7 @@ export class CloudPublicationClient {
   private readonly cloudApiUrl: string;
   private readonly getAuthToken: CloudPublicationClientConfig["getAuthToken"];
   private readonly workspaceService: WorkspaceService;
-  private readonly getDelivery: (id: string) => ChangeDelivery | undefined;
+  private readonly getDelivery: (id: string) => Promise<ChangeDelivery | undefined>;
   private readonly fetchFn: typeof fetch;
   private readonly requestTimeoutMs: number;
 
@@ -131,7 +131,7 @@ export class CloudPublicationClient {
 
   /** Which repository (by immutable GitHub id) Cloud will accept for this delivery's workspace. */
   async resolveRepositoryAuthorization(deliveryId: string): Promise<RepositoryAuthorizationView> {
-    const delivery = this.assertDelivery(deliveryId);
+    const delivery = await this.assertDelivery(deliveryId);
     const workspace = this.workspaceService.getWorkspace(delivery.deliveryWorkspaceId ?? delivery.workspaceId);
     if (!workspace) throw new CloudPublicationError(CLOUD_PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY);
     const identity = await this.readOriginIdentity(workspace.rootPath);
@@ -146,7 +146,7 @@ export class CloudPublicationClient {
    * view is Cloud's, not Desktop's.
    */
   async publishDelivery(deliveryId: string): Promise<CloudPublicationView> {
-    const delivery = this.assertDelivery(deliveryId);
+    const delivery = await this.assertDelivery(deliveryId);
     const workspace = this.workspaceService.getWorkspace(delivery.deliveryWorkspaceId ?? delivery.workspaceId);
     if (!workspace || !delivery.deliveryRevision || !delivery.deliveryTree || !delivery.commits.length) {
       throw new CloudPublicationError(CLOUD_PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY);
@@ -258,8 +258,8 @@ export class CloudPublicationClient {
     return (text ? JSON.parse(text) : {}) as T;
   }
 
-  private assertDelivery(id: string): ChangeDelivery {
-    const delivery = this.getDelivery(id);
+  private async assertDelivery(id: string): Promise<ChangeDelivery> {
+    const delivery = await this.getDelivery(id);
     if (!delivery || delivery.status !== "ready") throw new CloudPublicationError(CLOUD_PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY);
     return delivery;
   }

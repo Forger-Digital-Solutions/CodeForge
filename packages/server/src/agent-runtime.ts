@@ -2,7 +2,7 @@ import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition } from "@codeforge/providers";
 import type { WorkspaceEvent } from "@codeforge/protocol";
-import type { EventStore, SessionPersistence, WorkItem } from "@codeforge/sessions";
+import type { EventStore, ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import { WorkspaceEventAdapter, createWorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { resolveWithinWorkspace } from "./path-security.js";
 import fs from "node:fs";
@@ -134,15 +134,17 @@ export function classifyToolRecovery(record: Pick<DurableToolExecutionRecord, "e
 }
 
 /** Reclassifies durable records after a restart; it never executes a tool. */
-export function recoverDurableToolExecutions(persistence: SessionPersistence, runId?: string): DurableToolExecutionRecord[] {
-  const records = persistence.getWorkItemsByKind("agent_tool_execution")
-    .filter((item) => !runId || (item as unknown as DurableToolExecutionRecord).runId === runId) as unknown as DurableToolExecutionRecord[];
-  return records.map((record) => {
+export async function recoverDurableToolExecutions(persistence: ISessionPersistence, runId?: string): Promise<DurableToolExecutionRecord[]> {
+  const all = await persistence.getWorkItemsByKind("agent_tool_execution");
+  const records = all.filter((item) => !runId || (item as unknown as DurableToolExecutionRecord).runId === runId) as unknown as DurableToolExecutionRecord[];
+  const recovered: DurableToolExecutionRecord[] = [];
+  for (const record of records) {
     const recoveryDisposition = classifyToolRecovery(record);
-    const recovered = { ...record, recoveryDisposition, updatedAt: new Date().toISOString() };
-    persistence.upsertWorkItem(recovered as unknown as WorkItem);
-    return recovered;
-  });
+    const next = { ...record, recoveryDisposition, updatedAt: new Date().toISOString() };
+    await persistence.upsertWorkItem(next as unknown as WorkItem);
+    recovered.push(next);
+  }
+  return recovered;
 }
 
 const MAX_FILE_READ_BYTES = 100 * 1024;
@@ -169,6 +171,7 @@ export type TurnStatus =
   | "paused"
   | "waiting_for_approval"
   | "waiting_for_question"
+  | "recovering"
   | "completed"
   | "failed"
   | "cancelled";
@@ -203,6 +206,7 @@ export interface ApprovalRequest {
 
 export interface QuestionRequest {
   questionId: string;
+  turnId?: string;
   prompt: string;
   options?: string[];
   resolve: (answer: string) => void;
@@ -211,7 +215,7 @@ export interface QuestionRequest {
 export interface AgentRuntimeOptions {
   sessionId: string;
   eventStore: EventStore;
-  persistence: SessionPersistence;
+  persistence: ISessionPersistence;
   firewall: ForgeZero;
   providerCatalog: ProviderCatalog;
   workspacePath?: string;
@@ -220,6 +224,8 @@ export interface AgentRuntimeOptions {
   repositoryIntelligenceFactory?: () => RepositoryIntelligence;
   forgeGreen?: ForgeGreenAdvisor;
   userIntentHold?: UserIntentHoldController;
+  /** Test-only synchronization point at the real post-approval execution boundary. */
+  afterApprovalResolvedBoundary?: () => Promise<void>;
 }
 
 export interface ModelSelection {
@@ -273,7 +279,7 @@ export function parseToolArgs(argsJson: string): unknown {
 export class AgentRuntime {
   private readonly sessionId: string;
   private readonly eventStore: EventStore;
-  private readonly persistence: SessionPersistence;
+  private readonly persistence: ISessionPersistence;
   private readonly firewall: ForgeZero;
   private readonly providerCatalog: ProviderCatalog;
   private readonly workspacePath?: string;
@@ -292,7 +298,11 @@ export class AgentRuntime {
   private readonly repositoryIntelligenceFactory: () => RepositoryIntelligence;
   private readonly forgeGreen: ForgeGreenAdvisor;
   private readonly userIntentHold?: UserIntentHoldController;
+  private readonly afterApprovalResolvedBoundary?: () => Promise<void>;
   private readonly processedSteerIds = new Map<string, Set<string>>();
+  private readonly recoveryGenerationByTurn = new Map<string, number>();
+  private readonly recoveryRequiredTurns = new Set<string>();
+  private readonly recoveryOriginalStatusByTurn = new Map<string, Exclude<TurnStatus, "idle" | "completed" | "failed" | "cancelled">>();
 
   constructor(options: AgentRuntimeOptions) {
     this.sessionId = options.sessionId;
@@ -304,6 +314,7 @@ export class AgentRuntime {
     this.userId = options.userId ?? "anonymous";
     this.forgeGreen = options.forgeGreen ?? createForgeGreenAdvisor({ enabled: process.env.CODEFORGE_FORGREEN !== "0" });
     this.userIntentHold = options.userIntentHold;
+    this.afterApprovalResolvedBoundary = options.afterApprovalResolvedBoundary;
     this.demoMode = options.demoMode ?? false;
     this.repositoryIntelligenceFactory = options.repositoryIntelligenceFactory ?? (() => createRepositoryIntelligence({
       cacheRoot: path.join(os.tmpdir(), "codeforge-repository-indexes"),
@@ -311,6 +322,11 @@ export class AgentRuntime {
       maxFileBytes: MAX_FILE_READ_BYTES,
     }));
     this.approvalService = new ApprovalService({ defaultTimeoutMs: DEFAULT_APPROVAL_TIMEOUT_MS });
+  }
+
+  /** Must be awaited once before first use — recreates durable intent at a process boundary. */
+  async init(): Promise<void> {
+    await this.hydratePersistedTurns();
   }
 
   /**
@@ -339,6 +355,121 @@ export class AgentRuntime {
 
   getModelSelection(): ModelSelection | null {
     return this.modelSelection ? { ...this.modelSelection } : null;
+  }
+
+  /**
+   * Recreates only durable intent at a process boundary. No model stream, child process,
+   * promise, tool continuation, or approval continuation is ever restored here.
+   */
+  private async hydratePersistedTurns(): Promise<void> {
+    const workItems = await this.persistence.getWorkItems(this.sessionId);
+    const queuedSteers = this.userIntentHold?.queuedSteers(this.sessionId) ?? [];
+    for (const record of await this.persistence.getTurns(this.sessionId)) {
+      if (record.status === "completed" || record.status === "failed" || record.status === "cancelled" || record.status === "idle") continue;
+      const originalStatus = record.status as Exclude<TurnStatus, "idle" | "completed" | "failed" | "cancelled">;
+      const priorRecovery = workItems.find((item) => item.kind === "agent_turn_recovery" && item.turnId === record.id);
+      const generation = priorRecovery?.kind === "agent_turn_recovery" ? priorRecovery.generation : 1;
+      const state: TurnState = {
+        turnId: record.id,
+        sessionId: record.sessionId,
+        status: originalStatus,
+        userMessage: record.userMessage,
+        startedAt: record.startedAt ? new Date(record.startedAt) : new Date(),
+        ...(record.completedAt ? { completedAt: new Date(record.completedAt) } : {}),
+        ...(record.error ? { error: record.error } : {}),
+        ...(record.agentId ? { agentId: record.agentId } : {}),
+      };
+      this.recoveryGenerationByTurn.set(record.id, generation);
+      this.recoveryOriginalStatusByTurn.set(record.id, originalStatus);
+
+      const persistedSteers = queuedSteers.filter((steer) => steer.turnId === record.id);
+      if (persistedSteers.length > 0) {
+        this.pendingSteeringByTurn.set(record.id, persistedSteers.map((steer) => steer.message));
+        this.processedSteerIds.set(record.id, new Set(persistedSteers.map((steer) => steer.steerId)));
+      }
+
+      const pendingApproval = workItems.find((item) => item.kind === "approval" && item.turnId === record.id && !item.decision);
+      const pendingQuestion = workItems.find((item) => item.kind === "question" && item.turnId === record.id && item.answer === undefined);
+      const canRestoreApprovalWait = originalStatus === "waiting_for_approval" && pendingApproval?.kind === "approval";
+      const canRestoreQuestionWait = originalStatus === "waiting_for_question" && pendingQuestion?.kind === "question";
+      if (canRestoreApprovalWait) {
+        const createdAt = Date.parse(pendingApproval.createdAt);
+        this.approvalService.restorePending({
+          approvalId: pendingApproval.id,
+          turnId: record.id,
+          tool: pendingApproval.tool,
+          action: pendingApproval.action,
+          description: pendingApproval.description,
+          risk: pendingApproval.risk,
+          scope: pendingApproval.scope,
+          state: "pending",
+          createdAt,
+          expiresAt: createdAt + DEFAULT_APPROVAL_TIMEOUT_MS,
+        });
+      } else if (canRestoreQuestionWait) {
+        this.pendingQuestions.set(pendingQuestion.id, {
+          questionId: pendingQuestion.id,
+          turnId: record.id,
+          prompt: pendingQuestion.prompt,
+          ...(pendingQuestion.options ? { options: pendingQuestion.options } : {}),
+          resolve: () => undefined,
+        });
+      } else {
+        state.status = "recovering";
+        this.recoveryRequiredTurns.add(record.id);
+      }
+
+      this.activeTurns.set(record.id, state);
+      if (state.status === "recovering") {
+        const session = await this.persistence.getSession(this.sessionId);
+        if (session) await this.persistence.upsertSession({ ...session, status: "recovering", updatedAt: new Date().toISOString() });
+      }
+      if (!priorRecovery || priorRecovery.kind !== "agent_turn_recovery" || priorRecovery.state === "hydrated") {
+        const staleExecutionCount = await this.invalidateStaleExecutions(record.id, workItems);
+        const recoveryState = state.status === "recovering" ? "replan_required" as const : "hydrated" as const;
+        await this.persistRecovery(record.id, originalStatus, recoveryState, generation, staleExecutionCount,
+          state.status === "recovering" ? "Interrupted execution requires a fresh plan from current durable facts." : "Durable wait state restored without restoring an execution continuation.");
+        await this.persistTurn(state);
+        const adapter = this.createAdapter();
+        await adapter.emitTurnRecovery(record.id, "hydrated", generation);
+        if (staleExecutionCount > 0) await adapter.emitTurnRecovery(record.id, "stale_execution_invalidated", generation, `${staleExecutionCount} stale execution record(s) classified.`);
+        if (state.status === "recovering") await adapter.emitTurnRecovery(record.id, "replan_required", generation, "Interrupted execution will not be replayed.");
+      }
+    }
+  }
+
+  private async invalidateStaleExecutions(turnId: string, workItems: WorkItem[]): Promise<number> {
+    const executions = workItems.filter((item) => item.kind === "agent_tool_execution" && item.turnId === turnId) as unknown as DurableToolExecutionRecord[];
+    for (const execution of executions) {
+      const recoveryDisposition = classifyToolRecovery(execution);
+      await this.persistence.upsertWorkItem({ ...execution, recoveryDisposition, updatedAt: new Date().toISOString() } as unknown as WorkItem);
+    }
+    return executions.filter((execution) => execution.state !== "observation_recorded").length;
+  }
+
+  private async persistRecovery(
+    turnId: string,
+    originalStatus: Exclude<TurnStatus, "idle" | "completed" | "failed" | "cancelled">,
+    state: "hydrated" | "replan_required" | "replan_started" | "resumed" | "blocked",
+    generation: number,
+    staleExecutionCount: number,
+    detail?: string,
+  ): Promise<void> {
+    const prior = await this.persistence.getWorkItem(`agent-turn-recovery-${turnId}`);
+    const createdAt = prior?.kind === "agent_turn_recovery" ? prior.createdAt : new Date().toISOString();
+    await this.persistence.upsertWorkItem({
+      kind: "agent_turn_recovery",
+      id: `agent-turn-recovery-${turnId}`,
+      sessionId: this.sessionId,
+      turnId,
+      originalStatus,
+      state,
+      generation,
+      staleExecutionCount,
+      createdAt,
+      updatedAt: new Date().toISOString(),
+      ...(detail ? { detail } : {}),
+    });
   }
 
   /**
@@ -371,8 +502,8 @@ export class AgentRuntime {
       toolCount: 0,
     };
 
-    if (!this.persistence.getSession(this.sessionId)) {
-      this.persistence.upsertSession({
+    if (!(await this.persistence.getSession(this.sessionId))) {
+      await this.persistence.upsertSession({
         id: this.sessionId,
         title: redactSecrets(req.goal.slice(0, 80)),
         createdAt: new Date().toISOString(),
@@ -485,8 +616,8 @@ export class AgentRuntime {
         const modelTurnId = `${req.runId}:${req.agentId}:${turnCount}`;
         await this.userIntentHold?.waitForDispatch(this.sessionId, "model");
         const modelTurnCreatedAt = new Date().toISOString();
-        const persistModelTurn = (state: "created" | "provider_request_started" | "provider_response_completed" | "tool_requests_decoded" | "agent_result_completed" | "failed" | "cancelled") => {
-          this.persistence.upsertWorkItem({
+        const persistModelTurn = async (state: "created" | "provider_request_started" | "provider_response_completed" | "tool_requests_decoded" | "agent_result_completed" | "failed" | "cancelled"): Promise<void> => {
+          await this.persistence.upsertWorkItem({
             kind: "agent_model_turn",
             id: `agent-model-turn-${sha256(modelTurnId)}`,
             sessionId: this.sessionId,
@@ -498,7 +629,7 @@ export class AgentRuntime {
             updatedAt: new Date().toISOString(),
           } as unknown as WorkItem);
         };
-        persistModelTurn("created");
+        await persistModelTurn("created");
 
         // Get tools available for this role
         const availableTools = toolBroker.getRegistry().getForRole(req.role, req.permissions);
@@ -506,7 +637,7 @@ export class AgentRuntime {
         // Execute model request
         let response;
         try {
-          persistModelTurn("provider_request_started");
+          await persistModelTurn("provider_request_started");
           response = await modelAdapter.execute({
             modelSelection: req.modelSelection ?? (this.modelSelection ? { providerId: this.modelSelection.providerId, modelId: this.modelSelection.modelId } : undefined),
             messages,
@@ -516,7 +647,7 @@ export class AgentRuntime {
             authorityState: req.authorityState ?? "canonical",
             dedupeScope: req.runId,
           });
-          persistModelTurn("provider_response_completed");
+          await persistModelTurn("provider_response_completed");
         } catch (err: unknown) {
           const norm = normalizeProviderError(err);
           throw new Error(`[${norm.code}] ${norm.message}`);
@@ -573,12 +704,12 @@ export class AgentRuntime {
             }
             structuredData = validation.data;
           }
-          persistModelTurn("agent_result_completed");
+          await persistModelTurn("agent_result_completed");
           stopReason = "completed";
           break;
         }
 
-        persistModelTurn("tool_requests_decoded");
+        await persistModelTurn("tool_requests_decoded");
 
         // Tool calls requested
         const assistantToolMessage: ChatMessage = {
@@ -860,7 +991,7 @@ export class AgentRuntime {
       }
     } else {
       const running = Array.from(this.activeTurns.values()).find(
-        (t) => t.status === "running" || t.status === "paused" || t.status === "waiting_for_approval" || t.status === "waiting_for_question",
+        (t) => t.status === "running" || t.status === "paused" || t.status === "waiting_for_approval" || t.status === "waiting_for_question" || t.status === "recovering",
       );
       if (running) {
         throw new Error(`A turn (${running.turnId}) is already active in session ${this.sessionId}. Steer the active turn or wait for it to complete.`);
@@ -880,14 +1011,14 @@ export class AgentRuntime {
 
     this.activeTurns.set(turnId, state);
 
-    this.persistence.upsertSession({
+    await this.persistence.upsertSession({
       id: this.sessionId,
       title: userMessage.slice(0, 80),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: "running",
     });
-    this.persistTurn(state);
+    await this.persistTurn(state);
 
     // A workflow supplies its run-scoped adapter. Ordinary Chat keeps its existing session-scoped
     // adapter, so the UI never mistakes a chat tool call for autonomous workflow evidence.
@@ -899,13 +1030,15 @@ export class AgentRuntime {
     this.abortControllers.set(turnId, abortController);
 
     if (!this.demoMode) {
-      this.executeTurn(turnId, userMessage, adapter, abortController.signal).catch((error) => {
+      this.executeTurn(turnId, userMessage, adapter, abortController.signal).catch(async (error) => {
         const turnState = this.activeTurns.get(turnId);
         if (turnState && turnState.status === "running") {
           turnState.status = "failed";
           turnState.error = error instanceof Error ? error.message : String(error);
           this.activeTurns.set(turnId, turnState);
-          adapter.emitTurnFailed(turnId, turnState.error);
+          await this.persistTurn(turnState);
+          await this.userIntentHold?.resolveForTerminal(this.sessionId, turnId);
+          await adapter.emitTurnFailed(turnId, turnState.error);
           adapter.emitStatusChanged("running", "failed");
         }
       });
@@ -936,12 +1069,12 @@ export class AgentRuntime {
     pending.push(steering);
     this.pendingSteeringByTurn.set(turnId, pending);
 
-    this.userIntentHold?.queueSteer(this.sessionId, turnId, turnId, steering, id);
+    // Durable exactly-once steer acceptance must complete before this call resolves, so a client
+    // that saw an HTTP 2xx can kill the process and a fresh one still observes the queued steer.
+    await this.userIntentHold?.queueSteer(this.sessionId, turnId, turnId, steering, id);
 
     const adapter = this.createAdapter();
-    adapter.emitTurnSteered(turnId, steering);
-    state.userMessage = steering;
-    this.activeTurns.set(turnId, state);
+    await adapter.emitTurnSteered(turnId, steering);
   }
 
   async pauseTurn(turnId: string): Promise<void> {
@@ -958,35 +1091,51 @@ export class AgentRuntime {
     }
     state.status = "paused";
     this.activeTurns.set(turnId, state);
-    this.persistTurn(state);
+    await this.persistTurn(state);
     const adapter = this.createAdapter();
-    adapter.emitTurnPaused(turnId);
+    await adapter.emitTurnPaused(turnId);
     adapter.emitStatusChanged("running", "paused");
   }
 
   async resumeTurn(turnId: string): Promise<void> {
     const state = this.activeTurns.get(turnId);
     if (!state) {
-      throw new Error(`Turn ${turnId} not found`);
+      throw new Error(`Turn  not found`);
     }
-    if (state.status !== "paused") {
-      throw new Error(`Turn ${turnId} is not paused`);
+    if (state.status !== "paused" && state.status !== "recovering") {
+      throw new Error(`Turn ${turnId} is not paused or recovering`);
     }
     const adapter = this.createAdapter();
-    adapter.emitTurnResumed(turnId);
-    adapter.emitStatusChanged("paused", "running");
+    const recovering = state.status === "recovering";
+    const generation = this.recoveryGenerationByTurn.get(turnId);
+    const originalStatus = this.recoveryOriginalStatusByTurn.get(turnId);
+    if (recovering && generation && originalStatus) {
+      const recovery = await this.persistence.getWorkItem(`agent-turn-recovery-`);
+      await this.persistRecovery(turnId, originalStatus, "replan_started", generation,
+        recovery?.kind === "agent_turn_recovery" ? recovery.staleExecutionCount : 0,
+        "A new attempt is planning from current workspace and durable evidence.");
+      await adapter.emitTurnRecovery(turnId, "replan_started", generation);
+      this.recoveryRequiredTurns.add(turnId);
+    }
+    await adapter.emitTurnResumed(turnId);
+    adapter.emitStatusChanged(recovering ? "recovering" : "paused", "running");
     state.status = "running";
     this.activeTurns.set(turnId, state);
+    await this.persistTurn(state);
+    const session = await this.persistence.getSession(this.sessionId);
+    if (session) await this.persistence.upsertSession({ ...session, status: "running", updatedAt: new Date().toISOString() });
     const abortController = new AbortController();
     this.abortControllers.set(turnId, abortController);
     if (!this.demoMode) {
-      this.executeTurn(turnId, state.userMessage, adapter, abortController.signal).catch((error) => {
+      this.executeTurn(turnId, state.userMessage, adapter, abortController.signal).catch(async (error) => {
         const turnState = this.activeTurns.get(turnId);
         if (turnState && turnState.status === "running") {
           turnState.status = "failed";
           turnState.error = error instanceof Error ? error.message : String(error);
           this.activeTurns.set(turnId, turnState);
-          adapter.emitTurnFailed(turnId, turnState.error);
+          await this.persistTurn(turnState);
+          await this.userIntentHold?.resolveForTerminal(this.sessionId, turnId);
+          await adapter.emitTurnFailed(turnId, turnState.error);
         }
       });
     }
@@ -1003,6 +1152,7 @@ export class AgentRuntime {
     }
     this.approvalService.cancelForTurn(turnId, reason ?? "Turn cancelled");
     this.pendingSteeringByTurn.delete(turnId);
+    await this.userIntentHold?.resolveForTerminal(this.sessionId, turnId);
     // Also cancel via legacy map
     for (const [id, req] of Array.from(this.pendingApprovals.entries())) {
       // legacy entries don't store turnId, but we clear all waiting approvals for this turn's status
@@ -1015,22 +1165,32 @@ export class AgentRuntime {
     state.status = "cancelled";
     state.completedAt = new Date();
     this.activeTurns.set(turnId, state);
-    this.persistTurn(state);
+    await this.persistTurn(state);
     const adapter = this.createAdapter();
-    adapter.emitTurnCancelled(turnId, reason);
+    await adapter.emitTurnCancelled(turnId, reason);
     adapter.emitStatusChanged(state.status, "cancelled");
   }
 
-  resolveApproval(approvalId: string, decision: "allow_once" | "allow_session" | "deny"): void {
+  async resolveApproval(approvalId: string, decision: "allow_once" | "allow_session" | "deny"): Promise<void> {
     // First try new service
     const rec = this.approvalService.getRecord(approvalId);
     if (rec) {
-      const result = this.approvalService.resolve(approvalId, decision);
       const adapter = this.createAdapter();
-      adapter.emitApprovalResolved(approvalId, decision);
+      await adapter.emitApprovalResolved(approvalId, decision);
+      const stored = await this.persistence.getWorkItem(approvalId);
+      if (stored?.kind === "approval") {
+        await this.persistence.upsertWorkItem({ ...stored, decision, resolvedAt: new Date().toISOString() });
+      }
+      // Resolve the service promise only after the decision is durable, so the tool continuation
+      // this unblocks can never observe an approval state that a crash would lose.
+      const result = this.approvalService.resolve(approvalId, decision);
       // If this approval belongs to a waiting turn, transition back to running or handle rejection
       const turnState = this.findTurnByApprovalRecord(rec);
       if (turnState && turnState.status === "waiting_for_approval") {
+        if (this.recoveryOriginalStatusByTurn.has(turnState.turnId)) {
+          await this.enterRecoveryReplan(turnState, "Approval resolved after restart; the guarded operation will not be replayed.", adapter);
+          return;
+        }
         if (result.approved) {
           turnState.status = "running";
           this.activeTurns.set(turnState.turnId, turnState);
@@ -1052,7 +1212,7 @@ export class AgentRuntime {
       throw new Error(`Approval ${approvalId} not found`);
     }
     const adapter = this.createAdapter();
-    adapter.emitApprovalResolved(approvalId, decision);
+    await adapter.emitApprovalResolved(approvalId, decision);
     request.resolve(decision);
     this.pendingApprovals.delete(approvalId);
     const turnState = this.findTurnByApproval(approvalId);
@@ -1063,17 +1223,25 @@ export class AgentRuntime {
     }
   }
 
-  resolveQuestion(questionId: string, answer: string): void {
+  async resolveQuestion(questionId: string, answer: string): Promise<void> {
     const request = this.pendingQuestions.get(questionId);
     if (!request) {
       throw new Error(`Question ${questionId} not found`);
     }
+    const turnState = this.findTurnByQuestion(questionId);
     const adapter = this.createAdapter();
-    adapter.emitQuestionResolved(questionId, answer);
+    await adapter.emitQuestionResolved(questionId, answer);
+    const stored = await this.persistence.getWorkItem(questionId);
+    if (stored?.kind === "question") {
+      await this.persistence.upsertWorkItem({ ...stored, answer, resolvedAt: new Date().toISOString() });
+    }
     request.resolve(answer);
     this.pendingQuestions.delete(questionId);
-    const turnState = this.findTurnByQuestion(questionId);
     if (turnState && turnState.status === "waiting_for_question") {
+      if (this.recoveryOriginalStatusByTurn.has(turnState.turnId)) {
+        await this.enterRecoveryReplan(turnState, "Question resolved after restart; execution will continue only from a fresh plan.", adapter);
+        return;
+      }
       turnState.status = "running";
       this.activeTurns.set(turnState.turnId, turnState);
       adapter.emitStatusChanged("waiting_for_question", "running");
@@ -1086,7 +1254,7 @@ export class AgentRuntime {
 
   getActiveTurns(): TurnState[] {
     return Array.from(this.activeTurns.values()).filter(
-      (t) => t.status === "running" || t.status === "paused",
+      (t) => t.status === "running" || t.status === "paused" || t.status === "waiting_for_approval" || t.status === "waiting_for_question" || t.status === "recovering",
     );
   }
 
@@ -1149,6 +1317,21 @@ export class AgentRuntime {
     });
   }
 
+  private async enterRecoveryReplan(turnState: TurnState, detail: string, adapter: WorkspaceEventAdapter): Promise<void> {
+    const originalStatus = this.recoveryOriginalStatusByTurn.get(turnState.turnId);
+    const generation = this.recoveryGenerationByTurn.get(turnState.turnId);
+    if (!originalStatus || !generation) return;
+    turnState.status = "recovering";
+    this.activeTurns.set(turnState.turnId, turnState);
+    await this.persistTurn(turnState);
+    this.recoveryRequiredTurns.add(turnState.turnId);
+    const recovery = await this.persistence.getWorkItem(`agent-turn-recovery-${turnState.turnId}`);
+    await this.persistRecovery(turnState.turnId, originalStatus, "replan_required", generation,
+      recovery?.kind === "agent_turn_recovery" ? recovery.staleExecutionCount : 0, detail);
+    adapter.emitStatusChanged(originalStatus, "recovering");
+    await adapter.emitTurnRecovery(turnState.turnId, "replan_required", generation, detail);
+  }
+
   private async executeTurn(
     turnId: string,
     userMessage: string,
@@ -1185,6 +1368,18 @@ export class AgentRuntime {
         }
       }
 
+      if (this.recoveryRequiredTurns.has(turnId)) {
+        const generation = this.recoveryGenerationByTurn.get(turnId);
+        const originalStatus = this.recoveryOriginalStatusByTurn.get(turnId);
+        if (generation && originalStatus) {
+          const recovery = await this.persistence.getWorkItem(`agent-turn-recovery-${turnId}`);
+          await this.persistRecovery(turnId, originalStatus, "resumed", generation,
+            recovery?.kind === "agent_turn_recovery" ? recovery.staleExecutionCount : 0,
+            "Recovery resumed as a new planning attempt; no interrupted operation is replayed.");
+          await adapter.emitTurnRecovery(turnId, "resumed", generation);
+        }
+      }
+
       await this.simulateAgentWork(turnId, agentId, adapter, signal);
 
       if (signal.aborted) {
@@ -1205,7 +1400,8 @@ export class AgentRuntime {
         state.completedAt = new Date();
         state.error = reason;
         this.activeTurns.set(turnId, state);
-        this.persistTurn(state);
+        await this.persistTurn(state);
+        await this.userIntentHold?.resolveForTerminal(this.sessionId, turnId);
         adapter.emitTurnFailed(turnId, reason);
         adapter.emitStatusChanged("running", "failed");
         return;
@@ -1215,19 +1411,23 @@ export class AgentRuntime {
       state.completedAt = new Date();
       this.activeTurns.set(turnId, state);
 
-      this.persistence.upsertSession({
-        id: this.sessionId,
-        title: userMessage.slice(0, 80),
-        createdAt: new Date().toISOString(),
+      const completedSession = await this.persistence.getSession(this.sessionId);
+      await this.persistence.upsertSession({
+        ...(completedSession ?? {
+          id: this.sessionId,
+          title: userMessage.slice(0, 80),
+          createdAt: new Date().toISOString(),
+        }),
         updatedAt: new Date().toISOString(),
         status: "completed",
         currentAgentId: agentId,
         currentModelId: state.modelId,
         currentProviderId: state.providerId,
       });
-      this.persistTurn(state);
+      await this.persistTurn(state);
+      await this.userIntentHold?.resolveForTerminal(this.sessionId, turnId);
 
-      adapter.emitTurnCompleted(turnId, "Task completed successfully");
+      await adapter.emitTurnCompleted(turnId, "Task completed successfully");
       adapter.emitStatusChanged("running", "completed");
       adapter.emitAgentCompleted(agentId, turnId);
     } catch (error) {
@@ -1242,9 +1442,10 @@ export class AgentRuntime {
       state.error = error instanceof Error ? error.message : String(error);
       state.completedAt = new Date();
       this.activeTurns.set(turnId, state);
-      this.persistTurn(state);
-      const existingSession = this.persistence.getSession(this.sessionId);
-      this.persistence.upsertSession({
+      await this.persistTurn(state);
+      await this.userIntentHold?.resolveForTerminal(this.sessionId, turnId);
+      const existingSession = await this.persistence.getSession(this.sessionId);
+      await this.persistence.upsertSession({
         ...(existingSession ?? {
           id: this.sessionId,
           title: userMessage.slice(0, 80),
@@ -1327,14 +1528,23 @@ export class AgentRuntime {
     }
 
     const systemPrompt = this.buildSystemPrompt();
+    const recoveryDirective = this.recoveryRequiredTurns.has(turnId)
+      ? "[Recovery directive] A prior process stopped during this turn. Treat all unfinished pre-restart execution as stale. Inspect the current workspace and durable evidence, then create a new plan. Do not replay a prior command, tool call, or model continuation."
+      : undefined;
     const userMessage: ChatMessage = { role: "user", content: state.userMessage };
+    if (recoveryDirective) this.messageHistory.push({ role: "system", content: recoveryDirective });
     this.messageHistory.push(userMessage);
+    this.recoveryRequiredTurns.delete(turnId);
 
     const tools = this.getAvailableTools();
 
     const request: ChatRequest = {
       model: state.modelId,
-      messages: [systemPrompt ? { role: "system", content: systemPrompt } : undefined, userMessage].filter(Boolean) as ChatMessage[],
+      messages: [
+        systemPrompt ? { role: "system", content: systemPrompt } : undefined,
+        recoveryDirective ? { role: "system", content: recoveryDirective } : undefined,
+        userMessage,
+      ].filter(Boolean) as ChatMessage[],
       tools,
       toolChoice: "auto",
       temperature: 0.7,
@@ -1358,7 +1568,7 @@ export class AgentRuntime {
     const pendingSteering = this.pendingSteeringByTurn.get(turnId) ?? [];
     if (pendingSteering.length > 0) {
       const queued = this.userIntentHold?.queuedSteers(this.sessionId).filter((steer) => steer.turnId === turnId) ?? [];
-      this.userIntentHold?.beginReconciliation(this.sessionId, turnId, queued.map((steer) => steer.steerId));
+      await this.userIntentHold?.beginReconciliation(this.sessionId, turnId, queued.map((steer) => steer.steerId));
       this.pendingSteeringByTurn.set(turnId, []);
       for (const steeringText of pendingSteering) {
         const steeringMessage: ChatMessage = {
@@ -1371,9 +1581,9 @@ export class AgentRuntime {
         ...request,
         messages: [...this.messageHistory],
       };
-      this.userIntentHold?.completeReconciliation(this.sessionId, turnId, queued.map((steer) => steer.steerId));
+      await this.userIntentHold?.completeReconciliation(this.sessionId, turnId, queued.map((steer) => steer.steerId));
       const state = this.activeTurns.get(turnId);
-      if (state) this.persistTurn(state);
+      if (state) await this.persistTurn(state);
     }
 
     if (iteration >= this.maxIterations) {
@@ -1952,6 +2162,7 @@ export class AgentRuntime {
     const previousStatus = turnState.status;
     turnState.status = "waiting_for_approval";
     this.activeTurns.set(turnId, turnState);
+    await this.persistTurn(turnState);
     adapter.emitStatusChanged(previousStatus, "waiting_for_approval");
 
     const { approvalId, promise } = this.approvalService.requestApproval({
@@ -1963,9 +2174,23 @@ export class AgentRuntime {
       scope: this.workspacePath,
       signal,
     });
+    // The pending approval must be durable before the request event is announced, so a restart
+    // right after a client observes the request can still restore the wait state exactly.
+    await this.persistence.upsertWorkItem({
+      kind: "approval",
+      id: approvalId,
+      sessionId: this.sessionId,
+      turnId,
+      tool: toolName,
+      action: approvalNeeded.action,
+      description: `${toolName}: ${approvalNeeded.reason}`,
+      risk: approvalNeeded.risk,
+      scope: this.workspacePath,
+      createdAt: new Date().toISOString(),
+    });
 
     // Emit approval requested for UI
-    adapter.emitApprovalRequested(approvalId, toolName, approvalNeeded.action, `${toolName}: ${approvalNeeded.reason}`, approvalNeeded.risk, this.workspacePath);
+    await adapter.emitApprovalRequested(approvalId, toolName, approvalNeeded.action, `${toolName}: ${approvalNeeded.reason}`, approvalNeeded.risk, this.workspacePath);
 
     // Legacy map for HTTP handler compatibility
     const legacyResolveHolder: { decision?: string } = {};
@@ -1989,6 +2214,11 @@ export class AgentRuntime {
     // We bridge by having resolveApproval call service.resolve which fulfills promise.
     // So just await service promise; but also need to handle signal cancellation already wired inside service.
     const result = await promise;
+    // The approval decision is authoritative, but the guarded action is a new execution
+    // boundary. Yield once so a steer already accepted at the public HTTP boundary can become
+    // durable before a synchronous tool continuation could terminalize the turn.
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    await this.afterApprovalResolvedBoundary?.();
 
     // Cleanup legacy entry if still present
     this.pendingApprovals.delete(approvalId);
@@ -1999,14 +2229,17 @@ export class AgentRuntime {
       if (result.approved) {
         currentTurn.status = "running";
         this.activeTurns.set(turnId, currentTurn);
+        await this.persistTurn(currentTurn);
         adapter.emitStatusChanged("waiting_for_approval", "running");
       } else if (result.state === "rejected") {
         currentTurn.status = "running";
         this.activeTurns.set(turnId, currentTurn);
+        await this.persistTurn(currentTurn);
         adapter.emitStatusChanged("waiting_for_approval", "running");
       } else if (result.state === "expired") {
         currentTurn.status = "running";
         this.activeTurns.set(turnId, currentTurn);
+        await this.persistTurn(currentTurn);
         adapter.emitStatusChanged("waiting_for_approval", "running");
       } else if (result.state === "cancelled") {
         // Turn cancelled elsewhere; leave status as cancelled if already set
@@ -2344,8 +2577,8 @@ export class AgentRuntime {
     }
   }
 
-  private persistTurn(state: TurnState): void {
-    this.persistence.upsertTurn({
+  private async persistTurn(state: TurnState): Promise<void> {
+    await this.persistence.upsertTurn({
       id: state.turnId,
       sessionId: state.sessionId,
       seq: this.eventStore.getLastSeq(),
@@ -2359,15 +2592,19 @@ export class AgentRuntime {
   }
 
   private findTurnByApproval(approvalId: string): TurnState | undefined {
+    const record = this.approvalService.getRecord(approvalId);
+    if (record) return this.activeTurns.get(record.turnId);
+    // Legacy approvals have no service record; fall back to the single waiting turn.
     return Array.from(this.activeTurns.values()).find((t) => t.status === "waiting_for_approval");
   }
 
-  private findTurnByApprovalRecord(_rec: ApprovalRecord): TurnState | undefined {
-    return Array.from(this.activeTurns.values()).find((t) => t.status === "waiting_for_approval");
+  private findTurnByApprovalRecord(rec: ApprovalRecord): TurnState | undefined {
+    return this.activeTurns.get(rec.turnId);
   }
 
   private findTurnByQuestion(questionId: string): TurnState | undefined {
-    return Array.from(this.activeTurns.values()).find((t) => t.status === "waiting_for_question");
+    const question = this.pendingQuestions.get(questionId);
+    return question?.turnId ? this.activeTurns.get(question.turnId) : undefined;
   }
 }
 

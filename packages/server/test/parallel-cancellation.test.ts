@@ -101,7 +101,7 @@ describe("CF-08 parallel cancellation preserves autonomous results", () => {
     await execFile("git", ["commit", "-m", "base"], { cwd: repoDir });
   });
   // Fixture teardown only: the retention assertions all run while the test still owns the worktrees.
-  afterEach(async () => { persistence.close(); await fs.rm(repoDir, { recursive: true, force: true }); await fs.rm(worktreeDir, { recursive: true, force: true }); });
+  afterEach(async () => { await persistence.close(); await fs.rm(repoDir, { recursive: true, force: true }); await fs.rm(worktreeDir, { recursive: true, force: true }); });
 
   it("retains dirty and committed autonomous work, releases leases, and is idempotent on a second cancel", async () => {
     const barrier = new Barrier(2);
@@ -129,14 +129,14 @@ describe("CF-08 parallel cancellation preserves autonomous results", () => {
     // 1A — both Coders are genuinely active at the same instant, before any cancellation.
     await barrier.reached;
     expect(barrier.ids()).toEqual(["alpha", "beta"]);
-    const dispatchedWhileActive = orchestrator.getRun(runId)!.dispatches;
+    const dispatchedWhileActive = (await orchestrator.getRun(runId))!.dispatches;
     expect(dispatchedWhileActive.map((dispatch) => dispatch.workstreamId).sort()).toEqual(["alpha", "beta"]);
     expect(dispatchedWhileActive.every((dispatch) => dispatch.state === "active")).toBe(true);
     expect(new Set(dispatchedWhileActive.map((dispatch) => dispatch.worktreeId)).size).toBe(2);
 
     // 1B/1C — Coder A leaves uncommitted work parked; Coder B commits a useful result.
     await Promise.all([alphaParked.promise, betaCompleted.promise]);
-    const before = orchestrator.getRun(runId)!;
+    const before = await orchestrator.getRun(runId)!;
     const alphaDispatch = before.dispatches.find((dispatch) => dispatch.workstreamId === "alpha")!;
     const betaDispatch = before.dispatches.find((dispatch) => dispatch.workstreamId === "beta")!;
     const alphaPath = workspaceService.getWorkspace(alphaDispatch.worktreeId)!.rootPath;
@@ -154,7 +154,7 @@ describe("CF-08 parallel cancellation preserves autonomous results", () => {
 
     expect(result.status).toBe("cancelled");
     expect(result.error).toBe("PARALLEL_RUN_CANCELLED");
-    const cancelled = orchestrator.getRun(runId)!;
+    const cancelled = await orchestrator.getRun(runId)!;
     expect(cancelled.status).toBe("cancelled");
     expect(cancelled.workstreams.find((workstream) => workstream.workstreamId === "alpha")?.status).toBe("cancelled");
     expect(cancelled.workstreams.find((workstream) => workstream.workstreamId === "beta")?.status).toBe("completed");
@@ -194,7 +194,7 @@ describe("CF-08 parallel cancellation preserves autonomous results", () => {
     expect(cleanupStamp).toBeTruthy();
     expect(orchestrator.cancelRun(runId)).toBe(false);
     expect(orchestrator.cancelRun(runId)).toBe(false);
-    const afterSecondCancel = orchestrator.getRun(runId)!;
+    const afterSecondCancel = await orchestrator.getRun(runId)!;
     expect(afterSecondCancel.status).toBe("cancelled");
     expect(afterSecondCancel.cleanupCompletedAt).toBe(cleanupStamp);
     expect(events.filter((event) => event.type === "parallel.cancellation.finalized")).toHaveLength(1);

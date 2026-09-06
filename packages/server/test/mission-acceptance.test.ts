@@ -35,13 +35,13 @@ describe("CF-09 acceptance, assumptions, and the final gate", () => {
   });
 
   afterEach(async () => {
-    harness?.persistence.close();
+    await harness?.persistence.close();
     await fs.rm(repoDir, { recursive: true, force: true });
     await fs.rm(worktreeDir, { recursive: true, force: true });
   });
 
   it("refuses to complete while a mandatory criterion lacks deterministic evidence", async () => {
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: scriptFromSpec({ missionId: "small", goal: GOAL, criteria: SMALL_CRITERIA, plans: [{ milestones: [FIRST, unverifiedSecond] }], reviewer: () => reviewerPass() }),
     });
@@ -63,7 +63,7 @@ describe("CF-09 acceptance, assumptions, and the final gate", () => {
   }, 300_000);
 
   it("blocks promotion when the independent final Reviewer finds a missing requirement", async () => {
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: scriptFromSpec({
         missionId: "small", goal: GOAL, criteria: SMALL_CRITERIA, plans: [{ milestones: smallMilestones() }],
@@ -86,7 +86,7 @@ describe("CF-09 acceptance, assumptions, and the final gate", () => {
   }, 300_000);
 
   it("replans when repository evidence invalidates a planner assumption", async () => {
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: scriptFromSpec({
         missionId: "small", goal: GOAL, criteria: SMALL_CRITERIA,
@@ -123,7 +123,7 @@ describe("CF-09 acceptance, assumptions, and the final gate", () => {
 
   it("revalidates the target between milestones and refuses to promote over user work", async () => {
     let advanced = false;
-    harness = createHarness({
+    harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: (context) => {
         const base = scriptFromSpec({

@@ -57,6 +57,15 @@ export const TurnSteeredSchema = EventBase(
 
 export const TurnPausedSchema = EventBase("turn.paused", z.object({ turnId: z.string() }));
 export const TurnResumedSchema = EventBase("turn.resumed", z.object({ turnId: z.string() }));
+export const TurnRecoverySchema = EventBase(
+  "turn.recovery",
+  z.object({
+    turnId: z.string(),
+    phase: z.enum(["hydrated", "stale_execution_invalidated", "replan_required", "replan_started", "resumed", "blocked"]),
+    generation: z.number().int().positive(),
+    detail: z.string().optional(),
+  }),
+);
 export const TurnCancelledSchema = EventBase(
   "turn.cancelled",
   z.object({ turnId: z.string(), reason: z.string().optional() }),
@@ -85,7 +94,7 @@ export const UserIntentHoldReleasedSchema = EventBase(
   z.object({
     runId: z.string(),
     generation: z.number().int().positive(),
-    reason: z.enum(["draft_cleared", "user_intent_hold_disabled", "reconciled", "stale_lease"]),
+    reason: z.enum(["draft_cleared", "user_intent_hold_disabled", "reconciled", "stale_lease", "terminal"]),
   }),
 );
 
@@ -628,6 +637,7 @@ export const WorkspaceEventSchema = z.discriminatedUnion("type", [
   TurnSteeredSchema,
   TurnPausedSchema,
   TurnResumedSchema,
+  TurnRecoverySchema,
   TurnCancelledSchema,
   TurnFailedSchema,
   TurnCompletedSchema,

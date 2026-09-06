@@ -1,5 +1,5 @@
 import type { WorkspaceEvent } from "@codeforge/protocol";
-import type { EventStore, SessionPersistence } from "@codeforge/sessions";
+import type { EventStore, ISessionPersistence } from "@codeforge/sessions";
 import { redactSecrets } from "@codeforge/secrets";
 
 const MAX_SAFE_EVENT_TEXT = 32 * 1024;
@@ -15,14 +15,14 @@ export interface WorkspaceEventAdapterOptions {
   /** Present only for a bounded autonomous workflow/agent run. */
   runId?: string;
   eventStore: EventStore;
-  persistence: SessionPersistence;
+  persistence: ISessionPersistence;
 }
 
 export class WorkspaceEventAdapter {
   private readonly sessionId: string;
   private readonly runId?: string;
   private readonly eventStore: EventStore;
-  private readonly persistence: SessionPersistence;
+  private readonly persistence: ISessionPersistence;
 
   constructor(options: WorkspaceEventAdapterOptions) {
     this.sessionId = options.sessionId;
@@ -31,7 +31,15 @@ export class WorkspaceEventAdapter {
     this.persistence = options.persistence;
   }
 
-  emit(event: Omit<WorkspaceEvent, "seq" | "sessionId" | "timestamp">): void {
+  /**
+   * Durable events use a real awaited persistence write (needed so a process can be killed right
+   * after a durability-sensitive HTTP response and a fresh process reading the same database is
+   * guaranteed to observe it — CF-17R5's core restart invariant). High-frequency telemetry wrapper
+   * methods below intentionally do NOT await this and instead fire-and-forget with a logged
+   * failure, so the vast majority of call sites across the codebase are unaffected by PostgreSQL
+   * becoming a real network round trip.
+   */
+  async emit(event: Omit<WorkspaceEvent, "seq" | "sessionId" | "timestamp">): Promise<void> {
     // EventStore owns the process-wide sequence. Persisting a per-adapter counter made a reload
     // ambiguous as soon as a session had more than one turn; reserve the same next sequence that
     // EventStore will assign synchronously so SSE and durable replay are identical.
@@ -44,87 +52,106 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent;
 
     this.eventStore.append(fullEvent);
-    this.persistence.appendEvent(fullEvent);
+    await this.persistence.appendEvent(fullEvent);
   }
 
-  emitTurnStarted(turnId: string, userMessage: string, agentId?: string): void {
-    this.emit({
+  /** Fire-and-forget variant for high-frequency telemetry that does not gate CF-17 durability. */
+  private emitBestEffort(event: Omit<WorkspaceEvent, "seq" | "sessionId" | "timestamp">): void {
+    void this.emit(event).catch((error) => {
+      console.error("[workspace-event-adapter] best-effort event persistence failed", error);
+    });
+  }
+
+  emitTurnStarted(turnId: string, userMessage: string, agentId?: string): Promise<void> {
+    return this.emit({
       type: "turn.started",
       payload: { turnId, userMessage, agentId },
     } as WorkspaceEvent);
   }
 
-  emitTurnSteered(turnId: string, steering: string): void {
-    this.emit({
+  emitTurnSteered(turnId: string, steering: string): Promise<void> {
+    return this.emit({
       type: "turn.steered",
       payload: { turnId, steering },
     } as WorkspaceEvent);
   }
 
-  emitTurnPaused(turnId: string): void {
-    this.emit({
+  emitTurnPaused(turnId: string): Promise<void> {
+    return this.emit({
       type: "turn.paused",
       payload: { turnId },
     } as WorkspaceEvent);
   }
 
-  emitTurnResumed(turnId: string): void {
-    this.emit({
+  emitTurnResumed(turnId: string): Promise<void> {
+    return this.emit({
       type: "turn.resumed",
       payload: { turnId },
     } as WorkspaceEvent);
   }
 
-  emitTurnCancelled(turnId: string, reason?: string): void {
-    this.emit({
+  emitTurnRecovery(
+    turnId: string,
+    phase: "hydrated" | "stale_execution_invalidated" | "replan_required" | "replan_started" | "resumed" | "blocked",
+    generation: number,
+    detail?: string,
+  ): Promise<void> {
+    return this.emit({
+      type: "turn.recovery",
+      payload: { turnId, phase, generation, ...(detail ? { detail: safeEventText(detail) } : {}) },
+    } as WorkspaceEvent);
+  }
+
+  emitTurnCancelled(turnId: string, reason?: string): Promise<void> {
+    return this.emit({
       type: "turn.cancelled",
       payload: { turnId, reason },
     } as WorkspaceEvent);
   }
 
-  emitTurnFailed(turnId: string, error: string): void {
-    this.emit({
+  emitTurnFailed(turnId: string, error: string): Promise<void> {
+    return this.emit({
       type: "turn.failed",
       payload: { turnId, error },
     } as WorkspaceEvent);
   }
 
-  emitTurnCompleted(turnId: string, result?: string): void {
-    this.emit({
+  emitTurnCompleted(turnId: string, result?: string): Promise<void> {
+    return this.emit({
       type: "turn.completed",
       payload: { turnId, result },
     } as WorkspaceEvent);
   }
 
-  emitUserIntentHoldEntered(runId: string, generation: number, reason: "user_composer_active" | "user_steer_queued" | "awaiting_inflight_completion", turnId?: string): void {
-    this.emit({ type: "user_intent_hold.entered", payload: { runId, generation, reason, ...(turnId ? { turnId } : {}) } } as WorkspaceEvent);
+  emitUserIntentHoldEntered(runId: string, generation: number, reason: "user_composer_active" | "user_steer_queued" | "awaiting_inflight_completion", turnId?: string): Promise<void> {
+    return this.emit({ type: "user_intent_hold.entered", payload: { runId, generation, reason, ...(turnId ? { turnId } : {}) } } as WorkspaceEvent);
   }
 
-  emitUserIntentHoldReleased(runId: string, generation: number, reason: "draft_cleared" | "user_intent_hold_disabled" | "reconciled" | "stale_lease"): void {
-    this.emit({ type: "user_intent_hold.released", payload: { runId, generation, reason } } as WorkspaceEvent);
+  emitUserIntentHoldReleased(runId: string, generation: number, reason: "draft_cleared" | "user_intent_hold_disabled" | "reconciled" | "stale_lease" | "terminal"): Promise<void> {
+    return this.emit({ type: "user_intent_hold.released", payload: { runId, generation, reason } } as WorkspaceEvent);
   }
 
-  emitUserIntentSteerQueued(runId: string, turnId: string, steerId: string, position: number): void {
-    this.emit({ type: "user_intent_steer.queued", payload: { runId, turnId, steerId, position } } as WorkspaceEvent);
+  emitUserIntentSteerQueued(runId: string, turnId: string, steerId: string, position: number): Promise<void> {
+    return this.emit({ type: "user_intent_steer.queued", payload: { runId, turnId, steerId, position } } as WorkspaceEvent);
   }
 
-  emitUserIntentReconciliationStarted(runId: string, turnId: string, steerIds: string[]): void {
-    this.emit({ type: "user_intent_steer.reconciliation_started", payload: { runId, turnId, steerIds } } as WorkspaceEvent);
+  emitUserIntentReconciliationStarted(runId: string, turnId: string, steerIds: string[]): Promise<void> {
+    return this.emit({ type: "user_intent_steer.reconciliation_started", payload: { runId, turnId, steerIds } } as WorkspaceEvent);
   }
 
-  emitUserIntentReconciliationCompleted(runId: string, turnId: string, steerIds: string[]): void {
-    this.emit({ type: "user_intent_steer.reconciliation_completed", payload: { runId, turnId, steerIds } } as WorkspaceEvent);
+  emitUserIntentReconciliationCompleted(runId: string, turnId: string, steerIds: string[]): Promise<void> {
+    return this.emit({ type: "user_intent_steer.reconciliation_completed", payload: { runId, turnId, steerIds } } as WorkspaceEvent);
   }
 
   emitAgentStarted(agentId: string, role: string, taskId: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "agent.started",
       payload: { agentId, role, taskId },
     } as WorkspaceEvent);
   }
 
   emitAgentCompleted(agentId: string, taskId: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "agent.completed",
       payload: { agentId, taskId },
     } as WorkspaceEvent);
@@ -136,35 +163,35 @@ export class WorkspaceEventAdapter {
     task: string,
     parentAgentId?: string,
   ): void {
-    this.emit({
+    this.emitBestEffort({
       type: "subagent.started",
       payload: { agentId, role, task, parentAgentId },
     } as WorkspaceEvent);
   }
 
   emitSubagentProgress(agentId: string, message: string, percent?: number): void {
-    this.emit({
+    this.emitBestEffort({
       type: "subagent.progress",
       payload: { agentId, message, percent },
     } as WorkspaceEvent);
   }
 
   emitSubagentCompleted(agentId: string, result?: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "subagent.completed",
       payload: { agentId, result },
     } as WorkspaceEvent);
   }
 
   emitSubagentFailed(agentId: string, error: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "subagent.failed",
       payload: { agentId, error },
     } as WorkspaceEvent);
   }
 
   emitFileRead(fileCallId: string, path: string, lines?: number): void {
-    this.emit({
+    this.emitBestEffort({
       type: "file.read",
       payload: { fileCallId, path, lines },
     } as WorkspaceEvent);
@@ -181,7 +208,7 @@ export class WorkspaceEventAdapter {
   ): void {
     const safeDescription = safeEventText(description);
     const safeDiff = safeEventText(diff);
-    this.emit({
+    this.emitBestEffort({
       type: "file.change_proposed",
       payload: {
         changeId,
@@ -196,35 +223,35 @@ export class WorkspaceEventAdapter {
   }
 
   emitFileChangeApplied(changeId: string, path: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "file.change_applied",
       payload: { changeId, path },
     } as WorkspaceEvent);
   }
 
   emitFileChangeReverted(changeId: string, path: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "file.change_reverted",
       payload: { changeId, path },
     } as WorkspaceEvent);
   }
 
   emitCommandStarted(commandId: string, command: string, workingDirectory?: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "command.started",
       payload: { commandId, command, workingDirectory },
     } as WorkspaceEvent);
   }
 
   emitCommandOutput(commandId: string, output: string, stream?: "stdout" | "stderr"): void {
-    this.emit({
+    this.emitBestEffort({
       type: "command.output",
       payload: { commandId, output, stream },
     } as WorkspaceEvent);
   }
 
   emitCommandCompleted(commandId: string, exitCode: number, durationMs: number): void {
-    this.emit({
+    this.emitBestEffort({
       type: "command.completed",
       payload: { commandId, exitCode, durationMs },
     } as WorkspaceEvent);
@@ -237,8 +264,8 @@ export class WorkspaceEventAdapter {
     description: string,
     risk: "safe" | "moderate" | "high" | "critical",
     scope?: string,
-  ): void {
-    this.emit({
+  ): Promise<void> {
+    return this.emit({
       type: "approval.requested",
       payload: { approvalId, tool, action, description, risk, scope },
     } as WorkspaceEvent);
@@ -247,29 +274,29 @@ export class WorkspaceEventAdapter {
   emitApprovalResolved(
     approvalId: string,
     decision: "allow_once" | "allow_session" | "deny",
-  ): void {
-    this.emit({
+  ): Promise<void> {
+    return this.emit({
       type: "approval.resolved",
       payload: { approvalId, decision },
     } as WorkspaceEvent);
   }
 
-  emitQuestionRequested(questionId: string, prompt: string, options?: string[]): void {
-    this.emit({
+  emitQuestionRequested(questionId: string, prompt: string, options?: string[]): Promise<void> {
+    return this.emit({
       type: "question.requested",
       payload: { questionId, prompt, options },
     } as WorkspaceEvent);
   }
 
-  emitQuestionResolved(questionId: string, answer: string): void {
-    this.emit({
+  emitQuestionResolved(questionId: string, answer: string): Promise<void> {
+    return this.emit({
       type: "question.resolved",
       payload: { questionId, answer },
     } as WorkspaceEvent);
   }
 
   emitPlanStarted(planId: string, turnId: string, title: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "plan.started",
       payload: { planId, turnId, title },
     } as WorkspaceEvent);
@@ -283,14 +310,14 @@ export class WorkspaceEventAdapter {
       status: "queued" | "active" | "completed" | "blocked" | "failed" | "skipped";
     }>,
   ): void {
-    this.emit({
+    this.emitBestEffort({
       type: "plan.updated",
       payload: { planId, steps },
     } as WorkspaceEvent);
   }
 
   emitValidationStarted(validationId: string, type: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "validation.started",
       payload: { validationId, type },
     } as WorkspaceEvent);
@@ -302,21 +329,21 @@ export class WorkspaceEventAdapter {
     failed: number,
     skipped: number,
   ): void {
-    this.emit({
+    this.emitBestEffort({
       type: "validation.completed",
       payload: { validationId, passed, failed, skipped },
     } as WorkspaceEvent);
   }
 
   emitTestStarted(taskId: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "test.started",
       payload: { taskId },
     } as WorkspaceEvent);
   }
 
   emitTestCompleted(taskId: string, passed: number, failed: number, skipped: number): void {
-    this.emit({
+    this.emitBestEffort({
       type: "test.completed",
       payload: { taskId, passed, failed, skipped },
     } as WorkspaceEvent);
@@ -329,7 +356,7 @@ export class WorkspaceEventAdapter {
     branch?: string,
     testStatus?: string,
   ): void {
-    this.emit({
+    this.emitBestEffort({
       type: "checkpoint.created",
       payload: { checkpointId, label, fileCount, branch, testStatus },
     } as WorkspaceEvent);
@@ -339,7 +366,7 @@ export class WorkspaceEventAdapter {
     checkpointId: string,
     restoreType: "code_and_conversation" | "conversation_only" | "code_only",
   ): void {
-    this.emit({
+    this.emitBestEffort({
       type: "checkpoint.restored",
       payload: { checkpointId, restoreType },
     } as WorkspaceEvent);
@@ -351,7 +378,7 @@ export class WorkspaceEventAdapter {
     title: string,
     turnId?: string,
   ): void {
-    this.emit({
+    this.emitBestEffort({
       type: "artifact.created",
       payload: { artifactId, type, title, turnId },
     } as WorkspaceEvent);
@@ -362,49 +389,49 @@ export class WorkspaceEventAdapter {
     conclusion: string,
     references: Array<{ kind: "file" | "test" | "command" | "artifact"; ref: string }>,
   ): void {
-    this.emit({
+    this.emitBestEffort({
       type: "evidence.created",
       payload: { evidenceId, conclusion, references },
     } as WorkspaceEvent);
   }
 
   emitTaskCreated(taskId: string, title: string, mode: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "task.created",
       payload: { taskId, title, mode },
     } as WorkspaceEvent);
   }
 
   emitTaskStarted(taskId: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "task.started",
       payload: { taskId },
     } as WorkspaceEvent);
   }
 
   emitTaskStateChanged(taskId: string, from: string, to: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "task.state_changed",
       payload: { taskId, from, to },
     } as WorkspaceEvent);
   }
 
   emitTaskCompleted(taskId: string, result: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "task.completed",
       payload: { taskId, result },
     } as WorkspaceEvent);
   }
 
   emitTaskCancelled(taskId: string, reason?: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "task.cancelled",
       payload: { taskId, reason },
     } as WorkspaceEvent);
   }
 
   emitWorkflowVerificationStarted(taskId: string, attempt: number): void {
-    this.emit({
+    this.emitBestEffort({
       type: "workflow.verification_started",
       payload: { taskId, attempt },
     } as WorkspaceEvent);
@@ -434,7 +461,7 @@ export class WorkspaceEventAdapter {
       }>;
     },
   ): void {
-    this.emit({
+    this.emitBestEffort({
       type: "workflow.verification_completed",
       payload: {
         taskId,
@@ -449,20 +476,20 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent);
   }
 
-  emitForgeVerifyPlanCreated(taskId: string, planId: string, policyVersion: string, requiredVerifierIds: string[]): void {
-    this.emit({ type: "forgeverify.plan_created", payload: { taskId, planId, policyVersion, requiredVerifierIds } });
+  emitForgeVerifyPlanCreated(taskId: string, planId: string, policyVersion: string, requiredVerifierIds: string[]): Promise<void> {
+    return this.emit({ type: "forgeverify.plan_created", payload: { taskId, planId, policyVersion, requiredVerifierIds } });
   }
 
-  emitForgeVerifyAttemptStarted(taskId: string, planId: string, attemptId: string, verifierId: string): void {
-    this.emit({ type: "forgeverify.attempt_started", payload: { taskId, planId, attemptId, verifierId } });
+  emitForgeVerifyAttemptStarted(taskId: string, planId: string, attemptId: string, verifierId: string): Promise<void> {
+    return this.emit({ type: "forgeverify.attempt_started", payload: { taskId, planId, attemptId, verifierId } });
   }
 
-  emitForgeVerifyEvidenceCreated(taskId: string, planId: string, attemptId: string, evidenceId: string, verifierId: string, status: "passed" | "failed" | "cancelled" | "timed_out" | "infra_error" | "interrupted", durationMs: number, outputTruncated: boolean): void {
-    this.emit({ type: "forgeverify.evidence_created", payload: { taskId, planId, attemptId, evidenceId, verifierId, status, durationMs, outputTruncated } });
+  emitForgeVerifyEvidenceCreated(taskId: string, planId: string, attemptId: string, evidenceId: string, verifierId: string, status: "passed" | "failed" | "cancelled" | "timed_out" | "infra_error" | "interrupted", durationMs: number, outputTruncated: boolean): Promise<void> {
+    return this.emit({ type: "forgeverify.evidence_created", payload: { taskId, planId, attemptId, evidenceId, verifierId, status, durationMs, outputTruncated } });
   }
 
   emitWorkflowRepairAttempted(taskId: string, attempt: number, summary: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "workflow.repair_attempted",
       payload: { taskId, attempt, summary },
     } as WorkspaceEvent);
@@ -474,7 +501,7 @@ export class WorkspaceEventAdapter {
     findings: Array<{ code: string; severity: "blocking" | "advisory"; path: string; message: string }>,
     diffCount: number,
   ): void {
-    this.emit({
+    this.emitBestEffort({
       type: "workflow.review_completed",
       payload: { taskId, approved, findings, diffCount },
     } as WorkspaceEvent);
@@ -485,36 +512,36 @@ export class WorkspaceEventAdapter {
     outcome: "completed" | "blocked" | "failed",
     rationale: string,
     blockers: Array<{ code: string; severity: string; message: string }>,
-  ): void {
-    this.emit({
+  ): Promise<void> {
+    return this.emit({
       type: "workflow.completion_decided",
       payload: { taskId, outcome, rationale, blockers },
     } as WorkspaceEvent);
   }
 
   emitReviewStarted(taskId: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "review.started",
       payload: { taskId },
     } as WorkspaceEvent);
   }
 
   emitReviewCompleted(taskId: string, accepted: boolean, issues: string[]): void {
-    this.emit({
+    this.emitBestEffort({
       type: "review.completed",
       payload: { taskId, accepted, issues },
     } as WorkspaceEvent);
   }
 
-  emitPlanStatusChanged(planId: string, status: "draft" | "review" | "approved" | "rejected" | "superseded" | "completed"): void {
-    this.emit({
+  emitPlanStatusChanged(planId: string, status: "draft" | "review" | "approved" | "rejected" | "superseded" | "completed"): Promise<void> {
+    return this.emit({
       type: "plan.status_changed",
       payload: { planId, status },
     } as WorkspaceEvent);
   }
 
   emitStatusChanged(from: string, to: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "status.changed",
       payload: { from, to },
     } as WorkspaceEvent);
@@ -527,112 +554,112 @@ export class WorkspaceEventAdapter {
     score: number,
     reasons: string[],
   ): void {
-    this.emit({
+    this.emitBestEffort({
       type: "router.selection",
       payload: { taskId, modelId, providerId, score, reasons },
     } as WorkspaceEvent);
   }
 
   emitToolStarted(toolCallId: string, tool: string, taskId: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "tool.started",
       payload: { toolCallId, tool, taskId },
     } as WorkspaceEvent);
   }
 
   emitToolCompleted(toolCallId: string, tool: string, durationMs: number): void {
-    this.emit({
+    this.emitBestEffort({
       type: "tool.completed",
       payload: { toolCallId, tool, durationMs },
     } as WorkspaceEvent);
   }
 
   emitToolFailed(toolCallId: string, tool: string, error: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "tool.failed",
       payload: { toolCallId, tool, error },
     } as WorkspaceEvent);
   }
 
   emitTextDelta(turnId: string, delta: string, agentId?: string, messageId?: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "text.delta",
       payload: { turnId, delta, agentId, messageId },
     } as WorkspaceEvent);
   }
 
   emitAssistantMessageStarted(turnId: string, messageId: string, agentId?: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "assistant.message.started",
       payload: { turnId, messageId, agentId },
     } as WorkspaceEvent);
   }
 
   emitAssistantMessageCompleted(turnId: string, messageId: string, text: string, agentId?: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "assistant.message.completed",
       payload: { turnId, messageId, text, agentId },
     } as WorkspaceEvent);
   }
 
   emitToolCallStarted(turnId: string, toolCallId: string, toolName: string, agentId?: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "tool.call_started",
       payload: { turnId, toolCallId, toolName, agentId },
     } as WorkspaceEvent);
   }
 
   emitToolCallCompleted(turnId: string, toolCallId: string, toolName: string, argsJson: string, agentId?: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "tool.call_completed",
       payload: { turnId, toolCallId, toolName, argsJson: safeEventText(argsJson) ?? "", agentId },
     } as WorkspaceEvent);
   }
 
   emitToolExecutionStarted(turnId: string, toolCallId: string, toolName: string, argsJson: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "tool.execution_started",
       payload: { turnId, toolCallId, toolName, argsJson: safeEventText(argsJson) ?? "" },
     } as WorkspaceEvent);
   }
 
   emitToolExecutionCompleted(turnId: string, toolCallId: string, toolName: string, result: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "tool.execution_completed",
       payload: { turnId, toolCallId, toolName, result: safeEventText(result) ?? "" },
     } as WorkspaceEvent);
   }
 
   emitToolExecutionFailed(turnId: string, toolCallId: string, toolName: string, error: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "tool.execution_failed",
       payload: { turnId, toolCallId, toolName, error: safeEventText(error) ?? "" },
     } as WorkspaceEvent);
   }
 
   emitToolExecutionBlocked(turnId: string, toolCallId: string, toolName: string, reason: string): void {
-    this.emit({
+    this.emitBestEffort({
       type: "tool.execution_blocked",
       payload: { turnId, toolCallId, toolName, reason: safeEventText(reason) ?? "" },
     } as WorkspaceEvent);
   }
 
   emitTokenUsage(turnId: string, inputTokens: number, outputTokens: number, totalTokens?: number): void {
-    this.emit({
+    this.emitBestEffort({
       type: "token.usage",
       payload: { turnId, inputTokens, outputTokens, totalTokens },
     } as WorkspaceEvent);
   }
 
   emitFileWritten(fileCallId: string, path: string, bytesOrChars?: number): void {
-    this.emit({
+    this.emitBestEffort({
       type: "file.written",
       payload: { fileCallId, path, bytesOrChars },
     } as WorkspaceEvent);
   }
 
   emitCommandExecuted(commandId: string, command: string, output: string, exitCode: number): void {
-    this.emit({
+    this.emitBestEffort({
       type: "command.executed",
       payload: { commandId, command, output, exitCode },
     } as WorkspaceEvent);

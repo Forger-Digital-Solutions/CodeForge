@@ -10,7 +10,7 @@ import {
   type ExecutionMode,
   type WorkspaceEvent,
 } from "@codeforge/protocol";
-import { EventStore, createSessionPersistence, type SessionRecord, type TurnRecord, type WorkItem } from "@codeforge/sessions";
+import { EventStore, createSessionPersistence, type SessionDatabaseDriver, type SessionRecord, type TurnRecord, type WorkItem } from "@codeforge/sessions";
 import {
   ForgeZero,
   createDevelopmentEntitlementProvider,
@@ -43,6 +43,10 @@ export interface ServerOptions {
   port?: number;
   webDist?: string;
   dbPath?: string;
+  /** PostgreSQL connection string. Overrides CODEFORGE_SESSIONS_DATABASE_URL / DATABASE_URL. */
+  databaseUrl?: string;
+  /** Explicit persistence backend selection ("sqlite" | "postgres"). Overrides CODEFORGE_SESSIONS_DB_DRIVER. */
+  databaseDriver?: SessionDatabaseDriver;
   /** Catalog injection point for tests; production uses InMemoryProviderCatalog. */
   providerCatalog?: ProviderCatalog;
   firewall?: ForgeZero;
@@ -65,6 +69,8 @@ export interface ServerOptions {
   getCloudAuthToken?: () => string | undefined | Promise<string | undefined>;
   /** Test seam for the Cloud transport. */
   cloudFetch?: typeof fetch;
+  /** Test-only synchronization point used to prove approval/steer transition ordering. */
+  afterApprovalResolvedBoundary?: () => Promise<void>;
 }
 
 export class CodeForgeServer {
@@ -91,21 +97,20 @@ export class CodeForgeServer {
   private repositoryIndexEnabled = true;
   private repositoryIndexSnapshot: Record<string, unknown> = { state: "NOT_INDEXED", enabled: true, indexVersion: REPOSITORY_INDEX_VERSION, parserVersion: REPOSITORY_PARSER_VERSION };
   private readonly userIntentHold: UserIntentHoldController;
+  private readonly afterApprovalResolvedBoundary?: () => Promise<void>;
 
   constructor(options: ServerOptions = {}) {
     this.port = options.port ?? 3210;
     this.host = options.host ?? process.env.CODEFORGE_BIND_HOST ?? "127.0.0.1";
     this.webDist = options.webDist ?? path.join(__dirname, "..", "web", "dist");
-    this.persistence = createSessionPersistence(
-      options.dbPath ? { dbPath: options.dbPath } : undefined,
-    );
+    this.persistence = createSessionPersistence({
+      ...(options.dbPath ? { dbPath: options.dbPath } : {}),
+      ...(options.databaseUrl ? { databaseUrl: options.databaseUrl } : {}),
+      ...(options.databaseDriver ? { driver: options.databaseDriver } : {}),
+    });
     this.eventStore = new EventStore();
-    const persistedEvents = this.persistence
-      .listSessions()
-      .flatMap((session) => this.persistence.getEvents(session.id))
-      .filter(isWorkspaceEvent);
-    this.eventStore.hydrate(persistedEvents);
     this.userIntentHold = new UserIntentHoldController({ eventStore: this.eventStore, persistence: this.persistence });
+    this.afterApprovalResolvedBoundary = options.afterApprovalResolvedBoundary;
     // Development scaffold: deterministic entitlement scenarios until the real
     // entitlement service exists. GEMS access still fails closed.
     this.firewall = options.firewall ?? new ForgeZero({
@@ -130,9 +135,9 @@ export class CodeForgeServer {
       workspaceService: this.workspaceService,
       persistence: this.persistence,
       getAgentRuntime: (sessionId) => this.getOrCreateRuntime(sessionId),
-      findMission: (missionId) => {
-        const stored = this.persistence.getWorkItem(missionId);
-        return stored?.kind === "mission" && stored.sessionId ? this.getMissionSupervisor(stored.sessionId).getMission(missionId) : undefined;
+      findMission: async (missionId) => {
+        const stored = await this.persistence.getWorkItem(missionId);
+        return stored?.kind === "mission" && stored.sessionId ? (await this.getMissionSupervisor(stored.sessionId)).getMission(missionId) : undefined;
       },
       onEvent: (event) => { this.eventStore.append({ ...event, seq: 0 } as unknown as WorkspaceEvent); },
     });
@@ -257,7 +262,33 @@ export class CodeForgeServer {
     return this.port;
   }
 
+  /**
+   * Must be awaited before the server serves requests: initializes the persistence backend
+   * (PostgreSQL migrations run here), hydrates the event sequence, rehydrates durable
+   * user-intent hold state, and recovers nonterminal turns from durable storage. R3 recovery
+   * semantics are preserved — a recovered turn is never replayed; it is reclassified and,
+   * where its continuation died with the old process, marked for an explicit replan.
+   */
+  async init(): Promise<void> {
+    await this.persistence.init();
+    await this.workspaceService.init();
+    const sessions = await this.persistence.listSessions();
+    const persistedEvents = (await Promise.all(sessions.map((session) => this.persistence.getEvents(session.id))))
+      .flat()
+      .filter(isWorkspaceEvent);
+    this.eventStore.hydrate(persistedEvents);
+    await this.userIntentHold.init();
+    await this.workflowService.init();
+    for (const session of sessions) {
+      const turns = await this.persistence.getTurns(session.id);
+      if (!turns.some((turn) => !["idle", "completed", "failed", "cancelled"].includes(turn.status))) continue;
+      const runtime = this.getOrCreateRuntime(session.id);
+      await runtime.init();
+    }
+  }
+
   async start(): Promise<void> {
+    await this.init();
     this.server = http.createServer((req, res) => this.handleRequest(req, res));
     const server = this.server;
     // A bind failure (EADDRINUSE when another CodeForge already owns the port, EACCES on a
@@ -301,10 +332,10 @@ export class CodeForgeServer {
     this.persistence.close();
   }
 
-  private persistSession(sessionId: string, userMessage: string): void {
+  private async persistSession(sessionId: string, userMessage: string): Promise<void> {
     const now = new Date().toISOString();
-    const existing = this.persistence.getSession(sessionId);
-    this.persistence.upsertSession({
+    const existing = await this.persistence.getSession(sessionId);
+    await this.persistence.upsertSession({
       id: sessionId,
       title: userMessage.slice(0, 80),
       createdAt: existing?.createdAt ?? now,
@@ -313,28 +344,17 @@ export class CodeForgeServer {
     });
   }
 
-  private persistTurn(sessionId: string, turnId: string, userMessage: string): void {
-    const turn: TurnRecord = {
-      id: turnId,
-      sessionId,
-      seq: this.eventStore.getLastSeq(),
-      userMessage,
-      status: "running",
-      startedAt: new Date().toISOString(),
-    };
-    this.persistence.upsertTurn(turn);
-  }
-
-  private appendDemoEvent(event: WorkspaceEvent): void {
+  private async appendDemoEvent(event: WorkspaceEvent): Promise<void> {
     this.eventStore.append(event);
-    this.persistence.appendEvent({ ...event, seq: this.eventStore.getLastSeq() });
+    await this.persistence.appendEvent({ ...event, seq: this.eventStore.getLastSeq() });
 
     const completedAt = new Date().toISOString();
     if (event.type === "turn.completed" || event.type === "turn.failed" || event.type === "turn.cancelled") {
       const payload = event.payload as { turnId: string; error?: string };
-      const turn = this.persistence.getTurns(event.sessionId).find((candidate) => candidate.id === payload.turnId);
+      const turns = await this.persistence.getTurns(event.sessionId);
+      const turn = turns.find((candidate) => candidate.id === payload.turnId);
       if (turn) {
-        this.persistence.upsertTurn({
+        await this.persistence.upsertTurn({
           ...turn,
           status: event.type === "turn.completed" ? "completed" : event.type === "turn.cancelled" ? "cancelled" : "failed",
           completedAt,
@@ -354,9 +374,9 @@ export class CodeForgeServer {
       const status = payload.to === "completed" || payload.to === "failed" || payload.to === "cancelled"
         ? payload.to
         : undefined;
-      const session = status ? this.persistence.getSession(event.sessionId) : undefined;
+      const session = status ? await this.persistence.getSession(event.sessionId) : undefined;
       if (session && status) {
-        this.persistence.upsertSession({ ...session, status, updatedAt: completedAt });
+        await this.persistence.upsertSession({ ...session, status, updatedAt: completedAt });
       }
     }
   }
@@ -390,12 +410,12 @@ export class CodeForgeServer {
     }
 
     if (url.pathname.match(/^\/api\/sessions\/[^/]+\/turns\/[^/]+\/pause$/) && req.method === "POST") {
-      this.handlePauseTurn(req, res, url.pathname);
+      void this.handlePauseTurn(req, res, url.pathname);
       return;
     }
 
     if (url.pathname.match(/^\/api\/sessions\/[^/]+\/turns\/[^/]+\/resume$/) && req.method === "POST") {
-      this.handleResumeTurn(req, res, url.pathname);
+      void this.handleResumeTurn(req, res, url.pathname);
       return;
     }
 
@@ -487,56 +507,67 @@ export class CodeForgeServer {
     }
 
     if (url.pathname === "/api/sessions" && req.method === "GET") {
-      const sessions = this.persistence.listSessions();
-      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-      res.end(JSON.stringify(sessions));
+      void (async () => {
+        const sessions = await this.persistence.listSessions();
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify(sessions));
+      })().catch(() => this.sendJson(res, 500, { error: "Failed to list sessions" }));
       return;
     }
 
     if (url.pathname.startsWith("/api/sessions/") && url.pathname.endsWith("/events") && req.method === "GET") {
       const sessionId = url.pathname.replace("/api/sessions/", "").replace("/events", "");
-      const events = this.persistence.getEvents(sessionId);
-      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-      res.end(JSON.stringify(events));
+      void (async () => {
+        const events = await this.persistence.getEvents(sessionId);
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify(events));
+      })().catch(() => this.sendJson(res, 500, { error: "Failed to read events" }));
       return;
     }
 
     if (url.pathname.startsWith("/api/sessions/") && req.method === "GET") {
       const sessionId = url.pathname.replace("/api/sessions/", "");
-      const session = this.persistence.getSession(sessionId);
-      const turns = this.persistence.getTurns(sessionId);
-      const workItems = this.persistence.getWorkItems(sessionId);
-      const events = this.persistence.getEvents(sessionId);
-      const runtime = this.runtimes.get(sessionId);
-      const runtimeApprovals = runtime?.getAllPendingApprovals().map((a) => ({
-        approvalId: a.approvalId,
-        tool: a.tool,
-        action: a.action,
-        description: a.description,
-        risk: a.risk,
-        scope: a.scope,
-      })) ?? [];
-      const workflowApprovals = this.workflowService.getApprovalService().getAllPending().map((a) => ({
-        approvalId: a.approvalId,
-        tool: a.tool,
-        action: a.action,
-        description: a.description,
-        risk: a.risk,
-        scope: a.scope,
-      }));
-      const pendingApprovals = [...runtimeApprovals, ...workflowApprovals];
-      const pendingQuestions = runtime?.getAllPendingQuestions().map((q) => ({
-        questionId: q.questionId,
-        prompt: q.prompt,
-        options: q.options,
-      })) ?? [];
-      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-      res.end(JSON.stringify({ session, turns, workItems, events, pendingApprovals, pendingQuestions }));
+      void (async () => {
+        const session = await this.persistence.getSession(sessionId);
+        const turns = await this.persistence.getTurns(sessionId);
+        const workItems = await this.persistence.getWorkItems(sessionId);
+        const events = await this.persistence.getEvents(sessionId);
+        const runtime = this.runtimes.get(sessionId);
+        const runtimeApprovals = runtime?.getAllPendingApprovals().map((a) => ({
+          approvalId: a.approvalId,
+          tool: a.tool,
+          action: a.action,
+          description: a.description,
+          risk: a.risk,
+          scope: a.scope,
+        })) ?? [];
+        const workflowApprovals = this.workflowService.getApprovalService().getAllPending().map((a) => ({
+          approvalId: a.approvalId,
+          tool: a.tool,
+          action: a.action,
+          description: a.description,
+          risk: a.risk,
+          scope: a.scope,
+        }));
+        const pendingApprovals = [...runtimeApprovals, ...workflowApprovals];
+        const pendingQuestions = runtime?.getAllPendingQuestions().map((q) => ({
+          questionId: q.questionId,
+          prompt: q.prompt,
+          options: q.options,
+        })) ?? [];
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ session, turns, workItems, events, pendingApprovals, pendingQuestions }));
+      })().catch(() => this.sendJson(res, 500, { error: "Failed to read session" }));
       return;
     }
 
     if (url.pathname === "/api/workflow/run" && req.method === "POST") {
       this.handleWorkflowRun(req, res);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/workflow\/[^/]+\/steer$/) && req.method === "POST") {
+      void this.handleWorkflowSteer(req, res, url.pathname.split("/")[3]!);
       return;
     }
 
@@ -571,24 +602,24 @@ export class CodeForgeServer {
     }
 
     if (url.pathname === "/api/missions" && req.method === "GET") {
-      this.handleMissionList(res, url.searchParams.get("sessionId") ?? undefined);
+      void this.handleMissionList(res, url.searchParams.get("sessionId") ?? undefined);
       return;
     }
 
     const missionAction = url.pathname.match(/^\/api\/missions\/([^/]+)\/(pause|resume|cancel|steer)$/);
     if (missionAction && req.method === "POST") {
-      this.handleMissionAction(req, res, missionAction[1]!, missionAction[2]!);
+      void this.handleMissionAction(req, res, missionAction[1]!, missionAction[2]!);
       return;
     }
 
     const missionView = url.pathname.match(/^\/api\/missions\/([^/]+)\/(plan|milestones|evidence)$/);
     if (missionView && req.method === "GET") {
-      this.handleMissionView(res, missionView[1]!, missionView[2]!);
+      void this.handleMissionView(res, missionView[1]!, missionView[2]!);
       return;
     }
 
     if (url.pathname.match(/^\/api\/missions\/[^/]+$/) && req.method === "GET") {
-      this.handleMissionGet(res, url.pathname.split("/").pop()!);
+      void this.handleMissionGet(res, url.pathname.split("/").pop()!);
       return;
     }
 
@@ -598,30 +629,37 @@ export class CodeForgeServer {
     }
 
     if (url.pathname === "/api/deliveries" && req.method === "GET") {
-      this.sendJson(res, 200, this.deliveryService.listDeliveries(url.searchParams.get("sessionId") ?? undefined));
+      void (async () => {
+        const deliveries = await this.deliveryService.listDeliveries(url.searchParams.get("sessionId") ?? undefined);
+        this.sendJson(res, 200, deliveries);
+      })().catch(() => this.sendJson(res, 500, { error: "Failed to list deliveries" }));
       return;
     }
 
     const deliveryView = url.pathname.match(/^\/api\/deliveries\/([^/]+)\/(review-package|manifest)$/);
     if (deliveryView && req.method === "GET") {
-      this.handleDeliveryView(res, deliveryView[1]!, deliveryView[2]!);
+      void this.handleDeliveryView(res, deliveryView[1]!, deliveryView[2]!);
       return;
     }
 
     if (url.pathname.match(/^\/api\/deliveries\/[^/]+\/cancel$/) && req.method === "POST") {
       const id = url.pathname.split("/")[3]!;
-      const ok = this.deliveryService.cancelDelivery(id);
-      this.sendJson(res, ok ? 200 : 409, { ok });
+      void (async () => {
+        const ok = await this.deliveryService.cancelDelivery(id);
+        this.sendJson(res, ok ? 200 : 409, { ok });
+      })().catch(() => this.sendJson(res, 500, { ok: false }));
       return;
     }
 
     if (url.pathname.match(/^\/api\/deliveries\/[^/]+\/resume$/) && req.method === "POST") {
       const id = url.pathname.split("/")[3]!;
-      const delivery = this.deliveryService.getDelivery(id);
-      if (!delivery) { this.sendJson(res, 404, { ok: false, error: "Delivery not found" }); return; }
-      if (["ready", "blocked", "cancelled", "failed"].includes(delivery.status)) { this.sendJson(res, 409, { ok: false }); return; }
-      void this.deliveryService.resumeDelivery(id).catch(() => undefined);
-      this.sendJson(res, 202, { ok: true });
+      void (async () => {
+        const delivery = await this.deliveryService.getDelivery(id);
+        if (!delivery) { this.sendJson(res, 404, { ok: false, error: "Delivery not found" }); return; }
+        if (["ready", "blocked", "cancelled", "failed"].includes(delivery.status)) { this.sendJson(res, 409, { ok: false }); return; }
+        void this.deliveryService.resumeDelivery(id).catch(() => undefined);
+        this.sendJson(res, 202, { ok: true });
+      })().catch(() => undefined);
       return;
     }
 
@@ -632,8 +670,10 @@ export class CodeForgeServer {
     }
 
     if (url.pathname.match(/^\/api\/deliveries\/[^/]+$/) && req.method === "GET") {
-      const delivery = this.deliveryService.getDelivery(url.pathname.split("/").pop()!);
-      this.sendJson(res, delivery ? 200 : 404, delivery ?? { error: "Delivery not found" });
+      void (async () => {
+        const delivery = await this.deliveryService.getDelivery(url.pathname.split("/").pop()!);
+        this.sendJson(res, delivery ? 200 : 404, delivery ?? { error: "Delivery not found" });
+      })().catch(() => undefined);
       return;
     }
 
@@ -643,17 +683,22 @@ export class CodeForgeServer {
     }
 
     if (url.pathname === "/api/parallel-runs" && req.method === "GET") {
-      this.handleParallelRunList(res, url.searchParams.get("sessionId") ?? undefined);
+      void this.handleParallelRunList(res, url.searchParams.get("sessionId") ?? undefined);
       return;
     }
 
     if (url.pathname.match(/^\/api\/parallel-runs\/[^/]+\/cancel$/) && req.method === "POST") {
-      this.handleParallelRunCancel(res, url.pathname);
+      void this.handleParallelRunCancel(res, url.pathname);
+      return;
+    }
+
+    if (url.pathname.match(/^\/api\/parallel-runs\/[^/]+\/steer$/) && req.method === "POST") {
+      void this.handleParallelRunSteer(req, res, url.pathname.split("/")[3]!);
       return;
     }
 
     if (url.pathname.match(/^\/api\/parallel-runs\/[^/]+$/) && req.method === "GET") {
-      this.handleParallelRunGet(res, url.pathname);
+      void this.handleParallelRunGet(res, url.pathname);
       return;
     }
 
@@ -670,11 +715,11 @@ export class CodeForgeServer {
     this.serveStatic(req, res, url.pathname);
   }
 
-  private appendExecutionEvent(
+  private async appendExecutionEvent(
     sessionId: string,
     type: "execution.requested" | "execution.start_failed",
     payload: Record<string, unknown>,
-  ): void {
+  ): Promise<void> {
     const event = {
       type,
       timestamp: new Date().toISOString(),
@@ -683,7 +728,7 @@ export class CodeForgeServer {
       payload,
     } as WorkspaceEvent;
     this.eventStore.append(event);
-    this.persistence.appendEvent(event);
+    await this.persistence.appendEvent(event);
   }
 
   private classifyExecutionStartError(
@@ -718,10 +763,10 @@ export class CodeForgeServer {
       : { code: "CHAT_START_FAILED", message: "The chat turn could not start.", status: 500 };
   }
 
-  private markSessionFailed(sessionId: string): void {
-    const session = this.persistence.getSession(sessionId);
+  private async markSessionFailed(sessionId: string): Promise<void> {
+    const session = await this.persistence.getSession(sessionId);
     if (session) {
-      this.persistence.upsertSession({ ...session, status: "failed", updatedAt: new Date().toISOString() });
+      await this.persistence.upsertSession({ ...session, status: "failed", updatedAt: new Date().toISOString() });
     }
   }
 
@@ -759,7 +804,7 @@ export class CodeForgeServer {
           const activeTurns = runtime.getActiveTurns();
           const targetTurn = (data.turnId ? runtime.getTurn(data.turnId) : null) ?? activeTurns[0];
 
-          if (!targetTurn || (targetTurn.status !== "running" && targetTurn.status !== "paused" && targetTurn.status !== "waiting_for_approval" && targetTurn.status !== "waiting_for_question")) {
+          if (!targetTurn || (targetTurn.status !== "running" && targetTurn.status !== "paused" && targetTurn.status !== "waiting_for_approval" && targetTurn.status !== "waiting_for_question" && targetTurn.status !== "recovering")) {
             res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
             res.end(JSON.stringify({
               error: "NO_ACTIVE_TURN",
@@ -768,7 +813,7 @@ export class CodeForgeServer {
             return;
           }
 
-          await runtime.steerTurn(targetTurn.turnId, message, data.turnId);
+          await runtime.steerTurn(targetTurn.turnId, message, data.steerId);
           res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ ok: true, turnId: targetTurn.turnId, steered: true }));
           return;
@@ -776,8 +821,8 @@ export class CodeForgeServer {
 
         const executionMode = data.executionMode ?? MISSING_EXECUTION_MODE_FALLBACK;
         const requestId = data.turnId ?? crypto.randomUUID();
-        this.persistSession(sessionId, message);
-        this.appendExecutionEvent(sessionId, "execution.requested", {
+        await this.persistSession(sessionId, message);
+        await this.appendExecutionEvent(sessionId, "execution.requested", {
           requestId,
           executionMode,
           runtime: executionMode === "agent" ? "workflow" : "chat",
@@ -786,8 +831,8 @@ export class CodeForgeServer {
         if (executionMode === "agent") {
           if (!this.activeWorkspacePath) {
             const failure = this.classifyExecutionStartError(executionMode, new Error("No workspace path configured for workflow"));
-            this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode, code: failure.code, message: failure.message });
-            this.markSessionFailed(sessionId);
+            await this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode, code: failure.code, message: failure.message });
+            await this.markSessionFailed(sessionId);
             res.writeHead(failure.status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
             res.end(JSON.stringify({ error: failure.code, message: failure.message, executionMode, requestId }));
             return;
@@ -806,8 +851,8 @@ export class CodeForgeServer {
             return;
           } catch (e) {
             const failure = this.classifyExecutionStartError(executionMode, e);
-            this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode, code: failure.code, message: failure.message });
-            this.markSessionFailed(sessionId);
+            await this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode, code: failure.code, message: failure.message });
+            await this.markSessionFailed(sessionId);
             res.writeHead(failure.status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
             res.end(JSON.stringify({ error: failure.code, message: failure.message, executionMode, requestId }));
             return;
@@ -837,8 +882,8 @@ export class CodeForgeServer {
           turnId = await runtime.startTurn(message);
         } catch (error) {
           const failure = this.classifyExecutionStartError(executionMode, error);
-          this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode, code: failure.code, message: failure.message });
-          this.markSessionFailed(sessionId);
+          await this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode, code: failure.code, message: failure.message });
+          await this.markSessionFailed(sessionId);
           res.writeHead(failure.status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ error: failure.code, message: failure.message, executionMode, requestId }));
           return;
@@ -851,7 +896,7 @@ export class CodeForgeServer {
           runDemoRuntime({
             sessionId,
             turnId,
-            emit: (event) => this.appendDemoEvent(event),
+            emit: (event) => { void this.appendDemoEvent(event).catch(() => {}); },
           }).catch(() => {});
           res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ ok: true, turnId, executionMode, runtime: "chat", mode: "demo" }));
@@ -866,7 +911,7 @@ export class CodeForgeServer {
     });
   }
 
-  private handlePauseTurn(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+  private async handlePauseTurn(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): Promise<void> {
     const match = pathname.match(/\/api\/sessions\/([^/]+)\/turns\/([^/]+)\/pause$/);
     if (!match) {
       res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
@@ -874,12 +919,14 @@ export class CodeForgeServer {
       return;
     }
     const [, sessionId, turnId] = match;
-    const runtime = this.runtimes.get(sessionId ?? "");
-    if (!runtime) {
+    if (!sessionId || !(await this.persistence.getSession(sessionId))) {
       res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
       res.end(JSON.stringify({ error: "Session not found" }));
       return;
     }
+    // A restart has no in-memory runtime map. Constructing through this production path hydrates
+    // durable turn state so a persisted paused turn remains controllable.
+    const runtime = this.getOrCreateRuntime(sessionId);
 
     runtime.pauseTurn(turnId ?? "")
       .then(() => {
@@ -892,7 +939,7 @@ export class CodeForgeServer {
       });
   }
 
-  private handleResumeTurn(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
+  private async handleResumeTurn(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): Promise<void> {
     const match = pathname.match(/\/api\/sessions\/([^/]+)\/turns\/([^/]+)\/resume$/);
     if (!match) {
       res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
@@ -900,12 +947,12 @@ export class CodeForgeServer {
       return;
     }
     const [, sessionId, turnId] = match;
-    const runtime = this.runtimes.get(sessionId ?? "");
-    if (!runtime) {
+    if (!sessionId || !(await this.persistence.getSession(sessionId))) {
       res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
       res.end(JSON.stringify({ error: "Session not found" }));
       return;
     }
+    const runtime = this.getOrCreateRuntime(sessionId);
 
     runtime.resumeTurn(turnId ?? "")
       .then(() => {
@@ -976,21 +1023,21 @@ export class CodeForgeServer {
     const match = pathname.match(/\/api\/sessions\/([^/]+)\/intent-hold$/);
     const sessionId = match?.[1];
     if (!sessionId) { this.sendJson(res, 400, { error: "Invalid session" }); return; }
-    void this.readJsonBody(req).then((data) => {
-      this.userIntentHold.recoverStaleHolds();
+    void this.readJsonBody(req).then(async (data) => {
+      await this.userIntentHold.recoverStaleHolds();
       const action = data.action === "release" ? "release" : data.action === "request" ? "request" : undefined;
       if (!action) { this.sendJson(res, 400, { error: "action must be request or release" }); return; }
       const runtime = this.runtimes.get(sessionId);
-      const active = runtime?.getActiveTurns().find((turn) => turn.status === "running" || turn.status === "paused" || turn.status === "waiting_for_approval" || turn.status === "waiting_for_question");
+      const active = runtime?.getActiveTurns().find((turn) => turn.status === "running" || turn.status === "paused" || turn.status === "waiting_for_approval" || turn.status === "waiting_for_question" || turn.status === "recovering");
       const runId = typeof data.runId === "string" && data.runId ? data.runId : active?.turnId ?? sessionId;
       const turnId = typeof data.turnId === "string" && data.turnId ? data.turnId : active?.turnId;
       if (action === "request") {
-        const snapshot = this.userIntentHold.request(sessionId, runId, turnId);
+        const snapshot = await this.userIntentHold.request(sessionId, runId, turnId);
         this.sendJson(res, 200, { ok: true, active: true, generation: snapshot.generation, state: snapshot.state });
         return;
       }
       const generation = typeof data.generation === "number" ? data.generation : undefined;
-      const released = this.userIntentHold.release(sessionId, generation, "draft_cleared");
+      const released = await this.userIntentHold.release(sessionId, generation, "draft_cleared");
       this.sendJson(res, released ? 200 : 409, { ok: released, released });
     }).catch((error: unknown) => this.sendJson(res, 400, { error: error instanceof Error ? error.message : String(error) }));
   }
@@ -1225,17 +1272,17 @@ export class CodeForgeServer {
         }
         const workspacePath = typeof data.workspacePath === "string" && data.workspacePath ? data.workspacePath : this.activeWorkspacePath ?? undefined;
         if (!workspacePath) {
-          this.persistSession(sessionId, message);
-          this.appendExecutionEvent(sessionId, "execution.requested", { requestId, executionMode: "agent", runtime: "workflow" });
+          await this.persistSession(sessionId, message);
+          await this.appendExecutionEvent(sessionId, "execution.requested", { requestId, executionMode: "agent", runtime: "workflow" });
           const failure = this.classifyExecutionStartError("agent", new Error("No workspace set"));
-          this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode: "agent", code: failure.code, message: failure.message });
-          this.markSessionFailed(sessionId);
+          await this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode: "agent", code: failure.code, message: failure.message });
+          await this.markSessionFailed(sessionId);
           res.writeHead(failure.status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ error: failure.code, message: failure.message, executionMode: "agent", requestId }));
           return;
         }
-        this.persistSession(sessionId, message);
-        this.appendExecutionEvent(sessionId, "execution.requested", { requestId, executionMode: "agent", runtime: "workflow" });
+        await this.persistSession(sessionId, message);
+        await this.appendExecutionEvent(sessionId, "execution.requested", { requestId, executionMode: "agent", runtime: "workflow" });
         const result = await this.workflowService.startWorkflow({
           sessionId,
           message,
@@ -1255,8 +1302,8 @@ export class CodeForgeServer {
         const sessionId = typeof data.sessionId === "string" && data.sessionId ? data.sessionId : "default";
         const requestId = typeof data.turnId === "string" && data.turnId ? data.turnId : crypto.randomUUID();
         const failure = this.classifyExecutionStartError("agent", error);
-        this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode: "agent", code: failure.code, message: failure.message });
-        this.markSessionFailed(sessionId);
+        await this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode: "agent", code: failure.code, message: failure.message });
+        await this.markSessionFailed(sessionId);
         res.writeHead(failure.status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
         res.end(JSON.stringify({ error: failure.code, message: failure.message, executionMode: "agent", requestId }));
       }
@@ -1284,11 +1331,13 @@ export class CodeForgeServer {
       return;
     }
     // Also include persisted session data if available
-    const session = this.persistence.getSession(entry.task.sessionId);
-    const workItems = this.persistence.getWorkItems(entry.task.sessionId);
-    const events = this.persistence.getEvents(entry.task.sessionId);
-    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-    res.end(JSON.stringify({ task: entry.task, session, workItems, events }));
+    void (async () => {
+      const session = await this.persistence.getSession(entry.task.sessionId);
+      const workItems = await this.persistence.getWorkItems(entry.task.sessionId);
+      const events = await this.persistence.getEvents(entry.task.sessionId);
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ task: entry.task, session, workItems, events }));
+    })().catch(() => this.sendJson(res, 500, { error: "Failed to read workflow" }));
   }
 
   private handleWorkflowCancel(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
@@ -1306,6 +1355,26 @@ export class CodeForgeServer {
       res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
       res.end(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }));
     });
+  }
+
+  private async handleWorkflowSteer(req: http.IncomingMessage, res: http.ServerResponse, taskId: string): Promise<void> {
+    try {
+      const data = await this.readJsonBody(req);
+      const message = typeof data.message === "string" && data.message ? data.message : typeof data.steering === "string" ? data.steering : "";
+      if (!message) {
+        this.sendJson(res, 400, { error: "message is required" });
+        return;
+      }
+      const sessionId = typeof data.sessionId === "string" && data.sessionId ? data.sessionId : "default";
+      const result = await this.workflowService.steerWorkflow(taskId, sessionId, message, typeof data.steerId === "string" && data.steerId ? data.steerId : undefined);
+      if (!result.ok) {
+        this.sendJson(res, result.error === "WORKFLOW_NOT_FOUND" ? 404 : 409, { ok: false, error: result.error });
+        return;
+      }
+      this.sendJson(res, 200, { ok: true, ...(result.duplicate ? { duplicate: true } : {}) });
+    } catch (error) {
+      this.sendJson(res, 400, { error: error instanceof Error ? error.message : String(error) });
+    }
   }
 
   private handleOrchestratorRun(req: http.IncomingMessage, res: http.ServerResponse): void {
@@ -1382,7 +1451,7 @@ export class CodeForgeServer {
     res.end(JSON.stringify(runs));
   }
 
-  private getMissionSupervisor(sessionId: string): MissionSupervisor {
+  private async getMissionSupervisor(sessionId: string): Promise<MissionSupervisor> {
     const existing = this.missionSupervisors.get(sessionId);
     if (existing) return existing;
     const supervisor = createMissionSupervisor({
@@ -1395,13 +1464,14 @@ export class CodeForgeServer {
       },
     });
     this.missionSupervisors.set(sessionId, supervisor);
+    await supervisor.init();
     return supervisor;
   }
 
-  private findMission(missionId: string): { sessionId: string; supervisor: MissionSupervisor } | undefined {
-    const stored = this.persistence.getWorkItem(missionId);
+  private async findMission(missionId: string): Promise<{ sessionId: string; supervisor: MissionSupervisor } | undefined> {
+    const stored = await this.persistence.getWorkItem(missionId);
     if (!stored || stored.kind !== "mission") return undefined;
-    return { sessionId: stored.sessionId!, supervisor: this.getMissionSupervisor(stored.sessionId!) };
+    return { sessionId: stored.sessionId!, supervisor: await this.getMissionSupervisor(stored.sessionId!) };
   }
 
   private readJsonBody(req: http.IncomingMessage): Promise<Record<string, unknown>> {
@@ -1421,7 +1491,7 @@ export class CodeForgeServer {
   }
 
   private handleMissionCreate(req: http.IncomingMessage, res: http.ServerResponse): void {
-    void this.readJsonBody(req).then((data) => {
+    void this.readJsonBody(req).then(async (data) => {
       const sessionId = typeof data.sessionId === "string" && data.sessionId ? data.sessionId : `sess-${crypto.randomUUID()}`;
       const workspacePath = typeof data.workspacePath === "string" && data.workspacePath ? data.workspacePath : this.activeWorkspacePath;
       const goal = typeof data.goal === "string" ? data.goal : "";
@@ -1429,7 +1499,7 @@ export class CodeForgeServer {
         this.sendJson(res, 400, { error: !workspacePath ? "No workspace path specified" : "Goal is required" });
         return;
       }
-      const supervisor = this.getMissionSupervisor(sessionId);
+      const supervisor = await this.getMissionSupervisor(sessionId);
       const missionId = `mission-${crypto.randomUUID()}`;
       // Fire-and-forget: the mission is long-horizon and is observed through its durable state.
       void supervisor.startMission({
@@ -1445,10 +1515,10 @@ export class CodeForgeServer {
   }
 
   private handleDeliveryCreate(req: http.IncomingMessage, res: http.ServerResponse): void {
-    void this.readJsonBody(req).then((data) => {
+    void this.readJsonBody(req).then(async (data) => {
       if (typeof data.missionId !== "string" || !data.missionId) { this.sendJson(res, 400, { error: "missionId is required" }); return; }
-      const stored = this.persistence.getWorkItem(data.missionId);
-      const mission = stored?.kind === "mission" && stored.sessionId ? this.getMissionSupervisor(stored.sessionId).getMission(data.missionId) : undefined;
+      const stored = await this.persistence.getWorkItem(data.missionId);
+      const mission = stored?.kind === "mission" && stored.sessionId ? (await this.getMissionSupervisor(stored.sessionId)).getMission(data.missionId) : undefined;
       if (!mission || mission.status !== "completed" || !mission.finalRevision || mission.acceptanceCriteria.some((criterion) => criterion.mandatory && criterion.status !== "proven")) {
         this.sendJson(res, 409, { error: "DELIVERY_SOURCE_NOT_CERTIFIED" });
         return;
@@ -1460,8 +1530,8 @@ export class CodeForgeServer {
     }).catch((error: unknown) => this.sendJson(res, 400, { error: error instanceof Error ? error.message : String(error) }));
   }
 
-  private handleDeliveryView(res: http.ServerResponse, deliveryId: string, view: string): void {
-    const delivery = this.deliveryService.getDelivery(deliveryId);
+  private async handleDeliveryView(res: http.ServerResponse, deliveryId: string, view: string): Promise<void> {
+    const delivery = await this.deliveryService.getDelivery(deliveryId);
     if (!delivery) { this.sendJson(res, 404, { error: "Delivery not found" }); return; }
     if (view === "review-package") { this.sendJson(res, delivery.reviewPackage ? 200 : 409, delivery.reviewPackage ?? { error: "Review package not ready" }); return; }
     this.sendJson(res, 200, {
@@ -1514,20 +1584,21 @@ export class CodeForgeServer {
     this.sendJson(res, 409, { error: error instanceof Error ? error.message : String(error) });
   }
 
-  private handleMissionList(res: http.ServerResponse, sessionId?: string): void {
-    const missions = this.persistence.getWorkItemsByKind("mission").filter((item) => !sessionId || item.sessionId === sessionId);
+  private async handleMissionList(res: http.ServerResponse, sessionId?: string): Promise<void> {
+    const items = await this.persistence.getWorkItemsByKind("mission");
+    const missions = items.filter((item) => !sessionId || item.sessionId === sessionId);
     this.sendJson(res, 200, missions);
   }
 
-  private handleMissionGet(res: http.ServerResponse, missionId: string): void {
-    const found = this.findMission(missionId);
+  private async handleMissionGet(res: http.ServerResponse, missionId: string): Promise<void> {
+    const found = await this.findMission(missionId);
     const mission = found?.supervisor.getMission(missionId);
     if (!mission) { this.sendJson(res, 404, { error: "Mission not found" }); return; }
     this.sendJson(res, 200, mission);
   }
 
-  private handleMissionView(res: http.ServerResponse, missionId: string, view: string): void {
-    const found = this.findMission(missionId);
+  private async handleMissionView(res: http.ServerResponse, missionId: string, view: string): Promise<void> {
+    const found = await this.findMission(missionId);
     const mission = found?.supervisor.getMission(missionId);
     if (!mission) { this.sendJson(res, 404, { error: "Mission not found" }); return; }
     if (view === "plan") { this.sendJson(res, 200, { currentPlanVersion: mission.currentPlanVersion, planVersions: mission.planVersions }); return; }
@@ -1535,12 +1606,12 @@ export class CodeForgeServer {
     this.sendJson(res, 200, { acceptance: mission.acceptanceCriteria, evidence: mission.evidence, assumptions: mission.assumptions, memory: mission.memory });
   }
 
-  private handleMissionAction(req: http.IncomingMessage, res: http.ServerResponse, missionId: string, action: string): void {
-    const found = this.findMission(missionId);
+  private async handleMissionAction(req: http.IncomingMessage, res: http.ServerResponse, missionId: string, action: string): Promise<void> {
+    const found = await this.findMission(missionId);
     if (!found) { this.sendJson(res, 404, { error: "Mission not found" }); return; }
     const { supervisor } = found;
-    if (action === "pause") { const ok = supervisor.pauseMission(missionId); this.sendJson(res, ok ? 200 : 409, { ok }); return; }
-    if (action === "cancel") { const ok = supervisor.cancelMission(missionId); this.sendJson(res, ok ? 200 : 409, { ok }); return; }
+    if (action === "pause") { const ok = await supervisor.pauseMission(missionId); this.sendJson(res, ok ? 200 : 409, { ok }); return; }
+    if (action === "cancel") { const ok = await supervisor.cancelMission(missionId); this.sendJson(res, ok ? 200 : 409, { ok }); return; }
     if (action === "resume") {
       const mission = supervisor.getMission(missionId);
       if (!mission || !["paused", "executing", "planning", "evaluating", "replanning", "analyzing", "created"].includes(mission.status)) { this.sendJson(res, 409, { ok: false }); return; }
@@ -1548,7 +1619,7 @@ export class CodeForgeServer {
       this.sendJson(res, 202, { ok: true });
       return;
     }
-    void this.readJsonBody(req).then((data) => {
+    void this.readJsonBody(req).then(async (data) => {
       const type = typeof data.type === "string" ? data.type : "";
       if (!["clarification", "priority_change", "acceptance_change", "scope_reduction", "replan_request", "pause", "resume", "cancel"].includes(type)) {
         this.sendJson(res, 400, { error: "Unsupported steering type" });
@@ -1556,7 +1627,7 @@ export class CodeForgeServer {
       }
       // Steering arrives only through this authenticated product surface; repository and model
       // text can never reach it.
-      const steering = supervisor.steerMission(missionId, {
+      const steering = await supervisor.steerMission(missionId, {
         type: type as MissionSteering["type"],
         ...(typeof data.message === "string" ? { message: data.message } : {}),
         ...(Array.isArray(data.addedAcceptanceCriteria) ? { addedAcceptanceCriteria: data.addedAcceptanceCriteria as MissionSteering["addedAcceptanceCriteria"] } : {}),
@@ -1603,28 +1674,53 @@ export class CodeForgeServer {
     });
   }
 
-  private findParallelRun(runId: string): { sessionId: string; orchestrator: ParallelAutonomousRunOrchestrator } | undefined {
-    const stored = this.persistence.getWorkItem(runId);
+  private async findParallelRun(runId: string): Promise<{ sessionId: string; orchestrator: ParallelAutonomousRunOrchestrator } | undefined> {
+    const stored = await this.persistence.getWorkItem(runId);
     if (!stored || stored.kind !== "parallel_run") return undefined;
     return { sessionId: stored.sessionId, orchestrator: this.getParallelOrchestrator(stored.sessionId) };
   }
 
-  private handleParallelRunGet(res: http.ServerResponse, pathname: string): void {
+  private async handleParallelRunGet(res: http.ServerResponse, pathname: string): Promise<void> {
     const runId = pathname.match(/^\/api\/parallel-runs\/([^/]+)$/)?.[1];
-    const found = runId ? this.findParallelRun(runId) : undefined;
-    const run = found && runId ? found.orchestrator.getRun(runId) : undefined;
+    const found = runId ? await this.findParallelRun(runId) : undefined;
+    const run = found && runId ? await found.orchestrator.getRun(runId) : undefined;
     if (!run) { res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }); res.end(JSON.stringify({ error: "Parallel run not found" })); return; }
     res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }); res.end(JSON.stringify(run));
   }
 
-  private handleParallelRunList(res: http.ServerResponse, sessionId?: string): void {
-    const runs = this.persistence.getWorkItemsByKind("parallel_run").filter((item) => !sessionId || item.sessionId === sessionId);
+  private async handleParallelRunList(res: http.ServerResponse, sessionId?: string): Promise<void> {
+    const items = await this.persistence.getWorkItemsByKind("parallel_run");
+    const runs = items.filter((item) => !sessionId || item.sessionId === sessionId);
     res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }); res.end(JSON.stringify(runs));
   }
 
-  private handleParallelRunCancel(res: http.ServerResponse, pathname: string): void {
+  /** CF-17 targeted parallel steering: scope is mandatory and validated, never global. */
+  private async handleParallelRunSteer(req: http.IncomingMessage, res: http.ServerResponse, runId: string): Promise<void> {
+    try {
+      const data = await this.readJsonBody(req);
+      const message = typeof data.message === "string" && data.message ? data.message : "";
+      const workstreamId = typeof data.workstreamId === "string" && data.workstreamId ? data.workstreamId : "";
+      if (!message || !workstreamId) {
+        this.sendJson(res, 400, { ok: false, error: "message and workstreamId are required" });
+        return;
+      }
+      const sessionId = typeof data.sessionId === "string" && data.sessionId ? data.sessionId : (await this.findParallelRun(runId))?.sessionId ?? "default";
+      const found = await this.findParallelRun(runId);
+      const orchestrator = found?.orchestrator ?? this.getParallelOrchestrator(sessionId);
+      const result = await orchestrator.steerWorkstream(runId, workstreamId, message, typeof data.steerId === "string" && data.steerId ? data.steerId : undefined);
+      if (!result.ok) {
+        this.sendJson(res, result.error === "PARALLEL_RUN_NOT_FOUND" || result.error === "PARALLEL_WORKSTREAM_NOT_FOUND" ? 404 : 409, { ok: false, error: result.error });
+        return;
+      }
+      this.sendJson(res, 200, { ok: true, ...(result.duplicate ? { duplicate: true } : {}) });
+    } catch (error) {
+      this.sendJson(res, 400, { error: error instanceof Error ? error.message : String(error) });
+    }
+  }
+
+  private async handleParallelRunCancel(res: http.ServerResponse, pathname: string): Promise<void> {
     const runId = pathname.match(/^\/api\/parallel-runs\/([^/]+)\/cancel$/)?.[1];
-    const found = runId ? this.findParallelRun(runId) : undefined;
+    const found = runId ? await this.findParallelRun(runId) : undefined;
     const cancelled = Boolean(found && runId && found.orchestrator.cancelRun(runId));
     res.writeHead(cancelled ? 200 : 409, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }); res.end(JSON.stringify({ ok: cancelled }));
   }
@@ -1706,6 +1802,7 @@ export class CodeForgeServer {
         userId,
         demoMode,
         userIntentHold: this.userIntentHold,
+        afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
       });
       this.runtimes.set(sessionId, runtime);
     } else {

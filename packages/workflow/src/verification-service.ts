@@ -382,7 +382,7 @@ function notConfiguredReport(commands: string[]): import("./types.js").Verificat
 export async function runVerification(
   workspacePath: string,
   commandsOrVerifiers: string[] | import("./types.js").Verifier[] = DEFAULT_COMMANDS,
-  options: { signal?: AbortSignal; timeoutMs?: number; runId?: string; observer?: ForgeVerifyObserver } = {},
+  options: { signal?: AbortSignal; timeoutMs?: number; runId?: string; observer?: ForgeVerifyObserver; executionRevision?: number } = {},
 ): Promise<import("./types.js").VerificationReport> {
   let verifiers: import("./types.js").Verifier[] = [];
   if (Array.isArray(commandsOrVerifiers) && commandsOrVerifiers.length > 0) {
@@ -410,7 +410,7 @@ export async function runVerification(
   const definitions = adaptTrustedLegacyVerifiers(workspacePath, availableVerifiers.map((verifier) => ({ ...verifier, timeoutMs: verifier.timeoutMs ?? options.timeoutMs })));
   const registry = createVerifierRegistry(definitions);
   const policy: VerificationPolicy = { version: "legacy-workflow-policy-v1" as VerificationPolicy["version"] };
-  const plan = createVerificationPlan(registry, policy, { runId: options.runId ?? `legacy-${Date.now()}`, workspacePath, scope: "workspace" });
+  const plan = createVerificationPlan(registry, policy, { runId: options.runId ?? `legacy-${Date.now()}`, workspacePath, scope: "workspace", ...(options.executionRevision !== undefined ? { executionRevision: options.executionRevision } : {}) });
   const execution = await executeVerificationPlan(registry, plan, undefined, { signal: options.signal, observer: options.observer });
   const runResults = availableVerifiers.map((verifier, index) => {
     const planned = plan.verifiers[index]!;

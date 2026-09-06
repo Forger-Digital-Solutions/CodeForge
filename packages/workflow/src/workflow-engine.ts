@@ -140,6 +140,8 @@ export class WorkflowEngine {
   private task: WorkflowTask;
   private phase: WorkflowPhase = "received";
   private beforeSnapshots: Map<string, BeforeSnapshot> = new Map();
+  /** CF-17: steers accepted at the public boundary, consumed at the post-verification safe boundary. */
+  private readonly pendingSteers: Array<{ message: string; steerId?: string }> = [];
 
   constructor(options: WorkflowEngineOptions) {
     this.workspacePath = path.resolve(options.workspacePath);
@@ -174,6 +176,20 @@ export class WorkflowEngine {
 
   getTask(): WorkflowTask {
     return { ...this.task };
+  }
+
+  /**
+   * CF-17: accepts a user steer for this run. The message is queued in memory after the caller
+   * has durably recorded it (the WorkflowService persists a steer receipt and hold record before
+   * calling this) and is consumed only at the post-verification safe boundary, where it bumps the
+   * authoritative plan revision and forces ForgeVerify reconciliation. Steer text never reaches
+   * verification commands or completion authority — it can only demand MORE verification.
+   */
+  steer(message: string, steerId?: string): void {
+    if (this.TERMINAL_PHASES.has(this.phase as WorkflowPhase)) {
+      throw new Error(`Cannot steer workflow ${this.task.id} in terminal phase ${this.phase}`);
+    }
+    this.pendingSteers.push({ message, ...(steerId ? { steerId } : {}) });
   }
 
   private readonly TERMINAL_PHASES = new Set<WorkflowPhase>(["completed", "blocked", "failed", "cancelled"]);
@@ -249,6 +265,7 @@ export class WorkflowEngine {
       // 4. Create Plan
       this.setPhase("planning", "planning");
       let plan = createPlan(intent, context, repoMap, this.task.id);
+      plan = { ...plan, revision: 1 };
       this.task.planId = plan.id;
       this.onEvent?.({ type: "workflow.plan_created", phase: this.phase, payload: { planId: plan.id, steps: plan.steps.length } });
 
@@ -306,7 +323,7 @@ export class WorkflowEngine {
       let verificationAttempt = 1;
       this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { attempt: verificationAttempt, recommendation: verificationRecommendation } });
       await this.beforeVerificationDispatch?.();
-      let verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver });
+      let verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver, executionRevision: plan.revision });
       const verificationAttempts: VerificationResult[] = [verification];
       this.onEvent?.({ type: "workflow.verification_completed", phase: this.phase, payload: { attempt: verificationAttempt, verification } });
 
@@ -331,14 +348,38 @@ export class WorkflowEngine {
         verificationAttempt++;
         this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { attempt: verificationAttempt, recommendation: verificationRecommendation } });
         await this.beforeVerificationDispatch?.();
-        verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver });
+        verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver, executionRevision: plan.revision });
         verificationAttempts.push(verification);
         this.onEvent?.({ type: "workflow.verification_completed", phase: this.phase, payload: { attempt: verificationAttempt, verification } });
         analysis = analyzeFailures(verification);
         if (!analysis.hasFailures) break;
       }
 
-      // 10. Review Diff
+      // 10. Safe steering boundary: a steer accepted while the run was in flight is material —
+      // it increments the authoritative plan revision and forces a fresh ForgeVerify plan for the
+      // new revision. Evidence produced for a previous revision can never authorize completion of
+      // this one (the completion gate enforces the binding independently).
+      if (this.pendingSteers.length > 0) {
+        const consumed = this.pendingSteers.splice(0);
+        const fromRevision = plan.revision ?? 1;
+        const toRevision = fromRevision + 1;
+        plan = { ...plan, revision: toRevision, updatedAt: new Date().toISOString() };
+        this.onEvent?.({
+          type: "workflow.plan_revised",
+          phase: this.phase,
+          payload: { planId: plan.id, fromRevision, toRevision, ...(consumed.some((steer) => steer.steerId) ? { steerIds: consumed.map((steer) => steer.steerId).filter((steerId): steerId is string => Boolean(steerId)) } : {}) },
+        });
+        this.setPhase("verifying", "testing");
+        verificationAttempt++;
+        this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { attempt: verificationAttempt, recommendation: verificationRecommendation } });
+        await this.beforeVerificationDispatch?.();
+        verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver, executionRevision: plan.revision });
+        verificationAttempts.push(verification);
+        this.onEvent?.({ type: "workflow.verification_completed", phase: this.phase, payload: { attempt: verificationAttempt, verification } });
+        analysis = analyzeFailures(verification);
+      }
+
+      // 10b. Review Diff
       this.setPhase("reviewing", "reviewing");
       this.ensureNotAborted();
       const review = await reviewDiff(this.workspacePath, { beforeSnapshots: this.beforeSnapshots, signal: this.signal });
@@ -366,6 +407,8 @@ export class WorkflowEngine {
         budgetExhausted: analysis.hasFailures && attempts >= this.maxRepairAttempts,
         budgetDetail:
           attempts > 0 ? `Exhausted ${attempts}/${this.maxRepairAttempts} repair attempts` : undefined,
+        currentExecutionRevision: plan.revision,
+        verifiedExecutionRevision: (verification as import("./types.js").VerificationReport).forgeVerify?.plan.executionRevision,
       });
 
       const summary = [

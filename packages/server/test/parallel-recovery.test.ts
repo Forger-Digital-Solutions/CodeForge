@@ -98,7 +98,7 @@ describe("CF-08 restart-during-synthesis idempotency", () => {
   });
 
   afterEach(async () => {
-    try { live?.close(); } catch {}
+    try { await live?.close(); } catch {}
     live = undefined;
     await fs.rm(repoDir, { recursive: true, force: true });
     await fs.rm(worktreeDir, { recursive: true, force: true });
@@ -120,10 +120,12 @@ describe("CF-08 restart-during-synthesis idempotency", () => {
     const { orchestrator } = services(crashAtFirstSynthesisStep(crashing));
     await expect(orchestrator.startRun({ sessionId: SESSION_ID, workspacePath: repoDir, goal: "Implement three non-conflicting modules" })).rejects.toThrow(/PROCESS_TERMINATED/);
     const store = new ParallelRunStore(crashing);
-    const runId = crashing.getWorkItemsByKind("parallel_run")[0]!.id;
-    const run = store.get(runId)!;
-    const synthesisPath = createWorkspaceService({ persistence: crashing, worktreeParentDir: worktreeDir }).getWorkspace(run.synthesis!.worktreeId)!.rootPath;
-    crashing.close();
+    const runId = (await crashing.getWorkItemsByKind("parallel_run"))[0]!.id;
+    const run = await store.get(runId)!;
+    const synthesisWorkspaceService = createWorkspaceService({ persistence: crashing, worktreeParentDir: worktreeDir });
+    await synthesisWorkspaceService.init();
+    const synthesisPath = synthesisWorkspaceService.getWorkspace(run.synthesis!.worktreeId)!.rootPath;
+    await crashing.close();
     return { runId, baseRevision: run.baseRevision, synthesisPath };
   }
 
@@ -137,7 +139,7 @@ describe("CF-08 restart-during-synthesis idempotency", () => {
     const events: ParallelEvent[] = [];
     live = createSessionPersistence({ dbPath });
     const { orchestrator: fresh } = services(live, events);
-    const recovered = fresh.getRun(runId)!;
+    const recovered = await fresh.getRun(runId)!;
     expect(recovered.status).toBe("synthesizing");
     expect(recovered.synthesis!.order).toEqual(["alpha", "bravo", "charlie"]);
     expect(recovered.synthesis!.included.map((included) => included.workstreamId)).toEqual(["alpha"]);
@@ -153,7 +155,7 @@ describe("CF-08 restart-during-synthesis idempotency", () => {
     const resumedEvent = events.find((event) => event.type === "parallel.recovery.resumed");
     expect(resumedEvent?.payload).toMatchObject({ included: ["alpha"], pending: ["bravo", "charlie"] });
 
-    const final = fresh.getRun(runId)!;
+    const final = await fresh.getRun(runId)!;
     expect(final.synthesis!.included.map((included) => included.workstreamId)).toEqual(["alpha", "bravo", "charlie"]);
     expect(await countApplications(synthesisPath, baseRevision, alphaSource)).toBe(1);
     for (const included of final.synthesis!.included) expect(await countApplications(synthesisPath, baseRevision, included.sourceRevision)).toBe(1);
@@ -176,7 +178,7 @@ describe("CF-08 restart-during-synthesis idempotency", () => {
     const events: ParallelEvent[] = [];
     live = createSessionPersistence({ dbPath });
     const { orchestrator: fresh } = services(live, events);
-    const alphaSource = fresh.getRun(runId)!.synthesis!.included[0]!.sourceRevision;
+    const alphaSource = (await fresh.getRun(runId))!.synthesis!.included[0]!.sourceRevision;
     const result = await fresh.resumeRun(runId);
 
     expect(result).toMatchObject({ status: "blocked", error: "PARALLEL_RECOVERY_REVALIDATION_REQUIRED" });
@@ -184,7 +186,7 @@ describe("CF-08 restart-during-synthesis idempotency", () => {
     // No blind reapplication, no reset, no silent repair of the inconsistent history.
     expect(await git(synthesisPath, ["rev-parse", "HEAD"])).toBe(baseRevision);
     expect(await countApplications(synthesisPath, baseRevision, alphaSource)).toBe(0);
-    expect(fresh.getRun(runId)!.synthesis!.included.map((included) => included.workstreamId)).toEqual(["alpha"]);
+    expect((await fresh.getRun(runId))!.synthesis!.included.map((included) => included.workstreamId)).toEqual(["alpha"]);
     expect(events.some((event) => event.type === "synthesis.workstream_added")).toBe(false);
     expect(existsSync(path.join(repoDir, WORKSTREAM_FILES.alpha!))).toBe(false);
   }, 240_000);
@@ -205,6 +207,6 @@ describe("CF-08 restart-during-synthesis idempotency", () => {
     const result = await fresh.resumeRun("parallel-missing-worktree");
     expect(result).toMatchObject({ status: "blocked", error: "PARALLEL_RECOVERY_REVALIDATION_REQUIRED" });
     expect(events.find((event) => event.type === "parallel.recovery.revalidation_required")?.payload).toMatchObject({ reason: "SYNTHESIS_WORKSPACE_UNKNOWN" });
-    expect(fresh.getRun("parallel-missing-worktree")?.status).toBe("blocked");
+    expect((await fresh.getRun("parallel-missing-worktree"))?.status).toBe("blocked");
   });
 });

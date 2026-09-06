@@ -117,7 +117,7 @@ describe("CF-08 private agent context firewall", () => {
     await execFile("git", ["add", "."], { cwd: repoDir });
     await execFile("git", ["commit", "-m", "base"], { cwd: repoDir });
   });
-  afterEach(async () => { persistence.close(); await fs.rm(repoDir, { recursive: true, force: true }); await fs.rm(worktreeDir, { recursive: true, force: true }); });
+  afterEach(async () => { await persistence.close(); await fs.rm(repoDir, { recursive: true, force: true }); await fs.rm(worktreeDir, { recursive: true, force: true }); });
 
   it("keeps private Coder and Reviewer context inside its own agent while public artifacts still cross", async () => {
     const provider = new PrivacyProvider();
@@ -156,18 +156,18 @@ describe("CF-08 private agent context firewall", () => {
     }
 
     // Public orchestration surfaces stay clean.
-    const run = orchestrator.getRun(result.runId)!;
+    const run = await orchestrator.getRun(result.runId)!;
     const surfaces = [
       JSON.stringify(run.contracts),
       JSON.stringify(run.workstreams),
       JSON.stringify(run.synthesis),
       JSON.stringify(events),
-      JSON.stringify(persistence.getEvents(PRIVACY_SESSION)),
-      JSON.stringify(persistence.getWorkItem(result.runId)),
-      JSON.stringify(persistence.getAllWorkItems()),
+      JSON.stringify(await persistence.getEvents(PRIVACY_SESSION)),
+      JSON.stringify(await persistence.getWorkItem(result.runId)),
+      JSON.stringify(await persistence.getAllWorkItems()),
     ];
     for (const serialized of surfaces) { expect(serialized).not.toContain(CODER_A_PRIVATE); expect(serialized).not.toContain(REVIEWER_A_PRIVATE); }
-    expect(JSON.stringify(persistence.getAllWorkItems())).toContain("alpha");
+    expect(JSON.stringify(await persistence.getAllWorkItems())).toContain("alpha");
 
     // The public event stream still describes the whole lifecycle the product renders.
     const emitted = new Set(events.map((event) => event.type));

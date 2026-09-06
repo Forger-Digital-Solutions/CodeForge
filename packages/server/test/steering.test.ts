@@ -288,4 +288,33 @@ describe("Agent Steering Safety & Turn Concurrency (CF-06)", () => {
 
     release();
   });
+
+  it("accepts a steer through the public API while an approval is pending", async () => {
+    catalog.register({
+      providerId: "codeforge",
+      displayName: "Mock Provider",
+      isTestProvider: false,
+      models: () => [createGenericFreeRecord()],
+      streamChat: () => (async function* () {
+        yield { type: "tool_call_started", toolCallId: "approval-tool", toolName: "write_file" };
+        yield { type: "tool_call_completed", toolCallId: "approval-tool", toolName: "write_file", arguments: JSON.stringify({ path: "approved.txt", content: "approved" }) };
+        yield { type: "finish", finishReason: "tool_calls" as const };
+      })(),
+    } as any);
+    server = createServer({ port: 0, dbPath: ":memory:", providerCatalog: catalog, useRealRuntime: true } as any);
+    await server.start();
+    port = server.httpPort;
+    const started = await fetchJson(`http://localhost:${port}/api/send`, { sessionId: "approval-steer", message: "Write a file" });
+    expect(started.status).toBe(200);
+    for (let attempt = 0; attempt < 50; attempt++) {
+      const state = (server as any).runtimes.get("approval-steer")?.getTurn(started.body.turnId);
+      if (state?.status === "waiting_for_approval") break;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    const steered = await fetchJson(`http://localhost:${port}/api/send`, { sessionId: "approval-steer", message: "Use the existing helper", steer: true });
+    expect(steered).toMatchObject({ status: 200, body: { ok: true, turnId: started.body.turnId, steered: true } });
+    const runtime = (server as any).runtimes.get("approval-steer");
+    const approval = (server as any).eventStore.getBySession("approval-steer").find((event: any) => event.type === "approval.requested");
+    await runtime.resolveApproval(approval.payload.approvalId, "deny");
+  });
 });

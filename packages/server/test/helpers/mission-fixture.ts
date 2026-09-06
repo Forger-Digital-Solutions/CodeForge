@@ -148,14 +148,16 @@ export interface HarnessOptions {
   provider?: MissionProvider;
 }
 
-export function createHarness(options: HarnessOptions): MissionHarness {
+export async function createHarness(options: HarnessOptions): Promise<MissionHarness> {
   const persistence = options.persistence ?? createSessionPersistence(options.dbPath ? { dbPath: options.dbPath } : undefined);
+  await persistence.init();
   const provider = options.provider ?? new MissionProvider(options.script);
   const catalog = new InMemoryProviderCatalog();
   catalog.register(provider);
   const firewall = new ForgeZero();
   firewall.register(createGenericFreeRecord());
   const workspaceService = createWorkspaceService({ persistence, worktreeParentDir: options.worktreeDir });
+  await workspaceService.init();
   const agentRuntime = createAgentRuntime({ sessionId: options.sessionId, eventStore: new EventStore(), persistence, firewall, providerCatalog: catalog, workspacePath: options.repoDir });
   const missionEvents: MissionEvent[] = [];
   const parallelEvents: ParallelEvent[] = [];
@@ -164,6 +166,7 @@ export function createHarness(options: HarnessOptions): MissionHarness {
     onEvent: (event) => { missionEvents.push(event); },
     onParallelEvent: (event) => { parallelEvents.push(event); },
   });
+  await supervisor.init();
   return { supervisor, provider, persistence, workspaceService, missionEvents, parallelEvents };
 }
 

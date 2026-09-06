@@ -1,7 +1,7 @@
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import crypto from "node:crypto";
-import type { SessionPersistence } from "@codeforge/sessions";
+import type { ISessionPersistence } from "@codeforge/sessions";
 import { SecretScanner, containsSecret } from "@codeforge/secrets";
 import type { AutonomousMission } from "./mission-state.js";
 import type { ForgeWorkspace, WorkspaceService } from "./workspace-service.js";
@@ -20,15 +20,15 @@ const TERMINAL = new Set(["ready", "blocked", "cancelled", "failed"]);
 export interface DeliveryReviewerResult { verdict: "pass" | "blocked" | "code_repair_required"; findings: string[] }
 export interface DeliveryServiceOptions {
   workspaceService: WorkspaceService;
-  persistence?: SessionPersistence;
-  findMission: (missionId: string) => AutonomousMission | undefined;
+  persistence?: ISessionPersistence;
+  findMission: (missionId: string) => Promise<AutonomousMission | undefined>;
   policyService?: RepositoryPolicyService;
   analyzer?: ChangesetAnalyzer;
   /** Production delivery review is executed through this existing bounded agent runtime. */
   getAgentRuntime?: (sessionId: string) => AgentRuntime;
   /** Deterministic test seam only; production supplies getAgentRuntime. */
   reviewer?: (delivery: ChangeDelivery) => Promise<DeliveryReviewerResult>;
-  onEvent?: (event: DeliveryEvent) => void;
+  onEvent?: (event: DeliveryEvent) => void | Promise<void>;
 }
 export interface CreateDeliveryInput { missionId: string; deliveryId?: string; commitPlan?: CommitPlan }
 
@@ -65,30 +65,30 @@ export class DeliveryService {
     this.analyzer = options.analyzer ?? new ChangesetAnalyzer();
   }
 
-  getDelivery(id: string): ChangeDelivery | undefined { return this.store.get(id); }
-  listDeliveries(sessionId?: string): ChangeDelivery[] { return this.store.list(sessionId); }
+  async getDelivery(id: string): Promise<ChangeDelivery | undefined> { return await this.store.get(id); }
+  async listDeliveries(sessionId?: string): Promise<ChangeDelivery[]> { return await this.store.list(sessionId); }
 
   async resumeDelivery(id: string): Promise<ChangeDelivery> {
-    const delivery = this.store.get(id);
+    const delivery = await this.store.get(id);
     if (!delivery) throw new Error("DELIVERY_NOT_FOUND");
     if (TERMINAL.has(delivery.status)) return delivery;
-    const mission = this.options.findMission(delivery.missionId);
+    const mission = await this.options.findMission(delivery.missionId);
     const workspace = mission ? this.options.workspaceService.getWorkspace(mission.workspaceId) : undefined;
     if (!mission || !workspace || mission.status !== "completed" || mission.finalRevision !== delivery.sourceRevision) {
-      this.block(delivery, DELIVERY_ERRORS.DELIVERY_RECOVERY_REVALIDATION_REQUIRED);
+      await this.block(delivery, DELIVERY_ERRORS.DELIVERY_RECOVERY_REVALIDATION_REQUIRED);
       return delivery;
     }
     const controller = new AbortController();
     this.activeControllers.set(id, controller);
-    try { await this.run(delivery, workspace, mission, undefined, controller.signal); } catch (error) { if (!TERMINAL.has(delivery.status)) this.block(delivery, error instanceof Error ? error.message : String(error)); }
+    try { await this.run(delivery, workspace, mission, undefined, controller.signal); } catch (error) { if (!TERMINAL.has(delivery.status)) await this.block(delivery, error instanceof Error ? error.message : String(error)); }
     finally { this.activeControllers.delete(id); }
     return delivery;
   }
 
   async createDelivery(input: CreateDeliveryInput): Promise<ChangeDelivery> {
-    const existing = input.deliveryId ? this.store.get(input.deliveryId) : undefined;
+    const existing = input.deliveryId ? await this.store.get(input.deliveryId) : undefined;
     if (existing && TERMINAL.has(existing.status)) return existing;
-    const mission = this.options.findMission(input.missionId);
+    const mission = await this.options.findMission(input.missionId);
     if (!mission || mission.status !== "completed" || !mission.finalRevision || mission.acceptanceCriteria.some((criterion) => criterion.mandatory && criterion.status !== "proven")) {
       throw new Error(DELIVERY_ERRORS.DELIVERY_SOURCE_NOT_CERTIFIED);
     }
@@ -105,23 +105,23 @@ export class DeliveryService {
     try {
       await this.run(delivery, workspace, mission, input.commitPlan, controller.signal);
     } catch (error) {
-      if (!TERMINAL.has(delivery.status)) this.block(delivery, error instanceof Error ? error.message : String(error));
+      if (!TERMINAL.has(delivery.status)) await this.block(delivery, error instanceof Error ? error.message : String(error));
     } finally { this.activeControllers.delete(delivery.id); }
     return delivery;
   }
 
-  cancelDelivery(id: string): boolean {
-    const delivery = this.store.get(id);
+  async cancelDelivery(id: string): Promise<boolean> {
+    const delivery = await this.store.get(id);
     if (!delivery || TERMINAL.has(delivery.status)) return false;
     this.activeControllers.get(id)?.abort(DELIVERY_ERRORS.DELIVERY_CANCELLED);
     delivery.status = "cancelled"; delivery.error = DELIVERY_ERRORS.DELIVERY_CANCELLED;
-    this.save(delivery); this.store.emit(delivery, "delivery.cancelled", { branch: delivery.deliveryBranch, retained: true });
+    await this.save(delivery); await this.store.emit(delivery, "delivery.cancelled", { branch: delivery.deliveryBranch, retained: true });
     return true;
   }
 
   private async run(delivery: ChangeDelivery, workspace: ForgeWorkspace, mission: AutonomousMission, proposedPlan?: CommitPlan, signal?: AbortSignal): Promise<void> {
     this.throwIfCancelled(signal);
-    delivery.status = "analyzing"; this.save(delivery); this.store.emit(delivery, "delivery.analyzing");
+    delivery.status = "analyzing"; await this.save(delivery); await this.store.emit(delivery, "delivery.analyzing");
     delivery.policySnapshot = await this.policy.discover(workspace.rootPath, delivery.sourceRevision);
     delivery.analysis = await this.analyzer.analyze(workspace.rootPath, mission.baseRevision, delivery.sourceRevision);
     const diff = await this.git(workspace.rootPath, ["diff", "--binary", `${mission.baseRevision}..${delivery.sourceRevision}`]);
@@ -129,11 +129,11 @@ export class DeliveryService {
     if (/CF10_SECRET_DO_NOT_DELIVER_[A-Za-z0-9_-]+/.test(diff)) secretFindings.push({ type: "cf10_test_marker", line: 1 });
     if (secretFindings.length || containsSecret(diff)) {
       delivery.secretFindings = secretFindings;
-      this.save(delivery);
-      this.store.emit(delivery, "delivery.secret.detected", { findingTypes: secretFindings.map((finding) => finding.type) });
+      await this.save(delivery);
+      await this.store.emit(delivery, "delivery.secret.detected", { findingTypes: secretFindings.map((finding) => finding.type) });
       throw new Error(DELIVERY_ERRORS.DELIVERY_SECRET_DETECTED);
     }
-    this.save(delivery); this.store.emit(delivery, "delivery.analysis.completed", { changedFiles: allPaths(delivery).length, policyDigest: delivery.policySnapshot.digest });
+    await this.save(delivery); await this.store.emit(delivery, "delivery.analysis.completed", { changedFiles: allPaths(delivery).length, policyDigest: delivery.policySnapshot.digest });
 
     const plan = delivery.commitPlan ?? proposedPlan ?? defaultCommitPlan(allPaths(delivery));
     const planCheck = validateCommitPlan(plan, allPaths(delivery));
@@ -141,21 +141,21 @@ export class DeliveryService {
     for (const commit of plan.commits) if (!validCommitTitle(commit.title) || this.scanner.scan(commit.title).length) throw new Error(DELIVERY_ERRORS.DELIVERY_COMMIT_PLAN_INVALID);
 
     delivery.commitPlan = plan;
-    delivery.status = "packaging"; this.save(delivery);
+    delivery.status = "packaging"; await this.save(delivery);
     const child = delivery.deliveryWorkspaceId ? this.options.workspaceService.getWorkspace(delivery.deliveryWorkspaceId) : await this.options.workspaceService.createWorktree({
       parentWorkspaceId: workspace.id, base: "head", runId: delivery.id, label: "delivery", branchNamespace: "delivery", metadata: { missionId: delivery.missionId, sourceRevision: delivery.sourceRevision },
     });
     if (!child) throw new Error(DELIVERY_ERRORS.DELIVERY_RECOVERY_REVALIDATION_REQUIRED);
-    delivery.deliveryWorkspaceId = child.id; delivery.deliveryBranch = child.branch; this.save(delivery);
+    delivery.deliveryWorkspaceId = child.id; delivery.deliveryBranch = child.branch; await this.save(delivery);
     if (!delivery.packagingBasePrepared) {
       await this.git(child.rootPath, ["reset", "--mixed", mission.baseRevision], signal);
-      delivery.packagingBasePrepared = true; this.save(delivery);
+      delivery.packagingBasePrepared = true; await this.save(delivery);
     }
     await this.reconcileCommits(delivery, child, mission.baseRevision, plan, signal);
     delivery.sourceTree = (await this.git(workspace.rootPath, ["rev-parse", `${delivery.sourceRevision}^{tree}`])).trim();
-    this.save(delivery); this.store.emit(delivery, "delivery.packaging.started", { branch: child.branch });
+    await this.save(delivery); await this.store.emit(delivery, "delivery.packaging.started", { branch: child.branch });
     const lease = this.options.workspaceService.acquireLease(child.id, delivery.id, "write");
-    delivery.leaseId = lease.leaseId; this.save(delivery);
+    delivery.leaseId = lease.leaseId; await this.save(delivery);
     try {
       for (const planned of plan.commits) {
         this.throwIfCancelled(signal);
@@ -166,7 +166,7 @@ export class DeliveryService {
         await this.git(child.rootPath, ["commit", "-m", planned.title], signal);
         const sha = (await this.git(child.rootPath, ["rev-parse", "HEAD"], signal)).trim();
         delivery.commits = [...delivery.commits.filter((commit) => commit.id !== planned.id), { ...planned, sha }];
-        this.save(delivery); this.store.emit(delivery, "delivery.commit.created", { id: planned.id, sha, paths: planned.paths });
+        await this.save(delivery); await this.store.emit(delivery, "delivery.commit.created", { id: planned.id, sha, paths: planned.paths });
       }
     this.throwIfCancelled(signal);
     const staged = (await this.git(child.rootPath, ["status", "--porcelain"], signal)).trim();
@@ -174,21 +174,21 @@ export class DeliveryService {
     delivery.deliveryRevision = (await this.git(child.rootPath, ["rev-parse", "HEAD"])).trim();
     delivery.deliveryTree = (await this.git(child.rootPath, ["rev-parse", "HEAD^{tree}"])).trim();
     if (delivery.sourceTree !== delivery.deliveryTree) throw new Error(DELIVERY_ERRORS.DELIVERY_TREE_MISMATCH);
-    this.save(delivery); this.store.emit(delivery, "delivery.tree.equivalent", { sourceTree: delivery.sourceTree, deliveryTree: delivery.deliveryTree });
+    await this.save(delivery); await this.store.emit(delivery, "delivery.tree.equivalent", { sourceTree: delivery.sourceTree, deliveryTree: delivery.deliveryTree });
 
     const policyCurrent = await this.policy.isCurrent(workspace.rootPath, delivery.policySnapshot, delivery.sourceRevision);
     if (!policyCurrent) throw new Error(DELIVERY_ERRORS.DELIVERY_POLICY_STALE);
     const target = (await this.git(workspace.rootPath, ["rev-parse", "HEAD"])).trim();
     if (target !== delivery.targetRevision) throw new Error(DELIVERY_ERRORS.DELIVERY_TARGET_DIVERGED);
 
-    delivery.status = "verifying"; this.save(delivery);
+    delivery.status = "verifying"; await this.save(delivery);
     const commands = verificationCommands(delivery.policySnapshot);
     if (!commands.length) throw new Error(DELIVERY_ERRORS.DELIVERY_VERIFICATION_FAILED);
     delivery.verification = await this.verify(child.rootPath, commands, delivery.deliveryRevision, signal, delivery.id, delivery.sessionId);
     if (delivery.verification.some((entry) => entry.exitCode !== 0)) throw new Error(DELIVERY_ERRORS.DELIVERY_VERIFICATION_FAILED);
-    this.save(delivery); this.store.emit(delivery, "delivery.verification.completed", { commands, passed: true });
+    await this.save(delivery); await this.store.emit(delivery, "delivery.verification.completed", { commands, passed: true });
 
-    delivery.status = "reviewing"; this.save(delivery);
+    delivery.status = "reviewing"; await this.save(delivery);
     const review = await this.review(delivery, child, signal);
     delivery.reviewPackage = this.reviewPackage(delivery, review);
     if (review.verdict === "code_repair_required") throw new Error(DELIVERY_ERRORS.DELIVERY_CODE_REPAIR_REQUIRED);
@@ -198,10 +198,10 @@ export class DeliveryService {
     const finalTarget = (await this.git(workspace.rootPath, ["rev-parse", "HEAD"])).trim();
     if (finalTarget !== delivery.targetRevision) throw new Error(DELIVERY_ERRORS.DELIVERY_TARGET_DIVERGED);
     this.throwIfCancelled(signal);
-    delivery.status = "ready"; delivery.error = undefined; this.save(delivery); this.store.emit(delivery, "delivery.ready", { branch: delivery.deliveryBranch, revision: delivery.deliveryRevision });
+    delivery.status = "ready"; delivery.error = undefined; await this.save(delivery); await this.store.emit(delivery, "delivery.ready", { branch: delivery.deliveryBranch, revision: delivery.deliveryRevision });
     } finally {
       this.options.workspaceService.releaseLease(lease.leaseId, delivery.id);
-      delivery.leaseId = undefined; this.save(delivery);
+      delivery.leaseId = undefined; await this.save(delivery);
     }
   }
 
@@ -253,14 +253,14 @@ export class DeliveryService {
       reconciled.push({ ...expected, sha });
     }
     if (delivery.commits.length > reconciled.length) throw new Error(DELIVERY_ERRORS.DELIVERY_RECOVERY_REVALIDATION_REQUIRED);
-    delivery.commits = reconciled; this.save(delivery);
+    delivery.commits = reconciled; await this.save(delivery);
   }
 
   private async review(delivery: ChangeDelivery, workspace: ForgeWorkspace, signal?: AbortSignal): Promise<DeliveryReviewerResult> {
     const runtime = this.options.getAgentRuntime?.(delivery.sessionId);
     if (runtime) {
       const runId = `${delivery.id}:delivery-review`;
-      delivery.reviewerRunId = runId; this.save(delivery);
+      delivery.reviewerRunId = runId; await this.save(delivery);
       const response = await runtime.executeAgentRun({
         runId, agentId: "reviewer", role: "reviewer", goal: `Review local delivery ${delivery.id}; report only a structured review verdict.`,
         workspaceId: workspace.id, workspacePath: workspace.rootPath,
@@ -279,8 +279,8 @@ export class DeliveryService {
     return (await execFile("git", args, { cwd, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" }, signal })).stdout;
   }
   private throwIfCancelled(signal?: AbortSignal): void { if (signal?.aborted) throw new Error(DELIVERY_ERRORS.DELIVERY_CANCELLED); }
-  private save(delivery: ChangeDelivery): void { delivery.updatedAt = new Date().toISOString(); this.store.save(delivery); }
-  private block(delivery: ChangeDelivery, error: string): void { delivery.status = error === DELIVERY_ERRORS.DELIVERY_CANCELLED ? "cancelled" : "blocked"; delivery.error = error as DeliveryErrorCode; this.save(delivery); this.store.emit(delivery, "delivery.blocked", { error: delivery.error, branch: delivery.deliveryBranch }); }
+  private async save(delivery: ChangeDelivery): Promise<void> { delivery.updatedAt = new Date().toISOString(); await this.store.save(delivery); }
+  private async block(delivery: ChangeDelivery, error: string): Promise<void> { delivery.status = error === DELIVERY_ERRORS.DELIVERY_CANCELLED ? "cancelled" : "blocked"; delivery.error = error as DeliveryErrorCode; await this.save(delivery); await this.store.emit(delivery, "delivery.blocked", { error: delivery.error, branch: delivery.deliveryBranch }); }
 }
 
 export function createDeliveryService(options: DeliveryServiceOptions): DeliveryService { return new DeliveryService(options); }

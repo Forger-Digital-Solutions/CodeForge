@@ -125,6 +125,27 @@ export class ApprovalService {
     return { approvalId, promise, record };
   }
 
+  /**
+   * Restores an approval boundary after process restart. There is deliberately no continuation
+   * attached: resolving this record only authorizes recovery replanning, never the interrupted
+   * tool invocation.
+   */
+  restorePending(record: ApprovalRecord): void {
+    if (this.records.has(record.approvalId)) return;
+    this.records.set(record.approvalId, record);
+    if (record.state !== "pending") return;
+    const timeoutMs = Math.max(0, record.expiresAt - Date.now());
+    const timer = setTimeout(() => {
+      const pending = this.pendings.get(record.approvalId);
+      if (!pending || pending.record.state !== "pending") return;
+      pending.record.state = "expired";
+      pending.record.resolvedAt = Date.now();
+      this.pendings.delete(record.approvalId);
+      pending.resolver({ approved: false, state: "expired", reason: "Approval expired" });
+    }, timeoutMs);
+    this.pendings.set(record.approvalId, { record, timer, resolver: () => undefined });
+  }
+
   resolve(approvalId: string, decision: ApprovalDecision): ApprovalGateResult {
     const pending = this.pendings.get(approvalId);
     if (!pending) {

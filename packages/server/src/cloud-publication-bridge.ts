@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import type { SessionPersistence, WorkItem } from "@codeforge/sessions";
+import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import type { ChangeDelivery } from "./delivery-state.js";
 import {
   CloudPublicationClient,
@@ -31,8 +31,8 @@ export interface CloudPublicationRecord {
 }
 
 export interface CloudPublicationBridgeOptions {
-  persistence?: SessionPersistence;
-  getDelivery: (id: string) => ChangeDelivery | undefined;
+  persistence?: ISessionPersistence;
+  getDelivery: (id: string) => Promise<ChangeDelivery | undefined>;
   /** Undefined when Cloud publication is not configured for this desktop install. */
   client?: CloudPublicationClient;
 }
@@ -58,8 +58,8 @@ export class CloudPublicationBridge {
     return Boolean(this.options.client);
   }
 
-  get(deliveryId: string): CloudPublicationRecord | undefined {
-    const items = this.options.persistence?.getWorkItemsByKind("cloud_publication") ?? [];
+  async get(deliveryId: string): Promise<CloudPublicationRecord | undefined> {
+    const items = (await this.options.persistence?.getWorkItemsByKind("cloud_publication")) ?? [];
     for (const item of items) {
       const record = this.parse(item);
       if (record?.deliveryId === deliveryId) return record;
@@ -67,8 +67,9 @@ export class CloudPublicationBridge {
     return undefined;
   }
 
-  list(deliveryId?: string): CloudPublicationRecord[] {
-    return (this.options.persistence?.getWorkItemsByKind("cloud_publication") ?? [])
+  async list(deliveryId?: string): Promise<CloudPublicationRecord[]> {
+    const items = (await this.options.persistence?.getWorkItemsByKind("cloud_publication")) ?? [];
+    return items
       .map((item) => this.parse(item))
       .filter((item): item is CloudPublicationRecord => Boolean(item) && (!deliveryId || item!.deliveryId === deliveryId));
   }
@@ -85,11 +86,11 @@ export class CloudPublicationBridge {
   }
 
   async publish(deliveryId: string): Promise<CloudPublicationRecord> {
-    const delivery = this.requireDelivery(deliveryId);
+    const delivery = await this.requireDelivery(deliveryId);
     if (!this.options.client) {
       return this.save(this.seed(delivery, "authorization_required", CLOUD_PUBLICATION_ERRORS.CLOUD_NOT_CONFIGURED));
     }
-    const existing = this.get(deliveryId);
+    const existing = await this.get(deliveryId);
     if (existing?.status === "completed") return existing;
 
     const record = existing ?? this.seed(delivery, "preparing");
@@ -106,7 +107,7 @@ export class CloudPublicationBridge {
   }
 
   async refresh(deliveryId: string): Promise<CloudPublicationRecord | undefined> {
-    const record = this.get(deliveryId);
+    const record = await this.get(deliveryId);
     if (!record?.cloudPublicationId || !this.options.client) return record;
     if (TERMINAL_CLOUD_PUBLICATION_STATES.includes(record.status as CloudPublicationView["state"])) return record;
     try {
@@ -117,7 +118,7 @@ export class CloudPublicationBridge {
   }
 
   async retry(deliveryId: string): Promise<CloudPublicationRecord> {
-    const record = this.get(deliveryId);
+    const record = await this.get(deliveryId);
     if (!record) throw new CloudPublicationError(CLOUD_PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY);
     if (!this.options.client) return this.applyError(record, new CloudPublicationError(CLOUD_PUBLICATION_ERRORS.CLOUD_NOT_CONFIGURED));
     if (TERMINAL_CLOUD_PUBLICATION_STATES.includes(record.status as CloudPublicationView["state"])) return record;
@@ -161,7 +162,7 @@ export class CloudPublicationBridge {
 
   private save(record: CloudPublicationRecord): CloudPublicationRecord {
     record.updatedAt = new Date().toISOString();
-    this.options.persistence?.upsertWorkItem(record as unknown as WorkItem);
+    this.options.persistence?.upsertWorkItem(record as unknown as WorkItem).catch(() => {});
     return record;
   }
 
@@ -171,8 +172,8 @@ export class CloudPublicationBridge {
     return candidate as unknown as CloudPublicationRecord;
   }
 
-  private requireDelivery(deliveryId: string): ChangeDelivery {
-    const delivery = this.options.getDelivery(deliveryId);
+  private async requireDelivery(deliveryId: string): Promise<ChangeDelivery> {
+    const delivery = await this.options.getDelivery(deliveryId);
     if (!delivery || delivery.status !== "ready") throw new CloudPublicationError(CLOUD_PUBLICATION_ERRORS.DELIVERY_NOT_LOCAL_READY);
     return delivery;
   }

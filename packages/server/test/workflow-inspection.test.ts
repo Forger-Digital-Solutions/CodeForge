@@ -48,7 +48,7 @@ describe("WorkflowService run inspection evidence", () => {
       if (attempt === 99) throw new Error("workflow fixture did not settle within 2 seconds");
     }
 
-    const inspection = persistence.getWorkItems("session-a").find((item): item is Extract<WorkItem, { kind: "run_inspection" }> => item.kind === "run_inspection");
+    const inspection = (await persistence.getWorkItems("session-a")).find((item): item is Extract<WorkItem, { kind: "run_inspection" }> => item.kind === "run_inspection");
     expect(inspection).toBeDefined();
     expect(inspection).toMatchObject({ runId: started.taskId, executionMode: "agent" });
     expect(inspection?.diffs.map((diff) => diff.path)).toContain("src/calc.ts");
@@ -59,7 +59,7 @@ describe("WorkflowService run inspection evidence", () => {
     expect(inspection?.verification).toMatchObject({ verificationComplete: true, requiredCount: 1, satisfiedCount: 1 });
     expect(JSON.stringify(inspection)).not.toContain("sk-proj-12345678901234567890");
 
-    const forgeVerifyRecords = persistence.getWorkItems("session-a").filter((item) => item.kind === "verification");
+    const forgeVerifyRecords = (await persistence.getWorkItems("session-a")).filter((item) => item.kind === "verification");
     expect(forgeVerifyRecords.map((item) => item.recordType).sort()).toEqual(["attempt", "evidence", "plan"]);
     expect(forgeVerifyRecords.find((item) => item.recordType === "evidence")?.status).toBe("passed");
 
@@ -69,11 +69,11 @@ describe("WorkflowService run inspection evidence", () => {
     expect(events.some((event) => event.type === "forgeverify.plan_created")).toBe(true);
     expect(events.some((event) => event.type === "forgeverify.evidence_created")).toBe(true);
     expect(events.some((event) => event.type === "workflow.completion_decided")).toBe(true);
-    persistence.close();
+    await persistence.close();
     const reloaded = createSessionPersistence({ dbPath: persistencePath });
-    const recovered = reloaded.getWorkItems("session-a").filter((item) => item.kind === "verification");
+    const recovered = (await reloaded.getWorkItems("session-a")).filter((item) => item.kind === "verification");
     expect(recovered).toHaveLength(3);
     expect(recovered.find((item) => item.recordType === "evidence")?.status).toBe("passed");
-    reloaded.close();
+    await reloaded.close();
   });
 });

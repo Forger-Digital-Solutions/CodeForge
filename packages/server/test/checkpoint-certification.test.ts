@@ -71,11 +71,12 @@ describe("CF-05 Final Certification — Exact Staging, Restart Recovery & Ref Va
     expect(chk.commitSha).toMatch(/^[0-9a-f]{40}$/);
 
     // 2. Destroy service A and close persistence A
-    persistenceA.close();
+    await persistenceA.close();
 
     // 3. Open NEW persistence B against same SQLite DB file and NEW service B
     const persistenceB = createSessionPersistence({ dbPath: dbFile });
     const svcB = createCheckpointService(ws, persistenceB);
+    await svcB.init();
 
     // Production discovery: service B rehydrates from DB automatically
     const recoveredChk = svcB.getCheckpoint("chk-cert-001");
@@ -101,7 +102,7 @@ describe("CF-05 Final Certification — Exact Staging, Restart Recovery & Ref Va
     expect(await readFile(join(ws, "fileA.txt"), "utf-8")).toBe("A_modified\n");
     expect(await readFile(join(ws, "new_file.txt"), "utf-8")).toBe("untracked content\n");
 
-    persistenceB.close();
+    await persistenceB.close();
   });
 
   it("CF-05B: Exact Git Index / Staging Restore with mixed staged/unstaged/untracked state", async () => {
