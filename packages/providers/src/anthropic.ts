@@ -1,4 +1,4 @@
-import type { CredentialStore, ProviderAdapter, ProviderHealthResponse, ProviderModel } from "./index.js";
+import type { CredentialStore, ProviderAdapter, ProviderHealthResponse, ProviderModel, PromptCacheCapability } from "./index.js";
 import { ProviderError } from "./index.js";
 import { redactSecrets } from "./redact.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
@@ -70,6 +70,28 @@ export class AnthropicAdapter implements ProviderAdapter {
     return [];
   }
 
+  /**
+   * FG-1A. Anthropic prompt caching is explicit (cache_control breakpoints) and reports
+   * cache_read_input_tokens / cache_creation_input_tokens telemetry. Model families outside
+   * the verified list report unsupported so unknown models are invoked unchanged (fail closed).
+   */
+  getPromptCacheCapability(modelId: string): PromptCacheCapability {
+    const normalized = modelId.toLowerCase();
+    const cacheCapable =
+      /^claude-(3-5-haiku|3-5-sonnet|3-7-sonnet|opus-4|sonnet-4|haiku-4-5)/.test(normalized) ||
+      normalized.startsWith("claude-3-7") ||
+      normalized.startsWith("claude-3-5");
+    if (!cacheCapable) {
+      return { mode: "unsupported", telemetryAvailable: false };
+    }
+    return {
+      mode: "explicit",
+      telemetryAvailable: true,
+      minCacheableTokens: 1024,
+      constraints: ["cache_control is applied to the system block and the final tool definition only", "message ordering and content are never reordered for cacheability"],
+    };
+  }
+
   async chat(req: ChatRequest): Promise<ChatResponse> {
     const key = this.getApiKey();
     const controller = new AbortController();
@@ -118,6 +140,8 @@ export class AnthropicAdapter implements ProviderAdapter {
       const decoder = new TextDecoder();
       let buffer = "";
       const toolBlocks = new Map<number, { id: string; name: string; args: string }>();
+      let startUsage: { inputTokens?: number; cachedInputTokens?: number; cacheWriteTokens?: number } = {};
+      let usageYielded = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -160,9 +184,37 @@ export class AnthropicAdapter implements ProviderAdapter {
               yield { type: "tool_call_completed", toolCallId: tb.id, toolName: tb.name, arguments: tb.args };
               toolBlocks.delete(idx);
             }
+          } else if (evt.type === "message_start" && evt.message?.usage) {
+            // message_start is where Anthropic reports input and cache token telemetry.
+            startUsage = {
+              ...(typeof evt.message.usage.input_tokens === "number" ? { inputTokens: evt.message.usage.input_tokens } : {}),
+              ...(typeof evt.message.usage.cache_read_input_tokens === "number" ? { cachedInputTokens: evt.message.usage.cache_read_input_tokens } : {}),
+              ...(typeof evt.message.usage.cache_creation_input_tokens === "number" ? { cacheWriteTokens: evt.message.usage.cache_creation_input_tokens } : {}),
+            };
           } else if (evt.type === "message_delta" && evt.usage) {
-            yield { type: "usage", usage: { inputTokens: evt.usage.input_tokens ?? 0, outputTokens: evt.usage.output_tokens ?? 0 } };
+            usageYielded = true;
+            yield {
+              type: "usage",
+              usage: {
+                inputTokens: startUsage.inputTokens ?? evt.usage.input_tokens ?? 0,
+                outputTokens: evt.usage.output_tokens ?? 0,
+                ...(startUsage.cachedInputTokens !== undefined ? { cachedInputTokens: startUsage.cachedInputTokens } : {}),
+                ...(startUsage.cacheWriteTokens !== undefined ? { cacheWriteTokens: startUsage.cacheWriteTokens } : {}),
+              },
+            };
           } else if (evt.type === "message_stop") {
+            if (!usageYielded && (startUsage.inputTokens !== undefined || startUsage.cachedInputTokens !== undefined)) {
+              usageYielded = true;
+              yield {
+                type: "usage",
+                usage: {
+                  inputTokens: startUsage.inputTokens ?? 0,
+                  outputTokens: 0,
+                  ...(startUsage.cachedInputTokens !== undefined ? { cachedInputTokens: startUsage.cachedInputTokens } : {}),
+                  ...(startUsage.cacheWriteTokens !== undefined ? { cacheWriteTokens: startUsage.cacheWriteTokens } : {}),
+                },
+              };
+            }
             yield { type: "finish", finishReason: "stop" };
             return;
           }
@@ -239,14 +291,28 @@ export class AnthropicAdapter implements ProviderAdapter {
       messages,
       stream,
     };
-    if (systemParts.length > 0) body.system = systemParts.join("\n\n");
+    const cacheCapability = this.getPromptCacheCapability(req.model);
+    const cacheControl = cacheCapability.mode === "explicit" ? { type: "ephemeral" } : undefined;
+    if (systemParts.length > 0) {
+      if (cacheControl) {
+        // Block form exists only so the stable system prefix can carry a cache breakpoint;
+        // the joined text, ordering, and content are identical to the non-cached form.
+        body.system = [{ type: "text", text: systemParts.join("\n\n"), cache_control: cacheControl }];
+      } else {
+        body.system = systemParts.join("\n\n");
+      }
+    }
     if (req.temperature !== undefined) body.temperature = req.temperature;
     if (req.tools && req.tools.length > 0) {
-      body.tools = req.tools.map((t) => ({
+      const tools: Array<Record<string, unknown>> = req.tools.map((t) => ({
         name: t.function.name,
         description: t.function.description,
         input_schema: t.function.parameters ?? { type: "object", properties: {} },
       }));
+      if (cacheControl) {
+        tools[tools.length - 1] = { ...tools[tools.length - 1], cache_control: cacheControl };
+      }
+      body.tools = tools;
     }
     return body;
   }
@@ -270,7 +336,12 @@ export class AnthropicAdapter implements ProviderAdapter {
           finishReason: res.stop_reason === "tool_use" ? "tool_calls" : "stop",
         },
       ],
-      usage: res.usage ? { inputTokens: res.usage.input_tokens ?? 0, outputTokens: res.usage.output_tokens ?? 0 } : undefined,
+      usage: res.usage ? {
+        inputTokens: res.usage.input_tokens ?? 0,
+        outputTokens: res.usage.output_tokens ?? 0,
+        ...(typeof res.usage.cache_read_input_tokens === "number" ? { cachedInputTokens: res.usage.cache_read_input_tokens } : {}),
+        ...(typeof res.usage.cache_creation_input_tokens === "number" ? { cacheWriteTokens: res.usage.cache_creation_input_tokens } : {}),
+      } : undefined,
     };
   }
 
@@ -292,7 +363,7 @@ interface AnthropicResponse {
   model?: string;
   content?: AnthropicBlock[];
   stop_reason?: string;
-  usage?: { input_tokens?: number; output_tokens?: number };
+  usage?: { input_tokens?: number; output_tokens?: number; cache_read_input_tokens?: number; cache_creation_input_tokens?: number };
 }
 
 interface AnthropicStreamEvent {
@@ -301,6 +372,7 @@ interface AnthropicStreamEvent {
   content_block?: { type?: string; id?: string; name?: string };
   delta?: { type?: string; text?: string; partial_json?: string };
   usage?: { input_tokens?: number; output_tokens?: number };
+  message?: { usage?: { input_tokens?: number; output_tokens?: number; cache_read_input_tokens?: number; cache_creation_input_tokens?: number } };
 }
 
 function safeJson(s: string): unknown {

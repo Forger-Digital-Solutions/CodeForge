@@ -1,7 +1,26 @@
 import crypto from "node:crypto";
 
-export const FORGE_GREEN_POLICY_VERSION = "cf15-1";
-export const FORGE_GREEN_FEATURE_VERSION = "context-prompt-dedupe-1";
+import { FORGE_GREEN_POLICY_VERSION } from "./constants.js";
+
+export { FORGE_GREEN_POLICY_VERSION, FORGE_GREEN_FEATURE_VERSION } from "./constants.js";
+export {
+  FORGE_GREEN_CACHE_SCHEMA_VERSION,
+  canonicalCacheKey,
+  type CanonicalCacheIdentity,
+} from "./canonical-cache.js";
+export {
+  FORGE_GREEN_LEDGER_SCHEMA_VERSION,
+  ForgeGreenLedgerCollector,
+  createForgeGreenLedgerCollector,
+  type EfficiencyMeasurement,
+  type EfficiencyLedgerEvent,
+  type ForgeGreenMechanism,
+  type ForgeGreenLedgerIdentity,
+  type ForgeGreenLedgerRecord,
+  type ForgeGreenLedgerTotals,
+} from "./ledger.js";
+
+export const FORGE_GREEN_LEDGER_WORK_ITEM_KIND = "forgegreen_ledger";
 
 export type EfficiencyScore = number & { readonly __forgeGreenEfficiencyScore: unique symbol };
 export type WorkAvoidanceEstimate = number & { readonly __forgeGreenWorkAvoidanceEstimate: unique symbol };
@@ -23,7 +42,14 @@ export type ForgeGreenReasonCode =
   | "stale_generation_rejected"
   | "corrupt_cache_rejected"
   | "user_intent_hold"
-  | "forgegreen_disabled";
+  | "forgegreen_disabled"
+  | "provider_prompt_cache_reported"
+  | "tool_output_compressed"
+  | "duplicate_action_suppressed"
+  | "no_progress_interrupted"
+  | "canonical_cache_hit"
+  | "canonical_cache_miss"
+  | "canonical_cache_invalidated";
 
 export interface ContextCacheIdentity {
   workspaceId: string;
@@ -63,7 +89,19 @@ export interface EfficiencyReceipt {
   fallbackUsed: boolean;
   reasonCodes: ForgeGreenReasonCode[];
   policyVersion: string;
-  promptCacheAccounting: "unavailable";
+  /** FG-1A: `provider_reported` only when the provider itself reported cached input tokens. */
+  promptCacheAccounting: "unavailable" | "provider_reported";
+  /** FG-1A: provider-reported cached input tokens observed during the run, when known. */
+  providerCachedInputTokens?: number;
+  /** FG-1B: measured model-context bytes avoided by deterministic tool-output compression. */
+  toolOutputBytesAvoided?: number;
+  /** FG-1C: duplicate read-only actions suppressed against unchanged state. */
+  duplicateActionsSuppressed?: number;
+  /** FG-1C: bounded no-progress interruptions. */
+  noProgressInterruptions?: number;
+  /** FG-1D: canonical analysis cache outcomes. */
+  canonicalCacheHits?: number;
+  canonicalCacheMisses?: number;
   interactiveEfficiency?: InteractiveEfficiencyMetrics;
 }
 
@@ -312,7 +350,23 @@ export class ForgeGreenAdvisor {
     };
   }
 
-  createReceipt(input: { workspaceId: string; repositoryGeneration: number; requestedTokens?: number; deliveredTokens?: number; fallbackUsed?: boolean; reasonCodes?: ForgeGreenReasonCode[]; recommendedVerification?: string[]; canonicalVerificationExecuted?: string[]; interactiveEfficiency?: InteractiveEfficiencyMetrics }): EfficiencyReceipt {
+  createReceipt(input: {
+    workspaceId: string;
+    repositoryGeneration: number;
+    requestedTokens?: number;
+    deliveredTokens?: number;
+    fallbackUsed?: boolean;
+    reasonCodes?: ForgeGreenReasonCode[];
+    recommendedVerification?: string[];
+    canonicalVerificationExecuted?: string[];
+    interactiveEfficiency?: InteractiveEfficiencyMetrics;
+    providerCachedInputTokens?: number;
+    toolOutputBytesAvoided?: number;
+    duplicateActionsSuppressed?: number;
+    noProgressInterruptions?: number;
+    canonicalCacheHits?: number;
+    canonicalCacheMisses?: number;
+  }): EfficiencyReceipt {
     const snapshot = this.snapshot();
     return {
       receiptId: hash(stableJson({ input, snapshot, policyVersion: this.policyVersion })).slice(0, 24),
@@ -331,7 +385,13 @@ export class ForgeGreenAdvisor {
       fallbackUsed: Boolean(input.fallbackUsed || snapshot.fallbackCount > 0),
       reasonCodes: [...new Set(input.reasonCodes ?? [])],
       policyVersion: this.policyVersion,
-      promptCacheAccounting: "unavailable",
+      promptCacheAccounting: typeof input.providerCachedInputTokens === "number" && input.providerCachedInputTokens > 0 ? "provider_reported" : "unavailable",
+      ...(typeof input.providerCachedInputTokens === "number" && input.providerCachedInputTokens > 0 ? { providerCachedInputTokens: input.providerCachedInputTokens } : {}),
+      ...(typeof input.toolOutputBytesAvoided === "number" && input.toolOutputBytesAvoided > 0 ? { toolOutputBytesAvoided: input.toolOutputBytesAvoided } : {}),
+      ...(typeof input.duplicateActionsSuppressed === "number" && input.duplicateActionsSuppressed > 0 ? { duplicateActionsSuppressed: input.duplicateActionsSuppressed } : {}),
+      ...(typeof input.noProgressInterruptions === "number" && input.noProgressInterruptions > 0 ? { noProgressInterruptions: input.noProgressInterruptions } : {}),
+      ...(typeof input.canonicalCacheHits === "number" && input.canonicalCacheHits > 0 ? { canonicalCacheHits: input.canonicalCacheHits } : {}),
+      ...(typeof input.canonicalCacheMisses === "number" && input.canonicalCacheMisses > 0 ? { canonicalCacheMisses: input.canonicalCacheMisses } : {}),
       ...(input.interactiveEfficiency ? { interactiveEfficiency: input.interactiveEfficiency } : {}),
     };
   }

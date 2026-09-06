@@ -36,9 +36,9 @@ const commands = [
   // fixed-string match, no regex) and any earlier unmarked scoped rule this
   // script or a manual fix may have left behind, then write exactly one
   // fresh, narrowly-scoped rule.
-  `grep -vF '${MARKER_BEGIN}' ${HBA_PATH} | grep -vF '${MARKER_END}' | grep -vF 'host codeforge_test_db codeforge_test' > /tmp/pg_hba.new`,
+  `grep -vF '${MARKER_BEGIN}' ${HBA_PATH} | grep -vF '${MARKER_END}' | grep -vF 'host codeforge_test_db codeforge_test' | grep -vF 'host fg1_ledger_e2e codeforge_test' > /tmp/pg_hba.new`,
   `mv /tmp/pg_hba.new ${HBA_PATH}`,
-  `printf '%s\\n' "${MARKER_BEGIN}" "host codeforge_test_db codeforge_test $WSL_SUBNET md5" "${MARKER_END}" >> ${HBA_PATH}`,
+  `printf '%s\\n' "${MARKER_BEGIN}" "host codeforge_test_db codeforge_test $WSL_SUBNET md5" "host fg1_ledger_e2e codeforge_test $WSL_SUBNET md5" "${MARKER_END}" >> ${HBA_PATH}`,
   // Idempotent listen_addresses: only append if no active (uncommented)
   // listen_addresses line already exists.
   `grep -Eq "^listen_addresses[[:space:]]*=" ${CONF_PATH} || echo "listen_addresses = '*'" >> ${CONF_PATH}`,

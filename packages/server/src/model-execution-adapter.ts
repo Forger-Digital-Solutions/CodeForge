@@ -1,4 +1,4 @@
-import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition as ProviderToolDefinition } from "@codeforge/providers";
+import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition as ProviderToolDefinition, PromptCacheCapability } from "@codeforge/providers";
 import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
 import { ERROR_CODES, type AgentModelSelection, type AgentUsage } from "@codeforge/agent";
@@ -30,6 +30,14 @@ export interface ModelExecutionResponse {
   optimization?: {
     duplicateSuppressed: boolean;
     promptPrefixCacheHit: boolean;
+    /** FG-1A provider prompt-cache telemetry. `measured` only when the provider itself
+     * reported cached input tokens; otherwise `unavailable` and no savings are claimed. */
+    providerPromptCache?: {
+      capability: PromptCacheCapability;
+      classification: "measured" | "unavailable";
+      cachedInputTokens?: number;
+      cacheWriteTokens?: number;
+    };
   };
 }
 
@@ -194,6 +202,28 @@ export class ModelExecutionAdapter {
   }
 
   /**
+   * FG-1A provider-neutral capability resolution. Missing adapter support, malformed metadata,
+   * or resolver failure all degrade to `unsupported`: the provider is invoked exactly as before
+   * and no cache savings may be claimed. This must never be required for correctness.
+   */
+  resolvePromptCacheCapability(providerId: string, modelId: string): PromptCacheCapability {
+    const provider = this.providerCatalog.get(providerId);
+    if (!provider || typeof provider.getPromptCacheCapability !== "function") {
+      return { mode: "unsupported", telemetryAvailable: false };
+    }
+    try {
+      const capability = provider.getPromptCacheCapability(modelId);
+      const validModes = ["unsupported", "automatic", "explicit"];
+      if (!capability || typeof capability.mode !== "string" || !validModes.includes(capability.mode)) {
+        return { mode: "unsupported", telemetryAvailable: false };
+      }
+      return capability;
+    } catch {
+      return { mode: "unsupported", telemetryAvailable: false };
+    }
+  }
+
+  /**
    * Execute model request to full completion.
    */
   async execute(req: ModelExecutionRequest): Promise<ModelExecutionResponse> {
@@ -220,9 +250,19 @@ export class ModelExecutionAdapter {
     const run = this.forgeGreen
       ? await this.forgeGreen.runDeduplicated(requestKey, () => this.executeUncached({ ...req, modelSelection: resolved }), req.signal)
       : { value: await this.executeUncached({ ...req, modelSelection: resolved }), suppressed: false };
+    const cached = run.value.usage.cachedTokens;
     return {
       ...run.value,
-      optimization: { duplicateSuppressed: run.suppressed, promptPrefixCacheHit: prefixHit },
+      optimization: {
+        duplicateSuppressed: run.suppressed,
+        promptPrefixCacheHit: prefixHit,
+        providerPromptCache: {
+          capability: this.resolvePromptCacheCapability(resolved.providerId, resolved.modelId),
+          ...(typeof cached === "number"
+            ? { classification: "measured" as const, cachedInputTokens: cached, ...(typeof run.value.usage.cacheWriteTokens === "number" ? { cacheWriteTokens: run.value.usage.cacheWriteTokens } : {}) }
+            : { classification: "unavailable" as const }),
+        },
+      },
     };
   }
 
@@ -279,7 +319,8 @@ export class ModelExecutionAdapter {
           usage = {
             inputTokens: event.usage.inputTokens,
             outputTokens: event.usage.outputTokens,
-            cachedTokens: undefined,
+            cachedTokens: event.usage.cachedInputTokens,
+            cacheWriteTokens: event.usage.cacheWriteTokens,
             provider: providerId,
             model: modelId,
             requestCount: 1,

@@ -10,7 +10,7 @@ import {
   type ExecutionMode,
   type WorkspaceEvent,
 } from "@codeforge/protocol";
-import { EventStore, createSessionPersistence, type SessionDatabaseDriver, type SessionRecord, type TurnRecord, type WorkItem } from "@codeforge/sessions";
+import { EventStore, createSessionPersistence, createForgeGreenCacheStore, type ForgeGreenCacheStore, type SessionDatabaseDriver, type SessionRecord, type TurnRecord, type WorkItem } from "@codeforge/sessions";
 import {
   ForgeZero,
   createDevelopmentEntitlementProvider,
@@ -98,11 +98,14 @@ export class CodeForgeServer {
   private repositoryIndexSnapshot: Record<string, unknown> = { state: "NOT_INDEXED", enabled: true, indexVersion: REPOSITORY_INDEX_VERSION, parserVersion: REPOSITORY_PARSER_VERSION };
   private readonly userIntentHold: UserIntentHoldController;
   private readonly afterApprovalResolvedBoundary?: () => Promise<void>;
+  private readonly configuredDbPath?: string;
+  private forgeGreenCacheStore?: ForgeGreenCacheStore;
 
   constructor(options: ServerOptions = {}) {
     this.port = options.port ?? 3210;
     this.host = options.host ?? process.env.CODEFORGE_BIND_HOST ?? "127.0.0.1";
     this.webDist = options.webDist ?? path.join(__dirname, "..", "web", "dist");
+    this.configuredDbPath = options.dbPath;
     this.persistence = createSessionPersistence({
       ...(options.dbPath ? { dbPath: options.dbPath } : {}),
       ...(options.databaseUrl ? { databaseUrl: options.databaseUrl } : {}),
@@ -272,6 +275,12 @@ export class CodeForgeServer {
   async init(): Promise<void> {
     await this.persistence.init();
     await this.workspaceService.init();
+    // FG-1D: persistent canonical analysis cache, stored beside the application session
+    // database (never inside a user repository). Unavailable store = cache disabled = recompute.
+    const cachePath = this.configuredDbPath
+      ? path.join(path.dirname(path.resolve(this.configuredDbPath)), "forgegreen-cache.db")
+      : path.join(os.homedir(), ".codeforge", "forgegreen-cache.db");
+    this.forgeGreenCacheStore = await createForgeGreenCacheStore(cachePath).catch(() => undefined);
     const sessions = await this.persistence.listSessions();
     const persistedEvents = (await Promise.all(sessions.map((session) => this.persistence.getEvents(session.id))))
       .flat()
@@ -329,6 +338,9 @@ export class CodeForgeServer {
     const repoIntel = this.repositoryIntelligence;
     this.repositoryIntelligence = null;
     await repoIntel?.closeWorkspace();
+    const cacheStore = this.forgeGreenCacheStore;
+    this.forgeGreenCacheStore = undefined;
+    await cacheStore?.close().catch(() => undefined);
     this.persistence.close();
   }
 
@@ -1802,6 +1814,7 @@ export class CodeForgeServer {
         userId,
         demoMode,
         userIntentHold: this.userIntentHold,
+        forgeGreenCacheStore: this.forgeGreenCacheStore,
         afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
       });
       this.runtimes.set(sessionId, runtime);

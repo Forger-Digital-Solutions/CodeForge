@@ -1,4 +1,4 @@
-import type { CredentialStore, ProviderAdapter, ProviderHealthResponse, ProviderModel } from "./index.js";
+import type { CredentialStore, ProviderAdapter, ProviderHealthResponse, ProviderModel, PromptCacheCapability } from "./index.js";
 import { ProviderError } from "./index.js";
 import { redactSecrets } from "./redact.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
@@ -202,6 +202,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
                 inputTokens: parsed.usage.prompt_tokens ?? 0,
                 outputTokens: parsed.usage.completion_tokens ?? 0,
                 totalTokens: parsed.usage.total_tokens,
+                ...cachedFieldsFromOaiUsage(parsed.usage),
               },
             };
           }
@@ -280,8 +281,26 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         finishReason: (c.finish_reason as ChatResponse["choices"][number]["finishReason"]) ?? "stop",
       })),
       usage: res.usage
-        ? { inputTokens: res.usage.prompt_tokens ?? 0, outputTokens: res.usage.completion_tokens ?? 0, totalTokens: res.usage.total_tokens }
+        ? {
+            inputTokens: res.usage.prompt_tokens ?? 0,
+            outputTokens: res.usage.completion_tokens ?? 0,
+            totalTokens: res.usage.total_tokens,
+            ...cachedFieldsFromOaiUsage(res.usage),
+          }
         : undefined,
+    };
+  }
+
+  /**
+   * FG-1A. OpenAI-compatible endpoints may cache stable prefixes opaquely; no request shaping
+   * is ever applied. cached_tokens telemetry is parsed only when the provider reports it, so
+   * providers that do not cache (or do not report) produce no measured savings.
+   */
+  getPromptCacheCapability(_modelId: string): PromptCacheCapability {
+    return {
+      mode: "automatic",
+      telemetryAvailable: true,
+      constraints: ["cached_tokens is counted only when the provider reports prompt_tokens_details"],
     };
   }
 
@@ -303,12 +322,24 @@ interface OaiChatResponse {
   id?: string;
   model?: string;
   choices?: Array<{ message?: { content?: string; tool_calls?: Array<{ id: string; function: { name: string; arguments: string } }> }; finish_reason?: string }>;
-  usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
+  usage?: OaiUsage;
 }
 
 interface OaiStreamChunk {
   choices?: Array<{ delta?: { content?: string; tool_calls?: Array<{ id?: string; function?: { name?: string; arguments?: string } }> }; finish_reason?: string }>;
-  usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
+  usage?: OaiUsage;
+}
+
+interface OaiUsage {
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  total_tokens?: number;
+  prompt_tokens_details?: { cached_tokens?: number };
+}
+
+function cachedFieldsFromOaiUsage(usage: OaiUsage): { cachedInputTokens?: number } {
+  const cached = usage.prompt_tokens_details?.cached_tokens;
+  return typeof cached === "number" && cached >= 0 ? { cachedInputTokens: cached } : {};
 }
 
 async function safeText(res: Response): Promise<string> {

@@ -387,6 +387,7 @@ export class OpencodeAdapter implements ProviderAdapter {
           inputTokens: res.usage.input_tokens ?? res.usage.prompt_tokens ?? 0,
           outputTokens: res.usage.output_tokens ?? res.usage.completion_tokens ?? 0,
           totalTokens: res.usage.total_tokens ?? (res.usage.input_tokens ?? 0) + (res.usage.output_tokens ?? 0),
+          ...cachedFieldsFromOpencodeUsage(res.usage),
         }
       : undefined;
     return {
@@ -477,6 +478,11 @@ interface OpencodeResponsesResponse {
     completion_tokens?: number;
     input_tokens_details?: { cached_tokens?: number };
   };
+}
+
+function cachedFieldsFromOpencodeUsage(usage: OpencodeResponsesResponse["usage"]): { cachedInputTokens?: number } {
+  const cached = usage?.input_tokens_details?.cached_tokens;
+  return typeof cached === "number" && cached >= 0 ? { cachedInputTokens: cached } : {};
 }
 
 interface OpencodeResponsesStreamChunk {

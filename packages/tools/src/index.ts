@@ -33,11 +33,21 @@ export interface ToolExecutionRecord {
   toolName: string;
   arguments: Record<string, unknown>;
   success: boolean;
+  /** Authoritative post-redaction (bounded) result. Never replaced by compression. */
   output: string;
   error?: string;
   durationMs: number;
   readOnly: boolean;
   truncated: boolean;
+  /** FG-1B: bounded model-context representation when compression applied; absent = model sees `output`. */
+  modelContextOutput?: string;
+  /** FG-1B: compression provenance retained alongside the authoritative artifact. */
+  compression?: {
+    originalBytes: number;
+    compressedBytes: number;
+    strategies: string[];
+    artifactRef: string;
+  };
 }
 
 export const MAX_TOOL_OUTPUT_BYTES = 64 * 1024;
@@ -898,3 +908,5 @@ export function createToolRegistry(): ToolRegistry {
 export function createToolBroker(registry?: ToolRegistry): ToolBroker {
   return new ToolBroker(registry);
 }
+
+export { compressToolOutput, type CompressToolOutputOptions, type CompressedToolOutput } from "./compress.js";

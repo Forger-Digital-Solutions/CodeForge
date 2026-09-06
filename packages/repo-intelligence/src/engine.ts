@@ -414,7 +414,13 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       const now = new Date().toISOString();
       const branch = execGit(identity.realRoot, ["branch", "--show-current"]);
       const head = currentHead ?? execGit(identity.realRoot, ["rev-parse", "HEAD"]);
-      const nextGen = (Number(this.meta("generation")) || 0) + 1;
+      // Content identity first: the generation describes the indexed content state, so a
+      // refresh that added, changed, or deleted nothing must not advance it. Consumers
+      // (context cache, analysis caches) key on this generation — bumping it on no-op
+      // refreshes would silently invalidate every cached artifact after every read.
+      const previousGeneration = Number(this.meta("generation")) || 0;
+      const contentChanged = added.length + changed.length + deleted.length > 0;
+      const nextGen = contentChanged ? previousGeneration + 1 : previousGeneration;
       this.writeMeta("generation", String(nextGen));
       this.writeMeta("branch", branch ?? ""); this.writeMeta("head", head ?? "");
       this.writeMeta("updated_at", now); if (!this.meta("created_at")) this.writeMeta("created_at", now);

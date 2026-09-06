@@ -112,6 +112,8 @@ export interface AgentUsage {
   inputTokens: number;
   outputTokens: number;
   cachedTokens?: number;
+  /** FG-1A: provider-reported tokens written to its prompt cache. */
+  cacheWriteTokens?: number;
   reasoningTokens?: number;
   provider?: string;
   model?: string;
@@ -126,7 +128,9 @@ export type AgentStopReason =
   | "cancelled"
   | "error"
   | "blocked"
-  | "max_turns";
+  | "max_turns"
+  /** FG-1C: bounded no-progress escalation — repeated identical work with unchanged state. */
+  | "no_progress_detected";
 
 export interface AgentFinding {
   id: string;
@@ -810,6 +814,8 @@ export const ERROR_CODES = {
   AGENT_MODEL_TURN_LIMIT: "AGENT_MODEL_TURN_LIMIT",
   AGENT_TOOL_LIMIT: "AGENT_TOOL_LIMIT",
   AGENT_TOOL_LOOP_DETECTED: "AGENT_TOOL_LOOP_DETECTED",
+  /** FG-1C: bounded escalation for repeated identical work against unchanged state. */
+  AGENT_NO_PROGRESS_DETECTED: "AGENT_NO_PROGRESS_DETECTED",
   AGENT_INVALID_STRUCTURED_OUTPUT: "AGENT_INVALID_STRUCTURED_OUTPUT",
   TOOL_UNKNOWN: "TOOL_UNKNOWN",
   TOOL_ARGUMENT_INVALID: "TOOL_ARGUMENT_INVALID",

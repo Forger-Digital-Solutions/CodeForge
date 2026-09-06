@@ -9,6 +9,8 @@ export interface ProviderAdapter {
   chat(req: ChatRequest): Promise<ChatResponse>;
   streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent>;
   healthCheck(): Promise<ProviderHealthResponse>;
+  /** FG-1A: optional so existing adapters stay valid. Absent is equivalent to unsupported. */
+  getPromptCacheCapability?(modelId: string): PromptCacheCapability;
 }
 
 /**
@@ -50,6 +52,25 @@ export interface ProviderModel {
 }
 
 export type ProviderRegistry = Map<string, ProviderAdapter>;
+
+/**
+ * FG-1A provider-neutral prompt/prefix caching capability. Providers describe themselves;
+ * the runtime never hard-codes vendor behavior. `unsupported` is the fail-closed default:
+ * when metadata is missing or ambiguous, the provider must be invoked exactly as before and
+ * no cache savings may be claimed.
+ */
+export interface PromptCacheCapability {
+  /** unsupported: no prompt-cache optimization exists or is verifiable for this model.
+   * automatic: the provider caches stable prefixes opaquely; no request shaping is applied.
+   * explicit: the adapter shapes supported requests with provider cache controls. */
+  mode: "unsupported" | "automatic" | "explicit";
+  /** True only when the provider reports cache token telemetry the adapter actually parses. */
+  telemetryAvailable: boolean;
+  /** Minimum cacheable prefix size the provider accepts, when known. */
+  minCacheableTokens?: number;
+  /** Provider/model-specific constraints worth surfacing in diagnostics. */
+  constraints?: string[];
+}
 
 export interface ProviderConfig {
   readonly providerId: string;

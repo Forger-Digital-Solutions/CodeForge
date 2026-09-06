@@ -591,6 +591,16 @@ export const WorkItemSchema = z.discriminatedUnion("kind", [
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
   }),
+  z.object({
+    /** FG-1E: observational ForgeGreen efficiency ledger. Never an authority input. */
+    kind: z.literal("forgegreen_ledger"),
+    id: z.string(),
+    sessionId: z.string().optional(),
+    runId: z.string(),
+    record: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  }),
 ]);
 export type WorkItem = z.infer<typeof WorkItemSchema>;
 export type WorkItemKind = WorkItem["kind"];

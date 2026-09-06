@@ -56,6 +56,11 @@ export const UsageSchema = z.object({
   inputTokens: z.number().int().nonnegative(),
   outputTokens: z.number().int().nonnegative(),
   totalTokens: z.number().int().nonnegative().optional(),
+  /** Provider-reported input tokens served from its prompt cache. Absent = telemetry unavailable;
+   * ForgeGreen must never invent a value when the provider does not report one. */
+  cachedInputTokens: z.number().int().nonnegative().optional(),
+  /** Provider-reported tokens written to its prompt cache (e.g. Anthropic cache_creation_input_tokens). */
+  cacheWriteTokens: z.number().int().nonnegative().optional(),
 });
 export type Usage = z.infer<typeof UsageSchema>;
 

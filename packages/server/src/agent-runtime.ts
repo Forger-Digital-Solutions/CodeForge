@@ -19,7 +19,18 @@ import { searchWorkspace } from "./search-service.js";
 import { replaceExact, sha256 } from "./edit-service.js";
 import { createRepositoryIntelligence, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
 import { buildContextPack, ContextAssembler, createContextAssembler } from "@codeforge/context";
-import { createForgeGreenAdvisor, type EfficiencyReceipt, type ForgeGreenAdvisor } from "@codeforge/forge-green";
+import {
+  canonicalCacheKey,
+  createForgeGreenAdvisor,
+  createForgeGreenLedgerCollector,
+  type EfficiencyReceipt,
+  type ForgeGreenAdvisor,
+  type ForgeGreenLedgerCollector,
+  type ForgeGreenReasonCode,
+} from "@codeforge/forge-green";
+import type { ForgeGreenCacheStore } from "@codeforge/sessions";
+import { compressToolOutput } from "@codeforge/tools";
+import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
 import {
   ERROR_CODES,
   ROLE_PROMPTS,
@@ -67,6 +78,8 @@ export interface AgentRuntimeRequest {
   structuredOutput?: StructuredOutputKind;
   maxStructuredOutputRepairs?: number;
   userIntentHold?: UserIntentHoldController;
+  /** FG-1C: targeted workstream scope; duplicate identities never cross workstreams. */
+  workstreamScope?: string;
 }
 
 export interface AgentContextMetrics {
@@ -224,6 +237,8 @@ export interface AgentRuntimeOptions {
   repositoryIntelligenceFactory?: () => RepositoryIntelligence;
   forgeGreen?: ForgeGreenAdvisor;
   userIntentHold?: UserIntentHoldController;
+  /** FG-1D: persistent canonical analysis cache. Optional; absent = always recompute. */
+  forgeGreenCacheStore?: ForgeGreenCacheStore;
   /** Test-only synchronization point at the real post-approval execution boundary. */
   afterApprovalResolvedBoundary?: () => Promise<void>;
 }
@@ -303,6 +318,7 @@ export class AgentRuntime {
   private readonly recoveryGenerationByTurn = new Map<string, number>();
   private readonly recoveryRequiredTurns = new Set<string>();
   private readonly recoveryOriginalStatusByTurn = new Map<string, Exclude<TurnStatus, "idle" | "completed" | "failed" | "cancelled">>();
+  private readonly forgeGreenCacheStore?: ForgeGreenCacheStore;
 
   constructor(options: AgentRuntimeOptions) {
     this.sessionId = options.sessionId;
@@ -314,6 +330,7 @@ export class AgentRuntime {
     this.userId = options.userId ?? "anonymous";
     this.forgeGreen = options.forgeGreen ?? createForgeGreenAdvisor({ enabled: process.env.CODEFORGE_FORGREEN !== "0" });
     this.userIntentHold = options.userIntentHold;
+    this.forgeGreenCacheStore = options.forgeGreenCacheStore;
     this.afterApprovalResolvedBoundary = options.afterApprovalResolvedBoundary;
     this.demoMode = options.demoMode ?? false;
     this.repositoryIntelligenceFactory = options.repositoryIntelligenceFactory ?? (() => createRepositoryIntelligence({
@@ -487,6 +504,17 @@ export class AgentRuntime {
     const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen);
     const contextAssembler = createContextAssembler(budget.maxContextTokens, this.forgeGreen);
     const adapter = req.adapter ?? this.createAdapter();
+    const duplicateSupervisor = createDuplicateActionSupervisor({ workstreamScope: req.workstreamScope });
+    const ledger = createForgeGreenLedgerCollector({
+      runId: req.runId,
+      operation: "agent_run",
+      namespace: req.workspaceId,
+      sessionId: this.sessionId,
+      agentId: req.agentId,
+      workstreamScope: req.workstreamScope,
+    });
+    const canonicalCacheStats = { hits: 0, misses: 0 };
+    let toolOutputBytesAvoided = 0;
 
     const toolExecutions: ToolExecutionRecord[] = [];
     const changedFiles = new Set<string>();
@@ -606,6 +634,35 @@ export class AgentRuntime {
       };
 
       // 2. Multi-turn Model & Tool Loop
+      let responseCacheTelemetry: { classification: "measured" | "unavailable" } = { classification: "unavailable" };
+      let duplicateRequestSuppressedSeen = false;
+      let stablePrefixReusedSeen = false;
+      const createRunReceipt = (): EfficiencyReceipt => {
+        const supervisorMetrics = duplicateSupervisor.metrics;
+        return this.forgeGreen.createReceipt({
+          workspaceId: req.workspaceId,
+          repositoryGeneration: contextMetrics.repositoryGeneration ?? 1,
+          requestedTokens: contextMetrics.estimatedInputTokens,
+          deliveredTokens: contextMetrics.estimatedInputTokens,
+          reasonCodes: [
+            ...(duplicateRequestSuppressedSeen ? ["duplicate_request_suppressed" as const] : []),
+            ...(stablePrefixReusedSeen ? ["stable_prefix_reused" as const] : []),
+            ...(responseCacheTelemetry.classification === "measured" ? ["provider_prompt_cache_reported" as const] : []),
+            ...(duplicateSupervisor.metrics.duplicateActionsSuppressed > 0 ? ["duplicate_action_suppressed" as const] : []),
+            ...(duplicateSupervisor.metrics.noProgressEscalations > 0 ? ["no_progress_interrupted" as const] : []),
+            ...(canonicalCacheStats.hits > 0 ? ["canonical_cache_hit" as const] : []),
+            ...(canonicalCacheStats.misses > 0 ? ["canonical_cache_miss" as const] : []),
+            ...(toolOutputBytesAvoided > 0 ? ["tool_output_compressed" as const] : []),
+          ] as ForgeGreenReasonCode[],
+          providerCachedInputTokens: totalUsage.cachedTokens,
+          toolOutputBytesAvoided,
+          duplicateActionsSuppressed: supervisorMetrics.duplicateActionsSuppressed,
+          noProgressInterruptions: supervisorMetrics.noProgressEscalations,
+          canonicalCacheHits: canonicalCacheStats.hits,
+          canonicalCacheMisses: canonicalCacheStats.misses,
+          ...(this.userIntentHold ? { interactiveEfficiency: this.userIntentHold.metrics(this.sessionId) } : {}),
+        });
+      };
       while (turnCount < budget.maxModelTurns) {
         if (req.signal?.aborted) {
           throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
@@ -655,19 +712,26 @@ export class AgentRuntime {
 
         totalUsage.inputTokens += response.usage.inputTokens;
         totalUsage.outputTokens += response.usage.outputTokens;
+        if (typeof response.usage.cachedTokens === "number") {
+          totalUsage.cachedTokens = (totalUsage.cachedTokens ?? 0) + response.usage.cachedTokens;
+        }
+        if (typeof response.usage.cacheWriteTokens === "number") {
+          totalUsage.cacheWriteTokens = (totalUsage.cacheWriteTokens ?? 0) + response.usage.cacheWriteTokens;
+        }
         totalUsage.provider = response.providerId;
         totalUsage.model = response.modelId;
-        contextMetrics.efficiencyReceipt = this.forgeGreen.createReceipt({
-          workspaceId: req.workspaceId,
-          repositoryGeneration: contextMetrics.repositoryGeneration ?? 1,
-          requestedTokens: contextMetrics.estimatedInputTokens,
-          deliveredTokens: contextMetrics.estimatedInputTokens,
-          reasonCodes: [
-            ...(response.optimization?.duplicateSuppressed ? ["duplicate_request_suppressed" as const] : []),
-            ...(response.optimization?.promptPrefixCacheHit ? ["stable_prefix_reused" as const] : []),
-          ],
-          ...(this.userIntentHold ? { interactiveEfficiency: this.userIntentHold.metrics(this.sessionId) } : {}),
-        });
+
+        const providerPromptCache = response.optimization?.providerPromptCache;
+        responseCacheTelemetry = { classification: providerPromptCache?.classification ?? "unavailable" };
+        if (response.optimization?.duplicateSuppressed) duplicateRequestSuppressedSeen = true;
+        if (response.optimization?.promptPrefixCacheHit) stablePrefixReusedSeen = true;
+        if (providerPromptCache?.classification === "measured") {
+          ledger.recordProviderPromptCache(providerPromptCache.cachedInputTokens, providerPromptCache.cacheWriteTokens);
+        } else {
+          ledger.recordProviderPromptCache(undefined, undefined);
+        }
+        if (response.optimization?.duplicateSuppressed) ledger.recordRequestDeduped();
+        contextMetrics.efficiencyReceipt = createRunReceipt();
 
         if (response.text) {
           finalSummary = response.text;
@@ -796,6 +860,57 @@ export class AgentRuntime {
             }
           }
 
+          // FG-1C: state-aware duplicate / no-progress check. Identity binds tool + canonical
+          // arguments + workstream scope; the supervisor's state version advances on every
+          // mutating action and on steer consumption, so post-steer or post-write work is
+          // never mistaken for duplicate work.
+          const supervisorArgs = parseToolArgs(tc.arguments);
+          const duplicateIdentity: DuplicateActionIdentity = {
+            tool: tc.name,
+            canonicalArguments: supervisorArgs === PARSE_FAILED ? tc.arguments : supervisorArgs,
+            workstreamScope: req.workstreamScope,
+          };
+          const duplicateDecision = duplicateSupervisor.classify(duplicateIdentity);
+          if (duplicateDecision.action === "escalate") {
+            ledger.recordNoProgressInterruption(duplicateDecision.reason);
+            // When the escalating history also matches the certified CF-07 text-loop shapes
+            // (3 identical consecutive calls, or an X-Y-X-Y-X alternation), surface the
+            // certified AGENT_TOOL_LOOP_DETECTED contract — FG-1C just detects that loop one
+            // turn earlier and more cheaply. Genuinely novel no-progress shapes keep the
+            // FG-1C code. Either way the run fails closed as blocked, never as success.
+            const last3 = toolCallHistory.slice(-3);
+            const last5 = toolCallHistory.slice(-5);
+            const threeRepeat = last3.length === 3 && last3[0] === last3[1] && last3[1] === last3[2];
+            const oscillation = last5.length === 5 && last5[0] === last5[2] && last5[2] === last5[4] && last5[1] === last5[3] && last5[0] !== last5[1];
+            const certifiedShape = threeRepeat || oscillation;
+            const loopCode = certifiedShape ? ERROR_CODES.AGENT_TOOL_LOOP_DETECTED : ERROR_CODES.AGENT_NO_PROGRESS_DETECTED;
+            adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, loopCode);
+            stopReason = certifiedShape ? "tool_loop_detected" : "no_progress_detected";
+            contextMetrics.efficiencyReceipt = createRunReceipt();
+            return {
+              status: "blocked",
+              summary: `[${loopCode}] ${duplicateDecision.reason}`,
+              findings,
+              evidence,
+              toolExecutions,
+              usage: totalUsage,
+              stopReason,
+              filesChanged: Array.from(changedFiles),
+              error: loopCode,
+              contextMetrics,
+            };
+          }
+          if (duplicateDecision.action === "suppress") {
+            ledger.recordDuplicateSuppressed();
+            adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, "forgegreen_duplicate_suppressed");
+            messages.push({
+              role: "tool",
+              content: `[forgegreen: duplicate read-only action suppressed — identical action against unchanged workspace state; replaying prior authoritative result ${duplicateDecision.priorExecutionId}]\n${duplicateDecision.priorOutput}`,
+              toolCallId: tc.id,
+            });
+            continue;
+          }
+
           adapter.emitToolCallStarted(req.runId, tc.id, tc.name, req.agentId);
           adapter.emitToolExecutionStarted(req.runId, tc.id, tc.name, tc.arguments);
 
@@ -839,7 +954,7 @@ export class AgentRuntime {
               signal: req.signal,
               customExecutor: async (name, args) => {
                 if (name.startsWith("repo_")) {
-                  return this.executeRepositoryTool(name, args, req.signal ?? new AbortController().signal, req.workspacePath, intelligence);
+                  return this.executeRepositoryTool(name, args, req.signal ?? new AbortController().signal, req.workspacePath, intelligence, { ledger, cacheStats: canonicalCacheStats });
                 }
                 return req.customToolExecutor?.(name, args);
               },
@@ -847,6 +962,26 @@ export class AgentRuntime {
           );
 
           toolExecutions.push(toolExec);
+          if (duplicateSupervisor.isMutating(tc.name)) {
+            duplicateSupervisor.recordMutationExecution(duplicateIdentity, toolExec.success);
+          } else {
+            duplicateSupervisor.recordReadResult(duplicateIdentity, toolExec.output, toolExec.success, executionId);
+          }
+
+          // FG-1B: bound the model-context representation of large outputs. The authoritative
+          // post-redaction output stays on the record (and in the event stream) untouched.
+          const compression = compressToolOutput(toolExec.output, { artifactRef: executionId });
+          if (compression.applied) {
+            toolExec.modelContextOutput = compression.representation;
+            toolExec.compression = {
+              originalBytes: compression.originalBytes,
+              compressedBytes: compression.compressedBytes,
+              strategies: [...compression.strategies],
+              artifactRef: executionId,
+            };
+            ledger.recordToolCompression(compression.originalBytes, compression.compressedBytes, true);
+            toolOutputBytesAvoided += Math.max(0, compression.originalBytes - compression.compressedBytes);
+          }
           durableExecution.state = toolExec.success ? "completed" : "failed";
           durableExecution.completedAt = new Date().toISOString();
           durableExecution.resultHash = sha256(toolExec.output);
@@ -873,7 +1008,7 @@ export class AgentRuntime {
 
           messages.push({
             role: "tool",
-            content: toolExec.output,
+            content: toolExec.modelContextOutput ?? toolExec.output,
             toolCallId: tc.id,
           });
           durableExecution.state = "observation_recorded";
@@ -976,8 +1111,30 @@ export class AgentRuntime {
         error: errorMsg,
       };
     } finally {
+      await this.persistForgeGreenLedger(ledger).catch(() => undefined);
       await intelligence?.closeWorkspace().catch(() => undefined);
     }
+  }
+
+  /**
+   * FG-1E: persist the run's efficiency ledger as an observational record. `insertIfAbsent`
+   * is the established durable idempotency mechanism, so a retried run writes the ledger
+   * exactly once. Ledger failure never affects the run result — it is efficiency telemetry,
+   * not authority.
+   */
+  private async persistForgeGreenLedger(ledger: ForgeGreenLedgerCollector): Promise<void> {
+    const record = ledger.snapshot();
+    const id = `forgegreen-ledger-${sha256(`${record.identity.runId}\0${record.identity.agentId ?? ""}\0${record.identity.operation}`)}`;
+    const now = new Date().toISOString();
+    await this.persistence.insertIfAbsent({
+      kind: "forgegreen_ledger",
+      id,
+      sessionId: this.sessionId,
+      runId: record.identity.runId,
+      record: record as unknown as Record<string, unknown>,
+      createdAt: now,
+      updatedAt: now,
+    } as unknown as WorkItem);
   }
 
   async startTurn(userMessage: string, eventAdapter?: WorkspaceEventAdapter): Promise<string> {
@@ -1348,6 +1505,7 @@ export class AgentRuntime {
     }
 
     adapter.emitAgentStarted(agentId, "Lead Agent", turnId);
+    const duplicateSupervisor = createDuplicateActionSupervisor();
 
     try {
       const model = this.resolveTurnModel();
@@ -1380,7 +1538,7 @@ export class AgentRuntime {
         }
       }
 
-      await this.simulateAgentWork(turnId, agentId, adapter, signal);
+      await this.simulateAgentWork(turnId, agentId, adapter, signal, duplicateSupervisor);
 
       if (signal.aborted) {
         return;
@@ -1516,6 +1674,7 @@ export class AgentRuntime {
     agentId: string,
     adapter: WorkspaceEventAdapter,
     signal: AbortSignal,
+    duplicateSupervisor: DuplicateActionSupervisor,
   ): Promise<void> {
     const state = this.activeTurns.get(turnId);
     if (!state || !state.modelId || !state.providerId) {
@@ -1551,7 +1710,7 @@ export class AgentRuntime {
       maxTokens: 4096,
     };
 
-    await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, 0);
+    await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, 0, duplicateSupervisor);
   }
 
   private async runAgentLoop(
@@ -1562,11 +1721,15 @@ export class AgentRuntime {
     adapter: WorkspaceEventAdapter,
     signal: AbortSignal,
     iteration: number,
+    duplicateSupervisor: DuplicateActionSupervisor,
   ): Promise<void> {
     await this.userIntentHold?.waitForDispatch(this.sessionId, "model");
     // Safe steering boundary: drain queued steering instructions for this turn before model inference
     const pendingSteering = this.pendingSteeringByTurn.get(turnId) ?? [];
     if (pendingSteering.length > 0) {
+      // CF-17: consumed steers change the authoritative plan. Duplicate suppression must
+      // never mistake post-steer work for repeated work.
+      duplicateSupervisor.noteSteerConsumed();
       const queued = this.userIntentHold?.queuedSteers(this.sessionId).filter((steer) => steer.turnId === turnId) ?? [];
       await this.userIntentHold?.beginReconciliation(this.sessionId, turnId, queued.map((steer) => steer.steerId));
       this.pendingSteeringByTurn.set(turnId, []);
@@ -1693,7 +1856,7 @@ export class AgentRuntime {
     }
 
     if (toolCalls.length === 0 && this.userIntentHold?.hasQueuedSteer(this.sessionId)) {
-      await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, iteration + 1);
+      await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, iteration + 1, duplicateSupervisor);
       return;
     }
 
@@ -1711,11 +1874,11 @@ export class AgentRuntime {
 
       for (const tc of toolCalls) {
         if (this.userIntentHold?.hasQueuedSteer(this.sessionId)) {
-          await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, iteration + 1);
+          await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, iteration + 1, duplicateSupervisor);
           return;
         }
         await this.userIntentHold?.waitForDispatch(this.sessionId, "tool");
-        const toolResult = await this.executeTool(turnId, tc.id, tc.name, tc.arguments, adapter, signal);
+        const toolResult = await this.executeTool(turnId, tc.id, tc.name, tc.arguments, adapter, signal, duplicateSupervisor);
         if (signal.aborted) return;
 
         // Pipeline: raw -> size limit -> secret redaction -> history
@@ -1732,7 +1895,7 @@ export class AgentRuntime {
         messages: [...this.messageHistory],
       };
 
-      await this.runAgentLoop(turnId, agentId, provider, nextRequest, adapter, signal, iteration + 1);
+      await this.runAgentLoop(turnId, agentId, provider, nextRequest, adapter, signal, iteration + 1, duplicateSupervisor);
     } else {
       await this.userIntentHold?.waitForDispatch(this.sessionId, "other");
     }
@@ -1904,6 +2067,7 @@ export class AgentRuntime {
     signal: AbortSignal,
     workspacePath: string = this.workspacePath ?? "",
     existingIntelligence?: RepositoryIntelligence,
+    efficiency?: { ledger?: ForgeGreenLedgerCollector; cacheStats?: { hits: number; misses: number } },
   ): Promise<string> {
     if (!workspacePath) throw new Error("No workspace path configured");
     const intelligence = existingIntelligence ?? createRepositoryIntelligence();
@@ -1918,6 +2082,18 @@ export class AgentRuntime {
       const limit = Math.min(200, Math.max(1, typeof args.limit === "number" ? Math.floor(args.limit) : 50));
       const query = typeof args.query === "string" ? args.query : "";
       const requestedPath = typeof args.path === "string" ? args.path : "";
+      const cacheIdentity = await this.canonicalRepositoryCacheIdentity(toolName, intelligence, requestedPath, query, limit);
+      const cacheKey = cacheIdentity ? canonicalCacheKey(cacheIdentity) : undefined;
+      if (cacheKey && cacheIdentity && this.forgeGreenCacheStore) {
+        const hit = await this.forgeGreenCacheStore.get(cacheIdentity.namespace, cacheKey).catch(() => undefined);
+        if (hit !== undefined) {
+          if (efficiency?.cacheStats) efficiency.cacheStats.hits += 1;
+          efficiency?.ledger?.recordCanonicalCacheHit();
+          return hit.value;
+        }
+        if (efficiency?.cacheStats) efficiency.cacheStats.misses += 1;
+        efficiency?.ledger?.recordCanonicalCacheMiss();
+      }
       let output: unknown;
       switch (toolName) {
         case "repo_search":
@@ -1963,10 +2139,56 @@ export class AgentRuntime {
         default:
           output = intelligence.status();
       }
-      return JSON.stringify(output);
+      const serialized = JSON.stringify(output);
+      if (cacheKey && cacheIdentity && this.forgeGreenCacheStore) {
+        // Only successful, redacted, secret-free results are cached; failures stay uncached.
+        const redacted = redactSecrets(serialized);
+        if (redacted === serialized) {
+          await this.forgeGreenCacheStore.put(cacheIdentity.namespace, cacheKey, serialized).catch(() => false);
+        }
+      }
+      return serialized;
     } finally {
       if (ownsIntelligence) await intelligence.closeWorkspace();
     }
+  }
+
+  /**
+   * FG-1D canonical cache identity for a repository analysis. File-local analyses
+   * (repo_file_summary) key on the target file's content hash + parser/index version, so an
+   * unrelated edit elsewhere provably cannot invalidate them. Graph- and corpus-scoped
+   * analyses include the index generation: any refresh invalidates them, which is
+   * conservative (recompute) rather than ever risking a stale reuse.
+   */
+  private async canonicalRepositoryCacheIdentity(
+    toolName: string,
+    intelligence: RepositoryIntelligence,
+    requestedPath: string,
+    query: string,
+    limit: number,
+  ) {
+    if (!this.forgeGreenCacheStore) return undefined;
+    const supported = new Set(["repo_search", "repo_symbol", "repo_references", "repo_dependencies", "repo_dependents", "repo_tests", "repo_impact", "repo_file_summary", "repo_context"]);
+    if (!supported.has(toolName)) return undefined;
+    const status = intelligence.status();
+    if (!status.workspaceId) return undefined;
+    const parameters: Record<string, unknown> = { limit };
+    if (query) parameters.query = query;
+    if (requestedPath) parameters.path = requestedPath;
+    const base = {
+      namespace: status.workspaceId,
+      analysis: toolName,
+      parameters,
+      parserVersion: status.parserVersion,
+    };
+    if (toolName === "repo_file_summary" && requestedPath) {
+      const file = await intelligence.getFile(requestedPath).catch(() => undefined);
+      if (file?.hash) {
+        return { ...base, contentHashes: [file.hash], scopeDigest: `${status.indexVersion}:${status.parserVersion}` };
+      }
+      return undefined;
+    }
+    return { ...base, scopeDigest: `${status.indexVersion}:${status.parserVersion}:generation-${status.generation}` };
   }
 
   private async executeTool(
@@ -1976,6 +2198,7 @@ export class AgentRuntime {
     argsJson: string,
     adapter: WorkspaceEventAdapter,
     signal: AbortSignal,
+    duplicateSupervisor?: DuplicateActionSupervisor,
   ): Promise<string> {
     if (signal.aborted) {
       return "[Aborted]";
@@ -1996,6 +2219,22 @@ export class AgentRuntime {
       const safe = redactSecrets(msg);
       adapter.emitToolExecutionFailed(turnId, toolCallId, toolName, safe);
       return `Error: ${safe}`;
+    }
+
+    // FG-1C: state-aware duplicate suppression for read-only actions, before the approval gate
+    // (suppressed actions are read-only and never reach approval). Steer consumption and any
+    // mutating execution advance the supervisor's state version, so post-steer and post-write
+    // reruns are always treated as legitimate new work.
+    if (duplicateSupervisor && duplicateSupervisor.isReadOnly(toolName)) {
+      const decision = duplicateSupervisor.classify({ tool: toolName, canonicalArguments: parsedArgs });
+      if (decision.action === "escalate") {
+        adapter.emitToolExecutionBlocked(turnId, toolCallId, toolName, ERROR_CODES.AGENT_NO_PROGRESS_DETECTED);
+        throw new Error(`[${ERROR_CODES.AGENT_NO_PROGRESS_DETECTED}] ${decision.reason}`);
+      }
+      if (decision.action === "suppress") {
+        adapter.emitToolExecutionBlocked(turnId, toolCallId, toolName, "forgegreen_duplicate_suppressed");
+        return `[forgegreen: duplicate read-only action suppressed — identical action against unchanged workspace state; replaying prior authoritative result ${decision.priorExecutionId}]\n${decision.priorOutput}`;
+      }
     }
 
     // Risk classification & approval gate (authoritative)
@@ -2103,14 +2342,33 @@ export class AgentRuntime {
       const boundedResult = safeResult.length > MAX_COMMAND_OUTPUT_BYTES
         ? truncateOutput(safeResult, MAX_COMMAND_OUTPUT_BYTES, toolName)
         : safeResult;
+      if (duplicateSupervisor) {
+        const identity = { tool: toolName, canonicalArguments: parsedArgs };
+        if (duplicateSupervisor.isMutating(toolName)) {
+          duplicateSupervisor.recordMutationExecution(identity, true);
+        } else if (duplicateSupervisor.isReadOnly(toolName)) {
+          duplicateSupervisor.recordReadResult(identity, boundedResult, true, toolCallId);
+        }
+      }
       adapter.emitToolExecutionCompleted(turnId, toolCallId, toolName, boundedResult);
-      return boundedResult;
+      // FG-1B: the emitted event carries the authoritative post-redaction result; the model
+      // history receives the bounded deterministic representation when compression applied.
+      const compression = compressToolOutput(boundedResult, { artifactRef: `tool-${toolCallId}` });
+      return compression.applied ? compression.representation : boundedResult;
     } catch (error) {
       const raw = error instanceof Error ? error.message : String(error);
       const errorMessage = redactSecrets(raw);
       const boundedError = errorMessage.length > MAX_COMMAND_OUTPUT_BYTES
         ? truncateOutput(errorMessage, MAX_COMMAND_OUTPUT_BYTES, toolName)
         : errorMessage;
+      if (duplicateSupervisor) {
+        const identity = { tool: toolName, canonicalArguments: parsedArgs };
+        if (duplicateSupervisor.isMutating(toolName)) {
+          duplicateSupervisor.recordMutationExecution(identity, false);
+        } else if (duplicateSupervisor.isReadOnly(toolName)) {
+          duplicateSupervisor.recordReadResult(identity, boundedError, false, toolCallId);
+        }
+      }
       adapter.emitToolExecutionFailed(turnId, toolCallId, toolName, boundedError);
       return `Error: ${boundedError}`;
     }
