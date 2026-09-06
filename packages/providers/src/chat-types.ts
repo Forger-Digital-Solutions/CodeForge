@@ -49,6 +49,12 @@ export const ChatRequestSchema = z.object({
   maxTokens: z.number().int().positive().optional(),
   stop: z.array(z.string()).optional(),
   metadata: z.record(z.unknown()).optional(),
+  /** 8-Bit: ordered provider-native fallback candidates (primary model first), already
+   * filtered to policy-eligible routes by the caller. Adapters that support request-level
+   * fallback (e.g. OpenRouter's `models` array) may use this; adapters that do not support it
+   * simply ignore the field — no adapter may invent fallback behavior it cannot actually
+   * perform. Absent/empty means "no provider-native fallback for this request". */
+  fallbackModels: z.array(z.string()).optional(),
 });
 export type ChatRequest = z.infer<typeof ChatRequestSchema>;
 

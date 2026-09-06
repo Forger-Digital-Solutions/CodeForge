@@ -353,6 +353,11 @@ export class OpenRouterAdapter implements ProviderAdapter {
 
     return {
       model: req.model,
+      // OpenRouter-native request-level fallback: when present, `models` is an ordered
+      // candidate list (primary first) OpenRouter itself retries against on failure, without
+      // an extra CodeForge round-trip. Every candidate was already policy-filtered by the
+      // caller (8-Bit's `buildNativeFallbackModelIds`) — this adapter never adds candidates.
+      models: req.fallbackModels && req.fallbackModels.length > 1 ? req.fallbackModels : undefined,
       messages,
       tools: req.tools?.map((t) => ({
         type: "function" as const,
@@ -462,6 +467,8 @@ interface OpenRouterMessage {
 
 interface OpenRouterChatRequest {
   model: string;
+  /** Ordered request-level fallback candidates (OpenRouter-native). Optional. */
+  models?: string[];
   messages: OpenRouterMessage[];
   tools?: Array<{
     type: "function";

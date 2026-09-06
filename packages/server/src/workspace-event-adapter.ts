@@ -560,6 +560,37 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent);
   }
 
+  emitRouterFailover(taskId: string, fromModelId: string, toModelId: string, reason: string): void {
+    this.emitBestEffort({
+      type: "router.failover",
+      payload: { taskId, fromModelId, toModelId, reason },
+    } as WorkspaceEvent);
+  }
+
+  emitEightBitStatus(
+    event:
+      | "CATALOG_SCAN_STARTED"
+      | "ROUTE_DEGRADED"
+      | "ROUTE_COOLDOWN"
+      | "PROVIDER_OFFLINE"
+      | "PROVIDER_ONLINE"
+      | "FREE_ELIGIBILITY_REMOVED"
+      | "ROUTE_ROTATION_STARTED"
+      | "ROUTE_ROTATED"
+      | "ROUTE_READY"
+      | "NO_ELIGIBLE_FREE_MODEL",
+    role: string,
+    reasonCodes: string[],
+    accessibleText: string,
+    previous?: { providerId: string; modelId: string },
+    selected?: { providerId: string; modelId: string },
+  ): void {
+    this.emitBestEffort({
+      type: "eightbit.status",
+      payload: { event, role, previous, selected, reasonCodes, accessibleText },
+    } as WorkspaceEvent);
+  }
+
   emitToolStarted(toolCallId: string, tool: string, taskId: string): void {
     this.emitBestEffort({
       type: "tool.started",

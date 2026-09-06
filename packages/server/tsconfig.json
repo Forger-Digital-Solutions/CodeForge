@@ -17,6 +17,8 @@
     { "path": "../tools" },
     { "path": "../permissions" },
     { "path": "../repo-intelligence" },
+    { "path": "../forge-green" },
+    { "path": "../eight-bit" },
     { "path": "../context" },
     { "path": "../secrets" },
     { "path": "../workflow" }

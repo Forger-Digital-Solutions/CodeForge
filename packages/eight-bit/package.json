@@ -1,6 +1,6 @@
 {
-  "name": "@codeforge/server",
-  "version": "0.2.0",
+  "name": "@codeforge/eight-bit",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
@@ -14,23 +14,19 @@
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b --force",
+    "test": "vitest run",
     "clean": "rm -rf dist"
   },
   "dependencies": {
     "@codeforge/core": "*",
     "@codeforge/protocol": "*",
-    "@codeforge/sessions": "*",
-    "@codeforge/router": "*",
     "@codeforge/forge-zero": "*",
-    "@codeforge/providers": "*",
-    "@codeforge/secrets": "*",
-    "@codeforge/tools": "*",
-    "@codeforge/permissions": "*",
-    "@codeforge/repo-intelligence": "*",
+    "@codeforge/router": "*",
+    "@codeforge/sessions": "*",
     "@codeforge/forge-green": "*",
-    "@codeforge/eight-bit": "*",
-    "@codeforge/context": "*",
-    "@codeforge/workflow": "*",
     "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.0"
   }
 }

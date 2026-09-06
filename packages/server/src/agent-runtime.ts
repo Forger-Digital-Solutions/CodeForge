@@ -29,6 +29,7 @@ import {
   type ForgeGreenReasonCode,
 } from "@codeforge/forge-green";
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
+import { createEightBitRuntime, renderHandoffMessage, type EightBitRuntime, type EightBitRole } from "@codeforge/eight-bit";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
 import {
@@ -241,6 +242,9 @@ export interface AgentRuntimeOptions {
   forgeGreenCacheStore?: ForgeGreenCacheStore;
   /** Test-only synchronization point at the real post-approval execution boundary. */
   afterApprovalResolvedBoundary?: () => Promise<void>;
+  /** 8-Bit routing/failover/health/reliability core. Optional so existing callers/tests stay
+   * valid; defaults to a real instance backed by the same firewall + persistence. */
+  eightBit?: EightBitRuntime;
 }
 
 export interface ModelSelection {
@@ -319,6 +323,7 @@ export class AgentRuntime {
   private readonly recoveryRequiredTurns = new Set<string>();
   private readonly recoveryOriginalStatusByTurn = new Map<string, Exclude<TurnStatus, "idle" | "completed" | "failed" | "cancelled">>();
   private readonly forgeGreenCacheStore?: ForgeGreenCacheStore;
+  private readonly eightBit: EightBitRuntime;
 
   constructor(options: AgentRuntimeOptions) {
     this.sessionId = options.sessionId;
@@ -339,11 +344,15 @@ export class AgentRuntime {
       maxFileBytes: MAX_FILE_READ_BYTES,
     }));
     this.approvalService = new ApprovalService({ defaultTimeoutMs: DEFAULT_APPROVAL_TIMEOUT_MS });
+    this.eightBit = options.eightBit ?? createEightBitRuntime({ firewall: this.firewall, persistence: this.persistence });
   }
 
   /** Must be awaited once before first use — recreates durable intent at a process boundary. */
   async init(): Promise<void> {
     await this.hydratePersistedTurns();
+    // Restores persisted 8-Bit route bindings/health/cooldowns so a process restart never
+    // re-selects a route that was rotated away from before the crash (CF-restart recovery).
+    await this.eightBit.hydrate(this.sessionId);
   }
 
   /**
@@ -1528,6 +1537,7 @@ export class AgentRuntime {
         state.modelId = model.modelId;
         state.providerId = model.providerId;
         this.activeTurns.set(turnId, state);
+        await this.persistEightBitInitialRoute(turnId, model, !!this.modelSelection);
 
         if (model.tier === "gems_paid") {
           const entitlement = await this.firewall.checkEntitlement(this.userId, model.providerId, model.modelId);
@@ -1656,13 +1666,20 @@ export class AgentRuntime {
       estimatedContextTokens: 16000,
       requiredCapabilities: ["coding", "toolCalling"],
     });
-    // Highest-ranked verified-free model whose provider adapter is actually registered, so the
-    // turn can execute (never pick an eligible model with no backend — the orphan guard).
-    const best = ranked.find((r) => this.providerCatalog.get(r.model.providerId));
+    // Highest-ranked verified-free model whose provider adapter is actually registered (never
+    // pick an eligible model with no backend — the orphan guard) AND not currently in an
+    // 8-Bit health cooldown (a hard exclusion ForgeZero's own ranking-only health penalty does
+    // not provide — this is what makes restart recovery never re-pick a route just rotated
+    // away from).
+    const best = ranked.find(
+      (r) => this.providerCatalog.get(r.model.providerId) && !this.eightBit.health.isInCooldown(r.model.providerId, r.model.modelId),
+    );
     if (best) return best.model;
-    // Fallback: any eligible model with a registered provider.
+    // Fallback: any eligible model with a registered provider, same cooldown exclusion.
     const eligible = this.firewall.eligibleModels();
-    return eligible.find((m) => this.providerCatalog.get(m.providerId)) ?? null;
+    return (
+      eligible.find((m) => this.providerCatalog.get(m.providerId) && !this.eightBit.health.isInCooldown(m.providerId, m.modelId)) ?? null
+    );
   }
 
   private resolveTurnModel(): FreeModelRecord | null {
@@ -1678,6 +1695,28 @@ export class AgentRuntime {
       }
     }
     return this.selectModel();
+  }
+
+  /** Persists 8-Bit routing state for this turn's chosen route — restart-recovery and
+   * failover-exclusion state, not authority. Best-effort: a persistence hiccup here must never
+   * fail the turn (same posture as ForgeGreen ledger persistence). */
+  private async persistEightBitInitialRoute(turnId: string, model: FreeModelRecord, isExactPin: boolean): Promise<void> {
+    try {
+      await this.eightBit.store.saveRouteState(
+        { sessionId: this.sessionId, role: "CODER" },
+        {
+          sessionId: this.sessionId,
+          role: "CODER",
+          providerId: model.providerId,
+          modelId: model.modelId,
+          policyMode: "adaptive",
+          isExactPin,
+          health: this.eightBit.health.getHealth(model.providerId, model.modelId),
+        },
+      );
+    } catch {
+      // Observational persistence only — never blocks execution.
+    }
   }
 
   private async simulateAgentWork(
@@ -1830,6 +1869,9 @@ export class AgentRuntime {
               // request carries valid JSON and the provider does not 400 on the next turn.
               const parsedTc = parseToolArgs(currentToolCall.arguments);
               if (parsedTc !== PARSE_FAILED) currentToolCall.arguments = JSON.stringify(parsedTc);
+              if (turnState?.providerId && turnState?.modelId) {
+                this.eightBit.recordToolCallOutcome(turnState.providerId, turnState.modelId, parsedTc === PARSE_FAILED ? "malformed" : "valid");
+              }
               toolCalls.push(currentToolCall);
               adapter.emitToolCallCompleted(turnId, event.toolCallId, event.toolName, currentToolCall.arguments, agentId);
             }
@@ -1853,6 +1895,12 @@ export class AgentRuntime {
       if (signal.aborted) {
         return;
       }
+      // Safe failover boundary: nothing in THIS iteration has produced a side effect yet —
+      // `toolCalls` accumulated above are only ever executed further down this function, never
+      // inside the stream loop itself. So a stream/model-call failure here is a safe point to
+      // hand the turn to a replacement route without risking a repeated or partial side effect.
+      const handled = await this.attemptEightBitFailover(turnId, agentId, request, adapter, signal, iteration, duplicateSupervisor, error);
+      if (handled) return;
       throw error;
     }
 
@@ -1910,6 +1958,125 @@ export class AgentRuntime {
     } else {
       await this.userIntentHold?.waitForDispatch(this.sessionId, "other");
     }
+  }
+
+  /**
+   * 8-Bit active-run failover. Called only from the safe boundary in `runAgentLoop`'s stream
+   * catch block (no side effect has been dispatched from the failed iteration). Returns true
+   * when it fully handled the failure (bounded retry or rotation, already resumed the turn by
+   * recursing into `runAgentLoop`) — the caller must not also rethrow. Returns false when 8-Bit
+   * determined the turn cannot safely continue (exact pin failed / no eligible replacement /
+   * not a routing problem), leaving the original error to propagate through the existing
+   * `executeTurn` catch (which still performs its own auth/rate-limit health marking, and still
+   * marks the turn failed — 8-Bit never turns a real failure into a fake success).
+   *
+   * CF-17 (approval/question/steer/revision), the duplicate/no-progress supervisor's state
+   * version, and ForgeVerify/Completion Gate are never touched here — none of them are aware a
+   * model swap happened, by design (see packages/eight-bit).
+   */
+  private async attemptEightBitFailover(
+    turnId: string,
+    agentId: string,
+    request: ChatRequest,
+    adapter: WorkspaceEventAdapter,
+    signal: AbortSignal,
+    iteration: number,
+    duplicateSupervisor: DuplicateActionSupervisor,
+    error: unknown,
+  ): Promise<boolean> {
+    const state = this.activeTurns.get(turnId);
+    if (!state || !state.providerId || !state.modelId) return false;
+    const role: EightBitRole = "CODER";
+    const isExactPin = !!this.modelSelection;
+
+    const outcome = await this.eightBit.handleTurnFailure({
+      sessionId: this.sessionId,
+      turnId,
+      role,
+      runId: agentId,
+      agentId,
+      current: { providerId: state.providerId, modelId: state.modelId },
+      isExactPin,
+      policyMode: "adaptive",
+      error,
+      estimatedContextTokens: 16000,
+      hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
+    });
+
+    if (outcome.action === "retry_same") {
+      // Bounded retry against the SAME route — does not consume the iteration/tool budget.
+      await this.runAgentLoop(turnId, agentId, this.providerCatalog.get(state.providerId)!, request, adapter, signal, iteration, duplicateSupervisor);
+      return true;
+    }
+
+    if (outcome.action !== "rotate") {
+      if (outcome.action === "no_replacement" && outcome.receipt.action === "NO_ELIGIBLE_ROUTE") {
+        adapter.emitEightBitStatus(
+          "NO_ELIGIBLE_FREE_MODEL",
+          role,
+          outcome.receipt.reasonCodes,
+          "8-Bit found no eligible free route to continue this turn. Stopping safely — no paid or unknown-cost route was used.",
+          outcome.receipt.previous,
+        );
+      }
+      return false;
+    }
+
+    const newProvider = this.providerCatalog.get(outcome.replacement.providerId);
+    if (!newProvider) return false;
+
+    adapter.emitEightBitStatus(
+      "ROUTE_ROTATION_STARTED",
+      role,
+      outcome.receipt.reasonCodes,
+      `8-Bit is switching the CODER route away from ${state.providerId}/${state.modelId} (${outcome.reason}).`,
+      { providerId: state.providerId, modelId: state.modelId },
+      outcome.replacement,
+    );
+
+    // Build a bounded handoff summary from AUTHORITATIVE persisted runtime state (never
+    // guessed from conversation text) and make the discontinuity explicit to the replacement
+    // model. The full prior conversation (tool calls/results already made) also stays in
+    // `messageHistory`, which is what actually prevents replaying any completed side effect.
+    try {
+      const handoff = await this.eightBit.handoff.build(this.sessionId, turnId, state.userMessage);
+      this.messageHistory.push({ role: "system", content: renderHandoffMessage(handoff) });
+    } catch {
+      // Handoff summary is advisory context, not authority — its absence must never block
+      // continuing the turn (messageHistory alone already prevents side-effect replay).
+    }
+
+    const previousRoute = { providerId: state.providerId, modelId: state.modelId };
+    state.modelId = outcome.replacement.modelId;
+    state.providerId = outcome.replacement.providerId;
+    this.activeTurns.set(turnId, state);
+    await this.persistTurn(state);
+    adapter.emitRouterFailover(turnId, `${previousRoute.providerId}/${previousRoute.modelId}`, `${outcome.replacement.providerId}/${outcome.replacement.modelId}`, outcome.reason);
+
+    try {
+      const ledger = createForgeGreenLedgerCollector({ runId: agentId, operation: "eight_bit_failover", namespace: this.sessionId, sessionId: this.sessionId, agentId, turnId });
+      ledger.recordModelFailoverRotation();
+      await this.persistForgeGreenLedger(ledger);
+    } catch {
+      // Ledger persistence is observational only.
+    }
+
+    adapter.emitEightBitStatus(
+      "ROUTE_READY",
+      role,
+      outcome.receipt.reasonCodes,
+      `8-Bit switched the CODER route to ${outcome.replacement.providerId}/${outcome.replacement.modelId} and is continuing this turn.`,
+      previousRoute,
+      outcome.replacement,
+    );
+
+    const nextRequest: ChatRequest = {
+      ...request,
+      model: outcome.replacement.modelId,
+      messages: [...this.messageHistory],
+    };
+    await this.runAgentLoop(turnId, agentId, newProvider, nextRequest, adapter, signal, iteration, duplicateSupervisor);
+    return true;
   }
 
   private buildSystemPrompt(): string {

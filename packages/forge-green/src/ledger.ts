@@ -25,7 +25,8 @@ export type ForgeGreenMechanism =
   | "context_reuse"
   | "request_dedupe"
   | "fallback"
-  | "repository_intelligence";
+  | "repository_intelligence"
+  | "model_failover";
 
 export interface EfficiencyLedgerEvent {
   mechanism: ForgeGreenMechanism;
@@ -56,6 +57,12 @@ export interface ForgeGreenLedgerTotals {
   repositoryParseCacheHits: number;
   /** FG-2: dependents re-resolved because a resolved dependency target was deleted. */
   repositoryInvalidations: number;
+  /** 8-Bit: cross-provider/model rotations performed during an active run. */
+  modelFailoverRotations: number;
+  /** 8-Bit: routing decisions that stopped short of a paid/unknown-cost dispatch because no
+   * eligible free route existed (NO_ELIGIBLE_FREE_MODEL) — evidence of the free boundary
+   * holding, not a savings claim. */
+  modelFailoverBlockedDispatches: number;
 }
 
 export interface ForgeGreenLedgerIdentity {
@@ -101,6 +108,8 @@ function emptyTotals(): ForgeGreenLedgerTotals {
     repositoryFilesReused: 0,
     repositoryParseCacheHits: 0,
     repositoryInvalidations: 0,
+    modelFailoverRotations: 0,
+    modelFailoverBlockedDispatches: 0,
   };
 }
 
@@ -155,6 +164,10 @@ export class ForgeGreenLedgerCollector {
         else if (event.reason === "parse_cache_hits") this.totals.repositoryParseCacheHits += quantity;
         else if (event.reason === "dependent_revalidation") this.totals.repositoryInvalidations += quantity;
         else if (event.measurement === "unknown") this.noteUnknown();
+        break;
+      case "model_failover":
+        if (event.reason === "rotated") this.totals.modelFailoverRotations += 1;
+        else if (event.reason === "no_eligible_route") this.totals.modelFailoverBlockedDispatches += 1;
         break;
     }
   }
@@ -214,6 +227,17 @@ export class ForgeGreenLedgerCollector {
 
   recordFallback(reason: string): void {
     this.record({ mechanism: "fallback", measurement: "measured", quantity: 1, unit: "count", reason: reason.slice(0, 120) });
+  }
+
+  /** 8-Bit: a cross-provider/model rotation actually occurred during an active run. */
+  recordModelFailoverRotation(): void {
+    this.record({ mechanism: "model_failover", measurement: "measured", quantity: 1, unit: "count", reason: "rotated" });
+  }
+
+  /** 8-Bit: routing correctly refused to dispatch because no free-eligible route existed
+   * (the free-policy boundary holding under pressure — observational, not a savings claim). */
+  recordModelFailoverBlocked(): void {
+    this.record({ mechanism: "model_failover", measurement: "measured", quantity: 1, unit: "count", reason: "no_eligible_route" });
   }
 
   snapshot(): ForgeGreenLedgerRecord {

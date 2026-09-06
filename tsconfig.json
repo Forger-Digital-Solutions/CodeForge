@@ -13,6 +13,7 @@
     { "path": "packages/sessions" },
     { "path": "packages/repo-intelligence" },
     { "path": "packages/forge-green" },
+    { "path": "packages/eight-bit" },
     { "path": "packages/context" },
     { "path": "packages/git" },
     { "path": "packages/permissions" },

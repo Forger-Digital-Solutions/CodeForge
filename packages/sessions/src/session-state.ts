@@ -601,6 +601,48 @@ export const WorkItemSchema = z.discriminatedUnion("kind", [
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
   }),
+  z.object({
+    /** 8-Bit: append-only, immutable routing-decision receipt. Never an authority input —
+     * observational/explainability record only, same posture as `forgegreen_ledger`. */
+    kind: z.literal("eight_bit_decision_receipt"),
+    id: z.string(),
+    sessionId: z.string(),
+    receipt: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+  }),
+  z.object({
+    /** 8-Bit: live health snapshot for one (session, provider, model) route, independent of
+     * whichever role/workstream is currently bound to it. Persisted so a route that failed and
+     * was rotated away from stays excluded (cooldown/status) after a restart even though the
+     * current binding row now points at its replacement. */
+    kind: z.literal("eight_bit_route_health"),
+    id: z.string(),
+    sessionId: z.string(),
+    providerId: z.string(),
+    modelId: z.string(),
+    health: z.record(z.unknown()),
+    updatedAt: z.string().datetime(),
+  }),
+  z.object({
+    /** 8-Bit: mutable current routing state for one (session, role, workstream) scope —
+     * sticky binding, live health/reliability snapshot, cooldown, manual overrides. Read at
+     * process start to restore routing continuity across restarts (never authority for
+     * approval/verification/completion — routing only). */
+    kind: z.literal("eight_bit_route_state"),
+    id: z.string(),
+    sessionId: z.string(),
+    role: z.string(),
+    workstreamId: z.string().optional(),
+    providerId: z.string(),
+    modelId: z.string(),
+    policyMode: z.enum(["adaptive", "byok", "premium"]),
+    isExactPin: z.boolean(),
+    health: z.record(z.unknown()).optional(),
+    cooldownUntil: z.number().optional(),
+    manualOverride: z.boolean().optional(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  }),
 ]);
 export type WorkItem = z.infer<typeof WorkItemSchema>;
 export type WorkItemKind = WorkItem["kind"];

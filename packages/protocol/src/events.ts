@@ -61,6 +61,36 @@ export const RouterFailoverSchema = EventBase(
   }),
 );
 
+/**
+ * 8-Bit structured runtime status. `event` is the semantic trigger (what happened);
+ * `accessibleText` is required plain-language text so the status is understandable without
+ * the emoji layer — the UI maps `event` to a certified visual, but never the other way
+ * around, and a missing/broken visual must never affect anything here (this schema carries
+ * no permission/approval/verification/completion semantics).
+ */
+export const EightBitStatusSchema = EventBase(
+  "eightbit.status",
+  z.object({
+    event: z.enum([
+      "CATALOG_SCAN_STARTED",
+      "ROUTE_DEGRADED",
+      "ROUTE_COOLDOWN",
+      "PROVIDER_OFFLINE",
+      "PROVIDER_ONLINE",
+      "FREE_ELIGIBILITY_REMOVED",
+      "ROUTE_ROTATION_STARTED",
+      "ROUTE_ROTATED",
+      "ROUTE_READY",
+      "NO_ELIGIBLE_FREE_MODEL",
+    ]),
+    role: z.string(),
+    previous: z.object({ providerId: z.string(), modelId: z.string() }).optional(),
+    selected: z.object({ providerId: z.string(), modelId: z.string() }).optional(),
+    reasonCodes: z.array(z.string()),
+    accessibleText: z.string(),
+  }),
+);
+
 export const ProviderRateLimitedSchema = EventBase(
   "provider.rate_limited",
   z.object({ providerId: z.string(), retryAfterMs: z.number().optional() }),
@@ -128,6 +158,7 @@ export const ForgeEventSchema = z.discriminatedUnion("type", [
   AgentCompletedSchema,
   RouterSelectionSchema,
   RouterFailoverSchema,
+  EightBitStatusSchema,
   ProviderRateLimitedSchema,
   ProviderQuotaExhaustedSchema,
   ToolStartedSchema,
