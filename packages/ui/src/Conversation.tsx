@@ -6,7 +6,9 @@ import DiffViewer from "./DiffViewer.js";
 import { buildTimeline, type TimelineItem } from "./timeline.js";
 import { parseAssistantContent, parseInlineSpans, reasoningSummary } from "./assistant-content.js";
 import { describeToolTarget, summarizeToolResult, hasToolDetail } from "./tool-activity.js";
-import { ActivityIcon, activityLabel, resolveActivityKind, type ActivityState } from "./activity-icons.js";
+import { ActivityIcon, activityLabel, resolveActivityKind, type ActivityKind, type ActivityState } from "./activity-icons.js";
+import { EightBitStatusBadge } from "./EightBitStatusBadge.js";
+import { deriveLatestEightBitStatus } from "./eight-bit-status.js";
 
 interface ConversationProps {
   turns: TurnRecord[];
@@ -81,6 +83,56 @@ const ReasoningBlock = ({ text, open }: { text: string; open: boolean }) => {
   );
 };
 
+function splitActivityTarget(value?: string): { primary?: string; context?: string } {
+  if (!value) return {};
+  const normalized = value.replace(/\\/g, "/");
+  if (normalized.startsWith("http://") || normalized.startsWith("https://")) return { primary: value };
+  const slash = normalized.lastIndexOf("/");
+  if (slash <= 0 || slash === normalized.length - 1) return { primary: value };
+  return { primary: normalized.slice(slash + 1), context: normalized.slice(0, slash) };
+}
+
+interface ActivityLineProps {
+  kind: ActivityKind;
+  state?: ActivityState;
+  filePath?: string;
+  verb: string;
+  target?: string;
+  context?: string;
+  meta?: React.ReactNode;
+  expandable?: boolean;
+  expanded?: boolean;
+  onToggle?: () => void;
+  children?: React.ReactNode;
+}
+
+/** The compact transcript primitive: icon, verb, target, context, and metadata share one baseline. */
+const ActivityLine = ({ kind, state = "static", filePath, verb, target, context, meta, expandable, expanded, onToggle, children }: ActivityLineProps) => {
+  const targetParts = splitActivityTarget(target);
+  const content = (
+    <>
+      <ActivityIcon kind={kind} state={state} filePath={filePath} />
+      <span className="activity-verb">{verb}</span>
+      {targetParts.primary && <span className="activity-target">{targetParts.primary}</span>}
+      {(context || targetParts.context) && <span className="activity-context">{context ?? targetParts.context}</span>}
+      {meta && <span className="activity-meta">{meta}</span>}
+      {expandable && <span className="activity-caret" aria-hidden="true">{expanded ? "▾" : "▸"}</span>}
+    </>
+  );
+  return (
+    <div className={`activity-block${state === "active" ? " running" : ""}`}>
+      {expandable ? (
+        <button type="button" className="activity-header" onClick={onToggle} aria-expanded={expanded}>
+          {content}
+        </button>
+      ) : (
+        <div className="activity-header">{content}</div>
+      )}
+      {children}
+    </div>
+  );
+};
+
 /**
  * One line of tool activity: what ran, what it ran on, and what came back — the three things a
  * user needs to follow the agent's work. Running calls animate; finished calls carry their result
@@ -99,23 +151,18 @@ const ToolActivity = ({ item }: { item: Extract<TimelineItem, { kind: "tool" }> 
   const expandable = hasToolDetail(item);
 
   return (
-    <div className={`activity-block${running ? " running" : ""}`}>
-      <div
-        className="activity-header"
-        style={{ cursor: expandable ? "pointer" : "default" }}
-        onClick={expandable ? () => setExpanded((v) => !v) : undefined}
-      >
-        <ActivityIcon kind={bad ? "error" : activityKind} state={activityState} />
-        <span className="activity-title">
-          {activityLabel(activityKind)}
-          {target && <span className="activity-target">{target}</span>}
-        </span>
-        {summary && <span className={`activity-meta${bad ? " error" : ""}`}>{summary}</span>}
-        {running && <span className="activity-meta">Working</span>}
-        {expandable && <span className="activity-caret" aria-hidden="true">{expanded ? "▾" : "▸"}</span>}
-      </div>
+    <ActivityLine
+      kind={bad ? "error" : activityKind}
+      state={activityState}
+      verb={activityLabel(activityKind)}
+      target={target}
+      meta={<>{summary && <span className={bad ? "activity-meta-error" : undefined}>{summary}</span>}{running && <span>Working</span>}</>}
+      expandable={expandable}
+      expanded={expanded}
+      onToggle={() => setExpanded((v) => !v)}
+    >
       {expanded && detail && <pre className="activity-detail">{detail}</pre>}
-    </div>
+    </ActivityLine>
   );
 };
 
@@ -143,23 +190,24 @@ const TimelineItemView = ({ item }: { item: TimelineItem }) => {
       return <ToolActivity item={item} />;
     case "file":
       return (
-        <div className="activity-block">
-          <div className="activity-header" style={{ cursor: "default" }}>
-            <ActivityIcon kind={item.action === "written" ? "edit" : "read"} state="completed" />
-            <span className="activity-title">{item.action === "written" ? "Wrote" : "Read"} {item.path}</span>
-            {item.detail && <span className="activity-meta">{item.detail}</span>}
-          </div>
-        </div>
+        <ActivityLine
+          kind={item.action === "written" ? "edit" : "read"}
+          state="completed"
+          filePath={item.path}
+          verb={item.action === "written" ? "Write" : "Read"}
+          target={item.path}
+          meta={item.detail}
+        />
       );
     case "command":
       return (
-        <div className="activity-block">
-          <div className="activity-header" style={{ cursor: "default" }}>
-            <ActivityIcon kind={item.exitCode === 0 ? "success" : "error"} state={item.exitCode === 0 ? "completed" : "failed"} />
-            <span className="activity-title">Ran {item.command}</span>
-            <span className="activity-meta">exit {item.exitCode}</span>
-          </div>
-        </div>
+        <ActivityLine
+          kind={item.exitCode === 0 ? "success" : "error"}
+          state={item.exitCode === 0 ? "completed" : "failed"}
+          verb="Run"
+          target={item.command}
+          meta={`exit ${item.exitCode}`}
+        />
       );
     default:
       return null;
@@ -176,13 +224,16 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
       const a = item as Extract<WorkItem, { kind: "activity" }>;
       const iconState: ActivityState = a.status === "completed" ? "completed" : a.status === "failed" ? "failed" : "active";
       return (
-        <div className="activity-block">
-          <button type="button" className="activity-header" onClick={toggle}>
-            <span className={`activity-chevron ${!isCollapsed ? "open" : ""}`}>›</span>
-            <ActivityIcon kind="generic" state={iconState} />
-            <span className="activity-title">{a.title}</span>
-            {a.durationMs ? <span className="activity-meta activity-elapsed">{a.durationMs}ms</span> : null}
-          </button>
+        <ActivityLine
+          kind="generic"
+          state={iconState}
+          verb={activityLabel("generic")}
+          target={a.title}
+          meta={a.durationMs ? <span className="activity-elapsed">{a.durationMs}ms</span> : undefined}
+          expandable
+          expanded={!isCollapsed}
+          onToggle={toggle}
+        >
           {!isCollapsed && (
             <div className="activity-body">
               {displayMode !== "compact" && a.detail && <div>{a.detail}</div>}
@@ -193,7 +244,7 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
               )}
             </div>
           )}
-        </div>
+        </ActivityLine>
       );
     }
 
@@ -202,16 +253,19 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
       const isRunning = c.status === "running";
       const isFailed = c.status === "failed";
       return (
-        <div className="activity-block">
-          <button type="button" className="activity-header" onClick={toggle}>
-            <span className={`activity-chevron ${!isCollapsed ? "open" : ""}`}>›</span>
-            <ActivityIcon kind={isFailed ? "error" : isRunning ? "execute" : "success"} state={isFailed ? "failed" : isRunning ? "active" : "completed"} />
-            <span className="activity-title">Ran {c.command}</span>
-            <span className="activity-meta">
+        <ActivityLine
+          kind={isFailed ? "error" : isRunning ? "execute" : "success"}
+          state={isFailed ? "failed" : isRunning ? "active" : "completed"}
+          verb="Run"
+          target={c.command}
+          meta={<>
               {isRunning ? "Running" : isFailed ? `Exit ${c.exitCode ?? 1}` : "Passed"}
-            </span>
-            {c.durationMs ? <span className="activity-meta activity-elapsed">{c.durationMs}ms</span> : null}
-          </button>
+              {c.durationMs ? <span className="activity-elapsed"> · {c.durationMs}ms</span> : null}
+            </>}
+          expandable
+          expanded={!isCollapsed}
+          onToggle={toggle}
+        >
           {!isCollapsed && (
             <div className="activity-body">
               {c.workingDirectory && displayMode !== "compact" && (
@@ -232,23 +286,28 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
               )}
             </div>
           )}
-        </div>
+        </ActivityLine>
       );
     }
 
     case "file_change": {
       const f = item as Extract<WorkItem, { kind: "file_change" }>;
+      const fileVerb = f.changeType === "created" ? "Create" : f.changeType === "deleted" ? "Delete" : "Edit";
       return (
-        <div className="activity-block">
-          <button type="button" className="activity-header" onClick={toggle}>
-            <span className={`activity-chevron ${!isCollapsed ? "open" : ""}`}>›</span>
-            <ActivityIcon kind={f.changeType === "created" ? "create" : f.changeType === "deleted" ? "delete" : "edit"} state={f.changeType === "deleted" ? "failed" : "completed"} />
-            <span className="activity-title">Edited {f.path}</span>
-            <span className="activity-meta activity-diff-stats">
+        <ActivityLine
+          kind={f.changeType === "created" ? "create" : f.changeType === "deleted" ? "delete" : "edit"}
+          state={f.changeType === "deleted" ? "failed" : "completed"}
+          filePath={f.path}
+          verb={fileVerb}
+          target={f.path}
+          meta={<span className="activity-diff-stats">
               <span className="activity-stat activity-stat-additions">+{f.additions}</span>{" "}
               <span className="activity-stat activity-stat-deletions">−{f.deletions}</span>
-            </span>
-          </button>
+            </span>}
+          expandable
+          expanded={!isCollapsed}
+          onToggle={toggle}
+        >
           {!isCollapsed && (
             <div className="activity-body">
               {f.diff && <DiffViewer diff={f.diff} fileName={f.path} />}
@@ -260,7 +319,7 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
               </div>
             </div>
           )}
-        </div>
+        </ActivityLine>
       );
     }
 
@@ -268,15 +327,16 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
       const t = item as Extract<WorkItem, { kind: "test_run" }>;
       const isFailed = t.failed > 0;
       return (
-        <div className="activity-block">
-          <button type="button" className="activity-header" onClick={toggle}>
-            <span className={`activity-chevron ${!isCollapsed ? "open" : ""}`}>›</span>
-            <ActivityIcon kind={isFailed ? "error" : "test"} state={isFailed ? "failed" : "completed"} />
-            <span className="activity-title">{t.name || "Test Suite"}</span>
-            <span className="activity-meta">
-              {t.passed} passed{t.failed > 0 ? ` · ${t.failed} failed` : ""}
-            </span>
-          </button>
+        <ActivityLine
+          kind={isFailed ? "error" : "test"}
+          state={isFailed ? "failed" : "completed"}
+          verb="Test"
+          target={t.name || "Test Suite"}
+          meta={`${t.passed} passed${t.failed > 0 ? ` · ${t.failed} failed` : ""}`}
+          expandable
+          expanded={!isCollapsed}
+          onToggle={toggle}
+        >
           {!isCollapsed && (
             <div className="activity-body">
               {t.failures && t.failures.length > 0 && (
@@ -290,7 +350,7 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
               )}
             </div>
           )}
-        </div>
+        </ActivityLine>
       );
     }
 
@@ -336,18 +396,12 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
       // home (ApprovalBar); here we show only what was asked and what was decided.
       const outcome = a.decision
         ? a.decision === "deny"
-          ? { label: "Denied", cls: "denied" }
-          : { label: a.decision === "allow_session" ? "Allowed for session" : "Allowed", cls: "allowed" }
-        : { label: "Awaiting your decision", cls: "pending" };
+          ? { label: "Denied", kind: "error" as const, state: "failed" as const }
+          : { label: a.decision === "allow_session" ? "Allowed for session" : "Allowed", kind: "complete" as const, state: "completed" as const }
+        : { label: "Awaiting your decision", kind: "approval" as const, state: "pending" as const };
       return (
-        <div className={`approval-record ${outcome.cls}`}>
-          <div className="approval-record-head">
-            <span className="approval-record-title">
-              <strong>{a.tool}</strong> · <code>{a.action}</code>
-            </span>
-            <span className={`approval-record-state ${outcome.cls}`}>{outcome.label}</span>
-          </div>
-          <div className="approval-record-body">
+        <ActivityLine kind={outcome.kind} state={outcome.state} verb="Approval" target={a.tool} context={a.action} meta={outcome.label}>
+          <div className="activity-body">
             {a.description}
             {a.scope && (
               <>
@@ -356,7 +410,7 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
               </>
             )}
           </div>
-        </div>
+        </ActivityLine>
       );
     }
 
@@ -380,38 +434,21 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
     case "checkpoint": {
       const c = item as Extract<WorkItem, { kind: "checkpoint" }>;
       return (
-        <div className="activity-block">
-          <div className="activity-header" style={{ cursor: "default" }}>
-            <ActivityIcon kind="git" state="completed" />
-            <span className="activity-title">Checkpoint: {c.label}</span>
-            <span className="activity-meta">{c.id.slice(0, 8)}</span>
-          </div>
-        </div>
+        <ActivityLine kind="git" state="completed" verb="Checkpoint" target={c.label} meta={c.id.slice(0, 8)} />
       );
     }
 
     case "evidence": {
       const e = item as Extract<WorkItem, { kind: "evidence" }>;
       return (
-        <div className="activity-block">
-          <div className="activity-header" style={{ cursor: "default" }}>
-            <ActivityIcon kind="verify" state="completed" />
-            <span className="activity-title">Evidence: {e.conclusion}</span>
-          </div>
-        </div>
+        <ActivityLine kind="verify" state="completed" verb="Evidence" target={e.conclusion} />
       );
     }
 
     case "artifact": {
       const a = item as Extract<WorkItem, { kind: "artifact" }>;
       return (
-        <div className="activity-block">
-          <div className="activity-header" style={{ cursor: "default" }}>
-            <ActivityIcon kind="create" state="completed" />
-            <span className="activity-title">{a.title}</span>
-            <span className="activity-meta">{a.type}</span>
-          </div>
-        </div>
+        <ActivityLine kind="create" state="completed" verb="Artifact" target={a.title} meta={a.type} />
       );
     }
 
@@ -435,6 +472,9 @@ export default function Conversation({ turns, workItems, displayMode, events, on
   const containerRef = useRef<HTMLDivElement>(null);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const timeline = useMemo(() => buildTimeline(events ?? []), [events]);
+  // 8-Bit is presentation-only here: it renders whatever the backend's last `eightbit.status`
+  // event says, never influences routing/health/eligibility. See eight-bit-status.ts.
+  const eightBitStatus = useMemo(() => deriveLatestEightBitStatus(events), [events]);
 
   const handleScroll = () => {
     if (!containerRef.current) return;
@@ -522,6 +562,11 @@ export default function Conversation({ turns, workItems, displayMode, events, on
               <WorkItemRenderer key={item.id} item={item} displayMode={displayMode} />
             ))}
           </>
+        )}
+        {!isEmpty && eightBitStatus && (
+          <div className="eight-bit-status-row">
+            <EightBitStatusBadge status={eightBitStatus} />
+          </div>
         )}
       </div>
       {showJumpToLatest && (

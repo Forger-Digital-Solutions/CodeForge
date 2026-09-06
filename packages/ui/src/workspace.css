@@ -610,29 +610,31 @@ html, body, #root {
    ──────────────────────────────────────────── */
 
 .activity-block {
-  border-radius: var(--cf-radius);
-  overflow: hidden;
+  margin: 2px 0;
 }
 
 .activity-header {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  cursor: pointer;
-  border-radius: var(--cf-radius);
-  transition: background 0.1s;
+  align-items: baseline;
+  gap: 7px;
+  min-height: 24px;
+  padding: 2px 0;
+  cursor: default;
   font-size: 12px;
   color: var(--cf-text-secondary);
-  background: none;
+  background: transparent;
   border: none;
   width: 100%;
   text-align: left;
   font-family: var(--cf-font);
 }
 
-.activity-header:hover {
-  background: var(--cf-bg-raised);
+.activity-header:is(button) {
+  cursor: pointer;
+}
+
+.activity-header:is(button):hover {
+  background: transparent;
 }
 
 .activity-chevron {
@@ -652,13 +654,20 @@ html, body, #root {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   text-align: center;
   flex-shrink: 0;
+  line-height: 0;
 }
 
-.activity-icon svg { display: block; }
+.activity-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .activity-icon-success,
 .activity-icon-state-completed { color: var(--cf-success); }
 .activity-icon-error,
@@ -695,6 +704,13 @@ html, body, #root {
   white-space: nowrap;
 }
 
+.activity-verb {
+  flex: 0 0 auto;
+  color: var(--cf-text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .activity-meta {
   font-size: 11px;
   color: var(--cf-text-muted);
@@ -704,11 +720,14 @@ html, body, #root {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-left: auto;
 }
 
 .activity-meta.error {
   color: var(--cf-danger);
 }
+
+.activity-meta-error { color: var(--cf-danger); }
 
 .activity-elapsed {
   color: #c084fc;
@@ -724,16 +743,58 @@ html, body, #root {
 
 /* The target is what distinguishes one call from the next; the tool name is the repeated part. */
 .activity-target {
-  margin-left: 6px;
+  min-width: 0;
+  max-width: min(54vw, 560px);
   font-family: var(--cf-font-mono);
   font-size: 11.5px;
   color: var(--cf-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-context {
+  min-width: 0;
+  max-width: 28%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--cf-text-muted);
+  font-family: var(--cf-font-mono);
+  font-size: 10.5px;
 }
 
 .activity-caret {
   font-size: 9px;
   color: var(--cf-text-muted);
   flex-shrink: 0;
+}
+
+/* 8-Bit routing status: same compact language as an activity row — icon, then the real content
+   (accessible text), never the other way around. Presentation only. */
+.eight-bit-status-row {
+  margin: 6px 0 2px;
+}
+
+.eight-bit-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 0;
+  font-size: 11.5px;
+  color: var(--cf-text-secondary);
+  font-family: var(--cf-font);
+}
+
+.eight-bit-status-badge img {
+  flex-shrink: 0;
+}
+
+.eight-bit-status-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* A running call should be visibly alive without drawing the eye off the answer. */
@@ -756,6 +817,12 @@ html, body, #root {
   width: 18px;
   height: 18px;
   color: var(--cf-accent);
+}
+
+.forge-working-indicator .activity-icon img {
+  width: 100%;
+  height: 100%;
+  animation: forge-icon-pulse 1.15s ease-in-out infinite;
 }
 
 .forge-working-label {
@@ -783,6 +850,11 @@ html, body, #root {
   78%, 100% { opacity: 0; transform: translate(1px, -1px) scale(1); }
 }
 
+@keyframes forge-icon-pulse {
+  0%, 100% { opacity: 0.72; transform: translateY(0); }
+  42%, 64% { opacity: 1; transform: translateY(-1px); }
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -797,7 +869,8 @@ html, body, #root {
 
 @media (prefers-reduced-motion: reduce) {
   .forge-working-indicator .forge-spark,
-  .forge-working-indicator .forge-nozzle { animation: none; }
+  .forge-working-indicator .forge-nozzle,
+  .forge-working-indicator .activity-icon img { animation: none; }
   .forge-working-indicator .forge-spark { opacity: 0.75; }
 }
 
@@ -2410,6 +2483,20 @@ html, body, #root {
   }
   .workspace-inspector:not(.force-show) {
     display: none;
+  }
+  .activity-header {
+    gap: 5px;
+    min-height: 23px;
+  }
+  .activity-target {
+    max-width: 42vw;
+  }
+  .activity-context {
+    display: none;
+  }
+  .activity-meta {
+    max-width: 30%;
+    font-size: 10px;
   }
 }
 

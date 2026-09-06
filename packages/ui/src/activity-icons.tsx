@@ -1,4 +1,5 @@
 import React from "react";
+import { resolveActivityAsset } from "./emoji-assets.js";
 
 export type ActivityKind =
   | "search"
@@ -8,17 +9,26 @@ export type ActivityKind =
   | "edit"
   | "create"
   | "delete"
+  | "tool"
   | "execute"
   | "fetch"
+  | "build"
   | "test"
   | "verify"
   | "git"
   | "commit"
   | "error"
   | "waiting"
+  | "queued"
+  | "paused"
+  | "approval"
+  | "complete"
+  | "warning"
+  | "cancelled"
   | "parallel"
   | "success"
   | "generic"
+  | "unknown"
   | "forge";
 
 export type ActivityState = "active" | "completed" | "failed" | "blocked" | "pending" | "static";
@@ -31,17 +41,26 @@ const LABELS: Record<ActivityKind, string> = {
   edit: "Edit",
   create: "Create",
   delete: "Delete",
+  tool: "Tool",
   execute: "Execute",
   fetch: "Fetch",
+  build: "Build",
   test: "Test",
   verify: "Verify",
   git: "Git",
   commit: "Commit",
   error: "Error",
   waiting: "Waiting",
+  queued: "Queued",
+  paused: "Paused",
+  approval: "Approval",
+  complete: "Complete",
+  warning: "Warning",
+  cancelled: "Cancelled",
   parallel: "Parallel",
   success: "Success",
   generic: "Activity",
+  unknown: "Activity",
   forge: "Forging",
 };
 
@@ -56,19 +75,24 @@ export function resolveActivityKind(toolName: string): ActivityKind {
   if (/(^|_)(read|cat|list|inspect|stat)(_|$)/.test(name)) return "read";
   if (/(^|_)(reason|think|thinking)(_|$)/.test(name)) return "reason";
   if (/(^|_)(plan|planning)(_|$)/.test(name)) return "plan";
-  if (/(^|_)(edit|patch|write|create|modify|update)(_|$)/.test(name)) return name.includes("create") ? "create" : "edit";
+  if (/(^|_)(create)(_|$)/.test(name)) return "create";
+  if (/(^|_)(edit|patch|write|modify|update)(_|$)/.test(name)) return "edit";
   if (/(^|_)(delete|remove|trash)(_|$)/.test(name)) return "delete";
   if (/(^|_)(fetch|web|http|browse|url)(_|$)/.test(name)) return "fetch";
-  if (/(^|_)(test|lint|typecheck|build|verify|validation)(_|$)/.test(name)) return name.includes("verify") || name.includes("validation") ? "verify" : "test";
+  if (/(^|_)(build|compile|bundle)(_|$)/.test(name)) return "build";
+  if (/(^|_)(verify|validation)(_|$)/.test(name)) return "verify";
+  if (/(^|_)(test|lint|typecheck)(_|$)/.test(name)) return "test";
   if (/(^|_)(git|branch|commit|checkout)(_|$)/.test(name)) return name.includes("commit") ? "commit" : "git";
+  if (/(^|_)(tool|function)_?use(_|$)/.test(name)) return "tool";
   if (/(^|_)(run|exec|execute|command|shell|terminal)(_|$)/.test(name)) return "execute";
   return "generic";
 }
 
-interface ActivityIconProps {
+export interface ActivityIconProps {
   kind: ActivityKind;
   state?: ActivityState;
-  size?: 14 | 16 | 18;
+  size?: 14 | 16 | 18 | 20 | 24;
+  filePath?: string;
 }
 
 function IconShape({ kind }: { kind: ActivityKind }) {
@@ -114,12 +138,10 @@ function IconShape({ kind }: { kind: ActivityKind }) {
   }
 }
 
-export const ActivityIcon = React.memo(function ActivityIcon({ kind, state = "static", size = 16 }: ActivityIconProps) {
+export const ActivityIcon = React.memo(function ActivityIcon({ kind, state = "static", size = 20, filePath }: ActivityIconProps) {
   return (
-    <span className={`activity-icon activity-icon-${kind} activity-icon-state-${state}`} data-activity-kind={kind} data-activity-state={state} aria-hidden="true">
-      <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" focusable="false">
-        <IconShape kind={kind} />
-      </svg>
+    <span className={`activity-icon activity-icon-${kind} activity-icon-state-${state}`} style={{ width: size, height: size }} data-activity-kind={kind} data-activity-state={state} aria-hidden="true">
+      <img src={resolveActivityAsset(kind, filePath)} width={size} height={size} alt="" draggable={false} />
     </span>
   );
 });
@@ -133,7 +155,7 @@ export function ForgeWorkingIndicator({ active, label = "Forging..." }: ForgeWor
   if (!active) return null;
   return (
     <div className="forge-working-indicator" data-active="true" role="status" aria-live="polite">
-      <ActivityIcon kind="forge" state="active" size={18} />
+      <ActivityIcon kind="forge" state="active" size={20} />
       <span className="forge-working-label">{label}</span>
       <span className="sr-only">CodeForge is actively working.</span>
     </div>

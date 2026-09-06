@@ -98,6 +98,7 @@ interface LayoutOpts {
   pendingApproval?: any;
   pendingQuestion?: any;
   eventStreamConnected?: boolean;
+  events?: any[];
 }
 
 function Layout(opts: LayoutOpts) {
@@ -117,6 +118,7 @@ function Layout(opts: LayoutOpts) {
     pendingApproval = null,
     pendingQuestion = null,
     eventStreamConnected = true,
+    events,
   } = opts;
 
   return (
@@ -150,7 +152,7 @@ function Layout(opts: LayoutOpts) {
                 onResume={noop}
               />
             )}
-            <Conversation turns={turns} workItems={workItems} displayMode="detailed" isRunning={isRunning} contextLabel={`CodeForge · ${project.name}`} />
+            <Conversation turns={turns} workItems={workItems} events={events} displayMode="detailed" isRunning={isRunning} contextLabel={`CodeForge · ${project.name}`} />
             <ForgeWorkingIndicator active={isRunning && !isPaused && activePhase !== "awaiting_approval" && !pendingApproval && eventStreamConnected} />
             {isRunning && !pendingApproval && activePhase !== "awaiting_approval" && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px 6px", color: "#777", fontSize: 10 }} aria-label="Forge icon size samples">
@@ -288,17 +290,68 @@ const scenarios: Record<string, () => React.ReactElement> = {
   forgezero: () => <Layout
     session={{ id: "s", title: "Trust status", taskTitle: "Trust status", status: "idle" }}
     turns={[]} workItems={[]} activeTab="overview" forgeZeroOpen />,
+
+  "eight-bit": () => <Layout
+    session={{ id: "s", title: "Fix add function to return a + b", taskTitle: "Fix add function to return a + b", status: "running", branch: "fix/math-addition", currentAgentId: "forge-coder", currentModelId: "qwen-2.5-coder" }}
+    turns={[{ id: "t1", sessionId: "s", seq: 0, userMessage: "Fix the add function in src/calc.ts so it returns a + b instead of a - b", status: "completed" }]}
+    workItems={[]}
+    events={[
+      { type: "turn.started", timestamp: now, seq: 1, sessionId: "s", payload: { turnId: "t1", userMessage: "Fix the add function in src/calc.ts so it returns a + b instead of a - b" } },
+      { type: "assistant.message.started", timestamp: now, seq: 2, sessionId: "s", payload: { turnId: "t1", messageId: "m1", agentId: "forge-coder" } },
+      { type: "text.delta", timestamp: now, seq: 3, sessionId: "s", payload: { turnId: "t1", delta: "I'll inspect calc.ts and fix the operator.", agentId: "forge-coder", messageId: "m1" } },
+      { type: "assistant.message.completed", timestamp: now, seq: 4, sessionId: "s", payload: { turnId: "t1", messageId: "m1", text: "I'll inspect calc.ts and fix the operator.", agentId: "forge-coder" } },
+      { type: "tool.call_started", timestamp: now, seq: 5, sessionId: "s", payload: { turnId: "t1", toolCallId: "tc1", toolName: "edit_file", agentId: "forge-coder" } },
+      { type: "tool.call_completed", timestamp: now, seq: 6, sessionId: "s", payload: { turnId: "t1", toolCallId: "tc1", toolName: "edit_file", argsJson: "{\"path\":\"src/calc.ts\"}", agentId: "forge-coder" } },
+      {
+        type: "eightbit.status",
+        timestamp: now,
+        seq: 7,
+        sessionId: "s",
+        payload: {
+          event: "ROUTE_READY",
+          role: "CODER",
+          previous: { providerId: "openrouter", modelId: "deepseek-v3:free" },
+          selected: { providerId: "groq", modelId: "qwen-2.5-coder" },
+          reasonCodes: ["QUOTA_EXHAUSTED", "REPLACEMENT_ELIGIBLE"],
+          accessibleText: "8-Bit switched the CODER route to groq/qwen-2.5-coder because the previous provider exhausted its free quota, and is continuing this turn.",
+        },
+      },
+    ]}
+    isRunning activePhase="implementing" workflowProgress={70} activeTab="terminal" placeholder="Steer the agent…" />,
 };
 
 const SCENARIO_KEYS = Object.keys(scenarios);
 
+const LIGHT_THEME = {
+  "--cf-bg-base": "#f6f7f9",
+  "--cf-bg-raised": "#ffffff",
+  "--cf-bg-overlay": "#ffffff",
+  "--cf-bg-hover": "#edf1f5",
+  "--cf-bg-input": "#ffffff",
+  "--cf-text": "#20242b",
+  "--cf-text-secondary": "#586170",
+  "--cf-text-muted": "#77808d",
+  "--cf-accent": "#245dcc",
+  "--cf-accent-hover": "#194aa8",
+  "--cf-accent-muted": "rgba(36, 93, 204, 0.11)",
+  "--cf-success": "#147a46",
+  "--cf-success-muted": "rgba(20, 122, 70, 0.12)",
+  "--cf-warning": "#9a5b00",
+  "--cf-warning-muted": "rgba(154, 91, 0, 0.12)",
+  "--cf-danger": "#b42318",
+  "--cf-danger-muted": "rgba(180, 35, 24, 0.12)",
+  "--cf-border": "#d7dce4",
+  "--cf-border-subtle": "#e7eaf0",
+} as React.CSSProperties;
+
 function QAApp() {
   const params = new URLSearchParams(window.location.search);
   const current = params.get("scenario") || "empty";
+  const light = params.get("theme") === "light";
   const render = scenarios[current] ?? scenarios.empty!;
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", ...(light ? LIGHT_THEME : {}) }}>
       <div style={{ display: "flex", gap: 4, padding: "4px 8px", background: "#000", borderBottom: "1px solid #333", flexWrap: "wrap", alignItems: "center" }}>
         <span style={{ color: "#888", fontSize: 11, marginRight: 8, fontFamily: "system-ui" }}>QA:</span>
         {SCENARIO_KEYS.map((k) => (
