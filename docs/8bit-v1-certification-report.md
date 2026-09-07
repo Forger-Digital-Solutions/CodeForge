@@ -379,7 +379,9 @@ mechanism `ForgeZero`/`model-registry` already use (unmodified by this task).
 
 ## Repository State
 
-- Final HEAD (after commit): recorded below once created.
+- Final HEAD and commit: see the accompanying commit "implement 8-Bit Infinity Core V1" on
+  `feat/codeforge-cloud` — one commit ahead of `9fad9e6`, 42 files changed, 4029 insertions(+),
+  6 deletions(-).
 - **8-Bit-owned files included in the commit:**
   - `packages/eight-bit/**` (new package: `package.json`, `tsconfig.json`, `src/*.ts` ×11,
     `test/*.test.ts` ×11)
