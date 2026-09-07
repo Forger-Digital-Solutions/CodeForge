@@ -38,11 +38,13 @@ describe("PostgresCloudDatabase — async schema init (boot-fix)", () => {
     await db.init();
 
     const joined = queries.join("\n");
-    expect(joined).toContain("CREATE TABLE IF NOT EXISTS schema_migrations");
+    // Namespaced migration table (CF-clean-baseline: was the collision-prone `schema_migrations`,
+    // shared by name with @codeforge/sessions — see adoptLegacyMigrationsTableIfOwned).
+    expect(joined).toContain("CREATE TABLE IF NOT EXISTS cloud_schema_migrations");
     // Migration body ran (the initial schema creates the users table).
     expect(joined).toMatch(/CREATE TABLE[\s\S]*users/i);
-    // schema_migrations bookkeeping row inserted for each migration.
-    expect(queries.filter((q) => q.includes("INSERT INTO schema_migrations")).length).toBe(MIGRATIONS.length);
+    // cloud_schema_migrations bookkeeping row inserted for each migration.
+    expect(queries.filter((q) => q.includes("INSERT INTO cloud_schema_migrations")).length).toBe(MIGRATIONS.length);
     // Default plans seeded (free + pro at minimum).
     expect(queries.filter((q) => q.includes("INSERT INTO plans")).length).toBe(DEFAULT_PLANS.length);
   });
@@ -62,7 +64,7 @@ describe("PostgresCloudDatabase — async schema init (boot-fix)", () => {
     await Promise.all([db.init(), db.init(), db.init()]);
     // Exactly one migration pass despite three concurrent callers: one bookkeeping insert per
     // migration, not three times that.
-    expect(queries.filter((q) => q.includes("INSERT INTO schema_migrations")).length).toBe(MIGRATIONS.length);
+    expect(queries.filter((q) => q.includes("INSERT INTO cloud_schema_migrations")).length).toBe(MIGRATIONS.length);
   });
 
   it("handles idle pool errors without terminating the API process", () => {
@@ -91,7 +93,7 @@ describe.skipIf(!REAL_PG?.startsWith("postgres"))("PostgresCloudDatabase — rea
       const second = new PostgresCloudDatabase({ connectionString: schemaUrl.toString() });
 
       await Promise.all([first.init(), second.init()]);
-      const migrations = await adminPool.query(`SELECT version FROM ${safeSchema}.schema_migrations ORDER BY version`);
+      const migrations = await adminPool.query(`SELECT version FROM ${safeSchema}.cloud_schema_migrations ORDER BY version`);
       expect(migrations.rows.map((row) => row.version)).toEqual(MIGRATIONS.map((migration) => migration.version));
       await Promise.all([first.close(), second.close()]);
     } finally {

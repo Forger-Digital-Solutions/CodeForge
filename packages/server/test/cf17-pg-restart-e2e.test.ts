@@ -123,10 +123,19 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("CF-17 spawned-process restart
     const started = await request(portA, "/api/send", { sessionId: "cf17-pg-restart", message: "implement original behavior" });
     expect(started.status).toBe(200);
     const turnId = started.body.turnId as string;
+    // Wait for the fixture's own first stream delta ("first attempt started"), not just
+    // turn.status === "running". The steering-drain checkpoint (packages/server/src/agent-runtime.ts
+    // runAgentLoop) runs BEFORE the provider is ever called, on the very first iteration — turn
+    // status already reads "running" at that point, so a steer submitted on that (weaker) signal
+    // can race the drain and get folded into the turn's first request instead of remaining queued,
+    // which is a legitimate outcome but not the one this test is specifically proving. Waiting for
+    // the fixture's real stream delta guarantees iteration 0 is already blocked inside the (hung)
+    // provider call, past the drain checkpoint, so the steer that follows is guaranteed to still be
+    // queued at kill time.
     await waitFor(
       async () => (await request(portA, `/api/sessions/cf17-pg-restart`)).body,
-      (snapshot) => snapshot.turns?.some((turn: { id: string; status: string }) => turn.id === turnId && turn.status === "running"),
-      "process A turn did not become active",
+      (snapshot) => snapshot.events?.some((event: { type: string; payload?: { delta?: string } }) => event.type === "text.delta" && event.payload?.delta === "first attempt started"),
+      "process A turn did not reach the first provider stream delta",
     );
 
     const steered = await request(portA, "/api/send", { sessionId: "cf17-pg-restart", message: "use revised behavior", steer: true, steerId: "pg-restart-steer" });

@@ -11,6 +11,15 @@ const { Pool } = pg;
 const MIGRATION_LOCK_NAMESPACE = 2_045_909_113;
 const MIGRATION_LOCK_KEY = 771_034_889;
 
+// Namespaced migration-history table for this package. Earlier builds of both
+// @codeforge/sessions and @codeforge/cloud-db tracked migrations in an identically named
+// `schema_migrations` table — harmless in normal deployment topology (each service has its own
+// physical database) but a real collision when both are pointed at one shared database (e.g. a
+// local test database used by both suites). See adoptLegacyMigrationsTableIfOwned below for the
+// backward-compatible upgrade path for a database that already has the legacy table.
+const MIGRATIONS_TABLE = "sessions_schema_migrations";
+const LEGACY_MIGRATIONS_TABLE = "schema_migrations";
+
 export interface PostgresPersistenceOptions {
   connectionString?: string;
   ssl?: boolean;
@@ -262,8 +271,9 @@ export class PostgresSessionPersistence implements ISessionPersistence {
     const client = await this.pool.connect();
     try {
       await client.query("SELECT pg_advisory_lock($1, $2)", [MIGRATION_LOCK_NAMESPACE, MIGRATION_LOCK_KEY]);
+      await this.adoptLegacyMigrationsTableIfOwned(client);
       await client.query(`
-        CREATE TABLE IF NOT EXISTS schema_migrations (
+        CREATE TABLE IF NOT EXISTS ${MIGRATIONS_TABLE} (
           version INTEGER PRIMARY KEY,
           name VARCHAR(255) NOT NULL,
           checksum VARCHAR(64) NOT NULL,
@@ -271,7 +281,7 @@ export class PostgresSessionPersistence implements ISessionPersistence {
         );
       `);
       for (const migration of SESSIONS_MIGRATIONS) {
-        const res = await client.query(`SELECT checksum FROM schema_migrations WHERE version = $1`, [migration.version]);
+        const res = await client.query(`SELECT checksum FROM ${MIGRATIONS_TABLE} WHERE version = $1`, [migration.version]);
         if (res.rows.length > 0) {
           if (res.rows[0].checksum !== migration.checksum) {
             throw new Error(`Sessions database migration checksum mismatch for version ${migration.version} (${migration.name}). Database integrity compromised.`);
@@ -279,7 +289,7 @@ export class PostgresSessionPersistence implements ISessionPersistence {
         } else {
           await client.query(migration.postgresUp);
           await client.query(
-            `INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES ($1,$2,$3,$4)`,
+            `INSERT INTO ${MIGRATIONS_TABLE} (version, name, checksum, applied_at) VALUES ($1,$2,$3,$4)`,
             [migration.version, migration.name, migration.checksum, new Date().toISOString()],
           );
         }
@@ -290,6 +300,42 @@ export class PostgresSessionPersistence implements ISessionPersistence {
       } finally {
         client.release();
       }
+    }
+  }
+
+  /**
+   * Backward-compatible, ownership-safe upgrade path for a database created before this
+   * package's migration table was namespaced. Runs under the same advisory lock as the rest of
+   * `initSchema`, so it is race-free even across concurrently booting processes.
+   *
+   * - If the namespaced table already exists, this is a no-op (already upgraded).
+   * - If no legacy `schema_migrations` table exists, this is a no-op (a genuinely fresh database
+   *   — the CREATE TABLE IF NOT EXISTS right after this call creates the namespaced table).
+   * - If a legacy table exists, its version-1 migration name is compared against this package's
+   *   own ("initial_schema"). An exact match means the legacy table is this package's own prior
+   *   history: it is renamed in place (every row preserved, zero data loss) to the namespaced
+   *   name. Any other name (or none) means the legacy table belongs to another package (most
+   *   likely @codeforge/cloud-db) or is unrecognized — it is left completely untouched, and this
+   *   package simply starts its own namespaced table fresh. Ownership is never guessed from
+   *   anything but this exact, unambiguous name match.
+   */
+  private async adoptLegacyMigrationsTableIfOwned(client: pg.PoolClient): Promise<void> {
+    const namespaced = await client.query(`SELECT to_regclass($1) IS NOT NULL AS exists`, [MIGRATIONS_TABLE]);
+    if (namespaced.rows[0]?.exists) return;
+
+    const legacy = await client.query(`SELECT to_regclass($1) IS NOT NULL AS exists`, [LEGACY_MIGRATIONS_TABLE]);
+    if (!legacy.rows[0]?.exists) return;
+
+    const ownMigrationOne = SESSIONS_MIGRATIONS.find((m) => m.version === 1);
+    const legacyOwner = await client.query(`SELECT name FROM ${LEGACY_MIGRATIONS_TABLE} WHERE version = 1`);
+    if (!ownMigrationOne || legacyOwner.rows[0]?.name !== ownMigrationOne.name) return;
+
+    try {
+      await client.query(`ALTER TABLE ${LEGACY_MIGRATIONS_TABLE} RENAME TO ${MIGRATIONS_TABLE}`);
+    } catch {
+      // A concurrent process already claimed/renamed it under its own advisory-locked pass;
+      // the namespaced table it created is picked up normally by the CREATE TABLE IF NOT EXISTS
+      // that follows this call.
     }
   }
 

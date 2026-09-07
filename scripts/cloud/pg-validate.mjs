@@ -111,7 +111,9 @@ try {
   }
 
   // 5. Migration state & checksum integrity
-  const applied = await db.diagnosticQuery("SELECT version, name, checksum FROM schema_migrations ORDER BY version");
+  // cloud_schema_migrations: namespaced table name (was the collision-prone `schema_migrations`,
+  // shared by name with @codeforge/sessions — see postgres.ts's adoptLegacyMigrationsTableIfOwned).
+  const applied = await db.diagnosticQuery("SELECT version, name, checksum FROM cloud_schema_migrations ORDER BY version");
   const appliedByVersion = new Map(applied.rows.map((r) => [Number(r.version), r]));
   for (const migration of MIGRATIONS) {
     const row = appliedByVersion.get(migration.version);
