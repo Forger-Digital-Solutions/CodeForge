@@ -212,6 +212,8 @@ export interface GenericVerificationEvidence {
   verifierId?: string;
   scope?: string;
   workspacePath?: string;
+  command?: string;
+  targetPaths?: readonly string[];
   inputStateHash?: string;
   policyVersion?: string;
   status: "passed" | "failed" | "timed_out" | "cancelled" | "infra_error" | "interrupted" | "skipped";

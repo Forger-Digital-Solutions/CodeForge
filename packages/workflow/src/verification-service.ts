@@ -15,7 +15,9 @@ import {
 import {
   determineVerificationObligations,
   evaluateVerificationSufficiency,
+  resolveVerificationObligations,
   FORGE_GREEN_VERIFICATION_POLICY_VERSION,
+  type EvidenceResolutionReceipt,
   type GenericVerificationEvidence,
   type VerificationLevel,
   type VerificationPolicyDecision,
@@ -411,6 +413,7 @@ export async function runVerification(
   // workflow is not enough to pretend the change is local, and must retain the legacy verifier
   // contract until Repository Intelligence / FG-4 advice is available.
   let policyObligationsResult: import("@codeforge/forge-green").VerificationPolicyObligationsResult | undefined;
+  let resolutionResult: import("@codeforge/forge-green").EvidenceResolutionResult | undefined;
   const hasAuthoritativePolicyInputs = Boolean(
     options.riskAnalysis ||
     options.intelligence ||
@@ -443,7 +446,17 @@ export async function runVerification(
         ledger: options.ledger,
       });
 
+      const v0Resolution = await resolveVerificationObligations({
+        obligations: [],
+        workspacePath,
+        executionRevision: options.executionRevision,
+        currentInputStateHash: createVerificationInputStateHash(workspacePath),
+        policyReceiptId: policyObligationsResult.receipt.receiptId,
+        ledger: options.ledger,
+      });
+
       await options.observer?.policyReceiptCreated?.(v0Decision.receipt);
+      await options.observer?.resolutionReceiptCreated?.(v0Resolution.receipt);
 
       return {
         verifiers: [],
@@ -462,7 +475,21 @@ export async function runVerification(
         failures: [],
         policyDecision: v0Decision,
         policyReceipt: v0Decision.receipt,
+        resolutionReceipt: v0Resolution.receipt,
       };
+    }
+
+    resolutionResult = await resolveVerificationObligations({
+      obligations: policyObligationsResult.obligations,
+      workspacePath,
+      executionRevision: options.executionRevision,
+      currentInputStateHash: createVerificationInputStateHash(workspacePath),
+      policyReceiptId: policyObligationsResult.receipt.receiptId,
+      ledger: options.ledger,
+    });
+
+    if (resolutionResult.receipt) {
+      await options.observer?.resolutionReceiptCreated?.(resolutionResult.receipt);
     }
   }
 
@@ -567,6 +594,7 @@ export async function runVerification(
       ...execution.summary,
       policyDecision,
       policyReceipt: policyDecision.receipt,
+      resolutionReceipt: resolutionResult?.receipt,
     });
     await options.observer?.policyReceiptCreated?.(policyDecision.receipt);
   }
@@ -588,9 +616,10 @@ export async function runVerification(
     exitCode: requiredPassed ? 0 : 1,
     command: availableVerifiers.map((v) => v.command).join(" && "),
     failures: allFailures,
-    forgeVerify: { plan, ...execution, summary: policySummary },
+    forgeVerify: { plan, ...execution, summary: policySummary, resolutionReceipt: resolutionResult?.receipt },
     policyDecision,
     policyReceipt: policyDecision?.receipt,
+    resolutionReceipt: resolutionResult?.receipt,
   };
 }
 

@@ -537,7 +537,7 @@ export const WorkItemSchema = z.discriminatedUnion("kind", [
     id: z.string(),
     sessionId: z.string(),
     runId: z.string(),
-    recordType: z.enum(["plan", "attempt", "evidence", "policy_receipt"]),
+    recordType: z.enum(["plan", "attempt", "evidence", "policy_receipt", "resolution_receipt"]),
     planId: z.string(),
     verifierId: z.string().optional(),
     status: z.string().optional(),

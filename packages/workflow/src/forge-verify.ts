@@ -128,6 +128,7 @@ export interface VerificationSummary {
   reasons: readonly VerificationSummaryReason[];
   policyDecision?: import("@codeforge/forge-green").VerificationPolicyDecision;
   policyReceipt?: import("@codeforge/forge-green").VerificationPolicyReceipt;
+  resolutionReceipt?: import("@codeforge/forge-green").EvidenceResolutionReceipt;
 }
 
 export type VerificationSummaryReason = "missing" | "failed" | "cancelled" | "timed_out" | "infra_error" | "interrupted" | "stale" | "definition_changed";
@@ -149,6 +150,7 @@ export interface ForgeVerifyExecution {
   summary: VerificationSummary;
   policyDecision?: import("@codeforge/forge-green").VerificationPolicyDecision;
   policyReceipt?: import("@codeforge/forge-green").VerificationPolicyReceipt;
+  resolutionReceipt?: import("@codeforge/forge-green").EvidenceResolutionReceipt;
 }
 
 export interface ForgeVerifyObserver {
@@ -157,6 +159,7 @@ export interface ForgeVerifyObserver {
   attemptTerminal?(attempt: VerificationAttempt): void | Promise<void>;
   evidenceCreated?(evidence: VerificationEvidence): void | Promise<void>;
   policyReceiptCreated?(receipt: import("@codeforge/forge-green").VerificationPolicyReceipt): void | Promise<void>;
+  resolutionReceiptCreated?(receipt: import("@codeforge/forge-green").EvidenceResolutionReceipt): void | Promise<void>;
 }
 
 function digest(value: unknown): string {

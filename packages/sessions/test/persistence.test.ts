@@ -131,7 +131,7 @@ describe("SessionPersistence", () => {
     expect(items[0]!.kind).toBe("activity");
   });
 
-  it("persists verification policy receipts append-only and idempotently across restart", async () => {
+  it("persists verification policy and resolution receipts append-only and idempotently across restart", async () => {
     await db!.upsertSession(makeSession());
     const receipt = {
       kind: "verification" as const,
@@ -150,15 +150,37 @@ describe("SessionPersistence", () => {
       updatedAt: new Date().toISOString(),
     } as WorkItem;
 
+    const resReceipt = {
+      kind: "verification" as const,
+      id: "res-receipt-1",
+      sessionId: "sess-1",
+      runId: "run-1",
+      recordType: "resolution_receipt" as const,
+      planId: "res-receipt-1",
+      status: "RESOLVED",
+      payload: {
+        resolverVersion: "fg6-evidence-resolution-1",
+        outcome: "RESOLVED",
+        dispatchesAvoidedCount: 3,
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as WorkItem;
+
     expect(await db!.insertImmutableWorkItem(receipt)).toBe(true);
     expect(await db!.insertImmutableWorkItem({ ...receipt, status: "FAILED" })).toBe(false);
+    expect(await db!.insertImmutableWorkItem(resReceipt)).toBe(true);
+    expect(await db!.insertImmutableWorkItem({ ...resReceipt, status: "BLOCKED" })).toBe(false);
     expect((await db!.getWorkItems("sess-1")).find((item) => item.id === "receipt-1")?.status).toBe("SUFFICIENT");
+    expect((await db!.getWorkItems("sess-1")).find((item) => item.id === "res-receipt-1")?.status).toBe("RESOLVED");
 
     await db!.close();
     db = null;
     const reopened = createSessionPersistence({ dbPath });
     expect((await reopened.getWorkItems("sess-1")).find((item) => item.id === "receipt-1")?.status).toBe("SUFFICIENT");
+    expect((await reopened.getWorkItems("sess-1")).find((item) => item.id === "res-receipt-1")?.status).toBe("RESOLVED");
     expect(await reopened.insertImmutableWorkItem(receipt)).toBe(false);
+    expect(await reopened.insertImmutableWorkItem(resReceipt)).toBe(false);
     await reopened.close();
   });
 

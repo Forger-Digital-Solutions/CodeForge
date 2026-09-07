@@ -143,6 +143,8 @@ export interface VerificationReport extends VerificationResult {
   policyDecision?: import("@codeforge/forge-green").VerificationPolicyDecision;
   /** FG-5 verification policy receipt when evaluated. */
   policyReceipt?: import("@codeforge/forge-green").VerificationPolicyReceipt;
+  /** FG-6 evidence resolution receipt when evaluated. */
+  resolutionReceipt?: import("@codeforge/forge-green").EvidenceResolutionReceipt;
 }
 
 export interface FailureAnalysis {

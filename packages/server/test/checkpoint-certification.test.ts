@@ -46,8 +46,9 @@ describe("CF-05 Final Certification — Exact Staging, Restart Recovery & Ref Va
 
   it("CF-05A: Real Restart Recovery across instance destruction with SQLite file persistence", async () => {
     // 1. SessionPersistence A connected to file-backed DB (outside repository)
-    const persistenceA = createSessionPersistence({ dbPath: dbFile });
-    persistenceA.upsertSession({
+    const persistenceA = createSessionPersistence({ dbPath: dbFile, driver: "sqlite" });
+    await persistenceA.init();
+    await persistenceA.upsertSession({
       id: "sess-cert-1",
       title: "Certification Session",
       createdAt: new Date().toISOString(),
@@ -56,6 +57,7 @@ describe("CF-05 Final Certification — Exact Staging, Restart Recovery & Ref Va
     });
 
     const svcA = createCheckpointService(ws, persistenceA);
+    await svcA.init();
 
     // Modify file and create checkpoint
     await writeFile(join(ws, "fileA.txt"), "A_modified\n");
@@ -74,7 +76,8 @@ describe("CF-05 Final Certification — Exact Staging, Restart Recovery & Ref Va
     await persistenceA.close();
 
     // 3. Open NEW persistence B against same SQLite DB file and NEW service B
-    const persistenceB = createSessionPersistence({ dbPath: dbFile });
+    const persistenceB = createSessionPersistence({ dbPath: dbFile, driver: "sqlite" });
+    await persistenceB.init();
     const svcB = createCheckpointService(ws, persistenceB);
     await svcB.init();
 

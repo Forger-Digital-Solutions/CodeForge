@@ -28,7 +28,8 @@ export type ForgeGreenMechanism =
   | "repository_intelligence"
   | "risk_analysis"
   | "model_failover"
-  | "verification_policy";
+  | "verification_policy"
+  | "evidence_resolution";
 
 export interface EfficiencyLedgerEvent {
   mechanism: ForgeGreenMechanism;
@@ -98,6 +99,22 @@ export interface ForgeGreenLedgerTotals {
   verificationRerunsAvoided: number;
   /** FG-5: verification blocked events (missing infra, unapproved commands, etc.). */
   verificationBlockedEvents: number;
+  /** FG-6: verification obligations received by evidence resolver. */
+  resolutionObligationsReceived: number;
+  /** FG-6: exact duplicate obligations removed. */
+  resolutionDuplicatesRemoved: number;
+  /** FG-6: verification obligations subsumed by broader evidence. */
+  resolutionObligationsSubsumed: number;
+  /** FG-6: existing valid verification evidence reused. */
+  resolutionEvidenceReused: number;
+  /** FG-6: new verification evidence producers scheduled. */
+  resolutionProducersScheduled: number;
+  /** FG-6: redundant verification dispatches avoided. */
+  resolutionDispatchesAvoided: number;
+  /** FG-6: evidence resolution plans served from canonical cache. */
+  resolutionCacheHits: number;
+  /** FG-6: evidence resolution plans recomputed on cache miss. */
+  resolutionCacheMisses: number;
 }
 
 export interface ForgeGreenLedgerIdentity {
@@ -161,6 +178,14 @@ function emptyTotals(): ForgeGreenLedgerTotals {
     verificationStaleEvidenceRejected: 0,
     verificationRerunsAvoided: 0,
     verificationBlockedEvents: 0,
+    resolutionObligationsReceived: 0,
+    resolutionDuplicatesRemoved: 0,
+    resolutionObligationsSubsumed: 0,
+    resolutionEvidenceReused: 0,
+    resolutionProducersScheduled: 0,
+    resolutionDispatchesAvoided: 0,
+    resolutionCacheHits: 0,
+    resolutionCacheMisses: 0,
   };
 }
 
@@ -239,6 +264,16 @@ export class ForgeGreenLedgerCollector {
         else if (event.reason === "stale_rejected") this.totals.verificationStaleEvidenceRejected += quantity;
         else if (event.reason === "rerun_avoided") this.totals.verificationRerunsAvoided += quantity;
         else if (event.reason === "blocked") this.totals.verificationBlockedEvents += quantity;
+        break;
+      case "evidence_resolution":
+        if (event.reason === "obligations_received") this.totals.resolutionObligationsReceived += quantity;
+        else if (event.reason === "duplicates_removed") this.totals.resolutionDuplicatesRemoved += quantity;
+        else if (event.reason === "obligations_subsumed") this.totals.resolutionObligationsSubsumed += quantity;
+        else if (event.reason === "evidence_reused") this.totals.resolutionEvidenceReused += quantity;
+        else if (event.reason === "producers_scheduled") this.totals.resolutionProducersScheduled += quantity;
+        else if (event.reason === "dispatches_avoided") this.totals.resolutionDispatchesAvoided += quantity;
+        else if (event.reason === "cache_hit") this.totals.resolutionCacheHits += quantity;
+        else if (event.reason === "cache_miss") this.totals.resolutionCacheMisses += quantity;
         break;
     }
   }

@@ -183,3 +183,32 @@ V0 is limited to provably documentation-only changes. V1/V2 cover local and targ
 Evidence decisions bind policy version, revision, workspace content identity, verifier selection, command/configuration, namespace, and relevant environment. Structured execution status and exit code are authoritative: failures, skips, partial runs, timeouts, interruptions, blocked infrastructure, and missing obligations cannot become passes. Immutable ForgeVerify evidence and policy receipts are persisted through the existing SQLite/PostgreSQL work-item contract with idempotent duplicate handling.
 
 Completion Gate independently rejects stale policy decisions and continues to block pending approval, user questions, review findings, unfinished work, and other lifecycle conditions after verification is sufficient. FG-5 never grants permissions, selects models, changes exact pins, publishes, or completes a task by itself. See `docs/fg5-certification-report.md` for the certification boundary and evidence.
+
+## FG-6 — gate-specific evidence resolution & minimum valid verification plans
+
+FG-6 is the deterministic evidence-resolution layer between FG-5 verification obligations and ForgeVerify execution.
+
+```text
+FG-5 (Obligations Authority)
+  ↓ [hard typed obligations]
+FG-6 (Evidence Resolution Authority)
+  ↓ [deduplicated, minimal valid verification plan]
+ForgeVerify (Execution Authority)
+  ↓ [structured execution evidence]
+FG-5 (Sufficiency Authority)
+  ↓ [evidence evaluation receipt]
+Completion Gate (Completion Authority)
+```
+
+### Governing Principle
+> Resolve hard verification obligations into the minimum valid evidence plan without weakening any obligation.
+
+### Core Mechanisms
+- **Canonical Obligation Identity & Exact Deduplication:** Equivalent obligations canonicalize to stable identity keys. Duplicate obligations are deduplicated into a single execution while preserving all gate and reason provenance codes across all source obligations.
+- **Structured Subsumption:** Proves evidence subsumption strictly from trusted project configuration (e.g., tsconfig project references, package.json workspaces, verified test suites). Broad workspace typechecks subsume package-level typechecks only when referenced in root tsconfig. Package test suites subsume targeted test obligations only when targeted test paths are verifiably contained in the package test directory.
+- **Strict Prohibition of Prose-Based Subsumption:** Repository comments, README prose, script names (`test:all`), or malicious command stdout cannot define or infer subsumption.
+- **Environment-Sensitive & Evidence-Class Preservation:** Simulated/mock tests cannot substitute for `REAL_POSTGRESQL`, `REAL_GIT`, or `REAL_CHILD_PROCESS` requirements. If an environment dependency is unavailable, the obligation is marked `BLOCKED`, never silently downgraded.
+- **Valid Evidence Reuse First:** Existing valid evidence matching the current content hash, execution revision, and policy version is reused with 0 execution cost, avoiding redundant reruns. Stale, failed, skipped, or timed-out evidence is rejected.
+- **Durable Resolution Receipts:** Persists immutable `resolution_receipt` records idempotently across process restart with resolution ID, input/deduplicated/subsumed/reused counts, scheduled producers, and dispatches avoided metrics.
+- **ForgeGreen Ledger Integration:** Tracks measured obligations received, duplicates removed, subsumed obligations, evidence reused, scheduled producers, dispatches avoided, and cache hits/misses without carbon or duration claims.
+- **Authority Boundary:** FG-6 `RESOLVED` indicates a complete and valid execution plan exists; it is NOT verification `PASS` and cannot satisfy the Completion Gate. FG-7 Verification Coverage Authority remains next. See `docs/fg6-certification-report.md` for full certification evidence.

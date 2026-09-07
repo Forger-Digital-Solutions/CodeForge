@@ -292,7 +292,9 @@ export class CodeForgeServer {
       const turns = await this.persistence.getTurns(session.id);
       if (!turns.some((turn) => !["idle", "completed", "failed", "cancelled"].includes(turn.status))) continue;
       const runtime = this.getOrCreateRuntime(session.id);
-      await runtime.init();
+      if (typeof (runtime as unknown as { init?: () => Promise<void> }).init === "function") {
+        await (runtime as unknown as { init: () => Promise<void> }).init();
+      }
     }
   }
 

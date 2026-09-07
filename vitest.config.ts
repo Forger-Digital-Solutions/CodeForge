@@ -31,6 +31,8 @@ const packages = [
   "shared",
   "vscode",
   "workflow",
+  "eight-bit",
+  "forge-green",
   "cloud-db",
   "cloud-auth",
   "cloud-entitlements",

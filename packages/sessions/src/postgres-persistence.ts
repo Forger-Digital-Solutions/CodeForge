@@ -169,8 +169,8 @@ class PostgresQueryOps implements SessionPersistenceTx {
   }
 
   async insertImmutableWorkItem(item: WorkItem): Promise<boolean> {
-    if (item.kind !== "verification" || (item.recordType !== "plan" && item.recordType !== "evidence" && item.recordType !== "policy_receipt")) {
-      throw new Error("Only immutable ForgeVerify plan, evidence, or policy receipt records may use append-only persistence.");
+    if (item.kind !== "verification" || (item.recordType !== "plan" && item.recordType !== "evidence" && item.recordType !== "policy_receipt" && item.recordType !== "resolution_receipt")) {
+      throw new Error("Only immutable ForgeVerify plan, evidence, policy receipt, or resolution receipt records may use append-only persistence.");
     }
     return this.insertIfAbsent(item);
   }

@@ -31,6 +31,7 @@ export function createSessionPersistence(config: SessionPersistenceConfig = {}):
 
   const driver: SessionDatabaseDriver =
     config.driver
+    ?? (config.databaseUrl ? "postgres" : config.dbPath ? "sqlite" : undefined)
     ?? (process.env.CODEFORGE_SESSIONS_DB_DRIVER as SessionDatabaseDriver | undefined)
     ?? (looksLikePostgres(rawUrl) ? "postgres" : "sqlite");
 

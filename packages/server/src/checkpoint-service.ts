@@ -176,7 +176,7 @@ export class CheckpointService {
     // Persist to session storage if available
     if (this.persistence && sessionId) {
       try {
-        this.persistence.upsertWorkItem({
+        await this.persistence.upsertWorkItem({
           kind: "checkpoint",
           id: checkpointId,
           sessionId,
@@ -193,7 +193,7 @@ export class CheckpointService {
           stagedPaths: status.staged,
           untrackedPaths: status.untracked,
           createdAt: now.toISOString(),
-        } as unknown as import("@codeforge/sessions").WorkItem).catch(() => {});
+        } as unknown as import("@codeforge/sessions").WorkItem);
       } catch {}
     }
 
