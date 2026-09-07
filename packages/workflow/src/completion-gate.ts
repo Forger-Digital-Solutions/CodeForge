@@ -7,6 +7,11 @@ import type {
 } from "./types.js";
 import { verificationFailed } from "./verification-service.js";
 import type { VerificationSummary } from "./forge-verify.js";
+import {
+  FORGE_GREEN_VERIFICATION_POLICY_VERSION,
+  type VerificationPolicyDecision,
+  type VerificationPolicyReceipt,
+} from "@codeforge/forge-green";
 
 /**
  * Completion is a lifecycle transition subject to enforcement, not a claim the agent gets to make.
@@ -16,11 +21,14 @@ import type { VerificationSummary } from "./forge-verify.js";
 export type CompletionBlockerCode =
   | "verification_not_run"
   | "verification_failed"
+  | "verification_policy_insufficient"
   | "review_rejected"
   | "no_effective_change"
   | "budget_exhausted"
   | "plan_steps_unfinished"
-  | "verification_not_current";
+  | "verification_not_current"
+  | "approval_pending"
+  | "question_pending";
 
 export type CompletionBlockerSeverity = "blocking" | "advisory";
 
@@ -63,6 +71,8 @@ export interface CompletionGateInput {
   budgetDetail?: string;
   /** ForgeVerify evidence is evaluated before legacy reports and remains distinct from completion. */
   verificationSummary?: VerificationSummary;
+  /** FG-5 verification policy decision or receipt evaluating obligation sufficiency. */
+  verificationPolicyDecision?: VerificationPolicyDecision | VerificationPolicyReceipt;
   /**
    * CF-17 completion binding: `verifiedExecutionRevision` is the execution/plan revision the
    * ForgeVerify evidence was produced for; `currentExecutionRevision` is the authoritative
@@ -71,6 +81,11 @@ export interface CompletionGateInput {
    */
   currentExecutionRevision?: number;
   verifiedExecutionRevision?: number;
+  /** Current workspace identity used to independently reject a stale sufficient decision. */
+  currentVerificationInputStateHash?: string;
+  /** Independent lifecycle authorities remain blocking even after verification is sufficient. */
+  approvalPending?: boolean;
+  questionPending?: boolean;
 }
 
 /**
@@ -191,6 +206,60 @@ function collectForgeVerifyBlockers(summary: VerificationSummary | undefined, ve
   }];
 }
 
+function collectVerificationPolicyBlockers(
+  policyDecision: VerificationPolicyDecision | VerificationPolicyReceipt | undefined,
+  policy: CompletionPolicy,
+  currentExecutionRevision?: number,
+  currentVerificationInputStateHash?: string,
+): CompletionBlocker[] {
+  if (!policyDecision) return [];
+  const outcome = "outcome" in policyDecision ? policyDecision.outcome : policyDecision.decision;
+  const receipt = "receipt" in policyDecision ? policyDecision.receipt : policyDecision;
+  const staleIdentity =
+    receipt.policyVersion !== FORGE_GREEN_VERIFICATION_POLICY_VERSION ||
+    (currentExecutionRevision !== undefined && receipt.revision !== undefined && receipt.revision !== currentExecutionRevision) ||
+    (currentVerificationInputStateHash !== undefined && receipt.inputStateHash !== undefined && receipt.inputStateHash !== currentVerificationInputStateHash);
+  if (outcome === "SUFFICIENT" && !staleIdentity) return [];
+  if (staleIdentity) {
+    return [{
+      code: "verification_not_current",
+      severity: "blocking",
+      message: "Verification policy evidence does not match the current policy, execution revision, or workspace content.",
+      evidence: `policy=${receipt.policyVersion}; revision=${receipt.revision ?? "none"}; input=${receipt.inputStateHash ?? "none"}`,
+    }];
+  }
+  if (outcome === "FAILED") {
+    return [{
+      code: "verification_failed",
+      severity: "blocking",
+      message: `Verification policy evaluation failed: ${"rationale" in policyDecision ? policyDecision.rationale : "failed obligations"}`,
+      evidence: `level=${policyDecision.level}; reasons=${policyDecision.reasonCodes.join(",")}`,
+    }];
+  }
+  if (outcome === "STALE") {
+    return [{
+      code: "verification_not_current",
+      severity: "blocking",
+      message: `Verification policy decision is stale: ${"rationale" in policyDecision ? policyDecision.rationale : "stale evidence"}`,
+      evidence: `level=${policyDecision.level}; reasons=${policyDecision.reasonCodes.join(",")}`,
+    }];
+  }
+  if (outcome === "BLOCKED") {
+    return [{
+      code: "verification_not_run",
+      severity: policy.requireVerification ? "blocking" : "advisory",
+      message: `Verification was blocked: ${"rationale" in policyDecision ? policyDecision.rationale : "blocked execution"}`,
+      evidence: `level=${policyDecision.level}; reasons=${policyDecision.reasonCodes.join(",")}`,
+    }];
+  }
+  return [{
+    code: "verification_not_run",
+    severity: policy.requireVerification ? "blocking" : "advisory",
+    message: `Verification is insufficient for required level ${policyDecision.level}: ${"rationale" in policyDecision ? policyDecision.rationale : "missing required evidence"}`,
+    evidence: `level=${policyDecision.level}; reasons=${policyDecision.reasonCodes.join(",")}`,
+  }];
+}
+
 function collectReviewBlockers(review: ReviewDecision, policy: CompletionPolicy): CompletionBlocker[] {
   const findings = review.findings ?? [];
   const blocking = findings.filter((f) => f.severity === "blocking");
@@ -273,7 +342,29 @@ export function evaluateCompletion(input: CompletionGateInput): CompletionGateDe
     });
   }
 
+  if (input.approvalPending) {
+    candidates.push({
+      code: "approval_pending",
+      severity: "blocking",
+      message: "Completion is waiting for the required approval; verification cannot grant approval.",
+    });
+  }
+  if (input.questionPending) {
+    candidates.push({
+      code: "question_pending",
+      severity: "blocking",
+      message: "Completion is waiting for an answer to a required user question; verification cannot resolve it.",
+    });
+  }
+
   const report = input.verification as import("./types.js").VerificationReport;
+  const policyDecision = input.verificationPolicyDecision ?? (report as unknown as { policyDecision?: VerificationPolicyDecision })?.policyDecision ?? report.forgeVerify?.policyDecision;
+  candidates.push(...collectVerificationPolicyBlockers(
+    policyDecision,
+    policy,
+    input.currentExecutionRevision,
+    input.currentVerificationInputStateHash,
+  ));
   candidates.push(...collectForgeVerifyBlockers(input.verificationSummary ?? report.forgeVerify?.summary, input.verification));
   candidates.push(...collectVerificationBlockers(input.verification, input.analysis, policy));
   candidates.push(...collectReviewBlockers(input.review, policy));

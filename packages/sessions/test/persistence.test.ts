@@ -131,6 +131,37 @@ describe("SessionPersistence", () => {
     expect(items[0]!.kind).toBe("activity");
   });
 
+  it("persists verification policy receipts append-only and idempotently across restart", async () => {
+    await db!.upsertSession(makeSession());
+    const receipt = {
+      kind: "verification" as const,
+      id: "receipt-1",
+      sessionId: "sess-1",
+      runId: "run-1",
+      recordType: "policy_receipt" as const,
+      planId: "receipt-1",
+      status: "SUFFICIENT",
+      payload: {
+        policyVersion: "fg5-verification-policy-1",
+        decision: "SUFFICIENT",
+        evidenceIds: ["evidence-1"],
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as WorkItem;
+
+    expect(await db!.insertImmutableWorkItem(receipt)).toBe(true);
+    expect(await db!.insertImmutableWorkItem({ ...receipt, status: "FAILED" })).toBe(false);
+    expect((await db!.getWorkItems("sess-1")).find((item) => item.id === "receipt-1")?.status).toBe("SUFFICIENT");
+
+    await db!.close();
+    db = null;
+    const reopened = createSessionPersistence({ dbPath });
+    expect((await reopened.getWorkItems("sess-1")).find((item) => item.id === "receipt-1")?.status).toBe("SUFFICIENT");
+    expect(await reopened.insertImmutableWorkItem(receipt)).toBe(false);
+    await reopened.close();
+  });
+
   it("persists and retrieves events with ordering", async () => {
     await db!.appendEvent({ type: "turn.started", seq: 1, sessionId: "sess-1", timestamp: "2026-01-01T00:00:00Z", payload: {} });
     await db!.appendEvent({ type: "turn.completed", seq: 2, sessionId: "sess-1", timestamp: "2026-01-01T00:00:01Z", payload: {} });

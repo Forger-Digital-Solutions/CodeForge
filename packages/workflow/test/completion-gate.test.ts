@@ -7,7 +7,12 @@ import type {
   WorkflowPlan,
   PlanStep,
 } from "../src/types.js";
-import type { TaskRiskClass, AnalyzabilityClass } from "@codeforge/forge-green";
+import {
+  FORGE_GREEN_VERIFICATION_POLICY_VERSION,
+  type TaskRiskClass,
+  type AnalyzabilityClass,
+  type VerificationPolicyDecision,
+} from "@codeforge/forge-green";
 
 function plan(steps: Partial<PlanStep>[] = []): WorkflowPlan {
   return {
@@ -89,6 +94,39 @@ function review(overrides: Partial<ReviewDecision> = {}): ReviewDecision {
     ],
     summary: "1 file changed",
     ...overrides,
+  };
+}
+
+function sufficientPolicy(overrides: Partial<VerificationPolicyDecision["receipt"]> = {}): VerificationPolicyDecision {
+  const receipt = {
+    kind: "verification_policy_receipt" as const,
+    receiptId: "receipt-1",
+    policyVersion: FORGE_GREEN_VERIFICATION_POLICY_VERSION,
+    level: "V1_LOCAL" as const,
+    decision: "SUFFICIENT" as const,
+    obligations: [],
+    satisfiedObligations: [],
+    missingObligations: [],
+    evidenceIds: ["evidence-1"],
+    reasonCodes: ["ALL_OBLIGATIONS_SATISFIED" as const],
+    revision: 1,
+    inputStateHash: "state-1",
+    createdAt: new Date().toISOString(),
+    ...overrides,
+  };
+  return {
+    outcome: "SUFFICIENT",
+    level: "V1_LOCAL",
+    policyVersion: receipt.policyVersion,
+    obligations: [],
+    satisfiedObligations: [],
+    missingObligations: [],
+    failedObligations: [],
+    staleObligations: [],
+    blockedObligations: [],
+    reasonCodes: receipt.reasonCodes,
+    receipt,
+    rationale: "All verification obligations satisfied.",
   };
 }
 
@@ -255,5 +293,66 @@ describe("completion gate — the runtime, not the model, decides completion", (
     });
     expect(decision.outcome).toBe("blocked");
     expect(decision.blockers.map((blocker) => blocker.code)).toContain("verification_not_run");
+  });
+
+  it("rejects a sufficient decision from an older execution revision", () => {
+    const decision = evaluateCompletion({
+      plan: plan([{ kind: "edit", status: "completed" }]),
+      verification: passingVerification(),
+      verificationPolicyDecision: sufficientPolicy({ revision: 1 }),
+      currentExecutionRevision: 2,
+      analysis: analysis(),
+      review: review(),
+    });
+    expect(decision.outcome).toBe("blocked");
+    expect(decision.blockers.map((blocker) => blocker.code)).toContain("verification_not_current");
+  });
+
+  it("rejects a sufficient decision when workspace identity changed", () => {
+    const decision = evaluateCompletion({
+      plan: plan([{ kind: "edit", status: "completed" }]),
+      verification: passingVerification(),
+      verificationPolicyDecision: sufficientPolicy({ inputStateHash: "old-state" }),
+      currentVerificationInputStateHash: "new-state",
+      analysis: analysis(),
+      review: review(),
+    });
+    expect(decision.outcome).toBe("blocked");
+    expect(decision.blockers.map((blocker) => blocker.code)).toContain("verification_not_current");
+  });
+
+  it("keeps non-verification completion conditions independent after sufficient verification", () => {
+    const decision = evaluateCompletion({
+      plan: plan([{ kind: "edit", status: "completed" }, { kind: "command", status: "blocked" }]),
+      verification: passingVerification(),
+      verificationPolicyDecision: sufficientPolicy(),
+      analysis: analysis(),
+      review: review({ approved: false, findings: [{ code: "sensitive_file", severity: "blocking", path: ".env", message: "approval required" }] }),
+    });
+    expect(decision.outcome).toBe("blocked");
+    expect(decision.blockers.map((blocker) => blocker.code)).toEqual(expect.arrayContaining(["review_rejected", "plan_steps_unfinished"]));
+  });
+
+  it("blocks pending approval and question independently of sufficient verification", () => {
+    const approval = evaluateCompletion({
+      plan: plan([{ kind: "edit", status: "completed" }]),
+      verification: passingVerification(),
+      verificationPolicyDecision: sufficientPolicy(),
+      approvalPending: true,
+      analysis: analysis(),
+      review: review(),
+    });
+    const question = evaluateCompletion({
+      plan: plan([{ kind: "edit", status: "completed" }]),
+      verification: passingVerification(),
+      verificationPolicyDecision: sufficientPolicy(),
+      questionPending: true,
+      analysis: analysis(),
+      review: review(),
+    });
+    expect(approval.outcome).toBe("blocked");
+    expect(approval.blockers.map((blocker) => blocker.code)).toContain("approval_pending");
+    expect(question.outcome).toBe("blocked");
+    expect(question.blockers.map((blocker) => blocker.code)).toContain("question_pending");
   });
 });

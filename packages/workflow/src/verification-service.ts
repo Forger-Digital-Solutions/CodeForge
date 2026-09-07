@@ -5,12 +5,22 @@ import type { VerificationResult } from "./types.js";
 import { prepareShellCommand, terminateProcessTree } from "./child-process.js";
 import {
   adaptTrustedLegacyVerifiers,
+  createVerificationInputStateHash,
   createVerificationPlan,
   createVerifierRegistry,
   executeVerificationPlan,
   type ForgeVerifyObserver,
   type VerificationPolicy,
 } from "./forge-verify.js";
+import {
+  determineVerificationObligations,
+  evaluateVerificationSufficiency,
+  FORGE_GREEN_VERIFICATION_POLICY_VERSION,
+  type GenericVerificationEvidence,
+  type VerificationLevel,
+  type VerificationPolicyDecision,
+  type VerificationPolicyReceipt,
+} from "@codeforge/forge-green";
 
 const DEFAULT_COMMANDS = ["npm test", "npm run typecheck"];
 
@@ -382,8 +392,80 @@ function notConfiguredReport(commands: string[]): import("./types.js").Verificat
 export async function runVerification(
   workspacePath: string,
   commandsOrVerifiers: string[] | import("./types.js").Verifier[] = DEFAULT_COMMANDS,
-  options: { signal?: AbortSignal; timeoutMs?: number; runId?: string; observer?: ForgeVerifyObserver; executionRevision?: number } = {},
+  options: {
+    signal?: AbortSignal;
+    timeoutMs?: number;
+    runId?: string;
+    observer?: ForgeVerifyObserver;
+    executionRevision?: number;
+    changedPaths?: readonly string[];
+    riskAnalysis?: import("@codeforge/forge-green").StructuralRiskAnalysis;
+    intelligence?: import("@codeforge/repo-intelligence").RepositoryIntelligence;
+    userRequestedLevel?: VerificationLevel;
+    deliveryIntent?: boolean;
+    publicationIntent?: boolean;
+    ledger?: { record(event: import("@codeforge/forge-green").EfficiencyLedgerEvent): void };
+  } = {},
 ): Promise<import("./types.js").VerificationReport> {
+  // FG-5 needs authoritative structural/risk inputs. A bare changed-path list from the legacy
+  // workflow is not enough to pretend the change is local, and must retain the legacy verifier
+  // contract until Repository Intelligence / FG-4 advice is available.
+  let policyObligationsResult: import("@codeforge/forge-green").VerificationPolicyObligationsResult | undefined;
+  const hasAuthoritativePolicyInputs = Boolean(
+    options.riskAnalysis ||
+    options.intelligence ||
+    options.userRequestedLevel ||
+    options.deliveryIntent ||
+    options.publicationIntent,
+  );
+  if (options.changedPaths && options.changedPaths.length > 0 && hasAuthoritativePolicyInputs) {
+    policyObligationsResult = await determineVerificationObligations({
+      changedPaths: options.changedPaths,
+      riskAnalysis: options.riskAnalysis,
+      intelligence: options.intelligence,
+      workspacePath,
+      userRequestedLevel: options.userRequestedLevel,
+      deliveryIntent: options.deliveryIntent,
+      publicationIntent: options.publicationIntent,
+      executionRevision: options.executionRevision,
+      ledger: options.ledger,
+    });
+
+    if (policyObligationsResult.isV0) {
+      const v0Decision = evaluateVerificationSufficiency({
+        obligations: [],
+        level: "V0_NO_VERIFICATION",
+        evidence: [],
+        workspacePath,
+        currentInputStateHash: createVerificationInputStateHash(workspacePath),
+        currentExecutionRevision: options.executionRevision,
+        verifiedExecutionRevision: options.executionRevision,
+        ledger: options.ledger,
+      });
+
+      await options.observer?.policyReceiptCreated?.(v0Decision.receipt);
+
+      return {
+        verifiers: [],
+        requiredPassed: true,
+        hasFailures: false,
+        advisories: [],
+        overallStatus: "passed",
+        summary: "V0 documentation-only change requires no executable verification.",
+        passed: 0,
+        failed: 0,
+        skipped: 0,
+        durationMs: 0,
+        output: "V0 documentation-only change verified (no executable tests required).",
+        exitCode: 0,
+        command: "",
+        failures: [],
+        policyDecision: v0Decision,
+        policyReceipt: v0Decision.receipt,
+      };
+    }
+  }
+
   let verifiers: import("./types.js").Verifier[] = [];
   if (Array.isArray(commandsOrVerifiers) && commandsOrVerifiers.length > 0) {
     if (typeof commandsOrVerifiers[0] === "string") {
@@ -447,6 +529,48 @@ export async function runVerification(
   const advisories = runResults.filter((result) => !result.required && result.status !== "passed");
   const overallStatus = !requiredPassed ? "failed" : "passed";
 
+  // Evaluate FG-5 sufficiency if obligations exist
+  let policyDecision: VerificationPolicyDecision | undefined;
+  let policySummary: typeof execution.summary = execution.summary;
+  if (policyObligationsResult) {
+    const genericEvidence: GenericVerificationEvidence[] = execution.evidence.map((ev, index) => {
+      const runResult = runResults[index];
+      return {
+        evidenceId: ev.evidenceId,
+        verifierId: ev.verifierId,
+        category: registry.get(ev.verifierId)?.category,
+        workspacePath: ev.workspacePath,
+        inputStateHash: ev.inputStateHash,
+        status: ev.status,
+        exitCode: ev.exitCode,
+        elapsedMs: ev.elapsedMs,
+        outputExcerpt: ev.outputExcerpt,
+        passedCount: runResult?.passed,
+        failedCount: runResult?.failed,
+        skippedCount: runResult?.skipped,
+      };
+    });
+
+    policyDecision = evaluateVerificationSufficiency({
+      obligations: policyObligationsResult.obligations,
+      level: policyObligationsResult.level,
+      evidence: genericEvidence,
+      workspacePath,
+      currentInputStateHash: plan.inputStateHash,
+      currentExecutionRevision: options.executionRevision,
+      verifiedExecutionRevision: options.executionRevision,
+      riskReceiptId: policyObligationsResult.riskAnalysis?.receipt.receiptId,
+      ledger: options.ledger,
+    });
+
+    policySummary = Object.freeze({
+      ...execution.summary,
+      policyDecision,
+      policyReceipt: policyDecision.receipt,
+    });
+    await options.observer?.policyReceiptCreated?.(policyDecision.receipt);
+  }
+
   const summary = `ForgeVerify: ${runResults.filter((r) => r.status === "passed").length}/${runResults.length} verifiers passed (${requiredPassed ? "all required passed" : "required verifier failed"}).`;
 
   return {
@@ -464,7 +588,9 @@ export async function runVerification(
     exitCode: requiredPassed ? 0 : 1,
     command: availableVerifiers.map((v) => v.command).join(" && "),
     failures: allFailures,
-    forgeVerify: { plan, ...execution },
+    forgeVerify: { plan, ...execution, summary: policySummary },
+    policyDecision,
+    policyReceipt: policyDecision?.receipt,
   };
 }
 

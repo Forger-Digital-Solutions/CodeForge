@@ -139,6 +139,10 @@ export interface VerificationReport extends VerificationResult {
   summary: string;
   /** The canonical structured evidence used by the completion gate when present. */
   forgeVerify?: import("./forge-verify.js").ForgeVerifyExecution;
+  /** FG-5 verification policy decision when evaluated. */
+  policyDecision?: import("@codeforge/forge-green").VerificationPolicyDecision;
+  /** FG-5 verification policy receipt when evaluated. */
+  policyReceipt?: import("@codeforge/forge-green").VerificationPolicyReceipt;
 }
 
 export interface FailureAnalysis {

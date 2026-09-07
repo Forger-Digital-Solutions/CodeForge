@@ -23,5 +23,8 @@ export function createForgeVerifyPersistenceObserver(persistence: ISessionPersis
     evidenceCreated: async (evidence: VerificationEvidence) => {
       await persistence.insertImmutableWorkItem(item(sessionId, "evidence", evidence.evidenceId, evidence.planId, evidence.runId, evidence as unknown as Record<string, unknown>, evidence.status));
     },
+    policyReceiptCreated: async (receipt) => {
+      await persistence.insertImmutableWorkItem(item(sessionId, "policy_receipt", receipt.receiptId, receipt.receiptId, sessionId, receipt as unknown as Record<string, unknown>, receipt.decision));
+    },
   };
 }

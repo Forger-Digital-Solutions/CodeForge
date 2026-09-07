@@ -173,3 +173,13 @@ In the parallel path a steer may target one workstream explicitly (`targetWorkst
 Durable runtime state (sessions, turns, holds, steer receipts, verification records) lives behind one driver-neutral async persistence contract with SQLite and PostgreSQL implementations, so the same efficiency semantics hold on both backends and across process restarts.
 
 Interactive receipts expose only deterministic measurements: hold count/duration and dispatches actually blocked at an eligible boundary. No duration-only savings and no energy/carbon conversion are claimed.
+
+## FG-5 — verification policy authority
+
+FG-5 is the deterministic verification-policy layer between structural advice and execution. FG-2 provides structural facts and completeness; FG-4 provides risk/analyzability advice; FG-5 derives explicit V0–V5 obligations and evaluates evidence; ForgeVerify executes trusted checks; Completion Gate remains the final completion authority.
+
+V0 is limited to provably documentation-only changes. V1/V2 cover local and targeted evidence, V3 package verification, V4 cross-package integration, and V5 systemic or release-grade work. Obligations are typed, scoped, reason-coded, and identity-bound; the policy never uses model confidence, repository prose, or opaque scores as authority.
+
+Evidence decisions bind policy version, revision, workspace content identity, verifier selection, command/configuration, namespace, and relevant environment. Structured execution status and exit code are authoritative: failures, skips, partial runs, timeouts, interruptions, blocked infrastructure, and missing obligations cannot become passes. Immutable ForgeVerify evidence and policy receipts are persisted through the existing SQLite/PostgreSQL work-item contract with idempotent duplicate handling.
+
+Completion Gate independently rejects stale policy decisions and continues to block pending approval, user questions, review findings, unfinished work, and other lifecycle conditions after verification is sufficient. FG-5 never grants permissions, selects models, changes exact pins, publishes, or completes a task by itself. See `docs/fg5-certification-report.md` for the certification boundary and evidence.

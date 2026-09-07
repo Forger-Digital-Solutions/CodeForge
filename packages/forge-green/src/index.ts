@@ -20,6 +20,7 @@ export {
   type ForgeGreenLedgerTotals,
 } from "./ledger.js";
 export * from "./risk.js";
+export * from "./verification-policy.js";
 
 export const FORGE_GREEN_LEDGER_WORK_ITEM_KIND = "forgegreen_ledger";
 

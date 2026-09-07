@@ -371,8 +371,8 @@ export class SqliteSessionPersistence implements ISessionPersistence {
 
   /** Terminal audit records are append-only; duplicate persistence is idempotent rather than mutable. */
   async insertImmutableWorkItem(item: WorkItem): Promise<boolean> {
-    if (item.kind !== "verification" || (item.recordType !== "plan" && item.recordType !== "evidence")) {
-      throw new Error("Only immutable ForgeVerify plan or evidence records may use append-only persistence.");
+    if (item.kind !== "verification" || (item.recordType !== "plan" && item.recordType !== "evidence" && item.recordType !== "policy_receipt")) {
+      throw new Error("Only immutable ForgeVerify plan, evidence, or policy receipt records may use append-only persistence.");
     }
     const safeItem = sanitizeForPersistence(item);
     const result = this.statements.get("insertImmutableWorkItem")!.run({

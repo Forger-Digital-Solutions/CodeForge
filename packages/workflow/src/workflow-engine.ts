@@ -6,6 +6,7 @@ import { inspectRepository } from "./repo-inspector.js";
 import { buildContext } from "./context-builder.js";
 import { createPlan, planRequiresApproval, updatePlanStatus } from "./plan-service.js";
 import { runVerification, verificationPassed } from "./verification-service.js";
+import { createVerificationInputStateHash } from "./forge-verify.js";
 import { analyzeFailures } from "./failure-analyzer.js";
 import { reviewDiff, formatDiffSummary, type BeforeSnapshot } from "./diff-review.js";
 import {
@@ -315,15 +316,16 @@ export class WorkflowEngine {
       // 7. Run Verification
       this.setPhase("verifying", "testing");
       this.ensureNotAborted();
+      const changedPaths = [...new Set(plan.steps.filter((step) => step.kind === "edit" || step.kind === "write").map((step) => step.targetPath).filter((target): target is string => Boolean(target)))];
       const verificationRecommendation: VerificationRecommendation = this.forgeGreen.recommendVerification({
-        changedPaths: [...new Set(plan.steps.filter((step) => step.kind === "edit" || step.kind === "write").map((step) => step.targetPath).filter((target): target is string => Boolean(target)))],
+        changedPaths,
         candidateTests: repoMap.files.map((file) => file.relativePath).filter((file) => /(?:^|[\\/])(?:test|tests|spec|__tests__)(?:[\\/]|\.|$)/i.test(file)),
         analysisAvailable: true,
       });
       let verificationAttempt = 1;
       this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { attempt: verificationAttempt, recommendation: verificationRecommendation } });
       await this.beforeVerificationDispatch?.();
-      let verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver, executionRevision: plan.revision });
+      let verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver, executionRevision: plan.revision, changedPaths });
       const verificationAttempts: VerificationResult[] = [verification];
       this.onEvent?.({ type: "workflow.verification_completed", phase: this.phase, payload: { attempt: verificationAttempt, verification } });
 
@@ -348,7 +350,7 @@ export class WorkflowEngine {
         verificationAttempt++;
         this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { attempt: verificationAttempt, recommendation: verificationRecommendation } });
         await this.beforeVerificationDispatch?.();
-        verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver, executionRevision: plan.revision });
+        verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver, executionRevision: plan.revision, changedPaths });
         verificationAttempts.push(verification);
         this.onEvent?.({ type: "workflow.verification_completed", phase: this.phase, payload: { attempt: verificationAttempt, verification } });
         analysis = analyzeFailures(verification);
@@ -373,7 +375,7 @@ export class WorkflowEngine {
         verificationAttempt++;
         this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { attempt: verificationAttempt, recommendation: verificationRecommendation } });
         await this.beforeVerificationDispatch?.();
-        verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver, executionRevision: plan.revision });
+        verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver, executionRevision: plan.revision, changedPaths });
         verificationAttempts.push(verification);
         this.onEvent?.({ type: "workflow.verification_completed", phase: this.phase, payload: { attempt: verificationAttempt, verification } });
         analysis = analyzeFailures(verification);
@@ -401,6 +403,7 @@ export class WorkflowEngine {
         plan,
         verification,
         verificationSummary: (verification as import("./types.js").VerificationReport).forgeVerify?.summary,
+        verificationPolicyDecision: (verification as import("./types.js").VerificationReport).policyDecision,
         analysis,
         review,
         policy: this.completionPolicy,
@@ -409,6 +412,7 @@ export class WorkflowEngine {
           attempts > 0 ? `Exhausted ${attempts}/${this.maxRepairAttempts} repair attempts` : undefined,
         currentExecutionRevision: plan.revision,
         verifiedExecutionRevision: (verification as import("./types.js").VerificationReport).forgeVerify?.plan.executionRevision,
+        currentVerificationInputStateHash: createVerificationInputStateHash(this.workspacePath),
       });
 
       const summary = [
