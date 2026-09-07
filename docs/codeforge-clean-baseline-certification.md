@@ -136,6 +136,7 @@ All six are **intentional, environment-gated integration suites** — each is ga
 | `0930cb6` | integrate certified 8-Bit emoji activity theme and wire runtime status visuals | 94 files changed, 1098 insertions(+), 130 deletions(-) — `apps/web/src/qa.tsx`, `packages/ui/src/Conversation.tsx`, `packages/ui/src/activity-icons.tsx`, `packages/ui/src/index.ts`, `packages/ui/src/workspace.css`, `packages/ui/src/EightBitStatusBadge.tsx`, `packages/ui/src/emoji-assets.ts`, `packages/ui/src/assets/**` (94 PNGs), `packages/ui/test/activity-icons.test.tsx`, `docs/codeforge-8bit-activity-integration-report.md`, `docs/codeforge-emojipack-chat-integration-report.md` |
 | `c0415ed` | fix PostgreSQL migration table collision between sessions and cloud-db | 6 files changed, 339 insertions(+), 14 deletions(-) — `packages/sessions/src/postgres-persistence.ts`, `packages/cloud-db/src/postgres.ts`, `packages/cloud-db/test/postgres.test.ts`, `scripts/cloud/pg-validate.mjs`, `packages/server/test/cf17-pg-restart-e2e.test.ts`, `tests/migration-namespace-collision.test.ts` (new) |
 | `b47604f` | fill in 8-Bit V1 certification report's placeholder commit reference | 1 file changed, 3 insertions(+), 1 deletion(-) — `docs/8bit-v1-certification-report.md` |
+| `423c60b` | add clean-baseline certification report | 1 file changed, 162 insertions(+) — `docs/codeforge-clean-baseline-certification.md` (this document) |
 
 No commit used `git add -A`/`git add .`; every commit staged an explicit, reviewed file list. `git diff`/`git diff --cached`/`git diff --cached --check` were inspected before each commit.
 
@@ -146,12 +147,14 @@ No commit used `git add -A`/`git add .`; every commit staged an explicit, review
 ## 12. CodeForge Final Repository State
 
 ```
-Final HEAD:   b47604feb3dcbff545cafe6c3132917dda63cf73
+Final HEAD:   423c60b01a55f024233e2745722dfc30c20c6117
 Branch:       feat/codeforge-cloud
 git status --short: (empty)
 Working tree: CLEAN
 Remote operations performed: NONE (no push, no force-push, no PR, no tag, no remote branch change — in either repository)
 ```
+
+Note: this value is the commit that carries this document. A document cannot cite the hash of its own commit before that commit exists, so this line was filled in as a same-session follow-up edit after the initial commit landed; no further commits were made beyond that one correction.
 
 ## 13. Next Architecture Boundary
 
