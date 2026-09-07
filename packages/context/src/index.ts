@@ -58,6 +58,8 @@ export interface AssembleContextOptions {
   /** Cross-session/cross-worktree reusable Context Page cache. Omitted = pages are still built
    * and used for this call, just not persisted for reuse. */
   pageStore?: ContextPageStore;
+  /** FG-4 advisory structural breadth; Context Planner remains responsible for actual delivery. */
+  minimumContextLevel?: ContextLevel;
 }
 
 export interface AssembledContext {
@@ -249,6 +251,7 @@ export class ContextAssembler {
             intelligence: options.intelligence,
             mentionedPaths: options.mentionedPaths,
             pageStore: options.pageStore,
+            minimumLevel: options.minimumContextLevel,
           });
           progressive = {
             level: plan.level,

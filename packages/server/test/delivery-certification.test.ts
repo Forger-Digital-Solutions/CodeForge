@@ -138,7 +138,7 @@ describe("CF-10C adversarial delivery certification", () => {
     const third = await deliveryHarness(f, { source: changedSource, sessionId: "determinism-three" });
     const three = await third.delivery.createDelivery({ missionId: third.mission.id, deliveryId: "delivery-determinism-three" });
     expect(three.commitPlan).not.toEqual(one.commitPlan);
-    first.persistence.close(); second.persistence.close(); third.persistence.close();
+    await Promise.all([first.persistence.close(), second.persistence.close(), third.persistence.close()]);
   }, 60_000);
 
   it("fails closed when a controlled pre-finalization mutation makes the delivered tree differ", async () => {

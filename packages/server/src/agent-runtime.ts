@@ -30,6 +30,7 @@ import {
   canonicalCacheKey,
   createForgeGreenAdvisor,
   createForgeGreenLedgerCollector,
+  analyzeStructuralRisk,
   type EfficiencyReceipt,
   type ForgeGreenAdvisor,
   type ForgeGreenLedgerCollector,
@@ -2377,7 +2378,19 @@ export class AgentRuntime {
         case "repo_impact": {
           const rawPaths = Array.isArray(args.paths) ? (args.paths as string[]) : requestedPath ? [requestedPath] : [];
           const maxDepth = typeof args.maxDepth === "number" ? Math.min(10, Math.max(1, Math.floor(args.maxDepth))) : 3;
-          output = await intelligence.getImpactCandidates(rawPaths, { limit, maxDepth });
+          const impact = await intelligence.getImpactCandidates(rawPaths, { limit, maxDepth });
+          const risk = await analyzeStructuralRisk({
+            intelligence,
+            changedPaths: rawPaths,
+            task: query,
+            limit,
+            maxDepth,
+            cache: this.forgeGreenCacheStore,
+            ledger: efficiency?.ledger,
+          });
+          // Keep the legacy candidate shape available to existing clients while exposing FG-4's
+          // richer advisory result. Neither result can authorize execution or verification.
+          output = { ...impact, ...risk, impact };
           break;
         }
         case "repo_callees":

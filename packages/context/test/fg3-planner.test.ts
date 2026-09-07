@@ -8,6 +8,7 @@ import { createMinimalContextKernel, renderContextKernel } from "../src/kernel.j
 import { estimateTokens } from "../src/pack.js";
 import { resolveContextCapacity, ContextCapacityError } from "../src/budget.js";
 import { ContextPlanner, createContextPlanner } from "../src/planner.js";
+import { asContextLevel } from "../src/levels.js";
 
 const cleanupDirs: string[] = [];
 afterEach(() => {
@@ -281,6 +282,17 @@ describe("FG-3B/C/F Context Planner — progressive levels, narrow default, boun
     expect(plan.sections.some((s) => s.title === "structural_neighbors")).toBe(true);
     expect(typeof plan.receipt.omittedOptionalPages).toBe("number");
     expect(plan.tokenEstimate).toBeLessThanOrEqual(plan.capacity.maxContextTokens);
+
+    const broadened = await createContextPlanner().planNarrow({
+      goal: "Trace Invoice.total callers",
+      kernel,
+      capacity: resolveContextCapacity({ requestedTokens: 20_000 }),
+      intelligence,
+      mentionedPaths: ["src/billing/invoice.ts"],
+      minimumLevel: asContextLevel("L3"),
+    });
+    expect(broadened.level).toBe("L3");
+    expect(broadened.sections.some((section) => section.title === "module_context")).toBe(true);
 
     await intelligence.closeWorkspace();
   });

@@ -26,6 +26,7 @@ export type ForgeGreenMechanism =
   | "request_dedupe"
   | "fallback"
   | "repository_intelligence"
+  | "risk_analysis"
   | "model_failover";
 
 export interface EfficiencyLedgerEvent {
@@ -68,6 +69,16 @@ export interface ForgeGreenLedgerTotals {
   contextPagesReused: number;
   /** FG-3D: Context Pages freshly built from RepositoryIntelligence this run (work done). */
   contextPagesPulled: number;
+  /** FG-4: deterministic structural-risk analyses performed. */
+  riskAnalyses: number;
+  /** FG-4: structural-risk results served from the canonical cache. */
+  riskCacheHits: number;
+  /** FG-4: structural-risk cache misses/recomputations. */
+  riskCacheMisses: number;
+  /** FG-4: advisory capability escalations recommended by structural evidence. */
+  riskRoleEscalations: number;
+  /** FG-4: advisory context breadth expansions recommended by structural evidence. */
+  riskContextExpansions: number;
 }
 
 export interface ForgeGreenLedgerIdentity {
@@ -117,6 +128,11 @@ function emptyTotals(): ForgeGreenLedgerTotals {
     modelFailoverBlockedDispatches: 0,
     contextPagesReused: 0,
     contextPagesPulled: 0,
+    riskAnalyses: 0,
+    riskCacheHits: 0,
+    riskCacheMisses: 0,
+    riskRoleEscalations: 0,
+    riskContextExpansions: 0,
   };
 }
 
@@ -173,6 +189,13 @@ export class ForgeGreenLedgerCollector {
         else if (event.reason === "parse_cache_hits") this.totals.repositoryParseCacheHits += quantity;
         else if (event.reason === "dependent_revalidation") this.totals.repositoryInvalidations += quantity;
         else if (event.measurement === "unknown") this.noteUnknown();
+        break;
+      case "risk_analysis":
+        if (event.reason === "analysis") this.totals.riskAnalyses += quantity;
+        else if (event.reason === "cache_hit") this.totals.riskCacheHits += quantity;
+        else if (event.reason === "cache_miss") this.totals.riskCacheMisses += quantity;
+        else if (event.reason === "role_escalation") this.totals.riskRoleEscalations += quantity;
+        else if (event.reason === "context_expansion") this.totals.riskContextExpansions += quantity;
         break;
       case "model_failover":
         if (event.reason === "rotated") this.totals.modelFailoverRotations += 1;

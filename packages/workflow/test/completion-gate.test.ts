@@ -7,6 +7,7 @@ import type {
   WorkflowPlan,
   PlanStep,
 } from "../src/types.js";
+import type { TaskRiskClass, AnalyzabilityClass } from "@codeforge/forge-green";
 
 function plan(steps: Partial<PlanStep>[] = []): WorkflowPlan {
   return {
@@ -241,5 +242,18 @@ describe("completion gate — the runtime, not the model, decides completion", (
       review: review(),
     };
     expect(evaluateCompletion(input)).toEqual(evaluateCompletion(input));
+  });
+
+  it("does not treat a best-case FG-4 risk result as verification or completion authority", () => {
+    const riskAdvice: { risk: TaskRiskClass; analyzability: AnalyzabilityClass } = { risk: "LOCAL", analyzability: "HIGH" };
+    expect(riskAdvice).toEqual({ risk: "LOCAL", analyzability: "HIGH" });
+    const decision = evaluateCompletion({
+      plan: plan([{ kind: "edit", status: "completed" }]),
+      verification: unconfiguredVerification(),
+      analysis: analysis(),
+      review: review(),
+    });
+    expect(decision.outcome).toBe("blocked");
+    expect(decision.blockers.map((blocker) => blocker.code)).toContain("verification_not_run");
   });
 });

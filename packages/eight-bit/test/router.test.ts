@@ -109,4 +109,19 @@ describe("EightBitRouter — deterministic adaptive routing", () => {
     expect(result.outcome).toBe("no_eligible_route");
     if (result.outcome === "no_eligible_route") expect(result.reasonCodes).toContain("NO_ELIGIBLE_FREE_MODEL");
   });
+
+  it("[FG-4] applies advisory capability guidance through 8-Bit's own hard eligibility and ranking", () => {
+    const { fw, router } = setup();
+    fw.register(makeModel({ modelId: "guided-free" }));
+    const result = router.selectRoute({
+      ...baseOptions,
+      scope,
+      capabilityGuidance: { minimumRole: "REASONER", reasonCodes: ["CROSS_PACKAGE_DEPENDENCY"] },
+    });
+    expect(result.outcome).toBe("selected");
+    if (result.outcome === "selected") {
+      expect(result.model.modelId).toBe("guided-free");
+      expect(result.reasons).toEqual(expect.arrayContaining(["FG4_CAPABILITY:REASONER", "CROSS_PACKAGE_DEPENDENCY"]));
+    }
+  });
 });

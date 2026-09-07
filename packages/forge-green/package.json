@@ -16,5 +16,7 @@
     "typecheck": "tsc -b --force",
     "clean": "rm -rf dist"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@codeforge/repo-intelligence": "*"
+  }
 }

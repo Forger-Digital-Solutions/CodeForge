@@ -1,5 +1,5 @@
 import type { RepositoryIntelligence } from "@codeforge/repo-intelligence";
-import { asContextLevel, type ContextLevel } from "./levels.js";
+import { asContextLevel, contextLevelAtLeast, type ContextLevel } from "./levels.js";
 import { renderContextKernel, type ContextKernel } from "./kernel.js";
 import { buildContextPack, estimateTokens, sha256, type ContextChunk, type ContextReceipt } from "./pack.js";
 import {
@@ -40,6 +40,8 @@ export interface ContextPlanRequest {
   pageStore?: ContextPageStore;
   /** Override for tests only; production callers should rely on the default. */
   narrowCandidateLimit?: number;
+  /** Advisory breadth requested by FG-4; capacity remains authoritative for delivery. */
+  minimumLevel?: ContextLevel;
 }
 
 export interface ContextPlanSection {
@@ -185,6 +187,23 @@ export class ContextPlanner {
             pagesPulled.push(...prefetch.pulled);
             omittedOptionalPages += prefetch.omitted;
             truncated = truncated || prefetch.anyTruncated;
+          }
+          if (request.minimumLevel && contextLevelAtLeast(request.minimumLevel, asContextLevel("L3"))) {
+            const prefixes = [...new Set(selectedFiles.map((file) => file.split("/").slice(0, 2).join("/")))];
+            const moduleSummaries = await Promise.all(prefixes.map(async (prefix) => await request.intelligence!.getModuleSummary(prefix).catch(() => undefined)));
+            const moduleText = moduleSummaries.filter(Boolean).map((summary) => {
+              const module = summary!;
+              return `Module ${module.prefix}: files=${module.files.length}; package dependencies=${module.packageDependencies.join(", ") || "none"}; internal dependencies=${module.internalDependencies.join(", ") || "none"}; related tests=${module.relatedTests.length}`;
+            }).join("\n");
+            const moduleTokens = estimateTokens(moduleText);
+            if (moduleText && sectionTokens(sections) + moduleTokens <= request.capacity.maxContextTokens) {
+              sections.push({ title: "module_context", content: moduleText, level: asContextLevel("L3"), reasons: ["MODULE_CONTEXT"] });
+              level = asContextLevel("L3");
+              reasonCodes = [...reasonCodes, "MODULE_CONTEXT"];
+            } else if (moduleText) {
+              truncated = true;
+              reasonCodes = [...reasonCodes, "MODULE_CONTEXT_BUDGETED_OUT"];
+            }
           }
         } else {
           reasonCodes = [...reasonCodes, "NO_RELEVANT_TARGET_FOUND"];

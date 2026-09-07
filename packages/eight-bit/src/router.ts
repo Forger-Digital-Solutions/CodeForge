@@ -27,6 +27,8 @@ export interface SelectRouteOptions {
   estimatedContextTokens?: number;
   requiredCapabilities?: string[];
   taskType?: string;
+  /** FG-4 advisory capability requirement. Hard eligibility remains owned by 8-Bit. */
+  capabilityGuidance?: { minimumRole: EightBitRole; reasonCodes?: string[] };
   /** Providers with a registered adapter — an eligible model with no backend cannot execute. */
   hasAdapter: (providerId: string) => boolean;
 }
@@ -66,11 +68,12 @@ export class EightBitRouter {
   }
 
   private eligibleForRole(scope: BindingScope, options: SelectRouteOptions): FreeModelRecord[] {
+    const eligibilityRole = options.capabilityGuidance?.minimumRole ?? scope.role;
     return this.firewall.eligibleModels().filter((model) => {
       if (!options.hasAdapter(model.providerId)) return false;
       if (this.health.isInCooldown(model.providerId, model.modelId)) return false;
       const ctx: EligibilityContext = {
-        role: scope.role,
+        role: eligibilityRole,
         policyMode: options.policyMode,
         estimatedContextTokens: options.estimatedContextTokens,
         reliability: this.reliability.score(model.providerId, model.modelId),
@@ -87,7 +90,7 @@ export class EightBitRouter {
     }
 
     const req: RoutingRequest = {
-      taskType: options.taskType ?? scope.role.toLowerCase(),
+      taskType: options.taskType ?? (options.capabilityGuidance?.minimumRole ?? scope.role).toLowerCase(),
       estimatedContextTokens: options.estimatedContextTokens ?? 8_000,
       requiredCapabilities: options.requiredCapabilities ?? [],
     };
@@ -105,14 +108,19 @@ export class EightBitRouter {
     if (incumbentKey) {
       const incumbentRanked = ranked.find((r) => r.model.providerId === incumbentKey.providerId && r.model.modelId === incumbentKey.modelId);
       if (incumbentRanked && incumbentRanked.score + PROMOTION_MARGIN >= best.score) {
-        return { outcome: "selected", model: incumbentRanked.model, sticky: true, score: incumbentRanked.score, reasons: incumbentRanked.reasons };
+        return { outcome: "selected", model: incumbentRanked.model, sticky: true, score: incumbentRanked.score, reasons: this.guidanceReasons(options, incumbentRanked.reasons) };
       }
       // Incumbent is gone from the eligible set (unhealthy/ineligible/cooled-down) or a
       // meaningfully better route exists — fall through to (re)binding the best candidate.
     }
 
     this.bindings.set(scopeKey(scope), { providerId: best.model.providerId, modelId: best.model.modelId });
-    return { outcome: "selected", model: best.model, sticky: false, score: best.score, reasons: best.reasons };
+    return { outcome: "selected", model: best.model, sticky: false, score: best.score, reasons: this.guidanceReasons(options, best.reasons) };
+  }
+
+  private guidanceReasons(options: SelectRouteOptions, reasons: string[]): string[] {
+    if (!options.capabilityGuidance) return reasons;
+    return [...new Set([...reasons, `FG4_CAPABILITY:${options.capabilityGuidance.minimumRole}`, ...(options.capabilityGuidance.reasonCodes ?? [])])];
   }
 
   /** Used by failover: force-rebind away from a known-bad route to the next eligible one,
@@ -127,7 +135,7 @@ export class EightBitRouter {
       return { outcome: "no_eligible_route", reasonCodes: ["NO_ELIGIBLE_FREE_MODEL"] };
     }
     const req: RoutingRequest = {
-      taskType: options.taskType ?? scope.role.toLowerCase(),
+      taskType: options.taskType ?? (options.capabilityGuidance?.minimumRole ?? scope.role).toLowerCase(),
       estimatedContextTokens: options.estimatedContextTokens ?? 8_000,
       requiredCapabilities: options.requiredCapabilities ?? [],
     };
@@ -138,7 +146,7 @@ export class EightBitRouter {
     const best = ranked[0];
     if (!best) return { outcome: "no_eligible_route", reasonCodes: ["NO_ELIGIBLE_FREE_MODEL"] };
     this.bindings.set(scopeKey(scope), { providerId: best.model.providerId, modelId: best.model.modelId });
-    return { outcome: "selected", model: best.model, sticky: false, score: best.score, reasons: best.reasons };
+    return { outcome: "selected", model: best.model, sticky: false, score: best.score, reasons: this.guidanceReasons(options, best.reasons) };
   }
 }
 
