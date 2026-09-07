@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import { performance } from "node:perf_hooks";
 import { afterEach, describe, expect, it } from "vitest";
 import { createRepositoryIntelligence, type RepositoryIntelligence } from "../src/index.js";
+import { createContextPlanner, createMinimalContextKernel, estimateTokens, resolveContextCapacity } from "@codeforge/context";
 
 const cleanupDirs: string[] = [];
 
@@ -211,6 +212,46 @@ describe("FG-2 large-repository incremental certification", () => {
       indexCompleteness: completeness.completeness.level,
       completenessReasons: completeness.completeness.reasons,
     }));
+
+    // FG-3 §71/§72/§104: the important proof is not that CodeForge CAN send a million lines to
+    // a model — it is that a localized task in this SAME 1,000,000+ line, already-indexed
+    // repository never needs to. Reuses the certified FG-2 harness above rather than building a
+    // second giant fixture.
+    const kernel = createMinimalContextKernel({ sessionId: "fg3-large-repo", objective: "Fix the incrementalNeedle export in module-500" });
+    const capacity = resolveContextCapacity({ requestedTokens: 32_000 });
+    const planStart = performance.now();
+    const plan = await createContextPlanner().planNarrow({
+      goal: "Fix the incrementalNeedle export in module-500",
+      kernel,
+      capacity,
+      intelligence: reopened,
+      mentionedPaths: ["packages/modules/module-500.ts"],
+    });
+    const planMs = performance.now() - planStart;
+
+    const repositoryBytes = reopened.status().sizeBytes;
+    const promptBytes = Buffer.byteLength(plan.prompt, "utf8");
+    expect(plan.selectedFiles).toContain("packages/modules/module-500.ts");
+    expect(plan.selectedFiles.length).toBeLessThanOrEqual(6);
+    expect(plan.tokenEstimate).toBeLessThanOrEqual(capacity.maxContextTokens);
+    // The localized plan is a vanishing fraction of the repository — this is the actual FG-3
+    // large-repo success criterion, not merely "can index a million lines" (already FG-2's).
+    expect(promptBytes).toBeLessThan(repositoryBytes / 100);
+    expect(planMs).toBeLessThan(2_000);
+
+    console.log("FG3-LARGE-REPO-CONTEXT", JSON.stringify({
+      repositoryLines: lines,
+      repositoryFiles: reopened.status().fileCount,
+      repositoryIndexBytes: repositoryBytes,
+      localizedTaskLevel: plan.level,
+      localizedTaskSelectedFiles: plan.selectedFiles.length,
+      localizedTaskPromptBytes: promptBytes,
+      localizedTaskTokenEstimate: plan.tokenEstimate,
+      localizedTaskTokenClassification: "estimated" satisfies "estimated",
+      planLatencyMs: Math.round(planMs),
+      byteReductionRatio: repositoryBytes > 0 ? Number((repositoryBytes / Math.max(1, promptBytes)).toFixed(1)) : undefined,
+    }));
+    void estimateTokens; // re-exported for report-time verification; not otherwise used here.
 
     await reopened.closeWorkspace();
   }, 300_000);

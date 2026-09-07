@@ -18,7 +18,14 @@ import { getSanitizedEnvForChild } from "./env-filter.js";
 import { searchWorkspace } from "./search-service.js";
 import { replaceExact, sha256 } from "./edit-service.js";
 import { createRepositoryIntelligence, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
-import { buildContextPack, ContextAssembler, createContextAssembler } from "@codeforge/context";
+import {
+  buildContextPack,
+  buildDependencyNeighborhoodPage,
+  ContextAssembler,
+  createContextAssembler,
+  createContextPageStore,
+  resolveContextCapacity,
+} from "@codeforge/context";
 import {
   canonicalCacheKey,
   createForgeGreenAdvisor,
@@ -29,7 +36,7 @@ import {
   type ForgeGreenReasonCode,
 } from "@codeforge/forge-green";
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
-import { createEightBitRuntime, renderHandoffMessage, type EightBitRuntime, type EightBitRole } from "@codeforge/eight-bit";
+import { createEightBitRuntime, renderHandoffMessage, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef } from "@codeforge/eight-bit";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
 import {
@@ -509,9 +516,21 @@ export class AgentRuntime {
       DEFAULT_EXECUTION_BUDGETS[req.role] ??
       DEFAULT_EXECUTION_BUDGETS.default!;
 
+    // FG-3E: consume the routed model's catalog-declared context window when known (never
+    // fabricated when absent — see resolveContextCapacity). 8-Bit/the caller still decides
+    // WHICH model runs this role; this only decides how much context fits into it. A smaller
+    // real capacity clamps down; a larger one never causes gratuitous expansion (FG-3 §59).
+    const routedModel = req.modelSelection ? this.firewall.getModel(req.modelSelection.providerId, req.modelSelection.modelId) : undefined;
+    const contextCapacity = resolveContextCapacity({
+      requestedTokens: budget.maxContextTokens,
+      declaredModelContextWindow: routedModel?.contextWindow,
+    });
+    const resolvedMaxContextTokens = contextCapacity.maxContextTokens;
+
     const toolBroker = createToolBroker();
     const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen);
-    const contextAssembler = createContextAssembler(budget.maxContextTokens, this.forgeGreen);
+    const contextAssembler = createContextAssembler(resolvedMaxContextTokens, this.forgeGreen);
+    const contextPageStore = this.forgeGreenCacheStore ? createContextPageStore(this.forgeGreenCacheStore) : undefined;
     const adapter = req.adapter ?? this.createAdapter();
     const duplicateSupervisor = createDuplicateActionSupervisor({ workstreamScope: req.workstreamScope });
     const ledger = createForgeGreenLedgerCollector({
@@ -589,7 +608,7 @@ export class AgentRuntime {
         role: req.role,
         goal: req.goal,
         workspacePath: req.workspacePath,
-        contextWindow: budget.maxContextTokens,
+        contextWindow: resolvedMaxContextTokens,
         intelligence,
         explorerEvidence: req.explorerEvidence,
         findings: req.findings,
@@ -597,6 +616,15 @@ export class AgentRuntime {
         verificationEvidence: req.verificationEvidence,
         taskPlan: req.taskPlan,
         authorityState: req.authorityState,
+        // FG-3A/D/E: authoritative kernel + reusable Context Page cache + model capacity for
+        // the progressive planner. All optional — omitted fields degrade to pre-FG-3 behavior.
+        persistence: this.persistence,
+        sessionId: this.sessionId,
+        runId: req.runId,
+        agentId: req.agentId,
+        workstreamId: req.workstreamScope,
+        modelContextWindow: routedModel?.contextWindow,
+        pageStore: contextPageStore,
       });
 
       if (assembled.evidence) {
@@ -645,13 +673,20 @@ export class AgentRuntime {
         selectedEvidenceCount: assembled.evidence.length,
         contextBytes: Buffer.byteLength(messages.map((message) => message.content).join("\n"), "utf8"),
         estimatedInputTokens: assembled.tokenEstimate,
-        contextMaximum: budget.maxContextTokens,
+        contextMaximum: resolvedMaxContextTokens,
         reservedOutputTokens: assembled.budget.reservedOutput,
         repositoryGeneration: assembled.receipt?.repositoryGeneration ?? indexStatus?.generation ?? 1,
         contextHash: assembled.receipt?.contextHash,
         reasonCodes: assembled.receipt?.reasonCodes,
         efficiencyReceipt: assembled.efficiencyReceipt,
       };
+      // FG-3D: observational ledger accounting for Context Page reuse — reuses the existing
+      // ForgeGreen ledger (no second efficiency ledger), `measured` (a page either hit the
+      // persistent cache or it did not, never estimated).
+      if (assembled.progressive) {
+        ledger.recordContextPagesReused(assembled.progressive.pagesReused);
+        ledger.recordContextPagesPulled(assembled.progressive.pagesPulled);
+      }
 
       // 2. Multi-turn Model & Tool Loop
       let responseCacheTelemetry: { classification: "measured" | "unavailable" } = { classification: "unavailable" };
@@ -1989,6 +2024,12 @@ export class AgentRuntime {
     const role: EightBitRole = "CODER";
     const isExactPin = !!this.modelSelection;
 
+    // FG-3E: use the failing route's own catalog-declared context window as the failover
+    // ranking's context estimate when known, instead of a hardcoded guess — never fabricated
+    // when the catalog does not declare one (falls back to the pre-FG-3 constant).
+    const failingModel = this.firewall.getModel(state.providerId, state.modelId);
+    const estimatedContextTokens = failingModel?.contextWindow ?? 16000;
+
     const outcome = await this.eightBit.handleTurnFailure({
       sessionId: this.sessionId,
       turnId,
@@ -1999,7 +2040,7 @@ export class AgentRuntime {
       isExactPin,
       policyMode: "adaptive",
       error,
-      estimatedContextTokens: 16000,
+      estimatedContextTokens,
       hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
     });
 
@@ -2039,7 +2080,13 @@ export class AgentRuntime {
     // model. The full prior conversation (tool calls/results already made) also stays in
     // `messageHistory`, which is what actually prevents replaying any completed side effect.
     try {
-      const handoff = await this.eightBit.handoff.build(this.sessionId, turnId, state.userMessage);
+      const handoff = await this.eightBit.handoff.build(
+        this.sessionId,
+        turnId,
+        state.userMessage,
+        undefined,
+        this.workspacePath ? (changedFiles) => this.buildHandoffContextPages(changedFiles) : undefined,
+      );
       this.messageHistory.push({ role: "system", content: renderHandoffMessage(handoff) });
     } catch {
       // Handoff summary is advisory context, not authority — its absence must never block
@@ -2077,6 +2124,33 @@ export class AgentRuntime {
     };
     await this.runAgentLoop(turnId, agentId, newProvider, nextRequest, adapter, signal, iteration, duplicateSupervisor);
     return true;
+  }
+
+  /**
+   * FG-3D: bounded, best-effort reusable Context Page references for a handoff's changed
+   * files. Opens its own short-lived RepositoryIntelligence handle — the interactive loop
+   * keeps none open persistently between tool calls — and never blocks or fails the handoff
+   * itself; an unindexed or unavailable workspace simply yields no page references.
+   */
+  private async buildHandoffContextPages(changedFiles: string[]): Promise<HandoffContextPageRef[]> {
+    if (changedFiles.length === 0 || !this.workspacePath) return [];
+    const intelligence = createRepositoryIntelligence();
+    try {
+      await intelligence.openWorkspace(this.workspacePath);
+      const status = intelligence.status();
+      if (status.fileCount === 0 || status.state === "NOT_INDEXED" || status.state === "ERROR") return [];
+      const pageStore = this.forgeGreenCacheStore ? createContextPageStore(this.forgeGreenCacheStore) : undefined;
+      const refs: HandoffContextPageRef[] = [];
+      for (const filePath of changedFiles.slice(0, 5)) {
+        const result = await buildDependencyNeighborhoodPage(intelligence, filePath, pageStore);
+        if (result) refs.push({ type: result.page.type, path: filePath, reused: result.reused });
+      }
+      return refs;
+    } catch {
+      return [];
+    } finally {
+      await intelligence.closeWorkspace().catch(() => undefined);
+    }
   }
 
   private buildSystemPrompt(): string {
@@ -2366,7 +2440,12 @@ export class AgentRuntime {
     if (query) parameters.query = query;
     if (requestedPath) parameters.path = requestedPath;
     const base = {
-      namespace: status.workspaceId,
+      // FG-3: repository-level namespace when FG-2 exposes one, so this cache (the substrate
+      // Context Pages reuse — see docs/forgegreen.md §FG-3) is shared across worktrees of one
+      // repository, matching FG-2's own parse-cache cross-worktree reuse. Falls back to the
+      // pre-FG-3 per-worktree `workspaceId` when a stub/fixture status omits the new field, so
+      // no existing behavior changes when it is absent.
+      namespace: status.repositoryNamespace ?? status.workspaceId,
       analysis: toolName,
       parameters,
       parserVersion: status.parserVersion,

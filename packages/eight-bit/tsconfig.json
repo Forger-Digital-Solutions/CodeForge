@@ -13,6 +13,7 @@
     { "path": "../forge-zero" },
     { "path": "../router" },
     { "path": "../sessions" },
-    { "path": "../forge-green" }
+    { "path": "../forge-green" },
+    { "path": "../context" }
   ]
 }

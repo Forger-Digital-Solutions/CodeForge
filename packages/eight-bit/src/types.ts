@@ -168,9 +168,21 @@ export interface HandoffCompletedAction {
   at?: string;
 }
 
+/** FG-3: a reusable Context Page the replacement model can pull via the existing repo_* tools
+ * (which are already cache-backed by the same store) rather than needing the full page content
+ * inlined into the handoff message. */
+export interface HandoffContextPageRef {
+  type: string;
+  path: string;
+  /** True when this page was served from the persistent cross-session/cross-worktree page
+   * cache rather than freshly recomputed — the observable "reused a valid Context Page" signal. */
+  reused: boolean;
+}
+
 /** Bounded, deterministic snapshot of authoritative runtime truth handed to a replacement
  * route. This is a summary for injection into the model-visible context, never the source of
- * truth itself — CodeForge runtime persistence remains authoritative. */
+ * truth itself — CodeForge runtime persistence remains authoritative. `kernel`/`contextPages`
+ * are the FG-3 additions (both optional; every pre-FG-3 field and consumer is unchanged). */
 export interface HandoffContext {
   sessionId: string;
   turnId: string;
@@ -182,6 +194,11 @@ export interface HandoffContext {
   questionPending: boolean;
   repositoryIntelligenceCompleteness?: "COMPLETE" | "PARTIAL" | "UNKNOWN";
   generatedAt: string;
+  /** FG-3A: the full authoritative Context Kernel this handoff was derived from (steer state,
+   * verification status/plan id, constraints, workstream/revision identity). */
+  kernel?: import("@codeforge/context").ContextKernel;
+  /** FG-3D: reusable Context Pages available for the changed files in this turn. */
+  contextPages?: HandoffContextPageRef[];
 }
 
 export function renderHandoffMessage(ctx: HandoffContext): string {
@@ -204,6 +221,23 @@ export function renderHandoffMessage(ctx: HandoffContext): string {
   if (ctx.verificationRequired) lines.push("Verification is still required before this task may be reported complete.");
   if (ctx.repositoryIntelligenceCompleteness) {
     lines.push(`Repository intelligence completeness: ${ctx.repositoryIntelligenceCompleteness} (do not treat as more complete than reported).`);
+  }
+  if (ctx.kernel) {
+    if (ctx.kernel.constraints.length > 0) lines.push(`Constraints: ${ctx.kernel.constraints.join("; ")}`);
+    if (ctx.kernel.steer.unconsumedSteerIds.length > 0) {
+      lines.push(`${ctx.kernel.steer.unconsumedSteerIds.length} user steering instruction(s) are queued and not yet applied.`);
+    }
+    if (ctx.kernel.steer.lastConsumedSteerId) {
+      lines.push(`Most recently applied steering instruction: ${ctx.kernel.steer.lastConsumedSteerId} (do not re-apply it).`);
+    }
+    if (ctx.kernel.verification.latestStatus) {
+      lines.push(`Latest recorded verification status: ${ctx.kernel.verification.latestStatus}.`);
+    }
+  }
+  if (ctx.contextPages && ctx.contextPages.length > 0) {
+    lines.push(
+      `Reusable structural context is available for: ${ctx.contextPages.map((page) => `${page.path} [${page.type}${page.reused ? ", cached" : ""}]`).join(", ")}. Pull details with repo_dependencies/repo_dependents/repo_tests/repo_file_summary rather than re-deriving them.`,
+    );
   }
   return lines.join("\n");
 }

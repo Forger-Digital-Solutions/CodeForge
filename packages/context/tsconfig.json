@@ -10,6 +10,9 @@
   "references": [
     { "path": "../core" },
     { "path": "../protocol" },
-    { "path": "../repo-intelligence" }
+    { "path": "../repo-intelligence" },
+    { "path": "../forge-green" },
+    { "path": "../agent" },
+    { "path": "../sessions" }
   ]
 }

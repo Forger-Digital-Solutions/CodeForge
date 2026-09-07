@@ -664,6 +664,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
     return {
       state: this.state,
       workspaceId: identity.id,
+      repositoryNamespace: identity.repositoryNamespace,
       root: identity.root,
       indexPath: this.indexPath,
       indexVersion: REPOSITORY_INDEX_VERSION,

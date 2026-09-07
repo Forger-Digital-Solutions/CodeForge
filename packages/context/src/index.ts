@@ -1,415 +1,30 @@
-import crypto from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
-import { execFileSync } from "node:child_process";
-import type { RepositoryEdge, RepositoryIntelligence, RepositoryMatch, RepositorySymbol } from "@codeforge/repo-intelligence";
+import type { ISessionPersistence } from "@codeforge/sessions";
+import type { RepositoryIntelligence } from "@codeforge/repo-intelligence";
 import { createForgeGreenAdvisor, fingerprint, type EfficiencyReceipt, type ForgeGreenAdvisor } from "@codeforge/forge-green";
 import { formatUntrustedData, ROLE_PROMPTS, type AgentRoleType, type AgentFinding, type AgentEvidenceRef } from "@codeforge/agent";
+import {
+  buildContextPack,
+  calculateContextBudget,
+  estimateTokens,
+  fitToTokens,
+  isSensitiveContextPath,
+  sha256,
+  type ContextBudget,
+  type ContextEvidence,
+  type ContextReceipt,
+} from "./pack.js";
+import { buildContextKernel, createMinimalContextKernel, renderContextKernel, type ContextKernel } from "./kernel.js";
+import type { ContextLevel } from "./levels.js";
+import { ContextCapacityError, resolveContextCapacity, type ContextCapacitySource } from "./budget.js";
+import { createContextPlanner } from "./planner.js";
+import type { ContextPageStore } from "./pages.js";
 
-export interface ContextBudget {
-  contextWindow: number;
-  systemPrompt: number;
-  toolSchemas: number;
-  reservedOutput: number;
-  safetyMargin: number;
-  repository: number;
-  maxFiles?: number;
-  maxFileBytes?: number;
-  maxSearchResults?: number;
-  maxToolObservationTokens?: number;
-}
-
-export interface ContextProvenance {
-  path: string;
-  startLine: number;
-  endLine: number;
-  symbolId?: string;
-  symbol?: string;
-  selectionReasons: string[];
-  score: number;
-  contentHash: string;
-  indexedHash?: string;
-  fresh: boolean;
-}
-
-export interface ContextEvidence {
-  source: "file" | "symbol" | "search" | "graph" | "git" | "agent" | "verification";
-  path?: string;
-  symbol?: string;
-  range?: {
-    startLine: number;
-    endLine: number;
-  };
-  revision?: string;
-  hash?: string;
-  reasons?: string[];
-  fresh: boolean;
-}
-
-export interface ContextChunk {
-  id: string;
-  content: string;
-  tokenEstimate: number;
-  provenance: ContextProvenance;
-}
-
-export type LedgerEventKind =
-  | "goal"
-  | "constraint"
-  | "decision"
-  | "file_examined"
-  | "file_modified"
-  | "command"
-  | "failure"
-  | "repair"
-  | "verification"
-  | "blocker"
-  | "evidence"
-  | "noise";
-
-export interface LedgerEvent {
-  id: string;
-  kind: LedgerEventKind;
-  summary: string;
-  timestamp: string;
-  provenance?: string;
-  uncertain?: boolean;
-}
-
-export interface LedgerFact {
-  id: string;
-  kind: Exclude<LedgerEventKind, "noise">;
-  summary: string;
-  provenance: string[];
-  uncertain: boolean;
-}
-
-export interface CompactedLedger {
-  facts: LedgerFact[];
-  retainedEventIds: string[];
-  discardedEventCount: number;
-}
-
-export interface ContextReceipt {
-  requestId: string;
-  repositoryGeneration: number;
-  retrievedFiles: string[];
-  retrievedSymbols: string[];
-  estimatedTokens: number;
-  truncated: boolean;
-  cacheHits: number;
-  reasonCodes: string[];
-  contextHash: string;
-}
-
-export interface ContextPack {
-  taskSummary: string;
-  repositorySummary: string;
-  selectedFiles: string[];
-  selectedSymbols: RepositorySymbol[];
-  relevantTests: RepositoryMatch[];
-  dependencyContext: RepositoryEdge[];
-  gitContext: { branch?: string; head?: string; currentDiff?: string };
-  recentToolResults: LedgerEvent[];
-  currentDiff?: string;
-  unresolvedQuestions: string[];
-  evidence: LedgerFact[];
-  chunks: ContextChunk[];
-  tokenEstimate: number;
-  budget: ContextBudget;
-  truncated: boolean;
-  receipt: ContextReceipt;
-  index: { workspaceId: string; version: number; generation: number; updatedAt?: string; state: string };
-}
-
-export interface BuildContextPackOptions {
-  contextWindow: number;
-  systemPromptTokens?: number;
-  toolSchemaTokens?: number;
-  reservedOutputTokens?: number;
-  safetyMarginTokens?: number;
-  mentionedPaths?: string[];
-  recentToolResults?: LedgerEvent[];
-  unresolvedQuestions?: string[];
-  evidence?: LedgerFact[];
-  maxCandidates?: number;
-}
-
-export function estimateTokens(value: string): number {
-  return value ? Math.ceil(Buffer.byteLength(value, "utf8") / 2.5) + Math.ceil(value.split("\n").length / 8) : 0;
-}
-
-export function calculateContextBudget(options: BuildContextPackOptions): ContextBudget {
-  const systemPrompt = Math.max(0, options.systemPromptTokens ?? 4_000);
-  const toolSchemas = Math.max(0, options.toolSchemaTokens ?? 4_000);
-  const reservedOutput = Math.max(0, options.reservedOutputTokens ?? Math.min(8_000, Math.floor(options.contextWindow * 0.2)));
-  const safetyMargin = Math.max(512, options.safetyMarginTokens ?? Math.ceil(options.contextWindow * 0.05));
-  const repository = Math.max(0, options.contextWindow - systemPrompt - toolSchemas - reservedOutput - safetyMargin);
-  return {
-    contextWindow: options.contextWindow,
-    systemPrompt,
-    toolSchemas,
-    reservedOutput,
-    safetyMargin,
-    repository,
-    maxFiles: 30,
-    maxFileBytes: 512 * 1024,
-    maxSearchResults: 50,
-    maxToolObservationTokens: 16_000,
-  };
-}
-
-function sha256(value: string): string {
-  return crypto.createHash("sha256").update(value).digest("hex");
-}
-
-function normalize(relativePath: string): string {
-  return relativePath.replace(/\\/g, "/");
-}
-
-/** Secrets are excluded before context is constructed, not merely redacted after selection. */
-export function isSensitiveContextPath(relativePath: string): boolean {
-  const base = path.posix.basename(normalize(relativePath)).toLowerCase();
-  return base === ".env" || base.startsWith(".env.") ||
-    /^(?:credentials?|secrets?|tokens?)\.(?:json|ya?ml|toml|ini|txt)$/i.test(base) ||
-    /^(?:id_rsa|id_ed25519|.*\.(?:pem|key|p12|pfx))$/i.test(base);
-}
-
-function git(root: string, args: string[]): string | undefined {
-  try {
-    return execFileSync("git", ["-C", root, ...args], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-      maxBuffer: 2 * 1024 * 1024,
-      timeout: 10_000,
-    }).trim();
-  } catch {
-    return undefined;
-  }
-}
-
-function boundedSlice(content: string, symbol?: RepositorySymbol): { content: string; startLine: number; endLine: number } {
-  const lines = content.split(/\r?\n/);
-  if (symbol) {
-    const startLine = Math.max(1, symbol.startLine - 3);
-    const endLine = Math.min(lines.length, symbol.endLine + 3, startLine + 399);
-    return { content: lines.slice(startLine - 1, endLine).join("\n"), startLine, endLine };
-  }
-  if (lines.length <= 240) return { content, startLine: 1, endLine: lines.length };
-  return { content: lines.slice(0, 240).join("\n"), startLine: 1, endLine: 240 };
-}
-
-function fitToTokens(content: string, maximum: number): string {
-  if (estimateTokens(content) <= maximum) return content;
-  const suffix = "\n[context truncated]";
-  const contentBudget = Math.max(0, maximum - estimateTokens(suffix) - 2);
-  let low = 0;
-  let high = content.length;
-  while (low < high) {
-    const middle = Math.ceil((low + high) / 2);
-    if (estimateTokens(content.slice(0, middle)) <= contentBudget) low = middle;
-    else high = middle - 1;
-  }
-  const cut = content.slice(0, low);
-  const boundary = cut.lastIndexOf("\n");
-  let fitted = `${boundary > 0 ? cut.slice(0, boundary) : cut}${suffix}`;
-  while (fitted.length > suffix.length && estimateTokens(fitted) > maximum) {
-    fitted = `${fitted.slice(0, -suffix.length - 1)}${suffix}`;
-  }
-  return fitted;
-}
-
-export async function buildContextPack(
-  task: string,
-  intelligence: RepositoryIntelligence,
-  options: BuildContextPackOptions,
-): Promise<ContextPack> {
-  const status = intelligence.status();
-  const budget = calculateContextBudget(options);
-  const relevant = await intelligence.findRelevantContext(task, {
-    limit: options.maxCandidates ?? 100,
-    mentionedPaths: options.mentionedPaths,
-  });
-  const sortedMatches = [...relevant.items].sort(
-    (a, b) => b.score - a.score || a.path.localeCompare(b.path) || (a.line ?? 0) - (b.line ?? 0),
-  );
-  const selectedSymbols: RepositorySymbol[] = [];
-  const relevantTests: RepositoryMatch[] = [];
-  const dependencyContext: RepositoryEdge[] = [];
-  const chunks: ContextChunk[] = [];
-  const seenContent = new Set<string>();
-  let used = estimateTokens(task) + 100;
-
-  for (const match of sortedMatches) {
-    if (used >= budget.repository) break;
-    const relativePath = normalize(match.path);
-    if (isSensitiveContextPath(relativePath)) continue;
-    const root = path.resolve(status.root);
-    const absolute = path.resolve(root, relativePath);
-    const relative = path.relative(root, absolute);
-    if (relative.startsWith("..") || path.isAbsolute(relative)) continue;
-    const metadata = await intelligence.getFile(relativePath);
-    if (!metadata || metadata.binary || metadata.sensitive || metadata.size > 2 * 1024 * 1024) continue;
-    let raw: string;
-    try {
-      raw = fs.readFileSync(absolute, "utf8");
-    } catch {
-      continue;
-    }
-    const currentHash = sha256(raw);
-    if (currentHash !== metadata.hash) {
-      await intelligence.refresh([relativePath]);
-      const refreshed = await intelligence.getFile(relativePath);
-      if (!refreshed || refreshed.hash !== currentHash) continue;
-    }
-    const sliced = boundedSlice(raw, match.symbol);
-    const initialHash = sha256(sliced.content);
-    if (seenContent.has(initialHash)) continue;
-    const remaining = budget.repository - used - 32;
-    if (remaining < 32) break;
-    const content = fitToTokens(sliced.content, remaining);
-    const tokenEstimate = estimateTokens(content);
-    if (!content || tokenEstimate > remaining) continue;
-    const contentHash = sha256(content);
-    if (seenContent.has(contentHash)) continue;
-    seenContent.add(contentHash);
-    chunks.push({
-      id: sha256(`${relativePath}\0${sliced.startLine}\0${sliced.endLine}\0${contentHash}`),
-      content,
-      tokenEstimate,
-      provenance: {
-        path: relativePath,
-        startLine: sliced.startLine,
-        endLine: sliced.endLine,
-        symbolId: match.symbol?.id,
-        symbol: match.symbol?.qualifiedName,
-        selectionReasons: match.reasons,
-        score: match.score,
-        contentHash,
-        indexedHash: metadata.hash,
-        fresh: true,
-      },
-    });
-    used += tokenEstimate;
-    if (match.symbol && !selectedSymbols.some((symbol) => symbol.id === match.symbol!.id)) selectedSymbols.push(match.symbol);
-    for (const edge of (await intelligence.findDependencies(relativePath, { limit: 20 })).items) {
-      if (!dependencyContext.some((candidate) => candidate.id === edge.id)) dependencyContext.push(edge);
-    }
-    for (const test of (await intelligence.findRelatedTests(relativePath, { limit: 10 })).items) {
-      if (!relevantTests.some((candidate) => candidate.path === test.path)) relevantTests.push(test);
-    }
-  }
-
-  const branch = git(status.root, ["branch", "--show-current"]);
-  const head = git(status.root, ["rev-parse", "HEAD"]);
-  const currentDiff = git(status.root, ["diff", "--no-ext-diff", "--unified=2"]);
-  const diffBudget = Math.min(Math.max(0, budget.repository - used - 32), Math.floor(budget.repository * 0.2));
-  let fittedDiff = currentDiff && diffBudget > 0 ? fitToTokens(currentDiff, diffBudget) : undefined;
-  used += fittedDiff ? estimateTokens(fittedDiff) : 0;
-  if (used > budget.repository && fittedDiff) {
-    const withoutDiff = used - estimateTokens(fittedDiff);
-    const allowed = Math.max(0, budget.repository - withoutDiff - 8);
-    fittedDiff = allowed > 0 ? fitToTokens(fittedDiff, allowed) : undefined;
-    used = withoutDiff + (fittedDiff ? estimateTokens(fittedDiff) : 0);
-  }
-  while (used > budget.repository && chunks.length > 1) {
-    const removed = chunks.pop()!;
-    used -= removed.tokenEstimate;
-  }
-
-  const contextFingerprint = chunks
-    .map((c) => `${c.provenance.path}:${c.provenance.startLine}-${c.provenance.endLine}:${c.provenance.contentHash}`)
-    .join("\n");
-  const contextHash = sha256(contextFingerprint);
-  const reasonCodes = [...new Set(chunks.flatMap((c) => c.provenance.selectionReasons))];
-
-  const receipt: ContextReceipt = {
-    requestId: sha256(`${task}\0${status.workspaceId}\0${status.generation ?? 1}\0${contextHash}`).slice(0, 16),
-    repositoryGeneration: status.generation ?? 1,
-    retrievedFiles: [...new Set(chunks.map((chunk) => chunk.provenance.path))],
-    retrievedSymbols: selectedSymbols.map((s) => s.qualifiedName),
-    estimatedTokens: used,
-    truncated: relevant.truncated || chunks.length < relevant.items.length,
-    cacheHits: 0,
-    reasonCodes,
-    contextHash,
-  };
-
-  return {
-    taskSummary: task,
-    repositorySummary: `${status.fileCount} files, ${status.symbolCount} symbols, ${status.edgeCount} graph edges; index ${status.state}`,
-    selectedFiles: [...new Set(chunks.map((chunk) => chunk.provenance.path))],
-    selectedSymbols,
-    relevantTests,
-    dependencyContext,
-    gitContext: { branch, head, currentDiff: fittedDiff },
-    currentDiff: fittedDiff,
-    recentToolResults: (options.recentToolResults ?? []).slice(-50),
-    unresolvedQuestions: options.unresolvedQuestions ?? [],
-    evidence: options.evidence ?? [],
-    chunks,
-    tokenEstimate: used,
-    budget,
-    truncated: relevant.truncated || chunks.length < relevant.items.length,
-    receipt,
-    index: {
-      workspaceId: status.workspaceId,
-      version: status.indexVersion,
-      generation: status.generation ?? 1,
-      updatedAt: status.updatedAt,
-      state: status.state,
-    },
-  };
-}
-
-export function renderContextPack(pack: ContextPack): string {
-  const output = [`Task: ${pack.taskSummary}`, `Repository: ${pack.repositorySummary}`];
-  for (const chunk of pack.chunks) {
-    output.push(
-      `\n--- ${chunk.provenance.path}:${chunk.provenance.startLine} (${chunk.provenance.selectionReasons.join(", ")}) ---\n${formatUntrustedData(chunk.content, `file ${chunk.provenance.path}`)}`,
-    );
-  }
-  if (pack.currentDiff) {
-    output.push(`\n--- current diff ---\n${formatUntrustedData(pack.currentDiff, "git diff")}`);
-  }
-  return output.join("\n");
-}
-
-const CRITICAL_KINDS = new Set<LedgerEventKind>([
-  "goal",
-  "constraint",
-  "decision",
-  "file_modified",
-  "failure",
-  "repair",
-  "verification",
-  "blocker",
-  "evidence",
-]);
-
-export function compactLedger(events: LedgerEvent[], maximumFacts = 100): CompactedLedger {
-  const facts = new Map<string, LedgerFact>();
-  const retainedEventIds: string[] = [];
-  for (const event of events) {
-    if (!CRITICAL_KINDS.has(event.kind)) continue;
-    const key = `${event.kind}\0${event.summary.trim().toLowerCase()}`;
-    const existing = facts.get(key);
-    if (existing) {
-      existing.provenance.push(event.provenance ?? event.id);
-      existing.uncertain ||= Boolean(event.uncertain);
-    } else if (facts.size < maximumFacts) {
-      facts.set(key, {
-        id: sha256(key),
-        kind: event.kind as LedgerFact["kind"],
-        summary: event.summary,
-        provenance: [event.provenance ?? event.id],
-        uncertain: Boolean(event.uncertain),
-      });
-    }
-    retainedEventIds.push(event.id);
-  }
-  return { facts: [...facts.values()], retainedEventIds, discardedEventCount: events.length - retainedEventIds.length };
-}
+export * from "./pack.js";
+export * from "./levels.js";
+export * from "./budget.js";
+export * from "./kernel.js";
+export * from "./pages.js";
+export * from "./planner.js";
 
 export interface AssembleContextOptions {
   role: AgentRoleType | string;
@@ -425,6 +40,24 @@ export interface AssembleContextOptions {
   recentEdits?: string[];
   mentionedPaths?: string[];
   authorityState?: string;
+  // --- FG-3 additions (all optional; behavior is unchanged when omitted) ---
+  /** When supplied together with `sessionId`, the L0 Context Kernel is built from real
+   * persisted runtime state (approvals, questions, steers, verification, changed files)
+   * instead of a minimal objective-only fallback. */
+  persistence?: ISessionPersistence;
+  sessionId?: string;
+  turnId?: string;
+  runId?: string;
+  agentId?: string;
+  workstreamId?: string;
+  executionRevision?: string;
+  constraints?: string[];
+  /** The routed model's catalog-declared context window, when known (e.g.
+   * `FreeModelRecord.contextWindow`). Never fabricated by this package when absent. */
+  modelContextWindow?: number;
+  /** Cross-session/cross-worktree reusable Context Page cache. Omitted = pages are still built
+   * and used for this call, just not persisted for reuse. */
+  pageStore?: ContextPageStore;
 }
 
 export interface AssembledContext {
@@ -437,6 +70,18 @@ export interface AssembledContext {
   truncated: boolean;
   receipt: ContextReceipt;
   efficiencyReceipt?: EfficiencyReceipt;
+  /** FG-3A: the authoritative runtime kernel this context was built from. */
+  kernel?: ContextKernel;
+  /** FG-3B/G: present when this role's context went through the progressive planner (today:
+   * the coder role). Absent does not mean "broad" — it means this role's context shape is
+   * unchanged from its pre-FG-3 behavior and was not run through the planner. */
+  progressive?: {
+    level: ContextLevel;
+    capacitySource: ContextCapacitySource;
+    pagesReused: number;
+    pagesPulled: number;
+    omittedOptionalPages: number;
+  };
 }
 
 export class ContextAssembler {
@@ -499,9 +144,39 @@ export class ContextAssembler {
       };
     }
 
+    // FG-3A: the L0 authoritative kernel, always built first. Real (persistence-backed) when a
+    // session is identified; a minimal, honestly-empty fallback otherwise. Never dropped for
+    // budget reasons — see `ContextCapacityError` in the coder branch below.
+    const kernel = options.persistence && options.sessionId
+      ? await buildContextKernel(options.persistence, {
+          sessionId: options.sessionId,
+          turnId: options.turnId,
+          runId: options.runId,
+          agentId: options.agentId,
+          workstreamId: options.workstreamId,
+          executionRevision: options.executionRevision,
+          objective: options.goal,
+          constraints: options.constraints,
+        })
+      : createMinimalContextKernel({
+          sessionId: options.sessionId ?? options.workspacePath,
+          objective: options.goal,
+          constraints: options.constraints,
+        });
+
     const evidenceList: ContextEvidence[] = [];
-    const contextSections: string[] = [];
-    let estimatedTokensUsed = estimateTokens(roleDef.systemPromptTemplate) + 200;
+    const contextSections: string[] = [renderContextKernel(kernel)];
+    let estimatedTokensUsed = estimateTokens(roleDef.systemPromptTemplate) + estimateTokens(contextSections[0]!) + 200;
+    let progressive: AssembledContext["progressive"];
+
+    // FG-3 §10: this guarantee is universal, not just for the coder role's planner path — a
+    // budget may never silently truncate the kernel itself. If even the role's system prompt
+    // plus the kernel alone would not fit, fail closed with an explicit capacity problem rather
+    // than letting the generic `fitToTokens` call below quietly clip it along with everything
+    // else.
+    if (estimatedTokensUsed > budget.contextWindow) {
+      throw new ContextCapacityError({ minimumEstimatedTokens: estimatedTokensUsed, availableTokens: budget.contextWindow });
+    }
 
     // 1. Goal Section
     contextSections.push(`Goal:\n${options.goal}`);
@@ -558,24 +233,47 @@ export class ContextAssembler {
           estimatedTokensUsed += estimateTokens(options.taskPlan);
         }
         if (options.intelligence) {
-          const pack = await buildContextPack(options.goal, options.intelligence, {
-            contextWindow: Math.floor(budget.repository * 0.8),
-            mentionedPaths: options.mentionedPaths,
+          // FG-3B/C/F: start narrow (kernel + a small active-target slice), add bounded one-hop
+          // structural neighbors, rather than the pre-FG-3 eager ~80%-of-budget broad grab. The
+          // broad grab itself is unchanged and still available verbatim via `buildContextPack`
+          // (used directly by the `repo_context` pull tool for callers that want it).
+          const capacity = resolveContextCapacity({
+            requestedTokens: Math.floor(budget.repository * 0.8),
+            declaredModelContextWindow: options.modelContextWindow,
           });
-          if (pack.chunks.length > 0) {
-            for (const c of pack.chunks) {
-              evidenceList.push({
-                source: "file",
-                path: c.provenance.path,
-                symbol: c.provenance.symbol,
-                range: { startLine: c.provenance.startLine, endLine: c.provenance.endLine },
-                hash: c.provenance.contentHash,
-                fresh: c.provenance.fresh,
-              });
-              contextSections.push(
-                `File: ${c.provenance.path}:${c.provenance.startLine}\n${formatUntrustedData(c.content, `file ${c.provenance.path}`)}`,
-              );
-            }
+          const planner = createContextPlanner();
+          const plan = await planner.planNarrow({
+            goal: options.goal,
+            kernel,
+            capacity,
+            intelligence: options.intelligence,
+            mentionedPaths: options.mentionedPaths,
+            pageStore: options.pageStore,
+          });
+          progressive = {
+            level: plan.level,
+            capacitySource: plan.capacity.source,
+            pagesReused: plan.pagesReused.length,
+            pagesPulled: plan.pagesPulled.length,
+            omittedOptionalPages: plan.receipt.omittedOptionalPages,
+          };
+          for (const chunk of plan.activeTargetChunks) {
+            evidenceList.push({
+              source: "file",
+              path: chunk.provenance.path,
+              symbol: chunk.provenance.symbol,
+              range: { startLine: chunk.provenance.startLine, endLine: chunk.provenance.endLine },
+              hash: chunk.provenance.contentHash,
+              fresh: chunk.provenance.fresh,
+            });
+            contextSections.push(
+              `File: ${chunk.provenance.path}:${chunk.provenance.startLine}\n${formatUntrustedData(chunk.content, `file ${chunk.provenance.path}`)}`,
+            );
+          }
+          const structuralSection = plan.sections.find((section) => section.title === "structural_neighbors");
+          if (structuralSection) {
+            contextSections.push(formatUntrustedData(structuralSection.content, "structural neighbors"));
+            evidenceList.push({ source: "graph", reasons: structuralSection.reasons, fresh: true });
           }
         }
         break;
@@ -636,6 +334,8 @@ export class ContextAssembler {
       tokenEstimate: totalTokens,
       truncated: contextPrompt !== unboundedContextPrompt || totalTokens > budget.contextWindow,
       receipt,
+      kernel,
+      ...(progressive ? { progressive } : {}),
       efficiencyReceipt: this.forgeGreen.createReceipt({
         workspaceId: cacheIdentity.workspaceId,
         repositoryGeneration: cacheIdentity.repositoryGeneration,

@@ -1,5 +1,6 @@
 import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
-import type { HandoffContext, HandoffCompletedAction } from "./types.js";
+import { buildContextKernel } from "@codeforge/context";
+import type { HandoffContext, HandoffContextPageRef } from "./types.js";
 
 export interface RepositoryIntelligenceCompletenessSource {
   /** Returns the current advisory completeness for the changed files in this turn, if
@@ -8,18 +9,15 @@ export interface RepositoryIntelligenceCompletenessSource {
   getCompleteness(): "COMPLETE" | "PARTIAL" | "UNKNOWN" | undefined;
 }
 
-const MAX_ACTIONS = 25;
-const MAX_SUMMARY_LEN = 160;
-
-function truncate(s: string, max = MAX_SUMMARY_LEN): string {
-  return s.length > max ? `${s.slice(0, max - 1)}…` : s;
-}
-
 /**
  * Builds a bounded, deterministic snapshot of authoritative runtime truth for a turn, sourced
  * ENTIRELY from persisted `WorkItem`s (never guessed from conversation text). This is what a
  * replacement model is told already happened — CodeForge runtime persistence remains the
  * actual source of truth; this is a summary for context injection, not a new authority.
+ *
+ * FG-3: internally delegates to `buildContextKernel` (`@codeforge/context`) so the handoff and
+ * every other FG-3 consumer of runtime truth (the progressive Context Planner, receipts) share
+ * one computation instead of two independently-maintained WorkItem readers.
  */
 export class EightBitHandoffBuilder {
   constructor(private readonly persistence: ISessionPersistence) {}
@@ -29,61 +27,36 @@ export class EightBitHandoffBuilder {
     turnId: string,
     objective: string,
     repoIntelligence?: RepositoryIntelligenceCompletenessSource,
+    /** FG-3D: optional callback the caller supplies to build reusable Context Page references
+     * for this turn's changed files (it alone holds the RepositoryIntelligence/page-store
+     * handles needed to do so) — kept out of this class to preserve its "intentionally thin,
+     * WorkItem-only" contract. Failure here must never fail the handoff itself. */
+    buildContextPages?: (changedFiles: string[]) => Promise<HandoffContextPageRef[]>,
   ): Promise<HandoffContext> {
-    const items = await this.persistence.getWorkItems(sessionId);
-    const forTurn = items.filter((i) => "turnId" in i && (i as { turnId?: string }).turnId === turnId);
+    const kernel = await buildContextKernel(this.persistence, {
+      sessionId,
+      turnId,
+      objective,
+      repositoryIntelligenceCompleteness: repoIntelligence?.getCompleteness(),
+    });
 
-    const completedActions: HandoffCompletedAction[] = [];
-    const changedFiles: string[] = [];
-    let approvalPending = false;
-    let questionPending = false;
-
-    for (const item of forTurn) {
-      switch (item.kind) {
-        case "command":
-          if (item.status !== "running") {
-            completedActions.push({
-              kind: "command",
-              summary: truncate(`${item.command}${item.exitCode !== undefined ? ` (exit ${item.exitCode})` : ""}`),
-              at: item.completedAt ?? item.startedAt,
-            });
-          }
-          break;
-        case "file_change":
-          changedFiles.push(item.path);
-          completedActions.push({
-            kind: "file_change",
-            summary: truncate(`${item.changeType} ${item.path} (+${item.additions}/-${item.deletions})`),
-            at: item.appliedAt,
-          });
-          break;
-        case "activity":
-          if (item.status === "completed") {
-            completedActions.push({ kind: "tool_call", summary: truncate(item.title), at: item.completedAt ?? item.startedAt });
-          }
-          break;
-        case "approval":
-          if (!item.decision) approvalPending = true;
-          break;
-        case "question":
-          if (!item.answer) questionPending = true;
-          break;
-      }
-    }
-
-    completedActions.sort((a, b) => (a.at ?? "").localeCompare(b.at ?? ""));
+    const contextPages = buildContextPages
+      ? await buildContextPages(kernel.changedFiles).catch(() => undefined)
+      : undefined;
 
     return {
       sessionId,
       turnId,
-      objective: truncate(objective, 400),
-      completedActions: completedActions.slice(-MAX_ACTIONS),
-      changedFiles: [...new Set(changedFiles)],
-      verificationRequired: true,
-      approvalPending,
-      questionPending,
-      repositoryIntelligenceCompleteness: repoIntelligence?.getCompleteness(),
-      generatedAt: new Date().toISOString(),
+      objective: kernel.objective,
+      completedActions: kernel.completedActions,
+      changedFiles: kernel.changedFiles,
+      verificationRequired: kernel.verification.required,
+      approvalPending: kernel.approval.pending,
+      questionPending: kernel.question.pending,
+      repositoryIntelligenceCompleteness: kernel.repositoryIntelligenceCompleteness,
+      generatedAt: kernel.generatedAt,
+      kernel,
+      ...(contextPages && contextPages.length > 0 ? { contextPages } : {}),
     };
   }
 }

@@ -353,6 +353,14 @@ export interface IndexProgress {
 export interface IndexStatus {
   state: RepositoryIndexState;
   workspaceId: string;
+  /**
+   * FG-3: repository-level security namespace (stable across worktrees of one repository —
+   * see {@link WorkspaceIdentity.repositoryNamespace}), exposed here so callers that only hold
+   * an `IndexStatus` (e.g. tool-result cache identity) can key content-addressed reuse at the
+   * repository level instead of the per-worktree `workspaceId`. Optional so existing
+   * hand-constructed `IndexStatus` values (stubs/fixtures) remain valid without this field.
+   */
+  repositoryNamespace?: string;
   root: string;
   indexPath: string;
   indexVersion: number;

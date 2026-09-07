@@ -82,6 +82,46 @@ FG-2 makes Repository Intelligence a trustworthy, content-addressable, increment
 
 No context planner, progressive context resolution, or context budgets (FG-3). No blast-radius authority, risk gates, or model routing (FG-4). No verification policy, acceptance eligibility, or coverage authority (FG-5/FG-6). The interfaces above are the clean seams those phases consume; none of them carries authority today.
 
+## FG-3 — pull-based progressive context
+
+FG-3 evolves the existing `@codeforge/context` assembler from "one broad flat pack per role" into a narrow-by-default, pull-based progressive pipeline: an authoritative runtime **Context Kernel** (L0) plus a small targeted repository slice, expanded only when the task or evidence requires it. It reuses everything CodeForge already knows — FG-1's canonical cache, FG-2's structural intelligence and provenance, 8-Bit's handoff and routing — and adds no second context engine, cache, or repository graph. Context remains information delivery only: no FG-3 artifact carries permission, verification, or completion authority.
+
+### Architecture audit finding (which path was actually eager)
+
+The interactive **lead-agent** loop was already structurally lean and pull-based (a small system prompt plus read-only `repo_*` tools the model calls on demand), so FG-3 deliberately did **not** rewrite it. The genuine eager-context path was the **subagent** dispatch: `executeAgentRun → ContextAssembler → buildContextPack`, which eagerly retrieved up to ~100 repository candidates and filled ~80% of the repository budget before the model ran. FG-3 remediates exactly that path. This finding is recorded so future work does not "optimize" the already-lean lead loop again: the broad pack is still available verbatim, but now only as the explicit, model-initiated `repo_context` pull tool, never as an eager pre-dispatch grab.
+
+### Context Kernel (L0, authoritative projection)
+
+`buildContextKernel` (`packages/context/src/kernel.ts`) builds the minimum runtime truth a model — or a replacement model after 8-Bit failover — needs to continue safely: objective, constraints, changed files, already-completed actions (commands / file changes / tool calls), and approval / question / steer / verification state. It is sourced **entirely from persisted `WorkItem`s** (the same durable records `EightBitHandoffBuilder`, `UserIntentHoldController`, and ForgeVerify treat as authoritative), never guessed from conversation prose, and is itself only a reconstructable projection — CodeForge runtime persistence remains the source of truth. A budget may compact or omit optional repository context but may **never** drop a kernel field: when even the kernel cannot fit, `planNarrow` / `ContextAssembler` fail closed with an explicit `ContextCapacityError` (`CONTEXT_CAPACITY_UNKNOWN`) rather than silently truncating. `createMinimalContextKernel` provides an honestly-empty kernel (every runtime field false/empty, never fabricated) for callers with no persistence.
+
+### Progressive levels (breadth only, never authority)
+
+`ContextLevel` L0–L7 (`levels.ts`) is a branded type expressing information **breadth only** — L0 runtime kernel, L1 active targets, L2 structural neighbors, L3 one-hop dependencies, L4 targeted source bodies, L5 package/module, L6 broader search, L7 exceptional expansion. It is deliberately distinct from FG-2's `AnalysisCompleteness` and from any trust/permission/verification signal: a higher level means more was shown to the model, never that more was verified, authorized, or approved. Today the coder role's repository context is planned at L0→L1→L2; the broad L6/L7 grab remains available only as the explicit `repo_context` pull.
+
+### Context Pages (bounded, content-addressed, FG-1-cached)
+
+A Context Page (`pages.ts`) is a bounded, provenance-rich, structural (never LLM-summarized) repository unit: `file` pages and one-hop `dependency_neighborhood` pages (direct dependencies, dependents, and candidate related tests, capped at `ONE_HOP_MAX_EDGES` each). Pages are stored in `ContextPageStore`, a thin typed envelope over FG-1's existing `ForgeGreenCacheStore` — **no second cache layer**. A page's identity **is** an FG-1D `CanonicalCacheIdentity`, so it inherits namespace isolation, content-hash-first invalidation, and graph-generation scoping. File-local pages key on the file's content hash (an unrelated edit elsewhere provably cannot invalidate them); graph-scoped neighborhood pages key on `graphGeneration` (a comments-only edit does not invalidate them, a signature/import change does). Get/put never throw: a missing, corrupt, or schema-mismatched entry is a safe miss that recomputes — never a crash and never a trusted corrupt value.
+
+### Pull-based retrieval and one-hop prefetch
+
+`ContextPlanner.planNarrow` always emits the L0 kernel, adds a small bounded L1 active-target slice (`NARROW_CANDIDATE_LIMIT`), then a bounded one-hop L2 structural prefetch for at most `MAX_PREFETCH_TARGETS` of the selected files. Expansion beyond that is explicit and model-driven through the existing read-only `repo_*` tools (`repo_dependencies`, `repo_dependents`, `repo_tests`, `repo_file_summary`, `repo_callers`, `repo_callees`, `repo_context`) — never an unrestricted repository dump. `expandOneHop` is loop-safe: re-pulling the same page within one planner (one turn) is suppressed, while a fresh planner (a new turn, or a legitimate state change) may pull it again, integrating with CF-07/FG-1 no-progress semantics.
+
+### Model-aware budget (8-Bit picks the model, FG-3 fits it)
+
+`resolveContextCapacity` (`budget.ts`) replaces the pre-FG-3 hardcoded ~64K assumption with the routed model's catalog-declared `contextWindow` (`FreeModelRecord.contextWindow`) when the caller supplies one. It never selects, swaps, or pins a model — that remains 8-Bit's job. Unknown capacity falls back to the existing safe role default (never fabricated); a smaller real capacity clamps the budget down (compacting what is sent, never silently swapping models, so an exact pin that cannot fit surfaces a capacity problem rather than triggering replacement); a larger capacity never by itself causes gratuitous expansion. Optional repository content is dropped before mandatory kernel state. `agent-runtime.ts` wires the routed model's `contextWindow` into both the assembler budget and the 8-Bit failover ranking estimate.
+
+### FG-2 provenance and completeness preserved
+
+Pages carry FG-2 `EdgeProvenance` and `AnalysisCompleteness`. PARTIAL/UNKNOWN completeness and heuristic/unresolved edges are preserved verbatim and surfaced in the rendered neighborhood ("bounded one-hop view … some edges heuristic/unresolved/omitted") — never upgraded to certainty, never collapsed. Few retrieved edges are never treated as "nothing else exists," and repository prose can never raise completeness.
+
+### 8-Bit handoff integration
+
+`EightBitHandoffBuilder` now **delegates** to `buildContextKernel`, so the handoff and every other FG-3 consumer of runtime truth share one WorkItem reader instead of two independently-maintained ones. The handoff carries the full kernel (steer state, verification status/plan id, constraints, workstream/revision identity) plus optional reusable `HandoffContextPageRef`s for the turn's changed files, rendered as pull handles ("pull details with repo_dependencies/…") rather than inlined page content or blind transcript replay. A consumed steer is presented as "do not re-apply"; an unconsumed one as "queued and not yet applied"; recorded verification status is surfaced without ever claiming completion. Page-build failure is advisory and can never fail the handoff.
+
+### Receipts, ledger, and authority boundaries
+
+The planner emits a `ProgressiveContextReceipt` (level, capacity source, pages reused/pulled, omitted optional pages, reason codes, estimated-token classification, truncated flag) correlated with session/run/agent/workstream/revision. Context Page reuse is recorded on the **existing** ForgeGreen ledger (`recordContextPagesReused` / `recordContextPagesPulled`, `measured` counts — no second telemetry store, no carbon claim). FG-3 has **no path** to satisfy the Completion Gate: `evaluateCompletion` accepts no kernel/plan/receipt/level input, an excellent context plan is never verification or completion, and `CONTEXT_CAPACITY_UNKNOWN` is a context-delivery problem, never a completion blocker code. Prompt-injection fixtures prove repository prose cannot alter planner level, budget, routing, completeness, verification, or completion. FG-4 (blast-radius/risk authority) and FG-5 (verification sufficiency policy) were deliberately **not** implemented.
+
 ## Failure and disable behavior
 
 Missing, stale, corrupt, ambiguous, timed-out, or unavailable efficiency analysis uses the existing safe path and records `safe_fallback` or `analysis_unavailable`. `CODEFORGE_FORGREEN=0` disables the optimization layer and returns canonical behavior. Optimization exceptions are not allowed to become permission or completion decisions.

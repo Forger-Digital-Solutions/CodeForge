@@ -63,6 +63,11 @@ export interface ForgeGreenLedgerTotals {
    * eligible free route existed (NO_ELIGIBLE_FREE_MODEL) — evidence of the free boundary
    * holding, not a savings claim. */
   modelFailoverBlockedDispatches: number;
+  /** FG-3D: Context Pages served from the persistent cross-session/cross-worktree page cache
+   * without recomputing from RepositoryIntelligence (work avoided). */
+  contextPagesReused: number;
+  /** FG-3D: Context Pages freshly built from RepositoryIntelligence this run (work done). */
+  contextPagesPulled: number;
 }
 
 export interface ForgeGreenLedgerIdentity {
@@ -110,6 +115,8 @@ function emptyTotals(): ForgeGreenLedgerTotals {
     repositoryInvalidations: 0,
     modelFailoverRotations: 0,
     modelFailoverBlockedDispatches: 0,
+    contextPagesReused: 0,
+    contextPagesPulled: 0,
   };
 }
 
@@ -152,7 +159,9 @@ export class ForgeGreenLedgerCollector {
         this.totals.avoidedModelRequests += 1;
         break;
       case "context_reuse":
-        if (event.measurement === "measured" && event.unit === "tokens") this.tokensAvoidedMeasured(quantity);
+        if (event.reason === "page_reused") this.totals.contextPagesReused += quantity;
+        else if (event.reason === "page_pulled") this.totals.contextPagesPulled += quantity;
+        else if (event.measurement === "measured" && event.unit === "tokens") this.tokensAvoidedMeasured(quantity);
         else if (event.measurement === "unknown") this.noteUnknown();
         break;
       case "fallback":
@@ -238,6 +247,17 @@ export class ForgeGreenLedgerCollector {
    * (the free-policy boundary holding under pressure — observational, not a savings claim). */
   recordModelFailoverBlocked(): void {
     this.record({ mechanism: "model_failover", measurement: "measured", quantity: 1, unit: "count", reason: "no_eligible_route" });
+  }
+
+  /** FG-3D: Context Pages served from the persistent page cache this run (a count, not an
+   * estimate — a page either hit the cache or it did not). */
+  recordContextPagesReused(count: number): void {
+    if (count > 0) this.record({ mechanism: "context_reuse", measurement: "measured", quantity: count, unit: "count", reason: "page_reused" });
+  }
+
+  /** FG-3D: Context Pages freshly built (not reused) this run. */
+  recordContextPagesPulled(count: number): void {
+    if (count > 0) this.record({ mechanism: "context_reuse", measurement: "measured", quantity: count, unit: "count", reason: "page_pulled" });
   }
 
   snapshot(): ForgeGreenLedgerRecord {
