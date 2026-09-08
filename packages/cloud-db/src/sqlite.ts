@@ -20,6 +20,8 @@ import type {
   AbuseEventRecord,
   OAuthTransactionRecord,
   DesktopAuthCodeRecord,
+  BrowserOAuthTransactionRecord,
+  BrowserSessionRecord,
   FeatureKey,
   GitHubInstallationRecord,
   GitHubInstallationStatus,
@@ -282,7 +284,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     };
   }
 
-  async createIdentity(params: { userId: string; provider: "github" | "email"; providerUserId: string; providerEmail?: string; id?: string }): Promise<IdentityRecord> {
+  async createIdentity(params: { userId: string; provider: "github" | "email"; providerUserId: string; providerLogin?: string; providerAvatarUrl?: string; providerEmail?: string; id?: string }): Promise<IdentityRecord> {
     const now = new Date().toISOString();
     const id = params.id ?? randomUUID();
     const identity: IdentityRecord = {
@@ -290,18 +292,22 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       userId: params.userId,
       provider: params.provider,
       providerUserId: params.providerUserId,
+      providerLogin: params.providerLogin,
+      providerAvatarUrl: params.providerAvatarUrl,
       providerEmail: params.providerEmail,
       createdAt: now,
       updatedAt: now,
     };
     this.db.prepare(`
-      INSERT INTO identities (id, user_id, provider, provider_user_id, provider_email, created_at, updated_at)
-      VALUES (@id, @userId, @provider, @providerUserId, @providerEmail, @createdAt, @updatedAt)
+      INSERT INTO identities (id, user_id, provider, provider_user_id, provider_login, provider_avatar_url, provider_email, created_at, updated_at)
+      VALUES (@id, @userId, @provider, @providerUserId, @providerLogin, @providerAvatarUrl, @providerEmail, @createdAt, @updatedAt)
     `).run({
       id: identity.id,
       userId: identity.userId,
       provider: identity.provider,
       providerUserId: identity.providerUserId,
+      providerLogin: identity.providerLogin ?? null,
+      providerAvatarUrl: identity.providerAvatarUrl ?? null,
       providerEmail: identity.providerEmail ?? null,
       createdAt: identity.createdAt,
       updatedAt: identity.updatedAt,
@@ -317,10 +323,24 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       userId: String(row.user_id),
       provider: row.provider as "github" | "email",
       providerUserId: String(row.provider_user_id),
+      providerLogin: row.provider_login ? String(row.provider_login) : undefined,
+      providerAvatarUrl: row.provider_avatar_url ? String(row.provider_avatar_url) : undefined,
       providerEmail: row.provider_email ? String(row.provider_email) : undefined,
       createdAt: String(row.created_at),
       updatedAt: String(row.updated_at),
     };
+  }
+
+  async updateIdentityMetadata(params: { id: string; providerLogin?: string; providerAvatarUrl?: string; providerEmail?: string }): Promise<void> {
+    this.db.prepare(`
+      UPDATE identities
+      SET provider_login = @providerLogin, provider_avatar_url = @providerAvatarUrl, provider_email = @providerEmail, updated_at = @updatedAt
+      WHERE id = @id
+    `).run({ id: params.id, providerLogin: params.providerLogin ?? null, providerAvatarUrl: params.providerAvatarUrl ?? null, providerEmail: params.providerEmail ?? null, updatedAt: new Date().toISOString() });
+  }
+
+  async updateUserProfile(params: { id: string; displayName: string; avatarUrl?: string }): Promise<void> {
+    this.db.prepare(`UPDATE users SET display_name = @displayName, avatar_url = @avatarUrl, updated_at = @updatedAt WHERE id = @id`).run({ id: params.id, displayName: params.displayName, avatarUrl: params.avatarUrl ?? null, updatedAt: new Date().toISOString() });
   }
 
   // --- Device Sessions & Rotation ---
@@ -1418,6 +1438,109 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       throw new Error("Desktop authorization code already consumed (replay detected)");
     }
     return { ...record, usedAt: now };
+  }
+
+  // --- Browser OAuth and opaque server-side sessions ---
+
+  async createBrowserOAuthTransaction(params: { state: string; gitHubCodeVerifier: string; returnTarget: string; expiresInSeconds?: number }): Promise<BrowserOAuthTransactionRecord> {
+    const now = new Date();
+    const record: BrowserOAuthTransactionRecord = {
+      id: randomUUID(),
+      state: params.state,
+      gitHubCodeVerifier: params.gitHubCodeVerifier,
+      returnTarget: params.returnTarget,
+      expiresAt: new Date(now.getTime() + (params.expiresInSeconds ?? 600) * 1000).toISOString(),
+      usedAt: null,
+      createdAt: now.toISOString(),
+    };
+    this.db.prepare(`
+      INSERT INTO browser_oauth_transactions (id, state, github_code_verifier, return_target, expires_at, used_at, created_at)
+      VALUES (@id, @state, @gitHubCodeVerifier, @returnTarget, @expiresAt, NULL, @createdAt)
+    `).run({
+      id: record.id,
+      state: record.state,
+      gitHubCodeVerifier: record.gitHubCodeVerifier,
+      returnTarget: record.returnTarget,
+      expiresAt: record.expiresAt,
+      createdAt: record.createdAt,
+    });
+    return record;
+  }
+
+  private mapBrowserOAuthTransactionRow(row: Record<string, unknown>): BrowserOAuthTransactionRecord {
+    return {
+      id: String(row.id),
+      state: String(row.state),
+      gitHubCodeVerifier: String(row.github_code_verifier),
+      returnTarget: String(row.return_target),
+      expiresAt: String(row.expires_at),
+      usedAt: row.used_at ? String(row.used_at) : null,
+      createdAt: String(row.created_at),
+    };
+  }
+
+  async getBrowserOAuthTransaction(state: string): Promise<BrowserOAuthTransactionRecord | undefined> {
+    const row = this.db.prepare(`SELECT * FROM browser_oauth_transactions WHERE state = @state`).get({ state }) as Record<string, unknown> | undefined;
+    return row ? this.mapBrowserOAuthTransactionRow(row) : undefined;
+  }
+
+  async consumeBrowserOAuthTransaction(state: string): Promise<BrowserOAuthTransactionRecord> {
+    const row = this.db.prepare(`SELECT * FROM browser_oauth_transactions WHERE state = @state`).get({ state }) as Record<string, unknown> | undefined;
+    if (!row) throw new Error("Browser OAuth transaction not found");
+    const record = this.mapBrowserOAuthTransactionRow(row);
+    if (record.usedAt) throw new Error("Browser OAuth transaction already consumed (replay detected)");
+    if (new Date(record.expiresAt).getTime() < Date.now()) throw new Error("Browser OAuth transaction expired");
+    const now = new Date().toISOString();
+    const result = this.db.prepare(`UPDATE browser_oauth_transactions SET used_at = @now WHERE state = @state AND used_at IS NULL`).run({ state, now });
+    if (Number(result.changes) === 0) throw new Error("Browser OAuth transaction already consumed (replay detected)");
+    return { ...record, usedAt: now };
+  }
+
+  async createBrowserSession(params: { userId: string; sessionTokenHash: string; expiresInSeconds?: number }): Promise<BrowserSessionRecord> {
+    const now = new Date();
+    const record: BrowserSessionRecord = {
+      id: randomUUID(),
+      userId: params.userId,
+      sessionTokenHash: params.sessionTokenHash,
+      expiresAt: new Date(now.getTime() + (params.expiresInSeconds ?? 7 * 24 * 60 * 60) * 1000).toISOString(),
+      revokedAt: null,
+      createdAt: now.toISOString(),
+      lastSeenAt: now.toISOString(),
+    };
+    this.db.prepare(`INSERT INTO browser_sessions (id, user_id, session_token_hash, expires_at, revoked_at, created_at, last_seen_at) VALUES (@id, @userId, @sessionTokenHash, @expiresAt, NULL, @createdAt, @lastSeenAt)`).run({
+      id: record.id,
+      userId: record.userId,
+      sessionTokenHash: record.sessionTokenHash,
+      expiresAt: record.expiresAt,
+      createdAt: record.createdAt,
+      lastSeenAt: record.lastSeenAt,
+    });
+    return record;
+  }
+
+  private mapBrowserSessionRow(row: Record<string, unknown>): BrowserSessionRecord {
+    return {
+      id: String(row.id),
+      userId: String(row.user_id),
+      sessionTokenHash: String(row.session_token_hash),
+      expiresAt: String(row.expires_at),
+      revokedAt: row.revoked_at ? String(row.revoked_at) : null,
+      createdAt: String(row.created_at),
+      lastSeenAt: String(row.last_seen_at),
+    };
+  }
+
+  async getBrowserSessionByTokenHash(sessionTokenHash: string): Promise<BrowserSessionRecord | undefined> {
+    const row = this.db.prepare(`SELECT * FROM browser_sessions WHERE session_token_hash = @sessionTokenHash`).get({ sessionTokenHash }) as Record<string, unknown> | undefined;
+    return row ? this.mapBrowserSessionRow(row) : undefined;
+  }
+
+  async updateBrowserSessionLastSeen(id: string): Promise<void> {
+    this.db.prepare(`UPDATE browser_sessions SET last_seen_at = @lastSeenAt WHERE id = @id`).run({ id, lastSeenAt: new Date().toISOString() });
+  }
+
+  async revokeBrowserSession(id: string): Promise<void> {
+    this.db.prepare(`UPDATE browser_sessions SET revoked_at = @revokedAt WHERE id = @id AND revoked_at IS NULL`).run({ id, revokedAt: new Date().toISOString() });
   }
 
   // --- Billing Webhook Events ---

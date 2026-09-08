@@ -21,6 +21,8 @@ export interface CloudRuntimeConfig {
    * secret; it is authoritative configuration, which is exactly why it may not come from a client.
    */
   publicUrl?: string;
+  /** Exact static-site URLs accepted as browser OAuth return targets. */
+  allowedBrowserReturnUrls: string[];
 
   database: {
     driver: "sqlite" | "postgres";
@@ -78,6 +80,7 @@ const EnvSchema = z.object({
   HOST: z.string().optional(),
   PORT: z.string().optional(),
   CODEFORGE_PUBLIC_URL: z.string().optional(),
+  CODEFORGE_ALLOWED_BROWSER_RETURN_URLS: z.string().optional(),
   RENDER_EXTERNAL_URL: z.string().optional(),
   CODEFORGE_CLOUD_DB_DRIVER: z.enum(["sqlite", "postgres"]).optional(),
   DATABASE_URL: z.string().optional(),
@@ -283,11 +286,25 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
     .map((s) => s.trim())
     .filter(Boolean);
 
+  const allowedBrowserReturnUrls = (e.CODEFORGE_ALLOWED_BROWSER_RETURN_URLS ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   return {
     environment,
     host: e.HOST ?? "127.0.0.1",
     port: parseNum(e.PORT, 3220),
     publicUrl,
+    allowedBrowserReturnUrls:
+      allowedBrowserReturnUrls.length > 0
+        ? allowedBrowserReturnUrls
+        : [
+            "https://forgerdigitalsolutions.com/codeforge/sign-in",
+            "https://forger-digital-solutions.github.io/codeforge/sign-in",
+            "http://127.0.0.1:4321/codeforge/sign-in",
+            "http://localhost:4321/codeforge/sign-in",
+          ],
     database,
     jwtSecret,
     gitHub,
@@ -295,7 +312,16 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
     killSwitches,
     rateLimits: { maxRequestsPerMinute: parseNum(e.CODEFORGE_MAX_REQUESTS_PER_MINUTE, 120) },
     requestTimeoutMs: parseNum(e.CODEFORGE_REQUEST_TIMEOUT_MS, 60_000),
-    allowedOrigins: allowedOrigins.length > 0 ? allowedOrigins : ["http://127.0.0.1", "http://localhost", "https://codeforge.dev"],
+    allowedOrigins:
+      allowedOrigins.length > 0
+        ? allowedOrigins
+        : [
+            "http://127.0.0.1",
+            "http://localhost",
+            "https://codeforge.dev",
+            "https://forgerdigitalsolutions.com",
+            "https://forger-digital-solutions.github.io",
+          ],
     logLevel: e.CODEFORGE_LOG_LEVEL ?? (isProdLike ? "info" : "debug"),
     providerCredentials: resolveCloudProviderCredentials(env),
     trustProxy: parseOptionalBool("CODEFORGE_TRUST_PROXY", e.CODEFORGE_TRUST_PROXY) ?? false,

@@ -54,6 +54,27 @@ transparently: the next hosted request 401s, the main process uses its (still-va
 mint a fresh access token, and the request retries once. Refresh tokens are unaffected (they are hashed
 in the DB, not signed with `JWT_SECRET`). Rotate during low traffic; expect a brief burst of refreshes.
 
+## Verify GitHub browser identity configuration
+
+The GitHub OAuth App has exactly one authorization callback:
+
+```text
+https://<CODEFORGE_PUBLIC_URL>/v1/auth/github/callback
+```
+
+Keep `GITHUB_CLIENT_SECRET` and any GitHub App private key in the Cloud secret store only. Set
+`CODEFORGE_ALLOWED_BROWSER_RETURN_URLS` to the exact deployed FDS sign-in URLs, including:
+
+```text
+https://forgerdigitalsolutions.com/codeforge/sign-in
+https://forger-digital-solutions.github.io/codeforge/sign-in
+```
+
+The browser flow should return only `auth=success`, `auth=denied`, `auth=invalid`, or `auth=error`.
+Success sets an opaque HttpOnly cookie; it must not place a bearer token, refresh token, GitHub token,
+or PKCE verifier in a URL. Browser identity login also does not authorize repository access; that
+remains a separate GitHub App installation/authorization flow.
+
 ---
 
 ## Database

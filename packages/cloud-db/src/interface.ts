@@ -16,6 +16,8 @@ import type {
   AbuseEventRecord,
   OAuthTransactionRecord,
   DesktopAuthCodeRecord,
+  BrowserOAuthTransactionRecord,
+  BrowserSessionRecord,
   FeatureKey,
   GitHubInstallationRecord,
   GitHubInstallationStatus,
@@ -55,8 +57,10 @@ export interface ICloudDatabase {
   createUser(params: { displayName: string; avatarUrl?: string; primaryIdentity: string; id?: string }): Promise<UserRecord>;
   getUserById(id: string): Promise<UserRecord | undefined>;
   getUserByPrimaryIdentity(primaryIdentity: string): Promise<UserRecord | undefined>;
-  createIdentity(params: { userId: string; provider: "github" | "email"; providerUserId: string; providerEmail?: string; id?: string }): Promise<IdentityRecord>;
+  createIdentity(params: { userId: string; provider: "github" | "email"; providerUserId: string; providerLogin?: string; providerAvatarUrl?: string; providerEmail?: string; id?: string }): Promise<IdentityRecord>;
   getIdentityByProvider(provider: string, providerUserId: string): Promise<IdentityRecord | undefined>;
+  updateIdentityMetadata(params: { id: string; providerLogin?: string; providerAvatarUrl?: string; providerEmail?: string }): Promise<void>;
+  updateUserProfile(params: { id: string; displayName: string; avatarUrl?: string }): Promise<void>;
 
   // Device Sessions
   createDeviceSession(params: { userId: string; deviceName?: string; refreshTokenHash: string; ipAddress?: string; userAgent?: string; expiresInSeconds?: number }): Promise<DeviceSessionRecord>;
@@ -174,6 +178,15 @@ export interface ICloudDatabase {
    * exchange (including a concurrent one) throws, so a captured code can never be replayed.
    */
   consumeDesktopAuthCode(codeHash: string): Promise<DesktopAuthCodeRecord>;
+
+  // Browser OAuth and opaque server-side sessions
+  createBrowserOAuthTransaction(params: { state: string; gitHubCodeVerifier: string; returnTarget: string; expiresInSeconds?: number }): Promise<BrowserOAuthTransactionRecord>;
+  getBrowserOAuthTransaction(state: string): Promise<BrowserOAuthTransactionRecord | undefined>;
+  consumeBrowserOAuthTransaction(state: string): Promise<BrowserOAuthTransactionRecord>;
+  createBrowserSession(params: { userId: string; sessionTokenHash: string; expiresInSeconds?: number }): Promise<BrowserSessionRecord>;
+  getBrowserSessionByTokenHash(sessionTokenHash: string): Promise<BrowserSessionRecord | undefined>;
+  updateBrowserSessionLastSeen(id: string): Promise<void>;
+  revokeBrowserSession(id: string): Promise<void>;
 
   // Webhooks
   isWebhookProcessed(stripeEventId: string): Promise<boolean>;

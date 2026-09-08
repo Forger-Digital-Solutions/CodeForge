@@ -1,6 +1,7 @@
 export * from "./pkce.js";
 export * from "./redirect-uri.js";
 export * from "./desktop-auth-code.js";
+export * from "./browser-session.js";
 export * from "./jwt.js";
 export * from "./github-oauth.js";
 export * from "./github-app.js";

@@ -13,7 +13,7 @@ export function buildGitHubAuthUrl(options: GitHubAuthUrlOptions): string {
   url.searchParams.set("state", options.state);
   url.searchParams.set("code_challenge", options.codeChallenge);
   url.searchParams.set("code_challenge_method", "S256");
-  url.searchParams.set("scope", options.scope ?? "read:user user:email");
+  url.searchParams.set("scope", options.scope ?? "read:user");
   return url.toString();
 }
 

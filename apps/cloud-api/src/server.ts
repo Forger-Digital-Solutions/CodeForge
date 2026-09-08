@@ -12,6 +12,12 @@ import { PublicationService } from "./publication-service.js";
 import { PublicationError, PUBLICATION_ERROR_CODES, publicationErrorStatus, isPublicationErrorCode } from "./publication-errors.js";
 
 const MAX_BODY_BYTES = 1024 * 1024; // 1 MiB max payload
+const DEFAULT_BROWSER_RETURN_URLS = [
+  "https://forgerdigitalsolutions.com/codeforge/sign-in",
+  "https://forger-digital-solutions.github.io/codeforge/sign-in",
+  "http://127.0.0.1:4321/codeforge/sign-in",
+  "http://localhost:4321/codeforge/sign-in",
+] as const;
 
 // Boundary Zod Schemas
 //
@@ -114,6 +120,10 @@ export interface CodeForgeCloudServerConfig {
    * cannot start without it. Defaults to the loopback bind address for local development.
    */
   publicUrl?: string;
+  /** Exact static-site URLs allowed as browser OAuth return targets. */
+  allowedBrowserReturnUrls?: string[];
+  /** Lifetime of the HttpOnly browser session cookie. */
+  browserSessionExpiresInSeconds?: number;
   /**
    * Stripe TEST-mode configuration. Set this to null to explicitly disable billing, including in
    * local tests. Hosted Free stays independent of this integration.
@@ -202,7 +212,15 @@ export class CodeForgeCloudServer {
     }
 
     this.host = config.host ?? "127.0.0.1";
-    this.allowedOrigins = new Set(config.allowedOrigins ?? ["http://127.0.0.1", "http://localhost", "https://codeforge.dev"]);
+    this.allowedOrigins = new Set(
+      config.allowedOrigins ?? [
+        "http://127.0.0.1",
+        "http://localhost",
+        "https://codeforge.dev",
+        "https://forgerdigitalsolutions.com",
+        "https://forger-digital-solutions.github.io",
+      ],
+    );
     this.maxRequestsPerMinute = config.maxRequestsPerMinute ?? 120;
     this.trustProxy = config.trustProxy ?? false;
 
@@ -237,6 +255,8 @@ export class CodeForgeCloudServer {
       gitHubClientSecret: config.gitHubClientSecret,
       publicUrl,
       allowInsecurePublicUrl: !isProduction,
+      allowedBrowserReturnUrls: config.allowedBrowserReturnUrls ?? DEFAULT_BROWSER_RETURN_URLS,
+      browserSessionExpiresInSeconds: config.browserSessionExpiresInSeconds,
       fetchFn: config.fetchFn,
     });
 
@@ -419,6 +439,51 @@ export class CodeForgeCloudServer {
     return payload.sub;
   }
 
+  private getCookie(req: http.IncomingMessage, name: string): string | undefined {
+    const header = req.headers.cookie;
+    if (!header) return undefined;
+    for (const part of header.split(";")) {
+      const separator = part.indexOf("=");
+      if (separator < 0) continue;
+      const key = part.slice(0, separator).trim();
+      if (key !== name) continue;
+      return decodeURIComponent(part.slice(separator + 1).trim());
+    }
+    return undefined;
+  }
+
+  private async authenticateBrowserOrBearerRequest(req: http.IncomingMessage): Promise<string> {
+    const authHeader = req.headers["authorization"] || "";
+    if (authHeader.startsWith("Bearer ")) return this.authenticateRequest(req);
+    const token = this.getCookie(req, this.auth.getBrowserSessionCookieName());
+    if (!token) throw new Error("Missing or invalid browser session");
+    const user = await this.auth.authenticateBrowserSession(token);
+    return user.id;
+  }
+
+  private sendRedirect(res: http.ServerResponse, location: string, setCookie?: string): void {
+    res.writeHead(302, {
+      Location: location,
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      Pragma: "no-cache",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "Referrer-Policy": "no-referrer",
+      ...(setCookie ? { "Set-Cookie": setCookie } : {}),
+    });
+    res.end();
+  }
+
+  private browserSessionCookie(value: string, maxAge: number): string {
+    const name = this.auth.getBrowserSessionCookieName();
+    const secure = name.startsWith("__Host-") ? "; Secure" : "";
+    return `${name}=${encodeURIComponent(value)}; Max-Age=${Math.max(0, Math.floor(maxAge))}; Path=/; HttpOnly; SameSite=Lax${secure}`;
+  }
+
+  private browserSessionClearCookie(): string {
+    return this.browserSessionCookie("", 0);
+  }
+
   private getCorsOrigin(req: http.IncomingMessage): string | undefined {
     const origin = req.headers.origin;
     if (!origin) return undefined;
@@ -512,7 +577,7 @@ export class CodeForgeCloudServer {
     throw error;
   }
 
-  private sendJson(res: http.ServerResponse, status: number, data: unknown, origin?: string): void {
+  private sendJson(res: http.ServerResponse, status: number, data: unknown, origin?: string, setCookie?: string): void {
     res.writeHead(status, {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store, no-cache, must-revalidate",
@@ -520,6 +585,7 @@ export class CodeForgeCloudServer {
       "X-Content-Type-Options": "nosniff",
       "X-Frame-Options": "DENY",
       "Referrer-Policy": "no-referrer",
+      ...(setCookie ? { "Set-Cookie": setCookie } : {}),
       ...this.corsHeaders(origin),
     });
     res.end(JSON.stringify(data));
@@ -629,39 +695,87 @@ export class CodeForgeCloudServer {
         return;
       }
 
+      if (url.pathname === "/v1/auth/browser/start" && method === "GET") {
+        const returnTarget = url.searchParams.get("return") ?? "";
+        const result = await this.auth.startBrowserOAuth({ returnTarget });
+        this.sendRedirect(res, result.authUrl);
+        return;
+      }
+
       // GitHub authorization-server callback. This is the ONE URL registered in the GitHub OAuth
-      // App. It never emits a session credential: it redirects to the loopback URI recorded in the
-      // server-side transaction, carrying a single-use authorization code.
+      // App. It either redirects to the loopback URI recorded in a desktop transaction with a
+      // single-use authorization code, or completes a browser transaction with an HttpOnly cookie.
       if (url.pathname === "/v1/auth/github/callback" && method === "GET") {
         const oauthError = url.searchParams.get("error");
+        const state = url.searchParams.get("state") ?? "";
+        const browserTransaction = state ? await this.auth.getBrowserOAuthTransaction(state) : undefined;
         if (oauthError) {
-          // GitHub reported a failure (e.g. access_denied). Render it; do not redirect anywhere,
-          // because a failed attempt has no validated destination.
+          if (browserTransaction) {
+            try {
+              this.sendRedirect(res, await this.auth.handleBrowserAuthorizationDenied(state));
+            } catch {
+              this.sendAuthErrorPage(res, "This CodeForge sign-in link is invalid or has already been used.");
+            }
+            return;
+          }
+          // Desktop failures have no validated browser destination, so keep the existing static
+          // terminal page and preserve the loopback flow's authority boundary.
           this.sendAuthErrorPage(res, "GitHub authorization was not completed.");
+          return;
+        }
+
+        if (browserTransaction) {
+          try {
+            const result = await this.auth.handleBrowserGitHubCallback({
+              code: url.searchParams.get("code") ?? "",
+              state,
+            });
+            const cookie = result.sessionCookie ? this.browserSessionCookie(result.sessionCookie.value, result.sessionCookie.maxAge) : undefined;
+            this.sendRedirect(res, result.redirectTo, cookie);
+          } catch {
+            // A replayed/expired state is safely mapped back to the already-validated static-site
+            // destination when possible. No request-supplied URL is ever reflected.
+            try {
+              const invalidRedirect = await this.auth.getBrowserAuthStatusRedirect(state, "invalid");
+              this.sendRedirect(res, invalidRedirect);
+            } catch {
+              this.sendAuthErrorPage(res, "This CodeForge sign-in link is invalid or has already been used.");
+            }
+          }
           return;
         }
 
         try {
           const result = await this.auth.handleGitHubCallback({
             code: url.searchParams.get("code") ?? "",
-            state: url.searchParams.get("state") ?? "",
+            state,
           });
           // 302 to the server-validated loopback target. `Location` is derived entirely from the
           // stored transaction, so no request parameter can steer this redirect.
-          res.writeHead(302, {
-            Location: result.redirectTo,
-            "Cache-Control": "no-store, no-cache, must-revalidate",
-            Pragma: "no-cache",
-            "X-Content-Type-Options": "nosniff",
-            "X-Frame-Options": "DENY",
-            "Referrer-Policy": "no-referrer",
-          });
-          res.end();
+          this.sendRedirect(res, result.redirectTo);
         } catch {
           // Never echo the failure reason into a browser-rendered page: it is attacker-influenced
           // input and the detail is of no use to a legitimate user.
           this.sendAuthErrorPage(res, "This CodeForge sign-in link is invalid or has already been used.");
         }
+        return;
+      }
+
+      if (url.pathname === "/v1/auth/session" && method === "GET") {
+        const userId = await this.authenticateBrowserOrBearerRequest(req);
+        const account = await this.auth.getAccount(userId);
+        this.sendJson(res, 200, { user: account.user }, corsOrigin);
+        return;
+      }
+
+      if (url.pathname === "/v1/auth/browser/logout" && method === "POST") {
+        if (req.headers.origin && !corsOrigin) {
+          this.sendJson(res, 403, { error: "Origin is not allowed" });
+          return;
+        }
+        const token = this.getCookie(req, this.auth.getBrowserSessionCookieName());
+        if (token) await this.auth.logoutBrowserSession(token);
+        this.sendJson(res, 200, { ok: true }, corsOrigin, this.browserSessionClearCookie());
         return;
       }
 
@@ -699,7 +813,7 @@ export class CodeForgeCloudServer {
 
       // 3. Account Endpoints (Authenticated)
       if (url.pathname === "/v1/account" && method === "GET") {
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateBrowserOrBearerRequest(req);
         const account = await this.auth.getAccount(userId);
         this.sendJson(res, 200, account, corsOrigin);
         return;
@@ -959,7 +1073,7 @@ export class CodeForgeCloudServer {
       this.sendJson(res, 404, { error: "Endpoint not found" }, corsOrigin);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      const isAuthError = msg.includes("Bearer token") || msg.includes("JWT") || msg.includes("expired") || msg.includes("revoked");
+      const isAuthError = msg.includes("Bearer token") || msg.includes("browser session") || msg.includes("JWT") || msg.includes("expired") || msg.includes("revoked");
       const isPayloadTooLarge = msg.includes("Payload Too Large");
       const status = isPayloadTooLarge ? 413 : isAuthError ? 401 : 400;
 

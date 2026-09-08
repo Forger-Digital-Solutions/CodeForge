@@ -269,4 +269,67 @@ describe("CodeForge Cloud Server API End-to-End", () => {
       await noBillingServer.stop();
     }
   });
+
+  it("completes the browser GitHub flow with an opaque HttpOnly session and supports logout", async () => {
+    const returnTarget = "https://forgerdigitalsolutions.com/codeforge/sign-in";
+    const startRes = await fetch(`${baseUrl}/v1/auth/browser/start?return=${encodeURIComponent(returnTarget)}`, { redirect: "manual" });
+    expect(startRes.status).toBe(302);
+    const authorizeUrl = new URL(startRes.headers.get("location")!);
+    const state = authorizeUrl.searchParams.get("state")!;
+    expect(authorizeUrl.searchParams.get("scope")).toBe("read:user");
+    expect(authorizeUrl.searchParams.get("redirect_uri")).toContain("/v1/auth/github/callback");
+
+    const callbackRes = await fetch(`${baseUrl}/v1/auth/github/callback?code=gh_code&state=${encodeURIComponent(state)}`, { redirect: "manual" });
+    expect(callbackRes.status).toBe(302);
+    expect(callbackRes.headers.get("location")).toBe(`${returnTarget}?auth=success`);
+    const cookie = callbackRes.headers.get("set-cookie")!;
+    expect(cookie).toMatch(/^codeforge-session=[^;]+;/);
+    expect(cookie).toContain("HttpOnly");
+    expect(cookie).toContain("SameSite=Lax");
+    expect(cookie).toContain("Path=/");
+    expect(cookie).not.toContain("gho_mock_access_token_123");
+    const sessionCookie = cookie.split(";", 1)[0]!;
+
+    const sessionRes = await fetch(`${baseUrl}/v1/auth/session`, { headers: { Cookie: sessionCookie } });
+    expect(sessionRes.status).toBe(200);
+    expect((await sessionRes.json()).user.primaryIdentity).toBe("github:554433");
+
+    const accountRes = await fetch(`${baseUrl}/v1/account`, { headers: { Cookie: sessionCookie } });
+    expect(accountRes.status).toBe(200);
+
+    const logoutRes = await fetch(`${baseUrl}/v1/auth/browser/logout`, {
+      method: "POST",
+      headers: { Cookie: sessionCookie, Origin: returnTarget.replace("/codeforge/sign-in", "") },
+    });
+    expect(logoutRes.status).toBe(200);
+    expect(logoutRes.headers.get("set-cookie")).toContain("Max-Age=0");
+    expect((await fetch(`${baseUrl}/v1/auth/session`, { headers: { Cookie: sessionCookie } })).status).toBe(401);
+  });
+
+  it("keeps browser OAuth denial and open-redirect attempts fail-closed", async () => {
+    const returnTarget = "https://forgerdigitalsolutions.com/codeforge/sign-in";
+    const startRes = await fetch(`${baseUrl}/v1/auth/browser/start?return=${encodeURIComponent(returnTarget)}`, { redirect: "manual" });
+    const state = new URL(startRes.headers.get("location")!).searchParams.get("state")!;
+    const denied = await fetch(`${baseUrl}/v1/auth/github/callback?error=access_denied&state=${encodeURIComponent(state)}`, { redirect: "manual" });
+    expect(denied.status).toBe(302);
+    expect(denied.headers.get("location")).toBe(`${returnTarget}?auth=denied`);
+    expect(denied.headers.get("set-cookie")).toBeNull();
+    expect(await server.db.getUserByPrimaryIdentity("github:554433")).toBeUndefined();
+
+    const hostile = await fetch(`${baseUrl}/v1/auth/browser/start?return=${encodeURIComponent("https://attacker.example/steal")}`, { redirect: "manual" });
+    expect(hostile.status).toBe(400);
+    expect(hostile.headers.get("location")).toBeNull();
+  });
+
+  it("maps a browser callback replay to a safe invalid state without reissuing a cookie", async () => {
+    const returnTarget = "https://forgerdigitalsolutions.com/codeforge/sign-in";
+    const startRes = await fetch(`${baseUrl}/v1/auth/browser/start?return=${encodeURIComponent(returnTarget)}`, { redirect: "manual" });
+    const state = new URL(startRes.headers.get("location")!).searchParams.get("state")!;
+    const first = await fetch(`${baseUrl}/v1/auth/github/callback?code=gh_code&state=${encodeURIComponent(state)}`, { redirect: "manual" });
+    expect(first.status).toBe(302);
+    const replay = await fetch(`${baseUrl}/v1/auth/github/callback?code=gh_code&state=${encodeURIComponent(state)}`, { redirect: "manual" });
+    expect(replay.status).toBe(302);
+    expect(replay.headers.get("location")).toBe(`${returnTarget}?auth=invalid`);
+    expect(replay.headers.get("set-cookie")).toBeNull();
+  });
 });

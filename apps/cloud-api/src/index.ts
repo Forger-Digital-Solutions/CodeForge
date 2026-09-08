@@ -51,6 +51,7 @@ async function main() {
         }
       : {}),
     publicUrl: config.publicUrl,
+    allowedBrowserReturnUrls: config.allowedBrowserReturnUrls,
     stripeConfig: config.stripe,
     firewallManager,
     providerRegistry,

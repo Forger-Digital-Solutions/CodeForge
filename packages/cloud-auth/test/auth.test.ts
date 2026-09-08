@@ -13,6 +13,7 @@ import {
 
 const PUBLIC_URL = "https://cloud.codeforge.test";
 const LOOPBACK = "http://127.0.0.1:8765/auth/callback";
+const BROWSER_RETURN = "https://forgerdigitalsolutions.com/codeforge/sign-in";
 
 describe("AuthService — server-brokered GitHub OAuth", () => {
   let db: CloudDatabase;
@@ -64,6 +65,7 @@ describe("AuthService — server-brokered GitHub OAuth", () => {
       gitHubClientId: "gh_client_test_id",
       gitHubClientSecret: "gh_client_test_secret",
       publicUrl: PUBLIC_URL,
+      allowedBrowserReturnUrls: [BROWSER_RETURN],
       fetchFn: createMockGitHubFetch() as typeof fetch,
     });
   });
@@ -346,5 +348,112 @@ describe("AuthService — server-brokered GitHub OAuth", () => {
 
     const expiredToken = signAccessToken({ sub: "user-123", sid: "sess-456" }, jwtSecret, -10);
     expect(() => verifyAccessToken(expiredToken, jwtSecret)).toThrow(/expired/);
+  });
+
+  describe("browser GitHub identity flow", () => {
+    async function startBrowserLogin(returnTarget = BROWSER_RETURN) {
+      return auth.startBrowserOAuth({ returnTarget });
+    }
+
+    it("uses a server-held PKCE verifier and an exact return allowlist", async () => {
+      const start = await startBrowserLogin();
+      const authUrl = new URL(start.authUrl);
+      expect(authUrl.searchParams.get("scope")).toBe("read:user");
+      expect(authUrl.searchParams.get("redirect_uri")).toBe(`${PUBLIC_URL}${CLOUD_GITHUB_CALLBACK_PATH}`);
+      expect(authUrl.searchParams.get("code_challenge")).toBeTruthy();
+      expect(JSON.stringify(start)).not.toContain("codeVerifier");
+
+      const tx = await db.getBrowserOAuthTransaction(authUrl.searchParams.get("state")!);
+      expect(tx?.gitHubCodeVerifier).toBeTruthy();
+      expect(tx?.returnTarget).toBe(BROWSER_RETURN);
+
+      for (const hostile of [
+        "https://attacker.example/codeforge/sign-in",
+        "https://forgerdigitalsolutions.com/codeforge/sign-in?next=https://attacker.example",
+        "https://forgerdigitalsolutions.com/codeforge/sign-in#attacker",
+        "javascript:alert(1)",
+      ]) {
+        await expect(auth.startBrowserOAuth({ returnTarget: hostile })).rejects.toThrow();
+      }
+    });
+
+    it("creates one browser session without placing a token in the redirect", async () => {
+      const start = await startBrowserLogin();
+      const result = await auth.handleBrowserGitHubCallback({ code: "gh_code", state: start.authUrl ? new URL(start.authUrl).searchParams.get("state")! : "" });
+
+      expect(result.status).toBe("success");
+      expect(result.redirectTo).toBe(`${BROWSER_RETURN}?auth=success`);
+      expect(result.sessionCookie?.value).toBeTruthy();
+      expect(result.sessionCookie?.name).toBe("__Host-codeforge-session");
+      expect(result.redirectTo).not.toContain(result.sessionCookie!.value);
+      expect(result.redirectTo).not.toContain("gho_");
+
+      const user = await auth.authenticateBrowserSession(result.sessionCookie!.value);
+      expect(user.primaryIdentity).toBe("github:12345");
+      await auth.logoutBrowserSession(result.sessionCookie!.value);
+      await expect(auth.authenticateBrowserSession(result.sessionCookie!.value)).rejects.toThrow(/Invalid browser session/);
+    });
+
+    it("maps a repeat login to the same immutable GitHub account and refreshes profile metadata", async () => {
+      const first = await startBrowserLogin();
+      const firstResult = await auth.handleBrowserGitHubCallback({ code: "gh_code", state: new URL(first.authUrl).searchParams.get("state")! });
+      const firstUser = await auth.authenticateBrowserSession(firstResult.sessionCookie!.value);
+
+      const refreshedAuth = new AuthService({
+        db,
+        jwtSecret,
+        gitHubClientId: "gh_client_test_id",
+        gitHubClientSecret: "gh_client_test_secret",
+        publicUrl: PUBLIC_URL,
+        allowedBrowserReturnUrls: [BROWSER_RETURN],
+        fetchFn: createMockGitHubFetch({ id: 12345, login: "alice-renamed", name: "Alice Renamed", avatar_url: "https://example.com/new.png" }) as typeof fetch,
+      });
+      const second = await refreshedAuth.startBrowserOAuth({ returnTarget: BROWSER_RETURN });
+      const secondResult = await refreshedAuth.handleBrowserGitHubCallback({ code: "gh_code", state: new URL(second.authUrl).searchParams.get("state")! });
+
+      expect(secondResult.userId).toBe(firstUser.id);
+      expect(secondResult.isNewUser).toBe(false);
+      const updated = await db.getUserById(firstUser.id);
+      const identity = await db.getIdentityByProvider("github", "12345");
+      expect(updated?.displayName).toBe("Alice Renamed");
+      expect(identity?.providerLogin).toBe("alice-renamed");
+      expect(identity?.providerAvatarUrl).toBe("https://example.com/new.png");
+    });
+
+    it("allows exactly one account to win concurrent first browser callbacks", async () => {
+      const starts = await Promise.all([startBrowserLogin(), startBrowserLogin()]);
+      const results = await Promise.all(
+        starts.map((start) => auth.handleBrowserGitHubCallback({ code: "gh_code", state: new URL(start.authUrl).searchParams.get("state")! })),
+      );
+
+      expect(results.filter((result) => result.status === "success")).toHaveLength(2);
+      expect(results.filter((result) => result.isNewUser)).toHaveLength(1);
+      expect(await db.getUserByPrimaryIdentity("github:12345")).toBeDefined();
+      expect(await db.getIdentityByProvider("github", "12345")).toBeDefined();
+    });
+
+    it("does not provision on denial and consumes the browser transaction", async () => {
+      const start = await startBrowserLogin();
+      const state = new URL(start.authUrl).searchParams.get("state")!;
+      await expect(auth.handleBrowserAuthorizationDenied(state)).resolves.toBe(`${BROWSER_RETURN}?auth=denied`);
+      await expect(auth.handleBrowserAuthorizationDenied(state)).rejects.toThrow(/already consumed/);
+      expect(await db.getUserByPrimaryIdentity("github:12345")).toBeUndefined();
+    });
+
+    it("rejects expired and replayed browser transactions", async () => {
+      const expiredState = "expired-browser-state-123456";
+      await db.createBrowserOAuthTransaction({
+        state: expiredState,
+        gitHubCodeVerifier: generatePkcePair().codeVerifier,
+        returnTarget: BROWSER_RETURN,
+        expiresInSeconds: -1,
+      });
+      await expect(auth.handleBrowserGitHubCallback({ code: "gh_code", state: expiredState })).rejects.toThrow(/expired/);
+
+      const start = await startBrowserLogin();
+      const state = new URL(start.authUrl).searchParams.get("state")!;
+      await auth.handleBrowserGitHubCallback({ code: "gh_code", state });
+      await expect(auth.handleBrowserGitHubCallback({ code: "gh_code", state })).rejects.toThrow(/already consumed/);
+    });
   });
 });

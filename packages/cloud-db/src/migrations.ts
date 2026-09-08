@@ -770,6 +770,62 @@ CREATE INDEX IF NOT EXISTS idx_verification_attempts_plan ON verification_attemp
 CREATE INDEX IF NOT EXISTS idx_verification_evidence_plan ON verification_evidence(plan_id);
 `;
 
+const MIGRATION_7_SQLITE = `
+ALTER TABLE identities ADD COLUMN provider_login TEXT;
+ALTER TABLE identities ADD COLUMN provider_avatar_url TEXT;
+
+CREATE TABLE IF NOT EXISTS browser_oauth_transactions (
+  id TEXT PRIMARY KEY,
+  state TEXT NOT NULL UNIQUE,
+  github_code_verifier TEXT NOT NULL,
+  return_target TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  used_at TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_browser_oauth_transactions_state ON browser_oauth_transactions(state);
+
+CREATE TABLE IF NOT EXISTS browser_sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  session_token_hash TEXT NOT NULL UNIQUE,
+  expires_at TEXT NOT NULL,
+  revoked_at TEXT,
+  created_at TEXT NOT NULL,
+  last_seen_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_browser_sessions_token_hash ON browser_sessions(session_token_hash);
+CREATE INDEX IF NOT EXISTS idx_browser_sessions_user_id ON browser_sessions(user_id);
+`;
+
+const MIGRATION_7_POSTGRES = `
+ALTER TABLE identities ADD COLUMN IF NOT EXISTS provider_login VARCHAR(255);
+ALTER TABLE identities ADD COLUMN IF NOT EXISTS provider_avatar_url TEXT;
+
+CREATE TABLE IF NOT EXISTS browser_oauth_transactions (
+  id VARCHAR(64) PRIMARY KEY,
+  state VARCHAR(512) NOT NULL UNIQUE,
+  github_code_verifier VARCHAR(128) NOT NULL,
+  return_target TEXT NOT NULL,
+  expires_at VARCHAR(64) NOT NULL,
+  used_at VARCHAR(64),
+  created_at VARCHAR(64) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_browser_oauth_transactions_state ON browser_oauth_transactions(state);
+
+CREATE TABLE IF NOT EXISTS browser_sessions (
+  id VARCHAR(64) PRIMARY KEY,
+  user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  session_token_hash VARCHAR(128) NOT NULL UNIQUE,
+  expires_at VARCHAR(64) NOT NULL,
+  revoked_at VARCHAR(64),
+  created_at VARCHAR(64) NOT NULL,
+  last_seen_at VARCHAR(64) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_browser_sessions_token_hash ON browser_sessions(session_token_hash);
+CREATE INDEX IF NOT EXISTS idx_browser_sessions_user_id ON browser_sessions(user_id);
+`;
+
 export const MIGRATIONS: MigrationDefinition[] = [
   {
     version: 1,
@@ -812,6 +868,13 @@ export const MIGRATIONS: MigrationDefinition[] = [
     sqliteUp: MIGRATION_6_SQLITE,
     postgresUp: MIGRATION_6_POSTGRES,
     checksum: computeChecksum(MIGRATION_6_SQLITE),
+  },
+  {
+    version: 7,
+    name: "007_fds_browser_github_identity",
+    sqliteUp: MIGRATION_7_SQLITE,
+    postgresUp: MIGRATION_7_POSTGRES,
+    checksum: computeChecksum(MIGRATION_7_SQLITE),
   },
 ];
 

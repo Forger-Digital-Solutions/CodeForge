@@ -24,6 +24,8 @@ export const CLOUD_GITHUB_CALLBACK_PATH = "/v1/auth/github/callback";
 /** The only path a desktop loopback listener may expose for OAuth completion. */
 export const DESKTOP_LOOPBACK_CALLBACK_PATH = "/auth/callback";
 
+export type BrowserAuthStatus = "success" | "denied" | "invalid" | "error";
+
 /**
  * Lowest port a desktop loopback listener may bind. Privileged ports (< 1024) require elevation on
  * every supported platform, so a redirect target inside that range is never a genuine CodeForge
@@ -42,6 +44,43 @@ function containsControlCharacter(value: string): boolean {
     if (code <= 0x1f || code === 0x7f) return true;
   }
   return false;
+}
+
+/**
+ * Validate a browser return target by exact URL allowlist membership. The target is stored server
+ * side before GitHub is involved, so callback input can never create an open redirect.
+ */
+export function normalizeBrowserReturnUrl(returnTarget: string, allowedReturnUrls: readonly string[]): string {
+  if (typeof returnTarget !== "string" || returnTarget.length === 0 || returnTarget.length > 2048 || containsControlCharacter(returnTarget)) {
+    throw new Error("Browser OAuth return target is invalid");
+  }
+  let candidate: URL;
+  try {
+    candidate = new URL(returnTarget);
+  } catch {
+    throw new Error("Browser OAuth return target is invalid");
+  }
+  if (candidate.username || candidate.password || candidate.search || candidate.hash || (candidate.protocol !== "https:" && candidate.protocol !== "http:")) {
+    throw new Error("Browser OAuth return target is invalid");
+  }
+
+  for (const allowed of allowedReturnUrls) {
+    let normalizedAllowed: URL;
+    try {
+      normalizedAllowed = new URL(allowed);
+    } catch {
+      continue;
+    }
+    if (normalizedAllowed.username || normalizedAllowed.password || normalizedAllowed.search || normalizedAllowed.hash) continue;
+    if (candidate.href === normalizedAllowed.href) return candidate.href;
+  }
+  throw new Error("Browser OAuth return target is not allowed");
+}
+
+export function appendBrowserAuthStatus(returnTarget: string, status: BrowserAuthStatus): string {
+  const url = new URL(returnTarget);
+  url.searchParams.set("auth", status);
+  return url.toString();
 }
 
 /**

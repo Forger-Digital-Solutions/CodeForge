@@ -29,6 +29,8 @@ export const IdentityRecordSchema = z.object({
   userId: z.string().uuid(),
   provider: z.enum(["github", "email"]),
   providerUserId: z.string(),
+  providerLogin: z.string().optional(),
+  providerAvatarUrl: z.string().url().optional(),
   providerEmail: z.string().email().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -258,6 +260,30 @@ export const DesktopAuthCodeRecordSchema = z.object({
   createdAt: z.string(),
 });
 export type DesktopAuthCodeRecord = z.infer<typeof DesktopAuthCodeRecordSchema>;
+
+/** A browser OAuth transaction whose return target was validated before persistence. */
+export const BrowserOAuthTransactionRecordSchema = z.object({
+  id: z.string().uuid(),
+  state: z.string(),
+  gitHubCodeVerifier: z.string(),
+  returnTarget: z.string().url(),
+  expiresAt: z.string(),
+  usedAt: z.string().nullable().optional(),
+  createdAt: z.string(),
+});
+export type BrowserOAuthTransactionRecord = z.infer<typeof BrowserOAuthTransactionRecordSchema>;
+
+/** Opaque browser session material; only the SHA-256 token hash is persisted. */
+export const BrowserSessionRecordSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid(),
+  sessionTokenHash: z.string(),
+  expiresAt: z.string(),
+  revokedAt: z.string().nullable().optional(),
+  createdAt: z.string(),
+  lastSeenAt: z.string(),
+});
+export type BrowserSessionRecord = z.infer<typeof BrowserSessionRecordSchema>;
 
 export const SchemaMigrationRecordSchema = z.object({
   version: z.number().int().positive(),

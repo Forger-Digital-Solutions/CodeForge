@@ -20,6 +20,8 @@ import type {
   AbuseEventRecord,
   OAuthTransactionRecord,
   DesktopAuthCodeRecord,
+  BrowserOAuthTransactionRecord,
+  BrowserSessionRecord,
   FeatureKey,
   GitHubInstallationRecord,
   GitHubInstallationStatus,
@@ -303,6 +305,8 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       userId: String(row.user_id),
       provider: row.provider as "github" | "email",
       providerUserId: String(row.provider_user_id),
+      providerLogin: row.provider_login ? String(row.provider_login) : undefined,
+      providerAvatarUrl: row.provider_avatar_url ? String(row.provider_avatar_url) : undefined,
       providerEmail: row.provider_email ? String(row.provider_email) : undefined,
       createdAt: String(row.created_at),
       updatedAt: String(row.updated_at),
@@ -539,7 +543,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     return this.mapUserRow(res.rows[0]);
   }
 
-  async createIdentity(params: { userId: string; provider: "github" | "email"; providerUserId: string; providerEmail?: string; id?: string }): Promise<IdentityRecord> {
+  async createIdentity(params: { userId: string; provider: "github" | "email"; providerUserId: string; providerLogin?: string; providerAvatarUrl?: string; providerEmail?: string; id?: string }): Promise<IdentityRecord> {
     const now = new Date().toISOString();
     const id = params.id ?? randomUUID();
     const identity: IdentityRecord = {
@@ -547,14 +551,16 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       userId: params.userId,
       provider: params.provider,
       providerUserId: params.providerUserId,
+      providerLogin: params.providerLogin,
+      providerAvatarUrl: params.providerAvatarUrl,
       providerEmail: params.providerEmail,
       createdAt: now,
       updatedAt: now,
     };
     await this.pool.query(
-      `INSERT INTO identities (id, user_id, provider, provider_user_id, provider_email, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [identity.id, identity.userId, identity.provider, identity.providerUserId, identity.providerEmail ?? null, identity.createdAt, identity.updatedAt],
+      `INSERT INTO identities (id, user_id, provider, provider_user_id, provider_login, provider_avatar_url, provider_email, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [identity.id, identity.userId, identity.provider, identity.providerUserId, identity.providerLogin ?? null, identity.providerAvatarUrl ?? null, identity.providerEmail ?? null, identity.createdAt, identity.updatedAt],
     );
     return identity;
   }
@@ -563,6 +569,14 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     const res = await this.pool.query(`SELECT * FROM identities WHERE provider = $1 AND provider_user_id = $2`, [provider, providerUserId]);
     if (res.rows.length === 0) return undefined;
     return this.mapIdentityRow(res.rows[0]);
+  }
+
+  async updateIdentityMetadata(params: { id: string; providerLogin?: string; providerAvatarUrl?: string; providerEmail?: string }): Promise<void> {
+    await this.pool.query(`UPDATE identities SET provider_login = $1, provider_avatar_url = $2, provider_email = $3, updated_at = $4 WHERE id = $5`, [params.providerLogin ?? null, params.providerAvatarUrl ?? null, params.providerEmail ?? null, new Date().toISOString(), params.id]);
+  }
+
+  async updateUserProfile(params: { id: string; displayName: string; avatarUrl?: string }): Promise<void> {
+    await this.pool.query(`UPDATE users SET display_name = $1, avatar_url = $2, updated_at = $3 WHERE id = $4`, [params.displayName, params.avatarUrl ?? null, new Date().toISOString(), params.id]);
   }
 
   // --- Device Sessions ---
@@ -1555,6 +1569,91 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       throw new Error("Desktop authorization code already consumed (replay detected)");
     }
     return this.mapDesktopAuthCodeRow(res.rows[0]);
+  }
+
+  // --- Browser OAuth and opaque server-side sessions ---
+
+  async createBrowserOAuthTransaction(params: { state: string; gitHubCodeVerifier: string; returnTarget: string; expiresInSeconds?: number }): Promise<BrowserOAuthTransactionRecord> {
+    const now = new Date();
+    const record: BrowserOAuthTransactionRecord = {
+      id: randomUUID(),
+      state: params.state,
+      gitHubCodeVerifier: params.gitHubCodeVerifier,
+      returnTarget: params.returnTarget,
+      expiresAt: new Date(now.getTime() + (params.expiresInSeconds ?? 600) * 1000).toISOString(),
+      usedAt: null,
+      createdAt: now.toISOString(),
+    };
+    await this.pool.query(`INSERT INTO browser_oauth_transactions (id, state, github_code_verifier, return_target, expires_at, used_at, created_at) VALUES ($1, $2, $3, $4, $5, NULL, $6)`, [record.id, record.state, record.gitHubCodeVerifier, record.returnTarget, record.expiresAt, record.createdAt]);
+    return record;
+  }
+
+  private mapBrowserOAuthTransactionRow(row: Record<string, unknown>): BrowserOAuthTransactionRecord {
+    return {
+      id: String(row.id),
+      state: String(row.state),
+      gitHubCodeVerifier: String(row.github_code_verifier),
+      returnTarget: String(row.return_target),
+      expiresAt: String(row.expires_at),
+      usedAt: row.used_at ? String(row.used_at) : null,
+      createdAt: String(row.created_at),
+    };
+  }
+
+  async getBrowserOAuthTransaction(state: string): Promise<BrowserOAuthTransactionRecord | undefined> {
+    const res = await this.pool.query(`SELECT * FROM browser_oauth_transactions WHERE state = $1`, [state]);
+    return res.rows[0] ? this.mapBrowserOAuthTransactionRow(res.rows[0]) : undefined;
+  }
+
+  async consumeBrowserOAuthTransaction(state: string): Promise<BrowserOAuthTransactionRecord> {
+    const existing = await this.getBrowserOAuthTransaction(state);
+    if (!existing) throw new Error("Browser OAuth transaction not found");
+    if (existing.usedAt) throw new Error("Browser OAuth transaction already consumed (replay detected)");
+    if (new Date(existing.expiresAt).getTime() < Date.now()) throw new Error("Browser OAuth transaction expired");
+    const now = new Date().toISOString();
+    const res = await this.pool.query(`UPDATE browser_oauth_transactions SET used_at = $1 WHERE state = $2 AND used_at IS NULL RETURNING *`, [now, state]);
+    if (!res.rows[0]) throw new Error("Browser OAuth transaction already consumed (replay detected)");
+    return this.mapBrowserOAuthTransactionRow(res.rows[0]);
+  }
+
+  async createBrowserSession(params: { userId: string; sessionTokenHash: string; expiresInSeconds?: number }): Promise<BrowserSessionRecord> {
+    const now = new Date();
+    const record: BrowserSessionRecord = {
+      id: randomUUID(),
+      userId: params.userId,
+      sessionTokenHash: params.sessionTokenHash,
+      expiresAt: new Date(now.getTime() + (params.expiresInSeconds ?? 7 * 24 * 60 * 60) * 1000).toISOString(),
+      revokedAt: null,
+      createdAt: now.toISOString(),
+      lastSeenAt: now.toISOString(),
+    };
+    await this.pool.query(`INSERT INTO browser_sessions (id, user_id, session_token_hash, expires_at, revoked_at, created_at, last_seen_at) VALUES ($1, $2, $3, $4, NULL, $5, $6)`, [record.id, record.userId, record.sessionTokenHash, record.expiresAt, record.createdAt, record.lastSeenAt]);
+    return record;
+  }
+
+  private mapBrowserSessionRow(row: Record<string, unknown>): BrowserSessionRecord {
+    return {
+      id: String(row.id),
+      userId: String(row.user_id),
+      sessionTokenHash: String(row.session_token_hash),
+      expiresAt: String(row.expires_at),
+      revokedAt: row.revoked_at ? String(row.revoked_at) : null,
+      createdAt: String(row.created_at),
+      lastSeenAt: String(row.last_seen_at),
+    };
+  }
+
+  async getBrowserSessionByTokenHash(sessionTokenHash: string): Promise<BrowserSessionRecord | undefined> {
+    const res = await this.pool.query(`SELECT * FROM browser_sessions WHERE session_token_hash = $1`, [sessionTokenHash]);
+    return res.rows[0] ? this.mapBrowserSessionRow(res.rows[0]) : undefined;
+  }
+
+  async updateBrowserSessionLastSeen(id: string): Promise<void> {
+    await this.pool.query(`UPDATE browser_sessions SET last_seen_at = $1 WHERE id = $2`, [new Date().toISOString(), id]);
+  }
+
+  async revokeBrowserSession(id: string): Promise<void> {
+    await this.pool.query(`UPDATE browser_sessions SET revoked_at = $1 WHERE id = $2 AND revoked_at IS NULL`, [new Date().toISOString(), id]);
   }
 
   // --- Billing Webhook Events ---

@@ -23,6 +23,16 @@ describe("loadCloudRuntimeConfig", () => {
     expect(config.jwtSecret.length).toBeGreaterThanOrEqual(32);
   });
 
+  it("loads the browser OAuth return-target allowlist from server configuration", () => {
+    const config = loadCloudRuntimeConfig({
+      CODEFORGE_ALLOWED_BROWSER_RETURN_URLS: "https://forgerdigitalsolutions.com/codeforge/sign-in, https://preview.example/codeforge/sign-in",
+    });
+    expect(config.allowedBrowserReturnUrls).toEqual([
+      "https://forgerdigitalsolutions.com/codeforge/sign-in",
+      "https://preview.example/codeforge/sign-in",
+    ]);
+  });
+
   it("REFUSES live Stripe keys (test-mode only)", () => {
     expect(() => loadCloudRuntimeConfig({ STRIPE_SECRET_KEY: "sk_live_dangerous" })).toThrow(CloudConfigError);
     expect(() => loadCloudRuntimeConfig({ STRIPE_SECRET_KEY: "rk_live_dangerous" })).toThrow(/TEST MODE only/);

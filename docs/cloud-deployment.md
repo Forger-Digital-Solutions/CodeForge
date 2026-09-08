@@ -55,6 +55,7 @@ See [`.env.example`](../.env.example) for the full annotated list. Server-side e
 | `CODEFORGE_CLOUD_DB_SSL` | non-loopback postgres | certificate-validated TLS; staging/production reject a remote URL that disables or weakens TLS |
 | `JWT_SECRET` | yes | ≥ 32 strong chars (not the dev default) |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | yes | GitHub OAuth app |
+| `CODEFORGE_ALLOWED_BROWSER_RETURN_URLS` | recommended | comma-separated exact FDS sign-in URLs; defaults cover the production custom domain, GitHub Pages fallback, and local Astro development |
 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | optional, together | **TEST mode only** — billing endpoints stay disabled when absent; live keys are refused at boot |
 | `OPENROUTER_API_KEY`, `GROQ_API_KEY`, … | ≥ 1 for Hosted Free | server-owned provider keys (never sent to clients) |
 | `CODEFORGE_HOSTED_INFERENCE_ENABLED` / `CODEFORGE_HOSTED_FREE_ENABLED` | no | operator kill switches (default on) |
@@ -148,6 +149,32 @@ on every use and are stored by the desktop in the OS keychain (SafeStorage) — 
 Refresh-token reuse is distinguished by revocation reason: reusing a **rotated** token is treated as
 theft and revokes the whole session family, while reusing a token from an explicit **logout** revokes
 nothing else — so signing out on one machine does not sign the account out everywhere.
+
+### FDS browser identity flow
+
+The FDS website uses the same public Cloud callback but a separate browser transaction and session
+authority. Start it with:
+
+```text
+GET /v1/auth/browser/start?return=https%3A%2F%2Fforgerdigitalsolutions.com%2Fcodeforge%2Fsign-in
+```
+
+The `return` value must exactly match one entry in `CODEFORGE_ALLOWED_BROWSER_RETURN_URLS` (scheme,
+host, port, path, and absence of query/fragment). The server persists the state and PKCE verifier,
+exchanges the GitHub code confidentially, and returns to the allowlisted page with only
+`?auth=success|denied|invalid|error`. Success also sets an opaque `HttpOnly; SameSite=Lax` browser
+cookie; the static page never receives a GitHub token or a CodeForge bearer/refresh token.
+
+Browser sessions are validated at `GET /v1/auth/session`, may use the cookie for `GET /v1/account`,
+and are revoked with `POST /v1/auth/browser/logout`. The logout route accepts only configured FDS
+origins when an `Origin` header is present. Browser identity login does not grant repository access:
+GitHub App installation/authorization and webhook handling remain separate Cloud-only authorities.
+
+For the FDS static build, run `npm run codeforge:secret-scan` in the FDS repository after `npm run
+build`; it fails if generated output contains privileged OAuth configuration or credential-like values.
+
+The GitHub OAuth App still registers only the Cloud callback shown above. Configure the FDS repository's
+`PUBLIC_CODEFORGE_AUTH_URL` at build time if the Cloud API is not `https://cloud.codeforge.dev`.
 
 Run `npm run cloud:staging:preflight` to print the exact callback URL to register, derived from your
 configured `CODEFORGE_PUBLIC_URL`.

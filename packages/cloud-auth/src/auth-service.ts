@@ -7,9 +7,10 @@ import type {
   AccountSettingsRecord,
 } from "@codeforge/cloud-db";
 import { generatePkcePair, generateState, verifyPkce } from "./pkce.js";
-import { normalizeDesktopLoopbackRedirectUri, buildCloudGitHubCallbackUrl } from "./redirect-uri.js";
+import { normalizeDesktopLoopbackRedirectUri, normalizeBrowserReturnUrl, appendBrowserAuthStatus, buildCloudGitHubCallbackUrl, type BrowserAuthStatus } from "./redirect-uri.js";
 import { signAccessToken, verifyAccessToken, generateRefreshToken, hashRefreshToken, type AccessTokenPayload } from "./jwt.js";
 import { generateDesktopAuthCode, hashDesktopAuthCode } from "./desktop-auth-code.js";
+import { generateBrowserSessionToken, hashBrowserSessionToken } from "./browser-session.js";
 import { buildGitHubAuthUrl, exchangeGitHubCode, fetchGitHubUserProfile } from "./github-oauth.js";
 
 /**
@@ -54,6 +55,9 @@ export interface AuthServiceConfig {
   refreshTokenExpiresInSeconds?: number;
   /** Lifetime of the single-use desktop authorization code. Deliberately short. */
   desktopAuthCodeExpiresInSeconds?: number;
+  /** Exact static-site URLs to which a browser login may return. */
+  allowedBrowserReturnUrls?: readonly string[];
+  browserSessionExpiresInSeconds?: number;
   fetchFn?: typeof fetch;
 }
 
@@ -76,11 +80,25 @@ export interface StartOAuthResult {
   cloudCallbackUrl: string;
 }
 
+export interface StartBrowserOAuthResult {
+  authUrl: string;
+  cloudCallbackUrl: string;
+  returnTarget: string;
+}
+
 export interface GitHubCallbackResult {
   /** Fully-validated desktop loopback URL, with the single-use code appended. */
   redirectTo: string;
   userId: string;
   isNewUser: boolean;
+}
+
+export interface BrowserGitHubCallbackResult {
+  status: Extract<BrowserAuthStatus, "success" | "error">;
+  redirectTo: string;
+  userId?: string;
+  isNewUser?: boolean;
+  sessionCookie?: { name: string; value: string; maxAge: number };
 }
 
 export interface DesktopSessionResult {
@@ -101,6 +119,8 @@ export class AuthService {
   private readonly accessTokenExpiresInSeconds: number;
   private readonly refreshTokenExpiresInSeconds: number;
   private readonly desktopAuthCodeExpiresInSeconds: number;
+  private readonly allowedBrowserReturnUrls: readonly string[];
+  private readonly browserSessionExpiresInSeconds: number;
   private readonly defaultFetchFn: typeof fetch;
 
   constructor(config: AuthServiceConfig) {
@@ -113,6 +133,8 @@ export class AuthService {
     this.accessTokenExpiresInSeconds = config.accessTokenExpiresInSeconds ?? 3600;
     this.refreshTokenExpiresInSeconds = config.refreshTokenExpiresInSeconds ?? 30 * 24 * 60 * 60;
     this.desktopAuthCodeExpiresInSeconds = config.desktopAuthCodeExpiresInSeconds ?? 120;
+    this.allowedBrowserReturnUrls = [...(config.allowedBrowserReturnUrls ?? [])];
+    this.browserSessionExpiresInSeconds = config.browserSessionExpiresInSeconds ?? 7 * 24 * 60 * 60;
     this.defaultFetchFn = config.fetchFn ?? fetch;
   }
 
@@ -162,6 +184,114 @@ export class AuthService {
     });
 
     return { state, authUrl, cloudCallbackUrl };
+  }
+
+  /** Begin the static FDS website flow. The return target is exact-allowlisted before persistence. */
+  async startBrowserOAuth(options: { returnTarget: string }): Promise<StartBrowserOAuthResult> {
+    const returnTarget = normalizeBrowserReturnUrl(options.returnTarget, this.allowedBrowserReturnUrls);
+    const cloudCallbackUrl = this.getCloudGitHubCallbackUrl();
+    const gitHubPkce = generatePkcePair();
+    const state = generateState();
+
+    await this.db.createBrowserOAuthTransaction({
+      state,
+      gitHubCodeVerifier: gitHubPkce.codeVerifier,
+      returnTarget,
+      expiresInSeconds: 600,
+    });
+
+    return {
+      authUrl: buildGitHubAuthUrl({
+        clientId: this.gitHubClientId,
+        redirectUri: cloudCallbackUrl,
+        state,
+        codeChallenge: gitHubPkce.codeChallenge,
+        scope: "read:user",
+      }),
+      cloudCallbackUrl,
+      returnTarget,
+    };
+  }
+
+  async getBrowserOAuthTransaction(state: string) {
+    return this.db.getBrowserOAuthTransaction(state);
+  }
+
+  /** Close a denied browser transaction without exchanging a code or creating an account/session. */
+  async handleBrowserAuthorizationDenied(state: string): Promise<string> {
+    const tx = await this.db.consumeBrowserOAuthTransaction(state);
+    const returnTarget = normalizeBrowserReturnUrl(tx.returnTarget, this.allowedBrowserReturnUrls);
+    return appendBrowserAuthStatus(returnTarget, "denied");
+  }
+
+  async getBrowserAuthStatusRedirect(state: string, status: BrowserAuthStatus): Promise<string> {
+    const tx = await this.db.getBrowserOAuthTransaction(state);
+    if (!tx) throw new Error("Unknown browser OAuth transaction");
+    const returnTarget = normalizeBrowserReturnUrl(tx.returnTarget, this.allowedBrowserReturnUrls);
+    return appendBrowserAuthStatus(returnTarget, status);
+  }
+
+  /** Complete a browser transaction. The GitHub credential never leaves this server process. */
+  async handleBrowserGitHubCallback(options: { code: string; state: string }): Promise<BrowserGitHubCallbackResult> {
+    if (!options.code || !options.state) throw new Error("Browser GitHub callback is missing the authorization code or state");
+    const tx = await this.db.consumeBrowserOAuthTransaction(options.state);
+    const returnTarget = normalizeBrowserReturnUrl(tx.returnTarget, this.allowedBrowserReturnUrls);
+
+    try {
+      const exchange = await exchangeGitHubCode({
+        clientId: this.gitHubClientId,
+        clientSecret: this.gitHubClientSecret,
+        code: options.code,
+        redirectUri: this.getCloudGitHubCallbackUrl(),
+        codeVerifier: tx.gitHubCodeVerifier,
+        fetchFn: this.defaultFetchFn,
+      });
+      const profile = await fetchGitHubUserProfile(exchange.accessToken, this.defaultFetchFn);
+      const { user, isNewUser } = await this.provisionUser(profile);
+      const sessionToken = generateBrowserSessionToken();
+      await this.db.createBrowserSession({
+        userId: user.id,
+        sessionTokenHash: hashBrowserSessionToken(sessionToken),
+        expiresInSeconds: this.browserSessionExpiresInSeconds,
+      });
+      return {
+        status: "success",
+        redirectTo: appendBrowserAuthStatus(returnTarget, "success"),
+        userId: user.id,
+        isNewUser,
+        sessionCookie: {
+          name: this.browserSessionCookieName(),
+          value: sessionToken,
+          maxAge: this.browserSessionExpiresInSeconds,
+        },
+      };
+    } catch {
+      return { status: "error", redirectTo: appendBrowserAuthStatus(returnTarget, "error") };
+    }
+  }
+
+  private browserSessionCookieName(): string {
+    return this.publicUrl?.startsWith("https:") ? "__Host-codeforge-session" : "codeforge-session";
+  }
+
+  async authenticateBrowserSession(token: string): Promise<UserRecord> {
+    if (!token || token.length > 256) throw new Error("Invalid browser session");
+    const session = await this.db.getBrowserSessionByTokenHash(hashBrowserSessionToken(token));
+    if (!session || session.revokedAt || new Date(session.expiresAt).getTime() <= Date.now()) throw new Error("Invalid browser session");
+    const user = await this.db.getUserById(session.userId);
+    if (!user) throw new Error("Invalid browser session");
+    await this.db.updateBrowserSessionLastSeen(session.id);
+    return user;
+  }
+
+  async logoutBrowserSession(token: string): Promise<void> {
+    if (!token || token.length > 256) return;
+    const session = await this.db.getBrowserSessionByTokenHash(hashBrowserSessionToken(token));
+    if (session) await this.db.revokeBrowserSession(session.id);
+  }
+
+  getBrowserSessionCookieName(): string {
+    return this.browserSessionCookieName();
   }
 
   /**
@@ -267,27 +397,51 @@ export class AuthService {
   /** Create (or load) the CodeForge account backing a GitHub identity, with idempotent Free provisioning. */
   private async provisionUser(profile: { id: number; login: string; name?: string; avatar_url?: string; email?: string }): Promise<{ user: UserRecord; isNewUser: boolean }> {
     const primaryIdentity = `github:${profile.id}`;
-    let user = await this.db.getUserByPrimaryIdentity(primaryIdentity);
+    let identity = await this.db.getIdentityByProvider("github", String(profile.id));
+    let user: UserRecord | undefined;
     let isNewUser = false;
 
-    if (!user) {
-      isNewUser = true;
-      user = await this.db.createUser({
-        displayName: profile.name || profile.login,
-        avatarUrl: profile.avatar_url,
-        primaryIdentity,
-      });
-      await this.db.createIdentity({
-        userId: user.id,
-        provider: "github",
-        providerUserId: String(profile.id),
-        providerEmail: profile.email,
-      });
+    if (identity) {
+      user = await this.db.getUserById(identity.userId);
+      if (!user) throw new Error("GitHub identity points to a missing CodeForge account");
+    } else {
+      user = await this.db.getUserByPrimaryIdentity(primaryIdentity);
+      if (!user) {
+        try {
+          user = await this.db.createUser({ displayName: profile.name || profile.login, avatarUrl: profile.avatar_url, primaryIdentity });
+          isNewUser = true;
+        } catch {
+          // The durable UNIQUE(primary_identity) constraint is the race arbiter on Postgres; the
+          // loser re-reads the winning account and continues without creating a second identity.
+          user = await this.db.getUserByPrimaryIdentity(primaryIdentity);
+          if (!user) throw new Error("Unable to resolve the GitHub account after a concurrent login");
+        }
+      }
+      try {
+        identity = await this.db.createIdentity({
+          userId: user.id,
+          provider: "github",
+          providerUserId: String(profile.id),
+          providerLogin: profile.login,
+          providerAvatarUrl: profile.avatar_url,
+          providerEmail: profile.email,
+        });
+      } catch {
+        identity = await this.db.getIdentityByProvider("github", String(profile.id));
+        if (!identity || identity.userId !== user.id) throw new Error("GitHub identity is already linked to another account");
+        isNewUser = false;
+      }
+    }
 
-      // Default Free Tier Provisioning (IDEMPOTENT)
-      await this.db.setEntitlement(user.id, "HOSTED_FREE", "true");
-      await this.db.setEntitlement(user.id, "DIRECT_PROVIDERS", "true");
-      await this.db.setEntitlement(user.id, "COMMUNITY_MODELS", "true");
+    await this.db.updateIdentityMetadata({ id: identity.id, providerLogin: profile.login, providerAvatarUrl: profile.avatar_url, providerEmail: profile.email });
+    await this.db.updateUserProfile({ id: user.id, displayName: profile.name || profile.login, avatarUrl: profile.avatar_url });
+
+    // These writes are idempotent and repair an account if a process died between account creation
+    // and its initial Free provisioning. Existing paid subscriptions are never overwritten.
+    await this.db.setEntitlement(user.id, "HOSTED_FREE", "true");
+    await this.db.setEntitlement(user.id, "DIRECT_PROVIDERS", "true");
+    await this.db.setEntitlement(user.id, "COMMUNITY_MODELS", "true");
+    if (!(await this.db.getSubscriptionByUserId(user.id))) {
       await this.db.upsertSubscription({
         userId: user.id,
         planId: "free",

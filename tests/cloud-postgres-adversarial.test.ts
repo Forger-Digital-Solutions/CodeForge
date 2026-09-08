@@ -44,6 +44,39 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("Postgres Runtime — Deep Adv
     await db.close();
   });
 
+  it("persists browser identity/session state and arbitrates concurrent first login on real PostgreSQL", async () => {
+    const profileId = 900_000_000 + Math.floor(Math.random() * 99_999);
+    const auth = new AuthService({
+      db,
+      jwtSecret: "postgres-browser-auth-test-jwt-secret-32-chars",
+      gitHubClientId: "gh_postgres_test_id",
+      gitHubClientSecret: "gh_postgres_test_secret",
+      publicUrl: "https://cloud.codeforge.test",
+      allowedBrowserReturnUrls: ["https://forgerdigitalsolutions.com/codeforge/sign-in"],
+      fetchFn: createMockGitHubFetch({
+        id: profileId,
+        login: "postgres-browser-user",
+        name: "Postgres Browser User",
+        avatar_url: "https://example.com/postgres-browser.png",
+      }),
+    });
+
+    const starts = await Promise.all([
+      auth.startBrowserOAuth({ returnTarget: "https://forgerdigitalsolutions.com/codeforge/sign-in" }),
+      auth.startBrowserOAuth({ returnTarget: "https://forgerdigitalsolutions.com/codeforge/sign-in" }),
+    ]);
+    const results = await Promise.all(
+      starts.map((start) => auth.handleBrowserGitHubCallback({ code: "gh_postgres_code", state: new URL(start.authUrl).searchParams.get("state")! })),
+    );
+
+    expect(results.every((result) => result.status === "success")).toBe(true);
+    expect(results.filter((result) => result.isNewUser)).toHaveLength(1);
+    const user = await db.getUserByPrimaryIdentity(`github:${profileId}`);
+    expect(user).toBeDefined();
+    expect((await db.getIdentityByProvider("github", String(profileId)))?.providerLogin).toBe("postgres-browser-user");
+    expect(await auth.authenticateBrowserSession(results[0]!.sessionCookie!.value)).toMatchObject({ id: user!.id });
+  });
+
   it("Phase 11: Real Credit Overspend Attack — 10 concurrent 30k reserves on 100k balance", async () => {
     const user = await db.createUser({ displayName: "Overspend Victim", primaryIdentity: `github:ovs-${randomUUID()}` });
     await db.appendLedgerEvent({ userId: user.id, amount: 100_000, eventType: "FREE_ALLOWANCE_GRANTED" });
