@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
@@ -91,5 +91,21 @@ describe("applyPins (authoritative hashes)", () => {
   it("throws on an invalid pin hash", () => {
     const map = parseSha256Sums(`${"a".repeat(64)}  setup.exe`);
     expect(() => applyPins(map, ["setup.exe=not-hex"])).toThrow(/Invalid pin/);
+  });
+});
+
+describe("desktop packaging", () => {
+  it("keeps the Electron native addon explicitly included after the build exclusion", () => {
+    const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as {
+      build?: {
+        asarUnpack?: unknown;
+        files?: unknown;
+      };
+    };
+    const files = packageJson.build?.files;
+    expect(Array.isArray(files)).toBe(true);
+    expect(files).toContain("!node_modules/better-sqlite3/build/**/*");
+    expect(files).toContain("node_modules/better-sqlite3/build/Release/better_sqlite3.node");
+    expect(packageJson.build?.asarUnpack).toContain("node_modules/better-sqlite3/build/Release/better_sqlite3.node");
   });
 });
