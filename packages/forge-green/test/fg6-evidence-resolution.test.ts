@@ -310,6 +310,7 @@ describe("ForgeGreen FG-6 Evidence Resolution Authority", () => {
       evidenceId: "ev-passed-1",
       kind: "TYPECHECK",
       scope: "workspace",
+      workspacePath: root,
       status: "passed",
       exitCode: 0,
       inputStateHash: currentHash,
@@ -363,6 +364,155 @@ describe("ForgeGreen FG-6 Evidence Resolution Authority", () => {
     expect(reusedProd).toBeDefined();
     expect(reusedProd!.costEstimate).toBe(0);
     expect(reusedProd!.reusedEvidenceId).toBe("ev-passed-1");
+  });
+
+  it("rejects existing evidence with incomplete authority identity and schedules fresh verification", async () => {
+    const { root, config } = await createFixture();
+    const obligation = makeObligation({ id: "ob-current", kind: "TYPECHECK", scope: "workspace" });
+    const currentIdentity = {
+      workspacePath: root,
+      inputStateHash: "current-input-state",
+      executionRevision: 7,
+      policyVersion: FORGE_GREEN_VERIFICATION_POLICY_VERSION,
+    };
+
+    const incompleteEvidence: GenericVerificationEvidence[] = [
+      {
+        evidenceId: "missing-workspace",
+        kind: "TYPECHECK",
+        scope: "workspace",
+        status: "passed",
+        exitCode: 0,
+        inputStateHash: currentIdentity.inputStateHash,
+        executionRevision: currentIdentity.executionRevision,
+        policyVersion: currentIdentity.policyVersion,
+      },
+      {
+        evidenceId: "missing-input-state",
+        kind: "TYPECHECK",
+        scope: "workspace",
+        workspacePath: currentIdentity.workspacePath,
+        status: "passed",
+        exitCode: 0,
+        executionRevision: currentIdentity.executionRevision,
+        policyVersion: currentIdentity.policyVersion,
+      },
+      {
+        evidenceId: "missing-revision",
+        kind: "TYPECHECK",
+        scope: "workspace",
+        workspacePath: currentIdentity.workspacePath,
+        status: "passed",
+        exitCode: 0,
+        inputStateHash: currentIdentity.inputStateHash,
+        policyVersion: currentIdentity.policyVersion,
+      },
+      {
+        evidenceId: "missing-policy",
+        kind: "TYPECHECK",
+        scope: "workspace",
+        workspacePath: currentIdentity.workspacePath,
+        status: "passed",
+        exitCode: 0,
+        inputStateHash: currentIdentity.inputStateHash,
+        executionRevision: currentIdentity.executionRevision,
+      },
+    ];
+
+    const result = await resolveVerificationObligations({
+      obligations: [obligation],
+      workspacePath: root,
+      workspaceConfig: config,
+      currentInputStateHash: currentIdentity.inputStateHash,
+      executionRevision: currentIdentity.executionRevision,
+      policyVersion: currentIdentity.policyVersion,
+      existingEvidence: incompleteEvidence,
+      namespace: "ns-test",
+    });
+
+    expect(result.alreadySatisfiedObligations).toEqual([]);
+    expect(result.producers.some((producer) => producer.isReusedEvidence)).toBe(false);
+    expect(result.producers.some((producer) => producer.kind === "TYPECHECK" && !producer.isReusedEvidence)).toBe(true);
+  });
+
+  it("rejects a version-current cache payload whose recorded identity does not match the request", async () => {
+    const { root, config } = await createFixture();
+    const obligation = makeObligation({ id: "ob-cache-current", kind: "TYPECHECK", scope: "workspace" });
+    const cache = {
+      get: async () => ({
+        value: JSON.stringify({
+          kind: "evidence_resolution_receipt",
+          receiptId: "stale-receipt",
+          resolutionId: "stale-resolution",
+          policyVersion: FORGE_GREEN_VERIFICATION_POLICY_VERSION,
+          resolverVersion: FORGE_GREEN_EVIDENCE_RESOLVER_VERSION,
+          outcome: "RESOLVED",
+          revision: 7,
+          inputStateHash: "stale-input-state",
+          inputObligationCount: 1,
+          deduplicatedObligationCount: 1,
+          alreadySatisfiedObligationCount: 1,
+          subsumedObligationCount: 1,
+          scheduledProducerCount: 0,
+          dispatchesAvoidedCount: 1,
+          inputObligations: [obligation],
+          deduplicatedObligations: [],
+          subsumptions: [],
+          producers: [],
+          unresolvedObligationIds: [],
+          reasonCodes: ["RESOLUTION_COMPLETE"],
+          createdAt: new Date().toISOString(),
+        }),
+      }),
+      put: async () => true,
+    };
+
+    const result = await resolveVerificationObligations({
+      obligations: [obligation],
+      workspacePath: root,
+      workspaceConfig: config,
+      currentInputStateHash: "current-input-state",
+      executionRevision: 7,
+      namespace: "ns-test",
+      cache,
+    });
+
+    expect(result.receipt.receiptId).not.toBe("stale-receipt");
+    expect(result.receipt.inputStateHash).toBe("current-input-state");
+    expect(result.producers.some((producer) => producer.kind === "TYPECHECK" && !producer.isReusedEvidence)).toBe(true);
+  });
+
+  it("restores only a complete, current resolution receipt for the identical authority identity", async () => {
+    const { root, config } = await createFixture();
+    const obligation = makeObligation({ id: "ob-cache-hit", kind: "TYPECHECK", scope: "workspace" });
+    const entries = new Map<string, string>();
+    const cache = {
+      get: async (_namespace: string, key: string) => {
+        const value = entries.get(key);
+        return value ? { value } : undefined;
+      },
+      put: async (_namespace: string, key: string, value: string) => {
+        entries.set(key, value);
+        return true;
+      },
+    };
+    const request = {
+      obligations: [obligation],
+      workspacePath: root,
+      workspaceConfig: config,
+      currentInputStateHash: "current-input-state",
+      executionRevision: 7,
+      namespace: "ns-test",
+      cache,
+    };
+
+    const initial = await resolveVerificationObligations(request);
+    const restored = await resolveVerificationObligations(request);
+
+    expect(initial.receipt.cacheIdentity).toBeTruthy();
+    expect(restored.receipt.receiptId).toBe(initial.receipt.receiptId);
+    expect(restored.receipt.cacheIdentity).toBe(initial.receipt.cacheIdentity);
+    expect(restored.rationale).toContain("restored from canonical cache");
   });
 
   it("15, 16, 17. rejects malicious prose, comments, stdout, and deceptive script names", async () => {

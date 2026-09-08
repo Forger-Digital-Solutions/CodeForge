@@ -12,7 +12,7 @@ import {
   type VerificationScope,
 } from "./verification-policy.js";
 
-export const FORGE_GREEN_EVIDENCE_RESOLVER_VERSION = "fg6-evidence-resolution-1";
+export const FORGE_GREEN_EVIDENCE_RESOLVER_VERSION = "fg6-evidence-resolution-2";
 
 export type EvidenceResolutionOutcome =
   | "RESOLVED"
@@ -76,6 +76,8 @@ export interface EvidenceResolutionReceipt {
   policyReceiptId?: string;
   policyVersion: string;
   resolverVersion: string;
+  /** Canonical identity of the inputs that may restore this advisory resolution. */
+  cacheIdentity: string;
   outcome: EvidenceResolutionOutcome;
   revision?: number;
   inputStateHash: string;
@@ -146,6 +148,81 @@ export interface EvidenceResolutionResult {
   dispatchesAvoided: number;
   isResolved: boolean;
   rationale: string;
+}
+
+function normalizeObligationForCache(obligation: VerificationObligation): Record<string, unknown> {
+  return {
+    id: obligation.id,
+    kind: obligation.kind,
+    scope: obligation.scope,
+    required: obligation.required,
+    targetPaths: [...(obligation.targetPaths ?? [])].map((item) => item.replaceAll("\\", "/")).sort(),
+    targetPackages: [...(obligation.targetPackages ?? [])].sort(),
+    reasonCodes: [...obligation.reasonCodes].sort(),
+    commandHint: obligation.commandHint ?? "",
+    identity: obligation.identity
+      ? {
+          namespace: obligation.identity.namespace,
+          policyVersion: obligation.identity.policyVersion,
+          obligationId: obligation.identity.obligationId,
+        }
+      : undefined,
+  };
+}
+
+function resolutionCacheIdentity(input: {
+  namespace: string;
+  policyVersion: string;
+  resolverVersion: string;
+  obligations: readonly VerificationObligation[];
+  configHash?: string;
+  inputStateHash: string;
+  executionRevision?: number;
+  environmentAvailability: { postgres?: boolean; git?: boolean; childProcess?: boolean };
+}): string {
+  return canonicalCacheKey({
+    namespace: input.namespace,
+    analysis: "fg6_evidence_resolution",
+    parameters: {
+      obligations: input.obligations.map(normalizeObligationForCache).sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right))),
+      configHash: input.configHash ?? "",
+      executionRevision: input.executionRevision ?? null,
+      environmentAvailability: input.environmentAvailability,
+      resolverVersion: input.resolverVersion,
+    },
+    policyVersion: input.policyVersion,
+    runtimeConfigDigest: input.configHash,
+    contentHashes: input.inputStateHash ? [input.inputStateHash] : [],
+  });
+}
+
+function isCurrentCachedReceipt(
+  value: unknown,
+  expected: {
+    policyVersion: string;
+    resolverVersion: string;
+    cacheIdentity: string;
+    inputStateHash: string;
+    executionRevision?: number;
+    inputObligationCount: number;
+  },
+): value is EvidenceResolutionReceipt {
+  if (!value || typeof value !== "object") return false;
+  const receipt = value as Partial<EvidenceResolutionReceipt>;
+  return receipt.kind === "evidence_resolution_receipt"
+    && receipt.outcome === "RESOLVED"
+    && receipt.policyVersion === expected.policyVersion
+    && receipt.resolverVersion === expected.resolverVersion
+    && receipt.cacheIdentity === expected.cacheIdentity
+    && receipt.inputStateHash === expected.inputStateHash
+    && receipt.revision === expected.executionRevision
+    && receipt.inputObligationCount === expected.inputObligationCount
+    && Array.isArray(receipt.inputObligations)
+    && Array.isArray(receipt.deduplicatedObligations)
+    && Array.isArray(receipt.subsumptions)
+    && Array.isArray(receipt.producers)
+    && Array.isArray(receipt.unresolvedObligationIds)
+    && Array.isArray(receipt.reasonCodes);
 }
 
 /**
@@ -356,29 +433,34 @@ export async function resolveVerificationObligations(
     git: request.environmentAvailability?.git ?? config.environmentAvailability?.git ?? true,
     childProcess: request.environmentAvailability?.childProcess ?? config.environmentAvailability?.childProcess ?? true,
   };
+  const cacheIdentity = resolutionCacheIdentity({
+    namespace,
+    policyVersion,
+    resolverVersion,
+    obligations: request.obligations,
+    configHash: config.configHash,
+    inputStateHash,
+    executionRevision: request.executionRevision,
+    environmentAvailability: envAvail,
+  });
 
   // Check Canonical Cache if available
   let cacheKey: string | undefined;
   if (request.cache) {
     try {
-      cacheKey = canonicalCacheKey({
-        namespace,
-        analysis: "fg6_evidence_resolution",
-        parameters: {
-          obligations: request.obligations.map((o) => o.id),
-          configHash: config.configHash,
-          revision: request.executionRevision,
-          envAvail,
-        },
-        policyVersion,
-        runtimeConfigDigest: config.configHash,
-        contentHashes: inputStateHash ? [inputStateHash] : [],
-      });
+      cacheKey = cacheIdentity;
 
       const cached = await request.cache.get(namespace, cacheKey);
       if (cached?.value) {
-        const parsed = JSON.parse(cached.value) as EvidenceResolutionReceipt;
-        if (parsed.resolverVersion === resolverVersion && parsed.policyVersion === policyVersion) {
+        const parsed: unknown = JSON.parse(cached.value);
+        if (isCurrentCachedReceipt(parsed, {
+          policyVersion,
+          resolverVersion,
+          cacheIdentity,
+          inputStateHash,
+          executionRevision: request.executionRevision,
+          inputObligationCount: request.obligations.length,
+        })) {
           request.ledger?.record({
             mechanism: "evidence_resolution",
             measurement: "measured",
@@ -435,6 +517,7 @@ export async function resolveVerificationObligations(
       policyReceiptId: request.policyReceiptId,
       policyVersion,
       resolverVersion,
+      cacheIdentity,
       outcome: "RESOLVED",
       revision: request.executionRevision,
       inputStateHash,
@@ -540,28 +623,28 @@ export async function resolveVerificationObligations(
       if (ev.status !== "passed") return false;
       if (ev.exitCode !== undefined && ev.exitCode !== 0) return false;
 
+      // An evidence record with a missing identity component is not a weaker form of current
+      // evidence. It is unknown evidence and must cause fresh execution rather than reuse.
+      if (typeof ev.workspacePath !== "string" || path.resolve(ev.workspacePath) !== path.resolve(request.workspacePath)) return false;
+
       // Check revision freshness
-      if (
-        request.executionRevision !== undefined &&
-        ev.executionRevision !== undefined &&
-        ev.executionRevision !== request.executionRevision
-      ) {
+      if (request.executionRevision !== undefined && ev.executionRevision !== request.executionRevision) {
         return false;
       }
 
       // Check input state hash
-      if (
-        inputStateHash &&
-        ev.inputStateHash &&
-        ev.inputStateHash !== inputStateHash
-      ) {
+      if (inputStateHash && ev.inputStateHash !== inputStateHash) {
         return false;
       }
 
       // Check policy version
-      if (ev.policyVersion && ev.policyVersion !== policyVersion) {
+      if (ev.policyVersion !== policyVersion) {
         return false;
       }
+
+      // Scope is part of the evidence claim. Broader coverage may only subsume a narrower
+      // obligation through the separately explicit, configuration-backed planner below.
+      if (ev.scope !== dedup.scope) return false;
 
       // Match kind and scope
       const kindMatches =
@@ -579,7 +662,8 @@ export async function resolveVerificationObligations(
       if (!kindMatches) return false;
 
       // Match targets if targeted
-      if (dedup.targetPaths && dedup.targetPaths.length > 0 && ev.targetPaths) {
+      if (dedup.targetPaths && dedup.targetPaths.length > 0) {
+        if (!ev.targetPaths) return false;
         const evPaths = new Set(ev.targetPaths.map((p: string) => p.replace(/\\/g, "/")));
         const allIncluded = dedup.targetPaths.every((p) => evPaths.has(p.replace(/\\/g, "/")));
         if (!allIncluded) return false;
@@ -871,6 +955,7 @@ export async function resolveVerificationObligations(
     policyReceiptId: request.policyReceiptId,
     policyVersion,
     resolverVersion,
+    cacheIdentity,
     outcome,
     revision: request.executionRevision,
     inputStateHash,

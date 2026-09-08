@@ -2,6 +2,8 @@
 
 ForgeGreen reduces measurable computational work upstream of CodeForge’s canonical authorities. It does not weaken verification, permissions, approvals, security, or completion standards.
 
+The cross-stack ownership contract is maintained in [CodeForge Intelligence Stack](architecture/CODEFORGE_INTELLIGENCE_STACK.md).
+
 ## Boundary
 
 The directional flow is:
@@ -208,7 +210,7 @@ Completion Gate (Completion Authority)
 - **Structured Subsumption:** Proves evidence subsumption strictly from trusted project configuration (e.g., tsconfig project references, package.json workspaces, verified test suites). Broad workspace typechecks subsume package-level typechecks only when referenced in root tsconfig. Package test suites subsume targeted test obligations only when targeted test paths are verifiably contained in the package test directory.
 - **Strict Prohibition of Prose-Based Subsumption:** Repository comments, README prose, script names (`test:all`), or malicious command stdout cannot define or infer subsumption.
 - **Environment-Sensitive & Evidence-Class Preservation:** Simulated/mock tests cannot substitute for `REAL_POSTGRESQL`, `REAL_GIT`, or `REAL_CHILD_PROCESS` requirements. If an environment dependency is unavailable, the obligation is marked `BLOCKED`, never silently downgraded.
-- **Valid Evidence Reuse First:** Existing valid evidence matching the current content hash, execution revision, and policy version is reused with 0 execution cost, avoiding redundant reruns. Stale, failed, skipped, or timed-out evidence is rejected.
-- **Durable Resolution Receipts:** Persists immutable `resolution_receipt` records idempotently across process restart with resolution ID, input/deduplicated/subsumed/reused counts, scheduled producers, and dispatches avoided metrics.
+- **Valid Evidence Reuse First:** Existing evidence is reused only when it binds the exact workspace, scope, kind, current input hash, required execution revision, policy version, and targeted paths where applicable. Missing identity is unknown, not a wildcard: stale, failed, skipped, timed-out, malformed, or incomplete evidence is rejected and fresh work is planned.
+- **Durable Resolution Receipts:** `fg6-evidence-resolution-2` receipts carry a canonical `cacheIdentity` over the semantic obligations, namespace, configuration, input state, revision, environment, policy, and resolver version. Older, malformed, or identity-mismatched cache payloads are safe misses; only a complete current receipt is restored.
 - **ForgeGreen Ledger Integration:** Tracks measured obligations received, duplicates removed, subsumed obligations, evidence reused, scheduled producers, dispatches avoided, and cache hits/misses without carbon or duration claims.
 - **Authority Boundary:** FG-6 `RESOLVED` indicates a complete and valid execution plan exists; it is NOT verification `PASS` and cannot satisfy the Completion Gate. FG-7 Verification Coverage Authority remains next. See `docs/fg6-certification-report.md` for full certification evidence.
