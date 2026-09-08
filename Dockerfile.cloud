@@ -37,7 +37,11 @@ RUN npm ci
 # Build the TypeScript project graph first, then the Cloud-only packages in
 # their explicit dependency order so this remains reproducible from a clean
 # image layer.
-RUN npx tsc -b \
+# `@codeforge/secrets` is referenced by several root projects but appears later
+# in the root reference list. Build it (and its core dependency) first so a clean
+# container does not try to typecheck consumers before its declarations exist.
+RUN npx tsc -b packages/core packages/secrets \
+    && npx tsc -b \
     && npm run build --workspace=@codeforge/cloud-db \
     && npm run build --workspace=@codeforge/cloud-auth \
     && npm run build --workspace=@codeforge/cloud-entitlements \
