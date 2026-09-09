@@ -60,6 +60,18 @@ export class EntitlementService {
         };
       }
 
+      // A scheduled cancellation remains usable only through the Stripe-authoritative current
+      // period. This protects the paid runtime boundary if the terminal webhook is delayed.
+      if (planId !== "free" && subscription && new Date(subscription.currentPeriodEnd).getTime() <= Date.now()) {
+        return {
+          allowed: false,
+          reason: "Subscription period has expired",
+          maxEstimatedCredits: 0,
+          availableCredits: await this.db.getCreditBalance(params.userId),
+          planId,
+        };
+      }
+
       // Check concurrency
       const activeCount = params.activeConcurrency ?? 0;
       if (activeCount >= plan.maxConcurrentTasks) {
@@ -126,8 +138,10 @@ export class EntitlementService {
     if (!plan) return;
 
     if (planId === "pro") {
+      const subscription = await this.db.getSubscriptionByUserId(userId);
+      const expiresAt = subscription?.cancelAtPeriodEnd ? subscription.currentPeriodEnd : null;
       for (const feat of CANONICAL_PRO_FEATURES) {
-        await this.db.setEntitlement(userId, feat, "true");
+        await this.db.setEntitlement(userId, feat, "true", expiresAt);
       }
     } else {
       // Free plan: grant free features, revoke pro-only features

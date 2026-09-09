@@ -82,6 +82,9 @@ export const STAGING_CONFIG_CONTRACT: readonly StagingConfigVariable[] = [
   { name: "STRIPE_WEBHOOK_SECRET", requirement: "optional", secret: true, description: "Optional Stripe test webhook signing secret. Configure it only with STRIPE_SECRET_KEY.", example: "whsec_..." },
   { name: "STRIPE_PRO_PRICE_ID", requirement: "optional", secret: false, description: "Stripe test price id for the Pro plan.", example: "price_..." },
   { name: "STRIPE_CREDIT_PRICE_ID", requirement: "optional", secret: false, description: "Stripe test price id for credit packs.", example: "price_..." },
+  { name: "STRIPE_CHECKOUT_SUCCESS_URL", requirement: "optional", secret: false, description: "Server-owned hosted Checkout success destination; clients cannot override it.", example: "https://forger-digital-solutions.github.io/codeforge/upgrade?status=success" },
+  { name: "STRIPE_CHECKOUT_CANCEL_URL", requirement: "optional", secret: false, description: "Server-owned hosted Checkout cancellation destination; clients cannot override it.", example: "https://forger-digital-solutions.github.io/codeforge/upgrade?status=canceled" },
+  { name: "STRIPE_PORTAL_RETURN_URL", requirement: "optional", secret: false, description: "Server-owned Customer Portal return destination; clients cannot override it.", example: "https://forger-digital-solutions.github.io/codeforge/upgrade" },
 
   // --- Server-owned Hosted Free capacity -------------------------------------------------------
   {

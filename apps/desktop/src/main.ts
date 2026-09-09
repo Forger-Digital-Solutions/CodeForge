@@ -1360,8 +1360,6 @@ ipcMain.handle("cloud:billing:checkout", async () => {
     },
     body: JSON.stringify({
       planId: "pro",
-      successUrl: "https://codeforge.dev/app/billing/success",
-      cancelUrl: "https://codeforge.dev/app/billing/cancel",
     }),
   });
   if (!res.ok) throw new Error(`Failed to create checkout session: HTTP ${res.status}`);
@@ -1380,9 +1378,7 @@ ipcMain.handle("cloud:billing:portal", async () => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${tokens.accessToken}`,
     },
-    body: JSON.stringify({
-      returnUrl: "https://codeforge.dev/app/billing/portal",
-    }),
+    body: JSON.stringify({}),
   });
   if (!res.ok) throw new Error(`Failed to create portal session: HTTP ${res.status}`);
   const data = (await res.json()) as { portalUrl?: string };

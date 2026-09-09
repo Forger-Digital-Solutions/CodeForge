@@ -96,6 +96,9 @@ const EnvSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PRO_PRICE_ID: z.string().optional(),
   STRIPE_CREDIT_PRICE_ID: z.string().optional(),
+  STRIPE_CHECKOUT_SUCCESS_URL: z.string().optional(),
+  STRIPE_CHECKOUT_CANCEL_URL: z.string().optional(),
+  STRIPE_PORTAL_RETURN_URL: z.string().optional(),
   CODEFORGE_HOSTED_INFERENCE_ENABLED: z.string().optional(),
   CODEFORGE_HOSTED_FREE_ENABLED: z.string().optional(),
   CODEFORGE_MAX_REQUEST_COST_USD: z.string().optional(),
@@ -257,12 +260,18 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
   if (e.STRIPE_SECRET_KEY && !/^(sk|rk)_test_/.test(e.STRIPE_SECRET_KEY)) {
     throw new CloudConfigError("STRIPE_SECRET_KEY must be a Stripe TEST-mode key (sk_test_/rk_test_) when billing is configured.");
   }
+  if (hasStripeSecretKey && isProdLike && (!e.STRIPE_CHECKOUT_SUCCESS_URL || !e.STRIPE_CHECKOUT_CANCEL_URL || !e.STRIPE_PORTAL_RETURN_URL)) {
+    throw new CloudConfigError("Stripe billing in staging/production requires server-owned checkout and portal return URLs.");
+  }
   const stripe = hasStripeSecretKey
     ? {
         secretKey: e.STRIPE_SECRET_KEY!,
         webhookSecret: e.STRIPE_WEBHOOK_SECRET!,
         proPriceId: e.STRIPE_PRO_PRICE_ID ?? "price_pro_test",
         creditPackPriceId: e.STRIPE_CREDIT_PRICE_ID ?? "price_credits_test",
+        checkoutSuccessUrl: e.STRIPE_CHECKOUT_SUCCESS_URL,
+        checkoutCancelUrl: e.STRIPE_CHECKOUT_CANCEL_URL,
+        portalReturnUrl: e.STRIPE_PORTAL_RETURN_URL,
       }
     : isProdLike
       ? undefined
@@ -271,6 +280,9 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
           webhookSecret: "whsec_mock_456",
           proPriceId: "price_pro_test",
           creditPackPriceId: "price_credits_test",
+          checkoutSuccessUrl: "http://127.0.0.1:4321/codeforge/upgrade?status=success",
+          checkoutCancelUrl: "http://127.0.0.1:4321/codeforge/upgrade?status=canceled",
+          portalReturnUrl: "http://127.0.0.1:4321/codeforge/upgrade",
         };
 
   // --- Kill switches / spend firewall ---------------------------------------------------------

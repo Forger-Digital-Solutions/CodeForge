@@ -111,5 +111,28 @@ describe("Cloud Entitlement Service", () => {
     expect(proTask.allowed).toBe(true);
     expect(proTask.planId).toBe("pro");
   });
+
+  it("fails closed after a scheduled cancellation reaches the current period end", async () => {
+    const user = await db.createUser({ displayName: "Canceled Pro", primaryIdentity: "github:400" });
+    await db.upsertSubscription({
+      userId: user.id,
+      planId: "pro",
+      status: "active",
+      currentPeriodStart: new Date(Date.now() - 60_000).toISOString(),
+      currentPeriodEnd: new Date(Date.now() - 1_000).toISOString(),
+      cancelAtPeriodEnd: true,
+    });
+    await service.syncSubscriptionEntitlements(user.id, "pro");
+    await db.appendLedgerEvent({ userId: user.id, amount: 5_000_000, eventType: "SUBSCRIPTION_ALLOWANCE_GRANTED" });
+
+    const expired = await service.evaluateTaskExecution({
+      userId: user.id,
+      modelTier: "paid",
+      requestedEstimatedCredits: 1_000,
+      activeConcurrency: 0,
+    });
+    expect(expired.allowed).toBe(false);
+    expect(expired.reason).toContain("expired");
+  });
 });
 

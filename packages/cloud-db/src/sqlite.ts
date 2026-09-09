@@ -665,6 +665,20 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return this.getCreditBalanceSync(userId);
   }
 
+  private mapCreditLedgerRow(row: Record<string, unknown>): CreditLedgerRecord {
+    return {
+      id: String(row.id),
+      userId: String(row.user_id),
+      amount: Number(row.amount),
+      balanceAfter: Number(row.balance_after),
+      eventType: row.eventType as CreditEventType,
+      requestId: row.request_id ? String(row.request_id) : undefined,
+      description: row.description ? String(row.description) : undefined,
+      metadata: row.metadata ? JSON.parse(String(row.metadata)) : undefined,
+      createdAt: String(row.created_at),
+    };
+  }
+
   private appendLedgerSync(params: {
     userId: string;
     amount: number;
@@ -673,6 +687,16 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     description?: string;
     metadata?: Record<string, unknown>;
   }): CreditLedgerRecord {
+    if (params.requestId?.startsWith("stripe:")) {
+      const existing = this.db.prepare(`SELECT * FROM credit_ledger WHERE request_id = @requestId`).get({ requestId: params.requestId }) as Record<string, unknown> | undefined;
+      if (existing) {
+        if (String(existing.user_id) !== params.userId) {
+          throw new Error("Ledger request ID is already associated with another user account");
+        }
+        return this.mapCreditLedgerRow(existing);
+      }
+    }
+
     const currentBalance = this.getCreditBalanceSync(params.userId);
     const newBalance = currentBalance + params.amount;
     if (newBalance < 0) {
@@ -1552,17 +1576,25 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
 
   async claimWebhookEvent(params: { stripeEventId: string; eventType: string }): Promise<{ claimed: boolean }> {
     const now = new Date().toISOString();
+    const staleAt = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     const id = randomUUID();
-    // Atomic claim: exactly one caller inserts the row; every duplicate delivery conflicts and is skipped.
+    // Atomic claim with a short processing lease. A crashed worker can be reclaimed after the lease;
+    // a completed event remains permanently deduplicated.
     const result = this.db.prepare(`
       INSERT INTO billing_webhook_events (id, stripe_event_id, event_type, processed_at, status, payload, created_at)
-      VALUES (@id, @stripeEventId, @eventType, @processedAt, 'processed', NULL, @createdAt)
-      ON CONFLICT(stripe_event_id) DO NOTHING
+      VALUES (@id, @stripeEventId, @eventType, @processedAt, 'processing', NULL, @createdAt)
+      ON CONFLICT(stripe_event_id) DO UPDATE SET
+        event_type = excluded.event_type,
+        processed_at = excluded.processed_at,
+        status = 'processing'
+      WHERE billing_webhook_events.status = 'failed'
+         OR (billing_webhook_events.status = 'processing' AND billing_webhook_events.processed_at <= @staleAt)
     `).run({
       id,
       stripeEventId: params.stripeEventId,
       eventType: params.eventType,
       processedAt: now,
+      staleAt,
       createdAt: now,
     });
     return { claimed: Number(result.changes) > 0 };

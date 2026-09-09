@@ -853,6 +853,16 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       metadata?: Record<string, unknown>;
     },
   ): Promise<CreditLedgerRecord> {
+    if (params.requestId?.startsWith("stripe:")) {
+      const existing = await client.query(`SELECT * FROM credit_ledger WHERE request_id = $1`, [params.requestId]);
+      if (existing.rows.length > 0) {
+        if (String(existing.rows[0].user_id) !== params.userId) {
+          throw new Error("Ledger request ID is already associated with another user account");
+        }
+        return this.mapCreditLedgerRow(existing.rows[0]);
+      }
+    }
+
     const currentBalance = await this.getCreditBalanceWithClient(client, params.userId);
     const newBalance = currentBalance + params.amount;
     if (newBalance < 0) {
@@ -1671,10 +1681,15 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     const id = randomUUID();
     const res = await this.pool.query(
       `INSERT INTO billing_webhook_events (id, stripe_event_id, event_type, processed_at, status, payload, created_at)
-       VALUES ($1, $2, $3, $4, 'processed', NULL, $5)
-       ON CONFLICT (stripe_event_id) DO NOTHING
+       VALUES ($1, $2, $3, $4, 'processing', NULL, $5)
+       ON CONFLICT (stripe_event_id) DO UPDATE SET
+         event_type = EXCLUDED.event_type,
+         processed_at = EXCLUDED.processed_at,
+         status = 'processing'
+       WHERE billing_webhook_events.status = 'failed'
+          OR (billing_webhook_events.status = 'processing' AND billing_webhook_events.processed_at <= $6)
        RETURNING id`,
-      [id, params.stripeEventId, params.eventType, now, now],
+      [id, params.stripeEventId, params.eventType, now, now, new Date(Date.now() - 10 * 60 * 1000).toISOString()],
     );
     return { claimed: res.rows.length > 0 };
   }

@@ -826,6 +826,22 @@ CREATE INDEX IF NOT EXISTS idx_browser_sessions_token_hash ON browser_sessions(s
 CREATE INDEX IF NOT EXISTS idx_browser_sessions_user_id ON browser_sessions(user_id);
 `;
 
+const MIGRATION_8_SQLITE = `
+-- Stripe customer/subscription references are account-bound identities.
+-- Partial indexes preserve support for multiple free rows with NULL Stripe references.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_subscriptions_stripe_sub_unique
+  ON subscriptions(stripe_subscription_id) WHERE stripe_subscription_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_subscriptions_stripe_cust_unique
+  ON subscriptions(stripe_customer_id) WHERE stripe_customer_id IS NOT NULL;
+`;
+
+const MIGRATION_8_POSTGRES = `
+CREATE UNIQUE INDEX IF NOT EXISTS idx_subscriptions_stripe_sub_unique
+  ON subscriptions(stripe_subscription_id) WHERE stripe_subscription_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_subscriptions_stripe_cust_unique
+  ON subscriptions(stripe_customer_id) WHERE stripe_customer_id IS NOT NULL;
+`;
+
 export const MIGRATIONS: MigrationDefinition[] = [
   {
     version: 1,
@@ -875,6 +891,13 @@ export const MIGRATIONS: MigrationDefinition[] = [
     sqliteUp: MIGRATION_7_SQLITE,
     postgresUp: MIGRATION_7_POSTGRES,
     checksum: computeChecksum(MIGRATION_7_SQLITE),
+  },
+  {
+    version: 8,
+    name: "008_billing_identity_indexes",
+    sqliteUp: MIGRATION_8_SQLITE,
+    postgresUp: MIGRATION_8_POSTGRES,
+    checksum: computeChecksum(MIGRATION_8_SQLITE),
   },
 ];
 

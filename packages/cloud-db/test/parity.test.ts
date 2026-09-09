@@ -394,6 +394,14 @@ export function defineDatabaseParityTests(suiteName: string, getDb: () => Promis
       });
       expect(claim2.claimed).toBe(false);
 
+      // A claim is a processing lease; only completion marks the event processed.
+      expect(await db.isWebhookProcessed(evtId)).toBe(false);
+
+      await db.recordWebhookEvent({
+        stripeEventId: evtId,
+        eventType: "checkout.session.completed",
+        status: "processed",
+      });
       expect(await db.isWebhookProcessed(evtId)).toBe(true);
 
       await db.recordWebhookEvent({

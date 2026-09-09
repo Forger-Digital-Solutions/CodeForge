@@ -54,14 +54,12 @@ const AccountSettingsSchema = z.object({
 });
 
 const BillingCheckoutSchema = z.object({
-  planId: z.string().optional(),
-  successUrl: z.string().url(),
-  cancelUrl: z.string().url(),
+  // The client may select only an approved business identifier. Price IDs and redirect
+  // destinations are server-owned billing configuration.
+  planId: z.string().min(1).max(64),
 });
 
-const BillingPortalSchema = z.object({
-  returnUrl: z.string().url(),
-});
+const BillingPortalSchema = z.object({}).strict();
 
 // CF-11B: GitHub App authorization + publication schemas.
 const GitHubAppAuthCallbackSchema = z.object({
@@ -849,8 +847,6 @@ export class CodeForgeCloudServer {
         const session = await this.billing.createCheckoutSession({
           userId,
           planId: body.planId,
-          successUrl: body.successUrl,
-          cancelUrl: body.cancelUrl,
         });
         this.sendJson(res, 200, session, corsOrigin);
         return;
@@ -862,10 +858,9 @@ export class CodeForgeCloudServer {
           return;
         }
         const userId = this.authenticateRequest(req);
-        const body = await this.readJson(req, BillingPortalSchema);
+        await this.readJson(req, BillingPortalSchema);
         const session = await this.billing.createCustomerPortalSession({
           userId,
-          returnUrl: body.returnUrl,
         });
         this.sendJson(res, 200, session, corsOrigin);
         return;

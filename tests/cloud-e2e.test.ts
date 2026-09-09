@@ -167,6 +167,11 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
           customer: "cus_stripe_cert_1",
           subscription: "sub_stripe_cert_1",
           mode: "subscription",
+          metadata: { plan_id: "pro" },
+          status: "active",
+          current_period_start: Math.floor(Date.now() / 1000),
+          current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+          cancel_at_period_end: false,
         },
       },
     };

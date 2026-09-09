@@ -222,6 +222,10 @@ describe("CodeForge Cloud Server API End-to-End", () => {
           customer: "cus_123",
           subscription: "sub_123",
           mode: "subscription",
+          metadata: { plan_id: "pro" },
+          status: "active",
+          current_period_start: Math.floor(Date.now() / 1000),
+          current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 3600,
         },
       },
     };
