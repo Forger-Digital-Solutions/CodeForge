@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": [
+    "node_modules/",
+    "**/dist/",
+    "release/",
+    "coverage/",
+    "packages/vscode/.vscode-test/"
+  ],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "no-unused-vars": "error"
+  },
+  "overrides": []
+}

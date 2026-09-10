@@ -33,6 +33,24 @@ export interface CloudAuthResult {
   };
 }
 
+export type CloudAuthFailureKind = "configuration" | "network" | "cancelled" | "rejected" | "timeout";
+
+export class CloudAuthError extends Error {
+  constructor(public readonly kind: CloudAuthFailureKind, message: string) {
+    super(message);
+    this.name = "CloudAuthError";
+  }
+}
+
+export function describeCloudAuthFailure(error: unknown): string {
+  if (error instanceof CloudAuthError) {
+    if (error.kind === "cancelled") return "Sign-in was cancelled.";
+    if (error.kind === "rejected") return "We couldn't complete GitHub sign-in. Please try again.";
+    if (error.kind === "timeout") return "CodeForge sign-in timed out. Please try again.";
+  }
+  return "CodeForge sign-in is unavailable right now. Check your connection and try again.";
+}
+
 const SUCCESS_HTML = `<!doctype html><html><head><meta charset="utf-8"><title>CodeForge Cloud</title>
 <style>body{font-family:system-ui,sans-serif;background:#0f1115;color:#e6e8ec;display:grid;place-items:center;height:100vh;margin:0}
 .card{text-align:center;padding:2rem;background:#181a1f;border-radius:12px;border:1px solid #282c34;box-shadow:0 8px 24px rgba(0,0,0,0.5)}.d{color:#38bdf8;font-size:48px;margin-bottom:12px}
@@ -52,7 +70,11 @@ function createDesktopPkce(): { codeVerifier: string; codeChallenge: string } {
 }
 
 export function runCodeForgeCloudAuth(opts: CodeForgeCloudAuthOptions = {}): Promise<CloudAuthResult> {
-  const cloudApiUrl = (opts.cloudApiUrl ?? "http://127.0.0.1:3220").replace(/\/$/, "");
+  const configuredCloudApiUrl = opts.cloudApiUrl?.trim();
+  if (!configuredCloudApiUrl) {
+    return Promise.reject(new CloudAuthError("configuration", "CodeForge Cloud endpoint is not configured"));
+  }
+  const cloudApiUrl = configuredCloudApiUrl.replace(/\/$/, "");
   const timeoutMs = opts.timeoutMs ?? 180000;
   const openExternal = opts.openExternal ?? ((url: string) => shell.openExternal(url));
   const fetchFn = opts.fetchFn ?? fetch;
@@ -90,7 +112,7 @@ export function runCodeForgeCloudAuth(opts: CodeForgeCloudAuthOptions = {}): Pro
       };
 
       timer = setTimeout(() => {
-        finishReject(new Error("CodeForge Cloud authentication timed out"));
+        finishReject(new CloudAuthError("timeout", "CodeForge Cloud authentication timed out"));
       }, timeoutMs);
 
       server = http.createServer(async (req, res) => {
@@ -108,13 +130,14 @@ export function runCodeForgeCloudAuth(opts: CodeForgeCloudAuthOptions = {}): Pro
 
           const code = reqUrl.searchParams.get("code") || "";
           const state = reqUrl.searchParams.get("state") || "";
-          if (!code) {
-            throw new Error("CodeForge Cloud did not return an authorization code");
-          }
+          const authError = reqUrl.searchParams.get("error");
+          if (authError === "access_denied") throw new CloudAuthError("cancelled", "GitHub authorization was cancelled");
+          if (authError) throw new CloudAuthError("rejected", "GitHub authorization was rejected");
+          if (!code) throw new CloudAuthError("rejected", "CodeForge Cloud did not return an authorization code");
           // The Cloud echoes the state it issued; a mismatch means this callback belongs to a
           // different attempt and must not be redeemed.
           if (state && state !== startData.state) {
-            throw new Error("CodeForge Cloud authentication state mismatch");
+            throw new CloudAuthError("rejected", "CodeForge Cloud authentication state mismatch");
           }
 
           res.writeHead(200, { "Content-Type": "text/html" });
@@ -133,8 +156,11 @@ export function runCodeForgeCloudAuth(opts: CodeForgeCloudAuthOptions = {}): Pro
           });
 
           if (!exchangeRes.ok) {
-            const errText = await exchangeRes.text();
-            throw new Error(`Cloud exchange failed: ${errText}`);
+            await exchangeRes.text();
+            throw new CloudAuthError(
+              exchangeRes.status === 401 || exchangeRes.status === 403 ? "rejected" : "network",
+              `Cloud exchange failed with HTTP ${exchangeRes.status}`,
+            );
           }
 
           const authTokens = (await exchangeRes.json()) as CloudAuthResult;
@@ -160,14 +186,14 @@ export function runCodeForgeCloudAuth(opts: CodeForgeCloudAuthOptions = {}): Pro
           });
 
           if (!startRes.ok) {
-            throw new Error(`Failed to initiate Cloud auth: HTTP ${startRes.status}`);
+            throw new CloudAuthError("network", `Failed to initiate Cloud auth: HTTP ${startRes.status}`);
           }
 
           startData = (await startRes.json()) as { state: string; authUrl: string; cloudCallbackUrl?: string };
 
           await openExternal(startData.authUrl);
         } catch (err) {
-          finishReject(err instanceof Error ? err : new Error(String(err)));
+          finishReject(err instanceof CloudAuthError ? err : new CloudAuthError("network", "Cloud auth request failed"));
         }
       });
     })();

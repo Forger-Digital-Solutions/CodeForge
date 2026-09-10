@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import AuthScreen from "./AuthScreen.js";
+import CloseDialog, { type CloseRequest } from "./CloseDialog.js";
 import WelcomeScreen from "./WelcomeScreen.js";
 import WorkspaceShell from "./WorkspaceShell.js";
 
@@ -14,9 +16,39 @@ export default function App() {
   const [recentProjects, setRecentProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [authState, setAuthState] = useState<"loading" | "signed-out" | "authenticated">("loading");
+
+  const [closeRequest, setCloseRequest] = useState<CloseRequest | null>(null);
 
   useEffect(() => {
-    loadRecentProjects(true);
+    const unsubscribe = window.electronAPI?.onCloseRequested?.((request) => {
+      if (request && typeof request === "object") setCloseRequest(request as CloseRequest);
+    });
+    return () => unsubscribe?.();
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const restore = async (): Promise<void> => {
+      if (!window.electronAPI?.getCloudAccount) {
+        if (mounted) setAuthState("authenticated");
+        return;
+      }
+      try {
+        const account = await window.electronAPI.getCloudAccount();
+        if (!mounted) return;
+        if (!account) {
+          setAuthState("signed-out");
+          return;
+        }
+        setAuthState("authenticated");
+        await loadRecentProjects(true);
+      } catch {
+        if (mounted) setAuthState("signed-out");
+      }
+    };
+    void restore();
+    return () => { mounted = false; };
   }, []);
 
   const loadRecentProjects = async (restoreMostRecent = false) => {
@@ -77,22 +109,55 @@ export default function App() {
     loadRecentProjects(false);
   };
 
+  const handleAuthenticated = async (): Promise<void> => {
+    setAuthState("authenticated");
+    await loadRecentProjects(true);
+  };
+
+  const handleSignedOut = (): void => {
+    setCurrentProject(null);
+    setRecentProjects([]);
+    setAuthState("signed-out");
+  };
+
+  const handleCloseDecision = async (decision: "cancel" | "tray" | "quit" | "quit-anyway", remember: boolean): Promise<void> => {
+    setCloseRequest(null);
+    await window.electronAPI?.resolveClose?.(decision, remember);
+  };
+
+  const closeOverlay = closeRequest ? <CloseDialog request={closeRequest} onDecision={(decision, remember) => void handleCloseDecision(decision, remember)} /> : null;
+
+  if (authState === "loading") {
+    return <><div className="app-bootstrap" role="status" aria-live="polite"><span className="app-bootstrap-mark">◆</span><span>Restoring your CodeForge session…</span></div>{closeOverlay}</>;
+  }
+
+  if (authState === "signed-out") {
+    return <><AuthScreen onAuthenticated={() => void handleAuthenticated()} />{closeOverlay}</>;
+  }
+
   if (currentProject) {
     return (
+      <>
       <WorkspaceShell
         project={currentProject}
         onClose={handleCloseProject}
+        onSignedOut={handleSignedOut}
       />
+      {closeOverlay}
+      </>
     );
   }
 
   return (
-    <WelcomeScreen
-      recentProjects={recentProjects}
-      onOpenProject={handleOpenProject}
-      onCreateProject={handleCreateProject}
-      loading={loading}
-      error={error}
-    />
+    <>
+      <WelcomeScreen
+        recentProjects={recentProjects}
+        onOpenProject={handleOpenProject}
+        onCreateProject={handleCreateProject}
+        loading={loading}
+        error={error}
+      />
+      {closeOverlay}
+    </>
   );
 }

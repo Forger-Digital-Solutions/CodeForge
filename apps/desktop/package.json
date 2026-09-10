@@ -20,6 +20,10 @@
     "smoke:interrupt": "node scripts/packaged-smoke.js interrupt",
     "smoke:recover": "node scripts/packaged-smoke.js recover",
     "smoke:all": "node scripts/packaged-smoke.js full && node scripts/packaged-smoke.js interrupt && node scripts/packaged-smoke.js recover",
+    "audit:internal-deps": "node scripts/audit-packaged-internal-dependencies.mjs",
+    "audit:runtime-deps": "node scripts/audit-packaged-runtime-dependencies.mjs",
+    "audit:auth-endpoint": "node scripts/audit-packaged-auth-endpoint.mjs",
+    "audit:browser-security": "node scripts/audit-packaged-browser-security.mjs",
     "clean": "rm -rf dist",
     "build:channel": "node scripts/set-build-channel.mjs"
   },
@@ -36,6 +40,7 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@electron/asar": "^3.4.1",
     "@types/node": "^22.10.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
@@ -96,6 +101,10 @@
           "core/package.json",
           "director/dist/**/*.js",
           "director/package.json",
+          "eight-bit/dist/**/*.js",
+          "eight-bit/package.json",
+          "forge-green/dist/**/*.js",
+          "forge-green/package.json",
           "forge-zero/dist/**/*.js",
           "forge-zero/package.json",
           "model-registry/dist/**/*.js",
@@ -120,6 +129,8 @@
           "tools/package.json",
           "context/dist/**/*.js",
           "context/package.json",
+          "cloud-db/dist/**/*.js",
+          "cloud-db/package.json",
           "ui/dist/**/*.js",
           "ui/package.json",
           "workflow/dist/**/*.js",
@@ -145,6 +156,71 @@
           "**/*.cjs",
           "**/*.mjs"
         ]
+      },
+      {
+        "from": "node_modules/pg",
+        "to": "node_modules/pg",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/pg-connection-string",
+        "to": "node_modules/pg-connection-string",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/pg-pool",
+        "to": "node_modules/pg-pool",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/pg-protocol",
+        "to": "node_modules/pg-protocol",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/pg-types",
+        "to": "node_modules/pg-types",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/pgpass",
+        "to": "node_modules/pgpass",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/pg-int8",
+        "to": "node_modules/pg-int8",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/postgres-array",
+        "to": "node_modules/postgres-array",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/postgres-bytea",
+        "to": "node_modules/postgres-bytea",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/postgres-date",
+        "to": "node_modules/postgres-date",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/postgres-interval",
+        "to": "node_modules/postgres-interval",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/split2",
+        "to": "node_modules/split2",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/xtend",
+        "to": "node_modules/xtend",
+        "filter": ["**/*"]
       },
       {
         "from": "node_modules/better-sqlite3",

@@ -376,6 +376,15 @@ body {
   color: var(--cf-text);
 }
 
+.header-btn.cloud-signin-btn,
+.header-btn.cloud-account-btn {
+  width: auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .workspace-shell-main {
   flex: 1;
   overflow: hidden;
@@ -1061,4 +1070,63 @@ body {
   background: var(--cf-bg, #0f1115);
   color: var(--cf-text, #e6e8ec);
   border: 1px solid var(--cf-border-subtle, rgba(255,255,255,0.12));
+}
+/* R8 first-run identity surface: deliberately quiet, single-action, and independent of the
+   provider catalog. The authenticated workspace owns provider configuration. */
+.app-bootstrap,
+.auth-screen {
+  min-height: 100%;
+  width: 100%;
+  background: #090a0c;
+  color: #e6e7ea;
+}
+
+.app-bootstrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #8d929b;
+  font-size: 13px;
+}
+
+.app-bootstrap-mark { color: #d8dce3; font-size: 15px; }
+.auth-screen { display: grid; place-items: center; padding: 24px; }
+.auth-card { width: min(100%, 390px); display: flex; align-items: center; flex-direction: column; text-align: center; padding: 42px 34px 36px; }
+.auth-mark { width: 74px; height: 74px; margin-bottom: 18px; }
+.auth-wordmark { color: #f5f6f8; font-size: 16px; font-weight: 700; letter-spacing: .22em; margin-left: .22em; }
+.auth-card h1 { margin-top: 28px; color: #f1f2f4; font-size: 22px; font-weight: 620; letter-spacing: -.02em; }
+.auth-subtitle { max-width: 280px; margin-top: 8px; color: #858a93; font-size: 13px; line-height: 1.55; }
+.auth-error { width: 100%; margin-top: 18px; padding: 9px 12px; border: 1px solid rgba(239,77,77,.5); border-radius: 6px; background: rgba(239,77,77,.1); color: #fca5a5; font-size: 12px; }
+.auth-github-button { width: 100%; display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 26px; padding: 11px 16px; border: 1px solid #e0e3e8; border-radius: 6px; background: #e8ebef; color: #101114; font: 600 13px var(--cf-font); cursor: pointer; transition: background .12s, transform .12s; }
+.auth-github-button:hover:not(:disabled) { background: #fff; transform: translateY(-1px); }
+.auth-github-button:disabled { cursor: wait; opacity: .65; }
+.github-glyph { width: 16px; height: 16px; display: inline-grid; place-items: center; border: 2px solid currentColor; border-radius: 50%; font-size: 7px; }
+.auth-identity-note { max-width: 300px; margin-top: 12px; color: #666b74; font-size: 11px; line-height: 1.5; }
+.auth-links { display: flex; gap: 8px; align-items: center; margin-top: 34px; color: #656a73; font-size: 11px; }
+.auth-links button { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.auth-links button:hover { color: #cfd3d9; }
+
+/* Shared close coordinator surface. Rendered by the production root so it can sit above every
+   screen without duplicating shutdown paths. */
+.close-dialog-overlay { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 24px; background: rgba(0,0,0,.62); }
+.close-dialog { width: min(100%, 510px); padding: 26px 28px 22px; border: 1px solid #383c44; border-radius: 10px; background: #17181b; box-shadow: 0 24px 80px rgba(0,0,0,.58); }
+.close-dialog-kicker { color: #9399a3; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.close-dialog h2 { margin-top: 8px; color: #f0f1f3; font-size: 20px; font-weight: 650; }
+.close-dialog-lead { margin-top: 18px; color: #e2e4e8; font-size: 14px; font-weight: 600; }
+.close-dialog-copy { margin-top: 8px; color: #a0a5ae; font-size: 13px; line-height: 1.55; }
+.close-dialog-check { display: flex; align-items: center; gap: 8px; margin-top: 20px; color: #979ca5; font-size: 12px; cursor: pointer; }
+.close-dialog-check input { accent-color: #b7c0cc; }
+.close-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+.close-dialog-button { min-height: 32px; padding: 6px 11px; border: 1px solid #3a3e46; border-radius: 5px; background: #222429; color: #e1e3e7; font: 600 12px var(--cf-font); cursor: pointer; }
+.close-dialog-button:hover { background: #2d3036; }
+.close-dialog-button.quiet { color: #a2a7af; background: transparent; }
+.close-dialog-button.danger { border-color: rgba(239,77,77,.5); background: rgba(239,77,77,.12); color: #f5a0a0; }
+.close-dialog-button.danger:hover { background: rgba(239,77,77,.2); }
+.close-dialog-button.primary { border-color: #c9ced6; background: #d9dde3; color: #131519; }
+.close-dialog-button.primary:hover { background: #f0f2f5; }
+
+@media (max-width: 700px) {
+  .close-dialog-actions { flex-direction: column-reverse; }
+  .close-dialog-button { width: 100%; }
 }

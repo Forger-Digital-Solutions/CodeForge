@@ -1,5 +1,6 @@
 import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import type { ForgeVerifyObserver, VerificationAttempt, VerificationEvidence, VerificationPlan } from "@codeforge/workflow";
+import type { GenericVerificationEvidence } from "@codeforge/forge-green";
 
 type VerificationWorkItem = Extract<WorkItem, { kind: "verification" }>;
 
@@ -26,5 +27,19 @@ export function createForgeVerifyPersistenceObserver(persistence: ISessionPersis
     policyReceiptCreated: async (receipt) => {
       await persistence.insertImmutableWorkItem(item(sessionId, "policy_receipt", receipt.receiptId, receipt.receiptId, sessionId, receipt as unknown as Record<string, unknown>, receipt.decision));
     },
+    coverageReceiptCreated: async (receipt) => {
+      await persistence.insertImmutableWorkItem(item(sessionId, "coverage_receipt", receipt.coverageId, receipt.coverageId, sessionId, receipt as unknown as Record<string, unknown>, receipt.outcome));
+    },
   };
+}
+
+export async function loadForgeVerifyEvidence(
+  persistence: ISessionPersistence,
+  sessionId: string,
+  runId?: string,
+): Promise<readonly GenericVerificationEvidence[]> {
+  const items = await persistence.getWorkItems(sessionId);
+  return items
+    .filter((candidate): candidate is VerificationWorkItem => candidate.kind === "verification" && candidate.recordType === "evidence" && (!runId || candidate.runId === runId))
+    .map((candidate) => candidate.payload as unknown as GenericVerificationEvidence);
 }

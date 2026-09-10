@@ -9,6 +9,9 @@ import {
   verificationPassed,
   verificationFailed,
   evaluateCompletion,
+  VerifierRegistry,
+  createVerificationPlan,
+  executeVerificationPlan,
   type WorkflowPlan,
   type FailureAnalysis,
   type ReviewDecision,
@@ -88,6 +91,37 @@ describe("ForgeVerify — Structured Verifier Registry & Multi-Verifier Executio
     expect(classifyVerifier("npm run lint")).toEqual({ kind: "lint", required: false });
     expect(classifyVerifier("eslint .")).toEqual({ kind: "lint", required: false });
     expect(classifyVerifier("node custom-check.js")).toEqual({ kind: "custom", required: true });
+  });
+
+  it("preserves Electron-as-Node for a structured verifier", async () => {
+    Object.defineProperty(process.versions, "electron", { configurable: true, value: "test" });
+    try {
+      const registry = new VerifierRegistry();
+      registry.register({
+        id: "electron.node.environment",
+        version: "test-v1",
+        name: "Electron runtime environment",
+        category: "custom",
+        description: "Regression coverage for Electron verifier execution.",
+        execution: {
+          executable: process.execPath,
+          args: ["-e", "process.exit(process.env.ELECTRON_RUN_AS_NODE === '1' ? 0 : 1)"],
+        },
+        defaultRequirement: "required",
+        timeoutMs: 5_000,
+        maxAttempts: 1,
+        supportedScopes: ["workspace"],
+      });
+      const plan = createVerificationPlan(registry, { version: "test" }, {
+        workspacePath: ws,
+        scope: "workspace",
+        runId: "electron-runtime-test",
+      });
+      const result = await executeVerificationPlan(registry, plan);
+      expect(result.evidence[0]).toMatchObject({ status: "passed", exitCode: 0 });
+    } finally {
+      delete (process.versions as Record<string, string | undefined>).electron;
+    }
   });
 
   it("discovers all declared verifiers from package.json manifest in canonical order", async () => {

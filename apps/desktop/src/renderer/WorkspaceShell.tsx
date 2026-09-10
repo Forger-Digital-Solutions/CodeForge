@@ -13,6 +13,7 @@ const USER_INTENT_HOLD_POLICY_KEY = "codeforge:user-intent-hold-policy";
 interface WorkspaceShellProps {
   project: Project;
   onClose: () => void;
+  onSignedOut?: () => void;
 }
 
 interface ApiModel {
@@ -69,9 +70,9 @@ const PROVIDER_SECTION: Record<string, string> = {
 };
 
 const SECTION_ORDER = [
+  "RECOMMENDED",
   "CODEFORGE CLOUD (INCLUDED)",
-  "CODEFORGE",
-  "TOP VERIFIED FREE",
+  "FREE",
   "GEMS",
   "Z.AI",
   "OPENROUTER",
@@ -109,9 +110,9 @@ function accessBadge(m: ApiModel): string {
   }
 }
 
-export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps) {
+export default function WorkspaceShell({ project, onClose, onSignedOut }: WorkspaceShellProps) {
   const [models, setModels] = useState<ModelSelectorItem[]>([
-    { id: "auto", displayName: "Auto", tier: "free", description: "Best Verified Free Model" },
+    { id: "auto", displayName: "ForgeAuto/Free", tier: "free", description: "Automatic free routing" },
   ]);
   const [selectedModelId, setSelectedModelId] = useState<string | null>("auto");
   const [modelProviders, setModelProviders] = useState<Record<string, string>>({});
@@ -184,7 +185,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
 
       const visible = data.filter((m) => !isHiddenModel(m.id));
       const modelItems: ModelSelectorItem[] = [
-        { id: "auto", displayName: "Auto", tier: "free", description: "Best Verified Free" },
+        { id: "auto", displayName: "ForgeAuto/Free", tier: "free", description: "Automatic free routing" },
         ...visible.map((m) => ({
           id: m.id,
           displayName: m.displayName,
@@ -228,11 +229,11 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
 
     const autoItem = models.find((m) => m.id === "auto") ?? {
       id: "auto",
-      displayName: "Auto",
+      displayName: "ForgeAuto/Free",
       tier: "free" as const,
-      description: "Best Verified Free Model",
+      description: "Automatic free routing",
     };
-    sectionMap.set("CODEFORGE", [autoItem]);
+    sectionMap.set("RECOMMENDED", [autoItem]);
 
     for (const m of apiModels) {
       if (isHiddenModel(m.id)) continue;
@@ -260,7 +261,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
       }
     }
 
-    if (topVerified.length > 0) sectionMap.set("TOP VERIFIED FREE", topVerified);
+    if (topVerified.length > 0) sectionMap.set("FREE", topVerified);
     if (gemsModels.length > 0) sectionMap.set("GEMS", gemsModels);
 
     const sections: ModelSection[] = [];
@@ -317,8 +318,8 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
 
     if (selectedModelId === "auto") {
       const anyError = Object.values(providerStatus).some((h) => h.status === "error");
-      if (anyError) return { status: "auto", text: "Auto", detail: "Best Verified Free", error: true };
-      return { status: "auto", text: "Auto", detail: "Best Verified Free" };
+      if (anyError) return { status: "auto", text: "ForgeAuto/Free", detail: "Automatic free routing", error: true };
+      return { status: "auto", text: "ForgeAuto/Free", detail: "Automatic free routing" };
     }
     if (!providerId) return { status: "unknown", text: "Unknown" };
     const freeLabel = selected?.costProfile?.isFree || selected?.isPromotional ? "Free" : selected?.tier === "paid" || selected?.tier === "gems_paid" ? "Paid" : "Unknown";
@@ -599,6 +600,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
                         setCloudAccount(null);
                         setIsQuotaExhaustedOpen(false);
                         await refreshModelsAndHealth();
+                        onSignedOut?.();
                       }}
                     >
                       Sign Out
@@ -608,7 +610,7 @@ export default function WorkspaceShell({ project, onClose }: WorkspaceShellProps
               ) : (
                 <div>
                   <p style={{ color: "#9ca3af", fontSize: "14px" }}>
-                    Sign in with GitHub to access zero-setup hosted AI inference with 500,000 monthly credits.
+                    Sign in with GitHub to access zero-setup hosted AI inference with an allowance that resets each 30-day hosted-usage period.
                   </p>
                   <button
                     style={{ width: "100%", background: "#0284c7", color: "#fff", padding: "10px", borderRadius: "6px", border: "none", fontWeight: 600, cursor: "pointer" }}

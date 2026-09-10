@@ -75,10 +75,16 @@ export default function WorkspaceApp({
 }: WorkspaceAppProps) {
   const { state, setState, sendMessage, requestUserIntentHold, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession, startNewSession, hydrate } = useWorkspaceSSE(sseUrl ?? "/api/events");
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try { return window.localStorage.getItem("codeforge:sidebar-collapsed") === "true"; } catch { return false; }
+  });
+  const [inspectorCollapsed, setInspectorCollapsed] = useState(true);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [executionMode, setExecutionMode] = useState<ExecutionMode>(() => readRememberedExecutionMode());
+
+  React.useEffect(() => {
+    try { window.localStorage.setItem("codeforge:sidebar-collapsed", String(sidebarCollapsed)); } catch { /* convenience preference */ }
+  }, [sidebarCollapsed]);
 
   const apiOrigin = React.useMemo(() => {
     const u = sseUrl ?? "";
@@ -220,7 +226,7 @@ export default function WorkspaceApp({
   };
 
   const placeholder = state.pendingApproval?.tool === "workflow"
-    ? "Review the plan above and approve or deny…"
+    ? "Add context, or use the approval controls above…"
     : state.isRunning
       ? state.activePhase === "awaiting_approval"
         ? "Awaiting plan approval…"
@@ -308,7 +314,7 @@ export default function WorkspaceApp({
             }}
             isRunning={state.isRunning}
             onSuggestedPrompt={(text) => handleSend(text)}
-            contextLabel={projectName ? `CodeForge · ${projectName}${projectBranch ? ` · ${projectBranch}` : ""}` : undefined}
+            contextLabel={projectName ? `CodeForge · ${projectName}${projectBranch ?? state.session?.branch ? ` · ${projectBranch ?? state.session?.branch}` : ""}` : undefined}
           />
 
           <ForgeWorkingIndicator active={forgeWorkActive} />

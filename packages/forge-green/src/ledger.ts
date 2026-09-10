@@ -26,6 +26,7 @@ export type ForgeGreenMechanism =
   | "request_dedupe"
   | "fallback"
   | "repository_intelligence"
+  | "verification_coverage"
   | "risk_analysis"
   | "model_failover"
   | "verification_policy"

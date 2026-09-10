@@ -29,6 +29,7 @@
     "@codeforge/router": "*",
     "@codeforge/providers": "*",
     "@codeforge/protocol": "*",
+    "@codeforge/sessions": "*",
     "zod": "^3.24.0"
   }
 }

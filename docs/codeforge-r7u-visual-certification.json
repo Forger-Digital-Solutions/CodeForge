@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "milestone": "R7U competitive desktop UI audit, visual rework and daily-driver UX closure",
+  "verdict": "CODEFORGE_R7U_COMPETITIVE_DESKTOP_UI_BLOCKED",
+  "observedAt": "2026-09-09",
+  "repository": {
+    "path": "G:\\CodeForge",
+    "branch": "feat/codeforge-cloud",
+    "head": "9b40dc26c4b4baf9863da558163af756a8817f0f",
+    "worktreeWasDirty": true
+  },
+  "localReferenceAttempt": {
+    "processesObserved": ["Claude", "Claude Code", "Codex/ChatGPT", "Devin", "OpenCode", "ZCode"],
+    "methods": ["connector native-app inventory", "PID-correlated Win32 window enumeration", "full-desktop CopyFromScreen capture"],
+    "result": "protected/unavailable: no exposed native app surface, no visible correlated top-level window, and invalid black desktop frame",
+    "userAppsModified": false,
+    "officialFallbackIndex": "docs/certification/r7u/reference/index.md"
+  },
+  "implemented": [
+    "task-list status and relative-recency metadata",
+    "authoritative phase status without raw percentage progress",
+    "searchable structured model selector with count, focus, Escape close and empty state",
+    "compact composer and bounded catalog overlay styling",
+    "packaged renderer screenshot evidence path"
+  ],
+  "finalPackage": {
+    "root": "apps/desktop/release-r7u-final5",
+    "portableSha256": "305A8BCCDBE2EAD19D7D6AF38E46C40D1A5541C795D44738A938E672B7F021CC",
+    "setupSha256": "504E606CB6E240C04985A7F3D496969D223F2F968506BA5CBE4E03B6B103F593",
+    "unpackedExeSha256": "45AFE91CB66C6D0AAC8680513C6E44EF52FFC67D2D5DBF15577F34FDB4BFE22A",
+    "asarSha256": "555E79EEA33B56AE47CB5A2DA0255485374CF0DB7552CFF872A54E065C2E76F3",
+    "packaged": true,
+    "fullSmoke": "passed",
+    "interruptSmoke": "passed",
+    "recoverySmoke": "passed"
+  },
+  "capturedStates": [
+    "01-onboarding.png",
+    "02-workspace-ready.png",
+    "02a-model-catalog.png",
+    "02b-model-filter.png",
+    "03-workflow-completed.png",
+    "04-recovery.png"
+  ],
+  "validation": {
+    "focusedUiDesktopSuite": "8 files, 47 tests passed",
+    "finalMainCompile": "passed",
+    "finalFocusedRegression": "4 files, 19 tests passed",
+    "rendererBuild": "passed",
+    "diffCheck": "passed"
+  },
+  "blockingGaps": [
+    "actual local competitor-window pixel inspection",
+    "live 400+ provider catalog exercise",
+    "five realistic provider-driven visual task captures",
+    "required native multi-window-size screenshot matrix",
+    "rich diff/change review surface"
+  ]
+}

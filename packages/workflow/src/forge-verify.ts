@@ -160,6 +160,7 @@ export interface ForgeVerifyObserver {
   evidenceCreated?(evidence: VerificationEvidence): void | Promise<void>;
   policyReceiptCreated?(receipt: import("@codeforge/forge-green").VerificationPolicyReceipt): void | Promise<void>;
   resolutionReceiptCreated?(receipt: import("@codeforge/forge-green").EvidenceResolutionReceipt): void | Promise<void>;
+  coverageReceiptCreated?(receipt: import("@codeforge/forge-green").VerificationCoverageReceipt): void | Promise<void>;
 }
 
 function digest(value: unknown): string {
@@ -218,7 +219,7 @@ export function createVerifierRegistry(definitions: readonly VerifierDefinition[
   return registry;
 }
 
-function categoryForLegacy(kind: Verifier["kind"]): VerifierCategory {
+export function categoryForLegacy(kind: Verifier["kind"]): VerifierCategory {
   if (kind === "test") return "unit-test";
   if (kind === "typecheck") return "typecheck";
   if (kind === "build") return "build";
@@ -327,6 +328,10 @@ export class VerificationEvidenceStore {
     });
   }
 
+  addExistingEvidence(existing: VerificationEvidence): void {
+    this.evidence.set(existing.attemptId, existing);
+  }
+
   allEvidence(): readonly VerificationEvidence[] { return [...this.evidence.values()]; }
   allAttempts(): readonly VerificationAttempt[] { return [...this.attempts.values()]; }
 }
@@ -338,7 +343,11 @@ async function executeCommand(definition: VerifierDefinition, workspacePath: str
     let reason: "cancelled" | "timed_out" | undefined;
     let output = "";
     let child: ReturnType<typeof spawn>;
-    try { child = spawn(definition.execution.executable, [...definition.execution.args], { cwd: workspacePath, env: verifierEnvironment(), shell: false, windowsHide: true, detached: process.platform !== "win32" }); }
+    const environment = verifierEnvironment();
+    if (process.versions.electron && path.resolve(definition.execution.executable) === path.resolve(process.execPath)) {
+      environment.ELECTRON_RUN_AS_NODE = "1";
+    }
+    try { child = spawn(definition.execution.executable, [...definition.execution.args], { cwd: workspacePath, env: environment, shell: false, windowsHide: true, detached: process.platform !== "win32" }); }
     catch (error) { resolve({ status: "infra_error", elapsedMs: Date.now() - started, output: error instanceof Error ? error.message : String(error) }); return; }
     const finish = (status: VerificationEvidence["status"], exitCode?: number): void => { if (settled) return; settled = true; clearTimeout(timer); signal?.removeEventListener("abort", abort); resolve({ status, exitCode, elapsedMs: Date.now() - started, output }); };
     child.stdout?.on("data", (chunk: Buffer) => { output += chunk.toString(); });
@@ -352,11 +361,37 @@ async function executeCommand(definition: VerifierDefinition, workspacePath: str
   });
 }
 
-export async function executeVerificationPlan(registry: VerifierRegistry, plan: VerificationPlan, store = new VerificationEvidenceStore(), options: { signal?: AbortSignal; observer?: ForgeVerifyObserver } = {}): Promise<{ attempts: readonly VerificationAttempt[]; evidence: readonly VerificationEvidence[]; summary: VerificationSummary }> {
+export async function executeVerificationPlan(
+  registry: VerifierRegistry,
+  plan: VerificationPlan,
+  store = new VerificationEvidenceStore(),
+  options: {
+    signal?: AbortSignal;
+    observer?: ForgeVerifyObserver;
+    existingEvidence?: readonly (VerificationEvidence | import("@codeforge/forge-green").GenericVerificationEvidence)[];
+  } = {},
+): Promise<{ attempts: readonly VerificationAttempt[]; evidence: readonly VerificationEvidence[]; summary: VerificationSummary }> {
   await options.observer?.planCreated?.(plan);
   for (const planned of plan.verifiers) {
     const definition = registry.get(planned.verifierId);
     if (!definition || definition.version !== planned.verifierVersion || definitionDigest(definition) !== planned.definitionDigest) continue;
+
+    const reusable = options.existingEvidence?.find((ev) => {
+      if (ev.verifierId !== planned.verifierId) return false;
+      if (ev.verifierVersion && ev.verifierVersion !== planned.verifierVersion) return false;
+      if (ev.definitionDigest && ev.definitionDigest !== planned.definitionDigest) return false;
+      if (definitionDigest(definition) !== planned.definitionDigest) return false;
+      if (ev.status !== "passed" || (ev.exitCode !== undefined && ev.exitCode !== 0)) return false;
+      if (ev.workspacePath && path.resolve(ev.workspacePath) !== path.resolve(plan.workspacePath)) return false;
+      if (ev.inputStateHash && ev.inputStateHash !== plan.inputStateHash) return false;
+      return true;
+    });
+
+    if (reusable) {
+      store.addExistingEvidence(reusable as VerificationEvidence);
+      continue;
+    }
+
     for (let index = 0; index < definition.maxAttempts; index += 1) {
       const attempt = store.start(plan, planned);
       await options.observer?.attemptStarted?.(attempt);
@@ -380,7 +415,7 @@ export function summarizeVerification(plan: VerificationPlan, registry: Verifier
   let failedCount = 0;
   for (const planned of required) {
     const currentDefinition = registry.get(planned.verifierId);
-    const candidates = evidence.filter((item) => item.planId === plan.planId && item.verifierId === planned.verifierId && item.verifierVersion === planned.verifierVersion);
+    const candidates = evidence.filter((item) => item.verifierId === planned.verifierId && item.verifierVersion === planned.verifierVersion);
     const definitionChanged = !currentDefinition || definitionDigest(currentDefinition) !== planned.definitionDigest || candidates.some((item) => item.definitionDigest !== planned.definitionDigest);
     const stale = currentStateHash !== plan.inputStateHash || candidates.some((item) => item.inputStateHash !== currentStateHash || item.workspacePath !== plan.workspacePath);
     const passed = candidates.find((item) => item.status === "passed" && item.inputStateHash === currentStateHash && item.definitionDigest === planned.definitionDigest && item.workspacePath === plan.workspacePath);

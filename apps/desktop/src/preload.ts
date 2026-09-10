@@ -44,7 +44,7 @@ const api = {
     return ipcRenderer.invoke("onboarding:setCompleted", completed);
   },
   // --- CodeForge Cloud APIs ---
-  signInWithCloud: (): Promise<{ ok: boolean; user?: any; error?: string }> => {
+  signInWithCloud: (): Promise<{ ok: boolean; user?: unknown; error?: string }> => {
     return ipcRenderer.invoke("cloud:auth:start");
   },
   getCloudAccount: (): Promise<any> => {
@@ -61,6 +61,14 @@ const api = {
   },
   getCloudUsage: (): Promise<any> => {
     return ipcRenderer.invoke("cloud:usage:get");
+  },
+  onCloseRequested: (callback: (request: unknown) => void): (() => void) => {
+    const listener = (_event: unknown, request: unknown) => callback(request);
+    ipcRenderer.on("app:close-requested", listener);
+    return () => ipcRenderer.removeListener("app:close-requested", listener);
+  },
+  resolveClose: (decision: string, remember: boolean): Promise<void> => {
+    return ipcRenderer.invoke("app:close-decision", { decision, remember });
   },
 };
 

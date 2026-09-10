@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { WorkItem } from "@codeforge/sessions";
 
 export interface NavSessionSummary {
@@ -7,6 +7,31 @@ export interface NavSessionSummary {
   taskTitle?: string;
   status?: string;
   updatedAt?: string;
+}
+
+export function formatRelativeSessionTime(value?: string, now = Date.now()): string | null {
+  if (!value) return null;
+  const timestamp = Date.parse(value);
+  if (Number.isNaN(timestamp)) return null;
+  const minutes = Math.max(0, Math.floor((now - timestamp) / 60_000));
+  if (minutes < 1) return "now";
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  return `${Math.floor(hours / 24)}d`;
+}
+
+export type SessionGroupLabel = "Today" | "Yesterday" | "Previous 7 Days" | "Older";
+
+export function groupSessionByAge(value: string | undefined, now = Date.now()): SessionGroupLabel {
+  if (!value) return "Older";
+  const timestamp = Date.parse(value);
+  if (Number.isNaN(timestamp)) return "Older";
+  const age = Math.max(0, now - timestamp);
+  if (age < 24 * 60 * 60 * 1000) return "Today";
+  if (age < 2 * 24 * 60 * 60 * 1000) return "Yesterday";
+  if (age < 7 * 24 * 60 * 60 * 1000) return "Previous 7 Days";
+  return "Older";
 }
 
 interface NavigationProps {
@@ -67,7 +92,28 @@ export default function Navigation({
   onOpenSettings,
   onOpenHelp,
 }: NavigationProps) {
-  const sortedSessions = [...sessions].sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""));
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+  const groupedSessions = useMemo(() => {
+    const normalized = query.trim().toLocaleLowerCase();
+    const groups: Record<SessionGroupLabel, NavSessionSummary[]> = {
+      Today: [], Yesterday: [], "Previous 7 Days": [], Older: [],
+    };
+    for (const session of [...sessions].sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""))) {
+      const label = session.taskTitle || session.title || session.id.slice(0, 8);
+      if (normalized && !`${label} ${session.status ?? ""}`.toLocaleLowerCase().includes(normalized)) continue;
+      groups[groupSessionByAge(session.updatedAt)].push(session);
+    }
+    return groups;
+  }, [query, sessions]);
+
+  useEffect(() => {
+    if (searchOpen) searchRef.current?.focus();
+    else setQuery("");
+  }, [searchOpen]);
+
+  const groupOrder: SessionGroupLabel[] = ["Today", "Yesterday", "Previous 7 Days", "Older"];
 
   return (
     <nav className="workspace-nav">
@@ -82,16 +128,35 @@ export default function Navigation({
         <NavIcon path={ICON.plus} />
         <span>New task</span>
       </button>
+      <div className="nav-search-action">
+        {searchOpen ? (
+          <input
+            ref={searchRef}
+            type="search"
+            className="nav-search-input"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => { if (event.key === "Escape") setSearchOpen(false); }}
+            placeholder="Search tasks"
+            aria-label="Search tasks"
+          />
+        ) : (
+          <button type="button" className="nav-search-button" onClick={() => setSearchOpen(true)}>
+            <span aria-hidden="true">⌕</span><span>Search</span><span className="nav-shortcut">Ctrl K</span>
+          </button>
+        )}
+      </div>
 
       <div className="nav-scroll">
         {projectName && (
           <div className="nav-section">
-            <div className="nav-section-title">Project</div>
+            <div className="nav-section-title">Workspaces</div>
             <button
               type="button"
               className="nav-item nav-project"
               onClick={onOpenProjects}
               title="Switch project"
+              aria-current="page"
             >
               <span className="nav-icon"><NavIcon path={ICON.folder} /></span>
               <span className="nav-label">{projectName}</span>
@@ -100,28 +165,39 @@ export default function Navigation({
           </div>
         )}
 
-        <div className="nav-section">
-          <div className="nav-section-title">Tasks</div>
-          {sortedSessions.length === 0 ? (
+        <div className="nav-section nav-sessions-section">
+          <div className="nav-section-title">Sessions</div>
+          {sessions.length === 0 ? (
             <div className="nav-empty">No tasks yet</div>
           ) : (
-            sortedSessions.map((session) => {
-              const label = session.taskTitle || session.title || session.id.slice(0, 8);
-              const isActive = session.id === activeSessionId;
-              const running = session.status === "running";
-              return (
-                <button
-                  type="button"
-                  key={session.id}
-                  className={`nav-item nav-task ${isActive ? "active" : ""}`}
-                  onClick={() => onSelectSession(session.id)}
-                  title={label}
-                >
-                  <span className={`nav-task-dot ${running ? "running" : ""}`} />
-                  <span className="nav-label">{label}</span>
-                </button>
-              );
-            })
+            groupOrder.map((group) => groupedSessions[group].length > 0 ? (
+              <div className="nav-session-group" key={group}>
+                <div className="nav-group-label">{group}</div>
+                {groupedSessions[group].map((session) => {
+                  const label = session.taskTitle || session.title || session.id.slice(0, 8);
+                  const isActive = session.id === activeSessionId;
+                  const running = session.status === "running";
+                  const relativeTime = formatRelativeSessionTime(session.updatedAt);
+                  return (
+                    <button
+                      type="button"
+                      key={session.id}
+                      className={`nav-item nav-task ${isActive ? "active" : ""}`}
+                      onClick={() => onSelectSession(session.id)}
+                      title={label}
+                      aria-current={isActive ? "page" : undefined}
+                    >
+                      <span className={`nav-task-dot ${running ? "running" : ""}`} />
+                      <span className="nav-task-copy">
+                        <span className="nav-label">{label}</span>
+                        <span className="nav-task-meta">{running ? "Working" : session.status ?? "Idle"}{relativeTime ? ` · ${relativeTime}` : ""}</span>
+                      </span>
+                      <span className="nav-task-menu" aria-hidden="true">…</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null)
           )}
         </div>
       </div>

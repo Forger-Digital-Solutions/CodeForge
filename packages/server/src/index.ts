@@ -73,6 +73,20 @@ export interface ServerOptions {
   afterApprovalResolvedBoundary?: () => Promise<void>;
 }
 
+/** Minimal desktop-facing shutdown facts. Counts only; task payloads and secrets stay in the runtime. */
+export interface CodeForgeRuntimeStatus {
+  activeWork: boolean;
+  activeWorkflows: number;
+  activeAgentTurns: number;
+  activeCommands: number;
+  pendingApprovals: number;
+  activeVerifications: number;
+  hostedContinuations: number;
+  backgroundTasks: number;
+  recoverable: boolean;
+  unrecoverableResources: string[];
+}
+
 export class CodeForgeServer {
   private port: number;
   private readonly host: string;
@@ -263,6 +277,52 @@ export class CodeForgeServer {
   /** Bound port after start() (resolves the ephemeral port when started with 0). */
   get httpPort(): number {
     return this.port;
+  }
+
+  /**
+   * Return only the counts the desktop close coordinator needs. This intentionally does not
+   * expose prompts, command text, workspace paths, or credential-bearing runtime state.
+   */
+  async getRuntimeStatus(): Promise<CodeForgeRuntimeStatus> {
+    const activeAgentTurns = [...this.runtimes.values()].reduce((count, runtime) => count + runtime.getActiveTurns().length, 0);
+    const activeWorkflows = this.workflowService.getActiveCount() + this.orchestrator.getAllRuns().filter((run) => ["pending", "running"].includes(run.status)).length;
+    const pendingApprovalIds = new Set<string>();
+    for (const runtime of this.runtimes.values()) {
+      for (const approval of runtime.getAllPendingApprovals()) pendingApprovalIds.add(approval.approvalId);
+    }
+    for (const approval of this.workflowService.getApprovalService().getAllPending()) pendingApprovalIds.add(approval.approvalId);
+
+    const [commands, verifications, hosted, parallelRuns] = await Promise.all([
+      this.persistence.getWorkItemsByKind("command"),
+      this.persistence.getWorkItemsByKind("verification"),
+      this.persistence.getWorkItemsByKind("hosted_workflow"),
+      this.persistence.getWorkItemsByKind("parallel_run"),
+    ]);
+    const statusOf = (item: WorkItem): string | undefined => {
+      const candidate = item as WorkItem & { status?: unknown };
+      return typeof candidate.status === "string" ? candidate.status : undefined;
+    };
+    const activeCommands = commands.filter((item) => statusOf(item) === "running").length;
+    const activeVerifications = verifications.filter((item) => statusOf(item) === "running").length;
+    const hostedContinuations = hosted.filter((item) => !["completed", "failed", "cancelled", "blocked", "succeeded"].includes(statusOf(item) ?? "")).length;
+    const activeParallelRuns = parallelRuns.filter((item) => !["completed", "failed", "cancelled", "blocked"].includes(statusOf(item) ?? "")).length;
+    const backgroundTasks = this.repositoryIndexSnapshot.state === "INDEXING" ? 1 : 0;
+    const unrecoverableResources = activeCommands > 0
+      ? [`${activeCommands} local command${activeCommands === 1 ? "" : "s"} will stop if CodeForge quits`]
+      : [];
+    const activeWork = activeWorkflows > 0 || activeAgentTurns > 0 || activeCommands > 0 || pendingApprovalIds.size > 0 || activeVerifications > 0 || hostedContinuations > 0 || activeParallelRuns > 0 || backgroundTasks > 0;
+    return {
+      activeWork,
+      activeWorkflows: activeWorkflows + activeParallelRuns,
+      activeAgentTurns,
+      activeCommands,
+      pendingApprovals: pendingApprovalIds.size,
+      activeVerifications,
+      hostedContinuations,
+      backgroundTasks,
+      recoverable: unrecoverableResources.length === 0,
+      unrecoverableResources,
+    };
   }
 
   /**

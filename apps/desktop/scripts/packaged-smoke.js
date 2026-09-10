@@ -15,7 +15,11 @@ const exePath = process.env.CODEFORGE_SMOKE_EXECUTABLE
 const smokeWorkspace = resolve(desktopRoot, 'release', 'smoke-workspace');
 const smokeOut = resolve(desktopRoot, 'release', 'smoke-result.log');
 const smokeProfile = resolve(desktopRoot, 'release', 'smoke-user-data');
+const smokeRepositoryIndexes = resolve(desktopRoot, 'release', 'smoke-repository-indexes');
 const smokeSuiteState = resolve(desktopRoot, 'release', 'smoke-suite-id');
+const screenshotDirectory = process.env.CODEFORGE_SMOKE_SCREENSHOT_DIR
+  ? resolve(process.env.CODEFORGE_SMOKE_SCREENSHOT_DIR)
+  : undefined;
 if (mode === 'full') writeFileSync(smokeSuiteState, randomUUID(), 'utf8');
 if (!existsSync(smokeSuiteState)) {
   console.error('[PACKAGED SMOKE] Run full mode before interrupt/recover.');
@@ -25,7 +29,7 @@ const suiteId = readFileSync(smokeSuiteState, 'utf8').trim();
 const testSecret = `CF_SECRET_${createHash('sha256').update(`codeforge-packaged-smoke:${suiteId}`).digest('hex')}`;
 const runId = randomUUID();
 const requiredMarkers = {
-  full: ['PACKAGED_FULL_SMOKE_OK', 'packaged_failure_repair_pass=PASS', 'packaged_renderer_reload_count=5', 'packaged_renderer_reload=PASS', 'credential_plaintext_absent=PASS'],
+  full: ['PACKAGED_STARTUP=PASS', 'FORGEGREEN_RUNTIME=PASS', 'EIGHT_BIT_RUNTIME=PASS', 'CLOUD_DB_PACKAGED_RUNTIME=PASS', 'PACKAGED_FULL_SMOKE_OK', 'packaged_failure_repair_pass=PASS', 'packaged_renderer_reload_count=5', 'packaged_renderer_reload=PASS', 'credential_plaintext_absent=PASS'],
   interrupt: ['PACKAGED_INTERRUPT_EXPECTED_EXIT', 'electron_restart_interruption_ready=PASS'],
   recover: ['PACKAGED_RECOVERY_SMOKE_OK', 'electron_restart_failed_safely=PASS', 'electron_restart_no_approval_replay=PASS'],
 };
@@ -39,6 +43,7 @@ if (!existsSync(exePath)) {
 if (mode === 'full') {
   try { rmSync(smokeProfile, { recursive: true, force: true }); } catch {}
   try { rmSync(smokeWorkspace, { recursive: true, force: true }); } catch {}
+  try { rmSync(smokeRepositoryIndexes, { recursive: true, force: true }); } catch {}
   mkdirSync(join(smokeWorkspace, 'src'), { recursive: true });
   writeFileSync(join(smokeWorkspace, 'src', 'calc.ts'), 'export function add(a: number, b: number): number {\n  return a - b;\n}\n');
   writeFileSync(join(smokeWorkspace, 'package.json'), JSON.stringify({ name: 'smoke-test', type: 'module' }, null, 2));
@@ -53,21 +58,29 @@ if (mode === 'full') {
 
 const startingSize = existsSync(smokeOut) ? readFileSync(smokeOut).length : 0;
 
+const cleanRuntimeEnv = { ...process.env };
+delete cleanRuntimeEnv.NODE_PATH;
+delete cleanRuntimeEnv.NODE_OPTIONS;
+delete cleanRuntimeEnv.ELECTRON_RUN_AS_NODE;
+
 console.log(`[PACKAGED SMOKE] Mode: ${mode}`);
 console.log(`[PACKAGED SMOKE] Executable: ${exePath}`);
 console.log(`[PACKAGED SMOKE] Workspace: ${smokeWorkspace}`);
 
 const child = spawn(exePath, [`--user-data-dir=${smokeProfile}`], {
   env: {
-    ...process.env,
+    ...cleanRuntimeEnv,
     CODEFORGE_PACKAGED_SMOKE: '1',
     CODEFORGE_PACKAGED_SMOKE_MODE: mode,
     CODEFORGE_SMOKE_WORKSPACE: smokeWorkspace,
     CODEFORGE_SMOKE_OUT: smokeOut,
     CODEFORGE_SMOKE_RUN_ID: runId,
     CODEFORGE_TEST_SECRET: testSecret,
+    CODEFORGE_REPOSITORY_INDEX_ROOT: smokeRepositoryIndexes,
+    ...(screenshotDirectory ? { CODEFORGE_SMOKE_SCREENSHOT_DIR: screenshotDirectory } : {}),
     ELECTRON_ENABLE_LOGGING: '1',
   },
+  cwd: dirname(exePath),
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 

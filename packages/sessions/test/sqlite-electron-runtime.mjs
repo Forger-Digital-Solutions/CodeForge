@@ -7,18 +7,18 @@ if (!sessionsEntry || !dbPath) throw new Error("Expected sessions entry point an
 const { SessionPersistence, openSqliteDatabase } = await import(pathToFileURL(sessionsEntry).href);
 const now = new Date().toISOString();
 const first = new SessionPersistence({ dbPath, driver: "better-sqlite3" });
-first.upsertSession({
+await first.upsertSession({
   id: "electron-driver-session",
   title: "Electron ABI round trip",
   createdAt: now,
   updatedAt: now,
   status: "completed",
 });
-first.close();
+await first.close();
 
 const second = new SessionPersistence({ dbPath, driver: "better-sqlite3" });
-const session = second.getSession("electron-driver-session");
-second.close();
+const session = await second.getSession("electron-driver-session");
+await second.close();
 if (session?.title !== "Electron ABI round trip") throw new Error("Electron SQLite restart round trip failed");
 const { db } = openSqliteDatabase(dbPath, { driver: "better-sqlite3" });
 const count = db.prepare("SELECT count(*) AS count FROM sessions").get();

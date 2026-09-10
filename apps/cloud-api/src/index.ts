@@ -8,6 +8,7 @@ export * from "./publication-errors.js";
 export * from "./artifact-store.js";
 export * from "./publication-executor.js";
 export * from "./publication-service.js";
+export * from "./hosted-workflow-authority.js";
 export * from "./git-transport.js";
 export * from "./github-pr-client.js";
 

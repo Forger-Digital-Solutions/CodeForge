@@ -371,8 +371,8 @@ export class SqliteSessionPersistence implements ISessionPersistence {
 
   /** Terminal audit records are append-only; duplicate persistence is idempotent rather than mutable. */
   async insertImmutableWorkItem(item: WorkItem): Promise<boolean> {
-    if (item.kind !== "verification" || (item.recordType !== "plan" && item.recordType !== "evidence" && item.recordType !== "policy_receipt" && item.recordType !== "resolution_receipt")) {
-      throw new Error("Only immutable ForgeVerify plan, evidence, policy receipt, or resolution receipt records may use append-only persistence.");
+    if (item.kind !== "verification" || (item.recordType !== "plan" && item.recordType !== "evidence" && item.recordType !== "policy_receipt" && item.recordType !== "resolution_receipt" && item.recordType !== "coverage_receipt")) {
+      throw new Error("Only immutable ForgeVerify plan, evidence, policy receipt, resolution receipt, or coverage receipt records may use append-only persistence.");
     }
     const safeItem = sanitizeForPersistence(item);
     const result = this.statements.get("insertImmutableWorkItem")!.run({
@@ -408,6 +408,11 @@ export class SqliteSessionPersistence implements ISessionPersistence {
   async getWorkItemsByKind(kind: string): Promise<WorkItem[]> {
     const rows = this.all<StoredWorkItem>("getWorkItemsByKind", { $kind: kind });
     return rows.map((row) => JSON.parse(row.data) as WorkItem);
+  }
+
+  async lockWorkItem(id: string): Promise<void> {
+    // SQLite's single-connection model + explicit transaction provides sufficient isolation.
+    // PostgreSQL implementation uses SELECT FOR UPDATE here.
   }
 
   async getAllWorkItems(): Promise<WorkItem[]> {

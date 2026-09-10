@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0.0",
+  "milestone": "R4",
+  "verdict": "CODEFORGE_HOSTED_RUNTIME_AUTHORITY_R4_CERTIFIED",
+  "r3Verdict": "CODEFORGE_DURABLE_AGENT_CONTINUATION_R3_CERTIFIED",
+  "r3Certified": true,
+  "r4Certified": true,
+  "authorityPath": [
+    "WorkflowService.resumeHostedWorkflow",
+    "AgentRuntime.resumeAgentContinuation",
+    "WorkflowEngine",
+    "ForgeVerify",
+    "evaluateCompletion",
+    "hosted_workflow durable final state"
+  ],
+  "postgres": {
+    "driver": "PostgresSessionPersistence",
+    "continuationRowLocking": true,
+    "certificationTest": "packages/server/test/hosted-workflow-postgres-r4.test.ts",
+    "existingHarnessAvailabilityProof": "PASS: fg7-postgres-persistence through scripts/postgres-test-harness.mjs",
+    "r4Execution": "PASS: 1/1 through scripts/postgres-test-harness.mjs"
+  },
+  "validation": {
+    "packagesServerTypeScript": "PASS",
+    "focusedContinuationRuntimeCloud": "PASS: 5 files / 21 tests",
+    "targetedOxlint": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "concurrency": "PASS: two fresh WorkflowService/AgentRuntime graphs race one result; one suspends at the next action and one returns not_ready",
+  "cloudState": {
+    "cloudBuild": "not retried",
+    "cloudRun": "not deployed",
+    "productionTouched": false
+  }
+}

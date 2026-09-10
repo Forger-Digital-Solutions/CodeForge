@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "r3b-usable-agent-1",
+  "generatedAt": "2026-09-09",
+  "verdict": "CODEFORGE_R3B_BLOCKED_AGENT_WORKFLOW",
+  "source": {
+    "repository": "G:\\CodeForge",
+    "branch": "feat/codeforge-cloud",
+    "promptCertifiedCommit": "6b0770b11aab9f71e40b5c953e24e68fabc58707",
+    "startingHead": "9b40dc26c4b4baf9863da558163af756a8817f0f",
+    "endingHead": "9b40dc26c4b4baf9863da558163af756a8817f0f",
+    "commitsCreated": 0,
+    "workingTreeWasDirty": true
+  },
+  "gates": {
+    "lint": { "status": "PASS", "command": "npm run lint" },
+    "typecheck": { "status": "PASS", "command": "npm run typecheck" },
+    "workspaceBuild": { "status": "PASS", "command": "npm run build" },
+    "nativeRebuild": { "status": "PASS", "electron": "33.4.11", "abi": "130", "betterSqlite3": "12.11.1", "pythonDiscovery": "PASS" },
+    "packaging": {
+      "status": "PASS",
+      "installer": "apps/desktop/release/CodeForge-Setup-0.2.0.exe",
+      "portable": "apps/desktop/release/CodeForge-Portable.exe",
+      "unpacked": "apps/desktop/release/win-unpacked/CodeForge.exe",
+      "channel": "staging",
+      "endpoint": "https://codeforge-cloud-staging.onrender.com",
+      "sourceManifestRestored": true
+    },
+    "packagedSmoke": { "status": "PASS", "full": "PASS", "interrupt": "PASS_EXPECTED_EXIT_73", "recover": "PASS" },
+    "remoteProbe": { "status": "PASS", "passed": 21, "failed": 0, "verifiedFreeModels": 30, "catalogModels": 34 },
+    "realFreeHostedInference": { "status": "PASS", "provider": "openrouter", "model": "cohere/north-mini-code:free", "ownerCash": "$0" },
+    "freshUserAcceptance": { "status": "BLOCKED_EXTERNAL_AUTH", "passed": 6, "blocked": 5, "failed": 0 },
+    "stripeTestE2E": { "status": "STRIPE_TEST_E2E_AUTH_REQUIRED", "localBillingTestsPassed": 3 },
+    "authenticatedPackagedHostedRepositoryTask": { "status": "BLOCKED_EXTERNAL_AUTH" }
+  },
+  "regression": {
+    "fullVitest": { "passedFiles": 221, "skippedFiles": 7, "passedTests": 1710, "skippedTests": 35, "parallelRunFailureReports": 6, "isolatedFailureRerunsPassed": true },
+    "isolatedReruns": {
+      "fg2AndFg3CacheAuthority": "7/7",
+      "agentOrchestrator": "5/5",
+      "parallelOrchestrator": "4/4",
+      "remotePublication": "6/6",
+      "workflowHardening": "8/8"
+    }
+  },
+  "security": {
+    "paidFallbackObserved": false,
+    "secretLeakObserved": false,
+    "adversarialSuites": {
+      "serverHardening": "57/57",
+      "agentSecurity": "5/5",
+      "toolchain": "7/7",
+      "cloudPerimeter": "14/14",
+      "authBypass": "8/8",
+      "providerIsolation": "4/4"
+    }
+  },
+  "cost": { "monthlyInfrastructure": "$0", "paidInfrastructureCreated": false, "paidModelFallback": false },
+  "externalBlockers": ["GitHub OAuth consent/session for final packaged hosted repository E2E", "Stripe Test-mode credentials and price/webhook configuration"],
+  "productionActivation": "BLOCKED"
+}

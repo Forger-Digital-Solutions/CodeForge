@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { getUpgradeUrl } from "./upgrade-url.js";
 
 export type ModelTier = "free" | "gems_paid";
@@ -52,6 +52,24 @@ export function resolveModelSelection(
   return { allowed: false, navigateToUpgrade: true, url: options.upgradeUrl };
 }
 
+/** Filters only already-present catalog metadata; it never invents availability. */
+export function filterModelSections(sections: ModelSection[], query: string): ModelSection[] {
+  const normalized = query.trim().toLocaleLowerCase();
+  if (!normalized) return sections;
+  return sections
+    .map((section) => ({
+      ...section,
+      models: section.models.filter((model) =>
+        [section.sectionLabel, model.id, model.displayName, model.description, model.tier]
+          .filter((value): value is string => Boolean(value))
+          .join(" ")
+          .toLocaleLowerCase()
+          .includes(normalized),
+      ),
+    }))
+    .filter((section) => section.models.length > 0);
+}
+
 export interface ModelSelectorProps {
   models: ModelSelectorItem[];
   selectedId: string | null;
@@ -77,7 +95,21 @@ export function ModelSelector({
 }: ModelSelectorProps): React.ReactElement {
   const url = upgradeUrl ?? getUpgradeUrl();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [focusedIndex, setFocusedIndex] = useState(0);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const optionRefs = useRef<Array<HTMLDivElement | null>>([]);
   const isOpen = controlledIsOpen ?? internalIsOpen;
+
+  useEffect(() => {
+    if (isOpen) {
+      searchRef.current?.focus();
+      setFocusedIndex(0);
+    } else {
+      setQuery("");
+      setFocusedIndex(0);
+    }
+  }, [isOpen]);
 
   const handleSelect = (model: ModelSelectorItem): void => {
     if (disabled) return;
@@ -106,7 +138,7 @@ export function ModelSelector({
         ? `${selectedModel.displayName} · ${selectedModel.description}`
         : "Auto · Best Verified Free"
       : selectedModel.displayName
-    : "Auto · Verified Free";
+    : "ForgeAuto/Free · Automatic free routing";
 
   const sections: ModelSection[] = modelSections?.length
     ? modelSections
@@ -122,6 +154,14 @@ export function ModelSelector({
           models: models.filter((m) => m.tier === "gems_paid"),
         },
       ].filter((s) => s.models.length > 0);
+  const filteredSections = filterModelSections(sections, query);
+  const matchingModelCount = filteredSections.reduce((count, section) => count + section.models.length, 0);
+  const flatModels = filteredSections.flatMap((section) => section.models);
+
+  const close = (): void => {
+    setInternalIsOpen(false);
+    setQuery("");
+  };
 
   return (
     <div className="model-selector">
@@ -142,11 +182,36 @@ export function ModelSelector({
         <>
           <div
             style={{ position: "fixed", inset: 0, zIndex: 99 }}
-            onClick={() => setInternalIsOpen(false)}
+            onClick={close}
           />
-          <div className="model-dropdown" role="listbox" aria-label="Model selection">
-            {sections.map((section) => {
-              if (section.models.length === 0 && !section.note) return null;
+          <div className="model-dropdown" role="dialog" aria-label="Model selection" onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              close();
+              return;
+            }
+            if ((event.key === "ArrowDown" || event.key === "ArrowUp") && flatModels.length > 0) {
+              event.preventDefault();
+              const direction = event.key === "ArrowDown" ? 1 : -1;
+              const next = (focusedIndex + direction + flatModels.length) % flatModels.length;
+              setFocusedIndex(next);
+              optionRefs.current[next]?.focus();
+            }
+          }}>
+            <div className="model-search-wrap">
+              <input
+                ref={searchRef}
+                className="model-search"
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Filter models or providers"
+                aria-label="Filter models or providers"
+              />
+              <span className="model-search-count" aria-live="polite">{matchingModelCount} shown</span>
+            </div>
+            <div className="model-dropdown-list" role="listbox" aria-label="Available models">
+            {filteredSections.map((section) => {
               return (
               <div key={section.sectionId}>
                 <div className="model-dropdown-section">{section.sectionLabel}</div>
@@ -156,12 +221,14 @@ export function ModelSelector({
                   </div>
                 )}
                 {section.models.map((model) => {
+                  const optionIndex = flatModels.findIndex((candidate) => candidate.id === model.id);
                   const locked = !isModelUsable(model);
                   return (
                     <div
                       key={model.id}
+                      ref={(element) => { optionRefs.current[optionIndex] = element; }}
                       role="option"
-                      tabIndex={locked || disabled ? -1 : 0}
+                      tabIndex={locked || disabled ? -1 : optionIndex === focusedIndex ? 0 : -1}
                       aria-selected={model.id === selectedId}
                       aria-disabled={locked || disabled ? true : undefined}
                       title={locked ? `${model.displayName} requires an upgraded plan` : undefined}
@@ -200,6 +267,10 @@ export function ModelSelector({
               </div>
               );
             })}
+            {filteredSections.length === 0 && (
+              <div className="model-empty-result" role="status">No catalog matches. Refine the filter or choose Auto.</div>
+            )}
+            </div>
           </div>
         </>
       )}

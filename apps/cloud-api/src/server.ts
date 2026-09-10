@@ -8,6 +8,9 @@ import { EntitlementService } from "@codeforge/cloud-entitlements";
 import { UsageEngine } from "@codeforge/cloud-usage";
 import { StripeBillingService, type StripeConfig } from "@codeforge/cloud-billing";
 import { CloudFirewallManager, GatewayService, type HostedInferenceRequest, type HostedStreamEvent, type CloudProviderRegistry, type CloudKillSwitchConfig } from "@codeforge/cloud-gateway";
+import { DesktopWorkerActionResultSchema } from "@codeforge/protocol";
+import { createSessionPersistence, type ISessionPersistence } from "@codeforge/sessions";
+import { HostedWorkflowAuthority } from "./hosted-workflow-authority.js";
 import { PublicationService } from "./publication-service.js";
 import { PublicationError, PUBLICATION_ERROR_CODES, publicationErrorStatus, isPublicationErrorCode } from "./publication-errors.js";
 
@@ -104,6 +107,14 @@ const HostedInferenceSchema = z.object({
     .min(1),
 });
 
+const HostedWorkflowCreateSchema = z.object({
+  workerId: z.string().min(1).max(128),
+  workspaceId: z.string().min(1).max(128),
+  task: z.string().min(1).max(20_000),
+});
+
+const WorkerIdSchema = z.string().min(1).max(128);
+
 export interface CodeForgeCloudServerConfig {
   port?: number;
   host?: string;
@@ -155,6 +166,8 @@ export interface CodeForgeCloudServerConfig {
   gitHubAppInstallationUrl?: string;
   /** Filesystem root for bounded publication artifact staging. */
   publicationArtifactDir?: string;
+  /** Shared durable runtime state. When omitted, the server creates and owns one. */
+  sessionPersistence?: ISessionPersistence;
 }
 
 export class CodeForgeCloudServer {
@@ -169,6 +182,9 @@ export class CodeForgeCloudServer {
   public readonly providerRegistry?: CloudProviderRegistry;
   public readonly gitHubAppAuth?: GitHubAppAuthorizationService;
   public readonly publicationService?: PublicationService;
+  public readonly hostedWorkflowAuthority: HostedWorkflowAuthority;
+  private readonly sessionPersistence: ISessionPersistence;
+  private readonly ownsSessionPersistence: boolean;
   private readonly discoverOnStart: boolean;
   private readonly allowedOrigins: Set<string>;
   private readonly rateLimits = new Map<string, { count: number; resetAt: number }>();
@@ -235,6 +251,15 @@ export class CodeForgeCloudServer {
       });
     }
 
+    this.ownsSessionPersistence = config.sessionPersistence === undefined;
+    this.sessionPersistence = config.sessionPersistence ?? createSessionPersistence({
+      driver: config.driver,
+      dbPath: config.dbPath,
+      databaseUrl: config.databaseUrl,
+      databaseSsl: config.databaseSsl,
+    });
+    this.hostedWorkflowAuthority = new HostedWorkflowAuthority(this.sessionPersistence);
+
     this.entitlements = new EntitlementService(this.db);
     this.usage = new UsageEngine(this.db);
     this.firewallManager = config.firewallManager ?? new CloudFirewallManager({ killSwitches: config.killSwitches });
@@ -297,6 +322,7 @@ export class CodeForgeCloudServer {
     const bindHost = host ?? this.host;
     // Fail closed: initialize the database schema (async for Postgres) BEFORE accepting traffic.
     await this.db.init();
+    await this.hostedWorkflowAuthority.init();
     if (this.publicationService) {
       await this.publicationService.init();
       // Safe recovery is entirely durable and reacquires a new fenced lease before it can mutate a
@@ -337,9 +363,11 @@ export class CodeForgeCloudServer {
   }
 
   async stop(): Promise<void> {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
       this.server.close(() => {
-        void Promise.resolve(this.db.close()).then(() => resolve());
+        const closeOperations: Promise<unknown>[] = [Promise.resolve(this.db.close())];
+        if (this.ownsSessionPersistence) closeOperations.push(this.sessionPersistence.close());
+        void Promise.all(closeOperations).then(() => resolve(), reject);
       });
     });
   }
@@ -942,6 +970,62 @@ export class CodeForgeCloudServer {
             res.end();
           }
         }
+        return;
+      }
+
+      // Hosted workflows are owner-scoped. Worker actions themselves can only be minted by the
+      // server-side workflow authority; the public transport can poll and return results only.
+      if (url.pathname === "/v1/workflows" && method === "POST") {
+        const ownerUserId = this.authenticateRequest(req);
+        const body = await this.readJson(req, HostedWorkflowCreateSchema);
+        this.sendJson(res, 201, await this.hostedWorkflowAuthority.create({ ownerUserId, ...body }), corsOrigin);
+        return;
+      }
+
+      if (url.pathname === "/v1/workflows" && method === "GET") {
+        const ownerUserId = this.authenticateRequest(req);
+        this.sendJson(res, 200, await this.hostedWorkflowAuthority.list(ownerUserId), corsOrigin);
+        return;
+      }
+
+      const workflowCancelRoute = url.pathname.match(/^\/v1\/workflows\/([^/]+)\/cancel$/);
+      if (workflowCancelRoute && method === "POST") {
+        const ownerUserId = this.authenticateRequest(req);
+        const workflowId = workflowCancelRoute[1]!;
+        if (!await this.hostedWorkflowAuthority.get(workflowId, ownerUserId)) {
+          this.sendJson(res, 404, { error: "Hosted workflow not found" }, corsOrigin);
+          return;
+        }
+        this.sendJson(res, 200, await this.hostedWorkflowAuthority.cancel(ownerUserId, workflowId), corsOrigin);
+        return;
+      }
+
+      const workflowStatusRoute = url.pathname.match(/^\/v1\/workflows\/([^/]+)$/);
+      if (workflowStatusRoute && method === "GET") {
+        const ownerUserId = this.authenticateRequest(req);
+        const workflow = await this.hostedWorkflowAuthority.get(workflowStatusRoute[1]!, ownerUserId);
+        if (!workflow) {
+          this.sendJson(res, 404, { error: "Hosted workflow not found" }, corsOrigin);
+          return;
+        }
+        this.sendJson(res, 200, workflow, corsOrigin);
+        return;
+      }
+
+      if (url.pathname === "/v1/worker/actions" && method === "GET") {
+        const ownerUserId = this.authenticateRequest(req);
+        const workerId = WorkerIdSchema.parse(url.searchParams.get("workerId"));
+        this.sendJson(res, 200, await this.hostedWorkflowAuthority.pending(ownerUserId, workerId), corsOrigin);
+        return;
+      }
+
+      if (url.pathname === "/v1/worker/actions/result" && method === "POST") {
+        const ownerUserId = this.authenticateRequest(req);
+        const result = await this.readJson(req, DesktopWorkerActionResultSchema);
+        this.sendJson(res, 200, await this.hostedWorkflowAuthority.result(ownerUserId, {
+          ...result,
+          changedResources: result.changedResources ?? [],
+        }), corsOrigin);
         return;
       }
 

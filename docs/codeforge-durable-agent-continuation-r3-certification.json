@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "1.1.0",
+  "milestone": "R3",
+  "verdict": "CODEFORGE_DURABLE_AGENT_CONTINUATION_R3_CERTIFIED",
+  "overallR3Certified": true,
+  "repository": {
+    "path": "G:\\CodeForge",
+    "branch": "feat/codeforge-cloud",
+    "startingHead": "9b40dc26c4b4baf9863da558163af756a8817f0f",
+    "endingHead": "9b40dc26c4b4baf9863da558163af756a8817f0f",
+    "commitsCreated": 0,
+    "worktreeStatusEntries": 237,
+    "inheritedDirtyWorktree": true
+  },
+  "historicalR3State": "Earlier R3 artifact recorded a validated schema/result state machine while real AgentRuntime suspension and rehydration were still absent.",
+  "continuationSchema": {
+    "version": "2",
+    "legacyVersionReadable": "1",
+    "runtimeResumeRequires": "2",
+    "states": ["prepared", "awaiting_worker", "result_available", "result_consumed", "cancelled", "blocked"],
+    "context": "bounded API-visible messages, assistant tool calls, tool observation, provider/model binding",
+    "hiddenChainOfThoughtStored": false
+  },
+  "agentRuntime": {
+    "productionLoop": "packages/server/src/agent-runtime.ts::runAgentLoop",
+    "suspensionOutcome": "suspended(reason=awaiting_worker, continuationId, actionId)",
+    "continuationCreatedBeforeWorkerDispatch": true,
+    "freshRuntimeResume": true,
+    "canonicalObservationFunction": "applyToolObservation",
+    "localExecutionPreserved": true,
+    "multiToolGenerations": true,
+    "recoveryRunner": "recoverReadyHostedContinuations",
+    "preparedBoundaryRepair": true
+  },
+  "durability": {
+    "actionBinding": "transactionally validated by session/workflow/turn/worker/action identity",
+    "resultAvailability": "atomic durable transition after terminal worker result",
+    "claimAndContext": "one transaction persists result_consumed, observation, appended tool message, and resume lease",
+    "leaseRecovery": true,
+    "parentChildAdvancement": "parent lease advancement and child awaiting_worker binding share one transaction",
+    "duplicateWorkerResult": "idempotent",
+    "duplicateObservation": "idempotent by continuation and toolCallId/resultId"
+  },
+  "tests": {
+    "focused": { "files": 5, "passed": 21, "failed": 0, "skipped": 0 },
+    "sessionsAndCloudApi": { "files": 16, "passed": 143, "failed": 0, "skipped": 0 },
+    "fullServer": { "filesPassed": 76, "filesFailed": 2, "filesSkipped": 2, "testsPassed": 453, "testsFailed": 0, "testsSkipped": 2 },
+    "fullTypeScriptBuild": "PASS",
+    "targetedTypeScriptBuild": "PASS",
+    "targetedOxlint": "PASS",
+    "fullOxlint": "INHERITED_FAILURE: two unrelated unused-variable findings",
+    "gitDiffCheck": "PASS",
+    "postgresRecovery": "PASS: hosted WorkflowService A/B/C fresh-graph proof through the isolated repository PostgreSQL harness",
+    "secretChecker": "NOT_RUN: tools\\check-secrets.ps1 absent",
+    "npmScripts": "ENVIRONMENT_BLOCKER: npm wrapper resolves to missing npm-cli.js"
+  },
+  "testCoverage": {
+    "freshRuntime": true,
+    "startupRecovery": true,
+    "claimCrash": true,
+    "postObservationCrash": true,
+    "duplicateResult": true,
+    "staleRevision": true,
+    "cancellation": true,
+    "concurrentClaim": "single-owner sequential SQLite assertion; PostgreSQL concurrency proof pending",
+    "approvalCompatibility": "existing approval suites pass; hosted fresh-runtime approval E2E pending",
+    "forgeVerify": "existing WorkflowService/WorkflowEngine suites pass; hosted cloud composition pending",
+    "completionGate": "existing gate suites pass; hosted cloud composition pending",
+    "forgeGreenContinuity": "existing runtime/authority suites pass; hosted cloud parity pending"
+  },
+  "failures": [
+    {
+      "classification": "ENVIRONMENT BLOCKER",
+      "scope": "packages/server/test/fg2-runtime-integration.test.ts and fg3-authority-independence.test.ts",
+      "detail": "Windows EPERM creating C:\\Users\\Daddy_FDS\\AppData\\Local\\CodeForge\\repository-indexes\\..."
+    },
+    {
+      "classification": "INHERITED FAILURE",
+      "scope": "packages/server/test/fg7-postgres-persistence.test.ts and scripts/cloud/gcp-staging.mjs",
+      "detail": "Repository-wide oxlint reports unrelated unused variables in pre-existing untracked files."
+    },
+    {
+      "classification": "ENVIRONMENT BLOCKER",
+      "scope": "PostgreSQL and secret checker",
+      "detail": "No PostgreSQL listener/client and no tools\\check-secrets.ps1 in checkout."
+    },
+    {
+      "classification": "NEW REGRESSION",
+      "scope": "R3.1 continuation/runtime tests",
+      "detail": "None observed."
+    }
+  ],
+  "cloudState": {
+    "cloudBuild": "not retried; remains external",
+    "cloudRun": "not deployed",
+    "productionTouched": false,
+    "productionSecretsRead": false,
+    "productionDatabaseTouched": false
+  },
+  "remainingGaps": [
+    "Inherited Windows repository-index permissions and unrelated lint findings",
+    "Dedicated secret checker unavailable",
+    "R4 PostgreSQL hosted WorkflowService/ForgeVerify/completion certification test awaits explicit local WSL PostgreSQL authorization"
+  ],
+  "r4FollowUp": {
+    "report": "docs/codeforge-hosted-runtime-authority-r4-certification-report.md",
+    "implementation": "WorkflowService-owned hosted suspension/recovery into existing WorkflowEngine, ForgeVerify, and evaluateCompletion",
+    "realPostgresCertification": "PASS"
+  }
+}

@@ -225,6 +225,12 @@ export interface GenericVerificationEvidence {
   skippedCount?: number;
   executionRevision?: number;
   createdAt?: string;
+  authority?: "forgeverify" | "trusted_producer" | "untrusted";
+  evidenceHash?: string;
+  verifierVersion?: string;
+  definitionDigest?: string;
+  planId?: string;
+  attemptId?: string;
 }
 
 export interface VerificationSufficiencyInput {

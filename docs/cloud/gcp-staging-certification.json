@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestamp": "2026-09-09T00:00:00-04:00",
+  "projectId": "project-cecfd600-cbad-4750-8b2",
+  "region": "us-east1",
+  "cloudRunService": "codeforge-cloud-staging",
+  "cloudSqlInstance": "codeforge-staging",
+  "cloudSqlState": "RUNNABLE",
+  "cloudSqlVersion": "POSTGRES_16",
+  "cloudSqlTier": "db-f1-micro",
+  "artifactRepository": "codeforge",
+  "database": "CREATED_WITH_GENERATED_SECRET",
+  "backups": "ENABLED_7_RETAINED",
+  "health": "NOT_RUN",
+  "desktopConnection": "NOT_RUN",
+  "cloudRunReplacement": "NOT_RUN",
+  "forgeGreenDurability": "NOT_CERTIFIABLE_CURRENT_ARCHITECTURE",
+  "renderFallback": "UNCHANGED",
+  "production": "UNTOUCHED",
+  "classification": "CODEFORGE_GCP_STAGING_PROVISIONING_IN_PROGRESS"
+}

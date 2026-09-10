@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import type { Project } from "./App.js";
-import ProviderSetup from "./ProviderSetup.js";
-import OnboardingFlow from "./OnboardingFlow.js";
 
 interface WelcomeScreenProps {
   recentProjects: Project[];
@@ -18,115 +16,6 @@ export default function WelcomeScreen({
   loading,
   error,
 }: WelcomeScreenProps) {
-  const [showProviderSetup, setShowProviderSetup] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [hasConfiguredProvider, setHasConfiguredProvider] = useState(false);
-  const [cloudAccount, setCloudAccount] = useState<any>(null);
-  const [signingIn, setSigningIn] = useState(false);
-
-  useEffect(() => {
-    checkOnboardingState();
-    loadCloudAccount();
-  }, []);
-
-  const loadCloudAccount = async () => {
-    try {
-      if (window.electronAPI?.getCloudAccount) {
-        const acc = await window.electronAPI.getCloudAccount();
-        setCloudAccount(acc);
-      }
-    } catch {
-      // ignore
-    }
-  };
-
-  const checkOnboardingState = async () => {
-    try {
-      let onboardingCompleted = false;
-      if (window.electronAPI?.getOnboardingCompleted) {
-        onboardingCompleted = await window.electronAPI.getOnboardingCompleted();
-      } else {
-        onboardingCompleted = localStorage.getItem("codeforge:onboarding-completed") === "true";
-      }
-
-      if (window.electronAPI) {
-        const status = await window.electronAPI.getProviderCredentialStatus();
-        const hasCredentials = Object.values(status).some(Boolean);
-        setHasConfiguredProvider(hasCredentials);
-
-        const cloudAcc = await window.electronAPI.getCloudAccount?.();
-        if (!onboardingCompleted && !hasCredentials && !cloudAcc) {
-          setShowOnboarding(true);
-        }
-      }
-    } catch {
-      // If we can't check, don't show onboarding
-    }
-  };
-
-  const handleCloudSignIn = async () => {
-    setSigningIn(true);
-    try {
-      if (window.electronAPI?.signInWithCloud) {
-        const res = await window.electronAPI.signInWithCloud();
-        if (res.ok) {
-          await loadCloudAccount();
-        }
-      }
-    } finally {
-      setSigningIn(false);
-    }
-  };
-
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-    setShowProviderSetup(true);
-  };
-
-  const handleOnboardingSkip = async () => {
-    try {
-      if (window.electronAPI?.setOnboardingCompleted) {
-        await window.electronAPI.setOnboardingCompleted(true);
-      } else {
-        localStorage.setItem("codeforge:onboarding-completed", "true");
-      }
-    } catch {
-      // ignore
-    }
-    setShowOnboarding(false);
-  };
-
-  const handleProviderSetupComplete = async () => {
-    try {
-      if (window.electronAPI?.setOnboardingCompleted) {
-        await window.electronAPI.setOnboardingCompleted(true);
-      } else {
-        localStorage.setItem("codeforge:onboarding-completed", "true");
-      }
-    } catch {
-      // ignore
-    }
-    setShowProviderSetup(false);
-    checkOnboardingState();
-  };
-
-  if (showOnboarding) {
-    return (
-      <OnboardingFlow
-        onComplete={handleOnboardingComplete}
-        onSkip={handleOnboardingSkip}
-      />
-    );
-  }
-
-  if (showProviderSetup) {
-    return (
-      <ProviderSetup
-        onComplete={handleProviderSetupComplete}
-      />
-    );
-  }
-
   return (
     <div className="welcome">
       <div className="welcome-container">
@@ -163,23 +52,7 @@ export default function WelcomeScreen({
           <h1 className="welcome-title">CodeForge</h1>
           <p className="welcome-subtitle">Free-first autonomous software engineering platform</p>
           
-          {cloudAccount ? (
-            <div style={{ marginTop: "12px", display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(56, 189, 248, 0.1)", border: "1px solid rgba(56, 189, 248, 0.3)", padding: "4px 12px", borderRadius: "16px", fontSize: "13px", color: "#38bdf8" }}>
-              <span>✦ {cloudAccount.user?.displayName}</span>
-              <span style={{ opacity: 0.6 }}>•</span>
-              <span>{cloudAccount.planName} ({(cloudAccount.creditBalance / 1000).toLocaleString()}k credits)</span>
-            </div>
-          ) : (
-            <div style={{ marginTop: "12px" }}>
-              <button
-                onClick={handleCloudSignIn}
-                disabled={signingIn}
-                style={{ background: "#0284c7", color: "#fff", border: "none", padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
-              >
-                {signingIn ? "Connecting with GitHub..." : "✦ Start with CodeForge Free"}
-              </button>
-            </div>
-          )}
+          <p className="welcome-context-note">Choose a project to open your authenticated workspace.</p>
         </div>
 
         {error && (
@@ -204,17 +77,6 @@ export default function WelcomeScreen({
           >
             <span className="btn-icon">➕</span>
             <span>New Project</span>
-          </button>
-        </div>
-
-        <div className="welcome-actions">
-          <button
-            className="welcome-btn secondary"
-            onClick={() => setShowProviderSetup(true)}
-            disabled={loading}
-          >
-            <span className="btn-icon">🔑</span>
-            <span>Configure Providers (BYOK)</span>
           </button>
         </div>
 

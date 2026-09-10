@@ -9,6 +9,7 @@ import {
   describeCloudEndpoint,
   CloudEndpointError,
   DEFAULT_DEVELOPMENT_CLOUD_URL,
+  isLoopbackCloudHostname,
   type CloudEndpointManifest,
 } from "../src/cloud-endpoint.js";
 
@@ -101,6 +102,12 @@ describe("desktop Cloud endpoint resolution", () => {
         resolveCloudEndpoint({ manifest: { channel: "staging", endpoints: { staging: "http://127.0.0.1:3220" } }, env: {}, isPackaged: true }),
       ).toThrow(/HTTPS/);
     });
+
+    it("REFUSES HTTPS loopback endpoints on release channels too", () => {
+      for (const host of ["https://localhost", "https://127.0.0.1", "https://127.42.0.9", "https://[::1]"]) {
+        expect(() => assertValidCloudUrl(host, "production")).toThrow(/loopback/i);
+      }
+    });
   });
 
   describe("development keeps the developer override", () => {
@@ -152,6 +159,14 @@ describe("desktop Cloud endpoint resolution", () => {
       expect(() => assertValidCloudUrl("https://u:p@cloud.example.com", "production")).toThrow(/credentials/);
       expect(() => assertValidCloudUrl("https://cloud.example.com/?x=1", "production")).toThrow(/query string/);
       expect(() => assertValidCloudUrl("https://cloud.example.com/#f", "production")).toThrow(/fragment/);
+    });
+
+    it("recognizes the complete loopback range and common host spellings", () => {
+      expect(isLoopbackCloudHostname("127.0.0.1")).toBe(true);
+      expect(isLoopbackCloudHostname("127.42.0.9")).toBe(true);
+      expect(isLoopbackCloudHostname("LOCALHOST.")).toBe(true);
+      expect(isLoopbackCloudHostname("[::1]")).toBe(true);
+      expect(isLoopbackCloudHostname("192.168.1.10")).toBe(false);
     });
   });
 

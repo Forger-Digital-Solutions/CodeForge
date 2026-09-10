@@ -18,6 +18,7 @@
     { "path": "../../packages/forge-zero" },
     { "path": "../../packages/router" },
     { "path": "../../packages/providers" },
-    { "path": "../../packages/protocol" }
+    { "path": "../../packages/protocol" },
+    { "path": "../../packages/sessions" }
   ]
 }

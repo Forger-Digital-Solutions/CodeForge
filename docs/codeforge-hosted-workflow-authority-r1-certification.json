@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "hostedWorkflowAuthority": "PARTIAL_DURABLE_CORE_AND_AUTHENTICATED_LIFECYCLE_IMPLEMENTED",
+  "hostedSessionApi": "OWNER_AUTHENTICATED_CREATE_LIST_READ_CANCEL",
+  "workerTransport": "DURABLE_SHARED_PERSISTENCE",
+  "duplicateDelivery": "PASS",
+  "resultReplay": "PASS",
+  "wrongOwnerIsolation": "PASS",
+  "cancelledWorkflowResult": "REJECTS_UNRECORDED_RESULT",
+  "approval": "NOT_YET_HOSTED",
+  "steering": "NOT_YET_HOSTED",
+  "forgeVerifyCompletion": "NOT_YET_HOSTED",
+  "postgresRecovery": "NOT_RUN_NO_STAGING_SECRET_READ",
+  "hostedAgentE2E": "NOT_YET_IMPLEMENTED",
+  "cloudRun": "NOT_DEPLOYED_CLOUD_BUILD_PERMISSION_DENIED"
+}

@@ -62,6 +62,14 @@ const api = {
   getCloudUsage: () => {
     return ipcRenderer.invoke("cloud:usage:get");
   },
+  onCloseRequested: (callback) => {
+    const listener = (_event, request) => callback(request);
+    ipcRenderer.on("app:close-requested", listener);
+    return () => ipcRenderer.removeListener("app:close-requested", listener);
+  },
+  resolveClose: (decision, remember) => {
+    return ipcRenderer.invoke("app:close-decision", { decision, remember });
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);

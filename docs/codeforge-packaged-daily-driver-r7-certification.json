@@ -1,0 +1,40 @@
+{
+  "certification": "CodeForge R7R — Packaged Desktop Closure Certification",
+  "verdict": "CODEFORGE_R7R_PACKAGED_DAILY_DRIVER_BLOCKED",
+  "repository": "G:\\CodeForge",
+  "branch": "feat/codeforge-cloud",
+  "head": "9b40dc26c4b4baf9863da558163af756a8817f0f",
+  "worktree": "dirty_inherited_and_r7r_changes_preserved",
+  "package": {
+    "output": "apps/desktop/release-r7r-final6",
+    "portable": { "path": "CodeForge-Portable.exe", "sizeBytes": 85391444, "sha256": "3A5E324EDD6F75A00B70455C2AC4298459D40C8258A4A53BF52676965806565E", "launched": true },
+    "installer": { "path": "CodeForge-Setup-0.2.0.exe", "sizeBytes": 85662190, "sha256": "DE1BB65235B8484C49193A118309AA0A1FC3EEB8E76DD845494D3124B951322D" },
+    "unpackedExe": { "path": "win-unpacked/CodeForge.exe", "sha256": "8966443392D2C66EF7693BDD9B43AFCBEABBC1ADA4B19E3C6BD37B9432FA262D" },
+    "asar": { "path": "win-unpacked/resources/app.asar", "sha256": "477E87C8907A06FE357009DFFDEBF903EE21854FBC4555B8B9ED742D77FFE911", "inspected": true }
+  },
+  "r7rClosure": {
+    "rendererFirstPaint": true,
+    "gpuCrashRecurred": false,
+    "fullPackagedSmoke": "passed",
+    "interruptionSmoke": "passed",
+    "recoverySmoke": "passed",
+    "workflowRepairCompleted": true,
+    "completionGateRemainedFailClosed": true,
+    "credentialEncryptionAndRestart": "passed"
+  },
+  "validation": {
+    "focusedTests": { "files": 6, "passedTests": 26, "failedTests": 0 },
+    "workflowCompile": "passed",
+    "desktopCompile": "passed",
+    "rendererBuild": "passed_with_chunk_advisory",
+    "rootTypecheck": "blocked_by_inherited_dirty_tree_errors"
+  },
+  "remainingMandatoryGates": [
+    "live packaged authentication and real provider routing",
+    "large real catalog picker and explicit model invocation",
+    "five realistic user-driven packaged tasks",
+    "additional packaged collaboration and reconnect scenarios",
+    "repeatable R7 benchmark suite"
+  ],
+  "comparisonApps": "not_accessible_to_available_native_automation_surface"
+}

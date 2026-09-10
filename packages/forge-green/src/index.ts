@@ -22,6 +22,7 @@ export {
 export * from "./risk.js";
 export * from "./verification-policy.js";
 export * from "./evidence-resolution.js";
+export * from "./coverage-authority.js";
 
 export const FORGE_GREEN_LEDGER_WORK_ITEM_KIND = "forgegreen_ledger";
 

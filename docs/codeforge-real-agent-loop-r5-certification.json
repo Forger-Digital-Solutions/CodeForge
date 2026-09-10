@@ -1,0 +1,132 @@
+{
+  "certification": "CodeForge R5 real end-to-end coding agent loop",
+  "startedAt": "2026-09-09T13:42:55.669Z",
+  "verdict": "CODEFORGE_R5_REAL_AGENT_LOOP_CERTIFIED",
+  "provider": {
+    "id": "openrouter",
+    "liveModelCount": 431,
+    "verifiedFreeCount": 21,
+    "selectedModel": "openrouter::cohere/north-mini-code:free",
+    "selectedAccessClass": "FREE_ROUTED",
+    "selectedTier": "free"
+  },
+  "stages": {
+    "server": {
+      "started": true,
+      "transport": "HTTP + SSE",
+      "persistence": "SQLite"
+    },
+    "execution": {
+      "taskId": "f8c9a652-0302-45a5-933a-e9e69f9d98ba",
+      "turnId": "6f61cf5c-73a8-475e-a23f-e20fe3ea5c67",
+      "executionMode": "agent",
+      "runtime": "workflow"
+    },
+    "steering": {
+      "ok": true
+    },
+    "persistence": {
+      "durableEventCount": 147,
+      "firstSseEventCount": 17,
+      "reconnectEventCount": 130,
+      "maxSeq": 147,
+      "toolEventTypes": [
+        "tool.call_started",
+        "tool.execution_started",
+        "tool.execution_completed"
+      ],
+      "verificationItemKinds": [
+        "run_inspection",
+        "evidence"
+      ],
+      "finalResponseSource": "workflow"
+    },
+    "result": {
+      "turnStatus": "completed",
+      "sessionStatus": "completed",
+      "fileContent": "export function add(a, b) { return a + b; }\n",
+      "finalResponse": "# Workflow Summary for \"Fix the calculator bug. Inspect the repository first with list_files/read_file, \"\nTask type: bugfix, risk: medium\nPlan: plan-f8c9a652-5fa74b — 4/7 steps completed\nVerification: 1 passed, 0 failed, exit 0 — PASS\nReview: 1 file(s) changed, 0 issue(s) — approved\nChanged files: src/calculator.mjs\n\nOutcome: Completed successfully\nCompletion gate: COMPLETED",
+      "taskCompleted": true,
+      "forgeVerifyRecorded": true
+    }
+  },
+  "checks": [
+    {
+      "id": "live-free-provider-discovery",
+      "passed": true,
+      "detail": "21 verified-free models discovered from the live provider catalog"
+    },
+    {
+      "id": "free-route-selected",
+      "passed": true,
+      "detail": "selected route is ForgeZero verified-free and $0"
+    },
+    {
+      "id": "model-selection-persisted",
+      "passed": true,
+      "detail": "HTTP model selection round-tripped from durable runtime state"
+    },
+    {
+      "id": "real-workflow-terminal",
+      "passed": true,
+      "detail": "durable workflow turn status=completed"
+    },
+    {
+      "id": "real-tool-loop",
+      "passed": true,
+      "detail": "21 durable tool events observed"
+    },
+    {
+      "id": "real-file-change",
+      "passed": true,
+      "detail": "the disposable repository was changed by the agent"
+    },
+    {
+      "id": "real-verification",
+      "passed": true,
+      "detail": "ForgeVerify/run inspection evidence persisted"
+    },
+    {
+      "id": "completion-event",
+      "passed": true,
+      "detail": "task.completed was emitted after the workflow completion gate"
+    },
+    {
+      "id": "durable-final-response",
+      "passed": true,
+      "detail": "final response is reconstructable from a persisted work item"
+    },
+    {
+      "id": "sse-reconnect",
+      "passed": true,
+      "detail": "reconnect replay contained ordered, non-duplicate durable events"
+    },
+    {
+      "id": "event-sequence",
+      "passed": true,
+      "detail": "durable events have strictly increasing unique sequence numbers"
+    },
+    {
+      "id": "steering-boundary",
+      "passed": true,
+      "detail": "steering endpoint accepted=true"
+    },
+    {
+      "id": "approval-boundary",
+      "passed": true,
+      "detail": "2 real approval request(s) resolved through HTTP"
+    },
+    {
+      "id": "adversarial-verification-rejection",
+      "passed": true,
+      "detail": "a failing verifier cannot pass the completion gate"
+    }
+  ],
+  "negativeVerification": {
+    "outcome": "failed",
+    "blockerCodes": [
+      "verification_failed"
+    ]
+  },
+  "completedAt": "2026-09-09T13:43:14.746Z"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "verdict": "HOSTED_RUNTIME_AUTHORITY_R2_NOT_CERTIFIED_DURABLE_AGENT_CONTINUATION_NOT_IMPLEMENTED",
+  "hostedWorkflowLifecycle": "PASS",
+  "workerPollAndResultTransport": "PASS_OWNER_AND_WORKER_BOUND",
+  "workerActionCreationPublicApi": "REFUSED",
+  "duplicateResultReplay": "PASS",
+  "cancelledUnrecordedResult": "REJECTED",
+  "agentRuntimeContinuation": "NOT_IMPLEMENTED_PROCESS_LOCAL_LOOP_STATE",
+  "workflowServiceContinuation": "NOT_IMPLEMENTED",
+  "hostedApproval": "NOT_CERTIFIED",
+  "hostedSteering": "NOT_CERTIFIED",
+  "hostedForgeVerify": "NOT_CERTIFIED",
+  "hostedForgeGreenRecovery": "NOT_CERTIFIED",
+  "hostedCompletionGate": "NOT_CERTIFIED",
+  "postgresRecovery": "NOT_RUN",
+  "hostedAgentE2E": "NOT_RUN",
+  "cookieAudit": "STALE_TEST_FIXED_HARDENED_HOST_COOKIE_RETAINED",
+  "focusedTests": {
+    "files": 9,
+    "tests": 64,
+    "status": "PASS"
+  },
+  "cloudRun": "NOT_DEPLOYED_CLOUD_BUILD_PERMISSION_DENIED"
+}

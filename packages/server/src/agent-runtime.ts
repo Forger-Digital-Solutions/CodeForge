@@ -1,8 +1,16 @@
 import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
-import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition } from "@codeforge/providers";
-import type { WorkspaceEvent } from "@codeforge/protocol";
-import type { EventStore, ISessionPersistence, WorkItem } from "@codeforge/sessions";
+import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition, ProviderToolExecutionRequest, ProviderToolExecutionResult, ProviderExecutionContext } from "@codeforge/providers";
+import { DesktopWorkerActionTypeSchema, type DesktopWorkerActionType, type WorkspaceEvent } from "@codeforge/protocol";
+import {
+  createDesktopWorkerBridge,
+  createDurableAgentContinuationStore,
+  type ContinuationObservation,
+  type DurableAgentContinuation,
+  type EventStore,
+  type ISessionPersistence,
+  type WorkItem,
+} from "@codeforge/sessions";
 import { WorkspaceEventAdapter, createWorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { resolveWithinWorkspace } from "./path-security.js";
 import fs from "node:fs";
@@ -13,7 +21,7 @@ import { spawn } from "node:child_process";
 import { redactSecrets } from "@codeforge/secrets";
 import { prepareShellCommand, terminateProcessTree } from "@codeforge/workflow";
 import { classifyCommand } from "./command-classifier.js";
-import { ApprovalService, type ApprovalRecord } from "./approval-service.js";
+import { ApprovalService, type ApprovalRecord, type ApprovalGateResult } from "./approval-service.js";
 import { getSanitizedEnvForChild } from "./env-filter.js";
 import { searchWorkspace } from "./search-service.js";
 import { replaceExact, sha256 } from "./edit-service.js";
@@ -193,6 +201,8 @@ export type TurnStatus =
   | "paused"
   | "waiting_for_approval"
   | "waiting_for_question"
+  | "waiting_for_worker"
+  | "blocked"
   | "recovering"
   | "completed"
   | "failed"
@@ -234,6 +244,22 @@ export interface QuestionRequest {
   resolve: (answer: string) => void;
 }
 
+export interface HostedWorkerOptions {
+  workflowId: string;
+  workerId: string;
+  autoResume?: boolean;
+  resumeLeaseMs?: number;
+  afterResultClaim?: () => Promise<void>;
+  afterObservationPersisted?: () => Promise<void>;
+}
+
+export type AgentLoopOutcome =
+  | { kind: "completed" }
+  | { kind: "suspended"; reason: "awaiting_worker"; continuationId: string; actionId: string }
+  | { kind: "cancelled"; reason: string }
+  | { kind: "failed"; reason: string; error?: unknown }
+  | { kind: "not_ready" };
+
 export interface AgentRuntimeOptions {
   sessionId: string;
   eventStore: EventStore;
@@ -253,6 +279,16 @@ export interface AgentRuntimeOptions {
   /** 8-Bit routing/failover/health/reliability core. Optional so existing callers/tests stay
    * valid; defaults to a real instance backed by the same firewall + persistence. */
   eightBit?: EightBitRuntime;
+  hostedWorker?: HostedWorkerOptions;
+}
+
+function toWorkerActionType(toolName: string): DesktopWorkerActionType {
+  const upper = toolName.toUpperCase();
+  if (upper === "SEARCH_WORKSPACE" || upper === "SEARCH_FILES") return "SEARCH_FILES";
+  if (upper === "EDIT_FILE" || upper === "WRITE_PATCH") return "WRITE_PATCH";
+  const match = DesktopWorkerActionTypeSchema.safeParse(upper);
+  if (match.success) return match.data;
+  return "RUN_COMMAND";
 }
 
 export interface ModelSelection {
@@ -332,6 +368,10 @@ export class AgentRuntime {
   private readonly recoveryOriginalStatusByTurn = new Map<string, Exclude<TurnStatus, "idle" | "completed" | "failed" | "cancelled">>();
   private readonly forgeGreenCacheStore?: ForgeGreenCacheStore;
   private readonly eightBit: EightBitRuntime;
+  private readonly hostedWorker?: HostedWorkerOptions;
+  private readonly runtimeOwnerId = crypto.randomUUID();
+  private parentContinuationId?: string;
+  private readonly lastAssistantResponseByTurn = new Map<string, string>();
 
   constructor(options: AgentRuntimeOptions) {
     this.sessionId = options.sessionId;
@@ -353,6 +393,7 @@ export class AgentRuntime {
     }));
     this.approvalService = new ApprovalService({ defaultTimeoutMs: DEFAULT_APPROVAL_TIMEOUT_MS });
     this.eightBit = options.eightBit ?? createEightBitRuntime({ firewall: this.firewall, persistence: this.persistence });
+    this.hostedWorker = options.hostedWorker;
   }
 
   /** Must be awaited once before first use — recreates durable intent at a process boundary. */
@@ -361,6 +402,31 @@ export class AgentRuntime {
     // Restores persisted 8-Bit route bindings/health/cooldowns so a process restart never
     // re-selects a route that was rotated away from before the crash (CF-restart recovery).
     await this.eightBit.hydrate(this.sessionId);
+    if (this.hostedWorker && this.hostedWorker.autoResume !== false) {
+      await this.autoResumeHostedContinuations();
+    }
+  }
+
+  private async autoResumeHostedContinuations(): Promise<void> {
+    if (!this.hostedWorker) return;
+    const continuations = (await this.persistence.getWorkItemsByKind("agent_continuation")) as Array<Extract<WorkItem, { kind: "agent_continuation" }>>;
+    const now = Date.now();
+    const matching = continuations.filter((c) => {
+      if (c.workflowId !== this.hostedWorker?.workflowId) return false;
+      if (c.state === "result_available") return true;
+      if (c.state === "result_consumed" && c.resumeState === "leased") {
+        if (!c.resumeLease) return true;
+        return Date.parse(c.resumeLease.expiresAt) <= now;
+      }
+      return false;
+    });
+    for (const continuation of matching) {
+      try {
+        await this.resumeAgentContinuation(continuation.id);
+      } catch {
+        // Ignore errors during background auto-resume
+      }
+    }
   }
 
   /**
@@ -399,7 +465,7 @@ export class AgentRuntime {
     const workItems = await this.persistence.getWorkItems(this.sessionId);
     const queuedSteers = this.userIntentHold?.queuedSteers(this.sessionId) ?? [];
     for (const record of await this.persistence.getTurns(this.sessionId)) {
-      if (record.status === "completed" || record.status === "failed" || record.status === "cancelled" || record.status === "idle") continue;
+      if (record.status === "completed" || record.status === "failed" || record.status === "cancelled" || record.status === "idle" || record.status === "blocked") continue;
       const originalStatus = record.status as Exclude<TurnStatus, "idle" | "completed" | "failed" | "cancelled">;
       const priorRecovery = workItems.find((item) => item.kind === "agent_turn_recovery" && item.turnId === record.id);
       const generation = priorRecovery?.kind === "agent_turn_recovery" ? priorRecovery.generation : 1;
@@ -426,6 +492,7 @@ export class AgentRuntime {
       const pendingQuestion = workItems.find((item) => item.kind === "question" && item.turnId === record.id && item.answer === undefined);
       const canRestoreApprovalWait = originalStatus === "waiting_for_approval" && pendingApproval?.kind === "approval";
       const canRestoreQuestionWait = originalStatus === "waiting_for_question" && pendingQuestion?.kind === "question";
+      const canRestoreWorkerWait = originalStatus === "waiting_for_worker";
       if (canRestoreApprovalWait) {
         const createdAt = Date.parse(pendingApproval.createdAt);
         this.approvalService.restorePending({
@@ -448,6 +515,8 @@ export class AgentRuntime {
           ...(pendingQuestion.options ? { options: pendingQuestion.options } : {}),
           resolve: () => undefined,
         });
+      } else if (canRestoreWorkerWait) {
+        // Preserves waiting_for_worker status across restarts
       } else {
         state.status = "recovering";
         this.recoveryRequiredTurns.add(record.id);
@@ -491,12 +560,17 @@ export class AgentRuntime {
   ): Promise<void> {
     const prior = await this.persistence.getWorkItem(`agent-turn-recovery-${turnId}`);
     const createdAt = prior?.kind === "agent_turn_recovery" ? prior.createdAt : new Date().toISOString();
+    const normalizedOriginalStatus = (originalStatus === "waiting_for_worker"
+      ? "waiting_for_approval"
+      : originalStatus === "blocked"
+      ? "recovering"
+      : originalStatus) as "running" | "paused" | "waiting_for_approval" | "waiting_for_question" | "recovering";
     await this.persistence.upsertWorkItem({
       kind: "agent_turn_recovery",
       id: `agent-turn-recovery-${turnId}`,
       sessionId: this.sessionId,
       turnId,
-      originalStatus,
+      originalStatus: normalizedOriginalStatus,
       state,
       generation,
       staleExecutionCount,
@@ -1375,6 +1449,12 @@ export class AgentRuntime {
         this.pendingApprovals.delete(id);
       }
     }
+    try {
+      const store = createDurableAgentContinuationStore(this.persistence);
+      await store.cancelForTurn(turnId);
+    } catch {
+      // Best-effort cancellation of durable continuations
+    }
     state.status = "cancelled";
     state.completedAt = new Date();
     this.activeTurns.set(turnId, state);
@@ -1500,21 +1580,128 @@ export class AgentRuntime {
   }
 
   getAllPendingApprovals(): ApprovalRequest[] {
-    const fromService: ApprovalRequest[] = this.approvalService.getAllPending().map((r) => ({
-      approvalId: r.approvalId,
-      tool: r.tool,
-      action: r.action,
-      description: r.description,
-      risk: r.risk,
-      scope: r.scope,
-      resolve: () => {},
-    }));
-    const legacy = Array.from(this.pendingApprovals.values());
-    return [...fromService, ...legacy];
+    const seen = new Set<string>();
+    const result: ApprovalRequest[] = [];
+    for (const r of this.approvalService.getAllPending()) {
+      seen.add(r.approvalId);
+      result.push({
+        approvalId: r.approvalId,
+        tool: r.tool,
+        action: r.action,
+        description: r.description,
+        risk: r.risk,
+        scope: r.scope,
+        resolve: () => {},
+      });
+    }
+    for (const item of this.pendingApprovals.values()) {
+      if (!seen.has(item.approvalId)) {
+        seen.add(item.approvalId);
+        result.push(item);
+      }
+    }
+    return result;
   }
 
   getAllPendingQuestions(): QuestionRequest[] {
     return Array.from(this.pendingQuestions.values());
+  }
+
+  async executeProviderTool(request: ProviderToolExecutionRequest): Promise<ProviderToolExecutionResult> {
+    const rawReq = request as unknown as Record<string, unknown>;
+    const turnId = ((rawReq.codeForgeTurnId as string)
+      ?? (request.context?.turnId as string)
+      ?? (rawReq.turnId as string)
+      ?? Array.from(this.activeTurns.keys()).pop()) as string;
+
+    const turnState = turnId ? this.activeTurns.get(turnId) : undefined;
+    const adapter = this.createAdapter();
+    const previousStatus = turnState?.status ?? "running";
+
+    if (turnState) {
+      turnState.status = "waiting_for_approval";
+      this.activeTurns.set(turnId, turnState);
+      await this.persistTurn(turnState);
+      adapter.emitStatusChanged(previousStatus, "waiting_for_approval");
+    }
+
+    const { approvalId, promise } = this.approvalService.requestApproval({
+      turnId,
+      tool: request.toolName,
+      action: request.toolName,
+      description: `Provider tool execution: ${request.toolName}`,
+      risk: "high",
+      scope: this.workspacePath,
+      signal: request.signal,
+    });
+
+    const correlation = {
+      providerId: request.providerId,
+      processSessionId: rawReq.processSessionId,
+      codeForgeSessionId: this.sessionId,
+      codeForgeTurnId: turnId,
+      providerThreadId: rawReq.providerThreadId,
+      providerTurnId: rawReq.providerTurnId,
+      serverRequestId: rawReq.serverRequestId,
+      providerToolCallId: rawReq.toolCallId,
+      intendedAction: request.toolName,
+    };
+
+    await this.persistence.upsertWorkItem({
+      kind: "approval",
+      id: approvalId,
+      sessionId: this.sessionId,
+      turnId,
+      tool: request.toolName,
+      action: request.toolName,
+      description: `Provider tool execution: ${request.toolName}`,
+      risk: "high",
+      scope: this.workspacePath,
+      createdAt: new Date().toISOString(),
+      correlation,
+    } as unknown as WorkItem);
+
+    await adapter.emitApprovalRequested(
+      approvalId,
+      request.toolName,
+      request.toolName,
+      `Provider tool execution: ${request.toolName}`,
+      "high",
+      this.workspacePath,
+    );
+
+    let gateResult: ApprovalGateResult;
+    try {
+      gateResult = await promise;
+    } catch {
+      gateResult = { approved: false, state: "rejected", reason: "error" };
+    } finally {
+      if (turnState && turnState.status === "waiting_for_approval") {
+        turnState.status = "running";
+        this.activeTurns.set(turnId, turnState);
+        await this.persistTurn(turnState);
+        adapter.emitStatusChanged("waiting_for_approval", "running");
+      }
+    }
+
+    if (!gateResult.approved || (gateResult.decision !== "allow_once" && gateResult.decision !== "allow_session")) {
+      return { success: false, output: "Tool execution denied by user policy", error: "denied" };
+    }
+
+    try {
+      if (request.toolName === "write_file") {
+        const filePath = request.arguments.path as string;
+        const content = (request.arguments.content ?? "") as string;
+        const targetPath = this.workspacePath ? path.resolve(this.workspacePath, filePath) : path.resolve(filePath);
+        await fs.promises.mkdir(path.dirname(targetPath), { recursive: true });
+        await fs.promises.writeFile(targetPath, content, "utf-8");
+        return { success: true, output: "executed once" };
+      }
+
+      return { success: true, output: "Tool executed successfully" };
+    } catch (error) {
+      return { success: false, output: `Execution failed: ${error instanceof Error ? error.message : String(error)}`, error: String(error) };
+    }
   }
 
   // Exposed for tests and direct tool invocation hardening
@@ -1604,8 +1791,8 @@ export class AgentRuntime {
       state = this.activeTurns.get(turnId);
       if (!state) return;
 
-      // If turn was cancelled while waiting for approval, do not mark completed
-      if (state.status === "cancelled") return;
+      // If turn was cancelled or suspended for worker, do not mark completed
+      if (state.status === "cancelled" || state.status === "waiting_for_worker" || state.status === "blocked") return;
 
       // Running out of iterations is not finishing. Reporting it as success is the exact
       // fake-completion this runtime must never produce.
@@ -1625,6 +1812,26 @@ export class AgentRuntime {
       state.status = "completed";
       state.completedAt = new Date();
       this.activeTurns.set(turnId, state);
+
+      const finalResponseText = this.lastAssistantResponseByTurn.get(turnId);
+      if (finalResponseText && typeof (this.persistence as any).upsertWorkItem === "function") {
+        try {
+          await this.persistence.upsertWorkItem({
+            id: `agent-final-response-${turnId}`,
+            kind: "agent_final_response",
+            sessionId: this.sessionId,
+            turnId,
+            status: "completed",
+            response: finalResponseText,
+            providerId: state.providerId,
+            modelId: state.modelId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+        } catch {
+          // Non-blocking work item persistence
+        }
+      }
 
       const completedSession = await this.persistence.getSession(this.sessionId);
       await this.persistence.upsertSession({
@@ -1728,6 +1935,9 @@ export class AgentRuntime {
           const v = this.firewall.verify(providerId, modelId);
           if (v.ok) return requested;
         }
+        throw new Error(
+          `Exact model ${providerId}::${modelId} is no longer registered or available. Exact model execution failed closed.`
+        );
       }
     }
     return this.selectModel();
@@ -1777,6 +1987,8 @@ export class AgentRuntime {
       ? "[Recovery directive] A prior process stopped during this turn. Treat all unfinished pre-restart execution as stale. Inspect the current workspace and durable evidence, then create a new plan. Do not replay a prior command, tool call, or model continuation."
       : undefined;
     const userMessage: ChatMessage = { role: "user", content: state.userMessage };
+    this.messageHistory.length = 0;
+    if (systemPrompt) this.messageHistory.push({ role: "system", content: systemPrompt });
     if (recoveryDirective) this.messageHistory.push({ role: "system", content: recoveryDirective });
     this.messageHistory.push(userMessage);
     this.recoveryRequiredTurns.delete(turnId);
@@ -1785,11 +1997,7 @@ export class AgentRuntime {
 
     const request: ChatRequest = {
       model: state.modelId,
-      messages: [
-        systemPrompt ? { role: "system", content: systemPrompt } : undefined,
-        recoveryDirective ? { role: "system", content: recoveryDirective } : undefined,
-        userMessage,
-      ].filter(Boolean) as ChatMessage[],
+      messages: [...this.messageHistory],
       tools,
       toolChoice: "auto",
       temperature: 0.7,
@@ -1808,7 +2016,7 @@ export class AgentRuntime {
     signal: AbortSignal,
     iteration: number,
     duplicateSupervisor: DuplicateActionSupervisor,
-  ): Promise<void> {
+  ): Promise<AgentLoopOutcome> {
     await this.userIntentHold?.waitForDispatch(this.sessionId, "model");
     // Safe steering boundary: drain queued steering instructions for this turn before model inference
     const pendingSteering = this.pendingSteeringByTurn.get(turnId) ?? [];
@@ -1842,11 +2050,11 @@ export class AgentRuntime {
         budgetState.budgetExhausted = true;
         this.activeTurns.set(turnId, budgetState);
       }
-      return;
+      return { kind: "failed", reason: "budget_exhausted" };
     }
 
     if (signal.aborted) {
-      return;
+      return { kind: "cancelled", reason: "aborted" };
     }
 
     const turnState = this.activeTurns.get(turnId);
@@ -1872,9 +2080,22 @@ export class AgentRuntime {
     let assistantMessageStarted = false;
 
     try {
-      for await (const event of provider.streamChat(request, signal)) {
+      const stream = typeof (provider as any).streamChatWithContext === "function"
+        ? (provider as any).streamChatWithContext(
+            request,
+            {
+              sessionId: this.sessionId,
+              userId: this.userId,
+              workspacePath: this.workspacePath,
+              turnId,
+            },
+            signal,
+          )
+        : provider.streamChat(request, signal);
+
+      for await (const event of stream) {
         if (signal.aborted) {
-          return;
+          return { kind: "cancelled", reason: "aborted" };
         }
 
         switch (event.type) {
@@ -1929,14 +2150,14 @@ export class AgentRuntime {
       }
     } catch (error) {
       if (signal.aborted) {
-        return;
+        return { kind: "cancelled", reason: "aborted" };
       }
       // Safe failover boundary: nothing in THIS iteration has produced a side effect yet —
       // `toolCalls` accumulated above are only ever executed further down this function, never
       // inside the stream loop itself. So a stream/model-call failure here is a safe point to
       // hand the turn to a replacement route without risking a repeated or partial side effect.
       const handled = await this.attemptEightBitFailover(turnId, agentId, request, adapter, signal, iteration, duplicateSupervisor, error);
-      if (handled) return;
+      if (handled) return { kind: "completed" };
       throw error;
     }
 
@@ -1948,11 +2169,11 @@ export class AgentRuntime {
 
     if (currentText) {
       this.messageHistory.push({ role: "assistant", content: currentText });
+      this.lastAssistantResponseByTurn.set(turnId, currentText);
     }
 
     if (toolCalls.length === 0 && this.userIntentHold?.hasQueuedSteer(this.sessionId)) {
-      await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, iteration + 1, duplicateSupervisor);
-      return;
+      return await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, iteration + 1, duplicateSupervisor);
     }
 
     if (toolCalls.length > 0) {
@@ -1967,14 +2188,19 @@ export class AgentRuntime {
       };
       this.messageHistory.push(assistantMessage);
 
+      if (this.hostedWorker) {
+        const tc = toolCalls[0];
+        if (!tc) return { kind: "completed" };
+        return await this.dispatchHostedTool(turnId, agentId, tc, adapter, duplicateSupervisor);
+      }
+
       for (const tc of toolCalls) {
         if (this.userIntentHold?.hasQueuedSteer(this.sessionId)) {
-          await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, iteration + 1, duplicateSupervisor);
-          return;
+          return await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, iteration + 1, duplicateSupervisor);
         }
         await this.userIntentHold?.waitForDispatch(this.sessionId, "tool");
         const toolResult = await this.executeTool(turnId, tc.id, tc.name, tc.arguments, adapter, signal, duplicateSupervisor);
-        if (signal.aborted) return;
+        if (signal.aborted) return { kind: "cancelled", reason: "aborted" };
 
         // Pipeline: raw -> size limit -> secret redaction -> history
         // executeTool already returns sanitized bounded result
@@ -1990,10 +2216,317 @@ export class AgentRuntime {
         messages: [...this.messageHistory],
       };
 
-      await this.runAgentLoop(turnId, agentId, provider, nextRequest, adapter, signal, iteration + 1, duplicateSupervisor);
+      return await this.runAgentLoop(turnId, agentId, provider, nextRequest, adapter, signal, iteration + 1, duplicateSupervisor);
     } else {
       await this.userIntentHold?.waitForDispatch(this.sessionId, "other");
+      return { kind: "completed" };
     }
+  }
+
+  private async dispatchHostedTool(
+    turnId: string,
+    agentId: string,
+    tc: { id: string; name: string; arguments: string },
+    adapter: WorkspaceEventAdapter,
+    duplicateSupervisor: DuplicateActionSupervisor,
+  ): Promise<AgentLoopOutcome> {
+    if (!this.hostedWorker) {
+      throw new Error("Hosted worker configuration is required to dispatch hosted tool");
+    }
+    const workflow = await this.persistence.getWorkItem(this.hostedWorker.workflowId);
+    if (!workflow || workflow.kind !== "hosted_workflow") {
+      throw new Error(`Hosted workflow ${this.hostedWorker.workflowId} not found`);
+    }
+
+    const continuationId = crypto.randomUUID();
+    const actionId = crypto.randomUUID();
+    const parsedTc = parseToolArgs(tc.arguments);
+    const actionArgs = (parsedTc !== PARSE_FAILED && typeof parsedTc === "object" && parsedTc !== null ? parsedTc : {}) as Record<string, unknown>;
+    const actionType = toWorkerActionType(tc.name);
+    const now = new Date().toISOString();
+    const turnState = this.activeTurns.get(turnId);
+
+    const continuation: DurableAgentContinuation = {
+      kind: "agent_continuation",
+      id: continuationId,
+      sessionId: this.sessionId,
+      version: 2,
+      state: "prepared",
+      workflowId: this.hostedWorker.workflowId,
+      workflowRevision: workflow.revision,
+      turnId,
+      providerId: turnState?.providerId,
+      modelId: turnState?.modelId,
+      pendingTool: {
+        actionId,
+        workerId: this.hostedWorker.workerId,
+        toolCallId: tc.id,
+        toolName: tc.name,
+        argumentsJson: tc.arguments,
+        workflowId: this.hostedWorker.workflowId,
+        workflowRevision: workflow.revision,
+      },
+      messages: this.messageHistory.map((m) => ({
+        role: m.role as "user" | "assistant" | "tool" | "system",
+        content: typeof m.content === "string" ? m.content : "",
+        ...(m.toolCallId ? { toolCallId: m.toolCallId } : {}),
+      })),
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const store = createDurableAgentContinuationStore(this.persistence);
+    await store.create(continuation);
+
+    const bridge = createDesktopWorkerBridge(this.persistence);
+    await bridge.dispatch({
+      actionId,
+      workflowId: this.hostedWorker.workflowId,
+      turnId,
+      sessionId: this.sessionId,
+      workerId: this.hostedWorker.workerId,
+      type: actionType,
+      arguments: actionArgs,
+      idempotencyKey: `action-${actionId}`,
+    });
+
+    const parentResume = this.parentContinuationId
+      ? { continuationId: this.parentContinuationId, ownerId: this.runtimeOwnerId }
+      : undefined;
+    await store.markActionIssued(continuationId, parentResume);
+    this.parentContinuationId = undefined;
+
+    if (turnState) {
+      turnState.status = "waiting_for_worker";
+      this.activeTurns.set(turnId, turnState);
+      await this.persistTurn(turnState);
+    }
+
+    const session = await this.persistence.getSession(this.sessionId);
+    if (session) {
+      await this.persistence.upsertSession({
+        ...session,
+        status: "running",
+        updatedAt: now,
+      });
+    }
+
+    adapter.emitStatusChanged("running", "waiting_for_worker");
+
+    return {
+      kind: "suspended",
+      reason: "awaiting_worker",
+      continuationId,
+      actionId,
+    };
+  }
+
+  async resumeAgentContinuation(continuationId: string): Promise<AgentLoopOutcome> {
+    if (!this.hostedWorker) {
+      throw new Error("Hosted worker configuration is required to resume agent continuation");
+    }
+
+    const item = await this.persistence.getWorkItem(continuationId);
+    if (!item || item.kind !== "agent_continuation") {
+      throw new Error(`Continuation ${continuationId} not found`);
+    }
+
+    const workflow = await this.persistence.getWorkItem(item.workflowId);
+    if (!workflow || workflow.kind !== "hosted_workflow") {
+      throw new Error(`Hosted workflow ${item.workflowId} not found`);
+    }
+
+    const store = createDurableAgentContinuationStore(this.persistence);
+
+    if (item.workflowRevision !== undefined && workflow.revision !== item.workflowRevision) {
+      await store.block(continuationId);
+      const turn = await this.persistence.getTurn(item.turnId);
+      if (turn) {
+        await this.persistence.upsertTurn({
+          ...turn,
+          status: "blocked",
+          error: "stale_workflow_revision",
+          completedAt: new Date().toISOString(),
+        });
+      }
+      const state = this.activeTurns.get(item.turnId);
+      if (state) {
+        state.status = "blocked";
+        state.error = "stale_workflow_revision";
+        state.completedAt = new Date();
+        this.activeTurns.set(item.turnId, state);
+      }
+      return { kind: "failed", reason: "stale_workflow_revision" };
+    }
+
+    const turn = await this.persistence.getTurn(item.turnId);
+    if (item.state === "cancelled" || turn?.status === "cancelled") {
+      return { kind: "cancelled", reason: "cancelled" };
+    }
+
+    if (!item.pendingTool) {
+      throw new Error("Continuation missing pending tool");
+    }
+    const action = await this.persistence.getWorkItem(item.pendingTool.actionId);
+    if (!action || action.kind !== "desktop_worker_action") {
+      throw new Error("Continuation action missing");
+    }
+    if (action.state === "pending" || action.result === undefined) {
+      return { kind: "not_ready" };
+    }
+
+    const output = action.result;
+    const existingMessages = item.messages ?? [];
+    const hasObservation = existingMessages.some(
+      (m) => m.role === "tool" && m.toolCallId === item.pendingTool?.toolCallId
+    );
+    const messagesForClaim = hasObservation
+      ? existingMessages
+      : [...existingMessages, { role: "tool" as const, content: output, toolCallId: item.pendingTool.toolCallId }];
+
+    const observationForClaim: ContinuationObservation = {
+      toolCallId: item.pendingTool.toolCallId,
+      resultId: item.pendingTool.actionId,
+      actionId: item.pendingTool.actionId,
+      output,
+      status: action.state,
+      success: action.state === "succeeded",
+    };
+
+    const leaseMs = this.hostedWorker.resumeLeaseMs ?? 30000;
+    const claim = await store.claimResultForResume({
+      continuationId,
+      ownerId: this.runtimeOwnerId,
+      messages: messagesForClaim,
+      observation: observationForClaim,
+      leaseMs,
+    });
+
+    if (!claim) {
+      return { kind: "not_ready" };
+    }
+
+    if (this.hostedWorker.afterResultClaim) {
+      await this.hostedWorker.afterResultClaim();
+    }
+
+    if (this.hostedWorker.afterObservationPersisted) {
+      await this.hostedWorker.afterObservationPersisted();
+    }
+
+    this.messageHistory.length = 0;
+    for (const m of claim.continuation.messages ?? []) {
+      this.messageHistory.push({
+        role: m.role as "user" | "assistant" | "tool" | "system",
+        content: m.content,
+        toolCallId: m.toolCallId,
+      });
+    }
+
+    const turnId = item.turnId;
+    let turnState = this.activeTurns.get(turnId);
+    if (!turnState) {
+      turnState = {
+        turnId,
+        sessionId: this.sessionId,
+        status: "running",
+        userMessage: turn?.userMessage ?? "",
+        startedAt: turn?.startedAt ? new Date(turn.startedAt) : new Date(),
+        agentId: turn?.agentId ?? `agent-${turnId.slice(0, 8)}`,
+        modelId: item.modelId,
+        providerId: item.providerId,
+      };
+      this.activeTurns.set(turnId, turnState);
+    } else {
+      turnState.status = "running";
+      turnState.modelId ??= item.modelId;
+      turnState.providerId ??= item.providerId;
+    }
+    await this.persistTurn(turnState);
+
+    this.parentContinuationId = continuationId;
+
+    const agentId = turnState.agentId ?? `agent-${turnId.slice(0, 8)}`;
+    const adapter = this.createAdapter();
+    const abortController = new AbortController();
+    this.abortControllers.set(turnId, abortController);
+
+    const provider = this.providerCatalog.get(item.providerId ?? "codeforge") ?? this.providerCatalog.get("codeforge");
+    if (!provider) {
+      throw new Error(`Provider ${item.providerId} not found in catalog`);
+    }
+
+    const request: ChatRequest = {
+      model: item.modelId ?? "free-model-1",
+      messages: [...this.messageHistory],
+      tools: this.getAvailableTools(),
+      toolChoice: "auto",
+      temperature: 0.7,
+      maxTokens: 4096,
+    };
+
+    const duplicateSupervisor = createDuplicateActionSupervisor();
+    const outcome = await this.runAgentLoop(
+      turnId,
+      agentId,
+      provider,
+      request,
+      adapter,
+      abortController.signal,
+      0,
+      duplicateSupervisor,
+    );
+
+    if (outcome.kind === "completed") {
+      await store.markResumeAdvanced(continuationId, this.runtimeOwnerId);
+      this.parentContinuationId = undefined;
+
+      turnState.status = "completed";
+      turnState.completedAt = new Date();
+      this.activeTurns.set(turnId, turnState);
+      await this.persistTurn(turnState);
+
+      const finalResponseText = this.lastAssistantResponseByTurn.get(turnId);
+      if (finalResponseText && typeof (this.persistence as any).upsertWorkItem === "function") {
+        try {
+          await this.persistence.upsertWorkItem({
+            id: `agent-final-response-${turnId}`,
+            kind: "agent_final_response",
+            sessionId: this.sessionId,
+            turnId,
+            status: "completed",
+            response: finalResponseText,
+            providerId: turnState.providerId,
+            modelId: turnState.modelId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+        } catch {
+          // Non-blocking work item persistence
+        }
+      }
+
+      const completedSession = await this.persistence.getSession(this.sessionId);
+      await this.persistence.upsertSession({
+        ...(completedSession ?? {
+          id: this.sessionId,
+          title: turnState.userMessage.slice(0, 80),
+          createdAt: turnState.startedAt.toISOString(),
+        }),
+        updatedAt: new Date().toISOString(),
+        status: "completed",
+        currentAgentId: agentId,
+        currentModelId: turnState.modelId,
+        currentProviderId: turnState.providerId,
+      });
+
+      await adapter.emitTurnCompleted(turnId, "Task completed successfully");
+      adapter.emitStatusChanged("running", "completed");
+      adapter.emitAgentCompleted(agentId, turnId);
+      return { kind: "completed" };
+    }
+
+    return outcome;
   }
 
   /**

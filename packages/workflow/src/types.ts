@@ -108,6 +108,8 @@ export interface VerifierRunResult {
   timedOut?: boolean;
   cancelled?: boolean;
   notConfigured?: boolean;
+  /** FG-7: evidence ID that was reused for this verifier (when restart reuse occurs). */
+  reusedEvidenceId?: string;
 }
 
 export interface VerificationResult {
@@ -145,6 +147,8 @@ export interface VerificationReport extends VerificationResult {
   policyReceipt?: import("@codeforge/forge-green").VerificationPolicyReceipt;
   /** FG-6 evidence resolution receipt when evaluated. */
   resolutionReceipt?: import("@codeforge/forge-green").EvidenceResolutionReceipt;
+  /** FG-7 verification coverage receipt when evaluated. */
+  coverageReceipt?: import("@codeforge/forge-green").VerificationCoverageReceipt;
 }
 
 export interface FailureAnalysis {

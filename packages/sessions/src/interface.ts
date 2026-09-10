@@ -39,6 +39,7 @@ export interface SessionPersistenceTx {
   getWorkItem(id: string): Promise<WorkItem | undefined>;
   getWorkItemsByKind(kind: string): Promise<WorkItem[]>;
   getAllWorkItems(): Promise<WorkItem[]>;
+  lockWorkItem(id: string): Promise<void>;
 
   appendEvent(event: unknown): Promise<void>;
   getEvents(sessionId: string): Promise<unknown[]>;

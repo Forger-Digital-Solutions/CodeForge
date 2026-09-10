@@ -9,6 +9,7 @@ import { describeToolTarget, summarizeToolResult, hasToolDetail } from "./tool-a
 import { ActivityIcon, activityLabel, resolveActivityKind, type ActivityKind, type ActivityState } from "./activity-icons.js";
 import { EightBitStatusBadge } from "./EightBitStatusBadge.js";
 import { deriveLatestEightBitStatus } from "./eight-bit-status.js";
+import { resolveAssetUrlByName } from "./emoji-assets.js";
 
 interface ConversationProps {
   turns: TurnRecord[];
@@ -520,9 +521,10 @@ export default function Conversation({ turns, workItems, displayMode, events, on
       <div className="conversation-inner">
         {isEmpty ? (
           <div className="empty-state">
-            <div className="empty-state-title">What should we work on?</div>
+            <img className="empty-state-mark" src={resolveAssetUrlByName("8bit-idle")} width={32} height={32} alt="" aria-hidden="true" draggable={false} />
+            <div className="empty-state-title">What are we forging?</div>
             <div className="empty-state-subtitle">
-              Describe a bug to fix, feature to build, or task to accomplish.
+              Describe a task or ask about your code.
             </div>
             {contextLabel && <div className="empty-state-context">{contextLabel}</div>}
             <div className="suggested-prompts">

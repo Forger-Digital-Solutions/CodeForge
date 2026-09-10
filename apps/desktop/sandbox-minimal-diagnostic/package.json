@@ -1,0 +1,31 @@
+{
+  "name": "codeforge-sandbox-minimal-diagnostic",
+  "version": "0.0.0",
+  "private": true,
+  "main": "main.cjs",
+  "build": {
+    "appId": "app.codeforge.sandbox-minimal-diagnostic",
+    "productName": "CodeForge Sandbox Minimal Diagnostic",
+    "directories": {
+      "output": "../release-r8-sandbox-minimal1"
+    },
+    "files": [
+      "main.cjs",
+      "index.html",
+      "package.json",
+      {
+        "from": "../src/preload.cjs",
+        "to": "preload.cjs"
+      },
+      {
+        "from": "../dist/renderer",
+        "to": "renderer"
+      }
+    ],
+    "win": {
+      "target": [
+        "dir"
+      ]
+    }
+  }
+}

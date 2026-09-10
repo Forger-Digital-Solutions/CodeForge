@@ -1,0 +1,234 @@
+{
+  "certification": "CODEFORGE_R8_DAILY_DRIVER_UX",
+  "status": "PASS",
+  "summary": "Secure packaged daily-driver UX, staging OAuth, encrypted restoration, and zero-cost routing gates passed without disabling the Electron renderer sandbox.",
+  "evidenceCandidate": {
+    "path": "apps/desktop/release-r8-secure-candidate5",
+    "electronVersion": "33.4.11",
+    "channel": "staging",
+    "endpoint": "https://codeforge-cloud-staging.onrender.com",
+    "endpointAudit": "PASS",
+    "fullSmoke": "PASS",
+    "interruptSmoke": "PASS",
+    "recoverySmoke": "PASS",
+    "launchFailed49Observed": false
+  },
+  "finalArtifact": {
+    "path": "apps/desktop/release-r8-secure-final",
+    "buildStatus": "PASS",
+    "channel": "staging",
+    "endpoint": "https://codeforge-cloud-staging.onrender.com",
+    "unpackedExecutable": {
+      "path": "apps/desktop/release-r8-secure-final/win-unpacked/CodeForge.exe",
+      "sizeBytes": 188875264,
+      "sha256": "3854F29EF52CBAF5C4BB2D361B1569F6CB311368BC532CE9C51EE017B0DBB9EC"
+    },
+    "appAsar": {
+      "path": "apps/desktop/release-r8-secure-final/win-unpacked/resources/app.asar",
+      "sizeBytes": 22342283,
+      "sha256": "B0F4D3C4730503EC0B7EC78B2BEEDBFEDCB2244AC0824A2B0BF596A571895839"
+    },
+    "endpointAudit": "PASS",
+    "internalDependencyAudit": "PASS",
+    "runtimeDependencyAudit": "PASS",
+    "browserSecurityAudit": "PASS",
+    "fullSmoke": "PASS",
+    "interruptSmoke": "PASS",
+    "recoverySmoke": "PASS",
+    "realOAuthEncryptedProfileRestoration": "PASS",
+    "authenticatedPlanId": "free",
+    "rendererGoneMarkers": 0,
+    "packagedFailureMarkers": 0
+  },
+  "productionSecurity": {
+    "sandbox": true,
+    "nodeIntegration": false,
+    "contextIsolation": true,
+    "webSecurity": true,
+    "productionSandboxBypassAdded": false
+  },
+  "sourceManifest": {
+    "path": "apps/desktop/cloud-endpoints.json",
+    "restoredAfterPackaging": true,
+    "channel": "development",
+    "developmentEndpoint": "http://127.0.0.1:3220",
+    "stagingEndpointPresentInSource": false,
+    "productionEndpointPresentInSource": false
+  },
+  "endpointProvenance": {
+    "status": "PASS",
+    "channel": "staging",
+    "exactEndpoint": "https://codeforge-cloud-staging.onrender.com",
+    "auditedCandidates": [
+      "apps/desktop/release-r8-secure-candidate2",
+      "apps/desktop/release-r8-secure-candidate3",
+      "apps/desktop/release-r8-secure-candidate4",
+      "apps/desktop/release-r8-secure-candidate5",
+      "apps/desktop/release-r8-secure-final"
+    ],
+    "packagedEnvironmentOverrideIgnored": true,
+    "stagingLoopbackRejected": true
+  },
+  "remoteProbe": {
+    "endpoint": "https://codeforge-cloud-staging.onrender.com",
+    "status": "PASS",
+    "passed": 21,
+    "total": 21
+  },
+  "oauth": {
+    "status": "PASS",
+    "profile": "fresh-packaged-profile",
+    "authorizationArtifact": "apps/desktop/release-r8-secure-candidate5",
+    "finalRestorationArtifact": "apps/desktop/release-r8-secure-final",
+    "authorizationResult": "COMPLETED_EXISTING_GRANT_REDIRECT",
+    "humanApprovalPageObserved": false,
+    "humanApprovalClaimed": false,
+    "existingGrantAutoRedirectInferred": true,
+    "callbackVerified": true,
+    "encryptedAccessTokenPersistenceVerified": true,
+    "encryptedRefreshTokenPersistenceVerified": true,
+    "authenticatedRestartRestorationVerified": true,
+    "rawTokenExposedToRenderer": false,
+    "liveDenialOrCancellationExercised": false,
+    "denialCallbackBehavior": "KNOWN_LIMITATION_STATIC_CLOUD_400_DESKTOP_LIKELY_TIMEOUT",
+    "denialCaveat": "No live denial/cancellation was performed. Provider denial currently ends on a static Cloud 400 response instead of redirecting error=access_denied to the desktop loopback listener. Automated tests cover fail-closed request rejection and friendly error sanitization, not this end-to-end denial experience."
+  },
+  "packagedSmoke": {
+    "full": "PASS",
+    "interrupt": "PASS",
+    "recover": "PASS",
+    "runtimeImports": {
+      "forgeGreen": "PASS",
+      "eightBit": "PASS",
+      "cloudDb": "PASS"
+    },
+    "repositoryIndex": {
+      "status": "PASS",
+      "fileCount": 258,
+      "symbolCount": 259
+    },
+    "workflowBoundedRepair": "PASS",
+    "rendererReloadCount": 5,
+    "encryptedCredentialRoundTrip": "PASS",
+    "corruptCredentialFailsClosed": "PASS",
+    "restartNoApprovalReplay": "PASS",
+    "freshNoOpBlockedByCompletionGate": "PASS"
+  },
+  "packagedDependencies": {
+    "internalGraph": "PASS",
+    "shippedCodeForgePackages": 20,
+    "runtimeGraph": "PASS",
+    "scannedRuntimeModules": 196,
+    "externalRuntimePackages": 15,
+    "knownFixedPackagingDefect": "xtend/mutable missing runtime dependency"
+  },
+  "candidateBisection": [
+    {
+      "candidate": "apps/desktop/release-r8-secure-candidate2",
+      "change": "secure package with earlier packaged renderer URL construction",
+      "endpointAudit": "PASS",
+      "nestedCommandSandboxResult": "RENDER_PROCESS_GONE=launch-failed:49"
+    },
+    {
+      "candidate": "apps/desktop/release-r8-secure-candidate3",
+      "change": "packaged renderer loaded with BrowserWindow.loadFile()",
+      "endpointAudit": "PASS",
+      "nestedCommandSandboxResult": "RENDER_PROCESS_GONE=launch-failed:49"
+    },
+    {
+      "candidate": "apps/desktop/release-r8-secure-candidate4",
+      "change": "window creation began before server initialization",
+      "endpointAudit": "PASS",
+      "nestedCommandSandboxResult": "RENDER_PROCESS_GONE=launch-failed:49"
+    },
+    {
+      "candidate": "apps/desktop/release-r8-secure-candidate5",
+      "change": "secure window content load awaited before server startup",
+      "endpointAudit": "PASS",
+      "outsideNestedCommandSandboxResult": "FULL_INTERRUPT_RECOVERY_PASS"
+    }
+  ],
+  "launchFailureDiagnosis": {
+    "status": "RESOLVED",
+    "historicalSymptom": "RENDER_PROCESS_GONE=launch-failed:49",
+    "rootCause": "Chromium renderer sandbox launch nested inside the Codex command runner sandbox on Windows",
+    "productionDefect": false,
+    "resolutionEvidence": "Candidate 5 and the final artifact retained all renderer security settings and passed outside the nested command containment.",
+    "noSandboxProductionWorkaround": false
+  },
+  "visualEvidence": {
+    "status": "PASS",
+    "root": "apps/desktop/release-r8-secure-final/smoke-captures",
+    "screenshots": [
+      "01-authenticated-zero-state.png",
+      "02-workspace-ready.png",
+      "02a-model-catalog.png",
+      "02b-model-filter.png",
+      "03-workflow-completed.png",
+      "04-recovery.png"
+    ],
+    "capturedWithRendererSandboxEnabled": true
+  },
+  "testEvidence": {
+    "focusedEndpointAndAuth": {
+      "status": "PASS",
+      "tests": 29
+    },
+    "desktop": {
+      "status": "PASS",
+      "files": 13,
+      "tests": 99
+    },
+    "forgeZero": {
+      "status": "PASS",
+      "files": 9,
+      "tests": 87
+    },
+    "fullTypeScript": "PASS",
+    "rendererViteBuild": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "inferenceSafety": {
+    "forgeZeroAuthoritative": true,
+    "unknownFreeStatusFailsClosed": true,
+    "paidInference": "PROHIBITED_AND_GATE_PASS",
+    "paidFallback": "PROHIBITED_AND_GATE_PASS",
+    "localLlmInference": "PROHIBITED_AND_GATE_PASS"
+  },
+  "gates": {
+    "PACKAGED_INTERNAL_DEPENDENCY_GRAPH": "PASS",
+    "PACKAGED_RUNTIME_DEPENDENCY_GRAPH": "PASS",
+    "EXACT_PACKAGED_AUTH_ENDPOINT": "PASS",
+    "PACKAGED_BROWSER_SECURITY_AUDIT": "PASS",
+    "PUBLIC_STAGING_REMOTE_PROBE": "PASS_21_OF_21",
+    "AUTH_ERROR_SANITIZATION": "PASS",
+    "NODE_INTEGRATION_DISABLED": "PASS",
+    "CONTEXT_ISOLATION_ENABLED": "PASS",
+    "WEB_SECURITY_ENABLED": "PASS",
+    "PRELOAD_IPC_BOUNDARY": "PASS",
+    "SANDBOX_ENABLED_FIRST_PAINT": "PASS",
+    "SANDBOX_ENABLED_FULL_SMOKE": "PASS",
+    "PACKAGED_INTERRUPT_RECOVERY": "PASS",
+    "ENCRYPTED_TOKEN_PERSISTENCE": "PASS",
+    "AUTHENTICATED_RESTART_RESTORATION": "PASS",
+    "NO_PAID_INFERENCE": "PASS",
+    "NO_LOCAL_LLM_INFERENCE": "PASS",
+    "FORGEZERO_FAIL_CLOSED": "PASS",
+    "NO_UNRESOLVED_LAUNCH_FAILED_49": "PASS",
+    "PACKAGED_VISUAL_QA": "PASS",
+    "LIVE_OAUTH_HUMAN_APPROVAL_OBSERVED": "NOT_OBSERVED_EXISTING_GRANT_REDIRECT",
+    "LIVE_OAUTH_DENIAL_OBSERVED": "NOT_EXERCISED_KNOWN_STATIC_400_DESKTOP_TIMEOUT_LIMITATION",
+    "CODEFORGE_R8_DAILY_DRIVER_UX": "PASS"
+  },
+  "diagnosticArtifact": {
+    "path": "apps/desktop/release-r8-sandbox-diagnostic2",
+    "notForRelease": true,
+    "rendererSandbox": false,
+    "nodeIntegration": false,
+    "contextIsolation": true,
+    "webSecurity": true,
+    "fullSmoke": "PASS_DIAGNOSTIC_ONLY",
+    "contributesToSecureCertification": false
+  },
+  "releaseRecommendation": "R8 is certified from apps/desktop/release-r8-secure-final. Any later artifact with differing bytes must rerun the applicable packaged audits and smokes before distribution."
+}

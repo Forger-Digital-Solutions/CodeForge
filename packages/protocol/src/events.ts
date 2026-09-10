@@ -148,6 +148,86 @@ export const PermissionRequestedSchema = EventBase(
   }),
 );
 
+export const DesktopWorkerActionSchema = EventBase(
+  "desktop_worker_action",
+  z.object({
+    id: z.string().uuid(),
+    sessionId: z.string(),
+    workflowId: z.string(),
+    turnId: z.string(),
+    workerId: z.string(),
+    actionType: z.enum([
+      "READ_FILE",
+      "LIST_FILES",
+      "SEARCH_FILES",
+      "WRITE_PATCH",
+      "CREATE_FILE",
+      "DELETE_FILE",
+      "RUN_COMMAND",
+      "CHECK_GIT_STATUS",
+      "GET_DIFF",
+      "RUN_TEST",
+      "REQUEST_APPROVAL",
+      "ASK_USER",
+    ]),
+    actionArguments: z.record(z.unknown()),
+    idempotencyKey: z.string(),
+    expectedWorkspaceRevision: z.string().optional(),
+    cancellationId: z.string().uuid().optional(),
+    state: z.enum(["pending", "succeeded", "failed", "cancelled", "stale"]),
+    result: z.string().optional(),
+  }),
+);
+
+export const AgentContinuationSchema = EventBase(
+  "agent_continuation",
+  z.object({
+    version: z.number().int().positive(),
+    state: z.enum(["prepared", "awaiting_worker", "result_available", "result_consumed", "cancelled", "blocked"]),
+    sessionId: z.string(),
+    workflowId: z.string(),
+    workflowRevision: z.number().optional(),
+    turnId: z.string(),
+    providerId: z.string().optional(),
+    modelId: z.string().optional(),
+    pendingTool: z.object({
+      actionId: z.string(),
+      workerId: z.string().optional(),
+      toolCallId: z.string().optional(),
+      toolName: z.string().optional(),
+      tool: z.string().optional(),
+      argumentsJson: z.string().optional(),
+      argumentsHash: z.string().optional(),
+      workflowId: z.string().optional(),
+      workflowRevision: z.union([z.string(), z.number()]).optional(),
+    }).optional(),
+    resumeState: z.enum(["ready", "leased", "advanced"]).optional(),
+    resumeLease: z.object({
+      ownerId: z.string(),
+      expiresAt: z.string().datetime(),
+    }).optional(),
+    messages: z.array(z.object({
+      role: z.enum(["user", "assistant", "tool", "system"]),
+      content: z.string(),
+      toolCallId: z.string().optional(),
+    })).optional(),
+    observation: z.object({
+      toolCallId: z.string().optional(),
+      resultId: z.string().optional(),
+      actionId: z.string().optional(),
+      output: z.string().optional(),
+      status: z.string().optional(),
+      success: z.boolean().optional(),
+      messages: z.array(z.object({
+        role: z.enum(["user", "assistant", "tool", "system"]),
+        content: z.string(),
+        toolCallId: z.string().optional(),
+      })).optional(),
+    }).optional(),
+    resultConsumedAt: z.string().datetime().optional(),
+  }),
+);
+
 export const ForgeEventSchema = z.discriminatedUnion("type", [
   TaskCreatedSchema,
   TaskStartedSchema,
@@ -171,6 +251,8 @@ export const ForgeEventSchema = z.discriminatedUnion("type", [
   ReviewStartedSchema,
   ReviewCompletedSchema,
   PermissionRequestedSchema,
+  DesktopWorkerActionSchema,
+  AgentContinuationSchema,
 ]);
 export type ForgeEvent = z.infer<typeof ForgeEventSchema>;
 

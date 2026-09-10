@@ -2,12 +2,45 @@ import type { ChatRequest, ChatResponse, StreamEvent, ToolDefinition, Usage } fr
 
 export * from "./chat-types.js";
 
+export interface ProviderExecutionContext {
+  sessionId?: string;
+  userId?: string;
+  metadata?: Record<string, unknown>;
+  workspacePath?: string;
+  [key: string]: unknown;
+}
+
+export interface ProviderToolExecutionRequest {
+  toolName: string;
+  arguments: Record<string, unknown>;
+  context?: ProviderExecutionContext;
+  providerId?: string;
+  signal?: AbortSignal;
+}
+
+export interface ProviderToolExecutionResult {
+  output: string;
+  error?: string;
+  exitCode?: number;
+  success?: boolean;
+}
+
 export interface ProviderAdapter {
   readonly providerId: string;
   readonly isTestProvider?: boolean;
   listModels(): Promise<ProviderModel[]>;
   chat(req: ChatRequest): Promise<ChatResponse>;
   streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent>;
+  /**
+   * Optional execution-context seam for account-backed providers whose tool calls must be
+   * correlated back to the owning CodeForge session and turn. Ordinary providers continue to
+   * use `streamChat` unchanged.
+   */
+  streamChatWithContext?(
+    req: ChatRequest,
+    context: ProviderExecutionContext,
+    signal?: AbortSignal,
+  ): AsyncIterable<StreamEvent>;
   healthCheck(): Promise<ProviderHealthResponse>;
   /** FG-1A: optional so existing adapters stay valid. Absent is equivalent to unsupported. */
   getPromptCacheCapability?(modelId: string): PromptCacheCapability;
@@ -372,4 +405,3 @@ export {
 export * as OpenRouterOAuth from "./openrouter-oauth.js";
 export { redactSecrets } from "./redact.js";
 export { HostedProviderAdapter, type HostedProviderOptions } from "./hosted.js";
-

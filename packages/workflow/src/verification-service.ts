@@ -5,6 +5,7 @@ import type { VerificationResult } from "./types.js";
 import { prepareShellCommand, terminateProcessTree } from "./child-process.js";
 import {
   adaptTrustedLegacyVerifiers,
+  categoryForLegacy,
   createVerificationInputStateHash,
   createVerificationPlan,
   createVerifierRegistry,
@@ -16,6 +17,7 @@ import {
   determineVerificationObligations,
   evaluateVerificationSufficiency,
   resolveVerificationObligations,
+  evaluateVerificationCoverage,
   FORGE_GREEN_VERIFICATION_POLICY_VERSION,
   type EvidenceResolutionReceipt,
   type GenericVerificationEvidence,
@@ -407,6 +409,8 @@ export async function runVerification(
     deliveryIntent?: boolean;
     publicationIntent?: boolean;
     ledger?: { record(event: import("@codeforge/forge-green").EfficiencyLedgerEvent): void };
+    existingEvidence?: readonly GenericVerificationEvidence[];
+    existingEvidenceSource?: "durable" | "cache";
   } = {},
 ): Promise<import("./types.js").VerificationReport> {
   // FG-5 needs authoritative structural/risk inputs. A bare changed-path list from the legacy
@@ -520,7 +524,12 @@ export async function runVerification(
   const registry = createVerifierRegistry(definitions);
   const policy: VerificationPolicy = { version: "legacy-workflow-policy-v1" as VerificationPolicy["version"] };
   const plan = createVerificationPlan(registry, policy, { runId: options.runId ?? `legacy-${Date.now()}`, workspacePath, scope: "workspace", ...(options.executionRevision !== undefined ? { executionRevision: options.executionRevision } : {}) });
-  const execution = await executeVerificationPlan(registry, plan, undefined, { signal: options.signal, observer: options.observer });
+
+  const execution = await executeVerificationPlan(registry, plan, undefined, {
+    signal: options.signal,
+    observer: options.observer,
+    existingEvidence: options.existingEvidence as readonly import("./forge-verify.js").VerificationEvidence[] | undefined,
+  });
   const runResults = availableVerifiers.map((verifier, index) => {
     const planned = plan.verifiers[index]!;
     const evidence = execution.evidence.find((item) => item.verifierId === planned.verifierId);
@@ -528,6 +537,9 @@ export async function runVerification(
     const status = evidence?.status ?? "infra_error";
     const passed = status === "passed" ? Math.max(parsed.passed, 1) : parsed.passed;
     const failed = status === "passed" ? parsed.failed : Math.max(parsed.failed, 1);
+    // FG-7: check if this verifier reused existing evidence
+    const reusedEvidence = options.existingEvidence?.find((ev) => ev.verifierId === planned.verifierId && ev.evidenceId === evidence?.evidenceId);
+    const reusedEvidenceId = reusedEvidence?.evidenceId;
     return {
       id: verifier.id,
       kind: verifier.kind,
@@ -538,11 +550,12 @@ export async function runVerification(
       failed,
       skipped: parsed.skipped,
       exitCode: evidence?.exitCode ?? 1,
-      durationMs: evidence?.elapsedMs ?? 0,
+      durationMs: reusedEvidenceId ? 0 : (evidence?.elapsedMs ?? 0),
       output: evidence?.outputExcerpt ?? "Verifier did not create evidence.",
       failures: status === "passed" ? parsed.failures : [{ test: verifier.id, message: evidence?.outputExcerpt || `Verifier ended ${status}.` }],
       timedOut: status === "timed_out",
       cancelled: status === "cancelled",
+      reusedEvidenceId,
     } satisfies import("./types.js").VerifierRunResult;
   });
   const totalPassed = runResults.reduce((total, result) => total + result.passed, 0);
@@ -601,6 +614,98 @@ export async function runVerification(
 
   const summary = `ForgeVerify: ${runResults.filter((r) => r.status === "passed").length}/${runResults.length} verifiers passed (${requiredPassed ? "all required passed" : "required verifier failed"}).`;
 
+  // FG-7: Evaluate verification coverage receipt
+  const kindMap: Record<string, import("@codeforge/forge-green").VerificationEvidenceKind> = {
+    test: "UNIT_TEST",
+    typecheck: "TYPECHECK",
+    build: "BUILD",
+    lint: "LINT",
+    custom: "STATIC_ANALYSIS",
+  };
+
+  const executedCount = runResults.filter((r) => !r.reusedEvidenceId).length;
+  const skippedValidCount = runResults.filter((r) => Boolean(r.reusedEvidenceId) && r.status === "passed").length;
+  const restartReuseCount = options.existingEvidenceSource === "durable" ? skippedValidCount : 0;
+  const avoidedVerifierCalls = skippedValidCount;
+
+  const coverageObligations: readonly import("@codeforge/forge-green").VerificationObligation[] = policyObligationsResult?.obligations ?? plan.verifiers.map((planned, index) => {
+    const verifier = availableVerifiers[index];
+    const kind = kindMap[verifier?.kind ?? "custom"] ?? "STATIC_ANALYSIS";
+    return {
+      id: planned.verifierId,
+      kind,
+      scope: "workspace" as const,
+      required: planned.requirement === "required",
+      targetPaths: [],
+      targetPackages: [],
+      reasonCodes: ["WORKSPACE_BUILD_TYPECHECK"] as const,
+      identity: {
+        namespace: "forge-verify",
+        workspacePath: plan.workspacePath,
+        obligationId: planned.verifierId,
+        policyVersion: FORGE_GREEN_VERIFICATION_POLICY_VERSION,
+        ...(options.executionRevision !== undefined ? { revision: options.executionRevision } : {}),
+      },
+      commandHint: verifier?.command,
+    };
+  });
+
+  const coverageEvidence: import("@codeforge/forge-green").VerificationCoverageEvidence[] = execution.evidence.map((ev, index) => {
+    const verifierIndex = plan.verifiers.findIndex((pv) => pv.verifierId === ev.verifierId);
+    const verifier = verifierIndex >= 0 ? availableVerifiers[verifierIndex] : availableVerifiers[index];
+    const runResult = runResults.find((r) => r.id === verifier?.id) ?? runResults[index];
+    const kind = kindMap[verifier?.kind ?? "custom"] ?? "STATIC_ANALYSIS";
+    return {
+      evidenceId: ev.evidenceId,
+      authority: "forgeverify" as const,
+      verifierId: ev.verifierId,
+      verifierVersion: ev.verifierVersion,
+      definitionDigest: ev.definitionDigest,
+      planId: ev.planId,
+      attemptId: ev.attemptId,
+      runId: ev.runId,
+      evidenceHash: ev.evidenceHash,
+      kind,
+      category: registry.get(ev.verifierId)?.category ?? (verifier ? categoryForLegacy(verifier.kind) : "custom"),
+      scope: "workspace" as const,
+      workspacePath: ev.workspacePath,
+      inputStateHash: ev.inputStateHash,
+      policyVersion: FORGE_GREEN_VERIFICATION_POLICY_VERSION,
+      obligationIds: [ev.verifierId],
+      status: ev.status,
+      exitCode: ev.exitCode,
+      elapsedMs: ev.elapsedMs,
+      outputExcerpt: ev.outputExcerpt,
+      passedCount: runResult?.passed,
+      failedCount: runResult?.failed,
+      skippedCount: runResult?.skipped,
+      ...(options.executionRevision !== undefined ? { executionRevision: options.executionRevision } : {}),
+    };
+  });
+
+  const coverageResult = evaluateVerificationCoverage({
+    obligations: coverageObligations,
+    evidence: coverageEvidence,
+    workspacePath,
+    currentInputStateHash: plan.inputStateHash,
+    currentExecutionRevision: options.executionRevision,
+    policyVersion: FORGE_GREEN_VERIFICATION_POLICY_VERSION,
+    trustedVerifierIds: plan.verifiers.map((v) => v.verifierId),
+    metrics: {
+      totalRequired: coverageObligations.filter((o) => o.required).length,
+      alreadyCovered: skippedValidCount,
+      executed: executedCount,
+      skippedValid: skippedValidCount,
+      restartReuseCount,
+      avoidedVerifierCalls,
+    },
+    ledger: options.ledger,
+  });
+  const coverageReceipt: import("@codeforge/forge-green").VerificationCoverageReceipt = coverageResult.receipt;
+  if (coverageReceipt) {
+    await options.observer?.coverageReceiptCreated?.(coverageReceipt);
+  }
+
   return {
     verifiers: runResults,
     requiredPassed,
@@ -620,6 +725,7 @@ export async function runVerification(
     policyDecision,
     policyReceipt: policyDecision?.receipt,
     resolutionReceipt: resolutionResult?.receipt,
+    coverageReceipt,
   };
 }
 

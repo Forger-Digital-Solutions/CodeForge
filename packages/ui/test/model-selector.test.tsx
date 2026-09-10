@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import React from "react";
 import {
   ModelSelector,
+  filterModelSections,
   isModelUsable,
   resolveModelSelection,
   type ModelSelectorItem,
@@ -191,6 +192,19 @@ describe("ModelSelector section information architecture", () => {
     const markup = renderSelector();
     expect(markup).not.toMatch(/muse\s*spark/i);
     expect(markup).not.toContain("Promotional Free");
+  });
+});
+
+describe("model catalog filtering", () => {
+  const sections: ModelSection[] = [
+    { sectionId: "free", sectionLabel: "VERIFIED FREE", models: [freeModel] },
+    { sectionId: "gems", sectionLabel: "GEMS", models: [unentitledGemsModel] },
+  ];
+
+  it("filters against actual catalog and section metadata without changing availability", () => {
+    expect(filterModelSections(sections, "forge")).toEqual([sections[0]]);
+    expect(filterModelSections(sections, "gems")).toEqual([sections[1]]);
+    expect(filterModelSections(sections, "missing")).toEqual([]);
   });
 });
 

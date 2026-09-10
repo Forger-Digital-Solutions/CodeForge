@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestamp": "2026-09-09T00:00:00-04:00",
+  "agentLoopVerdict": "CODEFORGE_AI_AGENT_CORE_MATERIALLY_ADVANCED_HOSTED_WORKER_WIRING_REMAINS",
+  "hostedAuthorityVerdict": "NOT_CERTIFIED",
+  "providerResilienceVerdict": "FUNCTIONAL_NEEDS_HOSTED_E2E",
+  "desktopWorkerProtocol": "IMPLEMENTED_AND_TESTED",
+  "duplicateActionPrevention": "PASS",
+  "restartResultReplay": "PASS",
+  "steering": "EXISTING_DURABLE_AUTHORITY",
+  "approval": "EXISTING_DURABLE_AUTHORITY",
+  "verification": "FG7_CERTIFIED_BASELINE",
+  "toolCalls": 0,
+  "modelCalls": 0,
+  "providerFallback": "NOT_RUN",
+  "cloudRuntime": "NOT_DEPLOYED"
+}

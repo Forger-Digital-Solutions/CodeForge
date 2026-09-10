@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestamp": "2026-09-09T12:40:13.575Z",
+  "target": "https://codeforge-cloud-staging.onrender.com",
+  "checks": [
+    {
+      "id": "target.https",
+      "status": "PASS",
+      "message": "target uses HTTPS (codeforge-cloud-staging.onrender.com)"
+    },
+    {
+      "id": "target.dns",
+      "status": "PASS",
+      "message": "DNS resolved and connection established to codeforge-cloud-staging.onrender.com",
+      "durationMs": 12314
+    },
+    {
+      "id": "target.tls_certificate",
+      "status": "PASS",
+      "message": "TLS certificate validated by the system trust store",
+      "durationMs": 12314
+    },
+    {
+      "id": "health.live",
+      "status": "PASS",
+      "message": "/health/live returned 200 in 12314ms",
+      "durationMs": 12314
+    },
+    {
+      "id": "health.ready",
+      "status": "PASS",
+      "message": "/health/ready reports database connected",
+      "durationMs": 190
+    },
+    {
+      "id": "capacity.hosted_free",
+      "status": "PASS",
+      "message": "hosted free capacity available (30 verified-free model(s))"
+    },
+    {
+      "id": "meta",
+      "status": "PASS",
+      "message": "/v1/meta returned 200",
+      "durationMs": 272
+    },
+    {
+      "id": "models",
+      "status": "PASS",
+      "message": "/v1/hosted/models returned 34 model(s)",
+      "durationMs": 268
+    },
+    {
+      "id": "security.header.x-content-type-options",
+      "status": "PASS",
+      "message": "X-Content-Type-Options: nosniff present"
+    },
+    {
+      "id": "security.header.referrer-policy",
+      "status": "PASS",
+      "message": "Referrer-Policy: no-referrer present"
+    },
+    {
+      "id": "security.header.cache-control",
+      "status": "PASS",
+      "message": "Cache-Control: no-store present"
+    },
+    {
+      "id": "auth.required/v1/account",
+      "status": "PASS",
+      "message": "/v1/account requires authentication (401 without a token)",
+      "durationMs": 111
+    },
+    {
+      "id": "auth.required/v1/usage",
+      "status": "PASS",
+      "message": "/v1/usage requires authentication (401 without a token)",
+      "durationMs": 264
+    },
+    {
+      "id": "auth.forged_token",
+      "status": "PASS",
+      "message": "forged/unsigned bearer token rejected with 401",
+      "durationMs": 115
+    },
+    {
+      "id": "oauth.ready",
+      "status": "PASS",
+      "message": "OAuth start issues a GitHub authorize URL; registered callback is https://codeforge-cloud-staging.onrender.com/v1/auth/github/callback",
+      "durationMs": 346
+    },
+    {
+      "id": "oauth.no_verifier_leak",
+      "status": "PASS",
+      "message": "OAuth start response contains no PKCE verifier"
+    },
+    {
+      "id": "oauth.open_redirect",
+      "status": "PASS",
+      "message": "hostile redirect target refused at OAuth start",
+      "durationMs": 110
+    },
+    {
+      "id": "cors.untrusted_origin",
+      "status": "PASS",
+      "message": "untrusted origin is not granted CORS access"
+    },
+    {
+      "id": "limits.payload",
+      "status": "PASS",
+      "message": "oversized body rejected with 413",
+      "durationMs": 514
+    },
+    {
+      "id": "errors.normalized",
+      "status": "PASS",
+      "message": "unknown route returns a normalized 404 without internals"
+    },
+    {
+      "id": "sse.auth_required",
+      "status": "PASS",
+      "message": "hosted inference requires authentication before streaming",
+      "durationMs": 98
+    }
+  ],
+  "passed": 21,
+  "failed": 0,
+  "warnings": 0,
+  "ok": true
+}

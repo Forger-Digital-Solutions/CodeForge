@@ -47,7 +47,8 @@ export default function Header({
 
   const statusDotClass = isRunning ? (isPaused ? "paused" : "running") : (agentStatus === "failed" ? "failed" : "idle");
   const phaseInfo = isRunning && activePhase ? ` · ${activePhase.replace(/_/g, " ")}` : "";
-  const progressInfo = workflowProgress !== undefined ? ` · ${workflowProgress}%` : "";
+  // Workflow phases are authoritative; a raw percentage suggests precision the runtime does not claim.
+  void workflowProgress;
 
   if (!session) return null;
 
@@ -59,7 +60,6 @@ export default function Header({
         <span>
           {isRunning ? (isPaused ? "Paused" : "Running") : agentStatus === "completed" ? "Completed" : "Idle"}
           {phaseInfo}
-          {progressInfo}
         </span>
         {isRunning && !isPaused && <span style={{ fontFamily: "var(--cf-font-mono)" }}>{formatTime(elapsed)}</span>}
       </div>

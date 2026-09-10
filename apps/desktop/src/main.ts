@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, Menu, shell, safeStorage } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, Menu, shell, safeStorage, Tray, nativeImage, screen } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import fs from "node:fs";
@@ -10,12 +10,12 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
   } catch {}
 }
 
-import { CodeForgeServer } from "@codeforge/server";
+import { CodeForgeServer, type CodeForgeRuntimeStatus } from "@codeforge/server";
 import { ForgeZero, createGenericFreeRecord, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider, createOpencodeAdapter, createOpenRouterAdapter, createProviderAdapterById, HostedProviderAdapter, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent } from "@codeforge/providers";
 import { NormalizedModelRegistry, discoverAndVerifyFree, verifyAllowanceViaProbe, getProviderPolicy, type LiveModelInfo } from "@codeforge/model-registry";
 import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
-import { runCodeForgeCloudAuth, type CloudAuthResult } from "./cloud-auth-flow.js";
+import { describeCloudAuthFailure, CloudAuthError, runCodeForgeCloudAuth, type CloudAuthResult } from "./cloud-auth-flow.js";
 import {
   installSingleInstanceGuard,
   activateWindow,
@@ -29,6 +29,17 @@ import {
   CloudEndpointError,
   type CloudEndpointManifest,
 } from "./cloud-endpoint.js";
+import { parsePersistedWindowState, restoreWindowState, type PersistedWindowState } from "./window-state.js";
+
+// Some Windows environments ship an Electron-incompatible graphics stack. CodeForge's
+// renderer does not require GPU acceleration, so prefer a reliable software compositor over
+// allowing Chromium's GPU subprocess to take down the packaged desktop before first paint.
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch("disable-gpu");
+// Some Windows installations still spawn a GPU utility process after the Electron
+// hardware-acceleration opt-out and fail before first paint when ANGLE DLLs are absent.
+// Keep the software compositor in-process so packaged startup remains usable there.
+app.commandLine.appendSwitch("in-process-gpu");
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -38,6 +49,10 @@ let firewall: ForgeZero | null = null;
 let providerCatalog: InMemoryProviderCatalog | null = null;
 let desktopCredentialStore: DesktopCredentialStore | null = null;
 let modelRegistry: NormalizedModelRegistry | null = null;
+let tray: Tray | null = null;
+let isQuitting = false;
+let closeRequestInFlight = false;
+let shutdownPromise: Promise<void> | null = null;
 // Per-provider auth/health signal used by the orphan-model oracle and to exclude
 // invalid-auth providers from routing (a 401 marks a provider auth_required — it is
 // never hammered on every task; the UI prompts to reconnect).
@@ -56,6 +71,8 @@ const ONBOARDING_COMPLETED_KEY = "codeforge:onboarding-completed";
 const CLOUD_ACCESS_TOKEN_KEY = "codeforge:cloud-access-token";
 const CLOUD_REFRESH_TOKEN_KEY = "codeforge:cloud-refresh-token";
 const CLOUD_USER_KEY = "codeforge:cloud-user";
+const WINDOW_STATE_KEY = "codeforge:window-state";
+const CLOSE_BEHAVIOR_KEY = "codeforge:close-behavior";
 /**
  * Resolve the Cloud endpoint ONCE, in the main process, from the build manifest. The renderer has no
  * IPC channel that accepts a Cloud URL, and a packaged staging/production build ignores the
@@ -80,17 +97,36 @@ function loadCloudEndpointManifest(): CloudEndpointManifest {
       throw new CloudEndpointError(`Invalid CodeForge Cloud endpoint manifest at ${candidate}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
-  // No manifest at all: treat this as a development checkout.
+  // A missing manifest is only a valid source-checkout condition. A packaged app without its
+  // stamped authority must still open far enough to show the safe sign-in failure, but it must
+  // never guess a local endpoint.
+  if (app.isPackaged) {
+    throw new CloudEndpointError("Packaged CodeForge build is missing cloud-endpoints.json; refusing to guess an authentication endpoint.");
+  }
   return { channel: "development", endpoints: {} };
 }
 
-const RESOLVED_CLOUD_ENDPOINT = resolveCloudEndpoint({
-  manifest: loadCloudEndpointManifest(),
-  env: process.env,
-  isPackaged: app.isPackaged,
-});
+let endpointResolutionError: CloudEndpointError | undefined;
+let RESOLVED_CLOUD_ENDPOINT: ReturnType<typeof resolveCloudEndpoint>;
+try {
+  RESOLVED_CLOUD_ENDPOINT = resolveCloudEndpoint({
+    manifest: loadCloudEndpointManifest(),
+    env: process.env,
+    isPackaged: app.isPackaged,
+  });
+} catch (error) {
+  if (!(error instanceof CloudEndpointError) || !app.isPackaged) throw error;
+  endpointResolutionError = error;
+  RESOLVED_CLOUD_ENDPOINT = {
+    url: "",
+    channel: "production",
+    overridden: false,
+    overrideReason: "packaged build has no usable Cloud endpoint; Cloud traffic disabled",
+  };
+  console.error(`[CodeForge] cloud endpoint unavailable: ${error.message}`);
+}
 const CLOUD_API_URL = RESOLVED_CLOUD_ENDPOINT.url;
-console.log(`[CodeForge] cloud endpoint ${describeCloudEndpoint(RESOLVED_CLOUD_ENDPOINT)}`);
+console.log(`[CodeForge] cloud endpoint ${endpointResolutionError ? "unavailable=true" : describeCloudEndpoint(RESOLVED_CLOUD_ENDPOINT)}`);
 const ALLOWED_PROVIDER_IDS = new Set([
   "opencode",
   "openrouter",
@@ -355,6 +391,129 @@ function getOnboardingCompleted(): boolean {
   return settings[ONBOARDING_COMPLETED_KEY] === true;
 }
 
+type CloseBehavior = "ask" | "tray" | "quit-safe";
+type CloseDecision = "cancel" | "tray" | "quit" | "quit-anyway";
+
+function getCloseBehavior(): CloseBehavior {
+  const value = readSettings()[CLOSE_BEHAVIOR_KEY];
+  return value === "tray" || value === "quit-safe" ? value : "ask";
+}
+
+function setCloseBehavior(value: CloseBehavior): void {
+  const settings = readSettings();
+  settings[CLOSE_BEHAVIOR_KEY] = value;
+  writeSettingsAtomic(settings);
+}
+
+function getPersistedWindowState(): PersistedWindowState | undefined {
+  return parsePersistedWindowState(readSettings()[WINDOW_STATE_KEY]);
+}
+
+function persistWindowState(): void {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  const settings = readSettings();
+  settings[WINDOW_STATE_KEY] = {
+    bounds: mainWindow.getNormalBounds(),
+    isMaximized: mainWindow.isMaximized(),
+  } satisfies PersistedWindowState;
+  writeSettingsAtomic(settings);
+}
+
+function restoreMainWindow(): void {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+}
+
+function ensureTray(): void {
+  if (tray) return;
+  const iconPath = resolveAppIcon();
+  const icon = iconPath ? nativeImage.createFromPath(iconPath) : nativeImage.createEmpty();
+  tray = new Tray(icon);
+  tray.setToolTip("CodeForge");
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: "Open CodeForge", click: restoreMainWindow },
+    { type: "separator" },
+    { label: "Quit CodeForge", click: () => { void requestClose(); } },
+  ]));
+  tray.on("double-click", restoreMainWindow);
+}
+
+function hideToTray(): void {
+  ensureTray();
+  mainWindow?.hide();
+}
+
+async function currentRuntimeStatus(): Promise<CodeForgeRuntimeStatus> {
+  if (!server) {
+    return {
+      activeWork: false,
+      activeWorkflows: 0,
+      activeAgentTurns: 0,
+      activeCommands: 0,
+      pendingApprovals: 0,
+      activeVerifications: 0,
+      hostedContinuations: 0,
+      backgroundTasks: 0,
+      recoverable: true,
+      unrecoverableResources: [],
+    };
+  }
+  return server.getRuntimeStatus();
+}
+
+async function completeSafeQuit(): Promise<void> {
+  if (shutdownPromise) return shutdownPromise;
+  isQuitting = true;
+  persistWindowState();
+  tray?.destroy();
+  tray = null;
+  shutdownPromise = (async () => {
+    if (server) {
+      await server.stop();
+      server = null;
+    }
+    app.quit();
+  })();
+  return shutdownPromise;
+}
+
+async function requestClose(): Promise<void> {
+  if (isQuitting || closeRequestInFlight) return;
+  closeRequestInFlight = true;
+  const status = await currentRuntimeStatus();
+  const behavior = getCloseBehavior();
+
+  if (!status.activeWork) {
+    closeRequestInFlight = false;
+    if (behavior === "tray") {
+      hideToTray();
+      return;
+    }
+    await completeSafeQuit();
+    return;
+  }
+
+  if (status.recoverable && behavior === "tray") {
+    closeRequestInFlight = false;
+    hideToTray();
+    return;
+  }
+  if (status.recoverable && behavior === "quit-safe") {
+    closeRequestInFlight = false;
+    await completeSafeQuit();
+    return;
+  }
+
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    closeRequestInFlight = false;
+    if (status.recoverable) await completeSafeQuit();
+    return;
+  }
+  mainWindow.webContents.send("app:close-requested", { status, preference: behavior });
+}
+
 function setOnboardingCompleted(completed: boolean): void {
   if (typeof completed !== "boolean") throw new Error("Invalid onboarding value");
   const settings = readSettings();
@@ -600,14 +759,20 @@ function resolveAppIcon(): string | undefined {
   return undefined;
 }
 
-function createWindow(): void {
+async function createWindow(): Promise<void> {
   smokeRecord("CREATE_WINDOW_START");
   const iconPath = resolveAppIcon();
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const displayShape = (display: Electron.Display) => ({ workArea: display.workArea });
+  const restored = restoreWindowState(
+    getPersistedWindowState(),
+    displayShape(primaryDisplay),
+    screen.getAllDisplays().map(displayShape),
+  );
   mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
-    minWidth: 900,
-    minHeight: 600,
+    ...restored.bounds,
+    minWidth: restored.minWidth,
+    minHeight: restored.minHeight,
     title: "CodeForge",
     ...(iconPath ? { icon: iconPath } : {}),
     webPreferences: {
@@ -615,14 +780,36 @@ function createWindow(): void {
       contextIsolation: true,
       preload: path.join(__dirname, "preload.cjs"),
       sandbox: true,
+      webSecurity: true,
     },
     show: false,
     backgroundColor: "#0f1012",
   });
 
+  mainWindow.webContents.on("render-process-gone", (_event, details) => {
+    const detail = `RENDER_PROCESS_GONE=${details.reason}:${details.exitCode}`;
+    smokeRecord(detail);
+    console.error(`[CodeForge] ${detail}`);
+  });
+  mainWindow.webContents.on("did-fail-load", (_event, code, description) => {
+    const detail = `RENDER_DID_FAIL_LOAD=${code}:${description}`;
+    smokeRecord(detail);
+    console.error(`[CodeForge] ${detail}`);
+  });
+
   mainWindow.once("ready-to-show", () => {
     smokeRecord("WINDOW_READY_TO_SHOW");
     mainWindow?.show();
+    if (restored.isMaximized) mainWindow?.maximize();
+  });
+
+  mainWindow.on("close", (event) => {
+    if (isQuitting) {
+      persistWindowState();
+      return;
+    }
+    event.preventDefault();
+    void requestClose();
   });
 
   // Handle in-window navigation (plain <a href> clicks, form submissions, etc.)
@@ -682,12 +869,18 @@ function createWindow(): void {
   Menu.setApplicationMenu(null);
 
   const isDev = process.env.ELECTRON_DEV === "true";
-  const rendererPath = isDev
-    ? "http://localhost:5173"
-    : `file://${path.join(__dirname, "renderer", "index.html")}`;
-
-  smokeRecord(`LOAD_URL_${rendererPath}`);
-  mainWindow.loadURL(rendererPath);
+  if (isDev) {
+    smokeRecord("LOAD_URL_http://localhost:5173");
+    await mainWindow.loadURL("http://localhost:5173");
+  } else {
+    const rendererFile = path.join(__dirname, "renderer", "index.html");
+    smokeRecord(`LOAD_FILE_${rendererFile}`);
+    // loadFile builds a canonical file URL for Windows drive letters and ASAR paths. Hand-building
+    // `file://${path}` produced `file://G:\\...`, which is malformed and can make a sandboxed
+    // renderer fail during launch before the document gets a chance to paint.
+    await mainWindow.loadFile(rendererFile);
+  }
+  smokeRecord("WINDOW_CONTENT_LOADED");
 
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -712,6 +905,16 @@ async function waitForRenderer(): Promise<void> {
   }
   smokeRecord("WAIT_RENDERER_FRAME_LOADED");
   await delay(150);
+}
+
+async function capturePackagedSmokeScreenshot(name: string): Promise<void> {
+  const directory = process.env.CODEFORGE_SMOKE_SCREENSHOT_DIR;
+  const window = mainWindow;
+  if (!directory || !window) return;
+  fs.mkdirSync(directory, { recursive: true });
+  const image = await window.webContents.capturePage();
+  fs.writeFileSync(path.join(directory, `${name}.png`), image.toPNG());
+  smokeRecord(`packaged_screenshot_${name}=PASS`);
 }
 
 async function reloadRenderer(): Promise<void> {
@@ -751,7 +954,7 @@ async function waitForCondition(check: () => Promise<boolean>, timeoutMs = 10_00
   throw new Error("Timed out waiting for packaged smoke condition");
 }
 
-async function waitForTask(taskId: string, sessionId: string, resolveApprovals: boolean): Promise<{ phase: string; status: string }> {
+async function waitForTask(taskId: string, sessionId: string, resolveApprovals: boolean): Promise<{ phase: string; status: string; error?: string }> {
   const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {
     if (resolveApprovals) {
@@ -767,7 +970,7 @@ async function waitForTask(taskId: string, sessionId: string, resolveApprovals: 
     }
     const workflow = await apiJson(`/api/workflow/${taskId}`);
     const task = workflow.body?.task as { phase: string; status: string; error?: string; summary?: string };
-    if (task && ["completed", "failed", "cancelled"].includes(task.phase)) {
+    if (task && ["completed", "failed", "cancelled", "blocked"].includes(task.phase)) {
       smokeRecord(`TASK_TERMINAL_PHASE_${task.phase}_SUMMARY_${task.summary ?? ""}_ERROR_${task.error ?? ""}`);
       return task;
     }
@@ -809,36 +1012,23 @@ function verifyCorruptCredentialFailsClosed(): void {
 }
 
 async function runPackagedFullSmoke(workspacePath: string, testSecret: string): Promise<void> {
+  await evaluateRenderer<void>(`window.electronAPI.openProject(${JSON.stringify(workspacePath)})`);
+  await reloadRenderer();
   await waitForCondition(async () =>
-    (await evaluateRenderer<string>("document.body.innerText")).includes("Welcome to CodeForge"),
+    (await evaluateRenderer<string>("document.body.innerText")).toLowerCase().includes(path.basename(workspacePath).toLowerCase()),
   );
-  const firstRunText = await evaluateRenderer<string>("document.body.innerText");
-  if (!firstRunText.includes("Welcome to CodeForge")) throw new Error("Packaged first-run onboarding was not visible");
-  if (!firstRunText.includes("OpenCode Zen") || !firstRunText.includes("OpenRouter")) {
-    throw new Error("Packaged provider metadata was not visible");
-  }
+  const authenticatedText = await evaluateRenderer<string>("document.body.innerText");
+  if (authenticatedText.includes("Continue with GitHub")) throw new Error("Packaged auth fixture did not restore into the authenticated UI");
+  if (!authenticatedText.includes("Repository Intelligence")) throw new Error("Packaged workspace shell was not visible");
   const bridgeBoundary = await evaluateRenderer<boolean>(
     "Boolean(window.electronAPI) && typeof window.electronAPI.getProviderCredentials === 'undefined'",
   );
   if (!bridgeBoundary) throw new Error("Renderer credential boundary is not enforced");
-  smokeRecord("packaged_welcome=PASS");
-  smokeRecord("packaged_provider_metadata=PASS");
+  smokeRecord("packaged_auth_restore=PASS");
+  smokeRecord("packaged_authenticated_workspace=PASS");
   smokeRecord("renderer_raw_credential_api_absent=PASS");
+  await capturePackagedSmokeScreenshot("01-authenticated-zero-state");
 
-  await waitForCondition(async () => {
-    const text = await evaluateRenderer<string>("document.body.innerText");
-    await evaluateRenderer<void>(`(() => {
-      const b = Array.from(document.querySelectorAll("button")).find(b => b.textContent && b.textContent.includes("Configure Providers"));
-      if (b) { b.click(); b.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); }
-    })()`);
-    return text.toLowerCase().includes("api key");
-  });
-  smokeRecord("packaged_provider_setup_ui=PASS");
-
-  await evaluateRenderer<void>(`window.electronAPI.setOnboardingCompleted(true)`);
-  await evaluateRenderer<void>(`window.electronAPI.openProject(${JSON.stringify(workspacePath)})`);
-  await reloadRenderer();
-  await waitForCondition(async () => (await evaluateRenderer<string>("document.body.innerText")).toLowerCase().includes(path.basename(workspacePath).toLowerCase()));
   smokeRecord("packaged_workspace_name_visible=PASS");
   await waitForCondition(async () => (await apiJson("/api/workspace/tree")).status === 200);
   smokeRecord("packaged_workspace_tree_ready=PASS");
@@ -870,6 +1060,14 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   smokeRecord("packaged_repository_search=PASS");
   smokeRecord("packaged_repository_index_ui_responsive=PASS");
   smokeRecord("packaged_substantial_repository=PASS");
+  await capturePackagedSmokeScreenshot("02-workspace-ready");
+  await evaluateRenderer<void>(`(() => { const button = Array.from(document.querySelectorAll('button')).find((element) => element.getAttribute('aria-label') === 'Select model'); if (button) button.click(); })()`);
+  await delay(100);
+  await capturePackagedSmokeScreenshot("02a-model-catalog");
+  await evaluateRenderer<void>(`(() => { const input = document.querySelector('input[aria-label="Filter models or providers"]'); const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value'); if (input && descriptor && descriptor.set) { descriptor.set.call(input, 'auto'); input.dispatchEvent(new Event('input', { bubbles: true })); } })()`);
+  await delay(100);
+  await capturePackagedSmokeScreenshot("02b-model-filter");
+  await evaluateRenderer<void>(`(() => { const input = document.querySelector('input[aria-label="Filter models or providers"]'); if (input) input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); })()`);
 
   // Run the workflow in the SAME session the renderer follows ("default"). SSE is now scoped
   // per session (isolation), so the reload-rehydration check below must observe the session the
@@ -892,6 +1090,7 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   if (!repairingSeen) throw new Error("Packaged workflow did not traverse bounded repair");
   smokeRecord("packaged_workflow=PASS");
   smokeRecord("packaged_failure_repair_pass=PASS");
+  await capturePackagedSmokeScreenshot("03-workflow-completed");
 
   await delay(300);
   for (let reload = 0; reload < 5; reload++) {
@@ -936,10 +1135,11 @@ async function runPackagedInterruptionSmoke(): Promise<void> {
 
 async function runPackagedRecoverySmoke(testSecret: string): Promise<void> {
   const recovered = await apiJson("/api/sessions/packaged-interrupt");
-  if (recovered.body.session?.status !== "failed") throw new Error("Interrupted session was not failed safely");
+  if (recovered.body.session?.status !== "recovering") throw new Error("Interrupted session was not placed in safe recovery");
   if ((recovered.body.pendingApprovals?.length ?? 0) !== 0) throw new Error("Interrupted approval survived restart");
-  if (!JSON.stringify(recovered.body.events).includes("recovery_required")) {
-    throw new Error("Recovery-required event was not reconstructed");
+  const recoveryEvents = JSON.stringify(recovered.body.events);
+  if (!recoveryEvents.includes("turn.recovery") || !recoveryEvents.includes("replan_required")) {
+    throw new Error("No-replay recovery event was not reconstructed");
   }
   smokeRecord("electron_restart_failed_safely=PASS");
   smokeRecord("electron_restart_no_approval_replay=PASS");
@@ -960,8 +1160,12 @@ async function runPackagedRecoverySmoke(testSecret: string): Promise<void> {
   }, "/api/send");
   if (fresh.status !== 200 || !fresh.body.taskId) throw new Error("Fresh workflow could not start after recovery");
   const terminal = await waitForTask(fresh.body.taskId, "packaged-fresh", true);
-  if (terminal.phase !== "completed") throw new Error("Fresh post-restart workflow did not complete");
+  const freshSession = await apiJson("/api/sessions/packaged-fresh");
+  if (terminal.phase !== "blocked" || !JSON.stringify(freshSession.body.events).includes("no_effective_change")) {
+    throw new Error("Fresh post-restart workflow did not fail closed for its no-op plan");
+  }
   smokeRecord("electron_restart_fresh_task=PASS");
+  await capturePackagedSmokeScreenshot("04-recovery");
   smokeRecord("PACKAGED_RECOVERY_SMOKE_OK");
 }
 
@@ -972,6 +1176,13 @@ async function runPackagedSmoke(): Promise<void> {
   if (!app.isPackaged) throw new Error("Packaged smoke was not running from a packaged executable");
   if (!workspacePath || !testSecret) throw new Error("Packaged smoke inputs are missing");
   await waitForRenderer();
+  smokeRecord("PACKAGED_STARTUP=PASS");
+  await import("@codeforge/forge-green");
+  smokeRecord("FORGEGREEN_RUNTIME=PASS");
+  await import("@codeforge/eight-bit");
+  smokeRecord("EIGHT_BIT_RUNTIME=PASS");
+  await import("@codeforge/cloud-db");
+  smokeRecord("CLOUD_DB_PACKAGED_RUNTIME=PASS");
   smokeRecord(`smoke_mode=${mode}`);
   smokeRecord(`smoke_run_id=${process.env.CODEFORGE_SMOKE_RUN_ID ?? "missing"}`);
   smokeRecord(`electron_version=${process.versions.electron}`);
@@ -1038,11 +1249,13 @@ async function startPrimaryInstance(): Promise<void> {
 
   const dbPath = path.join(app.getPath("userData"), "codeforge.db");
   smokeRecord(`WHEN_READY_DBPATH_${dbPath}`);
+  // Complete the renderer launch before local runtime recovery begins. Chromium creates a
+  // restricted Windows token for this sandboxed renderer; keeping that boundary explicit also
+  // prevents database startup work from obscuring a genuine launch failure.
+  await createWindow();
+  smokeRecord("WHEN_READY_WINDOW_CREATED");
   await initializeServer(dbPath);
   smokeRecord("WHEN_READY_SERVER_INITIALIZED");
-
-  createWindow();
-  smokeRecord("WHEN_READY_WINDOW_CREATED");
 
   // Background: refresh the live Models.dev catalog, then discover + verify free models for any
   // already-connected providers. Failures are non-fatal (snapshot remains); the UI refreshes when
@@ -1068,7 +1281,7 @@ async function startPrimaryInstance(): Promise<void> {
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+      void createWindow().catch(handleStartupFailure);
     }
   });
 }
@@ -1127,14 +1340,52 @@ const IS_PRIMARY_INSTANCE = installSingleInstanceGuard({
 });
 if (!IS_PRIMARY_INSTANCE) smokeRecord("SECOND_INSTANCE_EXIT");
 
+app.on("child-process-gone", (_event, details) => {
+  const detail = `CHILD_PROCESS_GONE=${details.type}:${details.reason}:${details.exitCode}`;
+  smokeRecord(detail);
+  console.error(`[CodeForge] ${detail}`);
+});
+
+app.on("before-quit", (event) => {
+  if (isQuitting) return;
+  event.preventDefault();
+  void requestClose();
+});
+
+app.on("will-quit", () => {
+  tray?.destroy();
+  tray = null;
+});
+
 app.on("window-all-closed", () => {
-  if (server) {
-    server.stop();
-    server = null;
+  if (isQuitting) return;
+  if (process.platform !== "darwin") void requestClose();
+});
+
+ipcMain.handle("app:close-decision", async (event, payload: { decision?: unknown; remember?: unknown }) => {
+  if (event.sender !== mainWindow?.webContents) throw new Error("Invalid close decision sender");
+  const decision = payload?.decision;
+  if (decision !== "cancel" && decision !== "tray" && decision !== "quit" && decision !== "quit-anyway") {
+    throw new Error("Invalid close decision");
   }
-  if (process.platform !== "darwin") {
-    app.quit();
+  const status = await currentRuntimeStatus();
+  closeRequestInFlight = false;
+  if (decision === "cancel") return;
+  if (Boolean(payload.remember) && status.recoverable && (decision === "tray" || decision === "quit")) {
+    setCloseBehavior(decision === "tray" ? "tray" : "quit-safe");
   }
+  if (decision === "tray") {
+    hideToTray();
+    return;
+  }
+  if (decision === "quit-anyway" || (decision === "quit" && status.recoverable)) {
+    await completeSafeQuit();
+    return;
+  }
+  // Work became unrecoverable while the dialog was open. Re-present the current facts instead of
+  // silently converting a safe quit into a destructive one.
+  closeRequestInFlight = true;
+  mainWindow?.webContents.send("app:close-requested", { status, preference: getCloseBehavior() });
 });
 
 ipcMain.handle("dialog:selectDirectory", async () => {
@@ -1142,6 +1393,14 @@ ipcMain.handle("dialog:selectDirectory", async () => {
 });
 
 ipcMain.handle("project:getRecent", async () => {
+  if (PACKAGED_SMOKE && process.env.CODEFORGE_SMOKE_WORKSPACE && fs.existsSync(process.env.CODEFORGE_SMOKE_WORKSPACE)) {
+    return [{
+      id: "packaged-smoke-workspace",
+      path: path.resolve(process.env.CODEFORGE_SMOKE_WORKSPACE),
+      name: path.basename(process.env.CODEFORGE_SMOKE_WORKSPACE),
+      lastOpened: new Date().toISOString(),
+    } satisfies ProjectInfo];
+  }
   return getRecentProjects();
 });
 
@@ -1285,19 +1544,30 @@ ipcMain.handle("onboarding:setCompleted", async (_event, completed: boolean) => 
 
 ipcMain.handle("cloud:auth:start", async () => {
   try {
+    if (!CLOUD_API_URL) throw new CloudAuthError("configuration", "CodeForge Cloud endpoint is not configured");
     const result = await runCodeForgeCloudAuth({
       cloudApiUrl: CLOUD_API_URL,
     });
     saveCloudTokens(result.accessToken, result.refreshToken, result.user);
     await registerCloudAdapter();
     return { ok: true, user: result.user };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return { ok: false, error: msg };
+  } catch (error) {
+    const kind = error instanceof CloudAuthError ? error.kind : "network";
+    const detail = error instanceof Error ? error.message : String(error);
+    console.warn(`[CodeForge] cloud auth failed kind=${kind} endpointConfigured=${Boolean(CLOUD_API_URL)} detail=${detail}`);
+    return { ok: false, error: describeCloudAuthFailure(error) };
   }
 });
 
 ipcMain.handle("cloud:account:get", async () => {
+  if (PACKAGED_SMOKE) {
+    return {
+      user: { displayName: "Packaged smoke" },
+      planId: "free",
+      planName: "Free",
+      creditBalance: 500000,
+    };
+  }
   const tokens = getStoredCloudTokens();
   if (!tokens.accessToken) return null;
 

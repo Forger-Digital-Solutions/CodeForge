@@ -27,3 +27,15 @@ export {
   type ForgeGreenCacheStoreOptions,
   type ForgeGreenCacheHit,
 } from "./forgegreen-cache-store.js";
+export {
+  DesktopWorkerBridge,
+  DesktopWorkerExecutor,
+  createDesktopWorkerBridge,
+} from "./desktop-worker-bridge.js";
+export {
+  DurableAgentContinuationStore,
+  createDurableAgentContinuationStore,
+  type DurableAgentContinuation,
+  type ContinuationClaim,
+  type ContinuationObservation,
+} from "./durable-agent-continuation.js";

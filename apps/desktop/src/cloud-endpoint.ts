@@ -18,6 +18,8 @@
  * for a release build to ship with the override path live: a packaged production app ignores the
  * environment entirely.
  */
+import { isIP } from "node:net";
+
 export type CloudBuildChannel = "development" | "staging" | "production";
 
 export interface CloudEndpointManifest {
@@ -48,6 +50,15 @@ export const CLOUD_ENDPOINT_OVERRIDE_VARS = ["CODEFORGE_CLOUD_URL", "CODEFORGE_C
 
 export const DEFAULT_DEVELOPMENT_CLOUD_URL = "http://127.0.0.1:3220";
 
+/** Loopback is valid only for an explicitly local development build. */
+export function isLoopbackCloudHostname(hostname: string): boolean {
+  const normalized = hostname.toLowerCase().replace(/^\[|\]$/g, "").replace(/\.$/, "");
+  if (normalized === "localhost" || normalized === "::1") return true;
+  if (isIP(normalized) !== 4) return false;
+  const firstOctet = Number(normalized.split(".", 1)[0]);
+  return firstOctet === 127;
+}
+
 export class CloudEndpointError extends Error {
   constructor(message: string) {
     super(message);
@@ -70,7 +81,7 @@ export function assertValidCloudUrl(rawUrl: string, channel: CloudBuildChannel):
     throw new CloudEndpointError(`CodeForge Cloud URL is not a valid absolute URL: '${rawUrl}'`);
   }
 
-  const isLoopback = url.hostname === "127.0.0.1" || url.hostname === "localhost" || url.hostname === "::1";
+  const isLoopback = isLoopbackCloudHostname(url.hostname);
 
   if (url.protocol === "https:") {
     // Always acceptable.
@@ -79,6 +90,12 @@ export function assertValidCloudUrl(rawUrl: string, channel: CloudBuildChannel):
   } else {
     throw new CloudEndpointError(
       `CodeForge Cloud URL must use HTTPS on the '${channel}' channel (plain http is permitted only for loopback development): '${rawUrl}'`,
+    );
+  }
+
+  if (isLoopback && channel !== "development") {
+    throw new CloudEndpointError(
+      `CodeForge Cloud URL must not use a loopback host on the '${channel}' channel: '${rawUrl}'`,
     );
   }
 
