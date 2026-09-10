@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import type { ExecutionMode, UserIntentHoldPolicy } from "@codeforge/protocol";
 import type { WorkspaceState } from "./workspace-sse.js";
 import { readRememberedExecutionMode, rememberExecutionMode, useWorkspaceSSE } from "./workspace-sse.js";
@@ -40,9 +40,18 @@ export interface SessionSummary {
   updatedAt?: string;
 }
 
+export interface Attachment {
+  id: string;
+  type: "file" | "image" | "folder";
+  name: string;
+  path?: string;
+  content?: string;
+  size?: number;
+}
+
 export interface WorkspaceAppProps {
   sseUrl?: string;
-  onSendMessage?: (message: string, steer: boolean, executionMode: ExecutionMode) => void;
+  onSendMessage?: (message: string, steer: boolean, executionMode: ExecutionMode, attachments?: Attachment[]) => void;
   models?: ModelSelectorItem[];
   selectedModelId?: string | null;
   onSelectModel?: (model: ModelSelectorItem, sessionId?: string) => void;
@@ -81,6 +90,7 @@ export default function WorkspaceApp({
   const [inspectorCollapsed, setInspectorCollapsed] = useState(true);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [executionMode, setExecutionMode] = useState<ExecutionMode>(() => readRememberedExecutionMode());
+  const [showQuickActions, setShowQuickActions] = useState(false);
 
   React.useEffect(() => {
     try { window.localStorage.setItem("codeforge:sidebar-collapsed", String(sidebarCollapsed)); } catch { /* convenience preference */ }
@@ -132,11 +142,107 @@ export default function WorkspaceApp({
   const commands: Command[] = [
     {
       id: "new-session",
-      label: "New Session",
-      description: "Start a new coding session",
+      label: "New Task",
+      description: "Start a new coding task",
       icon: "＋",
       action: startNewSession,
       shortcut: "Ctrl+N",
+    },
+    {
+      id: "open-workspace",
+      label: "Open Workspace",
+      description: "Switch to a different project folder",
+      icon: "📁",
+      action: onOpenProjects ?? (() => {}),
+      shortcut: "Ctrl+Shift+O",
+    },
+    {
+      id: "search-sessions",
+      label: "Search Sessions",
+      description: "Find previous tasks and sessions",
+      icon: "🔍",
+      action: () => setShowQuickActions(true),
+      shortcut: "Ctrl+K",
+    },
+    {
+      id: "search-files",
+      label: "Search Files",
+      description: "Find files in the current workspace",
+      icon: "📄",
+      action: () => setState((prev) => ({ ...prev, leftNav: "files" })),
+      shortcut: "Ctrl+P",
+    },
+    {
+      id: "attach-file",
+      label: "Attach File",
+      description: "Add a file reference to the current task",
+      icon: "📎",
+      action: () => {},
+      shortcut: "Ctrl+Shift+A",
+    },
+    {
+      id: "toggle-sidebar",
+      label: "Toggle Sidebar",
+      description: "Show or hide the left navigation panel",
+      icon: "☰",
+      action: () => setSidebarCollapsed(!sidebarCollapsed),
+      shortcut: "Ctrl+B",
+    },
+    {
+      id: "toggle-inspector",
+      label: "Toggle Inspector",
+      description: "Show or hide the right details panel",
+      icon: "🔍",
+      action: () => setInspectorCollapsed(!inspectorCollapsed),
+      shortcut: "Ctrl+Alt+B",
+    },
+    {
+      id: "model-picker",
+      label: "Model Picker",
+      description: "Choose a model for the current task",
+      icon: "🤖",
+      action: () => {},
+      shortcut: "Ctrl+M",
+    },
+    {
+      id: "usage-billing",
+      label: "Usage & Billing",
+      description: "View your plan, credits, and usage",
+      icon: "💳",
+      action: () => onUpgradeNavigation?.(""),
+      shortcut: "",
+    },
+    {
+      id: "repository-intelligence",
+      label: "Repository Intelligence",
+      description: "View indexing status and settings",
+      icon: "📊",
+      action: () => {},
+      shortcut: "",
+    },
+    {
+      id: "permissions",
+      label: "Permissions & Approvals",
+      description: "Configure approval behavior",
+      icon: "🔐",
+      action: onOpenSettings ?? (() => {}),
+      shortcut: "",
+    },
+    {
+      id: "mcp-plugins",
+      label: "MCP / Plugins",
+      description: "Manage Model Context Protocol servers",
+      icon: "🔌",
+      action: onOpenSettings ?? (() => {}),
+      shortcut: "",
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      description: "Open application settings",
+      icon: "⚙",
+      action: onOpenSettings ?? (() => {}),
+      shortcut: "Ctrl+,",
     },
     {
       id: "clear-context",
@@ -152,20 +258,6 @@ export default function WorkspaceApp({
       description: "Show detailed debug information",
       icon: "🐛",
       action: () => setState((prev) => ({ ...prev, displayMode: prev.displayMode === "debug" ? "compact" : "debug" })),
-    },
-    {
-      id: "toggle-compact",
-      label: "Compact View",
-      description: "Show compact conversation view",
-      icon: "☰",
-      action: () => setState((prev) => ({ ...prev, displayMode: "compact" })),
-    },
-    {
-      id: "toggle-detailed",
-      label: "Detailed View",
-      description: "Show detailed conversation view",
-      icon: "☷",
-      action: () => setState((prev) => ({ ...prev, displayMode: "detailed" })),
     },
     {
       id: "approve-all",
@@ -202,8 +294,32 @@ export default function WorkspaceApp({
         e.preventDefault();
         setPaletteOpen((prev) => !prev);
       }
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setShowQuickActions(true);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "b") {
+        e.preventDefault();
+        setSidebarCollapsed(!sidebarCollapsed);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.altKey && e.key === "b") {
+        e.preventDefault();
+        setInspectorCollapsed(!inspectorCollapsed);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "m") {
+        e.preventDefault();
+        // Model picker focus - would need integration with ModelSelector
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "n") {
+        e.preventDefault();
+        startNewSession();
+      }
+      if (e.key === "Escape") {
+        setShowQuickActions(false);
+        setPaletteOpen(false);
+      }
     },
-    []
+    [sidebarCollapsed, inspectorCollapsed, startNewSession]
   );
 
   React.useEffect(() => {
@@ -211,12 +327,21 @@ export default function WorkspaceApp({
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
   }, [handleGlobalKeyDown]);
 
-  const handleSend = (message: string, steer = false) => {
+  const handleSend = (message: string, attachments?: Attachment[]) => {
     const requestMode = executionMode;
     if (onSendMessage) {
-      onSendMessage(message, steer, requestMode);
+      onSendMessage(message, false, requestMode, attachments);
     } else {
-      sendMessage(message, steer, requestMode);
+      sendMessage(message, false, requestMode);
+    }
+  };
+
+  const handleSteer = (message: string, attachments?: Attachment[]) => {
+    const requestMode = executionMode;
+    if (onSendMessage) {
+      onSendMessage(message, true, requestMode, attachments);
+    } else {
+      sendMessage(message, true, requestMode);
     }
   };
 
@@ -233,7 +358,7 @@ export default function WorkspaceApp({
         : "Steer the agent…"
       : state.pendingQuestion
         ? "Answer the agent..."
-        : "Ask CodeForge to work on this project... try: Fix add function to return a + b";
+        : "Describe a task or ask about your code…";
 
   const startFailureEvent = [...state.events].reverse().find((event) => event.type === "execution.start_failed");
   const startFailure = startFailureEvent?.type === "execution.start_failed"
@@ -255,48 +380,77 @@ export default function WorkspaceApp({
             onOpenSettings={onOpenSettings}
             onOpenHelp={onOpenHelp}
             workItems={state.workItems}
+            onNavigateFiles={() => setState((prev) => ({ ...prev, leftNav: "files" }))}
+            onNavigateTasks={() => setState((prev) => ({ ...prev, leftNav: "tasks" }))}
+            currentNavView={state.leftNav === "files" ? "files" : "tasks"}
           />
         )}
 
         <div className="workspace-center">
-          <button
-            className="panel-toggle panel-toggle-left"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-          >
-            {sidebarCollapsed ? "▶" : "◀"}
-          </button>
+          <div className="workspace-toolbar">
+            <button
+              className="toolbar-btn toolbar-toggle"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              title={sidebarCollapsed ? "Show sidebar (Ctrl+B)" : "Hide sidebar (Ctrl+B)"}
+              aria-label={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+              aria-expanded={!sidebarCollapsed}
+            >
+              ☰
+            </button>
 
-          <button
-            className="panel-toggle panel-toggle-right"
-            onClick={() => setInspectorCollapsed(!inspectorCollapsed)}
-            title={inspectorCollapsed ? "Expand Inspector" : "Collapse Inspector"}
-          >
-            {inspectorCollapsed ? "◀" : "▶"}
-          </button>
+            {state.session && (
+              <Header
+                session={state.session}
+                agentStatus={state.agentStatus}
+                isRunning={state.isRunning}
+                isPaused={state.isPaused}
+                activePhase={state.activePhase}
+                workflowProgress={state.workflowProgress}
+                onStop={() => {
+                  const activeTurn = state.turns.find((t) => t.status === "running");
+                  if (activeTurn && state.session) stopTurn(state.session.id, activeTurn.id);
+                }}
+                onPause={() => {
+                  const activeTurn = state.turns.find((t) => t.status === "running");
+                  if (activeTurn && state.session) pauseTurn(state.session.id, activeTurn.id);
+                }}
+                onResume={() => {
+                  const pausedTurn = state.turns.find((t) => t.status === "paused");
+                  if (pausedTurn && state.session) resumeTurn(state.session.id, pausedTurn.id);
+                }}
+              />
+            )}
 
-          {state.session && (
-            <Header
-              session={state.session}
-              agentStatus={state.agentStatus}
-              isRunning={state.isRunning}
-              isPaused={state.isPaused}
-              activePhase={state.activePhase}
-              workflowProgress={state.workflowProgress}
-              onStop={() => {
-                const activeTurn = state.turns.find((t) => t.status === "running");
-                if (activeTurn && state.session) stopTurn(state.session.id, activeTurn.id);
-              }}
-              onPause={() => {
-                const activeTurn = state.turns.find((t) => t.status === "running");
-                if (activeTurn && state.session) pauseTurn(state.session.id, activeTurn.id);
-              }}
-              onResume={() => {
-                const pausedTurn = state.turns.find((t) => t.status === "paused");
-                if (pausedTurn && state.session) resumeTurn(state.session.id, pausedTurn.id);
-              }}
-            />
-          )}
+            <div className="toolbar-spacer" />
+
+            <div className="toolbar-group">
+              {showQuickActions && (
+                <CommandPalette
+                  isOpen={showQuickActions}
+                  onClose={() => setShowQuickActions(false)}
+                  commands={commands}
+                />
+              )}
+              <button
+                className="toolbar-btn"
+                onClick={() => setShowQuickActions(!showQuickActions)}
+                title="Command Center (Ctrl+K)"
+                aria-label="Command Center"
+              >
+                ⌕
+              </button>
+            </div>
+
+            <button
+              className="toolbar-btn toolbar-toggle"
+              onClick={() => setInspectorCollapsed(!inspectorCollapsed)}
+              title={inspectorCollapsed ? "Show inspector (Ctrl+Alt+B)" : "Hide inspector (Ctrl+Alt+B)"}
+              aria-label={inspectorCollapsed ? "Show inspector" : "Hide inspector"}
+              aria-expanded={!inspectorCollapsed}
+            >
+              🔍
+            </button>
+          </div>
 
           {(state.activeTaskId || state.isRunning || state.workflowError || state.lastWorkflowResult || state.pendingApproval?.tool === "workflow" || state.workItems.some((item) => item.kind === "change_delivery" || item.kind === "cloud_publication")) && (
             <div style={{ padding: "8px 12px" }}>
@@ -344,7 +498,7 @@ export default function WorkspaceApp({
           <Composer
             placeholder={placeholder}
             onSend={handleSend}
-            onSteer={(msg) => handleSend(msg, true)}
+            onSteer={handleSteer}
             onStop={() => {
               const activeTurn = state.turns.find((t) => t.status === "running");
               if (activeTurn && state.session) stopTurn(state.session.id, activeTurn.id);

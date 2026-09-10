@@ -3,6 +3,7 @@ import type { WorkspaceEvent } from "@codeforge/protocol";
 import type { SessionRecord, WorkItem, TurnRecord } from "@codeforge/sessions";
 import FileExplorer from "./FileExplorer.js";
 import RunInspection from "./RunInspection.js";
+import DiffViewer from "./DiffViewer.js";
 
 function isWorkItemKind<K extends WorkItem["kind"]>(
   item: WorkItem,
@@ -26,10 +27,10 @@ interface InspectorProps {
 
 // "commands" (not "terminal") — this panel shows executed-command history, not an interactive
 // PTY. Naming it Terminal misrepresented the functionality; renamed for honesty (recovery brief).
-const TABS = ["run", "changes", "commands", "files", "evidence", "overview"];
+const TABS = ["changes", "run", "commands", "files", "evidence", "overview"];
 const TAB_LABELS: Record<string, string> = {
-  run: "Run",
   changes: "Changes",
+  run: "Run",
   commands: "Commands",
   files: "Files",
   evidence: "Evidence",
@@ -41,10 +42,10 @@ export default function Inspector({ activeTab, onTabSelect, session, workItems, 
 
   const renderTabContent = () => {
     switch (safeTab) {
-      case "run":
-        return <RunInspection events={events} workItems={workItems} preferredRunId={activeTaskId} startFailure={startFailure} />;
       case "changes":
         return renderChanges(workItems);
+      case "run":
+        return <RunInspection events={events} workItems={workItems} preferredRunId={activeTaskId} startFailure={startFailure} />;
       case "commands":
         return renderCommands(workItems);
       case "files":

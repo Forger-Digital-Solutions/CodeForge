@@ -10,6 +10,7 @@ import { ActivityIcon, activityLabel, resolveActivityKind, type ActivityKind, ty
 import { EightBitStatusBadge } from "./EightBitStatusBadge.js";
 import { deriveLatestEightBitStatus } from "./eight-bit-status.js";
 import { resolveAssetUrlByName } from "./emoji-assets.js";
+import { stripToolProtocol } from "./assistant-content.js";
 
 interface ConversationProps {
   turns: TurnRecord[];
@@ -477,6 +478,16 @@ export default function Conversation({ turns, workItems, displayMode, events, on
   // event says, never influences routing/health/eligibility. See eight-bit-status.ts.
   const eightBitStatus = useMemo(() => deriveLatestEightBitStatus(events), [events]);
 
+  // Presentation normalization: strip raw tool protocol from assistant messages before rendering
+  const sanitizedTimeline = useMemo(() => {
+    return timeline.map(item => {
+      if (item.kind === "assistant" && item.text) {
+        return { ...item, text: stripToolProtocol(item.text) };
+      }
+      return item;
+    });
+  }, [timeline]);
+
   const handleScroll = () => {
     if (!containerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
@@ -506,10 +517,10 @@ export default function Conversation({ turns, workItems, displayMode, events, on
   );
 
   const relevantItems = workItems.filter((w) => w.kind !== "context_ref");
-  const isEmpty = timeline.length === 0 && turns.length === 0 && relevantItems.length === 0;
+  const isEmpty = sanitizedTimeline.length === 0 && turns.length === 0 && relevantItems.length === 0;
   // Prefer the event-sourced timeline (correct chronological interleaving of user prompts,
   // assistant prose, and tool activity). Fall back to turns+workItems only when no events exist.
-  const useTimeline = timeline.length > 0;
+  const useTimeline = sanitizedTimeline.length > 0;
 
   return (
     <div
@@ -527,6 +538,19 @@ export default function Conversation({ turns, workItems, displayMode, events, on
               Describe a task or ask about your code.
             </div>
             {contextLabel && <div className="empty-state-context">{contextLabel}</div>}
+            
+            <div className="empty-state-favorites">
+              <div className="empty-state-favorites-label">Favorite models</div>
+              <div className="empty-state-favorites-list">
+                <button type="button" className="empty-state-model-btn" disabled>
+                  ForgeAuto/Free
+                </button>
+                <button type="button" className="empty-state-model-btn" disabled>
+                  + Add favorite
+                </button>
+              </div>
+            </div>
+
             <div className="suggested-prompts">
               {[
                 "Explain this repository structure",
@@ -548,7 +572,7 @@ export default function Conversation({ turns, workItems, displayMode, events, on
           </div>
         ) : useTimeline ? (
           <>
-            {timeline.map((item) => (
+            {sanitizedTimeline.map((item) => (
               <TimelineItemView key={item.id} item={item} />
             ))}
             {relevantItems

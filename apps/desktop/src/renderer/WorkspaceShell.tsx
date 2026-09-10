@@ -122,6 +122,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
   const [providerStatus, setProviderStatus] = useState<Record<string, { status: string; error?: string }>>({});
   const [isForgeZeroOpen, setIsForgeZeroOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isRepoIntelligenceOpen, setIsRepoIntelligenceOpen] = useState(false);
   const [userIntentHoldPolicy, setUserIntentHoldPolicy] = useState<UserIntentHoldPolicy>(() => {
     const value = window.localStorage.getItem(USER_INTENT_HOLD_POLICY_KEY);
     return value === "always" || value === "off" || value === "expensive_actions_only" ? value : "expensive_actions_only";
@@ -129,6 +130,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
   const [cloudAccount, setCloudAccount] = useState<any>(null);
   const [isQuotaExhaustedOpen, setIsQuotaExhaustedOpen] = useState(false);
   const [repositoryIndex, setRepositoryIndex] = useState<RepositoryIndexStatus>({ state: "NOT_INDEXED" });
+  const [projectBranch, setProjectBranch] = useState<string>("");
 
   useEffect(() => {
     fetch(`${SERVER_BASE_URL}/api/workspace/set`, {
@@ -137,6 +139,22 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
       body: JSON.stringify({ path: project.path }),
     }).catch(() => {});
     loadCloudAccount();
+    // Try to get branch from git
+    const getBranch = async () => {
+      try {
+        if (window.electronAPI?.execCommand) {
+          const result = await window.electronAPI.execCommand({
+            command: "git",
+            args: ["rev-parse", "--abbrev-ref", "HEAD"],
+            cwd: project.path,
+          });
+          if (result.exitCode === 0 && result.stdout) {
+            setProjectBranch(result.stdout.trim());
+          }
+        }
+      } catch {}
+    };
+    getBranch();
   }, [project.path]);
 
   useEffect(() => {
@@ -341,27 +359,81 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
           </button>
           <div className="header-project">
             <span className="project-name">{project.name}</span>
-            <span className="project-path">{project.path}</span>
-            <span className={`repository-index-status repository-index-${repositoryIndex.state.toLowerCase()}`} title="Repository indexing is local; raw source is not uploaded to build the index.">
-              Repository Intelligence · {repositoryIndex.state === "INDEXING" && repositoryIndex.progress
-                ? `Indexing ${repositoryIndex.progress.filesProcessed.toLocaleString()} / ${repositoryIndex.progress.filesDiscovered.toLocaleString()}`
-                : repositoryIndex.state === "READY" || repositoryIndex.state === "DEGRADED"
-                  ? `${repositoryIndex.state === "READY" ? "Ready" : "Degraded"} · ${(repositoryIndex.fileCount ?? 0).toLocaleString()} files · ${(repositoryIndex.symbolCount ?? 0).toLocaleString()} symbols`
-                  : repositoryIndex.state}
-              {repositoryIndex.local ? " · Local structural index" : ""}
-            </span>
-            <span className="repository-index-actions">
-              <button type="button" onClick={() => void setRepositoryIndexEnabled(repositoryIndex.enabled === false)}>
-                {repositoryIndex.enabled === false ? "Enable index" : "Disable index"}
-              </button>
-              <button type="button" disabled={repositoryIndex.enabled === false || repositoryIndex.state === "INDEXING"} onClick={() => void rebuildRepositoryIndex()}>
-                Rebuild
-              </button>
-            </span>
+            {projectBranch && <span className="project-branch">• {projectBranch}</span>}
           </div>
         </div>
 
+        <div className="header-center">
+          {/* Empty - no permanent telemetry */}
+        </div>
+
         <div className="header-right">
+          <button
+            className="header-btn header-icon-btn"
+            onClick={() => setIsRepoIntelligenceOpen(!isRepoIntelligenceOpen)}
+            aria-expanded={isRepoIntelligenceOpen}
+            aria-label="Repository Intelligence"
+            title="Repository Intelligence"
+          >
+            📊
+          </button>
+          {isRepoIntelligenceOpen && (
+            <>
+              <div
+                style={{ position: "fixed", inset: 0, zIndex: 199 }}
+                onClick={() => setIsRepoIntelligenceOpen(false)}
+              />
+              <div className="repo-intelligence-popover" onClick={(e) => e.stopPropagation()}>
+                <div className="repo-intelligence-popover-title">Repository Intelligence</div>
+                <div className="repo-intelligence-popover-row">
+                  <span className="repo-intelligence-popover-label">Status</span>
+                  <span className="repo-intelligence-popover-value">
+                    {repositoryIndex.state === "INDEXING" && repositoryIndex.progress
+                      ? `Indexing ${repositoryIndex.progress.filesProcessed.toLocaleString()} / ${repositoryIndex.progress.filesDiscovered.toLocaleString()}`
+                      : repositoryIndex.state === "READY" || repositoryIndex.state === "DEGRADED"
+                        ? `${repositoryIndex.state === "READY" ? "Ready" : "Degraded"}`
+                        : repositoryIndex.state}
+                  </span>
+                </div>
+                {repositoryIndex.state === "READY" || repositoryIndex.state === "DEGRADED" ? (
+                  <>
+                    <div className="repo-intelligence-popover-row">
+                      <span className="repo-intelligence-popover-label">Indexed</span>
+                      <span className="repo-intelligence-popover-value">
+                        {(repositoryIndex.fileCount ?? 0).toLocaleString()} files · {(repositoryIndex.symbolCount ?? 0).toLocaleString()} symbols
+                      </span>
+                    </div>
+                    <div className="repo-intelligence-popover-row">
+                      <span className="repo-intelligence-popover-label">Mode</span>
+                      <span className="repo-intelligence-popover-value">Local structural index</span>
+                    </div>
+                  </>
+                ) : null}
+                <div className="repo-intelligence-popover-divider" />
+                <button
+                  className="repo-intelligence-popover-action"
+                  onClick={() => void setRepositoryIndexEnabled(repositoryIndex.enabled === false)}
+                >
+                  {repositoryIndex.enabled === false ? "Enable index" : "Disable index"}
+                </button>
+                <button
+                  className="repo-intelligence-popover-action"
+                  disabled={repositoryIndex.enabled === false || repositoryIndex.state === "INDEXING"}
+                  onClick={() => void rebuildRepositoryIndex()}
+                >
+                  Rebuild
+                </button>
+                <div className="repo-intelligence-popover-divider" />
+                <button
+                  className="repo-intelligence-popover-action settings-link"
+                  onClick={() => { setIsRepoIntelligenceOpen(false); setIsSettingsOpen(true); }}
+                >
+                  Open Repository Intelligence Settings
+                </button>
+              </div>
+            </>
+          )}
+
           {cloudAccount ? (
             <button
               className="header-btn cloud-account-btn"
@@ -371,7 +443,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
             >
               <span>✦ {cloudAccount.user?.displayName || "Cloud User"}</span>
               <span style={{ opacity: 0.5 }}>|</span>
-              <span>{cloudAccount.planName} ({Math.round(cloudAccount.creditBalance / 1000)}k)</span>
+              <span>{cloudAccount.planName}</span>
             </button>
           ) : (
             <button

@@ -15,6 +15,7 @@ export interface ModelSelectorItem {
   tier: ModelTier;
   description?: string;
   entitlementStatus?: ModelEntitlementStatus;
+  favorite?: boolean;
 }
 
 export interface ModelSection {
@@ -70,6 +71,25 @@ export function filterModelSections(sections: ModelSection[], query: string): Mo
     .filter((section) => section.models.length > 0);
 }
 
+const FAVORITES_KEY = "codeforge:model-favorites";
+
+function loadFavorites(): Set<string> {
+  try {
+    const stored = window.localStorage.getItem(FAVORITES_KEY);
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function saveFavorites(favorites: Set<string>): void {
+  try {
+    window.localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favorites]));
+  } catch {
+    // ignore
+  }
+}
+
 export interface ModelSelectorProps {
   models: ModelSelectorItem[];
   selectedId: string | null;
@@ -80,6 +100,7 @@ export interface ModelSelectorProps {
   onShowDetails?: (model: ModelSelectorItem) => void;
   isOpen?: boolean;
   modelSections?: ModelSection[];
+  onToggleFavorite?: (model: ModelSelectorItem) => void;
 }
 
 export function ModelSelector({
@@ -92,11 +113,13 @@ export function ModelSelector({
   onShowDetails,
   isOpen: controlledIsOpen,
   modelSections,
+  onToggleFavorite,
 }: ModelSelectorProps): React.ReactElement {
   const url = upgradeUrl ?? getUpgradeUrl();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [focusedIndex, setFocusedIndex] = useState(0);
+  const [favorites, setFavorites] = useState<Set<string>>(loadFavorites);
   const searchRef = useRef<HTMLInputElement>(null);
   const optionRefs = useRef<Array<HTMLDivElement | null>>([]);
   const isOpen = controlledIsOpen ?? internalIsOpen;
@@ -124,6 +147,20 @@ export function ModelSelector({
     setInternalIsOpen(false);
   };
 
+  const handleToggleFavorite = (e: React.MouseEvent, model: ModelSelectorItem): void => {
+    e.stopPropagation();
+    e.preventDefault();
+    const newFavorites = new Set(favorites);
+    if (newFavorites.has(model.id)) {
+      newFavorites.delete(model.id);
+    } else {
+      newFavorites.add(model.id);
+    }
+    setFavorites(newFavorites);
+    saveFavorites(newFavorites);
+    onToggleFavorite?.({ ...model, favorite: !model.favorite });
+  };
+
   const handleOptionKeyDown = (e: React.KeyboardEvent, model: ModelSelectorItem): void => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -136,7 +173,7 @@ export function ModelSelector({
     ? selectedModel.id === "auto"
       ? selectedModel.description
         ? `${selectedModel.displayName} · ${selectedModel.description}`
-        : "Auto · Best Verified Free"
+        : "ForgeAuto/Free · Automatic free routing"
       : selectedModel.displayName
     : "ForgeAuto/Free · Automatic free routing";
 
@@ -154,7 +191,22 @@ export function ModelSelector({
           models: models.filter((m) => m.tier === "gems_paid"),
         },
       ].filter((s) => s.models.length > 0);
-  const filteredSections = filterModelSections(sections, query);
+
+  // Build sections with favorites at top
+  const favoriteModels = models.filter((m) => favorites.has(m.id));
+  const sectionsWithFavorites: ModelSection[] = [];
+  
+  if (favoriteModels.length > 0) {
+    sectionsWithFavorites.push({
+      sectionId: "favorites",
+      sectionLabel: "★ Favorites",
+      models: favoriteModels,
+    });
+  }
+  
+  sectionsWithFavorites.push(...sections);
+  
+  const filteredSections = filterModelSections(sectionsWithFavorites, query);
   const matchingModelCount = filteredSections.reduce((count, section) => count + section.models.length, 0);
   const flatModels = filteredSections.flatMap((section) => section.models);
 
@@ -223,6 +275,7 @@ export function ModelSelector({
                 {section.models.map((model) => {
                   const optionIndex = flatModels.findIndex((candidate) => candidate.id === model.id);
                   const locked = !isModelUsable(model);
+                  const isFavorite = favorites.has(model.id);
                   return (
                     <div
                       key={model.id}
@@ -232,7 +285,7 @@ export function ModelSelector({
                       aria-selected={model.id === selectedId}
                       aria-disabled={locked || disabled ? true : undefined}
                       title={locked ? `${model.displayName} requires an upgraded plan` : undefined}
-                      className={`model-option ${model.id === selectedId ? "selected" : ""} ${locked ? "locked" : ""}`}
+                      className={`model-option ${model.id === selectedId ? "selected" : ""} ${locked ? "locked" : ""} ${isFavorite ? "favorite" : ""}`}
                       onClick={() => handleSelect(model)}
                       onKeyDown={(e) => handleOptionKeyDown(e, model)}
                     >
@@ -247,6 +300,16 @@ export function ModelSelector({
                         {locked && model.tier === "gems_paid" && (
                           <span className="model-option-badge paid">Unavailable</span>
                         )}
+                        <button
+                          type="button"
+                          className={`model-option-favorite ${isFavorite ? "active" : ""}`}
+                          onClick={(e) => handleToggleFavorite(e, model)}
+                          title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                          aria-pressed={isFavorite}
+                        >
+                          ★
+                        </button>
                         {onShowDetails && model.id !== "auto" && (
                           <button
                             type="button"

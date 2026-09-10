@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { USER_INTENT_HOLD_QUIET_GRACE_MS, type ExecutionMode } from "@codeforge/protocol";
 import SlashCommands, { SLASH_COMMANDS } from "./SlashCommands.js";
 import { ModelSelector, type ModelSelectorItem, type ModelSection } from "./ModelSelector.js";
@@ -29,8 +29,8 @@ export function shouldSubmitOnEnter(e: {
 
 interface ComposerProps {
   placeholder: string;
-  onSend: (message: string) => void;
-  onSteer: (message: string) => void;
+  onSend: (message: string, attachments?: Attachment[]) => void;
+  onSteer: (message: string, attachments?: Attachment[]) => void;
   onStop: () => void;
   onPause: () => void;
   onResume: () => void;
@@ -47,6 +47,15 @@ interface ComposerProps {
   onExecutionModeChange?: (mode: ExecutionMode) => void;
   onComposerActivity?: (active: boolean) => void;
   executionState?: "running" | "user_intent_hold" | "steer_queued" | "reconciling_steer";
+}
+
+export interface Attachment {
+  id: string;
+  type: "file" | "image" | "folder";
+  name: string;
+  path?: string;
+  content?: string; // base64 for images
+  size?: number;
 }
 
 export default function Composer({
@@ -72,8 +81,14 @@ export default function Composer({
 }: ComposerProps) {
   const [input, setInput] = useState("");
   const [showCommands, setShowCommands] = useState(false);
+  const [showAttachments, setShowAttachments] = useState(false);
+  const [showContextPicker, setShowContextPicker] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [contextQuery, setContextQuery] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const holdReleaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const attachmentsRef = useRef<HTMLDivElement>(null);
+  const contextPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => () => {
     if (holdReleaseTimerRef.current) clearTimeout(holdReleaseTimerRef.current);
@@ -85,6 +100,84 @@ export default function Composer({
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
     }
   }, [input]);
+
+  // Handle drag and drop
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      processFiles(files);
+    }
+  }, []);
+
+  const processFiles = async (files: File[]) => {
+    for (const file of files) {
+      const attachment: Attachment = {
+        id: crypto.randomUUID(),
+        type: file.type.startsWith("image/") ? "image" : "file",
+        name: file.name,
+        size: file.size,
+      };
+
+      if (file.type.startsWith("image/")) {
+        const base64 = await fileToBase64(file);
+        attachment.content = base64;
+      } else {
+        const text = await fileToText(file);
+        attachment.content = text;
+      }
+
+      setAttachments((prev) => [...prev, attachment]);
+    }
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const fileToText = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  };
+
+  // Handle clipboard paste
+  const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = Array.from(e.clipboardData.items);
+    const imageItems = items.filter((item) => item.type.startsWith("image/"));
+    
+    if (imageItems.length > 0) {
+      e.preventDefault();
+      for (const item of imageItems) {
+        const file = item.getAsFile();
+        if (file) {
+          const base64 = await fileToBase64(file);
+          const attachment: Attachment = {
+            id: crypto.randomUUID(),
+            type: "image",
+            name: file.name || "pasted-image.png",
+            content: base64,
+            size: file.size,
+          };
+          setAttachments((prev) => [...prev, attachment]);
+        }
+      }
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -109,10 +202,28 @@ export default function Composer({
     const parts = value.split(/\s+/);
     const lastWord = parts[parts.length - 1] ?? "";
     setShowCommands(lastWord.startsWith("/") || value.endsWith("/"));
+    
+    // Handle @ context picker trigger
+    const atIndex = value.lastIndexOf("@");
+    if (atIndex >= 0 && (atIndex === 0 || value[atIndex - 1] === " ")) {
+      const query = value.slice(atIndex + 1);
+      if (query.length > 0 || value.endsWith("@")) {
+        setContextQuery(query);
+        setShowContextPicker(true);
+      } else {
+        setShowContextPicker(false);
+      }
+    } else {
+      setShowContextPicker(false);
+    }
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
   };
 
   const handleSubmit = () => {
-    if (!isComposerSendable(input)) return;
+    if (!isComposerSendable(input) && attachments.length === 0) return;
     const trimmed = input.trim();
     const slashMatch = trimmed.match(/^\/(\w+)(?:\s+(.*))?$/);
     if (slashMatch) {
@@ -124,12 +235,13 @@ export default function Composer({
       return;
     }
     if (isRunning) {
-      onSteer(trimmed);
+      onSteer(trimmed, attachments);
     } else {
-      onSend(trimmed);
+      onSend(trimmed, attachments);
     }
     setInput("");
     setShowCommands(false);
+    setAttachments([]);
   };
 
   const handleCommand = (command: string, arg: string) => {
@@ -187,13 +299,18 @@ export default function Composer({
     if (e.key === "Escape") {
       if (isRunning) onStop();
       setShowCommands(false);
+      setShowAttachments(false);
+      setShowContextPicker(false);
     }
   };
 
   const currentFilter = input.split(/\s+/).pop() ?? "";
 
   return (
-    <div className="workspace-composer" style={{ position: "relative" }}>
+    <div className="workspace-composer" style={{ position: "relative" }}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
       {isPaused && (
         <div className="composer-status">
           <span className="composer-status-dot paused" />
@@ -216,6 +333,44 @@ export default function Composer({
           <button type="button" className="btn-sm danger" onClick={onStop}>Stop</button>
         </div>
       )}
+
+      {/* Attachments preview */}
+      {attachments.length > 0 && (
+        <div className="composer-attachments" ref={attachmentsRef} role="list" aria-label="Attachments">
+          {attachments.map((att) => (
+            <div key={att.id} className="attachment-chip" role="listitem">
+              <span className="attachment-icon" aria-hidden="true">
+                {att.type === "image" ? "🖼" : att.type === "folder" ? "📁" : "📄"}
+              </span>
+              <span className="attachment-name" title={att.name}>{att.name}</span>
+              {att.size && <span className="attachment-size">{formatSize(att.size)}</span>}
+              <button
+                type="button"
+                className="attachment-remove"
+                onClick={() => removeAttachment(att.id)}
+                aria-label={`Remove ${att.name}`}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Context picker */}
+      {showContextPicker && contextQuery.length > 0 && (
+        <div className="context-picker" ref={contextPickerRef} role="listbox" aria-label="Context references">
+          <div className="context-picker-header">@ References</div>
+          <div className="context-picker-items">
+            {/* TODO: Implement actual file/symbol search */}
+            <div className="context-picker-item" role="option">
+              <span>📄</span>
+              <span>No matches for "@{contextQuery}"</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="composer-input-row">
         <textarea
           ref={textareaRef}
@@ -224,13 +379,14 @@ export default function Composer({
           value={input}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
           rows={1}
         />
         <button
           type="button"
-          className={`composer-btn ${isComposerSendable(input) ? "primary" : ""}`}
+          className={`composer-btn ${isComposerSendable(input) || attachments.length > 0 ? "primary" : ""}`}
           onClick={handleSubmit}
-          disabled={!isComposerSendable(input)}
+          disabled={!isComposerSendable(input) && attachments.length === 0}
           title={isRunning ? "Steer (Enter)" : "Send (Enter)"}
           style={{ minWidth: 40, height: 38, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}
         >
@@ -280,6 +436,49 @@ export default function Composer({
               Chat
             </button>
           </div>
+          <div className="composer-attachment-btns">
+            <button
+              type="button"
+              className="attachment-btn"
+              onClick={() => setShowAttachments(!showAttachments)}
+              aria-expanded={showAttachments}
+              aria-label={showAttachments ? "Hide attachments" : "Add attachment"}
+              title={showAttachments ? "Hide attachments" : "Add file, image, or folder (Ctrl+Shift+A)"}
+            >
+              +
+            </button>
+            {showAttachments && (
+              <div className="attachment-menu" role="menu">
+                <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => triggerFileInput("file")}>
+                  <span>📄</span> Add file
+                </button>
+                <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => triggerFileInput("image")}>
+                  <span>🖼</span> Add image
+                </button>
+                <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => triggerFileInput("folder")}>
+                  <span>📁</span> Add folder
+                </button>
+                <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => navigator.clipboard.read().then(items => { /* TODO: handle clipboard */ })}>
+                  <span>📋</span> Paste screenshot
+                </button>
+                <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => { /* TODO: repo context */ }}>
+                  <span>📦</span> Add repository context
+                </button>
+              </div>
+            )}
+            <input
+              type="file"
+              id="hidden-file-input"
+              multiple
+              accept="*/*"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []);
+                if (files.length > 0) processFiles(files);
+                e.target.value = "";
+              }}
+            />
+          </div>
           {models && models.length > 0 && (
             <ModelSelector
               models={models}
@@ -292,9 +491,24 @@ export default function Composer({
           )}
         </div>
         <div className="composer-toolbar-right">
-          Enter to send · Shift+Enter for newline · Esc to stop · / for commands
+          Enter to send · Shift+Enter for newline · Esc to stop · / for commands · @ for context
         </div>
       </div>
     </div>
   );
+}
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+}
+
+function triggerFileInput(type: "file" | "image" | "folder") {
+  const input = document.getElementById("hidden-file-input") as HTMLInputElement;
+  if (input) {
+    input.accept = type === "image" ? "image/*" : "*/*";
+    input.webkitdirectory = type === "folder";
+    input.click();
+  }
 }
