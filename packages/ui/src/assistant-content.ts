@@ -23,10 +23,24 @@ export type AssistantBlock =
 const THINK_OPEN = /<(think|thinking|reasoning)>/i;
 const THINK_CLOSE = /<\/(think|thinking|reasoning)>/i;
 
+/**
+ * Raw tool-call protocol the model leaked into its visible text channel (`<mcp-tool>` invocations,
+ * `<task_act>` directives). It is orchestration detail, never an answer — strip it before the
+ * prose parser sees it. An unterminated opener is still streaming; holding the tail back beats
+ * flashing raw protocol text at the user.
+ */
+const TOOL_PROTOCOL_BLOCK = /<(mcp-tool|task_act)>[\s\S]*?<\/\1>\s*/gi;
+const TOOL_PROTOCOL_OPEN_TAIL = /<(?:mcp-tool|task_act)>[\s\S]*$/i;
+
+export function stripToolProtocol(raw: string): string {
+  const withoutBlocks = (raw ?? "").replace(TOOL_PROTOCOL_BLOCK, "");
+  return withoutBlocks.replace(TOOL_PROTOCOL_OPEN_TAIL, "");
+}
+
 /** Split assistant text into reasoning, code and prose blocks. */
 export function parseAssistantContent(raw: string): AssistantBlock[] {
   const blocks: AssistantBlock[] = [];
-  let rest = raw ?? "";
+  let rest = stripToolProtocol(raw ?? "");
 
   const pushText = (text: string) => {
     // Prose between structural blocks is kept only when it carries something visible, so a stream

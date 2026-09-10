@@ -160,4 +160,75 @@ describe("Workflow Server Integration", () => {
     expect(Array.isArray(list)).toBe(true);
     expect(list.length).toBeGreaterThan(0);
   });
+
+})
+
+describe("R9 regression — Stop cancels the workflow during engine phases", () => {
+  let ws: string;
+  let port: number;
+  let server: InstanceType<typeof createServer>;
+
+  beforeEach(async () => {
+    ws = await mkdtemp(join(tmpdir(), "wf-r9stop-"));
+    await mkdir(join(ws, "src"), { recursive: true });
+    await writeFile(join(ws, "src", "calc.ts"), "export function add(a:number,b:number){return a+b}");
+    await writeFile(join(ws, "package.json"), JSON.stringify({ type: "module" }));
+    server = createServer({ port: 0, dbPath: ":memory:" });
+    await server.start();
+    port = (server as unknown as { httpPort: number }).httpPort;
+    const setRes = await fetchJson(`http://localhost:${port}/api/workspace/set`, { path: ws });
+    expect(setRes.status).toBe(200);
+  });
+
+  afterEach(async () => {
+    await server.stop();
+    // The killed verifier child may still hold its cwd briefly on Windows — never fail the test on cleanup
+    try { await rm(ws, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch {}
+  });
+
+  it("turn-level cancel route cancels an active workflow while it is verifying (no agent turn running)", async () => {
+    const runRes = await fetchJson(`http://localhost:${port}/api/workflow/run`, {
+      sessionId: "test-sess-r9stop",
+      message: "Explain the architecture of this repository. Do not modify any files.",
+      verificationCommands: ["node -e \"setTimeout(()=>process.exit(124), 8000)\""],
+    });
+    expect(runRes.status).toBe(200);
+    const body = runRes.body as { ok: boolean; taskId: string; turnId: string };
+    expect(body.ok).toBe(true);
+
+    // Wait until the engine reaches the verify phase (no agent turn is running there)
+    let inVerify = false;
+    for (let i = 0; i < 60; i++) {
+      await new Promise((r) => setTimeout(r, 250));
+      try {
+        const appr = await fetchJson(`http://localhost:${port}/api/sessions/test-sess-r9stop`, undefined, "GET");
+        const pending = (appr.body as { pendingApprovals?: Array<{ approvalId: string }> }).pendingApprovals ?? [];
+        for (const a of pending) {
+          await fetchJson(`http://localhost:${port}/api/approvals/${a.approvalId}/resolve`, { decision: "allow_once" });
+        }
+      } catch {}
+      const getRes = await fetchJson(`http://localhost:${port}/api/workflow/${body.taskId}`, undefined, "GET");
+      if (getRes.status === 200) {
+        const phase = (getRes.body as { task: { phase: string } }).task.phase;
+        if (phase === "verifying" || phase === "testing") { inVerify = true; break; }
+      }
+    }
+    expect(inVerify).toBe(true);
+
+    // The desktop Stop button posts the TURN cancel route — it must still stop the workflow
+    const cancelRes = await fetchJson(`http://localhost:${port}/api/sessions/test-sess-r9stop/turns/${body.turnId}/cancel`, { reason: "User stopped" });
+    expect(cancelRes.status).toBe(200);
+
+    let cancelled = false;
+    for (let i = 0; i < 40; i++) {
+      await new Promise((r) => setTimeout(r, 250));
+      const getRes = await fetchJson(`http://localhost:${port}/api/workflow/${body.taskId}`, undefined, "GET");
+      if (getRes.status === 200) {
+        const task = (getRes.body as { task: { status: string; phase: string } }).task;
+        if (task.phase === "cancelled" || task.status === "cancelled") { cancelled = true; break; }
+        if (task.phase === "completed" || task.phase === "failed" || task.phase === "blocked") break;
+      }
+    }
+    expect(cancelled).toBe(true);
+  });
 });

@@ -117,7 +117,10 @@ export interface RunOptions {
 }
 
 export async function runCommand(options: RunOptions): Promise<VerificationResult> {
-  const { workspacePath, command, timeoutMs = 60000, signal } = options;
+  // Real suites (monorepo `npm test`, full typechecks) routinely exceed one minute; a 60s kill
+  // turns a passing-but-slow suite into a fabricated failure that then triggers pointless repair
+  // turns. 5 minutes per verifier command stays well under the workflow-level watchdog.
+  const { workspacePath, command, timeoutMs = 300_000, signal } = options;
   if (!fs.existsSync(workspacePath) || !fs.statSync(workspacePath).isDirectory()) {
     throw new Error(`Workspace not found: ${workspacePath}`);
   }

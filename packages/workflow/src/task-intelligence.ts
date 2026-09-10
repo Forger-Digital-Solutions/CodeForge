@@ -17,10 +17,14 @@ function tokenize(message: string): string[] {
 
 function classifyType(message: string): TaskType {
   const lower = message.toLowerCase();
+  // An explicit question or explanation request is answered, not fixed — a task that merely
+  // *mentions* a failure ("what happens when every free candidate fails") must not become a
+  // bugfix plan with edit steps.
+  if (/(explain|describe|how does|how do|what is|what are|why does|walk me through|summar)/.test(lower)) return "documentation";
   if (/(fix|bug|error|fail|broken|crash|exception)/.test(lower)) return "bugfix";
   if (/(add test|write test|test coverage|unit test|e2e)/.test(lower)) return "testing";
   if (/(refactor|clean up|reorganize|rename)/.test(lower)) return "refactoring";
-  if (/(document|readme|comment|explain)/.test(lower)) return "documentation";
+  if (/(document|readme|comment)/.test(lower)) return "documentation";
   if (/(implement|create|add|build|feature|new|support for)/.test(lower)) {
     if (/(multi|several|multiple|across)/.test(lower)) return "multi_file_feature";
     return "implementation";
@@ -44,6 +48,9 @@ function extractGoals(message: string): string[] {
 function extractConstraints(message: string): string[] {
   const constraints: string[] = [];
   const lower = message.toLowerCase();
+  if (/(do not|don't|dont)\s+(modify|change|edit|touch|update|write)/.test(lower)) {
+    constraints.push("read-only: do not modify any files");
+  }
   if (lower.includes("without breaking")) constraints.push("preserve backward compatibility");
   if (lower.includes("test") || lower.includes("verify")) constraints.push("must pass verification");
   if (lower.includes("secure") || lower.includes("secret")) constraints.push("security-sensitive");

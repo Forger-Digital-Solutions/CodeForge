@@ -56,4 +56,20 @@ describe("HostedProviderAdapter", () => {
 
     await expect(adapter.listModels()).resolves.toEqual([]);
   });
+
+  it("fails fast when a tool-calling request hits the hosted route (R9 commissioning)", async () => {
+    let inferenceCalled = false;
+    const fetchFn = (async () => {
+      inferenceCalled = true;
+      return new Response('data: {"type":"text_delta","delta":"pretending"}\n\n');
+    }) as typeof fetch;
+    const adapter = new HostedProviderAdapter({ cloudApiUrl: "https://staging.example", getAccessToken: () => "token", fetchFn });
+
+    await expect(collect(adapter.streamChat({
+      model: "openrouter::acme/coder:free",
+      messages: [{ role: "user", content: "fix the bug" }],
+      tools: [{ type: "function", function: { name: "read_file", description: "read", parameters: { type: "object", properties: {} } } }],
+    }))).rejects.toThrow(/HOSTED_TOOL_CALLING_UNSUPPORTED/);
+    expect(inferenceCalled).toBe(false);
+  });
 });

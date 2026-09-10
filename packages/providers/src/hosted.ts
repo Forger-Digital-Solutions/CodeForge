@@ -122,6 +122,13 @@ export class HostedProviderAdapter implements ProviderAdapter {
   }
 
   async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+    // The hosted chat contract carries messages only — tools never reach the model, so a
+    // tool-calling turn on this route would silently degrade to prose that looks like tool
+    // calls while nothing executes. Failing fast keeps 8-Bit's compatibility authority honest:
+    // the failure lands on the safe failover boundary and rotates to a route that can act.
+    if (req.tools && req.tools.length > 0) {
+      throw new Error(`[HOSTED_TOOL_CALLING_UNSUPPORTED] The included free cloud route (${req.model}) cannot execute tools yet.`);
+    }
     let token = this.getAccessToken ? await this.getAccessToken() : null;
     const messages = req.messages.map((m) => ({
       role: m.role as "system" | "user" | "assistant",

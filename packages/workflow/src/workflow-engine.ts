@@ -332,6 +332,15 @@ export class WorkflowEngine {
       // 8. Analyze Failures
       this.setPhase("diagnosing", "diagnosing");
       let analysis: FailureAnalysis = analyzeFailures(verification);
+      // A plan with no edit/write steps asked the agent to change nothing, so there is no defect
+      // of its own a repair turn could fix: a verification failure here is environmental (slow
+      // suite, a build that needs ordered setup). Looping repair turns on it only burns the
+      // free-route budget and invites edits to unrelated files. The completion gate still sees
+      // the failed verification and decides the outcome truthfully.
+      const planTargetsEdits = plan.steps.some((step) => step.kind === "edit" || step.kind === "write");
+      if (!planTargetsEdits) {
+        analysis = { ...analysis, isRepairable: false };
+      }
       let attempts = 0;
 
       // 9. Repair loop
@@ -463,12 +472,27 @@ export class WorkflowEngine {
       };
     } catch (error) {
       if (this.signal?.aborted || (error instanceof Error && error.message === "Workflow cancelled")) {
+        // The abort reason distinguishes a watchdog timeout from a user stop — reporting a
+        // timeout as "cancelled" hides the actual failure from the user.
+        const abortReason = this.signal?.reason instanceof Error ? this.signal.reason.message : undefined;
+        const timedOut = typeof abortReason === "string" && abortReason.toLowerCase().includes("timed out");
+        if (timedOut) {
+          this.setPhase("failed", "failed_safely");
+          return {
+            taskId: this.task.id,
+            status: "failed",
+            phase: "failed",
+            summary: redact(`Task timed out: ${abortReason}`),
+          };
+        }
         this.setPhase("cancelled", "cancelled");
         return {
           taskId: this.task.id,
           status: "cancelled",
           phase: "cancelled",
-          summary: `Workflow cancelled: ${error instanceof Error ? error.message : String(error)}`,
+          // "Cancelled" duplicated from the internal error message reads as a defect to users;
+          // the phase itself is the fact, the summary only needs to say the task ended early.
+          summary: "Task stopped before completion.",
         };
       }
       this.setPhase("failed", "failed_safely");

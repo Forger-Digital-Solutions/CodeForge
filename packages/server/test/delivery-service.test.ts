@@ -195,7 +195,7 @@ describe("CF-10 autonomous change delivery", () => {
     await workspaceService.registerLocalWorkspace(root);
     const running = delivery.createDelivery({ missionId: "mission-real", deliveryId: "delivery-cancel" });
     let active = await delivery.getDelivery("delivery-cancel");
-    for (let attempt = 0; attempt < 100 && active?.status !== "verifying"; attempt++) { await new Promise((resolve) => setTimeout(resolve, 25)); active = await delivery.getDelivery("delivery-cancel"); }
+    for (let attempt = 0; attempt < 400 && active?.status !== "verifying"; attempt++) { await new Promise((resolve) => setTimeout(resolve, 25)); active = await delivery.getDelivery("delivery-cancel"); }
     expect(active?.status).toBe("verifying");
     const child = workspaceService.getWorkspace(active!.deliveryWorkspaceId!)!;
     expect(workspaceService.getLeasesForWorkspace(child.id)).toHaveLength(1);

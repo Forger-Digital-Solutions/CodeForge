@@ -21,6 +21,44 @@ export function formatRelativeSessionTime(value?: string, now = Date.now()): str
   return `${Math.floor(hours / 24)}d`;
 }
 
+/** Internal run states (phases, terminal enums) are not user vocabulary. */
+export function humanizeSessionStatus(status?: string): string {
+  switch (status) {
+    case undefined:
+    case "":
+      return "Idle";
+    case "running":
+      return "Working";
+    case "testing":
+      return "Verifying";
+    case "verifying":
+      return "Verifying";
+    case "repairing":
+      return "Repairing";
+    case "diagnosing":
+      return "Diagnosing";
+    case "reviewing":
+      return "Reviewing";
+    case "user_input_required":
+      return "Needs your input";
+    case "waiting_for_approval":
+      return "Needs your approval";
+    case "failed":
+      return "Failed";
+    case "failed_safely":
+      return "Stopped safely";
+    case "cancelled":
+      return "Stopped";
+    case "blocked":
+      return "Blocked";
+    case "completed":
+    case "complete":
+      return "Completed";
+    default:
+      return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ");
+  }
+}
+
 export type SessionGroupLabel = "Today" | "Yesterday" | "Previous 7 Days" | "Older";
 
 export function groupSessionByAge(value: string | undefined, now = Date.now()): SessionGroupLabel {
@@ -190,7 +228,7 @@ export default function Navigation({
                       <span className={`nav-task-dot ${running ? "running" : ""}`} />
                       <span className="nav-task-copy">
                         <span className="nav-label">{label}</span>
-                        <span className="nav-task-meta">{running ? "Working" : session.status ?? "Idle"}{relativeTime ? ` · ${relativeTime}` : ""}</span>
+                        <span className="nav-task-meta">{running ? "Working" : humanizeSessionStatus(session.status)}{relativeTime ? ` · ${relativeTime}` : ""}</span>
                       </span>
                       <span className="nav-task-menu" aria-hidden="true">…</span>
                     </button>

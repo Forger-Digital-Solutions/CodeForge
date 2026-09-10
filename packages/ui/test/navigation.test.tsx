@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatRelativeSessionTime } from "../src/Navigation.js";
+import { formatRelativeSessionTime, humanizeSessionStatus } from "../src/Navigation.js";
 
 describe("formatRelativeSessionTime", () => {
   const now = Date.UTC(2026, 8, 9, 18, 0, 0);
@@ -11,5 +11,16 @@ describe("formatRelativeSessionTime", () => {
     expect(formatRelativeSessionTime(new Date(now - 18 * 60_000).toISOString(), now)).toBe("18m");
     expect(formatRelativeSessionTime(new Date(now - 3 * 60 * 60_000).toISOString(), now)).toBe("3h");
     expect(formatRelativeSessionTime(new Date(now - 2 * 24 * 60 * 60_000).toISOString(), now)).toBe("2d");
+  });
+});
+
+describe("humanizeSessionStatus (R9 truthful status labels)", () => {
+  it("maps internal phase names to user vocabulary", () => {
+    expect(humanizeSessionStatus("testing")).toBe("Verifying");
+    expect(humanizeSessionStatus("failed_safely")).toBe("Stopped safely");
+    expect(humanizeSessionStatus("user_input_required")).toBe("Needs your input");
+    expect(humanizeSessionStatus("cancelled")).toBe("Stopped");
+    expect(humanizeSessionStatus(undefined)).toBe("Idle");
+    expect(humanizeSessionStatus("completed")).toBe("Completed");
   });
 });

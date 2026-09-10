@@ -46,7 +46,11 @@ export interface WorkflowRunRequest {
 
 const MAX_CONCURRENT_PER_SESSION = 1;
 const MAX_WORKFLOWS_GLOBAL = 20;
-const WORKFLOW_TIMEOUT_MS = 10 * 60 * 1000;
+// One verification cycle in a real repository routinely costs multiple minutes (a monorepo
+// `npm test` alone measured ~3 minutes during R9 commissioning); a whole-task budget of 10
+// minutes aborted realistic tasks mid-flight. 30 minutes still bounds runaway workflows.
+const WORKFLOW_TIMEOUT_MINUTES = 30;
+const WORKFLOW_TIMEOUT_MS = WORKFLOW_TIMEOUT_MINUTES * 60 * 1000;
 const MAX_WORKSPACE_PATH_LENGTH = 1024;
 
 /** A persisted running process has no trustworthy terminal result after a service restart. */
@@ -385,11 +389,12 @@ export class WorkflowService {
     const controller = new AbortController();
     const workflowTimeout = setTimeout(() => {
       if (!controller.signal.aborted) {
-        controller.abort();
+        // Abort WITH a reason so the engine can classify this as a timeout, not a user cancel.
+        controller.abort(new Error(`Workflow timed out after ${WORKFLOW_TIMEOUT_MINUTES} minutes`));
         try {
           adapter.emitTaskStateChanged(taskId, "running", "failed_safely");
           adapter.emitStatusChanged("running", "failed");
-          adapter.emitTurnFailed(turnId, "Workflow timed out after 10 minutes");
+          adapter.emitTurnFailed(turnId, `Workflow timed out after ${WORKFLOW_TIMEOUT_MINUTES} minutes`);
         } catch {}
       }
     }, WORKFLOW_TIMEOUT_MS);
@@ -867,6 +872,15 @@ export class WorkflowService {
         }
       }
     } catch {}
+  }
+
+  /** Cancel the active workflow for a session, if any — used when a client stops a session
+   * without addressing a specific turn (e.g. during the engine's verification phase, where no
+   * agent turn is running and a turn-level cancel would be a silent no-op). */
+  findActiveWorkflowForSession(sessionId: string): WorkflowTask | undefined {
+    return Array.from(this.workflows.values())
+      .map((entry) => entry.engine.getTask())
+      .find((task) => task.sessionId === sessionId && isActivePhase(task.phase));
   }
 
   cancelAll(reason = "Workspace changed"): void {

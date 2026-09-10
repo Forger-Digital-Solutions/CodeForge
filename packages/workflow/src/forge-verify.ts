@@ -245,7 +245,7 @@ export function adaptTrustedLegacyVerifiers(workspacePath: string, verifiers: re
       description: `Compatibility adapter for trusted verifier '${legacy.id}'.`,
       execution,
       defaultRequirement: legacy.required ? "required" : "advisory",
-      timeoutMs: legacy.timeoutMs ?? 60_000,
+      timeoutMs: legacy.timeoutMs ?? 300_000,
       maxAttempts: 1,
       supportedScopes: ["workspace", "integration", "publication"],
     } satisfies VerifierDefinition;

@@ -1047,6 +1047,24 @@ export class CodeForgeServer {
       return;
     }
     const [, sessionId, turnId] = match;
+    // Stop means stop: while the workflow engine is between turns (verifying, reviewing,
+    // repairing) no agent turn is active and a turn-level cancel would be a silent no-op.
+    // When the session has an active workflow, cancel it — cancelWorkflow also cancels any
+    // runtime turn that belongs to it. This must precede the runtime lookup: a session can
+    // have a workflow without ever materializing a per-session runtime.
+    const activeWorkflow = this.workflowService.findActiveWorkflowForSession(sessionId ?? "");
+    if (activeWorkflow) {
+      this.workflowService.cancelWorkflow(activeWorkflow.id, "User stopped")
+        .then(() => {
+          res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ ok: true }));
+        })
+        .catch((error) => {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+        });
+      return;
+    }
     const runtime = this.runtimes.get(sessionId ?? "");
     if (!runtime) {
       res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });

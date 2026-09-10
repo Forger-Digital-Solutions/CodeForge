@@ -38,3 +38,23 @@ describe("TaskIntelligence", () => {
     expect(intent.risk).toBe("low");
   });
 });
+
+describe("TaskIntelligence R9 regression (read-only commissioning)", () => {
+  it("classifies explanation tasks as documentation even when they mention failures", () => {
+    const intent = understandTask(
+      "Explain how CodeForge routes a task to a model under ForgeAuto/Free: which components decide eligibility, what the zero-billing firewall enforces, and what happens when every free candidate fails. Do not modify any files.",
+    );
+    expect(intent.taskType).toBe("documentation");
+  });
+
+  it("extracts an explicit read-only constraint", () => {
+    const intent = understandTask("Review the router module. Do not modify any files.");
+    expect(intent.constraints.some((c) => c.includes("read-only"))).toBe(true);
+  });
+
+  it("keeps genuine bugfix intent when the user asks to fix a failure", () => {
+    const intent = understandTask("Find why this focused test fails, fix the root cause, and run the relevant verification.");
+    expect(intent.taskType).toBe("bugfix");
+    expect(intent.constraints.some((c) => c.includes("read-only"))).toBe(false);
+  });
+});

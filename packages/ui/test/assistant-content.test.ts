@@ -79,3 +79,31 @@ describe("assistant content", () => {
     expect(reasoningSummary("   ", false)).toBe("Thought briefly");
   });
 });
+
+describe("stripToolProtocol (R9 raw protocol leak)", () => {
+  it("removes complete mcp-tool blocks", () => {
+    const raw = 'Reading files now.\n\n<mcp-tool>\n<server_name>filesystem</server_name>\n<tool_name>read_file</tool_name>\n</mcp-tool>\n\nDone reading.';
+    const blocks = parseAssistantContent(raw);
+    const joined = blocks.map((b) => ("text" in b ? b.text : "")).join(" ");
+    expect(joined).not.toContain("mcp-tool");
+    expect(joined).not.toContain("filesystem");
+    expect(joined).toContain("Reading files now.");
+    expect(joined).toContain("Done reading.");
+  });
+
+  it("removes task_act directives with embedded JSON", () => {
+    const raw = '<task_act><!-- { "tool_id": "edit_file", "dry_run": true } --></task_act> Proceeding with the plan.';
+    const blocks = parseAssistantContent(raw);
+    const joined = blocks.map((b) => ("text" in b ? b.text : "")).join(" ");
+    expect(joined).not.toContain("task_act");
+    expect(joined).toContain("Proceeding with the plan.");
+  });
+
+  it("holds back an unterminated opener while streaming", () => {
+    const raw = "Working on it. <mcp-tool>\n<tool_name>read_file</tool_name>";
+    const blocks = parseAssistantContent(raw);
+    const joined = blocks.map((b) => ("text" in b ? b.text : "")).join(" ");
+    expect(joined).not.toContain("read_file");
+    expect(joined).toContain("Working on it.");
+  });
+});

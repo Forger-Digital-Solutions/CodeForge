@@ -44,6 +44,13 @@ function inferEditTargets(intent: TaskIntent, context: ContextBundle): Array<{ p
   return targets;
 }
 
+function isReadOnlyIntent(intent: TaskIntent): boolean {
+  if (intent.constraints.some((c) => c.includes("read-only"))) return true;
+  if (intent.taskType === "research" || intent.taskType === "architecture" || intent.taskType === "repo_exploration") return true;
+  const lower = (intent.rawMessage ?? "").toLowerCase();
+  return /(explain|describe|how does|how do|what is|what are|why does|walk me through)/.test(lower);
+}
+
 export function createPlan(
   intent: TaskIntent,
   context: ContextBundle,
@@ -87,8 +94,8 @@ export function createPlan(
     });
   }
 
-  // 4. Implementation steps
-  const editTargets = inferEditTargets(intent, context);
+  // 4. Implementation steps — a read-only task answers questions and must never plan edits
+  const editTargets = isReadOnlyIntent(intent) ? [] : inferEditTargets(intent, context);
   for (const target of editTargets) {
     steps.push({
       id: nextId(),

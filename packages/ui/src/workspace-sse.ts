@@ -4,6 +4,14 @@ import { DEFAULT_EXECUTION_MODE, ExecutionModeSchema, WorkspaceEventSchema, isWo
 import type { SessionRecord, TurnRecord, WorkItem } from "@codeforge/sessions";
 import { isEventForSession, mergeEvent } from "./session-events.js";
 
+/** Workflow terminal reasons arrive as internal summaries; keep the chat language human. */
+function humanizeWorkflowError(reason: string): string {
+  if (/workflow cancelled/i.test(reason)) return "The task was stopped before completion.";
+  if (/timed out/i.test(reason)) return "The task ran too long and was stopped. Try a narrower task or review the run details below.";
+  if (/no eligible free route|no verified free|no free provider/i.test(reason)) return "No verified free model was available to finish this task. Check provider availability in Settings → Providers.";
+  return reason.length > 200 ? `${reason.slice(0, 200)}…` : reason;
+}
+
 export interface WorkflowTaskSummary {
   taskId: string;
   title: string;
@@ -631,7 +639,12 @@ export function useWorkspaceSSE(url: string) {
               next.workflowTasks = next.workflowTasks.map((t) =>
                 t.taskId === p.taskId ? { ...t, status: "cancelled", phase: "cancelled", progress: 0 } : t,
               );
-              if (p.reason) next.workflowError = p.reason;
+              if (p.reason) {
+                const reason = p.reason.toLowerCase();
+                // User-initiated stops are decisions, not failures — no red banner.
+                const userStopped = reason.includes("user stopped") || reason.includes("user cancelled");
+                if (!userStopped) next.workflowError = humanizeWorkflowError(p.reason);
+              }
             }
             if (parsed.type === "task.state_changed") {
               const p = parsed.payload as { taskId: string; from: string; to: string };
@@ -643,8 +656,8 @@ export function useWorkspaceSSE(url: string) {
               if (to === "complete" || to === "failed_safely" || to === "cancelled") {
                 next.isRunning = false;
                 next.agentStatus = to === "complete" ? "idle" : (to as SessionStatus);
-                if (to === "failed_safely") next.workflowError = `Workflow reached ${to}`;
-                if (to === "cancelled") next.workflowError = "Workflow cancelled";
+                if (to === "failed_safely") next.workflowError = "The task could not be completed safely. Review the run details below.";
+                // A stop is a user decision, not an error — no red banner.
                 next.workflowActionPending = "none";
               } else if (
                 to === "implementing" ||

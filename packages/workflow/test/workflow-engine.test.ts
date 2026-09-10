@@ -273,3 +273,73 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
     expect(events.length).toBeLessThan(50);
   });
 });
+
+describe("workflow engine R9 regression (truthful cancellation summary)", () => {
+  it("reports a human cancel summary instead of echoing the internal error", async () => {
+    const ws2 = await mkdtemp(join(tmpdir(), "wf-r9-"));
+    await mkdir(join(ws2, "src"), { recursive: true });
+    await writeFile(join(ws2, "src", "calc.ts"), "export function add(a: number, b: number): number {\n  return a - b;\n}\n");
+    await writeFile(join(ws2, "package.json"), JSON.stringify({ type: "module", name: "test" }));
+    const controller = new AbortController();
+    const engine = createWorkflowEngine({
+      workspacePath: ws2,
+      sessionId: "sess-r9-cancel",
+      signal: controller.signal,
+      verificationCommands: ["node -e \"setTimeout(()=>process.exit(0), 5000)\""],
+    });
+    const promise = engine.run("Fix add function with long verification");
+    controller.abort();
+    const result = await promise;
+    expect(result.status).toBe("cancelled");
+    expect(result.summary).toBe("Task stopped before completion.");
+    expect(result.summary).not.toContain("Workflow cancelled:");
+    await rm(ws2, { recursive: true, force: true });
+  });
+
+  it("does not enter repair on a no-change run when verification fails", async () => {
+    const ws3 = await mkdtemp(join(tmpdir(), "wf-r9nc-"));
+    await mkdir(join(ws3, "src"), { recursive: true });
+    await writeFile(join(ws3, "src", "calc.ts"), "export function add(a: number, b: number): number {\n  return a + b;\n}\n");
+    await writeFile(join(ws3, "package.json"), JSON.stringify({ type: "module", name: "test" }));
+    let repairAttempts = 0;
+    const engine = createWorkflowEngine({
+      workspacePath: ws3,
+      sessionId: "sess-r9-nochange",
+      verificationCommands: ["node -e \"console.log('1 passed'); setTimeout(()=>process.exit(124), 300)\""],
+      agentExecutor: {
+        executePlan: async () => ({ success: true, output: "answer only, no edits" }),
+        executeRepair: async () => {
+          repairAttempts++;
+          return { success: true, output: "should not be called" };
+        },
+      },
+    });
+    const result = await engine.run("Explain the architecture of this repository. Do not modify any files.");
+    expect(repairAttempts).toBe(0);
+    void result;
+    await rm(ws3, { recursive: true, force: true });
+  });
+});
+
+describe("workflow engine R9 regression (watchdog timeout is not user-cancel)", () => {
+  it("classifies an abort carrying a timeout reason as failed/failed_safely", async () => {
+    const ws4 = await mkdtemp(join(tmpdir(), "wf-r9to-"));
+    await mkdir(join(ws4, "src"), { recursive: true });
+    await writeFile(join(ws4, "src", "calc.ts"), "export function add(a: number, b: number): number {\n  return a - b;\n}\n");
+    await writeFile(join(ws4, "package.json"), JSON.stringify({ type: "module", name: "test" }));
+    const controller = new AbortController();
+    const engine = createWorkflowEngine({
+      workspacePath: ws4,
+      sessionId: "sess-r9-timeout",
+      signal: controller.signal,
+      verificationCommands: ["node -e \"setTimeout(()=>process.exit(0), 5000)\""],
+    });
+    const promise = engine.run("Fix add function with long verification");
+    controller.abort(new Error("Workflow timed out after 30 minutes"));
+    const result = await promise;
+    expect(result.status).toBe("failed");
+    expect(result.phase).toBe("failed");
+    expect(result.summary).toContain("timed out");
+    await rm(ws4, { recursive: true, force: true });
+  });
+});

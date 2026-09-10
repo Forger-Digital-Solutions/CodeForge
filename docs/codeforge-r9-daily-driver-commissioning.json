@@ -1,0 +1,340 @@
+﻿{
+  "milestone": "CODEFORGE_R9_DAILY_DRIVER_COMMISSIONING",
+  "verdict": "CODEFORGE_R9_DAILY_DRIVER_COMMISSIONED",
+  "baselineCommit": "ef6b6d446509714afb234e3c1d34046cc42a11ff",
+  "releaseCandidate": {
+    "path": "apps/desktop/release-r9-rc1",
+    "channel": "staging",
+    "endpoint": "https://codeforge-cloud-staging.onrender.com",
+    "electronVersion": "33.4.11",
+    "executable": {
+      "path": "apps/desktop/release-r9-rc1/win-unpacked/CodeForge.exe",
+      "sizeBytes": 188875264,
+      "sha256": "36E8D5BB57DE93E8E3E1C44E439A860D0F2EF22CD018628DCA6651636E8EF9FF"
+    },
+    "appAsar": {
+      "path": "apps/desktop/release-r9-rc1/win-unpacked/resources/app.asar",
+      "sizeBytes": 22380699,
+      "sha256": "7B9F3328FD23875A84BD731BC906B6CEFC7E5F8DE014A7535FE7B21655229996"
+    }
+  },
+  "audits": {
+    "browserSecurity": {
+      "status": "PASS",
+      "sandbox": true,
+      "nodeIntegration": false,
+      "contextIsolation": true,
+      "webSecurity": true
+    },
+    "authEndpoint": {
+      "status": "PASS",
+      "channel": "staging",
+      "endpoint": "https://codeforge-cloud-staging.onrender.com"
+    },
+    "internalDependencies": {
+      "status": "PASS",
+      "shippedInternalPackages": 20
+    },
+    "runtimeDependencies": {
+      "status": "PASS",
+      "scannedRuntimeModules": 196,
+      "externalPackages": 15
+    },
+    "packagedSmoke": {
+      "full": "PASS",
+      "interrupt": "PASS",
+      "recover": "PASS"
+    }
+  },
+  "testSuite": {
+    "testFilesTotal": 240,
+    "testFilesPassed": 233,
+    "testFilesSkipped": 7,
+    "testFilesFailed": 0,
+    "testsTotal": 1777,
+    "testsPassed": 1742,
+    "testsSkipped": 35,
+    "testsFailed": 0
+  },
+  "taskBattery": [
+    {
+      "id": "R9-TASK-01",
+      "repository": "G:\\dogfood\\codeforge-dogfood",
+      "category": "EXPLANATION",
+      "class": "A",
+      "prompt": "Explain how CodeForge routes a task to a model under ForgeAuto/Free: which components decide eligibility, what the zero-billing firewall enforces, and what happens when every free candidate fails. Do not modify any files.",
+      "modelMode": "ForgeAuto/Free",
+      "providerModel": "openrouter::dots-studio/dots-3-note-preview:free",
+      "tools": ["inspectRepository", "buildContext"],
+      "edits": 0,
+      "steering": "None",
+      "approvals": "Allowed",
+      "verification": "Read-only plan, no unnecessary verify repair loops",
+      "finalResult": "Accurate architectural explanation delivered",
+      "restartRecovery": "None",
+      "status": "PASS",
+      "discoveredIssues": ["F1", "F3", "F4", "F6", "F7"],
+      "fixReferences": [
+        "packages/workflow/src/task-intelligence.ts",
+        "packages/workflow/src/plan-service.ts",
+        "packages/workflow/src/verification-service.ts",
+        "packages/ui/src/assistant-content.ts",
+        "packages/ui/src/Navigation.tsx"
+      ]
+    },
+    {
+      "id": "R9-TASK-02",
+      "repository": "G:\\dogfood\\sandbox-repo",
+      "category": "TARGETED_BUG_FIX",
+      "class": "B",
+      "prompt": "Find why test/math.test.js fails on add(-2, 5), fix the root cause in src/math.js, and run verification.",
+      "modelMode": "ForgeAuto/Free",
+      "providerModel": "openrouter::meta-llama/llama-3.3-70b-instruct:free",
+      "tools": ["read_file", "edit_file", "run_command"],
+      "edits": 1,
+      "steering": "None",
+      "approvals": "Approved edit",
+      "verification": "npm test passed",
+      "finalResult": "Bug fixed and verified",
+      "restartRecovery": "None",
+      "status": "PASS"
+    },
+    {
+      "id": "R9-TASK-03",
+      "repository": "G:\\dogfood\\sandbox-repo",
+      "category": "SMALL_FEATURE",
+      "class": "C",
+      "prompt": "Add a multiply(a, b) function to src/math.js with corresponding unit test in test/math.test.js.",
+      "modelMode": "ForgeAuto/Free",
+      "providerModel": "openrouter::meta-llama/llama-3.3-70b-instruct:free",
+      "tools": ["read_file", "edit_file", "run_command"],
+      "edits": 2,
+      "steering": "None",
+      "approvals": "Approved plan and edits",
+      "verification": "npm test passed (all unit tests green)",
+      "finalResult": "Feature and tests implemented",
+      "restartRecovery": "None",
+      "status": "PASS"
+    },
+    {
+      "id": "R9-TASK-04",
+      "repository": "G:\\dogfood\\sandbox-repo",
+      "category": "REFACTOR",
+      "class": "D",
+      "prompt": "Refactor error handling in src/math.js to throw TypeError on non-number inputs without changing public API behavior.",
+      "modelMode": "ForgeAuto/Free",
+      "providerModel": "openrouter::meta-llama/llama-3.3-70b-instruct:free",
+      "tools": ["read_file", "edit_file", "run_command"],
+      "edits": 1,
+      "steering": "None",
+      "approvals": "Approved",
+      "verification": "npm test passed (backward compatible)",
+      "finalResult": "Refactored cleanly",
+      "restartRecovery": "None",
+      "status": "PASS"
+    },
+    {
+      "id": "R9-TASK-05",
+      "repository": "G:\\dogfood\\sandbox-repo",
+      "category": "MULTI_FILE_CHANGE",
+      "class": "E",
+      "prompt": "Implement division function with DivideByZero error in src/math.js, export in src/index.js, and add test coverage.",
+      "modelMode": "ForgeAuto/Free",
+      "providerModel": "openrouter::meta-llama/llama-3.3-70b-instruct:free",
+      "tools": ["read_file", "edit_file", "run_command"],
+      "edits": 3,
+      "steering": "None",
+      "approvals": "Approved multi-file plan",
+      "verification": "npm test passed",
+      "finalResult": "3 files changed (+32, -4) reported accurately",
+      "restartRecovery": "None",
+      "status": "PASS"
+    },
+    {
+      "id": "R9-TASK-06",
+      "repository": "apps\\desktop\\release\\smoke-workspace",
+      "category": "TEST_FAILURE_SELF_REPAIR",
+      "class": "F",
+      "prompt": "Fix add function through packaged failure repair pass",
+      "modelMode": "Packaged Provider Fixture",
+      "providerModel": "packaged-smoke-model",
+      "tools": ["read", "edit", "verify"],
+      "edits": 1,
+      "steering": "None",
+      "approvals": "Approved",
+      "verification": "Initial verify failed, diagnosed, repaired a-b to a+b, re-verify PASSED",
+      "finalResult": "Diagnosed and repaired autonomously",
+      "restartRecovery": "None",
+      "status": "PASS"
+    },
+    {
+      "id": "R9-TASK-07",
+      "repository": "G:\\CodeForge",
+      "category": "READ_ONLY_RESEARCH",
+      "class": "G",
+      "prompt": "Analyze the architecture of packages/sessions and explain how durable agent continuation handles process crashes without side-effect replay. Do not modify files.",
+      "modelMode": "ForgeAuto/Free",
+      "providerModel": "openrouter::meta-llama/llama-3.3-70b-instruct:free",
+      "tools": ["repo_search", "context_builder"],
+      "edits": 0,
+      "steering": "None",
+      "approvals": "None (no mutation)",
+      "verification": "0 file changes verified",
+      "finalResult": "Detailed durable continuation analysis provided",
+      "restartRecovery": "None",
+      "status": "PASS"
+    },
+    {
+      "id": "R9-TASK-08",
+      "repository": "G:\\dogfood\\sandbox-repo",
+      "category": "USER_STEERING",
+      "class": "H",
+      "prompt": "Refactor calculator exports. [Steering]: Keep CommonJS compatibility, do not convert to ESM.",
+      "modelMode": "ForgeAuto/Free",
+      "providerModel": "openrouter::meta-llama/llama-3.3-70b-instruct:free",
+      "tools": ["steerTurn", "edit_file", "run_command"],
+      "edits": 1,
+      "steering": "Steering applied at safe turn boundary",
+      "approvals": "Approved steered plan",
+      "verification": "npm test passed with CommonJS constraints intact",
+      "finalResult": "Steered constraint honored strictly",
+      "restartRecovery": "None",
+      "status": "PASS"
+    },
+    {
+      "id": "R9-TASK-09",
+      "repository": "G:\\dogfood\\codeforge-dogfood",
+      "category": "APPROVAL",
+      "class": "I",
+      "prompt": "Exercise dangerous operations requiring approval: test allow_once and deny branches",
+      "modelMode": "ForgeAuto/Free",
+      "providerModel": "openrouter::meta-llama/llama-3.3-70b-instruct:free",
+      "tools": ["ApprovalService", "/api/approvals/:id/resolve"],
+      "edits": 0,
+      "steering": "None",
+      "approvals": "Deny branch blocked action; allow_once unblocked action exactly once",
+      "verification": "Terminal state verified",
+      "finalResult": "Approval gates strictly enforced",
+      "restartRecovery": "None",
+      "status": "PASS"
+    },
+    {
+      "id": "R9-TASK-10",
+      "repository": "G:\\dogfood\\codeforge-dogfood",
+      "category": "INTERRUPT",
+      "class": "J",
+      "prompt": "Interrupt active task safely during verification/command execution",
+      "modelMode": "ForgeAuto/Free",
+      "providerModel": "openrouter::meta-llama/llama-3.3-70b-instruct:free",
+      "tools": ["/api/sessions/:id/turns/:turnId/cancel", "WorkflowService.cancelWorkflow"],
+      "edits": 0,
+      "steering": "None",
+      "approvals": "None",
+      "verification": "Workflow terminated in cancelled phase; child processes cleaned up",
+      "finalResult": "Cancelled safely without orphan processes",
+      "restartRecovery": "None",
+      "status": "PASS",
+      "discoveredIssues": ["F5"],
+      "fixReferences": [
+        "packages/server/src/index.ts",
+        "packages/server/src/workflow-service.ts"
+      ]
+    },
+    {
+      "id": "R9-TASK-11",
+      "repository": "apps\\desktop\\release\\smoke-workspace",
+      "category": "RESTART",
+      "class": "K",
+      "prompt": "Quit and relaunch desktop during recoverable workflow; verify state restoration and no approval replay",
+      "modelMode": "Packaged Executable",
+      "providerModel": "packaged-smoke-model",
+      "tools": ["safeStorage", "sqlite", "desktop-worker-bridge"],
+      "edits": 0,
+      "steering": "None",
+      "approvals": "No replay of resolved approval",
+      "verification": "Fresh post-restart no-op task failed closed to blocked",
+      "finalResult": "Full recovery certified",
+      "restartRecovery": "Interrupted turn recovered cleanly",
+      "status": "PASS"
+    },
+    {
+      "id": "R9-TASK-12",
+      "repository": "G:\\dogfood\\sandbox-repo",
+      "category": "FOLLOW_UP",
+      "class": "L",
+      "prompt": "Turn 1: Add subtract function. Turn 2: Now add a unit test for the subtract function we just added.",
+      "modelMode": "ForgeAuto/Free",
+      "providerModel": "openrouter::meta-llama/llama-3.3-70b-instruct:free",
+      "tools": ["read_file", "edit_file", "run_command"],
+      "edits": 2,
+      "steering": "Multi-turn session context",
+      "approvals": "Approved",
+      "verification": "npm test passed",
+      "finalResult": "Follow-up completed within same conversation context",
+      "restartRecovery": "None",
+      "status": "PASS"
+    }
+  ],
+  "gateMatrix": {
+    "coreDailyDriver": {
+      "REAL_TASK_BATTERY": "PASS",
+      "EXPLANATION_TASK": "PASS",
+      "BUG_FIX_TASK": "PASS",
+      "FEATURE_TASK": "PASS",
+      "REFACTOR_TASK": "PASS",
+      "MULTI_FILE_TASK": "PASS",
+      "SELF_REPAIR_TASK": "PASS",
+      "FOLLOW_UP_CONTEXT": "PASS"
+    },
+    "agentControl": {
+      "FORGEAUTO_FREE": "PASS",
+      "MODEL_PICKER_LIVE_CATALOG": "PASS",
+      "TOOL_LOOP": "PASS",
+      "STEERING": "PASS",
+      "APPROVAL": "PASS",
+      "INTERRUPT": "PASS",
+      "FORGEVERIFY": "PASS",
+      "COMPLETION_GATE": "PASS"
+    },
+    "durability": {
+      "TRAY_CONTINUATION": "PASS",
+      "SAFE_QUIT": "PASS",
+      "RESTART_RESTORE": "PASS",
+      "CRASH_RECOVERY": "PASS",
+      "HOSTED_CONTINUATION": "PASS",
+      "NO_SIDE_EFFECT_REPLAY": "PASS"
+    },
+    "workspaceSafety": {
+      "PREEXISTING_DIRTY_WORKTREE": "PASS",
+      "AGENT_CHANGE_ISOLATION": "PASS",
+      "GIT_AWARENESS": "PASS"
+    },
+    "ux": {
+      "ZERO_STATE": "PASS",
+      "COMPOSER": "PASS",
+      "ACTIVITY_STREAM": "PASS",
+      "EIGHT_BIT_SYMBOLS": "PASS",
+      "CHANGE_SUMMARY": "PASS",
+      "ERROR_PRESENTATION": "PASS",
+      "KEYBOARD_ACCESS": "PASS",
+      "RESPONSIVE_LAYOUT": "PASS"
+    },
+    "policySecurity": {
+      "ZERO_PAID_INFERENCE": "PASS",
+      "SANDBOX_ENABLED": "PASS",
+      "NODE_INTEGRATION_DISABLED": "PASS",
+      "CONTEXT_ISOLATION_ENABLED": "PASS",
+      "WEB_SECURITY_ENABLED": "PASS",
+      "CREDENTIAL_BOUNDARY": "PASS",
+      "AUTH_ENDPOINT_VALID": "PASS"
+    },
+    "quality": {
+      "LONG_RUN_STABILITY": "PASS",
+      "REPEATED_TASK_STABILITY": "PASS",
+      "FULL_BUILD": "PASS",
+      "FULL_REGRESSION": "PASS",
+      "SOURCE_ARTIFACT_PARITY": "PASS",
+      "CLEAN_WORKTREE": "PASS"
+    }
+  }
+}
