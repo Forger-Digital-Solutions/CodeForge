@@ -1114,9 +1114,17 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   const indexQuery = await apiJson("/api/repository-index/search?q=add");
   if (indexQuery.status !== 200 || !indexQuery.body?.items?.some((item: { path?: string }) => item.path === "src/calc.ts")) throw new Error("Packaged repository search did not return the known implementation");
   await toggleRepositoryIntelligencePopover();
-  const shellText = await evaluateRenderer<string>("document.body.innerText");
   smokeRecord("packaged_repository_query_known_answer=PASS");
-  if (!shellText.includes("Repository Intelligence") || !shellText.includes("Local structural index")) throw new Error("Packaged repository status UX was not visible");
+  // The renderer polls index status on its own 1s (indexing) / 5s (settled) interval, so the
+  // popover reflects READY only after its next tick past the API's own READY transition.
+  try {
+    await waitForCondition(async () => {
+      const shellText = await evaluateRenderer<string>("document.body.innerText");
+      return shellText.includes("Repository Intelligence") && shellText.includes("Local structural index");
+    }, 20_000);
+  } catch {
+    throw new Error("Packaged repository status UX was not visible");
+  }
   await toggleRepositoryIntelligencePopover();
   const escape = await apiJson(`/api/workspace/tree?path=${encodeURIComponent(path.dirname(workspacePath))}`);
   if (escape.status !== 403) throw new Error(`Workspace escape returned ${escape.status}`);
