@@ -1064,6 +1064,14 @@ function verifyCorruptCredentialFailsClosed(): void {
   smokeRecord("corrupt_credential_fails_closed=PASS");
 }
 
+// R9.1 moved the repository-intelligence status behind an icon button that carries the
+// "Repository Intelligence" label only as aria-label/title, with the status text inside a
+// popover that is closed by default — so innerText contains it only while the popover is open.
+async function toggleRepositoryIntelligencePopover(): Promise<void> {
+  await evaluateRenderer<void>(`(() => { const button = Array.from(document.querySelectorAll('button')).find((element) => element.getAttribute('aria-label') === 'Repository Intelligence'); if (!button) throw new Error('Repository intelligence control is absent'); button.click(); })()`);
+  await delay(100);
+}
+
 async function runPackagedFullSmoke(workspacePath: string, testSecret: string): Promise<void> {
   await evaluateRenderer<void>(`window.electronAPI.openProject(${JSON.stringify(workspacePath)})`);
   await reloadRenderer();
@@ -1072,7 +1080,10 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   );
   const authenticatedText = await evaluateRenderer<string>("document.body.innerText");
   if (authenticatedText.includes("Continue with GitHub")) throw new Error("Packaged auth fixture did not restore into the authenticated UI");
-  if (!authenticatedText.includes("Repository Intelligence")) throw new Error("Packaged workspace shell was not visible");
+  await toggleRepositoryIntelligencePopover();
+  const zeroStateShellText = await evaluateRenderer<string>("document.body.innerText");
+  if (!zeroStateShellText.includes("Repository Intelligence")) throw new Error("Packaged workspace shell was not visible");
+  await toggleRepositoryIntelligencePopover();
   const bridgeBoundary = await evaluateRenderer<boolean>(
     "Boolean(window.electronAPI) && typeof window.electronAPI.getProviderCredentials === 'undefined'",
   );
@@ -1102,9 +1113,11 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   if ((indexStatus.body?.fileCount ?? 0) < 258 || (indexStatus.body?.symbolCount ?? 0) < 257) throw new Error("Packaged substantial repository index did not contain workspace structure");
   const indexQuery = await apiJson("/api/repository-index/search?q=add");
   if (indexQuery.status !== 200 || !indexQuery.body?.items?.some((item: { path?: string }) => item.path === "src/calc.ts")) throw new Error("Packaged repository search did not return the known implementation");
+  await toggleRepositoryIntelligencePopover();
   const shellText = await evaluateRenderer<string>("document.body.innerText");
   smokeRecord("packaged_repository_query_known_answer=PASS");
   if (!shellText.includes("Repository Intelligence") || !shellText.includes("Local structural index")) throw new Error("Packaged repository status UX was not visible");
+  await toggleRepositoryIntelligencePopover();
   const escape = await apiJson(`/api/workspace/tree?path=${encodeURIComponent(path.dirname(workspacePath))}`);
   if (escape.status !== 403) throw new Error(`Workspace escape returned ${escape.status}`);
   smokeRecord("packaged_workspace_restore=PASS");
