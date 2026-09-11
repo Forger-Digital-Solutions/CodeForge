@@ -45,7 +45,10 @@ interface DuplicateRecord {
   attemptsAtState: number;
 }
 
-const READ_ONLY_SUPPRESSIBLE = new Set([
+/** Exported for FG-9's own regression proof (packages/server/test/fg9-unsafe-mutating.test.ts)
+ * that mutating tools can never reach a "suppress" decision — never redeclared/duplicated
+ * elsewhere. */
+export const READ_ONLY_SUPPRESSIBLE = new Set([
   "read_file",
   "list_files",
   "search_files",
@@ -61,7 +64,7 @@ const READ_ONLY_SUPPRESSIBLE = new Set([
   "repo_index_status",
 ]);
 
-const MUTATING_TOOLS = new Set(["write_file", "edit_file", "run_command"]);
+export const MUTATING_TOOLS = new Set(["write_file", "edit_file", "run_command"]);
 
 export class DuplicateActionSupervisor {
   private stateVersion = 1;

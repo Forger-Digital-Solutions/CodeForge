@@ -18,6 +18,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@codeforge/repo-intelligence": "*"
+    "@codeforge/repo-intelligence": "*",
+    "@codeforge/sessions": "*"
   }
 }

@@ -53,6 +53,6 @@ ForgeVerify executes the structured verifier plan and records evidence. ForgeGre
 
 ## Measurement and bounds
 
-ForgeGreen records only operational facts it can classify: measured provider cache tokens when reported, deterministic bytes or dispatches avoided, cache outcomes, evidence reuse, and unknown quantities. It does not treat cache misses, failed work, deferred work, rejected reuse, or suggestions as savings. Energy and carbon remain unknown without an external measurement methodology.
+ForgeGreen records only operational facts it can classify: measured provider cache tokens when reported, deterministic bytes or dispatches avoided, cache outcomes, evidence reuse, and unknown quantities. It does not treat cache misses, failed work, deferred work, rejected reuse, or suggestions as savings. FG-8 (`docs/codeforge-forgegreen-measurement-contract.md`) adds a pluggable, versioned energy/carbon estimator with an explicit confidence classification (`DIRECT` … `INSUFFICIENT_DATA`) and provenance record on every figure it produces; absent a calibrated hardware or provider telemetry source, energy and carbon are still reported as `INSUFFICIENT_DATA`, never invented — FG-8 makes "unknown" explicit and auditable rather than claiming a number.
 
 In-memory advisor and duplicate-action maps have configured bounds. Durable ForgeGreen, 8-Bit, ForgeVerify, and session records use the established session persistence abstraction and idempotent insertion primitives; no parallel data store is introduced.

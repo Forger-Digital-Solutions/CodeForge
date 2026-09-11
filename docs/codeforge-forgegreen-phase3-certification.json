@@ -1,0 +1,232 @@
+{
+  "generatedAt": "2026-09-11T08:15:00Z",
+  "certification": "CodeForge ForgeGreen Phase 3 (FG-8) sustainability & resource measurement — FG-8R live-measurement closure",
+  "revisionHistory": [
+    {
+      "revision": "FG-8",
+      "verdict": "CODEFORGE_FORGEGREEN_PHASE3_MEASUREMENT_CERTIFIED_ENERGY_ESTIMATION_LIMITED",
+      "summary": "Initial measurement infrastructure: receipt schema, normalization boundary, waste taxonomy, baseline framework, pluggable energy estimator, hardware-telemetry interface, cross-receipt integrity logic, append-only persistence, lifecycle events, 7 synthetic benchmark fixtures. Two gaps explicitly acknowledged and left open: (1) RouteReceipt/FinancialReceipt not wired into the live integration point, (2) Baseline B had no automatic live context-population source."
+    },
+    {
+      "revision": "FG-8R",
+      "verdict": "CODEFORGE_FORGEGREEN_FG8R_LIVE_MEASUREMENT_CLOSURE_CERTIFIED",
+      "summary": "Closure phase. This artifact reflects FG-8R's reconciled, corrected state and supersedes the FG-8 revision above as the current certification authority. See `reconciliation` below for exactly what the FG-8 narrative got wrong and what this revision corrected."
+    }
+  ],
+  "currentRevision": "FG-8R",
+  "repository": {
+    "branch": "feat/codeforge-cloud",
+    "headAtSessionStart": "3d5ba374e1ebf140813401c0b4dcbcebdf6a010c",
+    "workingTreeAtSessionStart": "clean (no commits since; all changes below are uncommitted, matching the no-commit policy)",
+    "inheritedUnrelatedChanges": "none — `git status` at the start of the FG-8R session showed only this work's own FG-8 modifications/additions, confirmed before any edit was made"
+  },
+  "schemaVersions": {
+    "receiptSchemaVersion": "fg8-receipt-1",
+    "normalizationSchemaVersion": "fg8-normalization-1",
+    "baselinePolicyVersion": "fg8-baseline-1",
+    "sustainabilityPolicyVersion": "fg8-sustainability-1",
+    "liveContextPopulationPolicyVersion": "fg8r-live-context-population-1"
+  },
+  "reconciliation": {
+    "note": "The FG-8R closure task explicitly required independently re-verifying the FG-8 certification's own numbers before trusting them. Findings:",
+    "eventCount": {
+      "claim_under_review": "FG-8's own certification JSON already correctly listed all 8 `forgegreen.*` events in its `implementation.newEvents` array. A later chat-summary sentence undercounted them as 7 by omitting `forgegreen.measurement_failed` from an inline enumeration — that was a prose slip, not an artifact error.",
+      "verifiedTruth": "8 real events, confirmed by direct inspection: defined in packages/protocol/src/workspace-events.ts (8 EventBase entries + 8 union-member registrations), emitted via matching methods in packages/server/src/workspace-event-adapter.ts, and ALL 8 are actually called from packages/server/src/agent-runtime.ts's persistForgeGreenSustainabilityReceipt — none are dead code.",
+      "correction": "None needed to the JSON certification artifact itself. This entry documents the verification."
+    },
+    "fileCount": {
+      "claim_under_review": "A prior chat-summary said '20 new' while its own category breakdown (10 src + 8 tests + 1 script + 4 docs) sums to 23 — an arithmetic transcription error in prose, not in any certification artifact (neither the FG-8 JSON nor its Markdown report stated a top-level 'total new files' number).",
+      "verifiedTruth": "Re-derived directly from `git status --short` at the start of FG-8R, then again after all FG-8R edits: FG-8 baseline was 11 modified + 23 new = 34 files. FG-8R added 1 new source file (live-context-adapter.ts) and 7 new test files, for a running total of 11 modified + 31 new = 42 files. See `implementation.fileCounts` below.",
+      "correction": "This artifact now states exact counts explicitly (`implementation.fileCounts`) rather than only category lists, to prevent the same reconciliation error from recurring."
+    },
+    "testCounts": {
+      "claim_under_review": "FG-8's certification claimed 45/45 focused, 118/118 forge-green total, 455/455 server, and a full-suite 1880 passed/36 skipped/1 pre-existing failure.",
+      "verifiedTruth": "Re-ran everything fresh for FG-8R rather than copying forward. forge-green package total is now 144/144 (118 original FG-8 + 26 new FG-8R). Full suite is now 1906 passed/36 skipped/1 pre-existing failure out of 1943 (grew from 1917 total because FG-8R added 26 tests: 1917 + 26 = 1943, exact). See `validation` below.",
+      "correction": "All numbers in this artifact were captured from actual command output during this session, not copied from the prior certification."
+    }
+  },
+  "architecture": {
+    "decision": "FG-8 (and this FG-8R closure) extends the existing certified ForgeGreen subsystem (packages/forge-green, FG-1 through FG-7) rather than creating a colliding or parallel subsystem under the same name — a user-directed decision made during FG-8 and unchanged here.",
+    "fg8rKeyFinding": "The FG-8R task assumed `RouteReceipt`/`FinancialReceipt` (packages/eight-bit/src/receipts.ts) were a real live authority not yet wired to FG-8. Direct investigation found this is NOT accurate: `createRouteReceipt`/`createFinancialReceipt` are called nowhere in the entire repository outside their own definition file — not in production code, not in eight-bit's own tests. The REAL live authority the production routing path actually constructs and persists is a `DecisionReceipt` (packages/eight-bit/src/types.ts), written by `EightBitDecisionStore.recordReceipt` on a rotation/failover event, plus the `FreeModelRecord` ForgeZero/the firewall verifies for whichever model actually executed (read via `firewall.getModel(provider, model)`, using `AgentUsage.provider`/`.model` — the real post-hoc dispatch, not the a-priori `req.modelSelection`, which the investigation found is undefined in the vast majority of live sub-agent runs). FG-8R wires the SustainabilityReceipt's cross-receipt integrity layer to this REAL live authority instead of the unused schema, per the task's own instruction to 'use the real existing lifecycle' and 'not invent another parallel receipt authority'. The RouteReceipt/FinancialReceipt-shaped inputs remain supported (fully tested) for forward compatibility, should 8-Bit ever construct them live."
+  },
+  "implementation": {
+    "fileCounts": {
+      "modified": 11,
+      "newThisRevisionFg8": 23,
+      "newThisRevisionFg8r": 8,
+      "totalNew": 31,
+      "totalChanged": 42
+    },
+    "fg8rNewSourceFiles": ["packages/forge-green/src/live-context-adapter.ts"],
+    "fg8rModifiedSourceFiles": [
+      "packages/forge-green/src/sustainability-types.ts",
+      "packages/forge-green/src/measurement-normalization.ts",
+      "packages/forge-green/src/sustainability-receipt.ts",
+      "packages/forge-green/src/baseline.ts",
+      "packages/forge-green/src/index.ts",
+      "packages/server/src/agent-runtime.ts",
+      "scripts/forgegreen-fg8-benchmark.mjs"
+    ],
+    "fg8rNewTestFiles": [
+      "packages/forge-green/test/fg8r-live-cross-receipt.test.ts",
+      "packages/forge-green/test/fg8r-live-context-baseline.test.ts",
+      "packages/forge-green/test/fg8r-live-lifecycle.test.ts",
+      "packages/forge-green/test/fg8r-duplicate-finalization-retry.test.ts",
+      "packages/forge-green/test/fg8r-measurement-failure-observability.test.ts",
+      "packages/forge-green/test/fg8r-authority-regression.test.ts",
+      "packages/forge-green/test/fg8r-privacy-regression.test.ts"
+    ],
+    "genuineBugFoundAndFixedDuringFg8r": [
+      {
+        "bug": "Receipt id (`SustainabilityReceipt.receiptId`) was hashed from identity + a normalization-version string only, never from the actual measured content. Two genuinely DIFFERENT measurements for the same run/session identity (e.g. a retry that legitimately observed MORE work) collided on the same receiptId, so the append-only `insertIfAbsent` store would silently DROP the second, more-complete measurement.",
+        "foundBy": "fg8r-duplicate-finalization-retry.test.ts's second test case (required by task §12), which failed on first run.",
+        "fix": "`identityFingerprint` in packages/forge-green/src/sustainability-receipt.ts now hashes the full measured content (tokens/tools/verification/routing/context/timing/crossReceiptIntegrity/wasteBreakdown/baselines-minus-timestamps/energy/carbon) in addition to identity — content-addressed, matching the FG-1D canonical-cache philosophy already used elsewhere in this codebase. An exact retry of identical measured content still yields the identical id (true idempotency); a retry that legitimately observed different content now yields a genuinely different id (never silently merged)."
+      },
+      {
+        "bug": "`simulateBaselineB` did not reject a negative `actualTransmittedBytes`, so malformed/impossible population input (e.g. -50 bytes transmitted) could pass its `> naivePolicyBytes` guard and produce a nonsensical >100%-savings comparison.",
+        "foundBy": "fg8r-measurement-failure-observability.test.ts's malformed-input test case (required by task §13/§9).",
+        "fix": "packages/forge-green/src/baseline.ts now rejects non-finite and negative `actualTransmittedBytes`/`naivePolicyBytes` before computing a comparison — returns `undefined` (no baseline claim) instead."
+      }
+    ]
+  },
+  "liveCrossReceiptWiring": {
+    "flow": "RouteReceipt/FinancialReceipt authority -> unused in production (verified). REAL flow: AgentRuntime.persistForgeGreenSustainabilityReceipt reads AgentUsage.provider/.model (the actual dispatched model, set from real provider responses) -> firewall.getModel(provider, model) returns the live FreeModelRecord ForgeZero verified (costProfile.isFree, accessClass, freeStatus) -> EightBitDecisionStore.listReceipts(sessionId) is queried and filtered to this runId for any persisted DecisionReceipt (rotation/failover) evidence -> both are passed into createSustainabilityReceipt({ live: { freeModelRecord, decisionReceipts } }) -> checkCrossReceiptIntegrity derives financialClassification/financialClassificationSource from the live record (never from a recomputation) and cross-checks the live model against the MOST RECENT DecisionReceipt's selected route, surfacing any disagreement as measurementStatus:'incomplete' with explicit reason codes rather than silently reconciling.",
+    "codeReferences": {
+      "liveAuthorityQuery": "packages/server/src/agent-runtime.ts persistForgeGreenSustainabilityReceipt (firewall.getModel + eightBit.store.listReceipts)",
+      "normalization": "packages/forge-green/src/measurement-normalization.ts normalizeLiveRoutingFinancial, RawFreeModelRecordLike, RawDecisionReceiptLike",
+      "integrityCheck": "packages/forge-green/src/sustainability-receipt.ts checkCrossReceiptIntegrity (4th `live` parameter)",
+      "types": "packages/forge-green/src/sustainability-types.ts CrossReceiptIntegrityCheck (financialClassificationSource, liveModelProviderId/ModelId/AccessClass, decisionReceiptIds)"
+    },
+    "commonCase": "In a typical live run, `decisionReceipts` is EMPTY — a DecisionReceipt is written only on an actual rotation/failover event, not on every run. This is expected and does not degrade `financialClassification`, which is derived independently from the live FreeModelRecord.",
+    "testEvidence": "packages/forge-green/test/fg8r-live-cross-receipt.test.ts (7 tests), packages/forge-green/test/fg8r-live-lifecycle.test.ts (2 tests, full 12-stage lifecycle including this wiring end to end)."
+  },
+  "liveContextBaseline": {
+    "flow": "Baseline B's eligible population comes from RepositoryIntelligence.getCompleteness() (analyzableFiles vs skippedFiles — a single cheap already-existing query) plus ONE bounded RepositoryIntelligence.listFiles({ limit: cap }) call. QueryPage.truncated tells the adapter, without a second call, whether that single bounded page covered every eligible file: if not truncated, eligibleBytes/naivePolicyBytes are an EXACT sum over every returned file's real stored size (never a sample or extrapolation) plus a real binary/generated/sensitive breakdown; if truncated (workspace larger than the bounded cap), bytes are explicitly reported unavailable rather than computed from an undercounted partial page — never fake precision. Actual-transmitted bytes/tokens come from AgentContextMetrics.contextBytes/.estimatedInputTokens, hoisted into module-scope variables in agent-runtime.ts to survive across the function's try/finally boundary safely.",
+    "neverEquatesRepoSizeWithEligibleContext": true,
+    "codeReferences": {
+      "adapter": "packages/forge-green/src/live-context-adapter.ts computeLiveContextPopulation",
+      "wiring": "packages/server/src/agent-runtime.ts (forgeGreenActualContextBytes/Tokens hoisted variables, computeLiveContextPopulation call in persistForgeGreenSustainabilityReceipt)"
+    },
+    "testEvidence": "packages/forge-green/test/fg8r-live-context-baseline.test.ts (4 tests, against a REAL RepositoryIntelligence instance indexing a real temp workspace, both the exact-sum and truncated/unavailable paths), packages/forge-green/test/fg8r-live-lifecycle.test.ts."
+  },
+  "measuredSignals": [
+    "tool call counts, tool failure counts, tool wall-clock (directly_measured)",
+    "run wall-clock (directly_measured)",
+    "input/output/cached/reasoning tokens, request count (provider_reported)",
+    "verification obligations/targeted-vs-full-suite/evidence-reuse counters (derived_from_authoritative_telemetry)",
+    "model-failover rotations/blocked-dispatches, fallback events (derived_from_authoritative_telemetry)",
+    "context pages reused/pulled, tokens/bytes avoided (derived_from_authoritative_telemetry)",
+    "live FreeModelRecord free/paid classification and access class (derived_from_authoritative_telemetry)",
+    "live-indexed eligible/excluded file counts and (when the workspace fits one bounded page) exact eligible-file byte sum (derived_from_authoritative_telemetry)"
+  ],
+  "estimatedSignals": {
+    "energy": {
+      "productionDefault": "InsufficientDataEstimator — always INSUFFICIENT_DATA, all numeric fields undefined. Unchanged from FG-8: no magic watts-per-token constant was introduced in this closure phase.",
+      "referenceEstimator": "ReferenceHeuristicEstimator — deterministic, openly-labeled non-authoritative fixture; still never wired as the production default.",
+      "confidence": "INSUFFICIENT_DATA in live production (no accelerator/power telemetry exposed by any verified-free provider)."
+    },
+    "carbon": { "productionDefault": "INSUFFICIENT_DATA", "confidence": "INSUFFICIENT_DATA in live production" }
+  },
+  "measurementCoverage": {
+    "note": "Live-production coverage as actually wired in AgentRuntime today (FG-8R state).",
+    "inputTokens": "PROVIDER_REPORTED",
+    "outputTokens": "PROVIDER_REPORTED",
+    "cachedTokens": "PROVIDER_REPORTED",
+    "reasoningTokens": "PROVIDER_REPORTED",
+    "modelRequests": "PROVIDER_REPORTED",
+    "tools": "DIRECT",
+    "timing": "DIRECT",
+    "context": "AUTHORITATIVE_DERIVED",
+    "retries": "AUTHORITATIVE_DERIVED",
+    "fallbacks": "AUTHORITATIVE_DERIVED",
+    "verification": "AUTHORITATIVE_DERIVED",
+    "spend": "AUTHORITATIVE_DERIVED (was UNAVAILABLE at FG-8 close — closed this revision via the live FreeModelRecord path; still UNAVAILABLE for any run where the executed provider/model could not be resolved from AgentUsage, e.g. a run that made no successful model call)",
+    "energy": "INSUFFICIENT_DATA",
+    "carbon": "INSUFFICIENT_DATA"
+  },
+  "baselineResults": {
+    "framework": "4 deterministic, zero-network baseline kinds, unchanged this revision: A_FIXED_MODEL_NO_SMART_ROUTING, B_NAIVE_FULL_CONTEXT (now live-capable — see liveContextBaseline), C_NAIVE_SEQUENTIAL_RETRY, D_VERIFICATION_OVERHEAD_COMPARISON (never a savings source).",
+    "realisticFixtureResults": "docs/codeforge-forgegreen-fg8-benchmark-fixtures.json — now 8 workloads: the original 7 synthetic fixtures plus a new `live_integration_shaped` workload (FG-8R) that indexes a real temp workspace with a real RepositoryIntelligence instance and uses authoritative-shaped DecisionReceipt/FreeModelRecord evidence, proving the benchmark reaches real production components, not only synthetic data. Zero network calls in all 8.",
+    "noBaselineNoClaim": "Still verified: a workload/run with no defensible population produces baselines without B present, and no savings field appears anywhere in the receipt for it."
+  },
+  "privacyChecks": {
+    "secretsNotPersisted": "PASS (fg8-privacy.test.ts + fg8r-privacy-regression.test.ts)",
+    "promptSourceContentOmitted": "PASS",
+    "liveContextAdapterNeverPersistsPathsOrContent": "PASS — new this revision: fg8r-privacy-regression.test.ts indexes a REAL temp workspace containing a secret token and a `.env` file and asserts neither the token, the file paths, nor the variable name ever appear in the resulting population or receipt JSON.",
+    "hashesIdsRemainUsable": "PASS"
+  },
+  "financialSafetyChecks": {
+    "freeRouteStaysZero": "PASS",
+    "paidTransitionNeverSilentlyFree": "PASS (now proven against the LIVE FreeModelRecord path too, fg8r-live-cross-receipt.test.ts)",
+    "noIndependentMonetaryField": "PASS",
+    "crossReceiptMismatchSurfaced": "PASS — extended this revision: a live DecisionReceipt/FreeModelRecord disagreement is now also surfaced as measurementStatus:'incomplete', never silently reconciled",
+    "zeroCashConstruction": "No live model call anywhere in FG-8/FG-8R source, tests, or the benchmark script (including the new live_integration_shaped workload, which only exercises local RepositoryIntelligence indexing of a local temp directory)."
+  },
+  "authorityRegression": {
+    "claim": "FG-8R does not change ForgeAuto model selection/ranking, 8-Bit qualification/eviction/fallback authority, ForgeVerify planning, Completion Gate authority, or verification pass/fail semantics.",
+    "evidence": [
+      "No file under packages/eight-bit, packages/router, packages/workflow, or packages/forge-zero was modified this revision (only packages/forge-green and packages/server/src/agent-runtime.ts's OWN sustainability-receipt method were touched).",
+      "agent-runtime.ts's live-authority reads (`firewall.getModel`, `eightBit.store.listReceipts`) are read-only queries against already-computed state — no write, no routing decision, no model selection is made or influenced by FG-8R.",
+      "packages/forge-green/test/fg8r-authority-regression.test.ts asserts structurally: no permission/approval/verdict/routing-decision/verification-pass field exists anywhere in a SustainabilityReceipt; a cross-receipt mismatch degrades to advisory `incomplete` status rather than throwing/blocking; no 'select'/'choose'/'pick' field exists on the cross-receipt integrity result.",
+      "The full packages/server/test suite (real AgentRuntime, mission/delivery/parallel/steering, 455 tests) passes unchanged after the live wiring — including every test that exercises real routing/verification/approval/completion behavior."
+    ]
+  },
+  "validation": {
+    "focusedFg8Tests": { "suite": "packages/forge-green/test/fg8-*.test.ts (original FG-8, 8 files)", "passed": 45, "failed": 0 },
+    "focusedFg8rTests": { "suite": "packages/forge-green/test/fg8r-*.test.ts (FG-8R closure, 7 files)", "passed": 26, "failed": 0 },
+    "forgeGreenPackageTotal": { "suite": "packages/forge-green/test (FG-1 through FG-8R, 22 files)", "passed": 144, "failed": 0, "skipped": 0 },
+    "affectedPackages": {
+      "suite": "packages/sessions/test + packages/eight-bit/test + packages/protocol/test",
+      "passed": 191, "skipped": 2, "failed": 1,
+      "failureNote": "sqlite-driver.test.ts 'forced better-sqlite3 backend' — see sqliteFailureInvestigation below. Reproduced identically 3 times across this session (twice for FG-8, once for FG-8R)."
+    },
+    "integrationSuite": { "suite": "packages/server/test (real AgentRuntime, mission/delivery/parallel/steering flows, live FG-8R wiring exercised throughout)", "passed": 455, "skipped": 3, "failed": 0 },
+    "typecheck": { "command": "tsc -b --force (root)", "result": "PASS", "runs": 3 },
+    "build": { "command": "npm run build --workspaces --if-present (root, includes desktop Electron + web Vite builds)", "result": "PASS", "runs": 2 },
+    "lint": { "result": "NOT_CONFIGURED", "note": "No ESLint or other lint tooling exists in this repository (no .eslintrc*/eslint.config*, no 'lint' script). Re-confirmed this revision." },
+    "fullMonorepoSuite": {
+      "command": "vitest run (root)",
+      "testFiles": { "passed": 257, "failed": 2, "skipped": 7, "total": 266 },
+      "tests": { "passed": 1906, "failed": 1, "skipped": 36, "total": 1943 },
+      "regressionsIntroducedByFg8r": 0,
+      "growthFromFg8": "1917 -> 1943 total tests (+26, exactly the new FG-8R focused test count)",
+      "preExistingFailures": [
+        {
+          "file": "packages/sessions/test/sqlite-driver.test.ts",
+          "cause": "better-sqlite3@12.11.1's prebuild-install places its compiled addon at node_modules/better-sqlite3/bin/win32-x64-130/better-sqlite3.node; the classic `bindings` package (which better-sqlite3's own lib/database.js calls as `require('bindings')('better_sqlite3.node')`) only searches legacy paths (build/Release/better_sqlite3.node and similar) and never finds it. This is a packaging/install-path mismatch between better-sqlite3's own install script and the `bindings` package's search list — not a Node ABI mismatch (both reference ABI 130) and not related to any FG-8/FG-8R file.",
+          "whyItDoesNotAffectFg8OrFg8r": "packages/sessions/src/sqlite.ts prefers Node's built-in `node:sqlite` (available in this environment, Node v24.19.0) and only falls back to better-sqlite3 when node:sqlite is unavailable (documented reason: the Electron desktop runtime currently bundles Node 20.x, which lacks node:sqlite). Every FG-8/FG-8R test that uses `createSessionPersistence` — including all restart/rehydration/duplicate-finalization tests — uses the default (node:sqlite) driver and never touches this code path. Only the ONE test that explicitly forces `driver: 'better-sqlite3'` to test that alternate backend in isolation is affected.",
+          "investigationMethod": "Non-destructive: inspected node_modules/better-sqlite3's actual installed file layout, its package.json install script, its lib/database.js source, and packages/sessions/src/sqlite.ts's driver-selection logic directly. No git stash, no dependency reinstall, no repository state was touched to confirm this.",
+          "classification": "pre-existing, environmental (local dependency-installation packaging quirk), confirmed NOT caused or exposed by FG-8/FG-8R"
+        },
+        {
+          "file": "tests/evidence/qualification-fixtures/patch-generation/test/config.test.ts",
+          "cause": "An 8-Bit qualification-harness fixture file (source content fed to models under test by the patch-generation evaluator) coincidentally matches vitest's root `tests/**/*.test.ts` include glob; it has zero vitest imports and was never intended to run standalone.",
+          "classification": "pre-existing repository-structure quirk, untouched by FG-8/FG-8R (not present in this session's git diff at any point)"
+        }
+      ],
+      "reproducedCount": 3
+    }
+  },
+  "gaps": [
+    { "gap": "Live financial classification is unavailable for a run that made no successful model call (AgentUsage.provider/.model stay unset), since there is nothing to look up in the firewall.", "severity": "low — expected/inherent, not a defect", "nextStep": "none required; this is the honest state for a run with zero completed model requests" },
+    { "gap": "Live Baseline B bytes are unavailable for any workspace larger than the bounded listFiles cap (default 5000 files) — by design, to avoid fake precision from a partial sum.", "severity": "low", "nextStep": "if needed later, add an opt-in paginated exact-sum mode for very large workspaces, clearly distinguished in provenance from the bounded-page mode" },
+    { "gap": "No real hardware/GPU telemetry adapter implemented.", "severity": "low (explicitly out of scope this phase)", "nextStep": "implement an nvidia-smi-backed HardwareTelemetryAdapter behind the existing interface when a target deployment has a real accelerator to poll" },
+    { "gap": "context_waste taxonomy category is never emitted.", "severity": "low", "nextStep": "define a conservative, defensible per-run 'context sent but not required' heuristic once FG-3/4 exposes a suitable necessity signal — explicitly out of scope for FG-8R per the closure task's own instruction" }
+  ],
+  "phaseGates": {
+    "LIVE_ROUTE_RECEIPT_REFERENCE": "PASS (via the real live authority — FreeModelRecord + DecisionReceipt, not the unused RouteReceipt schema)",
+    "LIVE_FINANCIAL_RECEIPT_REFERENCE": "PASS (via the real live authority — FreeModelRecord.costProfile.isFree, not the unused FinancialReceipt schema)",
+    "CROSS_RECEIPT_INTEGRITY_LIVE": "PASS",
+    "LIVE_BASELINE_B_CONTEXT_POPULATION": "PASS",
+    "RESTART_PERSISTENCE_PROOF": "PASS",
+    "DUPLICATE_FINALIZATION_RETRY_SAFETY": "PASS (after fixing the content-addressing bug this revision found)",
+    "MEASUREMENT_FAILURE_OBSERVABILITY": "PASS (no naked-catch-only failure path; console logging + durable failed-receipt + event, verified)",
+    "PRIVACY_PRESERVED": "PASS",
+    "NO_ROUTING_VERIFICATION_AUTHORITY_LEAKAGE": "PASS",
+    "CERTIFICATION_NUMBERS_RECONCILED": "PASS (see `reconciliation`)",
+    "ZERO_COST_BOUNDARY_MAINTAINED": "PASS",
+    "NO_FG8_REGRESSION": "PASS (0 regressions across 1943 tests, 3 full-suite runs)",
+    "REAL_DEFENSIBLE_ENERGY_ESTIMATION": "NOT_MET (unchanged, honest — INSUFFICIENT_DATA; this does not block FG-8R closure per the task's own success criteria)"
+  },
+  "verdict": "CODEFORGE_FORGEGREEN_FG8R_LIVE_MEASUREMENT_CLOSURE_CERTIFIED"
+}

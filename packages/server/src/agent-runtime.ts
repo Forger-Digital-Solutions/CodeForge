@@ -39,13 +39,25 @@ import {
   createForgeGreenAdvisor,
   createForgeGreenLedgerCollector,
   analyzeStructuralRisk,
+  buildDuplicateToolReuseDecision,
+  computeLiveContextPopulation,
+  createFailedSustainabilityReceipt,
+  createOptimizationDecisionStore,
+  createOptimizationReceiptStore,
+  createSustainabilityReceipt,
+  createSustainabilityReceiptStore,
+  finalizeSustainabilityReceipt,
+  normalizeMeasurementInput,
+  SustainabilityMeasurementError,
+  type DuplicateToolSuppressionEvent,
   type EfficiencyReceipt,
   type ForgeGreenAdvisor,
   type ForgeGreenLedgerCollector,
   type ForgeGreenReasonCode,
+  type NormalizedIdentity,
 } from "@codeforge/forge-green";
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
-import { createEightBitRuntime, renderHandoffMessage, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef } from "@codeforge/eight-bit";
+import { createEightBitRuntime, renderHandoffMessage, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt } from "@codeforge/eight-bit";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
 import {
@@ -602,6 +614,18 @@ export class AgentRuntime {
     });
     const resolvedMaxContextTokens = contextCapacity.maxContextTokens;
 
+    /** FG-8: directly-measured run wall-clock, used only for the sustainability receipt's timing
+     * accounting. Never read by any permission/verification/completion path. */
+    const forgeGreenRunStartedAtMs = Date.now();
+    /** FG-8R: hoisted (not read directly from `contextMetrics`, which is declared mid-function
+     * and would be in its temporal-dead-zone if referenced from the `finally` block after an
+     * early failure) actual-transmitted-context figures for Baseline B. Set once `contextMetrics`
+     * is built; stay `undefined` — never a fabricated value — if that point is never reached. */
+    let forgeGreenActualContextBytes: number | undefined;
+    let forgeGreenActualContextTokens: number | undefined;
+    /** FG-9 Candidate A: real FG-1C suppression events this run, wrapped (never re-decided) into
+     * the optimization decision/receipt framework. Hashes/ids/sizes only — never raw content. */
+    const forgeGreenDuplicateSuppressionEvents: DuplicateToolSuppressionEvent[] = [];
     const toolBroker = createToolBroker();
     const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen);
     const contextAssembler = createContextAssembler(resolvedMaxContextTokens, this.forgeGreen);
@@ -755,6 +779,8 @@ export class AgentRuntime {
         reasonCodes: assembled.receipt?.reasonCodes,
         efficiencyReceipt: assembled.efficiencyReceipt,
       };
+      forgeGreenActualContextBytes = contextMetrics.contextBytes;
+      forgeGreenActualContextTokens = contextMetrics.estimatedInputTokens;
       // FG-3D: observational ledger accounting for Context Page reuse — reuses the existing
       // ForgeGreen ledger (no second efficiency ledger), `measured` (a page either hit the
       // persistent cache or it did not, never estimated).
@@ -1032,6 +1058,12 @@ export class AgentRuntime {
           }
           if (duplicateDecision.action === "suppress") {
             ledger.recordDuplicateSuppressed();
+            forgeGreenDuplicateSuppressionEvents.push({
+              tool: tc.name,
+              identityKeyHash: duplicateSupervisor.identityKey(duplicateIdentity),
+              priorExecutionId: duplicateDecision.priorExecutionId,
+              avoidedBytes: Buffer.byteLength(duplicateDecision.priorOutput, "utf8"),
+            });
             adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, "forgegreen_duplicate_suppressed");
             messages.push({
               role: "tool",
@@ -1242,7 +1274,151 @@ export class AgentRuntime {
       };
     } finally {
       await this.persistForgeGreenLedger(ledger).catch(() => undefined);
+      await this.persistForgeGreenSustainabilityReceipt(
+        req,
+        ledger,
+        totalUsage,
+        toolExecutions,
+        Date.now() - forgeGreenRunStartedAtMs,
+        intelligence,
+        { contextBytes: forgeGreenActualContextBytes, contextTokens: forgeGreenActualContextTokens },
+        forgeGreenDuplicateSuppressionEvents,
+        adapter,
+      ).catch((err: unknown) => {
+        console.error("[agent-runtime] FG-8 sustainability measurement failed outside its own recovery path", err);
+      });
       await intelligence?.closeWorkspace().catch(() => undefined);
+    }
+  }
+
+  /**
+   * FG-8: build, finalize, and persist the run's sustainability/resource-measurement receipt.
+   * Measurement is strictly advisory — a failure here (impossible input, cross-receipt
+   * mismatch, an unexpected error) must never affect the agent run's status, verification, or
+   * completion. It also must never be silently erased: failure is reported via a best-effort
+   * `forgegreen.measurement_failed` event and recorded as an explicit failed receipt rather than
+   * dropped or reported as a zero-value success (hardening requirement from the FG-8 plan).
+   */
+  private async persistForgeGreenSustainabilityReceipt(
+    req: AgentRuntimeRequest,
+    ledger: ForgeGreenLedgerCollector,
+    usage: AgentUsage,
+    toolExecutions: ToolExecutionRecord[],
+    wallClockMs: number,
+    intelligence: RepositoryIntelligence | undefined,
+    liveContext: { contextBytes: number | undefined; contextTokens: number | undefined },
+    duplicateSuppressionEvents: DuplicateToolSuppressionEvent[],
+    adapter: WorkspaceEventAdapter,
+  ): Promise<void> {
+    const identity: NormalizedIdentity = {
+      runId: req.runId,
+      sessionId: this.sessionId,
+      agentId: req.agentId,
+      workstreamScope: req.workstreamScope,
+      namespace: req.workspaceId,
+    };
+    const store = createSustainabilityReceiptStore(this.persistence);
+    try {
+      adapter.emitForgeGreenRunStarted(req.runId);
+      const ledgerRecord = ledger.snapshot();
+      const normalized = normalizeMeasurementInput({ identity, ledgerRecord, usage, toolExecutions, wallClockMs });
+
+      // FG-8R live routing/financial wiring (closes gap #1). `createRouteReceipt`/
+      // `createFinancialReceipt` are unused in production; the REAL live authority is the
+      // FreeModelRecord ForgeZero verified for the model that actually executed this run's
+      // requests, cross-checked against any persisted 8-Bit DecisionReceipts for this run
+      // (commonly none — those are written only on a rotation/failover event).
+      let freeModelRecord: FreeModelRecord | undefined;
+      if (usage.provider && usage.model) {
+        try {
+          freeModelRecord = this.firewall.getModel(usage.provider, usage.model);
+        } catch {
+          freeModelRecord = undefined;
+        }
+      }
+      let decisionReceipts: DecisionReceipt[] = [];
+      try {
+        const sessionReceipts = await this.eightBit.store.listReceipts(this.sessionId);
+        decisionReceipts = sessionReceipts.filter((r) => r.runId === req.runId);
+      } catch {
+        decisionReceipts = [];
+      }
+
+      // FG-8R live Baseline B context population (closes gap #2). Never re-indexes; a thin,
+      // bounded read-model over already-computed RepositoryIntelligence facts.
+      const contextPopulation = await computeLiveContextPopulation(intelligence, {
+        actualTransmittedBytes: liveContext.contextBytes,
+        actualTransmittedTokens: liveContext.contextTokens,
+      }).catch(() => undefined);
+
+      const finalized = finalizeSustainabilityReceipt(
+        createSustainabilityReceipt({
+          identity,
+          normalized,
+          live: { freeModelRecord, decisionReceipts },
+          contextPopulation,
+        }),
+      );
+      await store.save(finalized);
+      adapter.emitForgeGreenModelUsageRecorded(req.runId, finalized.tokenAccounting.coverage, finalized.tokenAccounting.requestCount, finalized.tokenAccounting.totalTokens);
+      adapter.emitForgeGreenToolUsageRecorded(req.runId, finalized.toolAccounting.toolCallCount, finalized.toolAccounting.toolFailureCount);
+      adapter.emitForgeGreenVerificationUsageRecorded(req.runId, finalized.verificationAccounting.obligationsGenerated);
+      if (finalized.baselines.length > 0) {
+        adapter.emitForgeGreenBaselineGenerated(
+          req.runId,
+          finalized.baselines.map((b) => b.baselineKind),
+          finalized.baselines.map((b) => b.comparisonBasis),
+        );
+      }
+      adapter.emitForgeGreenEnergyEstimated(req.runId, finalized.energyEstimate.estimatorId, finalized.energyEstimate.estimatorVersion, finalized.energyEstimate.confidence);
+      adapter.emitForgeGreenRunFinalized(req.runId, finalized.receiptId, finalized.measurementStatus);
+      if (finalized.measurementStatus !== "complete") {
+        console.warn(
+          `[agent-runtime] FG-8 sustainability receipt ${finalized.receiptId} for run ${req.runId} is ${finalized.measurementStatus}: ${finalized.measurementFailureReasonCodes.join(", ")}`,
+        );
+      }
+
+      // FG-9 Candidate A: wraps FG-1C's ALREADY-ACTIVE duplicate-suppression behavior into the
+      // optimization decision/receipt framework. Introduces no new suppression logic and no new
+      // execution-path risk — a failure here can only fail to RECORD something that already
+      // safely happened, never affect what already happened. Isolated in its own try/catch so an
+      // FG-9 failure can never mask an otherwise-successful FG-8 measurement above.
+      try {
+        const result = buildDuplicateToolReuseDecision({
+          runId: req.runId,
+          sessionId: this.sessionId,
+          sustainabilityReceiptId: finalized.receiptId,
+          events: duplicateSuppressionEvents,
+        });
+        adapter.emitForgeGreenOptimizationCandidate(req.runId, "DUPLICATE_READ_ONLY_TOOL_REUSE", "ACTIVE_SAFE", duplicateSuppressionEvents.length);
+        if (result) {
+          await createOptimizationDecisionStore(this.persistence).save(result.decision);
+          await createOptimizationReceiptStore(this.persistence).save(result.receipt);
+          adapter.emitForgeGreenOptimizationApplied(
+            req.runId,
+            result.decision.decisionId,
+            result.decision.kind,
+            result.decision.expectedEffect.avoidedToolExecutions,
+            result.decision.expectedEffect.avoidedBytes,
+          );
+        }
+        adapter.emitForgeGreenOptimizationSummary(req.runId, duplicateSuppressionEvents.length, result ? 1 : 0, 0, result ? 0 : 1);
+      } catch (optimizationErr: unknown) {
+        console.error(`[agent-runtime] FG-9 optimization decision failed for run ${req.runId} (measurement above is unaffected)`, optimizationErr);
+      }
+    } catch (err: unknown) {
+      const reasonCodes = err instanceof SustainabilityMeasurementError ? err.reasonCodes : ["UNEXPECTED_MEASUREMENT_ERROR"];
+      // Hardening #13: a naked `.catch(() => undefined)` would make this failure unknowable.
+      // Best-effort behavior is preserved (the run is never affected), but the failure itself is
+      // always both logged and durably recorded.
+      console.error(`[agent-runtime] FG-8 sustainability measurement failed for run ${req.runId}`, err);
+      adapter.emitForgeGreenMeasurementFailed(req.runId, reasonCodes);
+      try {
+        const failed = finalizeSustainabilityReceipt(createFailedSustainabilityReceipt(identity, reasonCodes));
+        await store.save(failed);
+      } catch (persistErr: unknown) {
+        console.error(`[agent-runtime] FG-8 failed-measurement receipt could not be persisted for run ${req.runId}`, persistErr);
+      }
     }
   }
 

@@ -1,0 +1,165 @@
+{
+  "generatedAt": "2026-09-11T08:45:00Z",
+  "certification": "CodeForge ForgeGreen Phase 4 (FG-9) — optimization & efficiency policy",
+  "priorPhases": [
+    { "phase": "FG-8", "verdict": "CODEFORGE_FORGEGREEN_PHASE3_MEASUREMENT_CERTIFIED_ENERGY_ESTIMATION_LIMITED" },
+    { "phase": "FG-8R", "verdict": "CODEFORGE_FORGEGREEN_FG8R_LIVE_MEASUREMENT_CLOSURE_CERTIFIED" }
+  ],
+  "repository": {
+    "branch": "feat/codeforge-cloud",
+    "headAtSessionStart": "3d5ba374e1ebf140813401c0b4dcbcebdf6a010c",
+    "workingTreeAtSessionStart": "clean apart from prior FG-8/FG-8R uncommitted work (verified via git status before any Phase 4 edit)",
+    "inheritedUnrelatedChanges": "none"
+  },
+  "phaseNumbering": {
+    "convention": "FG-N sequential within packages/forge-green",
+    "priorPhases": "FG-1 through FG-8R (FG-1E, FG-2, FG-3/3D, FG-4, FG-5, FG-6, FG-7, FG-8, FG-8R)",
+    "verifiedNoExistingFG9": "grep -rn \"FG-9\" docs/forgegreen.md packages/forge-green/src/*.ts returned zero matches before this phase — FG-9 confirmed as the correct next number, not assumed"
+  },
+  "policyVersion": "fg9-optimization-1",
+  "architecture": {
+    "decision": "FG-9 composes existing ForgeGreen/server mechanisms rather than building a parallel optimization engine, per the phase's own instruction.",
+    "candidateA": "Composes the ALREADY ACTIVE, already-certified FG-1C DuplicateActionSupervisor (packages/server/src/duplicate-suppression.ts) — FG-9 introduces zero new suppression logic and zero new execution-path risk; it wraps already-happening behavior into the new decision/receipt provenance framework.",
+    "candidatesBCD": "Pure, tested detector functions over already-available evidence shapes (context-page transmission identity, optional-prefetch flags, ForgeVerify-confirmed validity) — implemented and exercised via deterministic/adversarial fixtures, not wired into live execution this phase."
+  },
+  "implementation": {
+    "fileCounts": { "modified": 12, "new": 15, "runningTotalAcrossPhase3And4": { "modified": 12, "new": 46, "total": 58 } },
+    "newSourceFiles": [
+      "packages/forge-green/src/optimization-types.ts",
+      "packages/forge-green/src/optimization-policy.ts",
+      "packages/forge-green/src/optimization-decision.ts",
+      "packages/forge-green/src/optimization-candidate-a.ts",
+      "packages/forge-green/src/optimization-candidates-shadow.ts",
+      "packages/forge-green/src/optimization-persistence.ts"
+    ],
+    "modifiedSourceFiles": [
+      "packages/forge-green/src/index.ts",
+      "packages/sessions/src/session-state.ts",
+      "packages/protocol/src/workspace-events.ts",
+      "packages/server/src/workspace-event-adapter.ts",
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/duplicate-suppression.ts"
+    ],
+    "newTestFiles": [
+      "packages/forge-green/test/fg9-decision-framework.test.ts",
+      "packages/forge-green/test/fg9-candidate-detection.test.ts",
+      "packages/forge-green/test/fg9-persistence.test.ts",
+      "packages/forge-green/test/fg9-shadow-mode.test.ts",
+      "packages/forge-green/test/fg9-active-safe.test.ts",
+      "packages/forge-green/test/fg9-failure-observability.test.ts",
+      "packages/forge-green/test/fg9-privacy-authority.test.ts",
+      "packages/server/test/fg9-unsafe-mutating.test.ts"
+    ],
+    "newDocs": ["docs/codeforge-forgegreen-optimization-policy.md"],
+    "persistenceWorkItemKinds": ["forgegreen_optimization_decision", "forgegreen_optimization_receipt"],
+    "newEvents": ["forgegreen.optimization_candidate", "forgegreen.optimization_applied", "forgegreen.optimization_rejected", "forgegreen.optimization_invalidated", "forgegreen.optimization_summary"],
+    "runtimeIntegrationPoint": "AgentRuntime.persistForgeGreenSustainabilityReceipt (packages/server/src/agent-runtime.ts), in its own isolated try/catch positioned AFTER the FG-8/FG-8R sustainability receipt is already built and saved, so an FG-9 failure can never mask an otherwise-successful measurement"
+  },
+  "authorityBoundaries": {
+    "grantedThisPhase": "Narrow: may record (and, for Candidate A only, wrap the already-active suppression of) duplicate read-only tool dispatches. No other resource-control surface is active.",
+    "explicitlyNotGranted": ["final model-selection policy", "paid/free classification", "8-Bit qualification", "provider safety", "security policy", "approval requirements", "ForgeVerify verdicts", "Completion Gate verdicts", "user intent", "task completion", "permissions", "authentication", "billing"],
+    "evidence": [
+      "packages/eight-bit, packages/router, packages/workflow, packages/forge-zero: zero files modified this phase.",
+      "createOptimizationDecision (optimization-decision.ts) structurally refuses status APPLIED for any kind whose resolved policy mode is not ACTIVE_SAFE — a code-level, not documentation-level, boundary.",
+      "fg9-privacy-authority.test.ts §34-37: no field on any decision/receipt matches a model-selection/approval/verification-verdict/completion-verdict shape (key-absence assertion).",
+      "fg9-unsafe-mutating.test.ts: proven directly against the REAL FG-1C DuplicateActionSupervisor that write_file/edit_file/run_command (installs/deployments run via run_command) can never be suppressed/cached.",
+      "The full packages/server/test suite (461 tests, real AgentRuntime, mission/delivery/parallel/steering, routing/verification/approval/completion flows) passes unchanged after the live Candidate A wiring."
+    ]
+  },
+  "shadowResults": {
+    "candidateB_duplicateContextPageTransmission": {
+      "mode": "SHADOW", "status": "implemented, tested, not live-wired",
+      "detectionProven": "fg9-candidate-detection.test.ts item 1",
+      "invalidationProven": ["file/content-hash changed (item 5)", "workspace revision changed (item 6)", "same path different content (item 10)"]
+    },
+    "candidateC_optionalPrefetchSuppression": {
+      "mode": "SHADOW", "status": "implemented, tested, not live-wired",
+      "detectionProven": "fg9-candidate-detection.test.ts item 3",
+      "safetyGuard": "required:true always wins — never a semantic-usefulness guess"
+    },
+    "candidateD_verificationEvidenceReuse": {
+      "mode": "SHADOW", "status": "implemented, tested, not live-wired",
+      "detectionProven": "fg9-candidate-detection.test.ts item 4",
+      "safetyGuard": "reuse is proposed ONLY when the caller supplies an explicit forgeVerifyConfirmedValid:true — FG-9 never independently judges validity (fg9-privacy-authority.test.ts item 36); invalidationProven for policy-revision change (item 8) and dependency/config change (item 9)"
+    },
+    "falsePositiveMeasurability": "fg9-shadow-mode.test.ts item 22: a mixed evidence set (1 valid duplicate, 1 content-changed false positive) reports exactly the valid subset, so the false-positive rate is reconstructable by the caller."
+  },
+  "activeSafeOptimizations": {
+    "graduated": ["DUPLICATE_READ_ONLY_TOOL_REUSE"],
+    "notGraduated": ["DUPLICATE_CONTEXT_PAGE_TRANSMISSION", "OPTIONAL_PREFETCH_SUPPRESSION", "VERIFICATION_EVIDENCE_REUSE"],
+    "rationale": "Per the phase's own instruction ('if only one is defensible, activate one'): Candidate A composes already-active, already-certified FG-1C behavior (zero new execution risk); B/C/D would each require new live wiring into context assembly or ForgeVerify call sites, judged out of scope for this phase's risk budget. Their detection logic is fully implemented and tested (shadowResults above) and is the natural Phase 5 wiring target."
+  },
+  "beforeAfterBenchmark": {
+    "source": "scripts/forgegreen-fg8-benchmark.mjs (deterministic, zero network) and packages/forge-green/test/fg9-active-safe.test.ts's '[§18/§31 before/after benchmark]' test",
+    "workload": "tool_heavy_task fixture (4 real FG-1C duplicate suppressions already recorded in packages/forge-green/src/sustainability-fixtures.ts)",
+    "control": { "description": "naive re-execution with the 4 suppressed calls added back", "toolCalls": 31, "wallClockMs": 15260, "measurementStatus": "complete" },
+    "treatment": { "description": "actual, FG-1C suppression ON", "toolCalls": 27, "wallClockMs": 15200, "measurementStatus": "complete" },
+    "delta": { "toolCallsAvoided": 4, "wallClockMsDelta": 60, "verificationOutcomeIdentical": true },
+    "note": "Raw values reported alongside the delta — never a percentage alone. Full receipts for both control and treatment are embedded in docs/codeforge-forgegreen-fg8-benchmark-fixtures.json's optimizationBenchmark field."
+  },
+  "correctnessAndVerification": {
+    "controlTreatmentMeasurementStatusIdentical": true,
+    "qualityResult": "EQUIVALENT (the replayed prior authoritative result is the same output a fresh execution against unchanged state would have produced — FG-1C's own certified guarantee, not a new FG-9 claim)",
+    "survivedValidation": true,
+    "noVerificationObligationChanged": "FG-9 never touches verification obligations/evidence for Candidate A; verificationAccounting is untouched by the optimization path"
+  },
+  "preventedWorkAccounting": {
+    "rule": "Only attributable, reconstructable counterfactuals are counted — never a rounded/guessed figure (unchanged FG-8 rule).",
+    "example": "4 duplicate read-only tool executions avoided; 1500 bytes of replayed prior output not retransmitted (packages/forge-green/test/fg9-candidate-detection.test.ts item 26)"
+  },
+  "energyCarbon": {
+    "status": "INSUFFICIENT_DATA",
+    "note": "Unchanged from FG-8/FG-8R. FG-9 reports resource-count reductions (tool calls, bytes, wall-clock) separately and never converts them into an energy/carbon figure. Example of what IS valid: '4 fewer tool dispatches, 60ms faster' — not '19.4% less energy'."
+  },
+  "privacyAndAuthority": {
+    "privacy": "PASS — fg9-privacy-authority.test.ts §31-33: no prompt content, no source content, no secrets in any decision/receipt built from evidence carrying injected secret/prompt/content-shaped extra fields.",
+    "authority": "PASS — see authorityBoundaries above."
+  },
+  "persistenceRestart": {
+    "decisionPersists": "PASS (fg9-persistence.test.ts item 15)",
+    "receiptPersists": "PASS (item 16)",
+    "restartDoesNotReapply": "PASS — a retried save of the same content-addressed decision is a no-op via insertIfAbsent (item 17)",
+    "invalidatedStaysInvalid": "PASS (item 18)",
+    "preventedWorkNotDoubled": "PASS — two distinct runs' decisions persist and count separately, never summed (item 19)"
+  },
+  "validation": {
+    "focusedFg9Tests": { "suite": "packages/forge-green/test/fg9-*.test.ts (7 files) + packages/server/test/fg9-unsafe-mutating.test.ts (1 file)", "passed": 46, "failed": 0 },
+    "forgeGreenPackageTotal": { "suite": "packages/forge-green/test (29 files, FG-1 through FG-9)", "passed": 184, "failed": 0, "skipped": 0 },
+    "affectedPackages": {
+      "suite": "sessions + eight-bit + protocol + context + repo-intelligence + tools + workflow",
+      "passed": 384, "skipped": 2, "failed": 1,
+      "failureNote": "Same pre-existing better-sqlite3/bindings packaging mismatch documented in the FG-8R certification — reproduced identically again, confirmed unrelated to any FG-9 file."
+    },
+    "integrationSuite": { "suite": "packages/server/test (real AgentRuntime, mission/delivery/parallel/steering, live FG-9 Candidate A wiring exercised throughout)", "passed": 461, "skipped": 3, "failed": 0 },
+    "typecheck": { "command": "tsc -b --force (root)", "result": "PASS", "runs": 2 },
+    "build": { "command": "npm run build --workspaces --if-present (root, includes desktop Electron + web Vite builds)", "result": "PASS", "runs": 2 },
+    "lint": { "result": "NOT_CONFIGURED" },
+    "fullMonorepoSuite": {
+      "command": "vitest run (root)",
+      "testFiles": { "passed": 265, "failed": 2, "skipped": 7, "total": 274 },
+      "tests": { "passed": 1952, "failed": 1, "skipped": 36, "total": 1989 },
+      "regressionsIntroducedByFg9": 0,
+      "growthFromFg8r": "1943 -> 1989 total tests (+46, exactly the new FG-9 focused test count)",
+      "preExistingFailures": "identical to FG-8R's documented two (sqlite-driver.test.ts native-binding packaging mismatch; qualification-fixtures fixture-file-matches-test-glob quirk) — reproduced a 4th time across this session's phases with identical behavior"
+    }
+  },
+  "gaps": [
+    { "gap": "Candidates B/C/D are shadow-only — not wired into live context assembly or a live ForgeVerify call site.", "severity": "medium — expected for this phase", "nextStep": "A future phase can wire each detector as a passive shadow observer inside the live pipeline first, then evaluate graduation per the same evidence bar Candidate A met." },
+    { "gap": "Candidate A's benchmark uses the FG-8 tool_heavy_task fixture's already-recorded suppression counts rather than a brand-new live run.", "severity": "low", "nextStep": "none required — this is the same zero-cash, deterministic-replay methodology FG-8/FG-8R already established as sufficient; a live run would need a real agent dispatch, explicitly out of the zero-cash boundary." },
+    { "gap": "Energy/carbon remain INSUFFICIENT_DATA.", "severity": "low — correct, not a gap to close here", "nextStep": "unchanged from FG-8R" }
+  ],
+  "phaseGates": {
+    "AUTHORITY_BOUNDARY_PRESERVED": "PASS",
+    "SHADOW_MODE_FUNCTIONAL": "PASS",
+    "AT_LEAST_ONE_ACTIVE_SAFE_CLASS": "PASS (DUPLICATE_READ_ONLY_TOOL_REUSE)",
+    "BEFORE_AFTER_RESOURCE_REDUCTION_PROVEN": "PASS",
+    "CORRECTNESS_PRESERVED": "PASS",
+    "VERIFICATION_REMAINS_VALID": "PASS",
+    "PERSISTENCE_RESTART": "PASS",
+    "PRIVACY": "PASS",
+    "AUTHORITY_ISOLATION": "PASS",
+    "ZERO_CASH": "PASS",
+    "NO_NEW_REGRESSION": "PASS"
+  },
+  "verdict": "CODEFORGE_FORGEGREEN_PHASE4_OPTIMIZATION_CERTIFIED"
+}

@@ -24,6 +24,30 @@ export * from "./verification-policy.js";
 export * from "./evidence-resolution.js";
 export * from "./coverage-authority.js";
 
+// FG-8: sustainability & resource measurement. Observational only — see docs/forgegreen.md and
+// docs/codeforge-forgegreen-measurement-contract.md for the full authority boundary.
+export { FORGE_GREEN_SUSTAINABILITY_POLICY_VERSION } from "./constants.js";
+export * from "./sustainability-types.js";
+export * from "./measurement-normalization.js";
+export * from "./waste-taxonomy.js";
+export * from "./hardware-telemetry.js";
+export * from "./energy-estimator.js";
+export * from "./baseline.js";
+export * from "./sustainability-receipt.js";
+export * from "./sustainability-summary.js";
+export * from "./sustainability-persistence.js";
+export * from "./sustainability-fixtures.js";
+export * from "./live-context-adapter.js";
+
+// FG-9: ForgeGreen optimization & efficiency policy (Phase 4). Narrowly scoped resource-control
+// authority only — see docs/codeforge-forgegreen-optimization-policy.md.
+export * from "./optimization-types.js";
+export * from "./optimization-policy.js";
+export * from "./optimization-decision.js";
+export * from "./optimization-candidate-a.js";
+export * from "./optimization-candidates-shadow.js";
+export * from "./optimization-persistence.js";
+
 export const FORGE_GREEN_LEDGER_WORK_ITEM_KIND = "forgegreen_ledger";
 
 export type EfficiencyScore = number & { readonly __forgeGreenEfficiencyScore: unique symbol };

@@ -615,6 +615,38 @@ export const WorkItemSchema = z.discriminatedUnion("kind", [
     updatedAt: z.string().datetime(),
   }),
   z.object({
+    /** FG-8: append-only, immutable sustainability/resource-measurement receipt. Same
+     * observational posture as `forgegreen_ledger` — never an authority input for permission,
+     * verification, routing, or completion decisions. */
+    kind: z.literal("forgegreen_sustainability_receipt"),
+    id: z.string(),
+    sessionId: z.string().optional(),
+    runId: z.string(),
+    record: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+  }),
+  z.object({
+    /** FG-9: append-only, immutable ForgeGreen optimization decision. Narrowly scoped
+     * resource-efficiency governance only — never a permission, routing, verification, or
+     * completion authority. See docs/codeforge-forgegreen-optimization-policy.md. */
+    kind: z.literal("forgegreen_optimization_decision"),
+    id: z.string(),
+    sessionId: z.string().optional(),
+    runId: z.string(),
+    record: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+  }),
+  z.object({
+    /** FG-9: append-only, immutable ForgeGreen optimization receipt (before -> decision -> after
+     * -> verification). Same observational/governance posture as forgegreen_optimization_decision. */
+    kind: z.literal("forgegreen_optimization_receipt"),
+    id: z.string(),
+    sessionId: z.string().optional(),
+    runId: z.string(),
+    record: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+  }),
+  z.object({
     /** 8-Bit: append-only, immutable routing-decision receipt. Never an authority input —
      * observational/explainability record only, same posture as `forgegreen_ledger`. */
     kind: z.literal("eight_bit_decision_receipt"),

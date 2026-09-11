@@ -186,6 +186,136 @@ export const ForgeVerifyEvidenceCreatedSchema = EventBase(
   z.object({ taskId: z.string(), planId: z.string(), attemptId: z.string(), evidenceId: z.string(), verifierId: z.string(), status: z.enum(["passed", "failed", "cancelled", "timed_out", "infra_error", "interrupted"]), durationMs: z.number().nonnegative(), outputTruncated: z.boolean() }),
 );
 
+/**
+ * FG-8: ForgeGreen sustainability/resource-measurement lifecycle events. Observational only —
+ * counts/ids/classifications, never prompt or source content. Emitted once per run (aggregated),
+ * never per token/tool-call, so this stays a bounded event stream. See
+ * docs/codeforge-forgegreen-measurement-contract.md.
+ */
+export const ForgeGreenRunStartedSchema = EventBase(
+  "forgegreen.run_started",
+  z.object({ runId: z.string() }),
+);
+
+export const ForgeGreenModelUsageRecordedSchema = EventBase(
+  "forgegreen.model_usage_recorded",
+  z.object({
+    runId: z.string(),
+    coverage: z.enum(["directly_measured", "provider_reported", "derived_from_authoritative_telemetry", "replayed", "simulated", "estimated", "unavailable"]),
+    requestCount: z.number().int().nonnegative().optional(),
+    totalTokens: z.number().int().nonnegative().optional(),
+  }),
+);
+
+export const ForgeGreenToolUsageRecordedSchema = EventBase(
+  "forgegreen.tool_usage_recorded",
+  z.object({
+    runId: z.string(),
+    toolCallCount: z.number().int().nonnegative().optional(),
+    toolFailureCount: z.number().int().nonnegative().optional(),
+  }),
+);
+
+export const ForgeGreenVerificationUsageRecordedSchema = EventBase(
+  "forgegreen.verification_usage_recorded",
+  z.object({
+    runId: z.string(),
+    obligationsGenerated: z.number().int().nonnegative().optional(),
+  }),
+);
+
+export const ForgeGreenBaselineGeneratedSchema = EventBase(
+  "forgegreen.baseline_generated",
+  z.object({
+    runId: z.string(),
+    baselineKinds: z.array(z.string()),
+    comparisonBasis: z.array(z.string()),
+  }),
+);
+
+export const ForgeGreenEnergyEstimatedSchema = EventBase(
+  "forgegreen.energy_estimated",
+  z.object({
+    runId: z.string(),
+    estimatorId: z.string(),
+    estimatorVersion: z.string(),
+    confidence: z.enum(["DIRECT", "PROVIDER_REPORTED", "HIGH_CONFIDENCE_ESTIMATE", "MODELED_ESTIMATE", "INSUFFICIENT_DATA"]),
+  }),
+);
+
+export const ForgeGreenRunFinalizedSchema = EventBase(
+  "forgegreen.run_finalized",
+  z.object({
+    runId: z.string(),
+    receiptId: z.string(),
+    measurementStatus: z.enum(["complete", "incomplete", "failed"]),
+  }),
+);
+
+export const ForgeGreenMeasurementFailedSchema = EventBase(
+  "forgegreen.measurement_failed",
+  z.object({
+    runId: z.string(),
+    reasonCodes: z.array(z.string()),
+  }),
+);
+
+/**
+ * FG-9: ForgeGreen optimization & efficiency policy (Phase 4) lifecycle events. Aggregated once
+ * per run per optimization kind — never one event per candidate/suppression instance. Narrowly
+ * scoped resource-governance signals only: no model-selection, approval, verification-verdict,
+ * or completion data ever appears in these payloads.
+ */
+export const ForgeGreenOptimizationCandidateSchema = EventBase(
+  "forgegreen.optimization_candidate",
+  z.object({
+    runId: z.string(),
+    kind: z.enum(["DUPLICATE_READ_ONLY_TOOL_REUSE", "DUPLICATE_CONTEXT_PAGE_TRANSMISSION", "OPTIONAL_PREFETCH_SUPPRESSION", "VERIFICATION_EVIDENCE_REUSE"]),
+    mode: z.enum(["OFF", "SHADOW", "ACTIVE_SAFE"]),
+    candidateCount: z.number().int().nonnegative(),
+  }),
+);
+
+export const ForgeGreenOptimizationAppliedSchema = EventBase(
+  "forgegreen.optimization_applied",
+  z.object({
+    runId: z.string(),
+    decisionId: z.string(),
+    kind: z.string(),
+    avoidedToolExecutions: z.number().int().nonnegative().optional(),
+    avoidedBytes: z.number().int().nonnegative().optional(),
+  }),
+);
+
+export const ForgeGreenOptimizationRejectedSchema = EventBase(
+  "forgegreen.optimization_rejected",
+  z.object({
+    runId: z.string(),
+    kind: z.string(),
+    reasonCodes: z.array(z.string()),
+  }),
+);
+
+export const ForgeGreenOptimizationInvalidatedSchema = EventBase(
+  "forgegreen.optimization_invalidated",
+  z.object({
+    runId: z.string(),
+    decisionId: z.string(),
+    reasonCodes: z.array(z.string()),
+  }),
+);
+
+export const ForgeGreenOptimizationSummarySchema = EventBase(
+  "forgegreen.optimization_summary",
+  z.object({
+    runId: z.string(),
+    candidatesConsidered: z.number().int().nonnegative(),
+    applied: z.number().int().nonnegative(),
+    proposed: z.number().int().nonnegative(),
+    skippedInsufficientEvidence: z.number().int().nonnegative(),
+  }),
+);
+
 export const WorkflowRepairAttemptedSchema = EventBase(
   "workflow.repair_attempted",
   z.object({ taskId: z.string(), attempt: z.number().int().positive(), summary: z.string() }),
@@ -655,6 +785,19 @@ export const WorkspaceEventSchema = z.discriminatedUnion("type", [
   ForgeVerifyPlanCreatedSchema,
   ForgeVerifyAttemptStartedSchema,
   ForgeVerifyEvidenceCreatedSchema,
+  ForgeGreenRunStartedSchema,
+  ForgeGreenModelUsageRecordedSchema,
+  ForgeGreenToolUsageRecordedSchema,
+  ForgeGreenVerificationUsageRecordedSchema,
+  ForgeGreenBaselineGeneratedSchema,
+  ForgeGreenEnergyEstimatedSchema,
+  ForgeGreenRunFinalizedSchema,
+  ForgeGreenMeasurementFailedSchema,
+  ForgeGreenOptimizationCandidateSchema,
+  ForgeGreenOptimizationAppliedSchema,
+  ForgeGreenOptimizationRejectedSchema,
+  ForgeGreenOptimizationInvalidatedSchema,
+  ForgeGreenOptimizationSummarySchema,
   WorkflowRepairAttemptedSchema,
   WorkflowReviewCompletedSchema,
   WorkflowCompletionDecidedSchema,

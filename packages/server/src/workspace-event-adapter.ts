@@ -696,6 +696,105 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent);
   }
 
+  /**
+   * FG-8: ForgeGreen sustainability/resource-measurement lifecycle events. Aggregated once per
+   * run — never one event per token/tool-call — so this stays a bounded stream. Observational
+   * only: counts/ids/classifications, never prompt or source content.
+   */
+  emitForgeGreenRunStarted(runId: string): void {
+    this.emitBestEffort({ type: "forgegreen.run_started", payload: { runId } } as WorkspaceEvent);
+  }
+
+  emitForgeGreenModelUsageRecorded(runId: string, coverage: string, requestCount?: number, totalTokens?: number): void {
+    this.emitBestEffort({
+      type: "forgegreen.model_usage_recorded",
+      payload: { runId, coverage, requestCount, totalTokens },
+    } as WorkspaceEvent);
+  }
+
+  emitForgeGreenToolUsageRecorded(runId: string, toolCallCount?: number, toolFailureCount?: number): void {
+    this.emitBestEffort({
+      type: "forgegreen.tool_usage_recorded",
+      payload: { runId, toolCallCount, toolFailureCount },
+    } as WorkspaceEvent);
+  }
+
+  emitForgeGreenVerificationUsageRecorded(runId: string, obligationsGenerated?: number): void {
+    this.emitBestEffort({
+      type: "forgegreen.verification_usage_recorded",
+      payload: { runId, obligationsGenerated },
+    } as WorkspaceEvent);
+  }
+
+  emitForgeGreenBaselineGenerated(runId: string, baselineKinds: string[], comparisonBasis: string[]): void {
+    this.emitBestEffort({
+      type: "forgegreen.baseline_generated",
+      payload: { runId, baselineKinds, comparisonBasis },
+    } as WorkspaceEvent);
+  }
+
+  emitForgeGreenEnergyEstimated(runId: string, estimatorId: string, estimatorVersion: string, confidence: string): void {
+    this.emitBestEffort({
+      type: "forgegreen.energy_estimated",
+      payload: { runId, estimatorId, estimatorVersion, confidence },
+    } as WorkspaceEvent);
+  }
+
+  emitForgeGreenRunFinalized(runId: string, receiptId: string, measurementStatus: string): void {
+    this.emitBestEffort({
+      type: "forgegreen.run_finalized",
+      payload: { runId, receiptId, measurementStatus },
+    } as WorkspaceEvent);
+  }
+
+  /** Non-fatal measurement failure (hardening #4): the underlying agent run is never affected,
+   * but the failure itself must be observable, not silently erased. */
+  emitForgeGreenMeasurementFailed(runId: string, reasonCodes: string[]): void {
+    this.emitBestEffort({
+      type: "forgegreen.measurement_failed",
+      payload: { runId, reasonCodes },
+    } as WorkspaceEvent);
+  }
+
+  /**
+   * FG-9: ForgeGreen optimization & efficiency policy lifecycle events. Aggregated once per run
+   * per optimization kind — never one event per candidate/suppression instance.
+   */
+  emitForgeGreenOptimizationCandidate(runId: string, kind: string, mode: string, candidateCount: number): void {
+    this.emitBestEffort({
+      type: "forgegreen.optimization_candidate",
+      payload: { runId, kind, mode, candidateCount },
+    } as WorkspaceEvent);
+  }
+
+  emitForgeGreenOptimizationApplied(runId: string, decisionId: string, kind: string, avoidedToolExecutions?: number, avoidedBytes?: number): void {
+    this.emitBestEffort({
+      type: "forgegreen.optimization_applied",
+      payload: { runId, decisionId, kind, avoidedToolExecutions, avoidedBytes },
+    } as WorkspaceEvent);
+  }
+
+  emitForgeGreenOptimizationRejected(runId: string, kind: string, reasonCodes: string[]): void {
+    this.emitBestEffort({
+      type: "forgegreen.optimization_rejected",
+      payload: { runId, kind, reasonCodes },
+    } as WorkspaceEvent);
+  }
+
+  emitForgeGreenOptimizationInvalidated(runId: string, decisionId: string, reasonCodes: string[]): void {
+    this.emitBestEffort({
+      type: "forgegreen.optimization_invalidated",
+      payload: { runId, decisionId, reasonCodes },
+    } as WorkspaceEvent);
+  }
+
+  emitForgeGreenOptimizationSummary(runId: string, candidatesConsidered: number, applied: number, proposed: number, skippedInsufficientEvidence: number): void {
+    this.emitBestEffort({
+      type: "forgegreen.optimization_summary",
+      payload: { runId, candidatesConsidered, applied, proposed, skippedInsufficientEvidence },
+    } as WorkspaceEvent);
+  }
+
   getSeq(): number {
     return this.eventStore.getLastSeq();
   }
