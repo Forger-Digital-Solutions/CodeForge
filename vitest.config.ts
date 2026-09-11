@@ -61,6 +61,9 @@ export default defineConfig({
       // VS Code test-electron tests must run separately (require real VS Code instance)
       "packages/vscode/src/test/**/*",
       "packages/vscode/test/suite/**/*",
+      // 8-Bit qualification fixtures are sample repositories the harness evaluates models
+      // against; their *.test.ts files are fixture content (Jest-style globals), not suites.
+      "tests/evidence/qualification-fixtures/**/*",
     ],
     globals: false,
     testTimeout: 30000,
