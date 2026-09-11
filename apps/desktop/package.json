@@ -20,7 +20,7 @@
     "smoke:interrupt": "node scripts/packaged-smoke.js interrupt",
     "smoke:recover": "node scripts/packaged-smoke.js recover",
     "smoke:all": "node scripts/packaged-smoke.js full && node scripts/packaged-smoke.js interrupt && node scripts/packaged-smoke.js recover",
-    "clean": "rm -rf dist"
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\""
   },
   "dependencies": {
     "@codeforge/ui": "*",

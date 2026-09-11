@@ -1,0 +1,35 @@
+{
+  "verdict": "CODEFORGE_DESKTOP_BYOK_BETA_R1_BLOCKED",
+  "appVersion": "0.2.0",
+  "source": {
+    "requestedStartingHead": "3d5ba374e1ebf140813401c0b4dcbcebdf6a010c",
+    "actualStartingHead": "4904d2b1b9000ce3ff812dc119d844c6ab0206d2",
+    "branch": "forger-digital-solutions-analyze-attached-request",
+    "finalHead": "pending-local-commit"
+  },
+  "automatedTests": {
+    "command": "npm test -- --reporter=dot",
+    "status": "pass",
+    "testFiles": 57,
+    "tests": 574
+  },
+  "packaging": {
+    "status": "not_run_in_workspace",
+    "runner": "windows-2022",
+    "architecture": "x64",
+    "portableArtifact": null,
+    "installerArtifact": null,
+    "sha256": null
+  },
+  "businessGates": {
+    "licenseOwner": "LICENSE_OWNER_AUTHORIZATION_REQUIRED",
+    "minimumAgePolicy": "MINIMUM_AGE_POLICY_AUTHORIZATION_REQUIRED",
+    "legalDocumentsActive": "not_established",
+    "counselReview": "not_established"
+  },
+  "sbom": "deferred_until_packaged_candidate",
+  "notes": [
+    "No Windows packaged artifact was fabricated from source-only validation.",
+    "No public release, tag, deployment, or paid inference was enabled."
+  ]
+}

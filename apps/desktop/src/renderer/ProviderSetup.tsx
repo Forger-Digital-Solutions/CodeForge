@@ -130,7 +130,7 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
           PROVIDERS.forEach((provider) => {
             const providerModels = models.filter((m) => m.providerId === provider.providerId);
             counts[provider.providerId] = {
-              free: providerModels.filter((m) => m.costProfile?.isFree || m.isPromotional).length,
+              free: providerModels.filter((m) => m.freeStatus === "verified_free").length,
               paid: providerModels.filter((m) => m.tier === "paid" || m.tier === "gems_paid").length,
             };
           });
