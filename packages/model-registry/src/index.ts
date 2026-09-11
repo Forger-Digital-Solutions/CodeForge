@@ -22,6 +22,7 @@ export * from "./models-dev.js";
 export * from "./overlay.js";
 export * from "./registry.js";
 export * from "./discovery.js";
+export * from "./catalog-refresh.js";
 export { MODELS_DEV_SNAPSHOT, MODELS_DEV_SNAPSHOT_CAPTURED_AT } from "./snapshot.js";
 
 /**

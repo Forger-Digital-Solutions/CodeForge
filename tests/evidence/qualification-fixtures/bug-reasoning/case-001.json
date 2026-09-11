@@ -1,0 +1,24 @@
+{
+  "id": "bug-reasoning-001",
+  "name": "Division by Zero Bug",
+  "category": "bug-reasoning",
+  "description": "Identify the root cause of a division by zero bug and suggest minimal fix",
+  "files": [
+    "calculator.ts"
+  ],
+  "question": "The calculateAverage function crashes when given an empty array. What is the root cause and what is the minimal fix direction?",
+  "expectedRootCause": "divide() called with b=0 when numbers.length is 0",
+  "expectedFixDirection": "Add zero-check in divide() or handle empty array before calling divide()",
+  "checkType": "semantic_match",
+  "requiredKeywords": [
+    "division by zero",
+    "divide",
+    "zero",
+    "check",
+    "empty"
+  ],
+  "metadata": {
+    "difficulty": "easy",
+    "deterministic": true
+  }
+}

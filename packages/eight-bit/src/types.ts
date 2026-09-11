@@ -18,6 +18,8 @@ export const EightBitRoleSchema = z.enum([
   "FAST_WORKER",
   "LONG_CONTEXT",
   "VISION",
+  "TOOL_AGENT",
+  "ANALYST",
 ]);
 export type EightBitRole = z.infer<typeof EightBitRoleSchema>;
 
@@ -42,6 +44,8 @@ export const ROLE_CONTRACTS: Readonly<Record<EightBitRole, RoleContract>> = {
   FAST_WORKER: { role: "FAST_WORKER", requiresTools: true, requiresStructuredOutput: false, requiresVision: false, requiresLongContext: false, minContextTokens: 4_000, minToolReliability: 0.5 },
   LONG_CONTEXT: { role: "LONG_CONTEXT", requiresTools: false, requiresStructuredOutput: false, requiresVision: false, requiresLongContext: true, minContextTokens: 100_000, minToolReliability: 0 },
   VISION: { role: "VISION", requiresTools: false, requiresStructuredOutput: false, requiresVision: true, requiresLongContext: false, minContextTokens: 8_000, minToolReliability: 0 },
+  TOOL_AGENT: { role: "TOOL_AGENT", requiresTools: true, requiresStructuredOutput: true, requiresVision: false, requiresLongContext: false, minContextTokens: 8_000, minToolReliability: 0.7 },
+  ANALYST: { role: "ANALYST", requiresTools: false, requiresStructuredOutput: false, requiresVision: false, requiresLongContext: false, minContextTokens: 8_000, minToolReliability: 0 },
 } as const;
 
 // --- Failure classification -------------------------------------------------------------------

@@ -1,0 +1,28 @@
+{
+  "id": "multi-file-001",
+  "name": "Multi-File Permission Analysis",
+  "category": "multi-file",
+  "description": "Answer requires joining facts from user.ts, roles.ts, and auth-service.ts",
+  "files": [
+    "src/user.ts",
+    "src/roles.ts",
+    "src/auth-service.ts"
+  ],
+  "question": "If a user has roleIds ['editor', 'viewer'], what permissions will they have according to the auth system? Explain your reasoning by referencing the relevant files.",
+  "expectedAnswer": "read, write",
+  "requiredFileReferences": [
+    "roles.ts",
+    "auth-service.ts"
+  ],
+  "checkType": "multi_file_synthesis",
+  "requirements": [
+    "Relevant discovery (references roles.ts and auth-service.ts)",
+    "Correct synthesis (read, write permissions)",
+    "No invented dependencies",
+    "Bounded unnecessary reads"
+  ],
+  "metadata": {
+    "difficulty": "medium",
+    "deterministic": true
+  }
+}

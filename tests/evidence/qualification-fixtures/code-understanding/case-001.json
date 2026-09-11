@@ -1,0 +1,20 @@
+{
+  "id": "code-understanding-001",
+  "name": "Token Validator Function Identification",
+  "category": "code-understanding",
+  "description": "Identify which function validates tokens in a small module",
+  "files": [
+    "token-validator.ts"
+  ],
+  "question": "Which exported function in token-validator.ts actually performs token validation (checks expiry and scope)?",
+  "expectedAnswer": "validateToken",
+  "acceptableAnswers": [
+    "validateToken",
+    "theValidator"
+  ],
+  "checkType": "exact_match",
+  "metadata": {
+    "difficulty": "easy",
+    "deterministic": true
+  }
+}

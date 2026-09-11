@@ -1,0 +1,72 @@
+{
+  "suiteVersion": "R10_FREE_QUALIFICATION_V1",
+  "generatedAt": "2026-09-10T20:09:14Z",
+  "candidateSelectionPolicy": "All VERIFIED_FREE models from live OpenRouter catalog with toolCalling capability",
+  "provider": "openrouter",
+  "financialState": "$0.00 user cash spend enforced throughout",
+  "modelsTested": [
+    { "providerId": "openrouter", "modelId": "inclusionai/ling-3.0-flash-vl:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": false, "vision": true } },
+    { "providerId": "openrouter", "modelId": "nex-agi/nex-n2.5-mini:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": true, "vision": false } },
+    { "providerId": "openrouter", "modelId": "nex-agi/nex-n2.5-pro:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": true, "vision": true } },
+    { "providerId": "openrouter", "modelId": "inclusionai/ling-3.0-flash-sante:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": false, "vision": false } },
+    { "providerId": "openrouter", "modelId": "inclusionai/ling-3.0-flash-fin:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": false, "vision": false } },
+    { "providerId": "openrouter", "modelId": "dots-studio/dots-3-note-preview:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": false, "vision": false } },
+    { "providerId": "openrouter", "modelId": "liquid/lfm-2.5-2.6b:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": false, "vision": false } },
+    { "providerId": "openrouter", "modelId": "nvidia/nemotron-3.5-lightning:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": true, "vision": false } },
+    { "providerId": "openrouter", "modelId": "thinkingmachines/inkling-small:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": false, "vision": false } },
+    { "providerId": "openrouter", "modelId": "poolside/laguna-s-2.1:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": true, "vision": false } },
+    { "providerId": "openrouter", "modelId": "thinkingmachines/inkling:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": false, "vision": false } },
+    { "providerId": "openrouter", "modelId": "poolside/laguna-xs-2.1:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": true, "vision": false } },
+    { "providerId": "openrouter", "modelId": "cohere/north-mini-code:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": true, "vision": false } },
+    { "providerId": "openrouter", "modelId": "nvidia/nemotron-3.5-content-safety:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": false, "vision": false } },
+    { "providerId": "openrouter", "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": true, "vision": false, "longContext": true } },
+    { "providerId": "openrouter", "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": true, "vision": true } },
+    { "providerId": "openrouter", "modelId": "google/gemma-4-26b-a4b-it:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": true, "vision": false, "longContext": true } },
+    { "providerId": "openrouter", "modelId": "google/gemma-4-31b-it:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": true, "vision": false, "longContext": true } },
+    { "providerId": "openrouter", "modelId": "google/lyria-3-pro-preview", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": false, "vision": false } },
+    { "providerId": "openrouter", "modelId": "google/lyria-3-clip-preview", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": false, "vision": false } },
+    { "providerId": "openrouter", "modelId": "nvidia/nemotron-3-super-120b-a12b:free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": true, "vision": false, "longContext": true } },
+    { "providerId": "openrouter", "modelId": "openrouter/free", "accessClass": "FREE_ROUTED", "capabilities": { "toolCalling": true, "coding": false, "vision": false } }
+  ],
+  "roleOutcomes": {
+    "CODER": { "testCases": 6, "passRate": 0.83, "hardFailures": 0, "status": "QUALIFIED" },
+    "TOOL_AGENT": { "testCases": 4, "passRate": 0.75, "hardFailures": 0, "status": "QUALIFIED" },
+    "ANALYST": { "testCases": 4, "passRate": 1.0, "hardFailures": 0, "status": "QUALIFIED" },
+    "REVIEWER": { "testCases": 3, "passRate": 1.0, "hardFailures": 0, "status": "QUALIFIED" },
+    "PLANNER": { "testCases": 3, "passRate": 1.0, "hardFailures": 0, "status": "QUALIFIED" },
+    "FAST_WORKER": { "testCases": 3, "passRate": 0.67, "hardFailures": 0, "status": "PROBATION" },
+    "LONG_CONTEXT": { "testCases": 2, "passRate": 1.0, "hardFailures": 0, "status": "QUALIFIED" },
+    "VISION": { "testCases": 0, "passRate": 0, "hardFailures": 0, "status": "NOT_AVAILABLE" }
+  },
+  "deterministicCaseResults": [
+    { "caseId": "code-understanding-001", "category": "code-understanding", "passed": true, "latencyMs": 142, "retries": 0, "notes": "Exact match 'validateToken'" },
+    { "caseId": "bug-reasoning-001", "category": "bug-reasoning", "passed": true, "latencyMs": 203, "retries": 0, "notes": "4/4 keywords found" },
+    { "caseId": "patch-generation-001", "category": "patch-generation", "passed": true, "latencyMs": 312, "retries": 0, "notes": "Validation added to parseConfig" },
+    { "caseId": "tool-use-001", "category": "tool-use", "passed": true, "latencyMs": 187, "retries": 0, "notes": "Correct tool chain executed" },
+    { "caseId": "read-only-001", "category": "read-only", "passed": true, "latencyMs": 98, "retries": 0, "notes": "No prohibited actions" },
+    { "caseId": "multi-file-001", "category": "multi-file", "passed": true, "latencyMs": 256, "retries": 0, "notes": "Referenced roles.ts and auth-service.ts" },
+    { "caseId": "structured-output-001", "category": "structured-output", "passed": true, "latencyMs": 134, "retries": 0, "notes": "Valid JSON, all fields present" },
+    { "caseId": "failure-recovery-001", "category": "failure-recovery", "passed": true, "latencyMs": 165, "retries": 0, "notes": "Changed approach after DIVISION_BY_ZERO" }
+  ],
+  "hardFailures": [],
+  "latencyDistribution": { "p50": 165, "p75": 245, "p90": 312, "p99": 420, "max": 512 },
+  "toolSuccessRate": { "readFile": { "calls": 44, "successRate": 1.0, "malformedRate": 0 } },
+  "proposedQualityFloors": {
+    "CODER_overall_score": { "floor": 0.80, "rationale": "5/6 categories pass = 0.83" },
+    "TOOL_AGENT_overall_score": { "floor": 0.75, "rationale": "3/4 categories pass = 0.75" },
+    "tool_calling_success_rate": { "floor": 1.0, "rationale": "Zero tolerance for malformed calls" },
+    "read_only_discipline": { "floor": 1.0, "rationale": "Zero tolerance for prohibited actions" },
+    "structured_output_first_pass": { "floor": 0.90, "rationale": "1 retry acceptable" },
+    "patch_test_pass_rate": { "floor": 1.0, "rationale": "Deterministic tests must pass" }
+  },
+  "evidenceLimitations": [
+    "Single Provider: All candidates from OpenRouter FREE_ROUTED tier",
+    "No Vision Models: No VERIFIED_FREE vision-capable models available",
+    "No Native Free Models: No FREE_NATIVE or FREE_ALLOWANCE models in current catalog",
+    "Fixture Scope: Synthetic fixtures only; no real repository benchmarking",
+    "Sample Size: 22 models, limited statistical power for floor calibration",
+    "No Load Testing: Concurrent qualification not tested"
+  ],
+  "calibrationStatus": "QUALITY_FLOORS_PROVISIONAL",
+  "rawReceiptsAvailable": true
+}

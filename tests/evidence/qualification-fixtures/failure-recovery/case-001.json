@@ -1,0 +1,26 @@
+{
+  "id": "failure-recovery-001",
+  "name": "Calculator Failure Recovery",
+  "category": "failure-recovery",
+  "description": "Given a failed tool/test observation, recognize failure and change approach",
+  "files": [
+    "calculator.ts"
+  ],
+  "scenario": {
+    "initialAttempt": "safeCalculate('10 / 0')",
+    "observation": { "result": 0, "error": "DIVISION_BY_ZERO" },
+    "expectedBehavior": "Recognize division by zero, try alternative approach (e.g., '10 / 2')"
+  },
+  "checkType": "failure_recovery",
+  "requirements": [
+    "Recognize failure from observation",
+    "Change approach (not repeat exact same action)",
+    "Avoid exact repeated bad action",
+    "Reach valid next step",
+    "Track repeatedActionCount"
+  ],
+  "metadata": {
+    "difficulty": "medium",
+    "deterministic": true
+  }
+}

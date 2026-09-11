@@ -1,0 +1,46 @@
+{
+  "id": "tool-use-001",
+  "name": "File Reader Tool Chain",
+  "category": "tool-use",
+  "description": "Model must read file, interpret result, and invoke appropriate next tool",
+  "tools": [
+    {
+      "name": "readFile",
+      "description": "Read a file from the test fixture",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string", "description": "Path to the file" }
+        },
+        "required": ["path"]
+      }
+    }
+  ],
+  "steps": [
+    {
+      "instruction": "Read config.json and tell me the version field",
+      "expectedTool": "readFile",
+      "expectedArgs": { "path": "config.json" },
+      "expectedAnswer": "1.0"
+    },
+    {
+      "instruction": "Now read data.txt and tell me the first line",
+      "expectedTool": "readFile",
+      "expectedArgs": { "path": "data.txt" },
+      "expectedAnswer": "Hello, World!"
+    }
+  ],
+  "checkType": "tool_chain",
+  "requirements": [
+    "Correct tool invoked (readFile)",
+    "Valid schema arguments",
+    "Correct path argument",
+    "No malformed protocol",
+    "No hallucinated tool names",
+    "Continues correctly after tool observation"
+  ],
+  "metadata": {
+    "difficulty": "easy",
+    "deterministic": true
+  }
+}

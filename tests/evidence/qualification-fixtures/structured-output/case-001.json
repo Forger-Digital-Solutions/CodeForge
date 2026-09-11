@@ -1,0 +1,23 @@
+{
+  "id": "structured-output-001",
+  "name": "Structured Analysis Output",
+  "category": "structured-output",
+  "description": "Produce valid structured output matching the schema",
+  "schemaFile": "schema.ts",
+  "schemaName": "AnalysisResultSchema",
+  "instruction": "Analyze this issue: 'Login page crashes when password field is empty'. Output a JSON object matching the AnalysisResultSchema with issueType=bug, severity=high, affectedFiles=['login.tsx'], suggestedFix='Add validation for empty password field', confidence=0.9",
+  "expectedSchema": "AnalysisResultSchema",
+  "checkType": "schema_validation",
+  "requirements": [
+    "First-pass schema success",
+    "Valid JSON",
+    "All required fields present",
+    "Correct enum values",
+    "Confidence in range 0-1",
+    "Track retries if any"
+  ],
+  "metadata": {
+    "difficulty": "easy",
+    "deterministic": true
+  }
+}

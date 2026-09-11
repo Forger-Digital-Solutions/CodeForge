@@ -25,9 +25,11 @@
     "@codeforge/sessions": "*",
     "@codeforge/forge-green": "*",
     "@codeforge/context": "*",
-    "zod": "^3.24.0"
+    "zod": "^3.24.0",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "vitest": "^2.1.0"
+    "vitest": "^2.1.0",
+    "@types/uuid": "^10.0.0"
   }
 }

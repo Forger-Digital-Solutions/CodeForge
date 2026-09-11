@@ -1,0 +1,23 @@
+{
+  "id": "patch-generation-001",
+  "name": "Config Validation Patch",
+  "category": "patch-generation",
+  "description": "Implement bounded fix for config validation - add validation to parseConfig",
+  "files": [
+    "src/config.ts",
+    "test/config.test.ts"
+  ],
+  "task": "Modify parseConfig in src/config.ts to call validateConfig and throw if validation fails. The fix must be minimal - only add validation, don't change the function signature or return type.",
+  "requirements": [
+    "parseConfig must validate the parsed config",
+    "parseConfig must throw on invalid config with descriptive error",
+    "All existing tests must pass",
+    "No unrelated files modified"
+  ],
+  "verifyCommand": "npx vitest run tests/evidence/qualification-fixtures/patch-generation/test/config.test.ts",
+  "checkType": "test_pass",
+  "metadata": {
+    "difficulty": "medium",
+    "deterministic": true
+  }
+}

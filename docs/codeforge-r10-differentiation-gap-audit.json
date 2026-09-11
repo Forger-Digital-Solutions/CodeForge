@@ -1,0 +1,299 @@
+{
+  "baseline": {
+    "commit": "085e065a46f73f9e80dd952b2ee64923908e276e",
+    "branch": "feat/codeforge-cloud",
+    "head": "6dbb67880c0e8bfbfa0bf69d4e593ab710320c6f",
+    "milestone": "CODEFORGE_R9_DAILY_DRIVER_COMMISSIONED"
+  },
+  "authoritySeparation": {
+    "ForgeAutoFree": {
+      "component": "ForgeRouter",
+      "location": "packages/router/src/index.ts",
+      "responsibilities": [
+        "task-aware route selection",
+        "eligible-model ranking",
+        "fallback",
+        "re-routing when appropriate",
+        "choosing among available free routes",
+        "respecting capability requirements"
+      ],
+      "integration": [
+        "ForgeZero.eligibleModels() for eligibility filtering",
+        "Director.resolveForgeZeroAdaptive()",
+        "Router.resolveSelection()",
+        "AgentRuntime.selectModel()"
+      ],
+      "gaps": [
+        "No task classification pipeline integration (manual taskType string)",
+        "No explicit model stickiness/anti-thrashing (handled by 8-Bit layer)",
+        "No route explanation beyond reasons array"
+      ]
+    },
+    "EightBit": {
+      "component": "EightBitRuntime + collaborators",
+      "location": "packages/eight-bit/src/",
+      "responsibilities": [
+        "discovering free candidates",
+        "verifying they really are free",
+        "checking compatibility",
+        "tracking availability",
+        "maintaining competitive free slots",
+        "monitoring provider/catalog churn",
+        "reporting viable candidates to ForgeAuto/Free"
+      ],
+      "modules": {
+        "eligibility.ts": "Hard role-capability + free-policy gate (evaluated BEFORE ranking)",
+        "health.ts": "Live health tracking, failure classification, cooldown, ForgeZero sync",
+        "reliability.ts": "Per-route tool-call reliability tracking (quarantine on 4 consecutive bad)",
+        "router.ts": "Role-aware adaptive router with sticky bindings & promotion margin (10 pts)",
+        "failover.ts": "Safe active-run failover: classify → mark health → decide → select replacement",
+        "handoff.ts": "Bounded context handoff from persisted WorkItems (FG-3 kernel + Context Pages)",
+        "persistence.ts": "Route state, health, decision receipts via ISessionPersistence",
+        "runtime.ts": "Top-level facade wiring all collaborators",
+        "qualification.ts": "Behavioral qualification harness (R10_FREE_QUALIFICATION_V1)",
+        "fixtures.ts": "Synthetic qualification fixture loader (8 categories A-H)",
+        "evaluators.ts": "Deterministic evaluators for each fixture category",
+        "runner.ts": "ModelQualificationRunner orchestrating qualification",
+        "eviction.ts": "ModelEvictionManager for stale/paid/deprecated eviction",
+        "receipts.ts": "FinancialReceipt + RouteReceipt + Why This Model UX"
+      },
+      "integration": [
+        "EightBitRuntime constructed in AgentRuntime constructor",
+        "hydrate() called in AgentRuntime.init() for restart recovery",
+        "selectInitialRoute() called during agent execution",
+        "handleTurnFailure() called from AgentRuntime.attemptEightBitFailover()",
+        "recordToolCallOutcome() / recordSuccess() called from tool execution path"
+      ],
+      "gaps": [
+        "No background qualification job",
+        "No multimodal/vision capability tracking in role contracts",
+        "No live latency tracking in router"
+      ]
+    },
+    "ForgeZero": {
+      "component": "ForgeZero firewall + verifier",
+      "location": "packages/forge-zero/src/",
+      "responsibilities": [
+        "enforcing $0 boundaries",
+        "rejecting unauthorized paid routes",
+        "preventing hidden paid fallback",
+        "validating price/cost eligibility",
+        "fail-closed behavior"
+      ],
+      "modules": {
+        "firewall.ts": "ForgeZero class: register, verify, eligibleModels, markProviderHealth, checkEntitlement",
+        "verifier.ts": "verifyModelEligibility() — 7-step verification pipeline",
+        "types.ts": "Complete type system: FreeModelRecord, AccessClass, ModelCostProfile, ModelHealthState, PrivacyMode, VerificationStep, VerificationResult",
+        "catalog.ts": "Static catalog: GENERIC_FREE_MODEL, MUSE_SPARK_1_2 (FREE_ROUTED), paid variants",
+        "entitlement.ts": "EntitlementProvider interface + DevelopmentEntitlementProvider for GEMS"
+      },
+      "verificationPipeline": [
+        "verify_access_class — must be in FREE_ACCESS_CLASSES (or legacy $0-unit); requireOngoingFree excludes TRIAL/FREE_PROMO",
+        "verify_not_deprecated — upstream deprecated = reject",
+        "verify_provider_registered — orphan-model invariant (providerOracle)",
+        "verify_cost — zero-unit classes must prove $0 input/output/cache costs; allowance/promo verified differently",
+        "verify_free_status — freeStatus === 'verified_free', remote+cloud-hosted, freshness ≤ 7 days",
+        "verify_paid_fallback_disabled — paidFallbackPossible === false OR paidFallbackDisabled === true",
+        "verify_provider_account — health status must be available/verified/rate_limited (post-retry); excludes configured/authenticated/offline/unknown/quota_exhausted",
+        "verify_privacy — model's privacyClass permitted by active PrivacyMode"
+      ],
+      "gaps": [
+        "No live provider catalog discovery (static catalog only)",
+        "Free status verification relies on freeStatusVerifiedAt timestamp (7-day TTL) — no active re-verification",
+        "No BYOK cost semantics handling",
+        "UNKNOWN_COST handling: models with null pricing rejected at cost gate",
+        "No provider ambiguity resolution"
+      ]
+    },
+    "ForgeGreen": {
+      "component": "ForgeGreenAdvisor + Ledger",
+      "location": "packages/forge-green/src/",
+      "responsibilities": [
+        "reducing unnecessary model calls",
+        "reducing tokens",
+        "reducing context",
+        "reducing verification work",
+        "reducing repeated repository reads",
+        "reducing duplicated searches",
+        "reducing unnecessary escalations",
+        "reducing wasted tool execution",
+        "reducing unnecessary compute / energy consumption"
+      ],
+      "modules": {
+        "index.ts": "ForgeGreenAdvisor — context cache, immutable fragment dedup, stable prefix, request dedup, verification recommendation",
+        "ledger.ts": "ForgeGreenLedgerCollector — efficiency receipts (tokens avoided, cache hits, duplicate suppression, tool compression)",
+        "canonical-cache.ts": "Cross-session/worktree canonical cache for repo analysis (FG-1D)",
+        "verification-policy.ts": "FG-5 verification policy (sufficiency evaluation)",
+        "evidence-resolution.js": "FG-7 evidence resolution (reuse valid evidence)",
+        "coverage-authority.ts": "Coverage authority",
+        "risk.ts": "FG-4 structural risk analysis"
+      },
+      "integration": [
+        "forgeGreen advisor used in ContextAssembler, ModelExecutionAdapter, tool execution",
+        "ForgeGreenLedgerCollector records: repository refresh, context pages, provider prompt cache, request dedup, tool compression, canonical cache, no-progress interruptions",
+        "forgeGreenCacheStore backs canonical cache + Context Pages (FG-3D)",
+        "efficiencyReceipt emitted in AgentContextMetrics and persisted as forgegreen_ledger work items"
+      ],
+      "gaps": [
+        "No duplicate file read detection (only request-level dedup via runDeduplicated)",
+        "No search deduplication",
+        "No partial verification reuse measurement (FG-7 exists but not measured in ledger)",
+        "No long-session context efficiency measurement",
+        "No retry efficiency tracking",
+        "No energy/compute measurement methodology",
+        "Tool result compression exists but savings not systematically measured"
+      ]
+    }
+  },
+  "gapMatrix": {
+    "ForgeGreen": [
+      { "capability": "token reduction", "status": "IMPLEMENTED_BUT_WEAK", "evidence": "ForgeGreenAdvisor context cache + content hash reuse + prompt prefix; ledger records tokensAvoided but no baseline measurement" },
+      { "capability": "context reduction", "status": "IMPLEMENTED_BUT_WEAK", "evidence": "FG-3 context pages + progressive planner; contextBytes tracked but no comparison" },
+      { "capability": "page/context selection", "status": "IMPLEMENTED", "evidence": "ContextAssembler with progressive Context Pages (FG-3)" },
+      { "capability": "repeated-read suppression", "status": "MISSING", "evidence": "Only request-level dedup (runDeduplicated); no file-read-level dedup" },
+      { "capability": "repeated-search suppression", "status": "MISSING", "evidence": "No search deduplication" },
+      { "capability": "verification reuse", "status": "PARTIAL", "evidence": "FG-7 evidence resolution exists (evidence-resolution.ts) but not measured in ledger" },
+      { "capability": "evidence reuse", "status": "PARTIAL", "evidence": "FG-7 + canonical cache; canonicalCacheHits/Misses tracked" },
+      { "capability": "cache reuse", "status": "IMPLEMENTED", "evidence": "Canonical cache (FG-1D) + Context Pages (FG-3D)" },
+      { "capability": "model-call reduction", "status": "IMPLEMENTED_BUT_WEAK", "evidence": "Request dedup + user intent hold; no measurement of avoided calls" },
+      { "capability": "unnecessary escalation avoidance", "status": "IMPLEMENTED", "evidence": "Completion gate blocks fake completion; FG-5 verification policy" },
+      { "capability": "tool-call efficiency", "status": "IMPLEMENTED", "evidence": "Tool compression (FG-1B) + duplicate suppression (FG-1C)" },
+      { "capability": "context prefetch efficiency", "status": "IMPLEMENTED", "evidence": "Progressive Context Pages with reuse tracking" },
+      { "capability": "retry efficiency", "status": "MISSING", "evidence": "No retry tracking in ledger" },
+      { "capability": "long-session efficiency", "status": "MISSING", "evidence": "No long-session measurement" },
+      { "capability": "durable restart efficiency", "status": "IMPLEMENTED", "evidence": "8-Bit hydrate + ForgeGreen canonical cache survive restart" }
+    ],
+    "EightBit": [
+      { "capability": "live free discovery", "status": "IMPLEMENTED", "evidence": "FreeModelCatalogRefresh with live OpenRouter sync; 22 VERIFIED_FREE models discovered" },
+      { "capability": "free-price verification", "status": "IMPLEMENTED", "evidence": "ForgeZero verifier (cost gate + free status gate + 7-day freshness)" },
+      { "capability": "provider compatibility", "status": "IMPLEMENTED", "evidence": "ProviderAvailabilityOracle + provider adapter registration" },
+      { "capability": "coding capability", "status": "IMPLEMENTED", "evidence": "capabilities.coding in FreeModelRecord + role contracts" },
+      { "capability": "tool calling", "status": "IMPLEMENTED", "evidence": "capabilities.toolCalling + toolReliability tracking + quarantine" },
+      { "capability": "structured output", "status": "IMPLEMENTED", "evidence": "capabilities.structuredOutput in role contracts" },
+      { "capability": "context compatibility", "status": "IMPLEMENTED", "evidence": "capabilities.longContext + contextWindow check in eligibility" },
+      { "capability": "multimodal support", "status": "PARTIAL", "evidence": "capabilities.vision exists; VISION role contract; no qualified free vision models in catalog" },
+      { "capability": "rate-limit health", "status": "IMPLEMENTED", "evidence": "health.status === 'rate_limited' + cooldown with exponential backoff" },
+      { "capability": "provider uptime", "status": "IMPLEMENTED", "evidence": "health.status tracking + markProviderHealth" },
+      { "capability": "stale model removal", "status": "IMPLEMENTED", "evidence": "ModelEvictionManager with deprecated/paid/expired/paid-fallback/orphan eviction" },
+      { "capability": "fallback candidates", "status": "IMPLEMENTED", "evidence": "buildNativeFallbackModelIds() for request-level; selectReplacement() for cross-provider" },
+      { "capability": "quality threshold", "status": "PROVISIONAL", "evidence": "Behavioral qualification harness (R10_FREE_QUALIFICATION_V1); floors calibrated from live data" },
+      { "capability": "model benchmarking", "status": "IMPLEMENTED", "evidence": "Behavioral qualification harness (8 fixture categories A-H) with 22 models tested" },
+      { "capability": "provider diversity", "status": "IMPLEMENTED", "evidence": "Provider diversity analysis in qualification report; concentration risk identified" }
+    ],
+    "ForgeAutoFree": [
+      { "capability": "task classification", "status": "IMPLEMENTED", "evidence": "understandTask() in task-intelligence.ts (keyword-based)" },
+      { "capability": "model eligibility", "status": "IMPLEMENTED", "evidence": "ForgeZero eligibleModels() + 8-Bit EightBitEligibilityPolicy" },
+      { "capability": "capability matching", "status": "IMPLEMENTED", "evidence": "Router scoring + 8-Bit role contracts" },
+      { "capability": "quality ranking", "status": "IMPLEMENTED", "evidence": "ForgeRouter.scoreModel() with benchmarks, empirical scores, health penalties" },
+      { "capability": "provider ranking", "status": "IMPLEMENTED", "evidence": "Router scoring includes accessClass preference (FREE_NATIVE > FREE_ROUTED > FREE_ALLOWANCE > FREE_PROMO)" },
+      { "capability": "latency awareness", "status": "PARTIAL", "evidence": "benchmarkProfile.speed used; no live latency tracking in router" },
+      { "capability": "reliability awareness", "status": "IMPLEMENTED", "evidence": "toolReliability + health penalties in router score" },
+      { "capability": "context-fit awareness", "status": "IMPLEMENTED", "evidence": "contextWindow vs estimatedContextTokens in score + eligibility" },
+      { "capability": "routing explanation", "status": "IMPLEMENTED", "evidence": "getReasons() returns reason codes" },
+      { "capability": "fallback", "status": "IMPLEMENTED", "evidence": "8-Bit selectReplacement() + buildNativeFallbackModelIds()" },
+      { "capability": "retry", "status": "IMPLEMENTED", "evidence": "8-Bit failover: bounded retry (3) → cooldown → rotate" },
+      { "capability": "reroute", "status": "IMPLEMENTED", "evidence": "8-Bit failover coordinator" },
+      { "capability": "task continuity", "status": "IMPLEMENTED", "evidence": "8-Bit handoff (FG-3 kernel + Context Pages) + messageHistory preserved" },
+      { "capability": "user preference", "status": "PARTIAL", "evidence": "exact-free mode + favorites in UI; no favorite signal in router" },
+      { "capability": "favorite model influence", "status": "MISSING", "evidence": "Not integrated into router scoring" },
+      { "capability": "model stickiness", "status": "IMPLEMENTED", "evidence": "8-Bit sticky bindings with 10-point promotion margin" },
+      { "capability": "anti-thrashing", "status": "IMPLEMENTED", "evidence": "Promotion margin + health cooldown + failover bounded retry" }
+    ],
+    "ForgeZero": [
+      { "capability": "free-price proof", "status": "IMPLEMENTED", "evidence": "Cost profile verification (input/output/cache = 0) + isFree flag + freeTierVerifiedAt" },
+      { "capability": "cost metadata freshness", "status": "IMPLEMENTED", "evidence": "7-day TTL on freeTierVerifiedAt / freeStatusVerifiedAt / lastVerified" },
+      { "capability": "paid-route denial", "status": "IMPLEMENTED", "evidence": "verify_cost gate rejects non-zero cost; verify_access_class rejects PAID" },
+      { "capability": "hidden fallback denial", "status": "IMPLEMENTED", "evidence": "verify_paid_fallback_disabled gate" },
+      { "capability": "BYOK cost semantics", "status": "MISSING", "evidence": "No BYOK handling in verifier" },
+      { "capability": "free quota exhaustion", "status": "IMPLEMENTED", "evidence": "health.status === 'quota_exhausted' → rejected at provider account gate" },
+      { "capability": "provider ambiguity", "status": "PARTIAL", "evidence": "accessClass classification; UNKNOWN_COST rejected at cost gate" },
+      { "capability": "unknown pricing", "status": "IMPLEMENTED", "evidence": "null pricing → UNKNOWN_COST_REJECTED (fail closed)" },
+      { "capability": "zero-spend receipts", "status": "IMPLEMENTED", "evidence": "FinancialReceipt per request with pricing evidence, ForgeZero decision, observed charge (null if not reported)" },
+      { "capability": "auditability", "status": "IMPLEMENTED", "evidence": "VerificationResult + FinancialReceipt + RouteReceipt with full decision trace" }
+    ]
+  },
+  "keyFindings": {
+    "authorityBoundariesRespected": true,
+    "freeModelPipelineMultiStage": true,
+    "failClosedEnforced": true,
+    "taskContinuityReal": true,
+    "efficiencyMeasurementExistsButLacksBaselines": true
+  },
+  "criticalGaps": [
+    { "priority": 1, "area": "8-Bit Live Discovery & Qualification", "items": [
+      "Implement FreeModelCatalogRefresh with live provider catalog sync (COMPLETED)",
+      "Build qualification harness with synthetic test suite A-H (COMPLETED)",
+      "Automated stale model eviction: deprecated, paid, failing (COMPLETED)",
+      "Provider diversity analysis in qualification report (COMPLETED)"
+    ]},
+    { "priority": 2, "area": "ForgeGreen Measurement Infrastructure", "items": [
+      "Representative workload suite (6 task classes from R10 §72)",
+      "Controlled baseline measurement (ForgeGreen disabled flag)",
+      "Baseline vs optimized comparison reporting",
+      "Energy/compute measurement methodology documentation"
+    ]},
+    { "priority": 3, "area": "Free Model Quality Floor", "items": [
+      "Behavioral qualification harness with raw pass/fail distributions (COMPLETED)",
+      "Probation period for newly discovered models (COMPLETED)",
+      "Define measurable minimum quality per role - PROVISIONAL floors calibrated",
+      "Reject free models below floor even if verified-free"
+    ]},
+    { "priority": 4, "area": "Routing Polish", "items": [
+      "Favorite model signal in router scoring",
+      "Latency tracking integration (live measurements → router score)",
+      "Route receipts persistence (COMPLETED)",
+      "\"Why this model?\" UX with compact user-facing explanation (COMPLETED)"
+    ]},
+    { "priority": 5, "area": "Verification & Evidence Reuse Measurement", "items": [
+      "Quantify FG-7 verification reuse in ledger",
+      "Partial verification reuse (reuse valid, rerun changed)",
+      "Failed verification repair efficiency (minimal context to repair route)"
+    ]}
+  ],
+  "realVsPromise": {
+    "real": [
+      "ForgeZero financial gate (complete with tests)",
+      "8-Bit health/reliability/failover (complete with tests)",
+      "8-Bit sticky routing + anti-thrash (complete with tests)",
+      "8-Bit handoff (FG-3 kernel) (complete)",
+      "ForgeGreen context cache + dedup (complete)",
+      "ForgeGreen tool compression (complete)",
+      "ForgeGreen canonical cache (FG-1D) (complete)",
+      "FG-3 Context Pages + reuse (complete)",
+      "FG-5 Verification policy (complete)",
+      "FG-7 Evidence resolution (complete)",
+      "Live free model discovery (complete with live OpenRouter sync)",
+      "Free model qualification (complete with behavioral harness + 8 fixture categories)",
+      "Quality floor enforcement (provisional - calibrated from live data)",
+      "Provider diversity analysis (complete - concentration risk identified)",
+      "Zero-spend receipts (complete - FinancialReceipt per request)",
+      "Route receipts (complete - RouteReceipt with full trace)",
+      "Why This Model UX (complete - generateWhyThisModel())"
+    ],
+    "architecturalPromise": [
+      "Baseline efficiency measurement (none → controlled workload suite)",
+      "BYOK cost semantics (none → ForgeZero integration)",
+      "Explicit provider diversity constraint in router"
+    ]
+  },
+  "measurableAdvantages": [
+    "Zero-cost eligibility: ForgeZero verifies that a route satisfies CodeForge's trusted zero-cost eligibility policy using current pricing, free-status, provider and fallback evidence",
+    "Fail-closed routing: Multiple independent gates (ForgeZero + 8-Bit eligibility) reject unknown/paid",
+    "Task continuity on failover: Handoff from persisted state + messageHistory preservation",
+    "Anti-thrashing: 10-point promotion margin + health cooldown + bounded retry",
+    "Duplicate suppression: FG-1C state-aware (steer-aware) read-only action suppression",
+    "Tool compression: FG-1B deterministic compression with byte savings tracked",
+    "Canonical cache: FG-1D cross-worktree repo analysis reuse",
+    "Context efficiency: FG-3 progressive Context Pages with reuse measurement"
+  ],
+  "nextSteps": [
+    "Audit complete — this document",
+    "Build free model catalog snapshot (R10 §5) using live permitted discovery",
+    "Define 'Verified Free' semantics explicitly (R10 §7)",
+    "Implement 8-Bit qualification harness (R10 §10)",
+    "Establish ForgeGreen baselines (R10 §23) with representative workloads",
+    "Implement evidence-backed gaps only (R10 §10)",
+    "Run dogfood battery (R10 §72) and measure",
+    "Produce certification report (R10 §99)"
+  ]
+}
