@@ -15,6 +15,7 @@ import { ForgeZero, createGenericFreeRecord, type ProviderAvailabilityOracle } f
 import { InMemoryProviderCatalog, createMockProvider, createOpencodeAdapter, createOpenRouterAdapter, createProviderAdapterById, HostedProviderAdapter, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent } from "@codeforge/providers";
 import { NormalizedModelRegistry, discoverAndVerifyFree, verifyAllowanceViaProbe, getProviderPolicy, type LiveModelInfo } from "@codeforge/model-registry";
 import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
+import { APPROVED_MINIMUM_AGE, AGE_POLICY_VERSION, createAgePolicyAcknowledgement } from "./age-policy.js";
 import { describeCloudAuthFailure, CloudAuthError, runCodeForgeCloudAuth, type CloudAuthResult } from "./cloud-auth-flow.js";
 import {
   installSingleInstanceGuard,
@@ -400,6 +401,12 @@ interface FirstRunLegalAck {
   ageConfirmed: true;
   hostExecutionAcknowledged: true;
   acknowledgedAt: string;
+  // Desktop BYOK Beta R1: the acknowledgement is bound to the exact approved policy
+  // (minimum age + policy version). A stored ack that predates or mismatches the
+  // active policy is treated as absent so the user is re-prompted; the renderer
+  // cannot supply these values — main stamps them from the compiled policy module.
+  minimumAge: typeof APPROVED_MINIMUM_AGE;
+  policyVersion: typeof AGE_POLICY_VERSION;
 }
 
 function getFirstRunLegalAck(): FirstRunLegalAck | null {
@@ -407,10 +414,17 @@ function getFirstRunLegalAck(): FirstRunLegalAck | null {
   const raw = settings[FIRST_RUN_LEGAL_ACK_KEY];
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
   const r = raw as Record<string, unknown>;
-  if (r.ageConfirmed === true && r.hostExecutionAcknowledged === true && typeof r.acknowledgedAt === "string") {
-    return { ageConfirmed: true, hostExecutionAcknowledged: true, acknowledgedAt: r.acknowledgedAt };
-  }
-  return null;
+  if (r.ageConfirmed !== true || r.hostExecutionAcknowledged !== true || typeof r.acknowledgedAt !== "string") return null;
+  if (typeof r.minimumAge !== "number" || typeof r.policyVersion !== "string") return null;
+  const policy = createAgePolicyAcknowledgement(r.minimumAge, r.policyVersion);
+  if (!policy) return null;
+  return {
+    ageConfirmed: true,
+    hostExecutionAcknowledged: true,
+    acknowledgedAt: r.acknowledgedAt,
+    minimumAge: policy.minimumAge,
+    policyVersion: policy.policyVersion,
+  };
 }
 
 type CloseBehavior = "ask" | "tray" | "quit-safe";
@@ -547,7 +561,13 @@ function setOnboardingCompleted(completed: boolean): void {
  *  acknowledgement box," so both flags are always set true with a fresh timestamp rather than
  *  trusting a renderer-supplied value that could claim acknowledgement without it happening. */
 function setFirstRunLegalAck(): FirstRunLegalAck {
-  const ack: FirstRunLegalAck = { ageConfirmed: true, hostExecutionAcknowledged: true, acknowledgedAt: new Date().toISOString() };
+  const ack: FirstRunLegalAck = {
+    ageConfirmed: true,
+    hostExecutionAcknowledged: true,
+    acknowledgedAt: new Date().toISOString(),
+    minimumAge: APPROVED_MINIMUM_AGE,
+    policyVersion: AGE_POLICY_VERSION,
+  };
   const settings = readSettings();
   settings[FIRST_RUN_LEGAL_ACK_KEY] = ack;
   writeSettingsAtomic(settings);

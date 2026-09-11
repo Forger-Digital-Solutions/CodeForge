@@ -19,13 +19,17 @@ certification.
 | App version | `0.2.0` |
 | Target architecture | Windows x64 |
 | Final HEAD | Recorded in the release commit that adds this report |
+| Remote availability | `REMOTE_CI_REQUIRES_PUSH_AUTHORIZATION` — exact candidate is absent from `origin` |
+| Windows workflow | `.github/workflows/windows-desktop.yml`; no exact-candidate run ID |
 
 The actual starting HEAD differs from the milestone prompt. Existing work was
 preserved; no reset or cleanup was performed.
 
 ## Evidence completed
 
-- `npm test -- --reporter=dot`: **PASS**, 57 test files and 574 tests.
+- `npm test -- --reporter=dot`: **PASS**, 58 test files and 577 tests.
+- The owner-authorized beta age policy is **18+**. The desktop now requires a
+  versioned acknowledgement without collecting date of birth.
 - `vitest.config.ts` already excludes the separate VS Code Electron fixture
   topology; no `describe is not defined` failure reproduced.
 - Electron window security settings are source-configured as
@@ -51,7 +55,7 @@ preserved; no reset or cleanup was performed.
 | Gate | Status |
 | --- | --- |
 | Root LICENSE owner authorization | `LICENSE_OWNER_AUTHORIZATION_REQUIRED` |
-| Minimum-age policy | `MINIMUM_AGE_POLICY_AUTHORIZATION_REQUIRED` |
+| Minimum-age policy | `APPROVED_MINIMUM_AGE=18` |
 | Legal documents active | Not established by this technical work |
 | Counsel review complete | Not established by this technical work |
 | Support contact | `SUPPORT_CONTACT_REQUIRED` if no approved route accompanies distribution |

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { APPROVED_MINIMUM_AGE } from "../age-policy.js";
 
 interface AuthScreenProps {
   onAuthenticated: () => void;
@@ -101,7 +102,7 @@ export default function AuthScreen({ onAuthenticated }: AuthScreenProps): React.
           <label className="auth-first-run-ack">
             <input type="checkbox" checked={acknowledged} onChange={(e) => setAcknowledged(e.target.checked)} />
             <span>
-              I am 18 years of age or older, and I understand CodeForge reads/writes files and runs commands on this
+              I am {APPROVED_MINIMUM_AGE} years of age or older, and I understand CodeForge reads/writes files and runs commands on this
               computer using my operating-system permissions. Review approval settings before allowing autonomous
               actions.
             </span>

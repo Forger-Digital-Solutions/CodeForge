@@ -10,8 +10,8 @@
   "automatedTests": {
     "command": "npm test -- --reporter=dot",
     "status": "pass",
-    "testFiles": 57,
-    "tests": 574
+    "testFiles": 58,
+    "tests": 577
   },
   "packaging": {
     "status": "not_run_in_workspace",
@@ -23,7 +23,7 @@
   },
   "businessGates": {
     "licenseOwner": "LICENSE_OWNER_AUTHORIZATION_REQUIRED",
-    "minimumAgePolicy": "MINIMUM_AGE_POLICY_AUTHORIZATION_REQUIRED",
+    "minimumAgePolicy": "APPROVED_MINIMUM_AGE=18",
     "legalDocumentsActive": "not_established",
     "counselReview": "not_established"
   },
