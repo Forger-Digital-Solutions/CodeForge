@@ -1,0 +1,11 @@
+{
+  "reportName": "forgegreen-fg10t-recovery",
+  "baseBranch": "feat/codeforge-cloud",
+  "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
+  "recoveryBranch": "forger-digital-solutions-forgegreen-certified",
+  "sourceStateId": "b2953f62172d2ccafb534322d709bd490be9cc6a41829c91f1794973906c47cd",
+  "status": "lineage-recovered-and-certified",
+  "routerDirectorRepair": "preserved-separately-as-build-fix",
+  "fg11Blocked": true,
+  "fg11BlockedReason": "recovery branch checkpoint not yet committed"
+}

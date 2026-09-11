@@ -1,7 +1,24 @@
 import type { ForgeZero, FreeModelRecord, PrivacyMode } from "@codeforge/forge-zero";
-import type { ExecutionModelSelection, ResolvedModel, PremiumFamily } from "@codeforge/director";
 import { err, ok, type Result } from "@codeforge/core";
 import { CodeForgeError } from "@codeforge/core";
+
+export type ExecutionMode = "forgezero-adaptive" | "exact-free" | "exact-premium" | "gems";
+export type PremiumFamily = "gpt" | "glm" | "anthropic";
+
+export interface ExecutionModelSelection {
+  mode: ExecutionMode;
+  modelId?: string;
+  providerId?: string;
+  family?: PremiumFamily;
+}
+
+export interface ResolvedModel {
+  requestedMode: ExecutionMode;
+  resolvedModelId: string;
+  resolvedProviderId: string;
+  resolvedFamily?: PremiumFamily;
+  isAdaptiveResolution: boolean;
+}
 
 export interface RoutingRequest {
   taskType: string;
@@ -99,10 +116,15 @@ export class ForgeRouter {
     }
 
     if (selection.mode === "exact-free") {
-      const verifyResult = this.firewall.verify(
-        selection.providerId,
-        selection.modelId,
-      );
+      const providerId = selection.providerId;
+      const modelId = selection.modelId;
+      if (!providerId || !modelId) {
+        return err(
+          new CodeForgeError("INVALID_INPUT", "Exact free routing requires providerId and modelId."),
+        );
+      }
+
+      const verifyResult = this.firewall.verify(providerId, modelId);
 
       if (!verifyResult.ok) {
         return err(verifyResult.error);
@@ -110,18 +132,27 @@ export class ForgeRouter {
 
       return ok({
         requestedMode: "exact-free",
-        resolvedModelId: selection.modelId,
-        resolvedProviderId: selection.providerId,
+        resolvedModelId: modelId,
+        resolvedProviderId: providerId,
         isAdaptiveResolution: false,
       });
     }
 
     if (selection.mode === "exact-premium") {
+      const family = selection.family;
+      const providerId = selection.providerId;
+      const modelId = selection.modelId;
+      if (!family || !providerId || !modelId) {
+        return err(
+          new CodeForgeError("INVALID_INPUT", "Exact premium routing requires family, providerId, and modelId."),
+        );
+      }
+
       return ok({
         requestedMode: "exact-premium",
-        resolvedModelId: selection.modelId,
-        resolvedProviderId: selection.providerId,
-        resolvedFamily: selection.family,
+        resolvedModelId: modelId,
+        resolvedProviderId: providerId,
+        resolvedFamily: family,
         isAdaptiveResolution: false,
       });
     }

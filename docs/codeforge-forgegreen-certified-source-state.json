@@ -1,0 +1,54 @@
+{
+  "sourceStateId": "b2953f62172d2ccafb534322d709bd490be9cc6a41829c91f1794973906c47cd",
+  "surfaceVersion": "fg10u-certified-v1",
+  "schemaVersion": "forgegreen-source-state/v1",
+  "baseBranch": "feat/codeforge-cloud",
+  "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
+  "recoveryBranch": "forger-digital-solutions-forgegreen-certified",
+  "materialFiles": [
+    "packages/forge-green/src/optimization-candidate-a.ts",
+    "packages/forge-green/src/optimization-candidates-shadow.ts",
+    "packages/forge-green/src/optimization-decision.ts",
+    "packages/forge-green/src/optimization-policy.ts",
+    "packages/forge-green/src/optimization-types.ts",
+    "packages/workflow/src/forge-verify.ts",
+    "packages/server/src/forge-verify-persistence.ts",
+    "packages/server/src/agent-runtime.ts",
+    "packages/router/src/index.ts",
+    "packages/router/package.json"
+  ],
+  "candidateA": {
+    "kind": "DUPLICATE_READ_ONLY_TOOL_REUSE",
+    "status": "ACTIVE_SAFE"
+  },
+  "candidateB": {
+    "kind": "DUPLICATE_CONTEXT_PAGE_TRANSMISSION",
+    "status": "SHADOW",
+    "canonicalEvidence": [
+      "pageId",
+      "contentHash",
+      "workspaceRevision",
+      "turnIndex"
+    ]
+  },
+  "candidateC": {
+    "kind": "OPTIONAL_PREFETCH_SUPPRESSION",
+    "status": "SHADOW",
+    "canonicalEvidence": [
+      "required",
+      "alreadyValidlyAvailable"
+    ]
+  },
+  "candidateD": {
+    "kind": "VERIFICATION_EVIDENCE_REUSE",
+    "status": "SHADOW",
+    "canonicalEvidence": [
+      "evidenceId",
+      "workspaceContentHash",
+      "policyRevision",
+      "dependencyStateHash",
+      "forgeVerifyConfirmedValid"
+    ]
+  },
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-10R implementation surface present on the recovered lineage."
+}

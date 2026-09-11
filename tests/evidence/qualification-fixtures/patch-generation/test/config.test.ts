@@ -1,6 +1,7 @@
 // qualification-fixtures/patch-generation/test/config.test.ts
 // Tests for config module - these should pass after the fix
 
+import { describe, expect, it } from "vitest";
 import { parseConfig, validateConfig, Config } from "../src/config.js";
 
 describe("Config parsing", () => {

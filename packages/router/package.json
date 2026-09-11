@@ -23,7 +23,6 @@
     "@codeforge/forge-zero": "*",
     "@codeforge/model-registry": "*",
     "@codeforge/providers": "*",
-    "@codeforge/director": "*",
     "zod": "^3.24.0"
   }
 }
