@@ -128,10 +128,10 @@ describe("ForgeVerify — Structured Verifier Registry & Multi-Verifier Executio
     const pkg = {
       name: "test-pkg",
       scripts: {
-        test: "node -e 'process.exit(0)'",
-        typecheck: "node -e 'process.exit(0)'",
-        build: "node -e 'process.exit(0)'",
-        lint: "node -e 'process.exit(0)'",
+        test: "node -e \"process.exit(0)\"",
+        typecheck: "node -e \"process.exit(0)\"",
+        build: "node -e \"process.exit(0)\"",
+        lint: "node -e \"process.exit(0)\"",
       },
     };
     await writeFile(join(ws, "package.json"), JSON.stringify(pkg, null, 2));
@@ -148,10 +148,10 @@ describe("ForgeVerify — Structured Verifier Registry & Multi-Verifier Executio
     const pkg = {
       name: "test-pkg",
       scripts: {
-        test: "node -e 'console.log(\"3 passed\"); process.exit(0)'",
-        typecheck: "node -e 'console.log(\"typecheck OK\"); process.exit(0)'",
-        build: "node -e 'console.log(\"build OK\"); process.exit(0)'",
-        lint: "node -e 'console.error(\"lint warning: unused var\"); process.exit(1)'",
+        test: "node -e \"console.log('3 passed'); process.exit(0)\"",
+        typecheck: "node -e \"console.log('typecheck OK'); process.exit(0)\"",
+        build: "node -e \"console.log('build OK'); process.exit(0)\"",
+        lint: "node -e \"console.error('lint warning: unused var'); process.exit(1)\"",
       },
     };
     await writeFile(join(ws, "package.json"), JSON.stringify(pkg, null, 2));
@@ -183,9 +183,9 @@ describe("ForgeVerify — Structured Verifier Registry & Multi-Verifier Executio
     const pkg = {
       name: "test-pkg",
       scripts: {
-        test: "node -e 'console.log(\"5 passed\"); process.exit(0)'",
-        typecheck: "node -e 'console.error(\"Type error in src/feature.ts\"); process.exit(1)'",
-        build: "node -e 'process.exit(0)'",
+        test: "node -e \"console.log('5 passed'); process.exit(0)\"",
+        typecheck: "node -e \"console.error('Type error in src/feature.ts'); process.exit(1)\"",
+        build: "node -e \"process.exit(0)\"",
       },
     };
     await writeFile(join(ws, "package.json"), JSON.stringify(pkg, null, 2));

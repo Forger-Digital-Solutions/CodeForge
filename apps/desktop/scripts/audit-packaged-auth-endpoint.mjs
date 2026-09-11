@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Inspect the structured endpoint manifest embedded in an Electron app.asar.
  *
