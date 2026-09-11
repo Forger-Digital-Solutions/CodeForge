@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "f9cb465db299648b01593111f3ebbfd90a8c2bc98b84f08a44ba051bb8d4c36a",
-  "surfaceVersion": "fg11-certified-v1",
+  "sourceStateId": "ac8414ebd2a85803bde97d35a5409ca1be7a5d156ae3be57a070ebb5ba72ad53",
+  "surfaceVersion": "fg12d-certified-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -17,7 +17,8 @@
     "packages/router/src/index.ts",
     "packages/server/src/agent-runtime.ts",
     "packages/server/src/forge-verify-persistence.ts",
-    "packages/workflow/src/forge-verify.ts"
+    "packages/workflow/src/forge-verify.ts",
+    "packages/workflow/src/verification-evidence-reuse.ts"
   ],
   "materialFileHashes": {
     "packages/context/src/planner.ts": "5cab4794355d06008e044ddd80ac1b560ec0f793",
@@ -30,7 +31,8 @@
     "packages/router/src/index.ts": "c2dc773f2ce117e5047db273d56c71eb5e10f6dc",
     "packages/server/src/agent-runtime.ts": "72a9690242f2f0cd0defa32fca5b77db22ec4795",
     "packages/server/src/forge-verify-persistence.ts": "813546f2e94bcf679080d8fc3635bf735314f1fe",
-    "packages/workflow/src/forge-verify.ts": "654afd2c1151402af0059ee29408d6ba8ebc09ce"
+    "packages/workflow/src/forge-verify.ts": "654afd2c1151402af0059ee29408d6ba8ebc09ce",
+    "packages/workflow/src/verification-evidence-reuse.ts": "c68f351d77896e0ee86513d4bbc148c36b922b6d"
   },
   "candidateA": {
     "kind": "DUPLICATE_READ_ONLY_TOOL_REUSE",
@@ -63,6 +65,7 @@
   "candidateD": {
     "kind": "VERIFICATION_EVIDENCE_REUSE",
     "status": "SHADOW",
+    "globalGraduationRegistryUnchanged": true,
     "canonicalEvidence": [
       "evidenceId",
       "workspaceContentHash",
@@ -72,28 +75,56 @@
     ],
     "validityAuthority": {
       "source": "packages/workflow/src/forge-verify.ts: isEvidenceCurrentlyValid(evidence, current)",
-      "note": "summarizeVerification and any external shadow observer both call this single exported function; neither maintains an independent copy of the validity rule."
+      "note": "summarizeVerification and any external shadow observer/advisor both call this single exported function; neither maintains an independent copy of the validity rule."
+    },
+    "controlledTrial": {
+      "source": "packages/workflow/src/verification-evidence-reuse.ts",
+      "mode": "ReuseTrialMode: 'SHADOW' | 'CONTROLLED_ACTIVE_TRIAL' — a local type, NOT a member of OptimizationPolicyMode",
+      "note": "FG-12D. Global GRADUATION_REGISTRY entry for VERIFICATION_EVIDENCE_REUSE is untouched (still SHADOW) — CONTROLLED_ACTIVE_TRIAL is reachable only by code that explicitly imports and passes it, never via the global mode-resolution/ceiling machinery. No production call site (workflow-engine.ts, autonomous-orchestrator.ts, delivery-service.ts, mission-supervisor.ts, parallel-orchestrator.ts) was modified to use it."
     }
   },
-  "recertification": {
-    "reason": "FG-11 amendment (Candidate C authority extraction, Candidate D canonical validity helper extraction): both changes are additive/behavior-preserving extensions of the certified fg10u-certified-v1 surface, not a detector-semantics redesign.",
-    "priorSourceStateId": "b2953f62172d2ccafb534322d709bd490be9cc6a41829c91f1794973906c47cd",
-    "priorSurfaceVersion": "fg10u-certified-v1",
-    "changes": [
-      {
-        "file": "packages/context/src/planner.ts",
-        "change": "Added ContextPageAvailability/ContextPageOptionality types, ContextPageClassification (pageId, filePath, availability, optionality, contentHash), and a new `classifications`/`pageClassifications` field on prefetchOneHop's PrefetchOutcome / planNarrow's ContextPlanResult. Added optional ContextPlanRequest.requiredPaths input. All existing fields, exports, and call signatures unchanged.",
-        "addedToMaterialFiles": true
-      },
-      {
-        "file": "packages/workflow/src/forge-verify.ts",
-        "change": "Extracted isEvidenceCurrentlyValid(evidence, current) from the inline validity check inside summarizeVerification; summarizeVerification now calls it. No change to any exported type or the function's observable behavior.",
-        "addedToMaterialFiles": false
-      }
-    ],
-    "regressionEvidence": "packages/context + packages/workflow/test/cf17-forgeverify-replan.test.ts + fg1-canonical-cache + fg6-evidence-resolution: 10 files / 85 tests, 0 failed. Then full packages/forge-green + packages/workflow: 42 files / 274 tests, 0 failed. Root `tsc -b --force`: clean.",
-    "recertifiedAt": "2026-09-11",
-    "sourceStateConstant": "FG11_CAMPAIGN_SOURCE_STATE"
-  },
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-11 implementation surface present on the recovered lineage, including the FG-11 authority-extraction recertification above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm."
+  "recertifications": [
+    {
+      "label": "FG-11",
+      "reason": "FG-11 amendment (Candidate C authority extraction, Candidate D canonical validity helper extraction): both changes are additive/behavior-preserving extensions of the certified fg10u-certified-v1 surface, not a detector-semantics redesign.",
+      "priorSourceStateId": "b2953f62172d2ccafb534322d709bd490be9cc6a41829c91f1794973906c47cd",
+      "priorSurfaceVersion": "fg10u-certified-v1",
+      "resultingSourceStateId": "f9cb465db299648b01593111f3ebbfd90a8c2bc98b84f08a44ba051bb8d4c36a",
+      "resultingSurfaceVersion": "fg11-certified-v1",
+      "changes": [
+        {
+          "file": "packages/context/src/planner.ts",
+          "change": "Added ContextPageAvailability/ContextPageOptionality types, ContextPageClassification (pageId, filePath, availability, optionality, contentHash), and a new `classifications`/`pageClassifications` field on prefetchOneHop's PrefetchOutcome / planNarrow's ContextPlanResult. Added optional ContextPlanRequest.requiredPaths input. All existing fields, exports, and call signatures unchanged.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/workflow/src/forge-verify.ts",
+          "change": "Extracted isEvidenceCurrentlyValid(evidence, current) from the inline validity check inside summarizeVerification; summarizeVerification now calls it. No change to any exported type or the function's observable behavior.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "packages/context + packages/workflow/test/cf17-forgeverify-replan.test.ts + fg1-canonical-cache + fg6-evidence-resolution: 10 files / 85 tests, 0 failed. Then full packages/forge-green + packages/workflow: 42 files / 274 tests, 0 failed. Root `tsc -b --force`: clean.",
+      "recertifiedAt": "2026-09-11",
+      "sourceStateConstant": "FG11_CAMPAIGN_SOURCE_STATE"
+    },
+    {
+      "label": "FG-12D",
+      "reason": "FG-12D controlled trial: added a new, additive verification-evidence-reuse advisor module. No existing exported function's signature or behavior changed (runVerification, executeVerificationPlan, summarizeVerification, isEvidenceCurrentlyValid all unmodified); no production call site wired to use the new capability by default.",
+      "priorSourceStateId": "f9cb465db299648b01593111f3ebbfd90a8c2bc98b84f08a44ba051bb8d4c36a",
+      "priorSurfaceVersion": "fg11-certified-v1",
+      "resultingSourceStateId": "ac8414ebd2a85803bde97d35a5409ca1be7a5d156ae3be57a070ebb5ba72ad53",
+      "resultingSurfaceVersion": "fg12d-certified-v1",
+      "changes": [
+        {
+          "file": "packages/workflow/src/verification-evidence-reuse.ts",
+          "change": "New file. narrowToStrictEvidence (fail-closed field-completeness narrowing), ReuseTrialMode (local type, not added to OptimizationPolicyMode), requestVerificationEvidenceReuse (advisor: calls isEvidenceCurrentlyValid + detectReusableVerificationEvidence unmodified, gated by mode + the existing resolveOptimizationMode kill-switch), runVerificationWithControlledReuse (thin wrapper: builds a preliminary advisory plan, then calls the real, unmodified runVerification — which builds its own authoritative plan fresh — with existingEvidence populated only when reuse is confirmed and permitted).",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "packages/workflow full suite (43 files incl. new fg12d-verification-evidence-reuse.test.ts) + packages/forge-green + packages/context: 0 failed. Root `tsc -b --force`: clean.",
+      "recertifiedAt": "2026-09-11",
+      "sourceStateConstant": "FG12D_TRIAL_SOURCE_STATE"
+    }
+  ],
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12D implementation surface present on the recovered lineage, including both the FG-11 and FG-12D recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm."
 }

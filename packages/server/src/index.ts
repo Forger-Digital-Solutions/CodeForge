@@ -2212,6 +2212,7 @@ export * from "./demo-runtime.js";
 export * from "./workspace-event-adapter.js";
 export * from "./agent-runtime.js";
 export * from "./duplicate-suppression.js";
+export * from "./forge-verify-persistence.js";
 export * from "./filesystem-service.js";
 export * from "./command-service.js";
 export * from "./validation-service.js";

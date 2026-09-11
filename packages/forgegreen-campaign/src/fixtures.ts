@@ -39,6 +39,10 @@ export const FIXTURE_FILE_SETS: readonly FixtureFileSet[] = [
       "src/billing/consumer.ts":
         "import { Invoice } from './invoice.js';\nexport function printInvoice(amount: number): string { return new Invoice().total(amount); }\n",
       "tests/invoice.test.ts": "import { Invoice } from '../src/billing/invoice.js';\nit('totals', () => new Invoice().total(5));\n",
+      // Deliberately invalid syntax (unbalanced parameter list) — a real, unambiguous parse
+      // failure with no top-level `export` ambiguity (FG-11 found `export` can make node's
+      // `--check` unreliable on some snippets). Used by FG-12D's "prior failed evidence" case.
+      "src/billing/does-not-parse.js": "function broken( { return 1\n",
       ...Object.fromEntries(
         Array.from({ length: 8 }, (_, i) => [`src/unrelated/widget-${i}.ts`, `export function widget${i}(): number { return ${i}; }\n`.repeat(10)]),
       ),

@@ -89,6 +89,12 @@ export const CAMPAIGN_HARNESS_FILES: readonly string[] = [
   "packages/forgegreen-campaign/src/tasks.ts",
   "packages/forgegreen-campaign/src/source-state.ts",
   "scripts/forgegreen-fg11-campaign.mjs",
+  // FG-12D controlled-trial harness additions.
+  "packages/forgegreen-campaign/src/fg12d/trial-receipt.ts",
+  "packages/forgegreen-campaign/src/fg12d/trial-runner.ts",
+  "packages/forgegreen-campaign/src/fg12d/case-matrix.ts",
+  "packages/forgegreen-campaign/src/fg12d/special-cases.ts",
+  "scripts/forgegreen-fg12d-trial.mjs",
 ];
 
 export function computeCampaignHarnessId(repoRoot: string): ContentStateId {

@@ -1,0 +1,2322 @@
+{
+  "schemaVersion": "fg12d-trial-artifact-1",
+  "generatedAt": "2026-09-11T18:54:23.734Z",
+  "fg12dTrialSourceState": "ac8414ebd2a85803bde97d35a5409ca1be7a5d156ae3be57a070ebb5ba72ad53",
+  "campaignHarnessId": "295f1bb1b3887e508d22364dd1e54a66bd06d0d29d102b0c71efbf1b3f17f939",
+  "verdict": "CODEFORGE_FORGEGREEN_FG12D_CONTROLLED_TRIAL_CERTIFIED_NOT_ACTIVATED",
+  "safetyBarClear": true,
+  "counts": {
+    "totalCases": 44,
+    "positive": 20,
+    "invalidation": 24,
+    "passed": 44,
+    "failed": 0,
+    "unsafeReuseCases": 0
+  },
+  "specialCases": [
+    {
+      "id": "restart-valid",
+      "category": "restart",
+      "passed": true,
+      "details": {
+        "loadedCount": 1,
+        "reused": true
+      }
+    },
+    {
+      "id": "restart-stale-refused",
+      "category": "restart",
+      "passed": true,
+      "details": {
+        "loadedCount": 1,
+        "reused": false
+      }
+    },
+    {
+      "id": "race-toctou",
+      "category": "race",
+      "passed": true,
+      "details": {
+        "earlyProposalCount": 1,
+        "reusedAtBoundary": false
+      }
+    },
+    {
+      "id": "fallback-advisor-throws",
+      "category": "fallback",
+      "passed": true,
+      "details": {
+        "fallbackReason": "simulated ForgeGreen advisor failure",
+        "overallStatus": "passed"
+      }
+    },
+    {
+      "id": "repeated-reuse-duplicate-accounting",
+      "category": "repeated",
+      "passed": true,
+      "details": {
+        "reused1": true,
+        "reused2": true,
+        "totalAttributedReuse": 2
+      }
+    }
+  ],
+  "performance": {
+    "totalActualVerificationAttemptsAvoided": 24,
+    "totalControlDurationMs": 17110,
+    "totalTreatmentDurationMs": 22040,
+    "netWallClockDeltaMs": -4930
+  },
+  "caseReceipts": [
+    {
+      "runId": "positive-identical-billing-invoice-r0-1-mtxbc5mk",
+      "caseId": "positive-identical-billing-invoice-r0-1",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "545d54a0-82b7-4d95-a534-1baeea3a5d3b"
+      ],
+      "previousEvidenceHashes": [
+        "f2acc900943ceaa33c387c8fe052cf4949955877fea46c9f856d6df303d63763"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "a281e8c01542f8cadd417e10233929e4f2d739481239d6d047f87a9ffba9b01f",
+      "currentDefinitionDigests": [
+        "fa3718c820096045ac56111e8ee22bca7c9e42788bca879b776f0ea2e7e0b816"
+      ],
+      "proposedReusableEvidenceIds": [
+        "545d54a0-82b7-4d95-a534-1baeea3a5d3b"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "545d54a0-82b7-4d95-a534-1baeea3a5d3b"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-invoice.pos.0",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "545d54a0-82b7-4d95-a534-1baeea3a5d3b",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 378,
+        "treatmentDurationMs": 452,
+        "referenceControlDurationMs": 378
+      },
+      "createdAt": "2026-09-11T18:52:04.604Z"
+    },
+    {
+      "runId": "positive-identical-billing-consumer-r0-2-mtxbc7uu",
+      "caseId": "positive-identical-billing-consumer-r0-2",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "5d48cc7f-f8c1-461f-ab87-693e4d2d12d1"
+      ],
+      "previousEvidenceHashes": [
+        "f17a79340dc203b2d8bd9970bffd99be1b35ad852b8bad573ead18170241336a"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "854f59daf1bb3f777484d6e847dbccdab142b230699c0a35564d76aacbc5ecae",
+      "currentDefinitionDigests": [
+        "009525285a5d92e3cac632d290e1e2dfe4c010febce9b748a6382688382fda43"
+      ],
+      "proposedReusableEvidenceIds": [
+        "5d48cc7f-f8c1-461f-ab87-693e4d2d12d1"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "5d48cc7f-f8c1-461f-ab87-693e4d2d12d1"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-consumer.pos.0",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "5d48cc7f-f8c1-461f-ab87-693e4d2d12d1",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 387,
+        "treatmentDurationMs": 464,
+        "referenceControlDurationMs": 387
+      },
+      "createdAt": "2026-09-11T18:52:07.494Z"
+    },
+    {
+      "runId": "positive-identical-auth-session-r0-3-mtxbca1z",
+      "caseId": "positive-identical-auth-session-r0-3",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "f58f1e62-d70b-416e-b373-1e237c00ee9c"
+      ],
+      "previousEvidenceHashes": [
+        "cbdeaa97d9a7769f9c7a2cc1fd0a895fd96c82823e4bdef437c8185e6acab540"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "f0e9b07d7ccf6aad12fe2d7a2c9ba62487242c73ae4298dd5f448799d34072ea",
+      "currentDefinitionDigests": [
+        "e04c2a3c18094a7b6af04a8afc5bd3c157f843dd90c854a5e160c552e8067b60"
+      ],
+      "proposedReusableEvidenceIds": [
+        "f58f1e62-d70b-416e-b373-1e237c00ee9c"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "f58f1e62-d70b-416e-b373-1e237c00ee9c"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-session.pos.0",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "f58f1e62-d70b-416e-b373-1e237c00ee9c",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 377,
+        "treatmentDurationMs": 459,
+        "referenceControlDurationMs": 377
+      },
+      "createdAt": "2026-09-11T18:52:10.343Z"
+    },
+    {
+      "runId": "positive-identical-auth-middleware-r0-4-mtxbccb9",
+      "caseId": "positive-identical-auth-middleware-r0-4",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "d9671d16-0887-4ed7-bc72-d0310877c7a5"
+      ],
+      "previousEvidenceHashes": [
+        "061da88635c1b092665fed594f261415af8ba35441083ecf0e3a42d84e344f41"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "e3d49678585ce1896ebfaba9ff91212ad4ed5b399adfc9a0d7fb71440925a783",
+      "currentDefinitionDigests": [
+        "2e99673415bc1f228d3ec294299406f4e3c443facd4af3995b7bb7423df4352f"
+      ],
+      "proposedReusableEvidenceIds": [
+        "d9671d16-0887-4ed7-bc72-d0310877c7a5"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "d9671d16-0887-4ed7-bc72-d0310877c7a5"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-middleware.pos.0",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "d9671d16-0887-4ed7-bc72-d0310877c7a5",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 393,
+        "treatmentDurationMs": 495,
+        "referenceControlDurationMs": 393
+      },
+      "createdAt": "2026-09-11T18:52:13.269Z"
+    },
+    {
+      "runId": "positive-identical-billing-invoice-r1-5-mtxbcek9",
+      "caseId": "positive-identical-billing-invoice-r1-5",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "e5ea86c2-1c78-4bf2-866f-8358d8134843"
+      ],
+      "previousEvidenceHashes": [
+        "f8c6b667054c385d0ec8a8073ca28797e64b2d008b1fbb4518cedd4069b72104"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "fc78d0f58bd64fb831f03addc0408975c73b14a66d2ba0d8b1ba49f55785b017",
+      "currentDefinitionDigests": [
+        "67395c7bb1a793591dea26bb1935e9452cb8fd99b12b3d20ca0f16fcc5256ab3"
+      ],
+      "proposedReusableEvidenceIds": [
+        "e5ea86c2-1c78-4bf2-866f-8358d8134843"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "e5ea86c2-1c78-4bf2-866f-8358d8134843"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-invoice.pos.1",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "e5ea86c2-1c78-4bf2-866f-8358d8134843",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 435,
+        "treatmentDurationMs": 462,
+        "referenceControlDurationMs": 435
+      },
+      "createdAt": "2026-09-11T18:52:16.185Z"
+    },
+    {
+      "runId": "positive-identical-billing-consumer-r1-6-mtxbcgsj",
+      "caseId": "positive-identical-billing-consumer-r1-6",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "8f34d2df-80ad-4c47-9cee-b219d05e045a"
+      ],
+      "previousEvidenceHashes": [
+        "0e6675350d96a3b18e1ebb774724a465e9cac38a31bd989ce15eedeab67d5035"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "397acffd1af388871f8e51dc8f32305bd2762e4f6f6f727f97e2f7740d306669",
+      "currentDefinitionDigests": [
+        "2037e6713309f9c9d93aca0be64a4f0d63dd84660518c828f2f0988a7c847e2a"
+      ],
+      "proposedReusableEvidenceIds": [
+        "8f34d2df-80ad-4c47-9cee-b219d05e045a"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "8f34d2df-80ad-4c47-9cee-b219d05e045a"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-consumer.pos.1",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "8f34d2df-80ad-4c47-9cee-b219d05e045a",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 384,
+        "treatmentDurationMs": 476,
+        "referenceControlDurationMs": 384
+      },
+      "createdAt": "2026-09-11T18:52:19.075Z"
+    },
+    {
+      "runId": "positive-identical-auth-session-r1-7-mtxbciz8",
+      "caseId": "positive-identical-auth-session-r1-7",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "92c86b7e-3231-4af5-a25b-91a8af26dfa6"
+      ],
+      "previousEvidenceHashes": [
+        "5cfcac22f92cad45cfba2318371d2f35be8c7ce93e19e3f67b50fda77ed84c92"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "7b26fa1acdd9bb94bbe7d3d5655c7b36aa9e58621b64e5fa64780bdcf1411bb0",
+      "currentDefinitionDigests": [
+        "d37b99836fa682ca0639b25083db7a33b3ea9e46cf854282c024eb6b40ec38e4"
+      ],
+      "proposedReusableEvidenceIds": [
+        "92c86b7e-3231-4af5-a25b-91a8af26dfa6"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "92c86b7e-3231-4af5-a25b-91a8af26dfa6"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-session.pos.1",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "92c86b7e-3231-4af5-a25b-91a8af26dfa6",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 390,
+        "treatmentDurationMs": 458,
+        "referenceControlDurationMs": 390
+      },
+      "createdAt": "2026-09-11T18:52:21.908Z"
+    },
+    {
+      "runId": "positive-identical-auth-middleware-r1-8-mtxbcl5f",
+      "caseId": "positive-identical-auth-middleware-r1-8",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "8bca3ff4-097f-49a9-a7d0-f932afd36f08"
+      ],
+      "previousEvidenceHashes": [
+        "70aa5d3ec6b5ca6550c8ae4a868cdc1e5f7950f1a9d91f996b8a817570e45331"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "086cc36e72d8f00eb93d0ccdbc436173a082ff1ae9b2bc2f20bd4b5d2c6ae50e",
+      "currentDefinitionDigests": [
+        "a4e555a5ef92037183bd0c899912ac560414c699b9b6228af2a928a093f58d71"
+      ],
+      "proposedReusableEvidenceIds": [
+        "8bca3ff4-097f-49a9-a7d0-f932afd36f08"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "8bca3ff4-097f-49a9-a7d0-f932afd36f08"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-middleware.pos.1",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "8bca3ff4-097f-49a9-a7d0-f932afd36f08",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 368,
+        "treatmentDurationMs": 457,
+        "referenceControlDurationMs": 368
+      },
+      "createdAt": "2026-09-11T18:52:24.723Z"
+    },
+    {
+      "runId": "positive-identical-billing-invoice-r2-9-mtxbcncz",
+      "caseId": "positive-identical-billing-invoice-r2-9",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "75d9bed9-0c48-4d75-ad9c-a79dd09d2902"
+      ],
+      "previousEvidenceHashes": [
+        "5b6ac41d8e8b9a908ee13bf4a4117f4f5778bd72e5a9564821ac806ee76b4fb5"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "0136ac45b046ed35d7ea8d355ec6de6c9b3064ba798f41035059b8e7c20b3314",
+      "currentDefinitionDigests": [
+        "835626bbbd6b715ff7261c2ec8cdeb297f0ce3836fa2c0fb2b15718ecfae88f1"
+      ],
+      "proposedReusableEvidenceIds": [
+        "75d9bed9-0c48-4d75-ad9c-a79dd09d2902"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "75d9bed9-0c48-4d75-ad9c-a79dd09d2902"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-invoice.pos.2",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "75d9bed9-0c48-4d75-ad9c-a79dd09d2902",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 379,
+        "treatmentDurationMs": 463,
+        "referenceControlDurationMs": 379
+      },
+      "createdAt": "2026-09-11T18:52:27.587Z"
+    },
+    {
+      "runId": "positive-identical-billing-consumer-r2-10-mtxbcpla",
+      "caseId": "positive-identical-billing-consumer-r2-10",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "fcf9d821-823b-489d-a0c7-b94e2f5e0a46"
+      ],
+      "previousEvidenceHashes": [
+        "aa37eb6cc0d9e84f583c4b1bd0b437143774e1d96535c6ff3f1b512526bd141d"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "a3c864ca747589801eb04a1970f1eba1d3109783c904cbb4f725b34ad71fe1ce",
+      "currentDefinitionDigests": [
+        "3dab6c48c6237faa767f2d4168b9a9283d07640e0726413dbf3ba2e1b4ae27d4"
+      ],
+      "proposedReusableEvidenceIds": [
+        "fcf9d821-823b-489d-a0c7-b94e2f5e0a46"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "fcf9d821-823b-489d-a0c7-b94e2f5e0a46"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-consumer.pos.2",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "fcf9d821-823b-489d-a0c7-b94e2f5e0a46",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 393,
+        "treatmentDurationMs": 455,
+        "referenceControlDurationMs": 393
+      },
+      "createdAt": "2026-09-11T18:52:30.478Z"
+    },
+    {
+      "runId": "positive-identical-auth-session-r2-11-mtxbcrs6",
+      "caseId": "positive-identical-auth-session-r2-11",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "20dbba74-8f19-4a02-b6e2-3ccadd69de51"
+      ],
+      "previousEvidenceHashes": [
+        "9346f8b3c8649c8722a093327c19511007ac36c33e630b1a96c88ebf32a6bf7d"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "90db751315568c5c22d97a368e03112731fa8a2161135a4e6c4ff3ed7a58bcf1",
+      "currentDefinitionDigests": [
+        "9c8134d372f14e59ea3b008fbe6228b99a538d02475ab53effa1530cb1bc236d"
+      ],
+      "proposedReusableEvidenceIds": [
+        "20dbba74-8f19-4a02-b6e2-3ccadd69de51"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "20dbba74-8f19-4a02-b6e2-3ccadd69de51"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-session.pos.2",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "20dbba74-8f19-4a02-b6e2-3ccadd69de51",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 374,
+        "treatmentDurationMs": 467,
+        "referenceControlDurationMs": 374
+      },
+      "createdAt": "2026-09-11T18:52:33.318Z"
+    },
+    {
+      "runId": "positive-identical-auth-middleware-r2-12-mtxbctzi",
+      "caseId": "positive-identical-auth-middleware-r2-12",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "00ab3b90-25be-4636-af4c-3e58e621768e"
+      ],
+      "previousEvidenceHashes": [
+        "80f13bb9bec06c32de365e04c52e65aa82d2b142527a853163a137ed28d7aeeb"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "9767fcf6f0e021d6b092f4e95bb6c850e23e37978454a0ff0e0097af39038266",
+      "currentDefinitionDigests": [
+        "43f5209b4856063c539a2d4d3a70f61c678eee275f826782c32bdcfc34a0d86d"
+      ],
+      "proposedReusableEvidenceIds": [
+        "00ab3b90-25be-4636-af4c-3e58e621768e"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "00ab3b90-25be-4636-af4c-3e58e621768e"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-middleware.pos.2",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "00ab3b90-25be-4636-af4c-3e58e621768e",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 381,
+        "treatmentDurationMs": 471,
+        "referenceControlDurationMs": 381
+      },
+      "createdAt": "2026-09-11T18:52:36.174Z"
+    },
+    {
+      "runId": "positive-identical-billing-invoice-r3-13-mtxbcw93",
+      "caseId": "positive-identical-billing-invoice-r3-13",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "fc51e922-32cc-4a87-8a85-e10d155234cb"
+      ],
+      "previousEvidenceHashes": [
+        "a20ed6b8bc40f10c4efb6661a0ccc9ff78d283471a543d36325a9a8d22f74b7c"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "68b8e2a4758683939ec4b55256a1aac1f429a956cfcd2f5daec70d94b0acd07d",
+      "currentDefinitionDigests": [
+        "96d5ae6ea40111834351271907fa661e047eda14e798f80f30114e8ca7d1dcac"
+      ],
+      "proposedReusableEvidenceIds": [
+        "fc51e922-32cc-4a87-8a85-e10d155234cb"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "fc51e922-32cc-4a87-8a85-e10d155234cb"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-invoice.pos.3",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "fc51e922-32cc-4a87-8a85-e10d155234cb",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 386,
+        "treatmentDurationMs": 478,
+        "referenceControlDurationMs": 386
+      },
+      "createdAt": "2026-09-11T18:52:39.111Z"
+    },
+    {
+      "runId": "positive-identical-billing-consumer-r3-14-mtxbcyhs",
+      "caseId": "positive-identical-billing-consumer-r3-14",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "6e092076-71fd-4073-aa44-3d94c5e1bec7"
+      ],
+      "previousEvidenceHashes": [
+        "11ce407fb4bb8875ca72497a2917db4c1290b37e645362d7b761a563e4c60362"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "8b16fb3364130b976cab144225f2b23cf3e6d44658872985decc6e93dfe7e265",
+      "currentDefinitionDigests": [
+        "c8c31987ab22df9705be96ad6e44c9b27eebaf72fc23b8b407f10cbe9ce4a8cc"
+      ],
+      "proposedReusableEvidenceIds": [
+        "6e092076-71fd-4073-aa44-3d94c5e1bec7"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "6e092076-71fd-4073-aa44-3d94c5e1bec7"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-consumer.pos.3",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "6e092076-71fd-4073-aa44-3d94c5e1bec7",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 389,
+        "treatmentDurationMs": 480,
+        "referenceControlDurationMs": 389
+      },
+      "createdAt": "2026-09-11T18:52:42.016Z"
+    },
+    {
+      "runId": "positive-identical-auth-session-r3-15-mtxbd0or",
+      "caseId": "positive-identical-auth-session-r3-15",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "adbebf96-2bbf-4958-b23a-7f7331e64904"
+      ],
+      "previousEvidenceHashes": [
+        "70beeb19f4bb2f8cb55e4eb0a2c671e9544fb13f4ddc5e9d9ff82fb55a639262"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "c9b6f6f8289fbf569f8131e7035fb1e2bc0572ba95e7cff7fedc7807968bae51",
+      "currentDefinitionDigests": [
+        "66a5c9f2f2a4a574ed581fb4d2e3c83c613a0bbf7368ed6dfaa1d59a28a9e16e"
+      ],
+      "proposedReusableEvidenceIds": [
+        "adbebf96-2bbf-4958-b23a-7f7331e64904"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "adbebf96-2bbf-4958-b23a-7f7331e64904"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-session.pos.3",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "adbebf96-2bbf-4958-b23a-7f7331e64904",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 384,
+        "treatmentDurationMs": 475,
+        "referenceControlDurationMs": 384
+      },
+      "createdAt": "2026-09-11T18:52:44.859Z"
+    },
+    {
+      "runId": "positive-identical-auth-middleware-r3-16-mtxbd2ui",
+      "caseId": "positive-identical-auth-middleware-r3-16",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "1d3e3c59-f5f4-43f9-bbf0-40fb3b480f58"
+      ],
+      "previousEvidenceHashes": [
+        "a64010348d1d7b079be3b258d44c5f29f2026b730ecfd8ea9dcd3ce6bbbf8720"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "42e1484eaf87abdc2eeee900ff9a1d88e03018a840df0740809866e01045c492",
+      "currentDefinitionDigests": [
+        "be517349328f2ef0a58aa12284373fca91f9101c3fe063e417411d8972efe9b6"
+      ],
+      "proposedReusableEvidenceIds": [
+        "1d3e3c59-f5f4-43f9-bbf0-40fb3b480f58"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "1d3e3c59-f5f4-43f9-bbf0-40fb3b480f58"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-middleware.pos.3",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "1d3e3c59-f5f4-43f9-bbf0-40fb3b480f58",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 389,
+        "treatmentDurationMs": 454,
+        "referenceControlDurationMs": 389
+      },
+      "createdAt": "2026-09-11T18:52:47.658Z"
+    },
+    {
+      "runId": "positive-identical-billing-invoice-r4-17-mtxbd522",
+      "caseId": "positive-identical-billing-invoice-r4-17",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "d30846df-dbf4-4a38-b0d9-906bba6911fc"
+      ],
+      "previousEvidenceHashes": [
+        "c0246a397365406e43ef7cf6cf026014f5c9632d50bde7a907c093e61dcacec5"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "ea4bd526de3d6be782cca944261dacdd53b47a45d1f86c5cca9c5ed63139a042",
+      "currentDefinitionDigests": [
+        "ca605fcff1045d4db504ef5b8e5bb80cc5e8b9594c09710b925dcd492be6941e"
+      ],
+      "proposedReusableEvidenceIds": [
+        "d30846df-dbf4-4a38-b0d9-906bba6911fc"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "d30846df-dbf4-4a38-b0d9-906bba6911fc"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-invoice.pos.4",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "d30846df-dbf4-4a38-b0d9-906bba6911fc",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 379,
+        "treatmentDurationMs": 453,
+        "referenceControlDurationMs": 379
+      },
+      "createdAt": "2026-09-11T18:52:50.522Z"
+    },
+    {
+      "runId": "positive-identical-billing-consumer-r4-18-mtxbd7co",
+      "caseId": "positive-identical-billing-consumer-r4-18",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "020f86f4-092a-4bef-8b62-e84a0d586967"
+      ],
+      "previousEvidenceHashes": [
+        "999c05e29ede105a48d5dfc102bbb85cda8137465fa284ef8b975fc46f0309f8"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "ab7cf35f06c892ac57aa875fc792ba81333101d0b4c6ae1909f05602a5863d21",
+      "currentDefinitionDigests": [
+        "0635d7c0cf5403d45938b4245ec42743b0aef92b5f4c85ba481a03ed2956a87c"
+      ],
+      "proposedReusableEvidenceIds": [
+        "020f86f4-092a-4bef-8b62-e84a0d586967"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "020f86f4-092a-4bef-8b62-e84a0d586967"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-consumer.pos.4",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "020f86f4-092a-4bef-8b62-e84a0d586967",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 414,
+        "treatmentDurationMs": 493,
+        "referenceControlDurationMs": 414
+      },
+      "createdAt": "2026-09-11T18:52:53.497Z"
+    },
+    {
+      "runId": "positive-identical-auth-session-r4-19-mtxbd9k3",
+      "caseId": "positive-identical-auth-session-r4-19",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "fb6af2bd-207b-4f48-b20e-17177fdbc58c"
+      ],
+      "previousEvidenceHashes": [
+        "ebc274503bb8049152cc994ac18843e9a665c15792add7fc39f6475593731471"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "4da0f30f804d8cdd9b79218434941c9b58bb713ed12ff587a9123e681bcba774",
+      "currentDefinitionDigests": [
+        "3e12709e68105fcdc645a5e02f45d3b9e7360da8ba083935e9630dcb90466614"
+      ],
+      "proposedReusableEvidenceIds": [
+        "fb6af2bd-207b-4f48-b20e-17177fdbc58c"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "fb6af2bd-207b-4f48-b20e-17177fdbc58c"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-session.pos.4",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "fb6af2bd-207b-4f48-b20e-17177fdbc58c",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 376,
+        "treatmentDurationMs": 481,
+        "referenceControlDurationMs": 376
+      },
+      "createdAt": "2026-09-11T18:52:56.355Z"
+    },
+    {
+      "runId": "positive-identical-auth-middleware-r4-20-mtxbdbrw",
+      "caseId": "positive-identical-auth-middleware-r4-20",
+      "category": "positive",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "f5701562-0677-4711-8f9a-41bd61b17d71"
+      ],
+      "previousEvidenceHashes": [
+        "deb9bb5db4ecf5b51e0dc5ebfc3a13ef3c666a5002c9d4a037941a620ddfb643"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "71a4943032753ba4bd30569cf0a72c9d275cb24152f4f8aa5222b6300214cf23",
+      "currentDefinitionDigests": [
+        "2b93909205d6309013b65c3483d247aa46bcc0199517bfd7d92d3a422169d3eb"
+      ],
+      "proposedReusableEvidenceIds": [
+        "f5701562-0677-4711-8f9a-41bd61b17d71"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "f5701562-0677-4711-8f9a-41bd61b17d71"
+      ],
+      "freshlyExecutedVerifierIds": [],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-middleware.pos.4",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "f5701562-0677-4711-8f9a-41bd61b17d71",
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 384,
+        "treatmentDurationMs": 488,
+        "referenceControlDurationMs": 384
+      },
+      "createdAt": "2026-09-11T18:52:59.228Z"
+    },
+    {
+      "runId": "invalidation-source-billing-invoice-21-mtxbdeeb",
+      "caseId": "invalidation-source-billing-invoice-21",
+      "category": "invalidation",
+      "invalidationReason": "source_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "e4f09aee-bf81-4162-9d32-fa55c8788c54"
+      ],
+      "previousEvidenceHashes": [
+        "e3a14606beeec06bc5775aacbf0f05fcfbf5e35ff524866c4227e4c193f2992e"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "dbb13c4d9753a69ad3a95440e859667f8c68f66fae6b113e367690fa3daf9139",
+      "currentDefinitionDigests": [
+        "3de8cb4d3d0fcf34d51a50f3622f728680359c4dafba83347e9f3a74da32f878"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.billing-invoice.src"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-invoice.src",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 401,
+        "treatmentDurationMs": 530,
+        "referenceControlDurationMs": 401
+      },
+      "createdAt": "2026-09-11T18:53:02.627Z"
+    },
+    {
+      "runId": "invalidation-source-billing-consumer-22-mtxbdgy1",
+      "caseId": "invalidation-source-billing-consumer-22",
+      "category": "invalidation",
+      "invalidationReason": "source_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "d7ba023b-2873-400a-97e3-bc716e852596"
+      ],
+      "previousEvidenceHashes": [
+        "942525c60c16016c6e524eaa1012c97e9f7db12e8df880e6c8fd01835c662fab"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "5e59f2f4e7bb630ee0897cbe6d105a37779f9c8bcba2415d7a02b61caca9df87",
+      "currentDefinitionDigests": [
+        "20e948b4dcce034977e69f8ba51838b8f626cb4b1a4affb3bd7e165ce635b0c1"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.billing-consumer.src"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-consumer.src",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 370,
+        "treatmentDurationMs": 525,
+        "referenceControlDurationMs": 370
+      },
+      "createdAt": "2026-09-11T18:53:05.929Z"
+    },
+    {
+      "runId": "invalidation-source-auth-session-23-mtxbdjhq",
+      "caseId": "invalidation-source-auth-session-23",
+      "category": "invalidation",
+      "invalidationReason": "source_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "f624e2e5-b506-4664-b4fc-3e1a78cd8000"
+      ],
+      "previousEvidenceHashes": [
+        "bbc64b5e2692b6b043e08889ab69ea99760aed336db5fd172c8f80bc5c15d144"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "d11f86da07d482bf0928195d526687169e6f3b2a3b5ca0227c5ee2a236e92b5a",
+      "currentDefinitionDigests": [
+        "05b98aba289724fc708bcac248b1e5283bef46d2f8badbfa3b3ab44104b108fb"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.auth-session.src"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-session.src",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 382,
+        "treatmentDurationMs": 538,
+        "referenceControlDurationMs": 382
+      },
+      "createdAt": "2026-09-11T18:53:09.230Z"
+    },
+    {
+      "runId": "invalidation-source-auth-middleware-24-mtxbdm2c",
+      "caseId": "invalidation-source-auth-middleware-24",
+      "category": "invalidation",
+      "invalidationReason": "source_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "98448af9-c989-49b6-9a86-e455e7d252dc"
+      ],
+      "previousEvidenceHashes": [
+        "020a41422a327e04b37299727ec5aa2bb01b62dc0247cd1c6bd641f9fff3b0c8"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "adf26bac0456bc954c944fb1f40cd3f2d55bcc2e1954d85ba1ea024b9838d3b9",
+      "currentDefinitionDigests": [
+        "986c4e8e0488eb0387f79959debdac218619980b2486663f0f75cd49a3df8971"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.auth-middleware.src"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-middleware.src",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 395,
+        "treatmentDurationMs": 530,
+        "referenceControlDurationMs": 395
+      },
+      "createdAt": "2026-09-11T18:53:12.564Z"
+    },
+    {
+      "runId": "invalidation-dependency-billing-invoice-25-mtxbdomw",
+      "caseId": "invalidation-dependency-billing-invoice-25",
+      "category": "invalidation",
+      "invalidationReason": "dependency_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "5d959f52-ef2a-40e0-879e-220fb6de3e92"
+      ],
+      "previousEvidenceHashes": [
+        "d6993e01acc1efb393b618652f2cf5677bb385d9826cb5d197a7766d9b05c712"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "56758deb4fe1fef77e62c95160661f2ad9447f00ff7a92ab53ae866c2e2ea368",
+      "currentDefinitionDigests": [
+        "afc136e311806072374b7eec97233d789afd7ec6658d7f46acbf37ab103d4d55"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.billing-invoice.dep"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-invoice.dep",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 370,
+        "treatmentDurationMs": 535,
+        "referenceControlDurationMs": 370
+      },
+      "createdAt": "2026-09-11T18:53:15.896Z"
+    },
+    {
+      "runId": "invalidation-dependency-billing-consumer-26-mtxbdr8h",
+      "caseId": "invalidation-dependency-billing-consumer-26",
+      "category": "invalidation",
+      "invalidationReason": "dependency_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "bcc5c3f7-8dae-41f8-8d96-09a68c194ba0"
+      ],
+      "previousEvidenceHashes": [
+        "412ffc8d7e734176e363f267392562f520c486a8cfa3ddbccfb10007638f1927"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "d3217676a95217049ebf3d58e8ec388d3804f9c54cb3ca3dc1d93b32fb1850dd",
+      "currentDefinitionDigests": [
+        "3237259f38372b31be0134cb4ff242ec24fb1af31c683d77c89c0df307625b7c"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.billing-consumer.dep"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-consumer.dep",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 374,
+        "treatmentDurationMs": 541,
+        "referenceControlDurationMs": 374
+      },
+      "createdAt": "2026-09-11T18:53:19.265Z"
+    },
+    {
+      "runId": "invalidation-dependency-auth-session-27-mtxbdtso",
+      "caseId": "invalidation-dependency-auth-session-27",
+      "category": "invalidation",
+      "invalidationReason": "dependency_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "ae649b81-0eb0-4187-bb1a-63f9cf7073ba"
+      ],
+      "previousEvidenceHashes": [
+        "b1695e59602cacc4efa7a4490fcc6534096bdf95c32ea67bc908dc8546c3c7e9"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "74a6770966b282e782933234e11ea21cb6ab4f584111e30d9e95380f1723e1bf",
+      "currentDefinitionDigests": [
+        "f5e9e538b7d753ba47c9db7bfb0e4d177b7949a97c1107c9cd19aad5dac30267"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.auth-session.dep"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-session.dep",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 383,
+        "treatmentDurationMs": 536,
+        "referenceControlDurationMs": 383
+      },
+      "createdAt": "2026-09-11T18:53:22.584Z"
+    },
+    {
+      "runId": "invalidation-dependency-auth-middleware-28-mtxbdwbv",
+      "caseId": "invalidation-dependency-auth-middleware-28",
+      "category": "invalidation",
+      "invalidationReason": "dependency_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "cd096441-8b5d-4cd3-89a7-1e03cf1b2923"
+      ],
+      "previousEvidenceHashes": [
+        "e34c9fc04de27b2df0a1542f56fea7f9b2d0ff5e673b88c1c3367c45125ebc2a"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "2c18c455310151f4b068ab07b41f717dff2e6882dcacf42c797acfcee2fccbfd",
+      "currentDefinitionDigests": [
+        "5d09023a7c8b3c8007210a9bdd76cdad33f5662c3372e34f7c532a6846ac735c"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.auth-middleware.dep"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-middleware.dep",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 382,
+        "treatmentDurationMs": 526,
+        "referenceControlDurationMs": 382
+      },
+      "createdAt": "2026-09-11T18:53:25.867Z"
+    },
+    {
+      "runId": "invalidation-config-billing-invoice-29-mtxbdyy7",
+      "caseId": "invalidation-config-billing-invoice-29",
+      "category": "invalidation",
+      "invalidationReason": "config_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "c80a6e43-34f9-48bd-9bd7-ff3a72dfd539"
+      ],
+      "previousEvidenceHashes": [
+        "0cd1d42d028d2ec5ce68f7c21d6a0592de382708d9699c280bf793cf48d8be68"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "c4bb3a7ed3c719450216c930ab9ab98123cd40a7b1973d338b3c72c75ca6657e",
+      "currentDefinitionDigests": [
+        "28e8d0b0dca2056f83c8ccbbdd5a88d21c796dabfe5b67735e157d9d79b27de4"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.billing-invoice.cfg"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-invoice.cfg",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 383,
+        "treatmentDurationMs": 548,
+        "referenceControlDurationMs": 383
+      },
+      "createdAt": "2026-09-11T18:53:29.263Z"
+    },
+    {
+      "runId": "invalidation-config-billing-consumer-30-mtxbe1ke",
+      "caseId": "invalidation-config-billing-consumer-30",
+      "category": "invalidation",
+      "invalidationReason": "config_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "37f09067-526c-4493-853b-5d226cc0f498"
+      ],
+      "previousEvidenceHashes": [
+        "df09c21eeeff563b4d09089d43fdbbcd5629fbb347c15ec59cc6ff0ab15f491e"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "cb4337c7cb50e61afec2fbca6e1fcc875c727bbd4784c66e8bfa0bbb79f07045",
+      "currentDefinitionDigests": [
+        "903b246832bd1d5e7dd33297c93fe11fcb2b352993048dbe9c34329e9dc13984"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.billing-consumer.cfg"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-consumer.cfg",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 390,
+        "treatmentDurationMs": 528,
+        "referenceControlDurationMs": 390
+      },
+      "createdAt": "2026-09-11T18:53:32.654Z"
+    },
+    {
+      "runId": "invalidation-config-auth-session-31-mtxbe445",
+      "caseId": "invalidation-config-auth-session-31",
+      "category": "invalidation",
+      "invalidationReason": "config_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "8a77f8c0-83de-4a87-90a4-5e1665c6183a"
+      ],
+      "previousEvidenceHashes": [
+        "5d57972589ab6188fdd2a495664fafa4a103caab839d80262d36c2759d3182b3"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "d9b77549ff7a7538f8d04da19f6543ac18be6ea6e66d877942afa95469a445a4",
+      "currentDefinitionDigests": [
+        "47c2c41f99c6ba4ac608b48cf7327d1be33f49b96af58a22d9b86bf6f7e66950"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.auth-session.cfg"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-session.cfg",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 379,
+        "treatmentDurationMs": 540,
+        "referenceControlDurationMs": 379
+      },
+      "createdAt": "2026-09-11T18:53:35.957Z"
+    },
+    {
+      "runId": "invalidation-config-auth-middleware-32-mtxbe6om",
+      "caseId": "invalidation-config-auth-middleware-32",
+      "category": "invalidation",
+      "invalidationReason": "config_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "6bb748f4-b4dd-4a8d-8aac-31a2965f3a60"
+      ],
+      "previousEvidenceHashes": [
+        "669485abb7aae76bf7bd38e230cbedc274f0364912b7faca7d83a601c62d1356"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "03755e8443a5764c630212357c8bd1d0feef269c825d09cc595d3b8084eb45e4",
+      "currentDefinitionDigests": [
+        "c320b05cb865a3d725000a01db759661d58ff5e7bd1caf9b6acd11d7a414912d"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.auth-middleware.cfg"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-middleware.cfg",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 396,
+        "treatmentDurationMs": 527,
+        "referenceControlDurationMs": 396
+      },
+      "createdAt": "2026-09-11T18:53:39.286Z"
+    },
+    {
+      "runId": "invalidation-stale-billing-invoice-33-mtxbe9cq",
+      "caseId": "invalidation-stale-billing-invoice-33",
+      "category": "invalidation",
+      "invalidationReason": "stale_evidence",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "39f4c4aa-6360-49cf-b694-af2fae9b60c5"
+      ],
+      "previousEvidenceHashes": [
+        "7ac1464059c13a020a6eb180744e193fc802f6cc864b36c123c2c6826f011c84"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "9c6eed878c48e699ca1cd4f8e002b9f60f1bb7674522ec293600511ab60b8db1",
+      "currentDefinitionDigests": [
+        "c036f14e3b1615d8523f375e54b158ca03bf9dd53e2f877eac3a4feedada66ed"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.billing-invoice.stale"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-invoice.stale",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 386,
+        "treatmentDurationMs": 594,
+        "referenceControlDurationMs": 386
+      },
+      "createdAt": "2026-09-11T18:53:42.746Z"
+    },
+    {
+      "runId": "invalidation-stale-billing-consumer-34-mtxbebxa",
+      "caseId": "invalidation-stale-billing-consumer-34",
+      "category": "invalidation",
+      "invalidationReason": "stale_evidence",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "7e435978-2bf0-4978-b41e-3e31d3985b8d"
+      ],
+      "previousEvidenceHashes": [
+        "ab9d9c7e7f82955ee9717d0cd1139200bcbad2fb4ed27df0a5914d6e9a39ae8d"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "fa75bf35cdd5b5f85e91bfcaaea15fbf172a12a5fe442eb74a90b3b7cb3acbf1",
+      "currentDefinitionDigests": [
+        "dc72b3f2b97b7dbe7d909c614e7f548546041655e18d20307acb266044298d02"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.billing-consumer.stale"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-consumer.stale",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 375,
+        "treatmentDurationMs": 536,
+        "referenceControlDurationMs": 375
+      },
+      "createdAt": "2026-09-11T18:53:46.078Z"
+    },
+    {
+      "runId": "invalidation-command-billing-invoice-35-mtxbee7v",
+      "caseId": "invalidation-command-billing-invoice-35",
+      "category": "invalidation",
+      "invalidationReason": "command_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "ff7b6ec5-6016-4aa6-b59b-3c828e7c7689"
+      ],
+      "previousEvidenceHashes": [
+        "c065e3aad61b39e75729aa6fa2a5e4a5a7b645a4250688151ef2af97959a3154"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "c677ee785026419c8005ca81e460b1fab7555c182dc1244976206904b2fbbb84",
+      "currentDefinitionDigests": [
+        "9d07a831d0db6a7ddd0239aaef5905a1faf038b9299d1977a0275561e10e7df1"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.billing-invoice.cmd"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-invoice.cmd",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 410,
+        "treatmentDurationMs": 547,
+        "referenceControlDurationMs": 410
+      },
+      "createdAt": "2026-09-11T18:53:49.051Z"
+    },
+    {
+      "runId": "invalidation-command-billing-consumer-36-mtxbeghh",
+      "caseId": "invalidation-command-billing-consumer-36",
+      "category": "invalidation",
+      "invalidationReason": "command_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "c265ceff-2f33-4e5a-a75a-322e17dd7e49"
+      ],
+      "previousEvidenceHashes": [
+        "469271fadba32d35628cb7beaef7b197e04f0e52eb7c79f16c7f28935b7dcccc"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "0840da10d861e00224f84dbe5b9b3b91d22c6987feadb659affca454f70bcc7b",
+      "currentDefinitionDigests": [
+        "29c4d8401c76ee7a4cde0850a71d749dc5bc785debf39f0b70a639bc2de1f832"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.billing-consumer.cmd"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-consumer.cmd",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 390,
+        "treatmentDurationMs": 532,
+        "referenceControlDurationMs": 390
+      },
+      "createdAt": "2026-09-11T18:53:51.989Z"
+    },
+    {
+      "runId": "invalidation-command-auth-session-37-mtxbeiw4",
+      "caseId": "invalidation-command-auth-session-37",
+      "category": "invalidation",
+      "invalidationReason": "command_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "c300f3f9-8a7a-49a3-954f-477fe50cb1a3"
+      ],
+      "previousEvidenceHashes": [
+        "7e2207bcc05ebc62ca510a8a0d1c614eccfce5e46d02cf330b7470bd9a90a406"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "31932ee8879de9125581a6676ee7312d9739d88000f934469001e1ced1000824",
+      "currentDefinitionDigests": [
+        "d26744972d05e8808ef4da16534566cd8d3c6c51082b14a0d097f80fb410cf7f"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.auth-session.cmd"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-session.cmd",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 431,
+        "treatmentDurationMs": 569,
+        "referenceControlDurationMs": 431
+      },
+      "createdAt": "2026-09-11T18:53:55.108Z"
+    },
+    {
+      "runId": "invalidation-command-auth-middleware-38-mtxbelcn",
+      "caseId": "invalidation-command-auth-middleware-38",
+      "category": "invalidation",
+      "invalidationReason": "command_changed",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "e2ae6638-cd26-40b5-92db-43b1dd5ecc8e"
+      ],
+      "previousEvidenceHashes": [
+        "c9d0453dc178e672ca089fc4bc19f2b621d812adbaaa46ad8e4d8a890305e60f"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "f06c454087bf3846a6bd9f38ddf86eac1a2e10b635cf5bab798f92b9adec537a",
+      "currentDefinitionDigests": [
+        "092669aacffea9e652d5163d7115c68eed1cacfb0cc2a69b109f53886a73376d"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.auth-middleware.cmd"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-middleware.cmd",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 429,
+        "treatmentDurationMs": 585,
+        "referenceControlDurationMs": 429
+      },
+      "createdAt": "2026-09-11T18:53:58.295Z"
+    },
+    {
+      "runId": "invalidation-newobligation-billing-invoice-39-mtxbenk0",
+      "caseId": "invalidation-newobligation-billing-invoice-39",
+      "category": "invalidation",
+      "invalidationReason": "new_obligation_added",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "770dabb0-6b64-4f2d-bd9e-1ab5e861a355"
+      ],
+      "previousEvidenceHashes": [
+        "680e3547f8408ba60a059666cd4e47e3fe7ffd674e121232e092cc1e1d25c30e"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "0203a401dc84ab8a662ba7d1072f1521324d8a9520fad6b029877940f32cb7f8",
+      "currentDefinitionDigests": [
+        "3be49bd328485df2131836ad385005fd52328f07766f82c8fe5735836534a5ac",
+        "f84008ad1e6a422a86872c0b4c32f633ec40dbbfaaed34656851f029b45d05ff"
+      ],
+      "proposedReusableEvidenceIds": [
+        "770dabb0-6b64-4f2d-bd9e-1ab5e861a355"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "770dabb0-6b64-4f2d-bd9e-1ab5e861a355"
+      ],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.billing-invoice.extra"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-invoice.primary",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "770dabb0-6b64-4f2d-bd9e-1ab5e861a355",
+          "status": "passed"
+        },
+        {
+          "verifierId": "fg12d.case.billing-invoice.extra",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 429,
+        "treatmentDurationMs": 491,
+        "referenceControlDurationMs": 429
+      },
+      "createdAt": "2026-09-11T18:54:01.152Z"
+    },
+    {
+      "runId": "invalidation-newobligation-billing-consumer-40-mtxbepoh",
+      "caseId": "invalidation-newobligation-billing-consumer-40",
+      "category": "invalidation",
+      "invalidationReason": "new_obligation_added",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "c47ec798-326d-4e38-a188-079c7651816c"
+      ],
+      "previousEvidenceHashes": [
+        "39b46e4bbf6e6f4ff95a1a786876ab1aa3da8ac59519ebf19860d473b24b2e74"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "8f88f146ffdd5114d2af385f3d10a7eb4637434fc4b9b4f0e27c345a61600a7c",
+      "currentDefinitionDigests": [
+        "2ac5d17ac4c173e1bbdcce059b2f5725aa653e78332b0d465808e758ad1b1162",
+        "9b2008b05c1b815201c49641fbd36c42d27fd18caccd5909b86118dbcef4db96"
+      ],
+      "proposedReusableEvidenceIds": [
+        "c47ec798-326d-4e38-a188-079c7651816c"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "c47ec798-326d-4e38-a188-079c7651816c"
+      ],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.billing-consumer.extra"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.billing-consumer.primary",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "c47ec798-326d-4e38-a188-079c7651816c",
+          "status": "passed"
+        },
+        {
+          "verifierId": "fg12d.case.billing-consumer.extra",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 413,
+        "treatmentDurationMs": 468,
+        "referenceControlDurationMs": 413
+      },
+      "createdAt": "2026-09-11T18:54:03.905Z"
+    },
+    {
+      "runId": "invalidation-newobligation-auth-session-41-mtxbersu",
+      "caseId": "invalidation-newobligation-auth-session-41",
+      "category": "invalidation",
+      "invalidationReason": "new_obligation_added",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "7e7958db-8dba-4633-b984-2bc6e00766a6"
+      ],
+      "previousEvidenceHashes": [
+        "ba12d1fe33296f21632f74df3a6eb732d29f254184fd49eed1f9c5d4c11c7526"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "abb9c36d3afa98b5b991c087fb0678476887455850b0b4dddc8c64601a6842e7",
+      "currentDefinitionDigests": [
+        "19a9e258006af962159829a20c88742df76a9bad659cf14007c43a9d3dd0efbf",
+        "5c24929a95ac8d3cf977611971e78f61ccc34a92f3700b47f640ffa37b9c8fac"
+      ],
+      "proposedReusableEvidenceIds": [
+        "7e7958db-8dba-4633-b984-2bc6e00766a6"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "7e7958db-8dba-4633-b984-2bc6e00766a6"
+      ],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.auth-session.extra"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-session.primary",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "7e7958db-8dba-4633-b984-2bc6e00766a6",
+          "status": "passed"
+        },
+        {
+          "verifierId": "fg12d.case.auth-session.extra",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 396,
+        "treatmentDurationMs": 486,
+        "referenceControlDurationMs": 396
+      },
+      "createdAt": "2026-09-11T18:54:06.654Z"
+    },
+    {
+      "runId": "invalidation-newobligation-auth-middleware-42-mtxbetxj",
+      "caseId": "invalidation-newobligation-auth-middleware-42",
+      "category": "invalidation",
+      "invalidationReason": "new_obligation_added",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "8748bd0b-b992-43a3-b808-f8505d29daf0"
+      ],
+      "previousEvidenceHashes": [
+        "fd5053887f3cd804215144efdeae4f977468c0737c0ade7f03e5b3724792c724"
+      ],
+      "canonicalValidityConfirmed": [
+        true
+      ],
+      "currentInputStateHash": "6b8b3f8fe1cf31a3a9fe415fbcd67fd49d0f71448e03be8ba193ac59dc11fa7d",
+      "currentDefinitionDigests": [
+        "bbefa0e7a3bcd45092beade9ac1eb09e17a9eecc1c3a15b818e48597d2d469c0",
+        "bdae716764e35a0fa1eb08531ddee7ee376f3d44ab218fa249c59af1e07f99dc"
+      ],
+      "proposedReusableEvidenceIds": [
+        "8748bd0b-b992-43a3-b808-f8505d29daf0"
+      ],
+      "actuallyReusedEvidenceIds": [
+        "8748bd0b-b992-43a3-b808-f8505d29daf0"
+      ],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.auth-middleware.extra"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.auth-middleware.primary",
+          "requirement": "required",
+          "actuallyReused": true,
+          "evidenceId": "8748bd0b-b992-43a3-b808-f8505d29daf0",
+          "status": "passed"
+        },
+        {
+          "verifierId": "fg12d.case.auth-middleware.extra",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "passed"
+        }
+      ],
+      "reuseDecisionStatus": "PROPOSED",
+      "finalOverallStatus": "passed",
+      "finalVerificationComplete": true,
+      "finalRequiredCoverageComplete": true,
+      "actual": {
+        "verificationAttemptsAvoided": 1,
+        "commandsAvoided": 1,
+        "childProcessesAvoided": 1,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 404,
+        "treatmentDurationMs": 487,
+        "referenceControlDurationMs": 404
+      },
+      "createdAt": "2026-09-11T18:54:09.415Z"
+    },
+    {
+      "runId": "invalidation-failed-evidence-0-43-mtxbew1p",
+      "caseId": "invalidation-failed-evidence-0-43",
+      "category": "invalidation",
+      "invalidationReason": "prior_failed_evidence",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "6d1bebf5-bcbc-4f29-b1cb-48293f70aeac"
+      ],
+      "previousEvidenceHashes": [
+        "c13e47bf9fc94c5a8ed7724c79799f5bb942a3530ea1d1765e070d12dadafdbb"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "2d3c80336f037798bc734dbcd566cc7dd2ee3853f046b30a1f3fee3ed4294701",
+      "currentDefinitionDigests": [
+        "e439ebaf872ce3a4e2c571cedaf6d5f63fbd29d84034a86b6d9681f447c2db2d"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.failed.0"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.failed.0",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "failed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "failed",
+      "finalVerificationComplete": false,
+      "finalRequiredCoverageComplete": false,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 353,
+        "treatmentDurationMs": 484,
+        "referenceControlDurationMs": 353
+      },
+      "createdAt": "2026-09-11T18:54:12.157Z"
+    },
+    {
+      "runId": "invalidation-failed-evidence-1-44-mtxbey5p",
+      "caseId": "invalidation-failed-evidence-1-44",
+      "category": "invalidation",
+      "invalidationReason": "prior_failed_evidence",
+      "optimizationKind": "VERIFICATION_EVIDENCE_REUSE",
+      "mode": "CONTROLLED_ACTIVE_TRIAL",
+      "previousEvidenceIds": [
+        "eb96471c-cc0d-48d8-8008-1eb4137220a7"
+      ],
+      "previousEvidenceHashes": [
+        "44786fa262db4e118f7f58aa432accf1c0e81c4aa5f9fce3d6ccb2067d7cee2e"
+      ],
+      "canonicalValidityConfirmed": [],
+      "currentInputStateHash": "1367655a62c7937fac60fc6908705062b04f479ca363db8c91faa2daf44e9456",
+      "currentDefinitionDigests": [
+        "d4f228672436c482662420dceb3365c86e681b588dc10b83e87ed6da8aa7eefb"
+      ],
+      "proposedReusableEvidenceIds": [],
+      "actuallyReusedEvidenceIds": [],
+      "freshlyExecutedVerifierIds": [
+        "fg12d.case.failed.1"
+      ],
+      "verifierOutcomes": [
+        {
+          "verifierId": "fg12d.case.failed.1",
+          "requirement": "required",
+          "actuallyReused": false,
+          "status": "failed"
+        }
+      ],
+      "reuseDecisionStatus": "SKIPPED_INSUFFICIENT_EVIDENCE",
+      "finalOverallStatus": "failed",
+      "finalVerificationComplete": false,
+      "finalRequiredCoverageComplete": false,
+      "actual": {
+        "verificationAttemptsAvoided": 0,
+        "commandsAvoided": 0,
+        "childProcessesAvoided": 0,
+        "directlyAvoidedDurationMs": 0
+      },
+      "reference": {
+        "controlDurationMs": 349,
+        "treatmentDurationMs": 476,
+        "referenceControlDurationMs": 349
+      },
+      "createdAt": "2026-09-11T18:54:14.893Z"
+    }
+  ],
+  "globalGraduationRegistryUnchanged": true,
+  "productionCallSitesModified": []
+}

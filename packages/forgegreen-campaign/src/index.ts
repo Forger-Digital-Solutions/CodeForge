@@ -8,3 +8,7 @@ export * from "./candidate-c-observer.js";
 export * from "./candidate-d-observer.js";
 export * from "./fixtures.js";
 export * from "./tasks.js";
+export * from "./fg12d/trial-receipt.js";
+export * from "./fg12d/trial-runner.js";
+export * from "./fg12d/case-matrix.js";
+export * from "./fg12d/special-cases.js";
