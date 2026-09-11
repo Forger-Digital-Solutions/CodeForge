@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { APPROVED_MINIMUM_AGE } from "./age-policy.js";
 
 interface OnboardingFlowProps {
   onComplete: () => void;
@@ -6,6 +7,8 @@ interface OnboardingFlowProps {
 }
 
 export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowProps) {
+  const [ageAcknowledged, setAgeAcknowledged] = useState(false);
+
   return (
     <div className="onboarding-flow">
       <div className="onboarding-container">
@@ -105,12 +108,21 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
             Provider configuration is optional and can be skipped. You can configure providers anytime from the
             welcome screen.
           </p>
+          <label className="onboarding-age-acknowledgement">
+            <input
+              type="checkbox"
+              checked={ageAcknowledged}
+              onChange={(event) => setAgeAcknowledged(event.target.checked)}
+            />
+            I confirm that I am {APPROVED_MINIMUM_AGE} or older.
+          </label>
         </div>
 
         <div className="onboarding-actions">
           <button
             className="onboarding-btn primary"
             onClick={onComplete}
+            disabled={!ageAcknowledged}
             aria-label="Configure cloud providers"
             autoFocus
           >
@@ -119,6 +131,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
           <button
             className="onboarding-btn secondary"
             onClick={onSkip}
+            disabled={!ageAcknowledged}
             aria-label="Skip provider setup"
           >
             Skip for Now

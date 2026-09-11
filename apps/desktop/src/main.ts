@@ -32,6 +32,7 @@ interface ProjectInfo {
 const RECENT_PROJECTS_KEY = "codeforge:recent-projects";
 const PROVIDER_CREDENTIALS_KEY = "codeforge:provider-credentials";
 const ONBOARDING_COMPLETED_KEY = "codeforge:onboarding-completed";
+const AGE_POLICY_ACKNOWLEDGED_KEY = "codeforge:age-policy:desktop-byok-beta-r1";
 const ALLOWED_PROVIDER_IDS = new Set(["opencode", "openrouter"]);
 const MAX_API_KEY_LENGTH = 512;
 const SETTINGS_FILE = "settings.json";
@@ -287,6 +288,16 @@ function setOnboardingCompleted(completed: boolean): void {
   if (typeof completed !== "boolean") throw new Error("Invalid onboarding value");
   const settings = readSettings();
   settings[ONBOARDING_COMPLETED_KEY] = completed;
+  writeSettingsAtomic(settings);
+}
+
+function getAgePolicyAcknowledged(): boolean {
+  return readSettings()[AGE_POLICY_ACKNOWLEDGED_KEY] === true;
+}
+
+function acknowledgeAgePolicy(): void {
+  const settings = readSettings();
+  settings[AGE_POLICY_ACKNOWLEDGED_KEY] = true;
   writeSettingsAtomic(settings);
 }
 
@@ -856,4 +867,10 @@ ipcMain.handle("onboarding:getCompleted", async () => {
 ipcMain.handle("onboarding:setCompleted", async (_event, completed: boolean) => {
   if (typeof completed !== "boolean") throw new Error("Invalid onboarding value");
   setOnboardingCompleted(completed);
+});
+
+ipcMain.handle("age-policy:getAcknowledged", async () => getAgePolicyAcknowledged());
+
+ipcMain.handle("age-policy:acknowledge", async () => {
+  acknowledgeAgePolicy();
 });

@@ -29,10 +29,13 @@ export default function WelcomeScreen({
   const checkOnboardingState = async () => {
     try {
       let onboardingCompleted = false;
+      let agePolicyAcknowledged = false;
       if (window.electronAPI?.getOnboardingCompleted) {
         onboardingCompleted = await window.electronAPI.getOnboardingCompleted();
+        agePolicyAcknowledged = await window.electronAPI.getAgePolicyAcknowledged();
       } else {
         onboardingCompleted = localStorage.getItem("codeforge:onboarding-completed") === "true";
+        agePolicyAcknowledged = localStorage.getItem("codeforge:age-policy:desktop-byok-beta-r1") === "true";
       }
 
       if (window.electronAPI) {
@@ -40,7 +43,7 @@ export default function WelcomeScreen({
         const hasCredentials = Object.values(status).some(Boolean);
         setHasConfiguredProvider(hasCredentials);
 
-        if (!onboardingCompleted && !hasCredentials) {
+        if (!onboardingCompleted || !agePolicyAcknowledged) {
           setShowOnboarding(true);
         }
       }
@@ -49,13 +52,19 @@ export default function WelcomeScreen({
     }
   };
 
-  const handleOnboardingComplete = () => {
+  const handleOnboardingComplete = async () => {
+    await window.electronAPI?.acknowledgeAgePolicy();
     setShowOnboarding(false);
     setShowProviderSetup(true);
   };
 
   const handleOnboardingSkip = async () => {
     try {
+      if (window.electronAPI?.acknowledgeAgePolicy) {
+        await window.electronAPI.acknowledgeAgePolicy();
+      } else {
+        localStorage.setItem("codeforge:age-policy:desktop-byok-beta-r1", "true");
+      }
       if (window.electronAPI?.setOnboardingCompleted) {
         await window.electronAPI.setOnboardingCompleted(true);
       } else {

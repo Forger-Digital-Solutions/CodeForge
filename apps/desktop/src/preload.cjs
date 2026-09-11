@@ -40,6 +40,12 @@ const api = {
   setOnboardingCompleted: (completed) => {
     return ipcRenderer.invoke("onboarding:setCompleted", completed);
   },
+  getAgePolicyAcknowledged: () => {
+    return ipcRenderer.invoke("age-policy:getAcknowledged");
+  },
+  acknowledgeAgePolicy: () => {
+    return ipcRenderer.invoke("age-policy:acknowledge");
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);

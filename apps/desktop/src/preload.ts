@@ -40,6 +40,12 @@ const api = {
   setOnboardingCompleted: (completed: boolean): Promise<void> => {
     return ipcRenderer.invoke("onboarding:setCompleted", completed);
   },
+  getAgePolicyAcknowledged: (): Promise<boolean> => {
+    return ipcRenderer.invoke("age-policy:getAcknowledged");
+  },
+  acknowledgeAgePolicy: (): Promise<void> => {
+    return ipcRenderer.invoke("age-policy:acknowledge");
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);
