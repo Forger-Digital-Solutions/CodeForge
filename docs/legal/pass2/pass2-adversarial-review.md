@@ -8,7 +8,7 @@
 ## Executive Summary
 The Pass 2 independent adversarial review of CodeForge has concluded. Pass 2 systematically challenged the conclusions of the Pass 1 audit, directly verifying source code architectures, dependency packaging, and the text of third-party provider agreements.
 
-Pass 1 provided a useful baseline but fundamentally erred by treating CodeForge uniformly as a centralized SaaS application. CodeForge's desktop-first architecture (local SQLite, user-supplied API keys) fundamentally shifts legal liability away from CodeForge and onto the user for large swaths of operation. 
+Pass 1 provided a useful baseline but fundamentally erred by treating CodeForge uniformly as a centralized SaaS application. CodeForge's desktop-first architecture (local SQLite, user-supplied API keys) fundamentally shifts legal liability away from CodeForge and onto the user for large swaths of operation.
 
 However, Pass 2 confirmed that if CodeForge launches its **Cloud API** layer, significant GDPR liabilities apply. Furthermore, Pass 2 discovered a critical technical blocker regarding Google Gemini authentication that Pass 1 missed entirely.
 
@@ -16,7 +16,7 @@ However, Pass 2 confirmed that if CodeForge launches its **Cloud API** layer, si
 
 ### 1. Privacy & Data Deletion (GDPR / CCPA)
 - **Pass 1 Error:** Claimed GDPR Art. 17 and CCPA demanded immediate deletion mechanisms for the entire application.
-- **Pass 2 Reality:** CCPA is inapplicable (thresholds unmet). GDPR Art. 17 is inapplicable to the local Desktop app (CodeForge is not the controller of the user's hard drive). 
+- **Pass 2 Reality:** CCPA is inapplicable (thresholds unmet). GDPR Art. 17 is inapplicable to the local Desktop app (CodeForge is not the controller of the user's hard drive).
 - **The True Risk:** GDPR Art. 17 *does* apply to the Cloud API (PostgreSQL). The lack of `DELETE /api/account` is a **P0 blocker** only if the Cloud API is launched to EEA users.
 
 ### 2. Provider Terms (OpenRouter & Gemini)

@@ -36,7 +36,7 @@ This document logs the independent verification of every primary legal source ci
 ## 5. CodeForge Monorepo / Desktop Release
 - **Source:** `g:\CodeForge`
 - **Status:** `SOURCE_CHANGED / RE-EVALUATED`
-- **Verification Details:** 
+- **Verification Details:**
   - Pass 1 claimed 20 internal packages lacked a license field. Pass 2 found **39** via `asar` extraction and local `package.json` scanning.
   - Pass 1 claimed Zero Telemetry. Pass 2 verified `@codeforge/telemetry` exists but is an empty, non-transmitting stub class.
   - Pass 1 claimed no `DELETE /api/sessions`. Pass 2 confirmed via `Select-String` search.

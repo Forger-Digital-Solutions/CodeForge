@@ -1,0 +1,139 @@
+{
+  "auditMetadata": {
+    "reportTitle": "CodeForge Pass 1 Legal & Commercial Release Readiness Audit Report",
+    "auditDate": "2026-09-10",
+    "auditor": "Primary Audit Agent (Pass 1)",
+    "pipelinePhase": "PASS_1",
+    "verdict": "CODEFORGE_LEGAL_PASS1_READY_FOR_INDEPENDENT_REVIEW",
+    "repositoryRoot": "G:\\CodeForge"
+  },
+  "repositoryArchitecture": {
+    "monorepoWorkspaces": 39,
+    "applications": ["apps/desktop", "apps/cloud-api", "apps/web"],
+    "packagedDesktopArtifact": "apps/desktop/release/win-unpacked/resources/app.asar",
+    "electronVersion": "33.4.11",
+    "databaseEngines": {
+      "local": "SQLite via node:sqlite / better-sqlite3",
+      "cloud": "PostgreSQL via pg pool (7 migrations)"
+    }
+  },
+  "dataFlowAndRetention": {
+    "mode": "Dual-Mode (Desktop Local-First vs Cloud Authenticated)",
+    "desktopTelemetryEgress": false,
+    "credentialStorage": "Windows DPAPI (safeStorage)",
+    "secretRedactionActive": true,
+    "retentionPolicyStatus": "RETENTION_POLICY_UNDEFINED",
+    "localSessionDeletionEndpoint": false,
+    "cloudAccountDeletionEndpoint": false
+  },
+  "openSourceLicensing": {
+    "totalManifestDependencies": 686,
+    "packagedAsarDependencies": 47,
+    "packagedCopyleftDependencies": 0,
+    "packagedLicenseBreakdown": {
+      "MIT": 33,
+      "ISC": 8,
+      "Apache-2.0": 3,
+      "BSD-3-Clause": 1,
+      "Permissive-Dual": 2
+    },
+    "rootLicenseFilePresent": false,
+    "internalPackagesWithMissingLicenseField": 20
+  },
+  "legalP0Blockers": [
+    {
+      "code": "LEGAL-P0-01",
+      "title": "Root LICENSE File Missing from Repository Root",
+      "severity": "LEGAL-P0",
+      "scope": "Open-Source Distribution",
+      "remediation": "Commit canonical MIT License text to repository root and add license field to packages/*/package.json upon authorization."
+    },
+    {
+      "code": "LEGAL-P0-02",
+      "title": "Absence of User Data Deletion & Automated Retention (RETENTION_POLICY_UNDEFINED)",
+      "severity": "LEGAL-P0",
+      "scope": "Hosted Cloud API & Multi-Tenant Database",
+      "remediation": "Implement local session deletion route, cloud account deletion cascade, and automated 30-day TTL purge before commercial cloud launch."
+    },
+    {
+      "code": "LEGAL-P0-03",
+      "title": "OpenRouter Standard Terms Resale Restriction (OPENROUTER_STANDARD_TERMS_COMMERCIAL_ROUTING_REVIEW_REQUIRED)",
+      "severity": "LEGAL-P0",
+      "scope": "Hosted Multi-Tenant Cloud Execution",
+      "remediation": "Maintain Desktop as client-side BYOK; restrict hosted multi-tenant cloud proxying until enterprise reseller agreement is executed."
+    },
+    {
+      "code": "LEGAL-P0-04",
+      "title": "Google Gemini Unpaid Services Regional Restriction in EEA, UK & Switzerland",
+      "severity": "LEGAL-P0",
+      "scope": "Google Gemini Free API Routes",
+      "remediation": "Deploy geo-blocking to disable Gemini Unpaid routes for users in EEA/UK/CH; mandate Paid Services keys in these jurisdictions."
+    }
+  ],
+  "legalP1Risks": [
+    {
+      "code": "LEGAL-P1-01",
+      "title": "Minimum Age & Upstream Provider Alignment",
+      "severity": "LEGAL-P1",
+      "remediation": "Resolve business decision on 18+ eligibility; implement age gate or onboarding confirmation."
+    },
+    {
+      "code": "LEGAL-P1-02",
+      "title": "FTC Green Guides Exposure for ForgeGreen Claims",
+      "severity": "LEGAL-P1",
+      "remediation": "Adhere strictly to docs/forgegreen.md L143; eliminate quantitative carbon reduction claims."
+    },
+    {
+      "code": "LEGAL-P1-03",
+      "title": "Unsandboxed Host OS Autonomous Execution Liability",
+      "severity": "LEGAL-P1",
+      "remediation": "Require user confirmation before Full-Auto mode; prominently present AI Output Disclaimer."
+    },
+    {
+      "code": "LEGAL-P1-04",
+      "title": "CodeForge Trademark Clearance Defect",
+      "severity": "LEGAL-P1",
+      "remediation": "Conduct comprehensive software trademark search across USPTO and international classes."
+    },
+    {
+      "code": "LEGAL-P1-05",
+      "title": "Third-Party Model Provider Logos in UI",
+      "severity": "LEGAL-P1",
+      "remediation": "Include nominative fair use disclaimers in UI Model Selector."
+    },
+    {
+      "code": "LEGAL-P1-06",
+      "title": "Stripe Test Mode to Live Mode Migration",
+      "severity": "LEGAL-P1",
+      "remediation": "Complete merchant underwriting; transition from test to live keys; activate auto-renewal terms."
+    }
+  ],
+  "documentsCreated": [
+    "docs/legal/README.md",
+    "docs/legal/product-fact-ledger.md",
+    "docs/legal/data-flow-inventory.md",
+    "docs/legal/third-party-services-register.md",
+    "docs/legal/provider-terms-register.md",
+    "docs/legal/model-license-register.md",
+    "docs/legal/open-source-license-audit.md",
+    "docs/legal/asset-provenance-audit.md",
+    "docs/legal/claims-substantiation-audit.md",
+    "docs/legal/attorney-review-issues.md",
+    "docs/legal/unresolved-legal-facts.md",
+    "docs/legal/source-register.md",
+    "docs/legal/commercial-launch-checklist.md",
+    "docs/legal/handoff-to-independent-review.md",
+    "docs/legal/handoff-to-final-review.md",
+    "docs/legal/pass1-legal-readiness-report.md",
+    "docs/legal/pass1-legal-readiness-report.json",
+    "docs/legal/drafts/terms-of-service.md",
+    "docs/legal/drafts/privacy-policy.md",
+    "docs/legal/drafts/acceptable-use-policy.md",
+    "docs/legal/drafts/ai-output-disclaimer.md",
+    "docs/legal/drafts/subscription-billing-terms.md",
+    "docs/legal/drafts/desktop-software-license.md",
+    "docs/legal/drafts/third-party-notices.md",
+    "docs/legal/drafts/security-disclosure.md",
+    "docs/legal/drafts/dmca-copyright-policy.md"
+  ]
+}

@@ -13,7 +13,7 @@ Pass 1 correctly identified the missing root `LICENSE`. Pass 2 emphasizes the sc
 ## 2. Cloud Proxy vs. BYOK Strategy (P1)
 Pass 2 identified significant Terms of Service friction if CodeForge operates a centralized Cloud API that aggregates users and proxies requests to OpenRouter or Gemini (ForgeZero).
 - **The Decision:** Will CodeForge launch as a purely "Bring Your Own Key" (BYOK) thick-client desktop application, OR will it launch with the centralized Cloud API enabled?
-- **Why it matters now:** 
+- **Why it matters now:**
   - If pure BYOK: CodeForge avoids OpenRouter "reselling/aggregation" bans, avoids GDPR cloud liabilities, and pushes Gemini EEA compliance onto the user.
   - If Cloud Proxy: CodeForge MUST build GDPR deletion pipelines, MUST geoblock EEA users from Gemini Unpaid, and MUST seek an Enterprise Agreement with OpenRouter.
 

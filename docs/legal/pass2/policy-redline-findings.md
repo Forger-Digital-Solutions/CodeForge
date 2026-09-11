@@ -16,7 +16,7 @@ The Pass 1 drafts suffer from the same architectural misunderstanding as the Pas
 
 ## 2. Privacy Policy (`privacy-policy.md`)
 - **Flaw:** Claims CodeForge processes "all chat logs" and promises GDPR compliance for them.
-- **Redline Required:** 
+- **Redline Required:**
   1. Clearly state that local sessions are stored on the user's device and CodeForge cannot delete them remotely.
   2. Clarify that GDPR Data Subject Requests (DSRs) apply *only* to Cloud Accounts and telemetry (if ever enabled).
 - **Flaw:** Fails to disclose Google's Unpaid Tier training practices.
