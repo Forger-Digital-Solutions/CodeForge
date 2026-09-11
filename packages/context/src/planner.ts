@@ -42,6 +42,28 @@ export interface ContextPlanRequest {
   narrowCandidateLimit?: number;
   /** Advisory breadth requested by FG-4; capacity remains authoritative for delivery. */
   minimumLevel?: ContextLevel;
+  /** Real signal — supplied by the caller from an active dependency, a current verification
+   * obligation, or an explicit user request — of which one-hop prefetch target paths are
+   * genuinely required right now. The planner never infers this itself: omitting the field
+   * entirely (vs. supplying an empty list) is the difference between "no signal available"
+   * (each candidate classifies `INSUFFICIENT`) and "checked, nothing is required" (`SAFE`). */
+  requiredPaths?: readonly string[];
+}
+
+/** One-hop prefetch candidate outcome (FG-11 amendment §3): the planner is the sole authority
+ * for both dimensions — ForgeGreen's shadow Candidate C observer consumes this unmodified and
+ * never derives its own optionality judgment from downstream signals like later file selection. */
+export type ContextPageAvailability = "PULLED" | "OMITTED" | "REUSED";
+export type ContextPageOptionality = "SAFE" | "REQUIRED" | "INSUFFICIENT";
+
+export interface ContextPageClassification {
+  pageId: ContextPageId;
+  filePath: string;
+  availability: ContextPageAvailability;
+  optionality: ContextPageOptionality;
+  /** The page's own content-identity hashes (`ContextPage.provenance.contentHashes`), joined —
+   * the same value that invalidates the page on a real content change. */
+  contentHash: string;
 }
 
 export interface ContextPlanSection {
@@ -70,6 +92,9 @@ export interface ContextPlanResult {
   activeTargetChunks: ContextChunk[];
   pagesReused: ContextPageId[];
   pagesPulled: ContextPageId[];
+  /** Planner-owned per-page availability/optionality classification for one-hop prefetch
+   * candidates (FG-11 amendment §3). Additive: empty when no prefetch ran. */
+  pageClassifications: ContextPageClassification[];
   tokenEstimate: number;
   truncated: boolean;
   capacity: ContextCapacity;
@@ -116,6 +141,9 @@ interface PrefetchOutcome {
    * budget could not hold them. Never speculative: dedup skips (loop protection) are not
    * omissions and are not counted. */
   omitted: number;
+  /** Planner-owned classification for every candidate actually built and measured (excludes
+   * same-turn dedup skips — those are loop protection, not an observable prefetch event). */
+  classifications: ContextPageClassification[];
 }
 
 export class ContextPlanner {
@@ -140,6 +168,7 @@ export class ContextPlanner {
     let activeTargetChunks: ContextChunk[] = [];
     const pagesReused: ContextPageId[] = [];
     const pagesPulled: ContextPageId[] = [];
+    const pageClassifications: ContextPageClassification[] = [];
     let omittedOptionalPages = 0;
     let reasonCodes: string[] = ["RUNTIME_KERNEL"];
     let repositoryGeneration = 1;
@@ -185,6 +214,7 @@ export class ContextPlanner {
             }
             pagesReused.push(...prefetch.reused);
             pagesPulled.push(...prefetch.pulled);
+            pageClassifications.push(...prefetch.classifications);
             omittedOptionalPages += prefetch.omitted;
             truncated = truncated || prefetch.anyTruncated;
           }
@@ -234,7 +264,7 @@ export class ContextPlanner {
       omittedOptionalPages,
     };
 
-    return { level, sections, prompt, selectedFiles, activeTargetChunks, pagesReused, pagesPulled, tokenEstimate, truncated, capacity: request.capacity, receipt };
+    return { level, sections, prompt, selectedFiles, activeTargetChunks, pagesReused, pagesPulled, pageClassifications, tokenEstimate, truncated, capacity: request.capacity, receipt };
   }
 
   /**
@@ -249,32 +279,43 @@ export class ContextPlanner {
   }
 
   private async prefetchOneHop(request: ContextPlanRequest, targetFiles: string[], budget: number): Promise<PrefetchOutcome> {
-    if (!request.intelligence || targetFiles.length === 0) return { reused: [], pulled: [], anyTruncated: false, omitted: 0 };
+    if (!request.intelligence || targetFiles.length === 0) return { reused: [], pulled: [], anyTruncated: false, omitted: 0, classifications: [] };
     const reused: ContextPageId[] = [];
     const pulled: ContextPageId[] = [];
+    const classifications: ContextPageClassification[] = [];
     const lines: string[] = [];
     let anyTruncated = false;
     let omitted = 0;
     let used = 0;
+    // Undefined `requiredPaths` means the caller supplied no real required-ness signal at all —
+    // every candidate classifies INSUFFICIENT rather than a forced SAFE (FG-11 amendment §3).
+    const hasRequiredSignal = request.requiredPaths !== undefined;
+    const optionalityFor = (filePath: string): ContextPageOptionality =>
+      !hasRequiredSignal ? "INSUFFICIENT" : request.requiredPaths!.includes(filePath) ? "REQUIRED" : "SAFE";
     for (const filePath of targetFiles) {
       const result = await buildDependencyNeighborhoodPage(request.intelligence, filePath, request.pageStore);
       if (!result) continue;
       const { page, reused: wasReused } = result;
+      // Same-turn dedup (loop protection) — not an observable prefetch event, never classified.
       if (this.suppliedPageIds.has(page.id)) continue;
+      const optionality = optionalityFor(filePath);
+      const contentHash = page.provenance.contentHashes.join(",");
       const rendered = renderDependencyNeighborhood(page);
       const tokens = estimateTokens(rendered);
       if (used + tokens > budget) {
         anyTruncated = true;
         omitted += 1;
+        classifications.push({ pageId: page.id, filePath, availability: "OMITTED", optionality, contentHash });
         continue;
       }
       this.suppliedPageIds.add(page.id);
       (wasReused ? reused : pulled).push(page.id);
+      classifications.push({ pageId: page.id, filePath, availability: wasReused ? "REUSED" : "PULLED", optionality, contentHash });
       lines.push(rendered);
       used += tokens;
       anyTruncated = anyTruncated || page.data.dependenciesTruncated || page.data.dependentsTruncated || page.data.testsTruncated;
     }
-    if (lines.length === 0) return { reused, pulled, anyTruncated, omitted };
+    if (lines.length === 0) return { reused, pulled, anyTruncated, omitted, classifications };
     return {
       section: {
         title: "structural_neighbors",
@@ -286,6 +327,7 @@ export class ContextPlanner {
       pulled,
       anyTruncated,
       omitted,
+      classifications,
     };
   }
 }

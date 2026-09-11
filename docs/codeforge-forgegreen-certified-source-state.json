@@ -1,22 +1,37 @@
 {
-  "sourceStateId": "b2953f62172d2ccafb534322d709bd490be9cc6a41829c91f1794973906c47cd",
-  "surfaceVersion": "fg10u-certified-v1",
+  "sourceStateId": "f9cb465db299648b01593111f3ebbfd90a8c2bc98b84f08a44ba051bb8d4c36a",
+  "surfaceVersion": "fg11-certified-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
   "recoveryBranch": "forger-digital-solutions-forgegreen-certified",
+  "idAlgorithm": "sha256(JSON.stringify(materialFiles sorted lexicographically, each as [path, gitBlobHash]))",
   "materialFiles": [
+    "packages/context/src/planner.ts",
     "packages/forge-green/src/optimization-candidate-a.ts",
     "packages/forge-green/src/optimization-candidates-shadow.ts",
     "packages/forge-green/src/optimization-decision.ts",
     "packages/forge-green/src/optimization-policy.ts",
     "packages/forge-green/src/optimization-types.ts",
-    "packages/workflow/src/forge-verify.ts",
-    "packages/server/src/forge-verify-persistence.ts",
-    "packages/server/src/agent-runtime.ts",
+    "packages/router/package.json",
     "packages/router/src/index.ts",
-    "packages/router/package.json"
+    "packages/server/src/agent-runtime.ts",
+    "packages/server/src/forge-verify-persistence.ts",
+    "packages/workflow/src/forge-verify.ts"
   ],
+  "materialFileHashes": {
+    "packages/context/src/planner.ts": "5cab4794355d06008e044ddd80ac1b560ec0f793",
+    "packages/forge-green/src/optimization-candidate-a.ts": "9588953b177b1a4864b76a7e8171f8998664b716",
+    "packages/forge-green/src/optimization-candidates-shadow.ts": "c7c20bad5e7f1f8cfdbe29fbae0b40528b8aa302",
+    "packages/forge-green/src/optimization-decision.ts": "940ab41951d0cae123e82decb8f9d4b0c2e40e05",
+    "packages/forge-green/src/optimization-policy.ts": "10080c5e77f96da4c822678f2644a2d5f426b104",
+    "packages/forge-green/src/optimization-types.ts": "1539abf45eaf618db3c2a68cf398b2320db5e7bd",
+    "packages/router/package.json": "5074d0197bcaeb493928901ec4a63c2fb8edc2ea",
+    "packages/router/src/index.ts": "c2dc773f2ce117e5047db273d56c71eb5e10f6dc",
+    "packages/server/src/agent-runtime.ts": "72a9690242f2f0cd0defa32fca5b77db22ec4795",
+    "packages/server/src/forge-verify-persistence.ts": "813546f2e94bcf679080d8fc3635bf735314f1fe",
+    "packages/workflow/src/forge-verify.ts": "654afd2c1151402af0059ee29408d6ba8ebc09ce"
+  },
   "candidateA": {
     "kind": "DUPLICATE_READ_ONLY_TOOL_REUSE",
     "status": "ACTIVE_SAFE"
@@ -37,7 +52,13 @@
     "canonicalEvidence": [
       "required",
       "alreadyValidlyAvailable"
-    ]
+    ],
+    "plannerAuthority": {
+      "source": "packages/context/src/planner.ts: ContextPlanner.prefetchOneHop -> ContextPageClassification[]",
+      "availability": ["PULLED", "OMITTED", "REUSED"],
+      "optionality": ["SAFE", "REQUIRED", "INSUFFICIENT"],
+      "note": "ForgeGreen observes this classification; it does not compute it. Absence of a real required-ness signal from the caller yields INSUFFICIENT, never a forced SAFE."
+    }
   },
   "candidateD": {
     "kind": "VERIFICATION_EVIDENCE_REUSE",
@@ -48,7 +69,31 @@
       "policyRevision",
       "dependencyStateHash",
       "forgeVerifyConfirmedValid"
-    ]
+    ],
+    "validityAuthority": {
+      "source": "packages/workflow/src/forge-verify.ts: isEvidenceCurrentlyValid(evidence, current)",
+      "note": "summarizeVerification and any external shadow observer both call this single exported function; neither maintains an independent copy of the validity rule."
+    }
   },
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-10R implementation surface present on the recovered lineage."
+  "recertification": {
+    "reason": "FG-11 amendment (Candidate C authority extraction, Candidate D canonical validity helper extraction): both changes are additive/behavior-preserving extensions of the certified fg10u-certified-v1 surface, not a detector-semantics redesign.",
+    "priorSourceStateId": "b2953f62172d2ccafb534322d709bd490be9cc6a41829c91f1794973906c47cd",
+    "priorSurfaceVersion": "fg10u-certified-v1",
+    "changes": [
+      {
+        "file": "packages/context/src/planner.ts",
+        "change": "Added ContextPageAvailability/ContextPageOptionality types, ContextPageClassification (pageId, filePath, availability, optionality, contentHash), and a new `classifications`/`pageClassifications` field on prefetchOneHop's PrefetchOutcome / planNarrow's ContextPlanResult. Added optional ContextPlanRequest.requiredPaths input. All existing fields, exports, and call signatures unchanged.",
+        "addedToMaterialFiles": true
+      },
+      {
+        "file": "packages/workflow/src/forge-verify.ts",
+        "change": "Extracted isEvidenceCurrentlyValid(evidence, current) from the inline validity check inside summarizeVerification; summarizeVerification now calls it. No change to any exported type or the function's observable behavior.",
+        "addedToMaterialFiles": false
+      }
+    ],
+    "regressionEvidence": "packages/context + packages/workflow/test/cf17-forgeverify-replan.test.ts + fg1-canonical-cache + fg6-evidence-resolution: 10 files / 85 tests, 0 failed. Then full packages/forge-green + packages/workflow: 42 files / 274 tests, 0 failed. Root `tsc -b --force`: clean.",
+    "recertifiedAt": "2026-09-11",
+    "sourceStateConstant": "FG11_CAMPAIGN_SOURCE_STATE"
+  },
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-11 implementation surface present on the recovered lineage, including the FG-11 authority-extraction recertification above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm."
 }

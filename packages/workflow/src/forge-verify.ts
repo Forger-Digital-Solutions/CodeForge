@@ -406,6 +406,25 @@ export async function executeVerificationPlan(
   return { attempts: store.allAttempts(), evidence: store.allEvidence(), summary: summarizeVerification(plan, registry, store.allEvidence()) };
 }
 
+/**
+ * Canonical single-evidence validity rule (FG-11 amendment §4): an evidence record remains
+ * currently valid only when it passed AND was produced against the exact current input-state
+ * hash, definition digest, and workspace path. Extracted from `summarizeVerification`'s inline
+ * check so ForgeVerify itself and any external shadow observer (e.g. ForgeGreen's Candidate D
+ * campaign) consult the same authority instead of each maintaining their own copy of this rule.
+ */
+export function isEvidenceCurrentlyValid(
+  evidence: VerificationEvidence,
+  current: { workspacePath: string; inputStateHash: VerificationInputStateHash; definitionDigest: string },
+): boolean {
+  return (
+    evidence.status === "passed" &&
+    evidence.inputStateHash === current.inputStateHash &&
+    evidence.definitionDigest === current.definitionDigest &&
+    evidence.workspacePath === current.workspacePath
+  );
+}
+
 export function summarizeVerification(plan: VerificationPlan, registry: VerifierRegistry, evidence: readonly VerificationEvidence[], currentStateHash = createVerificationInputStateHash(plan.workspacePath)): VerificationSummary {
   const required = plan.verifiers.filter((planned) => planned.requirement === "required");
   const satisfiedEvidenceIds: VerificationEvidenceId[] = [];
@@ -418,7 +437,7 @@ export function summarizeVerification(plan: VerificationPlan, registry: Verifier
     const candidates = evidence.filter((item) => item.verifierId === planned.verifierId && item.verifierVersion === planned.verifierVersion);
     const definitionChanged = !currentDefinition || definitionDigest(currentDefinition) !== planned.definitionDigest || candidates.some((item) => item.definitionDigest !== planned.definitionDigest);
     const stale = currentStateHash !== plan.inputStateHash || candidates.some((item) => item.inputStateHash !== currentStateHash || item.workspacePath !== plan.workspacePath);
-    const passed = candidates.find((item) => item.status === "passed" && item.inputStateHash === currentStateHash && item.definitionDigest === planned.definitionDigest && item.workspacePath === plan.workspacePath);
+    const passed = candidates.find((item) => isEvidenceCurrentlyValid(item, { workspacePath: plan.workspacePath, inputStateHash: currentStateHash, definitionDigest: planned.definitionDigest }));
     if (passed && !definitionChanged && !stale) { satisfiedEvidenceIds.push(passed.evidenceId); continue; }
     missingRequiredVerifiers.push(planned.verifierId);
     if (definitionChanged) { staleCount += 1; reasons.push("definition_changed"); }

@@ -33,6 +33,7 @@ const packages = [
   "workflow",
   "eight-bit",
   "forge-green",
+  "forgegreen-campaign",
   "cloud-db",
   "cloud-auth",
   "cloud-entitlements",
