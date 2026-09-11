@@ -443,6 +443,21 @@ export interface CloudVerificationAttemptRecord {
   payload: Record<string, unknown>;
 }
 
+export interface AccountDeletionTableSummary {
+  table: string;
+  rowsDeleted: number;
+}
+
+/** Evidence that deleteUserAccount() completed, without retaining an inventory of the deleted
+ *  user's content (R1 legal remediation spec §85). */
+export interface AccountDeletionResult {
+  userId: string;
+  tables: AccountDeletionTableSummary[];
+  /** abuse_events rows are not deleted (no retention-duration decision exists yet — see
+   *  @codeforge/legal-policy RetentionClass "SECURITY_AUDIT"); their user_id link is severed. */
+  abuseEventsAnonymized: number;
+}
+
 export interface CloudVerificationEvidenceRecord {
   id: string;
   attemptId: string;

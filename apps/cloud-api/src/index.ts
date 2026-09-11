@@ -60,6 +60,7 @@ async function main() {
     maxRequestsPerMinute: config.rateLimits.maxRequestsPerMinute,
     requestTimeoutMs: config.requestTimeoutMs,
     trustProxy: config.trustProxy,
+    trustedRegionHeaderName: config.trustedRegionHeaderName,
   });
 
   const actualPort = await server.start(config.port, config.host);

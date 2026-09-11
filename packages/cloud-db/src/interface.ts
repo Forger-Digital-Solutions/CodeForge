@@ -30,6 +30,7 @@ import type {
   CloudVerificationPlanRecord,
   CloudVerificationAttemptRecord,
   CloudVerificationEvidenceRecord,
+  AccountDeletionResult,
 } from "./types.js";
 
 /**
@@ -208,6 +209,20 @@ export interface ICloudDatabase {
 
   // Abuse
   recordAbuseEvent(params: { userId?: string; ipAddress?: string; eventType: string; details?: string }): Promise<AbuseEventRecord>;
+
+  /**
+   * GDPR Article 17 erasure (LEG-P0-02). Deletes every row in this package's schema that
+   * identifies the account — explicitly, table by table, rather than relying on ON DELETE CASCADE
+   * (which SQLite does not enforce unless its `foreign_keys` pragma is turned on, unlike
+   * PostgreSQL) — so behavior is identical and independently auditable on both backends. Runs as
+   * one transaction: a failure partway through leaves the account exactly as it was, never
+   * partially deleted. Rows this package classifies as SECURITY_AUDIT / BILLING_RECORD retention
+   * (see @codeforge/legal-policy) are NOT deleted — only their identifying link to the account is
+   * severed (see abuseEventsAnonymized) — because no retention-duration decision has been made yet
+   * (R1 remediation spec §26-27). Idempotent: deleting an already-deleted/unknown userId returns
+   * zero counts rather than throwing, so a client retry after an ambiguous network failure is safe.
+   */
+  deleteUserAccount(userId: string): Promise<AccountDeletionResult>;
 
   // CF-11B: GitHub App Installation & Authorization
   createGitHubInstallation(params: {

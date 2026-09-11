@@ -274,6 +274,9 @@ export class SqliteSessionPersistence implements ISessionPersistence {
       VALUES ($sessionId, $data, $createdAt)
     `);
       this.statement("getEvents", "SELECT * FROM events WHERE sessionId = $sessionId ORDER BY id ASC");
+      // events has no FK/cascade back to sessions (unlike turns and work_items) — deleteSession()
+      // alone would silently orphan it. See account-deletion coordination in @codeforge/cloud-db.
+      this.statement("deleteEventsForSession", "DELETE FROM events WHERE sessionId = $sessionId");
     } catch (error) {
       this.db.close();
       throw error;
@@ -332,6 +335,10 @@ export class SqliteSessionPersistence implements ISessionPersistence {
 
   async deleteSession(id: string): Promise<void> {
     this.run("deleteSession", { $id: id });
+  }
+
+  async deleteEventsForSession(sessionId: string): Promise<void> {
+    this.run("deleteEventsForSession", { $sessionId: sessionId });
   }
 
   async upsertTurn(turn: TurnRecord): Promise<void> {

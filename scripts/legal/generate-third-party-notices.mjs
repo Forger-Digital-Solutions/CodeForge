@@ -1,0 +1,173 @@
+#!/usr/bin/env node
+// R1 legal remediation (LEG-P2-05 / ENG-generated): deterministic third-party notice generation
+// from the REAL packaged desktop dependency graph, per the R1 spec §45 instruction not to
+// hand-maintain a static package list. Also explicitly represents Electron/Chromium (bundled
+// automatically by electron-builder, not npm-resolved) and better-sqlite3 (the one native/
+// prebuilt-binary dependency the packaged app ships), per §46.
+//
+// Usage:
+//   node scripts/legal/generate-third-party-notices.mjs
+// Writes:
+//   docs/legal/remediation/third-party-notices-generated.md   (human-readable)
+//   docs/legal/remediation/third-party-notices-generated.json (machine-readable, for the release gate)
+
+import { execSync } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+const OUT_DIR = join(REPO_ROOT, "docs", "legal", "remediation");
+const OUT_MD = join(OUT_DIR, "third-party-notices-generated.md");
+const OUT_JSON = join(OUT_DIR, "third-party-notices-generated.json");
+
+const EXPLICIT_BUNDLED_COMPONENTS = [
+  {
+    name: "Electron",
+    version: "33.4.11",
+    license: "MIT",
+    note: "Bundled automatically by electron-builder as LICENSE.electron.txt in packaged output. Not npm-resolved as a runtime dependency of the app bundle itself.",
+  },
+  {
+    name: "Chromium (via Electron)",
+    version: "n/a — tracks the Electron release",
+    license: "BSD-3-Clause and others (see bundled LICENSES.chromium.html)",
+    note: "Bundled automatically by electron-builder as LICENSES.chromium.html in packaged output, covering Chromium, V8, ANGLE, SwiftShader, and other Chromium-project third-party code.",
+  },
+];
+
+function resolvePackageJson(name) {
+  const candidates = [
+    join(REPO_ROOT, "node_modules", ...name.split("/"), "package.json"),
+    join(REPO_ROOT, "apps", "desktop", "node_modules", ...name.split("/"), "package.json"),
+  ];
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return JSON.parse(readFileSync(candidate, "utf8"));
+  }
+  return null;
+}
+
+function licenseOf(pkgJson) {
+  if (!pkgJson) return "UNKNOWN";
+  if (typeof pkgJson.license === "string" && pkgJson.license.trim()) return pkgJson.license.trim();
+  if (pkgJson.license && typeof pkgJson.license === "object" && pkgJson.license.type) return pkgJson.license.type;
+  if (Array.isArray(pkgJson.licenses) && pkgJson.licenses.length > 0) {
+    return pkgJson.licenses.map((l) => l.type || l).join(" OR ");
+  }
+  return "UNKNOWN";
+}
+
+function collectThirdPartyDeps(tree) {
+  const versions = new Map(); // name -> Set<version>
+  function walk(depsObj) {
+    if (!depsObj) return;
+    for (const [name, info] of Object.entries(depsObj)) {
+      if (name.startsWith("@codeforge/") || name === "codeforge" || name === "codeforge-desktop") {
+        walk(info.dependencies);
+        continue;
+      }
+      if (!versions.has(name)) versions.set(name, new Set());
+      if (info.version) versions.get(name).add(info.version);
+      walk(info.dependencies);
+    }
+  }
+  walk(tree.dependencies);
+  return versions;
+}
+
+function main() {
+  mkdirSync(OUT_DIR, { recursive: true });
+
+  const raw = execSync("npm ls --workspace=codeforge-desktop --all --omit=dev --json", {
+    cwd: REPO_ROOT,
+    maxBuffer: 32 * 1024 * 1024,
+    encoding: "utf8",
+  });
+  const tree = JSON.parse(raw);
+  const versionsByName = collectThirdPartyDeps(tree);
+
+  const entries = [];
+  const declaredButNotInstalled = [];
+  for (const [name, versionSet] of [...versionsByName.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+    // npm ls includes optional peer dependencies that were declared but never actually installed
+    // (e.g. pg-native, an optional native accelerator for `pg` that this project does not build)
+    // — reported as a name with no resolved version. Nothing not actually on disk is shipped, so
+    // it does not belong in a notice about what the packaged app contains.
+    if (versionSet.size === 0) {
+      declaredButNotInstalled.push(name);
+      continue;
+    }
+    const pkgJson = resolvePackageJson(name);
+    const license = licenseOf(pkgJson);
+    entries.push({
+      name,
+      versions: [...versionSet].sort(),
+      license,
+      isNativeBinary: name === "better-sqlite3" || name === "bindings" || name === "file-uri-to-path",
+      reviewRequired: license === "UNKNOWN",
+    });
+  }
+
+  const reviewRequired = entries.filter((e) => e.reviewRequired);
+  const licenseGroups = new Map();
+  for (const e of entries) {
+    if (!licenseGroups.has(e.license)) licenseGroups.set(e.license, []);
+    licenseGroups.get(e.license).push(e);
+  }
+
+  const generatedAt = new Date().toISOString();
+  const lines = [];
+  lines.push("# CodeForge Desktop — Third-Party Notices (generated)");
+  lines.push("");
+  lines.push(`<!-- GENERATED by scripts/legal/generate-third-party-notices.mjs at ${generatedAt}. Do not hand-edit — re-run the script. -->`);
+  lines.push("");
+  lines.push(
+    "This file is generated from the real resolved production dependency graph of the `codeforge-desktop` " +
+      "workspace (`npm ls --workspace=codeforge-desktop --all --omit=dev`), not hand-maintained. " +
+      `${entries.length} third-party npm package(s) resolved.`,
+  );
+  lines.push("");
+  lines.push("## Bundled runtime components (not npm-resolved)");
+  lines.push("");
+  for (const c of EXPLICIT_BUNDLED_COMPONENTS) {
+    lines.push(`### ${c.name} (${c.version})`);
+    lines.push("");
+    lines.push(`License: ${c.license}`);
+    lines.push("");
+    lines.push(c.note);
+    lines.push("");
+  }
+  lines.push("## npm dependency graph, by license");
+  lines.push("");
+  for (const [license, group] of [...licenseGroups.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+    lines.push(`### ${license}${license === "UNKNOWN" ? " — REVIEW_REQUIRED" : ""}`);
+    lines.push("");
+    for (const e of group.sort((a, b) => a.name.localeCompare(b.name))) {
+      const nativeTag = e.isNativeBinary ? " *(native/prebuilt binary)*" : "";
+      lines.push(`- \`${e.name}\` ${e.versions.join(", ")}${nativeTag}`);
+    }
+    lines.push("");
+  }
+  writeFileSync(OUT_MD, lines.join("\n"), "utf8");
+  writeFileSync(
+    OUT_JSON,
+    JSON.stringify(
+      { generatedAt, source: "npm ls --workspace=codeforge-desktop --all --omit=dev", bundledComponents: EXPLICIT_BUNDLED_COMPONENTS, entries, declaredButNotInstalled },
+      null,
+      2,
+    ),
+    "utf8",
+  );
+
+  console.log(`[generate-third-party-notices] ${entries.length} third-party package(s) resolved, ${reviewRequired.length} with UNKNOWN license.`);
+  if (reviewRequired.length > 0) {
+    console.warn(`[generate-third-party-notices] REVIEW_REQUIRED: ${reviewRequired.map((e) => e.name).join(", ")}`);
+  }
+  if (declaredButNotInstalled.length > 0) {
+    console.log(`[generate-third-party-notices] declared-but-not-installed (excluded, not shipped): ${declaredButNotInstalled.join(", ")}`);
+  }
+  console.log(`[generate-third-party-notices] Wrote ${OUT_MD}`);
+  console.log(`[generate-third-party-notices] Wrote ${OUT_JSON}`);
+}
+
+main();

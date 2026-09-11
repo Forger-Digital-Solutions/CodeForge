@@ -17,6 +17,7 @@
     { "path": "../router" },
     { "path": "../providers" },
     { "path": "../model-registry" },
-    { "path": "../protocol" }
+    { "path": "../protocol" },
+    { "path": "../legal-policy" }
   ]
 }

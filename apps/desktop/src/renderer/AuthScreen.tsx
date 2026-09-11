@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface AuthScreenProps {
   onAuthenticated: () => void;
@@ -45,14 +45,37 @@ function CodeForgeMark(): React.ReactElement {
 export default function AuthScreen({ onAuthenticated }: AuthScreenProps): React.ReactElement {
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // R1 legal remediation: ENG-P1-02 (18+ age gate) and ENG-P1-03 (host-execution disclosure).
+  // Combined into one first-run acknowledgement rather than two separate prompts, per the
+  // instruction not to build a "giant legal modal" — this is the only gate every path through the
+  // app passes today, so it is where both disclosures live.
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [checkingAck, setCheckingAck] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const ack = await window.electronAPI?.getFirstRunLegalAck?.();
+        if (!cancelled) setAcknowledged(Boolean(ack));
+      } finally {
+        if (!cancelled) setCheckingAck(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const signIn = async (): Promise<void> => {
+    if (!acknowledged) return;
     setSigningIn(true);
     setError(null);
     try {
       if (!window.electronAPI?.signInWithCloud) {
         throw new Error("CodeForge authentication is unavailable in this build.");
       }
+      await window.electronAPI.setFirstRunLegalAck?.();
       const result = await window.electronAPI.signInWithCloud();
       if (!result.ok) {
         setError(describeSignInFailure(result.error));
@@ -74,7 +97,22 @@ export default function AuthScreen({ onAuthenticated }: AuthScreenProps): React.
         <h1 id="auth-title">Build software with AI.</h1>
         <p className="auth-subtitle">A free-first engineering workspace with durable, verifiable execution.</p>
         {error && <AuthErrorMessage message={error} />}
-        <button type="button" className="auth-github-button" onClick={() => void signIn()} disabled={signingIn}>
+        {!checkingAck && !acknowledged && (
+          <label className="auth-first-run-ack">
+            <input type="checkbox" checked={acknowledged} onChange={(e) => setAcknowledged(e.target.checked)} />
+            <span>
+              I am 18 years of age or older, and I understand CodeForge reads/writes files and runs commands on this
+              computer using my operating-system permissions. Review approval settings before allowing autonomous
+              actions.
+            </span>
+          </label>
+        )}
+        <button
+          type="button"
+          className="auth-github-button"
+          onClick={() => void signIn()}
+          disabled={signingIn || checkingAck || !acknowledged}
+        >
           <span className="github-glyph" aria-hidden="true">●</span>
           {signingIn ? "Opening GitHub…" : "Continue with GitHub"}
         </button>

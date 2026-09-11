@@ -60,6 +60,12 @@ jobs:
       - name: Build all workspaces
         run: npm run build
 
+      - name: Generate third-party notices
+        run: npm run legal:notices
+
+      - name: Legal release gate (R1 — desktop BYOK)
+        run: npm run audit:legal-release -- --mode=DESKTOP_BYOK_BETA
+
       - name: Test
         run: npm test
 

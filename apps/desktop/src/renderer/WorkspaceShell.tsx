@@ -129,6 +129,8 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
   });
   const [cloudAccount, setCloudAccount] = useState<any>(null);
   const [isQuotaExhaustedOpen, setIsQuotaExhaustedOpen] = useState(false);
+  const [deleteAccountStep, setDeleteAccountStep] = useState<"idle" | "confirm" | "deleting" | "error">("idle");
+  const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null);
   const [repositoryIndex, setRepositoryIndex] = useState<RepositoryIndexStatus>({ state: "NOT_INDEXED" });
   const [projectBranch, setProjectBranch] = useState<string>("");
 
@@ -191,6 +193,25 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
         setCloudAccount(acc);
       }
     } catch {}
+  };
+
+  // GDPR Article 17 erasure (LEG-P0-02). Two-step confirmation — no single click deletes an
+  // account — and honest about what is/isn't erased (R1 spec §29: never claim instant total
+  // erasure unless true; some categories are retained pending retention-policy decisions).
+  const deleteCloudAccount = async () => {
+    setDeleteAccountStep("deleting");
+    setDeleteAccountError(null);
+    try {
+      await window.electronAPI?.deleteCloudAccount?.();
+      setCloudAccount(null);
+      setIsQuotaExhaustedOpen(false);
+      setDeleteAccountStep("idle");
+      await refreshModelsAndHealth();
+      onSignedOut?.();
+    } catch (cause) {
+      setDeleteAccountError(cause instanceof Error ? cause.message : "Account deletion failed. Please try again.");
+      setDeleteAccountStep("error");
+    }
   };
 
   const refreshModelsAndHealth = useCallback(async () => {
@@ -586,6 +607,42 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
                 </select>
               </div>
               <ProviderSetup />
+
+              <div style={{ marginTop: 18, borderTop: "1px solid #2a2d33", paddingTop: 16 }}>
+                <div style={{ fontWeight: 600, marginBottom: 8 }}>Legal</div>
+                <div style={{ fontSize: 12, color: "var(--cf-text-muted)", marginBottom: 10, lineHeight: 1.5 }}>
+                  CodeForge reads/writes project files and runs commands on this computer using your
+                  operating-system permissions. Review your approval settings before allowing autonomous actions.
+                </div>
+                <div style={{ fontSize: 11, color: "var(--cf-text-muted)", marginBottom: 10, lineHeight: 1.5 }}>
+                  Legal documents (Terms of Service, Privacy Policy, Acceptable Use Policy, AI Output Disclaimer,
+                  Subscription &amp; Billing Terms, Desktop Software License, Third-Party Notices, Security
+                  Disclosure, DMCA Policy): <strong>Draft — not yet effective.</strong>
+                </div>
+                <div style={{ display: "flex", gap: 14, fontSize: 12 }}>
+                  <button
+                    style={{ background: "transparent", border: "none", color: "#60a5fa", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+                    onClick={() => void window.electronAPI?.openExternal?.("https://codeforge.dev/privacy")}
+                  >
+                    Privacy
+                  </button>
+                  <button
+                    style={{ background: "transparent", border: "none", color: "#60a5fa", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+                    onClick={() => void window.electronAPI?.openExternal?.("https://codeforge.dev/terms")}
+                  >
+                    Terms
+                  </button>
+                  <button
+                    style={{ background: "transparent", border: "none", color: "#60a5fa", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+                    onClick={() => {
+                      setIsSettingsOpen(false);
+                      setIsQuotaExhaustedOpen(true);
+                    }}
+                  >
+                    Account &amp; Deletion
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -677,6 +734,57 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
                     >
                       Sign Out
                     </button>
+                  </div>
+
+                  <div style={{ borderTop: "1px solid #374151", marginTop: "12px", paddingTop: "12px" }}>
+                    {deleteAccountStep === "idle" && (
+                      <button
+                        style={{ background: "transparent", border: "1px solid #7f1d1d", color: "#f87171", cursor: "pointer", fontSize: "12px", padding: "6px 10px", borderRadius: "6px", width: "100%" }}
+                        onClick={() => setDeleteAccountStep("confirm")}
+                      >
+                        Delete Account
+                      </button>
+                    )}
+                    {deleteAccountStep === "confirm" && (
+                      <div style={{ background: "#1f1315", border: "1px solid #7f1d1d", borderRadius: "8px", padding: "12px" }}>
+                        <div style={{ fontWeight: 600, color: "#f87171", marginBottom: "6px", fontSize: "13px" }}>
+                          Delete your CodeForge Cloud account?
+                        </div>
+                        <p style={{ color: "#d1a3a3", fontSize: "12px", lineHeight: 1.5, margin: "0 0 10px 0" }}>
+                          This deletes your account, hosted sessions, and billing/entitlement records from
+                          CodeForge Cloud. Some records (e.g. security/abuse logs) may be retained per policy.
+                          Local files on this computer are not affected. This does not delete your GitHub account.
+                        </p>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <button
+                            style={{ flex: 1, background: "#7f1d1d", color: "#fff", padding: "8px", borderRadius: "6px", border: "none", fontWeight: 600, cursor: "pointer", fontSize: "12px" }}
+                            onClick={() => void deleteCloudAccount()}
+                          >
+                            Yes, delete my account
+                          </button>
+                          <button
+                            style={{ flex: 1, background: "#374151", color: "#fff", padding: "8px", borderRadius: "6px", border: "none", cursor: "pointer", fontSize: "12px" }}
+                            onClick={() => setDeleteAccountStep("idle")}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    {deleteAccountStep === "deleting" && (
+                      <div style={{ color: "#9ca3af", fontSize: "12px", textAlign: "center" }}>Deleting account…</div>
+                    )}
+                    {deleteAccountStep === "error" && (
+                      <div>
+                        <div style={{ color: "#f87171", fontSize: "12px", marginBottom: "6px" }}>{deleteAccountError}</div>
+                        <button
+                          style={{ background: "transparent", border: "1px solid #374151", color: "#9ca3af", cursor: "pointer", fontSize: "12px", padding: "6px 10px", borderRadius: "6px" }}
+                          onClick={() => setDeleteAccountStep("idle")}
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (

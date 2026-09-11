@@ -6,6 +6,11 @@ import { FAILURE_POLICY, routeKeyOf, type EightBitRouteHealth, type FailureReaso
 const SUSTAINED_FAILURE_THRESHOLD = 3;
 const BASE_COOLDOWN_MS = 30_000;
 const MAX_COOLDOWN_MS = 15 * 60_000;
+/** Consecutive 401/403s before a route stops retrying automatically and requires explicit
+ * credential-change/recovery (R1 legal remediation spec §21-22, ENG-P2-03). Below this count, an
+ * AUTH_FAILURE still gets the normal bounded, time-limited cooldown — a single bad response (a
+ * transient upstream glitch reported as 401) must not instantly and permanently kill a route. */
+const AUTH_FAILURE_PERMANENT_SUSPEND_THRESHOLD = 3;
 
 /**
  * Classifies a raw error (message/status) into a `FailureReason`. Kept deliberately simple and
@@ -29,7 +34,25 @@ export function classifyFailure(error: unknown): FailureReason {
   return "UNKNOWN";
 }
 
+/**
+ * Not a real cooldown duration — a "forever" stand-in. Deliberately Number.MAX_SAFE_INTEGER
+ * rather than Infinity: this value gets persisted through EightBitDecisionStore as JSON
+ * (work_items.data JSONB), and JSON.stringify(Infinity) silently becomes `null`, which would
+ * corrupt the cooldown on the very next restart and let a permanently-suspended route retry
+ * again. isInCooldown() also checks `permanentlySuspended` directly as the authoritative signal,
+ * so this value is really only for display/debugging (e.g. an EightBitDecisionStore fixture must
+ * never accidentally hydrate a healthy-looking route from an out-of-range value here).
+ */
+const PERMANENT_SUSPEND_COOLDOWN_MS = Number.MAX_SAFE_INTEGER;
+
+function isPermanentAuthSuspension(reason: FailureReason, consecutiveFailures: number): boolean {
+  return reason === "AUTH_FAILURE" && consecutiveFailures >= AUTH_FAILURE_PERMANENT_SUSPEND_THRESHOLD;
+}
+
 function cooldownMsFor(reason: FailureReason, consecutiveFailures: number): number {
+  if (isPermanentAuthSuspension(reason, consecutiveFailures)) {
+    return PERMANENT_SUSPEND_COOLDOWN_MS;
+  }
   if (reason === "RATE_LIMITED" || reason === "QUOTA_EXHAUSTED") {
     return Math.min(MAX_COOLDOWN_MS, BASE_COOLDOWN_MS * 2 ** Math.min(5, consecutiveFailures - 1));
   }
@@ -87,6 +110,7 @@ export class EightBitHealthTracker {
 
   isInCooldown(providerId: string, modelId: string): boolean {
     const h = this.getHealth(providerId, modelId);
+    if (h.permanentlySuspended) return true;
     return h.cooldownUntil !== undefined && h.cooldownUntil > this.now();
   }
 
@@ -101,6 +125,9 @@ export class EightBitHealthTracker {
   recordFailure(providerId: string, modelId: string, reason: FailureReason): EightBitRouteHealth {
     const key = routeKeyOf(providerId, modelId);
     const prior = this.getHealth(providerId, modelId);
+    // A route already permanently suspended stays that way — credentials don't become valid
+    // again just because another request was attempted against them.
+    if (prior.permanentlySuspended) return prior;
     const consecutiveFailures = prior.consecutiveFailures + 1;
     const status = statusFor(reason, consecutiveFailures);
     const cooldownMs = cooldownMsFor(reason, consecutiveFailures);
@@ -112,10 +139,27 @@ export class EightBitHealthTracker {
       lastFailureAt: new Date(this.now()).toISOString(),
       cooldownUntil: cooldownMs > 0 ? this.now() + cooldownMs : prior.cooldownUntil,
       status,
+      permanentlySuspended: isPermanentAuthSuspension(reason, consecutiveFailures) || undefined,
     };
     this.routes.set(key, updated);
     this.applyToFirewall(updated);
     return updated;
+  }
+
+  /**
+   * Explicit recovery from a permanent auth suspension — the human-in-the-loop counterpart to
+   * recordFailure()'s automatic escalation. Call this when the user actually changes/re-enters
+   * the credential for `providerId` (R1 spec §21: "stop automatic retry → require credential
+   * change / explicit recovery"). A no-op if the route was never permanently suspended, so it is
+   * always safe to call unconditionally after any credential update.
+   */
+  clearPermanentSuspension(providerId: string, modelId: string): void {
+    const key = routeKeyOf(providerId, modelId);
+    const prior = this.routes.get(key);
+    if (!prior?.permanentlySuspended) return;
+    const cleared: EightBitRouteHealth = { providerId, modelId, consecutiveFailures: 0, status: "HEALTHY" };
+    this.routes.set(key, cleared);
+    this.firewall.markProviderHealth(providerId, "available");
   }
 
   /** A successful call clears the consecutive-failure streak (bounded retry succeeded /

@@ -19,6 +19,7 @@
     { "path": "../../packages/router" },
     { "path": "../../packages/providers" },
     { "path": "../../packages/protocol" },
-    { "path": "../../packages/sessions" }
+    { "path": "../../packages/sessions" },
+    { "path": "../../packages/legal-policy" }
   ]
 }

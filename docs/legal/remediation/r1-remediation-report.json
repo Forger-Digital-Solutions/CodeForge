@@ -1,0 +1,131 @@
+{
+  "milestone": "CodeForge Legal R1 Remediation",
+  "date": "2026-09-11",
+  "branch": "feat/codeforge-cloud",
+  "startingHead": "60f8b54",
+  "startingCommitMessage": "docs: complete CodeForge legal readiness review",
+  "scope": "Engineering remediation only. Does not certify legal compliance, replace counsel, or make business decisions.",
+  "authoritativeInputs": [
+    "docs/legal/pass3/final-issue-register.md",
+    "docs/legal/pass3/final-engineering-remediation-plan.md",
+    "docs/legal/pass3/final-provider-remediation-plan.md",
+    "docs/legal/pass3/final-business-decisions.md",
+    "docs/legal/pass3/final-policy-redlines.md",
+    "docs/legal/pass3/launch-readiness-matrix.md",
+    "docs/legal/pass3/handoff-to-remediation.md"
+  ],
+  "newPackages": ["@codeforge/legal-policy"],
+  "newFiles": [
+    "LICENSE.pending",
+    "packages/legal-policy/src/*.ts",
+    "packages/legal-policy/test/*.test.ts",
+    "packages/vscode/LICENSE.pending",
+    "packages/vscode/README.md",
+    "apps/cloud-api/src/account-deletion.ts",
+    "apps/cloud-api/test/account-deletion.test.ts",
+    "packages/cloud-db/test/account-deletion.test.ts",
+    "packages/cloud-gateway/test/provider-region-policy.test.ts",
+    "scripts/legal/normalize-package-licenses.mjs",
+    "scripts/legal/generate-third-party-notices.mjs",
+    "scripts/legal/audit-legal-release.mjs",
+    "docs/legal/remediation/r1-remediation-report.md",
+    "docs/legal/remediation/r1-remediation-report.json",
+    "docs/legal/remediation/r1-issue-disposition.md",
+    "docs/legal/remediation/third-party-notices-generated.md",
+    "docs/legal/remediation/third-party-notices-generated.json"
+  ],
+  "modifiedFiles": [
+    "packages/cloud-db/src/interface.ts", "packages/cloud-db/src/postgres.ts", "packages/cloud-db/src/sqlite.ts", "packages/cloud-db/src/types.ts",
+    "packages/sessions/src/interface.ts", "packages/sessions/src/persistence.ts", "packages/sessions/src/postgres-persistence.ts",
+    "packages/cloud-gateway/src/cloud-firewall.ts", "packages/cloud-gateway/src/gateway-service.ts",
+    "apps/cloud-api/src/config.ts", "apps/cloud-api/src/index.ts", "apps/cloud-api/src/server.ts", "apps/cloud-api/test/hosted-capacity.test.ts",
+    "packages/eight-bit/src/health.ts", "packages/eight-bit/src/types.ts", "packages/eight-bit/test/health.test.ts",
+    "apps/desktop/src/main.ts", "apps/desktop/src/preload.ts", "apps/desktop/src/preload.cjs",
+    "apps/desktop/src/renderer/AuthScreen.tsx", "apps/desktop/src/renderer/WorkspaceShell.tsx", "apps/desktop/src/renderer/styles.css",
+    "SECURITY.md", "package.json", "tsconfig.json", "vitest.config.ts", ".github/workflows/windows-desktop.yml",
+    "43 workspace package.json files (license normalization)"
+  ],
+  "schemaChanges": {
+    "newInterfaceMethod": "ICloudDatabase.deleteUserAccount(userId): Promise<AccountDeletionResult>",
+    "newSessionsMethod": "ISessionPersistence.deleteEventsForSession(sessionId): Promise<void>",
+    "migrations": "none — deleteUserAccount() operates on existing tables via explicit per-table DELETE/UPDATE, no schema migration required",
+    "newTypes": ["AccountDeletionResult", "AccountDeletionTableSummary"]
+  },
+  "providerPolicyRegistry": {
+    "recordCount": 10,
+    "providers": ["google-gemini", "openrouter", "groq", "cloudflare-workers-ai"],
+    "reviewHorizon": "2027-03-10",
+    "restrictedHostedRoutes": ["google-gemini/HOSTED_MULTI_TENANT/FREE (region-gated, EEA/UK/CH denied)", "google-gemini/HOSTED_MULTI_TENANT/PAID (denied, no Google Cloud DPA on file)", "openrouter/HOSTED_MULTI_TENANT/FREE (denied, no Enterprise Agreement on file)"]
+  },
+  "accountDeletion": {
+    "endpoint": "DELETE /v1/account",
+    "authRequired": "Bearer access token; userId sourced only from verified token",
+    "confirmationRequired": "DELETE_MY_ACCOUNT literal in request body",
+    "tablesDeleted": 16,
+    "tablesAnonymizedNotDeleted": ["abuse_events (user_id set NULL, row retained — SECURITY_AUDIT retention class)"],
+    "crossSchemaCoordination": "packages/sessions (hosted workflow sessions/turns/work_items/events) purged before packages/cloud-db transaction",
+    "idempotent": true,
+    "postgresProofObtained": true
+  },
+  "testEvidence": {
+    "legalPolicy": { "passed": 46, "failed": 0 },
+    "cloudGateway": { "passed": 25, "failed": 0 },
+    "combinedRealPostgres": { "packages": ["cloud-db", "sessions", "cloud-api", "eight-bit"], "files": 36, "passed": 316, "failed": 0 },
+    "fullRepoBuild": { "status": "pass", "errors": 0 },
+    "fullRepoTestSuite": { "passed": 1836, "skipped": 36, "failed": 1, "preExistingFailure": "tests/evidence/qualification-fixtures/patch-generation/test/config.test.ts", "preExistingFailureOriginCommit": "188fb73", "isRegression": false },
+    "secretScanOfDiff": { "realFindings": 0, "falsePositives": 2 }
+  },
+  "regressionFoundAndFixed": {
+    "file": "apps/cloud-api/test/hosted-capacity.test.ts",
+    "cause": "fixture incidentally used a fake OpenRouter provider for unrelated capacity-machinery testing; now correctly denied under the OpenRouter hosted-pooling restriction",
+    "fix": "switched fixture provider to Groq (unrestricted), preserving test intent",
+    "weakenedRestriction": false
+  },
+  "packagedBuild": {
+    "status": "BLOCKED",
+    "reason": "Local machine has Visual Studio 18 (VS2026) installed; @electron/rebuild's node-gyp cannot detect it, so better-sqlite3 cannot be rebuilt against Electron's ABI locally. Pre-existing, documented (same reason windows-desktop.yml pins windows-2022 runners), not a regression, not introduced by this milestone.",
+    "mitigatingEvidence": [
+      "full repo build/typecheck compiled production main.ts/preload.cjs/renderer bundle cleanly",
+      "real Electron capture harness exercised actual built renderer + actual preload.cjs with contextIsolation/sandbox/nodeIntegration settings matching production",
+      "packaged-browser-security.test.ts (pre-existing regression test) passing",
+      "legal release gate wired into windows-desktop.yml, will run on the compatible windows-2022 CI runner"
+    ]
+  },
+  "zeroSpendConfirmed": true,
+  "gates": {
+    "STARTING_STATE": "PASS",
+    "LICENSE_POLICY": "BLOCKED_BUSINESS_DECISION",
+    "PUBLIC_PACKAGE_LICENSES": "PASS",
+    "PROVIDER_POLICY_REGISTRY": "PASS",
+    "OPENROUTER_ARCHITECTURE_POLICY": "PASS",
+    "GEMINI_REGION_POLICY": "PASS",
+    "GEMINI_DATA_USE_DISCLOSURE": "PASS",
+    "EIGHT_BIT_AUTH_CIRCUIT_BREAKER": "PASS",
+    "CLOUD_ACCOUNT_DELETION": "PASS",
+    "POSTGRES_ERASURE_PROOF": "PASS",
+    "SESSION_DELETION": "PASS",
+    "RETENTION_POLICY_INFRASTRUCTURE": "PASS",
+    "LEGAL_VERSION_INFRASTRUCTURE": "PASS",
+    "ACCEPTANCE_INFRASTRUCTURE": "PASS",
+    "SETTINGS_LEGAL_UX": "PASS",
+    "HOST_EXECUTION_DISCLOSURE": "PASS",
+    "CLAIMS_REMEDIATION": "PASS",
+    "THIRD_PARTY_NOTICES": "PASS",
+    "RELEASE_LICENSE_AUDIT": "PASS",
+    "SBOM": "NOT_APPLICABLE",
+    "AUTHORITY_BOUNDARY_TESTS": "PASS",
+    "FOCUSED_TESTS": "PASS",
+    "FULL_BUILD": "PASS",
+    "FULL_TESTS": "PASS",
+    "PACKAGED_BUILD": "BLOCKED",
+    "PACKAGED_SECURITY": "NOT_APPLICABLE",
+    "PACKAGED_SMOKE": "BLOCKED",
+    "ZERO_NEW_PAID_INFERENCE": "PASS",
+    "SECRET_SCAN": "PASS",
+    "CLEAN_WORKTREE": "PASS_AFTER_COMMIT"
+  },
+  "verdict": "CODEFORGE_LEGAL_R1_REMEDIATION_CERTIFIED",
+  "verdictNote": "All engineering-authorized R1 requirements are complete and their tests pass. PACKAGED_BUILD/SMOKE are BLOCKED by a pre-existing local environment gap (Visual Studio 2026 vs. the windows-2022 CI runner this repo already pins for this exact reason), not by incomplete engineering work — the code and CI wiring are complete; only a local demonstration of packaging is blocked. This verdict means CodeForge passed the defined Legal R1 engineering controls. It does NOT mean CodeForge is legally certified.",
+  "remainingAttorneyQuestions": 7,
+  "remainingBusinessDecisions": "see r1-remediation-report.md section 14 and docs/legal/pass3/final-business-decisions.md"
+}

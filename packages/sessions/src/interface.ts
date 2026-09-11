@@ -19,6 +19,10 @@ export interface SessionPersistenceTx {
   getSession(id: string): Promise<SessionRecord | undefined>;
   listSessions(): Promise<SessionRecord[]>;
   deleteSession(id: string): Promise<void>;
+  /** events has no FK/cascade back to sessions (unlike turns and work_items) — deleteSession()
+   *  alone leaves it orphaned. Callers that need a session's data fully gone (e.g. GDPR account
+   *  erasure) must call this explicitly, ideally in the same withTransaction as deleteSession. */
+  deleteEventsForSession(sessionId: string): Promise<void>;
 
   upsertTurn(turn: TurnRecord): Promise<void>;
   getTurns(sessionId: string): Promise<TurnRecord[]>;

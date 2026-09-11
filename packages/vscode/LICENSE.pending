@@ -1,0 +1,20 @@
+CodeForge for VS Code — LICENSE (PENDING)
+===========================================
+
+STATUS: OWNER_AUTHORIZATION_REQUIRED — same unresolved fact as the repository root.
+
+This extension is part of the CodeForge monorepo and carries the same MIT license type declared
+in this package's own package.json ("license": "MIT"). The copyright HOLDER name for the MIT
+grant is not yet confirmed at the repository level — see /LICENSE.pending at the repository root
+for the full explanation and the canonical MIT text.
+
+Do not treat this file, or this package.json's "license": "MIT" field, as authorization to
+publish this extension to the VS Code Marketplace. Marketplace publication additionally requires:
+
+  - a resolved copyright holder (this file becomes LICENSE once /LICENSE.pending does)
+  - this package.json's "private": true to be deliberately removed
+  - a README.md for this package (the Marketplace renders it as the listing page — currently
+    absent; see docs/legal/remediation/r1-issue-disposition.md, LEG-P2-01)
+  - marketplace icon/gallery metadata (currently absent)
+
+`npm run audit:legal-release` fails closed on all of the above until they are resolved.

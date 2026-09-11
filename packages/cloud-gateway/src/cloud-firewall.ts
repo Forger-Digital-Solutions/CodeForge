@@ -1,6 +1,14 @@
 import { ForgeZero, FREE_ACCESS_CLASSES, type AccessClass, type FreeModelRecord, type ModelHealthState, type PrivacyMode, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
 import { InMemoryProviderCatalog, type ProviderAdapter } from "@codeforge/providers";
+import {
+  defaultEnterpriseOverride,
+  evaluateRouteEligibility,
+  type EnterpriseOverrideConfig,
+  type RegionResolution,
+  type RouteEligibilityDecision,
+  type ServiceTier,
+} from "@codeforge/legal-policy";
 
 export interface CloudKillSwitchConfig {
   hostedInferenceEnabled: boolean;
@@ -79,6 +87,12 @@ export interface CloudFirewallManagerOptions {
   killSwitches?: Partial<CloudKillSwitchConfig>;
   /** Global privacy routing mode applied to hosted-free eligibility. Default: undefined (all classes). */
   privacyMode?: PrivacyMode;
+  /**
+   * Trusted, server-sourced provider-agreement overrides (R1 remediation spec §19-20). Must be
+   * populated only from process-level configuration set at deployment — never from a request. No
+   * real agreement exists today, so the default is empty (every provider stays STANDARD_TERMS).
+   */
+  enterpriseOverrides?: Record<string, EnterpriseOverrideConfig>;
 }
 
 export class CloudFirewallManager {
@@ -88,9 +102,11 @@ export class CloudFirewallManager {
   private killSwitches: CloudKillSwitchConfig;
   /** Per-provider auth/health state feeding the orphan-model oracle. */
   private readonly providerState = new Map<string, "ok" | "auth_required">();
+  private readonly enterpriseOverrides: Record<string, EnterpriseOverrideConfig>;
 
   constructor(options?: CloudFirewallManagerOptions) {
     this.providerCatalog = new InMemoryProviderCatalog();
+    this.enterpriseOverrides = options?.enterpriseOverrides ?? {};
 
     // Orphan-model invariant: a hosted model is routable only when a provider adapter is registered
     // AND its credential still authenticates. A model whose provider has no adapter (GEMS, or a
@@ -187,6 +203,25 @@ export class CloudFirewallManager {
         accessClass: m.tier === "gems_paid" ? ("gems_paid" as const) : isFreeClass ? ("free" as const) : ("paid" as const),
         isEligibleFree: eligibleKeys.has(`${m.providerId}::${m.modelId}`) && m.tier !== "gems_paid",
       };
+    });
+  }
+
+  /**
+   * The product/provider-policy eligibility gate (R1 remediation spec §8): every hosted request
+   * this class serves is, by construction, HOSTED_MULTI_TENANT (CloudFirewallManager only ever
+   * backs the pooled Cloud Gateway — desktop BYOK never routes through here), so that architecture
+   * is fixed rather than accepted as a parameter. This is deliberately independent of ForgeZero's
+   * financial verification: it can DENY a route ForgeZero would otherwise consider $0-eligible
+   * (e.g. Gemini's unpaid tier in an EEA region), and it never grants financial eligibility itself.
+   */
+  checkProviderPolicy(candidate: { providerId: string; serviceTier: ServiceTier }, region: RegionResolution): RouteEligibilityDecision {
+    const override = this.enterpriseOverrides[candidate.providerId] ?? defaultEnterpriseOverride(candidate.providerId);
+    return evaluateRouteEligibility({
+      providerId: candidate.providerId,
+      architecture: "HOSTED_MULTI_TENANT",
+      serviceTier: candidate.serviceTier,
+      region,
+      enterpriseOverride: override,
     });
   }
 }

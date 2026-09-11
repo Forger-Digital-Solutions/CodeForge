@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { ICloudDatabase } from "@codeforge/cloud-db";
 import { EntitlementService } from "@codeforge/cloud-entitlements";
 import { UsageEngine } from "@codeforge/cloud-usage";
+import { REGION_UNKNOWN, type RegionResolution } from "@codeforge/legal-policy";
 import { CloudFirewallManager } from "./cloud-firewall.js";
 import type { HostedInferenceRequest, HostedStreamEvent } from "./types.js";
 
@@ -56,6 +57,9 @@ export class GatewayService {
     request: HostedInferenceRequest,
     onEvent: (event: HostedStreamEvent) => void,
     signal?: AbortSignal,
+    // Sourced by the HTTP layer from trusted infrastructure only; defaults to REGION_UNKNOWN,
+    // which is the safe/fail-closed value for any policy record that restricts by region.
+    region: RegionResolution = REGION_UNKNOWN,
   ): Promise<{ messageId: string; fullText: string; creditsConsumed: number; balanceAfter: number }> {
     const turnId = request.turnId ?? randomUUID();
     const messageId = randomUUID();
@@ -137,8 +141,20 @@ export class GatewayService {
         if (!decision) {
           throw new Error("No verified free model is currently available in the CodeForge Cloud pool");
         }
-        selectedProviderId = decision.model.providerId;
-        selectedModelId = decision.model.modelId;
+        // Prefer the top-ranked candidate, but fall back through the router's own ranked
+        // alternatives when the top pick is provider-policy-ineligible (e.g. Gemini unpaid in an
+        // EEA region) — this preserves task continuity instead of failing auto-routing outright
+        // (R1 remediation spec §82). The gate re-runs authoritatively below regardless of which
+        // candidate is chosen here, so a wrong guess here is never a compliance risk, only a UX one.
+        const rankedCandidates = [decision.model, ...decision.alternatives];
+        const policyEligible = rankedCandidates.find(
+          (m) => this.firewallManager.checkProviderPolicy({ providerId: m.providerId, serviceTier: m.costProfile.isFree ? "FREE" : "PAID" }, region).decision !== "DENY",
+        );
+        if (!policyEligible) {
+          throw new Error("No provider-policy-eligible free model is currently available for your region");
+        }
+        selectedProviderId = policyEligible.providerId;
+        selectedModelId = policyEligible.modelId;
       } else if (!selectedProviderId) {
         // Exact model requested WITHOUT a providerId (desktop sends the bare modelId). Resolve it
         // against the privacy-filtered eligible pool — never silently substitute a different model.
@@ -170,6 +186,20 @@ export class GatewayService {
       if (!verifiedModel) {
         throw new Error(`Model ${selectedProviderId}::${selectedModelId} is not present in the ForgeZero catalog`);
       }
+
+      // Product/provider-policy eligibility (R1 remediation spec §8) runs before ForgeZero's
+      // financial verification: it is a DIFFERENT authority (contractual/regional restriction, not
+      // cost) and must be able to reject a route ForgeZero would otherwise consider $0-eligible.
+      const policyDecision = this.firewallManager.checkProviderPolicy(
+        { providerId: selectedProviderId, serviceTier: verifiedModel.costProfile.isFree ? "FREE" : "PAID" },
+        region,
+      );
+      if (policyDecision.decision === "DENY") {
+        const err = `Model ${selectedProviderId}::${selectedModelId} is not available under current provider policy (${policyDecision.reasonCode})`;
+        emitTerminalEvent({ type: "turn.failed", turnId, error: err });
+        throw new Error(err);
+      }
+
       const verification = this.firewallManager.firewall.verify(selectedProviderId, selectedModelId);
       if (!verification.ok) {
         throw new Error(`Model ${selectedProviderId}::${selectedModelId} is not eligible for hosted inference: ${verification.error.message}`);

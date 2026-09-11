@@ -221,6 +221,12 @@ class PostgresQueryOps implements SessionPersistenceTx {
     const res = await this.q.query(`SELECT * FROM events WHERE "sessionId" = $1 ORDER BY id ASC`, [sessionId]);
     return res.rows.map((row) => row.data);
   }
+
+  // events has no FK/cascade back to sessions (unlike turns and work_items) — deleteSession()
+  // alone would silently orphan it. See account-deletion coordination in @codeforge/cloud-db.
+  async deleteEventsForSession(sessionId: string): Promise<void> {
+    await this.q.query(`DELETE FROM events WHERE "sessionId" = $1`, [sessionId]);
+  }
 }
 
 /**
@@ -347,6 +353,7 @@ export class PostgresSessionPersistence implements ISessionPersistence {
   getSession(id: string): Promise<SessionRecord | undefined> { return this.ops.getSession(id); }
   listSessions(): Promise<SessionRecord[]> { return this.ops.listSessions(); }
   deleteSession(id: string): Promise<void> { return this.ops.deleteSession(id); }
+  deleteEventsForSession(sessionId: string): Promise<void> { return this.ops.deleteEventsForSession(sessionId); }
   upsertTurn(turn: TurnRecord): Promise<void> { return this.ops.upsertTurn(turn); }
   getTurns(sessionId: string): Promise<TurnRecord[]> { return this.ops.getTurns(sessionId); }
   getTurn(id: string): Promise<TurnRecord | undefined> { return this.ops.getTurn(id); }

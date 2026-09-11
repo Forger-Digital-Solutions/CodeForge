@@ -64,6 +64,15 @@ export interface CloudRuntimeConfig {
   /** Honor X-Forwarded-For only when the deployment proxy is explicitly trusted. */
   trustProxy: boolean;
 
+  /**
+   * Name of an inbound HTTP header that trusted edge infrastructure (and ONLY trusted edge
+   * infrastructure — never an end client) sets to a two-letter country code, for provider
+   * region-policy decisions (R1 remediation spec §12). Unset by default: no region header is
+   * trusted unless a deployment operator explicitly documents and configures one, which means
+   * region-restricted hosted routes (e.g. Gemini unpaid in the EEA) fail closed until then.
+   */
+  trustedRegionHeaderName?: string;
+
   requestTimeoutMs: number;
 
   allowedOrigins: string[];
@@ -102,6 +111,7 @@ const EnvSchema = z.object({
   CODEFORGE_GLOBAL_DAILY_SPEND_LIMIT_USD: z.string().optional(),
   CODEFORGE_MAX_REQUESTS_PER_MINUTE: z.string().optional(),
   CODEFORGE_TRUST_PROXY: z.string().optional(),
+  CODEFORGE_TRUSTED_REGION_HEADER: z.string().optional(),
   CODEFORGE_REQUEST_TIMEOUT_MS: z.string().optional(),
   CODEFORGE_ALLOWED_ORIGINS: z.string().optional(),
   CODEFORGE_LOG_LEVEL: z.enum(["debug", "info", "warn", "error", "silent"]).optional(),
@@ -325,6 +335,7 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
     logLevel: e.CODEFORGE_LOG_LEVEL ?? (isProdLike ? "info" : "debug"),
     providerCredentials: resolveCloudProviderCredentials(env),
     trustProxy: parseOptionalBool("CODEFORGE_TRUST_PROXY", e.CODEFORGE_TRUST_PROXY) ?? false,
+    trustedRegionHeaderName: e.CODEFORGE_TRUSTED_REGION_HEADER || undefined,
   };
 }
 
@@ -345,6 +356,7 @@ export function describeConfig(config: CloudRuntimeConfig): string {
     `hostedFree=${config.killSwitches.hostedFreeEnabled}`,
     `dailyLimitUsd=${config.killSwitches.globalDailySpendLimitUsd}`,
     `trustProxy=${config.trustProxy}`,
+    `trustedRegionHeader=${config.trustedRegionHeaderName ?? "unset(fail-closed)"}`,
     `logLevel=${config.logLevel}`,
   ].join(" ");
 }

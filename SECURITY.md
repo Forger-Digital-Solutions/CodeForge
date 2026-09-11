@@ -1,10 +1,11 @@
 # CodeForge — Security
 
-## Zero-Billing Guarantee
+## Zero-Billing Enforcement
 
 CodeForge's `ForgeZero` subsystem is architecturally incapable of intentionally routing to
 paid inference. Models must pass verification (cost, free status, no paid fallback) before
-becoming eligible. Fail-closed: unverified models are rejected.
+becoming eligible. Fail-closed: unverified models are rejected. This describes CodeForge's own
+routing behavior, not a guarantee about what a third-party provider might independently bill.
 
 ## No Local LLM Inference
 

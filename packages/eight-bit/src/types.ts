@@ -111,6 +111,13 @@ export interface EightBitRouteHealth {
   lastFailureAt?: string;
   cooldownUntil?: number;
   status: "HEALTHY" | "DEGRADED" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "UNAVAILABLE" | "SUSPENDED" | "UNKNOWN";
+  /**
+   * True once repeated AUTH_FAILUREs (401/403) cross the permanent-suspend threshold
+   * (R1 legal remediation spec §21-22, ENG-P2-03). Distinguishes an indefinite suspension that
+   * requires explicit credential-change/recovery from an ordinary time-bounded cooldown that
+   * clears itself — automatic retry must never burn requests against invalid credentials.
+   */
+  permanentlySuspended?: boolean;
 }
 
 // --- Tool reliability --------------------------------------------------------------------------

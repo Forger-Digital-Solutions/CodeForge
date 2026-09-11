@@ -2,6 +2,7 @@
   "name": "codeforge-desktop",
   "version": "0.2.0",
   "private": true,
+  "license": "MIT",
   "author": "CodeForge Team",
   "description": "CodeForge Desktop - AI-powered coding agent for Windows",
   "main": "./dist/main.js",

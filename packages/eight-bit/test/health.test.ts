@@ -93,3 +93,95 @@ describe("EightBitHealthTracker — live feedback loop", () => {
     expect(fw.getModel("openrouter", "coder-alpha:free")?.health?.status).toBe("offline");
   });
 });
+
+// R1 legal remediation spec §21-22, ENG-P2-03: repeated 401/403 must stop automatic retry
+// entirely (not just a bounded, time-limited cooldown) until explicit credential recovery.
+describe("EightBitHealthTracker — auth-failure circuit breaker", () => {
+  it("[PASS] one or two AUTH_FAILUREs still get an ordinary bounded, time-limited cooldown", () => {
+    let clock = 1_000_000;
+    const fw = new ForgeZero({ context: { now: () => new Date(clock) } });
+    fw.register(makeModel());
+    const tracker = new EightBitHealthTracker(fw, () => clock);
+    let h = tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    expect(h.permanentlySuspended).toBeFalsy();
+    h = tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    expect(h.permanentlySuspended).toBeFalsy();
+    expect(tracker.isInCooldown("openrouter", "coder-alpha:free")).toBe(true);
+    clock += 20 * 60_000; // past the 15-minute cap
+    expect(tracker.isInCooldown("openrouter", "coder-alpha:free")).toBe(false);
+  });
+
+  it("[PASS] a 3rd consecutive AUTH_FAILURE permanently suspends the route — cooldown never expires", () => {
+    let clock = 1_000_000;
+    const fw = new ForgeZero({ context: { now: () => new Date(clock) } });
+    fw.register(makeModel());
+    const tracker = new EightBitHealthTracker(fw, () => clock);
+    tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    const h = tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    expect(h.permanentlySuspended).toBe(true);
+    expect(h.status).toBe("SUSPENDED");
+    expect(tracker.isInCooldown("openrouter", "coder-alpha:free")).toBe(true);
+
+    // Not just a very long cooldown — literally does not expire with the passage of time.
+    clock += 365 * 24 * 60 * 60_000; // one full year later
+    expect(tracker.isInCooldown("openrouter", "coder-alpha:free")).toBe(true);
+  });
+
+  it("[PASS] a permanently-suspended route does not burn further requests recording more failures", () => {
+    const fw = new ForgeZero();
+    fw.register(makeModel());
+    const tracker = new EightBitHealthTracker(fw);
+    tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    const suspended = tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    expect(suspended.consecutiveFailures).toBe(3);
+    // A 4th call while already permanently suspended must not increment further or reclassify —
+    // there is nothing more useful to record once the breaker has already tripped.
+    const again = tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    expect(again).toEqual(suspended);
+  });
+
+  it("[PASS] clearPermanentSuspension is the only way out, and requires an explicit call (not time)", () => {
+    const fw = new ForgeZero();
+    fw.register(makeModel());
+    const tracker = new EightBitHealthTracker(fw);
+    tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    expect(tracker.isInCooldown("openrouter", "coder-alpha:free")).toBe(true);
+
+    tracker.clearPermanentSuspension("openrouter", "coder-alpha:free");
+    const h = tracker.getHealth("openrouter", "coder-alpha:free");
+    expect(h.permanentlySuspended).toBeFalsy();
+    expect(h.status).toBe("HEALTHY");
+    expect(h.consecutiveFailures).toBe(0);
+    expect(tracker.isInCooldown("openrouter", "coder-alpha:free")).toBe(false);
+    expect(fw.getModel("openrouter", "coder-alpha:free")?.health?.status).toBe("available");
+  });
+
+  it("[PASS] clearPermanentSuspension on a route that was never suspended is a safe no-op", () => {
+    const fw = new ForgeZero();
+    fw.register(makeModel());
+    const tracker = new EightBitHealthTracker(fw);
+    expect(() => tracker.clearPermanentSuspension("openrouter", "coder-alpha:free")).not.toThrow();
+    expect(tracker.getHealth("openrouter", "coder-alpha:free").status).toBe("HEALTHY");
+  });
+
+  it("[PASS] a permanently-suspended snapshot round-trips through JSON without losing its cooldown (persistence safety)", () => {
+    const fw = new ForgeZero();
+    fw.register(makeModel());
+    const tracker = new EightBitHealthTracker(fw);
+    tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+    const suspended = tracker.recordFailure("openrouter", "coder-alpha:free", "AUTH_FAILURE");
+
+    const roundTripped = JSON.parse(JSON.stringify(suspended));
+    expect(roundTripped.permanentlySuspended).toBe(true);
+    expect(Number.isFinite(roundTripped.cooldownUntil)).toBe(true); // never silently becomes null
+
+    const rehydrated = new EightBitHealthTracker(new ForgeZero());
+    rehydrated.hydrate(roundTripped);
+    expect(rehydrated.isInCooldown("openrouter", "coder-alpha:free")).toBe(true);
+  });
+});

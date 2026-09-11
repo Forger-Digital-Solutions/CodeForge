@@ -2,6 +2,7 @@
   "name": "codeforge-cloud-api",
   "version": "0.2.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -30,6 +31,7 @@
     "@codeforge/providers": "*",
     "@codeforge/protocol": "*",
     "@codeforge/sessions": "*",
+    "@codeforge/legal-policy": "*",
     "zod": "^3.24.0"
   }
 }

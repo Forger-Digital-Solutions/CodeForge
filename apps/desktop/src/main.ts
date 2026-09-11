@@ -68,6 +68,11 @@ interface ProjectInfo {
 const RECENT_PROJECTS_KEY = "codeforge:recent-projects";
 const PROVIDER_CREDENTIALS_KEY = "codeforge:provider-credentials";
 const ONBOARDING_COMPLETED_KEY = "codeforge:onboarding-completed";
+// R1 legal remediation (ENG-P1-02 age gate, ENG-P1-03 host-execution disclosure). Deliberately
+// separate from ONBOARDING_COMPLETED_KEY: that flag is a general product-tour concept that could
+// be repurposed later, whereas this one carries actual evidentiary weight (R1 spec §34) and must
+// keep its own stable meaning.
+const FIRST_RUN_LEGAL_ACK_KEY = "codeforge:first-run-legal-ack";
 const CLOUD_ACCESS_TOKEN_KEY = "codeforge:cloud-access-token";
 const CLOUD_REFRESH_TOKEN_KEY = "codeforge:cloud-refresh-token";
 const CLOUD_USER_KEY = "codeforge:cloud-user";
@@ -391,6 +396,23 @@ function getOnboardingCompleted(): boolean {
   return settings[ONBOARDING_COMPLETED_KEY] === true;
 }
 
+interface FirstRunLegalAck {
+  ageConfirmed: true;
+  hostExecutionAcknowledged: true;
+  acknowledgedAt: string;
+}
+
+function getFirstRunLegalAck(): FirstRunLegalAck | null {
+  const settings = readSettings();
+  const raw = settings[FIRST_RUN_LEGAL_ACK_KEY];
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
+  const r = raw as Record<string, unknown>;
+  if (r.ageConfirmed === true && r.hostExecutionAcknowledged === true && typeof r.acknowledgedAt === "string") {
+    return { ageConfirmed: true, hostExecutionAcknowledged: true, acknowledgedAt: r.acknowledgedAt };
+  }
+  return null;
+}
+
 type CloseBehavior = "ask" | "tray" | "quit-safe";
 type CloseDecision = "cancel" | "tray" | "quit" | "quit-anyway";
 
@@ -519,6 +541,17 @@ function setOnboardingCompleted(completed: boolean): void {
   const settings = readSettings();
   settings[ONBOARDING_COMPLETED_KEY] = completed;
   writeSettingsAtomic(settings);
+}
+
+/** Takes no parameters from the caller — the only valid call is "the user just checked the
+ *  acknowledgement box," so both flags are always set true with a fresh timestamp rather than
+ *  trusting a renderer-supplied value that could claim acknowledgement without it happening. */
+function setFirstRunLegalAck(): FirstRunLegalAck {
+  const ack: FirstRunLegalAck = { ageConfirmed: true, hostExecutionAcknowledged: true, acknowledgedAt: new Date().toISOString() };
+  const settings = readSettings();
+  settings[FIRST_RUN_LEGAL_ACK_KEY] = ack;
+  writeSettingsAtomic(settings);
+  return ack;
 }
 
 function getStoredCloudTokens(): { accessToken?: string; refreshToken?: string; user?: any } {
@@ -1540,6 +1573,14 @@ ipcMain.handle("onboarding:setCompleted", async (_event, completed: boolean) => 
   setOnboardingCompleted(completed);
 });
 
+ipcMain.handle("legal:getFirstRunAck", async () => {
+  return getFirstRunLegalAck();
+});
+
+ipcMain.handle("legal:setFirstRunAck", async () => {
+  return setFirstRunLegalAck();
+});
+
 // --- CodeForge Cloud IPC Handlers ---
 
 ipcMain.handle("cloud:auth:start", async () => {
@@ -1597,6 +1638,32 @@ ipcMain.handle("cloud:account:get", async () => {
   } catch {
     return null;
   }
+});
+
+// GDPR Article 17 erasure (LEG-P0-02). No parameters accepted from the renderer beyond the
+// explicit confirmation — the account acted on is always whichever one is currently signed in on
+// this device, exactly like cloud:account:get / cloud:auth:logout above.
+ipcMain.handle("cloud:account:delete", async () => {
+  const tokens = getStoredCloudTokens();
+  if (!tokens.accessToken) throw new Error("Must be signed in to CodeForge Cloud to delete your account");
+  const res = await fetch(`${CLOUD_API_URL}/v1/account`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${tokens.accessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ confirmation: "DELETE_MY_ACCOUNT" }),
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Account deletion failed (HTTP ${res.status})${detail ? `: ${detail.slice(0, 200)}` : ""}`);
+  }
+  const receipt = await res.json();
+  clearCloudTokens();
+  providerAuthState.delete("codeforge-cloud");
+  if (firewall) {
+    for (const model of firewall.allModels()) {
+      if (model.providerId === "codeforge-cloud") firewall.unregister(model.providerId, model.modelId);
+    }
+  }
+  return receipt;
 });
 
 ipcMain.handle("cloud:auth:logout", async () => {

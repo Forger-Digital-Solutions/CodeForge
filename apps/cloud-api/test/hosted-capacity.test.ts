@@ -7,8 +7,13 @@ import { loginToCloud } from "../../../tests/helpers/cloud-login.js";
 // A server provider key that must NEVER cross the cloud→desktop boundary.
 const PROVIDER_SECRET = "sk-or-SERVER_SECRET_SENTINEL_7f3a";
 
-class FakeOpenRouter implements ProviderAdapter {
-  readonly providerId = "openrouter";
+// Groq, not OpenRouter: as of the R1 legal remediation, hosted multi-tenant pooling through a
+// CodeForge-owned OpenRouter key is denied absent an Enterprise Agreement (LEG-P1-01,
+// @codeforge/legal-policy PROVIDER_POLICY_REGISTRY). This fixture exercises the general
+// zero-setup capacity/routing/usage-settlement machinery, not anything OpenRouter-specific, so an
+// unrestricted provider keeps the test's actual intent intact.
+class FakeGroqProvider implements ProviderAdapter {
+  readonly providerId = "groq";
   readonly isTestProvider = false;
   async listModels(): Promise<ProviderModel[]> {
     return [
@@ -60,12 +65,12 @@ describe("Zero-setup real hosted capacity (deterministic, injected provider)", (
   beforeEach(async () => {
     const firewallManager = new CloudFirewallManager();
     const store = new MapCredentialStore();
-    store.set("openrouter", PROVIDER_SECRET);
+    store.set("groq", PROVIDER_SECRET);
     const providerRegistry = new CloudProviderRegistry({
       firewallManager,
       credentialStore: store,
-      providerIds: ["openrouter"],
-      adapterFactory: () => new FakeOpenRouter(),
+      providerIds: ["groq"],
+      adapterFactory: () => new FakeGroqProvider(),
     });
 
     server = new CodeForgeCloudServer({
@@ -89,7 +94,7 @@ describe("Zero-setup real hosted capacity (deterministic, injected provider)", (
     expect(ready.hostedInferenceReady).toBe(true);
     expect(ready.availableFreeCount).toBeGreaterThan(0);
     expect(ready.providerCapacity).toEqual(
-      expect.arrayContaining([expect.objectContaining({ providerId: "openrouter", status: "healthy" })]),
+      expect.arrayContaining([expect.objectContaining({ providerId: "groq", status: "healthy" })]),
     );
   });
 
@@ -121,7 +126,7 @@ describe("Zero-setup real hosted capacity (deterministic, injected provider)", (
     const sse = await inf.text();
     // ForgeZero selected the real provider/model, and the real (fake) adapter produced the text.
     expect(sse).toContain("assistant.message.started");
-    expect(sse).toContain('"provider":"openrouter"');
+    expect(sse).toContain('"provider":"groq"');
     expect(sse).toContain("CODEFORGE_HOSTED_SMOKE_OK");
     expect(sse).toContain("turn.completed");
 

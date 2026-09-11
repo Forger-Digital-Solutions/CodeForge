@@ -8,6 +8,8 @@ import { EntitlementService } from "@codeforge/cloud-entitlements";
 import { UsageEngine } from "@codeforge/cloud-usage";
 import { StripeBillingService, type StripeConfig } from "@codeforge/cloud-billing";
 import { CloudFirewallManager, GatewayService, type HostedInferenceRequest, type HostedStreamEvent, type CloudProviderRegistry, type CloudKillSwitchConfig } from "@codeforge/cloud-gateway";
+import { REGION_UNKNOWN, classifyRegionEvidence, type RegionResolution } from "@codeforge/legal-policy";
+import { deleteAccount } from "./account-deletion.js";
 import { DesktopWorkerActionResultSchema } from "@codeforge/protocol";
 import { createSessionPersistence, type ISessionPersistence } from "@codeforge/sessions";
 import { HostedWorkflowAuthority } from "./hosted-workflow-authority.js";
@@ -54,6 +56,13 @@ const AuthLogoutSchema = z.object({
 const AccountSettingsSchema = z.object({
   privacyMode: z.enum(["STRICT", "STANDARD", "MAXIMUM_FREE"]).optional(),
   spendLimitUsd: z.number().nonnegative().optional(),
+});
+
+// A deliberate, hard-to-trigger-by-accident signal (R1 legal remediation spec §30 "recent-auth /
+// confirmation safeguards") — this architecture has no password to re-prompt for, so an explicit
+// literal string stands in for it, on top of requiring a live (short-lived) Bearer access token.
+const AccountDeletionSchema = z.object({
+  confirmation: z.literal("DELETE_MY_ACCOUNT"),
 });
 
 const BillingCheckoutSchema = z.object({
@@ -157,6 +166,9 @@ export interface CodeForgeCloudServerConfig {
   requestTimeoutMs?: number;
   /** Only honor proxy forwarding headers when an upstream proxy is explicitly trusted. */
   trustProxy?: boolean;
+  /** Name of a trusted-edge-set header carrying a two-letter country code (R1 spec §12). Unset by
+   *  default — no region header is trusted, so region-restricted hosted routes fail closed. */
+  trustedRegionHeaderName?: string;
   /**
    * CF-11B: GitHub App configuration for publication authorization. The private key lives only in
    * this process; supplying it is what enables the publication routes at all.
@@ -190,6 +202,7 @@ export class CodeForgeCloudServer {
   private readonly rateLimits = new Map<string, { count: number; resetAt: number }>();
   private readonly maxRequestsPerMinute: number;
   private readonly trustProxy: boolean;
+  private readonly trustedRegionHeaderName?: string;
   private actualPort = 0;
   private host: string;
 
@@ -239,6 +252,7 @@ export class CodeForgeCloudServer {
     );
     this.maxRequestsPerMinute = config.maxRequestsPerMinute ?? 120;
     this.trustProxy = config.trustProxy ?? false;
+    this.trustedRegionHeaderName = config.trustedRegionHeaderName;
 
     if (config.db) {
       this.db = config.db;
@@ -537,6 +551,20 @@ export class CodeForgeCloudServer {
     const forwarded = req.headers["x-forwarded-for"];
     const firstForwarded = (Array.isArray(forwarded) ? forwarded[0] : forwarded)?.split(",")[0]?.trim();
     return firstForwarded && isIP(firstForwarded) !== 0 ? firstForwarded : socketIp;
+  }
+
+  /**
+   * Region evidence for provider-policy decisions. Deliberately narrower than getClientIp()'s
+   * trustProxy gate: a raw IP is merely convenience-degraded by trusting the wrong proxy, but a
+   * spoofed COUNTRY can silently defeat a legal region restriction, so this requires its own
+   * explicit header name (trustedRegionHeaderName) rather than reusing trustProxy/X-Forwarded-For.
+   * With no header configured (the default), every region-restricted hosted route fails closed.
+   */
+  private resolveRegionEvidence(req: http.IncomingMessage): RegionResolution {
+    if (!this.trustedRegionHeaderName) return REGION_UNKNOWN;
+    const raw = req.headers[this.trustedRegionHeaderName.toLowerCase()];
+    const countryCode = (Array.isArray(raw) ? raw[0] : raw)?.trim() || null;
+    return classifyRegionEvidence({ countryCode, source: "TRUSTED_EDGE_HEADER", observedAt: new Date().toISOString() });
   }
 
   private corsHeaders(origin?: string): Record<string, string> {
@@ -858,6 +886,26 @@ export class CodeForgeCloudServer {
         return;
       }
 
+      // GDPR Article 17 erasure (LEG-P0-02). userId comes ONLY from the verified Bearer token —
+      // never from the request body/URL — so there is no parameter an attacker could substitute to
+      // delete a different account (confused-deputy / arbitrary-user-ID deletion is structurally
+      // impossible here, not just validated against). Bearer-only (not the cookie-accepting
+      // authenticateBrowserOrBearerRequest) so this can never be triggered by a bare cross-site
+      // request. Idempotent: see deleteAccount()/ICloudDatabase.deleteUserAccount() doc comments —
+      // a retried call after an ambiguous network failure is safe.
+      if (url.pathname === "/v1/account" && method === "DELETE") {
+        const userId = this.authenticateRequest(req);
+        await this.readJson(req, AccountDeletionSchema);
+        const receipt = await deleteAccount({
+          db: this.db,
+          sessionPersistence: this.sessionPersistence,
+          hostedWorkflowAuthority: this.hostedWorkflowAuthority,
+          userId,
+        });
+        this.sendJson(res, 200, receipt, corsOrigin);
+        return;
+      }
+
       // 4. Usage Endpoints (Authenticated)
       if (url.pathname === "/v1/usage" && method === "GET") {
         const userId = this.authenticateRequest(req);
@@ -960,6 +1008,7 @@ export class CodeForgeCloudServer {
               }
             },
             abortController.signal,
+            this.resolveRegionEvidence(req),
           );
           if (!res.writableEnded) {
             res.end();

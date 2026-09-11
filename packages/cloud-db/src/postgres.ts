@@ -34,6 +34,8 @@ import type {
   CloudVerificationPlanRecord,
   CloudVerificationAttemptRecord,
   CloudVerificationEvidenceRecord,
+  AccountDeletionResult,
+  AccountDeletionTableSummary,
 } from "./types.js";
 
 const { Pool } = pg;
@@ -1795,6 +1797,47 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       [record.id, record.userId ?? null, record.ipAddress ?? null, record.eventType, record.details ?? null, record.createdAt],
     );
     return record;
+  }
+
+  // --- GDPR Article 17 Erasure ---
+
+  async deleteUserAccount(userId: string): Promise<AccountDeletionResult> {
+    return this.withTx(async (client) => {
+      const tables: AccountDeletionTableSummary[] = [];
+      const del = async (table: string, sql: string): Promise<void> => {
+        const res = await client.query(sql, [userId]);
+        tables.push({ table, rowsDeleted: res.rowCount ?? 0 });
+      };
+
+      const anonymized = await client.query(`UPDATE abuse_events SET user_id = NULL WHERE user_id = $1`, [userId]);
+
+      // Children of github_installations (repository authorizations, publications) must be
+      // deleted before that parent table — both PostgreSQL's real ON DELETE CASCADE and, on newer
+      // Node runtimes, node:sqlite's default-enabled foreign key enforcement would otherwise beat
+      // an out-of-order explicit delete to it, silently under-reporting this receipt's counts.
+      await del(
+        "github_repository_authorizations",
+        `DELETE FROM github_repository_authorizations WHERE installation_id IN (SELECT id FROM github_installations WHERE codeforge_user_id = $1)`,
+      );
+      await del("publications", `DELETE FROM publications WHERE user_id = $1`);
+      await del("github_installations", `DELETE FROM github_installations WHERE codeforge_user_id = $1`);
+      await del("github_app_callback_states", `DELETE FROM github_app_callback_states WHERE codeforge_user_id = $1`);
+      await del("desktop_auth_codes", `DELETE FROM desktop_auth_codes WHERE user_id = $1`);
+      await del("browser_sessions", `DELETE FROM browser_sessions WHERE user_id = $1`);
+      await del("identities", `DELETE FROM identities WHERE user_id = $1`);
+      await del("device_sessions", `DELETE FROM device_sessions WHERE user_id = $1`);
+      await del("subscriptions", `DELETE FROM subscriptions WHERE user_id = $1`);
+      await del("entitlements", `DELETE FROM entitlements WHERE user_id = $1`);
+      await del("credit_ledger", `DELETE FROM credit_ledger WHERE user_id = $1`);
+      await del("usage_events", `DELETE FROM usage_events WHERE user_id = $1`);
+      await del("usage_periods", `DELETE FROM usage_periods WHERE user_id = $1`);
+      await del("reservations", `DELETE FROM reservations WHERE user_id = $1`);
+      await del("hosted_requests", `DELETE FROM hosted_requests WHERE user_id = $1`);
+      await del("account_settings", `DELETE FROM account_settings WHERE user_id = $1`);
+      await del("users", `DELETE FROM users WHERE id = $1`);
+
+      return { userId, tables, abuseEventsAnonymized: anonymized.rowCount ?? 0 };
+    });
   }
 
   // --- Health & Concurrency ---

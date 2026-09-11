@@ -1098,6 +1098,9 @@ body {
 .auth-card h1 { margin-top: 28px; color: #f1f2f4; font-size: 22px; font-weight: 620; letter-spacing: -.02em; }
 .auth-subtitle { max-width: 280px; margin-top: 8px; color: #858a93; font-size: 13px; line-height: 1.55; }
 .auth-error { width: 100%; margin-top: 18px; padding: 9px 12px; border: 1px solid rgba(239,77,77,.5); border-radius: 6px; background: rgba(239,77,77,.1); color: #fca5a5; font-size: 12px; }
+.auth-first-run-ack { display: flex; align-items: flex-start; gap: 9px; width: 100%; margin-top: 22px; padding: 11px 12px; border: 1px solid #383c44; border-radius: 6px; background: #17181b; text-align: left; cursor: pointer; }
+.auth-first-run-ack input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; accent-color: #e8ebef; }
+.auth-first-run-ack span { color: #9399a3; font-size: 11px; line-height: 1.55; }
 .auth-github-button { width: 100%; display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 26px; padding: 11px 16px; border: 1px solid #e0e3e8; border-radius: 6px; background: #e8ebef; color: #101114; font: 600 13px var(--cf-font); cursor: pointer; transition: background .12s, transform .12s; }
 .auth-github-button:hover:not(:disabled) { background: #fff; transform: translateY(-1px); }
 .auth-github-button:disabled { cursor: wait; opacity: .65; }

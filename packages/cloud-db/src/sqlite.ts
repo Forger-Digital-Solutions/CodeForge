@@ -34,6 +34,8 @@ import type {
   CloudVerificationPlanRecord,
   CloudVerificationAttemptRecord,
   CloudVerificationEvidenceRecord,
+  AccountDeletionResult,
+  AccountDeletionTableSummary,
 } from "./types.js";
 
 const require_ = createRequire(import.meta.url);
@@ -1701,6 +1703,61 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       createdAt: record.createdAt,
     });
     return record;
+  }
+
+  // --- GDPR Article 17 Erasure ---
+
+  /**
+   * SQLite does not enforce ON DELETE CASCADE unless `PRAGMA foreign_keys = ON` is set for the
+   * connection, which this codebase does not currently do — so, unlike the PostgreSQL backend,
+   * this cannot lean on the schema's cascade clauses at all. Every table is deleted explicitly.
+   * Wrapped in an explicit BEGIN/COMMIT/ROLLBACK (via the same `exec()` the rest of this class
+   * already uses for DDL) rather than relying on per-statement autocommit, since this is a
+   * multi-statement sequence that must never be left half-applied.
+   */
+  async deleteUserAccount(userId: string): Promise<AccountDeletionResult> {
+    const tables: AccountDeletionTableSummary[] = [];
+    const del = (table: string, sql: string): void => {
+      const res = this.db.prepare(sql).run({ userId });
+      tables.push({ table, rowsDeleted: Number(res.changes ?? 0) });
+    };
+
+    this.db.exec("BEGIN");
+    try {
+      const anonymized = this.db.prepare(`UPDATE abuse_events SET user_id = NULL WHERE user_id = @userId`).run({ userId });
+
+      // Children of github_installations (repository authorizations, publications) must be
+      // deleted before that parent table — node:sqlite defaults foreign key enforcement to ON
+      // (unlike better-sqlite3, which this module falls back to on older Node runtimes), so an
+      // out-of-order explicit delete can be silently beaten by cascade, under-reporting this
+      // receipt's counts even though the row does still end up gone either way.
+      del(
+        "github_repository_authorizations",
+        `DELETE FROM github_repository_authorizations WHERE installation_id IN (SELECT id FROM github_installations WHERE codeforge_user_id = @userId)`,
+      );
+      del("publications", `DELETE FROM publications WHERE user_id = @userId`);
+      del("github_installations", `DELETE FROM github_installations WHERE codeforge_user_id = @userId`);
+      del("github_app_callback_states", `DELETE FROM github_app_callback_states WHERE codeforge_user_id = @userId`);
+      del("desktop_auth_codes", `DELETE FROM desktop_auth_codes WHERE user_id = @userId`);
+      del("browser_sessions", `DELETE FROM browser_sessions WHERE user_id = @userId`);
+      del("identities", `DELETE FROM identities WHERE user_id = @userId`);
+      del("device_sessions", `DELETE FROM device_sessions WHERE user_id = @userId`);
+      del("subscriptions", `DELETE FROM subscriptions WHERE user_id = @userId`);
+      del("entitlements", `DELETE FROM entitlements WHERE user_id = @userId`);
+      del("credit_ledger", `DELETE FROM credit_ledger WHERE user_id = @userId`);
+      del("usage_events", `DELETE FROM usage_events WHERE user_id = @userId`);
+      del("usage_periods", `DELETE FROM usage_periods WHERE user_id = @userId`);
+      del("reservations", `DELETE FROM reservations WHERE user_id = @userId`);
+      del("hosted_requests", `DELETE FROM hosted_requests WHERE user_id = @userId`);
+      del("account_settings", `DELETE FROM account_settings WHERE user_id = @userId`);
+      del("users", `DELETE FROM users WHERE id = @userId`);
+
+      this.db.exec("COMMIT");
+      return { userId, tables, abuseEventsAnonymized: Number(anonymized.changes ?? 0) };
+    } catch (error) {
+      this.db.exec("ROLLBACK");
+      throw error;
+    }
   }
 
   // --- Health & Concurrency ---

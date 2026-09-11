@@ -43,9 +43,18 @@ const api = {
   setOnboardingCompleted: (completed: boolean): Promise<void> => {
     return ipcRenderer.invoke("onboarding:setCompleted", completed);
   },
+  getFirstRunLegalAck: (): Promise<{ ageConfirmed: true; hostExecutionAcknowledged: true; acknowledgedAt: string } | null> => {
+    return ipcRenderer.invoke("legal:getFirstRunAck");
+  },
+  setFirstRunLegalAck: (): Promise<{ ageConfirmed: true; hostExecutionAcknowledged: true; acknowledgedAt: string }> => {
+    return ipcRenderer.invoke("legal:setFirstRunAck");
+  },
   // --- CodeForge Cloud APIs ---
   signInWithCloud: (): Promise<{ ok: boolean; user?: unknown; error?: string }> => {
     return ipcRenderer.invoke("cloud:auth:start");
+  },
+  deleteCloudAccount: (): Promise<unknown> => {
+    return ipcRenderer.invoke("cloud:account:delete");
   },
   getCloudAccount: (): Promise<any> => {
     return ipcRenderer.invoke("cloud:account:get");

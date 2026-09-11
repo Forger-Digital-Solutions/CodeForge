@@ -3,7 +3,14 @@
   "displayName": "CodeForge",
   "description": "Free-first autonomous software engineering agent for VS Code",
   "version": "0.2.0",
+  "license": "MIT",
+  "private": true,
   "publisher": "codeforge",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Forger-Digital-Solutions/CodeForge.git",
+    "directory": "packages/vscode"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },

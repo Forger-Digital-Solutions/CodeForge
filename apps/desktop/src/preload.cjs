@@ -43,12 +43,21 @@ const api = {
   setOnboardingCompleted: (completed) => {
     return ipcRenderer.invoke("onboarding:setCompleted", completed);
   },
+  getFirstRunLegalAck: () => {
+    return ipcRenderer.invoke("legal:getFirstRunAck");
+  },
+  setFirstRunLegalAck: () => {
+    return ipcRenderer.invoke("legal:setFirstRunAck");
+  },
   // --- CodeForge Cloud APIs ---
   signInWithCloud: () => {
     return ipcRenderer.invoke("cloud:auth:start");
   },
   getCloudAccount: () => {
     return ipcRenderer.invoke("cloud:account:get");
+  },
+  deleteCloudAccount: () => {
+    return ipcRenderer.invoke("cloud:account:delete");
   },
   logoutCloud: () => {
     return ipcRenderer.invoke("cloud:auth:logout");
