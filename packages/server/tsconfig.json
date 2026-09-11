@@ -21,6 +21,7 @@
     { "path": "../eight-bit" },
     { "path": "../context" },
     { "path": "../secrets" },
-    { "path": "../workflow" }
+    { "path": "../workflow" },
+    { "path": "../agent" }
   ]
 }

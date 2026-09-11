@@ -11,6 +11,8 @@
     { "path": "../core" },
     { "path": "../protocol" },
     { "path": "../agent" },
-    { "path": "../tools" }
+    { "path": "../tools" },
+    { "path": "../forge-zero" },
+    { "path": "../providers" }
   ]
 }

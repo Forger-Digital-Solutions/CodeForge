@@ -11,7 +11,7 @@
     { "path": "../core" },
     { "path": "../protocol" },
     { "path": "../forge-zero" },
-    { "path": "../model-registry" },
-    { "path": "../providers" }
+    { "path": "../providers" },
+    { "path": "../director" }
   ]
 }

@@ -11,6 +11,7 @@
     { "path": "../core" },
     { "path": "../protocol" },
     { "path": "../sessions" },
-    { "path": "../repo-intelligence" }
+    { "path": "../repo-intelligence" },
+    { "path": "../forge-green" }
   ]
 }
