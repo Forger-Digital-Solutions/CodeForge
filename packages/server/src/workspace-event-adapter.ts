@@ -62,10 +62,10 @@ export class WorkspaceEventAdapter {
     });
   }
 
-  emitTurnStarted(turnId: string, userMessage: string, agentId?: string): Promise<void> {
+  emitTurnStarted(turnId: string, userMessage: string, agentId?: string, origin?: { origin: "user" | "workflow"; label?: string }): Promise<void> {
     return this.emit({
       type: "turn.started",
-      payload: { turnId, userMessage, agentId },
+      payload: { turnId, userMessage, agentId, ...(origin ? { origin: origin.origin, ...(origin.label ? { label: origin.label } : {}) } : {}) },
     } as WorkspaceEvent);
   }
 

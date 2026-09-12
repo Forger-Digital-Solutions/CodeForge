@@ -142,6 +142,16 @@ describe("resolveForgeZeroTrust", () => {
     expect(trust.label).toContain("No Free Route");
   });
 
+  it("says discovery is still running instead of claiming there is no route", () => {
+    // For the first seconds after launch the live catalogs are still being verified; the badge
+    // flashed "No Free Route" before flipping to "Verified Free". Neither claim is a fact yet.
+    const trust = resolveForgeZeroTrust("auto", undefined, false, true);
+    expect(trust.verifiedFree).toBe(false);
+    expect(trust.label).toContain("Discovering");
+    // Once a route is verified, discovery elsewhere no longer matters.
+    expect(resolveForgeZeroTrust("auto", undefined, true, true).label).toContain("Verified Free");
+  });
+
   it("trusts a concrete model only when its own record is independently verified free", () => {
     const verified = makeModel({ freeStatus: "verified_free", costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, paidFallbackPossible: false } });
     expect(resolveForgeZeroTrust("model-1", verified).verifiedFree).toBe(true);

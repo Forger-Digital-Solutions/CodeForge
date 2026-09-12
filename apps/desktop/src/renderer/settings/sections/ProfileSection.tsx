@@ -122,11 +122,13 @@ export function ProfileSection(): React.ReactElement {
         <SettingsRow
           title="Plan"
           description={
-            account.planId === "free"
-              ? "ForgeAuto/Free and CodeForge Free models don't use credits — they run on verified $0 routes."
-              : "Manage payment details from your billing portal."
+            account.offline
+              ? "CodeForge Cloud could not be reached, so your plan and credits are unknown right now. Local and BYOK routes keep working; Cloud-hosted models are unavailable until it is back."
+              : account.planId === "free"
+                ? "ForgeAuto/Free and CodeForge Free models don't use credits — they run on verified $0 routes."
+                : "Manage payment details from your billing portal."
           }
-          control={<span className="settings-value">{account.planName ?? "CodeForge Free"}</span>}
+          control={<span className="settings-value">{account.offline ? "Unknown (offline)" : account.planName ?? "CodeForge Free"}</span>}
         />
         {typeof account.creditBalance === "number" ? (
           <SettingsRow

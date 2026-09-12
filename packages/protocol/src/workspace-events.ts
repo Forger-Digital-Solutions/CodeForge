@@ -45,6 +45,13 @@ export const TurnStartedSchema = EventBase(
     turnId: z.string(),
     userMessage: z.string(),
     agentId: z.string().optional(),
+    /**
+     * Who authored the turn's message. A workflow dispatches internal turns (the builder and repair
+     * prompts) on the user's behalf; those must never be rendered as something the user typed.
+     */
+    origin: z.enum(["user", "workflow"]).optional(),
+    /** Short human label for an internal turn, e.g. "Implementing the plan". */
+    label: z.string().optional(),
   }),
 );
 

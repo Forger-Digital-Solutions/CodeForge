@@ -63,7 +63,8 @@ const MAX_WORKSPACE_PATH_LENGTH = 1024;
 
 /** One plan step as a person reads it: what happens, to which file or command, at what risk. */
 function describePlanStep(step: WorkflowPlan["steps"][number]): string {
-  const target = step.targetPath ? ` → ${step.targetPath}` : step.command ? ` → ${step.command}` : "";
+  const named = step.targetPath ?? step.command;
+  const target = named && !step.description.includes(named) ? ` → ${named}` : "";
   const risk = step.risk === "safe" ? "" : ` (${step.risk})`;
   return `${step.description}${target}${risk}`;
 }
@@ -336,7 +337,7 @@ export class WorkflowService {
         const prompt = buildImplementPrompt(plan, context, repoMap, intent);
         adapter.emitAgentStarted(`agent-${plan.id.slice(0, 8)}`, "Builder", plan.id);
         const runtime = getRuntime(sessionId, userId);
-        const turnId = await runtime.startTurn(prompt, adapter);
+        const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Implementing the approved plan" });
         const result = await waitForTurn(runtime, turnId);
         if (result.status === "completed") {
           adapter.emitAgentCompleted(`agent-${plan.id.slice(0, 8)}`, plan.id);
@@ -360,7 +361,7 @@ export class WorkflowService {
       ): Promise<{ success: boolean; output: string; turnId?: string }> => {
         const prompt = buildRepairPrompt(analysis, verification, context, intent);
         const runtime = getRuntime(sessionId, userId);
-        const turnId = await runtime.startTurn(prompt, adapter);
+        const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Repairing verification failures" });
         const result = await waitForTurn(runtime, turnId);
         if (result.status === "completed") return { success: true, output: `Repair turn ${turnId} completed`, turnId };
         return { success: false, output: `Repair turn ${turnId} ${result.status}${result.reason ? `: ${result.reason}` : ""}` };

@@ -25,7 +25,13 @@ export function humanizeError(msg: string): string {
   if (m.includes("401") || m.includes("invalid api key") || m.includes("autherror") || m.includes("unauthorized"))
     return "Provider authentication failed — your API key is invalid or expired. Update it in Settings → Providers.";
   if (m.includes("403")) return "Access denied by the provider. Check your API key permissions in Settings → Providers.";
-  if (m.includes("429") || m.includes("rate limit")) return "The provider is rate limited. Wait a moment and try again.";
+  if (m.includes("429") || m.includes("rate limit")) {
+    // A daily cap is not "a moment": say what the provider said.
+    if (m.includes("per-day") || m.includes("per day") || m.includes("daily")) {
+      return "The provider's daily free-request limit is exhausted and resets on the provider's schedule. Connect another verified free route or try again later.";
+    }
+    return "The provider is rate limited. Wait a moment and try again.";
+  }
   if (m.includes("not found in catalog") || m.includes("no free provider") || m.includes("no verified free"))
     return "No verified free model is available. Connect a provider in Settings → Providers.";
   if (m.includes("payment") || m.includes("paid model")) return "That model requires a paid plan. Choose a verified free model or connect a provider.";
@@ -134,6 +140,20 @@ export default function WorkspaceApp({
     }
     return "";
   }, [sseUrl]);
+
+  // "@" context references resolve through Repository Intelligence's live index.
+  const searchContext = React.useCallback(async (query: string) => {
+    if (!apiOrigin) return [];
+    const res = await fetch(`${apiOrigin}/api/repository-index/search?q=${encodeURIComponent(query)}`);
+    if (!res.ok) return [];
+    const page = (await res.json()) as { items?: Array<{ path: string; symbol?: { name?: string }; line?: number; reasons?: string[] }> };
+    return (page.items ?? []).map((item) => ({
+      path: item.path,
+      symbol: item.symbol?.name,
+      line: item.line,
+      reason: item.reasons?.[0]?.replace(/_/g, " "),
+    }));
+  }, [apiOrigin]);
 
   // Real favorited model ids — same localStorage-backed source ModelSelector's star toggle
   // writes to (see model-favorites.ts). Re-synced whenever the picker closes, since that's when a
@@ -530,6 +550,7 @@ export default function WorkspaceApp({
             isRunning={state.isRunning}
             onSuggestedPrompt={(text) => handleSend(text)}
             contextLabel={projectName ? `CodeForge · ${projectName}${projectBranch ?? state.session?.branch ? ` · ${projectBranch ?? state.session?.branch}` : ""}` : undefined}
+            workspacePath={workspacePath ?? state.session?.workspacePath}
             userDisplayName={userDisplayName}
             activityOverview={activityOverview}
             isActivityLoading={isActivityLoading}
@@ -609,6 +630,7 @@ export default function WorkspaceApp({
             }}
             executionMode={executionMode}
             onExecutionModeChange={handleExecutionModeChange}
+            searchContext={apiOrigin ? searchContext : undefined}
             executionState={state.executionState}
             onComposerActivity={(active) => {
               if (userIntentHoldPolicy !== "off" && (state.activeExecutionMode === "agent" || state.activeTaskId)) void requestUserIntentHold(active);

@@ -79,3 +79,13 @@ describe("tool activity", () => {
     expect(formatElapsed(-1)).toBe("");
   });
 });
+
+describe("relativeToWorkspace", () => {
+  it("strips the workspace root from absolute paths on either slash convention", async () => {
+    const { relativeToWorkspace } = await import("../src/tool-activity.js");
+    expect(relativeToWorkspace("C:\\Users\\dev\\CodeForge Live\\pricing-service\\src\\types.ts", "C:\\Users\\dev\\CodeForge Live\\pricing-service")).toBe("src/types.ts");
+    expect(relativeToWorkspace("/home/dev/app/src/index.ts", "/home/dev/app/")).toBe("src/index.ts");
+    expect(relativeToWorkspace("src/index.ts", "/home/dev/app")).toBe("src/index.ts");
+    expect(relativeToWorkspace("/elsewhere/file.ts", "/home/dev/app")).toBe("/elsewhere/file.ts");
+  });
+});

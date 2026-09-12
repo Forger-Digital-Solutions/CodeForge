@@ -27,6 +27,13 @@ export function shouldSubmitOnEnter(e: {
   return true;
 }
 
+export interface ContextMatch {
+  path: string;
+  symbol?: string;
+  line?: number;
+  reason?: string;
+}
+
 interface ComposerProps {
   placeholder: string;
   onSend: (message: string, attachments?: Attachment[]) => void;
@@ -54,6 +61,11 @@ interface ComposerProps {
   executionState?: "running" | "user_intent_hold" | "steer_queued" | "reconciling_steer";
   /** Repository/runtime context chips shown as the first row inside the composer surface. */
   contextRow?: React.ReactNode;
+  /**
+   * Resolves an "@" query to repository matches (files and symbols). Wired by the host to
+   * Repository Intelligence; absent, the picker says so instead of pretending to search.
+   */
+  searchContext?: (query: string) => Promise<ContextMatch[]>;
 }
 
 export interface Attachment {
@@ -88,11 +100,14 @@ export default function Composer({
   onComposerActivity,
   executionState = "running",
   contextRow,
+  searchContext,
 }: ComposerProps) {
   const [input, setInput] = useState("");
   const [showCommands, setShowCommands] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
   const [showContextPicker, setShowContextPicker] = useState(false);
+  const [contextMatches, setContextMatches] = useState<ContextMatch[] | null>(null);
+  const contextSearchSeq = useRef(0);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [contextQuery, setContextQuery] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -226,6 +241,31 @@ export default function Composer({
     } else {
       setShowContextPicker(false);
     }
+  };
+
+  // Debounced repository search for the "@" picker; a stale response never overwrites a newer one.
+  useEffect(() => {
+    if (!showContextPicker || contextQuery.length === 0 || !searchContext) {
+      setContextMatches(null);
+      return;
+    }
+    const seq = ++contextSearchSeq.current;
+    const handle = setTimeout(() => {
+      searchContext(contextQuery)
+        .then((matches) => { if (contextSearchSeq.current === seq) setContextMatches(matches.slice(0, 8)); })
+        .catch(() => { if (contextSearchSeq.current === seq) setContextMatches([]); });
+    }, 180);
+    return () => clearTimeout(handle);
+  }, [showContextPicker, contextQuery, searchContext]);
+
+  const insertContextReference = (match: ContextMatch) => {
+    const atIndex = input.lastIndexOf("@");
+    const reference = `@${match.path}${match.symbol ? `#${match.symbol}` : ""} `;
+    const next = atIndex >= 0 ? `${input.slice(0, atIndex)}${reference}` : `${input}${reference}`;
+    setInput(next);
+    setShowContextPicker(false);
+    setContextMatches(null);
+    textareaRef.current?.focus();
   };
 
   const removeAttachment = (id: string) => {
@@ -367,16 +407,43 @@ export default function Composer({
         </div>
       )}
 
-      {/* Context picker */}
+      {/* Context picker — real Repository Intelligence matches, inserted as @path references */}
       {showContextPicker && contextQuery.length > 0 && (
         <div className="context-picker" ref={contextPickerRef} role="listbox" aria-label="Context references">
           <div className="context-picker-header">@ References</div>
           <div className="context-picker-items">
-            {/* TODO: Implement actual file/symbol search */}
-            <div className="context-picker-item" role="option">
-              <span>📄</span>
-              <span>No matches for "@{contextQuery}"</span>
-            </div>
+            {!searchContext ? (
+              <div className="context-picker-item" role="option" aria-disabled="true">
+                <span>📄</span>
+                <span>Repository search is not available in this workspace</span>
+              </div>
+            ) : contextMatches === null ? (
+              <div className="context-picker-item" role="option" aria-disabled="true">
+                <span>⌕</span>
+                <span>Searching "@{contextQuery}"…</span>
+              </div>
+            ) : contextMatches.length === 0 ? (
+              <div className="context-picker-item" role="option" aria-disabled="true">
+                <span>📄</span>
+                <span>No matches for "@{contextQuery}"</span>
+              </div>
+            ) : (
+              contextMatches.map((match) => (
+                <button
+                  type="button"
+                  key={`${match.path}#${match.symbol ?? ""}#${match.line ?? ""}`}
+                  className="context-picker-item"
+                  role="option"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => insertContextReference(match)}
+                  title={match.reason ? `${match.path} · ${match.reason}` : match.path}
+                >
+                  <span>{match.symbol ? "ƒ" : "📄"}</span>
+                  <span className="context-picker-path">{match.path}</span>
+                  {match.symbol && <span className="context-picker-symbol">{match.symbol}{match.line ? `:${match.line}` : ""}</span>}
+                </button>
+              ))
+            )}
           </div>
         </div>
       )}

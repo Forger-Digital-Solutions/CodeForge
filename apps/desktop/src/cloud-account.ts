@@ -37,6 +37,24 @@ export interface CloudAccount {
   planId?: string;
   planName?: string;
   creditBalance?: number;
+  /**
+   * True when CodeForge Cloud could not be reached and this is the last account the device signed
+   * in as (identity only — plan and credits are unknown, never assumed). The workspace stays
+   * usable with local/BYOK routes; Cloud-backed features report the outage themselves.
+   */
+  offline?: boolean;
+}
+
+/**
+ * The account to present when Cloud is unreachable: the remembered signed-in user, marked
+ * offline, with no plan or balance claimed. `null` when this device never completed a sign-in —
+ * an outage must not manufacture an account.
+ */
+export function offlineCloudAccount(rememberedUser: unknown): CloudAccount | null {
+  if (typeof rememberedUser !== "object" || rememberedUser === null) return null;
+  const user = rememberedUser as CloudAccountUser;
+  if (typeof user.displayName !== "string" && typeof user.id !== "string") return null;
+  return { user, offline: true };
 }
 
 /** Shape of CodeForge Cloud's `/v1/usage` summary. `recentEvents` entries are opaque to the desktop. */

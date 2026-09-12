@@ -332,7 +332,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
 
   const currentStatus = getCurrentProviderStatus();
   const autoRouteAvailable = apiModels.some((model) => model.eligible === true && model.freeStatus === "verified_free" && model.costProfile?.isFree === true);
-  const forgeZeroTrust = resolveForgeZeroTrust(selectedModelId, apiModels.find((m) => m.id === selectedModelId), autoRouteAvailable);
+  const forgeZeroTrust = resolveForgeZeroTrust(selectedModelId, apiModels.find((m) => m.id === selectedModelId), autoRouteAvailable, (runtimeStatus?.discoveringProviders ?? 0) > 0);
   const runtimeLabel = resolveRuntimeLabel(selectedModelId, apiModels.find((m) => m.id === selectedModelId));
 
   // A smoke-fixture account has no real identity fields — it must never masquerade as a real
@@ -576,7 +576,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
               >
                 <AccountAvatar account={cloudAccount} />
                 <span>{displayName ?? "CodeForge account"}</span>
-                <span className="account-plan">{cloudAccount.planName ?? "CodeForge Free"}</span>
+                <span className="account-plan">{cloudAccount.offline ? "Cloud offline" : cloudAccount.planName ?? "CodeForge Free"}</span>
               </button>
               {isAccountMenuOpen && (
                 <>
@@ -593,7 +593,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
                           {cloudAccount.identity?.login ? `@${cloudAccount.identity.login}` : "GitHub connected ✓"}
                         </div>
                         <div className="account-email" style={{ fontSize: 11 }}>
-                          {cloudAccount.identity?.email ?? cloudAccount.planName ?? "CodeForge Free"}
+                          {cloudAccount.offline ? "CodeForge Cloud is unreachable — local routes still work" : cloudAccount.identity?.email ?? cloudAccount.planName ?? "CodeForge Free"}
                         </div>
                       </div>
                     </div>

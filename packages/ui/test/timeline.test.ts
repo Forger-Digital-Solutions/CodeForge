@@ -185,3 +185,16 @@ describe("session isolation", () => {
     expect(tl.filter((i) => i.kind === "user")).toHaveLength(1);
   });
 });
+
+describe("buildTimeline — workflow-dispatched turns are not the user's words", () => {
+  it("renders an internal builder turn as a system line, never as a 'You' message", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("turn.started", { turnId: "wf", userMessage: "Add coupon support" }),
+      ev("turn.started", { turnId: "builder", userMessage: "You are CodeForge, an autonomous coding agent. Implement the following plan…", origin: "workflow", label: "Implementing the approved plan" }),
+    ]);
+    expect(tl.map((i) => i.kind)).toEqual(["user", "system"]);
+    expect((tl[0] as any).text).toBe("Add coupon support");
+    expect((tl[1] as any).text).toBe("Implementing the approved plan");
+  });
+});

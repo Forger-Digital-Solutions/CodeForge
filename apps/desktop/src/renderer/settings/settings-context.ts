@@ -50,6 +50,8 @@ export interface DesktopRuntimeStatus {
   backgroundTasks: number;
   recoverable: boolean;
   unrecoverableResources: string[];
+  /** Providers whose live free-model discovery is still running (0 once the catalog is settled). */
+  discoveringProviders?: number;
 }
 
 export interface SettingsContextValue {

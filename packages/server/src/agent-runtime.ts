@@ -1449,7 +1449,11 @@ export class AgentRuntime {
     } as unknown as WorkItem);
   }
 
-  async startTurn(userMessage: string, eventAdapter?: WorkspaceEventAdapter): Promise<string> {
+  async startTurn(
+    userMessage: string,
+    eventAdapter?: WorkspaceEventAdapter,
+    options?: { origin?: "user" | "workflow"; label?: string },
+  ): Promise<string> {
     // Single-turn exclusivity per session for real active turns
     if (this.demoMode) {
       for (const t of this.activeTurns.values()) {
@@ -1497,7 +1501,7 @@ export class AgentRuntime {
     // adapter, so the UI never mistakes a chat tool call for autonomous workflow evidence.
     const adapter = eventAdapter ?? this.createAdapter();
     adapter.emitStatusChanged("idle", "running");
-    adapter.emitTurnStarted(turnId, userMessage);
+    adapter.emitTurnStarted(turnId, userMessage, undefined, options?.origin ? { origin: options.origin, label: options.label } : undefined);
 
     const abortController = new AbortController();
     this.abortControllers.set(turnId, abortController);

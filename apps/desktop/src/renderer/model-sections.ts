@@ -195,11 +195,12 @@ export interface ForgeZeroTrustStatus {
  * record. Anything else — GEMS, a BYOK paid model, or a model the catalog doesn't recognize —
  * fails closed to a truthful "not verified" state rather than defaulting to green.
  */
-export function resolveForgeZeroTrust(selectedModelId: string | null, selected: ApiModel | undefined, autoAvailable = false): ForgeZeroTrustStatus {
+export function resolveForgeZeroTrust(selectedModelId: string | null, selected: ApiModel | undefined, autoAvailable = false, discovering = false): ForgeZeroTrustStatus {
   if (selectedModelId === "auto") {
-    return autoAvailable
-      ? { verifiedFree: true, label: "ForgeZero · Verified Free", detail: "ForgeAuto/Free · Automatic free routing" }
-      : { verifiedFree: false, label: "ForgeZero · No Free Route", detail: "ForgeAuto/Free has no eligible provider right now" };
+    if (autoAvailable) return { verifiedFree: true, label: "ForgeZero · Verified Free", detail: "ForgeAuto/Free · Automatic free routing" };
+    // While a connected provider's catalog is still being verified, "no route" is not yet a fact.
+    if (discovering) return { verifiedFree: false, label: "ForgeZero · Discovering free routes…", detail: "Verifying connected providers' live catalogs" };
+    return { verifiedFree: false, label: "ForgeZero · No Free Route", detail: "ForgeAuto/Free has no eligible provider right now" };
   }
   if (!selected) {
     return { verifiedFree: false, label: "ForgeZero · Unverified", detail: "No model selection recognized" };

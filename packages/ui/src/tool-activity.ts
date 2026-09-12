@@ -11,7 +11,7 @@
  */
 
 /** The salient argument for a tool call — the path, command, or query it acted on. */
-export function describeToolTarget(toolName: string, argsJson?: string): string | undefined {
+export function describeToolTarget(toolName: string, argsJson?: string, workspacePath?: string): string | undefined {
   const args = safeParse(argsJson);
   if (!args) return undefined;
 
@@ -19,10 +19,24 @@ export function describeToolTarget(toolName: string, argsJson?: string): string 
   const preferred = ["path", "file_path", "filePath", "file", "command", "cmd", "pattern", "query", "search", "url", "name", "directory", "dir"];
   for (const key of preferred) {
     const v = args[key];
-    if (typeof v === "string" && v.trim().length > 0) return shorten(v.trim());
+    if (typeof v === "string" && v.trim().length > 0) return shorten(relativeToWorkspace(v.trim(), workspacePath));
   }
   const first = Object.values(args).find((v) => typeof v === "string" && v.trim().length > 0);
-  return typeof first === "string" ? shorten(first.trim()) : undefined;
+  return typeof first === "string" ? shorten(relativeToWorkspace(first.trim(), workspacePath)) : undefined;
+}
+
+/**
+ * Models sometimes address files by absolute path. Inside the workspace that is noise: the user
+ * knows where the project lives, and the row is about the file.
+ */
+export function relativeToWorkspace(value: string, workspacePath?: string): string {
+  if (!workspacePath) return value;
+  const normalize = (p: string) => p.replace(/\\/g, "/").replace(/\/+$/, "");
+  const root = normalize(workspacePath);
+  const candidate = normalize(value);
+  if (candidate.toLowerCase().startsWith(`${root.toLowerCase()}/`)) return candidate.slice(root.length + 1);
+  if (candidate.toLowerCase() === root.toLowerCase()) return ".";
+  return value;
 }
 
 /**

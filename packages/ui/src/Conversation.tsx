@@ -5,7 +5,7 @@ import InlineComments from "./InlineComments.js";
 import DiffViewer from "./DiffViewer.js";
 import { buildTimeline, type TimelineItem } from "./timeline.js";
 import { parseAssistantContent, parseInlineSpans, reasoningSummary } from "./assistant-content.js";
-import { describeToolTarget, summarizeToolResult, hasToolDetail } from "./tool-activity.js";
+import { describeToolTarget, summarizeToolResult, hasToolDetail, relativeToWorkspace } from "./tool-activity.js";
 import { ActivityIcon, activityLabel, resolveActivityKind, type ActivityKind, type ActivityState } from "./activity-icons.js";
 import { EightBitStatusBadge } from "./EightBitStatusBadge.js";
 import { deriveLatestEightBitStatus } from "./eight-bit-status.js";
@@ -26,6 +26,8 @@ interface ConversationProps {
   onSuggestedPrompt?: (text: string) => void;
   /** Short context label shown under the empty-state heading, e.g. "CodeForge · main". */
   contextLabel?: string;
+  /** Workspace root; tool rows render paths relative to it. */
+  workspacePath?: string;
   /** Real signed-in display name for the greeting; omit/undefined falls back to a neutral greeting. */
   userDisplayName?: string;
   activityOverview?: ActivityOverviewData | null;
@@ -154,14 +156,14 @@ const ActivityLine = ({ kind, state = "static", filePath, verb, target, context,
  * user needs to follow the agent's work. Running calls animate; finished calls carry their result
  * inline and expand to the full output only on request, so a long transcript stays scannable.
  */
-const ToolActivity = ({ item }: { item: Extract<TimelineItem, { kind: "tool" }> }) => {
+const ToolActivity = ({ item, workspacePath }: { item: Extract<TimelineItem, { kind: "tool" }>; workspacePath?: string }) => {
   const [expanded, setExpanded] = useState(false);
   const running = item.status === "running";
   const bad = item.status === "failed" || item.status === "blocked";
   const activityState: ActivityState = item.status === "completed" ? "completed" : item.status === "blocked" ? "blocked" : bad ? "failed" : "active";
   const activityKind = resolveActivityKind(item.toolName);
 
-  const target = describeToolTarget(item.toolName, item.argsJson);
+  const target = describeToolTarget(item.toolName, item.argsJson, workspacePath);
   // A file operation's own report ("28 lines", "written") beats a line count of the tool's raw
   // output, which includes framing the user never asked about.
   const summary = item.fileDetail ?? summarizeToolResult(item);
@@ -185,7 +187,7 @@ const ToolActivity = ({ item }: { item: Extract<TimelineItem, { kind: "tool" }> 
 };
 
 /** Renders one reconstructed timeline item: user prompt, assistant prose, or tool activity. */
-const TimelineItemView = ({ item }: { item: TimelineItem }) => {
+const TimelineItemView = ({ item, workspacePath }: { item: TimelineItem; workspacePath?: string }) => {
   switch (item.kind) {
     case "user":
       return (
@@ -205,7 +207,9 @@ const TimelineItemView = ({ item }: { item: TimelineItem }) => {
         </div>
       );
     case "tool":
-      return <ToolActivity item={item} />;
+      return <ToolActivity item={item} workspacePath={workspacePath} />;
+    case "system":
+      return <ActivityLine kind="plan" state="completed" verb="CodeForge" target={item.text} />;
     case "file":
       return (
         <ActivityLine
@@ -213,7 +217,7 @@ const TimelineItemView = ({ item }: { item: TimelineItem }) => {
           state="completed"
           filePath={item.path}
           verb={item.action === "written" ? "Write" : "Read"}
-          target={item.path}
+          target={relativeToWorkspace(item.path, workspacePath)}
           meta={item.detail}
         />
       );
@@ -493,6 +497,7 @@ export default function Conversation({
   events,
   onSuggestedPrompt,
   contextLabel,
+  workspacePath,
   userDisplayName,
   activityOverview,
   isActivityLoading,
@@ -623,7 +628,7 @@ export default function Conversation({
         ) : useTimeline ? (
           <>
             {sanitizedTimeline.map((item) => (
-              <TimelineItemView key={item.id} item={item} />
+              <TimelineItemView key={item.id} item={item} workspacePath={workspacePath} />
             ))}
             {relevantItems
               .filter((w) => w.kind === "approval" || w.kind === "question")

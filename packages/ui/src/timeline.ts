@@ -22,6 +22,7 @@ export type TimelineItem =
       /** What the file operation this call performed reported ("28 lines", "written"). */
       fileDetail?: string;
     }
+  | { kind: "system"; id: string; seq: number; turnId: string; text: string }
   | { kind: "file"; id: string; seq: number; turnId?: string; path: string; action: "read" | "written"; detail?: string }
   | { kind: "command"; id: string; seq: number; turnId?: string; command: string; exitCode: number; output?: string };
 
@@ -54,10 +55,16 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
   for (const e of ordered) {
     switch (e.type) {
       case "turn.started": {
-        const p = e.payload;
+        const p = e.payload as { turnId: string; userMessage: string; origin?: "user" | "workflow"; label?: string };
         if (!seenUserTurns.has(p.turnId)) {
           seenUserTurns.add(p.turnId);
-          items.push({ kind: "user", id: `user-${p.turnId}`, seq: e.seq, turnId: p.turnId, text: p.userMessage });
+          if (p.origin === "workflow") {
+            // An internal turn the workflow dispatched (builder/repair prompt). Its text is the
+            // workflow's instruction to the agent, not something the user wrote.
+            items.push({ kind: "system", id: `system-${p.turnId}`, seq: e.seq, turnId: p.turnId, text: p.label ?? "Agent turn started" });
+          } else {
+            items.push({ kind: "user", id: `user-${p.turnId}`, seq: e.seq, turnId: p.turnId, text: p.userMessage });
+          }
         }
         break;
       }

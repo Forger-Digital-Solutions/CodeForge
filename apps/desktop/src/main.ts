@@ -18,6 +18,7 @@ import {
   type SettingsSnapshot,
 } from "./app-settings.js";
 import { readZeroUnitEnvironmentCredentials } from "./provider-environment.js";
+import { offlineCloudAccount } from "./cloud-account.js";
 import {
   CONTROL_PLANE_TOKEN_HEADER,
   isAllowedPrimaryWindowNavigation,
@@ -86,6 +87,8 @@ const CLOUD_CATALOG_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 // invalid-auth providers from routing (a 401 marks a provider auth_required — it is
 // never hammered on every task; the UI prompts to reconnect).
 const providerAuthState = new Map<string, "ok" | "auth_required" | "rate_limited">();
+/** Providers whose live free-model discovery is in flight — "no free route" is not yet a fact. */
+const discoveringProviders = new Set<string>();
 
 interface ProjectInfo {
   id: string;
@@ -554,22 +557,22 @@ function hideToTray(): void {
   mainWindow?.hide();
 }
 
-async function currentRuntimeStatus(): Promise<CodeForgeRuntimeStatus> {
-  if (!server) {
-    return {
-      activeWork: false,
-      activeWorkflows: 0,
-      activeAgentTurns: 0,
-      activeCommands: 0,
-      pendingApprovals: 0,
-      activeVerifications: 0,
-      hostedContinuations: 0,
-      backgroundTasks: 0,
-      recoverable: true,
-      unrecoverableResources: [],
-    };
-  }
-  return server.getRuntimeStatus();
+async function currentRuntimeStatus(): Promise<CodeForgeRuntimeStatus & { discoveringProviders: number }> {
+  const base: CodeForgeRuntimeStatus = server
+    ? await server.getRuntimeStatus()
+    : {
+        activeWork: false,
+        activeWorkflows: 0,
+        activeAgentTurns: 0,
+        activeCommands: 0,
+        pendingApprovals: 0,
+        activeVerifications: 0,
+        hostedContinuations: 0,
+        backgroundTasks: 0,
+        recoverable: true,
+        unrecoverableResources: [],
+      };
+  return { ...base, discoveringProviders: discoveringProviders.size };
 }
 
 async function completeSafeQuit(): Promise<void> {
@@ -801,6 +804,16 @@ async function discoverProviderFree(providerId: string): Promise<number> {
   if (!providerCatalog || !firewall || !modelRegistry) return 0;
   const adapter = providerCatalog.get(providerId);
   if (!adapter) return 0;
+  discoveringProviders.add(providerId);
+  try {
+    return await discoverProviderFreeInner(providerId, adapter);
+  } finally {
+    discoveringProviders.delete(providerId);
+  }
+}
+
+async function discoverProviderFreeInner(providerId: string, adapter: ProviderAdapter): Promise<number> {
+  if (!firewall || !modelRegistry) return 0;
   try {
     const models = await adapter.listModels();
     const live: LiveModelInfo[] = models.map((m) => ({
@@ -2157,9 +2170,14 @@ ipcMain.handle("cloud:account:get", async (event) => {
     if (res.ok) {
       return await res.json();
     }
-    return null;
+    // Cloud answered and refused (401 without a usable refresh, 403, …): the session is not valid.
+    if (res.status >= 400 && res.status < 500) return null;
+    // A 5xx is an outage, not a sign-out.
+    return offlineCloudAccount(tokens.user);
   } catch {
-    return null;
+    // Unreachable Cloud must not lock a signed-in user out of local work: keep the remembered
+    // identity, claim nothing about plan or credits.
+    return offlineCloudAccount(tokens.user);
   }
 });
 
