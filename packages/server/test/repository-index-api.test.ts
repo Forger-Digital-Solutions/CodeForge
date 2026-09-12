@@ -61,6 +61,37 @@ describe("repository index API", () => {
     await waitForReady();
   });
 
+  it("re-opening the same workspace while it indexes never races the index file", async () => {
+    // The renderer re-opens the current project on every reload. A second instance on the same
+    // SQLite file used to hit the first one's write lock, treat it as corruption and try to move
+    // the index aside (EBUSY) — leaving the workspace in ERROR. Same workspace = same indexer.
+    const before = (server as unknown as { repositoryIntelligence: unknown }).repositoryIntelligence;
+    for (let i = 0; i < 5; i++) {
+      expect((await request(port, "/api/workspace/set", "POST", { path: root })).status).toBe(200);
+    }
+    const ready = await waitForReady();
+    expect(ready.state).not.toBe("ERROR");
+    expect((server as unknown as { repositoryIntelligence: unknown }).repositoryIntelligence).toBe(before);
+    expect(fs.readdirSync(path.dirname(String(ready.indexPath))).filter((name) => name.includes(".corrupt-"))).toEqual([]);
+  });
+
+  it("switching workspaces mid-index cancels the old indexer and indexes the new one", async () => {
+    const other = fs.mkdtempSync(path.join(os.tmpdir(), "codeforge-repository-api-other-"));
+    try {
+      fs.mkdirSync(path.join(other, "src"));
+      fs.writeFileSync(path.join(other, "src", "other.ts"), "export function otherNeedle(): number { return 2; }\n");
+      expect((await request(port, "/api/workspace/set", "POST", { path: other })).status).toBe(200);
+      const ready = await waitForReady();
+      expect(String(ready.root)).toBe(fs.realpathSync(other));
+      expect((await request(port, "/api/repository-index/search?q=otherNeedle")).body.items).toEqual(expect.arrayContaining([expect.objectContaining({ path: "src/other.ts" })]));
+      // An explicit rebuild still rebuilds the current workspace.
+      expect((await request(port, "/api/repository-index/rebuild", "POST")).status).toBe(202);
+      expect(String((await waitForReady()).state)).toMatch(/READY|DEGRADED/);
+    } finally {
+      fs.rmSync(other, { recursive: true, force: true });
+    }
+  });
+
   it("re-stating an enabled index is idempotent — no rebuild, no interruption", async () => {
     // The desktop re-applies its preferences after every settings write; that must never throw
     // away a live index and rescan the workspace.

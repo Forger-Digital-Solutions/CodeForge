@@ -56,6 +56,14 @@ const DYNAMIC_CALL_KINDS = new Set(["dynamic_import", "dynamic_require", "comput
 
 const DEFAULT_MAX_FILE_BYTES = 2 * 1024 * 1024;
 const DEFAULT_MAX_FILES = 1_000_000;
+/** SQLite/OS "busy" conditions — contention from another live handle, never data corruption. */
+function isBusyError(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  if (typeof code === "string" && /^(SQLITE_BUSY|SQLITE_LOCKED|EBUSY|EPERM)/.test(code)) return true;
+  const message = error instanceof Error ? error.message : String(error);
+  return /database is locked|SQLITE_BUSY|resource busy or locked/i.test(message);
+}
+
 /** Longest stretch the parse loop may hold the event loop before yielding. */
 const PARSE_SLICE_BUDGET_MS = 40;
 const DEFAULT_LIMIT = 50;
@@ -237,13 +245,29 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       if (!this.meta("graph_generation")) this.writeMeta("graph_generation", "1");
       this.state = this.meta("state") as IndexStatus["state"] || "NOT_INDEXED";
     } catch (error) {
+      // A lock held by another live instance of this index (an in-flight indexer on the same
+      // workspace) is contention, not corruption: moving the file aside would destroy a healthy
+      // index out from under it. Surface it; the owner of the other instance must sequence opens.
+      if (isBusyError(error)) {
+        try { this.db?.close(); } catch {}
+        this.db = undefined;
+        throw new Error(`Repository index is in use by another instance: ${String(error)}`);
+      }
       this.recoverCorruption(error);
     }
   }
 
   private recoverCorruption(original: unknown): void {
     try { this.db?.close(); } catch {}
-    if (fs.existsSync(this.indexPath)) fs.renameSync(this.indexPath, `${this.indexPath}.corrupt-${Date.now()}`);
+    if (fs.existsSync(this.indexPath)) {
+      try {
+        fs.renameSync(this.indexPath, `${this.indexPath}.corrupt-${Date.now()}`);
+      } catch (renameError) {
+        // The file is held open elsewhere; do not fight over it.
+        if (isBusyError(renameError)) throw new Error(`Repository index is in use by another instance: ${String(original)}`);
+        throw renameError;
+      }
+    }
     try {
       this.db = openSqliteDatabase(this.indexPath).db;
       this.initializeSchema();

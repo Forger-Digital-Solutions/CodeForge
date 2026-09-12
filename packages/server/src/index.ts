@@ -138,6 +138,8 @@ export class CodeForgeServer {
   private workflowService: WorkflowService;
   private repositoryIntelligence: RepositoryIntelligence | null = null;
   private repositoryIndexEnabled = true;
+  /** Cancels the in-flight indexer when its workspace is replaced or indexing is switched off. */
+  private repositoryIndexController: AbortController | null = null;
   private repositoryIndexSnapshot: Record<string, unknown> = { state: "NOT_INDEXED", enabled: true, indexVersion: REPOSITORY_INDEX_VERSION, parserVersion: REPOSITORY_PARSER_VERSION };
   private readonly userIntentHold: UserIntentHoldController;
   private readonly afterApprovalResolvedBoundary?: () => Promise<void>;
@@ -439,6 +441,8 @@ export class CodeForgeServer {
     this.clients.clear();
     const repoIntel = this.repositoryIntelligence;
     this.repositoryIntelligence = null;
+    // Cancel an in-flight index so shutdown never waits on a long parse.
+    this.repositoryIndexController?.abort();
     await repoIntel?.closeWorkspace();
     const cacheStore = this.forgeGreenCacheStore;
     this.forgeGreenCacheStore = undefined;
@@ -1298,14 +1302,25 @@ export class CodeForgeServer {
     this.startRepositoryIndex(workspacePath);
   }
 
-  private startRepositoryIndex(workspacePath: string): void {
+  private startRepositoryIndex(workspacePath: string, options: { force?: boolean } = {}): void {
     const previous = this.repositoryIntelligence;
-    if (previous) void previous.closeWorkspace();
     if (!this.repositoryIndexEnabled) {
       this.repositoryIntelligence = null;
+      this.repositoryIndexController?.abort();
+      if (previous) void previous.closeWorkspace().catch(() => undefined);
       this.repositoryIndexSnapshot = { state: "NOT_INDEXED", enabled: false, root: workspacePath, indexVersion: REPOSITORY_INDEX_VERSION, parserVersion: REPOSITORY_PARSER_VERSION, local: true };
       return;
     }
+    // Re-opening the workspace that is already indexed (or indexing) is a no-op: the renderer
+    // re-opens the current project on every reload, and a second instance on the same index file
+    // races the first one's write transaction.
+    if (!options.force && previous && this.repositoryIndexSnapshot.root === workspacePath && this.repositoryIndexSnapshot.state !== "ERROR") return;
+    // A different workspace: stop the previous indexer and wait for it to release the index
+    // before the new one opens anything.
+    this.repositoryIndexController?.abort();
+    const released = previous ? previous.closeWorkspace().catch(() => undefined) : Promise.resolve();
+    const controller = new AbortController();
+    this.repositoryIndexController = controller;
     const intelligence = createRepositoryIntelligence({
       cacheRoot: process.env.CODEFORGE_REPOSITORY_INDEX_ROOT ?? (process.env.VITEST ? path.join(os.tmpdir(), "codeforge-test-repository-indexes") : undefined),
       onProgress: (progress) => {
@@ -1315,12 +1330,12 @@ export class CodeForgeServer {
     });
     this.repositoryIntelligence = intelligence;
     this.repositoryIndexSnapshot = { state: "INDEXING", enabled: true, root: workspacePath, indexVersion: REPOSITORY_INDEX_VERSION, parserVersion: REPOSITORY_PARSER_VERSION, local: true };
-    void intelligence.openWorkspace(workspacePath).then(async () => {
-      if (this.repositoryIntelligence !== intelligence) return;
+    void released.then(() => intelligence.openWorkspace(workspacePath)).then(async () => {
+      if (this.repositoryIntelligence !== intelligence || controller.signal.aborted) return;
       const current = intelligence.status();
-      if (current.fileCount === 0 || current.state === "NOT_INDEXED" || current.state === "ERROR") await intelligence.indexWorkspace();
-      else await intelligence.refresh();
-      if (this.repositoryIntelligence !== intelligence) return;
+      if (current.fileCount === 0 || current.state === "NOT_INDEXED" || current.state === "ERROR") await intelligence.indexWorkspace(controller.signal);
+      else await intelligence.refresh(undefined, controller.signal);
+      if (this.repositoryIntelligence !== intelligence || controller.signal.aborted) return;
       if (!process.env.VITEST) intelligence.startWatching();
       if (this.repositoryIntelligence === intelligence) this.repositoryIndexSnapshot = { ...intelligence.status(), enabled: true, local: true };
     }).catch((error) => {
@@ -1346,7 +1361,7 @@ export class CodeForgeServer {
       res.end(JSON.stringify({ error: "No workspace set" }));
       return;
     }
-    this.startRepositoryIndex(this.activeWorkspacePath);
+    this.startRepositoryIndex(this.activeWorkspacePath, { force: true });
     res.writeHead(202, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
     res.end(JSON.stringify({ ok: true, state: "INDEXING" }));
   }
