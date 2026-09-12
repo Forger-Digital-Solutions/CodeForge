@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "40882f10cd19b8f118c759cc479c4c40e124a66b95dcb65cb90f4198541a530a",
-  "surfaceVersion": "fg12f-certified-v1-r2-package-metadata",
+  "sourceStateId": "5551787971c70ed44ff345043a05c90cbaeff5c6e206dab00ba32dd5836a3c28",
+  "surfaceVersion": "fg12f-certified-v1-codex-r1-runtime-hardening",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -39,11 +39,11 @@
     "packages/forge-green/src/optimization-types.ts": "1539abf45eaf618db3c2a68cf398b2320db5e7bd",
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
     "packages/router/package.json": "316fe9f303ac9a67cd11c5b111d3c6d8bea4ffe9",
-    "packages/router/src/index.ts": "c2dc773f2ce117e5047db273d56c71eb5e10f6dc",
-    "packages/server/src/agent-runtime.ts": "72a9690242f2f0cd0defa32fca5b77db22ec4795",
+    "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
+    "packages/server/src/agent-runtime.ts": "9847d445ddb25bfa9993b50bd6cd310ce034ef60",
     "packages/server/src/autonomous-orchestrator.ts": "4a72d071796bb928de0debc73c9f6a61a1caddeb",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "0aefaf664149c7b1e6079c546ba2df157d2aec27",
+    "packages/server/src/workflow-service.ts": "e5bcba685cbf059fead7890a56c4ba4843a7a5fe",
     "packages/sessions/src/persistence.ts": "773d64921c840a0ca860b6e1985184dace727c8a",
     "packages/sessions/src/postgres-persistence.ts": "f47a6a0e3cd9e3064c17b00b4e6516082f738068",
     "packages/sessions/src/session-state.ts": "5feee78c1b875877637cac624d2d614240507f06",
@@ -259,7 +259,35 @@
       "regressionEvidence": "Codex full-system R1 source-state verification plus the repository regression suite; exact results are recorded in docs/codeforge-codex-full-system-certification-r1.*.",
       "recertifiedAt": "2026-09-12",
       "sourceStateConstant": "CODEFORGE_CODEX_FULL_SYSTEM_R1_SOURCE_STATE"
+    },
+    {
+      "label": "Codex full-system R1 runtime hardening",
+      "reason": "Codex full-system R1 changed three material files while hardening routing, approvals, budgets and the task UI after the first live packaged autonomous tasks. None of the changes touch ForgeGreen optimization candidates, the verification-evidence-reuse advisor, the FG-12F cost gate, or ForgeVerify validity authority; the FG-12F campaign evidence remains historically accurate for the source state it recorded. This entry records the drift explicitly rather than rehashing that record.",
+      "priorSourceStateId": "40882f10cd19b8f118c759cc479c4c40e124a66b95dcb65cb90f4198541a530a",
+      "priorSurfaceVersion": "fg12f-certified-v1-r2-package-metadata",
+      "resultingSourceStateId": "5551787971c70ed44ff345043a05c90cbaeff5c6e206dab00ba32dd5836a3c28",
+      "resultingSurfaceVersion": "fg12f-certified-v1-codex-r1-runtime-hardening",
+      "changes": [
+        {
+          "file": "packages/router/src/index.ts",
+          "change": "ForgeRouter.rank() now treats requiredCapabilities that a model record can state (text, coding, toolCalling, vision, structuredOutput, longContext) as hard requirements instead of scoring bonuses; the agent loop drives tools natively, so a route without toolCalling can never win a tool-driven coding route. ForgeGreen candidates and ForgeVerify reuse authority do not consult this ranking.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Approval session grants ('Allow for Session' is now remembered per session runtime for safe/moderate risk), approval prompts name the file/command, tool_call_completed arguments honored, startTurn preserves the existing session record, turns carry an origin/label, explicit pins of non-tool routes fail closed. Verification evidence handling, ForgeGreen ledger persistence and the duplicate-action supervisor are unchanged.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "Agent working budget per implementation/repair turn raised from 120 s to a configurable 20 min with cancellation of the turn on exhaustion (previously an orphaned agent kept running after the workflow failed); plan approval prompts list the plan's steps; internal builder/repair turns are marked origin=workflow. runVerification dispatch, the ForgeVerify observer wiring and the Candidate D cost gate are untouched.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Repository regression suite from the R1 runtime candidate plus the packaged smoke (full/interrupt/recover) and the live packaged autonomous task; exact results are recorded in docs/codeforge-codex-full-system-certification-r1.*.",
+      "recertifiedAt": "2026-09-12",
+      "sourceStateConstant": "CODEFORGE_CODEX_FULL_SYSTEM_R1_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm."
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above."
 }
