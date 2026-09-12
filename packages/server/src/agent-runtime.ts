@@ -2127,7 +2127,17 @@ export class AgentRuntime {
         if (requested) {
           if (requested.tier === "gems_paid") return requested;
           const v = this.firewall.verify(providerId, modelId);
-          if (v.ok) return requested;
+          if (v.ok) {
+            // The agent loop drives tools through native tool calls; a route the provider's own
+            // catalog marks as not tool-capable cannot execute a turn, so say so up front rather
+            // than spending a request to discover it.
+            if (!requested.capabilities.toolCalling) {
+              throw new Error(
+                `Selected model ${providerId}::${modelId} does not support tool calling and cannot run agent tasks. Choose another verified free route or ForgeAuto.`,
+              );
+            }
+            return requested;
+          }
         }
         throw new Error(
           `Exact model ${providerId}::${modelId} is no longer registered or available. Exact model execution failed closed.`

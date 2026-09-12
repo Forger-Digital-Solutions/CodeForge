@@ -1361,8 +1361,14 @@ export class CodeForgeServer {
       try {
         const parsed = JSON.parse(body) as { enabled?: unknown };
         if (typeof parsed.enabled !== "boolean") throw new Error("enabled must be a boolean");
+        const wasEnabled = this.repositoryIndexEnabled;
         this.repositoryIndexEnabled = parsed.enabled;
-        if (parsed.enabled && this.activeWorkspacePath) this.startRepositoryIndex(this.activeWorkspacePath);
+        // Idempotent: re-stating "enabled" must not throw away and rebuild a live index — the desktop
+        // re-applies its preferences after every settings write, and a large workspace would be
+        // rescanned on each one. Only an actual off→on transition (or no index yet) starts indexing.
+        if (parsed.enabled && this.activeWorkspacePath && (!wasEnabled || !this.repositoryIntelligence)) {
+          this.startRepositoryIndex(this.activeWorkspacePath);
+        }
         if (!parsed.enabled) {
           const previous = this.repositoryIntelligence;
           this.repositoryIntelligence = null;

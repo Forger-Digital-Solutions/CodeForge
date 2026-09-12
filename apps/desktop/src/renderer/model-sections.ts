@@ -27,6 +27,21 @@ export interface ApiModel {
   eligible?: boolean;
 }
 
+/**
+ * Whether a route can drive CodeForge's agent loop at all. The loop executes tools through native
+ * tool calls, so a $0 route without tool calling (a content-safety classifier, a music model) is
+ * not a usable coding route no matter how "free" it is — offering it would only waste a request.
+ */
+export function canDriveAgent(m: Pick<ApiModel, "capabilities">): boolean {
+  return m.capabilities?.toolCalling !== false;
+}
+
+export function selectorAvailability(m: ApiModel): { available: boolean; unavailableReason?: string } {
+  if (m.eligible !== true) return { available: false, unavailableReason: "Provider or entitlement is unavailable" };
+  if (!canDriveAgent(m)) return { available: false, unavailableReason: "No tool calling — cannot run agent tasks" };
+  return { available: true };
+}
+
 // Muse Spark is a promotional model excluded from normal routing entirely — hide any stray record.
 const HIDDEN_MODEL_RE = /muse[-\s]?spark/i;
 export function isHiddenModel(id: string): boolean {
@@ -140,13 +155,13 @@ export function buildModelSections(apiModels: ApiModel[], models: ModelSelectorI
     if (isHiddenModel(m.id)) continue;
     if (INTERNAL_SENTINEL_MODEL_IDS.has(m.id)) continue;
 
+    const availability = selectorAvailability(m);
     const selectorItem: ModelSelectorItem = {
       id: m.id,
       displayName: m.displayName,
       tier: m.tier === "gems_paid" ? "gems_paid" : "free",
-      description: accessBadge(m),
-      available: m.eligible === true,
-      unavailableReason: m.eligible === false ? "Provider or entitlement is unavailable" : undefined,
+      description: canDriveAgent(m) ? accessBadge(m) : `${accessBadge(m)} · No tools`,
+      ...availability,
     };
 
     if (m.tier === "gems_paid") {

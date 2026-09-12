@@ -3,7 +3,7 @@ import { WorkspaceApp, type ModelSection } from "@codeforge/ui";
 import type { Project } from "./App.js";
 import type { ModelSelectorItem } from "@codeforge/ui";
 import ModelDetails from "./ModelDetails.js";
-import { accessBadge, buildModelSections, isHiddenModel, resolveForgeZeroTrust, resolveRuntimeLabel, type ApiModel } from "./model-sections.js";
+import { accessBadge, buildModelSections, canDriveAgent, isHiddenModel, resolveForgeZeroTrust, resolveRuntimeLabel, selectorAvailability, type ApiModel } from "./model-sections.js";
 import { classifyGitWorkspace, GIT_WORKSPACE_INFO_ARGS, type GitWorkspaceInfo } from "./git-workspace-info.js";
 import SettingsApp from "./settings/SettingsApp.js";
 import type { SettingsContextValue, CloudAccountView, SystemInfoView, DesktopRuntimeStatus, RepositoryIndexStatus } from "./settings/settings-context.js";
@@ -57,6 +57,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   const appliedDefaultModelRef = useRef(false);
   const notificationPrefsRef = useRef<AppSettings["notifications"] | null>(null);
   const previousCountersRef = useRef<RunningCounters | null>(null);
+  const discoveringProvidersRef = useRef(0);
 
   const loadCloudAccount = useCallback(async () => {
     try {
@@ -170,9 +171,8 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
           id: m.id,
           displayName: m.displayName,
           tier: m.tier === "gems_paid" ? ("gems_paid" as const) : ("free" as const),
-          description: m.eligible === false ? `${accessBadge(m)} · Unavailable` : accessBadge(m),
-          available: m.eligible === true,
-          unavailableReason: m.eligible === false ? "Provider or entitlement is unavailable" : undefined,
+          description: m.eligible === false ? `${accessBadge(m)} · Unavailable` : canDriveAgent(m) ? accessBadge(m) : `${accessBadge(m)} · No tools`,
+          ...selectorAvailability(m),
         })),
       ];
       setModels(modelItems);
@@ -231,6 +231,11 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
         const status = await window.electronAPI!.getRuntimeStatus() as DesktopRuntimeStatus;
         if (cancelled || !status) return;
         setRuntimeStatus(status);
+        // Discovery just finished: show the verified catalog now rather than at the next poll.
+        if (discoveringProvidersRef.current > 0 && (status.discoveringProviders ?? 0) === 0) {
+          void refreshModelsAndHealth();
+        }
+        discoveringProvidersRef.current = status.discoveringProviders ?? 0;
         const prefs = notificationPrefsRef.current;
         if (prefs && window.electronAPI?.showNotification) {
           const notifications = computeWorkNotifications(previousCountersRef.current, status, prefs, document.hasFocus());

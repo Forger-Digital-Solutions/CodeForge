@@ -56,6 +56,8 @@ const DYNAMIC_CALL_KINDS = new Set(["dynamic_import", "dynamic_require", "comput
 
 const DEFAULT_MAX_FILE_BYTES = 2 * 1024 * 1024;
 const DEFAULT_MAX_FILES = 1_000_000;
+/** Longest stretch the parse loop may hold the event loop before yielding. */
+const PARSE_SLICE_BUDGET_MS = 40;
 const DEFAULT_LIMIT = 50;
 const MAX_QUERY_LIMIT = 200;
 const BINARY_EXTENSIONS = new Set([".7z", ".avi", ".bmp", ".class", ".dll", ".doc", ".docx", ".eot", ".exe", ".gif", ".gz", ".ico", ".jar", ".jpeg", ".jpg", ".mov", ".mp3", ".mp4", ".o", ".obj", ".otf", ".pdf", ".png", ".so", ".tar", ".ttf", ".wav", ".webm", ".woff", ".woff2", ".xls", ".xlsx", ".zip"]);
@@ -443,8 +445,17 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
         this.deleteFile(removed, true);
       }
       let processed = 0;
+      // Time-sliced: parsing runs on the server's event loop, so a fixed file-count batch let one
+      // batch of large TypeScript files block every control-plane request (approvals, SSE, tool
+      // calls) for 10+ seconds on a monorepo. Yield whenever a slice has consumed its budget.
+      let sliceStartedAt = Date.now();
       for (const relativePath of worklist) {
         if (signal?.aborted) throw new Error("Repository indexing cancelled");
+        if (Date.now() - sliceStartedAt >= PARSE_SLICE_BUDGET_MS) {
+          this.progress("parse", worklist.length, processed, symbolsIndexed, edgesIndexed, errors, started);
+          await new Promise<void>((resolve) => setImmediate(resolve));
+          sliceStartedAt = Date.now();
+        }
         const discovery = discoveredByPath.get(relativePath) ?? requeueDiscovery.get(relativePath);
         if (!discovery) continue;
         const absolute = safeRealFile(identity.realRoot, relativePath);
@@ -556,6 +567,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
         if (processed % this.options.batchSize === 0) {
           this.progress("parse", worklist.length, processed, symbolsIndexed, edgesIndexed, errors, started);
           await new Promise<void>((resolve) => setImmediate(resolve));
+          sliceStartedAt = Date.now();
         }
       }
       this.insertPackageEdges();

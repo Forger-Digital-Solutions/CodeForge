@@ -207,3 +207,25 @@ describe("resolveRuntimeLabel", () => {
     expect(resolveRuntimeLabel("deleted-model", undefined).label).toBe("Unknown");
   });
 });
+
+describe("routes that cannot drive the agent loop", () => {
+  const caps = (toolCalling: boolean) => ({ text: true, coding: true, toolCalling, vision: false, structuredOutput: true, longContext: true });
+
+  it("locks a verified-free route without tool calling and says why", () => {
+    // Live OpenRouter catalog: google/lyria-3-*-preview is $0 and "eligible", but it is a music
+    // model with no tool calling — offering it as a coding route only wastes a request.
+    const lyria = makeModel({ id: "google/lyria-3-pro-preview", providerId: "openrouter", accessClass: "FREE_ROUTED", capabilities: caps(false) });
+    const sections = buildModelSections([lyria], []);
+    const row = sections.flatMap((s) => s.models).find((i) => i.id === lyria.id)!;
+    expect(row.available).toBe(false);
+    expect(row.unavailableReason).toMatch(/tool calling/i);
+    expect(row.description).toContain("No tools");
+  });
+
+  it("keeps tool-capable verified-free routes selectable", () => {
+    const nemotron = makeModel({ id: "nvidia/nemotron-3-super-120b-a12b:free", providerId: "openrouter", accessClass: "FREE_ROUTED", capabilities: caps(true) });
+    const row = buildModelSections([nemotron], []).flatMap((s) => s.models).find((i) => i.id === nemotron.id)!;
+    expect(row.available).toBe(true);
+    expect(row.description).not.toContain("No tools");
+  });
+});

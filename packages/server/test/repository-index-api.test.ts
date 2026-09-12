@@ -60,4 +60,17 @@ describe("repository index API", () => {
     expect((await request(port, "/api/repository-index/rebuild", "POST")).status).toBe(202);
     await waitForReady();
   });
+
+  it("re-stating an enabled index is idempotent — no rebuild, no interruption", async () => {
+    // The desktop re-applies its preferences after every settings write; that must never throw
+    // away a live index and rescan the workspace.
+    await waitForReady();
+    const before = (server as unknown as { repositoryIntelligence: unknown }).repositoryIntelligence;
+    expect(before).toBeTruthy();
+    for (let i = 0; i < 3; i++) {
+      expect((await request(port, "/api/repository-index/settings", "POST", { enabled: true })).status).toBe(200);
+      expect(String((await request(port, "/api/repository-index/status")).body.state)).toBe("READY");
+    }
+    expect((server as unknown as { repositoryIntelligence: unknown }).repositoryIntelligence).toBe(before);
+  });
 });

@@ -80,6 +80,8 @@ let trayStatusTimer: NodeJS.Timeout | null = null;
 let isQuitting = false;
 let closeRequestInFlight = false;
 let shutdownPromise: Promise<void> | null = null;
+/** How long a requested quit may linger after app.quit() before the process is exited outright. */
+const QUIT_GRACE_MS = 2_000;
 let cloudCatalogRefreshTimer: NodeJS.Timeout | null = null;
 /** Mirrors CloudProviderRegistry's own DEFAULT_REFRESH_TTL_MS on the cloud side. */
 const CLOUD_CATALOG_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
@@ -586,11 +588,23 @@ async function completeSafeQuit(): Promise<void> {
     trayStatusTimer = null;
   }
   shutdownPromise = (async () => {
+    console.log("[CodeForge] quit: stopping local runtime");
     if (server) {
       await server.stop();
       server = null;
     }
+    console.log("[CodeForge] quit: local runtime stopped, quitting");
     app.quit();
+    // Observed on Windows: with every window closed and the runtime stopped, the browser process
+    // can idle indefinitely (a provider-catalog keep-alive socket was the only live handle) and
+    // the user is left with an invisible CodeForge in Task Manager. Everything durable is already
+    // persisted at this point, so a bounded forced exit is safe — an exit the user asked for must
+    // actually happen.
+    const fallback = setTimeout(() => {
+      console.warn(`[CodeForge] quit: process still alive ${QUIT_GRACE_MS}ms after app.quit(); exiting`);
+      app.exit(0);
+    }, QUIT_GRACE_MS);
+    fallback.unref?.();
   })();
   return shutdownPromise;
 }
@@ -911,20 +925,28 @@ function controlPlaneFetch(pathname: string, init?: RequestInit): Promise<Respon
   return fetch(`http://localhost:${LOCAL_SERVER_PORT}${pathname}`, { ...init, headers });
 }
 
-/** Apply persisted preferences owned by the local runtime at startup and immediately after edits. */
-async function applyRuntimeSettings(settings: AppSettings): Promise<void> {
-  await Promise.allSettled([
-    controlPlaneFetch("/api/privacy-mode", {
+/**
+ * Apply persisted preferences owned by the local runtime at startup and immediately after edits.
+ * With `previous`, only the groups that actually changed are re-applied: a notification toggle must
+ * not cost a repository-index round trip (it made every settings write take ~800 ms).
+ */
+async function applyRuntimeSettings(settings: AppSettings, previous?: AppSettings): Promise<void> {
+  const calls: Promise<Response>[] = [];
+  if (!previous || previous.privacy.routingMode !== settings.privacy.routingMode) {
+    calls.push(controlPlaneFetch("/api/privacy-mode", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mode: settings.privacy.routingMode }),
-    }),
-    controlPlaneFetch("/api/repository-index/settings", {
+    }));
+  }
+  if (!previous || previous.workspace.repositoryIndexEnabled !== settings.workspace.repositoryIndexEnabled) {
+    calls.push(controlPlaneFetch("/api/repository-index/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ enabled: settings.workspace.repositoryIndexEnabled }),
-    }),
-  ]);
+    }));
+  }
+  await Promise.allSettled(calls);
 }
 
 /**
@@ -1657,12 +1679,16 @@ async function startPrimaryInstance(): Promise<void> {
   // already-connected providers. Failures are non-fatal (snapshot remains); the UI refreshes when
   // provider-updated fires. Never blocks window paint.
   if (!PACKAGED_SMOKE && modelRegistry) {
+    // The whole window — registry refresh and then per-provider verification — is "discovering":
+    // until it ends, "no free route" is not yet a fact the UI may state.
+    const pendingDiscovery = ROUTABLE_PROVIDER_IDS.filter((id) => providerCatalog?.get(id));
+    for (const id of pendingDiscovery) discoveringProviders.add(id);
     void modelRegistry
       .refresh()
       .catch(() => {})
       .finally(() => {
-        for (const id of ROUTABLE_PROVIDER_IDS) {
-          if (providerCatalog?.get(id)) void discoverProviderFree(id);
+        for (const id of pendingDiscovery) {
+          void discoverProviderFree(id).finally(() => discoveringProviders.delete(id));
         }
       });
   }
@@ -1949,8 +1975,9 @@ ipcMain.handle("settings:get", (event): SettingsSnapshot => {
 ipcMain.handle("settings:set", async (event, payload: { settings?: unknown; closeBehavior?: unknown }) => {
   assertMainWindowSender(event);
   if (payload === null || typeof payload !== "object") throw new Error("Invalid settings payload");
+  const previous = readAppSettings();
   const snapshot = updateSettings(payload);
-  if (payload.settings !== undefined) await applyRuntimeSettings(snapshot.settings);
+  if (payload.settings !== undefined) await applyRuntimeSettings(snapshot.settings, previous);
   return snapshot;
 });
 
