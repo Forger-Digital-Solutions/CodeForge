@@ -883,15 +883,21 @@ async function applyStartupServerSettings(): Promise<void> {
   void continueRecoverableAgents();
 }
 
+function controlPlaneFetch(pathname: string, init?: RequestInit): Promise<Response> {
+  const headers = new Headers(init?.headers);
+  headers.set("X-CodeForge-Control-Token", controlPlaneToken);
+  return fetch(`http://localhost:${LOCAL_SERVER_PORT}${pathname}`, { ...init, headers });
+}
+
 /** Apply persisted preferences owned by the local runtime at startup and immediately after edits. */
 async function applyRuntimeSettings(settings: AppSettings): Promise<void> {
   await Promise.allSettled([
-    fetch(`http://localhost:${LOCAL_SERVER_PORT}/api/privacy-mode`, {
+    controlPlaneFetch("/api/privacy-mode", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mode: settings.privacy.routingMode }),
     }),
-    fetch(`http://localhost:${LOCAL_SERVER_PORT}/api/repository-index/settings`, {
+    controlPlaneFetch("/api/repository-index/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ enabled: settings.workspace.repositoryIndexEnabled }),
@@ -909,19 +915,19 @@ async function applyRuntimeSettings(settings: AppSettings): Promise<void> {
 async function continueRecoverableAgents(): Promise<void> {
   if (!server) return;
   try {
-    const res = await fetch(`http://localhost:${LOCAL_SERVER_PORT}/api/sessions`);
+    const res = await controlPlaneFetch("/api/sessions");
     if (!res.ok) return;
     const sessions = (await res.json()) as Array<{ id?: string; status?: string }>;
     const recovering = sessions.filter((s) => s.status === "recovering" && typeof s.id === "string").slice(0, 5);
     for (const session of recovering) {
-      const detailRes = await fetch(`http://localhost:${LOCAL_SERVER_PORT}/api/sessions/${encodeURIComponent(session.id!)}`);
+      const detailRes = await controlPlaneFetch(`/api/sessions/${encodeURIComponent(session.id!)}`);
       if (!detailRes.ok) continue;
       const detail = (await detailRes.json()) as { turns?: Array<{ id?: string; status?: string }> };
       for (const turn of detail.turns ?? []) {
         if (!turn.id || (turn.status !== "running" && turn.status !== "recovering")) continue;
         smokeRecord(`CONTINUE_INTERRUPTED_TURN_${session.id}_${turn.id}`);
-        await fetch(
-          `http://localhost:${LOCAL_SERVER_PORT}/api/sessions/${encodeURIComponent(session.id!)}/turns/${encodeURIComponent(turn.id)}/resume`,
+        await controlPlaneFetch(
+          `/api/sessions/${encodeURIComponent(session.id!)}/turns/${encodeURIComponent(turn.id)}/resume`,
           { method: "POST" },
         ).catch(() => {});
       }
@@ -1134,7 +1140,7 @@ async function evaluateRenderer<T>(source: string): Promise<T> {
 }
 
 async function apiJson(pathname: string, init?: RequestInit): Promise<{ status: number; body: any }> {
-  const response = await fetch(`http://localhost:3210${pathname}`, init);
+  const response = await controlPlaneFetch(pathname, init);
   const text = await response.text();
   let body: any;
   try { body = JSON.parse(text); } catch { body = text; }
