@@ -274,6 +274,31 @@ const ToolGroupActivity = ({ item, workspacePath }: { item: Extract<DisplayTimel
   );
 };
 
+const CommandActivity = ({ item }: { item: Extract<TimelineItem, { kind: "command" }> }) => {
+  const [expanded, setExpanded] = useState(false);
+  const passed = item.exitCode === 0;
+  return (
+    <div className={`command-activity ${passed ? "passed" : "failed"}`}>
+      <button type="button" className="command-activity-head" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}>
+        <ActivityIcon kind={passed ? "execute" : "error"} state={passed ? "completed" : "failed"} />
+        <span className="command-activity-copy">
+          <span className="command-activity-label">Run command</span>
+          <code className="command-activity-command">{item.command}</code>
+        </span>
+        <span className={passed ? "command-activity-result passed" : "command-activity-result failed"}>{passed ? "Passed" : `Failed · exit ${item.exitCode}`}</span>
+        <span className="activity-caret" aria-hidden="true">{expanded ? "▾" : "▸"}</span>
+      </button>
+      {expanded && (
+        <div className="command-activity-detail">
+          <div className="command-activity-prompt">$ {item.command}</div>
+          {item.output ? <pre>{item.output}</pre> : <div className="command-activity-empty">No command output was recorded.</div>}
+          <div className="command-activity-exit">Exit code {item.exitCode}</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 /** Renders one reconstructed timeline item: user prompt, assistant prose, or tool activity. */
 const TimelineItemView = ({ item, workspacePath }: { item: TimelineItem; workspacePath?: string }) => {
   switch (item.kind) {
@@ -310,15 +335,7 @@ const TimelineItemView = ({ item, workspacePath }: { item: TimelineItem; workspa
         />
       );
     case "command":
-      return (
-        <ActivityLine
-          kind={item.exitCode === 0 ? "success" : "error"}
-          state={item.exitCode === 0 ? "completed" : "failed"}
-          verb="Run"
-          target={item.command}
-          meta={`exit ${item.exitCode}`}
-        />
-      );
+      return <CommandActivity item={item} />;
     default:
       return null;
   }

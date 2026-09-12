@@ -1330,6 +1330,22 @@ body {
   overflow: auto;
 }
 
+.command-activity { margin: 6px 0; border: 1px solid var(--cf-border); border-radius: var(--cf-radius-md); background: var(--cf-bg-raised); overflow: hidden; }
+.command-activity.failed { border-color: rgba(239, 77, 77, .42); }
+.command-activity-head { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: transparent; border: 0; color: var(--cf-text); cursor: pointer; text-align: left; font-family: var(--cf-font); }
+.command-activity-head:hover { background: var(--cf-bg-hover); }
+.command-activity-copy { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 2px; }
+.command-activity-label { color: var(--cf-text-muted); font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.command-activity-command { overflow: hidden; color: var(--cf-text-secondary); font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; }
+.command-activity-result { flex-shrink: 0; font-size: 11px; }
+.command-activity-result.passed { color: var(--cf-success); }
+.command-activity-result.failed { color: var(--cf-danger); }
+.command-activity-detail { border-top: 1px solid var(--cf-border-subtle); background: var(--cf-bg-input); font-family: var(--cf-font-mono); font-size: 11.5px; }
+.command-activity-detail pre { max-height: 260px; margin: 0; padding: 8px 10px; overflow: auto; white-space: pre-wrap; color: var(--cf-text-secondary); }
+.command-activity-prompt, .command-activity-exit, .command-activity-empty { padding: 7px 10px; color: var(--cf-text-muted); }
+.command-activity-prompt { border-bottom: 1px solid var(--cf-border-subtle); color: var(--cf-text); }
+.command-activity-exit { border-top: 1px solid var(--cf-border-subtle); }
+
 /* ────────────────────────────────────────────
    PLAN BLOCK
    ──────────────────────────────────────────── */
