@@ -565,20 +565,19 @@ export default function WorkspaceApp({
             </div>
           )}
 
-          {(runtimeLabel || projectName || isGitRepo) && (
-            <ContextBar
-              runtimeLabel={runtimeLabel ?? "Local"}
-              runtimeDetail={runtimeDetail}
-              workspaceName={projectName}
-              workspacePath={workspacePath}
-              isGitRepo={isGitRepo}
-              branch={projectBranch ?? state.session?.branch ?? null}
-              isDetached={isDetached}
-              isWorktree={isWorktree}
-            />
-          )}
-
           <Composer
+            contextRow={(runtimeLabel || projectName || isGitRepo) ? (
+              <ContextBar
+                runtimeLabel={runtimeLabel ?? "Local"}
+                runtimeDetail={runtimeDetail}
+                workspaceName={projectName}
+                workspacePath={workspacePath}
+                isGitRepo={isGitRepo}
+                branch={projectBranch ?? state.session?.branch ?? null}
+                isDetached={isDetached}
+                isWorktree={isWorktree}
+              />
+            ) : undefined}
             placeholder={placeholder}
             onSend={handleSend}
             onSteer={handleSteer}

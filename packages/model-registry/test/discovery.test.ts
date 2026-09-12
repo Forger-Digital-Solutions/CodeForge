@@ -78,3 +78,33 @@ describe("Free model discovery + verification (connected provider)", () => {
     expect(rec.capabilities.longContext).toBe(true);
   });
 });
+
+describe("Live catalog capability facts take precedence for the served route", () => {
+  it("a ':free' route the provider serves without tool calling is registered without it", () => {
+    // Models.dev may describe the base model as tool-capable; the connected provider's own
+    // catalog says what the route it actually serves supports, and Auto must not route a
+    // tool-driven coding task to a route that will reject tools.
+    const reg = registryWithSnapshot();
+    expect(reg.get("openrouter", "z-ai/glm-5.2:free")!.capabilities.toolCalling).toBe(true);
+
+    const result = discoverAndVerifyFree(reg, "openrouter", [
+      { modelId: "z-ai/glm-5.2:free", isFree: true, contextWindow: 200000, toolCalling: false },
+    ], { now });
+    expect(result.verifiedCount).toBe(1);
+    expect(result.records[0]!.capabilities.toolCalling).toBe(false);
+
+    const fw = new ForgeZero({ context: { now } });
+    for (const rec of result.records) fw.register(rec);
+    expect(fw.eligibleModels()).toHaveLength(1);
+    const router = new ForgeRouter({ firewall: fw });
+    expect(router.route({ taskType: "coding", estimatedContextTokens: 8000, requiredCapabilities: ["coding", "toolCalling"] })).toBeNull();
+  });
+
+  it("keeps the registry's facts when the live catalog states nothing", () => {
+    const reg = registryWithSnapshot();
+    const result = discoverAndVerifyFree(reg, "openrouter", [
+      { modelId: "z-ai/glm-5.2:free", isFree: true, contextWindow: 200000 },
+    ], { now });
+    expect(result.records[0]!.capabilities.toolCalling).toBe(true);
+  });
+});

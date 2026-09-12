@@ -54,11 +54,29 @@ html, body, #root {
    WORKSPACE — three-column layout
    ──────────────────────────────────────────── */
 
+/* The standalone web host mounts the workspace straight into #root; give it a full-height chain. */
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+/*
+ * The workspace fills whatever hosts it — the desktop shell's main area (which sits below the
+ * shell header and clips overflow) or the standalone web root. Sizing it to the viewport here made
+ * it exactly one header taller than its host, so the composer's control row was cut off until a
+ * running task re-laid the column out.
+ */
 .workspace {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  width: 100vw;
+  flex: 1 1 auto;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
 }
 
 .workspace-body {
@@ -559,12 +577,14 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: safe center;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 32px 24px;
   text-align: center;
   gap: 16px;
-  padding-bottom: 16vh;
+  padding-bottom: 24px;
 }
 
 .empty-state-mark {
@@ -809,6 +829,11 @@ html, body, #root {
   align-items: center;
   gap: 6px;
   padding: 0 4px 6px;
+}
+
+/* Inside the composer surface the context chips form its first row. */
+.composer-context-row .context-bar {
+  padding: 8px 10px 0;
 }
 
 .context-chip {
@@ -1738,9 +1763,9 @@ html, body, #root {
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: var(--cf-bg-overlay);
+  background: transparent;
   border: 1px solid var(--cf-border);
-  border-radius: var(--cf-radius);
+  border-radius: 50%;
   color: var(--cf-text-secondary);
   font-size: 18px;
   font-weight: 600;
@@ -1798,52 +1823,70 @@ html, body, #root {
   outline-offset: -2px;
 }
 
-.composer-input-row {
+/* One bordered surface: the prompt on top, controls along the bottom edge. */
+.composer-box {
+  position: relative;
   display: flex;
-  gap: 8px;
-  align-items: flex-end;
+  flex-direction: column;
+  background: var(--cf-bg-input);
+  border: 1px solid var(--cf-border);
+  border-radius: 12px;
+  transition: border-color 0.1s, box-shadow 0.1s;
+}
+
+.composer-box:focus-within {
+  border-color: var(--cf-accent);
+  box-shadow: 0 0 0 2px var(--cf-accent-muted);
+}
+
+.composer-box.steering {
+  border-color: var(--cf-accent);
 }
 
 .composer-input {
-  flex: 1;
-  background: var(--cf-bg-input);
-  border: 1px solid var(--cf-border);
-  border-radius: 6px;
-  padding: 9px 12px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-radius: 12px 12px 0 0;
+  padding: 12px 14px 6px;
   color: var(--cf-text);
   font-family: var(--cf-font);
   font-size: 13px;
+  line-height: 1.45;
   resize: none;
   outline: none;
-  min-height: 40px;
-  max-height: 120px;
-}
-
-.composer-input:focus {
-  border-color: var(--cf-accent);
-  box-shadow: 0 0 0 2px var(--cf-accent-muted);
+  min-height: 44px;
+  max-height: 160px;
+  box-sizing: border-box;
 }
 
 .composer-input::placeholder {
   color: var(--cf-text-muted);
 }
 
-.composer-input.steering {
-  border-color: var(--cf-accent);
-}
-
 .composer-toolbar {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 8px;
   justify-content: space-between;
+  padding: 4px 8px 8px 10px;
 }
 
 .composer-toolbar-left {
   display: flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
+}
+
+.composer-hint {
+  margin-top: 6px;
+  padding: 0 6px;
+  font-size: 10px;
+  color: var(--cf-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .execution-mode-selector {
@@ -1875,8 +1918,27 @@ html, body, #root {
 }
 
 .composer-toolbar-right {
-  font-size: 10px;
-  color: var(--cf-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.composer-toolbar-right .model-dropdown {
+  left: auto;
+  right: 0;
+}
+
+.composer-btn.composer-send {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 14px;
 }
 
 .composer-btn {

@@ -37,6 +37,20 @@ function synthCaps(live: LiveModelInfo): NormalizedCapabilities {
   };
 }
 
+/** Overlay explicit live capability facts onto a registry record; untouched when nothing is stated. */
+export function applyLiveCapabilities(record: ModelRecord, live: LiveModelInfo): ModelRecord {
+  const capabilities = { ...record.capabilities };
+  let changed = false;
+  for (const key of ["toolCalling", "vision", "structuredOutput"] as const) {
+    const fact = live[key];
+    if (typeof fact === "boolean" && capabilities[key] !== fact) {
+      capabilities[key] = fact;
+      changed = true;
+    }
+  }
+  return changed ? { ...record, capabilities } : record;
+}
+
 /** Build a ModelRecord from a live listing when the registry has no snapshot/live entry yet. */
 export function recordFromLive(providerId: string, live: LiveModelInfo): ModelRecord {
   const policy = getProviderPolicy(providerId);
@@ -83,10 +97,10 @@ export function discoverAndVerifyFree(
 
   for (const live of liveModels) {
     if (!live.isFree) continue;
-    let record = registry.get(providerId, live.modelId);
-    if (!record) {
-      record = recordFromLive(providerId, live);
-    }
+    const known = registry.get(providerId, live.modelId);
+    // The connected provider's own catalog is authoritative for the capabilities of the route it
+    // actually serves (a ":free" variant may lack tool calling the base model advertises upstream).
+    const record = known ? applyLiveCapabilities(known, live) : recordFromLive(providerId, live);
     const overlay = verifyZeroUnitFree(record, { confirmedByLiveCatalog: true, now });
     if (!overlay) continue; // not a zero-unit free model → not verified here
     registry.overlay.merge(overlay);

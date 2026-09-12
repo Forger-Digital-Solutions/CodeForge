@@ -81,3 +81,35 @@ describe("ForgeRouter — free-first ranking", () => {
     expect(router.resolveSelection({ mode: "forgezero-adaptive" }).ok).toBe(false);
   });
 });
+
+describe("ForgeRouter — required capabilities are requirements", () => {
+  it("never ranks a route that lacks a required capability, however well it would score", () => {
+    const fw = new ForgeZero({ context: ctx });
+    // A big, otherwise attractive $0 route that the provider serves WITHOUT native tool calling
+    // (a content-safety classifier, a music model, a ":free" variant with tools disabled) …
+    fw.register(verifiedFree("openrouter", "big/no-tools:free", {
+      contextWindow: 1_000_000,
+      codingScore: 95,
+      capabilities: { text: true, coding: true, toolCalling: false, vision: false, structuredOutput: true, longContext: true },
+    }));
+    // … and a modest one that can actually drive the agent loop.
+    fw.register(verifiedFree("openrouter", "small/with-tools:free", { contextWindow: 64000, codingScore: 40 }));
+    const router = new ForgeRouter({ firewall: fw });
+
+    const ranked = router.rank(codingReq).map((r) => r.model.modelId);
+    expect(ranked).toEqual(["small/with-tools:free"]);
+    expect(router.route(codingReq)!.model.modelId).toBe("small/with-tools:free");
+    expect(router.topVerifiedFree(codingReq, 5).map((r) => r.model.modelId)).toEqual(["small/with-tools:free"]);
+  });
+
+  it("returns no route at all when nothing eligible meets the requirements", () => {
+    const fw = new ForgeZero({ context: ctx });
+    fw.register(verifiedFree("openrouter", "no-tools:free", {
+      capabilities: { text: true, coding: true, toolCalling: false, vision: false, structuredOutput: true, longContext: true },
+    }));
+    const router = new ForgeRouter({ firewall: fw });
+    expect(router.route(codingReq)).toBeNull();
+    // Requirements the record cannot state remain advisory: the model is still routable for them.
+    expect(router.route({ ...codingReq, requiredCapabilities: ["coding", "reasoning"] })!.model.modelId).toBe("no-tools:free");
+  });
+});

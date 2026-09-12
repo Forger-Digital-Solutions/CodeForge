@@ -2094,10 +2094,14 @@ export class AgentRuntime {
       (r) => this.providerCatalog.get(r.model.providerId) && !this.eightBit.health.isInCooldown(r.model.providerId, r.model.modelId),
     );
     if (best) return best.model;
-    // Fallback: any eligible model with a registered provider, same cooldown exclusion.
+    // Fallback: any eligible tool-capable model with a registered provider, same cooldown
+    // exclusion. Never a route without native tool calling — the agent loop cannot drive it, so
+    // "no route" is the honest answer rather than a doomed turn.
     const eligible = this.firewall.eligibleModels();
     return (
-      eligible.find((m) => this.providerCatalog.get(m.providerId) && !this.eightBit.health.isInCooldown(m.providerId, m.modelId)) ?? null
+      eligible.find(
+        (m) => m.capabilities.toolCalling && this.providerCatalog.get(m.providerId) && !this.eightBit.health.isInCooldown(m.providerId, m.modelId),
+      ) ?? null
     );
   }
 

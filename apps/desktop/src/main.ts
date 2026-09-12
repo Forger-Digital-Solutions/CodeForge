@@ -1860,8 +1860,17 @@ ipcMain.handle("project:open", async (event, projectPath: string) => {
   if (typeof projectPath !== "string" || projectPath.length === 0 || projectPath.length > 1024) {
     throw new Error("Invalid project path");
   }
-  const normalized = path.normalize(projectPath);
+  const normalized = path.resolve(path.normalize(projectPath));
   if (normalized.includes("\0")) throw new Error("Invalid project path");
+  // A workspace must be a real directory: a recent-projects entry for a folder that does not exist
+  // (a typo'd path, a removed drive) would open a workspace the runtime can never act on.
+  let stats: fs.Stats;
+  try {
+    stats = fs.statSync(normalized);
+  } catch {
+    throw new Error(`Project folder does not exist: ${normalized}`);
+  }
+  if (!stats.isDirectory()) throw new Error(`Project path is not a folder: ${normalized}`);
   const projectName = path.basename(normalized);
   const project: ProjectInfo = {
     id: crypto.randomUUID(),
@@ -1870,11 +1879,7 @@ ipcMain.handle("project:open", async (event, projectPath: string) => {
     lastOpened: new Date().toISOString(),
   };
   saveRecentProject(project);
-  try {
-    server?.setWorkspace(normalized);
-  } catch {
-    // Ignore workspace set failure if path doesn't exist
-  }
+  server?.setWorkspace(normalized);
   return project;
 });
 

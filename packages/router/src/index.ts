@@ -47,6 +47,22 @@ export interface RouterOptions {
   firewall: ForgeZero;
 }
 
+/**
+ * Capability names that map to facts a model record states. A request that REQUIRES one of these
+ * excludes every model lacking it: the agent runtime drives tools through native tool calls, so a
+ * route without `toolCalling` cannot execute a tool-driven task no matter how well it scores.
+ * Names outside this set (e.g. "reasoning") stay advisory scoring hints.
+ */
+const HARD_CAPABILITIES = new Set(["text", "coding", "toolCalling", "vision", "structuredOutput", "longContext"]);
+
+function hasRequiredCapabilities(model: FreeModelRecord, required: string[]): boolean {
+  for (const capability of required) {
+    if (!HARD_CAPABILITIES.has(capability)) continue;
+    if ((model.capabilities as Record<string, boolean | undefined>)[capability] !== true) return false;
+  }
+  return true;
+}
+
 export class ForgeRouter {
   private readonly firewall: ForgeZero;
 
@@ -61,6 +77,7 @@ export class ForgeRouter {
   rank(req: RoutingRequest): RankedModel[] {
     const eligible = req.privacyMode ? this.firewall.eligibleModels({ privacyMode: req.privacyMode }) : this.firewall.eligibleModels();
     return eligible
+      .filter((model) => hasRequiredCapabilities(model, req.requiredCapabilities))
       .map((model) => ({ model, score: this.scoreModel(model, req), reasons: this.getReasons(model, req) }))
       .sort((a, b) => b.score - a.score || a.model.modelId.localeCompare(b.model.modelId));
   }

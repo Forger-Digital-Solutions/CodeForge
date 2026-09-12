@@ -80,7 +80,9 @@ export class OpenRouterAdapter implements ProviderAdapter {
       }
 
       const data = (await response.json()) as { data: OpenRouterModel[] };
-      this.modelCache = data.data.map((m) => this.convertModel(m));
+      // Only text-producing models are chat/coding candidates; a catalog entry whose output is
+      // audio or image only cannot be driven through /chat/completions by this adapter.
+      this.modelCache = data.data.filter(producesText).map((m) => this.convertModel(m));
       this.modelCacheTime = now;
       return this.modelCache;
     } catch (error) {
@@ -97,6 +99,12 @@ export class OpenRouterAdapter implements ProviderAdapter {
     const isFree =
       pricing?.prompt === "0" &&
       pricing?.completion === "0";
+    // Capability facts come from the live catalog and fail closed. OpenRouter reports tool support
+    // through `supported_parameters` ("tools"), not a boolean, and `architecture.modality` is a
+    // "text+image->text" string, so neither may be assumed: a route the catalog does not mark as
+    // tool-capable must never be routed a tool-driven coding task.
+    const supported = Array.isArray(m.supported_parameters) ? m.supported_parameters : undefined;
+    const inputs = inputModalities(m);
 
     return {
       modelId: m.id,
@@ -104,10 +112,10 @@ export class OpenRouterAdapter implements ProviderAdapter {
       contextWindow: m.context_length,
       capabilities: {
         text: true,
-        coding: m.architecture?.modality?.includes("text") ?? true,
-        toolCalling: m.supports_tools ?? true,
-        vision: m.architecture?.modality?.includes("image") ?? false,
-        structuredOutput: true,
+        coding: inputs.includes("text"),
+        toolCalling: supported ? supported.includes("tools") : m.supports_tools === true,
+        vision: inputs.includes("image"),
+        structuredOutput: supported ? supported.includes("structured_outputs") || supported.includes("response_format") : false,
         longContext: (m.context_length ?? 4096) > 32000,
       },
       isFree,
@@ -448,9 +456,38 @@ interface OpenRouterModel {
     completion?: string;
   };
   architecture?: {
-    modality?: string[];
+    /** e.g. "text+image->text" */
+    modality?: string;
+    input_modalities?: string[];
+    output_modalities?: string[];
   };
+  /** OpenRouter's capability list, e.g. ["tools", "tool_choice", "response_format", ...]. */
+  supported_parameters?: string[];
+  /** Legacy/hypothetical boolean; only honored when the parameter list is absent. */
   supports_tools?: boolean;
+}
+
+function splitModality(m: OpenRouterModel): { inputs: string[]; outputs: string[] } | undefined {
+  const modality = m.architecture?.modality;
+  if (typeof modality !== "string" || !modality.includes("->")) return undefined;
+  const [left, right] = modality.split("->");
+  return { inputs: left!.split("+").map((s) => s.trim()), outputs: right!.split("+").map((s) => s.trim()) };
+}
+
+function inputModalities(m: OpenRouterModel): string[] {
+  const listed = m.architecture?.input_modalities;
+  if (Array.isArray(listed)) return listed;
+  return splitModality(m)?.inputs ?? ["text"];
+}
+
+function outputModalities(m: OpenRouterModel): string[] {
+  const listed = m.architecture?.output_modalities;
+  if (Array.isArray(listed)) return listed;
+  return splitModality(m)?.outputs ?? ["text"];
+}
+
+function producesText(m: OpenRouterModel): boolean {
+  return outputModalities(m).includes("text");
 }
 
 interface OpenRouterMessage {

@@ -52,6 +52,8 @@ interface ComposerProps {
   onExecutionModeChange?: (mode: ExecutionMode) => void;
   onComposerActivity?: (active: boolean) => void;
   executionState?: "running" | "user_intent_hold" | "steer_queued" | "reconciling_steer";
+  /** Repository/runtime context chips shown as the first row inside the composer surface. */
+  contextRow?: React.ReactNode;
 }
 
 export interface Attachment {
@@ -85,6 +87,7 @@ export default function Composer({
   onExecutionModeChange,
   onComposerActivity,
   executionState = "running",
+  contextRow,
 }: ComposerProps) {
   const [input, setInput] = useState("");
   const [showCommands, setShowCommands] = useState(false);
@@ -378,7 +381,13 @@ export default function Composer({
         </div>
       )}
 
-      <div className="composer-input-row">
+      {/*
+        One composer surface: prompt on top, controls along the bottom edge — attachments and
+        execution mode on the left, model route and the send/stop action on the right. Keyboard
+        help lives under the box so the control row stays readable at narrow widths.
+      */}
+      <div className={`composer-box ${isRunning ? "steering" : ""}`}>
+        {contextRow && <div className="composer-context-row">{contextRow}</div>}
         <textarea
           ref={textareaRef}
           className={`composer-input ${isRunning ? "steering" : ""}`}
@@ -388,120 +397,117 @@ export default function Composer({
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           rows={1}
+          aria-label={isRunning ? "Steer the running task" : "Describe a task"}
         />
-        <button
-          type="button"
-          className={`composer-btn ${isComposerSendable(input) || attachments.length > 0 ? "primary" : ""}`}
-          onClick={handleSubmit}
-          disabled={!isComposerSendable(input) && attachments.length === 0}
-          title={isRunning ? "Steer (Enter)" : "Send (Enter)"}
-          style={{ minWidth: 40, height: 38, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}
-        >
-          ↑
-        </button>
-      </div>
 
-      {showCommands && (
-        <SlashCommands
-          onSelect={(command) => {
-            if (!command) {
+        {showCommands && (
+          <SlashCommands
+            onSelect={(command) => {
+              if (!command) {
+                setShowCommands(false);
+                return;
+              }
+              const parts = input.split(/\s+/);
+              const lastPart = parts.pop() ?? "";
+              if (lastPart.startsWith("/")) {
+                const arg = parts.join(" ");
+                handleCommand(command.slice(1), arg);
+              }
+              setInput("");
               setShowCommands(false);
-              return;
-            }
-            const parts = input.split(/\s+/);
-            const lastPart = parts.pop() ?? "";
-            if (lastPart.startsWith("/")) {
-              const arg = parts.join(" ");
-              handleCommand(command.slice(1), arg);
-            }
-            setInput("");
-            setShowCommands(false);
-          }}
-          filter={currentFilter.startsWith("/") ? currentFilter : undefined}
-        />
-      )}
+            }}
+            filter={currentFilter.startsWith("/") ? currentFilter : undefined}
+          />
+        )}
 
-      <div className="composer-toolbar">
-        <div className="composer-toolbar-left">
-          <div className="execution-mode-selector" role="group" aria-label="Execution mode">
-            <button
-              type="button"
-              className={`execution-mode-option ${executionMode === "agent" ? "selected" : ""}`}
-              aria-pressed={executionMode === "agent"}
-              onClick={() => onExecutionModeChange?.("agent")}
-              title="Agent runs the full autonomous workflow with approval and verification gates"
-            >
-              Agent
-            </button>
-            <button
-              type="button"
-              className={`execution-mode-option ${executionMode === "chat" ? "selected" : ""}`}
-              aria-pressed={executionMode === "chat"}
-              onClick={() => onExecutionModeChange?.("chat")}
-              title="Chat starts a conversational runtime turn"
-            >
-              Chat
-            </button>
+        <div className="composer-toolbar">
+          <div className="composer-toolbar-left">
+            <div className="composer-attachment-btns">
+              <button
+                type="button"
+                className="attachment-btn"
+                onClick={() => setShowAttachments(!showAttachments)}
+                aria-expanded={showAttachments}
+                aria-label={showAttachments ? "Hide attachments" : "Add attachment"}
+                title={showAttachments ? "Hide attachments" : "Add file, image, or folder (Ctrl+Shift+A)"}
+              >
+                +
+              </button>
+              {showAttachments && (
+                <div className="attachment-menu" role="menu">
+                  <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => triggerFileInput("file")}>
+                    <span>📄</span> Add file
+                  </button>
+                  <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => triggerFileInput("image")}>
+                    <span>🖼</span> Add image
+                  </button>
+                  <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => triggerFileInput("folder")}>
+                    <span>📁</span> Add folder
+                  </button>
+                </div>
+              )}
+              <input
+                type="file"
+                id="hidden-file-input"
+                multiple
+                accept="*/*"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length > 0) processFiles(files);
+                  e.target.value = "";
+                }}
+              />
+            </div>
+            <div className="execution-mode-selector" role="group" aria-label="Execution mode">
+              <button
+                type="button"
+                className={`execution-mode-option ${executionMode === "agent" ? "selected" : ""}`}
+                aria-pressed={executionMode === "agent"}
+                onClick={() => onExecutionModeChange?.("agent")}
+                title="Agent runs the full autonomous workflow with approval and verification gates"
+              >
+                Agent
+              </button>
+              <button
+                type="button"
+                className={`execution-mode-option ${executionMode === "chat" ? "selected" : ""}`}
+                aria-pressed={executionMode === "chat"}
+                onClick={() => onExecutionModeChange?.("chat")}
+                title="Chat starts a conversational runtime turn"
+              >
+                Chat
+              </button>
+            </div>
           </div>
-          <div className="composer-attachment-btns">
-            <button
-              type="button"
-              className="attachment-btn"
-              onClick={() => setShowAttachments(!showAttachments)}
-              aria-expanded={showAttachments}
-              aria-label={showAttachments ? "Hide attachments" : "Add attachment"}
-              title={showAttachments ? "Hide attachments" : "Add file, image, or folder (Ctrl+Shift+A)"}
-            >
-              +
-            </button>
-            {showAttachments && (
-              <div className="attachment-menu" role="menu">
-                <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => triggerFileInput("file")}>
-                  <span>📄</span> Add file
-                </button>
-                <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => triggerFileInput("image")}>
-                  <span>🖼</span> Add image
-                </button>
-                <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => triggerFileInput("folder")}>
-                  <span>📁</span> Add folder
-                </button>
-                <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => navigator.clipboard.read().then(items => { /* TODO: handle clipboard */ })}>
-                  <span>📋</span> Paste screenshot
-                </button>
-                <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => { /* TODO: repo context */ }}>
-                  <span>📦</span> Add repository context
-                </button>
-              </div>
+          <div className="composer-toolbar-right">
+            {models && models.length > 0 && (
+              <ModelSelector
+                models={models}
+                selectedId={selectedModelId ?? "auto"}
+                onSelect={onSelectModel ?? (() => {})}
+                onShowDetails={onShowModelDetails}
+                onUpgradeNavigation={onUpgradeNavigation}
+                modelSections={modelSections}
+                isOpen={isModelPickerOpen}
+                onOpenChange={onModelPickerOpenChange}
+              />
             )}
-            <input
-              type="file"
-              id="hidden-file-input"
-              multiple
-              accept="*/*"
-              style={{ display: "none" }}
-              onChange={(e) => {
-                const files = Array.from(e.target.files || []);
-                if (files.length > 0) processFiles(files);
-                e.target.value = "";
-              }}
-            />
+            <button
+              type="button"
+              className={`composer-btn composer-send ${isComposerSendable(input) || attachments.length > 0 ? "primary" : ""}`}
+              onClick={handleSubmit}
+              disabled={!isComposerSendable(input) && attachments.length === 0}
+              title={isRunning ? "Steer (Enter)" : "Send (Enter)"}
+              aria-label={isRunning ? "Steer the running task" : "Send"}
+            >
+              ↑
+            </button>
           </div>
-          {models && models.length > 0 && (
-            <ModelSelector
-              models={models}
-              selectedId={selectedModelId ?? "auto"}
-              onSelect={onSelectModel ?? (() => {})}
-              onShowDetails={onShowModelDetails}
-              onUpgradeNavigation={onUpgradeNavigation}
-              modelSections={modelSections}
-              isOpen={isModelPickerOpen}
-              onOpenChange={onModelPickerOpenChange}
-            />
-          )}
         </div>
-        <div className="composer-toolbar-right">
-          Enter to send · Shift+Enter for newline · Esc to stop · / for commands · @ for context
-        </div>
+      </div>
+      <div className="composer-hint" aria-hidden="true">
+        Enter to send · Shift+Enter for newline · Esc to stop · / for commands · @ for context
       </div>
     </div>
   );
