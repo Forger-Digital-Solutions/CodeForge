@@ -52,6 +52,13 @@ describe("preload bridge", () => {
     expect(exposedMethods(cjs)).toEqual(exposedMethods(ts));
   });
 
+  it("ships the per-process local control-plane token in both preload implementations", () => {
+    for (const preload of [cjs, ts]) {
+      expect(preload).toContain('const CONTROL_PLANE_TOKEN_ARG = "--codeforge-control-plane-token="');
+      expect(preload).toMatch(/const api = \{\s+controlPlaneToken,/);
+    }
+  });
+
   it("exposes the CodeForge Cloud API the renderer depends on", () => {
     // The zero-setup product journey — sign in, read the account, sign out — runs entirely through
     // these. Absent from the shipped bridge, the packaged app cannot reach Cloud at all.
