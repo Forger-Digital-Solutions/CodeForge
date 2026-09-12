@@ -1,0 +1,8 @@
+{
+  "certification": "codeforge-daily-driver-product-r1",
+  "runtimeCandidate": "8b54f3c62f7fa4d2c5b4ba5a78eaa8e81d3d3cd1",
+  "verdict": "BLOCKED",
+  "verified": ["packaged full smoke", "interrupt recovery", "browser security", "terminal state reconciliation", "Z.AI direct-free discovery guards"],
+  "blockedBy": ["fresh live completion", "live verification failure-repair-completion", "live cross-route failover"],
+  "noPaidFallback": true
+}

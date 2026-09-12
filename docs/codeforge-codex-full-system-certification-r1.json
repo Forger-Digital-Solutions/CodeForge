@@ -1,0 +1,75 @@
+{
+  "certification": "codeforge-codex-full-system-r1",
+  "verdict": "CODEFORGE_CODEX_FULL_SYSTEM_R1_BLOCKED",
+  "verdictReason": "Every deterministic gate is green on the final packaged candidate, and a real zero-priced OpenRouter model drove a multi-turn coding task through the packaged app with tools, steering, approvals and ForgeVerify — but no live task reached a COMPLETED completion gate: run #1 was cut by the (now fixed) 120 s agent budget at 11/12 tests passing and run #2 hit OpenRouter's 50-request/day free cap (429 free-models-per-day). The completed-live-task, forced-verification-repair, live minimize/Settings/close-during-work and live model-failover gates therefore remain unproven on the final package.",
+  "generatedAt": "2026-09-12T23:20:00Z",
+  "package": { "name": "codeforge-desktop", "version": "0.3.0", "channel": "development" },
+  "commits": {
+    "startingClaudeEvidenceHead": "2610a48",
+    "priorClaudeRuntimeCandidate": "2dbeab7",
+    "priorCodexCandidateInvalidated": "39255c7",
+    "priorCodexPreloadCommits": ["f46d4fa", "29893a4"],
+    "runtimeCandidateHistory": ["4f0499a", "e209542", "06017b0", "de81d0e", "6855434", "8b438f0", "65fa5ed", "d0e2e8f", "8b54f3c"],
+    "finalRuntimeCandidate": "8b54f3c62f7fa4d2c5b4ba5a78eaa8e81d3d3cd1",
+    "docsEvidenceCommit": "PENDING_DOCUMENTATION_COMMIT",
+    "branch": "forger-digital-solutions-forgegreen-certified",
+    "treeCleanAtCandidate": true
+  },
+  "preloadPackagingDefect": {
+    "rootCause": "The desktop copies src/preload.cjs into the package while preload.ts only types the surface; the bearer support existed only in preload.ts, so the packaged renderer could not authenticate to the local control plane.",
+    "priorCodexFix": "f46d4fa added the token to preload.cjs via process.argv; 29893a4 made main-process control calls send the bearer.",
+    "r1Resolution": "4f0499a removed the bearer from BOTH preloads entirely: main attaches X-CodeForge-Control-Token via session.webRequest.onBeforeSendHeaders only for requests from the primary window's top-level document at the app's own URL (control-plane-trust.ts). The renderer never holds the secret; the SSE query-string fallback was removed; will-navigate/window.open no longer admit arbitrary file: URLs.",
+    "regressionCoverage": ["apps/desktop/test/control-plane-trust.test.ts", "apps/desktop/test/preload-bridge.test.ts (bearer must be absent from both bridges)", "packages/server/test/network-exposure.test.ts (query-string bearer rejected, wrong bearer, approvals)", "apps/desktop/test/packaged-browser-security.test.ts (packaged audit requires injection hook, bearer-free preload)", "packaged smoke markers control_plane_* (9)"]
+  },
+  "tests": {
+    "focusedSuitesFromCandidate": { "desktop+ui+server+workflow+protocol (6855434)": { "files": 148, "passed": 1118, "skipped": 3, "failed": 0 } },
+    "fullSuite_8b438f0": { "files": 315, "filesPassed": 304, "filesFailed": 4, "filesSkipped": 7, "tests": 2336, "passed": 2296, "failed": 4, "skipped": 36, "durationSeconds": 483, "failuresAdjudicated": "all 4 pass in isolation (cf14 benchmark 60 s, parallel-orchestrator, remote-publication, workflow-hardening 18/18) — load-induced timeouts at the 30 s testTimeout under full parallel run" },
+    "fullSuite_d0e2e8f": { "status": "run completed 22:56Z; the same 4 load-sensitive tests (CF-08 worktree orchestration, CF-11 remote delivery, WorkflowService cap, FG-2 1M-line incremental) exceeded the 30 s timeout under load; totals line not captured by the log filter — rerun `node node_modules/vitest/vitest.mjs run` from d0e2e8f to record exact totals" },
+    "forcedTypeScriptBuild": "PASS (tsc -b --force) at 8b438f0 and d0e2e8f",
+    "normalBuild": "PASS (npm run build) — renderer chunk 601.6 kB warning unchanged, not a blocker"
+  },
+  "packaging": {
+    "flow": "npm run dist (apps/desktop) — build:main + build:renderer + build:native (better-sqlite3 prebuilt) + electron-builder nsis+portable",
+    "artifacts_8b54f3c": {
+      "release/CodeForge-Setup-0.3.0.exe": "79904AF069B5B817FDCF92E1682AF1947872DB18D6AF786C2B4B4A145D319C63",
+      "release/CodeForge-Portable.exe": "DD75DB8F813BB4145465574F62EDCA293FF6776B8BD26BAE3C1B976ACD343D81",
+      "release/win-unpacked/CodeForge.exe": "D67C61BAFFF1C1D673F55196A526C772BF8B2EA9DF88EAE8985B8315D4281C44",
+      "release/win-unpacked/resources/app.asar": "989D1A0904254FDCD620F38AFDDA5E4E9F5CF11736F95519A897224E93787A9E",
+      "app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node": "359cbd480d7c5b2e4693a68605dc1429e05c48d04016b7aa2ac0b04d6b176b17"
+    },
+    "audits_d0e2e8f": { "browserSecurity": "PASS (sandbox, contextIsolation, nodeIntegration=false, webSecurity, controlPlaneBearerInjection, preloadBearerFree)", "authEndpoint": "PASS (development channel 127.0.0.1:3220)", "internalDependencies": "PASS (20 packages)", "runtimeDependencies": "PASS (233 modules / 15 external)" },
+    "smoke_d0e2e8f": { "full": "PASS", "interrupt": "PASS (exit 73)", "recover": "PASS" }
+  },
+  "security": {
+    "externalAdversarialProbes": "12/12 PASS against the running packaged app (no bearer 401, wrong bearer 401, bearer in query 401 incl. /api/events, forged origin 403, forged-origin preflight 403, null origin without bearer 401, approval resolve/send/privacy-mode without bearer 401, /api/models 401, LAN 172.18.208.1:3210 refused)",
+    "packagedSmokeBoundary": "renderer cannot read bearer; primary document authenticated; secondary renderer with same preload refused by IPC and control plane",
+    "credentials": "OPENROUTER_API_KEY read from environment, never persisted/printed; credential_source: supported_environment; GROQ/OPENAI/GEMINI env keys ignored by design"
+  },
+  "liveDiscovery": {
+    "openrouterCatalogEntries": 445,
+    "zeroPricedRoutes": 22,
+    "toolCapableZeroPriced": 19,
+    "nonToolZeroPriced": ["nvidia/nemotron-3.5-content-safety:free", "google/lyria-3-pro-preview", "google/lyria-3-clip-preview"],
+    "hostedCodeforgeEligible": 0,
+    "priorSessionNumbers": { "catalog": 629, "zeroPriced": 22, "note": "catalog drifted 629 → 445 between sessions; zero-priced count unchanged" },
+    "forgeAutoTopRanking": ["cohere/north-mini-code:free (90)", "nvidia/nemotron-3-super-120b-a12b:free (90)", "nvidia/nemotron-3-ultra-550b-a55b:free (90)", "nvidia/nemotron-3.5-lightning:free (90)", "dots-studio/dots-3-note-preview:free (82)"],
+    "rankingGap": "four routes tie at 90 with no codingScore/agentScore facts; tie breaks on registration order"
+  },
+  "providerDirectDiscovery_2026_09_12": {
+    "zai": "FREE_API candidate only after authenticated current catalog availability plus fresh 0/0 registry pricing; documented free GLM-4.7-Flash, GLM-4.5-Flash and GLM-4.6V-Flash; no Z.AI credential was supplied for live account execution.",
+    "openai": "NO_SUPPORTED_ZERO_COST_OPENAI_ROUTE. ChatGPT/Codex plan access and API billing are separate; API remains PAID and is hard-excluded from ForgeAuto/Free.",
+    "anthropic": "NO_SUPPORTED_ZERO_COST_ANTHROPIC_ROUTE. New-account credits are PROMOTIONAL_CREDIT/TRIAL, not FREE_API; Claude App/Claude Code subscription authentication is not a CodeForge provider adapter."
+  },
+  "liveTasks": {
+    "run1": { "package": "06017b0", "model": "openrouter/cohere/north-mini-code:free via ForgeAuto (router.selection)", "modelCalls": 43, "toolCalls": { "read_file": 17, "edit_file": 19, "write_file": 1, "run_command": 4, "list_files": 1, "search_files": 1 }, "inputTokens": 367452, "outputTokens": 14750, "steers": 2, "approvals": { "requested": 22, "resolved": 18 }, "forgeVerify": "3 verifier attempts (test, typecheck, build); test failed 1/12", "completion": "failed — verification_failed + plan_steps_unfinished (no fake success)", "defectsFound": ["120 s agent working budget cut the task mid-edit and left an orphaned agent turn", "Allow for Session forgotten", "approval prompt lacked file name", "task header showed internal builder prompt", "tool rows lacked file names / duplicated", "plan approval showed no steps"] },
+    "run2": { "package": "de81d0e", "model": "same ForgeAuto pick", "outcome": "OpenRouter 429 free-models-per-day after ~10 calls; 8-Bit RATE_LIMITED → NO_ELIGIBLE_FREE_MODEL; no paid fallback; completion gate → blocked (plan_steps_unfinished); UI banner + badge truthful" },
+    "run3": { "status": "NOT RUN — daily free cap resets 00:00 UTC; target repo reset to baseline deddf33; harness ready (see docs/codeforge-codex-full-system-certification-r1.md 'Resume state')" }
+  },
+  "settings": { "functional": 14, "actions": 13, "navigation": 8, "informational": 34, "intentionallyUnavailable": 2, "defectsRepaired": 3, "controlsRemoved": 2, "remainingNonFunctional": 0, "matrix": "docs/codeforge-settings-wiring-matrix-r1.md" },
+  "repositoryIntelligence": { "monorepoIndex": { "files": 1162, "symbols": 68345, "edges": 3647, "errors": 0, "indexSizeBytes": 69865472, "incrementalReadySeconds": 14, "coldFullIndexSeconds": 48 }, "eventLoopStallBeforeMs": 12604, "eventLoopStallAfterMs": 2472, "mainProcessWorkingSetMB": 315, "search": { "ForgeZero canRouteTo": "728 ms / 50 items, top packages/forge-zero/src/firewall.ts", "gateWithApproval": "99 ms / 28 items, top packages/server/src/agent-runtime.ts" } },
+  "competitorsObserved": ["Codex desktop (OpenAI)", "ZCode (Z.AI)", "Devin desktop", "Qoder", "OpenCode desktop"],
+  "competitorsNotObservable": ["Cursor", "Kiro", "Zed", "VS Code — computer-use IDE-tier grant gate did not accept the same-turn confirmation in this session"],
+  "macos": "MACOS_RUNTIME_VALIDATION_REQUIRES_MACOS_HOST",
+  "unresolvedBlockers": ["Completed live autonomous task on the final package (d0e2e8f) not yet observed", "Forced ForgeVerify failure → live repair → completion not yet observed live", "Live minimize/restore + Settings during active work + close during work not yet observed live", "Live model failover to another route not observable while the account-wide daily cap is the failure mode", "OpenRouter free tier: 50 requests/day without credits is not a daily-driver route by itself"],
+  "evidencePaths": ["C:/Users/Daddy_FDS/CodeForge Live/evidence/ (screenshots 01-11, run1/ session+workflow JSON, adversarial-control-plane.log, large-repo-index.json, desktop logs)", "scratchpad cycle-<sha>/ (dist/audit/smoke logs, SHA256SUMS.txt) for 4f0499a, e209542, 06017b0, de81d0e, 6855434, 65fa5ed, d0e2e8f", "apps/desktop/release/smoke-result.log", "docs/codeforge-settings-wiring-matrix-r1.md", "docs/codeforge-forgegreen-certified-source-state.json (Codex R1 recertification entry)"]
+}
