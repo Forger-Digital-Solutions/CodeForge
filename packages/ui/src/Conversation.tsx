@@ -54,6 +54,41 @@ interface ConversationProps {
   workspaceBrief?: WorkspaceBriefData;
 }
 
+type DisplayTimelineItem = TimelineItem | {
+  kind: "tool_group";
+  id: string;
+  seq: number;
+  activityKind: ActivityKind;
+  items: Array<Extract<TimelineItem, { kind: "tool" }>>;
+};
+
+/** Collapse only adjacent, completed, same-kind tool calls. Failures and live calls stay explicit. */
+export function groupConsecutiveToolActivity(items: TimelineItem[]): DisplayTimelineItem[] {
+  const grouped: DisplayTimelineItem[] = [];
+  for (let index = 0; index < items.length;) {
+    const item = items[index]!;
+    if (item.kind !== "tool" || item.status !== "completed") {
+      grouped.push(item);
+      index++;
+      continue;
+    }
+    const activityKind = resolveActivityKind(item.toolName);
+    const consecutive = [item];
+    let cursor = index + 1;
+    while (cursor < items.length) {
+      const candidate = items[cursor]!;
+      if (candidate.kind !== "tool" || candidate.status !== "completed" || resolveActivityKind(candidate.toolName) !== activityKind) break;
+      consecutive.push(candidate);
+      cursor++;
+    }
+    grouped.push(consecutive.length < 2
+      ? item
+      : { kind: "tool_group", id: `tool-group-${item.id}`, seq: item.seq, activityKind, items: consecutive });
+    index = cursor;
+  }
+  return grouped;
+}
+
 function WorkspaceBrief({ brief }: { brief: WorkspaceBriefData }): React.ReactElement {
   const repositoryState = brief.repositoryState === "clean"
     ? "Clean working tree"
@@ -220,6 +255,25 @@ const ToolActivity = ({ item, workspacePath }: { item: Extract<TimelineItem, { k
   );
 };
 
+const ToolGroupActivity = ({ item, workspacePath }: { item: Extract<DisplayTimelineItem, { kind: "tool_group" }>; workspacePath?: string }) => {
+  const [expanded, setExpanded] = useState(false);
+  const label = activityLabel(item.activityKind);
+  return (
+    <ActivityLine
+      kind={item.activityKind}
+      state="completed"
+      verb={label}
+      target={`${item.items.length} ${item.activityKind === "read" ? "files" : "operations"}`}
+      meta="Completed"
+      expandable
+      expanded={expanded}
+      onToggle={() => setExpanded((value) => !value)}
+    >
+      {expanded && <div className="activity-group-detail">{item.items.map((tool) => <ToolActivity key={tool.id} item={tool} workspacePath={workspacePath} />)}</div>}
+    </ActivityLine>
+  );
+};
+
 /** Renders one reconstructed timeline item: user prompt, assistant prose, or tool activity. */
 const TimelineItemView = ({ item, workspacePath }: { item: TimelineItem; workspacePath?: string }) => {
   switch (item.kind) {
@@ -272,6 +326,7 @@ const TimelineItemView = ({ item, workspacePath }: { item: TimelineItem; workspa
 
 const WorkItemRenderer = ({ item, displayMode, taskTerminal = false }: { item: WorkItem; displayMode: string; taskTerminal?: boolean }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [approvalExpanded, setApprovalExpanded] = useState(false);
 
   const toggle = () => setIsCollapsed(!isCollapsed);
 
@@ -461,9 +516,14 @@ const WorkItemRenderer = ({ item, displayMode, taskTerminal = false }: { item: W
           ? { label: "Denied", kind: "error" as const, state: "failed" as const }
           : { label: a.decision === "allow_session" ? "Allowed for session" : "Allowed", kind: "complete" as const, state: "completed" as const }
         : { label: "Awaiting your decision", kind: "approval" as const, state: "pending" as const };
+      const workflowApproval = a.tool === "workflow" && a.action === "execute_plan";
+      const target = workflowApproval ? "Implementation plan" : a.action.replace(/_/g, " ");
+      const resolvedSummary = workflowApproval
+        ? `${outcome.label} · CodeForge ${a.decision === "deny" ? "stopped safely" : "continued the task"}`
+        : outcome.label;
       return (
-        <ActivityLine kind={outcome.kind} state={outcome.state} verb="Approval" target={a.tool} context={a.action} meta={outcome.label}>
-          <div className="activity-body">
+        <ActivityLine kind={outcome.kind} state={outcome.state} verb="Approval" target={target} meta={resolvedSummary} expandable={Boolean(a.decision)} expanded={approvalExpanded} onToggle={() => setApprovalExpanded((value) => !value)}>
+          {(!a.decision || approvalExpanded) && <div className="activity-body">
             {a.description}
             {a.scope && (
               <>
@@ -471,7 +531,7 @@ const WorkItemRenderer = ({ item, displayMode, taskTerminal = false }: { item: W
                 <span className="approval-record-scope">Scope: <code>{a.scope}</code></span>
               </>
             )}
-          </div>
+          </div>}
         </ActivityLine>
       );
     }
@@ -566,6 +626,7 @@ export default function Conversation({
       return item;
     });
   }, [timeline]);
+  const displayTimeline = useMemo(() => groupConsecutiveToolActivity(sanitizedTimeline), [sanitizedTimeline]);
 
   const handleScroll = () => {
     if (!containerRef.current) return;
@@ -599,7 +660,7 @@ export default function Conversation({
   const isEmpty = sanitizedTimeline.length === 0 && turns.length === 0 && relevantItems.length === 0;
   // Prefer the event-sourced timeline (correct chronological interleaving of user prompts,
   // assistant prose, and tool activity). Fall back to turns+workItems only when no events exist.
-  const useTimeline = sanitizedTimeline.length > 0;
+  const useTimeline = displayTimeline.length > 0;
 
   return (
     <div
@@ -619,7 +680,7 @@ export default function Conversation({
             {contextLabel && <div className="empty-state-context">{contextLabel}</div>}
             {workspaceBrief && <WorkspaceBrief brief={workspaceBrief} />}
 
-            {activityOverview !== undefined && (
+            {activityOverview !== undefined && activityOverview?.hasAnyHistory && (
               <ActivityOverview
                 overview={activityOverview}
                 isLoading={isActivityLoading}
@@ -651,10 +712,12 @@ export default function Conversation({
 
             <div className="suggested-prompts">
               {[
-                "Explain this repository structure",
+                "Explain this repository",
+                "Review the architecture",
                 "Create an implementation plan",
-                "Review the current architecture",
-                "Run the test suite and report results",
+                "Run the test suite",
+                "Find TODOs in this workspace",
+                "Review current changes",
               ].map((prompt) => (
                 <button
                   key={prompt}
@@ -670,8 +733,10 @@ export default function Conversation({
           </div>
         ) : useTimeline ? (
           <>
-            {sanitizedTimeline.map((item) => (
-              <TimelineItemView key={item.id} item={item} workspacePath={workspacePath} />
+            {displayTimeline.map((item) => (
+              item.kind === "tool_group"
+                ? <ToolGroupActivity key={item.id} item={item} workspacePath={workspacePath} />
+                : <TimelineItemView key={item.id} item={item} workspacePath={workspacePath} />
             ))}
             {relevantItems
               .filter((w) => w.kind === "approval" || w.kind === "question")

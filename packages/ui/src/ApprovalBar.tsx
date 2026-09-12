@@ -19,12 +19,13 @@ function riskStyle(risk: string): { bg: string; fg: string; border: string } {
 export default function ApprovalBar({ approval, onApprove, onDeny }: ApprovalBarProps) {
   const isWorkflow = approval.tool === "workflow" && approval.action === "execute_plan";
   const r = riskStyle(approval.risk);
+  const actionLabel = isWorkflow ? "continue the approved implementation plan" : approval.action.replace(/_/g, " ");
 
   return (
     <div className="approval-bar" style={{ borderColor: r.border }}>
       <div className="approval-bar-header">
         <span className="approval-bar-title">
-          {isWorkflow ? "Plan Approval Required" : "Permission Required"}
+          Permission Required
         </span>
         <span
           className="approval-bar-risk"
@@ -34,34 +35,27 @@ export default function ApprovalBar({ approval, onApprove, onDeny }: ApprovalBar
         </span>
       </div>
       <div className="approval-bar-body">
-        <span style={{ fontSize: 10, color: "var(--cf-text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-          {isWorkflow ? "Plan:" : "Action:"}
-        </span>{" "}
-        <code>{approval.tool} · {approval.action}</code>
-        <br />
-        <span style={{ whiteSpace: "pre-wrap" }}>{approval.description}</span>
+        <div className="approval-bar-label">CodeForge wants to</div>
+        <div className="approval-bar-action">{actionLabel}</div>
+        <div className="approval-bar-label">Why</div>
+        <span className="approval-bar-description">{approval.description}</span>
         {approval.scope && (
-          <>
-            <br />
-            <span style={{ fontSize: 10, color: "var(--cf-text-muted)" }}>Scope: </span>
-            <code style={{ fontSize: 11 }}>{approval.scope}</code>
-          </>
+          <div className="approval-bar-scope"><span>Scope</span><code>{approval.scope}</code></div>
         )}
         {isWorkflow && (
-          <>
-            <br />
-            <span style={{ fontSize: 10, color: "var(--cf-text-muted)", marginTop: 4, display: "block" }}>
-              Approving executes via ForgeZero-verified free models only. Deny fails safely.
-            </span>
-          </>
+          <span className="approval-bar-note">ForgeZero permits verified-free routes only. Denying stops this task safely.</span>
         )}
+        <details className="approval-technical-details">
+          <summary>Technical details</summary>
+          <code>{approval.tool} · {approval.action}</code>
+        </details>
       </div>
       <div className="approval-bar-actions">
         <button className="btn-sm primary" onClick={() => onApprove("allow_once")}>
-          {isWorkflow ? "Approve Plan" : "Allow Once"}
+          Allow once
         </button>
         <button className="btn-sm" onClick={() => onApprove("allow_session")}>
-          Allow for Session
+          Allow for task
         </button>
         <button className="btn-sm danger" onClick={onDeny}>Deny</button>
       </div>

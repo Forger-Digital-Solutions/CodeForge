@@ -450,6 +450,10 @@ export default function WorkspaceApp({
     ? { code: startFailureEvent.payload.code, message: startFailureEvent.payload.message }
     : undefined;
   const forgeWorkActive = isForgeWorkActive(state);
+  const repairFailure = () => {
+    handleSend("Review the failure, fix the underlying issue, and rerun the relevant verification.");
+    dismissWorkflowError();
+  };
 
   return (
     <div className="workspace">
@@ -577,17 +581,19 @@ export default function WorkspaceApp({
           )}
 
           {state.workflowError && (
-            <div className="workspace-error-banner" role="alert">
-              <span className="workspace-error-icon" aria-hidden="true">⚠</span>
-              <span className="workspace-error-text">{humanizeError(state.workflowError)}</span>
-              <button
-                type="button"
-                className="workspace-error-dismiss"
-                onClick={dismissWorkflowError}
-                aria-label="Dismiss error"
-              >
-                ×
-              </button>
+            <div className="task-failure-card" role="alert">
+              <div className="task-failure-card-head">
+                <div>
+                  <div className="task-failure-kicker">Task needs attention</div>
+                  <div className="task-failure-title">CodeForge stopped before verification could finish.</div>
+                </div>
+                <button type="button" className="workspace-error-dismiss" onClick={dismissWorkflowError} aria-label="Dismiss failure">×</button>
+              </div>
+              <div className="task-failure-message">{humanizeError(state.workflowError)}</div>
+              <div className="task-failure-actions">
+                <button type="button" className="btn-sm primary" onClick={repairFailure}>Fix and continue</button>
+                <button type="button" className="btn-sm" onClick={() => setInspectorCollapsed(false)}>Review task details</button>
+              </div>
             </div>
           )}
 

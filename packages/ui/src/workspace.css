@@ -1292,6 +1292,13 @@ body {
   overflow: auto;
 }
 
+.activity-group-detail {
+  margin: 2px 0 7px 28px;
+  padding: 4px 8px;
+  border-left: 1px solid var(--cf-border-subtle);
+}
+.activity-group-detail .activity-block { margin: 0; }
+
 .activity-body {
   padding: 8px 10px 10px 36px;
   font-size: 12px;
@@ -2781,6 +2788,16 @@ body {
   margin-bottom: 10px;
   line-height: 1.6;
 }
+.approval-bar-label { margin-top: 8px; color: var(--cf-text-muted); font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.approval-bar-label:first-child { margin-top: 0; }
+.approval-bar-action { margin-top: 2px; color: var(--cf-text); font-size: 13px; font-weight: 600; }
+.approval-bar-description { display: block; margin-top: 3px; white-space: pre-wrap; }
+.approval-bar-scope { display: flex; align-items: baseline; gap: 8px; margin-top: 9px; color: var(--cf-text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
+.approval-bar-scope code { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--cf-text-secondary); font-size: 11px; text-transform: none; letter-spacing: 0; }
+.approval-bar-note { display: block; margin-top: 9px; color: var(--cf-text-muted); font-size: 11px; }
+.approval-technical-details { margin-top: 9px; color: var(--cf-text-muted); font-size: 10.5px; }
+.approval-technical-details summary { cursor: pointer; }
+.approval-technical-details code { display: block; margin-top: 4px; font-size: 11px; color: var(--cf-text-secondary); }
 
 .approval-bar-actions {
   display: flex;
@@ -3593,6 +3610,13 @@ body {
   flex-shrink: 0;
 }
 .workspace-error-dismiss:hover { color: var(--cf-text); }
+
+.task-failure-card { flex-shrink: 0; margin: 0 16px 8px; padding: 12px 14px; background: var(--cf-bg-raised); border: 1px solid rgba(239, 77, 77, .45); border-left: 3px solid var(--cf-danger); border-radius: var(--cf-radius-md); }
+.task-failure-card-head { display: flex; justify-content: space-between; gap: 12px; }
+.task-failure-kicker { color: var(--cf-danger); font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.task-failure-title { margin-top: 3px; color: var(--cf-text); font-size: 13px; font-weight: 600; }
+.task-failure-message { margin-top: 8px; color: var(--cf-text-secondary); font: 11.5px/1.5 var(--cf-font-mono); white-space: pre-wrap; }
+.task-failure-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
 
 /* --- Approval: one live control, plus a transcript record ------------------------------------ */
 
