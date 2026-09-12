@@ -10,7 +10,7 @@ describe("resolveCloudCatalogSyncMode", () => {
     // This is the actual fix: GET /v1/hosted/models needs no auth, so a fresh install must still
     // see the real free catalog. But registering the adapter into providerCatalog would flip the
     // server to attempting real (401-doomed) inference the moment someone sends a message before
-    // signing in, instead of the existing safe scripted demo runtime.
+    // signing in; unsigned catalog rows remain visible but unavailable and execution fails closed.
     expect(resolveCloudCatalogSyncMode(false)).toBe("sync-catalog-only");
   });
 });

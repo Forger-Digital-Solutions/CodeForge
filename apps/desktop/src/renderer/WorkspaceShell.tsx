@@ -10,9 +10,10 @@ import type { SettingsContextValue, CloudAccountView, SystemInfoView, DesktopRun
 import { computeWorkNotifications, type RunningCounters } from "./settings/notifications-client.js";
 import { describeHeaderActivity, summarizeActiveWork } from "../close-lifecycle.js";
 import type { AppSettings, AppSettingsPatch, CloseBehavior, ExecutionMode, SettingsSnapshot } from "../app-settings.js";
+import { authenticatedEventStreamUrl } from "./control-plane.js";
 
 const SERVER_BASE_URL = "http://localhost:3210";
-const HELP_URL = "https://github.com/codeforge/codeforge#readme";
+const HELP_URL = "https://github.com/Forger-Digital-Solutions/CodeForge#readme";
 const EXECUTION_MODE_KEY = "codeforge:execution-mode";
 const DEFAULT_MODEL_ZOOM: Record<AppSettings["appearance"]["chatTextScale"], number> = {
   small: 0.9,
@@ -142,7 +143,11 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ enabled }),
     });
-    if (response.ok) setRepositoryIndex((current) => ({ ...current, enabled, state: enabled ? "INDEXING" : "NOT_INDEXED" }));
+    if (response.ok) {
+      setRepositoryIndex((current) => ({ ...current, enabled, state: enabled ? "INDEXING" : "NOT_INDEXED" }));
+      const snapshot = await window.electronAPI?.updateSettings?.({ settings: { workspace: { repositoryIndexEnabled: enabled } } });
+      if (snapshot) setSettingsSnapshot(snapshot as SettingsSnapshot);
+    }
   };
 
   const rebuildRepositoryIndex = async () => {
@@ -166,20 +171,29 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
           id: m.id,
           displayName: m.displayName,
           tier: m.tier === "gems_paid" ? ("gems_paid" as const) : ("free" as const),
-          description: accessBadge(m),
+          description: m.eligible === false ? `${accessBadge(m)} · Unavailable` : accessBadge(m),
+          available: m.eligible === true,
+          unavailableReason: m.eligible === false ? "Provider or entitlement is unavailable" : undefined,
         })),
       ];
       setModels(modelItems);
       setModelProviders(Object.fromEntries(data.map((m) => [m.id, m.providerId])));
 
-      const uniqueProviders = [...new Set(data.map((m) => m.providerId))];
-      for (const providerId of uniqueProviders) {
+      const providerIds = [...new Set([
+        ...data.map((m) => m.providerId),
+        "codeforge-cloud", "opencode", "openrouter", "zai", "google", "groq",
+        "cloudflare-workers-ai", "openai", "anthropic",
+      ])];
+      const statuses = await Promise.all(providerIds.map(async (providerId) => {
         try {
           const res = await fetch(`${SERVER_BASE_URL}/api/providers/${providerId}/health`);
-          const health = await res.json();
-          setProviderStatus((prev) => ({ ...prev, [providerId]: health }));
-        } catch {}
-      }
+          if (!res.ok) return [providerId, undefined] as const;
+          return [providerId, await res.json() as { status: string; error?: string }] as const;
+        } catch {
+          return [providerId, undefined] as const;
+        }
+      }));
+      setProviderStatus(Object.fromEntries(statuses.filter((entry) => entry[1] !== undefined)) as Record<string, { status: string; error?: string }>);
     } catch {}
   }, []);
 
@@ -199,12 +213,13 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     const defaultModelId = settingsSnapshot.settings.models.defaultModelId;
     if (defaultModelId === "auto") return;
     const found = apiModels.find((m) => m.id === defaultModelId);
-    if (!found) return;
-    setSelectedModelId(defaultModelId);
-    fetch(`${SERVER_BASE_URL}/api/model-selection`, {
+    if (!found || found.eligible !== true) return;
+    void fetch(`${SERVER_BASE_URL}/api/model-selection`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ modelId: defaultModelId, providerId: found.providerId, sessionId: "default" }),
+    }).then((response) => {
+      if (response.ok) setSelectedModelId(defaultModelId);
     }).catch(() => {});
   }, [settingsSnapshot, apiModels]);
 
@@ -251,25 +266,27 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   const modelSections = useMemo((): ModelSection[] => buildModelSections(apiModels, models), [apiModels, models]);
 
   const postModelSelection = useCallback(async (modelId: string, providerId?: string) => {
-    try {
-      await fetch(`${SERVER_BASE_URL}/api/model-selection`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // The historical endpoint name ("/api/model/select") never existed on the server and the
-        // 404 silently swallowed every selection — /api/model-selection is the real authority.
-        body: JSON.stringify({ modelId, providerId, sessionId: "default" }),
-      });
-    } catch {}
+    const response = await fetch(`${SERVER_BASE_URL}/api/model-selection`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      // The historical endpoint name ("/api/model/select") never existed on the server and the
+      // 404 silently swallowed every selection — /api/model-selection is the real authority.
+      body: JSON.stringify({ modelId, providerId, sessionId: "default" }),
+    });
+    if (!response.ok) throw new Error(`Model selection rejected (${response.status})`);
   }, []);
 
   const handleSelectModel = (model: ModelSelectorItem) => {
     const modelId = model.id;
-    setSelectedModelId(modelId);
-    void postModelSelection(modelId, modelProviders[modelId]);
-    // The picker choice IS the persisted default model (single catalog, one source of truth).
-    window.electronAPI?.updateSettings?.({ settings: { models: { defaultModelId: modelId } } })
-      ?.then((snapshot) => setSettingsSnapshot(snapshot as SettingsSnapshot))
-      ?.catch(() => {});
+    void (async () => {
+      try {
+        await postModelSelection(modelId, modelProviders[modelId]);
+        setSelectedModelId(modelId);
+        // Persist only after the server authority accepts the exact route.
+        const snapshot = await window.electronAPI?.updateSettings?.({ settings: { models: { defaultModelId: modelId } } });
+        if (snapshot) setSettingsSnapshot(snapshot as SettingsSnapshot);
+      } catch {}
+    })();
   };
 
   const handleShowModelDetails = (model: ModelSelectorItem) => {
@@ -300,9 +317,10 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     const health = providerId ? providerStatus[providerId] : undefined;
 
     if (selectedModelId === "auto") {
-      const anyError = Object.values(providerStatus).some((h) => h.status === "error");
-      if (anyError) return { status: "auto", text: "ForgeAuto/Free", detail: "Automatic free routing", error: true };
-      return { status: "auto", text: "ForgeAuto/Free", detail: "Automatic free routing" };
+      const available = apiModels.some((model) => model.eligible === true && model.freeStatus === "verified_free" && model.costProfile?.isFree === true);
+      return available
+        ? { status: "auto", text: "ForgeAuto/Free", detail: "Automatic free routing" }
+        : { status: "auto", text: "ForgeAuto/Free", detail: "No eligible free route", error: true };
     }
     if (!providerId) return { status: "unknown", text: "Unknown" };
     const freeLabel = selected?.costProfile?.isFree || selected?.isPromotional ? "Free" : selected?.tier === "paid" || selected?.tier === "gems_paid" ? "Paid" : "Unknown";
@@ -314,7 +332,8 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   };
 
   const currentStatus = getCurrentProviderStatus();
-  const forgeZeroTrust = resolveForgeZeroTrust(selectedModelId, apiModels.find((m) => m.id === selectedModelId));
+  const autoRouteAvailable = apiModels.some((model) => model.eligible === true && model.freeStatus === "verified_free" && model.costProfile?.isFree === true);
+  const forgeZeroTrust = resolveForgeZeroTrust(selectedModelId, apiModels.find((m) => m.id === selectedModelId), autoRouteAvailable);
   const runtimeLabel = resolveRuntimeLabel(selectedModelId, apiModels.find((m) => m.id === selectedModelId));
 
   // A smoke-fixture account has no real identity fields — it must never masquerade as a real
@@ -333,12 +352,14 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     if (!window.electronAPI?.resetSettings) return;
     const snapshot = await window.electronAPI.resetSettings() as SettingsSnapshot;
     setSettingsSnapshot(snapshot);
+    setDefaultExecutionModeState("agent");
+    try { window.localStorage.removeItem(EXECUTION_MODE_KEY); } catch {}
   }, []);
 
   const setDefaultModel = useCallback(async (modelId: string) => {
     const providerId = modelId === "auto" ? undefined : modelProviders[modelId] ?? apiModels.find((m) => m.id === modelId)?.providerId;
-    setSelectedModelId(modelId);
     await postModelSelection(modelId, providerId);
+    setSelectedModelId(modelId);
     await updateSettings({ settings: { models: { defaultModelId: modelId } } });
   }, [modelProviders, apiModels, postModelSelection, updateSettings]);
 
@@ -360,6 +381,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
         models: { defaultModelId: "auto" },
         notifications: { enabled: true, onApprovalNeeded: true, onAgentCompleted: true, onlyWhenInBackground: true },
         privacy: { routingMode: "STANDARD" },
+        workspace: { repositoryIndexEnabled: true },
       },
       closeBehavior: settingsSnapshot?.closeBehavior ?? "ask",
       update: updateSettings,
@@ -702,7 +724,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
           style={scaleZoom !== 1 ? ({ zoom: scaleZoom } as React.CSSProperties) : undefined}
         >
           <WorkspaceApp
-            sseUrl={`${SERVER_BASE_URL}/api/events`}
+            sseUrl={authenticatedEventStreamUrl(`${SERVER_BASE_URL}/api/events`)}
             models={models}
             selectedModelId={selectedModelId}
             onSelectModel={handleSelectModel}

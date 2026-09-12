@@ -6,11 +6,9 @@
  * manual/packaged verification.
  *
  * The policy: `GET /v1/hosted/models` (listing) requires no authentication — only
- * `/v1/hosted/inference` (actually running a model) does. So the catalog should always be visible,
- * but the provider adapter should only be registered into providerCatalog (which is what flips
- * CodeForgeServer from the safe scripted demo runtime to attempting real inference) once the user
- * is actually signed in — otherwise a signed-out fresh install would attempt real hosted inference
- * with no credential and get a confusing 401 instead of the existing safe demo.
+ * `/v1/hosted/inference` (actually running a model) does. The catalog may be browsed while signed
+ * out, but the executable provider adapter is registered only after sign-in. The server exposes
+ * those unsigned routes as unavailable and fails closed instead of simulating inference.
  */
 export type CloudCatalogSyncMode = "register-adapter-and-sync" | "sync-catalog-only";
 

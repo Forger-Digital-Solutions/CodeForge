@@ -43,6 +43,10 @@ describe("isModelUsable", () => {
     expect(isModelUsable(freeModel)).toBe(true);
   });
 
+  it("denies a catalog record whose provider is not executable", () => {
+    expect(isModelUsable({ ...freeModel, available: false })).toBe(false);
+  });
+
   it("denies unentitled GEMS models", () => {
     expect(isModelUsable(unentitledGemsModel)).toBe(false);
     expect(isModelUsable({ ...unentitledGemsModel, entitlementStatus: "not_entitled" })).toBe(false);
@@ -120,6 +124,23 @@ describe("ModelSelector rendering", () => {
     expect(markup).toContain("auto-route");
     expect(markup).toContain("Verified $0");
     expect(markup).toContain("Automatic free routing");
+  });
+
+  it("labels ForgeAuto unavailable instead of claiming verified routing when no route exists", () => {
+    const auto: ModelSelectorItem = {
+      id: "auto",
+      displayName: "ForgeAuto/Free",
+      tier: "free",
+      description: "No eligible free route",
+      available: false,
+      unavailableReason: "Connect a verified-free provider",
+    };
+    const markup = renderToStaticMarkup(
+      React.createElement(ModelSelector, { models: [auto], selectedId: "auto", onSelect: () => {}, isOpen: true }),
+    );
+    expect(markup).toContain("No route");
+    expect(markup).not.toContain("Verified $0");
+    expect(markup).toContain("aria-disabled=\"true\"");
   });
 
   it("renders the Auto entry in trigger button with its description", () => {

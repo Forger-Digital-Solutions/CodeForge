@@ -74,6 +74,11 @@ const PrivacySettingsSchema = z.object({
   routingMode: PrivacyRoutingModeSchema.default("STANDARD"),
 });
 
+const WorkspaceSettingsSchema = z.object({
+  /** Persist Repository Intelligence enablement across desktop/runtime restarts. */
+  repositoryIndexEnabled: z.boolean().default(true),
+});
+
 export const AppSettingsSchema = z.object({
   schemaVersion: z.literal(APP_SETTINGS_SCHEMA_VERSION).default(APP_SETTINGS_SCHEMA_VERSION),
   general: GeneralSettingsSchema.default({}),
@@ -81,6 +86,7 @@ export const AppSettingsSchema = z.object({
   models: ModelsSettingsSchema.default({}),
   notifications: NotificationsSettingsSchema.default({}),
   privacy: PrivacySettingsSchema.default({}),
+  workspace: WorkspaceSettingsSchema.default({}),
 });
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
@@ -103,6 +109,7 @@ export const AppSettingsPatchSchema = z.object({
   models: ModelsSettingsSchema.partial().optional(),
   notifications: NotificationsSettingsSchema.partial().optional(),
   privacy: PrivacySettingsSchema.partial().optional(),
+  workspace: WorkspaceSettingsSchema.partial().optional(),
 }).strict();
 export type AppSettingsPatch = z.infer<typeof AppSettingsPatchSchema>;
 
@@ -130,11 +137,13 @@ export function parseAppSettings(raw: unknown): AppSettings {
   const models = salvage(AppSettingsSchema.shape.models, source.models);
   const notifications = salvage(AppSettingsSchema.shape.notifications, source.notifications);
   const privacy = salvage(AppSettingsSchema.shape.privacy, source.privacy);
+  const workspace = salvage(AppSettingsSchema.shape.workspace, source.workspace);
   if (general) salvaged.general = general;
   if (appearance) salvaged.appearance = appearance;
   if (models) salvaged.models = models;
   if (notifications) salvaged.notifications = notifications;
   if (privacy) salvaged.privacy = privacy;
+  if (workspace) salvaged.workspace = workspace;
   return salvaged;
 }
 
@@ -155,6 +164,7 @@ export function applySettingsPatch(current: AppSettings, patch: AppSettingsPatch
     models: { ...current.models, ...(patch.models ?? {}) },
     notifications: { ...current.notifications, ...(patch.notifications ?? {}) },
     privacy: { ...current.privacy, ...(patch.privacy ?? {}) },
+    workspace: { ...current.workspace, ...(patch.workspace ?? {}) },
   };
 }
 

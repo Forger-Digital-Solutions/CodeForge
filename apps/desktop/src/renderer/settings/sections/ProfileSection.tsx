@@ -9,6 +9,9 @@ import { Avatar, Toggle, SettingsGroup, SettingsRow, SettingsButton, StatusBadge
 export function ProfileSection(): React.ReactElement {
   const ctx = useSettings();
   const account = ctx.account;
+  const eligibleFreeRoutes = ctx.apiModels.filter(
+    (model) => model.eligible === true && model.freeStatus === "verified_free" && model.costProfile?.isFree === true,
+  ).length;
   const [deleteStep, setDeleteStep] = useState<"idle" | "confirm" | "deleting">("idle");
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [reconnecting, setReconnecting] = useState(false);
@@ -134,8 +137,8 @@ export function ProfileSection(): React.ReactElement {
         ) : null}
         <SettingsRow
           title="ForgeZero Free Access"
-          description="Verified-free routing is available on every plan, including with zero credits."
-          control={<StatusBadge kind="ok">Available</StatusBadge>}
+          description="Verified-free routing does not require credits. Availability depends on at least one currently executable provider route."
+          control={<StatusBadge kind={eligibleFreeRoutes > 0 ? "ok" : "warn"}>{eligibleFreeRoutes > 0 ? `${eligibleFreeRoutes} available` : "No route"}</StatusBadge>}
         />
         <SettingsRow
           title="Sign out"

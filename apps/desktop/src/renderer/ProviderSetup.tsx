@@ -13,6 +13,7 @@ interface ApiModel {
     paidFallbackPossible: boolean;
   };
   isPromotional?: boolean;
+  eligible?: boolean;
 }
 
 interface ProviderConfig {
@@ -181,7 +182,7 @@ export default function ProviderSetup(): React.ReactElement {
           PROVIDERS.forEach((provider) => {
             const providerModels = models.filter((m) => m.providerId === provider.providerId);
             counts[provider.providerId] = {
-              free: providerModels.filter((m) => m.costProfile?.isFree || m.isPromotional).length,
+              free: providerModels.filter((m) => m.eligible === true && (m.costProfile?.isFree || m.isPromotional)).length,
               paid: providerModels.filter((m) => m.tier === "paid" || m.tier === "gems_paid").length,
             };
           });
@@ -473,6 +474,13 @@ export default function ProviderSetup(): React.ReactElement {
 
                 <div className="provider-actions">
                   {apiKey ? (
+                    <button
+                      onClick={() => handleSaveCredential(provider.providerId)}
+                      className="provider-btn save"
+                    >
+                      Save &amp; verify
+                    </button>
+                  ) : state?.hasCredential ? (
                     <>
                       <button
                         onClick={() => handleTestConnection(provider.providerId)}
@@ -480,12 +488,6 @@ export default function ProviderSetup(): React.ReactElement {
                         className="provider-btn test"
                       >
                         {state?.status === "testing" ? "Testing..." : "Test Connection"}
-                      </button>
-                      <button
-                        onClick={() => handleSaveCredential(provider.providerId)}
-                        className="provider-btn save"
-                      >
-                        Save
                       </button>
                       <button
                         onClick={() => handleDeleteCredential(provider.providerId)}
@@ -511,7 +513,7 @@ export default function ProviderSetup(): React.ReactElement {
 
         <div className="provider-setup-note" role="note" aria-label="Free Mode note">
           <p>
-            <strong>Free Mode:</strong> Full-Auto selects the best currently verified free model. If no
+            <strong>Free Mode:</strong> ForgeAuto/Free selects the best currently verified free model. If no
             verified free model is available, CodeForge will not silently use a paid model. Promotional
             free models may expire.
           </p>

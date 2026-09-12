@@ -14,6 +14,7 @@ const FIXTURE_MODELS: ApiModel[] = [
     tier: "free",
     freeStatus: "verified_free",
     costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, paidFallbackPossible: false },
+    eligible: true,
   },
   {
     id: "nemotron",
@@ -23,6 +24,7 @@ const FIXTURE_MODELS: ApiModel[] = [
     freeStatus: "verified_free",
     accessClass: "FREE_NATIVE",
     costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, paidFallbackPossible: false },
+    eligible: true,
   },
   {
     id: "glm-flash",
@@ -32,6 +34,7 @@ const FIXTURE_MODELS: ApiModel[] = [
     freeStatus: "verified_free",
     accessClass: "FREE_NATIVE",
     costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, paidFallbackPossible: false },
+    eligible: true,
   },
   {
     id: "gems-topaz",
@@ -65,7 +68,7 @@ describe("Models & Routing page", () => {
   it("reuses the canonical catalog sections and reports truthful catalog counts", () => {
     const markup = renderSection(<ModelsRoutingSection />, canonicalContext());
     expect(markup).toContain("ForgeAuto/Free");
-    expect(markup).toContain("2 free models listed · 3 verified-free routes in the catalog · 1 GEMS");
+    expect(markup).toContain("2 CodeForge Free models listed · 3 verified-free records · 3 executable now · 1 GEMS");
     expect(markup).toContain("Healthy");
   });
 
@@ -82,12 +85,14 @@ describe("Models & Routing page", () => {
     expect(markup).toContain("8-Bit free catalog");
   });
 
-  it("flags degraded routing when a connected provider health check fails", () => {
+  it("reports no route only when no verified-free record is executable", () => {
+    const unavailable = FIXTURE_MODELS.map((model) => ({ ...model, eligible: false }));
     const markup = renderSection(
       <ModelsRoutingSection />,
-      canonicalContext({ providerStatus: { zai: { status: "error", error: "401 unauthorized" } } }),
+      canonicalContext({ apiModels: unavailable, providerStatus: { zai: { status: "error", error: "401 unauthorized" } } }),
     );
-    expect(markup).toContain("Degraded");
+    expect(markup).toContain("No eligible route");
+    expect(markup).toContain("0 executable now");
   });
 });
 

@@ -23,6 +23,7 @@ function makeModel(overrides: Partial<ApiModel>): ApiModel {
     freeStatus: "verified_free",
     accessClass: "FREE_NATIVE",
     costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, paidFallbackPossible: false },
+    eligible: true,
     ...overrides,
   };
 }
@@ -130,9 +131,15 @@ describe("accessBadge", () => {
 
 describe("resolveForgeZeroTrust", () => {
   it("trusts ForgeAuto unconditionally — it only ever resolves into ForgeZero-eligible free models", () => {
-    const trust = resolveForgeZeroTrust("auto", undefined);
+    const trust = resolveForgeZeroTrust("auto", undefined, true);
     expect(trust.verifiedFree).toBe(true);
     expect(trust.label).toContain("Verified Free");
+  });
+
+  it("does not show ForgeAuto as verified when no eligible provider can execute", () => {
+    const trust = resolveForgeZeroTrust("auto", undefined, false);
+    expect(trust.verifiedFree).toBe(false);
+    expect(trust.label).toContain("No Free Route");
   });
 
   it("trusts a concrete model only when its own record is independently verified free", () => {

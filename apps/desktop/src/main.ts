@@ -17,6 +17,7 @@ import {
   type AppSettings,
   type SettingsSnapshot,
 } from "./app-settings.js";
+import { readZeroUnitEnvironmentCredentials } from "./provider-environment.js";
 
 if (process.env.CODEFORGE_SMOKE_OUT) {
   try {
@@ -56,6 +57,7 @@ app.commandLine.appendSwitch("disable-gpu");
 app.commandLine.appendSwitch("in-process-gpu");
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const controlPlaneToken = crypto.randomBytes(32).toString("base64url");
 
 let server: CodeForgeServer | null = null;
 let mainWindow: BrowserWindow | null = null;
@@ -360,8 +362,8 @@ function saveRecentProject(project: ProjectInfo): void {
 function getProviderCredentials(): Record<string, string> {
   const settings = readSettings();
   const raw = settings[PROVIDER_CREDENTIALS_KEY];
-  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return {};
-  const result: Record<string, string> = {};
+  const result = readZeroUnitEnvironmentCredentials(process.env, MAX_API_KEY_LENGTH);
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return result;
   for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
     if (!ALLOWED_PROVIDER_IDS.has(k)) continue;
     if (typeof v !== "string") continue;
@@ -714,11 +716,8 @@ async function syncCloudFreeModelsIntoFirewall(cloudAdapter: HostedProviderAdapt
 }
 
 /**
- * Signed-in path: registers the hosted adapter into providerCatalog (which is what flips the
- * server from demo to real runtime, per CodeForgeServer.realRuntimeEnabled()) AND syncs the
- * catalog. Only call this once the user actually has cloud credentials — registering the adapter
- * while signed out would make the server attempt real (but doomed-to-401) hosted inference instead
- * of the safe scripted demo the very first time someone sends a message.
+ * Signed-in path: registers the hosted adapter into providerCatalog and syncs the catalog. Only
+ * call this once the user has cloud credentials; a signed-out adapter would only produce a 401.
  */
 async function registerCloudAdapter(): Promise<void> {
   if (!providerCatalog || !firewall) return;
@@ -732,10 +731,8 @@ async function registerCloudAdapter(): Promise<void> {
 /**
  * Signed-out path: CodeForge Free's catalog listing (`GET /v1/hosted/models`) requires no auth —
  * only actually running a model does. So a fresh, signed-out install still gets the real catalog
- * for browsing/selection, WITHOUT registering the adapter into providerCatalog. That keeps
- * realRuntimeEnabled() false until the user connects a real provider (BYOK) or signs in, so
- * selecting one of these models before then still runs the existing safe scripted demo runtime
- * instead of a confusing 401 from an adapter that has no credential yet.
+ * for browsing, WITHOUT registering the adapter into providerCatalog. Those catalog records are
+ * marked unavailable by the provider oracle, and execution fails closed until the user connects.
  */
 async function registerCloudFreeCatalogOnly(): Promise<void> {
   if (!firewall) return;
@@ -841,18 +838,17 @@ async function discoverProviderFree(providerId: string): Promise<number> {
 async function initializeServer(dbPath: string): Promise<void> {
   smokeRecord("INIT_SERVER_START");
   try {
-    const hasCredentials = PACKAGED_SMOKE || (!!providerCatalog && (
-      providerCatalog.get("opencode") ||
-      providerCatalog.get("openrouter") ||
-      providerCatalog.get("codeforge")
-    ));
+    const hasCredentials = PACKAGED_SMOKE || (!!providerCatalog && providerCatalog.all().some((adapter) => adapter.isTestProvider !== true));
     smokeRecord(`INIT_SERVER_HAS_CREDS_${Boolean(hasCredentials)}`);
     server = new CodeForgeServer({
       port: LOCAL_SERVER_PORT,
       dbPath,
       firewall: firewall ?? undefined,
       providerCatalog: providerCatalog ?? undefined,
-      useRealRuntime: hasCredentials ? true : undefined,
+      // A shipping desktop request must never yield the server's scripted demo events. With no
+      // real provider, the real runtime fails closed and the UI surfaces the missing route.
+      useRealRuntime: true,
+      controlPlaneToken,
     });
     smokeRecord("INIT_SERVER_INSTANCE_CREATED");
     await server.start();
@@ -882,15 +878,25 @@ async function initializeServer(dbPath: string): Promise<void> {
  */
 async function applyStartupServerSettings(): Promise<void> {
   const settings = readAppSettings();
-  try {
-    await fetch(`http://localhost:${LOCAL_SERVER_PORT}/api/privacy-mode`, {
+  await applyRuntimeSettings(settings);
+  if (PACKAGED_SMOKE || !settings.general.continueInterruptedAgents) return;
+  void continueRecoverableAgents();
+}
+
+/** Apply persisted preferences owned by the local runtime at startup and immediately after edits. */
+async function applyRuntimeSettings(settings: AppSettings): Promise<void> {
+  await Promise.allSettled([
+    fetch(`http://localhost:${LOCAL_SERVER_PORT}/api/privacy-mode`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mode: settings.privacy.routingMode }),
-    });
-  } catch {}
-  if (PACKAGED_SMOKE || !settings.general.continueInterruptedAgents) return;
-  void continueRecoverableAgents();
+    }),
+    fetch(`http://localhost:${LOCAL_SERVER_PORT}/api/repository-index/settings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled: settings.workspace.repositoryIndexEnabled }),
+    }),
+  ]);
 }
 
 /**
@@ -968,6 +974,7 @@ async function createWindow(): Promise<void> {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.cjs"),
+      additionalArguments: [`--codeforge-control-plane-token=${controlPlaneToken}`],
       sandbox: true,
       webSecurity: true,
     },
@@ -1511,16 +1518,8 @@ async function startPrimaryInstance(): Promise<void> {
   const credentials = getProviderCredentials();
   smokeRecord("WHEN_READY_CREDS_LOADED");
 
-  // NOTE: Do NOT register a scripted/mock provider for "codeforge" here.
-  // createMockProvider() is a test-only adapter and ForgeZero's provider
-  // isolation guard (assertRegistrable) refuses to register it outside test
-  // mode — doing so threw TestProviderIsolationError and crashed startup before
-  // the window opened. The free/GEMS/paid model *records* are still registered
-  // with the firewall (registerFreeModels / server catalog) so the model
-  // selector populates. With no real provider credentials the server falls back
-  // to the demo runtime, which drives a visible scripted task so the workspace
-  // is usable out of the box; connecting OpenCode/OpenRouter switches it to the
-  // real runtime.
+  // Scripted providers remain confined to PACKAGED_SMOKE. Production always uses the real runtime;
+  // when no executable free route exists, ForgeZero fails closed and the UI says so.
   if (!PACKAGED_SMOKE) {
     for (const id of ROUTABLE_PROVIDER_IDS) {
       if (credentials[id]) registerProviderAdapter(id);
@@ -1684,8 +1683,12 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") void requestClose();
 });
 
+function assertMainWindowSender(event: Electron.IpcMainInvokeEvent): void {
+  if (event.sender !== mainWindow?.webContents) throw new Error("Invalid IPC sender");
+}
+
 ipcMain.handle("app:close-decision", async (event, payload: { decision?: unknown; remember?: unknown }) => {
-  if (event.sender !== mainWindow?.webContents) throw new Error("Invalid close decision sender");
+  assertMainWindowSender(event);
   const decision = payload?.decision;
   if (decision !== "cancel" && decision !== "tray" && decision !== "quit" && decision !== "quit-anyway") {
     throw new Error("Invalid close decision");
@@ -1716,7 +1719,7 @@ ipcMain.handle("app:close-decision", async (event, payload: { decision?: unknown
  * `git` only: this is not a general command-execution bridge across the renderer/main boundary.
  */
 ipcMain.handle("shell:execCommand", async (event, payload: { command?: unknown; args?: unknown; cwd?: unknown }) => {
-  if (event.sender !== mainWindow?.webContents) throw new Error("Invalid execCommand sender");
+  assertMainWindowSender(event);
   if (payload?.command !== "git") throw new Error("execCommand only supports 'git'");
   const args = payload.args;
   if (!Array.isArray(args) || !args.every((a) => typeof a === "string")) throw new Error("Invalid execCommand args");
@@ -1737,13 +1740,18 @@ ipcMain.handle("shell:execCommand", async (event, payload: { command?: unknown; 
 
 /** Lets the renderer show a compact "N tasks running" indicator backed by the same authoritative
  * runtime status the close-safety dialog uses — never a separate, potentially-inconsistent count. */
-ipcMain.handle("app:runtime-status", async () => currentRuntimeStatus());
+ipcMain.handle("app:runtime-status", async (event) => {
+  assertMainWindowSender(event);
+  return currentRuntimeStatus();
+});
 
-ipcMain.handle("dialog:selectDirectory", async () => {
+ipcMain.handle("dialog:selectDirectory", async (event) => {
+  assertMainWindowSender(event);
   return selectDirectory();
 });
 
-ipcMain.handle("project:getRecent", async () => {
+ipcMain.handle("project:getRecent", async (event) => {
+  assertMainWindowSender(event);
   if (PACKAGED_SMOKE && process.env.CODEFORGE_SMOKE_WORKSPACE && fs.existsSync(process.env.CODEFORGE_SMOKE_WORKSPACE)) {
     return [{
       id: "packaged-smoke-workspace",
@@ -1756,13 +1764,14 @@ ipcMain.handle("project:getRecent", async () => {
 });
 
 ipcMain.handle("project:clearRecent", async (event) => {
-  if (event.sender !== mainWindow?.webContents) throw new Error("Invalid clearRecent sender");
+  assertMainWindowSender(event);
   const settings = readSettings();
   delete settings[RECENT_PROJECTS_KEY];
   writeSettingsAtomic(settings);
 });
 
-ipcMain.handle("project:open", async (_event, projectPath: string) => {
+ipcMain.handle("project:open", async (event, projectPath: string) => {
+  assertMainWindowSender(event);
   if (typeof projectPath !== "string" || projectPath.length === 0 || projectPath.length > 1024) {
     throw new Error("Invalid project path");
   }
@@ -1784,7 +1793,8 @@ ipcMain.handle("project:open", async (_event, projectPath: string) => {
   return project;
 });
 
-ipcMain.handle("project:create", async () => {
+ipcMain.handle("project:create", async (event) => {
+  assertMainWindowSender(event);
   const selectedPath = await selectDirectory();
   if (!selectedPath) return null;
 
@@ -1804,7 +1814,8 @@ ipcMain.handle("project:create", async () => {
   return project;
 });
 
-ipcMain.handle("shell:openExternal", async (_event, url: string) => {
+ipcMain.handle("shell:openExternal", async (event, url: string) => {
+  assertMainWindowSender(event);
   try {
     const parsed = new URL(url);
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw new Error("Unsupported protocol");
@@ -1815,26 +1826,41 @@ ipcMain.handle("shell:openExternal", async (_event, url: string) => {
   }
 });
 
-ipcMain.handle("app:getVersion", () => {
+ipcMain.handle("app:getVersion", (event) => {
+  assertMainWindowSender(event);
   return app.getVersion();
 });
 
-ipcMain.handle("app:getPlatform", () => {
+ipcMain.handle("app:getPlatform", (event) => {
+  assertMainWindowSender(event);
   return process.platform;
 });
 
 // --- Settings surface (canonical schema in app-settings.ts) ---
 
-ipcMain.handle("settings:get", (): SettingsSnapshot => getSettingsSnapshot());
-
-ipcMain.handle("settings:set", (_event, payload: { settings?: unknown; closeBehavior?: unknown }) => {
-  if (payload === null || typeof payload !== "object") throw new Error("Invalid settings payload");
-  return updateSettings(payload);
+ipcMain.handle("settings:get", (event): SettingsSnapshot => {
+  assertMainWindowSender(event);
+  return getSettingsSnapshot();
 });
 
-ipcMain.handle("settings:reset", (): SettingsSnapshot => resetAppSettings());
+ipcMain.handle("settings:set", async (event, payload: { settings?: unknown; closeBehavior?: unknown }) => {
+  assertMainWindowSender(event);
+  if (payload === null || typeof payload !== "object") throw new Error("Invalid settings payload");
+  const snapshot = updateSettings(payload);
+  if (payload.settings !== undefined) await applyRuntimeSettings(snapshot.settings);
+  return snapshot;
+});
 
-ipcMain.handle("app:getSystemInfo", () => ({
+ipcMain.handle("settings:reset", async (event): Promise<SettingsSnapshot> => {
+  assertMainWindowSender(event);
+  const snapshot = resetAppSettings();
+  await applyRuntimeSettings(snapshot.settings);
+  return snapshot;
+});
+
+ipcMain.handle("app:getSystemInfo", (event) => {
+  assertMainWindowSender(event);
+  return {
   appVersion: app.getVersion(),
   electron: process.versions.electron ?? "unknown",
   node: process.versions.node ?? "unknown",
@@ -1844,15 +1870,17 @@ ipcMain.handle("app:getSystemInfo", () => ({
   osRelease: os.release(),
   buildChannel: RESOLVED_CLOUD_ENDPOINT.channel,
   isPackaged: app.isPackaged,
-}));
+  };
+});
 
-ipcMain.handle("app:openDataFolder", async () => {
+ipcMain.handle("app:openDataFolder", async (event) => {
+  assertMainWindowSender(event);
   const result = await shell.openPath(app.getPath("userData"));
   return { ok: !result, error: result || undefined };
 });
 
 ipcMain.handle("notifications:show", (event, payload: { title?: unknown; body?: unknown }) => {
-  if (event.sender !== mainWindow?.webContents) throw new Error("Invalid notification sender");
+  assertMainWindowSender(event);
   if (typeof payload?.title !== "string" || payload.title.length === 0 || typeof payload?.body !== "string") {
     throw new Error("Invalid notification payload");
   }
@@ -1874,7 +1902,8 @@ ipcMain.handle("notifications:show", (event, payload: { title?: unknown; body?: 
  * triggered on demand. Never grants free status by itself: ForgeZero verification rules apply
  * identically to this path.
  */
-ipcMain.handle("catalog:refresh", async () => {
+ipcMain.handle("catalog:refresh", async (event) => {
+  assertMainWindowSender(event);
   try {
     if (!firewall) return { ok: false, freeModels: 0, error: "Runtime is not ready" };
     if (modelRegistry) await modelRegistry.refresh().catch(() => {});
@@ -1884,18 +1913,20 @@ ipcMain.handle("catalog:refresh", async () => {
     await Promise.allSettled(
       ROUTABLE_PROVIDER_IDS.filter((id) => providerCatalog?.get(id)).map((id) => discoverProviderFree(id)),
     );
-    const freeModels = firewall.allModels().filter((m) => m.costProfile?.isFree).length;
+    const freeModels = firewall.eligibleModels().length;
     return { ok: true, freeModels };
   } catch (error) {
     return { ok: false, freeModels: 0, error: (error instanceof Error ? error.message : String(error)).slice(0, 200) };
   }
 });
 
-ipcMain.handle("provider:getCredentialStatus", async () => {
+ipcMain.handle("provider:getCredentialStatus", async (event) => {
+  assertMainWindowSender(event);
   return getProviderCredentialStatus();
 });
 
-ipcMain.handle("provider:setCredential", async (_event, providerId: string, apiKey: string) => {
+ipcMain.handle("provider:setCredential", async (event, providerId: string, apiKey: string) => {
+  assertMainWindowSender(event);
   if (!isValidProviderId(providerId)) throw new Error("Invalid providerId");
   if (!isValidApiKey(apiKey)) throw new Error("Invalid API key");
   setProviderCredential(providerId, apiKey);
@@ -1914,7 +1945,8 @@ ipcMain.handle("provider:setCredential", async (_event, providerId: string, apiK
  * No API key is ever typed or logged; the resulting user-controlled key is stored encrypted via
  * safeStorage, the adapter is registered, and free models are discovered + verified immediately.
  */
-ipcMain.handle("oauth:openrouter:start", async () => {
+ipcMain.handle("oauth:openrouter:start", async (event) => {
+  assertMainWindowSender(event);
   if (PACKAGED_SMOKE) return { ok: false, error: "Unavailable in smoke mode" };
   try {
     const key = await runOpenRouterOAuth();
@@ -1928,13 +1960,15 @@ ipcMain.handle("oauth:openrouter:start", async () => {
   }
 });
 
-ipcMain.handle("provider:deleteCredential", async (_event, providerId: string) => {
+ipcMain.handle("provider:deleteCredential", async (event, providerId: string) => {
+  assertMainWindowSender(event);
   if (!isValidProviderId(providerId)) throw new Error("Invalid providerId");
   deleteProviderCredential(providerId);
   desktopCredentialStore?.reload();
 });
 
-ipcMain.handle("provider:testConnection", async (_event, providerId: string): Promise<{ status: string; error?: string }> => {
+ipcMain.handle("provider:testConnection", async (event, providerId: string): Promise<{ status: string; error?: string }> => {
+  assertMainWindowSender(event);
   if (!isValidProviderId(providerId)) {
     return { status: "error", error: "Invalid providerId" };
   }
@@ -1957,26 +1991,31 @@ ipcMain.handle("provider:testConnection", async (_event, providerId: string): Pr
   }
 });
 
-ipcMain.handle("onboarding:getCompleted", async () => {
+ipcMain.handle("onboarding:getCompleted", async (event) => {
+  assertMainWindowSender(event);
   return getOnboardingCompleted();
 });
 
-ipcMain.handle("onboarding:setCompleted", async (_event, completed: boolean) => {
+ipcMain.handle("onboarding:setCompleted", async (event, completed: boolean) => {
+  assertMainWindowSender(event);
   if (typeof completed !== "boolean") throw new Error("Invalid onboarding value");
   setOnboardingCompleted(completed);
 });
 
-ipcMain.handle("legal:getFirstRunAck", async () => {
+ipcMain.handle("legal:getFirstRunAck", async (event) => {
+  assertMainWindowSender(event);
   return getFirstRunLegalAck();
 });
 
-ipcMain.handle("legal:setFirstRunAck", async () => {
+ipcMain.handle("legal:setFirstRunAck", async (event) => {
+  assertMainWindowSender(event);
   return setFirstRunLegalAck();
 });
 
 // --- CodeForge Cloud IPC Handlers ---
 
-ipcMain.handle("cloud:auth:start", async () => {
+ipcMain.handle("cloud:auth:start", async (event) => {
+  assertMainWindowSender(event);
   try {
     if (!CLOUD_API_URL) throw new CloudAuthError("configuration", "CodeForge Cloud endpoint is not configured");
     const result = await runCodeForgeCloudAuth({
@@ -1993,7 +2032,8 @@ ipcMain.handle("cloud:auth:start", async () => {
   }
 });
 
-ipcMain.handle("cloud:account:get", async () => {
+ipcMain.handle("cloud:account:get", async (event) => {
+  assertMainWindowSender(event);
   if (PACKAGED_SMOKE) {
     return {
       user: { displayName: "Packaged smoke" },
@@ -2036,7 +2076,8 @@ ipcMain.handle("cloud:account:get", async () => {
 // GDPR Article 17 erasure (LEG-P0-02). No parameters accepted from the renderer beyond the
 // explicit confirmation — the account acted on is always whichever one is currently signed in on
 // this device, exactly like cloud:account:get / cloud:auth:logout above.
-ipcMain.handle("cloud:account:delete", async () => {
+ipcMain.handle("cloud:account:delete", async (event) => {
+  assertMainWindowSender(event);
   const tokens = getStoredCloudTokens();
   if (!tokens.accessToken) throw new Error("Must be signed in to CodeForge Cloud to delete your account");
   const res = await fetch(`${CLOUD_API_URL}/v1/account`, {
@@ -2059,7 +2100,8 @@ ipcMain.handle("cloud:account:delete", async () => {
   return receipt;
 });
 
-ipcMain.handle("cloud:auth:logout", async () => {
+ipcMain.handle("cloud:auth:logout", async (event) => {
+  assertMainWindowSender(event);
   const tokens = getStoredCloudTokens();
   if (tokens.refreshToken) {
     try {
@@ -2079,7 +2121,8 @@ ipcMain.handle("cloud:auth:logout", async () => {
   }
 });
 
-ipcMain.handle("cloud:billing:checkout", async () => {
+ipcMain.handle("cloud:billing:checkout", async (event) => {
+  assertMainWindowSender(event);
   const tokens = getStoredCloudTokens();
   if (!tokens.accessToken) throw new Error("Must be logged in to CodeForge Cloud");
   const res = await fetch(`${CLOUD_API_URL}/v1/billing/checkout`, {
@@ -2101,7 +2144,8 @@ ipcMain.handle("cloud:billing:checkout", async () => {
   }
 });
 
-ipcMain.handle("cloud:billing:portal", async () => {
+ipcMain.handle("cloud:billing:portal", async (event) => {
+  assertMainWindowSender(event);
   const tokens = getStoredCloudTokens();
   if (!tokens.accessToken) throw new Error("Must be logged in to CodeForge Cloud");
   const res = await fetch(`${CLOUD_API_URL}/v1/billing/portal`, {
@@ -2121,7 +2165,8 @@ ipcMain.handle("cloud:billing:portal", async () => {
   }
 });
 
-ipcMain.handle("cloud:usage:get", async () => {
+ipcMain.handle("cloud:usage:get", async (event) => {
+  assertMainWindowSender(event);
   const tokens = getStoredCloudTokens();
   if (!tokens.accessToken) return null;
   const res = await fetch(`${CLOUD_API_URL}/v1/usage`, {

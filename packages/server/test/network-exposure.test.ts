@@ -48,6 +48,65 @@ describe("local control-plane network exposure", () => {
 
     await expect(connect(lan, port)).resolves.toBe(true);
   });
+
+  it("rejects browser origins outside the packaged and development renderers", async () => {
+    server = createServer({ port: 0, dbPath: ":memory:" });
+    await server.start();
+
+    const response = await fetch(`http://127.0.0.1:${server.httpPort}/api/sessions`, {
+      headers: { Origin: "https://attacker.example" },
+    });
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({
+      error: "Origin is not allowed to access the local control plane",
+    });
+  });
+
+  it.each(["null", "http://localhost:5173", "http://127.0.0.1:5173"])(
+    "accepts the trusted renderer origin %s",
+    async (origin) => {
+      server = createServer({ port: 0, dbPath: ":memory:" });
+      await server.start();
+
+      const response = await fetch(`http://127.0.0.1:${server.httpPort}/api/sessions`, {
+        headers: { Origin: origin },
+      });
+
+      expect(response.status).toBe(200);
+    },
+  );
+
+  it("requires the per-process token when desktop authentication is configured", async () => {
+    server = createServer({ port: 0, dbPath: ":memory:", controlPlaneToken: "test-control-token" });
+    await server.start();
+    const endpoint = `http://127.0.0.1:${server.httpPort}/api/sessions`;
+
+    const missing = await fetch(endpoint, { headers: { Origin: "null" } });
+    expect(missing.status).toBe(401);
+
+    const authenticated = await fetch(endpoint, {
+      headers: {
+        Origin: "null",
+        "X-CodeForge-Control-Token": "test-control-token",
+      },
+    });
+    expect(authenticated.status).toBe(200);
+  });
+
+  it("does not let a valid token bypass the browser-origin boundary", async () => {
+    server = createServer({ port: 0, dbPath: ":memory:", controlPlaneToken: "test-control-token" });
+    await server.start();
+
+    const response = await fetch(`http://127.0.0.1:${server.httpPort}/api/sessions`, {
+      headers: {
+        Origin: "https://attacker.example",
+        "X-CodeForge-Control-Token": "test-control-token",
+      },
+    });
+
+    expect(response.status).toBe(403);
+  });
 });
 
 function connect(host: string, port: number): Promise<boolean> {

@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "733b611a4edc4aea39bb63f77008961af648d59d9f548e49e7ce521384d976db",
-  "surfaceVersion": "fg12f-certified-v1",
+  "sourceStateId": "40882f10cd19b8f118c759cc479c4c40e124a66b95dcb65cb90f4198541a530a",
+  "surfaceVersion": "fg12f-certified-v1-r2-package-metadata",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -38,7 +38,7 @@
     "packages/forge-green/src/optimization-policy.ts": "53dee55244eb1dc5d5ae03a4a30d96ecad0362aa",
     "packages/forge-green/src/optimization-types.ts": "1539abf45eaf618db3c2a68cf398b2320db5e7bd",
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
-    "packages/router/package.json": "5074d0197bcaeb493928901ec4a63c2fb8edc2ea",
+    "packages/router/package.json": "316fe9f303ac9a67cd11c5b111d3c6d8bea4ffe9",
     "packages/router/src/index.ts": "c2dc773f2ce117e5047db273d56c71eb5e10f6dc",
     "packages/server/src/agent-runtime.ts": "72a9690242f2f0cd0defa32fca5b77db22ec4795",
     "packages/server/src/autonomous-orchestrator.ts": "4a72d071796bb928de0debc73c9f6a61a1caddeb",
@@ -241,6 +241,24 @@
       "regressionEvidence": "Full Vitest suite: 286 files passed / 7 skipped / 0 failed; 2081 tests passed / 36 skipped / 0 failed (FG-12E baseline: 283 files / 2042 tests / 36 skipped / 0 failed — delta is the three new FG-12F test files: 10 forge-green policy + 17 workflow advisor + 12 server production-composition tests). Focused regression: FG-12D trial tests, FG-12E benchmark tests, ForgeVerify, workflow, server, ForgeGreen FG-9/FG-11, Candidate A, Completion Gate — all green. Root tsc -b --force clean; npm run build success. FG-12F rollout corpus (scripts/forgegreen-fg12f-cost-gated-rollout.mjs): 40 gated cases + boundary/partial/restart/invalidation/kill-switch/fallback controls, 0 failures.",
       "recertifiedAt": "2026-09-11",
       "sourceStateConstant": "FG12F_ROLLOUT_SOURCE_STATE"
+    },
+    {
+      "label": "R2 package metadata reconciliation",
+      "reason": "The R2 product release changed the router workspace package version from 0.2.0 to 0.3.0 without refreshing the material-source fingerprint. This recertification records that metadata-only drift; no router source, ForgeGreen policy, verification authority, or executable behavior changed.",
+      "priorSourceStateId": "733b611a4edc4aea39bb63f77008961af648d59d9f548e49e7ce521384d976db",
+      "priorSurfaceVersion": "fg12f-certified-v1",
+      "resultingSourceStateId": "40882f10cd19b8f118c759cc479c4c40e124a66b95dcb65cb90f4198541a530a",
+      "resultingSurfaceVersion": "fg12f-certified-v1-r2-package-metadata",
+      "changes": [
+        {
+          "file": "packages/router/package.json",
+          "change": "Workspace package version metadata changed from 0.2.0 to 0.3.0 as part of the inherited R2 release bump; executable dependencies and router source are unchanged.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Codex full-system R1 source-state verification plus the repository regression suite; exact results are recorded in docs/codeforge-codex-full-system-certification-r1.*.",
+      "recertifiedAt": "2026-09-12",
+      "sourceStateConstant": "CODEFORGE_CODEX_FULL_SYSTEM_R1_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm."

@@ -33,8 +33,8 @@ export function RuntimeExecutionSection(): React.ReactElement {
         />
         <SettingsRow
           title="Hosted continuations"
-          description="Long model-side work can continue safely on CodeForge's hosted worker and be reclaimed exactly once — even across restarts."
-          control={<StatusBadge kind="info">Available</StatusBadge>}
+          description="Eligible hosted work can be reclaimed exactly once across restarts. A signed-in CodeForge Cloud route is required to dispatch hosted work."
+          control={<StatusBadge kind="info">{ctx.account ? "Account connected" : "Requires sign-in"}</StatusBadge>}
         />
         <SettingsRow
           title="Runtime status"

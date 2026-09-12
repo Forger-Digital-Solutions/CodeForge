@@ -21,10 +21,13 @@ export function ModelsRoutingSection(): React.ReactElement {
 
   const freeSection = ctx.modelSections.find((s) => s.sectionLabel === "CODEFORGE FREE");
   const freeCount = freeSection?.models.length ?? 0;
+  const eligibleFreeCount = ctx.apiModels.filter(
+    (m) => m.eligible === true && m.freeStatus === "verified_free" && m.costProfile?.isFree === true,
+  ).length;
   const verifiedFreeCount = ctx.apiModels.filter(
     (m) => m.freeStatus === "verified_free" && m.costProfile?.isFree === true && !m.isPromotional,
   ).length;
-  const routingDegraded = Object.values(ctx.providerStatus).some((h) => h.status === "error");
+  const routingDegraded = eligibleFreeCount === 0;
   const gemsCount = ctx.modelSections.find((s) => s.sectionLabel === "GEMS")?.models.length ?? 0;
 
   const lastChecked = ctx.catalogLastCheckedAt
@@ -74,6 +77,7 @@ export function ModelsRoutingSection(): React.ReactElement {
                         <StatusBadge kind="ok">Default</StatusBadge>
                       ) : (
                         <SettingsButton
+                          disabled={model.available === false}
                           onClick={async () => {
                             await ctx.setDefaultModel(model.id);
                             setPicking(false);
@@ -98,7 +102,7 @@ export function ModelsRoutingSection(): React.ReactElement {
         <SettingsRow
           title="Routing status"
           description="ForgeAuto ranks ForgeZero-eligible models by capability, benchmark, and live health, then routes each task to the best free route."
-          control={<StatusBadge kind={routingDegraded ? "warn" : "ok"}>{routingDegraded ? "Degraded" : "Healthy"}</StatusBadge>}
+          control={<StatusBadge kind={routingDegraded ? "warn" : "ok"}>{routingDegraded ? "No eligible route" : "Healthy"}</StatusBadge>}
         />
         <SettingsRow
           title="Fallback"
@@ -110,8 +114,8 @@ export function ModelsRoutingSection(): React.ReactElement {
       <SettingsGroup title="8-Bit free catalog">
         <SettingsRow
           title="Qualified free models"
-          description={`${freeCount} free models listed · ${verifiedFreeCount} verified-free routes in the catalog${gemsCount ? ` · ${gemsCount} GEMS` : ""}.`}
-          control={<StatusBadge kind={freeCount > 0 ? "ok" : "warn"}>{freeCount > 0 ? "Healthy" : "Empty"}</StatusBadge>}
+          description={`${freeCount} CodeForge Free models listed · ${verifiedFreeCount} verified-free records · ${eligibleFreeCount} executable now${gemsCount ? ` · ${gemsCount} GEMS` : ""}.`}
+          control={<StatusBadge kind={eligibleFreeCount > 0 ? "ok" : "warn"}>{eligibleFreeCount > 0 ? "Healthy" : "Unavailable"}</StatusBadge>}
         />
         <SettingsRow
           title="Catalog check"

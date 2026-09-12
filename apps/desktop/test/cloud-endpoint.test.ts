@@ -218,8 +218,9 @@ describe("desktop Cloud endpoint resolution", () => {
       expect(handlers.length, "expected main to register Cloud IPC handlers").toBeGreaterThan(0);
 
       for (const [, channel, params] of handlers) {
-        // A zero-argument handler cannot be influenced by the renderer, even by a compromised one.
-        expect(params.trim(), `Cloud IPC handler '${channel}' accepts renderer-supplied arguments`).toBe("");
+        // The Electron event is trusted main-process metadata used to authenticate the sender. No
+        // renderer-controlled payload parameter may be accepted on a Cloud channel.
+        expect(params.trim(), `Cloud IPC handler '${channel}' accepts renderer-supplied arguments`).toBe("event");
       }
     });
 

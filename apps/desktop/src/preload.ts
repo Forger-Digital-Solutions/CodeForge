@@ -1,7 +1,13 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { CloudAccount, CloudUsage } from "./cloud-account.js";
 
+const CONTROL_PLANE_TOKEN_ARG = "--codeforge-control-plane-token=";
+const controlPlaneToken = process.argv
+  .find((argument) => argument.startsWith(CONTROL_PLANE_TOKEN_ARG))
+  ?.slice(CONTROL_PLANE_TOKEN_ARG.length) ?? "";
+
 const api = {
+  controlPlaneToken,
   selectDirectory: (): Promise<string | null> => {
     return ipcRenderer.invoke("dialog:selectDirectory");
   },

@@ -17,6 +17,9 @@ export interface ModelSelectorItem {
   description?: string;
   entitlementStatus?: ModelEntitlementStatus;
   favorite?: boolean;
+  /** False when the server knows the route cannot execute right now. */
+  available?: boolean;
+  unavailableReason?: string;
 }
 
 export interface ModelSection {
@@ -38,6 +41,7 @@ export interface ModelSelectionIntent {
 }
 
 export function isModelUsable(model: ModelSelectorItem): boolean {
+  if (model.available === false) return false;
   if (model.tier !== "gems_paid") {
     return true;
   }
@@ -279,7 +283,7 @@ export function ModelSelector({
                       tabIndex={locked || disabled ? -1 : optionIndex === focusedIndex ? 0 : -1}
                       aria-selected={model.id === selectedId}
                       aria-disabled={locked || disabled ? true : undefined}
-                      title={locked ? `${model.displayName} is not yet available on your plan` : undefined}
+                      title={locked ? model.unavailableReason ?? `${model.displayName} is not yet available on your plan` : undefined}
                       className={`model-option ${model.id === selectedId ? "selected" : ""} ${locked ? "locked" : ""} ${isFavorite ? "favorite" : ""} ${model.id === "auto" ? "auto-route" : ""}`}
                       onClick={() => handleSelect(model)}
                       onKeyDown={(e) => handleOptionKeyDown(e, model)}
@@ -293,7 +297,7 @@ export function ModelSelector({
                             like an ordinary catalog entry, so it always carries its own explicit
                             verified-$0 tag regardless of description text. */}
                         {model.id === "auto" && (
-                          <span className="model-option-badge auto">Verified $0</span>
+                          <span className={`model-option-badge ${locked ? "locked" : "auto"}`}>{locked ? "No route" : "Verified $0"}</span>
                         )}
                         {!locked && !model.description && model.id !== "auto" && model.tier === "free" && (
                           <span className="model-option-badge free">Free</span>

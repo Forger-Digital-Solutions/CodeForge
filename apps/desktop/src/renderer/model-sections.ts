@@ -23,6 +23,8 @@ export interface ApiModel {
     paidFallbackPossible: boolean;
   };
   isPromotional?: boolean;
+  /** Server-authoritative ForgeZero + provider-oracle result for this exact route. */
+  eligible?: boolean;
 }
 
 // Muse Spark is a promotional model excluded from normal routing entirely — hide any stray record.
@@ -118,11 +120,19 @@ export function buildModelSections(apiModels: ApiModel[], models: ModelSelectorI
   const gemsModels: ModelSelectorItem[] = [];
   const codeforgeFreeModels: ModelSelectorItem[] = [];
 
-  const autoItem = models.find((m) => m.id === "auto") ?? {
-    id: "auto",
-    displayName: "ForgeAuto/Free",
-    tier: "free" as const,
-    description: "Automatic free routing",
+  const autoAvailable = apiModels.some(
+    (m) => m.eligible === true && m.freeStatus === "verified_free" && m.costProfile?.isFree === true,
+  );
+  const existingAutoItem = models.find((m) => m.id === "auto");
+  const autoItem = {
+    ...(existingAutoItem ?? {
+      id: "auto",
+      displayName: "ForgeAuto/Free",
+      tier: "free" as const,
+    }),
+    available: autoAvailable,
+    description: autoAvailable ? "Automatic free routing" : "No eligible free route",
+    unavailableReason: autoAvailable ? undefined : "Connect a verified-free provider or sign in to CodeForge Cloud",
   };
   sectionMap.set("RECOMMENDED", [autoItem]);
 
@@ -135,6 +145,8 @@ export function buildModelSections(apiModels: ApiModel[], models: ModelSelectorI
       displayName: m.displayName,
       tier: m.tier === "gems_paid" ? "gems_paid" : "free",
       description: accessBadge(m),
+      available: m.eligible === true,
+      unavailableReason: m.eligible === false ? "Provider or entitlement is unavailable" : undefined,
     };
 
     if (m.tier === "gems_paid") {
@@ -183,9 +195,11 @@ export interface ForgeZeroTrustStatus {
  * record. Anything else — GEMS, a BYOK paid model, or a model the catalog doesn't recognize —
  * fails closed to a truthful "not verified" state rather than defaulting to green.
  */
-export function resolveForgeZeroTrust(selectedModelId: string | null, selected: ApiModel | undefined): ForgeZeroTrustStatus {
+export function resolveForgeZeroTrust(selectedModelId: string | null, selected: ApiModel | undefined, autoAvailable = false): ForgeZeroTrustStatus {
   if (selectedModelId === "auto") {
-    return { verifiedFree: true, label: "ForgeZero · Verified Free", detail: "ForgeAuto/Free · Automatic free routing" };
+    return autoAvailable
+      ? { verifiedFree: true, label: "ForgeZero · Verified Free", detail: "ForgeAuto/Free · Automatic free routing" }
+      : { verifiedFree: false, label: "ForgeZero · No Free Route", detail: "ForgeAuto/Free has no eligible provider right now" };
   }
   if (!selected) {
     return { verifiedFree: false, label: "ForgeZero · Unverified", detail: "No model selection recognized" };
@@ -193,7 +207,7 @@ export function resolveForgeZeroTrust(selectedModelId: string | null, selected: 
   if (selected.tier === "gems_paid") {
     return { verifiedFree: false, label: "ForgeZero · Paid (GEMS)", detail: `${selected.displayName} is a first-party paid model` };
   }
-  const verified = selected.freeStatus === "verified_free" && selected.costProfile?.isFree === true;
+  const verified = selected.eligible === true && selected.freeStatus === "verified_free" && selected.costProfile?.isFree === true;
   if (verified) {
     return { verifiedFree: true, label: "ForgeZero · Verified Free", detail: `${selected.displayName} · verified $0` };
   }

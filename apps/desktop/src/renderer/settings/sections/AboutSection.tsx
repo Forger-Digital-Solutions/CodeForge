@@ -2,8 +2,8 @@ import React from "react";
 import { useSettings } from "../settings-context.js";
 import { SettingsGroup, SettingsRow, SettingsButton, StatusBadge } from "../settings-controls.js";
 
-const REPO_URL = "https://github.com/codeforge/codeforge";
-const DOCS_URL = "https://github.com/codeforge/codeforge#readme";
+const REPO_URL = "https://github.com/Forger-Digital-Solutions/CodeForge";
+const DOCS_URL = "https://github.com/Forger-Digital-Solutions/CodeForge#readme";
 
 export function AboutSection(): React.ReactElement {
   const ctx = useSettings();

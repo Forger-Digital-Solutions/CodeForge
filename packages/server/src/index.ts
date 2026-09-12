@@ -40,6 +40,16 @@ import { buildActivityOverview, type ActivityOverview, type ActivityPeriod } fro
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const TRUSTED_RENDERER_ORIGINS = new Set([
+  "null",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]);
+
+export function isAllowedLocalControlPlaneOrigin(origin: string | undefined): boolean {
+  return origin === undefined || TRUSTED_RENDERER_ORIGINS.has(origin);
+}
+
 export interface ServerOptions {
   port?: number;
   webDist?: string;
@@ -72,6 +82,8 @@ export interface ServerOptions {
   cloudFetch?: typeof fetch;
   /** Test-only synchronization point used to prove approval/steer transition ordering. */
   afterApprovalResolvedBoundary?: () => Promise<void>;
+  /** Per-process bearer used by the packaged renderer to authenticate to the loopback API. */
+  controlPlaneToken?: string;
 }
 
 /** Minimal desktop-facing shutdown facts. Counts only; task payloads and secrets stay in the runtime. */
@@ -114,6 +126,7 @@ export class CodeForgeServer {
   private readonly userIntentHold: UserIntentHoldController;
   private readonly afterApprovalResolvedBoundary?: () => Promise<void>;
   private readonly configuredDbPath?: string;
+  private readonly controlPlaneToken?: string;
   private forgeGreenCacheStore?: ForgeGreenCacheStore;
   /**
    * Raw session/turn/work-item data backing the activity overview, cached briefly. The renderer
@@ -129,6 +142,7 @@ export class CodeForgeServer {
     this.host = options.host ?? process.env.CODEFORGE_BIND_HOST ?? "127.0.0.1";
     this.webDist = options.webDist ?? path.join(__dirname, "..", "web", "dist");
     this.configuredDbPath = options.dbPath;
+    this.controlPlaneToken = options.controlPlaneToken;
     this.persistence = createSessionPersistence({
       ...(options.dbPath ? { dbPath: options.dbPath } : {}),
       ...(options.databaseUrl ? { databaseUrl: options.databaseUrl } : {}),
@@ -466,14 +480,39 @@ export class CodeForgeServer {
 
   private handleRequest(req: http.IncomingMessage, res: http.ServerResponse): void {
     const url = new URL(req.url || "/", `http://${req.headers.host}`);
+    const origin = Array.isArray(req.headers.origin) ? req.headers.origin[0] : req.headers.origin;
+
+    if (!isAllowedLocalControlPlaneOrigin(origin)) {
+      res.writeHead(403, {
+        "Content-Type": "application/json",
+        Vary: "Origin",
+      });
+      res.end(JSON.stringify({ error: "Origin is not allowed to access the local control plane" }));
+      return;
+    }
 
     if (req.method === "OPTIONS") {
       res.writeHead(204, {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, X-CodeForge-Control-Token",
       });
       res.end();
+      return;
+    }
+
+    const headerToken = Array.isArray(req.headers["x-codeforge-control-token"])
+      ? req.headers["x-codeforge-control-token"][0]
+      : req.headers["x-codeforge-control-token"];
+    const suppliedToken = url.pathname === "/api/events"
+      ? headerToken ?? url.searchParams.get("controlToken") ?? undefined
+      : headerToken;
+    if (this.controlPlaneToken && suppliedToken !== this.controlPlaneToken) {
+      res.writeHead(401, {
+        "Content-Type": "application/json",
+        Vary: "Origin",
+      });
+      res.end(JSON.stringify({ error: "Local control-plane authentication failed" }));
       return;
     }
 

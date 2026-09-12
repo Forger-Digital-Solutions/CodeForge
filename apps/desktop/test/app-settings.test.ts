@@ -24,6 +24,7 @@ describe("canonical app settings schema", () => {
       onlyWhenInBackground: true,
     });
     expect(settings.privacy.routingMode).toBe("STANDARD");
+    expect(settings.workspace.repositoryIndexEnabled).toBe(true);
   });
 
   it("degrades field-by-field instead of discarding good groups on a corrupt store", () => {
@@ -52,12 +53,14 @@ describe("canonical app settings schema", () => {
     const patch = parseAppSettingsPatch({
       general: { continueInterruptedAgents: false },
       notifications: { onAgentCompleted: false },
+      workspace: { repositoryIndexEnabled: false },
     });
     const next = applySettingsPatch(current, patch);
     expect(next.general.continueInterruptedAgents).toBe(false);
     expect(next.notifications.onAgentCompleted).toBe(false);
     expect(next.general.openLastWorkspaceOnStartup).toBe(true);
     expect(next.notifications.onApprovalNeeded).toBe(true);
+    expect(next.workspace.repositoryIndexEnabled).toBe(false);
     expect(current.general.continueInterruptedAgents).toBe(true);
   });
 

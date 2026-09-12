@@ -16,6 +16,7 @@ export const FIXTURE_SETTINGS: AppSettings = {
   models: { defaultModelId: "auto" },
   notifications: { enabled: true, onApprovalNeeded: true, onAgentCompleted: true, onlyWhenInBackground: true },
   privacy: { routingMode: "STANDARD" },
+  workspace: { repositoryIndexEnabled: true },
 };
 
 export const FIXTURE_ACCOUNT = {
