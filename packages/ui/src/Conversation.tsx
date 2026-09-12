@@ -14,6 +14,17 @@ import { stripToolProtocol } from "./assistant-content.js";
 import { ActivityOverview, type ActivityOverviewData, type ActivityPeriod } from "./ActivityOverview.js";
 import type { ModelSelectorItem } from "./ModelSelector.js";
 
+/** Actual repository facts supplied by the desktop host for the idle workspace. */
+export interface WorkspaceBriefData {
+  repositoryName: string;
+  branch?: string | null;
+  repositoryState: "clean" | "changes" | "unavailable";
+  indexState?: string;
+  indexedFiles?: number;
+  indexedSymbols?: number;
+  isWorktree?: boolean;
+}
+
 interface ConversationProps {
   turns: TurnRecord[];
   workItems: WorkItem[];
@@ -40,6 +51,29 @@ interface ConversationProps {
   onSelectModel?: (model: ModelSelectorItem) => void;
   /** Opens the canonical model picker — the empty state never renders a second, separate picker. */
   onOpenModelPicker?: () => void;
+  workspaceBrief?: WorkspaceBriefData;
+}
+
+function WorkspaceBrief({ brief }: { brief: WorkspaceBriefData }): React.ReactElement {
+  const repositoryState = brief.repositoryState === "clean"
+    ? "Clean working tree"
+    : brief.repositoryState === "changes" ? "Changes detected" : "Git status unavailable";
+  const indexSummary = brief.indexedFiles === undefined
+    ? brief.indexState
+    : `${brief.indexedFiles.toLocaleString()} files${brief.indexedSymbols === undefined ? "" : ` · ${brief.indexedSymbols.toLocaleString()} symbols`}`;
+  return (
+    <section className="workspace-brief" aria-label="Selected workspace">
+      <div className="workspace-brief-header">
+        <span className="workspace-brief-kicker">Selected workspace</span>
+        <span className={`workspace-brief-state ${brief.repositoryState}`}>{repositoryState}</span>
+      </div>
+      <div className="workspace-brief-name">{brief.repositoryName}</div>
+      <dl className="workspace-brief-details">
+        <div><dt>Branch</dt><dd>{brief.branch ?? "Detached HEAD"}{brief.isWorktree ? " · worktree" : ""}</dd></div>
+        {indexSummary && <div><dt>Repository intelligence</dt><dd>{indexSummary}</dd></div>}
+      </dl>
+    </section>
+  );
 }
 
 /** Inline `code` and **strong** within a prose paragraph. */
@@ -236,7 +270,7 @@ const TimelineItemView = ({ item, workspacePath }: { item: TimelineItem; workspa
   }
 };
 
-const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: string }) => {
+const WorkItemRenderer = ({ item, displayMode, taskTerminal = false }: { item: WorkItem; displayMode: string; taskTerminal?: boolean }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const toggle = () => setIsCollapsed(!isCollapsed);
@@ -378,6 +412,12 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
 
     case "plan": {
       const p = item as Extract<WorkItem, { kind: "plan" }>;
+      // A generated plan is intent, not a receipt. Once the owning task is terminal, queued
+      // planning rows must not imply that CodeForge completed (or will still execute) them. The
+      // durable inspection/verification records are the authoritative terminal evidence.
+      if (taskTerminal && p.status !== "completed") {
+        return <ActivityLine kind="plan" state="completed" verb="Plan" target="Archived with terminal workflow result" meta="See executed activity and verification" />;
+      }
       return (
         <div className="plan-container">
           <div className="plan-header">
@@ -496,6 +536,7 @@ export default function Conversation({
   displayMode,
   events,
   onSuggestedPrompt,
+  isRunning,
   contextLabel,
   workspacePath,
   userDisplayName,
@@ -507,6 +548,7 @@ export default function Conversation({
   favoriteModels,
   onSelectModel,
   onOpenModelPicker,
+  workspaceBrief,
 }: ConversationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
@@ -572,9 +614,10 @@ export default function Conversation({
             <img className="empty-state-mark" src={resolveAssetUrlByName("8bit-idle")} width={32} height={32} alt="" aria-hidden="true" draggable={false} />
             <div className="empty-state-title">{userDisplayName ? `What's next, ${userDisplayName}?` : "What are we forging next?"}</div>
             <div className="empty-state-subtitle">
-              Describe a task or ask about your code.
+              Start with a repository-aware task, or ask CodeForge to inspect the codebase.
             </div>
             {contextLabel && <div className="empty-state-context">{contextLabel}</div>}
+            {workspaceBrief && <WorkspaceBrief brief={workspaceBrief} />}
 
             {activityOverview !== undefined && (
               <ActivityOverview
@@ -640,7 +683,7 @@ export default function Conversation({
           <>
             {turns.map(renderTurn)}
             {relevantItems.map((item) => (
-              <WorkItemRenderer key={item.id} item={item} displayMode={displayMode} />
+              <WorkItemRenderer key={item.id} item={item} displayMode={displayMode} taskTerminal={!isRunning && turns.length > 0} />
             ))}
           </>
         )}

@@ -46,6 +46,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [repositoryIndex, setRepositoryIndex] = useState<RepositoryIndexStatus>({ state: "NOT_INDEXED" });
   const [gitInfo, setGitInfo] = useState<GitWorkspaceInfo>({ isGitRepo: false, branch: null, isDetached: false, isWorktree: false });
+  const [gitWorkingTree, setGitWorkingTree] = useState<"clean" | "changes" | "unavailable">("unavailable");
   const [runtimeStatus, setRuntimeStatus] = useState<DesktopRuntimeStatus | null>(null);
   const [systemInfo, setSystemInfo] = useState<SystemInfoView | null>(null);
   const [recentProjects, setRecentProjects] = useState<Project[]>([]);
@@ -94,9 +95,16 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
             cwd: project.path,
           });
           setGitInfo(classifyGitWorkspace(result.exitCode, result.stdout ?? ""));
+          const workingTree = await window.electronAPI.execCommand({
+            command: "git",
+            args: ["status", "--porcelain"],
+            cwd: project.path,
+          });
+          setGitWorkingTree(workingTree.exitCode === 0 ? (workingTree.stdout.trim() ? "changes" : "clean") : "unavailable");
         }
       } catch {
         setGitInfo({ isGitRepo: false, branch: null, isDetached: false, isWorktree: false });
+        setGitWorkingTree("unavailable");
       }
     };
     void loadGitInfo();
@@ -751,6 +759,15 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
             onOpenHelp={() => openExternalLink(HELP_URL)}
             userIntentHoldPolicy={userIntentHoldPolicy}
             defaultExecutionMode={defaultExecutionMode}
+            workspaceBrief={{
+              repositoryName: project.name,
+              branch: gitInfo.branch,
+              repositoryState: gitWorkingTree,
+              indexState: repositoryIndex.state,
+              indexedFiles: repositoryIndex.fileCount,
+              indexedSymbols: repositoryIndex.symbolCount,
+              isWorktree: gitInfo.isWorktree,
+            }}
           />
         </main>
       )}

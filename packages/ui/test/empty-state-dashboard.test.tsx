@@ -22,6 +22,27 @@ describe("Conversation empty-state greeting", () => {
   });
 });
 
+describe("Conversation workspace brief", () => {
+  it("renders only supplied repository facts, including a visible non-color status", () => {
+    const markup = renderToStaticMarkup(React.createElement(Conversation, {
+      ...EMPTY_PROPS,
+      workspaceBrief: {
+        repositoryName: "CodeForge",
+        branch: "feature/daily-driver",
+        repositoryState: "changes",
+        indexState: "READY",
+        indexedFiles: 27,
+        indexedSymbols: 84,
+        isWorktree: true,
+      },
+    }));
+    expect(markup).toContain("Selected workspace");
+    expect(markup).toContain("Changes detected");
+    expect(markup).toContain("feature/daily-driver · worktree");
+    expect(markup).toContain("27 files · 84 symbols");
+  });
+});
+
 describe("Conversation empty-state real favorites", () => {
   const favorites: ModelSelectorItem[] = [
     { id: "nemotron", displayName: "Nemotron 70B", tier: "free" },

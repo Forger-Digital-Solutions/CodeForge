@@ -24,6 +24,11 @@ describe("checkGitExecArgs — allowed read-only invocations", () => {
     expect(checkGitExecArgs(["rev-parse", "--is-inside-work-tree"]).ok).toBe(true);
     expect(checkGitExecArgs(["rev-parse", "HEAD"]).ok).toBe(true);
   });
+  it("accepts only the fixed porcelain working-tree observation", () => {
+    expect(checkGitExecArgs(["status", "--porcelain"])).toEqual({ ok: true });
+    expect(checkGitExecArgs(["status"])).toEqual({ ok: false, reason: "git status: only `status --porcelain` is allowed" });
+    expect(checkGitExecArgs(["status", "--short"])).toEqual({ ok: false, reason: "git status: only `status --porcelain` is allowed" });
+  });
 });
 
 describe("checkGitExecArgs — rejects mutating / dangerous git", () => {

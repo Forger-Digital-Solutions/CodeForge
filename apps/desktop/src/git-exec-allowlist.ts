@@ -3,7 +3,8 @@
  *
  * The renderer is NOT a trusted command channel. This bridge exists for exactly two read-only
  * product features:
- *   1. Workspace Git context (branch / worktree) — `git rev-parse …` (see `git-workspace-info.ts`).
+ *   1. Workspace Git context (branch / worktree / working-tree state) — fixed `git rev-parse …`
+ *      and `git status --porcelain` forms (see `git-workspace-info.ts`).
  *   2. Detected local Git identity in Settings — `git config user.name` / `git config user.email`.
  *
  * Every invocation this function accepts is read-only: it cannot mutate the repository, the working
@@ -31,7 +32,7 @@ export interface GitExecCheck {
  * introspection (cannot mutate); `config` is gated to its read form below. Extend ONLY with a
  * subcommand proven read-only AND given a validated argument shape here.
  */
-const READONLY_SUBCOMMANDS = new Set(["rev-parse", "config"]);
+const READONLY_SUBCOMMANDS = new Set(["rev-parse", "status", "config"]);
 
 /**
  * git config keys the Settings identity reader is allowed to READ. A bare `git config <key>` reads;
@@ -79,6 +80,14 @@ export function checkGitExecArgs(args: readonly unknown[]): GitExecCheck {
   if (subcommand === "rev-parse") {
     // rev-parse is pure introspection; no rev-parse argument can mutate state or execute code.
     return { ok: true };
+  }
+
+  if (subcommand === "status") {
+    // Porcelain status is a fixed, machine-readable working-tree observation. Do not accept
+    // arbitrary status flags from the renderer: a fixed vector keeps this bridge narrow.
+    return argv.length === 2 && argv[1] === "--porcelain"
+      ? { ok: true }
+      : { ok: false, reason: "git status: only `status --porcelain` is allowed" };
   }
 
   // subcommand === "config"

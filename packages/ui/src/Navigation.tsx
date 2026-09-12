@@ -9,6 +9,23 @@ export interface NavSessionSummary {
   updatedAt?: string;
 }
 
+/** A session is the user-visible task; retries and recovery remain inside it. */
+export function dedupeSessionSummaries<T extends NavSessionSummary>(sessions: T[]): T[] {
+  const unique = new Map<string, T>();
+  for (const session of sessions) {
+    const existing = unique.get(session.id);
+    if (!existing || (session.updatedAt ?? "").localeCompare(existing.updatedAt ?? "") > 0) unique.set(session.id, session);
+  }
+  return [...unique.values()];
+}
+
+/** Internal bootstrap prompts must never leak into task history. */
+export function displaySessionTitle(session: NavSessionSummary): string {
+  const title = (session.taskTitle || session.title || "").replace(/\s+/g, " ").trim();
+  if (!title || /^(you are codeforge|you are an autonomous coding agent|system prompt)/i.test(title)) return "CodeForge task";
+  return title;
+}
+
 export function formatRelativeSessionTime(value?: string, now = Date.now()): string | null {
   if (!value) return null;
   const timestamp = Date.parse(value);
@@ -234,6 +251,8 @@ function getSessionStatusIcon(status?: string): string {
     case "blocked": return "⛔";
     case "user_input_required": return "?";
     case "waiting_for_approval": return "⏳";
+    case "paused": return "Ⅱ";
+    case "interrupted": return "Ⅱ";
     default: return "○";
   }
 }
@@ -260,7 +279,7 @@ export default function Navigation({
       Today: [], Yesterday: [], "Previous 7 Days": [], Older: [],
     };
     for (const session of [...sessions].sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""))) {
-      const label = session.taskTitle || session.title || session.id.slice(0, 8);
+      const label = displaySessionTitle(session);
       if (normalized && !`${label} ${session.status ?? ""}`.toLocaleLowerCase().includes(normalized)) continue;
       groups[groupSessionByAge(session.updatedAt)].push(session);
     }
@@ -357,7 +376,7 @@ export default function Navigation({
                   <div className="nav-session-group" key={group}>
                     <div className="nav-group-label">{group}</div>
                     {groupedSessions[group].map((session) => {
-                      const label = session.taskTitle || session.title || session.id.slice(0, 8);
+                      const label = displaySessionTitle(session);
                       const isActive = session.id === activeSessionId;
                       const running = session.status === "running";
                       const relativeTime = formatRelativeSessionTime(session.updatedAt);
@@ -366,17 +385,18 @@ export default function Navigation({
                         <button
                           type="button"
                           key={session.id}
-                          className={`nav-item nav-task ${isActive ? "active" : ""}`}
+                          className={`nav-item nav-task ${isActive ? "active" : ""} status-${session.status ?? "idle"}`}
                           onClick={() => onSelectSession(session.id)}
                           title={label}
                           aria-current={isActive ? "page" : undefined}
+                          aria-label={`${label} — ${humanizeSessionStatus(session.status)}${relativeTime ? `, ${relativeTime}` : ""}`}
                         >
                           <span className={`nav-task-dot ${running ? "running" : ""}`} />
                           <span className="nav-task-copy">
                             <span className="nav-label">{label}</span>
                             <span className="nav-task-meta">{running ? "Working" : humanizeSessionStatus(session.status)}{relativeTime ? ` · ${relativeTime}` : ""}</span>
                           </span>
-                          <span className="nav-task-status-icon" aria-hidden="true">{statusIcon}</span>
+                          <span className="nav-task-status-icon" title={humanizeSessionStatus(session.status)} aria-hidden="true">{statusIcon}</span>
                         </button>
                       );
                     })}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatRelativeSessionTime, humanizeSessionStatus } from "../src/Navigation.js";
+import { dedupeSessionSummaries, displaySessionTitle, formatRelativeSessionTime, humanizeSessionStatus } from "../src/Navigation.js";
 
 describe("formatRelativeSessionTime", () => {
   const now = Date.UTC(2026, 8, 9, 18, 0, 0);
@@ -22,5 +22,22 @@ describe("humanizeSessionStatus (R9 truthful status labels)", () => {
     expect(humanizeSessionStatus("cancelled")).toBe("Stopped");
     expect(humanizeSessionStatus(undefined)).toBe("Idle");
     expect(humanizeSessionStatus("completed")).toBe("Completed");
+  });
+});
+
+describe("task-history identity", () => {
+  it("keeps one row for a session even if the server repeats it during recovery", () => {
+    const sessions = dedupeSessionSummaries([
+      { id: "task-1", title: "Earlier", updatedAt: "2026-09-09T10:00:00Z" },
+      { id: "task-1", title: "Latest", updatedAt: "2026-09-09T11:00:00Z" },
+      { id: "task-2", title: "Other", updatedAt: "2026-09-09T10:00:00Z" },
+    ]);
+    expect(sessions).toHaveLength(2);
+    expect(sessions.find((session) => session.id === "task-1")?.title).toBe("Latest");
+  });
+
+  it("does not render an internal CodeForge bootstrap prompt as a task title", () => {
+    expect(displaySessionTitle({ id: "task-1", title: "You are CodeForge, an autonomous coding agent..." })).toBe("CodeForge task");
+    expect(displaySessionTitle({ id: "task-2", taskTitle: "Repair the pricing test" })).toBe("Repair the pricing test");
   });
 });

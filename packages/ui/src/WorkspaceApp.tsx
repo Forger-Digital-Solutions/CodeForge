@@ -4,6 +4,7 @@ import type { WorkspaceState } from "./workspace-sse.js";
 import { readRememberedExecutionMode, rememberExecutionMode, useWorkspaceSSE } from "./workspace-sse.js";
 import Header from "./Header.js";
 import Navigation from "./Navigation.js";
+import { dedupeSessionSummaries } from "./Navigation.js";
 import Conversation from "./Conversation.js";
 import Inspector from "./Inspector.js";
 import Composer from "./Composer.js";
@@ -17,6 +18,7 @@ import { isForgeWorkActive } from "./forge-activity.js";
 import { loadModelFavorites } from "./model-favorites.js";
 import { ContextBar } from "./ContextBar.js";
 import type { ActivityOverviewData, ActivityPeriod } from "./ActivityOverview.js";
+import type { WorkspaceBriefData } from "./Conversation.js";
 import "./workspace.css";
 
 /** Turn provider/runtime errors into concise, actionable guidance. */
@@ -91,6 +93,7 @@ export interface WorkspaceAppProps {
    * open, the composer follows it (the composer's own toggle remains the per-workspace control).
    */
   defaultExecutionMode?: ExecutionMode;
+  workspaceBrief?: WorkspaceBriefData;
 }
 
 export default function WorkspaceApp({
@@ -118,6 +121,7 @@ export default function WorkspaceApp({
   onOpenHelp,
   userIntentHoldPolicy = "expensive_actions_only",
   defaultExecutionMode,
+  workspaceBrief,
 }: WorkspaceAppProps) {
   const { state, setState, sendMessage, requestUserIntentHold, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession, startNewSession, hydrate } = useWorkspaceSSE(sseUrl ?? "/api/events");
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -209,7 +213,7 @@ export default function WorkspaceApp({
       const res = await fetch(`${apiOrigin}/api/sessions`);
       if (!res.ok) return;
       const data = (await res.json()) as SessionSummary[];
-      if (Array.isArray(data)) setSessions(data);
+      if (Array.isArray(data)) setSessions(dedupeSessionSummaries(data));
     } catch {
       // server may still be starting
     }
@@ -560,6 +564,7 @@ export default function WorkspaceApp({
             favoriteModels={favoriteModels}
             onSelectModel={(model) => onSelectModel?.(model, state.session?.id)}
             onOpenModelPicker={() => setIsModelPickerOpen(true)}
+            workspaceBrief={workspaceBrief}
           />
 
           <ForgeWorkingIndicator active={forgeWorkActive} />
