@@ -19,6 +19,8 @@ export type TimelineItem =
       argsJson?: string;
       result?: string;
       error?: string;
+      /** What the file operation this call performed reported ("28 lines", "written"). */
+      fileDetail?: string;
     }
   | { kind: "file"; id: string; seq: number; turnId?: string; path: string; action: "read" | "written"; detail?: string }
   | { kind: "command"; id: string; seq: number; turnId?: string; command: string; exitCode: number; output?: string };
@@ -80,22 +82,29 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
         break;
       }
       case "tool.execution_started":
+      case "tool.call_completed":
       case "tool.call_started": {
+        // A call announces itself before its arguments are known; the arguments arrive with the
+        // completed call / execution start. The row must pick them up then, or it would forever
+        // read "Read" with no file — which is exactly what shipped.
         const p = e.payload as { turnId: string; toolCallId: string; toolName: string; argsJson?: string };
-        if (!toolByCall.has(p.toolCallId)) {
-          const item: Extract<TimelineItem, { kind: "tool" }> = {
-            kind: "tool",
-            id: `tool-${p.toolCallId}`,
-            seq: e.seq,
-            turnId: p.turnId,
-            toolCallId: p.toolCallId,
-            toolName: p.toolName,
-            status: "running",
-            argsJson: p.argsJson,
-          };
-          toolByCall.set(p.toolCallId, item);
-          items.push(item);
+        const existing = toolByCall.get(p.toolCallId);
+        if (existing) {
+          if (!existing.argsJson && p.argsJson) existing.argsJson = p.argsJson;
+          break;
         }
+        const item: Extract<TimelineItem, { kind: "tool" }> = {
+          kind: "tool",
+          id: `tool-${p.toolCallId}`,
+          seq: e.seq,
+          turnId: p.turnId,
+          toolCallId: p.toolCallId,
+          toolName: p.toolName,
+          status: "running",
+          argsJson: p.argsJson,
+        };
+        toolByCall.set(p.toolCallId, item);
+        items.push(item);
         break;
       }
       case "tool.execution_completed": {
@@ -127,11 +136,24 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
       }
       case "file.read": {
         const p = e.payload as { fileCallId: string; path: string; lines?: number };
-        items.push({ kind: "file", id: `file-${p.fileCallId}`, seq: e.seq, path: p.path, action: "read", detail: p.lines ? `${p.lines} lines` : undefined });
+        const detail = p.lines ? `${p.lines} lines` : undefined;
+        // The agent's read_file tool reports the same read through this event; fold it into the
+        // running tool row instead of showing the one action twice.
+        const owner = runningToolForPath(toolByCall, p.path, "read");
+        if (owner) {
+          if (detail) owner.fileDetail = detail;
+          break;
+        }
+        items.push({ kind: "file", id: `file-${p.fileCallId}`, seq: e.seq, path: p.path, action: "read", detail });
         break;
       }
       case "file.written": {
         const p = e.payload as { fileCallId: string; path: string; bytesOrChars?: number };
+        const owner = runningToolForPath(toolByCall, p.path, "written");
+        if (owner) {
+          owner.fileDetail = "written";
+          break;
+        }
         items.push({ kind: "file", id: `file-${p.fileCallId}`, seq: e.seq, path: p.path, action: "written" });
         break;
       }
@@ -146,6 +168,35 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
   }
 
   return items;
+}
+
+const READ_TOOLS = new Set(["read_file"]);
+const WRITE_TOOLS = new Set(["write_file", "edit_file"]);
+
+/** The still-running tool call that is acting on `path` — the owner of a file event. */
+function runningToolForPath(
+  toolByCall: Map<string, Extract<TimelineItem, { kind: "tool" }>>,
+  filePath: string,
+  action: "read" | "written",
+): Extract<TimelineItem, { kind: "tool" }> | undefined {
+  const wanted = normalizePath(filePath);
+  const tools = action === "read" ? READ_TOOLS : WRITE_TOOLS;
+  let match: Extract<TimelineItem, { kind: "tool" }> | undefined;
+  for (const item of toolByCall.values()) {
+    if (item.status !== "running" || !tools.has(item.toolName) || !item.argsJson) continue;
+    let args: { path?: unknown } | undefined;
+    try {
+      args = JSON.parse(item.argsJson) as { path?: unknown };
+    } catch {
+      continue;
+    }
+    if (typeof args?.path === "string" && normalizePath(args.path) === wanted) match = item;
+  }
+  return match;
+}
+
+function normalizePath(p: string): string {
+  return p.replace(/\\/g, "/").replace(/^\.\//, "").toLowerCase();
 }
 
 /** True when at least one assistant message with visible text exists in the timeline. */

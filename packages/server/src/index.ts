@@ -98,6 +98,8 @@ export interface ServerOptions {
   afterApprovalResolvedBoundary?: () => Promise<void>;
   /** Per-process bearer used by the packaged renderer to authenticate to the loopback API. */
   controlPlaneToken?: string;
+  /** Agent working budget per workflow implementation/repair turn (ms); tests use small values. */
+  agentWorkingBudgetMs?: number;
 }
 
 /** Minimal desktop-facing shutdown facts. Counts only; task payloads and secrets stay in the runtime. */
@@ -226,6 +228,7 @@ export class CodeForgeServer {
       getOrCreateRuntime: (sessionId: string, userId?: string) => this.getOrCreateRuntime(sessionId, userId),
       useRealRuntime: () => this.realRuntimeEnabled(),
       userIntentHold: this.userIntentHold,
+      ...(options.agentWorkingBudgetMs !== undefined ? { agentWorkingBudgetMs: options.agentWorkingBudgetMs } : {}),
     });
   }
 

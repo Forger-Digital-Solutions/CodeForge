@@ -104,6 +104,50 @@ describe("buildTimeline — assistant prose reconstruction", () => {
   });
 });
 
+describe("buildTimeline — tool rows carry their target and own their file events", () => {
+  // Exactly the event order the runtime emits for one read_file call.
+  const readCall = (id: string, path: string, lines: number) => [
+    ev("tool.call_started", { turnId: "t1", toolCallId: id, toolName: "read_file" }),
+    ev("tool.call_completed", { turnId: "t1", toolCallId: id, toolName: "read_file", argsJson: JSON.stringify({ path }) }),
+    ev("tool.execution_started", { turnId: "t1", toolCallId: id, toolName: "read_file", argsJson: JSON.stringify({ path }) }),
+    ev("file.read", { fileCallId: `f-${id}`, path, lines }),
+    ev("tool.execution_completed", { turnId: "t1", toolCallId: id, toolName: "read_file", result: ["hash: abc", ...Array.from({ length: lines }, () => "x")].join("\n") }),
+  ];
+
+  it("picks up the arguments that arrive after the call is announced", () => {
+    reset();
+    const tl = buildTimeline([ev("turn.started", { turnId: "t1", userMessage: "go" }), ...readCall("c1", "src/index.ts", 6)]);
+    const tool = tl.find((i) => i.kind === "tool") as any;
+    expect(tool.argsJson).toBe(JSON.stringify({ path: "src/index.ts" }));
+    expect(tool.status).toBe("completed");
+  });
+
+  it("shows one row per read, carrying the file's own line count", () => {
+    reset();
+    const tl = buildTimeline([ev("turn.started", { turnId: "t1", userMessage: "go" }), ...readCall("c1", "src/index.ts", 6), ...readCall("c2", "test/helpers.ts", 16)]);
+    expect(tl.map((i) => i.kind)).toEqual(["user", "tool", "tool"]);
+    expect((tl[1] as any).fileDetail).toBe("6 lines");
+    expect((tl[2] as any).fileDetail).toBe("16 lines");
+  });
+
+  it("folds a write into its edit_file row, and keeps standalone file events when no tool owns them", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("turn.started", { turnId: "t1", userMessage: "go" }),
+      ev("tool.call_started", { turnId: "t1", toolCallId: "e1", toolName: "edit_file" }),
+      ev("tool.call_completed", { turnId: "t1", toolCallId: "e1", toolName: "edit_file", argsJson: JSON.stringify({ path: "src\\types.ts", oldText: "a", newText: "b" }) }),
+      ev("tool.execution_started", { turnId: "t1", toolCallId: "e1", toolName: "edit_file", argsJson: JSON.stringify({ path: "src\\types.ts", oldText: "a", newText: "b" }) }),
+      ev("file.written", { fileCallId: "w1", path: "src/types.ts", bytesOrChars: 724 }),
+      ev("tool.execution_completed", { turnId: "t1", toolCallId: "e1", toolName: "edit_file", result: "ok" }),
+      // The heuristic implementer writes without a tool call: that still needs a row.
+      ev("file.written", { fileCallId: "w2", path: "src/feature.ts", bytesOrChars: 10 }),
+    ]);
+    expect(tl.map((i) => i.kind)).toEqual(["user", "tool", "file"]);
+    expect((tl[1] as any).fileDetail).toBe("written");
+    expect((tl[2] as any).path).toBe("src/feature.ts");
+  });
+});
+
 describe("session isolation", () => {
   it("rejects events from other sessions and already-seen seqs", () => {
     expect(isEventForSession({ sessionId: "A", seq: 5 }, "A", 3)).toBe(true);

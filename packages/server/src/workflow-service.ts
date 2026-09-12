@@ -33,6 +33,8 @@ export interface WorkflowServiceOptions {
    */
   useRealRuntime?: boolean | (() => boolean);
   userIntentHold?: UserIntentHoldController;
+  /** Agent working budget per implementation/repair turn (ms). Tests use small values. */
+  agentWorkingBudgetMs?: number;
 }
 
 export interface WorkflowRunRequest {
@@ -52,7 +54,27 @@ const MAX_WORKFLOWS_GLOBAL = 20;
 // minutes aborted realistic tasks mid-flight. 30 minutes still bounds runaway workflows.
 const WORKFLOW_TIMEOUT_MINUTES = 30;
 const WORKFLOW_TIMEOUT_MS = WORKFLOW_TIMEOUT_MINUTES * 60 * 1000;
+// How long the agent may actively WORK on one implementation or repair turn (time parked on a
+// human decision is excluded). Two minutes was far too little for a real model implementing a
+// multi-file change with a free route — it timed out mid-edit on the first real live task — so
+// the default now leaves the rest of the task budget for verification and repair.
+const DEFAULT_AGENT_WORKING_BUDGET_MS = 20 * 60 * 1000;
 const MAX_WORKSPACE_PATH_LENGTH = 1024;
+
+/** One plan step as a person reads it: what happens, to which file or command, at what risk. */
+function describePlanStep(step: WorkflowPlan["steps"][number]): string {
+  const target = step.targetPath ? ` → ${step.targetPath}` : step.command ? ` → ${step.command}` : "";
+  const risk = step.risk === "safe" ? "" : ` (${step.risk})`;
+  return `${step.description}${target}${risk}`;
+}
+
+/** The approval text for a plan: title, then the pending steps, bounded so the card stays readable. */
+function describePlanForApproval(plan: WorkflowPlan, safeTitle: string): string {
+  const pending = plan.steps.filter((step) => step.status !== "completed");
+  const shown = pending.slice(0, 8).map((step) => `• ${describePlanStep(step)}`);
+  if (pending.length > shown.length) shown.push(`• … ${pending.length - shown.length} more step(s)`);
+  return [`${safeTitle} — ${pending.length} step${pending.length === 1 ? "" : "s"} to run`, ...shown].join("\n");
+}
 
 /** A persisted running process has no trustworthy terminal result after a service restart. */
 async function recoverInterruptedForgeVerifyAttempts(persistence: ISessionPersistence, sessionId: string): Promise<void> {
@@ -163,6 +185,7 @@ export class WorkflowService {
   private readonly getOrCreateRuntime?: (sessionId: string, userId?: string) => AgentRuntime;
   private readonly isRealRuntimeEnabled: () => boolean;
   private readonly userIntentHold?: UserIntentHoldController;
+  private readonly agentWorkingBudgetMs: number;
 
   constructor(options: WorkflowServiceOptions) {
     this.eventStore = options.eventStore;
@@ -174,6 +197,7 @@ export class WorkflowService {
     const realRuntime = options.useRealRuntime ?? false;
     this.isRealRuntimeEnabled = typeof realRuntime === "function" ? realRuntime : () => realRuntime;
     this.userIntentHold = options.userIntentHold;
+    this.agentWorkingBudgetMs = options.agentWorkingBudgetMs ?? DEFAULT_AGENT_WORKING_BUDGET_MS;
   }
 
   /** Must be awaited once after construction — reclassifies persisted state before serving. */
@@ -216,7 +240,7 @@ export class WorkflowService {
     adapter: WorkspaceEventAdapter,
   ): NonNullable<import("@codeforge/workflow").WorkflowEngineOptions["agentExecutor"]> {
     const getRuntime = this.getOrCreateRuntime!;
-    const waitForTurn = async (runtime: AgentRuntime, turnId: string): Promise<{ status: string; turn?: ReturnType<AgentRuntime["getTurn"]> }> => {
+    const waitForTurn = async (runtime: AgentRuntime, turnId: string): Promise<{ status: string; turn?: ReturnType<AgentRuntime["getTurn"]>; reason?: string }> => {
       // This budget bounds how long the AGENT may work. Time the turn spends parked on a human
       // decision is not the agent working, so it is excluded: otherwise a user who takes longer than
       // the budget to read an approval has their workflow declared failed for having thought about
@@ -225,7 +249,7 @@ export class WorkflowService {
       // The wait is still bounded — ApprovalService owns that bound and expires the approval on its
       // own timeout, which resolves the promise and lets the turn finish. Nothing here is unbounded
       // and no timeout protection is removed.
-      const timeoutMs = 120_000;
+      const timeoutMs = this.agentWorkingBudgetMs;
       let workingMs = 0;
       let lastTick = Date.now();
       while (workingMs < timeoutMs) {
@@ -256,7 +280,12 @@ export class WorkflowService {
         workingMs += elapsed;
         await new Promise((r) => setTimeout(r, 200));
       }
-      return { status: "failed" };
+      // Budget exhausted: the turn must stop NOW. Leaving it running produced an orphaned agent
+      // that kept editing the workspace and raising approvals after the workflow had already been
+      // declared failed — and blocked the repair turn, since a session runs one turn at a time.
+      const reason = `Agent working budget of ${Math.round(timeoutMs / 60_000)} minutes exhausted`;
+      try { await runtime.cancelTurn(turnId, reason); } catch {}
+      return { status: "budget_exhausted", turn: runtime.getTurn(turnId), reason };
     };
 
     const buildImplementPrompt = (plan: WorkflowPlan, context: ContextBundle, repoMap: RepoMap, intent: TaskIntent): string => {
@@ -313,6 +342,9 @@ export class WorkflowService {
           adapter.emitAgentCompleted(`agent-${plan.id.slice(0, 8)}`, plan.id);
           return { success: true, output: `Turn ${turnId} completed`, turnId };
         }
+        if (result.status === "budget_exhausted") {
+          return { success: false, output: `Turn ${turnId} stopped: ${result.reason}`, turnId };
+        }
         if (result.status === "cancelled" || sig?.aborted || signal.aborted) {
           return { success: false, output: `Turn ${turnId} cancelled` };
         }
@@ -331,7 +363,7 @@ export class WorkflowService {
         const turnId = await runtime.startTurn(prompt, adapter);
         const result = await waitForTurn(runtime, turnId);
         if (result.status === "completed") return { success: true, output: `Repair turn ${turnId} completed`, turnId };
-        return { success: false, output: `Repair turn ${turnId} ${result.status}` };
+        return { success: false, output: `Repair turn ${turnId} ${result.status}${result.reason ? `: ${result.reason}` : ""}` };
       },
     };
   }
@@ -543,10 +575,27 @@ export class WorkflowService {
         }
       },
       askForApproval: async (plan: WorkflowPlan) => {
-        // Use authoritative ApprovalService — ensure secrets never leak into approval records
+        // Use authoritative ApprovalService — ensure secrets never leak into approval records.
+        // The prompt lists what the plan will actually do: a user cannot approve a plan they
+        // cannot see, and the card used to show only the plan id.
         const safePlanTitle = redactSecrets(plan.title);
-        const safeDescription = redactSecrets(`Execute plan ${plan.id}: ${safePlanTitle}`);
+        const safeDescription = redactSecrets(describePlanForApproval(plan, safePlanTitle));
         const risk = plan.steps.some((s: WorkflowPlan["steps"][number]) => s.risk === "critical") ? "critical" : plan.steps.some((s: WorkflowPlan["steps"][number]) => s.risk === "high") ? "high" : "moderate";
+        // Keep the persisted plan in step with what is being approved (it was stored with no steps).
+        try {
+          await this.persistence.upsertWorkItem({
+            kind: "plan",
+            id: plan.id,
+            sessionId,
+            turnId,
+            title: safePlanTitle,
+            status: "review",
+            steps: plan.steps.map((step) => ({ id: step.id, description: redactSecrets(describePlanStep(step)), status: step.status })),
+            comments: [],
+            createdAt: plan.createdAt ?? new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          } as unknown as import("@codeforge/sessions").WorkItem);
+        } catch {}
         const { approvalId, promise } = this.approvalService.requestApproval({
           turnId,
           tool: "workflow",

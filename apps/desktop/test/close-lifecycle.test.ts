@@ -109,12 +109,24 @@ describe("describeHeaderActivity (R2 GAP-6 header indicator)", () => {
     expect(describeHeaderActivity(ZERO)).toBeNull();
   });
 
-  it("summarizes running work only", () => {
-    expect(describeHeaderActivity({ ...ZERO, activeAgentTurns: 1, activeCommands: 1 })).toBe("2 running");
+  it("counts running work as tasks: a turn and the command it is running are one task", () => {
+    expect(describeHeaderActivity({ ...ZERO, activeAgentTurns: 1, activeCommands: 1 })).toBe("1 task running");
+  });
+
+  it("folds a workflow's own agent turn, command and verification into one task", () => {
+    // The live packaged run showed "2 running" for a single autonomous task: the workflow plus
+    // the builder turn it dispatched. One task is one task.
+    expect(describeHeaderActivity({ ...ZERO, activeWorkflows: 1, activeAgentTurns: 1, activeCommands: 1 })).toBe("1 task running");
+    expect(describeHeaderActivity({ ...ZERO, activeWorkflows: 1, activeAgentTurns: 1, activeVerifications: 1 })).toBe("1 task running");
+    // A standalone chat turn next to a workflow is a second task.
+    expect(describeHeaderActivity({ ...ZERO, activeWorkflows: 1, activeAgentTurns: 2 })).toBe("2 tasks running");
+    // Background indexing and hosted continuations are their own lines of work.
+    expect(describeHeaderActivity({ ...ZERO, activeWorkflows: 1, activeAgentTurns: 1, backgroundTasks: 1 })).toBe("2 tasks running");
+    expect(describeHeaderActivity({ ...ZERO, activeVerifications: 1 })).toBe("1 task running");
   });
 
   it("surfaces pending approvals separately from running work (an approval waits on the user)", () => {
-    expect(describeHeaderActivity({ ...ZERO, activeWorkflows: 1, pendingApprovals: 1 })).toBe("1 running · 1 approval pending");
+    expect(describeHeaderActivity({ ...ZERO, activeWorkflows: 1, pendingApprovals: 1 })).toBe("1 task running · 1 approval pending");
     expect(describeHeaderActivity({ ...ZERO, pendingApprovals: 2 })).toBe("2 approvals pending");
   });
 });

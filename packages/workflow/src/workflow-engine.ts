@@ -128,6 +128,8 @@ export class WorkflowEngine {
   private readonly sessionId: string;
   private readonly maxRepairAttempts: number;
   private readonly verificationCommands?: string[];
+  /** Why the agent's implementation stopped short, when it did — surfaced in the summary. */
+  private implementationStopReason: string | null = null;
   private readonly verificationObserver?: ForgeVerifyObserver;
   private readonly completionPolicy?: Partial<CompletionPolicy>;
   private readonly signal?: AbortSignal;
@@ -554,6 +556,7 @@ export class WorkflowEngine {
       this.onEvent?.({ type: "workflow.implementation_started", phase: this.phase, payload: { planId: plan.id, steps: plan.steps.length } });
       try {
         const result = await this.agentExecutor.executePlan(plan, context, repoMap, intent, this.signal);
+        this.implementationStopReason = result.success ? null : result.output;
         let currentPlan = plan;
         if (result.success) {
           currentPlan = {
@@ -813,6 +816,7 @@ export class WorkflowEngine {
     parts.push(`# Workflow Summary for "${intent.title}"`);
     parts.push(`Task type: ${intent.taskType}, risk: ${intent.risk}`);
     parts.push(`Plan: ${plan.id} — ${plan.steps.filter((s) => s.status === "completed").length}/${plan.steps.length} steps completed`);
+    if (this.implementationStopReason) parts.push(`Implementation stopped: ${this.implementationStopReason}`);
     // "Nothing to verify" is reported as exactly that. Printing it as a PASS would present an
     // unverified change as a verified one.
     parts.push(

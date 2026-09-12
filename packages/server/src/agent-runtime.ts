@@ -380,6 +380,12 @@ export class AgentRuntime {
   private readonly recoveryOriginalStatusByTurn = new Map<string, Exclude<TurnStatus, "idle" | "completed" | "failed" | "cancelled">>();
   private readonly forgeGreenCacheStore?: ForgeGreenCacheStore;
   private readonly eightBit: EightBitRuntime;
+  /**
+   * "Allow for Session" grants, keyed by `${action}@${risk}` (e.g. `write@moderate`). Held in
+   * memory for this session's runtime only — a grant never outlives the process and is never
+   * consulted for high or critical risk, which always asks (Settings › Agents › Approval policy).
+   */
+  private readonly sessionGrants = new Set<string>();
   private readonly hostedWorker?: HostedWorkerOptions;
   private readonly runtimeOwnerId = crypto.randomUUID();
   private parentContinuationId?: string;
@@ -1474,11 +1480,15 @@ export class AgentRuntime {
 
     this.activeTurns.set(turnId, state);
 
+    // Preserve the session the user (or the workflow) already established. Replacing the record
+    // here renamed every workflow session after its internal builder prompt ("You are CodeForge,
+    // an autonomous coding agent…") and dropped its task title, workspace and creation time.
+    const existingSession = await this.persistence.getSession(this.sessionId);
+    const now = new Date().toISOString();
     await this.persistence.upsertSession({
+      ...(existingSession ?? { id: this.sessionId, title: userMessage.slice(0, 80), createdAt: now }),
       id: this.sessionId,
-      title: userMessage.slice(0, 80),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      updatedAt: now,
       status: "running",
     });
     await this.persistTurn(state);
@@ -2301,6 +2311,12 @@ export class AgentRuntime {
 
           case "tool_call_completed":
             if (currentToolCall) {
+              // The completion event carries the full arguments (StreamEvent contract); adapters
+              // that stream deltas also repeat them here. Prefer the authoritative final form so a
+              // provider that only delivers arguments on completion never executes a tool with {}.
+              if (typeof event.arguments === "string" && event.arguments.trim().length > 0) {
+                currentToolCall.arguments = event.arguments;
+              }
               // Normalize possibly-malformed arguments (e.g. two JSON objects concatenated by a
               // small model) BEFORE they enter the message history, so the follow-up provider
               // request carries valid JSON and the provider does not 400 on the next turn.
@@ -3240,7 +3256,7 @@ export class AgentRuntime {
 
     // Risk classification & approval gate (authoritative)
     const approvalNeeded = this.requiresApproval(toolName, parsedArgs);
-    if (approvalNeeded.requires) {
+    if (approvalNeeded.requires && !this.hasSessionGrant(approvalNeeded)) {
       const gateResult = await this.gateWithApproval(
         turnId,
         toolName,
@@ -3375,6 +3391,22 @@ export class AgentRuntime {
     }
   }
 
+  private static sessionGrantKey(approval: { action: string; risk: "safe" | "moderate" | "high" | "critical" }): string | null {
+    // Destructive or privileged actions are never granted for a whole session.
+    if (approval.risk === "high" || approval.risk === "critical") return null;
+    return `${approval.action}@${approval.risk}`;
+  }
+
+  private hasSessionGrant(approval: { action: string; risk: "safe" | "moderate" | "high" | "critical" }): boolean {
+    const key = AgentRuntime.sessionGrantKey(approval);
+    return key !== null && this.sessionGrants.has(key);
+  }
+
+  private rememberSessionGrant(approval: { action: string; risk: "safe" | "moderate" | "high" | "critical" }): void {
+    const key = AgentRuntime.sessionGrantKey(approval);
+    if (key !== null) this.sessionGrants.add(key);
+  }
+
   private requiresApproval(toolName: string, args: unknown): { requires: boolean; risk: "safe" | "moderate" | "high" | "critical"; reason: string; action: string } {
     switch (toolName) {
       case "read_file":
@@ -3390,8 +3422,12 @@ export class AgentRuntime {
       case "repo_index_status":
         return { requires: false, risk: "safe", reason: "read-only", action: "read" };
       case "write_file":
-      case "edit_file":
-        return { requires: true, risk: "moderate", reason: "file modification", action: "write" };
+      case "edit_file": {
+        // Name the file: an approval the user cannot understand is not a real decision.
+        const target = (args as { path?: unknown })?.path;
+        const reason = typeof target === "string" && target.length > 0 ? `${toolName === "write_file" ? "write" : "edit"} ${target}` : "file modification";
+        return { requires: true, risk: "moderate", reason, action: "write" };
+      }
       case "create_checkpoint":
         return { requires: false, risk: "safe", reason: "checkpoint is safe", action: "checkpoint" };
       case "run_command": {
@@ -3399,7 +3435,10 @@ export class AgentRuntime {
         const cls = classifyCommand(cmd);
         const requires = cls.requiresApproval;
         const risk = cls.risk as "safe" | "moderate" | "high" | "critical";
-        return { requires, risk, reason: cls.reasons.join("; ") || cls.category, action: "exec" };
+        // Show the command itself first; the classification explains the risk it was given.
+        const why = cls.reasons.join("; ") || cls.category;
+        const reason = cmd.trim().length > 0 ? `${cmd.trim().slice(0, 200)} — ${why}` : why;
+        return { requires, risk, reason, action: "exec" };
       }
       default:
         return { requires: true, risk: "moderate", reason: "unknown tool requires approval", action: toolName };
@@ -3473,6 +3512,7 @@ export class AgentRuntime {
     // We bridge by having resolveApproval call service.resolve which fulfills promise.
     // So just await service promise; but also need to handle signal cancellation already wired inside service.
     const result = await promise;
+    if (result.approved && result.decision === "allow_session") this.rememberSessionGrant(approvalNeeded);
     // The approval decision is authoritative, but the guarded action is a new execution
     // boundary. Yield once so a steer already accepted at the public HTTP boundary can become
     // durable before a synchronous tool continuation could terminalize the turn.

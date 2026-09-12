@@ -85,10 +85,26 @@ export function countRunningWork(status: ActiveWorkCounts): number {
  * the header stays clean (no permanent telemetry) whenever the runtime is idle.
  */
 export function describeHeaderActivity(status: ActiveWorkCounts): string | null {
-  const running = countRunningWork(status);
+  const running = countRunningTasks(status);
   const approvals = status.pendingApprovals;
   const parts: string[] = [];
-  if (running > 0) parts.push(`${running} running`);
+  if (running > 0) parts.push(`${running} task${running === 1 ? "" : "s"} running`);
   if (approvals > 0) parts.push(`${approvals} approval${approvals === 1 ? "" : "s"} pending`);
   return parts.length > 0 ? parts.join(" · ") : null;
+}
+
+/**
+ * Running work counted the way a user thinks about it — as tasks. A workflow OWNS the agent turn,
+ * commands and verifications it dispatches, so one autonomous task must read as one task, not as
+ * "3 running" (workflow + its turn + its command). Agent turns beyond the active workflows are
+ * standalone chat turns and count on their own; hosted continuations and background tasks (repository
+ * indexing) are separate lines of work.
+ */
+export function countRunningTasks(status: ActiveWorkCounts): number {
+  const standaloneTurns = Math.max(0, status.activeAgentTurns - status.activeWorkflows);
+  const ownedByTurns = status.activeWorkflows + standaloneTurns;
+  // Commands/verifications without any owning turn or workflow (e.g. a verification the user
+  // triggered directly) still count as work in progress.
+  const orphanUnits = ownedByTurns === 0 ? Math.min(1, status.activeCommands + status.activeVerifications) : 0;
+  return ownedByTurns + orphanUnits + status.hostedContinuations + status.backgroundTasks;
 }

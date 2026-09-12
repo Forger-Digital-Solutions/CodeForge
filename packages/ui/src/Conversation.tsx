@@ -162,7 +162,9 @@ const ToolActivity = ({ item }: { item: Extract<TimelineItem, { kind: "tool" }> 
   const activityKind = resolveActivityKind(item.toolName);
 
   const target = describeToolTarget(item.toolName, item.argsJson);
-  const summary = summarizeToolResult(item);
+  // A file operation's own report ("28 lines", "written") beats a line count of the tool's raw
+  // output, which includes framing the user never asked about.
+  const summary = item.fileDetail ?? summarizeToolResult(item);
   const detail = item.error ?? item.result;
   const expandable = hasToolDetail(item);
 
