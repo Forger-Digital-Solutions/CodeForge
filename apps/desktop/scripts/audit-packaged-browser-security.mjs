@@ -93,7 +93,12 @@ function readPackagedFile(archive, basename, description) {
 
 export function auditPackagedBrowserSecurity(input) {
   const archive = resolveArchive(input);
-  const main = readPackagedFile(archive, "main.js", "main bundle");
+  // The main process ships as ES modules: the BrowserWindow policy and the webRequest hook live
+  // in main.js, the bearer header name and attachment policy in control-plane-trust.js.
+  const main = [
+    readPackagedFile(archive, "main.js", "main bundle"),
+    readPackagedFile(archive, "control-plane-trust.js", "control-plane trust module"),
+  ].join("\n");
   const preload = readPackagedFile(archive, "preload.cjs", "preload bridge");
   return { ...validatePackagedBrowserSecuritySource(main, preload), archive };
 }
