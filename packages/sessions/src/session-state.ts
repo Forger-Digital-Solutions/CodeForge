@@ -151,6 +151,9 @@ export const WorkItemSchema = z.discriminatedUnion("kind", [
     }).optional(),
     decision: ApprovalDecisionSchema.optional(),
     resolvedAt: z.string().datetime().optional(),
+    /** Terminal ownership settled this boundary without attributing a denial to the user. */
+    cancelledAt: z.string().datetime().optional(),
+    cancellationReason: z.string().optional(),
     createdAt: z.string().datetime(),
   }),
   z.object({

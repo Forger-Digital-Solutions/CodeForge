@@ -77,6 +77,43 @@ describe("Free model discovery + verification (connected provider)", () => {
     expect(rec.accessClass).toBe("FREE_ROUTED");
     expect(rec.capabilities.longContext).toBe(true);
   });
+
+  it("verifies Z.AI direct $0 routes when its authenticated catalog confirms availability and fresh pricing confirms 0/0", () => {
+    const reg = new NormalizedModelRegistry({ now });
+    reg.loadDoc({
+      zai: {
+        id: "zai",
+        models: {
+          "glm-4.7-flash": {
+            id: "glm-4.7-flash", name: "GLM-4.7-Flash", tool_call: true,
+            modalities: { input: ["text"], output: ["text"] }, limit: { context: 128000 },
+            cost: { input: 0, output: 0 },
+          },
+        },
+      },
+    } as ModelsDevDoc, "live", NOW.toISOString());
+
+    // Z.AI's `/models` shape reports availability, not per-model prices.
+    const result = discoverAndVerifyFree(reg, "zai", [
+      { modelId: "glm-4.7-flash", isFree: false, toolCalling: true },
+    ], { now });
+    expect(result.verifiedCount).toBe(1);
+    expect(result.records[0]).toMatchObject({ providerId: "zai", modelId: "glm-4.7-flash", accessClass: "FREE_NATIVE", freeStatus: "verified_free" });
+  });
+
+  it("never infers a direct-provider free route from a bundled snapshot", () => {
+    const reg = new NormalizedModelRegistry({ now });
+    reg.loadDoc({
+      zai: { id: "zai", models: { "glm-4.7-flash": { id: "glm-4.7-flash", cost: { input: 0, output: 0 } } } },
+    } as ModelsDevDoc, "snapshot", NOW.toISOString());
+    const result = discoverAndVerifyFree(reg, "zai", [{ modelId: "glm-4.7-flash", isFree: false }], { now });
+    expect(result.verifiedCount).toBe(0);
+  });
+
+  it("keeps OpenAI paid even if an upstream catalog were to report a zero price", () => {
+    const rec = recordFromLive("openai", { modelId: "hypothetical-zero", isFree: true });
+    expect(rec.accessClass).toBe("PAID");
+  });
 });
 
 describe("Live catalog capability facts take precedence for the served route", () => {

@@ -25,6 +25,13 @@ export interface ProviderPolicy {
   hasTrial?: boolean;
   /** Provider has no free access of any kind (OpenAI). */
   paidOnly?: boolean;
+  /**
+   * The authenticated `/models` endpoint establishes current account availability but does not
+   * expose prices. A freshly fetched registry price may supply the zero-unit evidence only for
+   * providers whose official pricing is published separately. This is deliberately opt-in:
+   * ordinary OpenAI-compatible endpoints must never gain a free grant from an id or name.
+   */
+  allowLiveCatalogZeroUnitInference?: boolean;
   /** Base URL (may contain ${VAR} templates resolved at connect time). */
   baseUrl?: string;
   /** Env var(s) that carry the credential. */
@@ -50,6 +57,7 @@ export const PROVIDER_POLICIES: Record<string, ProviderPolicy> = {
     authMode: "API_KEY",
     privacyClass: "standard",
     hasTrial: true,
+    allowLiveCatalogZeroUnitInference: true,
     baseUrl: "https://api.z.ai/api/paas/v4",
     env: ["ZHIPU_API_KEY", "ZAI_API_KEY"],
   },
@@ -140,6 +148,9 @@ export function deriveAccessClass(
   capabilities: NormalizedCapabilities,
   policy: ProviderPolicy | undefined,
 ): AccessClass {
+  // A provider policy is an explicit financial boundary. Even an accidental or stale upstream
+  // $0 entry cannot make OpenAI's paid API eligible for ForgeAuto/Free.
+  if (policy?.paidOnly) return "PAID";
   if (pricing.inputPerMillion === null || pricing.outputPerMillion === null) {
     // Unknown pricing → never assume free.
     return "PAID";

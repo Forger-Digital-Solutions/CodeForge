@@ -506,7 +506,7 @@ export class AgentRuntime {
         this.processedSteerIds.set(record.id, new Set(persistedSteers.map((steer) => steer.steerId)));
       }
 
-      const pendingApproval = workItems.find((item) => item.kind === "approval" && item.turnId === record.id && !item.decision);
+      const pendingApproval = workItems.find((item) => item.kind === "approval" && item.turnId === record.id && !item.decision && !item.cancelledAt);
       const pendingQuestion = workItems.find((item) => item.kind === "question" && item.turnId === record.id && item.answer === undefined);
       const canRestoreApprovalWait = originalStatus === "waiting_for_approval" && pendingApproval?.kind === "approval";
       const canRestoreQuestionWait = originalStatus === "waiting_for_question" && pendingQuestion?.kind === "question";

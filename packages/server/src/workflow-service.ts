@@ -212,6 +212,32 @@ export class WorkflowService {
       for (const sess of sessions) {
         const statusStr = sess.status as string;
         const isTerminal = statusStr === "completed" || statusStr === "failed" || statusStr === "cancelled" || statusStr === "failed_safely";
+        if (isTerminal) {
+          // A terminal user task owns its turns and approvals. A previous workflow version could
+          // persist the workflow's failed session while leaving its underlying agent turn in an
+          // approval wait; on the next launch that made one task simultaneously failed and active.
+          // Converge that historical state before any runtime hydrates it. This never replays work.
+          const now = new Date().toISOString();
+          const turnStatus = statusStr === "completed" ? "completed" : statusStr === "cancelled" ? "cancelled" : "failed";
+          for (const turn of await this.persistence.getTurns(sess.id)) {
+            if (["idle", "completed", "failed", "cancelled", "blocked"].includes(turn.status)) continue;
+            await this.persistence.upsertTurn({
+              ...turn,
+              status: turnStatus,
+              completedAt: now,
+              ...(turnStatus === "failed" ? { error: turn.error ?? `Task ended: ${statusStr}` } : {}),
+            });
+          }
+          for (const item of await this.persistence.getWorkItems(sess.id)) {
+            if (item.kind !== "approval" || item.decision || item.cancelledAt) continue;
+            await this.persistence.upsertWorkItem({
+              ...item,
+              cancelledAt: now,
+              cancellationReason: "Task ended",
+            });
+          }
+          continue;
+        }
         if (!isTerminal) {
           // A turn record contains durable user intent and may be owned by AgentRuntime rather
           // than a workflow. Failing it here destroys the information needed for the runtime's

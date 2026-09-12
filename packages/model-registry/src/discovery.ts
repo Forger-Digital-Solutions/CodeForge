@@ -96,11 +96,22 @@ export function discoverAndVerifyFree(
   const overlays: CodeForgeOverlay[] = [];
 
   for (const live of liveModels) {
-    if (!live.isFree) continue;
     const known = registry.get(providerId, live.modelId);
     // The connected provider's own catalog is authoritative for the capabilities of the route it
     // actually serves (a ":free" variant may lack tool calling the base model advertises upstream).
     const record = known ? applyLiveCapabilities(known, live) : recordFromLive(providerId, live);
+    const policy = getProviderPolicy(providerId);
+    // Some direct OpenAI-compatible providers return availability-only records from `/models`.
+    // Z.AI is the narrowly approved example: its authenticated listing proves this account can
+    // execute the route, while a *fresh* Models.dev record supplies its documented 0/0 price.
+    // Never infer this from a bundled snapshot, model name, or a provider without the explicit
+    // policy flag. This keeps a stale free label from turning into a billable request.
+    const freshZeroUnitPricing =
+      registry.source === "live" &&
+      policy?.allowLiveCatalogZeroUnitInference === true &&
+      record.pricing.inputPerMillion === 0 &&
+      record.pricing.outputPerMillion === 0;
+    if (!live.isFree && !freshZeroUnitPricing) continue;
     const overlay = verifyZeroUnitFree(record, { confirmedByLiveCatalog: true, now });
     if (!overlay) continue; // not a zero-unit free model → not verified here
     registry.overlay.merge(overlay);
