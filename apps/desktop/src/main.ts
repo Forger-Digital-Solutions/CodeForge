@@ -3,7 +3,7 @@ import { resolveCloudCatalogSyncMode } from "./cloud-catalog-sync.js";
 import { checkGitExecArgs } from "./git-exec-allowlist.js";
 import path from "node:path";
 import os from "node:os";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import fs from "node:fs";
 import crypto from "node:crypto";
 import { execFile } from "node:child_process";
@@ -18,6 +18,13 @@ import {
   type SettingsSnapshot,
 } from "./app-settings.js";
 import { readZeroUnitEnvironmentCredentials } from "./provider-environment.js";
+import {
+  CONTROL_PLANE_TOKEN_HEADER,
+  isAllowedPrimaryWindowNavigation,
+  isExternalLinkAllowed,
+  shouldAttachControlPlaneToken,
+  type ControlPlaneTrust,
+} from "./control-plane-trust.js";
 
 if (process.env.CODEFORGE_SMOKE_OUT) {
   try {
@@ -58,6 +65,8 @@ app.commandLine.appendSwitch("in-process-gpu");
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const controlPlaneToken = crypto.randomBytes(32).toString("base64url");
+/** URL of the renderer document the primary window loads; the only document granted control-plane authority. */
+let trustedRendererDocumentUrl: string | null = null;
 
 let server: CodeForgeServer | null = null;
 let mainWindow: BrowserWindow | null = null;
@@ -885,7 +894,7 @@ async function applyStartupServerSettings(): Promise<void> {
 
 function controlPlaneFetch(pathname: string, init?: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers);
-  headers.set("X-CodeForge-Control-Token", controlPlaneToken);
+  headers.set(CONTROL_PLANE_TOKEN_HEADER, controlPlaneToken);
   return fetch(`http://localhost:${LOCAL_SERVER_PORT}${pathname}`, { ...init, headers });
 }
 
@@ -980,13 +989,13 @@ async function createWindow(): Promise<void> {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.cjs"),
-      additionalArguments: [`--codeforge-control-plane-token=${controlPlaneToken}`],
       sandbox: true,
       webSecurity: true,
     },
     show: false,
     backgroundColor: "#0f1012",
   });
+  installControlPlaneBearerInjection(mainWindow);
 
   mainWindow.webContents.on("render-process-gone", (_event, details) => {
     const detail = `RENDER_PROCESS_GONE=${details.reason}:${details.exitCode}`;
@@ -1014,68 +1023,36 @@ async function createWindow(): Promise<void> {
     void requestClose();
   });
 
-  // Handle in-window navigation (plain <a href> clicks, form submissions, etc.)
-  // The renderer is a single-page app: internal navigation stays in-window, and any
-  // external link is opened in the user's real browser via the OS instead of
-  // replacing the app. Without the shell.openExternal() call here, external links
-  // were silently swallowed (preventDefault with no handoff) — the "dead links" bug.
+  // The renderer is a single-page application: it never navigates in-window, so the only URL the
+  // primary window may ever commit is its own document. Any other target is refused; safe external
+  // links are handed to the OS browser instead of replacing the app (silently swallowing them was
+  // the "dead links" bug). Allowing arbitrary `file:` navigation would let any local HTML file —
+  // including one an agent wrote into the workspace — inherit the preload bridge and the window's
+  // IPC authority, so that is refused as well.
   mainWindow.webContents.on("will-navigate", (event, url) => {
-    try {
-      const parsed = new URL(url);
-      const allowedOrigin = "http://localhost:3210";
-      const isFile = parsed.protocol === "file:";
-      const isAllowedHttp = parsed.origin === allowedOrigin;
-
-      // Allow internal navigation (file: or localhost:3210) to proceed in-window.
-      if (isFile || isAllowedHttp) {
-        return;
-      }
-
-      // Everything else must never replace the app window.
-      event.preventDefault();
-
-      // Hand safe external links (https, or http on localhost) to the OS browser.
-      if (parsed.protocol === "https:" || (parsed.protocol === "http:" && parsed.hostname === "localhost")) {
-        void shell.openExternal(url);
-      }
-      // All other schemes (javascript:, data:, file: to elsewhere, etc.) are dropped.
-    } catch {
-      event.preventDefault();
-    }
+    if (isAllowedPrimaryWindowNavigation(url, controlPlaneTrust())) return;
+    event.preventDefault();
+    if (isExternalLinkAllowed(url)) void shell.openExternal(url);
+    // All other schemes (javascript:, data:, file:, etc.) are dropped.
   });
 
-  // Handle window.open() and target="_blank" links
-  mainWindow.webContents.setWindowOpenHandler(({ url, disposition }) => {
-    try {
-      const parsed = new URL(url);
-      const allowedOrigin = "http://localhost:3210";
-      const isFile = parsed.protocol === "file:";
-      const isAllowedHttp = parsed.origin === allowedOrigin;
-
-      // Allow internal navigation in new window
-      if (isFile || isAllowedHttp) {
-        return { action: "allow" };
-      }
-
-      // Only allow https: (and http: for localhost) for external links
-      if (parsed.protocol === "https:" || (parsed.protocol === "http:" && parsed.hostname === "localhost")) {
-        shell.openExternal(url);
-      }
-      // Deny all other schemes (javascript:, data:, etc.)
-      return { action: "deny" };
-    } catch {
-      return { action: "deny" };
-    }
+  // window.open() and target="_blank" never spawn a CodeForge window: a child window would
+  // inherit this window's webPreferences (and its preload). Safe links open externally.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (isExternalLinkAllowed(url)) void shell.openExternal(url);
+    return { action: "deny" };
   });
 
   Menu.setApplicationMenu(null);
 
   const isDev = process.env.ELECTRON_DEV === "true";
   if (isDev) {
+    trustedRendererDocumentUrl = "http://localhost:5173/";
     smokeRecord("LOAD_URL_http://localhost:5173");
     await mainWindow.loadURL("http://localhost:5173");
   } else {
     const rendererFile = path.join(__dirname, "renderer", "index.html");
+    trustedRendererDocumentUrl = pathToFileURL(rendererFile).href;
     smokeRecord(`LOAD_FILE_${rendererFile}`);
     // loadFile builds a canonical file URL for Windows drive letters and ASAR paths. Hand-building
     // `file://${path}` produced `file://G:\\...`, which is malformed and can make a sandboxed
@@ -1091,6 +1068,34 @@ async function createWindow(): Promise<void> {
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function controlPlaneTrust(): ControlPlaneTrust {
+  return {
+    controlPlaneOrigin: `http://localhost:${LOCAL_SERVER_PORT}`,
+    trustedWebContentsId: mainWindow?.webContents.id ?? null,
+    trustedDocumentUrl: trustedRendererDocumentUrl,
+    caseInsensitiveFilePaths: process.platform === "win32",
+  };
+}
+
+/**
+ * Attaches the per-process bearer to control-plane requests issued by the primary window's own
+ * document — and to nothing else. The bearer never reaches the renderer (see control-plane-trust.ts).
+ */
+function installControlPlaneBearerInjection(window: BrowserWindow): void {
+  window.webContents.session.webRequest.onBeforeSendHeaders(
+    { urls: [`http://localhost:${LOCAL_SERVER_PORT}/*`] },
+    (details, callback) => {
+      const requestHeaders: Record<string, string> = { ...details.requestHeaders };
+      if (shouldAttachControlPlaneToken(details, controlPlaneTrust())) {
+        requestHeaders[CONTROL_PLANE_TOKEN_HEADER] = controlPlaneToken;
+      } else if (PACKAGED_SMOKE) {
+        smokeRecord(`CONTROL_PLANE_BEARER_WITHHELD wc=${details.webContentsId ?? "none"} frame=${details.frame?.url ?? "none"} url=${details.url}`);
+      }
+      callback({ requestHeaders });
+    },
+  );
 }
 
 async function waitForRenderer(): Promise<void> {
@@ -1190,6 +1195,79 @@ async function rendererWorkflowRequest(payload: Record<string, unknown>, endpoin
   }).then(async response => ({ status: response.status, body: await response.json() }))`);
 }
 
+/**
+ * Packaged proof of the local control-plane trust boundary (origin gate + per-process bearer +
+ * primary-window IPC guard), exercised against the real server inside the real packaged app.
+ */
+async function verifyControlPlaneTrustBoundary(): Promise<void> {
+  const base = `http://localhost:${LOCAL_SERVER_PORT}`;
+
+  // The renderer never holds the bearer: nothing on the bridge exposes it.
+  const rendererBearer = await evaluateRenderer<string>("typeof (window.electronAPI && window.electronAPI.controlPlaneToken)");
+  if (rendererBearer !== "undefined") throw new Error("Renderer can read the control-plane bearer");
+  smokeRecord("control_plane_renderer_bearer_absent=PASS");
+
+  // The primary window's own document is authenticated by the main process on its behalf.
+  const trusted = await evaluateRenderer<number | string>(`fetch(${JSON.stringify(`${base}/api/sessions`)}).then((r) => r.status, (e) => "error:" + e.message)`);
+  if (trusted !== 200) throw new Error(`Trusted renderer control-plane request returned ${trusted}`);
+  smokeRecord("control_plane_trusted_renderer=PASS");
+
+  // Missing or wrong bearer fails closed, including on approval resolution.
+  const missing = await fetch(`${base}/api/sessions`);
+  if (missing.status !== 401) throw new Error(`Bearer-less control-plane request returned ${missing.status}`);
+  smokeRecord("control_plane_missing_bearer_rejected=PASS");
+  const wrong = await fetch(`${base}/api/sessions`, { headers: { [CONTROL_PLANE_TOKEN_HEADER]: "not-the-process-bearer" } });
+  if (wrong.status !== 401) throw new Error(`Wrong-bearer control-plane request returned ${wrong.status}`);
+  smokeRecord("control_plane_wrong_bearer_rejected=PASS");
+  const forgedApproval = await fetch(`${base}/api/approvals/forged-approval/resolve`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: "null" },
+    body: JSON.stringify({ decision: "allow_once" }),
+  });
+  if (forgedApproval.status !== 401) throw new Error(`Bearer-less approval resolution returned ${forgedApproval.status}`);
+  smokeRecord("control_plane_forged_approval_rejected=PASS");
+
+  // A browser origin outside the renderer is refused even when it presents the real bearer.
+  const forgedOrigin = await controlPlaneFetch("/api/sessions", { headers: { Origin: "https://attacker.example" } });
+  if (forgedOrigin.status !== 403) throw new Error(`Forged-origin control-plane request returned ${forgedOrigin.status}`);
+  smokeRecord("control_plane_forged_origin_rejected=PASS");
+
+  // A second renderer with the very same preload is neither a trusted IPC sender nor an
+  // authenticated control-plane caller: authority is bound to the primary window's document.
+  const secondary = new BrowserWindow({
+    show: false,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, "preload.cjs"),
+      sandbox: true,
+      webSecurity: true,
+    },
+  });
+  try {
+    await secondary.loadURL("about:blank");
+    const ipc = await secondary.webContents.executeJavaScript(
+      `window.electronAPI.getSettings().then(() => "accepted", (e) => "rejected:" + String((e && e.message) || e))`,
+      true,
+    ) as string;
+    if (!ipc.startsWith("rejected")) throw new Error(`Secondary renderer IPC was ${ipc}`);
+    smokeRecord("control_plane_secondary_renderer_ipc_rejected=PASS");
+    const http = await secondary.webContents.executeJavaScript(
+      `fetch(${JSON.stringify(`${base}/api/sessions`)}).then((r) => r.status, () => "network-error")`,
+      true,
+    ) as number | string;
+    if (http === 200) throw new Error("Secondary renderer reached the control plane");
+    smokeRecord(`control_plane_secondary_renderer_result=${http}`);
+    smokeRecord("control_plane_secondary_renderer_unauthenticated=PASS");
+  } finally {
+    secondary.destroy();
+  }
+  // The primary window must be unaffected by the probe.
+  const stillTrusted = await evaluateRenderer<number | string>(`fetch(${JSON.stringify(`${base}/api/sessions`)}).then((r) => r.status, (e) => "error:" + e.message)`);
+  if (stillTrusted !== 200) throw new Error(`Primary renderer lost control-plane authority: ${stillTrusted}`);
+  smokeRecord("control_plane_trust_boundary=PASS");
+}
+
 function verifyCredentialPersistence(testSecret: string): void {
   const raw = fs.readFileSync(getStorePath(), "utf8");
   if (raw.includes(testSecret)) throw new Error("Credential was written in plaintext");
@@ -1238,6 +1316,7 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   smokeRecord("packaged_auth_restore=PASS");
   smokeRecord("packaged_authenticated_workspace=PASS");
   smokeRecord("renderer_raw_credential_api_absent=PASS");
+  await verifyControlPlaneTrustBoundary();
   await capturePackagedSmokeScreenshot("01-authenticated-zero-state");
   // Collapse the popover again so later programmatic interactions start from a clean surface.
   await evaluateRenderer<void>(`(() => { const button = Array.from(document.querySelectorAll('button')).find((element) => element.getAttribute('aria-label') === 'Repository Intelligence'); if (button) button.click(); })()`);

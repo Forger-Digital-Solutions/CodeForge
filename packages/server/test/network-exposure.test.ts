@@ -4,9 +4,10 @@ import os from "node:os";
 import { createServer } from "../src/index.js";
 
 /**
- * The local runtime has no authentication: every route, including approval resolution, is open to
- * whoever can reach the socket. Loopback containment is therefore a load-bearing security control,
- * not a preference — binding a routable interface would hand the agent's control plane to the LAN.
+ * The local control plane exposes every route, including approval resolution, to whoever can
+ * reach it. Three independent controls keep that to the desktop's own renderer: loopback binding
+ * (never the LAN), a browser-origin gate (never an arbitrary web page), and a per-process bearer
+ * that only the desktop main process holds (never an unauthenticated local caller).
  */
 describe("local control-plane network exposure", () => {
   let server: ReturnType<typeof createServer> | null = null;
@@ -92,6 +93,45 @@ describe("local control-plane network exposure", () => {
       },
     });
     expect(authenticated.status).toBe(200);
+  });
+
+  it("rejects a wrong or malformed bearer", async () => {
+    server = createServer({ port: 0, dbPath: ":memory:", controlPlaneToken: "test-control-token" });
+    await server.start();
+    const endpoint = `http://127.0.0.1:${server.httpPort}/api/sessions`;
+
+    for (const token of ["wrong-control-token", "test-control-toke", "test-control-token-longer", ""]) {
+      const response = await fetch(endpoint, { headers: { "X-CodeForge-Control-Token": token } });
+      expect(response.status, token).toBe(401);
+    }
+  });
+
+  it("never accepts the bearer from the URL, including for the event stream", async () => {
+    // EventSource requests from the desktop renderer carry the header (the main process attaches
+    // it at the session level), so a query-string fallback would only widen the leak surface.
+    server = createServer({ port: 0, dbPath: ":memory:", controlPlaneToken: "test-control-token" });
+    await server.start();
+
+    const stream = await fetch(`http://127.0.0.1:${server.httpPort}/api/events?controlToken=test-control-token`, {
+      headers: { Origin: "null" },
+    });
+    expect(stream.status).toBe(401);
+    await stream.body?.cancel();
+
+    const sessions = await fetch(`http://127.0.0.1:${server.httpPort}/api/sessions?controlToken=test-control-token`);
+    expect(sessions.status).toBe(401);
+  });
+
+  it("guards approval resolution with the bearer", async () => {
+    server = createServer({ port: 0, dbPath: ":memory:", controlPlaneToken: "test-control-token" });
+    await server.start();
+
+    const response = await fetch(`http://127.0.0.1:${server.httpPort}/api/approvals/forged/resolve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: "null" },
+      body: JSON.stringify({ decision: "allow_once" }),
+    });
+    expect(response.status).toBe(401);
   });
 
   it("does not let a valid token bypass the browser-origin boundary", async () => {

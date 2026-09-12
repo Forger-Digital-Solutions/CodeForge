@@ -29,7 +29,15 @@ const suiteId = readFileSync(smokeSuiteState, 'utf8').trim();
 const testSecret = `CF_SECRET_${createHash('sha256').update(`codeforge-packaged-smoke:${suiteId}`).digest('hex')}`;
 const runId = randomUUID();
 const requiredMarkers = {
-  full: ['PACKAGED_STARTUP=PASS', 'FORGEGREEN_RUNTIME=PASS', 'EIGHT_BIT_RUNTIME=PASS', 'CLOUD_DB_PACKAGED_RUNTIME=PASS', 'PACKAGED_FULL_SMOKE_OK', 'packaged_failure_repair_pass=PASS', 'packaged_renderer_reload_count=5', 'packaged_renderer_reload=PASS', 'credential_plaintext_absent=PASS'],
+  full: [
+    'PACKAGED_STARTUP=PASS', 'FORGEGREEN_RUNTIME=PASS', 'EIGHT_BIT_RUNTIME=PASS', 'CLOUD_DB_PACKAGED_RUNTIME=PASS', 'PACKAGED_FULL_SMOKE_OK',
+    'packaged_failure_repair_pass=PASS', 'packaged_renderer_reload_count=5', 'packaged_renderer_reload=PASS', 'credential_plaintext_absent=PASS',
+    // Local control-plane trust boundary: bearer never reaches the renderer, main authenticates the
+    // primary document, everything else (no/wrong bearer, forged origin, secondary renderer) fails closed.
+    'control_plane_renderer_bearer_absent=PASS', 'control_plane_trusted_renderer=PASS', 'control_plane_missing_bearer_rejected=PASS',
+    'control_plane_wrong_bearer_rejected=PASS', 'control_plane_forged_approval_rejected=PASS', 'control_plane_forged_origin_rejected=PASS',
+    'control_plane_secondary_renderer_ipc_rejected=PASS', 'control_plane_secondary_renderer_unauthenticated=PASS', 'control_plane_trust_boundary=PASS',
+  ],
   interrupt: ['PACKAGED_INTERRUPT_EXPECTED_EXIT', 'electron_restart_interruption_ready=PASS'],
   recover: ['PACKAGED_RECOVERY_SMOKE_OK', 'electron_restart_failed_safely=PASS', 'electron_restart_no_approval_replay=PASS'],
 };

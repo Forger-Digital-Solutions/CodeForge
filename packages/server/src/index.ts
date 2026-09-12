@@ -1,4 +1,5 @@
 import http from "node:http";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -46,8 +47,21 @@ const TRUSTED_RENDERER_ORIGINS = new Set([
   "http://127.0.0.1:5173",
 ]);
 
+/**
+ * Browser-origin admission for the local control plane. A request without an Origin header comes
+ * from a non-browser client (the desktop main process, curl); browsers always send one for
+ * cross-origin requests, so any web page is either in the trusted set or refused. This is the first
+ * gate only — every admitted request must still present the per-process bearer.
+ */
 export function isAllowedLocalControlPlaneOrigin(origin: string | undefined): boolean {
   return origin === undefined || TRUSTED_RENDERER_ORIGINS.has(origin);
+}
+
+function controlPlaneTokenMatches(supplied: string | undefined, expected: string): boolean {
+  if (typeof supplied !== "string") return false;
+  const a = Buffer.from(supplied, "utf8");
+  const b = Buffer.from(expected, "utf8");
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 export interface ServerOptions {
@@ -501,13 +515,13 @@ export class CodeForgeServer {
       return;
     }
 
+    // Per-process bearer. The desktop main process attaches it to the primary window's own
+    // requests (including the EventSource stream) and to its own calls; it is never accepted
+    // from the URL, so it cannot leak through query-string logging or referrers.
     const headerToken = Array.isArray(req.headers["x-codeforge-control-token"])
       ? req.headers["x-codeforge-control-token"][0]
       : req.headers["x-codeforge-control-token"];
-    const suppliedToken = url.pathname === "/api/events"
-      ? headerToken ?? url.searchParams.get("controlToken") ?? undefined
-      : headerToken;
-    if (this.controlPlaneToken && suppliedToken !== this.controlPlaneToken) {
+    if (this.controlPlaneToken && !controlPlaneTokenMatches(headerToken, this.controlPlaneToken)) {
       res.writeHead(401, {
         "Content-Type": "application/json",
         Vary: "Origin",

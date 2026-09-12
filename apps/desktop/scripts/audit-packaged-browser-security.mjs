@@ -20,9 +20,26 @@ const FORBIDDEN_BYPASSES = [
   ["webSecurity:false", /\bwebSecurity\s*:\s*false\b/],
   ["--no-sandbox", /appendSwitch\s*\(\s*["']no-sandbox["']/],
   ["--disable-setuid-sandbox", /appendSwitch\s*\(\s*["']disable-setuid-sandbox["']/],
+  // The per-process control-plane bearer must never be handed to a renderer as an argument.
+  ["additionalArguments", /\badditionalArguments\s*:/],
 ];
 
-export function validatePackagedBrowserSecuritySource(source) {
+// The local control plane is reachable only with a per-process bearer that the main process
+// attaches to the primary window's own requests. Both halves must ship: the injection hook and
+// the header the server checks.
+const REQUIRED_CONTROL_PLANE_CONTRACT = [
+  ["control-plane bearer injection hook", /webRequest\.onBeforeSendHeaders\s*\(/],
+  ["control-plane bearer header", /X-CodeForge-Control-Token/],
+];
+
+// The shipped preload must not expose the bearer (or anything derived from process arguments).
+const FORBIDDEN_PRELOAD_CONTENT = [
+  ["controlPlaneToken", /controlPlaneToken/],
+  ["control-plane-token argument", /control-plane-token/],
+  ["process.argv", /process\.argv/],
+];
+
+export function validatePackagedBrowserSecuritySource(source, preloadSource) {
   if (typeof source !== "string" || source.length === 0) throw new Error("packaged main bundle is empty");
   for (const [name, pattern] of REQUIRED_SETTINGS) {
     if (!pattern.test(source)) throw new Error(`packaged BrowserWindow is missing required ${name} setting`);
@@ -30,11 +47,22 @@ export function validatePackagedBrowserSecuritySource(source) {
   for (const [name, pattern] of FORBIDDEN_BYPASSES) {
     if (pattern.test(source)) throw new Error(`packaged main bundle contains forbidden browser security bypass ${name}`);
   }
+  for (const [name, pattern] of REQUIRED_CONTROL_PLANE_CONTRACT) {
+    if (!pattern.test(source)) throw new Error(`packaged main bundle is missing required ${name}`);
+  }
+  if (preloadSource !== undefined) {
+    if (typeof preloadSource !== "string" || preloadSource.length === 0) throw new Error("packaged preload bridge is empty");
+    for (const [name, pattern] of FORBIDDEN_PRELOAD_CONTENT) {
+      if (pattern.test(preloadSource)) throw new Error(`packaged preload bridge exposes forbidden ${name}`);
+    }
+  }
   return {
     sandbox: true,
     nodeIntegration: false,
     contextIsolation: true,
     webSecurity: true,
+    controlPlaneBearerInjection: true,
+    preloadBearerFree: preloadSource !== undefined,
   };
 }
 
@@ -51,8 +79,8 @@ function resolveArchive(input) {
   return archive;
 }
 
-function readPackagedMain(archive) {
-  const candidates = ["apps/desktop/dist/main.js", "apps\\desktop\\dist\\main.js", "dist/main.js"];
+function readPackagedFile(archive, basename, description) {
+  const candidates = [`apps/desktop/dist/${basename}`, `apps\\desktop\\dist\\${basename}`, `dist/${basename}`];
   for (const filename of candidates) {
     try {
       return extractFile(archive, filename).toString("utf8");
@@ -60,12 +88,14 @@ function readPackagedMain(archive) {
       // Try the other known electron-builder layout.
     }
   }
-  throw new Error("packaged main bundle is missing from app.asar");
+  throw new Error(`packaged ${description} is missing from app.asar`);
 }
 
 export function auditPackagedBrowserSecurity(input) {
   const archive = resolveArchive(input);
-  return { ...validatePackagedBrowserSecuritySource(readPackagedMain(archive)), archive };
+  const main = readPackagedFile(archive, "main.js", "main bundle");
+  const preload = readPackagedFile(archive, "preload.cjs", "preload bridge");
+  return { ...validatePackagedBrowserSecuritySource(main, preload), archive };
 }
 
 function main(argv) {
@@ -81,6 +111,8 @@ function main(argv) {
     console.log("nodeIntegration=false");
     console.log("contextIsolation=true");
     console.log("webSecurity=true");
+    console.log("controlPlaneBearerInjection=true");
+    console.log("preloadBearerFree=true");
     console.log(`archive=${result.archive}`);
   } catch (error) {
     console.error(`${PACKAGED_BROWSER_SECURITY_VALID}=FAIL`);

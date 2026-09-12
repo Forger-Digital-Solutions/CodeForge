@@ -1,12 +1,9 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-const CONTROL_PLANE_TOKEN_ARG = "--codeforge-control-plane-token=";
-const controlPlaneToken = process.argv
-  .find((argument) => argument.startsWith(CONTROL_PLANE_TOKEN_ARG))
-  ?.slice(CONTROL_PLANE_TOKEN_ARG.length) ?? "";
-
+// The local control-plane bearer is deliberately absent from this bridge: the main process
+// attaches it to the primary window's own requests (see control-plane-trust.ts), so the
+// renderer never holds a secret it could leak.
 const api = {
-  controlPlaneToken,
   selectDirectory: () => {
     return ipcRenderer.invoke("dialog:selectDirectory");
   },

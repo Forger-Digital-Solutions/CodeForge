@@ -52,11 +52,24 @@ describe("preload bridge", () => {
     expect(exposedMethods(cjs)).toEqual(exposedMethods(ts));
   });
 
-  it("ships the per-process local control-plane token in both preload implementations", () => {
+  it("never hands the local control-plane bearer to the renderer", () => {
+    // The bearer is attached by the main process to the primary document's own requests
+    // (control-plane-trust.ts). Shipping it over the bridge — or as a renderer argument — would
+    // turn a process-local secret into something any script in the page could exfiltrate.
     for (const preload of [cjs, ts]) {
-      expect(preload).toContain('const CONTROL_PLANE_TOKEN_ARG = "--codeforge-control-plane-token="');
-      expect(preload).toMatch(/const api = \{\s+controlPlaneToken,/);
+      expect(preload).not.toMatch(/controlPlaneToken|control-plane-token|process\.argv/);
     }
+    expect(main).not.toContain("additionalArguments");
+    expect(main).toContain("installControlPlaneBearerInjection(mainWindow)");
+    expect(main).toMatch(/webRequest\.onBeforeSendHeaders\(/);
+  });
+
+  it("exposes only IPC-backed methods: no raw values the renderer could treat as authority", () => {
+    // Every member of the bridge is a function; a bare property would be a renderer-readable
+    // constant (a token, a URL, an endpoint) that the renderer never gets to hold.
+    const bareProperties = (source: string) => [...source.matchAll(/^\s{2}([a-zA-Z][a-zA-Z0-9]*),?\s*$/gm)].map((m) => m[1]!);
+    expect(bareProperties(cjs)).toEqual([]);
+    expect(bareProperties(ts)).toEqual([]);
   });
 
   it("exposes the CodeForge Cloud API the renderer depends on", () => {

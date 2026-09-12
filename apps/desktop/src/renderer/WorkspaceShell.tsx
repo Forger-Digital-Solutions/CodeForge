@@ -10,7 +10,6 @@ import type { SettingsContextValue, CloudAccountView, SystemInfoView, DesktopRun
 import { computeWorkNotifications, type RunningCounters } from "./settings/notifications-client.js";
 import { describeHeaderActivity, summarizeActiveWork } from "../close-lifecycle.js";
 import type { AppSettings, AppSettingsPatch, CloseBehavior, ExecutionMode, SettingsSnapshot } from "../app-settings.js";
-import { authenticatedEventStreamUrl } from "./control-plane.js";
 
 const SERVER_BASE_URL = "http://localhost:3210";
 const HELP_URL = "https://github.com/Forger-Digital-Solutions/CodeForge#readme";
@@ -724,7 +723,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
           style={scaleZoom !== 1 ? ({ zoom: scaleZoom } as React.CSSProperties) : undefined}
         >
           <WorkspaceApp
-            sseUrl={authenticatedEventStreamUrl(`${SERVER_BASE_URL}/api/events`)}
+            sseUrl={`${SERVER_BASE_URL}/api/events`}
             models={models}
             selectedModelId={selectedModelId}
             onSelectModel={handleSelectModel}
