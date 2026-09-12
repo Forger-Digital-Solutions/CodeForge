@@ -3,6 +3,7 @@ import AuthScreen from "./AuthScreen.js";
 import CloseDialog, { type CloseRequest } from "./CloseDialog.js";
 import WelcomeScreen from "./WelcomeScreen.js";
 import WorkspaceShell from "./WorkspaceShell.js";
+import { migrateLegacyAppSettings, type AppSettings, type SettingsSnapshot } from "../app-settings.js";
 
 export interface Project {
   id: string;
@@ -30,6 +31,22 @@ export default function App() {
   useEffect(() => {
     let mounted = true;
     const restore = async (): Promise<void> => {
+      // Load the canonical settings before deciding what to restore. On the first run with the
+      // canonical store absent, seed it from the pre-canonical renderer-local preference exactly
+      // once (a fresh store is reported by the main process; later launches never migrate).
+      let startupSettings: AppSettings | undefined;
+      try {
+        if (window.electronAPI?.getSettings) {
+          const snapshot = await window.electronAPI.getSettings() as SettingsSnapshot;
+          if (snapshot.fresh) {
+            const patch = migrateLegacyAppSettings(window.localStorage.getItem("codeforge:user-intent-hold-policy"));
+            if (patch) await window.electronAPI.updateSettings?.({ settings: patch });
+          }
+          startupSettings = snapshot.settings;
+        }
+      } catch {}
+
+      if (!mounted) return;
       if (!window.electronAPI?.getCloudAccount) {
         if (mounted) setAuthState("authenticated");
         return;
@@ -42,7 +59,8 @@ export default function App() {
           return;
         }
         setAuthState("authenticated");
-        await loadRecentProjects(true);
+        const openLastWorkspace = startupSettings?.general.openLastWorkspaceOnStartup !== false;
+        await loadRecentProjects(openLastWorkspace);
       } catch {
         if (mounted) setAuthState("signed-out");
       }
@@ -142,6 +160,7 @@ export default function App() {
         project={currentProject}
         onClose={handleCloseProject}
         onSignedOut={handleSignedOut}
+        onOpenProjectPath={handleOpenProject}
       />
       {closeOverlay}
       </>

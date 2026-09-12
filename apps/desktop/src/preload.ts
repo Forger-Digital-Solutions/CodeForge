@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
+import type { CloudAccount, CloudUsage } from "./cloud-account.js";
 
 const api = {
   selectDirectory: (): Promise<string | null> => {
@@ -56,7 +57,7 @@ const api = {
   deleteCloudAccount: (): Promise<unknown> => {
     return ipcRenderer.invoke("cloud:account:delete");
   },
-  getCloudAccount: (): Promise<any> => {
+  getCloudAccount: (): Promise<CloudAccount | null> => {
     return ipcRenderer.invoke("cloud:account:get");
   },
   logoutCloud: (): Promise<void> => {
@@ -68,7 +69,7 @@ const api = {
   openCloudPortal: (): Promise<void> => {
     return ipcRenderer.invoke("cloud:billing:portal");
   },
-  getCloudUsage: (): Promise<any> => {
+  getCloudUsage: (): Promise<CloudUsage | null> => {
     return ipcRenderer.invoke("cloud:usage:get");
   },
   onCloseRequested: (callback: (request: unknown) => void): (() => void) => {
@@ -78,6 +79,41 @@ const api = {
   },
   resolveClose: (decision: string, remember: boolean): Promise<void> => {
     return ipcRenderer.invoke("app:close-decision", { decision, remember });
+  },
+  /**
+   * Read-only git introspection for the workspace context chips (branch/worktree detection). The
+   * main process allowlists this to `git` only — it is not a general command-execution bridge.
+   */
+  execCommand: (params: { command: string; args: string[]; cwd?: string }): Promise<{ exitCode: number; stdout: string; stderr: string }> => {
+    return ipcRenderer.invoke("shell:execCommand", params);
+  },
+  getRuntimeStatus: (): Promise<unknown> => {
+    return ipcRenderer.invoke("app:runtime-status");
+  },
+  // --- Settings surface ---
+  getSettings: (): Promise<unknown> => {
+    return ipcRenderer.invoke("settings:get");
+  },
+  updateSettings: (payload: { settings?: unknown; closeBehavior?: unknown }): Promise<unknown> => {
+    return ipcRenderer.invoke("settings:set", payload);
+  },
+  resetSettings: (): Promise<unknown> => {
+    return ipcRenderer.invoke("settings:reset");
+  },
+  getSystemInfo: (): Promise<unknown> => {
+    return ipcRenderer.invoke("app:getSystemInfo");
+  },
+  openDataFolder: (): Promise<{ ok: boolean; error?: string }> => {
+    return ipcRenderer.invoke("app:openDataFolder");
+  },
+  showNotification: (payload: { title: string; body: string }): Promise<{ ok: boolean; reason?: string }> => {
+    return ipcRenderer.invoke("notifications:show", payload);
+  },
+  refreshCatalog: (): Promise<{ ok: boolean; freeModels: number; error?: string }> => {
+    return ipcRenderer.invoke("catalog:refresh");
+  },
+  clearRecentProjects: (): Promise<void> => {
+    return ipcRenderer.invoke("project:clearRecent");
   },
 };
 

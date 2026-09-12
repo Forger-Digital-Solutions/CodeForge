@@ -36,6 +36,7 @@ import {
 import type { ISessionPersistence } from "@codeforge/sessions";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { runVerification, verificationPassed as forgeVerificationPassed, type VerificationResult } from "@codeforge/workflow";
+import { createForgeVerifyPersistenceObserver } from "./forge-verify-persistence.js";
 import { redactSecrets } from "@codeforge/secrets";
 import { getSanitizedEnvForChild } from "./env-filter.js";
 
@@ -607,7 +608,7 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
 
       const verificationCwd = worktreeWs.rootPath;
       const verificationReport = verificationCommands.length
-        ? await runVerification(verificationCwd, verificationCommands, { signal: controller.signal, runId })
+        ? await runVerification(verificationCwd, verificationCommands, { signal: controller.signal, runId, ...(this.persistence ? { observer: createForgeVerifyPersistenceObserver(this.persistence, run.sessionId) } : {}) })
         : undefined;
       const verificationPassed = verificationReport ? forgeVerificationPassed(verificationReport) : true;
       if (verificationReport) verificationResults.push(...verificationReport.verifiers.map((verifier) => ({

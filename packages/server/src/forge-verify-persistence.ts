@@ -1,5 +1,5 @@
 import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
-import type { ForgeVerifyObserver, VerificationAttempt, VerificationEvidence, VerificationPlan } from "@codeforge/workflow";
+import type { ForgeVerifyObserver, VerificationAttempt, VerificationEvidence, VerificationPlan, VerificationReuseCostGateReceipt } from "@codeforge/workflow";
 import type { GenericVerificationEvidence } from "@codeforge/forge-green";
 
 type VerificationWorkItem = Extract<WorkItem, { kind: "verification" }>;
@@ -9,7 +9,10 @@ function item(sessionId: string, recordType: VerificationWorkItem["recordType"],
   return { kind: "verification", id, sessionId, runId, recordType, planId, payload, ...(status ? { status } : {}), createdAt: now, updatedAt: now };
 }
 
-/** Persists ForgeVerify's structured records without making terminal evidence mutable. */
+/** Persists ForgeVerify's structured records without making terminal evidence mutable. The same
+ * observer is also FG-12F's durable prior-evidence source: cost-gated reuse advising loads the
+ * session's already-persisted evidence records (which carry their real measured `elapsedMs`)
+ * through `loadPriorEvidence`, and records its reconciled receipt via `costGateReceiptCreated`. */
 export function createForgeVerifyPersistenceObserver(persistence: ISessionPersistence, sessionId: string): ForgeVerifyObserver {
   return {
     planCreated: async (plan: VerificationPlan) => {
@@ -29,6 +32,10 @@ export function createForgeVerifyPersistenceObserver(persistence: ISessionPersis
     },
     coverageReceiptCreated: async (receipt) => {
       await persistence.insertImmutableWorkItem(item(sessionId, "coverage_receipt", receipt.coverageId, receipt.coverageId, sessionId, receipt as unknown as Record<string, unknown>, receipt.outcome));
+    },
+    loadPriorEvidence: () => loadForgeVerifyEvidence(persistence, sessionId),
+    costGateReceiptCreated: async (receipt: VerificationReuseCostGateReceipt) => {
+      await persistence.insertImmutableWorkItem(item(sessionId, "cost_gate_receipt", `${receipt.planId}-cost-gate`, receipt.planId, receipt.runId, receipt as unknown as Record<string, unknown>));
     },
   };
 }

@@ -1,0 +1,154 @@
+{
+  "milestone": "CodeForge Desktop Home / Empty Session R1",
+  "verdict": "CODEFORGE_DESKTOP_HOME_R1_BLOCKED",
+  "generatedAt": "2026-09-11",
+  "startingState": {
+    "branch": "forger-digital-solutions-forgegreen-certified",
+    "headCommit": "92df553",
+    "unrelatedUncommittedWorkPreserved": true,
+    "priorMilestoneUncommittedWorkPreserved": "CodeForge Model Picker R1 (built upon, not redone)",
+    "commitsCreatedThisSession": 0
+  },
+  "auditFindings": {
+    "emptyState": "existed at packages/ui/src/Conversation.tsx with a hardcoded, always-disabled favorites row and no dashboard component anywhere",
+    "composer": "already had Agent/Chat toggle and canonical ModelSelector; no reasoning/effort or approval-mode control",
+    "approvalMode": "no standing backend concept exists — PermissionEngine.evaluate() is a stub always returning 'ask'; SessionRecord.permissionMode is defined but never read/written; only real mechanism is the existing per-action ApprovalBar",
+    "reasoningEffort": "no concept exists anywhere in @codeforge/providers or @codeforge/protocol",
+    "activityData": "real persisted SessionRecord/TurnRecord/WorkItem data exists with no prior aggregation; tokens only tracked on completed run_inspection agent runs",
+    "worktreeDetection": "did not exist for a user-opened workspace anywhere in the repo prior to this milestone",
+    "execCommandBug": "window.electronAPI.execCommand was called from the renderer but never implemented in preload.ts/preload.cjs/main.ts — branch/worktree detection was non-functional in every real build before this milestone; fixed as part of this work",
+    "closeTrayLifecycle": "already a real, working three-way CloseDialog (Cancel/Quit/Tray) with atomic preference persistence and a correct tray; real gaps were only a missing tray active-work indicator and zero test coverage"
+  },
+  "emptyStateChanges": {
+    "greeting": "userDisplayName from cloudAccount.user.displayName, falls back to 'What are we forging next?' with no hardcoded name",
+    "favorites": "extracted to packages/ui/src/model-favorites.ts as single source shared by ModelSelector's star toggle; empty-state row renders real favorited models and opens the same canonical picker via 'Add favorite'",
+    "suggestions": "unchanged in function, visually de-emphasized below the Overview card"
+  },
+  "activityOverview": {
+    "endpoint": "GET /api/activity/overview?period=all|30d|7d",
+    "sourceModule": "packages/server/src/activity-overview.ts (pure, unit-tested)",
+    "dataReused": ["listSessions()", "getTurns(sessionId)", "getWorkItemsByKind('run_inspection')"],
+    "newTrackingAdded": false,
+    "cacheTtlMs": 15000,
+    "metrics": {
+      "tasks": "sessions whose updatedAt falls within the period",
+      "messages": "total TurnRecord count across those sessions (session-level period attribution, documented simplification)",
+      "tokens": "sum of run_inspection.usage.totalTokens for those sessions; UI labels this 'Tokens (agent runs)' since ordinary chat turns have no token accounting",
+      "activeDays": "distinct calendar dates from turn completedAt/startedAt (fallback session.updatedAt) within the period",
+      "currentStreak": "lifetime, independent of period filter — confirmed identical across periods in tests",
+      "mostUsedModel": "mode of run_inspection.provider.modelId (source=agent-run) falling back to mode of session.currentModelId (source=session-selection); null with hasAnyHistory=false when no data exists"
+    },
+    "heatmap": {
+      "windowDays": 365,
+      "definition": "one cell per day, level 0/1/2/3 bucketed at 0 / 1-2 / 3-5 / 6+ messages that day",
+      "periodIndependent": true
+    },
+    "metricCount": 6
+  },
+  "composerContextBar": {
+    "component": "packages/ui/src/ContextBar.tsx",
+    "chips": {
+      "runtime": "resolveRuntimeLabel() in model-sections.ts — Auto / Hosted / Direct (BYOK), derived from the real selected model's providerId/tier",
+      "workspace": "real project name with full path in a tooltip",
+      "branch": "git-workspace-info.ts classifyGitWorkspace() — single `git rev-parse --abbrev-ref HEAD --git-dir --git-common-dir` call; no chip rendered for a non-git directory; detached HEAD shown truthfully",
+      "worktree": "same git call — detected via --git-dir vs --git-common-dir divergence (the standard git worktree mechanism), shown only when true"
+    },
+    "canonicalSourceUnification": "desktop header's branch display now reads the same gitInfo object as the context bar"
+  },
+  "modelIntegration": {
+    "canonicalPickerReused": true,
+    "fixRequired": "ModelSelector's controlled isOpen prop was an untested seam whose internal close paths ignored external control; added onOpenChange + unified setOpen() for real bidirectional control, verified live in browser"
+  },
+  "closeProtection": {
+    "activeWorkDetection": "unchanged, CodeForgeServer.getRuntimeStatus() — proven accurate with a real server (no mocks) in packages/server/test/close-safety-runtime-status.test.ts",
+    "decisionLogic": "extracted to apps/desktop/src/close-lifecycle.ts resolveCloseAction(); behavior-preserving refactor of requestClose(); exhaustively tested (all 9 activeWork/recoverable/behavior combinations); unrecoverable work always resolves to 'ask' regardless of remembered preference",
+    "modalBehavior": "unchanged, CloseDialog.tsx already correct (Cancel/Quit(-anyway)/Keep running in tray, unrecoverable re-prompt race); now shares summarizeActiveWork() with the tray tooltip",
+    "trayIndicator": "new — tray tooltip shows 'CodeForge — N workflow(s) · N agent turn(s)...' while work is running (excludes pendingApprovals), refreshed every 15s, reset to 'CodeForge' when idle",
+    "persistedPreference": "unchanged, already correct (ask/tray/quit-safe, written only for a recoverable choice)"
+  },
+  "backgroundAgentProof": {
+    "insideRealElectron": false,
+    "reason": "packaged app cannot get past CodeForgeServer construction due to the native SQLite ABI blocker (see remainingBlockers)",
+    "whatWasProven": [
+      "CodeForgeServer.getRuntimeStatus() accurately reflects a genuinely active task and its completion, using a real server with no mocking of the status computation",
+      "code reading confirms the 'tray' decision path never calls server.stop() or app.quit() in either requestClose() or the app:close-decision IPC handler",
+      "the packaged app reaches WHEN_READY_WINDOW_CREATED (window created, renderer loaded) before failing at server init for the unrelated native-module reason"
+    ],
+    "claimNotMade": "that an agent literally kept running after minimizing was not directly observed inside a live packaged window"
+  },
+  "liveUiVerification": {
+    "method": "real production build served and driven in a browser tab against a real CodeForgeServer instance seeded with real session/turn/run_inspection history — not a qa.html mock",
+    "confirmed": [
+      "neutral greeting when signed out",
+      "Overview card real metrics: tasks 9, messages 27, tokens 37.5K, active days 7, streak 3d, most-used model resolved to display name",
+      "7d period filter live-recomputed tasks/messages/tokens/active-days while streak and heatmap stayed identical",
+      "context bar all four chips real and live-updating (runtime changed Auto->Hosted after model selection)",
+      "header branch/worktree badge matches the context bar",
+      "Add favorite opens the identical canonical picker; starring a model and closing made it appear as a real favorite chip",
+      "sidebar correctly showed seeded session history grouped by recency, confirming no regression to existing features"
+    ]
+  },
+  "midSessionBugFixed": {
+    "symptom": "Cannot find module close-lifecycle.js crash reported live by the user",
+    "rootCause": "close-lifecycle.ts lived under src/renderer/, whose compiled output directory is emptied by every Vite renderer build, silently deleting the main-process compiled file on a renderer-only rebuild",
+    "fix": "moved close-lifecycle.ts to src/ (sibling to main.ts), updated both consumers' imports, added it to the renderer tsconfig's include list for typecheck convenience only",
+    "verifiedFixed": "clean rebuild + repackage + smoke test now progresses to the same pre-existing unrelated native-module blocker, no module-not-found crash"
+  },
+  "filesChanged": [
+    "apps/desktop/src/main.ts",
+    "apps/desktop/src/preload.ts",
+    "apps/desktop/src/preload.cjs",
+    "apps/desktop/src/close-lifecycle.ts (new)",
+    "apps/desktop/src/renderer/git-workspace-info.ts (new)",
+    "apps/desktop/src/renderer/model-sections.ts",
+    "apps/desktop/src/renderer/CloseDialog.tsx",
+    "apps/desktop/src/renderer/WorkspaceShell.tsx",
+    "apps/desktop/tsconfig.json",
+    "packages/server/src/activity-overview.ts (new)",
+    "packages/server/src/index.ts",
+    "packages/ui/src/ActivityOverview.tsx (new)",
+    "packages/ui/src/ContextBar.tsx (new)",
+    "packages/ui/src/model-favorites.ts (new)",
+    "packages/ui/src/ModelSelector.tsx",
+    "packages/ui/src/Composer.tsx",
+    "packages/ui/src/Conversation.tsx",
+    "packages/ui/src/WorkspaceApp.tsx",
+    "packages/ui/src/workspace.css"
+  ],
+  "testsExecuted": {
+    "apps/desktop + packages/ui": { "files": 34, "tests": 362, "result": "PASS" },
+    "packages/server (full suite)": { "files": 86, "tests": 487, "skipped": 3, "skipReason": "no local Postgres configured (pre-existing, expected)", "result": "PASS" },
+    "newTestCasesThisMilestone": 53,
+    "typecheck": "clean across packages/ui, apps/desktop (main + renderer), packages/server after every change"
+  },
+  "buildResult": {
+    "npmRunBuild": "PASS",
+    "npmRunBuildNative": "FAIL - same pre-existing Visual Studio 2026/node-gyp incompatibility as prior milestone; unrelated to this work",
+    "electronBuilderDirPackage": "PASS"
+  },
+  "packagedRuntimeResult": {
+    "launch": "PASS - window created, real renderer bundle loaded (WINDOW_CONTENT_LOADED, WHEN_READY_WINDOW_CREATED reached)",
+    "serverInit": "FAIL - better-sqlite3 native binding compiled for plain Node ABI, not Electron 33's ABI (v130); Electron's bundled Node lacks node:sqlite",
+    "unrelatedToMilestone": true
+  },
+  "regressionsChecked": {
+    "scopeConfirmed": "git diff --stat touches only the files in filesChanged",
+    "untouchedSubsystems": ["packages/forge-zero", "packages/eight-bit", "packages/model-registry", "packages/router", "packages/cloud-gateway", "apps/cloud-api", "GitHub auth", "ForgeVerify/completion gates"],
+    "fullServerSuitePassing": "487/487 (3 skipped) including CF-09 mission steering/budget/security/recovery/acceptance, publication, network-exposure, workflow terminal-state races",
+    "unrelatedUncommittedWorkUntouched": true
+  },
+  "remainingBlockers": [
+    {
+      "id": "no-packaged-electron-minimize-proof",
+      "description": "This machine's Visual Studio 2026 install is incompatible with node-gyp's VS detection, and Electron's bundled Node lacks node:sqlite, so the packaged app cannot get past CodeForgeServer construction to reach a state where a real agent turn and a real minimize-to-tray could be observed inside actual Electron chrome.",
+      "missingProof": "The exact scenario in the milestone spec (start a real task, request close, choose minimize to tray, confirm the process/task survives, restore, confirm completion) run on a toolchain — or CI runner pinned to windows-2022, per this project's existing operational memory — capable of the native rebuild."
+    },
+    {
+      "id": "no-packaged-desktop-home-smoke-path",
+      "description": "The full packaged-desktop smoke path (launch, open workspace, land on empty state, verify overview/context/model controls, start a task, close/minimize/restore cycle, quit, restart) could not be executed inside real Electron chrome for the same reason.",
+      "missingProof": "Same toolchain requirement as above; live browser verification (documented in this report) substitutes for everything reachable without a real Electron window but is not a substitute for the packaged-app proof the milestone requires."
+    }
+  ],
+  "fakeCertificationAvoided": "No claim is made that a real agent survived minimizing inside a live packaged window, since that was not directly observed. The report distinguishes precisely what was proven (server-level runtime-status accuracy, code-level confirmation the tray path never touches server.stop()/app.quit(), live browser verification of every UI surface reachable without Electron) from what remains unverified.",
+  "finalVerdict": "CODEFORGE_DESKTOP_HOME_R1_BLOCKED"
+}

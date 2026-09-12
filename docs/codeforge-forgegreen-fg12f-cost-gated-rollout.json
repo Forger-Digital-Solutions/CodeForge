@@ -1,0 +1,638 @@
+{
+  "artifactSchemaVersion": "fg12f-cost-gated-rollout/v1",
+  "generatedAt": "2026-09-11T22:07:05.998Z",
+  "certificationToken": "CODEFORGE_FORGEGREEN_FG12F_COST_GATED_REUSE_CERTIFIED",
+  "sourceState": {
+    "sourceStateId": "733b611a4edc4aea39bb63f77008961af648d59d9f548e49e7ce521384d976db",
+    "surfaceVersion": "fg12f-certified-v1",
+    "lineage": {
+      "FG11": "f9cb465db299648b01593111f3ebbfd90a8c2bc98b84f08a44ba051bb8d4c36a",
+      "FG12D": "ac8414ebd2a85803bde97d35a5409ca1be7a5d156ae3be57a070ebb5ba72ad53",
+      "FG12F": "733b611a4edc4aea39bb63f77008961af648d59d9f548e49e7ce521384d976db"
+    }
+  },
+  "policy": {
+    "policyVersion": "fg12f-verification-reuse-cost-gated-1",
+    "costThresholdMs": 250,
+    "thresholdSemantics": "estimatedFreshMs >= 250 is eligible (inclusive); 249 is not",
+    "unknownCostBehavior": "FRESH_VERIFY",
+    "minDurationSamples": 1,
+    "maxDurationSamples": 5,
+    "statistic": "median of the most-recent trusted samples",
+    "durationIdentityRequirements": [
+      "verifierId",
+      "verifierVersion",
+      "definitionDigest"
+    ],
+    "killSwitch": "CODEFORGE_FORGEGREEN_OPTIMIZATION (OFF/SHADOW ceiling, effective without restart)",
+    "executionState": "ACTIVE_SAFE_COST_GATED"
+  },
+  "historySource": {
+    "source": "verification_evidence_elapsed_ms",
+    "provenance": "elapsedMs of prior PASSED evidence records persisted verbatim by createForgeVerifyPersistenceObserver.evidenceCreated into the session SQLite store, loaded via loadForgeVerifyEvidence for the same session; fresh executions append new records (append-only, §18).",
+    "speculativeCostModelUsed": false
+  },
+  "rolloutSeam": {
+    "integrationPoint": "packages/workflow/src/verification-service.ts: runVerification — after authoritative plan construction, before executeVerificationPlan",
+    "architecture": "caller -> verification service (runVerification) -> cost-gated reuse advisor (adviseCostGatedReuse) -> ForgeVerify authoritative execution (executeVerificationPlan)",
+    "callersCovered": [
+      "workflow-engine.ts (via workflow-service inline observer)",
+      "autonomous-orchestrator.ts",
+      "delivery-service.ts",
+      "mission-supervisor.ts",
+      "parallel-orchestrator.ts"
+    ],
+    "finalAuthority": "executeVerificationPlan's pre-existing reuse revalidation is unchanged and remains mandatory"
+  },
+  "corpus": {
+    "cheap": {
+      "expected": "all fresh",
+      "cases": [
+        {
+          "id": "cheap-1",
+          "verifier": "node --check a.js",
+          "priorElapsedMs": 82,
+          "run1VerifierMs": 82,
+          "run2Fresh": true,
+          "costRejectionReason": "below_threshold",
+          "failureReasons": []
+        },
+        {
+          "id": "cheap-2",
+          "verifier": "node --check a.js",
+          "priorElapsedMs": 83,
+          "run1VerifierMs": 83,
+          "run2Fresh": true,
+          "costRejectionReason": "below_threshold",
+          "failureReasons": []
+        },
+        {
+          "id": "cheap-3",
+          "verifier": "node --check a.js",
+          "priorElapsedMs": 79,
+          "run1VerifierMs": 79,
+          "run2Fresh": true,
+          "costRejectionReason": "below_threshold",
+          "failureReasons": []
+        },
+        {
+          "id": "cheap-4",
+          "verifier": "node --check a.js",
+          "priorElapsedMs": 82,
+          "run1VerifierMs": 82,
+          "run2Fresh": true,
+          "costRejectionReason": "below_threshold",
+          "failureReasons": []
+        },
+        {
+          "id": "cheap-5",
+          "verifier": "node --check a.js",
+          "priorElapsedMs": 85,
+          "run1VerifierMs": 85,
+          "run2Fresh": true,
+          "costRejectionReason": "below_threshold",
+          "failureReasons": []
+        },
+        {
+          "id": "cheap-6",
+          "verifier": "node --check a.js",
+          "priorElapsedMs": 83,
+          "run1VerifierMs": 83,
+          "run2Fresh": true,
+          "costRejectionReason": "below_threshold",
+          "failureReasons": []
+        },
+        {
+          "id": "cheap-7",
+          "verifier": "node --check a.js",
+          "priorElapsedMs": 76,
+          "run1VerifierMs": 76,
+          "run2Fresh": true,
+          "costRejectionReason": "below_threshold",
+          "failureReasons": []
+        },
+        {
+          "id": "cheap-8",
+          "verifier": "node --check a.js",
+          "priorElapsedMs": 74,
+          "run1VerifierMs": 74,
+          "run2Fresh": true,
+          "costRejectionReason": "below_threshold",
+          "failureReasons": []
+        },
+        {
+          "id": "cheap-9",
+          "verifier": "node --check a.js",
+          "priorElapsedMs": 77,
+          "run1VerifierMs": 77,
+          "run2Fresh": true,
+          "costRejectionReason": "below_threshold",
+          "failureReasons": []
+        },
+        {
+          "id": "cheap-10",
+          "verifier": "node --check a.js",
+          "priorElapsedMs": 81,
+          "run1VerifierMs": 81,
+          "run2Fresh": true,
+          "costRejectionReason": "below_threshold",
+          "failureReasons": []
+        }
+      ],
+      "allPassed": true
+    },
+    "moderate": {
+      "expected": "gated reuse",
+      "cases": [
+        {
+          "id": "moderate-1",
+          "verifier": "node sleeper.js (380ms class)",
+          "priorElapsedMs": 490,
+          "run1VerifierMs": 490,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 753.4,
+          "run2WallClockMs": 255.5,
+          "reusedEvidenceId": "3990d360-a122-4160-a398-376a1841b133",
+          "referencePreventedTimeMs": 490,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "moderate-2",
+          "verifier": "node sleeper.js (380ms class)",
+          "priorElapsedMs": 462,
+          "run1VerifierMs": 462,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 716.1,
+          "run2WallClockMs": 248.9,
+          "reusedEvidenceId": "13e10b8a-2e18-4ff0-aea5-b8e7c45bf06c",
+          "referencePreventedTimeMs": 462,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "moderate-3",
+          "verifier": "node sleeper.js (380ms class)",
+          "priorElapsedMs": 475,
+          "run1VerifierMs": 475,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 723,
+          "run2WallClockMs": 238.2,
+          "reusedEvidenceId": "00f65571-ceba-4ff2-862c-7eb3d286d4d9",
+          "referencePreventedTimeMs": 475,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "moderate-4",
+          "verifier": "node sleeper.js (380ms class)",
+          "priorElapsedMs": 473,
+          "run1VerifierMs": 473,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 723.3,
+          "run2WallClockMs": 248.7,
+          "reusedEvidenceId": "2194ff21-58d9-430d-bab4-aa9797b44b5a",
+          "referencePreventedTimeMs": 473,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "moderate-5",
+          "verifier": "node sleeper.js (380ms class)",
+          "priorElapsedMs": 468,
+          "run1VerifierMs": 468,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 718,
+          "run2WallClockMs": 242.3,
+          "reusedEvidenceId": "ad78834f-1165-4e3c-9abc-ef9f1c57935d",
+          "referencePreventedTimeMs": 468,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "moderate-6",
+          "verifier": "node sleeper.js (380ms class)",
+          "priorElapsedMs": 472,
+          "run1VerifierMs": 472,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 742,
+          "run2WallClockMs": 234.3,
+          "reusedEvidenceId": "94cb675f-af34-4127-b70c-48e583cef00e",
+          "referencePreventedTimeMs": 472,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "moderate-7",
+          "verifier": "node sleeper.js (380ms class)",
+          "priorElapsedMs": 463,
+          "run1VerifierMs": 463,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 730.5,
+          "run2WallClockMs": 230.7,
+          "reusedEvidenceId": "68b36731-fcd9-437d-b449-e0c75150fed4",
+          "referencePreventedTimeMs": 463,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "moderate-8",
+          "verifier": "node sleeper.js (380ms class)",
+          "priorElapsedMs": 467,
+          "run1VerifierMs": 467,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 718.3,
+          "run2WallClockMs": 243,
+          "reusedEvidenceId": "7ae8049f-56ad-464d-8745-b9f24e4c4d34",
+          "referencePreventedTimeMs": 467,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "moderate-9",
+          "verifier": "node sleeper.js (380ms class)",
+          "priorElapsedMs": 493,
+          "run1VerifierMs": 493,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 742.4,
+          "run2WallClockMs": 242.2,
+          "reusedEvidenceId": "d8050efc-9549-4459-a080-1509a95daa7d",
+          "referencePreventedTimeMs": 493,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "moderate-10",
+          "verifier": "node sleeper.js (380ms class)",
+          "priorElapsedMs": 468,
+          "run1VerifierMs": 468,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 727.1,
+          "run2WallClockMs": 236.7,
+          "reusedEvidenceId": "4a93cfff-8e2f-4504-9608-874c57585984",
+          "referencePreventedTimeMs": 468,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        }
+      ],
+      "allPassed": true
+    },
+    "expensive": {
+      "expected": "reuse + no child process",
+      "cases": [
+        {
+          "id": "expensive-1",
+          "verifier": "node sleeper.js (950ms class)",
+          "priorElapsedMs": 1049,
+          "run1VerifierMs": 1049,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 1328,
+          "run2WallClockMs": 252.3,
+          "reusedEvidenceId": "48c78fb1-9eeb-42fc-891c-282cc22a1941",
+          "referencePreventedTimeMs": 1049,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "expensive-2",
+          "verifier": "node sleeper.js (950ms class)",
+          "priorElapsedMs": 1036,
+          "run1VerifierMs": 1036,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 1291.5,
+          "run2WallClockMs": 258.7,
+          "reusedEvidenceId": "63e3adb4-efa3-4d30-874e-06bdf04d3e28",
+          "referencePreventedTimeMs": 1036,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "expensive-3",
+          "verifier": "node sleeper.js (950ms class)",
+          "priorElapsedMs": 1040,
+          "run1VerifierMs": 1040,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 1292.3,
+          "run2WallClockMs": 261.8,
+          "reusedEvidenceId": "137b0e76-69f5-4fee-b32c-b3253cdecbce",
+          "referencePreventedTimeMs": 1040,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "expensive-4",
+          "verifier": "node sleeper.js (950ms class)",
+          "priorElapsedMs": 1032,
+          "run1VerifierMs": 1032,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 1282.9,
+          "run2WallClockMs": 251,
+          "reusedEvidenceId": "17803e80-0b9f-4eb7-b0c9-2382124c6608",
+          "referencePreventedTimeMs": 1032,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "expensive-5",
+          "verifier": "node sleeper.js (950ms class)",
+          "priorElapsedMs": 1046,
+          "run1VerifierMs": 1046,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 1311.9,
+          "run2WallClockMs": 248.5,
+          "reusedEvidenceId": "e54c4b81-a3b5-456c-a357-018e1b8202fa",
+          "referencePreventedTimeMs": 1046,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "expensive-6",
+          "verifier": "node sleeper.js (950ms class)",
+          "priorElapsedMs": 1048,
+          "run1VerifierMs": 1048,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 1312.4,
+          "run2WallClockMs": 240.5,
+          "reusedEvidenceId": "6a075c5c-5dc9-44b2-8d65-f8ae8c62b6de",
+          "referencePreventedTimeMs": 1048,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "expensive-7",
+          "verifier": "node sleeper.js (950ms class)",
+          "priorElapsedMs": 1043,
+          "run1VerifierMs": 1043,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 1315,
+          "run2WallClockMs": 246.6,
+          "reusedEvidenceId": "0a3e471f-38b0-44e6-a33f-a8218596abe2",
+          "referencePreventedTimeMs": 1043,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "expensive-8",
+          "verifier": "node sleeper.js (950ms class)",
+          "priorElapsedMs": 1026,
+          "run1VerifierMs": 1026,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 1289.2,
+          "run2WallClockMs": 227,
+          "reusedEvidenceId": "af63432c-b75b-42ce-8217-dd58dbb711f1",
+          "referencePreventedTimeMs": 1026,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "expensive-9",
+          "verifier": "node sleeper.js (950ms class)",
+          "priorElapsedMs": 1048,
+          "run1VerifierMs": 1048,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 1295.8,
+          "run2WallClockMs": 238.5,
+          "reusedEvidenceId": "2a52e9db-d160-4c78-a5d0-c6d0c2995092",
+          "referencePreventedTimeMs": 1048,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        },
+        {
+          "id": "expensive-10",
+          "verifier": "node sleeper.js (950ms class)",
+          "priorElapsedMs": 1037,
+          "run1VerifierMs": 1037,
+          "run2VerifierMs": 0,
+          "run1WallClockMs": 1306.2,
+          "run2WallClockMs": 232.2,
+          "reusedEvidenceId": "8a81121a-f1af-48d5-a8ef-efa211df8f7e",
+          "referencePreventedTimeMs": 1037,
+          "childProcessesSpawnedInRun2": 0,
+          "failureReasons": []
+        }
+      ],
+      "allPassed": true
+    },
+    "unknownCostColdStart": {
+      "expected": "fresh then learned reuse",
+      "cases": [
+        {
+          "id": "cold-1",
+          "unknownCostRun": {
+            "reused": false,
+            "costRejectionReason": "unknown_cost"
+          },
+          "learnedRun": {
+            "reused": true
+          },
+          "failureReasons": []
+        },
+        {
+          "id": "cold-2",
+          "unknownCostRun": {
+            "reused": false,
+            "costRejectionReason": "unknown_cost"
+          },
+          "learnedRun": {
+            "reused": true
+          },
+          "failureReasons": []
+        },
+        {
+          "id": "cold-3",
+          "unknownCostRun": {
+            "reused": false,
+            "costRejectionReason": "unknown_cost"
+          },
+          "learnedRun": {
+            "reused": true
+          },
+          "failureReasons": []
+        },
+        {
+          "id": "cold-4",
+          "unknownCostRun": {
+            "reused": false,
+            "costRejectionReason": "unknown_cost"
+          },
+          "learnedRun": {
+            "reused": true
+          },
+          "failureReasons": []
+        },
+        {
+          "id": "cold-5",
+          "unknownCostRun": {
+            "reused": false,
+            "costRejectionReason": "unknown_cost"
+          },
+          "learnedRun": {
+            "reused": true
+          },
+          "failureReasons": []
+        },
+        {
+          "id": "cold-6",
+          "unknownCostRun": {
+            "reused": false,
+            "costRejectionReason": "unknown_cost"
+          },
+          "learnedRun": {
+            "reused": true
+          },
+          "failureReasons": []
+        },
+        {
+          "id": "cold-7",
+          "unknownCostRun": {
+            "reused": false,
+            "costRejectionReason": "unknown_cost"
+          },
+          "learnedRun": {
+            "reused": true
+          },
+          "failureReasons": []
+        },
+        {
+          "id": "cold-8",
+          "unknownCostRun": {
+            "reused": false,
+            "costRejectionReason": "unknown_cost"
+          },
+          "learnedRun": {
+            "reused": true
+          },
+          "failureReasons": []
+        },
+        {
+          "id": "cold-9",
+          "unknownCostRun": {
+            "reused": false,
+            "costRejectionReason": "unknown_cost"
+          },
+          "learnedRun": {
+            "reused": true
+          },
+          "failureReasons": []
+        },
+        {
+          "id": "cold-10",
+          "unknownCostRun": {
+            "reused": false,
+            "costRejectionReason": "unknown_cost"
+          },
+          "learnedRun": {
+            "reused": true
+          },
+          "failureReasons": []
+        }
+      ],
+      "allPassed": true
+    },
+    "thresholdBoundary": [
+      {
+        "craftedElapsedMs": 249,
+        "reused": false,
+        "costEligible": false,
+        "expected": false
+      },
+      {
+        "craftedElapsedMs": 250,
+        "reused": true,
+        "costEligible": true,
+        "expected": true
+      },
+      {
+        "craftedElapsedMs": 251,
+        "reused": true,
+        "costEligible": true,
+        "expected": true
+      }
+    ],
+    "thresholdBoundaryMismatch": [],
+    "thresholdBoundaryPassed": true,
+    "partialReuse": {
+      "reusedVerifiers": 1,
+      "freshVerifiers": 1,
+      "markerCount": 1,
+      "failureReasons": []
+    },
+    "restart": {
+      "reloadedEvidenceRecords": 1,
+      "validRestartReused": true,
+      "mutatedRestartRefused": true,
+      "failureReasons": []
+    },
+    "invalidation": {
+      "passed": true,
+      "validityResult": "invalid",
+      "failureReasons": []
+    },
+    "killSwitch": {
+      "passed": true,
+      "receiptAbsent": true,
+      "failureReasons": []
+    },
+    "failureFallback": {
+      "passed": true,
+      "verificationStillPassed": true,
+      "failureReasons": []
+    }
+  },
+  "actualPreventedWork": {
+    "note": "Actual reuse truth is ForgeVerify's reusedEvidenceId only (§16); prevented time is a REFERENCE (the reused record's own prior measured duration), never claimed as a measured before/after delta (§32).",
+    "verifierExecutionsAvoided": 30,
+    "childProcessesNotSpawned": 30,
+    "referencePreventedTimeMsTotal": 15136,
+    "run2WallClockSavingsMsObserved": 15442
+  },
+  "incrementalOverhead": {
+    "note": "FG-12F-specific additions only; pre-existing ForgeVerify plan/input-state-hash work is NOT attributed to the cost policy (§28).",
+    "durationLookupMs": {
+      "50": 0.106,
+      "75": 0.117,
+      "95": 0.232
+    },
+    "advisorEvaluationMs": {
+      "50": 0.084,
+      "75": 0.097,
+      "95": 0.182
+    },
+    "receiptReconcileMs": {
+      "50": 0.011,
+      "75": 0.013,
+      "95": 0.07
+    },
+    "receiptPersistenceMs": {
+      "50": 0.157,
+      "75": 0.171,
+      "95": 6.611
+    },
+    "totalMedianMs": 0.359
+  },
+  "validation": {
+    "suiteTotals": {
+      "typecheck": "tsc -b --force: clean",
+      "build": "npm run build: success",
+      "testFiles": {
+        "passed": 286,
+        "skipped": 7,
+        "failed": 0
+      },
+      "tests": {
+        "passed": 2081,
+        "skipped": 36,
+        "failed": 0
+      },
+      "baseline": {
+        "testFilesPassed": 283,
+        "testsPassed": 2042,
+        "skipped": 36,
+        "failed": 0
+      },
+      "note": "Delta vs FG-12E baseline = the three new FG-12F test files (10 + 17 + 12 tests). Focused FG-12F: packages/forge-green/test/fg12f-reuse-cost-policy.test.ts, packages/workflow/test/fg12f-cost-gate-advisor.test.ts, packages/server/test/fg12f-production-reuse.test.ts. Regression coverage includes FG-12D, FG-12E, ForgeVerify, workflow, server, ForgeGreen, Candidate A, Completion Gate suites."
+    },
+    "note": "Focused FG-12F tests: packages/forge-green/test/fg12f-reuse-cost-policy.test.ts, packages/workflow/test/fg12f-cost-gate-advisor.test.ts, packages/server/test/fg12f-production-reuse.test.ts. Regression: FG-12D/FG-12E/ForgeVerify/workflow/server/ForgeGreen/Candidate A/Completion Gate. Repository: tsc -b --force, npm run build, full Vitest suite."
+  },
+  "failureCount": 0
+}

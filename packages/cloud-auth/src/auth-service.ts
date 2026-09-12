@@ -11,7 +11,7 @@ import { normalizeDesktopLoopbackRedirectUri, normalizeBrowserReturnUrl, appendB
 import { signAccessToken, verifyAccessToken, generateRefreshToken, hashRefreshToken, type AccessTokenPayload } from "./jwt.js";
 import { generateDesktopAuthCode, hashDesktopAuthCode } from "./desktop-auth-code.js";
 import { generateBrowserSessionToken, hashBrowserSessionToken } from "./browser-session.js";
-import { buildGitHubAuthUrl, exchangeGitHubCode, fetchGitHubUserProfile } from "./github-oauth.js";
+import { buildGitHubAuthUrl, exchangeGitHubCode, fetchGitHubUserProfile, fetchGitHubUserEmails, selectGitHubAuthorizedEmail } from "./github-oauth.js";
 
 /**
  * THE CANONICAL CODEFORGE CLOUD OAUTH FLOW (server-brokered, confidential client).
@@ -61,8 +61,21 @@ export interface AuthServiceConfig {
   fetchFn?: typeof fetch;
 }
 
+export interface AuthAccountIdentity {
+  /** GitHub username (@handle), when the connected identity reports one. */
+  login: string | null;
+  /**
+   * The authorized email the user's GitHub account shares with CodeForge. Null when the user's
+   * email is hidden and the email scope was not granted — never a guessed or placeholder address.
+   */
+  email: string | null;
+  profileUrl: string | null;
+}
+
 export interface AuthAccountSnapshot {
   user: UserRecord;
+  /** Connected GitHub identity details, when the account has one. Absent fields mean "not shared", never "unknown". */
+  identity?: AuthAccountIdentity;
   planId: string;
   planName: string;
   subscription?: SubscriptionRecord;
@@ -206,7 +219,7 @@ export class AuthService {
         redirectUri: cloudCallbackUrl,
         state,
         codeChallenge: gitHubPkce.codeChallenge,
-        scope: "read:user",
+        scope: "read:user user:email",
       }),
       cloudCallbackUrl,
       returnTarget,
@@ -247,7 +260,8 @@ export class AuthService {
         fetchFn: this.defaultFetchFn,
       });
       const profile = await fetchGitHubUserProfile(exchange.accessToken, this.defaultFetchFn);
-      const { user, isNewUser } = await this.provisionUser(profile);
+      const displayProfile = await this.resolveDisplayProfile(exchange.accessToken, profile, this.defaultFetchFn);
+      const { user, isNewUser } = await this.provisionUser(displayProfile);
       const sessionToken = generateBrowserSessionToken();
       await this.db.createBrowserSession({
         userId: user.id,
@@ -332,7 +346,8 @@ export class AuthService {
     });
 
     const profile = await fetchGitHubUserProfile(exchange.accessToken, fetchFn);
-    const { user, isNewUser } = await this.provisionUser(profile);
+    const displayProfile = await this.resolveDisplayProfile(exchange.accessToken, profile, fetchFn);
+    const { user, isNewUser } = await this.provisionUser(displayProfile);
 
     // Mint the single-use handoff code. Only its hash is stored.
     const desktopCode = generateDesktopAuthCode();
@@ -392,6 +407,29 @@ export class AuthService {
     });
 
     return { user, ...session, isNewUser: record.isNewUser };
+  }
+
+  /**
+   * Resolve the best email to persist for this account. The base profile's `email` field is only
+   * populated when the user's email is public, so when the authorization included `user:email` the
+   * authorized-address list is authoritative (primary + verified first). Scope not granted or the
+   * endpoint failing degrades to the public email alone — an address is never invented.
+   */
+  private async resolveDisplayProfile(
+    accessToken: string,
+    profile: { id: number; login: string; name?: string; avatar_url?: string; email?: string },
+    fetchFn: typeof fetch,
+  ): Promise<{ id: number; login: string; name?: string; avatar_url?: string; email?: string }> {
+    try {
+      const emails = await fetchGitHubUserEmails(accessToken, fetchFn);
+      const email = selectGitHubAuthorizedEmail(emails);
+      // Only override when the authorized list yields a verified/primary address; otherwise the
+      // profile's own public email (possibly absent) is the honest remaining source.
+      if (email) return { ...profile, email };
+    } catch {
+      // Scope not granted or endpoint failure: fall through to the profile as-is.
+    }
+    return profile;
   }
 
   /** Create (or load) the CodeForge account backing a GitHub identity, with idempotent Free provisioning. */
@@ -543,6 +581,28 @@ export class AuthService {
     return verifyAccessToken(accessToken, this.jwtSecret);
   }
 
+  /**
+   * The connected GitHub identity behind an account, resolved from the stored identity record —
+   * never re-fetched from GitHub here, so account reads stay fast and work when GitHub is offline.
+   * Absent login/email mean the account does not share them; callers must render that honestly.
+   */
+  private async getGitHubIdentity(user: UserRecord): Promise<AuthAccountIdentity | undefined> {
+    if (!user.primaryIdentity.startsWith("github:")) return undefined;
+    const providerUserId = user.primaryIdentity.slice("github:".length);
+    try {
+      const identity = await this.db.getIdentityByProvider("github", providerUserId);
+      if (!identity) return undefined;
+      const login = identity.providerLogin ?? null;
+      return {
+        login,
+        email: identity.providerEmail ?? null,
+        profileUrl: login ? `https://github.com/${login}` : null,
+      };
+    } catch {
+      return undefined;
+    }
+  }
+
   async getAccount(userId: string): Promise<AuthAccountSnapshot> {
     const user = await this.db.getUserById(userId);
     if (!user) {
@@ -558,9 +618,11 @@ export class AuthService {
     const entitlements = await this.db.getEntitlements(userId);
     const creditBalance = await this.db.getCreditBalance(userId);
     const settings = await this.db.getAccountSettings(userId);
+    const identity = await this.getGitHubIdentity(user);
 
     return {
       user,
+      ...(identity ? { identity } : {}),
       planId,
       planName: plan?.name ?? "CodeForge Free",
       subscription,

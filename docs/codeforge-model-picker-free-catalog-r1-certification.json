@@ -1,0 +1,154 @@
+{
+  "milestone": "CodeForge Model Picker R1 — Restore the Real Free-Model Product Architecture",
+  "verdict": "CODEFORGE_MODEL_PICKER_FREE_CATALOG_R1_BLOCKED",
+  "generatedAt": "2026-09-11",
+  "startingState": {
+    "branch": "forger-digital-solutions-forgegreen-certified",
+    "headCommit": "92df553",
+    "unrelatedUncommittedWorkPreserved": true,
+    "commitsCreatedThisSession": 0
+  },
+  "rootCauseFinding": {
+    "file": "apps/desktop/src/main.ts",
+    "description": "registerCloudAdapter() — which lists CodeForge's hosted, server-owned-key-backed free catalog — was only invoked when the user already had a stored cloud sign-in token, even though GET /v1/hosted/models requires no authentication (only POST /v1/hosted/inference does). A fresh, signed-out install therefore only ever saw the single bundled generic placeholder model.",
+    "evidence": "apps/cloud-api/src/server.ts:729 (unauthenticated) vs :970 (authenticateRequest called)"
+  },
+  "additionalFindings": [
+    {
+      "id": "codeforge-free-byok-conflation",
+      "description": "A BYOK-connected provider's own free-of-charge model was bucketed into the same generic top-5 'FREE' section as CodeForge's no-credential catalog, violating the requirement that credential-required models never appear in the credential-free section.",
+      "file": "apps/desktop/src/renderer/WorkspaceShell.tsx (pre-fix)"
+    },
+    {
+      "id": "forgezero-badge-hardcoded",
+      "description": "Header trust badge always rendered the literal string 'ForgeZero · Verified Free' regardless of the actually selected model's real verified-free status.",
+      "file": "apps/desktop/src/renderer/WorkspaceShell.tsx (pre-fix)"
+    },
+    {
+      "id": "native-select-styling-bug",
+      "description": "'Pause Agent while typing' <select> had no CSS class, rendering as an OS-default bright control inside the dark UI.",
+      "file": "apps/desktop/src/renderer/WorkspaceShell.tsx (pre-fix)"
+    },
+    {
+      "id": "gems-unavailable-wording",
+      "description": "Locked GEMS models showed 'Unavailable' (implies a broken feature) instead of 'Coming soon' (accurate — GEMS has never shipped a usable model).",
+      "file": "packages/ui/src/ModelSelector.tsx (pre-fix)"
+    },
+    {
+      "id": "settings-provider-first-hierarchy",
+      "description": "Settings led with 'Configure Providers' with no indication CodeForge Free/ForgeAuto need no setup.",
+      "file": "apps/desktop/src/renderer/WorkspaceShell.tsx, ProviderSetup.tsx (pre-fix)"
+    },
+    {
+      "id": "credits-messaging-implies-blocked",
+      "description": "'0 Available Credits' shown with no distinction between free/ForgeZero execution and paid credit consumption.",
+      "file": "apps/desktop/src/renderer/WorkspaceShell.tsx (pre-fix)"
+    }
+  ],
+  "architectureAudit": {
+    "forgeAuto": {
+      "location": "packages/router/src/index.ts (ForgeRouter)",
+      "status": "real_dynamic_routing_confirmed",
+      "changedThisMilestone": false
+    },
+    "eightBit": {
+      "location": "packages/eight-bit/src/{eligibility,router,eviction,qualification,health}.ts",
+      "status": "real_separate_pool_maintenance_confirmed",
+      "changedThisMilestone": false
+    },
+    "forgeZero": {
+      "location": "packages/forge-zero/src/verifier.ts (verifyModelEligibility, 7-gate pipeline)",
+      "status": "real_metadata_driven_confirmed",
+      "changedThisMilestone": false,
+      "note": "backend unchanged; desktop UI trust badge was not wired to it and now is"
+    },
+    "freeModelDiscovery": {
+      "location": "packages/model-registry/src/{discovery,catalog-refresh}.ts, packages/cloud-gateway/src/provider-registry.ts",
+      "status": "real_confirmed",
+      "changedThisMilestone": false,
+      "note": "never invoked by desktop for a signed-out user prior to this milestone's fix"
+    },
+    "gems": {
+      "location": "packages/gems (stub), packages/cloud-gateway/src/gateway-service.ts (explicit offline throw)",
+      "status": "correct_prelaunch_scaffolding_no_real_models_yet",
+      "changedThisMilestone": "UI wording only (Unavailable -> Coming soon)"
+    }
+  },
+  "filesChanged": [
+    "apps/desktop/src/main.ts",
+    "apps/desktop/src/cloud-catalog-sync.ts (new)",
+    "apps/desktop/src/renderer/model-sections.ts (new)",
+    "apps/desktop/src/renderer/WorkspaceShell.tsx",
+    "apps/desktop/src/renderer/ProviderSetup.tsx",
+    "apps/desktop/src/renderer/styles.css",
+    "packages/ui/src/ModelSelector.tsx",
+    "packages/ui/src/workspace.css",
+    "apps/desktop/test/model-sections.test.ts (new)",
+    "apps/desktop/test/cloud-catalog-sync.test.ts (new)",
+    "packages/ui/test/model-selector.test.tsx"
+  ],
+  "canonicalCatalogSource": "GET /api/models (packages/server/src/index.ts handleModels) reading ForgeZero.allModels(); single source, no duplicate catalog introduced",
+  "modelQualificationSource": "ForgeZero verifyModelEligibility() 7-gate pipeline + FreeModelCatalogRefresh/CloudProviderRegistry discovery (unchanged, pre-existing)",
+  "freeModelSectionCap": 13,
+  "testsExecuted": {
+    "apps/desktop/test": { "files": 15, "tests": 118, "result": "PASS" },
+    "packages/ui/test": { "files": 16, "tests": 205, "result": "PASS" },
+    "packages/providers/test": { "files": 14, "tests": 121, "result": "PASS" },
+    "totalAcrossSuites": { "tests": 444, "failures": 0 },
+    "newTestsThisMilestone": 22,
+    "typecheck": {
+      "packages/ui": "PASS (tsc -b --force)",
+      "apps/desktop main": "PASS (tsc -p tsconfig.main.json --noEmit)",
+      "apps/desktop renderer": "PASS except 2 pre-existing, unrelated TS2339 errors on window.electronAPI.execCommand, confirmed via git stash/pop to predate this session"
+    }
+  },
+  "liveUiVerification": {
+    "method": "real production build (npm run build) + real CodeForgeServer instance, served and driven in a browser tab; NOT a qa.html mock",
+    "signedOutFreshInstallConfirmed": {
+      "sections": ["RECOMMENDED (ForgeAuto, distinct styling + Verified $0 badge)", "CODEFORGE FREE (6 real named models)", "GEMS (4, locked, Coming soon)"],
+      "codeforgeAutoSentinelHidden": true,
+      "byokSectionAbsentWhenNoProviderConnected": true,
+      "headerBadge": "ForgeZero · Verified Free (correct for default ForgeAuto selection)",
+      "searchFiltering": "confirmed ('nemotron' -> 1 result)",
+      "selectionPersistence": "confirmed across picker close/reopen",
+      "keyboardNav": "confirmed (Down/Up moved focus)",
+      "settingsHierarchy": "confirmed ('Models & Routing' section first, live counts; 'Connected Providers (Optional)' second)",
+      "nativeSelectStylingFix": "confirmed (dark-themed, screenshot-verified)",
+      "accountDialogHonesty": "confirmed corrected copy distinguishing picker visibility from execution requiring sign-in"
+    },
+    "notReVerifiedLive": [
+      "signed-in '0 Available Credits' free-vs-paid clarification line (verified via code read + typecheck only)",
+      "GEMS locked-click upgrade-navigation path (pre-existing, unmodified control flow)"
+    ]
+  },
+  "buildResult": {
+    "npmRunBuild": "PASS",
+    "npmRunBuildNative": "FAIL - node-gyp cannot find a supported Visual Studio install (VS2026 'unknown version 18'); matches pre-existing project memory that CI must stay pinned to windows-2022",
+    "electronBuilderDirPackage": "PASS (produced release/win-unpacked/CodeForge.exe, using non-rebuilt native binaries)"
+  },
+  "packagedRuntimeResult": {
+    "launch": "PASS - window created, real renderer bundle loaded (WINDOW_CONTENT_LOADED reached)",
+    "serverInit": "FAIL - better-sqlite3 native binding compiled for plain Node ABI, not Electron 33's ABI (v130); confirms build:native's failure is the blocking cause",
+    "unrelatedToMilestone": true
+  },
+  "regressionsChecked": {
+    "scopeConfirmedContained": "git diff --stat touches only the 11 files listed in filesChanged",
+    "untouchedSubsystems": ["packages/forge-zero", "packages/eight-bit", "packages/model-registry", "packages/router", "packages/cloud-gateway", "packages/server", "apps/cloud-api"],
+    "unrelatedForgeGreenWorkingTreeChanges": "untouched, confirmed via git status diff before/after",
+    "preExistingTestSuitesStillPassing": true
+  },
+  "remainingBlockers": [
+    {
+      "id": "packaged-windows-native-rebuild",
+      "description": "This machine's Visual Studio 2026 install is incompatible with node-gyp's VS detection, preventing an Electron-ABI rebuild of better-sqlite3, which blocks a full packaged-exe click-through of the model picker inside real Electron chrome.",
+      "missingProof": "A packaged-exe run reaching the model-picker screen inside real Electron chrome, on a toolchain (or CI runner pinned to windows-2022) where the native rebuild succeeds."
+    },
+    {
+      "id": "no-network-to-real-cloud-api",
+      "description": "This sandbox cannot reach a real, deployed apps/cloud-api instance or OpenRouter, so live discovery was validated via unit tests and a schema-accurate local fixture, not a real network round trip.",
+      "missingProof": "The same live verification performed in this report, run against a real reachable apps/cloud-api deployment, confirming the real current free-model count/identities and the signed-out 401 UX for actual send attempts."
+    }
+  ],
+  "fakeCertificationAvoided": "Overclaiming copy drafted mid-milestone ('ForgeAuto/Free and the CodeForge Free catalog already work without signing in') was caught during the audit of apps/cloud-api's auth requirements and corrected before being shipped, since hosted inference execution (not just catalog listing) still requires sign-in or BYOK by pre-existing, intentional design.",
+  "finalVerdict": "CODEFORGE_MODEL_PICKER_FREE_CATALOG_R1_BLOCKED"
+}

@@ -87,7 +87,11 @@ export async function observeCandidateD(params: CandidateDParams): Promise<{ obs
       sustainabilityReceiptId: undefined,
       candidates: [candidate],
     });
-    const validated = decision.status === "PROPOSED" && decision.sourceEvidenceIds.length > 0;
+    // FG-12F: Candidate D is now registered ACTIVE_SAFE (cost-gated), so a valid candidate derives
+    // status APPLIED under the registry and PROPOSED only under a SHADOW ceiling. Validity — what
+    // this classification is about — is carried by the proposal set itself, which is populated
+    // strictly from ForgeVerify-confirmed candidates regardless of the resolved mode.
+    const validated = decision.sourceEvidenceIds.length > 0;
     // The canonical helper already forces inputStateHash/definitionDigest/workspacePath equality
     // to the CURRENT (fresh) state before declaring valid — so a validated reuse must reproduce
     // the same real "passed" outcome the fresh rerun actually measured. If it doesn't, that is

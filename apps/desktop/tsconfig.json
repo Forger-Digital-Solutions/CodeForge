@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "jsx": "react-jsx"
   },
-  "include": ["src/renderer/**/*"],
+  "include": ["src/renderer/**/*", "src/close-lifecycle.ts", "src/app-settings.ts", "src/cloud-account.ts"],
   "exclude": ["node_modules"]
 }

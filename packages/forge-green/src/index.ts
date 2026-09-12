@@ -48,6 +48,9 @@ export * from "./optimization-candidate-a.js";
 export * from "./optimization-candidates-shadow.js";
 export * from "./optimization-persistence.js";
 
+// FG-12F: cost-gated execution policy for Candidate D's ACTIVE_SAFE graduation.
+export * from "./reuse-cost-policy.js";
+
 export const FORGE_GREEN_LEDGER_WORK_ITEM_KIND = "forgegreen_ledger";
 
 export type EfficiencyScore = number & { readonly __forgeGreenEfficiencyScore: unique symbol };

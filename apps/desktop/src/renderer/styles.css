@@ -356,6 +356,74 @@ body {
   position: relative;
 }
 
+.header-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Transient live-activity indicator (R2 GAP-6). Monochrome to match the CodeForge visual language;
+   a single accent dot for running work, warning-toned when an approval is waiting on the user. */
+.header-activity {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 320px;
+  padding: 3px 10px;
+  background: var(--cf-bg-overlay);
+  border: 1px solid var(--cf-border);
+  border-radius: 999px;
+  color: var(--cf-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: default;
+  transition: all 0.12s ease;
+}
+
+.header-activity:hover {
+  color: var(--cf-text);
+  border-color: var(--cf-border);
+}
+
+.header-activity.has-approvals {
+  color: var(--cf-warning);
+  border-color: var(--cf-warning-muted);
+  background: var(--cf-warning-muted);
+  cursor: pointer;
+}
+
+.header-activity-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-activity-dot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--cf-accent);
+  animation: cf-activity-pulse 1.6s ease-in-out infinite;
+}
+
+.header-activity.has-approvals .header-activity-dot {
+  background: var(--cf-warning);
+  animation: none;
+}
+
+@keyframes cf-activity-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.cf-reduced-motion .header-activity-dot {
+  animation: none;
+}
+
 .header-btn {
   display: flex;
   align-items: center;
@@ -1063,13 +1131,25 @@ body {
   margin-bottom: 6px;
   color: var(--cf-text, #e6e8ec);
 }
-.privacy-mode-control select {
+.privacy-mode-control select,
+.settings-select {
   width: 100%;
   padding: 8px 10px;
   border-radius: 8px;
   background: var(--cf-bg, #0f1115);
   color: var(--cf-text, #e6e8ec);
   border: 1px solid var(--cf-border-subtle, rgba(255,255,255,0.12));
+}
+/* Native <select> popup lists are OS-rendered and cannot be themed cross-platform; the closed
+   control itself must never fall back to the OS's bright default, so every settings dropdown gets
+   this class explicitly instead of relying on inherited styling. */
+.settings-select {
+  font-size: 13px;
+  cursor: pointer;
+}
+.settings-select:focus-visible {
+  outline: 1px solid var(--cf-accent, #8b98ff);
+  outline-offset: 1px;
 }
 /* R8 first-run identity surface: deliberately quiet, single-action, and independent of the
    provider catalog. The authenticated workspace owns provider configuration. */

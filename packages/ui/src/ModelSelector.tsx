@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { getUpgradeUrl } from "./upgrade-url.js";
+import { loadModelFavorites, saveModelFavorites } from "./model-favorites.js";
 
 export type ModelTier = "free" | "gems_paid";
 
@@ -71,25 +72,6 @@ export function filterModelSections(sections: ModelSection[], query: string): Mo
     .filter((section) => section.models.length > 0);
 }
 
-const FAVORITES_KEY = "codeforge:model-favorites";
-
-function loadFavorites(): Set<string> {
-  try {
-    const stored = window.localStorage.getItem(FAVORITES_KEY);
-    return stored ? new Set(JSON.parse(stored)) : new Set();
-  } catch {
-    return new Set();
-  }
-}
-
-function saveFavorites(favorites: Set<string>): void {
-  try {
-    window.localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favorites]));
-  } catch {
-    // ignore
-  }
-}
-
 export interface ModelSelectorProps {
   models: ModelSelectorItem[];
   selectedId: string | null;
@@ -99,6 +81,14 @@ export interface ModelSelectorProps {
   disabled?: boolean;
   onShowDetails?: (model: ModelSelectorItem) => void;
   isOpen?: boolean;
+  /**
+   * Notified on every open/close transition when `isOpen` is provided, so a parent can drive this
+   * picker open (e.g. from an "Add favorite" button elsewhere) while still letting the user close
+   * it normally (outside click, Escape, selecting a model). Without this, passing a literal
+   * `isOpen={true}` would make the dropdown unclosable — every internal close path is a no-op
+   * unless the parent is told to flip its own state back.
+   */
+  onOpenChange?: (isOpen: boolean) => void;
   modelSections?: ModelSection[];
   onToggleFavorite?: (model: ModelSelectorItem) => void;
 }
@@ -112,6 +102,7 @@ export function ModelSelector({
   disabled,
   onShowDetails,
   isOpen: controlledIsOpen,
+  onOpenChange,
   modelSections,
   onToggleFavorite,
 }: ModelSelectorProps): React.ReactElement {
@@ -119,10 +110,14 @@ export function ModelSelector({
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [focusedIndex, setFocusedIndex] = useState(0);
-  const [favorites, setFavorites] = useState<Set<string>>(loadFavorites);
+  const [favorites, setFavorites] = useState<Set<string>>(loadModelFavorites);
   const searchRef = useRef<HTMLInputElement>(null);
   const optionRefs = useRef<Array<HTMLDivElement | null>>([]);
   const isOpen = controlledIsOpen ?? internalIsOpen;
+  const setOpen = (next: boolean): void => {
+    if (controlledIsOpen === undefined) setInternalIsOpen(next);
+    onOpenChange?.(next);
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -144,7 +139,7 @@ export function ModelSelector({
       return;
     }
     onSelect(model);
-    setInternalIsOpen(false);
+    setOpen(false);
   };
 
   const handleToggleFavorite = (e: React.MouseEvent, model: ModelSelectorItem): void => {
@@ -157,7 +152,7 @@ export function ModelSelector({
       newFavorites.add(model.id);
     }
     setFavorites(newFavorites);
-    saveFavorites(newFavorites);
+    saveModelFavorites(newFavorites);
     onToggleFavorite?.({ ...model, favorite: !model.favorite });
   };
 
@@ -211,7 +206,7 @@ export function ModelSelector({
   const flatModels = filteredSections.flatMap((section) => section.models);
 
   const close = (): void => {
-    setInternalIsOpen(false);
+    setOpen(false);
     setQuery("");
   };
 
@@ -220,7 +215,7 @@ export function ModelSelector({
       <button
         type="button"
         className="model-trigger"
-        onClick={() => setInternalIsOpen(!internalIsOpen)}
+        onClick={() => setOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label="Select model"
@@ -284,21 +279,27 @@ export function ModelSelector({
                       tabIndex={locked || disabled ? -1 : optionIndex === focusedIndex ? 0 : -1}
                       aria-selected={model.id === selectedId}
                       aria-disabled={locked || disabled ? true : undefined}
-                      title={locked ? `${model.displayName} requires an upgraded plan` : undefined}
-                      className={`model-option ${model.id === selectedId ? "selected" : ""} ${locked ? "locked" : ""} ${isFavorite ? "favorite" : ""}`}
+                      title={locked ? `${model.displayName} is not yet available on your plan` : undefined}
+                      className={`model-option ${model.id === selectedId ? "selected" : ""} ${locked ? "locked" : ""} ${isFavorite ? "favorite" : ""} ${model.id === "auto" ? "auto-route" : ""}`}
                       onClick={() => handleSelect(model)}
                       onKeyDown={(e) => handleOptionKeyDown(e, model)}
                     >
-                      <span className="model-option-name">{model.displayName}</span>
+                      <span className="model-option-name">{model.id === "auto" ? "⚡ " : ""}{model.displayName}</span>
                       <span className="model-option-meta">
                         {model.description && (
                           <span className="model-option-desc">{model.description}</span>
                         )}
-                        {!locked && !model.description && model.tier === "free" && (
+                        {/* ForgeAuto is a routing layer, not a foundation model — it must never read
+                            like an ordinary catalog entry, so it always carries its own explicit
+                            verified-$0 tag regardless of description text. */}
+                        {model.id === "auto" && (
+                          <span className="model-option-badge auto">Verified $0</span>
+                        )}
+                        {!locked && !model.description && model.id !== "auto" && model.tier === "free" && (
                           <span className="model-option-badge free">Free</span>
                         )}
                         {locked && model.tier === "gems_paid" && (
-                          <span className="model-option-badge paid">Unavailable</span>
+                          <span className="model-option-badge paid">Coming soon</span>
                         )}
                         <button
                           type="button"

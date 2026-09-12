@@ -104,29 +104,10 @@ interface ProviderState {
   paidModelCount?: number;
 }
 
-export default function ProviderSetup({ onComplete }: { onComplete?: () => void }) {
+export default function ProviderSetup(): React.ReactElement {
   const [providerStates, setProviderStates] = useState<Record<string, ProviderState>>({});
   const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
   const [showApiKeys, setShowApiKeys] = useState<Record<string, boolean>>({});
-  const [privacyMode, setPrivacyMode] = useState<string>("STANDARD");
-
-  useEffect(() => {
-    fetch("http://localhost:3210/api/privacy-mode")
-      .then((r) => r.json())
-      .then((d: { mode?: string }) => { if (d.mode) setPrivacyMode(d.mode); })
-      .catch(() => {});
-  }, []);
-
-  const updatePrivacyMode = (mode: string) => {
-    setPrivacyMode(mode);
-    fetch("http://localhost:3210/api/privacy-mode", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode }),
-    })
-      .then(() => notifyProviderUpdated())
-      .catch(() => {});
-  };
 
   const loadProviderStates = async () => {
     if (!window.electronAPI) return;
@@ -377,35 +358,9 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
     setShowApiKeys((prev) => ({ ...prev, [providerId]: !prev[providerId] }));
   };
 
-  const anyConnected = Object.values(providerStates).some((s) => s.status === "connected");
-
   return (
     <div className="provider-setup">
       <div className="provider-setup-container">
-        <div className="provider-setup-header">
-          <h1 className="provider-setup-title">Configure Providers</h1>
-          <p className="provider-setup-subtitle">
-            Connect a free provider to code at $0 — no CodeForge account required. Credentials stay on this device.
-          </p>
-        </div>
-
-        <div className="privacy-mode-control">
-          <label htmlFor="privacy-mode">Privacy routing</label>
-          <select
-            id="privacy-mode"
-            value={privacyMode}
-            onChange={(e) => updatePrivacyMode(e.target.value)}
-          >
-            <option value="STRICT">Strict · no provider training/retention</option>
-            <option value="STANDARD">Standard · normal provider retention</option>
-            <option value="MAXIMUM_FREE">Maximum Free · allow weaker-retention free endpoints</option>
-          </select>
-          <p className="provider-help">
-            ForgeZero excludes endpoints that violate this mode from Auto routing (e.g. Gemini's
-            free tier may train on prompts, so it is excluded under Strict).
-          </p>
-        </div>
-
         <div className="provider-list">
           {PROVIDERS.map((provider) => {
             const state = providerStates[provider.providerId];
@@ -553,14 +508,6 @@ export default function ProviderSetup({ onComplete }: { onComplete?: () => void 
             );
           })}
         </div>
-
-        {anyConnected && onComplete && (
-          <div className="provider-setup-footer">
-            <button onClick={onComplete} className="provider-btn primary">
-              Continue to CodeForge
-            </button>
-          </div>
-        )}
 
         <div className="provider-setup-note" role="note" aria-label="Free Mode note">
           <p>

@@ -1,11 +1,13 @@
 import { createOptimizationDecision } from "./optimization-decision.js";
-import type { ForgeGreenOptimizationDecision, OptimizationKind } from "./optimization-types.js";
+import { resolveOptimizationMode } from "./optimization-policy.js";
+import type { ForgeGreenOptimizationDecision, OptimizationDecisionStatus, OptimizationKind } from "./optimization-types.js";
 
 /**
  * FG-9 shadow-mode candidate detectors for Candidates B, C, D. Pure functions over
- * already-available evidence — no live execution is ever altered by these (their graduated
- * mode is `SHADOW`, enforced by `createOptimizationDecision`, which refuses to produce an
- * `APPLIED` status for any kind not registered `ACTIVE_SAFE`). Each detector is deliberately
+ * already-available evidence. Candidate B/C remain graduated `SHADOW` and Candidate D graduated
+ * `ACTIVE_SAFE` with a cost-gated execution policy (FG-12F); `createOptimizationDecision`
+ * independently refuses to produce an `APPLIED` status for any kind not registered `ACTIVE_SAFE`.
+ * Each detector is deliberately
  * conservative: any invalidating signal degrades to `SKIPPED_INSUFFICIENT_EVIDENCE` rather than
  * a proposed reuse.
  */
@@ -148,14 +150,38 @@ export function detectReusableVerificationEvidence(params: {
   sessionId: string | undefined;
   sustainabilityReceiptId: string | undefined;
   candidates: VerificationEvidenceReuseCandidate[];
+  /** FG-12F cost-gate outcome (fg12f-verification-reuse-cost-gated-1) for the VALID candidates.
+   * Purely advisory: it can veto surfacing valid evidence for reuse, never authorize invalid
+   * evidence. When absent, every valid candidate is treated as cost-eligible (FG-11 semantics). */
+  costGate?: {
+    /** Valid candidates whose measured historical duration reaches the policy threshold. */
+    costEligibleEvidenceIds: readonly string[];
+    /** Valid candidates held fresh: below threshold or unknown historical cost. */
+    costRejectedEvidenceIds: readonly string[];
+  };
 }): ForgeGreenOptimizationDecision {
   const reusable = params.candidates.filter((c) => c.forgeVerifyConfirmedValid === true);
   const anyRejectedByForgeVerify = params.candidates.some((c) => c.forgeVerifyConfirmedValid === false);
+  const costEligibleIds = new Set(params.costGate?.costEligibleEvidenceIds ?? reusable.map((c) => c.evidenceId));
+  const costRejected = reusable.filter((c) => !costEligibleIds.has(c.evidenceId));
+  const anyCostEligible = reusable.some((c) => costEligibleIds.has(c.evidenceId));
+
+  // Under ACTIVE_SAFE the decision may only claim APPLIED when at least one valid candidate also
+  // passed the cost gate; if validity passed everywhere but cost held everything fresh, the
+  // honest status is REJECTED. Under a SHADOW/OFF ceiling no explicit status is passed at all —
+  // the automatic derivation (PROPOSED/SKIPPED) applies and createOptimizationDecision's
+  // MODE_STATUS_MISMATCH guard stays as the backstop.
+  const resolvedMode = resolveOptimizationMode(KIND_D);
+  let explicitStatus: OptimizationDecisionStatus | undefined;
+  if (params.costGate && reusable.length > 0 && resolvedMode === "ACTIVE_SAFE") {
+    explicitStatus = anyCostEligible ? "APPLIED" : "REJECTED";
+  }
 
   return createOptimizationDecision({
     runId: params.runId,
     sessionId: params.sessionId,
     kind: KIND_D,
+    status: explicitStatus,
     targetResource: "verification_evidence",
     sourceEvidenceIds: reusable.map((c) => c.evidenceId),
     sustainabilityReceiptId: params.sustainabilityReceiptId,
@@ -164,10 +190,14 @@ export function detectReusableVerificationEvidence(params: {
       avoidedTokens: undefined,
       avoidedBytes: undefined,
       avoidedToolExecutions: undefined,
-      avoidedVerificationReruns: reusable.length > 0 ? reusable.length : undefined,
+      avoidedVerificationReruns: anyCostEligible ? reusable.filter((c) => costEligibleIds.has(c.evidenceId)).length : undefined,
       timeReductionMs: undefined,
     },
     confidence: reusable.length > 0 ? "DIRECT" : "INSUFFICIENT_DATA",
+    statusReasonCodes: [
+      ...(costRejected.length > 0 ? ["FG12F_COST_GATE_HELD_EVIDENCE_FRESH"] : []),
+      ...(reusable.length > 0 && params.costGate && !anyCostEligible ? ["FG12F_UNKNOWN_OR_BELOW_THRESHOLD_COST"] : []),
+    ],
     safetyGuards: {
       redundancyRationale: "ForgeVerify's own validity policy (workspace content hash, policy revision, command/config, dependency state) already confirmed this evidence remains valid — FG-9 never invents a parallel verification-cache validity policy.",
       invariant: "`forgeVerifyConfirmedValid` must be an explicit true from ForgeVerify's own decision; FG-9 never independently judges evidence validity. Removing verification is never represented as an optimization — this class only REUSES evidence ForgeVerify already authorized.",

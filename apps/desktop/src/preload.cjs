@@ -79,6 +79,37 @@ const api = {
   resolveClose: (decision, remember) => {
     return ipcRenderer.invoke("app:close-decision", { decision, remember });
   },
+  execCommand: (params) => {
+    return ipcRenderer.invoke("shell:execCommand", params);
+  },
+  getRuntimeStatus: () => {
+    return ipcRenderer.invoke("app:runtime-status");
+  },
+  // --- Settings surface ---
+  getSettings: () => {
+    return ipcRenderer.invoke("settings:get");
+  },
+  updateSettings: (payload) => {
+    return ipcRenderer.invoke("settings:set", payload);
+  },
+  resetSettings: () => {
+    return ipcRenderer.invoke("settings:reset");
+  },
+  getSystemInfo: () => {
+    return ipcRenderer.invoke("app:getSystemInfo");
+  },
+  openDataFolder: () => {
+    return ipcRenderer.invoke("app:openDataFolder");
+  },
+  showNotification: (payload) => {
+    return ipcRenderer.invoke("notifications:show", payload);
+  },
+  refreshCatalog: () => {
+    return ipcRenderer.invoke("catalog:refresh");
+  },
+  clearRecentProjects: () => {
+    return ipcRenderer.invoke("project:clearRecent");
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);

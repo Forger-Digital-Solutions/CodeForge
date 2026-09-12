@@ -395,7 +395,7 @@ export class CodexAppServerProcess implements CodexAppServerTransport {
     try {
       await this.withTimeout(
         this.dispatchRequest("initialize", {
-          clientInfo: { name: "codeforge-desktop", title: "CodeForge Desktop", version: "0.2.0" },
+          clientInfo: { name: "codeforge-desktop", title: "CodeForge Desktop", version: "0.3.0" },
           capabilities: { experimentalApi: true, requestAttestation: false },
         }, true),
         this.startupTimeoutMs,

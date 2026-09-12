@@ -43,6 +43,11 @@ interface ComposerProps {
   onShowModelDetails?: (model: ModelSelectorItem) => void;
   onUpgradeNavigation?: (url: string) => void;
   modelSections?: ModelSection[];
+  /** Lets a parent (e.g. the empty state's "+ Add favorite" button) open THIS same canonical
+   * picker instead of a second, separate one. Omit both for the picker's normal self-managed
+   * open/close behavior — unchanged from before. */
+  isModelPickerOpen?: boolean;
+  onModelPickerOpenChange?: (isOpen: boolean) => void;
   executionMode?: ExecutionMode;
   onExecutionModeChange?: (mode: ExecutionMode) => void;
   onComposerActivity?: (active: boolean) => void;
@@ -74,6 +79,8 @@ export default function Composer({
   onShowModelDetails,
   onUpgradeNavigation,
   modelSections,
+  isModelPickerOpen,
+  onModelPickerOpenChange,
   executionMode = "agent",
   onExecutionModeChange,
   onComposerActivity,
@@ -487,6 +494,8 @@ export default function Composer({
               onShowDetails={onShowModelDetails}
               onUpgradeNavigation={onUpgradeNavigation}
               modelSections={modelSections}
+              isOpen={isModelPickerOpen}
+              onOpenChange={onModelPickerOpenChange}
             />
           )}
         </div>

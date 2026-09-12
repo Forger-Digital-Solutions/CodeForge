@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "ac8414ebd2a85803bde97d35a5409ca1be7a5d156ae3be57a070ebb5ba72ad53",
-  "surfaceVersion": "fg12d-certified-v1",
+  "sourceStateId": "733b611a4edc4aea39bb63f77008961af648d59d9f548e49e7ce521384d976db",
+  "surfaceVersion": "fg12f-certified-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -13,26 +13,46 @@
     "packages/forge-green/src/optimization-decision.ts",
     "packages/forge-green/src/optimization-policy.ts",
     "packages/forge-green/src/optimization-types.ts",
+    "packages/forge-green/src/reuse-cost-policy.ts",
     "packages/router/package.json",
     "packages/router/src/index.ts",
     "packages/server/src/agent-runtime.ts",
+    "packages/server/src/autonomous-orchestrator.ts",
     "packages/server/src/forge-verify-persistence.ts",
+    "packages/server/src/workflow-service.ts",
+    "packages/sessions/src/persistence.ts",
+    "packages/sessions/src/postgres-persistence.ts",
+    "packages/sessions/src/session-state.ts",
     "packages/workflow/src/forge-verify.ts",
-    "packages/workflow/src/verification-evidence-reuse.ts"
+    "packages/workflow/src/index.ts",
+    "packages/workflow/src/types.ts",
+    "packages/workflow/src/verification-evidence-reuse.ts",
+    "packages/workflow/src/verification-reuse-cost-gate.ts",
+    "packages/workflow/src/verification-service.ts"
   ],
   "materialFileHashes": {
     "packages/context/src/planner.ts": "5cab4794355d06008e044ddd80ac1b560ec0f793",
     "packages/forge-green/src/optimization-candidate-a.ts": "9588953b177b1a4864b76a7e8171f8998664b716",
-    "packages/forge-green/src/optimization-candidates-shadow.ts": "c7c20bad5e7f1f8cfdbe29fbae0b40528b8aa302",
+    "packages/forge-green/src/optimization-candidates-shadow.ts": "a3d1f7b3a5a28d46eb127ce83770d1c292053507",
     "packages/forge-green/src/optimization-decision.ts": "940ab41951d0cae123e82decb8f9d4b0c2e40e05",
-    "packages/forge-green/src/optimization-policy.ts": "10080c5e77f96da4c822678f2644a2d5f426b104",
+    "packages/forge-green/src/optimization-policy.ts": "53dee55244eb1dc5d5ae03a4a30d96ecad0362aa",
     "packages/forge-green/src/optimization-types.ts": "1539abf45eaf618db3c2a68cf398b2320db5e7bd",
+    "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
     "packages/router/package.json": "5074d0197bcaeb493928901ec4a63c2fb8edc2ea",
     "packages/router/src/index.ts": "c2dc773f2ce117e5047db273d56c71eb5e10f6dc",
     "packages/server/src/agent-runtime.ts": "72a9690242f2f0cd0defa32fca5b77db22ec4795",
-    "packages/server/src/forge-verify-persistence.ts": "813546f2e94bcf679080d8fc3635bf735314f1fe",
-    "packages/workflow/src/forge-verify.ts": "654afd2c1151402af0059ee29408d6ba8ebc09ce",
-    "packages/workflow/src/verification-evidence-reuse.ts": "c68f351d77896e0ee86513d4bbc148c36b922b6d"
+    "packages/server/src/autonomous-orchestrator.ts": "4a72d071796bb928de0debc73c9f6a61a1caddeb",
+    "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
+    "packages/server/src/workflow-service.ts": "0aefaf664149c7b1e6079c546ba2df157d2aec27",
+    "packages/sessions/src/persistence.ts": "773d64921c840a0ca860b6e1985184dace727c8a",
+    "packages/sessions/src/postgres-persistence.ts": "f47a6a0e3cd9e3064c17b00b4e6516082f738068",
+    "packages/sessions/src/session-state.ts": "5feee78c1b875877637cac624d2d614240507f06",
+    "packages/workflow/src/forge-verify.ts": "a2ebe610ad4ec74a68609c57bba7b19fe6869cdc",
+    "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
+    "packages/workflow/src/types.ts": "a2b484a4acbcac05a4739c1f6cbf5450ff49fe41",
+    "packages/workflow/src/verification-evidence-reuse.ts": "c68f351d77896e0ee86513d4bbc148c36b922b6d",
+    "packages/workflow/src/verification-reuse-cost-gate.ts": "3c3bc502921ef79a9496d762167f366e5589fd02",
+    "packages/workflow/src/verification-service.ts": "67bb1400b4320aa7c03ec2c7129df0516dbd8aff"
   },
   "candidateA": {
     "kind": "DUPLICATE_READ_ONLY_TOOL_REUSE",
@@ -57,15 +77,34 @@
     ],
     "plannerAuthority": {
       "source": "packages/context/src/planner.ts: ContextPlanner.prefetchOneHop -> ContextPageClassification[]",
-      "availability": ["PULLED", "OMITTED", "REUSED"],
-      "optionality": ["SAFE", "REQUIRED", "INSUFFICIENT"],
+      "availability": [
+        "PULLED",
+        "OMITTED",
+        "REUSED"
+      ],
+      "optionality": [
+        "SAFE",
+        "REQUIRED",
+        "INSUFFICIENT"
+      ],
       "note": "ForgeGreen observes this classification; it does not compute it. Absence of a real required-ness signal from the caller yields INSUFFICIENT, never a forced SAFE."
     }
   },
   "candidateD": {
     "kind": "VERIFICATION_EVIDENCE_REUSE",
-    "status": "SHADOW",
-    "globalGraduationRegistryUnchanged": true,
+    "status": "ACTIVE_SAFE_COST_GATED",
+    "executionSemantics": "Registry mode ACTIVE_SAFE narrowed by the fg12f-verification-reuse-cost-gated-1 cost policy: reuse requires canonical ForgeVerify validity AND a measured historical duration >= 250 ms (inclusive); unknown cost and below-threshold cost always run fresh; the CODEFORGE_FORGEGREEN_OPTIMIZATION ceiling (OFF/SHADOW) remains fully effective.",
+    "costPolicy": {
+      "policyVersion": "fg12f-verification-reuse-cost-gated-1",
+      "module": "packages/forge-green/src/reuse-cost-policy.ts",
+      "thresholdMs": 250,
+      "thresholdSemantics": "estimatedFreshMs >= costThresholdMs is eligible (inclusive)",
+      "unknownCostBehavior": "FRESH_VERIFY",
+      "historySource": "verification_evidence_elapsed_ms (prior PASSED evidence for the same verifierId+verifierVersion+definitionDigest, most-recent-5 median)",
+      "estimatedReuseOverheadMs": 184,
+      "overheadProvenance": "FG-12E p75 measured reuse overhead; used only for reported net-benefit estimates, never for the gate"
+    },
+    "rolloutSeam": "packages/workflow/src/verification-service.ts: runVerification builds the authoritative plan, then consults the observer-provided durable prior evidence through adviseCostGatedReuse; executeVerificationPlan revalidates at the authoritative boundary. All five production callers reach it through their existing persistence-backed ForgeVerifyObserver.",
     "canonicalEvidence": [
       "evidenceId",
       "workspaceContentHash",
@@ -75,12 +114,12 @@
     ],
     "validityAuthority": {
       "source": "packages/workflow/src/forge-verify.ts: isEvidenceCurrentlyValid(evidence, current)",
-      "note": "summarizeVerification and any external shadow observer/advisor both call this single exported function; neither maintains an independent copy of the validity rule."
+      "note": "summarizeVerification, the FG-12F advisor, and any external observer all call this single exported function; neither maintains an independent copy of the validity rule."
     },
     "controlledTrial": {
       "source": "packages/workflow/src/verification-evidence-reuse.ts",
       "mode": "ReuseTrialMode: 'SHADOW' | 'CONTROLLED_ACTIVE_TRIAL' — a local type, NOT a member of OptimizationPolicyMode",
-      "note": "FG-12D. Global GRADUATION_REGISTRY entry for VERIFICATION_EVIDENCE_REUSE is untouched (still SHADOW) — CONTROLLED_ACTIVE_TRIAL is reachable only by code that explicitly imports and passes it, never via the global mode-resolution/ceiling machinery. No production call site (workflow-engine.ts, autonomous-orchestrator.ts, delivery-service.ts, mission-supervisor.ts, parallel-orchestrator.ts) was modified to use it."
+      "note": "FG-12D trial harness, preserved unchanged for reproducibility; its explicit existingEvidence hand-off always wins over the FG-12F advisor path."
     }
   },
   "recertifications": [
@@ -124,7 +163,85 @@
       "regressionEvidence": "packages/workflow full suite (43 files incl. new fg12d-verification-evidence-reuse.test.ts) + packages/forge-green + packages/context: 0 failed. Root `tsc -b --force`: clean.",
       "recertifiedAt": "2026-09-11",
       "sourceStateConstant": "FG12D_TRIAL_SOURCE_STATE"
+    },
+    {
+      "label": "FG-12F",
+      "reason": "FG-12F cost-gated production rollout of Candidate D: graduated VERIFICATION_EVIDENCE_REUSE to a cost-gated ACTIVE_SAFE execution policy and wired the advisor into the shared runVerification seam. ForgeVerify validity authority unchanged; the cost gate is advisory and fails closed (unknown cost -> fresh).",
+      "priorSourceStateId": "ac8414ebd2a85803bde97d35a5409ca1be7a5d156ae3be57a070ebb5ba72ad53",
+      "priorSurfaceVersion": "fg12d-certified-v1",
+      "resultingSourceStateId": "733b611a4edc4aea39bb63f77008961af648d59d9f548e49e7ce521384d976db",
+      "resultingSurfaceVersion": "fg12f-certified-v1",
+      "changes": [
+        {
+          "file": "packages/forge-green/src/reuse-cost-policy.ts",
+          "change": "New file. Versioned FG-12F cost policy (threshold 250 ms inclusive, unknown-cost -> FRESH_VERIFY, identity requirements, most-recent-5 median), estimateVerifierReuseBenefit, isVerifierReuseCostEligible.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/forge-green/src/optimization-policy.ts",
+          "change": "GRADUATION_REGISTRY.VERIFICATION_EVIDENCE_REUSE: SHADOW -> ACTIVE_SAFE (cost-gated execution policy per the FG-12F module); ceiling machinery unchanged.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/forge-green/src/optimization-candidates-shadow.ts",
+          "change": "detectReusableVerificationEvidence accepts an optional costGate outcome and derives an honest APPLIED/REJECTED status under ACTIVE_SAFE only; without it FG-11 semantics are preserved.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/verification-reuse-cost-gate.ts",
+          "change": "New file. adviseCostGatedReuse (narrow -> canonical validity -> cost eligibility, never throws) and reconcileCostGateReceipt (actual reuse truth = reusedEvidenceId).",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/workflow/src/verification-service.ts",
+          "change": "runVerification engages the cost-gated advisor between plan construction and executeVerificationPlan when the observer provides durable prior evidence and no explicit existingEvidence was supplied; reconciled receipt attached to the report and emitted via the observer.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/workflow/src/forge-verify.ts",
+          "change": "ForgeVerifyObserver gained optional loadPriorEvidence and costGateReceiptCreated; no existing observer is broken (both optional).",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/types.ts",
+          "change": "VerificationReport gained optional costGateReceipt.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/forge-verify-persistence.ts",
+          "change": "createForgeVerifyPersistenceObserver now also implements loadPriorEvidence (loadForgeVerifyEvidence) and persists cost_gate_receipt records.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "Inline verification observer implements loadPriorEvidence + cost-gate receipt persistence.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "Verification gate now passes the persistence-backed observer (same pattern as the other production callers), enabling evidence durability + cost-gated reuse for that flow.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/sessions/src/session-state.ts",
+          "change": "Verification work-item recordType enum gained 'cost_gate_receipt'.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/sessions/src/persistence.ts",
+          "change": "Append-only guard accepts 'cost_gate_receipt'.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/sessions/src/postgres-persistence.ts",
+          "change": "Append-only guard accepts 'cost_gate_receipt'.",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "Full Vitest suite: 286 files passed / 7 skipped / 0 failed; 2081 tests passed / 36 skipped / 0 failed (FG-12E baseline: 283 files / 2042 tests / 36 skipped / 0 failed — delta is the three new FG-12F test files: 10 forge-green policy + 17 workflow advisor + 12 server production-composition tests). Focused regression: FG-12D trial tests, FG-12E benchmark tests, ForgeVerify, workflow, server, ForgeGreen FG-9/FG-11, Candidate A, Completion Gate — all green. Root tsc -b --force clean; npm run build success. FG-12F rollout corpus (scripts/forgegreen-fg12f-cost-gated-rollout.mjs): 40 gated cases + boundary/partial/restart/invalidation/kill-switch/fallback controls, 0 failures.",
+      "recertifiedAt": "2026-09-11",
+      "sourceStateConstant": "FG12F_ROLLOUT_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12D implementation surface present on the recovered lineage, including both the FG-11 and FG-12D recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm."
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm."
 }

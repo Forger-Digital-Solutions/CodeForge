@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { summarizeActiveWork } from "../close-lifecycle.js";
 
 export interface DesktopRuntimeStatus {
   activeWork: boolean;
@@ -23,18 +24,6 @@ interface CloseDialogProps {
   onDecision: (decision: "cancel" | "tray" | "quit" | "quit-anyway", remember: boolean) => void;
 }
 
-function activitySummary(status: DesktopRuntimeStatus): string {
-  const items: string[] = [];
-  if (status.activeWorkflows) items.push(`${status.activeWorkflows} workflow${status.activeWorkflows === 1 ? "" : "s"}`);
-  if (status.activeAgentTurns) items.push(`${status.activeAgentTurns} agent turn${status.activeAgentTurns === 1 ? "" : "s"}`);
-  if (status.activeCommands) items.push(`${status.activeCommands} local command${status.activeCommands === 1 ? "" : "s"}`);
-  if (status.pendingApprovals) items.push(`${status.pendingApprovals} approval${status.pendingApprovals === 1 ? "" : "s"}`);
-  if (status.activeVerifications) items.push(`${status.activeVerifications} verification${status.activeVerifications === 1 ? "" : "s"}`);
-  if (status.hostedContinuations) items.push(`${status.hostedContinuations} hosted continuation${status.hostedContinuations === 1 ? "" : "s"}`);
-  if (status.backgroundTasks) items.push(`${status.backgroundTasks} background task${status.backgroundTasks === 1 ? "" : "s"}`);
-  return items.join(" · ") || "Background state is being saved.";
-}
-
 export default function CloseDialog({ request, onDecision }: CloseDialogProps): React.ReactElement {
   const [remember, setRemember] = useState(false);
   const { status } = request;
@@ -46,7 +35,7 @@ export default function CloseDialog({ request, onDecision }: CloseDialogProps): 
         {status.recoverable ? (
           <>
             <p className="close-dialog-lead">CodeForge still has active work.</p>
-            <p className="close-dialog-copy">{activitySummary(status)}</p>
+            <p className="close-dialog-copy">{summarizeActiveWork(status)}</p>
             <p className="close-dialog-copy">Keep CodeForge running in the background or quit safely. Completed and recoverable work will remain saved.</p>
           </>
         ) : (

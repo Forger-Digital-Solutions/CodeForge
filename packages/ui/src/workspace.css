@@ -672,6 +672,164 @@ html, body, #root {
 }
 
 /* ────────────────────────────────────────────
+   ACTIVITY OVERVIEW (empty-state dashboard card)
+   ──────────────────────────────────────────── */
+
+.activity-overview {
+  width: 100%;
+  max-width: 460px;
+  margin-top: 4px;
+  padding: 16px 18px;
+  background: var(--cf-bg-raised);
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  text-align: left;
+}
+
+.activity-overview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.activity-overview-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cf-text-muted);
+}
+
+.activity-period-filter {
+  display: inline-flex;
+  gap: 2px;
+  background: var(--cf-bg);
+  border-radius: var(--cf-radius);
+  padding: 2px;
+}
+
+.activity-period-btn {
+  padding: 3px 8px;
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--cf-radius) - 2px);
+  color: var(--cf-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--cf-font);
+}
+
+.activity-period-btn.active {
+  background: var(--cf-bg-hover);
+  color: var(--cf-text);
+}
+
+.activity-overview-loading,
+.activity-overview-empty {
+  padding: 18px 4px;
+  text-align: center;
+}
+
+.activity-overview-empty-title {
+  font-size: 13px;
+  color: var(--cf-text-secondary);
+  margin-bottom: 4px;
+}
+
+.activity-overview-empty-subtitle,
+.activity-overview-loading {
+  font-size: 12px;
+  color: var(--cf-text-muted);
+}
+
+.activity-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 8px;
+  margin-bottom: 14px;
+}
+
+.activity-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.activity-metric-value {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cf-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-metric-model {
+  font-size: 13px;
+}
+
+.activity-metric-label {
+  font-size: 10px;
+  color: var(--cf-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.activity-heatmap {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: 9px;
+  gap: 2px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.activity-heatmap-cell {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--cf-bg-hover);
+}
+
+.activity-heatmap-cell.level-1 { background: var(--cf-success-muted); }
+.activity-heatmap-cell.level-2 { background: color-mix(in srgb, var(--cf-success) 55%, var(--cf-bg-hover)); }
+.activity-heatmap-cell.level-3 { background: var(--cf-success); }
+
+/* ────────────────────────────────────────────
+   CONTEXT BAR (repository/runtime chips above the composer)
+   ──────────────────────────────────────────── */
+
+.context-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px 6px;
+}
+
+.context-chip {
+  padding: 3px 8px;
+  background: var(--cf-bg-raised);
+  border: 1px solid var(--cf-border-subtle);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--cf-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.context-chip-worktree {
+  color: var(--cf-warning);
+  border-color: color-mix(in srgb, var(--cf-warning) 40%, transparent);
+}
+
+/* ────────────────────────────────────────────
    USER MESSAGE
    ──────────────────────────────────────────── */
 
@@ -1915,6 +2073,22 @@ html, body, #root {
   border-radius: 4px;
   font-weight: 500;
 }
+.model-option-badge.auto {
+  color: var(--cf-success);
+  background: var(--cf-success-muted);
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* ForgeAuto is a routing layer, not a foundation model — pin it apart visually so it never
+   reads as just another catalog row. */
+.model-option.auto-route {
+  border-left: 2px solid var(--cf-success);
+}
+.model-option.auto-route .model-option-name {
+  font-weight: 600;
+}
 
 .model-option-details {
   display: flex;
@@ -2836,6 +3010,18 @@ html, body, #root {
 .forgezero-icon {
   color: var(--cf-success);
   font-size: 12px;
+}
+
+/* Fails closed: only an affirmatively verified-free active route gets the green "verified" look.
+   Anything else (a paid GEMS model, a BYOK model without independent free verification, or an
+   unrecognized selection) shows a truthful, visually distinct warning state instead of silently
+   staying green. */
+.forgezero-indicator.unverified {
+  border-color: var(--cf-warning);
+}
+
+.forgezero-indicator.unverified .forgezero-icon {
+  color: var(--cf-warning);
 }
 
 .forgezero-popover {

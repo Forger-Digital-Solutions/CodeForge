@@ -1,116 +1,33 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { WorkspaceApp, type ModelSection } from "@codeforge/ui";
 import type { Project } from "./App.js";
 import type { ModelSelectorItem } from "@codeforge/ui";
-import type { UserIntentHoldPolicy } from "@codeforge/protocol";
 import ModelDetails from "./ModelDetails.js";
-import ProviderSetup from "./ProviderSetup.js";
+import { accessBadge, buildModelSections, isHiddenModel, resolveForgeZeroTrust, resolveRuntimeLabel, type ApiModel } from "./model-sections.js";
+import { classifyGitWorkspace, GIT_WORKSPACE_INFO_ARGS, type GitWorkspaceInfo } from "./git-workspace-info.js";
+import SettingsApp from "./settings/SettingsApp.js";
+import type { SettingsContextValue, CloudAccountView, SystemInfoView, DesktopRuntimeStatus, RepositoryIndexStatus } from "./settings/settings-context.js";
+import { computeWorkNotifications, type RunningCounters } from "./settings/notifications-client.js";
+import { describeHeaderActivity, summarizeActiveWork } from "../close-lifecycle.js";
+import type { AppSettings, AppSettingsPatch, CloseBehavior, ExecutionMode, SettingsSnapshot } from "../app-settings.js";
 
 const SERVER_BASE_URL = "http://localhost:3210";
 const HELP_URL = "https://github.com/codeforge/codeforge#readme";
-const USER_INTENT_HOLD_POLICY_KEY = "codeforge:user-intent-hold-policy";
+const EXECUTION_MODE_KEY = "codeforge:execution-mode";
+const DEFAULT_MODEL_ZOOM: Record<AppSettings["appearance"]["chatTextScale"], number> = {
+  small: 0.9,
+  medium: 1,
+  large: 1.15,
+};
 
 interface WorkspaceShellProps {
   project: Project;
   onClose: () => void;
   onSignedOut?: () => void;
+  onOpenProjectPath?: (projectPath: string) => Promise<void>;
 }
 
-interface ApiModel {
-  id: string;
-  providerId: string;
-  displayName: string;
-  tier: "free" | "gems_paid" | "paid";
-  freeStatus: string;
-  accessClass?: string;
-  contextWindow?: number;
-  capabilities?: {
-    text: boolean;
-    coding: boolean;
-    toolCalling: boolean;
-    vision: boolean;
-    structuredOutput: boolean;
-    longContext: boolean;
-  };
-  costProfile?: {
-    inputCostPerMillion: number;
-    outputCostPerMillion: number;
-    isFree: boolean;
-    paidFallbackPossible: boolean;
-  };
-  isPromotional?: boolean;
-}
-
-interface RepositoryIndexStatus {
-  state: "NOT_INDEXED" | "INDEXING" | "READY" | "STALE" | "DEGRADED" | "ERROR";
-  enabled?: boolean;
-  fileCount?: number;
-  symbolCount?: number;
-  sizeBytes?: number;
-  local?: boolean;
-  progress?: { filesProcessed: number; filesDiscovered: number };
-}
-
-// Muse Spark is a promotional model excluded from normal routing entirely — hide any stray record.
-const HIDDEN_MODEL_RE = /muse[-\s]?spark/i;
-function isHiddenModel(id: string): boolean {
-  return HIDDEN_MODEL_RE.test(id);
-}
-
-// Provider → user-facing section label. Order follows the spec's model dropdown structure.
-const PROVIDER_SECTION: Record<string, string> = {
-  "codeforge-cloud": "CODEFORGE CLOUD (INCLUDED)",
-  zai: "Z.AI",
-  openrouter: "OPENROUTER",
-  google: "GOOGLE",
-  groq: "GROQ",
-  "cloudflare-workers-ai": "CLOUDFLARE",
-  anthropic: "ANTHROPIC",
-  openai: "OPENAI",
-};
-
-const SECTION_ORDER = [
-  "RECOMMENDED",
-  "CODEFORGE CLOUD (INCLUDED)",
-  "FREE",
-  "GEMS",
-  "Z.AI",
-  "OPENROUTER",
-  "GOOGLE",
-  "GROQ",
-  "CLOUDFLARE",
-  "ANTHROPIC",
-  "OPENAI",
-];
-function getSectionOrder(sectionLabel: string): number {
-  const idx = SECTION_ORDER.indexOf(sectionLabel);
-  return idx === -1 ? 99 : idx;
-}
-
-// Honest access-status badge from the CodeForge access class.
-function accessBadge(m: ApiModel): string {
-  switch (m.accessClass) {
-    case "FREE_NATIVE":
-      return "Free";
-    case "FREE_ROUTED":
-      return "Free · routed";
-    case "FREE_ALLOWANCE":
-      return "Free · allowance";
-    case "FREE_PROMO":
-      return "Promo";
-    case "TRIAL":
-      return "Trial";
-    case "PAID": {
-      const inC = m.costProfile?.inputCostPerMillion;
-      const outC = m.costProfile?.outputCostPerMillion;
-      return inC != null && outC != null ? `Paid · $${inC}/$${outC} per 1M` : "Paid";
-    }
-    default:
-      return m.costProfile?.isFree ? "Free" : "Paid";
-  }
-}
-
-export default function WorkspaceShell({ project, onClose, onSignedOut }: WorkspaceShellProps) {
+export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenProjectPath }: WorkspaceShellProps) {
   const [models, setModels] = useState<ModelSelectorItem[]>([
     { id: "auto", displayName: "ForgeAuto/Free", tier: "free", description: "Automatic free routing" },
   ]);
@@ -121,18 +38,40 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
   const [selectedModelForDetails, setSelectedModelForDetails] = useState<ApiModel | null>(null);
   const [providerStatus, setProviderStatus] = useState<Record<string, { status: string; error?: string }>>({});
   const [isForgeZeroOpen, setIsForgeZeroOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  /** Deep-linked settings view: null = workspace, otherwise a settings section id. */
+  const [settingsSection, setSettingsSection] = useState<string | null>(null);
   const [isRepoIntelligenceOpen, setIsRepoIntelligenceOpen] = useState(false);
-  const [userIntentHoldPolicy, setUserIntentHoldPolicy] = useState<UserIntentHoldPolicy>(() => {
-    const value = window.localStorage.getItem(USER_INTENT_HOLD_POLICY_KEY);
-    return value === "always" || value === "off" || value === "expensive_actions_only" ? value : "expensive_actions_only";
-  });
-  const [cloudAccount, setCloudAccount] = useState<any>(null);
-  const [isQuotaExhaustedOpen, setIsQuotaExhaustedOpen] = useState(false);
-  const [deleteAccountStep, setDeleteAccountStep] = useState<"idle" | "confirm" | "deleting" | "error">("idle");
-  const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null);
+  const [settingsSnapshot, setSettingsSnapshot] = useState<SettingsSnapshot | null>(null);
+  const [cloudAccount, setCloudAccount] = useState<CloudAccountView | null>(null);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [repositoryIndex, setRepositoryIndex] = useState<RepositoryIndexStatus>({ state: "NOT_INDEXED" });
-  const [projectBranch, setProjectBranch] = useState<string>("");
+  const [gitInfo, setGitInfo] = useState<GitWorkspaceInfo>({ isGitRepo: false, branch: null, isDetached: false, isWorktree: false });
+  const [runtimeStatus, setRuntimeStatus] = useState<DesktopRuntimeStatus | null>(null);
+  const [systemInfo, setSystemInfo] = useState<SystemInfoView | null>(null);
+  const [recentProjects, setRecentProjects] = useState<Project[]>([]);
+  const [catalogLastCheckedAt, setCatalogLastCheckedAt] = useState<number | null>(null);
+  const [defaultExecutionMode, setDefaultExecutionModeState] = useState<ExecutionMode>(() => {
+    const value = window.localStorage.getItem(EXECUTION_MODE_KEY);
+    return value === "chat" ? "chat" : "agent";
+  });
+  const appliedDefaultModelRef = useRef(false);
+  const notificationPrefsRef = useRef<AppSettings["notifications"] | null>(null);
+  const previousCountersRef = useRef<RunningCounters | null>(null);
+
+  const loadCloudAccount = useCallback(async () => {
+    try {
+      if (window.electronAPI?.getCloudAccount) {
+        const acc = await window.electronAPI.getCloudAccount();
+        setCloudAccount(acc);
+      }
+    } catch {}
+  }, []);
+
+  const loadRecentProjects = useCallback(async () => {
+    try {
+      if (window.electronAPI?.getRecentProjects) setRecentProjects(await window.electronAPI.getRecentProjects());
+    } catch {}
+  }, []);
 
   useEffect(() => {
     fetch(`${SERVER_BASE_URL}/api/workspace/set`, {
@@ -140,24 +79,49 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path: project.path }),
     }).catch(() => {});
-    loadCloudAccount();
-    // Try to get branch from git
-    const getBranch = async () => {
+    void loadCloudAccount();
+    void loadRecentProjects();
+    // Single canonical git read: branch + worktree status come from ONE `git rev-parse`
+    // invocation so the header, composer context bar, and Settings can never disagree
+    // about what Git state this workspace is in.
+    const loadGitInfo = async () => {
       try {
         if (window.electronAPI?.execCommand) {
           const result = await window.electronAPI.execCommand({
             command: "git",
-            args: ["rev-parse", "--abbrev-ref", "HEAD"],
+            args: GIT_WORKSPACE_INFO_ARGS,
             cwd: project.path,
           });
-          if (result.exitCode === 0 && result.stdout) {
-            setProjectBranch(result.stdout.trim());
-          }
+          setGitInfo(classifyGitWorkspace(result.exitCode, result.stdout ?? ""));
         }
-      } catch {}
+      } catch {
+        setGitInfo({ isGitRepo: false, branch: null, isDetached: false, isWorktree: false });
+      }
     };
-    getBranch();
-  }, [project.path]);
+    void loadGitInfo();
+  }, [project.path, loadCloudAccount, loadRecentProjects]);
+
+  // Canonical settings load. The renderer never invents settings values: everything it shows
+  // comes from the validated store in the main process.
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      try {
+        if (!window.electronAPI?.getSettings) return;
+        const snapshot = await window.electronAPI.getSettings() as SettingsSnapshot;
+        if (active) setSettingsSnapshot(snapshot);
+      } catch {}
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (window.electronAPI?.getSystemInfo) {
+      void window.electronAPI.getSystemInfo().then((info) => setSystemInfo(info as SystemInfoView)).catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -186,34 +150,6 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
     if (response.ok) setRepositoryIndex((current) => ({ ...current, state: "INDEXING" }));
   };
 
-  const loadCloudAccount = async () => {
-    try {
-      if (window.electronAPI?.getCloudAccount) {
-        const acc = await window.electronAPI.getCloudAccount();
-        setCloudAccount(acc);
-      }
-    } catch {}
-  };
-
-  // GDPR Article 17 erasure (LEG-P0-02). Two-step confirmation — no single click deletes an
-  // account — and honest about what is/isn't erased (R1 spec §29: never claim instant total
-  // erasure unless true; some categories are retained pending retention-policy decisions).
-  const deleteCloudAccount = async () => {
-    setDeleteAccountStep("deleting");
-    setDeleteAccountError(null);
-    try {
-      await window.electronAPI?.deleteCloudAccount?.();
-      setCloudAccount(null);
-      setIsQuotaExhaustedOpen(false);
-      setDeleteAccountStep("idle");
-      await refreshModelsAndHealth();
-      onSignedOut?.();
-    } catch (cause) {
-      setDeleteAccountError(cause instanceof Error ? cause.message : "Account deletion failed. Please try again.");
-      setDeleteAccountStep("error");
-    }
-  };
-
   const refreshModelsAndHealth = useCallback(async () => {
     try {
       const response = await fetch(`${SERVER_BASE_URL}/api/models`);
@@ -221,6 +157,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
       const data = (await response.json()) as ApiModel[];
       if (!Array.isArray(data)) return;
       setApiModels(data);
+      setCatalogLastCheckedAt(Date.now());
 
       const visible = data.filter((m) => !isHiddenModel(m.id));
       const modelItems: ModelSelectorItem[] = [
@@ -252,6 +189,56 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
     return () => clearInterval(interval);
   }, [refreshModelsAndHealth]);
 
+  // Re-apply the persisted default model exactly once per workspace mount, after the catalog
+  // has loaded — the local server's model selection is per-process, so without this the user's
+  // pinned default silently reset to ForgeAuto on every restart.
+  useEffect(() => {
+    if (appliedDefaultModelRef.current) return;
+    if (!settingsSnapshot || apiModels.length === 0) return;
+    appliedDefaultModelRef.current = true;
+    const defaultModelId = settingsSnapshot.settings.models.defaultModelId;
+    if (defaultModelId === "auto") return;
+    const found = apiModels.find((m) => m.id === defaultModelId);
+    if (!found) return;
+    setSelectedModelId(defaultModelId);
+    fetch(`${SERVER_BASE_URL}/api/model-selection`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ modelId: defaultModelId, providerId: found.providerId, sessionId: "default" }),
+    }).catch(() => {});
+  }, [settingsSnapshot, apiModels]);
+
+  // Runtime-status polling: feeds the Settings runtime surfaces and the OS notification policy.
+  useEffect(() => {
+    if (!window.electronAPI?.getRuntimeStatus) return;
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const status = await window.electronAPI!.getRuntimeStatus() as DesktopRuntimeStatus;
+        if (cancelled || !status) return;
+        setRuntimeStatus(status);
+        const prefs = notificationPrefsRef.current;
+        if (prefs && window.electronAPI?.showNotification) {
+          const notifications = computeWorkNotifications(previousCountersRef.current, status, prefs, document.hasFocus());
+          for (const notification of notifications) {
+            void window.electronAPI!.showNotification!({ title: notification.title, body: notification.body }).catch(() => {});
+          }
+        }
+        previousCountersRef.current = status;
+      } catch {}
+    };
+    void tick();
+    const interval = setInterval(tick, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    notificationPrefsRef.current = settingsSnapshot?.settings.notifications ?? null;
+  }, [settingsSnapshot]);
+
   useEffect(() => {
     const handleProviderUpdated = () => {
       refreshModelsAndHealth();
@@ -259,69 +246,30 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
     };
     window.addEventListener("codeforge:provider-updated", handleProviderUpdated);
     return () => window.removeEventListener("codeforge:provider-updated", handleProviderUpdated);
-  }, [refreshModelsAndHealth]);
+  }, [refreshModelsAndHealth, loadCloudAccount]);
 
-  const modelSections = useMemo((): ModelSection[] => {
-    const sectionMap = new Map<string, ModelSelectorItem[]>();
-    const topVerified: ModelSelectorItem[] = [];
-    const gemsModels: ModelSelectorItem[] = [];
+  const modelSections = useMemo((): ModelSection[] => buildModelSections(apiModels, models), [apiModels, models]);
 
-    const autoItem = models.find((m) => m.id === "auto") ?? {
-      id: "auto",
-      displayName: "ForgeAuto/Free",
-      tier: "free" as const,
-      description: "Automatic free routing",
-    };
-    sectionMap.set("RECOMMENDED", [autoItem]);
-
-    for (const m of apiModels) {
-      if (isHiddenModel(m.id)) continue;
-      const isFree = m.costProfile?.isFree || m.freeStatus === "verified_free" || m.isPromotional;
-      const selectorItem: ModelSelectorItem = {
-        id: m.id,
-        displayName: m.displayName,
-        tier: m.tier === "gems_paid" ? "gems_paid" : "free",
-        description: accessBadge(m),
-      };
-
-      if (m.providerId === "codeforge-cloud") {
-        const existing = sectionMap.get("CODEFORGE CLOUD (INCLUDED)") || [];
-        existing.push(selectorItem);
-        sectionMap.set("CODEFORGE CLOUD (INCLUDED)", existing);
-      } else if (m.tier === "gems_paid") {
-        gemsModels.push(selectorItem);
-      } else if (isFree && topVerified.length < 5) {
-        topVerified.push(selectorItem);
-      } else {
-        const secName = PROVIDER_SECTION[m.providerId] || m.providerId.toUpperCase();
-        const existing = sectionMap.get(secName) || [];
-        existing.push(selectorItem);
-        sectionMap.set(secName, existing);
-      }
-    }
-
-    if (topVerified.length > 0) sectionMap.set("FREE", topVerified);
-    if (gemsModels.length > 0) sectionMap.set("GEMS", gemsModels);
-
-    const sections: ModelSection[] = [];
-    const sortedKeys = Array.from(sectionMap.keys()).sort((a, b) => getSectionOrder(a) - getSectionOrder(b));
-    for (const key of sortedKeys) {
-      const items = sectionMap.get(key);
-      if (items && items.length > 0) {
-        sections.push({ sectionId: key.toLowerCase().replace(/[^a-z0-9]+/g, "-"), sectionLabel: key, models: items });
-      }
-    }
-    return sections;
-  }, [apiModels, models]);
+  const postModelSelection = useCallback(async (modelId: string, providerId?: string) => {
+    try {
+      await fetch(`${SERVER_BASE_URL}/api/model-selection`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // The historical endpoint name ("/api/model/select") never existed on the server and the
+        // 404 silently swallowed every selection — /api/model-selection is the real authority.
+        body: JSON.stringify({ modelId, providerId, sessionId: "default" }),
+      });
+    } catch {}
+  }, []);
 
   const handleSelectModel = (model: ModelSelectorItem) => {
     const modelId = model.id;
     setSelectedModelId(modelId);
-    fetch(`${SERVER_BASE_URL}/api/model/select`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ modelId, providerId: modelProviders[modelId] }),
-    }).catch(() => {});
+    void postModelSelection(modelId, modelProviders[modelId]);
+    // The picker choice IS the persisted default model (single catalog, one source of truth).
+    window.electronAPI?.updateSettings?.({ settings: { models: { defaultModelId: modelId } } })
+      ?.then((snapshot) => setSettingsSnapshot(snapshot as SettingsSnapshot))
+      ?.catch(() => {});
   };
 
   const handleShowModelDetails = (model: ModelSelectorItem) => {
@@ -336,10 +284,6 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
   const handleCloseModelDetails = () => {
     setShowModelDetails(false);
     setSelectedModelForDetails(null);
-  };
-
-  const handleUpgradeNavigation = () => {
-    setIsQuotaExhaustedOpen(true);
   };
 
   const openExternalLink = (url: string) => {
@@ -370,9 +314,129 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
   };
 
   const currentStatus = getCurrentProviderStatus();
+  const forgeZeroTrust = resolveForgeZeroTrust(selectedModelId, apiModels.find((m) => m.id === selectedModelId));
+  const runtimeLabel = resolveRuntimeLabel(selectedModelId, apiModels.find((m) => m.id === selectedModelId));
+
+  // A smoke-fixture account has no real identity fields — it must never masquerade as a real
+  // authenticated user in the UI.
+  const isFixtureAccount = Boolean(
+    cloudAccount && !cloudAccount.user?.primaryIdentity && !cloudAccount.user?.id,
+  );
+
+  const updateSettings = useCallback(async (payload: { settings?: AppSettingsPatch; closeBehavior?: CloseBehavior }) => {
+    if (!window.electronAPI?.updateSettings) return;
+    const snapshot = await window.electronAPI.updateSettings(payload) as SettingsSnapshot;
+    setSettingsSnapshot(snapshot);
+  }, []);
+
+  const resetPreferences = useCallback(async () => {
+    if (!window.electronAPI?.resetSettings) return;
+    const snapshot = await window.electronAPI.resetSettings() as SettingsSnapshot;
+    setSettingsSnapshot(snapshot);
+  }, []);
+
+  const setDefaultModel = useCallback(async (modelId: string) => {
+    const providerId = modelId === "auto" ? undefined : modelProviders[modelId] ?? apiModels.find((m) => m.id === modelId)?.providerId;
+    setSelectedModelId(modelId);
+    await postModelSelection(modelId, providerId);
+    await updateSettings({ settings: { models: { defaultModelId: modelId } } });
+  }, [modelProviders, apiModels, postModelSelection, updateSettings]);
+
+  const setDefaultExecutionMode = useCallback((mode: ExecutionMode) => {
+    setDefaultExecutionModeState(mode);
+    // The composer reads this key as its persisted default (established store for this setting).
+    try {
+      window.localStorage.setItem(EXECUTION_MODE_KEY, mode);
+    } catch {}
+  }, []);
+
+  const settingsContext = useMemo((): SettingsContextValue => {
+    const settings = settingsSnapshot?.settings;
+    return {
+      settings: settings ?? {
+        schemaVersion: 1,
+        general: { openLastWorkspaceOnStartup: true, continueInterruptedAgents: true, defaultSteeringPolicy: "expensive_actions_only" },
+        appearance: { chatTextScale: "medium", reducedMotion: false },
+        models: { defaultModelId: "auto" },
+        notifications: { enabled: true, onApprovalNeeded: true, onAgentCompleted: true, onlyWhenInBackground: true },
+        privacy: { routingMode: "STANDARD" },
+      },
+      closeBehavior: settingsSnapshot?.closeBehavior ?? "ask",
+      update: updateSettings,
+      resetPreferences,
+      account: cloudAccount,
+      isFixtureAccount,
+      refreshAccount: loadCloudAccount,
+      signIn: async () => {
+        if (!window.electronAPI?.signInWithCloud) return false;
+        const result = await window.electronAPI.signInWithCloud();
+        if (result?.ok) {
+          await loadCloudAccount();
+          await refreshModelsAndHealth();
+          return true;
+        }
+        return false;
+      },
+      signOut: async () => {
+        await window.electronAPI?.logoutCloud?.();
+        setCloudAccount(null);
+        await refreshModelsAndHealth();
+        onSignedOut?.();
+      },
+      deleteAccount: async () => {
+        await window.electronAPI?.deleteCloudAccount?.();
+        setCloudAccount(null);
+        await refreshModelsAndHealth();
+        onSignedOut?.();
+      },
+      apiModels,
+      modelSections,
+      providerStatus,
+      defaultModelId: settings?.models.defaultModelId ?? "auto",
+      setDefaultModel,
+      refreshModels: refreshModelsAndHealth,
+      catalogRefresh: async () => {
+        if (!window.electronAPI?.refreshCatalog) return null;
+        return await window.electronAPI.refreshCatalog();
+      },
+      catalogLastCheckedAt,
+      gitInfo,
+      project,
+      recentProjects,
+      openProjectPath: async (projectPath: string) => {
+        if (onOpenProjectPath) await onOpenProjectPath(projectPath);
+      },
+      repositoryIndex,
+      setRepositoryIndexEnabled,
+      rebuildRepositoryIndex,
+      runtimeStatus,
+      systemInfo,
+      defaultExecutionMode,
+      setDefaultExecutionMode,
+      openExternal: openExternalLink,
+      openDataFolder: async () => {
+        await window.electronAPI?.openDataFolder?.().catch(() => {});
+      },
+      clearRecentProjects: async () => {
+        await window.electronAPI?.clearRecentProjects?.();
+        await loadRecentProjects();
+      },
+      closeSettings: () => setSettingsSection(null),
+      navigate: (sectionId: string) => setSettingsSection(sectionId),
+    };
+  }, [
+    settingsSnapshot, updateSettings, resetPreferences, cloudAccount, isFixtureAccount, loadCloudAccount,
+    refreshModelsAndHealth, onSignedOut, apiModels, modelSections, providerStatus, setDefaultModel,
+    catalogLastCheckedAt, gitInfo, project, recentProjects, onOpenProjectPath, repositoryIndex,
+    runtimeStatus, systemInfo, defaultExecutionMode, setDefaultExecutionMode, loadRecentProjects,
+  ]);
+
+  const userIntentHoldPolicy = settingsSnapshot?.settings.general.defaultSteeringPolicy ?? "expensive_actions_only";
+  const displayName = cloudAccount?.user?.displayName;
+  const scaleZoom = DEFAULT_MODEL_ZOOM[settingsSnapshot?.settings.appearance.chatTextScale ?? "medium"];
 
   return (
-    <div className="workspace-shell">
+    <div className={`workspace-shell${settingsSnapshot?.settings.appearance.reducedMotion ? " cf-reduced-motion" : ""}`}>
       <header className="workspace-shell-header">
         <div className="header-left">
           <button className="header-back" onClick={onClose} title="Back to projects">
@@ -380,12 +444,37 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
           </button>
           <div className="header-project">
             <span className="project-name">{project.name}</span>
-            {projectBranch && <span className="project-branch">• {projectBranch}</span>}
+            {gitInfo.isGitRepo && (
+              <span className="project-branch">
+                • {gitInfo.isDetached ? "detached HEAD" : gitInfo.branch}
+                {gitInfo.isWorktree && " · worktree"}
+              </span>
+            )}
           </div>
         </div>
 
         <div className="header-center">
-          {/* Empty - no permanent telemetry */}
+          {/* Transient only: a live activity indicator that persists while Settings is open (the
+              header stays mounted, the workspace SSE view does not) so an in-flight agent run is
+              never invisible, and clicking it returns to the workspace. Renders nothing when idle —
+              no permanent telemetry. (R2 GAP-6) */}
+          {(() => {
+            const activity = runtimeStatus ? describeHeaderActivity(runtimeStatus) : null;
+            if (!activity || !runtimeStatus) return null;
+            const inSettings = settingsSection !== null;
+            return (
+              <button
+                type="button"
+                className={`header-activity${runtimeStatus.pendingApprovals > 0 ? " has-approvals" : ""}`}
+                title={`${summarizeActiveWork(runtimeStatus)}${inSettings ? " — click to return to the workspace" : ""}`}
+                aria-label={`Active work: ${summarizeActiveWork(runtimeStatus)}.${inSettings ? " Return to the workspace." : ""}`}
+                onClick={() => { if (inSettings) setSettingsSection(null); }}
+              >
+                <span className="header-activity-dot" aria-hidden="true" />
+                <span className="header-activity-label">{activity}</span>
+              </button>
+            );
+          })()}
         </div>
 
         <div className="header-right">
@@ -447,42 +536,104 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
                 <div className="repo-intelligence-popover-divider" />
                 <button
                   className="repo-intelligence-popover-action settings-link"
-                  onClick={() => { setIsRepoIntelligenceOpen(false); setIsSettingsOpen(true); }}
+                  onClick={() => { setIsRepoIntelligenceOpen(false); setSettingsSection("workspaces"); }}
                 >
-                  Open Repository Intelligence Settings
+                  Open Workspace Settings
                 </button>
               </div>
             </>
           )}
 
           {cloudAccount ? (
-            <button
-              className="header-btn cloud-account-btn"
-              style={{ background: "rgba(56, 189, 248, 0.12)", border: "1px solid rgba(56, 189, 248, 0.35)", color: "#38bdf8", padding: "4px 10px", borderRadius: "14px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
-              onClick={() => setIsQuotaExhaustedOpen(true)}
-              title="CodeForge Cloud Account"
-            >
-              <span>✦ {cloudAccount.user?.displayName || "Cloud User"}</span>
-              <span style={{ opacity: 0.5 }}>|</span>
-              <span>{cloudAccount.planName}</span>
-            </button>
+            <div className="cloud-account-menu-anchor">
+              <button
+                className="cloud-account-btn"
+                onClick={() => setIsAccountMenuOpen((current) => !current)}
+                aria-expanded={isAccountMenuOpen}
+                aria-haspopup="menu"
+                title="Account"
+              >
+                <AccountAvatar account={cloudAccount} />
+                <span>{displayName ?? "CodeForge account"}</span>
+                <span className="account-plan">{cloudAccount.planName ?? "CodeForge Free"}</span>
+              </button>
+              {isAccountMenuOpen && (
+                <>
+                  <div
+                    style={{ position: "fixed", inset: 0, zIndex: 199, cursor: "default" }}
+                    onClick={() => setIsAccountMenuOpen(false)}
+                  />
+                  <div className="cloud-account-menu" role="menu" onClick={(e) => e.stopPropagation()}>
+                    <div className="cloud-account-menu-header">
+                      <AccountAvatar account={cloudAccount} />
+                      <div style={{ minWidth: 0 }}>
+                        <div className="account-name" style={{ fontSize: 13 }}>{displayName ?? "CodeForge account"}</div>
+                        <div className="account-handle" style={{ fontSize: 11 }}>
+                          {cloudAccount.identity?.login ? `@${cloudAccount.identity.login}` : "GitHub connected ✓"}
+                        </div>
+                        <div className="account-email" style={{ fontSize: 11 }}>
+                          {cloudAccount.identity?.email ?? cloudAccount.planName ?? "CodeForge Free"}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="cloud-account-menu-item"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsAccountMenuOpen(false);
+                        setSettingsSection("profile");
+                      }}
+                    >
+                      Profile &amp; Account
+                    </button>
+                    <button
+                      type="button"
+                      className="cloud-account-menu-item"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsAccountMenuOpen(false);
+                        setSettingsSection("general");
+                      }}
+                    >
+                      Settings
+                    </button>
+                    <div className="cloud-account-menu-divider" />
+                    <button
+                      type="button"
+                      className="cloud-account-menu-item danger"
+                      role="menuitem"
+                      onClick={async () => {
+                        setIsAccountMenuOpen(false);
+                        await window.electronAPI?.logoutCloud?.();
+                        setCloudAccount(null);
+                        await refreshModelsAndHealth();
+                        onSignedOut?.();
+                      }}
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           ) : (
             <button
-              className="header-btn cloud-signin-btn"
-              style={{ background: "#0284c7", color: "#fff", border: "none", padding: "4px 10px", borderRadius: "14px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}
+              className="cloud-account-btn"
               onClick={async () => {
                 if (window.electronAPI?.signInWithCloud) {
                   const res = await window.electronAPI.signInWithCloud();
                   if (res.ok) await loadCloudAccount();
                 }
               }}
+              title="Sign in with GitHub"
             >
               ✦ Start Free Cloud
             </button>
           )}
 
           <div
-            className="forgezero-indicator"
+            className={`forgezero-indicator ${forgeZeroTrust.verifiedFree ? "verified" : "unverified"}`}
             role="button"
             tabIndex={0}
             onClick={() => setIsForgeZeroOpen(!isForgeZeroOpen)}
@@ -493,10 +644,10 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
               }
             }}
             aria-expanded={isForgeZeroOpen}
-            title="ForgeZero Trust Status"
+            title={forgeZeroTrust.detail}
           >
-            <span className="forgezero-icon" aria-hidden="true">◈</span>
-            <span>ForgeZero · Verified Free</span>
+            <span className="forgezero-icon" aria-hidden="true">{forgeZeroTrust.verifiedFree ? "◈" : "◇"}</span>
+            <span>{forgeZeroTrust.label}</span>
             {isForgeZeroOpen && (
               <>
                 <div
@@ -509,12 +660,12 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
                 <div className="forgezero-popover" onClick={(e) => e.stopPropagation()}>
                   <div className="forgezero-popover-title">ForgeZero Trust Status</div>
                   <div className="forgezero-popover-row">
-                    <span className="forgezero-popover-icon">✓</span>
+                    <span className="forgezero-popover-icon">{forgeZeroTrust.verifiedFree ? "✓" : "⚠"}</span>
                     <span className="forgezero-popover-label">Provider: {currentStatus.text}</span>
                   </div>
                   <div className="forgezero-popover-row">
-                    <span className="forgezero-popover-icon">✓</span>
-                    <span className="forgezero-popover-label">Zero Billing · Verified Free</span>
+                    <span className="forgezero-popover-icon">{forgeZeroTrust.verifiedFree ? "✓" : "⚠"}</span>
+                    <span className="forgezero-popover-label">{forgeZeroTrust.detail}</span>
                   </div>
                   <div className="forgezero-popover-row">
                     <span className="forgezero-popover-icon">✓</span>
@@ -543,22 +694,40 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
         </div>
       </header>
 
-      <main className="workspace-shell-main">
-        <WorkspaceApp
-          sseUrl={`${SERVER_BASE_URL}/api/events`}
-          models={models}
-          selectedModelId={selectedModelId}
-          onSelectModel={handleSelectModel}
-          onShowModelDetails={handleShowModelDetails}
-          onUpgradeNavigation={handleUpgradeNavigation}
-          modelSections={modelSections}
-          projectName={project.name}
-          onOpenProjects={onClose}
-          onOpenSettings={() => setIsSettingsOpen(true)}
-          onOpenHelp={() => openExternalLink(HELP_URL)}
-          userIntentHoldPolicy={userIntentHoldPolicy}
-        />
-      </main>
+      {settingsSection !== null ? (
+        <SettingsApp context={settingsContext} initialSection={settingsSection} />
+      ) : (
+        <main
+          className="workspace-shell-main"
+          style={scaleZoom !== 1 ? ({ zoom: scaleZoom } as React.CSSProperties) : undefined}
+        >
+          <WorkspaceApp
+            sseUrl={`${SERVER_BASE_URL}/api/events`}
+            models={models}
+            selectedModelId={selectedModelId}
+            onSelectModel={handleSelectModel}
+            onShowModelDetails={handleShowModelDetails}
+            onUpgradeNavigation={() => setSettingsSection("profile")}
+            modelSections={modelSections}
+            projectName={project.name}
+            projectBranch={gitInfo.branch ?? undefined}
+            userDisplayName={displayName}
+            workspacePath={project.path}
+            isGitRepo={gitInfo.isGitRepo}
+            isDetached={gitInfo.isDetached}
+            isWorktree={gitInfo.isWorktree}
+            runtimeLabel={runtimeLabel.label}
+            runtimeDetail={runtimeLabel.detail}
+            resolveModelDisplayName={(modelId) => models.find((m) => m.id === modelId)?.displayName ?? modelId}
+            onOpenProjects={onClose}
+            onOpenSettings={() => setSettingsSection("general")}
+            onOpenSettingsSection={(sectionId) => setSettingsSection(sectionId)}
+            onOpenHelp={() => openExternalLink(HELP_URL)}
+            userIntentHoldPolicy={userIntentHoldPolicy}
+            defaultExecutionMode={defaultExecutionMode}
+          />
+        </main>
+      )}
 
       {showModelDetails && selectedModelForDetails && (
         <ModelDetails
@@ -566,250 +735,32 @@ export default function WorkspaceShell({ project, onClose, onSignedOut }: Worksp
           onClose={handleCloseModelDetails}
         />
       )}
-
-      {isSettingsOpen && (
-        <div className="settings-modal-overlay" onClick={() => setIsSettingsOpen(false)}>
-          <div
-            className="settings-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Settings"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="settings-modal-header">
-              <span className="settings-modal-title">Settings & Providers</span>
-              <button
-                className="settings-modal-close"
-                onClick={() => setIsSettingsOpen(false)}
-                aria-label="Close settings"
-              >
-                ×
-              </button>
-            </div>
-            <div className="settings-modal-body">
-              <div style={{ marginBottom: 18 }}>
-                <div style={{ fontWeight: 600, marginBottom: 4 }}>Pause Agent while typing</div>
-                <div style={{ fontSize: 12, color: "var(--cf-text-muted)", marginBottom: 8 }}>
-                  Hold new Agent actions while you prepare a steer. Already-running commands continue unless you explicitly cancel them.
-                </div>
-                <select
-                  aria-label="Pause Agent while typing"
-                  value={userIntentHoldPolicy}
-                  onChange={(event) => {
-                    const value = event.target.value as UserIntentHoldPolicy;
-                    setUserIntentHoldPolicy(value);
-                    window.localStorage.setItem(USER_INTENT_HOLD_POLICY_KEY, value);
-                  }}
-                >
-                  <option value="expensive_actions_only">Expensive actions only</option>
-                  <option value="always">Always</option>
-                  <option value="off">Off</option>
-                </select>
-              </div>
-              <ProviderSetup />
-
-              <div style={{ marginTop: 18, borderTop: "1px solid #2a2d33", paddingTop: 16 }}>
-                <div style={{ fontWeight: 600, marginBottom: 8 }}>Legal</div>
-                <div style={{ fontSize: 12, color: "var(--cf-text-muted)", marginBottom: 10, lineHeight: 1.5 }}>
-                  CodeForge reads/writes project files and runs commands on this computer using your
-                  operating-system permissions. Review your approval settings before allowing autonomous actions.
-                </div>
-                <div style={{ fontSize: 11, color: "var(--cf-text-muted)", marginBottom: 10, lineHeight: 1.5 }}>
-                  Legal documents (Terms of Service, Privacy Policy, Acceptable Use Policy, AI Output Disclaimer,
-                  Subscription &amp; Billing Terms, Desktop Software License, Third-Party Notices, Security
-                  Disclosure, DMCA Policy): <strong>Draft — not yet effective.</strong>
-                </div>
-                <div style={{ display: "flex", gap: 14, fontSize: 12 }}>
-                  <button
-                    style={{ background: "transparent", border: "none", color: "#60a5fa", cursor: "pointer", textDecoration: "underline", padding: 0 }}
-                    onClick={() => void window.electronAPI?.openExternal?.("https://codeforge.dev/privacy")}
-                  >
-                    Privacy
-                  </button>
-                  <button
-                    style={{ background: "transparent", border: "none", color: "#60a5fa", cursor: "pointer", textDecoration: "underline", padding: 0 }}
-                    onClick={() => void window.electronAPI?.openExternal?.("https://codeforge.dev/terms")}
-                  >
-                    Terms
-                  </button>
-                  <button
-                    style={{ background: "transparent", border: "none", color: "#60a5fa", cursor: "pointer", textDecoration: "underline", padding: 0 }}
-                    onClick={() => {
-                      setIsSettingsOpen(false);
-                      setIsQuotaExhaustedOpen(true);
-                    }}
-                  >
-                    Account &amp; Deletion
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isQuotaExhaustedOpen && (
-        <div className="settings-modal-overlay" onClick={() => setIsQuotaExhaustedOpen(false)}>
-          <div
-            className="settings-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label="CodeForge Cloud Account"
-            onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: "480px" }}
-          >
-            <div className="settings-modal-header">
-              <span className="settings-modal-title">✦ CodeForge Cloud Account</span>
-              <button
-                className="settings-modal-close"
-                onClick={() => setIsQuotaExhaustedOpen(false)}
-                aria-label="Close"
-              >
-                ×
-              </button>
-            </div>
-            <div className="settings-modal-body" style={{ padding: "16px 20px" }}>
-              {cloudAccount ? (
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: "15px" }}>{cloudAccount.user?.displayName}</div>
-                      <div style={{ color: "#9ca3af", fontSize: "13px" }}>Plan: <strong>{cloudAccount.planName}</strong></div>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: "18px", fontWeight: "bold", color: "#38bdf8" }}>
-                        {(cloudAccount.creditBalance).toLocaleString()}
-                      </div>
-                      <div style={{ color: "#9ca3af", fontSize: "11px" }}>Available Credits</div>
-                    </div>
-                  </div>
-
-                  {cloudAccount.planId === "free" ? (
-                    <div style={{ background: "#1f2937", borderRadius: "8px", padding: "14px", marginBottom: "16px" }}>
-                      <div style={{ fontWeight: 600, marginBottom: "4px" }}>Upgrade to CodeForge Pro</div>
-                      <p style={{ color: "#9ca3af", fontSize: "13px", margin: "0 0 10px 0" }}>
-                        Get 5,000,000 monthly credits, high-speed priority routing, and premium model access for $20/month.
-                      </p>
-                      <button
-                        style={{ width: "100%", background: "#0284c7", color: "#fff", padding: "8px", borderRadius: "6px", border: "none", fontWeight: 600, cursor: "pointer" }}
-                        onClick={() => window.electronAPI?.openCloudCheckout?.()}
-                      >
-                        Upgrade to Pro ($20/mo)
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ background: "#1f2937", borderRadius: "8px", padding: "14px", marginBottom: "16px" }}>
-                      <div style={{ fontWeight: 600, marginBottom: "4px", color: "#38bdf8" }}>Pro Subscription Active</div>
-                      <p style={{ color: "#9ca3af", fontSize: "13px", margin: "0 0 10px 0" }}>
-                        Manage payment method, invoices, or billing settings in the Stripe Customer Portal.
-                      </p>
-                      <button
-                        style={{ width: "100%", background: "#374151", color: "#fff", padding: "8px", borderRadius: "6px", border: "none", fontWeight: 600, cursor: "pointer" }}
-                        onClick={() => window.electronAPI?.openCloudPortal?.()}
-                      >
-                        Manage Subscription
-                      </button>
-                    </div>
-                  )}
-
-                  <div style={{ borderTop: "1px solid #374151", paddingTop: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <button
-                      style={{ background: "transparent", border: "none", color: "#9ca3af", cursor: "pointer", fontSize: "13px", textDecoration: "underline" }}
-                      onClick={() => {
-                        setIsQuotaExhaustedOpen(false);
-                        setIsSettingsOpen(true);
-                      }}
-                    >
-                      Switch to BYOK Direct Mode
-                    </button>
-                    <button
-                      style={{ background: "transparent", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "13px" }}
-                      onClick={async () => {
-                        await window.electronAPI?.logoutCloud?.();
-                        setCloudAccount(null);
-                        setIsQuotaExhaustedOpen(false);
-                        await refreshModelsAndHealth();
-                        onSignedOut?.();
-                      }}
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-
-                  <div style={{ borderTop: "1px solid #374151", marginTop: "12px", paddingTop: "12px" }}>
-                    {deleteAccountStep === "idle" && (
-                      <button
-                        style={{ background: "transparent", border: "1px solid #7f1d1d", color: "#f87171", cursor: "pointer", fontSize: "12px", padding: "6px 10px", borderRadius: "6px", width: "100%" }}
-                        onClick={() => setDeleteAccountStep("confirm")}
-                      >
-                        Delete Account
-                      </button>
-                    )}
-                    {deleteAccountStep === "confirm" && (
-                      <div style={{ background: "#1f1315", border: "1px solid #7f1d1d", borderRadius: "8px", padding: "12px" }}>
-                        <div style={{ fontWeight: 600, color: "#f87171", marginBottom: "6px", fontSize: "13px" }}>
-                          Delete your CodeForge Cloud account?
-                        </div>
-                        <p style={{ color: "#d1a3a3", fontSize: "12px", lineHeight: 1.5, margin: "0 0 10px 0" }}>
-                          This deletes your account, hosted sessions, and billing/entitlement records from
-                          CodeForge Cloud. Some records (e.g. security/abuse logs) may be retained per policy.
-                          Local files on this computer are not affected. This does not delete your GitHub account.
-                        </p>
-                        <div style={{ display: "flex", gap: "8px" }}>
-                          <button
-                            style={{ flex: 1, background: "#7f1d1d", color: "#fff", padding: "8px", borderRadius: "6px", border: "none", fontWeight: 600, cursor: "pointer", fontSize: "12px" }}
-                            onClick={() => void deleteCloudAccount()}
-                          >
-                            Yes, delete my account
-                          </button>
-                          <button
-                            style={{ flex: 1, background: "#374151", color: "#fff", padding: "8px", borderRadius: "6px", border: "none", cursor: "pointer", fontSize: "12px" }}
-                            onClick={() => setDeleteAccountStep("idle")}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    {deleteAccountStep === "deleting" && (
-                      <div style={{ color: "#9ca3af", fontSize: "12px", textAlign: "center" }}>Deleting account…</div>
-                    )}
-                    {deleteAccountStep === "error" && (
-                      <div>
-                        <div style={{ color: "#f87171", fontSize: "12px", marginBottom: "6px" }}>{deleteAccountError}</div>
-                        <button
-                          style={{ background: "transparent", border: "1px solid #374151", color: "#9ca3af", cursor: "pointer", fontSize: "12px", padding: "6px 10px", borderRadius: "6px" }}
-                          onClick={() => setDeleteAccountStep("idle")}
-                        >
-                          Dismiss
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <p style={{ color: "#9ca3af", fontSize: "14px" }}>
-                    Sign in with GitHub to access zero-setup hosted AI inference with an allowance that resets each 30-day hosted-usage period.
-                  </p>
-                  <button
-                    style={{ width: "100%", background: "#0284c7", color: "#fff", padding: "10px", borderRadius: "6px", border: "none", fontWeight: 600, cursor: "pointer" }}
-                    onClick={async () => {
-                      const res = await window.electronAPI?.signInWithCloud?.();
-                      if (res?.ok) {
-                        await loadCloudAccount();
-                        await refreshModelsAndHealth();
-                      }
-                    }}
-                  >
-                    Sign In with GitHub
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
+  );
+}
+
+/** Avatar with a deterministic initials fallback — a missing or broken GitHub image never breaks the UI. */
+function AccountAvatar({ account }: { account: CloudAccountView }): React.ReactElement {
+  const url = account.user?.avatarUrl;
+  const name = account.user?.displayName ?? "CodeForge";
+  if (!url) {
+    return <span className="account-avatar-fallback account-avatar-fallback-sm" aria-hidden="true">{(name.trim()[0] ?? "C").toUpperCase()}</span>;
+  }
+  return (
+    <img
+      className="account-avatar account-avatar-sm"
+      src={url}
+      alt=""
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      onError={(event) => {
+        const img = event.currentTarget;
+        const fallback = document.createElement("span");
+        fallback.className = "account-avatar-fallback account-avatar-fallback-sm";
+        fallback.setAttribute("aria-hidden", "true");
+        fallback.textContent = (name.trim()[0] ?? "C").toUpperCase();
+        img.replaceWith(fallback);
+      }}
+    />
   );
 }

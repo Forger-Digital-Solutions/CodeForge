@@ -14,6 +14,9 @@ import WorkflowProgress from "./WorkflowProgress.js";
 import { type ModelSelectorItem, type ModelSection } from "./ModelSelector.js";
 import { ForgeWorkingIndicator } from "./activity-icons.js";
 import { isForgeWorkActive } from "./forge-activity.js";
+import { loadModelFavorites } from "./model-favorites.js";
+import { ContextBar } from "./ContextBar.js";
+import type { ActivityOverviewData, ActivityPeriod } from "./ActivityOverview.js";
 import "./workspace.css";
 
 /** Turn provider/runtime errors into concise, actionable guidance. */
@@ -60,10 +63,28 @@ export interface WorkspaceAppProps {
   modelSections?: ModelSection[];
   projectName?: string;
   projectBranch?: string;
+  /** Real signed-in display name; omit for a neutral greeting instead of guessing/hardcoding one. */
+  userDisplayName?: string;
+  workspacePath?: string;
+  isGitRepo?: boolean;
+  isDetached?: boolean;
+  isWorktree?: boolean;
+  /** Where the next turn will actually execute, e.g. "Local" / "Hosted". Real state, not invented. */
+  runtimeLabel?: string;
+  runtimeDetail?: string;
+  /** Resolves a raw model id (e.g. "openrouter::nemotron") to its catalog display name. */
+  resolveModelDisplayName?: (modelId: string) => string;
   onOpenProjects?: () => void;
   onOpenSettings?: () => void;
+  /** Deep-link target for settings sections (Agents, About, …) when the host has a Settings app. */
+  onOpenSettingsSection?: (sectionId: string) => void;
   onOpenHelp?: () => void;
   userIntentHoldPolicy?: UserIntentHoldPolicy;
+  /**
+   * The persisted default task mode from the Settings app. When it changes while a workspace is
+   * open, the composer follows it (the composer's own toggle remains the per-workspace control).
+   */
+  defaultExecutionMode?: ExecutionMode;
 }
 
 export default function WorkspaceApp({
@@ -77,10 +98,20 @@ export default function WorkspaceApp({
   modelSections,
   projectName,
   projectBranch,
+  userDisplayName,
+  workspacePath,
+  isGitRepo,
+  isDetached,
+  isWorktree,
+  runtimeLabel,
+  runtimeDetail,
+  resolveModelDisplayName,
   onOpenProjects,
   onOpenSettings,
+  onOpenSettingsSection,
   onOpenHelp,
   userIntentHoldPolicy = "expensive_actions_only",
+  defaultExecutionMode,
 }: WorkspaceAppProps) {
   const { state, setState, sendMessage, requestUserIntentHold, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession, startNewSession, hydrate } = useWorkspaceSSE(sseUrl ?? "/api/events");
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -103,6 +134,35 @@ export default function WorkspaceApp({
     }
     return "";
   }, [sseUrl]);
+
+  // Real favorited model ids — same localStorage-backed source ModelSelector's star toggle
+  // writes to (see model-favorites.ts). Re-synced whenever the picker closes, since that's when a
+  // toggle inside it could have changed.
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(loadModelFavorites);
+  const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
+  const favoriteModels = React.useMemo(
+    () => (models ?? []).filter((m) => favoriteIds.has(m.id)),
+    [models, favoriteIds],
+  );
+
+  const [activityOverview, setActivityOverview] = useState<ActivityOverviewData | null>(null);
+  const [isActivityLoading, setIsActivityLoading] = useState(false);
+  const [activityPeriod, setActivityPeriod] = useState<ActivityPeriod>("all");
+  const refreshActivityOverview = useCallback(async (period: ActivityPeriod) => {
+    if (!apiOrigin) return;
+    setIsActivityLoading(true);
+    try {
+      const res = await fetch(`${apiOrigin}/api/activity/overview?period=${period}`);
+      if (res.ok) setActivityOverview((await res.json()) as ActivityOverviewData);
+    } catch {
+      // server may still be starting — keep whatever we last had
+    } finally {
+      setIsActivityLoading(false);
+    }
+  }, [apiOrigin]);
+  React.useEffect(() => {
+    void refreshActivityOverview(activityPeriod);
+  }, [refreshActivityOverview, activityPeriod, state.session?.id]);
 
   // CF-11B: publication is a single Cloud request. The desktop UI never pushes or opens a PR, and
   // it never marks a delivery published on its own — it re-hydrates and shows Cloud's state.
@@ -223,17 +283,11 @@ export default function WorkspaceApp({
     {
       id: "permissions",
       label: "Permissions & Approvals",
-      description: "Configure approval behavior",
+      description: "Review approval and agent behavior settings",
       icon: "🔐",
-      action: onOpenSettings ?? (() => {}),
-      shortcut: "",
-    },
-    {
-      id: "mcp-plugins",
-      label: "MCP / Plugins",
-      description: "Manage Model Context Protocol servers",
-      icon: "🔌",
-      action: onOpenSettings ?? (() => {}),
+      action: onOpenSettingsSection
+        ? () => onOpenSettingsSection("agents")
+        : onOpenSettings ?? (() => {}),
       shortcut: "",
     },
     {
@@ -241,7 +295,9 @@ export default function WorkspaceApp({
       label: "Settings",
       description: "Open application settings",
       icon: "⚙",
-      action: onOpenSettings ?? (() => {}),
+      action: onOpenSettingsSection
+        ? () => onOpenSettingsSection("general")
+        : onOpenSettings ?? (() => {}),
       shortcut: "Ctrl+,",
     },
     {
@@ -349,6 +405,11 @@ export default function WorkspaceApp({
     setExecutionMode(mode);
     rememberExecutionMode(mode);
   };
+
+  // A default-mode change from the Settings app reaches an open workspace through this prop.
+  React.useEffect(() => {
+    if (defaultExecutionMode) setExecutionMode(defaultExecutionMode);
+  }, [defaultExecutionMode]);
 
   const placeholder = state.pendingApproval?.tool === "workflow"
     ? "Add context, or use the approval controls above…"
@@ -469,6 +530,15 @@ export default function WorkspaceApp({
             isRunning={state.isRunning}
             onSuggestedPrompt={(text) => handleSend(text)}
             contextLabel={projectName ? `CodeForge · ${projectName}${projectBranch ?? state.session?.branch ? ` · ${projectBranch ?? state.session?.branch}` : ""}` : undefined}
+            userDisplayName={userDisplayName}
+            activityOverview={activityOverview}
+            isActivityLoading={isActivityLoading}
+            activityPeriod={activityPeriod}
+            onActivityPeriodChange={setActivityPeriod}
+            resolveModelDisplayName={resolveModelDisplayName}
+            favoriteModels={favoriteModels}
+            onSelectModel={(model) => onSelectModel?.(model, state.session?.id)}
+            onOpenModelPicker={() => setIsModelPickerOpen(true)}
           />
 
           <ForgeWorkingIndicator active={forgeWorkActive} />
@@ -493,6 +563,19 @@ export default function WorkspaceApp({
                 ×
               </button>
             </div>
+          )}
+
+          {(runtimeLabel || projectName || isGitRepo) && (
+            <ContextBar
+              runtimeLabel={runtimeLabel ?? "Local"}
+              runtimeDetail={runtimeDetail}
+              workspaceName={projectName}
+              workspacePath={workspacePath}
+              isGitRepo={isGitRepo}
+              branch={projectBranch ?? state.session?.branch ?? null}
+              isDetached={isDetached}
+              isWorktree={isWorktree}
+            />
           )}
 
           <Composer
@@ -520,6 +603,11 @@ export default function WorkspaceApp({
             onShowModelDetails={onShowModelDetails}
             onUpgradeNavigation={onUpgradeNavigation}
             modelSections={modelSections}
+            isModelPickerOpen={isModelPickerOpen}
+            onModelPickerOpenChange={(open) => {
+              setIsModelPickerOpen(open);
+              if (!open) setFavoriteIds(loadModelFavorites());
+            }}
             executionMode={executionMode}
             onExecutionModeChange={handleExecutionModeChange}
             executionState={state.executionState}

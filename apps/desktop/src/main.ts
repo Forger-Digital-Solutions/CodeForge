@@ -1,8 +1,22 @@
-import { app, BrowserWindow, ipcMain, dialog, Menu, shell, safeStorage, Tray, nativeImage, screen } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, Menu, shell, safeStorage, Tray, nativeImage, screen, Notification } from "electron";
+import { resolveCloudCatalogSyncMode } from "./cloud-catalog-sync.js";
+import { checkGitExecArgs } from "./git-exec-allowlist.js";
 import path from "node:path";
+import os from "node:os";
 import { fileURLToPath } from "node:url";
 import fs from "node:fs";
 import crypto from "node:crypto";
+import { execFile } from "node:child_process";
+import { resolveCloseAction, summarizeActiveWork, countRunningWork, type CloseBehavior } from "./close-lifecycle.js";
+import {
+  APP_SETTINGS_KEY,
+  CloseBehaviorSchema,
+  applySettingsPatch,
+  parseAppSettings,
+  parseAppSettingsPatch,
+  type AppSettings,
+  type SettingsSnapshot,
+} from "./app-settings.js";
 
 if (process.env.CODEFORGE_SMOKE_OUT) {
   try {
@@ -50,9 +64,13 @@ let providerCatalog: InMemoryProviderCatalog | null = null;
 let desktopCredentialStore: DesktopCredentialStore | null = null;
 let modelRegistry: NormalizedModelRegistry | null = null;
 let tray: Tray | null = null;
+let trayStatusTimer: NodeJS.Timeout | null = null;
 let isQuitting = false;
 let closeRequestInFlight = false;
 let shutdownPromise: Promise<void> | null = null;
+let cloudCatalogRefreshTimer: NodeJS.Timeout | null = null;
+/** Mirrors CloudProviderRegistry's own DEFAULT_REFRESH_TTL_MS on the cloud side. */
+const CLOUD_CATALOG_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 // Per-provider auth/health signal used by the orphan-model oracle and to exclude
 // invalid-auth providers from routing (a 401 marks a provider auth_required — it is
 // never hammered on every task; the UI prompts to reconnect).
@@ -413,7 +431,6 @@ function getFirstRunLegalAck(): FirstRunLegalAck | null {
   return null;
 }
 
-type CloseBehavior = "ask" | "tray" | "quit-safe";
 type CloseDecision = "cancel" | "tray" | "quit" | "quit-anyway";
 
 function getCloseBehavior(): CloseBehavior {
@@ -425,6 +442,48 @@ function setCloseBehavior(value: CloseBehavior): void {
   const settings = readSettings();
   settings[CLOSE_BEHAVIOR_KEY] = value;
   writeSettingsAtomic(settings);
+}
+
+// Canonical Settings surface (see app-settings.ts). `fresh` reports whether the canonical store
+// existed when this process started, so the renderer can seed it from pre-canonical renderer-local
+// values exactly once instead of overwriting real preferences on every launch.
+let appSettingsFreshAtStartup = true;
+
+function readAppSettings(): AppSettings {
+  return parseAppSettings(readSettings()[APP_SETTINGS_KEY]);
+}
+
+function writeAppSettings(settings: AppSettings): void {
+  const store = readSettings();
+  store[APP_SETTINGS_KEY] = settings;
+  writeSettingsAtomic(store);
+}
+
+function getSettingsSnapshot(): SettingsSnapshot {
+  return { settings: readAppSettings(), closeBehavior: getCloseBehavior(), fresh: appSettingsFreshAtStartup };
+}
+
+function updateSettings(payload: { settings?: unknown; closeBehavior?: unknown }): SettingsSnapshot {
+  if (payload.settings !== undefined) {
+    const patch = parseAppSettingsPatch(payload.settings);
+    writeAppSettings(applySettingsPatch(readAppSettings(), patch));
+    // After a successful write the store is no longer "fresh" — it is an authoritative preference.
+    appSettingsFreshAtStartup = false;
+  }
+  if (payload.closeBehavior !== undefined) {
+    const behavior = CloseBehaviorSchema.safeParse(payload.closeBehavior);
+    if (!behavior.success) throw new Error("Invalid close behavior");
+    setCloseBehavior(behavior.data);
+  }
+  return getSettingsSnapshot();
+}
+
+function resetAppSettings(): SettingsSnapshot {
+  const store = readSettings();
+  delete store[APP_SETTINGS_KEY];
+  writeSettingsAtomic(store);
+  appSettingsFreshAtStartup = true;
+  return getSettingsSnapshot();
 }
 
 function getPersistedWindowState(): PersistedWindowState | undefined {
@@ -448,6 +507,20 @@ function restoreMainWindow(): void {
   mainWindow.focus();
 }
 
+const TRAY_STATUS_REFRESH_MS = 15_000;
+
+/**
+ * Keeps the tray tooltip honest about whether anything is actually running while the window is
+ * hidden — the same `summarizeActiveWork()` text the close dialog shows, so the two surfaces can
+ * never describe active work differently. A no-op if the tray doesn't currently exist.
+ */
+async function updateTrayStatus(): Promise<void> {
+  if (!tray) return;
+  const status = await currentRuntimeStatus();
+  const running = countRunningWork(status);
+  tray.setToolTip(running > 0 ? `CodeForge — ${summarizeActiveWork(status)}` : "CodeForge");
+}
+
 function ensureTray(): void {
   if (tray) return;
   const iconPath = resolveAppIcon();
@@ -460,6 +533,9 @@ function ensureTray(): void {
     { label: "Quit CodeForge", click: () => { void requestClose(); } },
   ]));
   tray.on("double-click", restoreMainWindow);
+  void updateTrayStatus();
+  trayStatusTimer = setInterval(() => { void updateTrayStatus(); }, TRAY_STATUS_REFRESH_MS);
+  trayStatusTimer.unref?.();
 }
 
 function hideToTray(): void {
@@ -491,6 +567,10 @@ async function completeSafeQuit(): Promise<void> {
   persistWindowState();
   tray?.destroy();
   tray = null;
+  if (trayStatusTimer) {
+    clearInterval(trayStatusTimer);
+    trayStatusTimer = null;
+  }
   shutdownPromise = (async () => {
     if (server) {
       await server.stop();
@@ -506,28 +586,20 @@ async function requestClose(): Promise<void> {
   closeRequestInFlight = true;
   const status = await currentRuntimeStatus();
   const behavior = getCloseBehavior();
+  const action = resolveCloseAction(status, behavior);
 
-  if (!status.activeWork) {
-    closeRequestInFlight = false;
-    if (behavior === "tray") {
-      hideToTray();
-      return;
-    }
-    await completeSafeQuit();
-    return;
-  }
-
-  if (status.recoverable && behavior === "tray") {
+  if (action === "tray") {
     closeRequestInFlight = false;
     hideToTray();
     return;
   }
-  if (status.recoverable && behavior === "quit-safe") {
+  if (action === "quit") {
     closeRequestInFlight = false;
     await completeSafeQuit();
     return;
   }
 
+  // action === "ask"
   if (!mainWindow || mainWindow.isDestroyed()) {
     closeRequestInFlight = false;
     if (status.recoverable) await completeSafeQuit();
@@ -582,38 +654,40 @@ function clearCloudTokens(): void {
   writeSettingsAtomic(settings);
 }
 
-async function registerCloudAdapter(): Promise<void> {
-  if (!providerCatalog || !firewall) return;
-  const existing = providerCatalog.get("codeforge-cloud");
-  const cloudAdapter = existing instanceof HostedProviderAdapter
-    ? existing
-    : new HostedProviderAdapter({
-        cloudApiUrl: CLOUD_API_URL,
-        getAccessToken: () => {
-          const tokens = getStoredCloudTokens();
-          return tokens.accessToken ?? null;
-        },
-        onAuthExpired: async () => {
-          const tokens = getStoredCloudTokens();
-          if (!tokens.refreshToken) return null;
-          try {
-            const refreshRes = await fetch(`${CLOUD_API_URL}/v1/auth/refresh`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ refreshToken: tokens.refreshToken }),
-            });
-            if (refreshRes.ok) {
-              const data = (await refreshRes.json()) as any;
-              saveCloudTokens(data.accessToken, data.refreshToken, data.user);
-              return data.accessToken;
-            }
-          } catch {}
-          return null;
-        },
-      });
-  if (!(existing instanceof HostedProviderAdapter)) providerCatalog.register(cloudAdapter);
-  providerAuthState.set("codeforge-cloud", "ok");
+function createCloudAdapter(): HostedProviderAdapter {
+  return new HostedProviderAdapter({
+    cloudApiUrl: CLOUD_API_URL,
+    getAccessToken: () => {
+      const tokens = getStoredCloudTokens();
+      return tokens.accessToken ?? null;
+    },
+    onAuthExpired: async () => {
+      const tokens = getStoredCloudTokens();
+      if (!tokens.refreshToken) return null;
+      try {
+        const refreshRes = await fetch(`${CLOUD_API_URL}/v1/auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken: tokens.refreshToken }),
+        });
+        if (refreshRes.ok) {
+          const data = (await refreshRes.json()) as any;
+          saveCloudTokens(data.accessToken, data.refreshToken, data.user);
+          return data.accessToken;
+        }
+      } catch {}
+      return null;
+    },
+  });
+}
 
+/**
+ * Reconciles ForgeZero's "codeforge-cloud" records against what the adapter's listModels()
+ * currently reports — registering newly verified-free models and dropping ones no longer
+ * verified-free (cost-transition safety: a model can never silently keep a stale free grant).
+ */
+async function syncCloudFreeModelsIntoFirewall(cloudAdapter: HostedProviderAdapter): Promise<void> {
+  if (!firewall) return;
   for (const model of firewall.allModels()) {
     if (model.providerId === "codeforge-cloud") firewall.unregister(model.providerId, model.modelId);
   }
@@ -637,6 +711,36 @@ async function registerCloudAdapter(): Promise<void> {
       health: { status: "available", lastCheckedAt: now },
     });
   }
+}
+
+/**
+ * Signed-in path: registers the hosted adapter into providerCatalog (which is what flips the
+ * server from demo to real runtime, per CodeForgeServer.realRuntimeEnabled()) AND syncs the
+ * catalog. Only call this once the user actually has cloud credentials — registering the adapter
+ * while signed out would make the server attempt real (but doomed-to-401) hosted inference instead
+ * of the safe scripted demo the very first time someone sends a message.
+ */
+async function registerCloudAdapter(): Promise<void> {
+  if (!providerCatalog || !firewall) return;
+  const existing = providerCatalog.get("codeforge-cloud");
+  const cloudAdapter = existing instanceof HostedProviderAdapter ? existing : createCloudAdapter();
+  if (!(existing instanceof HostedProviderAdapter)) providerCatalog.register(cloudAdapter);
+  providerAuthState.set("codeforge-cloud", "ok");
+  await syncCloudFreeModelsIntoFirewall(cloudAdapter);
+}
+
+/**
+ * Signed-out path: CodeForge Free's catalog listing (`GET /v1/hosted/models`) requires no auth —
+ * only actually running a model does. So a fresh, signed-out install still gets the real catalog
+ * for browsing/selection, WITHOUT registering the adapter into providerCatalog. That keeps
+ * realRuntimeEnabled() false until the user connects a real provider (BYOK) or signs in, so
+ * selecting one of these models before then still runs the existing safe scripted demo runtime
+ * instead of a confusing 401 from an adapter that has no credential yet.
+ */
+async function registerCloudFreeCatalogOnly(): Promise<void> {
+  if (!firewall) return;
+  const listOnlyAdapter = createCloudAdapter();
+  await syncCloudFreeModelsIntoFirewall(listOnlyAdapter);
 }
 
 async function selectDirectory(): Promise<string | null> {
@@ -752,19 +856,71 @@ async function initializeServer(dbPath: string): Promise<void> {
     });
     smokeRecord("INIT_SERVER_INSTANCE_CREATED");
     await server.start();
-    const recent = getRecentProjects()[0];
-    if (recent && fs.existsSync(recent.path)) {
-      try {
-        server.setWorkspace(recent.path);
-      } catch {
-        // ignore
+    if (readAppSettings().general.openLastWorkspaceOnStartup) {
+      const recent = getRecentProjects()[0];
+      if (recent && fs.existsSync(recent.path)) {
+        try {
+          server.setWorkspace(recent.path);
+        } catch {
+          // ignore
+        }
       }
     }
     smokeRecord("INIT_SERVER_STARTED");
+    await applyStartupServerSettings();
   } catch (err) {
     smokeRecord(`INIT_SERVER_ERROR: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}`);
     throw err;
   }
+}
+
+/**
+ * Re-applies persisted preferences to the freshly started local server and continues eligible
+ * interrupted work. The server holds privacy-routing mode in memory only, so without this the
+ * user's ForgeZero routing choice silently reset on every launch. Both steps are fail-safe:
+ * a failure leaves the server in its defaults and never blocks startup.
+ */
+async function applyStartupServerSettings(): Promise<void> {
+  const settings = readAppSettings();
+  try {
+    await fetch(`http://localhost:${LOCAL_SERVER_PORT}/api/privacy-mode`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode: settings.privacy.routingMode }),
+    });
+  } catch {}
+  if (PACKAGED_SMOKE || !settings.general.continueInterruptedAgents) return;
+  void continueRecoverableAgents();
+}
+
+/**
+ * Continue interrupted agents after a restart — the durable-recovery scope of that preference,
+ * nothing more. Sessions left in the visible recovery hold are inspected via the local API, and
+ * only turns that were persisted mid-run are resumed (a turn the user paused on purpose stays
+ * paused). Resume re-plans from durable facts; no interrupted tool execution is ever replayed,
+ * and anything risky still goes through the unchanged approval gate.
+ */
+async function continueRecoverableAgents(): Promise<void> {
+  if (!server) return;
+  try {
+    const res = await fetch(`http://localhost:${LOCAL_SERVER_PORT}/api/sessions`);
+    if (!res.ok) return;
+    const sessions = (await res.json()) as Array<{ id?: string; status?: string }>;
+    const recovering = sessions.filter((s) => s.status === "recovering" && typeof s.id === "string").slice(0, 5);
+    for (const session of recovering) {
+      const detailRes = await fetch(`http://localhost:${LOCAL_SERVER_PORT}/api/sessions/${encodeURIComponent(session.id!)}`);
+      if (!detailRes.ok) continue;
+      const detail = (await detailRes.json()) as { turns?: Array<{ id?: string; status?: string }> };
+      for (const turn of detail.turns ?? []) {
+        if (!turn.id || (turn.status !== "running" && turn.status !== "recovering")) continue;
+        smokeRecord(`CONTINUE_INTERRUPTED_TURN_${session.id}_${turn.id}`);
+        await fetch(
+          `http://localhost:${LOCAL_SERVER_PORT}/api/sessions/${encodeURIComponent(session.id!)}/turns/${encodeURIComponent(turn.id)}/resume`,
+          { method: "POST" },
+        ).catch(() => {});
+      }
+    }
+  } catch {}
 }
 
 function registerFreeModels(fw: ForgeZero): void {
@@ -1052,7 +1208,16 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   );
   const authenticatedText = await evaluateRenderer<string>("document.body.innerText");
   if (authenticatedText.includes("Continue with GitHub")) throw new Error("Packaged auth fixture did not restore into the authenticated UI");
-  if (!authenticatedText.includes("Repository Intelligence")) throw new Error("Packaged workspace shell was not visible");
+  // The shell's Repository Intelligence surface is an icon-only header button; open its live
+  // status popover so the smoke verifies the real status UI (title + state text) rather than an
+  // attribute innerText never contains.
+  await evaluateRenderer<void>(`(() => { const button = Array.from(document.querySelectorAll('button')).find((element) => element.getAttribute('aria-label') === 'Repository Intelligence'); if (button) button.click(); })()`);
+  await delay(150);
+  const shellVisibleText = await evaluateRenderer<string>("document.body.innerText");
+  // Case-insensitive: the popover title is uppercased by CSS text-transform, which innerText reflects.
+  if (!shellVisibleText.toLowerCase().includes("repository intelligence")) {
+    throw new Error(`Packaged workspace shell was not visible; body text: ${shellVisibleText.slice(0, 500).replace(/\s+/g, " | ")}`);
+  }
   const bridgeBoundary = await evaluateRenderer<boolean>(
     "Boolean(window.electronAPI) && typeof window.electronAPI.getProviderCredentials === 'undefined'",
   );
@@ -1061,6 +1226,9 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   smokeRecord("packaged_authenticated_workspace=PASS");
   smokeRecord("renderer_raw_credential_api_absent=PASS");
   await capturePackagedSmokeScreenshot("01-authenticated-zero-state");
+  // Collapse the popover again so later programmatic interactions start from a clean surface.
+  await evaluateRenderer<void>(`(() => { const button = Array.from(document.querySelectorAll('button')).find((element) => element.getAttribute('aria-label') === 'Repository Intelligence'); if (button) button.click(); })()`);
+  await delay(100);
 
   smokeRecord("packaged_workspace_name_visible=PASS");
   await waitForCondition(async () => (await apiJson("/api/workspace/tree")).status === 200);
@@ -1082,9 +1250,16 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   if ((indexStatus.body?.fileCount ?? 0) < 258 || (indexStatus.body?.symbolCount ?? 0) < 257) throw new Error("Packaged substantial repository index did not contain workspace structure");
   const indexQuery = await apiJson("/api/repository-index/search?q=add");
   if (indexQuery.status !== 200 || !indexQuery.body?.items?.some((item: { path?: string }) => item.path === "src/calc.ts")) throw new Error("Packaged repository search did not return the known implementation");
+  // Open the Repository Intelligence popover again now that the index is READY, so the smoke
+  // verifies the live status surface (READY + file/symbol counts) actually renders.
+  await evaluateRenderer<void>(`(() => { const button = Array.from(document.querySelectorAll('button')).find((element) => element.getAttribute('aria-label') === 'Repository Intelligence'); if (button) button.click(); })()`);
+  await delay(150);
   const shellText = await evaluateRenderer<string>("document.body.innerText");
   smokeRecord("packaged_repository_query_known_answer=PASS");
-  if (!shellText.includes("Repository Intelligence") || !shellText.includes("Local structural index")) throw new Error("Packaged repository status UX was not visible");
+  const shellTextLower = shellText.toLowerCase();
+  if (!shellTextLower.includes("repository intelligence") || !shellTextLower.includes("local structural index")) throw new Error("Packaged repository status UX was not visible");
+  await evaluateRenderer<void>(`(() => { const button = Array.from(document.querySelectorAll('button')).find((element) => element.getAttribute('aria-label') === 'Repository Intelligence'); if (button) button.click(); })()`);
+  await delay(100);
   const escape = await apiJson(`/api/workspace/tree?path=${encodeURIComponent(path.dirname(workspacePath))}`);
   if (escape.status !== 403) throw new Error(`Workspace escape returned ${escape.status}`);
   smokeRecord("packaged_workspace_restore=PASS");
@@ -1139,6 +1314,82 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   await evaluateRenderer<void>(`window.electronAPI.setProviderCredential("opencode", ${JSON.stringify(testSecret)})`);
   const status = await evaluateRenderer<Record<string, boolean>>(`window.electronAPI.getProviderCredentialStatus()`);
   if (!status.opencode) throw new Error("Packaged credential status was not persisted");
+
+  // --- Settings application walkthrough (Settings & Identity R1 packaged evidence) ---
+  // Drives the real Settings UI in the packaged app: open, section navigation, the header
+  // account menu deep link, functional search, and back-to-workspace. Every visited surface
+  // is captured as screenshot evidence; any dead control fails the run.
+  const clickButtonWithText = (text: string): Promise<void> =>
+    evaluateRenderer<void>(`(() => {
+      const target = ${JSON.stringify(text)};
+      const button = Array.from(document.querySelectorAll('button')).find((element) => (element.textContent ?? '').trim() === target);
+      if (!button) throw new Error('settings walkthrough: button not found: ' + target);
+      button.click();
+    })()`);
+  const clickSettingsNav = (label: string): Promise<void> =>
+    evaluateRenderer<void>(`(() => {
+      const item = Array.from(document.querySelectorAll('.settings-nav-item')).find((element) => (element.textContent ?? '') === ${JSON.stringify(label)});
+      if (!item) throw new Error('settings walkthrough: nav item not found: ' + ${JSON.stringify(label)});
+      item.click();
+    })()`);
+  const captureSettings = async (name: string, mustContain: string): Promise<void> => {
+    await delay(250);
+    const text = await evaluateRenderer<string>("document.body.innerText");
+    if (!text.toLowerCase().includes(mustContain.toLowerCase())) {
+      throw new Error(`settings walkthrough: expected "${mustContain}" on screen for ${name}; body text: ${text.slice(0, 1400).replace(/\s+/g, " | ")}`);
+    }
+    await capturePackagedSmokeScreenshot(name);
+  };
+
+  await clickButtonWithText("Settings");
+  await captureSettings("05-settings-general", "Open last workspace on startup");
+  smokeRecord("settings_open=PASS");
+
+  // Header account menu -> Profile & Account deep link (the account identity surface).
+  await evaluateRenderer<void>(`(() => { const button = document.querySelector('.cloud-account-btn'); if (!button) throw new Error('settings walkthrough: account button not found'); button.click(); })()`);
+  await delay(200);
+  await capturePackagedSmokeScreenshot("05a-account-menu");
+  await clickButtonWithText("Profile & Account");
+  await captureSettings("06-settings-profile", "CodeForge account");
+  smokeRecord("account_menu_profile_deeplink=PASS");
+
+  await clickSettingsNav("Models & Routing");
+  await captureSettings("07-settings-models", "ForgeZero");
+  await clickSettingsNav("Agents");
+  await captureSettings("08-settings-agents", "Agent steering");
+  await clickSettingsNav("Verification & Safety");
+  await captureSettings("09-settings-safety", "Completion gate");
+  await clickSettingsNav("Connected Providers");
+  await captureSettings("10-settings-providers", "OpenRouter");
+  await clickSettingsNav("About");
+  await captureSettings("11-settings-about", "License");
+
+  // Functional search: "tray" must find the close-behavior surface and land on it.
+  await evaluateRenderer<void>(`(() => {
+    const input = document.querySelector('input[aria-label="Search settings"]');
+    if (!input) throw new Error('settings walkthrough: search input not found');
+    const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+    descriptor.set.call(input, 'tray');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  })()`);
+  await delay(250);
+  await capturePackagedSmokeScreenshot("12-settings-search");
+  const searchResultText = await evaluateRenderer<string>("document.body.innerText");
+  if (!searchResultText.includes("Application & Background")) throw new Error("settings walkthrough: search for 'tray' did not surface Application & Background");
+  await evaluateRenderer<void>(`(() => {
+    const result = Array.from(document.querySelectorAll('.settings-search-result')).find((element) => (element.textContent ?? '').includes('Application & Background'));
+    if (!result) throw new Error('settings walkthrough: search result not clickable');
+    result.click();
+  })()`);
+  await captureSettings("13-settings-close-behavior", "When tasks are active and I close CodeForge");
+  smokeRecord("settings_search=PASS");
+
+  await evaluateRenderer<void>(`(() => { const button = document.querySelector('.settings-back-btn'); if (!button) throw new Error('settings walkthrough: back button not found'); button.click(); })()`);
+  await delay(250);
+  const backText = await evaluateRenderer<string>("document.body.innerText");
+  if (backText.includes("Search settings")) throw new Error("settings walkthrough: Back did not return to the workspace");
+  smokeRecord("settings_back_to_workspace=PASS");
+
   verifyCredentialPersistence(testSecret);
   smokeRecord("safe_storage_available=PASS");
   smokeRecord("credential_round_trip=PASS");
@@ -1239,6 +1490,9 @@ async function runPackagedSmoke(): Promise<void> {
 
 async function startPrimaryInstance(): Promise<void> {
   smokeRecord("WHEN_READY_START");
+  // One-time freshness probe for the canonical settings store: a first launch with no stored
+  // settings object lets the renderer seed defaults from its pre-canonical local values.
+  appSettingsFreshAtStartup = !(APP_SETTINGS_KEY in readSettings());
   desktopCredentialStore = new DesktopCredentialStore();
   smokeRecord("WHEN_READY_CRED_STORE_DONE");
   // Firewall enforces the orphan-model invariant via the provider oracle: a model can be
@@ -1272,8 +1526,20 @@ async function startPrimaryInstance(): Promise<void> {
       if (credentials[id]) registerProviderAdapter(id);
     }
     const cloudTokens = getStoredCloudTokens();
-    if (cloudTokens.accessToken) {
+    if (resolveCloudCatalogSyncMode(Boolean(cloudTokens.accessToken)) === "register-adapter-and-sync") {
+      // Signed-in: eagerly register before window paint so the account's hosted models are
+      // selectable the instant the workspace opens (existing behavior, unchanged).
       await registerCloudAdapter();
+    } else {
+      // CodeForge's hosted free catalog (CloudProviderRegistry, backed by CodeForge's own
+      // server-owned provider keys) requires no sign-in to LIST — only /v1/hosted/inference
+      // (actually running a model) checks auth. A fresh, signed-out install must still see the
+      // real qualified free-model catalog instead of falling back to the single generic
+      // placeholder record, so populate it here too (catalog only — see
+      // registerCloudFreeCatalogOnly for why the adapter itself isn't registered yet).
+      // Fire-and-forget: never block window paint; a cloud-api outage silently leaves the
+      // generic fallback in place (HostedProviderAdapter already swallows fetch failures).
+      void registerCloudFreeCatalogOnly().catch(() => {});
     }
   }
 
@@ -1302,6 +1568,21 @@ async function startPrimaryInstance(): Promise<void> {
           if (providerCatalog?.get(id)) void discoverProviderFree(id);
         }
       });
+  }
+
+  // Keep the CodeForge Free (hosted) catalog current: capacity CodeForge's own server-owned
+  // provider keys back can appear, rotate, or drop out after this process has already started.
+  // Mirrors CloudProviderRegistry's own 5-minute discovery TTL on the cloud side so the desktop
+  // never displays a materially stale view of what is actually routable. Re-registering is
+  // idempotent (registerCloudAdapter reconciles the existing "codeforge-cloud" records each time)
+  // and any failure (offline cloud-api) is swallowed the same way the initial registration is.
+  if (!PACKAGED_SMOKE) {
+    cloudCatalogRefreshTimer = setInterval(() => {
+      const mode = resolveCloudCatalogSyncMode(Boolean(getStoredCloudTokens().accessToken));
+      const refresh = mode === "register-adapter-and-sync" ? registerCloudAdapter() : registerCloudFreeCatalogOnly();
+      void refresh.catch(() => {});
+    }, CLOUD_CATALOG_REFRESH_INTERVAL_MS);
+    cloudCatalogRefreshTimer.unref?.();
   }
 
   if (PACKAGED_SMOKE) {
@@ -1388,6 +1669,14 @@ app.on("before-quit", (event) => {
 app.on("will-quit", () => {
   tray?.destroy();
   tray = null;
+  if (trayStatusTimer) {
+    clearInterval(trayStatusTimer);
+    trayStatusTimer = null;
+  }
+  if (cloudCatalogRefreshTimer) {
+    clearInterval(cloudCatalogRefreshTimer);
+    cloudCatalogRefreshTimer = null;
+  }
 });
 
 app.on("window-all-closed", () => {
@@ -1421,6 +1710,35 @@ ipcMain.handle("app:close-decision", async (event, payload: { decision?: unknown
   mainWindow?.webContents.send("app:close-requested", { status, preference: getCloseBehavior() });
 });
 
+/**
+ * Read-only git introspection for the desktop's workspace context chips (branch/worktree
+ * detection — see `apps/desktop/src/renderer/git-workspace-info.ts`). Deliberately allowlisted to
+ * `git` only: this is not a general command-execution bridge across the renderer/main boundary.
+ */
+ipcMain.handle("shell:execCommand", async (event, payload: { command?: unknown; args?: unknown; cwd?: unknown }) => {
+  if (event.sender !== mainWindow?.webContents) throw new Error("Invalid execCommand sender");
+  if (payload?.command !== "git") throw new Error("execCommand only supports 'git'");
+  const args = payload.args;
+  if (!Array.isArray(args) || !args.every((a) => typeof a === "string")) throw new Error("Invalid execCommand args");
+  // Strict read-only subcommand/argument allowlist (R2 GAP-4): this bridge is for workspace git
+  // introspection only, never a general git-command tunnel. Rejects push/reset/clean/config-write/
+  // credential/global-flag-injection even though the binary is already pinned to `git`.
+  const gitCheck = checkGitExecArgs(args);
+  if (!gitCheck.ok) throw new Error(`execCommand rejected: ${gitCheck.reason}`);
+  const cwd = payload.cwd;
+  if (cwd !== undefined && typeof cwd !== "string") throw new Error("Invalid execCommand cwd");
+  return new Promise<{ exitCode: number; stdout: string; stderr: string }>((resolve) => {
+    execFile("git", args, { cwd, timeout: 10_000, windowsHide: true }, (error, stdout, stderr) => {
+      const code = error ? (typeof (error as NodeJS.ErrnoException & { code?: unknown }).code === "number" ? (error as unknown as { code: number }).code : 1) : 0;
+      resolve({ exitCode: code, stdout, stderr });
+    });
+  });
+});
+
+/** Lets the renderer show a compact "N tasks running" indicator backed by the same authoritative
+ * runtime status the close-safety dialog uses — never a separate, potentially-inconsistent count. */
+ipcMain.handle("app:runtime-status", async () => currentRuntimeStatus());
+
 ipcMain.handle("dialog:selectDirectory", async () => {
   return selectDirectory();
 });
@@ -1435,6 +1753,13 @@ ipcMain.handle("project:getRecent", async () => {
     } satisfies ProjectInfo];
   }
   return getRecentProjects();
+});
+
+ipcMain.handle("project:clearRecent", async (event) => {
+  if (event.sender !== mainWindow?.webContents) throw new Error("Invalid clearRecent sender");
+  const settings = readSettings();
+  delete settings[RECENT_PROJECTS_KEY];
+  writeSettingsAtomic(settings);
 });
 
 ipcMain.handle("project:open", async (_event, projectPath: string) => {
@@ -1496,6 +1821,74 @@ ipcMain.handle("app:getVersion", () => {
 
 ipcMain.handle("app:getPlatform", () => {
   return process.platform;
+});
+
+// --- Settings surface (canonical schema in app-settings.ts) ---
+
+ipcMain.handle("settings:get", (): SettingsSnapshot => getSettingsSnapshot());
+
+ipcMain.handle("settings:set", (_event, payload: { settings?: unknown; closeBehavior?: unknown }) => {
+  if (payload === null || typeof payload !== "object") throw new Error("Invalid settings payload");
+  return updateSettings(payload);
+});
+
+ipcMain.handle("settings:reset", (): SettingsSnapshot => resetAppSettings());
+
+ipcMain.handle("app:getSystemInfo", () => ({
+  appVersion: app.getVersion(),
+  electron: process.versions.electron ?? "unknown",
+  node: process.versions.node ?? "unknown",
+  chrome: process.versions.chrome ?? "unknown",
+  platform: process.platform,
+  arch: process.arch,
+  osRelease: os.release(),
+  buildChannel: RESOLVED_CLOUD_ENDPOINT.channel,
+  isPackaged: app.isPackaged,
+}));
+
+ipcMain.handle("app:openDataFolder", async () => {
+  const result = await shell.openPath(app.getPath("userData"));
+  return { ok: !result, error: result || undefined };
+});
+
+ipcMain.handle("notifications:show", (event, payload: { title?: unknown; body?: unknown }) => {
+  if (event.sender !== mainWindow?.webContents) throw new Error("Invalid notification sender");
+  if (typeof payload?.title !== "string" || payload.title.length === 0 || typeof payload?.body !== "string") {
+    throw new Error("Invalid notification payload");
+  }
+  if (!Notification.isSupported()) return { ok: false, reason: "unsupported" };
+  const notification = new Notification({
+    title: payload.title.slice(0, 120),
+    body: payload.body.slice(0, 250),
+    // CodeForge has no sound infrastructure; silent keeps notifications from inventing one.
+    silent: true,
+  });
+  notification.on("click", () => restoreMainWindow());
+  notification.show();
+  return { ok: true };
+});
+
+/**
+ * Manual free-catalog refresh — the exact refresh the 5-minute background timer performs
+ * (cloud catalog sync + live Models.dev refresh + re-verification for connected providers),
+ * triggered on demand. Never grants free status by itself: ForgeZero verification rules apply
+ * identically to this path.
+ */
+ipcMain.handle("catalog:refresh", async () => {
+  try {
+    if (!firewall) return { ok: false, freeModels: 0, error: "Runtime is not ready" };
+    if (modelRegistry) await modelRegistry.refresh().catch(() => {});
+    const mode = resolveCloudCatalogSyncMode(Boolean(getStoredCloudTokens().accessToken));
+    if (mode === "register-adapter-and-sync") await registerCloudAdapter();
+    else await registerCloudFreeCatalogOnly();
+    await Promise.allSettled(
+      ROUTABLE_PROVIDER_IDS.filter((id) => providerCatalog?.get(id)).map((id) => discoverProviderFree(id)),
+    );
+    const freeModels = firewall.allModels().filter((m) => m.costProfile?.isFree).length;
+    return { ok: true, freeModels };
+  } catch (error) {
+    return { ok: false, freeModels: 0, error: (error instanceof Error ? error.message : String(error)).slice(0, 200) };
+  }
 });
 
 ipcMain.handle("provider:getCredentialStatus", async () => {

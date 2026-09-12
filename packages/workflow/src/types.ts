@@ -149,6 +149,8 @@ export interface VerificationReport extends VerificationResult {
   resolutionReceipt?: import("@codeforge/forge-green").EvidenceResolutionReceipt;
   /** FG-7 verification coverage receipt when evaluated. */
   coverageReceipt?: import("@codeforge/forge-green").VerificationCoverageReceipt;
+  /** FG-12F cost-gated evidence-reuse receipt when the advisor engaged (Candidate D). */
+  costGateReceipt?: import("./verification-reuse-cost-gate.js").VerificationReuseCostGateReceipt;
 }
 
 export interface FailureAnalysis {

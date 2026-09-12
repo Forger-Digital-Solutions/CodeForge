@@ -6,6 +6,7 @@ export * from "./plan-service.js";
 export * from "./verification-service.js";
 export * from "./forge-verify.js";
 export * from "./verification-evidence-reuse.js";
+export * from "./verification-reuse-cost-gate.js";
 export * from "./child-process.js";
 export * from "./failure-analyzer.js";
 export * from "./diff-review.js";

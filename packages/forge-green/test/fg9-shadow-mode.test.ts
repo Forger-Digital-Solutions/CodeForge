@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   detectDuplicateContextPageTransmission,
   detectOptionalPrefetchSuppression,
-  detectReusableVerificationEvidence,
   resolveOptimizationMode,
 } from "../src/index.js";
 
@@ -20,11 +19,14 @@ describe("FG-9 shadow mode (§30 items 20-22)", () => {
   });
 
   it("[21] a shadow decision's expectedEffect is structurally distinct from a 'measured' resource delta — comparing candidate recommendation against actual execution requires a SEPARATE, explicitly measured receipt, never the expectation itself relabeled", () => {
-    const decision = detectReusableVerificationEvidence({
+    // Candidate C (registered SHADOW). FG-12F graduated Candidate D to a cost-gated ACTIVE_SAFE,
+    // so the shadow-semantics example now uses a kind whose graduated mode is still SHADOW.
+    const decision = detectOptionalPrefetchSuppression({
       runId: "r1", sessionId: "s1", sustainabilityReceiptId: undefined,
-      candidates: [{ evidenceId: "ev-1", workspaceContentHash: "h1", policyRevision: "p1", command: "npm test", dependencyStateHash: "d1", forgeVerifyConfirmedValid: true }],
+      candidates: [{ pageId: "p1", required: false, alreadyValidlyAvailable: true }],
     });
     expect(decision.status).toBe("PROPOSED");
+    expect(decision.mode).toBe("SHADOW");
     // The decision type has no field claiming a measured outcome — only expectedEffect/confidence.
     expect(Object.keys(decision)).not.toContain("measuredEffect");
     expect(Object.keys(decision)).not.toContain("actualEffect");

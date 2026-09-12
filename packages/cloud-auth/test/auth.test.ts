@@ -358,7 +358,9 @@ describe("AuthService — server-brokered GitHub OAuth", () => {
     it("uses a server-held PKCE verifier and an exact return allowlist", async () => {
       const start = await startBrowserLogin();
       const authUrl = new URL(start.authUrl);
-      expect(authUrl.searchParams.get("scope")).toBe("read:user");
+      // Identity R1: user:email is requested so the account email can be shown when the
+      // user approves it; without the grant the email endpoint fails and CodeForge falls back honestly.
+      expect(authUrl.searchParams.get("scope")).toBe("read:user user:email");
       expect(authUrl.searchParams.get("redirect_uri")).toBe(`${PUBLIC_URL}${CLOUD_GITHUB_CALLBACK_PATH}`);
       expect(authUrl.searchParams.get("code_challenge")).toBeTruthy();
       expect(JSON.stringify(start)).not.toContain("codeVerifier");

@@ -87,7 +87,9 @@ describe("ModelSelector rendering", () => {
         isOpen: true,
       }),
     );
-    expect(markup).toContain("Unavailable");
+    // GEMS has never shipped a usable model, so "Coming soon" is the truthful state — not
+    // "Unavailable", which would imply a working feature that broke.
+    expect(markup).toContain("Coming soon");
     expect(markup).toContain("aria-disabled=\"true\"");
     expect(markup).toContain("Free");
   });
@@ -101,8 +103,23 @@ describe("ModelSelector rendering", () => {
         isOpen: true,
       }),
     );
-    expect(markup).not.toContain("Unavailable");
+    expect(markup).not.toContain("Coming soon");
     expect(markup).not.toContain("aria-disabled");
+  });
+
+  it("visually distinguishes ForgeAuto from an ordinary catalog row instead of masquerading as a model", () => {
+    const auto: ModelSelectorItem = { id: "auto", displayName: "ForgeAuto/Free", tier: "free", description: "Automatic free routing" };
+    const markup = renderToStaticMarkup(
+      React.createElement(ModelSelector, {
+        models: [auto, freeModel],
+        selectedId: null,
+        onSelect: () => {},
+        isOpen: true,
+      }),
+    );
+    expect(markup).toContain("auto-route");
+    expect(markup).toContain("Verified $0");
+    expect(markup).toContain("Automatic free routing");
   });
 
   it("renders the Auto entry in trigger button with its description", () => {
@@ -195,6 +212,28 @@ describe("ModelSelector section information architecture", () => {
   });
 });
 
+describe("stale selection safety", () => {
+  it("falls back to the ForgeAuto/Free trigger label instead of crashing when the selected id no longer exists in the catalog", () => {
+    expect(() =>
+      renderToStaticMarkup(
+        React.createElement(ModelSelector, {
+          models: [freeModel],
+          selectedId: "deleted-model-that-no-longer-exists",
+          onSelect: () => {},
+        }),
+      ),
+    ).not.toThrow();
+    const markup = renderToStaticMarkup(
+      React.createElement(ModelSelector, {
+        models: [freeModel],
+        selectedId: "deleted-model-that-no-longer-exists",
+        onSelect: () => {},
+      }),
+    );
+    expect(markup).toContain("ForgeAuto/Free · Automatic free routing");
+  });
+});
+
 describe("model catalog filtering", () => {
   const sections: ModelSection[] = [
     { sectionId: "free", sectionLabel: "VERIFIED FREE", models: [freeModel] },
@@ -205,6 +244,22 @@ describe("model catalog filtering", () => {
     expect(filterModelSections(sections, "forge")).toEqual([sections[0]]);
     expect(filterModelSections(sections, "gems")).toEqual([sections[1]]);
     expect(filterModelSections(sections, "missing")).toEqual([]);
+  });
+});
+
+describe("controlled open state", () => {
+  it("renders closed by default, and open when a parent explicitly controls isOpen", () => {
+    const closedMarkup = renderToStaticMarkup(
+      React.createElement(ModelSelector, { models: [freeModel], selectedId: null, onSelect: () => {} }),
+    );
+    expect(closedMarkup).toContain('aria-expanded="false"');
+    expect(closedMarkup).not.toContain("model-dropdown");
+
+    const openMarkup = renderToStaticMarkup(
+      React.createElement(ModelSelector, { models: [freeModel], selectedId: null, onSelect: () => {}, isOpen: true, onOpenChange: () => {} }),
+    );
+    expect(openMarkup).toContain('aria-expanded="true"');
+    expect(openMarkup).toContain("model-dropdown");
   });
 });
 

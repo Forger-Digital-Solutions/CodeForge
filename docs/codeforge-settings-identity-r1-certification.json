@@ -1,0 +1,126 @@
+{
+  "milestone": "codeforge-settings-identity-r1",
+  "verdict": "CODEFORGE_SETTINGS_IDENTITY_R1_CERTIFIED",
+  "generatedAt": "2026-09-12T00:35:00Z",
+  "repository": {
+    "path": "G:\\CodeForge",
+    "branch": "forger-digital-solutions-forgegreen-certified",
+    "startingHead": "92df55383e4bad701c8c9ac01dd23fa2b7e7a4ab",
+    "inheritedChanges": "ForgeGreen milestone working tree (17 modified + 28 untracked files) preserved untouched and stacked upon",
+    "worktreeStatus": "dirty by design (inherited + this milestone); no commits made by this milestone"
+  },
+  "priorSettingsArchitecture": {
+    "surface": "settings modal in WorkspaceShell embedding ProviderSetup (provider-key-first)",
+    "deficiencies": [
+      "provider-first presentation with hard-coded duplicated provider metadata",
+      "dead controls: ProviderSetup onComplete footer unreachable, palette Permissions/MCP entries pointing at a modal with no such content, dead getRuntimeStatus bridge, no-op palette actions",
+      "native bright <select> controls for steering and privacy routing",
+      "fragmented persistence: settings.json (unversioned) + localStorage + in-memory server state resetting each restart",
+      "default-model persistence broken end-to-end (POST /api/model/select 404 swallowed; server route is /api/model-selection)",
+      "GitHub avatar fetched but never rendered; no login/email anywhere in the UI; no truthful missing-email state",
+      "packaged-smoke fixture account (displayName 'Packaged smoke') indistinguishable from a real user; the milestone brief's 'Fixture Tester' string does not exist in the tree"
+    ]
+  },
+  "newSettingsArchitecture": {
+    "canonicalSchema": "apps/desktop/src/app-settings.ts — zod-validated, schemaVersion 1, codeforge:app-settings in settings.json, field-level salvage, pure main/renderer-shared",
+    "stores": {
+      "canonical": ["startup", "recovery", "steering", "appearance", "defaultModel", "notifications", "privacyRouting"],
+      "preservedSeparate": ["closeBehavior (codeforge:close-behavior)", "executionMode (renderer store)", "favorites (shared localStorage module)", "providerCredentials (safeStorage-encrypted)"],
+      "migration": "one-time seed of legacy steering policy via settings fresh flag; legacy 'always' mapped to 'expensive_actions_only' (identical runtime semantics; dead option removed)"
+    },
+    "ipc": ["settings:get", "settings:set", "settings:reset", "app:getSystemInfo", "app:openDataFolder", "notifications:show", "catalog:refresh", "project:clearRecent"],
+    "controls": "Toggle(role=switch), CfSelect keyboard-navigable listbox (zero native selects), Segmented, SettingsRow/Group, StatusBadge, danger button, Avatar with initials fallback; --cf-* token system in settings.css",
+    "keyboard": "settings search focus via '/' or Ctrl+F; Escape clears; arrow/enter navigation in dropdowns"
+  },
+  "categories": {
+    "general": ["General", "Profile & Account", "Appearance"],
+    "codeforge": ["Models & Routing", "Agents", "Verification & Safety", "GEMS"],
+    "workspace": ["Workspaces", "Git & GitHub", "Runtime & Execution"],
+    "system": ["Notifications", "Application & Background", "Data & Privacy"],
+    "integrations": ["Connected Providers"],
+    "advanced": ["Advanced", "About"],
+    "deliberatelyAbsent": ["Automations (no scheduler exists)", "Extensions/MCP (dead palette entry removed)", "Worktrees page (status shown in Git & GitHub)", "Network page (no proxy infrastructure)", "fake theme picker (dark-only product)"]
+  },
+  "githubIdentity": {
+    "username": "identity.login returned in account snapshot, joined from stored identity record (no account-read GitHub fetch)",
+    "displayName": "displayName with login fallback; renderer tolerates absence without rendering undefined",
+    "email": "OAuth scope now read:user user:email; /user/emails primary-verified selection at login; absent -> 'Email not shared' with reconnect explanation; never guessed",
+    "avatar": "user.avatarUrl rendered via CSP-allowlisted https://avatars.githubusercontent.com, lazy, initials fallback, not bundled",
+    "caching": "identity from account snapshot; no startup blocking; graceful offline via cached data",
+    "fixtureHandling": "snapshot without real identity fields (packaged-smoke fixture) renders explicit 'Smoke fixture account' banner; regression-tested; 'Fixture Tester' string confirmed absent from tree",
+    "oauthSecurity": "server-brokered code flow, dual PKCE, state validation, loopback allowlist, safeStorage tokens — unchanged; scope escalation is GitHub-consented and degrades gracefully when declined",
+    "liveOAuth": "not performed (external authorization boundary, no credentials in environment); mocked harness proves callback -> account -> identity -> persistence"
+  },
+  "modelsRouting": {
+    "canonicalCatalogReused": "buildModelSections over /api/models is the only grouping; settings picker and composer share it",
+    "defaultModelPersistence": "canonical defaultModelId; /api/model-selection endpoint mismatch fixed; re-applied on startup only if the model still exists (fail-closed to ForgeAuto)",
+    "forgeAuto": "status Healthy/Degraded from live provider health; fallback described; no invented router knobs",
+    "eightBit": "qualified counts, last-checked, working Refresh catalog (same verified sync as the 5-minute timer)",
+    "forgeZero": "fail-closed enforcement always-on; privacy routing moved to Data & Privacy and now persists across restarts (main re-applies after server start)",
+    "favorites": "shared loadModelFavorites module; remove/set-default",
+    "gems": "Topaz/Sapphire/Peridot/Garnet with authoritative specializations; truthful 'Coming soon'; entitlement-gated, never free-routed",
+    "reasoningEffort": "intentionally absent — no reasoning parameter exists in ChatRequest; sending one would be an unsupported parameter"
+  },
+  "agentsVerification": {
+    "agents": "default Agent/Chat mode (persisted, live-synced to open composer); steering two real values (dead 'Always' removed); truthful per-action approval policy with live pending count; parallel/tool limits as read-only facts",
+    "verification": "ForgeVerify, completion gate, evidence freshness, boundaries, destructive confirmation, command safeguards, secret redaction — always-on status, no fake toggles (architectural, non-disableable per product policy)"
+  },
+  "workspaceGitRuntime": {
+    "workspaces": "current workspace + git state, recent projects with working open, Repository Intelligence toggle/rebuild (real endpoints), boundary status, startup restore toggle gating real behavior",
+    "gitGithub": "detected git user.name/email (read-only), branch/detached/worktree state, connected GitHub account card, manage-connection deep link, explicit never-auto-push statement",
+    "runtime": "real system info (new app:getSystemInfo), model-derived execution label, live runtime counters via previously-dead getRuntimeStatus",
+    "background": "close behavior bound to canonical codeforge:close-behavior (single store), tray always documented, recovery toggle resumes only turns persisted mid-run (no replay, approvals intact, paused turns untouched)",
+    "notifications": "real OS notifications (approval-needed, work-completed) with canonical per-class toggles, background-only default, pure logic over authoritative runtime status; in-app approval/failure surfaces always remain"
+  },
+  "providers": "Connected Providers under INTEGRATIONS with optional-expansion framing; credential manager embedded (OAuth connect, masked key input, test/delete); live health-derived status; secrets never displayed after storage; BYOK optional, Free/ForgeAuto require nothing",
+  "persistenceMigration": "canonical v1 store with defaults + salvage; one-time legacy migration; close behavior/provider credentials/execution-mode stores preserved; persistence proven by unit tests, packaged reloads, and a real packaged restart (recovery smoke)",
+  "security": {
+    "review": "no secrets in settings.json plaintext (safeStorage preserved); no token in renderer state/logs/reports; CSP narrowed to GitHub avatar host only (no wildcard); notifications and openDataFolder senders validated; settings patches zod-validated with strict schema",
+    "oauthRegressions": "none — existing OAuth invariants re-tested"
+  },
+  "tests": {
+    "command": "npm test",
+    "result": "300 files / 2215 tests passed / 0 failed / 7 skipped (by design)",
+    "newTests": 53,
+    "newTestFiles": [
+      "apps/desktop/test/app-settings.test.ts",
+      "apps/desktop/test/settings-registry.test.tsx",
+      "apps/desktop/test/settings-identity.test.tsx",
+      "apps/desktop/test/settings-models.test.tsx",
+      "apps/desktop/test/settings-agents-safety.test.tsx",
+      "apps/desktop/test/settings-providers.test.tsx",
+      "apps/desktop/test/notifications-client.test.ts"
+    ],
+    "updatedTests": [
+      "packages/cloud-auth/test/auth.test.ts (scope read:user user:email)",
+      "apps/cloud-api/test/cloud-api.test.ts (emails mock, primary-verified selection, hidden-email fallback, identity in snapshot)",
+      "apps/desktop/test/header-account-layout.test.ts (new account control)",
+      "apps/desktop/test/renderer-csp.test.ts (avatar allowlist, no wildcard)"
+    ]
+  },
+  "packaging": {
+    "targets": ["win-unpacked", "nsis", "portable"],
+    "artifacts": [
+      { "name": "CodeForge-Setup-0.2.0.exe", "bytes": 85884856, "sha256": "51786a34239e4432b7ced0e4f19cde9123685649376bb2de7767f18623a5d417" },
+      { "name": "CodeForge-Portable.exe", "bytes": 85614116, "sha256": "4c3b6f0c6fc7505fc7d09a3c121b657f08153197a64e0d5f393e67515f351934" },
+      { "name": "win-unpacked/resources/app.asar", "sha256": "66e258c8d72a95114ffb011d38bbbe9aa345061917d2248fe460b9e42802c1ea" }
+    ]
+  },
+  "packagedEvidence": {
+    "harness": "apps/desktop/scripts/packaged-smoke.js against release/win-unpacked/CodeForge.exe (fresh profile, Electron 33.4.11)",
+    "full": "SUCCESS exit 0 — PACKAGED_FULL_SMOKE_OK + settings walkthrough (open, account-menu deep link, section navigation, search 'tray' -> Application & Background, close-behavior, back to workspace) + screenshots 01-13 in release/smoke-screens/",
+    "interrupt": "SUCCESS exit 73 (expected) — electron_restart_interruption_ready=PASS",
+    "recover": "SUCCESS exit 0 — PACKAGED_RECOVERY_SMOKE_OK (safe recovery, no approval replay, credential decrypt, corrupt-credential fail-closed)",
+    "settingsScreenshots": ["01-authenticated-zero-state", "02-workspace-ready", "02a-model-catalog", "02b-model-filter", "03-workflow-completed", "05-settings-general", "05a-account-menu", "06-settings-profile", "07-settings-models", "08-settings-agents", "09-settings-safety", "10-settings-providers", "11-settings-about", "12-settings-search", "13-settings-close-behavior", "04-recovery"]
+  },
+  "bugsFoundAndFixed": [
+    "Deep links dead after mount: SettingsApp consumed initialSection only in state initializer; account-menu -> Profile never navigated. Fixed with prop-sync effect; covered end-to-end by packaged walkthrough.",
+    "Inherited smoke text assertions untestable as written (popover never opened; CSS uppercase vs case-sensitive innerText match). Harness now opens the live status surface and compares case-insensitively.",
+    "Inherited environment blocker resolved: no MSVC toolchain on this machine blocked build:native; official better-sqlite3 v12.11.1 Electron-v130 prebuild installed (ABI-matched). Previously failing sqlite-driver suite now 5/5. This unblocked packaged validation for the first time since the R8 smoke assertions were introduced."
+  ],
+  "regressionsChecked": ["model-picker R1", "ForgeAuto/Free", "8-Bit SSE status", "ForgeZero enforcement + trust chip", "GEMS catalog", "provider discovery/OAuth", "GitHub OAuth security architecture", "R5 real agent loop", "steering", "approvals", "ForgeVerify", "completion gates", "hosted continuations", "restart recovery", "tray/safe-close", "workspace restore", "git branch/worktree context", "SSE/reconnect", "secret redaction", "zero-billing guarantees", "Windows packaging + all three smoke modes"],
+  "blockers": [
+    "Live GitHub OAuth authorization not performed (external authorization boundary; no GitHub credentials in this environment). Mocked harness proves the flow; packaged UI fallbacks verified truthfully.",
+    "Cloud deployment of the user:email/identity changes is required for production accounts to display login/authorized email; against the current deployment the desktop renders documented truthful fallbacks."
+  ]
+}

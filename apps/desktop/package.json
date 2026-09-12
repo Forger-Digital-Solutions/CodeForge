@@ -1,6 +1,6 @@
 {
   "name": "codeforge-desktop",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "license": "MIT",
   "author": "CodeForge Team",
@@ -74,7 +74,7 @@
     },
     "extraMetadata": {
       "name": "codeforge-desktop",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "type": "module",
       "main": "apps/desktop/dist/main.js",
       "author": "CodeForge Team",

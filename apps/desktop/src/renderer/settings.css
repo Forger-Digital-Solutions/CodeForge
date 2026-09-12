@@ -1,0 +1,748 @@
+/* CodeForge Settings application — one desktop visual system built on the shared --cf-* tokens.
+   The settings shell is a real application area (left navigation + content pane), not a modal. */
+
+.app-settings {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  background: var(--cf-bg-base);
+  color: var(--cf-text);
+  overflow: hidden;
+}
+
+/* ---------- Left navigation ---------- */
+
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--cf-border-subtle);
+  background: var(--cf-bg-raised);
+}
+
+.settings-nav-header {
+  padding: 14px 14px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-back-btn {
+  background: transparent;
+  border: 1px solid var(--cf-border);
+  color: var(--cf-text-secondary);
+  border-radius: var(--cf-radius-md);
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.settings-back-btn:hover {
+  background: var(--cf-bg-hover);
+  color: var(--cf-text);
+}
+
+.settings-nav-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cf-text);
+}
+
+.settings-search {
+  padding: 0 12px 10px;
+}
+
+.settings-search-input {
+  width: 100%;
+  background: var(--cf-bg-input);
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  color: var(--cf-text);
+  font-size: 12px;
+  padding: 6px 9px;
+  outline: none;
+}
+
+.settings-search-input::placeholder {
+  color: var(--cf-text-muted);
+}
+
+.settings-search-input:focus-visible {
+  border-color: var(--cf-accent);
+  box-shadow: 0 0 0 2px var(--cf-accent-muted);
+}
+
+.settings-search-results {
+  margin: 0 12px 8px;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  background: var(--cf-bg-overlay);
+  overflow: hidden;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.settings-search-result {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--cf-border-subtle);
+  color: var(--cf-text);
+  font-size: 12px;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.settings-search-result:last-child {
+  border-bottom: none;
+}
+
+.settings-search-result:hover,
+.settings-search-result:focus-visible {
+  background: var(--cf-bg-hover);
+  outline: none;
+}
+
+.settings-search-result .settings-search-result-hint {
+  color: var(--cf-text-muted);
+  margin-left: 6px;
+  font-size: 11px;
+}
+
+.settings-search-empty {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--cf-text-muted);
+}
+
+.settings-nav-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 8px 14px;
+}
+
+.settings-nav-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cf-text-muted);
+  padding: 14px 8px 4px;
+}
+
+.settings-nav-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: var(--cf-radius-md);
+  color: var(--cf-text-secondary);
+  font-size: 12.5px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.settings-nav-item:hover {
+  background: var(--cf-bg-hover);
+  color: var(--cf-text);
+}
+
+.settings-nav-item.selected {
+  background: var(--cf-accent-muted);
+  color: var(--cf-text);
+  font-weight: 600;
+}
+
+.settings-nav-item:focus-visible {
+  outline: 2px solid var(--cf-accent);
+  outline-offset: -2px;
+}
+
+/* ---------- Content pane ---------- */
+
+.settings-content {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 22px 26px 40px;
+}
+
+.settings-section-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.settings-section-subtitle {
+  font-size: 12.5px;
+  color: var(--cf-text-secondary);
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+
+.settings-group {
+  border: 1px solid var(--cf-border);
+  border-radius: 8px;
+  background: var(--cf-bg-raised);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.settings-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cf-text-secondary);
+  padding: 12px 14px 6px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--cf-border-subtle);
+}
+
+.settings-row.stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.settings-row-main {
+  min-width: 0;
+}
+
+.settings-row-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cf-text);
+}
+
+.settings-row-description {
+  font-size: 12px;
+  color: var(--cf-text-secondary);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+.settings-row-control {
+  flex-shrink: 0;
+}
+
+.settings-value {
+  font-size: 12.5px;
+  color: var(--cf-text);
+}
+
+.settings-value.muted {
+  color: var(--cf-text-muted);
+}
+
+.settings-note {
+  font-size: 11.5px;
+  color: var(--cf-text-muted);
+  line-height: 1.5;
+  padding: 8px 14px 12px;
+}
+
+/* ---------- Toggle switch ---------- */
+
+.cf-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 34px;
+  height: 19px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.cf-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+
+.cf-toggle-track {
+  width: 34px;
+  height: 19px;
+  border-radius: 999px;
+  background: var(--cf-bg-hover);
+  border: 1px solid var(--cf-border);
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.cf-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--cf-text-secondary);
+  transition: transform 120ms ease, background 120ms ease;
+  pointer-events: none;
+}
+
+.cf-toggle input:checked + .cf-toggle-track {
+  background: var(--cf-accent-muted);
+  border-color: var(--cf-accent);
+}
+
+.cf-toggle input:checked + .cf-toggle-track .cf-toggle-thumb {
+  transform: translateX(15px);
+  background: var(--cf-accent);
+}
+
+.cf-toggle input:focus-visible + .cf-toggle-track {
+  outline: 2px solid var(--cf-accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Custom dropdown (no native selects anywhere in Settings) ---------- */
+
+.cf-select {
+  position: relative;
+  display: inline-block;
+}
+
+.cf-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cf-bg-input);
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  color: var(--cf-text);
+  font-size: 12.5px;
+  padding: 6px 10px;
+  cursor: pointer;
+  min-width: 180px;
+  justify-content: space-between;
+}
+
+.cf-select-trigger:hover {
+  border-color: var(--cf-text-muted);
+}
+
+.cf-select-trigger:focus-visible {
+  outline: 2px solid var(--cf-accent);
+  outline-offset: 1px;
+}
+
+.cf-select-trigger .cf-select-caret {
+  color: var(--cf-text-muted);
+  font-size: 10px;
+}
+
+.cf-select-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 60;
+  min-width: 100%;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--cf-bg-overlay);
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  padding: 4px;
+}
+
+.cf-select-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: var(--cf-radius);
+  color: var(--cf-text);
+  font-size: 12.5px;
+  padding: 7px 9px;
+  cursor: pointer;
+}
+
+.cf-select-option:hover,
+.cf-select-option.focused {
+  background: var(--cf-bg-hover);
+}
+
+.cf-select-option.selected {
+  color: var(--cf-accent);
+  font-weight: 600;
+}
+
+.cf-select-option:focus-visible {
+  outline: 2px solid var(--cf-accent);
+  outline-offset: -2px;
+}
+
+/* ---------- Segmented control ---------- */
+
+.cf-segmented {
+  display: inline-flex;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  background: var(--cf-bg-input);
+  overflow: hidden;
+}
+
+.cf-segmented-option {
+  background: transparent;
+  border: none;
+  color: var(--cf-text-secondary);
+  font-size: 12px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+.cf-segmented-option + .cf-segmented-option {
+  border-left: 1px solid var(--cf-border);
+}
+
+.cf-segmented-option.selected {
+  background: var(--cf-accent-muted);
+  color: var(--cf-text);
+  font-weight: 600;
+}
+
+.cf-segmented-option:focus-visible {
+  outline: 2px solid var(--cf-accent);
+  outline-offset: -2px;
+}
+
+/* ---------- Buttons, badges, status ---------- */
+
+.settings-btn {
+  background: var(--cf-bg-input);
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  color: var(--cf-text);
+  font-size: 12px;
+  padding: 5px 11px;
+  cursor: pointer;
+}
+
+.settings-btn:hover:not(:disabled) {
+  background: var(--cf-bg-hover);
+}
+
+.settings-btn.primary {
+  background: var(--cf-accent-muted);
+  border-color: var(--cf-accent);
+  color: var(--cf-accent);
+  font-weight: 600;
+}
+
+.settings-btn.danger {
+  background: transparent;
+  border-color: #7f1d1d;
+  color: var(--cf-danger);
+}
+
+.settings-btn.danger:hover:not(:disabled) {
+  background: var(--cf-danger-muted);
+}
+
+.settings-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.settings-btn:focus-visible {
+  outline: 2px solid var(--cf-accent);
+  outline-offset: 1px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 9px;
+  border: 1px solid var(--cf-border);
+  color: var(--cf-text-secondary);
+  white-space: nowrap;
+}
+
+.status-badge.ok {
+  color: var(--cf-success);
+  border-color: rgba(45, 211, 111, 0.35);
+  background: var(--cf-success-muted);
+}
+
+.status-badge.warn {
+  color: var(--cf-warning);
+  border-color: rgba(245, 166, 35, 0.35);
+  background: var(--cf-warning-muted);
+}
+
+.status-badge.error {
+  color: var(--cf-danger);
+  border-color: rgba(239, 68, 68, 0.35);
+  background: var(--cf-danger-muted);
+}
+
+.status-badge.info {
+  color: var(--cf-accent);
+  border-color: rgba(79, 143, 255, 0.35);
+  background: var(--cf-accent-muted);
+}
+
+/* ---------- Account / identity ---------- */
+
+.account-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+}
+
+.account-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--cf-border);
+  flex-shrink: 0;
+}
+
+.account-avatar-fallback {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--cf-border);
+  background: var(--cf-accent-muted);
+  color: var(--cf-accent);
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.account-avatar-sm,
+.account-avatar-fallback-sm {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.account-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cf-text);
+}
+
+.account-handle,
+.account-email {
+  font-size: 12px;
+  color: var(--cf-text-secondary);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.fixture-banner {
+  margin: 0 14px 12px;
+  border: 1px solid rgba(245, 166, 35, 0.35);
+  background: var(--cf-warning-muted);
+  color: var(--cf-warning);
+  border-radius: var(--cf-radius-md);
+  font-size: 12px;
+  padding: 8px 10px;
+  line-height: 1.5;
+}
+
+.danger-zone {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+/* ---------- Model catalog rows ---------- */
+
+.model-pick-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 14px;
+  border-top: 1px solid var(--cf-border-subtle);
+}
+
+.model-pick-row:first-child {
+  border-top: none;
+}
+
+.model-pick-name {
+  font-size: 12.5px;
+  color: var(--cf-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-pick-badge {
+  font-size: 10.5px;
+  color: var(--cf-text-muted);
+  border: 1px solid var(--cf-border);
+  border-radius: 999px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+
+/* ---------- Header account menu (main app shell) ---------- */
+
+.cloud-account-menu-anchor {
+  position: relative;
+}
+
+.cloud-account-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cf-bg-raised);
+  border: 1px solid var(--cf-border);
+  border-radius: 999px;
+  color: var(--cf-text);
+  padding: 3px 10px 3px 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cloud-account-btn:hover {
+  background: var(--cf-bg-hover);
+}
+
+.cloud-account-btn .account-plan {
+  color: var(--cf-text-secondary);
+}
+
+.cloud-account-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 80;
+  width: 240px;
+  background: var(--cf-bg-overlay);
+  border: 1px solid var(--cf-border);
+  border-radius: 8px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.cloud-account-menu-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--cf-border-subtle);
+}
+
+.cloud-account-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--cf-text);
+  font-size: 12.5px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.cloud-account-menu-item:hover {
+  background: var(--cf-bg-hover);
+}
+
+.cloud-account-menu-item.danger {
+  color: var(--cf-danger);
+}
+
+.cloud-account-menu-item:focus-visible {
+  outline: 2px solid var(--cf-accent);
+  outline-offset: -2px;
+}
+
+.cloud-account-menu-divider {
+  height: 1px;
+  background: var(--cf-border-subtle);
+}
+
+/* ---------- Provider compact cards (Connected Providers) ---------- */
+
+.settings-provider-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settings-provider-models {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Reduced motion ---------- */
+
+.cf-reduced-motion *,
+.cf-reduced-motion *::before,
+.cf-reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ---------- Responsive desktop behavior ---------- */
+
+@media (max-width: 860px) {
+  .app-settings {
+    grid-template-columns: 210px minmax(0, 1fr);
+  }
+  .settings-content {
+    padding: 16px 16px 32px;
+  }
+}
+
+@media (max-width: 680px) {
+  .app-settings {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .settings-nav {
+    border-right: none;
+    border-bottom: 1px solid var(--cf-border-subtle);
+  }
+  .settings-nav-scroll {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 4px 8px 10px;
+  }
+  .settings-nav-group-label {
+    display: none;
+  }
+  .settings-nav-item {
+    white-space: nowrap;
+    width: auto;
+  }
+}

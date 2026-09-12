@@ -13,6 +13,6 @@
     "sourceMap": true,
     "resolveJsonModule": true
   },
-  "include": ["src/main.ts", "src/preload.ts"],
+  "include": ["src/main.ts", "src/preload.ts", "src/app-settings.ts"],
   "exclude": ["node_modules"]
 }

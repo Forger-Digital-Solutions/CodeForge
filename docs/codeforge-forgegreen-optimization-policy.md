@@ -25,9 +25,9 @@ The operating sequence is always `MEASURE → IDENTIFY → PROPOSE → GUARD →
 | `DUPLICATE_READ_ONLY_TOOL_REUSE` | **ACTIVE_SAFE** | FG-1C `DuplicateActionSupervisor` (`packages/server/src/duplicate-suppression.ts`) — ALREADY ACTIVE in production | FG-9 introduces no new suppression logic; it wraps already-happening, already-certified behavior into the decision/receipt provenance framework. Zero new execution-path risk. |
 | `DUPLICATE_CONTEXT_PAGE_TRANSMISSION` | SHADOW | FG-3D context-page identity (`packages/context`) | Detects a page transmitted more than once with an identical content hash AND workspace revision. Not yet wired into live context assembly this phase. |
 | `OPTIONAL_PREFETCH_SUPPRESSION` | SHADOW | FG-3's `omittedOptionalPages`/progressive-context concepts | Proposes suppressing prefetch only when explicitly non-required AND already validly available. Not yet wired into live context assembly this phase. |
-| `VERIFICATION_EVIDENCE_REUSE` | SHADOW | FG-5/FG-6 verification-policy/evidence-resolution validity semantics | Reuse is proposed **only** when the caller passes an explicit `forgeVerifyConfirmedValid: true` — FG-9 never independently judges verification validity. Not yet wired into a live ForgeVerify call site this phase. |
+| `VERIFICATION_EVIDENCE_REUSE` | **ACTIVE_SAFE (cost-gated, FG-12F)** | FG-5/FG-6 verification-policy/evidence-resolution validity semantics | Reuse is proposed **only** when the caller passes an explicit `forgeVerifyConfirmedValid: true` — FG-9 never independently judges verification validity. Since FG-12F the kind's ACTIVE_SAFE execution policy is cost-gated: see §15. |
 
-Per §22 of the task's own instruction ("if only one is defensible, activate one"), only Candidate A graduates this phase.
+Per §22 of the task's own instruction ("if only one is defensible, activate one"), only Candidate A graduated at FG-9. Candidate D graduated at FG-12F under its own cost-gated execution policy after the FG-12D controlled trial and FG-12E performance characterization (break-even ≈152 ms, IQR 139–184 ms).
 
 ## 4. Decision & receipt schema
 
@@ -76,3 +76,17 @@ Unchanged from FG-8/FG-8R: `INSUFFICIENT_DATA` in production. FG-9 reports resou
 ## 14. Relationship to ForgeAuto / 8-Bit / ForgeVerify / Completion Gate
 
 Unchanged. FG-9 reads already-computed state (FG-1C's supervisor metrics) and writes only its own decision/receipt records. It never calls into 8-Bit's routing, ForgeVerify's execution, or the Completion Gate, and none of those subsystems read FG-9 output.
+
+## 15. FG-12F — Candidate D's cost-gated ACTIVE_SAFE execution policy
+
+FG-12F wired `VERIFICATION_EVIDENCE_REUSE` into the real production verification path. The kind's registry mode is `ACTIVE_SAFE`, but that mode means **cost-gated** reuse — never unconditional:
+
+- **Policy**: `fg12f-verification-reuse-cost-gated-1` (`packages/forge-green/src/reuse-cost-policy.ts`). Threshold **250 ms**, inclusive (`estimatedFreshMs >= 250` is eligible; 249 is not). FG-12E measured break-even ≈152 ms (IQR 139–184 ms); 250 ms sits above the p75 reuse overhead (184 ms) and at the low end of the measured consistently-positive class, keeping the cheap `node --check` class (~81 ms) fresh.
+- **Unknown cost → fresh verification** (fail closed). A verifier with no trusted duration history is never reused on a guess; its first fresh execution persists its real `elapsedMs`, making the next equivalent invocation cost-eligible (natural learning, no prediction model).
+- **Cost history source**: `elapsedMs` of prior PASSED evidence records for the same verifier identity (id + version + definition digest), read from the session's already-persisted ForgeVerify evidence — most-recent-5 median. No second telemetry store is created.
+- **Authority boundary (unchanged)**: ForgeVerify's `isEvidenceCurrentlyValid` is decided FIRST and always; the cost gate can only veto an already-valid reuse. `executeVerificationPlan` revalidates at the authoritative execution boundary, unchanged.
+- **Seam**: one shared integration point — `runVerification` (`packages/workflow/src/verification-service.ts`) consults the observer-provided durable prior evidence through `adviseCostGatedReuse` between authoritative plan construction and `executeVerificationPlan`. All five production callers reach it via their existing persistence-backed `ForgeVerifyObserver`; no caller contains rollout logic.
+- **Receipts**: a per-verifier `VerificationReuseCostGateReceipt` (schema `fg12f-cost-gate-receipt-1`) is attached to the verification report and persisted as an immutable `cost_gate_receipt` work item. Actual reuse is counted only from ForgeVerify's real `reusedEvidenceId` — never from advisor proposals.
+- **Kill switch**: the existing `CODEFORGE_FORGEGREEN_OPTIMIZATION` ceiling is fully effective (OFF disables immediately with no receipt path; SHADOW degrades the kind to observation-only), without restart. Any advisor/duration-lookup failure falls back to fresh verification.
+
+Certification evidence: `docs/codeforge-forgegreen-fg12f-cost-gated-rollout.json` / `-report.md` (40-case corpus through production composition + component overhead measurement). Certified source-state: `fg12f-certified-v1` in `docs/codeforge-forgegreen-certified-source-state.json`.

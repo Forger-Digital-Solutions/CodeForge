@@ -11,6 +11,8 @@ import { EightBitStatusBadge } from "./EightBitStatusBadge.js";
 import { deriveLatestEightBitStatus } from "./eight-bit-status.js";
 import { resolveAssetUrlByName } from "./emoji-assets.js";
 import { stripToolProtocol } from "./assistant-content.js";
+import { ActivityOverview, type ActivityOverviewData, type ActivityPeriod } from "./ActivityOverview.js";
+import type { ModelSelectorItem } from "./ModelSelector.js";
 
 interface ConversationProps {
   turns: TurnRecord[];
@@ -24,6 +26,18 @@ interface ConversationProps {
   onSuggestedPrompt?: (text: string) => void;
   /** Short context label shown under the empty-state heading, e.g. "CodeForge · main". */
   contextLabel?: string;
+  /** Real signed-in display name for the greeting; omit/undefined falls back to a neutral greeting. */
+  userDisplayName?: string;
+  activityOverview?: ActivityOverviewData | null;
+  isActivityLoading?: boolean;
+  activityPeriod?: ActivityPeriod;
+  onActivityPeriodChange?: (period: ActivityPeriod) => void;
+  resolveModelDisplayName?: (modelId: string) => string;
+  /** Real favorited models (from the same source ModelSelector's star toggle writes to). */
+  favoriteModels?: ModelSelectorItem[];
+  onSelectModel?: (model: ModelSelectorItem) => void;
+  /** Opens the canonical model picker — the empty state never renders a second, separate picker. */
+  onOpenModelPicker?: () => void;
 }
 
 /** Inline `code` and **strong** within a prose paragraph. */
@@ -470,7 +484,23 @@ const WorkItemRenderer = ({ item, displayMode }: { item: WorkItem; displayMode: 
   }
 };
 
-export default function Conversation({ turns, workItems, displayMode, events, onSuggestedPrompt, contextLabel }: ConversationProps) {
+export default function Conversation({
+  turns,
+  workItems,
+  displayMode,
+  events,
+  onSuggestedPrompt,
+  contextLabel,
+  userDisplayName,
+  activityOverview,
+  isActivityLoading,
+  activityPeriod = "all",
+  onActivityPeriodChange,
+  resolveModelDisplayName,
+  favoriteModels,
+  onSelectModel,
+  onOpenModelPicker,
+}: ConversationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const timeline = useMemo(() => buildTimeline(events ?? []), [events]);
@@ -533,19 +563,37 @@ export default function Conversation({ turns, workItems, displayMode, events, on
         {isEmpty ? (
           <div className="empty-state">
             <img className="empty-state-mark" src={resolveAssetUrlByName("8bit-idle")} width={32} height={32} alt="" aria-hidden="true" draggable={false} />
-            <div className="empty-state-title">What are we forging?</div>
+            <div className="empty-state-title">{userDisplayName ? `What's next, ${userDisplayName}?` : "What are we forging next?"}</div>
             <div className="empty-state-subtitle">
               Describe a task or ask about your code.
             </div>
             {contextLabel && <div className="empty-state-context">{contextLabel}</div>}
-            
+
+            {activityOverview !== undefined && (
+              <ActivityOverview
+                overview={activityOverview}
+                isLoading={isActivityLoading}
+                period={activityPeriod}
+                onPeriodChange={(p) => onActivityPeriodChange?.(p)}
+                resolveModelDisplayName={resolveModelDisplayName}
+              />
+            )}
+
             <div className="empty-state-favorites">
               <div className="empty-state-favorites-label">Favorite models</div>
               <div className="empty-state-favorites-list">
-                <button type="button" className="empty-state-model-btn" disabled>
-                  ForgeAuto/Free
-                </button>
-                <button type="button" className="empty-state-model-btn" disabled>
+                {favoriteModels?.map((model) => (
+                  <button
+                    key={model.id}
+                    type="button"
+                    className="empty-state-model-btn"
+                    onClick={() => onSelectModel?.(model)}
+                    disabled={!onSelectModel}
+                  >
+                    {model.displayName}
+                  </button>
+                ))}
+                <button type="button" className="empty-state-model-btn" onClick={onOpenModelPicker} disabled={!onOpenModelPicker}>
                   + Add favorite
                 </button>
               </div>

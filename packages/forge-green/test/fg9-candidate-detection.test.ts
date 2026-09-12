@@ -53,7 +53,10 @@ describe("FG-9 candidate detection (§30 items 1-4)", () => {
         { evidenceId: "ev-2", workspaceContentHash: "h2", policyRevision: "p1", command: "npm test", dependencyStateHash: "d1", forgeVerifyConfirmedValid: false },
       ],
     });
-    expect(decision.status).toBe("PROPOSED");
+    // FG-12F graduated Candidate D: with its cost gate satisfied (no costGate override means all
+    // valid candidates are eligible), the kind's registered ACTIVE_SAFE mode derives APPLIED.
+    expect(decision.status).toBe("APPLIED");
+    expect(decision.mode).toBe("ACTIVE_SAFE");
     expect(decision.sourceEvidenceIds).toEqual(["ev-1"]);
     expect(decision.safetyGuards.reasonCodes).toContain("FORGEVERIFY_REJECTED_SOME_CANDIDATES");
   });

@@ -47,8 +47,10 @@ describe("FG-9 optimization decision/receipt framework", () => {
     expect(active.status).toBe("APPLIED");
     expect(active.mode).toBe("ACTIVE_SAFE");
 
+    // FG-12F graduated Candidate D to a cost-gated ACTIVE_SAFE; Candidate C remains the
+    // registered-SHADOW example for this invariant.
     const shadow = createOptimizationDecision({
-      runId: "r1", sessionId: "s1", kind: "VERIFICATION_EVIDENCE_REUSE", targetResource: "x",
+      runId: "r1", sessionId: "s1", kind: "OPTIONAL_PREFETCH_SUPPRESSION", targetResource: "x",
       sourceEvidenceIds: ["e1"], sustainabilityReceiptId: undefined, expectedEffect: emptyEffect(),
       confidence: "DIRECT", safetyGuards: { redundancyRationale: "x", invariant: "x", verificationProof: undefined, reasonCodes: [] },
     });
@@ -124,7 +126,7 @@ describe("FG-9 optimization decision/receipt framework", () => {
   it("survivedValidation can only be claimed for an APPLIED decision", () => {
     const proposed = finalizeOptimizationDecision(
       createOptimizationDecision({
-        runId: "r1", sessionId: "s1", kind: "VERIFICATION_EVIDENCE_REUSE", targetResource: "x",
+        runId: "r1", sessionId: "s1", kind: "OPTIONAL_PREFETCH_SUPPRESSION", // registered SHADOW
         sourceEvidenceIds: ["e1"], sustainabilityReceiptId: undefined, expectedEffect: emptyEffect(),
         confidence: "DIRECT", safetyGuards: { redundancyRationale: "x", invariant: "x", verificationProof: undefined, reasonCodes: [] },
       }),

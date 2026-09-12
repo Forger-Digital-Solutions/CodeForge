@@ -672,7 +672,7 @@ export class CodeForgeCloudServer {
     try {
       // 1. Health & Meta Endpoints
       if (url.pathname === "/health/live" && method === "GET") {
-        this.sendJson(res, 200, { status: "ok", version: "0.2.0" }, corsOrigin);
+        this.sendJson(res, 200, { status: "ok", version: "0.3.0" }, corsOrigin);
         return;
       }
 
@@ -717,7 +717,7 @@ export class CodeForgeCloudServer {
           200,
           {
             apiVersion: "1.0.0",
-            serverVersion: "0.2.0",
+            serverVersion: "0.3.0",
             hostedInferenceReady: availableFreeCount > 0,
             features: ["HOSTED_FREE", "DYNAMIC_MODELS", ...(this.billing ? ["STRIPE_BILLING"] : [])],
           },

@@ -11,7 +11,8 @@ import {
   type WorkflowResult,
 } from "@codeforge/workflow";
 import type { WorkflowPlan, ContextBundle, RepoMap, FailureAnalysis, VerificationResult, TaskIntent } from "@codeforge/workflow";
-import type { ForgeVerifyObserver, VerificationAttempt, VerificationEvidence, VerificationPlan } from "@codeforge/workflow";
+import type { ForgeVerifyObserver, VerificationAttempt, VerificationEvidence, VerificationPlan, VerificationReuseCostGateReceipt } from "@codeforge/workflow";
+import { loadForgeVerifyEvidence } from "./forge-verify-persistence.js";
 import type { AgentRuntime } from "./agent-runtime.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import { redactSecrets } from "@codeforge/secrets";
@@ -405,7 +406,7 @@ export class WorkflowService {
     const agentExecutor = shouldUseRealAgent ? this.createAgentExecutor(sessionId, request.userId, controller.signal, adapter) : undefined;
 
     const repairAttempts: Array<{ attempt: number; summary: string }> = [];
-    const persistForgeVerify = async (recordType: "plan" | "attempt" | "evidence", id: string, planId: string, value: VerificationPlan | VerificationAttempt | VerificationEvidence): Promise<void> => {
+    const persistForgeVerify = async (recordType: "plan" | "attempt" | "evidence" | "cost_gate_receipt", id: string, planId: string, value: VerificationPlan | VerificationAttempt | VerificationEvidence | VerificationReuseCostGateReceipt): Promise<void> => {
       const createdAt = "createdAt" in value ? value.createdAt : value.startedAt;
       const updatedAt = "finishedAt" in value && value.finishedAt ? value.finishedAt : createdAt;
       const item = {
@@ -421,7 +422,7 @@ export class WorkflowService {
         createdAt,
         updatedAt,
       } as import("@codeforge/sessions").WorkItem;
-      if (recordType === "plan" || recordType === "evidence") await this.persistence.insertImmutableWorkItem(item);
+      if (recordType === "plan" || recordType === "evidence" || recordType === "cost_gate_receipt") await this.persistence.insertImmutableWorkItem(item);
       else await this.persistence.upsertWorkItem(item);
     };
     const verificationObserver: ForgeVerifyObserver = {
@@ -437,6 +438,12 @@ export class WorkflowService {
       evidenceCreated: async (evidence) => {
         await persistForgeVerify("evidence", evidence.evidenceId, evidence.planId, evidence);
         await adapter.emitForgeVerifyEvidenceCreated(taskId, evidence.planId, evidence.attemptId, evidence.evidenceId, evidence.verifierId, evidence.status, evidence.elapsedMs, evidence.outputTruncated);
+      },
+      // FG-12F: this observer doubles as the durable prior-evidence source for cost-gated reuse
+      // advising and persists the reconciled receipt alongside the other ForgeVerify records.
+      loadPriorEvidence: () => loadForgeVerifyEvidence(this.persistence, sessionId),
+      costGateReceiptCreated: async (receipt: VerificationReuseCostGateReceipt) => {
+        await persistForgeVerify("cost_gate_receipt", `${receipt.planId}-cost-gate`, receipt.planId, receipt);
       },
     };
     // Snapshot adapter for phase transitions

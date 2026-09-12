@@ -56,6 +56,7 @@ export default defineConfig({
       "packages/*/test/**/*.test.tsx",
       "packages/*/src/**/*.test.ts",
       "apps/*/test/**/*.test.ts",
+      "apps/*/test/**/*.test.tsx",
       "tests/**/*.test.ts",
     ],
     exclude: [

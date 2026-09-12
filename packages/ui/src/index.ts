@@ -26,6 +26,7 @@ export {
   type ModelSelectionIntent,
 } from "./ModelSelector.js";
 export type { SessionSummary } from "./WorkspaceApp.js";
+export { MODEL_FAVORITES_KEY, loadModelFavorites, saveModelFavorites } from "./model-favorites.js";
 export { getUpgradeUrl, DEFAULT_UPGRADE_URL } from "./upgrade-url.js";
 export { ActivityIcon, ForgeWorkingIndicator, activityLabel, resolveActivityKind } from "./activity-icons.js";
 export { resolveActivityAsset, resolveActivityAssetName, resolveFileAssetName } from "./emoji-assets.js";

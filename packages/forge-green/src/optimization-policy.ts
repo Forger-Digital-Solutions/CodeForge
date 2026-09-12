@@ -13,7 +13,11 @@ const GRADUATION_REGISTRY: Record<OptimizationKind, OptimizationPolicyMode> = {
   DUPLICATE_READ_ONLY_TOOL_REUSE: "ACTIVE_SAFE",
   DUPLICATE_CONTEXT_PAGE_TRANSMISSION: "SHADOW",
   OPTIONAL_PREFETCH_SUPPRESSION: "SHADOW",
-  VERIFICATION_EVIDENCE_REUSE: "SHADOW",
+  // FG-12F: Candidate D graduates, but its ACTIVE_SAFE execution policy is COST-GATED — reuse
+  // only for evidence ForgeVerify holds valid AND whose verifier's measured historical duration
+  // reaches the fg12f-verification-reuse-cost-gated-1 threshold (unknown cost -> fresh). The
+  // mode union is unchanged; the cost gate lives entirely in the kind's own execution policy.
+  VERIFICATION_EVIDENCE_REUSE: "ACTIVE_SAFE",
 };
 
 /** Env override: forces every kind down to at most this mode (e.g. `SHADOW` to disable all live

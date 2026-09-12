@@ -161,6 +161,11 @@ export interface ForgeVerifyObserver {
   policyReceiptCreated?(receipt: import("@codeforge/forge-green").VerificationPolicyReceipt): void | Promise<void>;
   resolutionReceiptCreated?(receipt: import("@codeforge/forge-green").EvidenceResolutionReceipt): void | Promise<void>;
   coverageReceiptCreated?(receipt: import("@codeforge/forge-green").VerificationCoverageReceipt): void | Promise<void>;
+  /** FG-12F: optional durable prior-evidence source for cost-gated reuse advising (pull side).
+   * Purely additive — observers without it keep verification unconditionally fresh. */
+  loadPriorEvidence?(): readonly import("@codeforge/forge-green").GenericVerificationEvidence[] | Promise<readonly import("@codeforge/forge-green").GenericVerificationEvidence[]>;
+  /** FG-12F: emitted after execution with the reconciled per-verifier cost-gate receipt. */
+  costGateReceiptCreated?(receipt: import("./verification-reuse-cost-gate.js").VerificationReuseCostGateReceipt): void | Promise<void>;
 }
 
 function digest(value: unknown): string {

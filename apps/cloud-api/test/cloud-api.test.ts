@@ -39,12 +39,18 @@ describe("CodeForge Cloud Server API End-to-End", () => {
   let baseUrl: string;
   const webhookSecret = "whsec_test_12345";
 
-  const createMockGitHubFetch = () => {
+  const createMockGitHubFetch = (overrides: { emails?: unknown; emailsStatus?: number; hideProfileEmail?: boolean } = {}) => {
     return async (url: string | URL | Request, init?: RequestInit) => {
       const urlStr = url.toString();
       if (urlStr.includes("login/oauth/access_token")) {
         return new Response(JSON.stringify({ access_token: "gho_mock_access_token_123", token_type: "bearer", scope: "read:user user:email" }), {
           status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (urlStr.includes("api.github.com/user/emails")) {
+        return new Response(JSON.stringify(overrides.emails ?? []), {
+          status: overrides.emailsStatus ?? 200,
           headers: { "Content-Type": "application/json" },
         });
       }
@@ -55,7 +61,7 @@ describe("CodeForge Cloud Server API End-to-End", () => {
             login: "alice_cloud",
             name: "Alice Cloud",
             avatar_url: "https://github.com/alice.png",
-            email: "alice@example.com",
+            ...(overrides.hideProfileEmail ? {} : { email: "alice@example.com" }),
           }),
           {
             status: 200,
@@ -70,7 +76,12 @@ describe("CodeForge Cloud Server API End-to-End", () => {
   beforeEach(async () => {
     server = new CodeForgeCloudServer({
       jwtSecret: "test-jwt-secret-32-character-long",
-      fetchFn: createMockGitHubFetch() as typeof fetch,
+      fetchFn: createMockGitHubFetch({
+        emails: [
+          { email: "alice-old@example.com", primary: false, verified: true, visibility: "private" },
+          { email: "alice-primary@example.com", primary: true, verified: true, visibility: "private" },
+        ],
+      }) as typeof fetch,
       stripeConfig: {
         secretKey: "sk_test_123",
         webhookSecret,
@@ -158,6 +169,13 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     expect(account.user.displayName).toBe("Alice Cloud");
     expect(account.planId).toBe("free");
     expect(account.creditBalance).toBe(500_000);
+    // Connected GitHub identity surfaces for the desktop profile UI: the login comes from the
+    // stored identity, and the email is the primary VERIFIED authorized address (which the mock
+    // deliberately reports as different from the public profile email).
+    expect(account.identity).toBeDefined();
+    expect(account.identity.login).toBe("alice_cloud");
+    expect(account.identity.email).toBe("alice-primary@example.com");
+    expect(account.identity.profileUrl).toBe("https://github.com/alice_cloud");
 
     // 4. Execute Hosted Inference (Streaming SSE)
     const inferenceRes = await fetch(`${baseUrl}/v1/hosted/inference`, {
@@ -276,7 +294,7 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     expect(startRes.status).toBe(302);
     const authorizeUrl = new URL(startRes.headers.get("location")!);
     const state = authorizeUrl.searchParams.get("state")!;
-    expect(authorizeUrl.searchParams.get("scope")).toBe("read:user");
+    expect(authorizeUrl.searchParams.get("scope")).toBe("read:user user:email");
     expect(authorizeUrl.searchParams.get("redirect_uri")).toContain("/v1/auth/github/callback");
 
     const callbackRes = await fetch(`${baseUrl}/v1/auth/github/callback?code=gh_code&state=${encodeURIComponent(state)}`, { redirect: "manual" });
@@ -304,6 +322,34 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     expect(logoutRes.status).toBe(200);
     expect(logoutRes.headers.get("set-cookie")).toContain("Max-Age=0");
     expect((await fetch(`${baseUrl}/v1/auth/session`, { headers: { Cookie: sessionCookie } })).status).toBe(401);
+  });
+
+  it("falls back to a truthful 'no email shared' identity when the email endpoint is unavailable", async () => {
+    // A user whose GitHub account hides their email and who has not granted the email scope:
+    // the desktop must still get the login (for @handle display) but never an invented address.
+    const hiddenEmailServer = new CodeForgeCloudServer({
+      jwtSecret: "cloud-hidden-email-jwt-secret-32-char",
+      fetchFn: createMockGitHubFetch({ emails: [], emailsStatus: 403, hideProfileEmail: true }) as typeof fetch,
+    });
+    const hiddenPort = await hiddenEmailServer.start(0);
+    const hiddenUrl = `http://127.0.0.1:${hiddenPort}`;
+    try {
+      const start = await startCloudLogin(hiddenUrl, { loopbackPort: 8791 });
+      const { code: desktopCode } = await completeGitHubCallback(hiddenUrl, start);
+      const exchangeRes = await exchangeDesktopCode(hiddenUrl, start, desktopCode);
+      expect(exchangeRes.status).toBe(200);
+      const tokens = await exchangeRes.json();
+
+      const account = await (await fetch(`${hiddenUrl}/v1/account`, {
+        headers: { Authorization: `Bearer ${tokens.accessToken}` },
+      })).json();
+      expect(account.user.displayName).toBe("Alice Cloud");
+      expect(account.identity.login).toBe("alice_cloud");
+      expect(account.identity.email).toBeNull();
+      expect(account.identity.profileUrl).toBe("https://github.com/alice_cloud");
+    } finally {
+      await hiddenEmailServer.stop();
+    }
   });
 
   it("keeps browser OAuth denial and open-redirect attempts fail-closed", async () => {

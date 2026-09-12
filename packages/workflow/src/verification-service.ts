@@ -18,6 +18,7 @@ import {
   evaluateVerificationSufficiency,
   resolveVerificationObligations,
   evaluateVerificationCoverage,
+  resolveOptimizationMode,
   FORGE_GREEN_VERIFICATION_POLICY_VERSION,
   type EvidenceResolutionReceipt,
   type GenericVerificationEvidence,
@@ -25,6 +26,7 @@ import {
   type VerificationPolicyDecision,
   type VerificationPolicyReceipt,
 } from "@codeforge/forge-green";
+import { adviseCostGatedReuse, reconcileCostGateReceipt } from "./verification-reuse-cost-gate.js";
 
 const DEFAULT_COMMANDS = ["npm test", "npm run typecheck"];
 
@@ -528,10 +530,36 @@ export async function runVerification(
   const policy: VerificationPolicy = { version: "legacy-workflow-policy-v1" as VerificationPolicy["version"] };
   const plan = createVerificationPlan(registry, policy, { runId: options.runId ?? `legacy-${Date.now()}`, workspacePath, scope: "workspace", ...(options.executionRevision !== undefined ? { executionRevision: options.executionRevision } : {}) });
 
+  // FG-12F: cost-gated evidence reuse advising — Candidate D's ACTIVE_SAFE execution policy,
+  // evaluated here so every production caller gets it from one shared verification-service seam.
+  // Caller-supplied `existingEvidence` always wins (the FG-12D controlled-trial wrapper's path);
+  // the advisor only engages when the observer can provide durable prior evidence and the kind
+  // has not been forced OFF. Validity stays ForgeVerify's: the advisor proposes, and
+  // `executeVerificationPlan` re-checks everything at the authoritative boundary.
+  let existingEvidence = options.existingEvidence as readonly import("./forge-verify.js").VerificationEvidence[] | undefined;
+  let existingEvidenceSource = options.existingEvidenceSource;
+  let costGateReceipt: import("./verification-reuse-cost-gate.js").VerificationReuseCostGateReceipt | undefined;
+  if (existingEvidence === undefined && options.observer?.loadPriorEvidence && resolveOptimizationMode("VERIFICATION_EVIDENCE_REUSE") !== "OFF") {
+    try {
+      const priorEvidence = await options.observer.loadPriorEvidence();
+      if (priorEvidence.length > 0) {
+        const advice = adviseCostGatedReuse({ plan, priorEvidence });
+        costGateReceipt = advice.receipt;
+        if (advice.reusableEvidence.length > 0) {
+          existingEvidence = advice.reusableEvidence;
+          existingEvidenceSource = "durable";
+        }
+      }
+    } catch {
+      // §27: any failure in the duration lookup or advisor falls back to fresh verification.
+      costGateReceipt = undefined;
+    }
+  }
+
   const execution = await executeVerificationPlan(registry, plan, undefined, {
     signal: options.signal,
     observer: options.observer,
-    existingEvidence: options.existingEvidence as readonly import("./forge-verify.js").VerificationEvidence[] | undefined,
+    existingEvidence,
   });
   const runResults = availableVerifiers.map((verifier, index) => {
     const planned = plan.verifiers[index]!;
@@ -541,7 +569,7 @@ export async function runVerification(
     const passed = status === "passed" ? Math.max(parsed.passed, 1) : parsed.passed;
     const failed = status === "passed" ? parsed.failed : Math.max(parsed.failed, 1);
     // FG-7: check if this verifier reused existing evidence
-    const reusedEvidence = options.existingEvidence?.find((ev) => ev.verifierId === planned.verifierId && ev.evidenceId === evidence?.evidenceId);
+    const reusedEvidence = existingEvidence?.find((ev) => ev.verifierId === planned.verifierId && ev.evidenceId === evidence?.evidenceId);
     const reusedEvidenceId = reusedEvidence?.evidenceId;
     return {
       id: verifier.id,
@@ -628,7 +656,7 @@ export async function runVerification(
 
   const executedCount = runResults.filter((r) => !r.reusedEvidenceId).length;
   const skippedValidCount = runResults.filter((r) => Boolean(r.reusedEvidenceId) && r.status === "passed").length;
-  const restartReuseCount = options.existingEvidenceSource === "durable" ? skippedValidCount : 0;
+  const restartReuseCount = existingEvidenceSource === "durable" ? skippedValidCount : 0;
   const avoidedVerifierCalls = skippedValidCount;
 
   const coverageObligations: readonly import("@codeforge/forge-green").VerificationObligation[] = policyObligationsResult?.obligations ?? plan.verifiers.map((planned, index) => {
@@ -709,6 +737,15 @@ export async function runVerification(
     await options.observer?.coverageReceiptCreated?.(coverageReceipt);
   }
 
+  // FG-12F: reconcile the pre-execution cost-gate receipt with what ForgeVerify actually did —
+  // the real `reusedEvidenceId` is the only actual-reuse truth (§16).
+  if (costGateReceipt) {
+    const runResultsByKey = new Map(plan.verifiers.map((planned, index) => [planned.verifierId, runResults[index]!] as const));
+    const freshElapsedMsByKey = new Map(plan.verifiers.map((planned) => [planned.verifierId, execution.evidence.find((item) => item.verifierId === planned.verifierId)?.elapsedMs] as const));
+    costGateReceipt = reconcileCostGateReceipt(costGateReceipt, runResultsByKey, freshElapsedMsByKey);
+    await options.observer?.costGateReceiptCreated?.(costGateReceipt);
+  }
+
   return {
     verifiers: runResults,
     requiredPassed,
@@ -729,6 +766,7 @@ export async function runVerification(
     policyReceipt: policyDecision?.receipt,
     resolutionReceipt: resolutionResult?.receipt,
     coverageReceipt,
+    costGateReceipt,
   };
 }
 

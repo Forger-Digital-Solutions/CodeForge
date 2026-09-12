@@ -12,4 +12,11 @@ describe("desktop renderer CSP", () => {
     expect(rendererHtml).toContain("script-src 'self' 'unsafe-inline'");
     expect(rendererHtml).not.toContain("script-src *");
   });
+
+  it("allows GitHub avatar images for the account identity without a broad wildcard", () => {
+    // The account avatar is the one remote image the app renders; it may come only from
+    // GitHub's avatar host — no wildcard img-src may sneak in.
+    expect(rendererHtml).toContain("img-src 'self' data: https://avatars.githubusercontent.com");
+    expect(rendererHtml).not.toContain("img-src *");
+  });
 });

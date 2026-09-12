@@ -36,6 +36,7 @@ import { CloudPublicationClient, CloudPublicationError } from "./cloud-publicati
 import { createWorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { createRepositoryIntelligence, REPOSITORY_INDEX_VERSION, REPOSITORY_PARSER_VERSION, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
 import { UserIntentHoldController } from "./user-intent-hold.js";
+import { buildActivityOverview, type ActivityOverview, type ActivityPeriod } from "./activity-overview.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -114,6 +115,14 @@ export class CodeForgeServer {
   private readonly afterApprovalResolvedBoundary?: () => Promise<void>;
   private readonly configuredDbPath?: string;
   private forgeGreenCacheStore?: ForgeGreenCacheStore;
+  /**
+   * Raw session/turn/work-item data backing the activity overview, cached briefly. The renderer
+   * polls this endpoint on the same cadence as its other status polls; without this cache every
+   * poll would re-fetch every session's turns from SQLite even though the data rarely changes
+   * between polls.
+   */
+  private activityRawCache?: { sessions: SessionRecord[]; turnsBySessionId: Map<string, TurnRecord[]>; runInspections: WorkItem[]; computedAt: number };
+  private static readonly ACTIVITY_CACHE_TTL_MS = 15_000;
 
   constructor(options: ServerOptions = {}) {
     this.port = options.port ?? 3210;
@@ -556,6 +565,11 @@ export class CodeForgeServer {
 
     if (url.pathname === "/api/free/top" && req.method === "GET") {
       this.handleTopFree(res);
+      return;
+    }
+
+    if (url.pathname === "/api/activity/overview" && req.method === "GET") {
+      void this.handleActivityOverview(res, url);
       return;
     }
 
@@ -2025,6 +2039,46 @@ export class CodeForgeServer {
     }));
     res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
     res.end(JSON.stringify(out));
+  }
+
+  /**
+   * Gathers the raw data `buildActivityOverview` needs, cached briefly (see `activityRawCache`
+   * doc). Fetches every session's turns individually — acceptable on a local SQLite database for
+   * the session counts a single desktop user accumulates; this is not a scan of message contents,
+   * just per-session row counts.
+   */
+  private async getActivityRawData(): Promise<NonNullable<typeof this.activityRawCache>> {
+    const cached = this.activityRawCache;
+    if (cached && Date.now() - cached.computedAt < CodeForgeServer.ACTIVITY_CACHE_TTL_MS) {
+      return cached;
+    }
+    const sessions = await this.persistence.listSessions();
+    const turnsBySessionId = new Map<string, TurnRecord[]>();
+    for (const session of sessions) {
+      turnsBySessionId.set(session.id, await this.persistence.getTurns(session.id));
+    }
+    const runInspections = await this.persistence.getWorkItemsByKind("run_inspection");
+    const fresh = { sessions, turnsBySessionId, runInspections, computedAt: Date.now() };
+    this.activityRawCache = fresh;
+    return fresh;
+  }
+
+  /**
+   * `GET /api/activity/overview?period=all|30d|7d` — backs the desktop empty-state's Overview
+   * card. See `activity-overview.ts` for the exact, documented definition of every metric.
+   */
+  private async handleActivityOverview(res: http.ServerResponse, url: URL): Promise<void> {
+    try {
+      const periodParam = url.searchParams.get("period");
+      const period: ActivityPeriod = periodParam === "30d" || periodParam === "7d" ? periodParam : "all";
+      const { sessions, turnsBySessionId, runInspections } = await this.getActivityRawData();
+      const overview: ActivityOverview = buildActivityOverview(sessions, turnsBySessionId, runInspections, period);
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify(overview));
+    } catch {
+      res.writeHead(500, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "Failed to compute activity overview" }));
+    }
   }
 
   private handleSetPrivacyMode(req: http.IncomingMessage, res: http.ServerResponse): void {
