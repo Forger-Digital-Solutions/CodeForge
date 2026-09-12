@@ -1,0 +1,92 @@
+{
+  "phase": "CODEFORGE_R2_DAILY_DRIVER_CLOSURE",
+  "verdict": "CODEFORGE_DAILY_DRIVER_R2_BLOCKED",
+  "verdict_reason": "Every gate that does not require live model inference is proven on the real packaged Windows application. The single mandatory gate that cannot be honestly proven is the real live-model coding task from the packaged UI: this environment has no zero-cash free-model inference route (no OpenRouter/BYOK key; the configured 'opencode' provider has no CLI/model set up; CodeForge Cloud hosted inference requires a reachable cloud endpoint with server-owned provider keys, and the packaged dev-channel endpoint is a local 127.0.0.1:3220 that is not running and has no provider keys). Per Section 8/27 this is reported as a legitimate availability failure, not replaced with a fixture.",
+  "generated_at": "2026-09-12T08:10:00-04:00",
+  "branch": "forger-digital-solutions-forgegreen-certified",
+  "candidate_commit": "2dbeab7fff2e881aa0fae9a2ad8624ad995b4542",
+  "candidate_commits": {
+    "r2_gap_closure_and_version_bump": "cf7ac08c6a67b06614105f7af8312e611820d892",
+    "packaging_native_prebuild_fix": "2dbeab7fff2e881aa0fae9a2ad8624ad995b4542"
+  },
+  "r1_baseline_commit": "92df55383e4bad701c8c9ac01dd23fa2b7e7a4ab",
+  "repository_cleanliness": "clean (0 uncommitted changes after commit; release/ and dist/ are gitignored)",
+  "package_version": "0.3.0",
+  "previous_version": "0.2.0",
+  "packaging": {
+    "tool": "electron-builder 25.1.8",
+    "electron": "33.4.11",
+    "targets": ["nsis", "portable"],
+    "designed_flow_verified": "npm run dist completes end-to-end (build + native prebuild staging + electron-builder), exit 0",
+    "code_signing": "skipped (no signing certificate configured for local build)"
+  },
+  "installer_path": "apps/desktop/release/CodeForge-Setup-0.3.0.exe",
+  "portable_path": "apps/desktop/release/CodeForge-Portable.exe",
+  "win_unpacked_path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+  "artifact_hashes_sha256": {
+    "CodeForge-Setup-0.3.0.exe": "ee022692191662e6524aaa89d562e78b01d45593f0f46f34d212cd9991632687",
+    "CodeForge-Portable.exe": "b90353a2a617e23ff7ef33260da3ae44218ceb097d0f62a8887d96a21ea08554",
+    "win-unpacked/CodeForge.exe": "ff557e2ea7c7ac24cae4bb984cf2b6fb7a1ac12776f07d0c289e88753b3cfa84"
+  },
+  "build_result": "PASS (npm run build clean across all workspaces; npm run dist end-to-end exit 0)",
+  "test_totals": {
+    "logical_pass": 2243,
+    "skipped": 36,
+    "genuine_failures": 0,
+    "r1_baseline_pass": 2215,
+    "new_tests_this_phase": 28,
+    "new_test_breakdown": "git-exec-allowlist.test.ts (25) + close-lifecycle describeHeaderActivity (3)",
+    "full_run_observation": "A single fully-parallel full-suite run reported 8 'failures', all in packages/server/test (delivery-certification, parallel-recovery, parallel-security). Every one was an environment/resource-contention flake (test timeouts and a Windows EBUSY rmdir lock on temp git worktrees). All three files were re-run in isolation: 20/20 pass. Zero logic failures.",
+    "desktop_suite_pass": 225
+  },
+  "model_system": {
+    "live_hosted_discovery_count": 0,
+    "live_hosted_discovery_note": "GET /v1/hosted/models is unauthenticated but returns models only from server-owned provider keys at cloud startup; no reachable cloud + no provider keys in this environment => 0 discovered.",
+    "packaged_picker_models_shown": 6,
+    "packaged_picker_groups": ["RECOMMENDED (ForgeAuto/Free — Automatic free routing, Verified $0)", "CODEFORGE FREE (CodeForge Free Model)", "GEMS (Topaz, Sapphire, Peridot, Garnet — Paid, Coming soon)"],
+    "compatible_free_models_curated": "ForgeAuto/Free route + CodeForge Free Model (verifiedFree overlay curated set)",
+    "forgeauto_free_behavior": "Task router shown first in picker with 'Verified $0'; owns free-experience runtime routing/fallback. Architecturally distinct from 8-Bit.",
+    "eight_bit_behavior": "Maintains competitive free-model availability in the free slots (free catalog); NO_ELIGIBLE_FREE_MODEL fail path exists. NOT the general runtime router.",
+    "model_picker_behavior": "PROVEN in packaged UI: logical grouping, 'Filter models or providers' search with live count, ForgeAuto/Free first, GEMS paid tier clearly labeled. Source: model-sections.test (22) + model-selector.test + settings-models."
+  },
+  "selected_certification_model": null,
+  "provider": "none available (opencode credential non-functional: no CLI/model configured; no BYOK key; cloud endpoint unreachable)",
+  "live_task_result": "BLOCKED — no zero-cash live-model inference route. Packaged agent MACHINERY is proven end-to-end in the real packaged app (app_is_packaged=true) via a scripted mock provider gated strictly to CODEFORGE_PACKAGED_SMOKE mode: repository read -> edit src/calc.ts (a - b => a + b) -> workflow -> verification -> completion, plus an induced failure that must be repaired before completion (packaged_failure_repair_pass=PASS). This proves the runtime/tool/edit/verify/completion machinery in the packaged application, NOT live-model intelligence.",
+  "steering_result": "BLOCKED (requires a live task). Steering pathway exists and is covered by source-level tests; not exercised against a live packaged run.",
+  "approval_result": "PARTIAL — approval logic proven (approval-lifecycle.test.ts, 13 scenarios incl. double-approve protection; completion gate blocks on approval_pending). Live GUI approval during a real model task BLOCKED (requires a live task).",
+  "forgeverify_result": "PASS — ForgeVerify + completion gate authority proven: packaged workflow completes only after verification; verification-service / forge-verify unit + integration tests pass; packaged failure-repair proves fail path.",
+  "completion_gate_result": "PASS — evaluateCompletion is the single authority; blocking codes (verification_not_run/failed/not_current, approval_pending, budget_exhausted, no_effective_change, plan_steps_unfinished, review_rejected) all block 'completed'. Proven in packaged smoke (workflow completed) and full suite.",
+  "negative_verification_result": "PASS — packaged smoke induces a failure that must be repaired before success (packaged_failure_repair_pass=PASS); delivery-certification suite proves fail-closed (blocks before commit/review on verification failure and on tree divergence).",
+  "minimize_background_result": "SUBSTANTIALLY PROVEN — tray implementation real (ensureTray/hideToTray/restoreMainWindow, honest tooltip via summarizeActiveWork), close policy unit-tested (resolveCloseAction truth table), packaged Settings shows tray 'Always on' + 'When tasks are active and I close: Ask me'. Packaged interrupt(exit 73)+recover proven. The literal act of minimizing the window WHILE a LIVE model task runs is BLOCKED (needs a live task).",
+  "close_safety_result": "PASS — resolveCloseAction never silently discards unrecoverable work (always 'ask'); packaged close-behavior UI present; packaged interrupt mode exits deterministically (73).",
+  "restart_rehydration_result": "PASS — packaged recover mode: electron_restart_failed_safely=PASS, electron_restart_no_approval_replay=PASS (durable restart continues without replaying approvals/tool calls). Packaged Settings 'Continue eligible interrupted agents' documents 're-planned from saved facts; nothing is replayed'.",
+  "settings_during_run_result": "GAP-6 MITIGATED — added a persistent header activity indicator (describeHeaderActivity) that stays visible while Settings is open (header stays mounted) so an in-flight run is never invisible, and clicking it returns to the workspace. Packaged smoke: settings_open/search/back-to-workspace all PASS with workspace state intact. SSE unmount-under-Settings remains the intended safe design (server-authoritative turn, completion gate authoritative); no state-management rewrite performed.",
+  "model_picker_result": "PASS — see model_system.model_picker_behavior; verified visually in the packaged app.",
+  "account_auth_status": "EXTERNAL CONFIG GATE — the machine has a real prior CodeForge Cloud sign-in (encrypted access/refresh tokens + real cloud-user with id/primaryIdentity/avatarUrl, not a fixture) and an 'opencode' provider credential. The packaged dev-channel cloud endpoint is http://127.0.0.1:3220 (deliberately local; no staging/prod baked in), which is not running, so the live sign-in / hosted-inference flow was not exercised. Packaged smoke account is the clearly-labeled 'Packaged smoke' fixture — never masquerading as a real user.",
+  "security_audit_result": {
+    "packaged_browser_security": "PASS (sandbox=true, nodeIntegration=false, contextIsolation=true, webSecurity=true; no bypass switches) — verified against packaged app.asar main.js",
+    "packaged_auth_endpoint": "PASS (channel=development -> http://127.0.0.1:3220 baked correctly; fail-closed for staging/production)",
+    "packaged_runtime_dependencies": "PASS (231 packaged runtime modules, 15 external packages)",
+    "packaged_internal_dependencies": "PASS (20 shipped internal packages)",
+    "credential_handling": "PASS (packaged smoke: credential_plaintext_absent, credential_encrypted_payload, safe_storage_available, credential_round_trip; renderer_raw_credential_api_absent)",
+    "shell_execCommand_hardening": "PASS (R2 GAP-4: read-only git subcommand/arg allowlist; rejects push/reset/clean/config-write/credential/global-flag-injection/control-char; 25 regression tests)",
+    "secret_scan": "PASS (no private keys/OAuth secrets/API keys/.env/fixture accounts/dev paths in distributable; only certs/supabase-prod-ca-2021.crt public CA)"
+  },
+  "gap_resolutions": {
+    "GAP-1_packaged_binary": "RESOLVED — installer + portable + win-unpacked built from candidate 2dbeab7, hashes recorded, packaged app booted and visually inspected.",
+    "GAP-2_minimize_close_active": "SUBSTANTIALLY RESOLVED — tray/policy/interrupt/recover proven; live-task-during-minimize blocked by model availability.",
+    "GAP-3_exact_candidate": "RESOLVED — committed local candidate 2dbeab7, clean tree, artifacts built from that SHA.",
+    "GAP-4_execCommand_git_args": "RESOLVED — strict read-only subcommand/argument allowlist (git-exec-allowlist.ts) + 25 regression tests.",
+    "GAP-5_preload_any": "RESOLVED — CloudAccount/CloudUsage typed in shared cloud-account.ts; renderer aliases it; no 'any' at the boundary.",
+    "GAP-6_settings_sse_unmount": "MITIGATED — persistent header activity indicator during Settings; no destructive state loss; no large rewrite."
+  },
+  "unresolved_blockers": [
+    "Real live-model coding task from the packaged UI (Section 8) — no zero-cash free-model inference route available in this environment (no BYOK/OpenRouter key; opencode provider non-functional; cloud hosted inference requires a reachable endpoint with server provider keys). Zero-cash boundary forbids paid providers; using the user's personal cloud account/credits was not authorized for this run.",
+    "Live user steering during a real packaged run (Section 9) — depends on the live task.",
+    "Live approval UX observed in the packaged GUI during a real task (Section 10) — approval logic is unit-proven; live GUI observation depends on the live task.",
+    "Minimize-to-tray continuity while a LIVE model task executes (Section 11) — tray/policy/interrupt/recover proven; the live-task variant depends on the live task.",
+    "Live hosted free-model discovery counts (Section 7) — requires a reachable cloud with server provider keys."
+  ],
+  "how_to_close_blockers": "Provide any ONE working zero-cost free-model route and re-run the principal task through the packaged UI: (a) a CodeForge Cloud sign-in against a reachable endpoint whose server holds free-tier provider keys, or (b) a BYOK provider credential that includes at least one $0 model (e.g. an OpenRouter key with :free models), or (c) a configured, installed opencode CLI pointed at a free model. Then the live task, steering, live approval, live-minimize continuity, and live discovery count can all be exercised and this verdict re-issued.",
+  "do_not_cheat_attestation": "No fixture identity, simulated live-model output, dev-Electron-as-packaged, hand-edited persistence, or paid provider substitution was used to claim any PASS. The packaged smoke's mock provider is explicitly labeled as machinery proof, not live-model proof, and is gated to CODEFORGE_PACKAGED_SMOKE mode (never production boot)."
+}
