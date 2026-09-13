@@ -465,6 +465,25 @@ export class WorkflowService {
     const agentExecutor = shouldUseRealAgent ? this.createAgentExecutor(sessionId, request.userId, controller.signal, adapter) : undefined;
 
     const repairAttempts: Array<{ attempt: number; summary: string }> = [];
+    // Phase callbacks are synchronous, while persistence is asynchronous. Serialize their writes
+    // so a slow "verifying" save can never land after the terminal "completed" save and revive a
+    // finished task in the sidebar on the next session refresh.
+    let phaseStatusWrites: Promise<void> = Promise.resolve();
+    const persistPhaseStatus = (task: WorkflowTask, status: string): void => {
+      const record = {
+        id: sessionId,
+        title: task.title,
+        createdAt: task.createdAt,
+        updatedAt: new Date().toISOString(),
+        status: status as unknown as "running",
+        taskTitle: task.title,
+        workspacePath,
+      };
+      phaseStatusWrites = phaseStatusWrites
+        .catch(() => {})
+        .then(() => this.persistence.upsertSession(record))
+        .catch(() => {});
+    };
     const persistForgeVerify = async (recordType: "plan" | "attempt" | "evidence" | "cost_gate_receipt", id: string, planId: string, value: VerificationPlan | VerificationAttempt | VerificationEvidence | VerificationReuseCostGateReceipt): Promise<void> => {
       const createdAt = "createdAt" in value ? value.createdAt : value.startedAt;
       const updatedAt = "finishedAt" in value && value.finishedAt ? value.finishedAt : createdAt;
@@ -540,16 +559,8 @@ export class WorkflowService {
         const to = statusMap[phase] ?? phase;
         adapter.emitTaskStateChanged(taskId, task.phase, to);
         adapter.emitStatusChanged(task.phase, phase);
-        // Persist session status — phase telemetry, so best-effort by design
-        this.persistence.upsertSession({
-          id: sessionId,
-          title: task.title,
-          createdAt: task.createdAt,
-          updatedAt: new Date().toISOString(),
-          status: (to as unknown as "running") ?? "running",
-          taskTitle: task.title,
-          workspacePath,
-        }).catch(() => {});
+        // Persist ordered phase telemetry; terminal persistence below waits for this queue.
+        persistPhaseStatus(task, to);
       },
       onEvent: (evt: { type: string; payload: unknown }) => {
         if (evt.type === "workflow.plan_created") {
@@ -823,6 +834,7 @@ export class WorkflowService {
         }
         // Persist final session status (redacted)
         try {
+          await phaseStatusWrites;
           const safeMsg = redactSecrets(request.message.slice(0, 80));
           await this.persistence.upsertSession({
             id: sessionId,

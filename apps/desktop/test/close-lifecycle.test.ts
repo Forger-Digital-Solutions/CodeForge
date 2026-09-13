@@ -120,8 +120,9 @@ describe("describeHeaderActivity (R2 GAP-6 header indicator)", () => {
     expect(describeHeaderActivity({ ...ZERO, activeWorkflows: 1, activeAgentTurns: 1, activeVerifications: 1 })).toBe("1 task running");
     // A standalone chat turn next to a workflow is a second task.
     expect(describeHeaderActivity({ ...ZERO, activeWorkflows: 1, activeAgentTurns: 2 })).toBe("2 tasks running");
-    // Background indexing and hosted continuations are their own lines of work.
-    expect(describeHeaderActivity({ ...ZERO, activeWorkflows: 1, activeAgentTurns: 1, backgroundTasks: 1 })).toBe("2 tasks running");
+    // Background indexing is visible, but never masquerades as an agent task.
+    expect(describeHeaderActivity({ ...ZERO, activeWorkflows: 1, activeAgentTurns: 1, backgroundTasks: 1 })).toBe("1 task running · 1 background task");
+    expect(describeHeaderActivity({ ...ZERO, backgroundTasks: 1 })).toBe("1 background task");
     expect(describeHeaderActivity({ ...ZERO, activeVerifications: 1 })).toBe("1 task running");
   });
 

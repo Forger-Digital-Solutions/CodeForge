@@ -1,8 +1,19 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import type { SessionRecord, TurnRecord } from "@codeforge/sessions";
-import { applyExecutionLifecycleEvent, clearSessionScopedState, createNewSessionDraft, createSendRequest, executionStartFailureMessage, initialWorkspaceState, mergeHydratedEvents, readRememberedActiveSession, readRememberedExecutionMode, rememberActiveSession, rememberExecutionMode, resolveSendSessionId, upsertPendingApproval, removePendingApproval, type PendingApproval } from "../src/workspace-sse.js";
+import { applyExecutionLifecycleEvent, clearSessionScopedState, createNewSessionDraft, createSendRequest, executionStartFailureMessage, hasTerminalActiveWorkflow, initialWorkspaceState, mergeHydratedEvents, readRememberedActiveSession, readRememberedExecutionMode, rememberActiveSession, rememberExecutionMode, resolveSendSessionId, upsertPendingApproval, removePendingApproval, type PendingApproval } from "../src/workspace-sse.js";
 
 describe("workspace-sse - task session allocation", () => {
+  it("keeps a terminal workflow terminal when later plan bookkeeping arrives", () => {
+    expect(hasTerminalActiveWorkflow({
+      activeTaskId: "task-1",
+      workflowTasks: [{ taskId: "task-1", title: "Completed work", status: "completed", phase: "completed", progress: 100, createdAt: "2026-09-12T00:00:00.000Z" }],
+    })).toBe(true);
+    expect(hasTerminalActiveWorkflow({
+      activeTaskId: "task-1",
+      workflowTasks: [{ taskId: "task-1", title: "In progress", status: "testing", phase: "testing", progress: 75, createdAt: "2026-09-12T00:00:00.000Z" }],
+    })).toBe(false);
+  });
+
   it("persists only a canonical execution selection and fails corrupted storage to Agent", () => {
     const values = new Map<string, string>();
     const storage = {

@@ -205,6 +205,12 @@ export function executionStartFailureMessage(mode: ExecutionMode, message: strin
   return `${mode === "agent" ? "Agent" : "Chat"} could not start\n${message}`;
 }
 
+/** A later bookkeeping event must never revive a workflow which has already settled. */
+export function hasTerminalActiveWorkflow(state: Pick<WorkspaceState, "activeTaskId" | "workflowTasks">): boolean {
+  const task = state.workflowTasks.find((candidate) => candidate.taskId === state.activeTaskId);
+  return task?.phase === "completed" || task?.phase === "complete" || task?.phase === "failed_safely" || task?.phase === "cancelled";
+}
+
 export function applyExecutionLifecycleEvent(state: WorkspaceState, event: WorkspaceEvent): WorkspaceState {
   if (event.type === "execution.requested") {
     return { ...state, activeExecutionMode: event.payload.executionMode };
@@ -685,12 +691,12 @@ export function useWorkspaceSSE(url: string) {
                 ];
               }
             }
-            if (parsed.type === "plan.started") {
+            if (parsed.type === "plan.started" && !hasTerminalActiveWorkflow(next)) {
               next.isRunning = true;
               next.activePhase = "planning";
               next.workflowProgress = Math.max(next.workflowProgress, phaseToProgress("planning"));
             }
-            if (parsed.type === "plan.updated" || parsed.type === "plan.status_changed") {
+            if ((parsed.type === "plan.updated" || parsed.type === "plan.status_changed") && !hasTerminalActiveWorkflow(next)) {
               next.isRunning = true;
             }
             if (parsed.type === "checkpoint.created") {
