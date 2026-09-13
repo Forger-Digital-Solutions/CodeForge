@@ -1439,6 +1439,19 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     });
   }
 
+  async getUsagePeriodConsumedCredits(userId: string, periodStartIso: string, periodEndIso: string): Promise<number> {
+    // Settled-usage authority — see the SQLite implementation for the invariants.
+    const res = await this.pool.query(
+      `SELECT COALESCE(SUM(credits_consumed), 0) AS consumed
+       FROM usage_events
+       WHERE user_id = $1
+         AND created_at >= $2
+         AND created_at < $3`,
+      [userId, periodStartIso, periodEndIso],
+    );
+    return Number(res.rows[0]?.consumed ?? 0);
+  }
+
   // --- OAuth Transactions ---
 
   async createOAuthTransaction(params: {

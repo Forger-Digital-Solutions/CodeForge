@@ -175,12 +175,36 @@ export class UsageEngine {
     return { reconciled, refundedCredits };
   }
 
-  async getUserUsageSummary(userId: string): Promise<{ creditBalance: number; recentEvents: UsageEventRecord[] }> {
+  async getUserUsageSummary(userId: string): Promise<{
+    creditBalance: number;
+    recentEvents: UsageEventRecord[];
+    freeAllowance: {
+      allowanceCredits: number;
+      usedCredits: number;
+      remainingCredits: number;
+      periodStart: string;
+      /** Server-controlled reset timestamp (spec §53) — clients render it, never compute it. */
+      periodEnd: string;
+    };
+  }> {
     const creditBalance = await this.db.getCreditBalance(userId);
     const recentEvents = await this.db.listUsageEvents(userId, 20);
+    const { period } = await this.db.getOrCreateCurrentUsagePeriod(userId);
+    const usedCredits = await this.db.getUsagePeriodConsumedCredits(userId, period.periodStart, period.periodEnd);
+    // Displayed remaining is what the user can actually still start with: settled usage AND active
+    // holds both reduce it, because reserved credits are not spendable. Without the balance term a
+    // user mid-task would show 100% remaining while every new task is correctly denied.
+    const remainingCredits = Math.max(0, Math.min(creditBalance, period.freeAllowanceGranted - usedCredits));
     return {
       creditBalance,
       recentEvents,
+      freeAllowance: {
+        allowanceCredits: period.freeAllowanceGranted,
+        usedCredits,
+        remainingCredits,
+        periodStart: period.periodStart,
+        periodEnd: period.periodEnd,
+      },
     };
   }
 }

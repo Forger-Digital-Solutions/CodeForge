@@ -157,6 +157,12 @@ export interface ICloudDatabase {
 
   // Usage Periods
   getOrCreateCurrentUsagePeriod(userId: string, allowanceAmount?: number, now?: Date): Promise<{ period: UsagePeriodRecord; grantedNewAllowance: boolean }>;
+  /**
+   * Authoritative consumption attributable to the current Free usage period: the sum of actual
+   * CREDIT_USED settle events inside [periodStart, periodEnd). Committed reservations only —
+   * holds and refunds never count, so an upstream failure can never appear as usage (spec §9).
+   */
+  getUsagePeriodConsumedCredits(userId: string, periodStartIso: string, periodEndIso: string): Promise<number>;
 
   // OAuth Transactions
   /**

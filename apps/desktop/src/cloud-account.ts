@@ -57,8 +57,20 @@ export function offlineCloudAccount(rememberedUser: unknown): CloudAccount | nul
   return { user, offline: true };
 }
 
+/** Server-authoritative per-user Free allowance state for the current usage period. */
+export interface CloudFreeAllowance {
+  allowanceCredits: number;
+  usedCredits: number;
+  remainingCredits: number;
+  periodStart: string;
+  /** Server-controlled reset timestamp — the renderer renders it, never computes it. */
+  periodEnd: string;
+}
+
 /** Shape of CodeForge Cloud's `/v1/usage` summary. `recentEvents` entries are opaque to the desktop. */
 export interface CloudUsage {
   creditBalance: number;
   recentEvents: unknown[];
+  /** Absent only when talking to an older Cloud deployment — the UI treats it as "unknown", not zero. */
+  freeAllowance?: CloudFreeAllowance;
 }

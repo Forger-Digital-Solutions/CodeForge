@@ -1273,6 +1273,19 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     });
   }
 
+  async getUsagePeriodConsumedCredits(userId: string, periodStartIso: string, periodEndIso: string): Promise<number> {
+    // usage_events.credits_consumed is the settled-usage authority: one row per transitioned
+    // reservation (idempotent under retry), so holds, releases, and refunds never pollute it.
+    const row = this.db.prepare(`
+      SELECT COALESCE(SUM(credits_consumed), 0) AS consumed
+      FROM usage_events
+      WHERE user_id = @userId
+        AND created_at >= @periodStartIso
+        AND created_at < @periodEndIso
+    `).get({ userId, periodStartIso, periodEndIso }) as { consumed: number | string };
+    return Number(row.consumed);
+  }
+
   // --- OAuth Transactions ---
 
   async createOAuthTransaction(params: {

@@ -5,7 +5,7 @@ import type { ApiModel } from "../model-sections.js";
 import type { ModelSection } from "@codeforge/ui";
 import type { Project } from "../App.js";
 
-import type { CloudAccount, CloudAccountIdentity } from "../../cloud-account.js";
+import type { CloudAccount, CloudAccountIdentity, CloudUsage } from "../../cloud-account.js";
 
 /**
  * The renderer's view of a cloud account is the *same* typed contract the preload exposes for
@@ -64,6 +64,12 @@ export interface SettingsContextValue {
   /** True when the account comes from the packaged-smoke fixture rather than a real sign-in. */
   isFixtureAccount: boolean;
   refreshAccount: () => Promise<void>;
+  /**
+   * Server-authoritative per-user Free usage (allowance/used/remaining/reset), or null when
+   * signed out, Cloud is unreachable, or the deployment predates the freeAllowance summary.
+   */
+  cloudUsage: CloudUsage | null;
+  refreshUsage: () => Promise<void>;
   signIn: () => Promise<boolean>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<void>;

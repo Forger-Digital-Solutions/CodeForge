@@ -55,6 +55,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   const [isRepoIntelligenceOpen, setIsRepoIntelligenceOpen] = useState(false);
   const [settingsSnapshot, setSettingsSnapshot] = useState<SettingsSnapshot | null>(null);
   const [cloudAccount, setCloudAccount] = useState<CloudAccountView | null>(null);
+  const [cloudUsage, setCloudUsage] = useState<CloudUsage | null>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [repositoryIndex, setRepositoryIndex] = useState<RepositoryIndexStatus>({ state: "NOT_INDEXED" });
   const [gitInfo, setGitInfo] = useState<GitWorkspaceInfo>({ isGitRepo: false, branch: null, isDetached: false, isWorktree: false });
@@ -107,6 +108,11 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       if (window.electronAPI?.getCloudAccount) {
         const acc = await window.electronAPI.getCloudAccount();
         setCloudAccount(acc);
+      }
+      // Usage follows the account: signed-out means no per-user Free allowance to show, and a
+      // signed-out answer must clear any stale signed-in numbers rather than keep displaying them.
+      if (window.electronAPI?.getCloudUsage) {
+        setCloudUsage(await window.electronAPI.getCloudUsage());
       }
     } catch {}
   }, []);
@@ -496,6 +502,8 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       account: cloudAccount,
       isFixtureAccount,
       refreshAccount: loadCloudAccount,
+      cloudUsage,
+      refreshUsage: loadCloudAccount,
       signIn: async () => {
         if (!window.electronAPI?.signInWithCloud) return false;
         const result = await window.electronAPI.signInWithCloud();
@@ -509,6 +517,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       signOut: async () => {
         await window.electronAPI?.logoutCloud?.();
         setCloudAccount(null);
+        setCloudUsage(null);
         await refreshModelsAndHealth();
         onSignedOut?.();
       },
@@ -554,7 +563,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       navigate: (sectionId: string) => setSettingsSection(sectionId),
     };
   }, [
-    settingsSnapshot, updateSettings, resetPreferences, cloudAccount, isFixtureAccount, loadCloudAccount,
+    settingsSnapshot, updateSettings, resetPreferences, cloudAccount, cloudUsage, isFixtureAccount, loadCloudAccount,
     refreshModelsAndHealth, onSignedOut, apiModels, modelSections, providerStatus, setDefaultModel,
     catalogLastCheckedAt, gitInfo, project, recentProjects, onOpenProjectPath, repositoryIndex,
     runtimeStatus, systemInfo, defaultExecutionMode, setDefaultExecutionMode, loadRecentProjects,

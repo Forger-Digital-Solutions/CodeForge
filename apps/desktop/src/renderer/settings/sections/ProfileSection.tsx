@@ -58,6 +58,29 @@ export function ProfileSection(): React.ReactElement {
     ? undefined
     : "Your GitHub account does not share an email with CodeForge. Reconnect GitHub and approve the email permission to show your verified address here.";
 
+  const allowance = ctx.cloudUsage?.freeAllowance;
+  const usage = allowance
+    ? {
+        allowanceCredits: allowance.allowanceCredits,
+        usedCredits: allowance.usedCredits,
+        remainingCredits: allowance.remainingCredits,
+        periodEnd: allowance.periodEnd,
+      }
+    : null;
+  const resetLabel = (() => {
+    if (!allowance?.periodEnd) return null;
+    const reset = new Date(allowance.periodEnd);
+    if (Number.isNaN(reset.getTime())) return null;
+    const diffMs = reset.getTime() - Date.now();
+    if (diffMs <= 0) return "now";
+    const hours = Math.floor(diffMs / 3_600_000);
+    if (hours < 48) {
+      const minutes = Math.floor((diffMs % 3_600_000) / 60_000);
+      return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    }
+    return reset.toLocaleDateString();
+  })();
+
   return (
     <div>
       <h1 className="settings-section-title">Profile &amp; Account</h1>
@@ -135,6 +158,26 @@ export function ProfileSection(): React.ReactElement {
             title="Credits"
             description="Credits are only consumed by premium or GEMS models, never by verified-free routes."
             control={<span className="settings-value">{account.creditBalance.toLocaleString()}</span>}
+          />
+        ) : null}
+        {usage ? (
+          <SettingsRow
+            title="CodeForge Free usage"
+            description={
+              usage.allowanceCredits > 0
+                ? `${usage.usedCredits.toLocaleString()} of ${usage.allowanceCredits.toLocaleString()} allowance credits used this period. Verified-free routes settle actual usage; failed requests never consume your allowance.`
+                : "This period has no Free allowance configured yet."
+            }
+            control={
+              usage.allowanceCredits > 0 ? (
+                <span className="settings-value">
+                  {Math.max(0, Math.round((usage.remainingCredits / usage.allowanceCredits) * 100))}% remaining
+                  {usage.periodEnd ? <> · resets {resetLabel}</> : null}
+                </span>
+              ) : (
+                <StatusBadge kind="warn">Unknown</StatusBadge>
+              )
+            }
           />
         ) : null}
         <SettingsRow
