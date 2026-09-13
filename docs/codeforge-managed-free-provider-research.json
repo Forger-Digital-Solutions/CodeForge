@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "status": "RESEARCH_ONLY",
+  "decision": "NO_REAL_MANAGED_FREE_PROVIDER_APPROVED",
+  "providers": [
+    { "providerId": "cloudflare-workers-ai", "result": "BLOCKED_PER_ACCOUNT_ALLOWANCE", "source": "https://developers.cloudflare.com/workers-ai/platform/pricing/" },
+    { "providerId": "cerebras", "result": "BLOCKED_TRIAL_CREDIT", "source": "https://www.cerebras.ai/pricing" },
+    { "providerId": "groq", "result": "BLOCKED_ORGANIZATION_ALLOWANCE", "source": "https://console.groq.com/docs/legal/services-agreement" },
+    { "providerId": "google", "result": "BLOCKED_PROJECT_ALLOWANCE", "source": "https://ai.google.dev/gemini-api/docs/pricing" },
+    { "providerId": "mistral", "result": "BLOCKED_NO_MANAGED_FREE_COMMITMENT", "source": "https://mistral.ai/pricing/" },
+    { "providerId": "nvidia", "result": "BLOCKED_TRIAL_NON_PRODUCTION", "source": "https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf" },
+    { "providerId": "zai", "result": "PENDING_PROVIDER_AUTHORIZATION", "source": "https://docs.z.ai/guides/overview/pricing" },
+    { "providerId": "openrouter", "result": "BLOCKED_ACCOUNT_ALLOWANCE", "source": "https://openrouter.ai/docs/faq" }
+  ],
+  "fixture": { "providerId": "devpool", "result": "EXCLUDED_DETERMINISTIC_FIXTURE" }
+}
