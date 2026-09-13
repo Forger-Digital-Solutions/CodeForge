@@ -4,6 +4,9 @@ const { contextBridge, ipcRenderer } = require("electron");
 // attaches it to the primary window's own requests (see control-plane-trust.ts), so the
 // renderer never holds a secret it could leak.
 const api = {
+  getRuntimeEndpoint: () => {
+    return ipcRenderer.sendSync("app:runtime-endpoint");
+  },
   selectDirectory: () => {
     return ipcRenderer.invoke("dialog:selectDirectory");
   },

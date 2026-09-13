@@ -14,7 +14,11 @@ import { computeWorkNotifications, type RunningCounters } from "./settings/notif
 import { describeHeaderActivity, summarizeActiveWork } from "../close-lifecycle.js";
 import type { AppSettings, AppSettingsPatch, CloseBehavior, ExecutionMode, SettingsSnapshot } from "../app-settings.js";
 
-const SERVER_BASE_URL = "http://localhost:3210";
+const SERVER_BASE_URL = (() => {
+  if (typeof window === "undefined") return "http://127.0.0.1:3210";
+  const endpoint = window.electronAPI?.getRuntimeEndpoint?.();
+  return typeof endpoint === "string" && endpoint.length > 0 ? endpoint : "http://127.0.0.1:3210";
+})();
 const HELP_URL = "https://github.com/Forger-Digital-Solutions/CodeForge#readme";
 const EXECUTION_MODE_KEY = "codeforge:execution-mode";
 const DEFAULT_MODEL_ZOOM: Record<AppSettings["appearance"]["chatTextScale"], number> = {

@@ -7,7 +7,11 @@ import { routeHealthLabel, routeStageLabel } from "../../CanonicalModelDetails.j
 import { fetchFreeCloudSummary, type FreeCloudSummaryView } from "../../provider-connections-client.js";
 import type { FreeCloudView } from "../../model-sections.js";
 
-const SERVER_BASE_URL = "http://localhost:3210";
+const SERVER_BASE_URL = (() => {
+  if (typeof window === "undefined") return "http://127.0.0.1:3210";
+  const endpoint = window.electronAPI?.getRuntimeEndpoint?.();
+  return typeof endpoint === "string" && endpoint.length > 0 ? endpoint : "http://127.0.0.1:3210";
+})();
 
 export interface ModelsRoutingSectionProps {
   /** Test seam: a static registry snapshot instead of the live server. */

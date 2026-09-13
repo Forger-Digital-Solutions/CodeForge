@@ -26,7 +26,7 @@ export function AdvancedSection(): React.ReactElement {
       <SettingsGroup title="Runtime diagnostics">
         <SettingsRow
           title="Local API"
-          description="The embedded CodeForge server listens on http://localhost:3210 for this machine only."
+          description="The embedded CodeForge server uses an isolated loopback port for this CodeForge instance only."
         />
         <SettingsRow
           title="Catalog diagnostics"

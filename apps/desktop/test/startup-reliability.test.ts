@@ -20,12 +20,14 @@ describe("packaged desktop startup reliability", () => {
     expect(source).not.toContain("`file://${path.join(__dirname, \"renderer\", \"index.html\")}`");
   });
 
-  it("finishes the secure renderer launch before starting the local runtime", () => {
+  it("binds the local runtime before the renderer loads so the real endpoint is available", () => {
     const source = readFileSync(resolve(process.cwd(), "apps/desktop/src/main.ts"), "utf8");
     const windowIndex = source.indexOf("await createWindow();");
     const serverIndex = source.indexOf("await initializeServer(dbPath);");
     expect(windowIndex).toBeGreaterThan(-1);
     expect(serverIndex).toBeGreaterThan(-1);
-    expect(windowIndex).toBeLessThan(serverIndex);
+    expect(serverIndex).toBeLessThan(windowIndex);
+    expect(source).toContain("port: 0,");
+    expect(source).toContain('ipcMain.on("app:runtime-endpoint"');
   });
 });

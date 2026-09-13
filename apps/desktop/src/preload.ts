@@ -5,6 +5,9 @@ import type { CloudAccount, CloudUsage } from "./cloud-account.js";
 // attaches it to the primary window's own requests (see control-plane-trust.ts), so the
 // renderer never holds a secret it could leak.
 const api = {
+  getRuntimeEndpoint: (): string | null => {
+    return ipcRenderer.sendSync("app:runtime-endpoint") as string | null;
+  },
   selectDirectory: (): Promise<string | null> => {
     return ipcRenderer.invoke("dialog:selectDirectory");
   },

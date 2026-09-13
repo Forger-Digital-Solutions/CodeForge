@@ -66,6 +66,13 @@ import {
   type CloudEndpointManifest,
 } from "./cloud-endpoint.js";
 import { parsePersistedWindowState, restoreWindowState, type PersistedWindowState } from "./window-state.js";
+import {
+  classifyRuntimeMetadata,
+  readRuntimeMetadata,
+  removeRuntimeMetadataIfOwned,
+  runtimeMetadataPath,
+  writeRuntimeMetadata,
+} from "./runtime-ownership.js";
 
 // Some Windows environments ship an Electron-incompatible graphics stack. CodeForge's
 // renderer does not require GPU acceleration, so prefer a reliable software compositor over
@@ -202,8 +209,35 @@ function isAllowedCredentialKey(key: string): boolean {
 const MAX_API_KEY_LENGTH = 512;
 const SETTINGS_FILE = "settings.json";
 const PACKAGED_SMOKE = process.env.CODEFORGE_PACKAGED_SMOKE === "1";
-/** Port the local CodeForge API binds to; the renderer and the VS Code extension both target it. */
-const LOCAL_SERVER_PORT = 3210;
+/** Legacy developer/extension preference; desktop instances bind to an OS-assigned port. */
+const LOCAL_SERVER_PREFERRED_PORT = 3210;
+let localServerPort = 0;
+const runtimeInstanceId = crypto.randomUUID();
+let runtimeMetadataFile: string | null = null;
+
+function localServerBaseUrl(): string {
+  return `http://127.0.0.1:${localServerPort || LOCAL_SERVER_PREFERRED_PORT}`;
+}
+
+function recordRuntimeMetadata(): void {
+  if (!runtimeMetadataFile || !server || localServerPort <= 0) return;
+  writeRuntimeMetadata(runtimeMetadataFile, {
+    instanceId: runtimeInstanceId,
+    pid: process.pid,
+    profilePath: app.getPath("userData"),
+    runtimeEndpoint: localServerBaseUrl(),
+    startupTimestamp: new Date().toISOString(),
+    applicationVersion: app.getVersion(),
+    executablePath: process.execPath,
+    parentElectronPid: process.ppid,
+  });
+  smokeRecord(`RUNTIME_ENDPOINT_${localServerPort}`);
+  smokeRecord(`RUNTIME_METADATA_${runtimeMetadataFile}`);
+}
+
+function cleanupRuntimeMetadata(): void {
+  if (runtimeMetadataFile) removeRuntimeMetadataIfOwned(runtimeMetadataFile, runtimeInstanceId, process.pid);
+}
 
 function smokeRecord(line: string): void {
   const outputPath = process.env.CODEFORGE_SMOKE_OUT;
@@ -625,6 +659,8 @@ async function completeSafeQuit(): Promise<void> {
       await server.stop();
       server = null;
     }
+    cleanupRuntimeMetadata();
+    localServerPort = 0;
     console.log("[CodeForge] quit: local runtime stopped, quitting");
     app.quit();
     // Observed on Windows: with every window closed and the runtime stopped, the browser process
@@ -1004,7 +1040,7 @@ async function initializeServer(dbPath: string): Promise<void> {
     const hasCredentials = PACKAGED_SMOKE || (!!providerCatalog && providerCatalog.all().some((adapter) => adapter.isTestProvider !== true));
     smokeRecord(`INIT_SERVER_HAS_CREDS_${Boolean(hasCredentials)}`);
     server = new CodeForgeServer({
-      port: LOCAL_SERVER_PORT,
+      port: 0,
       dbPath,
       firewall: firewall ?? undefined,
       providerCatalog: providerCatalog ?? undefined,
@@ -1016,6 +1052,8 @@ async function initializeServer(dbPath: string): Promise<void> {
     });
     smokeRecord("INIT_SERVER_INSTANCE_CREATED");
     await server.start();
+    localServerPort = server.httpPort;
+    recordRuntimeMetadata();
     if (readAppSettings().general.openLastWorkspaceOnStartup) {
       const recent = getRecentProjects()[0];
       if (recent && fs.existsSync(recent.path)) {
@@ -1050,7 +1088,7 @@ async function applyStartupServerSettings(): Promise<void> {
 function controlPlaneFetch(pathname: string, init?: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers);
   headers.set(CONTROL_PLANE_TOKEN_HEADER, controlPlaneToken);
-  return fetch(`http://localhost:${LOCAL_SERVER_PORT}${pathname}`, { ...init, headers });
+  return fetch(`${localServerBaseUrl()}${pathname}`, { ...init, headers });
 }
 
 /**
@@ -1235,7 +1273,7 @@ function delay(ms: number): Promise<void> {
 
 function controlPlaneTrust(): ControlPlaneTrust {
   return {
-    controlPlaneOrigin: `http://localhost:${LOCAL_SERVER_PORT}`,
+    controlPlaneOrigin: localServerBaseUrl(),
     trustedWebContentsId: mainWindow?.webContents.id ?? null,
     trustedDocumentUrl: trustedRendererDocumentUrl,
     caseInsensitiveFilePaths: process.platform === "win32",
@@ -1248,7 +1286,7 @@ function controlPlaneTrust(): ControlPlaneTrust {
  */
 function installControlPlaneBearerInjection(window: BrowserWindow): void {
   window.webContents.session.webRequest.onBeforeSendHeaders(
-    { urls: [`http://localhost:${LOCAL_SERVER_PORT}/*`] },
+    { urls: [`${localServerBaseUrl()}/*`] },
     (details, callback) => {
       const requestHeaders: Record<string, string> = { ...details.requestHeaders };
       if (shouldAttachControlPlaneToken(details, controlPlaneTrust())) {
@@ -1351,7 +1389,7 @@ async function waitForTask(taskId: string, sessionId: string, resolveApprovals: 
 
 async function rendererWorkflowRequest(payload: Record<string, unknown>, endpoint = "/api/workflow/run"): Promise<any> {
   const serialized = JSON.stringify(payload).replace(/</g, "\\u003c");
-  return evaluateRenderer<any>(`fetch("http://localhost:3210${endpoint}", {
+  return evaluateRenderer<any>(`fetch(${JSON.stringify(`${localServerBaseUrl()}${endpoint}`)}, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(${serialized})
@@ -1363,7 +1401,11 @@ async function rendererWorkflowRequest(payload: Record<string, unknown>, endpoin
  * primary-window IPC guard), exercised against the real server inside the real packaged app.
  */
 async function verifyControlPlaneTrustBoundary(): Promise<void> {
-  const base = `http://localhost:${LOCAL_SERVER_PORT}`;
+  const base = localServerBaseUrl();
+
+  const rendererEndpoint = await evaluateRenderer<string | null>("window.electronAPI.getRuntimeEndpoint()");
+  if (rendererEndpoint !== base) throw new Error(`Renderer endpoint ${rendererEndpoint ?? "missing"} does not match its runtime ${base}`);
+  smokeRecord(`control_plane_endpoint_propagated=${base}=PASS`);
 
   // The renderer never holds the bearer: nothing on the bridge exposes it.
   const rendererBearer = await evaluateRenderer<string>("typeof (window.electronAPI && window.electronAPI.controlPlaneToken)");
@@ -1803,14 +1845,16 @@ async function startPrimaryInstance(): Promise<void> {
   smokeRecord("WHEN_READY_MODELS_REGISTERED");
 
   const dbPath = path.join(app.getPath("userData"), "codeforge.db");
+  runtimeMetadataFile = runtimeMetadataPath(app.getPath("userData"));
+  const previousRuntimeMetadata = readRuntimeMetadata(runtimeMetadataFile);
+  smokeRecord(`RUNTIME_METADATA_PREVIOUS_${classifyRuntimeMetadata(previousRuntimeMetadata, app.getPath("userData"))}`);
   smokeRecord(`WHEN_READY_DBPATH_${dbPath}`);
-  // Complete the renderer launch before local runtime recovery begins. Chromium creates a
-  // restricted Windows token for this sandboxed renderer; keeping that boundary explicit also
-  // prevents database startup work from obscuring a genuine launch failure.
-  await createWindow();
-  smokeRecord("WHEN_READY_WINDOW_CREATED");
   await initializeServer(dbPath);
   smokeRecord("WHEN_READY_SERVER_INITIALIZED");
+  // The runtime binds before the document loads so the renderer receives the actual endpoint from
+  // the main process on first evaluation. Chromium still owns the renderer sandbox boundary.
+  await createWindow();
+  smokeRecord("WHEN_READY_WINDOW_CREATED");
 
   // Background: refresh the live Models.dev catalog, then discover + verify free models for any
   // already-connected providers. Failures are non-fatal (snapshot remains); the UI refreshes when
@@ -1905,7 +1949,7 @@ function handleStartupFailure(error: unknown): void {
     return;
   }
 
-  const message = describeStartupFailure(error, LOCAL_SERVER_PORT);
+  const message = describeStartupFailure(error, LOCAL_SERVER_PREFERRED_PORT);
   try {
     dialog.showErrorBox("CodeForge could not start", message);
   } catch {
@@ -1943,6 +1987,7 @@ app.on("before-quit", (event) => {
 });
 
 app.on("will-quit", () => {
+  if (isQuitting) cleanupRuntimeMetadata();
   tray?.destroy();
   tray = null;
   if (trayStatusTimer) {
@@ -1963,6 +2008,16 @@ app.on("window-all-closed", () => {
 function assertMainWindowSender(event: Electron.IpcMainInvokeEvent): void {
   if (event.sender !== mainWindow?.webContents) throw new Error("Invalid IPC sender");
 }
+
+ipcMain.on("app:runtime-endpoint", (event) => {
+  // The endpoint is routing metadata, not an authentication secret. Returning it only to the
+  // primary window keeps secondary or forged renderers from learning another instance's port.
+  if (event.sender !== mainWindow?.webContents || localServerPort <= 0) {
+    event.returnValue = null;
+    return;
+  }
+  event.returnValue = localServerBaseUrl();
+});
 
 ipcMain.handle("app:close-decision", async (event, payload: { decision?: unknown; remember?: unknown }) => {
   assertMainWindowSender(event);
