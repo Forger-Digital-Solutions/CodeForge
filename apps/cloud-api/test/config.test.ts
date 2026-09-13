@@ -154,16 +154,16 @@ describe("loadCloudRuntimeConfig", () => {
   });
 
   it("resolves server provider credentials from env", () => {
-    const config = loadCloudRuntimeConfig({ OPENROUTER_API_KEY: "or", GROQ_API_KEY: "gq" });
-    expect(config.providerCredentials.providerIds.sort()).toEqual(["groq", "openrouter"]);
+    const config = loadCloudRuntimeConfig({ CODEFORGE_ZAI_API_KEY: "zai", CODEFORGE_GROQ_API_KEY: "gq", CODEFORGE_GROQ_FREE_PLAN_ONLY: "true" });
+    expect(config.providerCredentials.providerIds).toEqual(["groq"]);
   });
 
   it("produces a redacted, secret-free startup summary", () => {
-    const summary = describeConfig(loadCloudRuntimeConfig({ ...prodBase, OPENROUTER_API_KEY: "or-secret-value" }));
+    const summary = describeConfig(loadCloudRuntimeConfig({ ...prodBase, CODEFORGE_GROQ_API_KEY: "groq-secret-value", CODEFORGE_GROQ_FREE_PLAN_ONLY: "true" }));
     expect(summary).toContain("env=production");
     expect(summary).toContain("db=postgres");
-    expect(summary).toContain("providers=[openrouter]");
-    expect(summary).not.toContain("or-secret-value");
+    expect(summary).toContain("providers=[groq]");
+    expect(summary).not.toContain("groq-secret-value");
     expect(summary).not.toContain("postgres://");
   });
 });

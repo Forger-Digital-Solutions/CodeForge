@@ -128,6 +128,12 @@ const EnvSchema = z.object({
   CODEFORGE_REQUEST_TIMEOUT_MS: z.string().optional(),
   CODEFORGE_ALLOWED_ORIGINS: z.string().optional(),
   CODEFORGE_LOG_LEVEL: z.enum(["debug", "info", "warn", "error", "silent"]).optional(),
+  CODEFORGE_ZAI_API_KEY: z.string().optional(),
+  CODEFORGE_GROQ_API_KEY: z.string().optional(),
+  CODEFORGE_GROQ_FREE_PLAN_ONLY: z.string().optional(),
+  CODEFORGE_CLOUDFLARE_ACCOUNT_ID: z.string().optional(),
+  CODEFORGE_CLOUDFLARE_API_TOKEN: z.string().optional(),
+  CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY: z.string().optional(),
 });
 
 function parseBool(v: string | undefined, dflt: boolean): boolean {

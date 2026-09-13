@@ -201,11 +201,11 @@ export function runStagingPreflight(env: Env = process.env): PreflightReport {
   }
 
   // --- Server-owned Hosted Free capacity ---------------------------------------------------------
-  const providerKeys = ["OPENROUTER_API_KEY", "GROQ_API_KEY"].filter((n) => present(env, n));
+  const providerKeys = ["CODEFORGE_ZAI_API_KEY", "CODEFORGE_GROQ_API_KEY", "CODEFORGE_CLOUDFLARE_API_TOKEN"].filter((n) => present(env, n));
   if (providerKeys.length > 0) {
     pass("capacity.provider_credential", `server-owned provider credential present (${providerKeys.join(", ")})`);
   } else {
-    fail("capacity.provider_credential", "no server-owned provider credential — Hosted Free will report unavailable (set OPENROUTER_API_KEY and/or GROQ_API_KEY)");
+    fail("capacity.provider_credential", "no server-owned managed-free credential — Hosted Free will report unavailable (set CODEFORGE_ZAI_API_KEY, or a Free-plan-attested Groq/Workers reserve credential)");
   }
 
   // --- Proxy / networking -------------------------------------------------------------------------

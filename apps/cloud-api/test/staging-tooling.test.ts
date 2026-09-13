@@ -32,7 +32,7 @@ const SENTINEL = {
   GITHUB_CLIENT_SECRET: "ghs_SENTINELGITHUBCLIENTSECRET0123456789",
   STRIPE_SECRET_KEY: "sk_test_SENTINELSTRIPETESTKEY0123456789",
   STRIPE_WEBHOOK_SECRET: "whsec_SENTINELWEBHOOKSECRET0123456789",
-  OPENROUTER_API_KEY: "sk-or-v1-SENTINELOPENROUTERKEY0123456789abcd",
+  CODEFORGE_GROQ_API_KEY: "gsk_SENTINELGROQKEY0123456789abcdef",
 };
 
 const COMPLETE_STAGING_ENV: Record<string, string> = {
@@ -45,6 +45,7 @@ const COMPLETE_STAGING_ENV: Record<string, string> = {
   CODEFORGE_CLOUD_DB_DRIVER: "postgres",
   CODEFORGE_CLOUD_DB_SSL: "true",
   GITHUB_CLIENT_ID: "Iv1.notasecret0123",
+  CODEFORGE_GROQ_FREE_PLAN_ONLY: "true",
   ...SENTINEL,
 };
 
@@ -59,7 +60,7 @@ describe("staging config contract", () => {
   });
 
   it("marks every credential-bearing variable as secret", () => {
-    for (const name of ["DATABASE_URL", "JWT_SECRET", "GITHUB_CLIENT_SECRET", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "OPENROUTER_API_KEY", "GROQ_API_KEY"]) {
+    for (const name of ["DATABASE_URL", "JWT_SECRET", "GITHUB_CLIENT_SECRET", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "CODEFORGE_ZAI_API_KEY", "CODEFORGE_GROQ_API_KEY", "CODEFORGE_CLOUDFLARE_API_TOKEN"]) {
       expect(SECRET_CONFIG_NAMES.has(name), `${name} must be marked secret`).toBe(true);
     }
     // Public configuration is deliberately NOT marked secret, so it can appear in reports.
@@ -73,7 +74,7 @@ describe("staging config contract", () => {
       SENTINEL.DATABASE_URL,
       SENTINEL.STRIPE_SECRET_KEY,
       SENTINEL.STRIPE_WEBHOOK_SECRET,
-      SENTINEL.OPENROUTER_API_KEY,
+      SENTINEL.CODEFORGE_GROQ_API_KEY,
       "ghp_0123456789abcdefghij",
       "github_pat_0123456789abcdefghij",
       "gsk_0123456789abcdefghij",
@@ -208,7 +209,7 @@ describe("staging preflight", () => {
 
   it("reports missing hosted capacity rather than silently passing", () => {
     const env = { ...COMPLETE_STAGING_ENV };
-    delete env.OPENROUTER_API_KEY;
+    delete env.CODEFORGE_GROQ_API_KEY;
     const report = runStagingPreflight(env);
     expect(report.checks.find((c) => c.id === "capacity.provider_credential")?.status).toBe("FAIL");
   });
@@ -358,7 +359,7 @@ describe("certification receipt schema", () => {
   });
 
   it("REFUSES a receipt whose free text contains credential-shaped material", () => {
-    const shaped = [SENTINEL.DATABASE_URL, SENTINEL.STRIPE_SECRET_KEY, SENTINEL.STRIPE_WEBHOOK_SECRET, SENTINEL.OPENROUTER_API_KEY];
+    const shaped = [SENTINEL.DATABASE_URL, SENTINEL.STRIPE_SECRET_KEY, SENTINEL.STRIPE_WEBHOOK_SECRET, SENTINEL.CODEFORGE_GROQ_API_KEY];
     for (const leaked of shaped) {
       expect(
         () => assertReceiptIsSecretFree({ ...validReceipt, stages: [{ id: "x", status: "PASS", detail: `saw ${leaked}` }] }),

@@ -18,8 +18,8 @@ class FakeGroqProvider implements ProviderAdapter {
   async listModels(): Promise<ProviderModel[]> {
     return [
       {
-        modelId: "meta-llama/llama-3.1-8b-instruct:free",
-        displayName: "Llama 3.1 8B Instruct (free)",
+        modelId: "openai/gpt-oss-120b",
+        displayName: "GPT-OSS 120B",
         contextWindow: 131072,
         capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
         isFree: true,
@@ -101,8 +101,8 @@ describe("Zero-setup real hosted capacity (deterministic, injected provider)", (
   it("exposes the discovered provider model via /v1/hosted/models", async () => {
     const models = await (await fetch(`${baseUrl}/v1/hosted/models`)).json();
     const ids = models.map((m: { modelId: string }) => m.modelId);
-    expect(ids).toContain("meta-llama/llama-3.1-8b-instruct:free");
-    const free = models.find((m: { modelId: string }) => m.modelId.endsWith(":free"));
+    expect(ids).toContain("openai/gpt-oss-120b");
+    const free = models.find((m: { modelId: string }) => m.modelId === "openai/gpt-oss-120b");
     expect(free.isEligibleFree).toBe(true);
     expect(free.accessClass).toBe("free");
   });

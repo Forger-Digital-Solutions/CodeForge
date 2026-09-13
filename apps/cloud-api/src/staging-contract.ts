@@ -84,14 +84,12 @@ export const STAGING_CONFIG_CONTRACT: readonly StagingConfigVariable[] = [
   { name: "STRIPE_CREDIT_PRICE_ID", requirement: "optional", secret: false, description: "Stripe test price id for credit packs.", example: "price_..." },
 
   // --- Server-owned Hosted Free capacity -------------------------------------------------------
-  {
-    name: "OPENROUTER_API_KEY",
-    requirement: "optional",
-    secret: true,
-    description: "Server-owned OpenRouter key. Supplies verified $0 (:free) Hosted capacity. At least one provider key is needed for Hosted Free to be available.",
-    example: "sk-or-...",
-  },
-  { name: "GROQ_API_KEY", requirement: "optional", secret: true, description: "Server-owned Groq key. Supplies free-allowance Hosted capacity.", example: "gsk_..." },
+  { name: "CODEFORGE_ZAI_API_KEY", requirement: "optional", secret: true, description: "Server-only Z.AI key for the exact glm-4.7-flash managed-free route.", example: "<zai key>" },
+  { name: "CODEFORGE_GROQ_API_KEY", requirement: "optional", secret: true, description: "Server-only Groq key for the exact GPT-OSS managed-free routes.", example: "gsk_..." },
+  { name: "CODEFORGE_GROQ_FREE_PLAN_ONLY", requirement: "optional", secret: false, description: "Must be true before a Groq key can enter managed Free; asserts the operator has retained the hard-stop Free plan.", example: "true" },
+  { name: "CODEFORGE_CLOUDFLARE_ACCOUNT_ID", requirement: "optional", secret: false, description: "Workers AI account identifier for the limited reserve route.", example: "<account id>" },
+  { name: "CODEFORGE_CLOUDFLARE_API_TOKEN", requirement: "optional", secret: true, description: "Server-only Workers AI token for the limited reserve route.", example: "<token>" },
+  { name: "CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY", requirement: "optional", secret: false, description: "Must be true before the Workers AI reserve can enter managed Free; never enable Workers Paid or unified billing.", example: "true" },
 
   // --- Operator policy -------------------------------------------------------------------------
   { name: "CODEFORGE_ALLOWED_ORIGINS", requirement: "optional", secret: false, description: "Comma-separated CORS allow-list. Desktop loopback origins are always permitted.", example: "https://codeforge.dev" },
