@@ -22,7 +22,10 @@ import {
   type ProviderConnectionState,
 } from "../src/index.js";
 
-const NOW = new Date("2026-09-12T12:00:00.000Z");
+// Real clock: several cases build ForgeZero with its default clock, and verified-free status expires
+// 7 days after freeStatusVerifiedAt, so a pinned date would silently expire every fixture route a
+// week after it was written (the same time bomb the eight-bit fixtures had).
+const NOW = new Date();
 
 function freeRecord(providerId: string, modelId: string, overrides: Partial<FreeModelRecord> = {}): FreeModelRecord {
   return {
@@ -436,6 +439,52 @@ describe("FreeCloudService", () => {
     expect((await svc.qualifyPending()).length).toBe(0);
     clock += 24 * 60 * 60_000;
     expect((await svc.qualifyPending()).length).toBe(2);
+  });
+
+  it("does not let a transiently failing route consume cycle slots or keep head-of-queue priority", async () => {
+    // Observed in R5: an upstream-rate-limited route (poolside/laguna) sat first in the queue by
+    // family prior; every cycle spent slots re-probing it and its sibling, and the never-tested
+    // candidates behind them were starved.
+    const fw = new ForgeZero();
+    fw.register(freeRecord("openrouter", "poolside/laguna-xs-2.1:free"));
+    fw.register(freeRecord("openrouter", "vendor/model-a:free"));
+    fw.register(freeRecord("openrouter", "vendor/model-b:free"));
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(createMockProvider({ providerId: "openrouter" }));
+    let clock = NOW.getTime();
+    const runs: string[] = [];
+    const svc = new FreeCloudService({
+      firewall: fw,
+      providerCatalog: catalog,
+      registry: new NormalizedModelRegistry(),
+      now: () => new Date(clock),
+      maxQualificationsPerCycle: 2,
+      qualificationDailyBudgetPerProvider: 30,
+      qualificationCycleIntervalMs: 0,
+      failureCooldownMs: 1_000,
+      qualificationRunner: async (model) => {
+        runs.push(model.modelId);
+        if (model.modelId.startsWith("poolside/")) {
+          return { ...receipt(model.providerId, model.modelId, "NOT_QUALIFIED"), metadata: { compact: true, requests: 1, transient: true } };
+        }
+        return receipt(model.providerId, model.modelId);
+      },
+    });
+    svc.setConnection(connected("openrouter", { credentialSource: "OAUTH" }));
+    expect(svc.pendingQualification()[0]?.providerModelId).toBe("poolside/laguna-xs-2.1:free");
+
+    // Cycle 1: the transient probe does not use one of the two slots; two real routes get scored.
+    const produced = await svc.qualifyPending();
+    expect(produced.map((r) => r.modelId).sort()).toEqual(["vendor/model-a:free", "vendor/model-b:free"]);
+    expect(runs).toEqual(["poolside/laguna-xs-2.1:free", "vendor/model-a:free", "vendor/model-b:free"]);
+    expect(svc.isForgeAutoEligible("openrouter", "poolside/laguna-xs-2.1:free")).toBe(false);
+
+    // After its cooldown the transiently failed route is still pending but ranks behind any
+    // never-tested route rather than reclaiming the head of the queue.
+    clock += 5_000;
+    fw.register(freeRecord("openrouter", "vendor/model-c:free"));
+    const pending = svc.pendingQualification().map((r) => r.providerModelId);
+    expect(pending).toEqual(["vendor/model-c:free", "poolside/laguna-xs-2.1:free"]);
   });
 
   it("records quota from provider responses and reacts to 429/402", () => {

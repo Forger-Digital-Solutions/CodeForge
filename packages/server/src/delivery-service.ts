@@ -276,7 +276,7 @@ export class DeliveryService {
 
   private async git(cwd: string, args: string[], signal?: AbortSignal): Promise<string> {
     this.throwIfCancelled(signal);
-    return (await execFile("git", args, { cwd, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" }, signal })).stdout;
+    return (await execFile("git", args, { cwd, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" }, signal })).stdout;
   }
   private throwIfCancelled(signal?: AbortSignal): void { if (signal?.aborted) throw new Error(DELIVERY_ERRORS.DELIVERY_CANCELLED); }
   private async save(delivery: ChangeDelivery): Promise<void> { delivery.updatedAt = new Date().toISOString(); await this.store.save(delivery); }

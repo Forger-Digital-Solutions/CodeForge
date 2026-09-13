@@ -54,7 +54,7 @@ function asSnapshot(content: string | BeforeSnapshot): BeforeSnapshot {
 
 function getGitDiff(workspacePath: string): string | null {
   try {
-    const res = spawnSync("git", ["diff", "--no-color"], { cwd: workspacePath, encoding: "utf-8", timeout: 5000 });
+    const res = spawnSync("git", ["diff", "--no-color"], { cwd: workspacePath, encoding: "utf-8", timeout: 5000, windowsHide: true });
     if (res.status === 0 && res.stdout && res.stdout.trim().length > 0) {
       return redact(res.stdout.slice(0, 32 * 1024));
     }
@@ -64,7 +64,7 @@ function getGitDiff(workspacePath: string): string | null {
 
 function getGitStatusFiles(workspacePath: string): Array<{ path: string; status: string }> {
   try {
-    const res = spawnSync("git", ["status", "--porcelain"], { cwd: workspacePath, encoding: "utf-8", timeout: 5000 });
+    const res = spawnSync("git", ["status", "--porcelain"], { cwd: workspacePath, encoding: "utf-8", timeout: 5000, windowsHide: true });
     if (res.status !== 0 || !res.stdout) return [];
     return res.stdout
       .split("\n")

@@ -6,7 +6,7 @@ import { getSanitizedEnvForChild } from "./env-filter.js";
 const execFile = promisify(execFileCallback);
 
 async function git(cwd: string, args: string[]): Promise<string> {
-  return (await execFile("git", args, { cwd, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } })).stdout;
+  return (await execFile("git", args, { cwd, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } })).stdout;
 }
 
 function packageFor(file: string): string {

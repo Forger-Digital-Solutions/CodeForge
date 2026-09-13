@@ -59,8 +59,8 @@ class TextOnlyProvider implements ProviderAdapter {
   }
 }
 
-async function waitForTerminal(runtime: ReturnType<typeof createAgentRuntime>, turnId: string) {
-  for (let i = 0; i < 100; i++) {
+async function waitForTerminal(runtime: ReturnType<typeof createAgentRuntime>, turnId: string, iterations = 100) {
+  for (let i = 0; i < iterations; i++) {
     const state = runtime.getTurn(turnId);
     if (state?.status === "completed" || state?.status === "failed") return state;
     await new Promise((r) => setTimeout(r, 50));
@@ -154,16 +154,20 @@ describe("8-Bit — restart recovery and exact-pin safety (mandatory certificati
     runtime.setModelSelection({ providerId: "provider-a", modelId: "aaa-model" });
 
     const turnId = await runtime.startTurn("Task with exact pin");
-    const final = await waitForTerminal(runtime, turnId);
+    // A 503 is a transient capacity failure: with nothing to rotate to, 8-Bit retries the SAME
+    // pinned route a bounded number of times (with a short wait) before surfacing the failure.
+    const final = await waitForTerminal(runtime, turnId, 600);
 
     // The turn fails (the real failure is surfaced) rather than silently succeeding on a
     // substituted provider — 8-Bit must never replace an exact pin automatically.
     expect(final?.status).toBe("failed");
     expect(final?.providerId).toBe("provider-a");
+    expect(providerA.callCount).toBe(3); // initial attempt + two bounded same-route retries
     expect(providerB.callCount).toBe(0);
 
     const items = await persistence.getWorkItems(sessionId);
     const receipts = items.filter((i) => i.kind === "eight_bit_decision_receipt");
     expect(receipts.some((r: any) => r.receipt.action === "EXACT_PIN_FAILED")).toBe(true);
-  });
+    expect(receipts.filter((r: any) => r.receipt.action === "COOLDOWN" && r.receipt.reasonCodes.includes("BOUNDED_SAME_ROUTE_RETRY")).length).toBe(2);
+  }, 60_000);
 });

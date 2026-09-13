@@ -1,0 +1,14 @@
+{
+  "status": "CODEFORGE_DESKTOP_AUTONOMOUS_UX_LOCK_BLOCKED",
+  "schemaVersion": 1,
+  "blockers": ["R5_NOT_YET_CERTIFIED"],
+  "prerequisite": { "r5Status": "CODEFORGE_FREE_CLOUD_PLATFORM_R5_BLOCKED", "r5Blocker": "OPENROUTER_DAILY_FREE_REQUEST_CAP_EXHAUSTED", "resetUtc": "2026-09-14T00:00:00Z" },
+  "auditCompletedAt": "2026-09-13",
+  "auditEvidenceRoot": "apps/desktop/release/ui-lock-evidence/",
+  "contract": { "path": "docs/codeforge-desktop-ui-contract.md", "state": "DRAFT — ACTIVATES AFTER R5 CERTIFICATION" },
+  "defects": { "p0": 2, "p1": 8, "p2": 10, "p3": 4 },
+  "patchQueue": 16,
+  "implementation": { "started": false, "patchesCompleted": [] },
+  "packagedDemonstration": null,
+  "finalCandidate": null
+}

@@ -204,8 +204,16 @@ const verifyProviderAccount = (model: FreeModelRecord, ctx: VerifyContext): bool
     const retryAfter = model.health.retryAfter;
     if (retryAfter === undefined || ctx.now().getTime() < retryAfter) return false;
   }
+  if (status === "degraded") {
+    // A degraded provider is a ranking penalty, not an exclusion: 8-Bit demotes a route to
+    // DEGRADED after a single transient failure and projects that provider-wide. Treating it as
+    // ineligible with no expiry left every route of the provider unroutable until restart
+    // (observed in R5 after one upstream 502). Excluded only while its cooldown is still running.
+    const retryAfter = model.health.retryAfter;
+    if (retryAfter !== undefined && ctx.now().getTime() < retryAfter) return false;
+  }
   if (status === "configured" || status === "authenticated") return false;
-  return status === "available" || status === "verified" || status === "rate_limited";
+  return status === "available" || status === "verified" || status === "rate_limited" || status === "degraded";
 };
 
 export const assertEligible = (

@@ -1,6 +1,9 @@
 import type { FreeModelRecord } from "@codeforge/forge-zero";
 
-const now = new Date("2026-09-06T12:00:00Z");
+// Real clock: ForgeZero expires verified-free status after 7 days, and the router/failover tests
+// construct ForgeZero with the real clock. A pinned date silently expired the whole fixture fleet a
+// week after it was written (every routing test then reported no_eligible_route).
+const now = new Date();
 
 export const NOW = now;
 

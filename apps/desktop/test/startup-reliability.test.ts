@@ -30,4 +30,34 @@ describe("packaged desktop startup reliability", () => {
     expect(source).toContain("port: 0,");
     expect(source).toContain('ipcMain.handle("app:runtime-endpoint"');
   });
+
+  it("installs the control-plane bearer filter only once the runtime origin is bound", () => {
+    // R2 installed the filter at window construction, before initializeServer had bound the
+    // ephemeral port: the URL filter matched the preferred port instead, so no renderer request
+    // ever carried the bearer and the packaged workspace was refused with 401 (found by R5).
+    const source = readFileSync(resolve(process.cwd(), "apps/desktop/src/main.ts"), "utf8");
+    const createWindowStart = source.indexOf("async function createWindow(loadDocument = true)");
+    const createWindowEnd = source.indexOf("\n}", createWindowStart);
+    expect(createWindowStart).toBeGreaterThan(-1);
+    expect(source.slice(createWindowStart, createWindowEnd)).not.toContain("installControlPlaneBearerInjection(");
+    const documentStart = source.indexOf("async function createWindowDocument()");
+    const guardIndex = source.indexOf("if (localServerPort <= 0) throw new Error(", documentStart);
+    const installIndex = source.indexOf("installControlPlaneBearerInjection(window);", documentStart);
+    const loadIndex = source.indexOf("await window.loadFile(rendererFile);", documentStart);
+    expect(guardIndex).toBeGreaterThan(documentStart);
+    expect(installIndex).toBeGreaterThan(guardIndex);
+    expect(loadIndex).toBeGreaterThan(installIndex);
+  });
+
+  it("waits for the renderer's loading state to settle instead of a second did-finish-load", () => {
+    // loadFile() resolves on did-finish-load while the main frame still reports loading until
+    // did-stop-loading; waiting for another did-finish-load at that point never returns (the R4
+    // stall after WINDOW_READY_TO_SHOW).
+    const source = readFileSync(resolve(process.cwd(), "apps/desktop/src/main.ts"), "utf8");
+    const start = source.indexOf("async function waitForRenderer()");
+    const end = source.indexOf("\n}", start);
+    const body = source.slice(start, end);
+    expect(body).toContain('contents.on("did-stop-loading", settle)');
+    expect(body).not.toContain('once("did-finish-load"');
+  });
 });

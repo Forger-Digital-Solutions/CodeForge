@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "5551787971c70ed44ff345043a05c90cbaeff5c6e206dab00ba32dd5836a3c28",
-  "surfaceVersion": "fg12f-certified-v1-codex-r1-runtime-hardening",
+  "sourceStateId": "464343d9548f70b354d4496caa1de8ad5e4373612b8a847f0ef643bdfa36c84e",
+  "surfaceVersion": "fg12f-certified-v1-free-cloud-r5",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -38,15 +38,15 @@
     "packages/forge-green/src/optimization-policy.ts": "53dee55244eb1dc5d5ae03a4a30d96ecad0362aa",
     "packages/forge-green/src/optimization-types.ts": "1539abf45eaf618db3c2a68cf398b2320db5e7bd",
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
-    "packages/router/package.json": "316fe9f303ac9a67cd11c5b111d3c6d8bea4ffe9",
+    "packages/router/package.json": "b2b596febe0eab8a591ed016e9783170c35ed096",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
-    "packages/server/src/agent-runtime.ts": "9847d445ddb25bfa9993b50bd6cd310ce034ef60",
-    "packages/server/src/autonomous-orchestrator.ts": "4a72d071796bb928de0debc73c9f6a61a1caddeb",
+    "packages/server/src/agent-runtime.ts": "5a47295d1105f60d2804a2f87930f3f4d4caad86",
+    "packages/server/src/autonomous-orchestrator.ts": "75b5f6244034dd38820d6a0efeee299add80afbf",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "e5bcba685cbf059fead7890a56c4ba4843a7a5fe",
+    "packages/server/src/workflow-service.ts": "a46e0238daf63d31820dd6548c362ef6e77981cb",
     "packages/sessions/src/persistence.ts": "773d64921c840a0ca860b6e1985184dace727c8a",
     "packages/sessions/src/postgres-persistence.ts": "f47a6a0e3cd9e3064c17b00b4e6516082f738068",
-    "packages/sessions/src/session-state.ts": "5feee78c1b875877637cac624d2d614240507f06",
+    "packages/sessions/src/session-state.ts": "92cf36edd5887521521d1246d0bbc80a84d40103",
     "packages/workflow/src/forge-verify.ts": "a2ebe610ad4ec74a68609c57bba7b19fe6869cdc",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
     "packages/workflow/src/types.ts": "a2b484a4acbcac05a4739c1f6cbf5450ff49fe41",
@@ -275,7 +275,7 @@
         },
         {
           "file": "packages/server/src/agent-runtime.ts",
-          "change": "Approval session grants ('Allow for Session' is now remembered per session runtime for safe/moderate risk), approval prompts name the file/command, tool_call_completed arguments honored, startTurn preserves the existing session record, turns carry an origin/label, explicit pins of non-tool routes fail closed. Verification evidence handling, ForgeGreen ledger persistence and the duplicate-action supervisor are unchanged.",
+          "change": "ForgeAuto now accepts only registry-admitted, qualified free routes; a canonical model selection can fail over to an admitted same-model alternate route before a different model, and route health is shared with the registry. ForgeGreen ledger persistence, verification-evidence reuse and ForgeVerify validity are unchanged.",
           "addedToMaterialFiles": false
         },
         {
@@ -287,7 +287,76 @@
       "regressionEvidence": "Repository regression suite from the R1 runtime candidate plus the packaged smoke (full/interrupt/recover) and the live packaged autonomous task; exact results are recorded in docs/codeforge-codex-full-system-certification-r1.*.",
       "recertifiedAt": "2026-09-12",
       "sourceStateConstant": "CODEFORGE_CODEX_FULL_SYSTEM_R1_SOURCE_STATE"
+    },
+    {
+      "label": "Free Cloud R3 provider and terminal-state reconciliation",
+      "reason": "The Free Cloud R2 lineage changed four material files for provider-route integration and terminal-state recovery. None change ForgeGreen optimization candidates, the verification-evidence-reuse advisor, the FG-12F cost gate, or ForgeVerify validity authority; prior campaign evidence remains historically accurate for its recorded source state. This entry records the reviewed drift rather than rewriting historical evidence.",
+      "priorSourceStateId": "5551787971c70ed44ff345043a05c90cbaeff5c6e206dab00ba32dd5836a3c28",
+      "priorSurfaceVersion": "fg12f-certified-v1-codex-r1-runtime-hardening",
+      "resultingSourceStateId": "72673f2c31852263cd41bd056250628e9acbd966085eef9cc45546e2402cc873",
+      "resultingSurfaceVersion": "fg12f-certified-v1-free-cloud-r3",
+      "changes": [
+        {
+          "file": "packages/router/package.json",
+          "change": "The unused model-registry dependency was removed from the router workspace manifest as part of the Free Cloud provider-route integration. Router eligibility remains governed by ForgeZero.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Approval session grants ('Allow for Session' is now remembered per session runtime for safe/moderate risk), approval prompts name the file/command, tool_call_completed arguments honored, startTurn preserves the existing session record, turns carry an origin/label, explicit pins of non-tool routes fail closed. Verification evidence handling, ForgeGreen ledger persistence and the duplicate-action supervisor are unchanged.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "Terminal sessions now settle non-terminal owned turns and unresolved approval records without replaying work; phase-status persistence is serialized so a late non-terminal write cannot revive a finished task. ForgeVerify dispatch, observer wiring and the Candidate D cost gate are untouched.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/sessions/src/session-state.ts",
+          "change": "Approval work items gained terminal cancellation metadata so recovery can mark an interrupted task ended without falsely attributing a user denial. ForgeGreen policy and ForgeVerify validity are unchanged.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Focused ForgeGreen source-state/provenance, desktop runtime ownership/control-plane/preload/package-security tests, and the packaged browser-security audit were rerun during the R3 reconciliation. The full suite remains a separate R3 certification gate.",
+      "recertifiedAt": "2026-09-13",
+      "sourceStateConstant": "CODEFORGE_FREE_CLOUD_PLATFORM_R3_SOURCE_STATE"
+    },
+    {
+      "label": "Free Cloud R5 no-route turn fails closed",
+      "reason": "R5 observed in the packaged product that a builder turn with no eligible route (every route of the provider cooled down after one upstream 502) completed as a success without any model call; only the workflow completion gate caught it. The fix makes the runtime itself fail such a turn. It does not touch ForgeGreen optimization candidates, the verification-evidence-reuse advisor, the FG-12F cost gate, or ForgeVerify validity authority; prior campaign evidence remains historically accurate for its recorded source state.",
+      "priorSourceStateId": "72673f2c31852263cd41bd056250628e9acbd966085eef9cc45546e2402cc873",
+      "priorSurfaceVersion": "fg12f-certified-v1-free-cloud-r3",
+      "resultingSourceStateId": "16b978e4066d6b6b1e757daefece91578c8f98213eefa7e452df078253541898",
+      "resultingSurfaceVersion": "fg12f-certified-v1-free-cloud-r5",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "executeTurn now fails the turn closed with an explicit 'No eligible free route' error when route resolution yields no admitted, healthy route, instead of running an empty loop and reporting 'Task completed successfully'. Route ranking, 8-Bit failover, approvals, verification-evidence handling, ForgeGreen ledger persistence and the duplicate-action supervisor are unchanged.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "packages/server (incl. the new no-eligible-route-turn regression), packages/workflow, packages/forge-green and packages/forgegreen-campaign suites, followed by the full R5 regression run and the packaged smoke chain; exact results are recorded in docs/codeforge-free-cloud-platform-r5.*.",
+      "recertifiedAt": "2026-09-13",
+      "sourceStateConstant": "CODEFORGE_FREE_CLOUD_PLATFORM_R5_SOURCE_STATE"
+    },
+    {
+      "label": "Free Cloud R5 hidden git console windows",
+      "reason": "The user observed the packaged desktop flashing console windows whenever the agent's tooling invoked git; the orchestrator's git helper now passes windowsHide like every other git call in the runtime. A child-process spawn option only: ForgeGreen optimization candidates, the verification-evidence-reuse advisor, the FG-12F cost gate and ForgeVerify validity authority are untouched.",
+      "priorSourceStateId": "16b978e4066d6b6b1e757daefece91578c8f98213eefa7e452df078253541898",
+      "priorSurfaceVersion": "fg12f-certified-v1-free-cloud-r5",
+      "resultingSourceStateId": "464343d9548f70b354d4496caa1de8ad5e4373612b8a847f0ef643bdfa36c84e",
+      "resultingSurfaceVersion": "fg12f-certified-v1-free-cloud-r5",
+      "changes": [
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "The orchestrator's git helper passes windowsHide so the packaged GUI process does not allocate a visible console window for each git invocation. No orchestration, verification, ForgeGreen or ForgeVerify logic changed.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "packages/server (incl. the new no-eligible-route-turn regression), packages/workflow, packages/forge-green and packages/forgegreen-campaign suites, followed by the full R5 regression run and the packaged smoke chain; exact results are recorded in docs/codeforge-free-cloud-platform-r5.*.",
+      "recertifiedAt": "2026-09-13",
+      "sourceStateConstant": "CODEFORGE_FREE_CLOUD_PLATFORM_R5_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above."
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above."
 }

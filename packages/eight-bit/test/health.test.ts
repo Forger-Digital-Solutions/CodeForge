@@ -84,6 +84,26 @@ describe("EightBitHealthTracker — live feedback loop", () => {
     expect(rec?.health?.status).toBe("degraded");
   });
 
+  it("[PASS] one TEMPORARY_CAPACITY failure does not make the provider's routes ineligible past its cooldown", () => {
+    // R5: 8-Bit projects DEGRADED provider-wide onto ForgeZero; ForgeZero used to treat "degraded"
+    // as ineligible with no expiry, so a single upstream 502 on one route left every route of the
+    // provider unroutable until restart (healthyFreeRoutes: 0, and no success could ever clear it).
+    let clock = Date.now();
+    const fw = new ForgeZero({ context: { now: () => new Date(clock) } });
+    fw.register(makeModel());
+    fw.register(makeModel({ modelId: "coder-beta:free", displayName: "Coder Beta (Free)" }));
+    const tracker = new EightBitHealthTracker(fw, () => clock);
+    tracker.recordFailure("openrouter", "coder-alpha:free", "TEMPORARY_CAPACITY");
+    expect(fw.getModel("openrouter", "coder-beta:free")?.health?.status).toBe("degraded");
+    // Inside the cooldown the provider is excluded (same as a rate limit) …
+    expect(fw.verify("openrouter", "coder-beta:free").ok).toBe(false);
+    // … and after it elapses both routes are eligible again without any success having occurred.
+    clock += 10 * 60_000;
+    expect(fw.verify("openrouter", "coder-beta:free").ok).toBe(true);
+    expect(fw.verify("openrouter", "coder-alpha:free").ok).toBe(true);
+    expect(fw.eligibleModels().map((m) => m.modelId).sort()).toEqual(["coder-alpha:free", "coder-beta:free"]);
+  });
+
   it("[PASS] hydrate restores a persisted snapshot into both the tracker and ForgeZero", () => {
     const fw = new ForgeZero();
     fw.register(makeModel());

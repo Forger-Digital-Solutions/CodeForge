@@ -60,16 +60,19 @@ export class SqliteQualificationPersistence implements QualificationPersistence 
   }
 
   private toWorkItem(receipt: ModelQualificationReceipt): WorkItem {
-    const item: WorkItem = {
+    // A receipt belongs to the host, not to any session. work_items.sessionId is a foreign key
+    // to sessions(id) (nullable), so a fabricated "global" session id made every save fail the
+    // constraint; the failure was swallowed and receipts only ever lived in memory, which
+    // re-spent free quota re-qualifying every route on each launch (found by R5).
+    const item = {
       kind: "activity",
       id: this.key(receipt.providerId, receipt.modelId),
-      sessionId: "global",
       title: `Qualification: ${receipt.providerId}/${receipt.modelId}`,
       status: "completed",
       detail: JSON.stringify(receipt),
       startedAt: receipt.startedAt,
       completedAt: receipt.completedAt,
-    };
+    } as unknown as WorkItem;
     return item;
   }
 

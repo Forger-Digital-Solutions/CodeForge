@@ -9,14 +9,17 @@ const __dirname = dirname(__filename);
 
 const mode = process.argv[2] || 'full';
 const desktopRoot = resolve(__dirname, '..');
+const smokeRoot = process.env.CODEFORGE_SMOKE_ROOT
+  ? resolve(process.env.CODEFORGE_SMOKE_ROOT)
+  : resolve(desktopRoot, 'release');
 const exePath = process.env.CODEFORGE_SMOKE_EXECUTABLE
   ? resolve(process.env.CODEFORGE_SMOKE_EXECUTABLE)
-  : resolve(desktopRoot, 'release', 'win-unpacked', 'CodeForge.exe');
-const smokeWorkspace = resolve(desktopRoot, 'release', 'smoke-workspace');
-const smokeOut = resolve(desktopRoot, 'release', 'smoke-result.log');
-const smokeProfile = resolve(desktopRoot, 'release', 'smoke-user-data');
-const smokeRepositoryIndexes = resolve(desktopRoot, 'release', 'smoke-repository-indexes');
-const smokeSuiteState = resolve(desktopRoot, 'release', 'smoke-suite-id');
+  : resolve(smokeRoot, 'win-unpacked', 'CodeForge.exe');
+const smokeWorkspace = resolve(smokeRoot, 'smoke-workspace');
+const smokeOut = resolve(smokeRoot, 'smoke-result.log');
+const smokeProfile = resolve(smokeRoot, 'smoke-user-data');
+const smokeRepositoryIndexes = resolve(smokeRoot, 'smoke-repository-indexes');
+const smokeSuiteState = resolve(smokeRoot, 'smoke-suite-id');
 const screenshotDirectory = process.env.CODEFORGE_SMOKE_SCREENSHOT_DIR
   ? resolve(process.env.CODEFORGE_SMOKE_SCREENSHOT_DIR)
   : undefined;
@@ -31,6 +34,8 @@ const runId = randomUUID();
 const requiredMarkers = {
   full: [
     'PACKAGED_STARTUP=PASS', 'FORGEGREEN_RUNTIME=PASS', 'EIGHT_BIT_RUNTIME=PASS', 'CLOUD_DB_PACKAGED_RUNTIME=PASS', 'PACKAGED_FULL_SMOKE_OK',
+    // Renderer startup chain stamped by the renderer itself (renderer/lifecycle.ts).
+    'packaged_renderer_lifecycle_chain=PASS',
     'packaged_failure_repair_pass=PASS', 'packaged_renderer_reload_count=5', 'packaged_renderer_reload=PASS', 'credential_plaintext_absent=PASS',
     // Local control-plane trust boundary: bearer never reaches the renderer, main authenticates the
     // primary document, everything else (no/wrong bearer, forged origin, secondary renderer) fails closed.

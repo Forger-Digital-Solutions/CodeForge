@@ -48,7 +48,7 @@ function assertId(value: string, name: string): void {
 }
 
 async function git(cwd: string, args: string[]): Promise<string> {
-  return (await execFile("git", args, { cwd, env: { PATH: process.env.PATH, GIT_CONFIG_NOSYSTEM: "1", GIT_TERMINAL_PROMPT: "0" } })).stdout.trim();
+  return (await execFile("git", args, { cwd, windowsHide: true, env: { PATH: process.env.PATH, GIT_CONFIG_NOSYSTEM: "1", GIT_TERMINAL_PROMPT: "0" } })).stdout.trim();
 }
 
 /**
@@ -63,7 +63,7 @@ export async function createPublicationArtifact(options: CreatePublicationArtifa
   ]);
   if (head !== options.certifiedHead || tree !== options.certifiedTree) throw new Error("PUBLICATION_ARTIFACT_DELIVERY_CHANGED");
   try {
-    await execFile("git", ["merge-base", "--is-ancestor", options.targetSha, options.certifiedHead], { cwd: options.workspacePath, env: { PATH: process.env.PATH, GIT_CONFIG_NOSYSTEM: "1", GIT_TERMINAL_PROMPT: "0" } });
+    await execFile("git", ["merge-base", "--is-ancestor", options.targetSha, options.certifiedHead], { cwd: options.workspacePath, windowsHide: true, env: { PATH: process.env.PATH, GIT_CONFIG_NOSYSTEM: "1", GIT_TERMINAL_PROMPT: "0" } });
   } catch {
     throw new Error("PUBLICATION_LINEAGE_INVALID");
   }

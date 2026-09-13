@@ -52,7 +52,10 @@ const runtimeModules = entries.filter((entry) => {
       || normalized.includes("node_modules/pgpass/")
       || normalized.includes("node_modules/xtend/")
     )
-    && !normalized.includes("node_modules/@codeforge/ui/");
+    && !normalized.includes("node_modules/@codeforge/ui/")
+    // The renderer is a sandboxed browser bundle: it resolves no Node modules at runtime, and
+    // its minified UI strings ("… loaded from ", provider.displayName) are not import specifiers.
+    && !normalized.startsWith("apps/desktop/dist/renderer/");
 });
 
 for (const entry of runtimeModules) {

@@ -1173,6 +1173,13 @@ function resolveAppIcon(): string | undefined {
 async function createWindowDocument(): Promise<void> {
   const window = mainWindow;
   if (!window) throw new Error("Main window was not created");
+  // The bearer filter is keyed on the runtime's actual origin, so it can only be installed once
+  // the runtime has bound its ephemeral port. Installing it at window construction (before
+  // initializeServer) matched the preferred port instead, and every renderer control-plane
+  // request — sessions, models, the event stream — was refused with 401.
+  if (localServerPort <= 0) throw new Error("Local runtime is not bound; the renderer document cannot be loaded");
+  installControlPlaneBearerInjection(window);
+  smokeRecord(`CONTROL_PLANE_BEARER_FILTER_${localServerBaseUrl()}`);
   const isDev = process.env.ELECTRON_DEV === "true";
   if (isDev) {
     trustedRendererDocumentUrl = "http://localhost:5173/";
@@ -1216,7 +1223,8 @@ async function createWindow(loadDocument = true): Promise<void> {
     show: false,
     backgroundColor: "#0f1012",
   });
-  installControlPlaneBearerInjection(mainWindow);
+  smokeRecordTimed("WINDOW_CONSTRUCTED");
+  installRendererLifecycleDiagnostics(mainWindow);
 
   mainWindow.webContents.on("render-process-gone", (_event, details) => {
     const detail = `RENDER_PROCESS_GONE=${details.reason}:${details.exitCode}`;
@@ -1230,9 +1238,12 @@ async function createWindow(loadDocument = true): Promise<void> {
   });
 
   mainWindow.once("ready-to-show", () => {
-    smokeRecord("WINDOW_READY_TO_SHOW");
+    // Electron emits ready-to-show from the renderer's first visually non-empty paint, so this is
+    // the first-paint marker; the state snapshot records what the window looked like as it was shown.
+    smokeRecordTimed("WINDOW_READY_TO_SHOW");
     mainWindow?.show();
     if (restored.isMaximized) mainWindow?.maximize();
+    smokeRecordWindowState("WINDOW_STATE_AFTER_SHOW");
   });
 
   mainWindow.on("close", (event) => {
@@ -1310,16 +1321,91 @@ async function waitForRenderer(): Promise<void> {
   smokeRecord("WAIT_RENDERER_START");
   const window = mainWindow;
   if (!window) throw new Error("Main window was not created");
-  if (window.webContents.isLoadingMainFrame()) {
+  const contents = window.webContents;
+  // loadFile() resolves on did-finish-load, but Chromium still reports the main frame as loading
+  // until the separate did-stop-loading notification arrives. Waiting here for another
+  // did-finish-load therefore never returned (the R4 stall after WINDOW_READY_TO_SHOW); the
+  // loading state itself is the condition to wait on.
+  if (contents.isLoading()) {
     await new Promise<void>((resolve, reject) => {
-      window.webContents.once("did-finish-load", () => resolve());
-      window.webContents.once("did-fail-load", (_event, code, description) => {
+      const settle = () => { cleanup(); resolve(); };
+      const fail = (_event: Electron.Event, code: number, description: string, _url: string, isMainFrame: boolean) => {
+        if (!isMainFrame) return;
+        cleanup();
         reject(new Error(`Renderer load failed (${code}): ${description}`));
-      });
+      };
+      const cleanup = () => {
+        contents.off("did-stop-loading", settle);
+        contents.off("did-fail-load", fail);
+      };
+      contents.on("did-stop-loading", settle);
+      contents.on("did-fail-load", fail);
     });
   }
-  smokeRecord("WAIT_RENDERER_FRAME_LOADED");
+  smokeRecordTimed("WAIT_RENDERER_FRAME_LOADED");
   await delay(150);
+}
+
+/** Timestamped smoke marker for startup-chain timing; inert outside the packaged smoke harness. */
+function smokeRecordTimed(marker: string): void {
+  smokeRecord(`${marker} t=${Date.now()}`);
+}
+
+/**
+ * Window/renderer state snapshot for packaged certification. Contains geometry, visibility and
+ * loading state plus the renderer OS pid — no document content and no credentials.
+ */
+function smokeRecordWindowState(marker: string): void {
+  if (!process.env.CODEFORGE_SMOKE_OUT) return;
+  const window = mainWindow;
+  if (!window || window.isDestroyed()) {
+    smokeRecord(`${marker}={"destroyed":true}`);
+    return;
+  }
+  const contents = window.webContents;
+  const state = {
+    t: Date.now(),
+    bounds: window.getBounds(),
+    isVisible: window.isVisible(),
+    isMinimized: window.isMinimized(),
+    isFocused: window.isFocused(),
+    isDestroyed: window.isDestroyed(),
+    isLoading: contents.isLoading(),
+    isLoadingMainFrame: contents.isLoadingMainFrame(),
+    isCrashed: contents.isCrashed(),
+    url: contents.getURL(),
+    rendererOsPid: contents.getOSProcessId(),
+    rendererProcessId: contents.getProcessId(),
+  };
+  smokeRecord(`${marker}=${JSON.stringify(state)}`);
+}
+
+/**
+ * Renderer lifecycle diagnostics for packaged certification. Every marker goes through
+ * smokeRecord, which is inert unless the packaged smoke harness started this process, so a normal
+ * launch pays only for the event subscriptions. Only the renderer's own `[codeforge:lifecycle]`
+ * console marks (see renderer/lifecycle.ts) and error-level console lines are forwarded; nothing
+ * else the renderer logs is persisted, and no new IPC or evaluation surface is introduced.
+ */
+function installRendererLifecycleDiagnostics(window: BrowserWindow): void {
+  if (!process.env.CODEFORGE_SMOKE_OUT) return;
+  const contents = window.webContents;
+  contents.on("dom-ready", () => smokeRecordTimed("RENDERER_DOM_READY"));
+  contents.on("did-frame-finish-load", (_event, isMainFrame) => {
+    if (isMainFrame) smokeRecordTimed("RENDERER_DID_FRAME_FINISH_LOAD");
+  });
+  contents.on("did-finish-load", () => smokeRecordTimed("RENDERER_DID_FINISH_LOAD"));
+  contents.on("did-stop-loading", () => smokeRecordTimed("RENDERER_DID_STOP_LOADING"));
+  contents.on("preload-error", (_event, preloadPath, error) => {
+    smokeRecord(`RENDERER_PRELOAD_ERROR path=${path.basename(preloadPath)} message=${error.message}`);
+  });
+  contents.on("console-message", (_event, level, message) => {
+    if (message.startsWith("[codeforge:lifecycle] ")) {
+      smokeRecord(`RENDERER_LIFECYCLE ${message.slice("[codeforge:lifecycle] ".length)}`);
+    } else if (level === 3) {
+      smokeRecord(`RENDERER_CONSOLE_ERROR ${message.slice(0, 500).replace(/\s+/g, " ")}`);
+    }
+  });
 }
 
 async function capturePackagedSmokeScreenshot(name: string): Promise<void> {
@@ -1360,13 +1446,13 @@ async function apiJson(pathname: string, init?: RequestInit): Promise<{ status: 
   return { status: response.status, body };
 }
 
-async function waitForCondition(check: () => Promise<boolean>, timeoutMs = 10_000): Promise<void> {
+async function waitForCondition(check: () => Promise<boolean>, timeoutMs = 10_000, label = "condition"): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (await check()) return;
     await delay(100);
   }
-  throw new Error("Timed out waiting for packaged smoke condition");
+  throw new Error(`Timed out waiting for packaged smoke ${label}`);
 }
 
 async function waitForTask(taskId: string, sessionId: string, resolveApprovals: boolean): Promise<{ phase: string; status: string; error?: string }> {
@@ -1423,6 +1509,17 @@ async function verifyControlPlaneTrustBoundary(): Promise<void> {
   const trusted = await evaluateRenderer<number | string>(`fetch(${JSON.stringify(`${base}/api/sessions`)}).then((r) => r.status, (e) => "error:" + e.message)`);
   if (trusted !== 200) throw new Error(`Trusted renderer control-plane request returned ${trusted}`);
   smokeRecord("control_plane_trusted_renderer=PASS");
+
+  // The authoritative execution stream (EventSource) is authenticated the same way as fetch.
+  const stream = await evaluateRenderer<string>(`new Promise((resolve) => {
+    const source = new EventSource(${JSON.stringify(`${base}/api/events?sessionId=default`)});
+    const finish = (result) => { try { source.close(); } catch {} resolve(result); };
+    source.onopen = () => finish("open");
+    source.onerror = () => finish("error:" + source.readyState);
+    setTimeout(() => finish("timeout:" + source.readyState), 5000);
+  })`);
+  if (stream !== "open") throw new Error(`Trusted renderer event stream did not open: ${stream}`);
+  smokeRecord("control_plane_trusted_event_stream=PASS");
 
   // Missing or wrong bearer fails closed, including on approval resolution.
   const missing = await fetch(`${base}/api/sessions`);
@@ -1508,7 +1605,7 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   await reloadRenderer();
   await waitForCondition(async () =>
     (await evaluateRenderer<string>("document.body.innerText")).toLowerCase().includes(path.basename(workspacePath).toLowerCase()),
-  );
+  10_000, "workspace name in renderer");
   const authenticatedText = await evaluateRenderer<string>("document.body.innerText");
   if (authenticatedText.includes("Continue with GitHub")) throw new Error("Packaged auth fixture did not restore into the authenticated UI");
   // The shell's Repository Intelligence surface is an icon-only header button; open its live
@@ -1529,6 +1626,26 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   smokeRecord("packaged_authenticated_workspace=PASS");
   smokeRecord("renderer_raw_credential_api_absent=PASS");
   await verifyControlPlaneTrustBoundary();
+  // Renderer startup chain (renderer/lifecycle.ts): bootstrap → root mounted → first frame →
+  // workspace root → runtime connected → workspace interactive, all stamped by the renderer itself.
+  const lifecycleSnapshot = () => evaluateRenderer<Record<string, number>>(
+    "Object.fromEntries(Array.from(document.documentElement.attributes).filter((a) => a.name.startsWith('data-cf-lifecycle-')).map((a) => [a.name.slice('data-cf-lifecycle-'.length), Number(a.value)]))",
+  );
+  try {
+    await waitForCondition(async () =>
+      (await evaluateRenderer<string | null>("document.documentElement.getAttribute('data-cf-lifecycle-workspace-interactive')")) !== null,
+    10_000, "renderer workspace-interactive lifecycle mark");
+  } catch (error) {
+    smokeRecord(`RENDERER_LIFECYCLE_PARTIAL=${JSON.stringify(await lifecycleSnapshot())}`);
+    throw error;
+  }
+  const lifecycle = await lifecycleSnapshot();
+  for (const mark of ["bootstrap", "root-mounted", "first-frame", "workspace-root", "runtime-connected", "workspace-interactive"]) {
+    if (typeof lifecycle[mark] !== "number") throw new Error(`Renderer lifecycle mark missing: ${mark}`);
+  }
+  smokeRecord(`RENDERER_LIFECYCLE_SNAPSHOT=${JSON.stringify(lifecycle)}`);
+  smokeRecordWindowState("WINDOW_STATE_WORKSPACE_INTERACTIVE");
+  smokeRecord("packaged_renderer_lifecycle_chain=PASS");
   await capturePackagedSmokeScreenshot("01-authenticated-zero-state");
   // Collapse the popover again so later programmatic interactions start from a clean surface.
   await evaluateRenderer<void>(`(() => { const button = Array.from(document.querySelectorAll('button')).find((element) => element.getAttribute('aria-label') === 'Repository Intelligence'); if (button) button.click(); })()`);

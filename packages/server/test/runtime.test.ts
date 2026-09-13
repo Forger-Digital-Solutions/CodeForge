@@ -115,6 +115,9 @@ describe("AgentRuntime (in-memory)", () => {
       },
       isRemote: true,
       isCloudHosted: true,
+      // Without a health state ForgeZero never admits the route; these turns then exercised the
+      // runtime's (former) fall-through to "completed" without a model instead of the mock provider.
+      health: { status: "available", lastCheckedAt: new Date().toISOString() },
     };
     firewall.register(model);
 
@@ -147,25 +150,30 @@ describe("AgentRuntime (in-memory)", () => {
     });
   });
 
+  const settle = async (turnId: string) => {
+    for (let i = 0; i < 200 && runtime.getTurn(turnId)?.status === "running"; i++) await new Promise((r) => setTimeout(r, 10));
+    return runtime.getTurn(turnId);
+  };
+
   it("should start a turn", async () => {
     const turnId = await runtime.startTurn("Hello world");
     expect(turnId).toBeDefined();
-    const state = runtime.getTurn(turnId);
-    expect(state).toBeDefined();
-    // Turn completes immediately with mock provider that has no delays
+    expect(runtime.getTurn(turnId)).toBeDefined();
+    // The mock provider answers immediately, so the real model turn settles as completed.
+    const state = await settle(turnId);
     expect(state?.status).toBe("completed");
+    expect(state?.modelId).toBe("test-model");
   });
 
   it("should track active turns", async () => {
-    // Start two turns - they will complete immediately with mock provider
+    // One real turn at a time per session: the second starts once the first has settled.
     const turnId1 = await runtime.startTurn("First task");
+    await settle(turnId1);
     const turnId2 = await runtime.startTurn("Second task");
-    // Verify both turns were created and can be retrieved
-    expect(runtime.getTurn(turnId1)).toBeDefined();
-    expect(runtime.getTurn(turnId2)).toBeDefined();
-    // Active turns may be empty if both completed
-    const active = runtime.getActiveTurns();
-    expect(active.length).toBeGreaterThanOrEqual(0);
+    await settle(turnId2);
+    expect(runtime.getTurn(turnId1)?.status).toBe("completed");
+    expect(runtime.getTurn(turnId2)?.status).toBe("completed");
+    expect(runtime.getActiveTurns().filter((t) => t.status === "running")).toHaveLength(0);
   });
 
   it("should handle cancellation", async () => {

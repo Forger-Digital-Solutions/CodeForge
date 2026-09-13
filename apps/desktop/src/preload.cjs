@@ -1,5 +1,12 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
+// Startup-chain marks at verbose console level (see renderer/lifecycle.ts). Observation only:
+// nothing is exposed to the page and nothing is read from the main process.
+const lifecycleMark = (name) => {
+  try { console.debug(`[codeforge:lifecycle] ${name} ${Date.now()}`); } catch { /* diagnostics only */ }
+};
+lifecycleMark("preload-entry");
+
 // The local control-plane bearer is deliberately absent from this bridge: the main process
 // attaches it to the primary window's own requests (see control-plane-trust.ts), so the
 // renderer never holds a secret it could leak.
@@ -142,3 +149,4 @@ const api = {
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);
+lifecycleMark("preload-bridge-ready");

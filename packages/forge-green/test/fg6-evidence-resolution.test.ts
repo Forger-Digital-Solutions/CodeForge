@@ -637,12 +637,10 @@ describe("ForgeGreen FG-6 Evidence Resolution Authority", () => {
     expect(resTenantB.receipt.resolutionId).not.toBe(resModelA.receipt.resolutionId);
   });
 
-  it("31 & 32. scale test: 1,000 duplicate/overlapping obligations resolves boundedly in <50ms", async () => {
+  it("31 & 32. scale test: 1,000 duplicate/overlapping obligations resolves boundedly (near-linear)", async () => {
     const { root, config } = await createFixture();
-    const largeSet: VerificationObligation[] = [];
-
-    for (let i = 0; i < 1000; i++) {
-      largeSet.push(
+    const buildSet = (count: number): VerificationObligation[] =>
+      Array.from({ length: count }, (_, i) =>
         makeObligation({
           id: `large-ob-${i}`,
           kind: i % 2 === 0 ? "TYPECHECK" : "PACKAGE_TEST",
@@ -651,23 +649,38 @@ describe("ForgeGreen FG-6 Evidence Resolution Authority", () => {
           reasonCodes: [`REASON_${i % 5}`],
         })
       );
-    }
+    const resolve = (obligations: VerificationObligation[]) =>
+      resolveVerificationObligations({ obligations, workspacePath: root, workspaceConfig: config, namespace: "ns-test" });
+    // Boundedness is asserted against the same host at the same moment rather than as an absolute
+    // wall-clock budget: a saturated machine (the full suite runs real git/sqlite/HTTP fixtures in
+    // parallel) stretched a ~10 ms resolution past a fixed 100 ms bound without any algorithmic
+    // regression. Min-of-three removes one-off scheduling stalls; the 10×-input ratio catches a
+    // quadratic fold (~100× slower) while a linear pass stays near 10×.
+    const minElapsed = async (count: number): Promise<number> => {
+      let best = Number.POSITIVE_INFINITY;
+      for (let run = 0; run < 3; run++) {
+        const t0 = performance.now();
+        await resolve(buildSet(count));
+        best = Math.min(best, performance.now() - t0);
+      }
+      return best;
+    };
+    const largeSet = buildSet(1000);
+    await resolve(buildSet(10)); // warm module/fixture caches once
 
-    const t0 = performance.now();
-    const res = await resolveVerificationObligations({
-      obligations: largeSet,
-      workspacePath: root,
-      workspaceConfig: config,
-      namespace: "ns-test",
-    });
-    const elapsed = performance.now() - t0;
-
+    const res = await resolve(largeSet);
     expect(res.outcome).toBe("RESOLVED");
     expect(res.receipt.inputObligationCount).toBe(1000);
     // 1000 obligations deduplicated to 2 canonical obligations!
     expect(res.receipt.deduplicatedObligationCount).toBe(2);
     expect(res.receipt.dispatchesAvoidedCount).toBeGreaterThanOrEqual(998);
-    expect(elapsed).toBeLessThan(100); // Super fast O(N) deduplication
+
+    const thousandMs = await minElapsed(1000);
+    const tenThousandMs = await minElapsed(10_000);
+    // 10× the input must not cost more than 30× the time (3× headroom over linear); an O(N²)
+    // fold would land near 100×.
+    expect(tenThousandMs).toBeLessThan(Math.max(thousandMs, 1) * 30);
+    expect(tenThousandMs).toBeLessThan(10_000); // pathological-regression guard, host-load tolerant
   });
 
   it("33 & 34. authority boundary: FG-6 RESOLVED does not equal verification PASS and cannot satisfy Completion Gate", async () => {

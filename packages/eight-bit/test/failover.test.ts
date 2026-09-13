@@ -48,6 +48,35 @@ describe("EightBitFailoverCoordinator — safe active-run handoff decision", () 
     }
   });
 
+  it("[PASS] a capacity blip with nothing to rotate to retries the same route after a bounded wait, then escalates", async () => {
+    // R5: with exactly one admitted free route, an upstream "502 temporarily overloaded" abandoned
+    // the whole task although the route answered again seconds later. The retry is bounded by the
+    // same escalation threshold as every other bounded retry; rate limits/quota never take it.
+    fw.register(makeModel({ providerId: "openrouter", modelId: "only-route" }));
+    const waits: number[] = [];
+    let clock = Date.now();
+    const timed = new EightBitFailoverCoordinator(new EightBitHealthTracker(fw, () => clock), router, store, { now: () => clock, sleep: async (ms) => { waits.push(ms); clock += ms; } });
+    const req = { ...baseReq, current: { providerId: "openrouter", modelId: "only-route" }, error: new Error("OpenRouter stream error (502): Upstream error from Nvidia: Service temporarily overloaded") };
+    const first = await timed.handleFailure(req);
+    expect(first.action).toBe("retry_same");
+    expect(waits.length).toBe(1);
+    expect(waits[0]).toBeGreaterThan(0);
+    expect(waits[0]).toBeLessThanOrEqual(8_000);
+    const second = await timed.handleFailure(req);
+    expect(second.action).toBe("retry_same");
+    const third = await timed.handleFailure(req);
+    expect(third.action).toBe("no_replacement");
+    if (third.action === "no_replacement") expect(third.receipt.action).toBe("NO_ELIGIBLE_ROUTE");
+    const receipts = await store.listReceipts("s1");
+    expect(receipts.filter((r) => r.action === "COOLDOWN" && r.reasonCodes.includes("BOUNDED_SAME_ROUTE_RETRY")).length).toBe(2);
+  });
+
+  it("[PASS] a rate limit with nothing to rotate to is not retried on the same route", async () => {
+    fw.register(makeModel({ providerId: "openrouter", modelId: "only-route" }));
+    const outcome = await coordinator.handleFailure({ ...baseReq, current: { providerId: "openrouter", modelId: "only-route" }, error: new Error("429 rate limit exceeded: free-models-per-day") });
+    expect(outcome.action).toBe("no_replacement");
+  });
+
   it("[PASS] a single TIMEOUT does not rotate (bounded retry first — never demote on one transient blip)", async () => {
     fw.register(makeModel({ providerId: "openrouter", modelId: "primary" }));
     fw.register(makeModel({ providerId: "groq", modelId: "secondary" }));

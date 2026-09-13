@@ -4,6 +4,7 @@ import CloseDialog, { type CloseRequest } from "./CloseDialog.js";
 import WelcomeScreen from "./WelcomeScreen.js";
 import WorkspaceShell from "./WorkspaceShell.js";
 import { migrateLegacyAppSettings, type AppSettings, type SettingsSnapshot } from "../app-settings.js";
+import { markRendererLifecycle } from "./lifecycle.js";
 
 export interface Project {
   id: string;
@@ -20,6 +21,12 @@ export default function App() {
   const [authState, setAuthState] = useState<"loading" | "signed-out" | "authenticated">("loading");
 
   const [closeRequest, setCloseRequest] = useState<CloseRequest | null>(null);
+
+  useEffect(() => {
+    // The root has committed; the next animation frame is the first one that can show it.
+    markRendererLifecycle("root-mounted");
+    requestAnimationFrame(() => markRendererLifecycle("first-frame"));
+  }, []);
 
   useEffect(() => {
     const unsubscribe = window.electronAPI?.onCloseRequested?.((request) => {

@@ -101,7 +101,7 @@ export class MissionSupervisor {
 
   private async save(mission: AutonomousMission): Promise<void> { mission.updatedAt = new Date().toISOString(); await this.store.save(mission); }
   private emit(mission: AutonomousMission, type: string, payload: Record<string, unknown> = {}, extra: { milestoneId?: string; wave?: number } = {}): void { this.store.emit(mission, type, payload, extra); }
-  private async git(cwd: string, args: string[]) { return execFile("git", args, { cwd, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } }); }
+  private async git(cwd: string, args: string[]) { return execFile("git", args, { cwd, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } }); }
 
   private missionWorkspace(mission: AutonomousMission): ForgeWorkspace | undefined {
     return mission.missionWorkspaceId ? this.options.workspaceService.getWorkspace(mission.missionWorkspaceId) : undefined;

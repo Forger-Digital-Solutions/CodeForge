@@ -99,7 +99,7 @@ function normalizeRelative(relativePath: string): string {
 
 function execGit(root: string, args: string[]): string | undefined {
   try {
-    return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 20_000 }).trim();
+    return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 20_000, windowsHide: true }).trim();
   } catch {
     return undefined;
   }
@@ -109,13 +109,18 @@ function execGit(root: string, args: string[]): string | undefined {
  * would be corrupted, silently dropping the modified flag for the most common dirty state. */
 function execGitNulDelimited(root: string, args: string[]): string | undefined {
   try {
-    return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 20_000 });
+    return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 20_000, windowsHide: true });
   } catch {
     return undefined;
   }
 }
 
 function defaultCacheRoot(): string {
+  // One override for every creator that does not pass an explicit cacheRoot (the desktop smoke,
+  // the test suite): without it, callers that rely on the default silently shared the user's
+  // real profile cache, and concurrent test workers raced on it (Windows EPERM on mkdir).
+  const override = process.env.CODEFORGE_REPOSITORY_INDEX_ROOT?.trim();
+  if (override) return override;
   const appData = process.env.LOCALAPPDATA || process.env.XDG_CACHE_HOME;
   return appData ? path.join(appData, "CodeForge", "repository-indexes") : path.join(os.tmpdir(), "codeforge", "repository-indexes");
 }

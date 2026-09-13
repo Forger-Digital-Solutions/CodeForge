@@ -72,7 +72,7 @@ export class IntegrationService {
   }
 
   private async git(cwd: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
-    return execFile("git", args, { cwd, maxBuffer: 10 * 1024 * 1024, env: { ...process.env, GIT_TERMINAL_PROMPT: "0" } });
+    return execFile("git", args, { cwd, maxBuffer: 10 * 1024 * 1024, windowsHide: true, env: { ...process.env, GIT_TERMINAL_PROMPT: "0" } });
   }
 
   /**

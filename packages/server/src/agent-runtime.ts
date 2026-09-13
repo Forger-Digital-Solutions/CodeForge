@@ -1960,6 +1960,14 @@ export class AgentRuntime {
 
     try {
       const model = this.resolveTurnModel();
+      // No admitted, healthy route is a failed turn, never a finished one: the loop below cannot
+      // run without a model, and letting the turn fall through to "completed" reported a task
+      // that did nothing as a success (observed in R5 after a provider-wide capacity cooldown).
+      if (!model) {
+        throw new Error(
+          "No eligible free route: ForgeAuto/Free has no admitted, healthy route for this task right now. Retry shortly or connect another free provider.",
+        );
+      }
       if (model && state) {
         adapter.emitRouterSelection(turnId, model.modelId, model.providerId, 75, [
           "forgezero_adaptive",

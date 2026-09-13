@@ -60,7 +60,7 @@ describe("preload bridge", () => {
       expect(preload).not.toMatch(/controlPlaneToken|control-plane-token|process\.argv/);
     }
     expect(main).not.toContain("additionalArguments");
-    expect(main).toContain("installControlPlaneBearerInjection(mainWindow)");
+    expect(main).toContain("installControlPlaneBearerInjection(window)");
     expect(main).toMatch(/webRequest\.onBeforeSendHeaders\(/);
   });
 

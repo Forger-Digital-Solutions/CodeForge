@@ -1,0 +1,43 @@
+{
+  "status": "CODEFORGE_FREE_CLOUD_PLATFORM_R4_BLOCKED",
+  "schemaVersion": 1,
+  "branch": "forger-digital-solutions-forgegreen-certified",
+  "head": "18c9f941ffe1961d5a1ca2b525afbb57a9b7af77",
+  "r2Candidate": "8b05773dd892de96bec52c5d7325622817e4dc75",
+  "forgeGreenSourceState": "72673f2c31852263cd41bd056250628e9acbd966085eef9cc45546e2402cc873",
+  "applicationSourceEquivalentToR2": true,
+  "hostNativeAttempt": {
+    "method": "temporary interactive Windows Scheduled Task; removed after execution",
+    "exactExecutable": "apps/desktop/release/win-unpacked/CodeForge.exe",
+    "browserPid": 24932,
+    "parentElectronPid": 30324,
+    "runtimeEndpoint": "http://127.0.0.1:64128",
+    "result": "incomplete_renderer_evidence",
+    "launchFailed49": false
+  },
+  "liveCatalog": { "provider": "openrouter", "registryModelCount": 1644, "verifiedZeroUnitCandidates": 22, "allowanceCandidates": 0, "errors": 0 },
+  "realQualification": {
+    "provider": "openrouter",
+    "model": "nvidia/nemotron-3-super-120b-a12b:free",
+    "state": "PROBATION",
+    "requestCount": 4,
+    "totalLatencyMs": 15529,
+    "forgeAutoAdmitted": false,
+    "receipt": "apps/desktop/release/r4-evidence/free-route-qualification.json"
+  },
+  "securityAudit": "PASS",
+  "r4EvidenceSecretPatternScan": "PASS_NO_MATCHES",
+  "focusedTests": { "files": 5, "tests": 34, "result": "PASS" },
+  "fullTestAggregate": { "filesPassed": 306, "filesFailed": 8, "filesSkipped": 7, "testsPassed": 2345, "testsFailed": 13, "testsSkipped": 36, "durationSeconds": 491.4 },
+  "artifacts": {
+    "setupSha256": "9F00742C0A7371DF80A19F983ED37E0EF107EE2B497E261C901A67C1A216064E",
+    "portableSha256": "B9F592F8EEEF47E3D2B7B098102121EBBADAF5F679EA478C0D097914047C7CA8",
+    "unpackedExeSha256": "54548AE86EDD165EDB3C4F0DA3E739A1244596BA6962435DDC39A22FAF54A5DE"
+  },
+  "remainingBlockers": [
+    "fresh foreground host-native exact-candidate first paint and workspace proof",
+    "qualified and ForgeAuto-admitted free coding route in packaged product",
+    "packaged autonomous coding task through ForgeVerify and completion gate",
+    "clean full-suite rerun outside Windows cache/cleanup contention"
+  ]
+}

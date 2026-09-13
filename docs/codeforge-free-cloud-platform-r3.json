@@ -1,0 +1,49 @@
+{
+  "schema": "codeforge-free-cloud-platform-r3",
+  "verdict": "CODEFORGE_FREE_CLOUD_PLATFORM_R3_BLOCKED",
+  "generatedAt": "2026-09-13",
+  "startingState": {
+    "branch": "forger-digital-solutions-forgegreen-certified",
+    "head": "18c9f941ffe1961d5a1ca2b525afbb57a9b7af77",
+    "r2CandidateInAncestry": "8b05773dd892de96bec52c5d7325622817e4dc75"
+  },
+  "renderer": {
+    "electron": "33.4.11",
+    "rootCause": "Nested Codex command-runner containment conflicts with Chromium renderer sandbox; it is not a CodeForge production renderer defect.",
+    "productionSecurityUnchanged": true,
+    "hostNativeR3FirstPaint": "not-observable-from-contained-runner",
+    "historicalSecureHostEvidence": "docs/codeforge-ui-daily-driver-r8-certification-report.md"
+  },
+  "runtimeOwnership": {
+    "directLaunchProfile": "apps/desktop/release/r3-direct-launch-profile",
+    "endpoint": "http://127.0.0.1:53528",
+    "loopbackOnly": true
+  },
+  "forgeGreen": {
+    "priorSourceStateId": "5551787971c70ed44ff345043a05c90cbaeff5c6e206dab00ba32dd5836a3c28",
+    "sourceStateId": "72673f2c31852263cd41bd056250628e9acbd966085eef9cc45546e2402cc873",
+    "reviewedChangedFiles": [
+      "packages/router/package.json",
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/workflow-service.ts",
+      "packages/sessions/src/session-state.ts"
+    ],
+    "fg11AndFg12eProvenance": "pass"
+  },
+  "tests": {
+    "focusedDesktop": { "filesPassed": 4, "testsPassed": 32 },
+    "focusedForgeGreen": { "filesPassed": 2, "testsPassed": 8 },
+    "packagedBrowserSecurityAudit": "pass",
+    "full": { "filesPassed": 314, "filesSkipped": 7, "testsPassed": 2358, "testsSkipped": 36, "durationSeconds": 302 }
+  },
+  "liveDiscovery": { "provider": "openrouter", "zeroUnitCandidates": 22, "allowanceCandidates": 0, "errors": 0, "admittedRoutes": 0 },
+  "artifacts": {
+    "setupSha256": "9F00742C0A7371DF80A19F983ED37E0EF107EE2B497E261C901A67C1A216064E",
+    "portableSha256": "B9F592F8EEEF47E3D2B7B098102121EBBADAF5F679EA478C0D097914047C7CA8",
+    "unpackedExecutableSha256": "54548AE86EDD165EDB3C4F0DA3E739A1244596BA6962435DDC39A22FAF54A5DE"
+  },
+  "blockers": [
+    "Host-native fresh-profile package smoke outside Codex command containment.",
+    "Legitimate authenticated free-provider capacity, qualification, and a completion-gated packaged coding task."
+  ]
+}

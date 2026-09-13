@@ -635,7 +635,7 @@ export class WorkspaceService {
   }
 
   private async gitCommand(cwd: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
-    return await execFile("git", args, { cwd, env: getSanitizedEnvForChild() });
+    return await execFile("git", args, { cwd, windowsHide: true, env: getSanitizedEnvForChild() });
   }
 }
 

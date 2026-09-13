@@ -216,11 +216,15 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       (FAMILY_PRIOR[familyByModel.get(r.canonicalModelId) ?? ""] ?? 0) * 100 +
       (routeCountByModel.get(r.canonicalModelId) ?? 0) * 10 +
       Math.min(9, Math.round((r.contextWindow ?? 0) / 100_000));
+    // A route whose last probe failed transiently (upstream 429/5xx → DEGRADED after its cooldown)
+    // is tested after the never-tested ones: re-probing the same rate-limited upstream first in
+    // every cycle starved untested candidates of the bounded per-cycle slots (observed in R5).
+    const penalty = (r: ProviderRouteView): number => (r.health === "DEGRADED" ? 1 : 0);
     return snap.models
       .flatMap((m) => m.routes)
       .filter((r) => r.admission.failedGate === "CODEFORGE_QUALIFIED" && (r.qualificationState === "NOT_TESTED" || r.qualificationState === "STALE"))
       .filter((r) => r.health !== "COOLDOWN" && r.health !== "QUOTA_EXHAUSTED" && r.health !== "AUTH_REQUIRED")
-      .sort((a, b) => score(b) - score(a));
+      .sort((a, b) => penalty(a) - penalty(b) || score(b) - score(a));
   }
 
   private spendFor(providerId: string): { day: string; requests: number; lastCycleAt: number } {
@@ -267,21 +271,24 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         cycleStarted.add(route.providerId);
         spend.lastCycleAt = this.now().getTime();
         spend.requests += 3;
-        taken++;
         try {
           const receipt = await this.qualificationRunner(model, adapter);
-          // A transient (429/401) probe is not evidence about the model; keep it pending.
+          // A transient (429/401) probe is not evidence about the model; keep it pending. It
+          // still counts against the provider's daily spend (conservative), but not against the
+          // per-cycle slots, so the cycle moves on to a route that can actually be scored.
           if (receipt.metadata?.transient === true) {
             this.recordRouteFailure(route.providerId, route.providerModelId, "RATE_LIMITED");
             continue;
           }
+          taken++;
           this.receipts.set(`${receipt.providerId}::${receipt.modelId}`, receipt);
           await this.qualificationStore.save(receipt).catch(() => undefined);
           this.applyReceiptToFirewall(receipt);
           produced.push(receipt);
           this.emit();
         } catch {
-          // Qualification must never take the fleet down.
+          // Qualification must never take the fleet down; an exception is still a spent slot.
+          taken++;
         }
       }
     } finally {

@@ -187,6 +187,20 @@ export class EightBitHealthTracker {
     this.firewall.markProviderHealth(providerId, "available");
   }
 
+  /**
+   * Shorten (never extend) a route's cooldown so a bounded same-route retry can proceed once it
+   * has waited that long: the wait *is* the cooldown. ForgeZero's projection follows, since the
+   * agent loop re-verifies eligibility before every model call.
+   */
+  shortenCooldown(providerId: string, modelId: string, until: number): void {
+    const key = routeKeyOf(providerId, modelId);
+    const prior = this.routes.get(key);
+    if (!prior || prior.cooldownUntil === undefined || prior.cooldownUntil <= until) return;
+    const next: EightBitRouteHealth = { ...prior, cooldownUntil: until };
+    this.routes.set(key, next);
+    this.applyToFirewall(next);
+  }
+
   policyFor(reason: FailureReason): (typeof FAILURE_POLICY)[FailureReason] {
     return FAILURE_POLICY[reason];
   }

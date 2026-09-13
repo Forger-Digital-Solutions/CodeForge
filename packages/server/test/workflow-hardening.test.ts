@@ -136,7 +136,10 @@ describe("WorkflowService hardening — production autonomous execution", () => 
     for (const dir of extraWsDirs) {
       await rm(dir, { recursive: true, force: true }).catch(() => {});
     }
-  });
+    // Twenty real workflows (each with its own workspace, indexer and verification process) cost
+    // ~9 s alone and ~19 s beside the rest of the suite; the budget matches that real cost with
+    // headroom, like the other multi-workflow integration tests in this package.
+  }, 60_000);
 
   it("redacts secrets in persisted turn and evidence", async () => {
     const secret = "sk-proj-abcdef1234567890";

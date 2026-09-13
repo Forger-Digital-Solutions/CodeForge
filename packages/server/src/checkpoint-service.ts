@@ -497,6 +497,7 @@ export class CheckpointService {
     try {
       const { stdout } = await execFile("git", ["rev-parse", "--is-inside-work-tree"], {
         cwd: this.workspaceRoot,
+        windowsHide: true,
         env: getSanitizedEnvForChild(),
       });
       if (stdout.trim() !== "true") {
@@ -510,6 +511,7 @@ export class CheckpointService {
   private async getHeadSha(): Promise<string> {
     const { stdout } = await execFile("git", ["rev-parse", "HEAD"], {
       cwd: this.workspaceRoot,
+      windowsHide: true,
       env: getSanitizedEnvForChild(),
     });
     const sha = stdout.trim();
@@ -523,6 +525,7 @@ export class CheckpointService {
     try {
       const { stdout } = await execFile("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
         cwd: this.workspaceRoot,
+        windowsHide: true,
         env: getSanitizedEnvForChild(),
       });
       return stdout.trim() || "HEAD";
@@ -541,6 +544,7 @@ export class CheckpointService {
     try {
       const { stdout: statusOut } = await execFile("git", ["status", "--porcelain=v2"], {
         cwd: this.workspaceRoot,
+        windowsHide: true,
         env: getSanitizedEnvForChild(),
       });
 
@@ -583,7 +587,7 @@ export class CheckpointService {
 
   private async gitCommandArgs(args: string[], ignoreErrors = false): Promise<{ stdout: string; stderr: string }> {
     try {
-      return await execFile("git", args, { cwd: this.workspaceRoot, env: getSanitizedEnvForChild() });
+      return await execFile("git", args, { cwd: this.workspaceRoot, windowsHide: true, env: getSanitizedEnvForChild() });
     } catch (error) {
       if (ignoreErrors) {
         return { stdout: "", stderr: "" };

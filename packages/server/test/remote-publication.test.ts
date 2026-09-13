@@ -54,7 +54,9 @@ async function harness(persistence?: SessionPersistence) {
   return { root, bare, state, workspaces, delivery, ready };
 }
 
-afterEach(async () => { while (owned.length) await fs.rm(owned.pop()!, { recursive: true, force: true }); });
+// Bounded retries: a git child that is still exiting holds the repository briefly on Windows
+// (EBUSY), which must not turn a failed assertion into an opaque hook error.
+afterEach(async () => { while (owned.length) await fs.rm(owned.pop()!, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); });
 
 describe("CF-11 controlled remote delivery", () => {
   it("publishes exactly the certified SHA to a real bare remote and creates one PR through HTTP", async () => {

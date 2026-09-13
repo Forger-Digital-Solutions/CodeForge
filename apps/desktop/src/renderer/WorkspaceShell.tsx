@@ -13,6 +13,7 @@ import type { SettingsContextValue, CloudAccountView, SystemInfoView, DesktopRun
 import { computeWorkNotifications, type RunningCounters } from "./settings/notifications-client.js";
 import { describeHeaderActivity, summarizeActiveWork } from "../close-lifecycle.js";
 import type { AppSettings, AppSettingsPatch, CloseBehavior, ExecutionMode, SettingsSnapshot } from "../app-settings.js";
+import { markRendererLifecycle, markWorkspaceInteractiveWhenReady } from "./lifecycle.js";
 
 const FALLBACK_SERVER_BASE_URL = "http://127.0.0.1:0";
 const HELP_URL = "https://github.com/Forger-Digital-Solutions/CodeForge#readme";
@@ -72,6 +73,10 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   const discoveringProvidersRef = useRef(0);
 
   useEffect(() => {
+    markRendererLifecycle("workspace-root");
+  }, []);
+
+  useEffect(() => {
     let active = true;
     const endpointPromise = window.electronAPI?.getRuntimeEndpoint?.();
     if (!endpointPromise) return () => { active = false; };
@@ -80,6 +85,22 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     }).catch(() => {});
     return () => { active = false; };
   }, []);
+
+  // Startup-chain marks: the runtime is connected once this instance's endpoint is known and the
+  // execution event stream has opened; the workspace is interactive once the composer is also up.
+  const [eventStreamConnected, setEventStreamConnected] = useState(false);
+  useEffect(() => {
+    const onStream = (event: Event) => {
+      if ((event as CustomEvent<{ connected?: boolean }>).detail?.connected) setEventStreamConnected(true);
+    };
+    window.addEventListener("codeforge:event-stream", onStream);
+    return () => window.removeEventListener("codeforge:event-stream", onStream);
+  }, []);
+  useEffect(() => {
+    if (!runtimeEndpoint || !eventStreamConnected) return;
+    markRendererLifecycle("runtime-connected");
+    markWorkspaceInteractiveWhenReady();
+  }, [runtimeEndpoint, eventStreamConnected]);
 
   const loadCloudAccount = useCallback(async () => {
     try {

@@ -66,7 +66,9 @@ describe("CF-08 real concurrent worktree orchestration", () => {
     await fs.writeFile(path.join(repoDir, "test", "string.test.mjs"), "import test from 'node:test'; import assert from 'node:assert/strict'; import { slugify } from '../src/string.mjs'; test('slugify', () => assert.equal(slugify('Hello, World!'), 'hello-world'));\n");
     await execFile("git", ["add", "."], { cwd: repoDir }); await execFile("git", ["commit", "-m", "base"], { cwd: repoDir });
   });
-  afterEach(async () => { persistence.close(); await fs.rm(repoDir, { recursive: true, force: true }); await fs.rm(worktreeDir, { recursive: true, force: true }); });
+  // Bounded retries: a git child that is still exiting holds the worktree briefly on Windows
+  // (EBUSY), which must not turn a failed assertion into an opaque hook error.
+  afterEach(async () => { persistence.close(); await fs.rm(repoDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); await fs.rm(worktreeDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); });
 
   it("proves two Coders overlap in separate real worktrees and safely promotes their clean synthesis", async () => {
     const latch = new Latch(); const catalog = new InMemoryProviderCatalog(); catalog.register(new ParallelProvider(latch)); const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord());

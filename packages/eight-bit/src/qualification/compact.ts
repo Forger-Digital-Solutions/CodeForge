@@ -54,11 +54,16 @@ const EDIT_FILE_TOOL: ToolDefinition = {
 
 const SYSTEM = "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool.";
 
+/** Output budget for one edit-probe turn (tool call arguments are small; see probeEdit). */
+const EDIT_PROBE_MAX_TOKENS = 400;
+
 const CALC_TS = "export function add(a: number, b: number): number {\n  return a - b;\n}\n";
 
 interface ToolCallObservation {
   toolCalls: Array<{ name: string; args: Record<string, unknown> }>;
   text: string;
+  finishReason?: string;
+  outputTokens?: number;
   error?: string;
   errorClass?: "bad_request" | "auth" | "rate_limited" | "other";
 }
@@ -68,9 +73,13 @@ async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, t
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   const calls: ToolCallObservation["toolCalls"] = [];
   let text = "";
+  let finishReason: string | undefined;
+  let outputTokens: number | undefined;
   try {
     for await (const ev of adapter.streamChat(req, controller.signal)) {
       if (ev.type === "text_delta") text += ev.delta;
+      if (ev.type === "finish") finishReason = ev.finishReason;
+      if (ev.type === "usage") outputTokens = ev.usage.outputTokens;
       if (ev.type === "tool_call_completed") {
         let args: Record<string, unknown> = {};
         try {
@@ -80,12 +89,12 @@ async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, t
         }
         calls.push({ name: ev.toolName, args });
       }
-      if (ev.type === "error") return { toolCalls: calls, text, error: ev.message, errorClass: classify(ev.message) };
+      if (ev.type === "error") return { toolCalls: calls, text, finishReason, outputTokens, error: ev.message, errorClass: classify(ev.message) };
     }
-    return { toolCalls: calls, text };
+    return { toolCalls: calls, text, finishReason, outputTokens };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    return { toolCalls: calls, text, error: message, errorClass: classify(message) };
+    return { toolCalls: calls, text, finishReason, outputTokens, error: message, errorClass: classify(message) };
   } finally {
     clearTimeout(timer);
   }
@@ -144,7 +153,7 @@ async function probeToolCall(adapter: CompactQualificationAdapter, modelId: stri
  * calls): a careful model that reads the file first gets the real tool result back, exactly as the
  * CodeForge loop would give it — reading before editing is correct behaviour, not a failure.
  */
-async function probeEdit(adapter: CompactQualificationAdapter, modelId: string, timeoutMs: number): Promise<TestCaseResult> {
+async function probeEdit(adapter: CompactQualificationAdapter, modelId: string, timeoutMs: number, maxTokens = EDIT_PROBE_MAX_TOKENS): Promise<TestCaseResult> {
   const started = Date.now();
   const messages: ChatRequest["messages"] = [
     { role: "system", content: SYSTEM },
@@ -152,11 +161,15 @@ async function probeEdit(adapter: CompactQualificationAdapter, modelId: string, 
   ];
   let calls = 0;
   let lastToolNames: string[] = [];
+  // Per-call shape only (tool names, finish reason, sizes): enough to tell a model that cannot
+  // edit from a probe that starved it of output tokens, never the model's text.
+  const turns: Array<{ toolCalls: string[]; finishReason?: string; textLength: number; outputTokens?: number }> = [];
   while (calls < 3) {
     calls++;
-    const obs = await observe(adapter, { model: modelId, messages, tools: [READ_FILE_TOOL, EDIT_FILE_TOOL], toolChoice: "auto", temperature: 0, maxTokens: 400 }, timeoutMs);
+    const obs = await observe(adapter, { model: modelId, messages, tools: [READ_FILE_TOOL, EDIT_FILE_TOOL], toolChoice: "auto", temperature: 0, maxTokens }, timeoutMs);
+    turns.push({ toolCalls: obs.toolCalls.map((c) => c.name), finishReason: obs.finishReason, textLength: obs.text.length, outputTokens: obs.outputTokens });
     if (obs.error) {
-      return caseResult("compact.edit", "edit", false, started, { hardFailure: obs.errorClass === "bad_request", error: obs.error.slice(0, 200), details: { calls } });
+      return caseResult("compact.edit", "edit", false, started, { hardFailure: obs.errorClass === "bad_request", error: obs.error.slice(0, 200), details: { calls, turns } });
     }
     lastToolNames = obs.toolCalls.map((c) => c.name);
     const edit = obs.toolCalls.find((c) => c.name === "edit_file");
@@ -165,7 +178,7 @@ async function probeEdit(adapter: CompactQualificationAdapter, modelId: string, 
       const newText = typeof edit.args.newText === "string" ? edit.args.newText : "";
       const path = typeof edit.args.path === "string" ? edit.args.path.replace(/\\/g, "/") : "";
       const passed = /src\/calc\.ts$/.test(path) && oldText.length > 0 && CALC_TS.includes(oldText) && oldText.includes("a - b") && newText.includes("a + b");
-      return caseResult("compact.edit", "edit", passed, started, { details: { calls, path, oldTextMatches: oldText.length > 0 && CALC_TS.includes(oldText), newTextOk: newText.includes("a + b") } });
+      return caseResult("compact.edit", "edit", passed, started, { details: { calls, path, oldTextMatches: oldText.length > 0 && CALC_TS.includes(oldText), oldTextHasBug: oldText.includes("a - b"), newTextOk: newText.includes("a + b"), turns } });
     }
     const read = obs.toolCalls.find((c) => c.name === "read_file");
     if (!read) break;
@@ -174,7 +187,16 @@ async function probeEdit(adapter: CompactQualificationAdapter, modelId: string, 
     messages.push({ role: "assistant", content: obs.text, toolCalls: [{ id: callId, type: "function", function: { name: "read_file", arguments: JSON.stringify(read.args) } }] });
     messages.push({ role: "tool", content: CALC_TS, toolCallId: callId });
   }
-  return caseResult("compact.edit", "edit", false, started, { details: { calls, toolCalls: lastToolNames } });
+  return caseResult("compact.edit", "edit", false, started, { details: { calls, toolCalls: lastToolNames, turns } });
+}
+
+/** Diagnostic seam for certification harnesses: one edit-probe attempt (no retry) with its details. */
+export async function probeCompactEditForDiagnostics(
+  adapter: CompactQualificationAdapter,
+  modelId: string,
+  options: { timeoutMs?: number; maxTokens?: number } = {},
+): Promise<TestCaseResult> {
+  return probeEdit(adapter, modelId, options.timeoutMs ?? 45_000, options.maxTokens ?? EDIT_PROBE_MAX_TOKENS);
 }
 
 /** Probe 3: structured JSON output without tools. */

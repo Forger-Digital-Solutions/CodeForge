@@ -487,6 +487,9 @@ export function useWorkspaceSSE(url: string) {
         if (aborted) return;
         clearReconnect();
         setState((prev) => ({ ...prev, isEventStreamConnected: true }));
+        // Hosts (the desktop shell) observe the authoritative stream coming up without needing a
+        // prop path through WorkspaceApp; the same window-event pattern as provider updates.
+        try { window.dispatchEvent(new CustomEvent("codeforge:event-stream", { detail: { connected: true } })); } catch { /* diagnostics only */ }
       };
 
       es.onerror = () => {

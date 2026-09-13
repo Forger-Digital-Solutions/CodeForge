@@ -1,3 +1,4 @@
+import { availableParallelism } from "node:os";
 import { resolve } from "path";
 import { defineConfig } from "vitest/config";
 
@@ -49,8 +50,16 @@ for (const pkg of packages) {
 }
 aliases["codeforge-cloud-api"] = resolve(__dirname, "apps/cloud-api/src");
 
+// Real-process integration suites (git worktrees, bare remotes, spawned verification commands,
+// sqlite) saturate a Windows host when every logical CPU runs a worker: measured on a 12-CPU
+// host, the long CF-08/CF-10C/CF-11 and workflow-cap tests ran 2–3× slower than in isolation and
+// overran their budgets (R4). Half the logical CPUs keeps them at ≥2× headroom for ~40% more
+// wall time; other platforms keep Vitest's default.
+const windowsWorkerBound = process.platform === "win32" ? Math.max(2, Math.floor(availableParallelism() / 2)) : undefined;
+
 export default defineConfig({
   test: {
+    ...(windowsWorkerBound ? { minWorkers: 1, maxWorkers: windowsWorkerBound } : {}),
     include: [
       "packages/*/test/**/*.test.ts",
       "packages/*/test/**/*.test.tsx",
@@ -65,6 +74,11 @@ export default defineConfig({
       "packages/vscode/test/suite/**/*",
     ],
     globals: false,
+    // One isolated repository-index cache root per run (see tests/setup/repository-index-root.*):
+    // default-rooted RepositoryIntelligence instances otherwise shared the user's real profile
+    // cache and raced on it across workers (Windows EPERM on mkdir).
+    globalSetup: ["./tests/setup/repository-index-root.global.ts"],
+    setupFiles: ["./tests/setup/repository-index-root.ts"],
     testTimeout: 30000,
     // Spawned-process hooks (real server fixtures) can exceed the 10s default while a cold
     // machine or a cold WSL2 PostgreSQL host boots underneath them; the assertions are unchanged.

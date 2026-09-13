@@ -122,7 +122,7 @@ export class ParallelAutonomousRunOrchestrator {
     }
     return run;
   }
-  private async git(cwd: string, args: string[]) { return execFile("git", args, { cwd, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } }); }
+  private async git(cwd: string, args: string[]) { return execFile("git", args, { cwd, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } }); }
   private async save(run: DurableParallelRun): Promise<void> { run.updatedAt = new Date().toISOString(); await this.store.save(run); }
   private async emit(run: DurableParallelRun, type: string, payload: Record<string, unknown> = {}, workstreamId?: string): Promise<void> { await this.store.emit(run, type, payload, workstreamId); }
   private result(run: DurableParallelRun, verification: VerificationResult[]): ParallelRunResult { return { runId: run.id, status: run.status === "completed" ? "completed" : run.status === "cancelled" ? "cancelled" : run.status === "failed" ? "failed" : "blocked", ...(run.plan ? { plan: run.plan } : {}), workstreams: run.workstreams, ...(run.synthesis ? { synthesis: run.synthesis } : {}), verification, usage: run.usage ?? emptyParallelRunUsage(), ...(run.error ? { error: run.error } : {}) }; }

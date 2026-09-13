@@ -1,0 +1,167 @@
+{
+  "status": "CODEFORGE_FREE_CLOUD_PLATFORM_R5_BLOCKED",
+  "schemaVersion": 1,
+  "branch": "forger-digital-solutions-forgegreen-certified",
+  "head": "18c9f941ffe1961d5a1ca2b525afbb57a9b7af77",
+  "version": "0.3.0",
+  "forgeGreenSourceState": "464343d9548f70b354d4496caa1de8ad5e4373612b8a847f0ef643bdfa36c84e",
+  "reconciliation": {
+    "r5WorktreePreserved": true,
+    "summaryDocumentsCreatedThisContinuation": true
+  },
+  "repeatability": {
+    "commandMode": "serialized file-level scheduling; existing 30-second test timeout unchanged",
+    "files": 11,
+    "tests": 102,
+    "runs": [
+      {
+        "result": "PASS",
+        "durationSeconds": 203.21,
+        "evidence": "apps/desktop/release/r5-evidence/tests/flaky-group-serial-stability-1.log"
+      },
+      {
+        "result": "PASS",
+        "durationSeconds": 173.45,
+        "evidence": "apps/desktop/release/r5-evidence/tests/flaky-group-serial-stability-2.log"
+      },
+      {
+        "result": "PASS",
+        "durationSeconds": 173.19,
+        "evidence": "apps/desktop/release/r5-evidence/tests/flaky-group-serial-stability-3.log"
+      }
+    ],
+    "earlierParallelFailureRetained": true
+  },
+  "providerInventory": {
+    "timestamp": "2026-09-13T16:49:06.712Z",
+    "provider": "openrouter",
+    "verifiedZeroUnit": 22,
+    "toolCapable": 19,
+    "errors": 0,
+    "evidence": "apps/desktop/release/r5-evidence/free-cloud/discovery-refresh-current.json"
+  },
+  "qualifiedRoute": {
+    "provider": "openrouter",
+    "model": "nvidia/nemotron-3-super-120b-a12b:free",
+    "state": "QUALIFIED",
+    "admittedThrough": "normal persisted Free registry / ForgeZero policy",
+    "evidence": "apps/desktop/release/r5-evidence/live/free-cloud-registry-after-qualification.json"
+  },
+  "fullSuite": {
+    "filesPassed": 318,
+    "filesSkipped": 7,
+    "testsPassed": 2370,
+    "testsSkipped": 36,
+    "failed": 0,
+    "durationSeconds": 369.58
+  },
+  "package": {
+    "rebuilt": true,
+    "unpackedSmoke": {
+      "full": "PASS",
+      "interrupt": "PASS",
+      "recover": "PASS"
+    },
+    "securityAudit": "PASS",
+    "runtimeDependencyAudit": "PASS",
+    "endpointAudit": "PASS",
+    "artifacts": {
+      "setup": {
+        "path": "apps/desktop/release/CodeForge-Setup-0.3.0.exe",
+        "bytes": 85948057,
+        "sha256": "B10D5161D9524D0EF11F2E657FC13C210804360A04B328B98F5A38CE7C109D7C"
+      },
+      "portable": {
+        "path": "apps/desktop/release/CodeForge-Portable.exe",
+        "bytes": 85677306,
+        "sha256": "7E011228A8AD5B4905F517B6C598FD2DA26E9A6E738708FB5AB940D830696DF1"
+      },
+      "unpacked": {
+        "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+        "bytes": 188875264,
+        "sha256": "AFDC8E7EE6BC787DEAACBD8B84522B646A0915D6801FC836D8831D53189F949C"
+      }
+    }
+  },
+  "security": {
+    "paidInference": false,
+    "localModelFallback": false,
+    "credentialLeakEvidence": "PASS_NO_MATCHES",
+    "browserSecurity": "PASS"
+  },
+  "remainingBlockers": [
+    "OPENROUTER_DAILY_FREE_REQUEST_CAP_EXHAUSTED until 2026-09-14T00:00:00Z (external; 429 free-models-per-day, limit 50, remaining 0). Live packaged task + ForgeVerify + completion + persistence + close safeguard run at the reset through native UI control."
+  ],
+  "nativeUi": {
+    "mechanism": "computer-use native Windows mouse/keyboard/screenshot (tier full) for unpacked, Portable (temp-extracted) and installed executables; DPI-aware desktop captures; no CDP/remote-debugging for certification flows",
+    "evidenceRoot": "apps/desktop/release/r5-evidence/native-ui/",
+    "unpackedProcessProof": "apps/desktop/release/r5-evidence/native-ui/picker/process-context-unpacked-probe.json",
+    "picker": {
+      "result": "PASS",
+      "canonicalId": "nvidia/nemotron-3-super-120b-a12b",
+      "qualification": "qualified",
+      "forgeAutoEligible": true,
+      "routes": 2,
+      "duplicateEntry": false,
+      "paidRequirement": false,
+      "probationLabel": false,
+      "evidence": [
+        "apps/desktop/release/r5-evidence/native-ui/picker/01-nemotron-detail-qualified-eligible.png",
+        "apps/desktop/release/r5-evidence/native-ui/picker/02-picker-scrolled-connect-and-gems.png"
+      ]
+    },
+    "forgeAutoAdmission": {
+      "result": "PASS",
+      "defaultModel": "ForgeAuto/Free",
+      "routingStatus": "Healthy",
+      "paidFallback": false,
+      "verifiedRoutes": 19,
+      "qualifiedPrimaryCodingAgents": 1,
+      "coolingDown": 0,
+      "awaitingQualification": 16,
+      "evidence": "apps/desktop/release/r5-evidence/native-ui/picker/03-settings-models-routing-forgeauto-admission.png"
+    },
+    "portableFlow": {
+      "result": "PASS",
+      "profile": "fresh isolated (native-ui/portable/profile)",
+      "steps": [
+        "launch",
+        "first-run chooser",
+        "native folder dialog",
+        "workspace",
+        "picker",
+        "settings provider connections (env credential name only)",
+        "composer typing",
+        "close",
+        "relaunch restored"
+      ],
+      "evidence": "apps/desktop/release/r5-evidence/native-ui/portable/"
+    },
+    "installedFlow": {
+      "result": "PASS",
+      "installPath": "C:UsersDaddy_FDSAppDataLocalProgramscodeforge-desktop",
+      "exeSha256": "AFDC8E7EE6BC787DEAACBD8B84522B646A0915D6801FC836D8831D53189F949C",
+      "asarSha256": "3D8ADDF452E8C2754F820A28F4D558FB722EF1CD0AA6608D14B65B28E663E0FC",
+      "registryDisplayName": "CodeForge 0.3.0",
+      "profile": "fresh isolated (native-ui/installed/profile)",
+      "evidence": "apps/desktop/release/r5-evidence/native-ui/installed/"
+    },
+    "liveTask": {
+      "result": "PENDING",
+      "reason": "OPENROUTER_DAILY_FREE_REQUEST_CAP_EXHAUSTED",
+      "rateLimit": {
+        "limit": 50,
+        "remaining": 0,
+        "resetUtc": "2026-09-14T00:00:00Z",
+        "observedUtc": "2026-09-13T17:10:30Z"
+      },
+      "runbook": "apps/desktop/release/r5-evidence/native-ui/live/RUNBOOK.md",
+      "disposableRepo": {
+        "path": "C:UsersDaddy_FDSCodeForge Live\r5session-lib",
+        "baseline": "8cc123eb15e167202b7244b9f2f2ac7552874da3",
+        "baselineTests": "7 passed",
+        "evidence": "apps/desktop/release/r5-evidence/native-ui/live/00-baseline.txt"
+      }
+    }
+  }
+}

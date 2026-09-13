@@ -207,6 +207,9 @@ export class OpenRouterAdapter implements ProviderAdapter {
       const decoder = new TextDecoder();
       let buffer = "";
       let currentToolCall: { id: string; name: string; arguments: string } | null = null;
+      // The upstream's own finish reason, when it is one the stream contract can express; a
+      // truncated ("length") or filtered answer must not be reported as a clean "stop".
+      let finishReason: "stop" | "tool_calls" | "length" | "content_filter" | "error" = "stop";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -228,12 +231,21 @@ export class OpenRouterAdapter implements ProviderAdapter {
                 arguments: currentToolCall.arguments,
               };
             }
-            yield { type: "finish", finishReason: "stop" };
+            yield { type: "finish", finishReason };
             return;
           }
 
           try {
             const parsed = JSON.parse(data) as OpenRouterStreamChunk;
+            // OpenRouter reports an upstream failure after the 200 response as an in-band
+            // `error` object (with or without a terminal choice). Swallowing it made a failed
+            // route look like an empty, successful answer to the agent loop and to qualification.
+            if (parsed.error) {
+              const message = typeof parsed.error.message === "string" ? parsed.error.message : "upstream stream error";
+              const code = String(parsed.error.code ?? "STREAM_ERROR");
+              yield { type: "error", code, message: `OpenRouter stream error (${code}): ${message}`, retryable: /^(5\d\d|429)$/.test(code) };
+              return;
+            }
             const choice = parsed.choices?.[0];
             if (!choice) continue;
 
@@ -276,6 +288,9 @@ export class OpenRouterAdapter implements ProviderAdapter {
               };
               currentToolCall = null;
             }
+            if (choice.finish_reason === "length" || choice.finish_reason === "content_filter" || choice.finish_reason === "error" || choice.finish_reason === "tool_calls") {
+              finishReason = choice.finish_reason;
+            }
 
             if (parsed.usage) {
               yield {
@@ -293,7 +308,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
         }
       }
 
-      yield { type: "finish", finishReason: "stop" };
+      yield { type: "finish", finishReason };
     } catch (error) {
       clearTimeout(timeout);
       if (error instanceof ProviderError) throw error;
@@ -536,6 +551,8 @@ interface OpenRouterChatResponse {
 }
 
 interface OpenRouterStreamChunk {
+  /** In-band upstream failure (sent after the HTTP 200 stream has started). */
+  error?: { code?: number | string; message?: string };
   choices?: Array<{
     delta: {
       content?: string;

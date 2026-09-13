@@ -282,7 +282,7 @@ export class CloudPublicationClient {
   }
 
   private async git(cwd: string, args: string[]): Promise<string> {
-    const { stdout } = await execFile("git", args, { cwd, env: { PATH: process.env.PATH, GIT_CONFIG_NOSYSTEM: "1", GIT_TERMINAL_PROMPT: "0" } });
+    const { stdout } = await execFile("git", args, { cwd, windowsHide: true, env: { PATH: process.env.PATH, GIT_CONFIG_NOSYSTEM: "1", GIT_TERMINAL_PROMPT: "0" } });
     return stdout;
   }
 }
