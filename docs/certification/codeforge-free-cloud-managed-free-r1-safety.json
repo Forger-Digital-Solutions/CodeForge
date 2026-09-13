@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "status": "CODEFORGE_FREE_CLOUD_REAL_PROVIDER_R1_HOSTED_POLICY_AUTHORIZATION_REQUIRED",
+  "frozen_r5_unchanged": true,
+  "frozen_r5_commit": "3bba7e2",
+  "dynamic_discovery_can_activate_provider": false,
+  "paid_fallback_reachable": false,
+  "managed_free_can_consume_byok": false,
+  "provider_secret_exposed_to_client": false,
+  "user_allowance_isolated": true,
+  "global_provider_capacity_separate": true,
+  "devpool_is_production_capacity": false,
+  "zai_hosted_policy_authorized": false,
+  "zai_activation": "HOSTED_POLICY_AUTHORIZATION_REQUIRED",
+  "groq_managed_route_live_verified": "IMPLEMENTED_AWAITING_OPERATOR_CREDENTIAL",
+  "cloudflare_managed_route_live_verified": "IMPLEMENTED_RESERVE_AWAITING_OPERATOR_CREDENTIAL",
+  "additional_providers_approved": [],
+  "inventory": "packages/cloud-gateway/src/managed-free-inventory.ts"
+}
