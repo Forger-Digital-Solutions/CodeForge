@@ -1,0 +1,32 @@
+{
+  "verdict": "CODEFORGE_CODEX_FULL_SYSTEM_R3_BLOCKED",
+  "r2Baseline": "80b88c034fa76eff2071483898ed8df8067dc280",
+  "candidate": "1fa8afa1770a0ac8f3263ffd871cd84ed397f25e",
+  "branch": "forger-digital-solutions-forgegreen-certified",
+  "desktopVersion": "0.3.0",
+  "validated": {
+    "typescriptForcedBuild": "passed",
+    "focusedTests": { "passed": 53, "files": 3 },
+    "packagedFullSmoke": "passed",
+    "controlPlaneTrustBoundary": "passed",
+    "rendererReload": "passed",
+    "failureRepairWorkflow": "passed",
+    "settingsScreens": "passed"
+  },
+  "visualEvidence": {
+    "directory": "apps/desktop/release/r3-ui-evidence",
+    "reviewed": ["01-authenticated-zero-state.png", "03-workflow-completed.png"],
+    "manifestComplete": false
+  },
+  "artifact": {
+    "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+    "sha256": "1CF79CA802024AB9D8143A4CF1AAB86B4B5ECA5ECBAD0D3CBC50157E202AFF02",
+    "packagingMode": "unpacked directory"
+  },
+  "blockers": [
+    "No fresh legitimate free-provider live autonomous-run receipt.",
+    "No real route-to-route free failover receipt.",
+    "Required 20-state packaged screenshot manifest is incomplete.",
+    "Full-suite aggregate total was not available from the host output; no total is asserted."
+  ]
+}
