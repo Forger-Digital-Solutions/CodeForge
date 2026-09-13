@@ -23,6 +23,13 @@ export * from "./overlay.js";
 export * from "./registry.js";
 export * from "./discovery.js";
 export * from "./catalog-refresh.js";
+// --- R1 Free Cloud Platform: provider definitions, canonical models, env discovery, 8-Bit registry ---
+export * from "./provider-definitions.js";
+export * from "./canonical.js";
+export * from "./env-discovery.js";
+export * from "./free-cloud-registry.js";
+export * from "./free-cloud-service.js";
+export * from "./quota.js";
 export { MODELS_DEV_SNAPSHOT, MODELS_DEV_SNAPSHOT_CAPTURED_AT } from "./snapshot.js";
 
 /**

@@ -1213,3 +1213,209 @@ body {
   .close-dialog-actions { flex-direction: column-reverse; }
   .close-dialog-button { width: 100%; }
 }
+
+/* ---- R1 Free Cloud Platform: provider connections, add-provider flow, enable panel, routes ---- */
+.provider-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px 10px;
+}
+.provider-search-row .model-search {
+  flex: 1;
+  min-width: 0;
+}
+.add-provider-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.add-provider-flow.compact {
+  padding: 10px 12px;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  background: var(--cf-bg-raised);
+}
+.add-provider-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.add-provider-label {
+  font-size: 12px;
+  color: var(--cf-text-secondary);
+}
+.add-provider-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--cf-text-secondary);
+}
+.add-provider-quota {
+  color: var(--cf-text-muted);
+}
+.add-provider-oauth {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--cf-accent-muted);
+  background: var(--cf-accent-muted);
+  border-radius: var(--cf-radius-md);
+}
+.add-provider-models {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--cf-border-subtle);
+}
+.add-provider-enable summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--cf-text-secondary);
+}
+.add-provider-enable-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 6px 0;
+}
+.add-provider-enable-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.add-provider-done {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.free-cloud-enable-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.55);
+  display: grid;
+  place-items: center;
+}
+.free-cloud-enable {
+  width: min(560px, calc(100vw - 48px));
+  background: var(--cf-bg-overlay);
+  border: 1px solid var(--cf-border);
+  border-radius: 8px;
+  padding: 18px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+.free-cloud-enable.inline {
+  width: auto;
+  box-shadow: none;
+}
+.free-cloud-enable-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.free-cloud-enable-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.free-cloud-enable-sub {
+  font-size: 12px;
+  color: var(--cf-text-secondary);
+}
+.free-cloud-primary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--cf-radius-md);
+  border: 1px solid var(--cf-accent-muted);
+  background: var(--cf-accent-muted);
+}
+.free-cloud-primary-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+.free-cloud-primary-desc {
+  font-size: 12px;
+  color: var(--cf-text-secondary);
+}
+.free-cloud-other summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--cf-text-secondary);
+}
+.free-cloud-other-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--cf-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+}
+.link-button:hover {
+  color: var(--cf-accent-hover);
+  text-decoration: underline;
+}
+.free-cloud-enable-bar {
+  position: fixed;
+  left: calc(50% + 160px);
+  bottom: 128px;
+  transform: translateX(-50%);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--cf-bg-overlay);
+  border: 1px solid var(--cf-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  font-size: 13px;
+}
+.route-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.route-table th,
+.route-table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--cf-border-subtle);
+  white-space: nowrap;
+}
+.route-table th {
+  color: var(--cf-text-muted);
+  font-weight: 500;
+}
+.route-table tr.eligible td:first-child {
+  color: var(--cf-success);
+}
+.route-diagnostics {
+  overflow-x: auto;
+  padding: 0 14px 12px;
+}
+.model-pick-list {
+  padding: 0 14px 6px;
+}

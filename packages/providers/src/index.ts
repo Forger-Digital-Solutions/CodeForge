@@ -376,13 +376,45 @@ export function createScriptedTestProvider(options: ScriptedProviderOptions): Sc
 export class ProviderError extends Error {
   readonly code?: string;
   readonly retryable?: boolean;
+  /** Upstream HTTP status when the failure came from a provider response. */
+  readonly status?: number;
+  /** Epoch millis after which the provider may be retried (from Retry-After / rate-limit headers). */
+  readonly retryAfter?: number;
 
-  constructor(message: string, code?: string, retryable?: boolean) {
+  constructor(message: string, code?: string, retryable?: boolean, extra?: { status?: number; retryAfter?: number }) {
     super(message);
     this.name = "ProviderError";
     this.code = code;
     this.retryable = retryable;
+    this.status = extra?.status;
+    this.retryAfter = extra?.retryAfter;
   }
+}
+
+/**
+ * Observation of one upstream HTTP response (status + rate-limit headers only — never bodies,
+ * never credentials). Adapters emit this so the runtime can track quota without each call site
+ * re-parsing headers (R1 §79).
+ */
+export interface ProviderResponseObservation {
+  providerId: string;
+  modelId?: string;
+  status: number;
+  headers: Array<[string, string]>;
+  observedAt: number;
+}
+
+export type ProviderResponseObserver = (observation: ProviderResponseObservation) => void;
+
+const QUOTA_HEADER_RE = /^(x-ratelimit-|retry-after$|ratelimit-|x-rate-limit-)/i;
+
+/** Extract only quota/rate-limit headers from a response (safe to persist or log). */
+export function quotaHeadersOf(res: { headers: { forEach(cb: (value: string, key: string) => void): void } }): Array<[string, string]> {
+  const out: Array<[string, string]> = [];
+  res.headers.forEach((value, key) => {
+    if (QUOTA_HEADER_RE.test(key)) out.push([key.toLowerCase(), value]);
+  });
+  return out;
 }
 
 export { OpenRouterAdapter, type OpenRouterOptions, createOpenRouterAdapter } from "./openrouter.js";
@@ -400,7 +432,10 @@ export {
   createCloudflareAdapter,
   createOpenAIAdapter,
   createProviderAdapterById,
+  createProviderAdapterFromDefinition,
+  configFieldKey,
   type ProviderFactoryOptions,
+  type ProviderTransportDefinition,
 } from "./provider-factory.js";
 export * as OpenRouterOAuth from "./openrouter-oauth.js";
 export { redactSecrets } from "./redact.js";

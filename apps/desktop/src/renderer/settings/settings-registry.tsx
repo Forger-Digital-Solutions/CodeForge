@@ -137,11 +137,11 @@ export const SETTINGS_SECTIONS: SettingsSectionDef[] = [
   },
   {
     id: "providers",
-    label: "Connected Providers",
+    label: "Provider Connections",
     group: "Integrations",
     component: ProvidersSection,
-    keywords: ["providers", "byok", "api key", "openrouter", "z.ai", "gemini", "groq", "opencode", "anthropic", "openai", "credentials", "oauth", "integrations", "extensions", "mcp"],
-    description: "Optional provider credentials — expansion beyond the built-in free catalog.",
+    keywords: ["providers", "byok", "api key", "openrouter", "z.ai", "gemini", "groq", "cerebras", "sambanova", "mistral", "cloudflare", "opencode", "anthropic", "openai", "credentials", "oauth", "environment", "env", "integrations", "extensions", "mcp", "add provider"],
+    description: "Free cloud connections, detected environment credentials, and BYOK providers.",
   },
   {
     id: "advanced",

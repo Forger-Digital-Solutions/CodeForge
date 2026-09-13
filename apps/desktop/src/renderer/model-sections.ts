@@ -1,4 +1,14 @@
 import type { ModelSection, ModelSelectorItem } from "@codeforge/ui";
+import type { CanonicalModelView, FreeCloudSnapshot } from "@codeforge/model-registry";
+
+/** Picker item id for a canonical model (vs. a provider route id). */
+export const CANONICAL_PREFIX = "canonical:";
+export function isCanonicalSelection(id: string | null | undefined): id is string {
+  return typeof id === "string" && id.startsWith(CANONICAL_PREFIX);
+}
+export function canonicalIdOfSelection(id: string): string {
+  return id.slice(CANONICAL_PREFIX.length);
+}
 
 export interface ApiModel {
   id: string;
@@ -25,7 +35,14 @@ export interface ApiModel {
   isPromotional?: boolean;
   /** Server-authoritative ForgeZero + provider-oracle result for this exact route. */
   eligible?: boolean;
+  /** R1: canonical model identity of this route. */
+  canonicalId?: string;
+  /** R1: passed the full 8-Bit admission pipeline (verified free + qualified + healthy). */
+  forgeAutoEligible?: boolean;
 }
+
+/** Renderer view of the 8-Bit registry snapshot as served by `/api/free-cloud/registry`. */
+export type FreeCloudView = FreeCloudSnapshot & { qualifying?: boolean; pendingQualification?: number };
 
 /**
  * Whether a route can drive CodeForge's agent loop at all. The loop executes tools through native
@@ -252,4 +269,100 @@ export function resolveRuntimeLabel(selectedModelId: string | null, selected: Ap
     return { label: "Hosted", detail: `${selected.displayName} runs on CodeForge's hosted infrastructure` };
   }
   return { label: "Direct (BYOK)", detail: `${selected.displayName} runs directly against your connected ${selected.providerId} credential` };
+}
+
+
+/** Picker description text for a canonical model (R1 §66, §125). */
+export function canonicalDescription(m: CanonicalModelView): string {
+  const category = m.category === "Recommended" || m.category === "Strong" || m.category === "Fast" || m.category === "Experimental" ? m.category : "";
+  return category ? `${m.freeBadge} · ${category}` : m.freeBadge;
+}
+
+export function canonicalAvailability(m: CanonicalModelView): { available: boolean; unavailableReason?: string } {
+  if (m.readiness === "FREE_AVAILABLE") return { available: true };
+  if (m.readiness === "PAID_BYOK") {
+    return m.routes.some((r) => r.executable) ? { available: true } : { available: false, unavailableReason: "Connect the provider to use this paid model (BYOK)" };
+  }
+  if (m.readiness === "FREE_CONNECT_REQUIRED") {
+    return { available: false, unavailableReason: m.connectOffer ? `Enable: ${m.connectOffer.label}` : "Connect a provider that serves this model" };
+  }
+  if (m.readiness === "FREE_TEMPORARILY_UNAVAILABLE") {
+    return { available: false, unavailableReason: "All free routes are cooling down or unavailable right now" };
+  }
+  return { available: false, unavailableReason: "Not supported" };
+}
+
+/**
+ * R1 canonical picker (R1 §6, §66, §122): one row per MODEL, never per provider route. Sections:
+ * Recommended (ForgeAuto) · Free coding models · GEMS · BYOK/paid. Provider duplicates collapse
+ * into "Free · N routes"; route details live in the model's details panel.
+ */
+export function buildCanonicalModelSections(snapshot: FreeCloudView, apiModels: ApiModel[], models: ModelSelectorItem[], options: { showAll?: boolean } = {}): ModelSection[] {
+  const sections: ModelSection[] = [];
+  const autoAvailable = snapshot.summary.healthyFreeRoutes > 0;
+  const qualifying = (snapshot.qualifying || (snapshot.pendingQualification ?? 0) > 0) && !autoAvailable;
+  const existingAutoItem = models.find((m) => m.id === "auto");
+  sections.push({
+    sectionId: "recommended",
+    sectionLabel: "RECOMMENDED",
+    models: [
+      {
+        ...(existingAutoItem ?? { id: "auto", displayName: "ForgeAuto/Free", tier: "free" as const }),
+        available: autoAvailable,
+        description: autoAvailable
+          ? `Automatic free routing · ${snapshot.summary.primaryCodingModels} qualified model${snapshot.summary.primaryCodingModels === 1 ? "" : "s"}`
+          : qualifying
+            ? "Qualifying free models…"
+            : "No eligible free route",
+        unavailableReason: autoAvailable ? undefined : qualifying ? "8-Bit is qualifying newly verified free routes" : "Enable Free Cloud Models to get started",
+      },
+    ],
+  });
+
+  const free: ModelSelectorItem[] = [];
+  const paid: ModelSelectorItem[] = [];
+  // Connect-required candidates (discovery only) are capped so a fresh install sees a short,
+  // useful list rather than every $0 listing on the internet; search/Show all reveal the rest.
+  const MAX_CONNECT_REQUIRED = 12;
+  let connectRequiredShown = 0;
+  for (const m of snapshot.models) {
+    if (m.routes.every((r) => r.deprecated)) continue;
+    if (m.readiness === "UNSUPPORTED") continue;
+    if (isHiddenModel(m.canonicalId) || isHiddenModel(m.displayName)) continue;
+    if (m.readiness === "FREE_CONNECT_REQUIRED" && !options.showAll) {
+      if (connectRequiredShown >= MAX_CONNECT_REQUIRED) continue;
+      connectRequiredShown++;
+    }
+    const item: ModelSelectorItem = {
+      id: `${CANONICAL_PREFIX}${m.canonicalId}`,
+      displayName: m.displayName,
+      tier: "free",
+      description: canonicalDescription(m),
+      ...canonicalAvailability(m),
+    };
+    if (m.readiness === "PAID_BYOK") {
+      if (options.showAll || m.routes.some((r) => r.connected)) paid.push(item);
+      continue;
+    }
+    if (!options.showAll && (m.category === "Experimental" || m.category === "Unrated") && m.readiness !== "FREE_AVAILABLE" && m.readiness !== "FREE_CONNECT_REQUIRED") continue;
+    free.push(item);
+  }
+  if (free.length > 0) sections.push({ sectionId: "free-coding", sectionLabel: "FREE CODING", models: free });
+
+  const gems = apiModels
+    .filter((m) => m.tier === "gems_paid" && !isHiddenModel(m.id))
+    .map((m) => ({ id: m.id, displayName: m.displayName, tier: "gems_paid" as const, description: accessBadge(m), ...selectorAvailability(m) }));
+  if (gems.length > 0) sections.push({ sectionId: "gems", sectionLabel: "GEMS", models: gems });
+  if (paid.length > 0) sections.push({ sectionId: "byok", sectionLabel: "BYOK / PAID", models: paid });
+  return sections;
+}
+
+/** Trust badge for a canonical selection: verified free only when a free route is executable now. */
+export function resolveCanonicalTrust(model: CanonicalModelView | undefined): ForgeZeroTrustStatus {
+  if (!model) return { verifiedFree: false, label: "ForgeZero · Unverified", detail: "No model selection recognized" };
+  if (model.readiness === "FREE_AVAILABLE") {
+    return { verifiedFree: true, label: "ForgeZero · Verified Free", detail: `${model.displayName} · ${model.healthyFreeRouteCount || model.routes.filter((r) => r.executable).length} verified $0 route(s)` };
+  }
+  if (model.readiness === "PAID_BYOK") return { verifiedFree: false, label: "ForgeZero · Billing May Apply", detail: `${model.displayName} runs on your own paid provider credential` };
+  return { verifiedFree: false, label: "ForgeZero · No Free Route", detail: `${model.displayName} has no executable free route right now` };
 }

@@ -63,6 +63,12 @@ export const FailureReasonSchema = z.enum([
   "CONTEXT_LIMIT",
   "INVALID_TOOL_OUTPUT",
   "STRUCTURED_OUTPUT_FAILURE",
+  // R1 normalized provider error classes (§100).
+  "TEMPORARY_CAPACITY",
+  "PAID_PLAN_REQUIRED",
+  "FREE_TIER_NOT_AVAILABLE",
+  "SAFETY_REJECTION",
+  "BAD_REQUEST",
   "UNKNOWN",
 ]);
 export type FailureReason = z.infer<typeof FailureReasonSchema>;
@@ -84,7 +90,39 @@ export const FAILURE_POLICY: Readonly<Record<FailureReason, FailurePolicy>> = {
   CONTEXT_LIMIT: "surface_only",
   INVALID_TOOL_OUTPUT: "surface_only",
   STRUCTURED_OUTPUT_FAILURE: "surface_only",
+  TEMPORARY_CAPACITY: "cooldown_and_rotate",
+  // A 402 / "upgrade your plan" answer means this route is not free for THIS account: drop it
+  // from the free pool and re-verify rather than retrying into a charge.
+  PAID_PLAN_REQUIRED: "remove_and_refresh",
+  FREE_TIER_NOT_AVAILABLE: "remove_and_refresh",
+  SAFETY_REJECTION: "surface_only",
+  BAD_REQUEST: "surface_only",
   UNKNOWN: "bounded_retry",
+} as const;
+
+/**
+ * User-facing wording for a normalized failure class (§101). Raw provider text stays in
+ * diagnostics; the product only ever says what CodeForge is doing about it.
+ */
+export const FAILURE_USER_MESSAGE: Readonly<Record<FailureReason, string>> = {
+  TRANSIENT_NETWORK: "Network hiccup — retrying the same free route.",
+  TIMEOUT: "The provider is slow to respond — retrying.",
+  RATE_LIMITED: "Free provider is busy — ForgeAuto is switching free routes.",
+  QUOTA_EXHAUSTED: "Today's free quota on this route is used up — switching routes.",
+  MODEL_NOT_FOUND: "This route is no longer served — refreshing the free catalog.",
+  MODEL_RETIRED: "This model was retired by the provider — refreshing the free catalog.",
+  PROVIDER_OUTAGE: "Provider outage — ForgeAuto is switching free routes.",
+  AUTH_FAILURE: "This provider connection needs attention — switching to another route.",
+  FREE_ELIGIBILITY_REMOVED: "This route stopped being free — removed from ForgeAuto/Free.",
+  CONTEXT_LIMIT: "The task context is too large for this model.",
+  INVALID_TOOL_OUTPUT: "The model produced an invalid tool call.",
+  STRUCTURED_OUTPUT_FAILURE: "The model produced invalid structured output.",
+  TEMPORARY_CAPACITY: "Free providers are temporarily at capacity — switching routes.",
+  PAID_PLAN_REQUIRED: "This route requires a paid plan on your account — excluded from ForgeAuto/Free.",
+  FREE_TIER_NOT_AVAILABLE: "The free tier is not available on this account — excluded from ForgeAuto/Free.",
+  SAFETY_REJECTION: "The provider declined this request on safety grounds.",
+  BAD_REQUEST: "The provider rejected the request format.",
+  UNKNOWN: "Unexpected provider error — retrying.",
 } as const;
 
 // --- Route assignment / health --------------------------------------------------------------

@@ -22,7 +22,7 @@ describe("settings registry", () => {
       "Notifications",
       "Application & Background",
       "Data & Privacy",
-      "Connected Providers",
+      "Provider Connections",
       "Advanced",
       "About",
     ]);
@@ -76,7 +76,7 @@ describe("settings shell", () => {
     expect(markup).toContain("CodeForge Settings");
     expect(markup).toContain("Search settings");
     expect(markup).toContain("← Back");
-    for (const label of ["General", "Agents", "GEMS", "Workspaces", "Notifications", "Connected Providers", "About"]) {
+    for (const label of ["General", "Agents", "GEMS", "Workspaces", "Notifications", "Provider Connections", "About"]) {
       expect(markup).toContain(label);
     }
     // Ampersand-bearing labels render escaped in static markup.

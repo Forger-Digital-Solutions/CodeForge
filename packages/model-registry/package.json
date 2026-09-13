@@ -21,6 +21,9 @@
     "@codeforge/core": "*",
     "@codeforge/protocol": "*",
     "@codeforge/forge-zero": "*",
-    "zod": "^3.24.0"
+    "zod": "^3.24.0",
+    "@codeforge/providers": "*",
+    "@codeforge/eight-bit": "*",
+    "@codeforge/sessions": "*"
   }
 }

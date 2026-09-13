@@ -31,6 +31,11 @@ export interface SelectRouteOptions {
   capabilityGuidance?: { minimumRole: EightBitRole; reasonCodes?: string[] };
   /** Providers with a registered adapter — an eligible model with no backend cannot execute. */
   hasAdapter: (providerId: string) => boolean;
+  /**
+   * R1: extra per-route admission filter supplied by the 8-Bit Free Cloud Registry (qualification,
+   * shared cross-session health, plan attestation). Absent = ForgeZero eligibility alone.
+   */
+  routeFilter?: (providerId: string, modelId: string) => boolean;
 }
 
 export type SelectRouteResult =
@@ -72,6 +77,7 @@ export class EightBitRouter {
     return this.firewall.eligibleModels().filter((model) => {
       if (!options.hasAdapter(model.providerId)) return false;
       if (this.health.isInCooldown(model.providerId, model.modelId)) return false;
+      if (options.routeFilter && !options.routeFilter(model.providerId, model.modelId)) return false;
       const ctx: EligibilityContext = {
         role: eligibilityRole,
         policyMode: options.policyMode,
@@ -126,13 +132,24 @@ export class EightBitRouter {
   /** Used by failover: force-rebind away from a known-bad route to the next eligible one,
    * excluding the failed route even if it would otherwise still rank/pass health checks
    * (e.g. mid-turn, before the health tracker's cooldown state has propagated). */
-  selectReplacement(options: SelectRouteOptions, exclude: RouteKey): SelectRouteResult {
+  selectReplacement(options: SelectRouteOptions, exclude: RouteKey, prefer?: RouteKey[]): SelectRouteResult {
     const scope = options.scope;
     const eligible = this.eligibleForRole(scope, options).filter(
       (m) => !(m.providerId === exclude.providerId && m.modelId === exclude.modelId),
     );
     if (eligible.length === 0) {
       return { outcome: "no_eligible_route", reasonCodes: ["NO_ELIGIBLE_FREE_MODEL"] };
+    }
+    // R1 §76: same-canonical-model alternates first — a provider swap keeps model behaviour
+    // stable mid-task, so an eligible preferred route wins over any cross-model candidate.
+    if (prefer && prefer.length > 0) {
+      for (const p of prefer) {
+        const match = eligible.find((m) => m.providerId === p.providerId && m.modelId === p.modelId);
+        if (match) {
+          this.bindings.set(scopeKey(scope), { providerId: match.providerId, modelId: match.modelId });
+          return { outcome: "selected", model: match, sticky: false, score: 0, reasons: this.guidanceReasons(options, ["same_model_alternate_route"]) };
+        }
+      }
     }
     const req: RoutingRequest = {
       taskType: options.taskType ?? (options.capabilityGuidance?.minimumRole ?? scope.role).toLowerCase(),

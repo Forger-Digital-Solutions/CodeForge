@@ -110,6 +110,29 @@ const api = {
   refreshCatalog: () => {
     return ipcRenderer.invoke("catalog:refresh");
   },
+  // --- R1 Free Cloud Platform: provider connections (schemas + state; never secret values) ---
+  getProviderDefinitions: () => ipcRenderer.invoke("provider:definitions"),
+  getProviderConnections: () => ipcRenderer.invoke("provider:connections"),
+  listEnvironmentCredentials: () => ipcRenderer.invoke("provider:env:list"),
+  getEnvironmentCredentialPolicy: () => ipcRenderer.invoke("provider:env:policy:get"),
+  setEnvironmentCredentialPolicy: (policy) => ipcRenderer.invoke("provider:env:policy:set", policy),
+  setEnvironmentCredentialEnabled: (providerId, enabled) => ipcRenderer.invoke("provider:env:setEnabled", providerId, enabled),
+  refreshEnvironmentCredentials: () => ipcRenderer.invoke("provider:env:refresh"),
+  importEnvironmentCredential: (providerId) => ipcRenderer.invoke("provider:env:import", providerId),
+  validateProvider: (providerId, fields) => ipcRenderer.invoke("provider:validate", providerId, fields),
+  connectProvider: (providerId, fields) => ipcRenderer.invoke("provider:connect", providerId, fields),
+  getProviderCatalog: (providerId) => ipcRenderer.invoke("provider:catalog", providerId),
+  disconnectProvider: (providerId) => ipcRenderer.invoke("provider:disconnect", providerId),
+  attestProviderFreePlan: (providerId, attested) => ipcRenderer.invoke("provider:attestFreePlan", providerId, attested),
+  setProviderEnabledModels: (providerId, modelIds) => ipcRenderer.invoke("provider:setEnabledModels", providerId, modelIds),
+  getFreeCloudOffer: () => ipcRenderer.invoke("freecloud:offer"),
+  getFreeCloudSummary: () => ipcRenderer.invoke("freecloud:summary"),
+  qualifyFreeCloud: () => ipcRenderer.invoke("freecloud:qualify"),
+  onProviderChanged: (callback) => {
+    const listener = () => callback();
+    ipcRenderer.on("provider:changed", listener);
+    return () => ipcRenderer.removeListener("provider:changed", listener);
+  },
   clearRecentProjects: () => {
     return ipcRenderer.invoke("project:clearRecent");
   },

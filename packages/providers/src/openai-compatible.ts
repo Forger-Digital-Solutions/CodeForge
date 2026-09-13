@@ -1,5 +1,5 @@
-import type { CredentialStore, ProviderAdapter, ProviderHealthResponse, ProviderModel, PromptCacheCapability } from "./index.js";
-import { ProviderError } from "./index.js";
+import type { CredentialStore, ProviderAdapter, ProviderHealthResponse, ProviderModel, PromptCacheCapability, ProviderResponseObserver } from "./index.js";
+import { ProviderError, quotaHeadersOf } from "./index.js";
 import { redactSecrets } from "./redact.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
 
@@ -29,6 +29,13 @@ export interface OpenAICompatibleConfig {
   mapModel?: (raw: unknown) => ProviderModel | null;
   /** Injectable fetch (defaults to global fetch). Used for tests and custom transports. */
   fetchFn?: typeof fetch;
+  /** Receives status + rate-limit headers of every upstream response (never bodies/credentials). */
+  onResponse?: ProviderResponseObserver;
+  /**
+   * Route-specific request shaping. Some OpenAI-compatible hosts reject fields they do not
+   * implement (e.g. `tool_choice`, `stream_options`); a definition can strip them per provider.
+   */
+  omitRequestFields?: string[];
 }
 
 interface OaiMessage {
@@ -85,7 +92,8 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         true,
       );
     }
-    if (!res.ok) throw this.handleError(res.status, await safeText(res));
+    this.observe(res);
+    if (!res.ok) throw this.handleError(res.status, await safeText(res), res);
     const data = (await res.json()) as { data?: unknown[] };
     const list = Array.isArray(data.data) ? data.data : [];
     const mapper = this.cfg.mapModel ?? defaultMapModel;
@@ -108,7 +116,8 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         body: JSON.stringify(this.toRequest(req, false)),
         signal: controller.signal,
       });
-      if (!res.ok) throw this.handleError(res.status, await safeText(res));
+      this.observe(res, req.model);
+      if (!res.ok) throw this.handleError(res.status, await safeText(res), res);
       const data = (await res.json()) as OaiChatResponse;
       return this.fromResponse(data);
     } catch (e) {
@@ -142,7 +151,8 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         body: JSON.stringify(this.toRequest(req, true)),
         signal: controller.signal,
       });
-      if (!res.ok) throw this.handleError(res.status, await safeText(res));
+      this.observe(res, req.model);
+      if (!res.ok) throw this.handleError(res.status, await safeText(res), res);
       if (!res.body) throw new ProviderError(`${this.providerId} returned no body`, "NO_BODY", true);
 
       const reader = res.body.getReader();
@@ -255,7 +265,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         tool_call_id: m.toolCallId,
       });
     }
-    return {
+    const body: Record<string, unknown> = {
       model: req.model,
       messages,
       tools: req.tools?.map((t) => ({ type: "function" as const, function: { name: t.function.name, description: t.function.description, parameters: t.function.parameters } })),
@@ -265,6 +275,8 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       stop: req.stop,
       stream,
     };
+    for (const field of this.cfg.omitRequestFields ?? []) delete body[field];
+    return body;
   }
 
   private fromResponse(res: OaiChatResponse): ChatResponse {
@@ -304,7 +316,16 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     };
   }
 
-  private handleError(status: number, body: string): ProviderError {
+  private observe(res: Response, modelId?: string): void {
+    if (!this.cfg.onResponse) return;
+    try {
+      this.cfg.onResponse({ providerId: this.providerId, modelId, status: res.status, headers: quotaHeadersOf(res), observedAt: Date.now() });
+    } catch {
+      // Observation is advisory; never let a listener break a request.
+    }
+  }
+
+  private handleError(status: number, body: string, res?: Response): ProviderError {
     let code = "PROVIDER_ERROR";
     let retryable = false;
     if (status === 401 || status === 403) code = "AUTH_ERROR";
@@ -314,7 +335,10 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     else if (status >= 500) { code = "PROVIDER_ERROR"; retryable = true; }
     // Providers (e.g. Google) can echo the API key back in error bodies — redact before surfacing.
     const safe = redactSecrets(body, this.cfg.apiKey ?? this.cfg.credentialStore?.get(this.providerId)).slice(0, 200);
-    return new ProviderError(`${this.providerId} error (${status}): ${safe}`, code, retryable);
+    return new ProviderError(`${this.providerId} error (${status}): ${safe}`, code, retryable, {
+      status,
+      retryAfter: res && status === 429 ? parseRetryAfter(res) : undefined,
+    });
   }
 }
 

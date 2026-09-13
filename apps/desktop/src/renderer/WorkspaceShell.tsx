@@ -3,7 +3,10 @@ import { WorkspaceApp, type ModelSection } from "@codeforge/ui";
 import type { Project } from "./App.js";
 import type { ModelSelectorItem } from "@codeforge/ui";
 import ModelDetails from "./ModelDetails.js";
-import { accessBadge, buildModelSections, canDriveAgent, isHiddenModel, resolveForgeZeroTrust, resolveRuntimeLabel, selectorAvailability, type ApiModel } from "./model-sections.js";
+import CanonicalModelDetails from "./CanonicalModelDetails.js";
+import FreeCloudEnablePanel from "./FreeCloudEnablePanel.js";
+import { accessBadge, buildModelSections, buildCanonicalModelSections, canDriveAgent, canonicalIdOfSelection, isCanonicalSelection, isHiddenModel, resolveCanonicalTrust, resolveForgeZeroTrust, resolveRuntimeLabel, selectorAvailability, CANONICAL_PREFIX, type ApiModel, type FreeCloudView } from "./model-sections.js";
+import type { CanonicalModelView } from "@codeforge/model-registry";
 import { classifyGitWorkspace, GIT_WORKSPACE_INFO_ARGS, type GitWorkspaceInfo } from "./git-workspace-info.js";
 import SettingsApp from "./settings/SettingsApp.js";
 import type { SettingsContextValue, CloudAccountView, SystemInfoView, DesktopRuntimeStatus, RepositoryIndexStatus } from "./settings/settings-context.js";
@@ -35,6 +38,12 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   const [modelProviders, setModelProviders] = useState<Record<string, string>>({});
   const [apiModels, setApiModels] = useState<ApiModel[]>([]);
   const [showModelDetails, setShowModelDetails] = useState(false);
+  /** R1: 8-Bit Free Cloud Registry snapshot (canonical models + routes) from the local server. */
+  const [freeCloud, setFreeCloud] = useState<FreeCloudView | null>(null);
+  const [canonicalDetails, setCanonicalDetails] = useState<CanonicalModelView | null>(null);
+  /** Model that needs a connection before it can be used (drives the Enable panel). */
+  const [enableTarget, setEnableTarget] = useState<CanonicalModelView | null>(null);
+  const [showEnablePanel, setShowEnablePanel] = useState(false);
   const [selectedModelForDetails, setSelectedModelForDetails] = useState<ApiModel | null>(null);
   const [providerStatus, setProviderStatus] = useState<Record<string, { status: string; error?: string }>>({});
   const [isForgeZeroOpen, setIsForgeZeroOpen] = useState(false);
@@ -171,6 +180,10 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       if (!Array.isArray(data)) return;
       setApiModels(data);
       setCatalogLastCheckedAt(Date.now());
+      try {
+        const registryRes = await fetch(`${SERVER_BASE_URL}/api/free-cloud/registry`);
+        if (registryRes.ok) setFreeCloud((await registryRes.json()) as FreeCloudView);
+      } catch {}
 
       const visible = data.filter((m) => !isHiddenModel(m.id));
       const modelItems: ModelSelectorItem[] = [
@@ -219,6 +232,16 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     appliedDefaultModelRef.current = true;
     const defaultModelId = settingsSnapshot.settings.models.defaultModelId;
     if (defaultModelId === "auto") return;
+    if (isCanonicalSelection(defaultModelId)) {
+      void fetch(`${SERVER_BASE_URL}/api/model-selection`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ modelId: defaultModelId, canonicalModelId: canonicalIdOfSelection(defaultModelId), sessionId: "default" }),
+      }).then((response) => {
+        if (response.ok) setSelectedModelId(defaultModelId);
+      }).catch(() => {});
+      return;
+    }
     const found = apiModels.find((m) => m.id === defaultModelId);
     if (!found || found.eligible !== true) return;
     void fetch(`${SERVER_BASE_URL}/api/model-selection`, {
@@ -275,16 +298,26 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     return () => window.removeEventListener("codeforge:provider-updated", handleProviderUpdated);
   }, [refreshModelsAndHealth, loadCloudAccount]);
 
-  const modelSections = useMemo((): ModelSection[] => buildModelSections(apiModels, models), [apiModels, models]);
+  // R1: the canonical picker (one row per model, routes collapsed) whenever the 8-Bit registry is
+  // served; the legacy per-route sections remain the fallback for older local runtimes.
+  const modelSections = useMemo(
+    (): ModelSection[] => (freeCloud ? buildCanonicalModelSections(freeCloud, apiModels, models) : buildModelSections(apiModels, models)),
+    [freeCloud, apiModels, models],
+  );
+  const canonicalModels = useMemo(() => new Map<string, CanonicalModelView>((freeCloud?.models ?? []).map((m) => [`${CANONICAL_PREFIX}${m.canonicalId}`, m])), [freeCloud]);
 
   const postModelSelection = useCallback(async (modelId: string, providerId?: string) => {
+    const body = isCanonicalSelection(modelId)
+      ? { modelId, canonicalModelId: canonicalIdOfSelection(modelId), sessionId: "default" }
+      : { modelId, providerId, sessionId: "default" };
     const response = await fetch(`${SERVER_BASE_URL}/api/model-selection`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       // The historical endpoint name ("/api/model/select") never existed on the server and the
       // 404 silently swallowed every selection — /api/model-selection is the real authority.
-      body: JSON.stringify({ modelId, providerId, sessionId: "default" }),
+      body: JSON.stringify(body),
     });
+    if (response.status === 409) throw new Error("MODEL_NOT_CONNECTED");
     if (!response.ok) throw new Error(`Model selection rejected (${response.status})`);
   }, []);
 
@@ -297,12 +330,24 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
         // Persist only after the server authority accepts the exact route.
         const snapshot = await window.electronAPI?.updateSettings?.({ settings: { models: { defaultModelId: modelId } } });
         if (snapshot) setSettingsSnapshot(snapshot as SettingsSnapshot);
-      } catch {}
+      } catch (error) {
+        // A model with no connected route is not an error to dump on the user: offer the
+        // lowest-friction way to enable it (R1 §68).
+        const canonical = canonicalModels.get(modelId);
+        if (canonical && (error instanceof Error && error.message === "MODEL_NOT_CONNECTED" || canonical.readiness === "FREE_CONNECT_REQUIRED")) {
+          setEnableTarget(canonical);
+        }
+      }
     })();
   };
 
   const handleShowModelDetails = (model: ModelSelectorItem) => {
     const modelId = model.id;
+    const canonical = canonicalModels.get(modelId);
+    if (canonical) {
+      setCanonicalDetails(canonical);
+      return;
+    }
     const found = apiModels.find((m) => m.id === modelId);
     if (found) {
       setSelectedModelForDetails(found);
@@ -344,9 +389,19 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   };
 
   const currentStatus = getCurrentProviderStatus();
-  const autoRouteAvailable = apiModels.some((model) => model.eligible === true && model.freeStatus === "verified_free" && model.costProfile?.isFree === true);
-  const forgeZeroTrust = resolveForgeZeroTrust(selectedModelId, apiModels.find((m) => m.id === selectedModelId), autoRouteAvailable, (runtimeStatus?.discoveringProviders ?? 0) > 0);
-  const runtimeLabel = resolveRuntimeLabel(selectedModelId, apiModels.find((m) => m.id === selectedModelId));
+  const autoRouteAvailable = freeCloud
+    ? freeCloud.summary.healthyFreeRoutes > 0
+    : apiModels.some((model) => model.eligible === true && model.freeStatus === "verified_free" && model.costProfile?.isFree === true);
+  const freeCloudQualifying = Boolean(freeCloud && (freeCloud.qualifying || (freeCloud.pendingQualification ?? 0) > 0));
+  const selectedCanonical = selectedModelId ? canonicalModels.get(selectedModelId) : undefined;
+  const forgeZeroTrust = selectedCanonical
+    ? resolveCanonicalTrust(selectedCanonical)
+    : resolveForgeZeroTrust(selectedModelId, apiModels.find((m) => m.id === selectedModelId), autoRouteAvailable, (runtimeStatus?.discoveringProviders ?? 0) > 0 || freeCloudQualifying);
+  const runtimeLabel = selectedCanonical
+    ? { label: selectedCanonical.readiness === "FREE_AVAILABLE" ? "Free route" : "Route", detail: `${selectedCanonical.displayName} · ForgeAuto picks the healthiest of ${selectedCanonical.routes.length} route${selectedCanonical.routes.length === 1 ? "" : "s"}` }
+    : resolveRuntimeLabel(selectedModelId, apiModels.find((m) => m.id === selectedModelId));
+  // First run (R1 §70): ForgeAuto/Free with no admitted route and nothing in flight → one action.
+  const needsFreeCloudEnable = Boolean(freeCloud) && selectedModelId === "auto" && !autoRouteAvailable && !freeCloudQualifying && (runtimeStatus?.discoveringProviders ?? 0) === 0;
 
   // A smoke-fixture account has no real identity fields — it must never masquerade as a real
   // authenticated user in the UI.
@@ -777,6 +832,38 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
           model={selectedModelForDetails}
           onClose={handleCloseModelDetails}
         />
+      )}
+      {canonicalDetails && (
+        <CanonicalModelDetails
+          model={canonicalDetails}
+          onClose={() => setCanonicalDetails(null)}
+          onEnable={(model) => {
+            setCanonicalDetails(null);
+            setEnableTarget(model);
+          }}
+        />
+      )}
+      {(enableTarget || (needsFreeCloudEnable && showEnablePanel)) && settingsSection === null && (
+        <div className="free-cloud-enable-backdrop" onClick={() => { setEnableTarget(null); setShowEnablePanel(false); }}>
+          <div onClick={(event) => event.stopPropagation()}>
+            <FreeCloudEnablePanel
+              target={enableTarget ? { displayName: enableTarget.displayName, providerId: enableTarget.connectOffer?.providerId, authClass: enableTarget.connectOffer?.authClass, label: enableTarget.connectOffer?.label, environmentVariable: enableTarget.connectOffer?.environmentVariable, planAttestation: enableTarget.connectOffer?.planAttestation } : undefined}
+              onClose={() => { setEnableTarget(null); setShowEnablePanel(false); }}
+              onDone={() => {
+                setEnableTarget(null);
+                setShowEnablePanel(false);
+                void refreshModelsAndHealth();
+              }}
+              onOpenSettings={() => { setEnableTarget(null); setShowEnablePanel(false); setSettingsSection("providers"); }}
+            />
+          </div>
+        </div>
+      )}
+      {needsFreeCloudEnable && !showEnablePanel && !enableTarget && settingsSection === null && (
+        <div className="free-cloud-enable-bar" role="status">
+          <span className="free-cloud-enable-bar-text">ForgeAuto/Free has no free model connection yet.</span>
+          <button type="button" className="provider-btn primary" onClick={() => setShowEnablePanel(true)}>Enable Free Cloud Models</button>
+        </div>
       )}
     </div>
   );

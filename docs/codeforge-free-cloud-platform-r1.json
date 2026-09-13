@@ -1,0 +1,23 @@
+{
+  "schema": "codeforge-free-cloud-platform-r1",
+  "status": "implemented-unpackaged-not-certified",
+  "guarantees": [
+    "free admission fails closed",
+    "promotional and paid routes excluded from ForgeAuto/Free",
+    "canonical model picker with provider-route diagnostics",
+    "same-model route failover before cross-model fallback",
+    "no completed mutating tool replay during failover",
+    "environment values never cross normal renderer IPC"
+  ],
+  "verified": {
+    "workspaceBuild": true,
+    "focusedTests": { "files": 5, "passed": 74 },
+    "broaderProviderTests": { "files": 38, "passed": 361, "skipped": 2 }
+  },
+  "notYetCertified": [
+    "packaged fresh profile",
+    "interactive OpenRouter OAuth browser flow",
+    "real free-cloud coding task",
+    "terminal full-suite aggregate"
+  ]
+}

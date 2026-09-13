@@ -1,0 +1,28 @@
+{
+  "schema": "codeforge-free-cloud-registry-r1",
+  "status": "implemented-unpackaged",
+  "canonicalIdentity": "provider-neutral canonical id with provider-specific routes",
+  "discovery": {
+    "modelsDev": "candidate metadata only",
+    "admission": "fails closed without current zero-cash evidence"
+  },
+  "admissionGates": [
+    "zero_cash_evidence",
+    "connected",
+    "terms_and_privacy",
+    "executable_tool_capable_healthy",
+    "qualified"
+  ],
+  "excludedFreeClasses": [
+    "PROMOTIONAL_CREDIT",
+    "FREE_DEV_ENDPOINT",
+    "FREE_PRODUCT_ONLY",
+    "PAID_API",
+    "LEGAL_REVIEW_REQUIRED",
+    "UNAVAILABLE"
+  ],
+  "evidence": [
+    "packages/model-registry/test/free-cloud-registry.test.ts",
+    "packages/model-registry/src/free-cloud-service.ts"
+  ]
+}

@@ -1,13 +1,19 @@
 import type { AccessClass, AuthMode, PrivacyClass } from "@codeforge/forge-zero";
 import type { NormalizedCapabilities, NormalizedPricing } from "./normalized-types.js";
+import {
+  PROVIDER_DEFINITIONS,
+  environmentVariablesFor,
+  type FreeAccessClass,
+  type ProviderDefinition,
+} from "./provider-definitions.js";
 
 export type ProviderTransport = "openai-compatible" | "anthropic-messages" | "internal";
 export type ProviderKind = "direct" | "gateway";
 
 /**
- * CodeForge-owned provider policy. Derived from official-docs research
- * (see docs/research/provider-model-access-2026.md, checked 2026-08-29).
- * This is CodeForge knowledge/trust — NOT raw upstream facts.
+ * Coarse CodeForge provider policy — the ForgeZero-facing view of a {@link ProviderDefinition}.
+ * Derived, never hand-maintained in two places: the definition registry is the source of truth
+ * and this projection keeps every existing consumer (discovery, cloud gateway, tests) working.
  */
 export interface ProviderPolicy {
   providerId: string;
@@ -19,7 +25,7 @@ export interface ProviderPolicy {
   privacyClass: PrivacyClass;
   /** Privacy class of the provider's FREE tier specifically, if materially different. */
   freePrivacyClass?: PrivacyClass;
-  /** Provider grants a recurring free quota/allowance (Gemini/Groq/Cloudflare). */
+  /** Provider grants a recurring free quota/allowance (Gemini/Groq/Cloudflare/Mistral/SambaNova). */
   hasAllowanceFree?: boolean;
   /** Provider offers only trial credits for otherwise-paid models (Anthropic). */
   hasTrial?: boolean;
@@ -36,99 +42,56 @@ export interface ProviderPolicy {
   baseUrl?: string;
   /** Env var(s) that carry the credential. */
   env?: string[];
+  /** Fine-grained R1 free-access class (see provider-definitions). */
+  freeAccessClass: FreeAccessClass;
 }
 
-export const PROVIDER_POLICIES: Record<string, ProviderPolicy> = {
-  openrouter: {
-    providerId: "openrouter",
-    displayName: "OpenRouter",
-    kind: "gateway",
-    transport: "openai-compatible",
-    authMode: "OAUTH_PKCE",
-    privacyClass: "standard",
-    baseUrl: "https://openrouter.ai/api/v1",
-    env: ["OPENROUTER_API_KEY"],
-  },
-  zai: {
-    providerId: "zai",
-    displayName: "Z.AI",
-    kind: "direct",
-    transport: "openai-compatible",
-    authMode: "API_KEY",
-    privacyClass: "standard",
-    hasTrial: true,
-    allowLiveCatalogZeroUnitInference: true,
-    baseUrl: "https://api.z.ai/api/paas/v4",
-    env: ["ZHIPU_API_KEY", "ZAI_API_KEY"],
-  },
-  google: {
-    providerId: "google",
-    displayName: "Google Gemini",
-    kind: "direct",
-    transport: "openai-compatible",
-    authMode: "API_KEY",
-    privacyClass: "standard",
-    // Free tier prompts may be used to improve Google products → weaker retention.
-    freePrivacyClass: "permissive",
-    hasAllowanceFree: true,
-    baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
-    env: ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
-  },
-  groq: {
-    providerId: "groq",
-    displayName: "Groq",
-    kind: "direct",
-    transport: "openai-compatible",
-    authMode: "API_KEY",
-    privacyClass: "standard",
-    hasAllowanceFree: true,
-    baseUrl: "https://api.groq.com/openai/v1",
-    env: ["GROQ_API_KEY"],
-  },
-  "cloudflare-workers-ai": {
-    providerId: "cloudflare-workers-ai",
-    displayName: "Cloudflare Workers AI",
-    kind: "direct",
-    transport: "openai-compatible",
-    authMode: "ACCOUNT_CONNECT",
-    privacyClass: "standard",
-    hasAllowanceFree: true,
-    baseUrl: "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/v1",
-    env: ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_KEY"],
-  },
-  openai: {
-    providerId: "openai",
-    displayName: "OpenAI",
-    kind: "direct",
-    transport: "openai-compatible",
-    authMode: "API_KEY",
-    privacyClass: "standard",
-    paidOnly: true,
-    baseUrl: "https://api.openai.com/v1",
-    env: ["OPENAI_API_KEY"],
-  },
-  anthropic: {
-    providerId: "anthropic",
-    displayName: "Anthropic",
-    kind: "direct",
-    transport: "anthropic-messages",
-    authMode: "API_KEY",
-    privacyClass: "strict",
-    hasTrial: true,
-    baseUrl: "https://api.anthropic.com/v1",
-    env: ["ANTHROPIC_API_KEY"],
-  },
-  opencode: {
-    providerId: "opencode",
-    displayName: "OpenCode Zen",
-    kind: "gateway",
-    transport: "openai-compatible",
-    authMode: "API_KEY",
-    privacyClass: "standard",
-    baseUrl: "https://opencode.ai/zen/v1",
-    env: ["OPENCODE_API_KEY"],
-  },
-};
+const ALLOWANCE_CLASSES: readonly FreeAccessClass[] = [
+  "FREE_DAILY_ALLOCATION",
+  "FREE_MONTHLY_ALLOWANCE",
+  "FREE_ACCOUNT_ENTITLEMENT",
+];
+
+function authModeFor(def: ProviderDefinition): AuthMode {
+  if (def.apiStyle === "hosted") return "HOSTED_RELAY";
+  if (def.apiStyle === "internal") return "NONE";
+  if (def.authClasses[0] === "OAUTH_PKCE") return "OAUTH_PKCE";
+  if (def.connection.fields.some((f) => !f.secret)) return "ACCOUNT_CONNECT";
+  return "API_KEY";
+}
+
+export function policyFromDefinition(def: ProviderDefinition): ProviderPolicy {
+  const transport: ProviderTransport =
+    def.apiStyle === "anthropic-messages" ? "anthropic-messages" : def.apiStyle === "hosted" || def.apiStyle === "internal" ? "internal" : "openai-compatible";
+  const kind: ProviderKind = def.kind === "gateway" || def.kind === "fds-gateway" ? "gateway" : "direct";
+  const env = environmentVariablesFor(def);
+  return {
+    providerId: def.id,
+    displayName: def.displayName,
+    kind,
+    transport,
+    authMode: authModeFor(def),
+    privacyClass: def.privacy.class,
+    ...(def.privacy.freeTierClass ? { freePrivacyClass: def.privacy.freeTierClass } : {}),
+    ...(ALLOWANCE_CLASSES.includes(def.freeAccess.class) && def.kind === "direct" ? { hasAllowanceFree: true } : {}),
+    ...(def.hasTrial ? { hasTrial: true } : {}),
+    ...(def.paidOnly ? { paidOnly: true } : {}),
+    ...(def.allowLiveCatalogZeroUnitInference ? { allowLiveCatalogZeroUnitInference: true } : {}),
+    ...(def.baseUrl ? { baseUrl: def.baseUrl } : {}),
+    ...(env.length > 0 ? { env } : {}),
+    freeAccessClass: def.freeAccess.class,
+  };
+}
+
+/**
+ * Coarse policies for every curated provider definition. Kept as a plain record so existing
+ * consumers that iterate it (cloud gateway credential resolution, tests) are unchanged.
+ */
+export const PROVIDER_POLICIES: Record<string, ProviderPolicy> = Object.fromEntries(
+  Object.values(PROVIDER_DEFINITIONS)
+    .filter((def) => def.apiStyle !== "internal" && def.apiStyle !== "hosted")
+    .map((def) => [def.id, policyFromDefinition(def)]),
+);
 
 export function getProviderPolicy(providerId: string): ProviderPolicy | undefined {
   return PROVIDER_POLICIES[providerId];
@@ -141,6 +104,10 @@ const isZeroUnit = (p: NormalizedPricing): boolean =>
  * Derive a CANDIDATE access classification from upstream facts + provider policy.
  * This is not trust: a candidate free class still requires independent CodeForge
  * verification (the overlay) before it can enter Auto free routing.
+ *
+ * R1: a $0 unit price on a provider whose free access is promotional, development-only, or
+ * legally unreviewed is a TRIAL candidate, never FREE_* — NVIDIA's 99 "$0" catalog entries are
+ * evaluation credits, not a free tier.
  */
 export function deriveAccessClass(
   providerId: string,
@@ -156,6 +123,10 @@ export function deriveAccessClass(
     return "PAID";
   }
   if (isZeroUnit(pricing)) {
+    const cls = policy?.freeAccessClass;
+    if (cls === "PROMOTIONAL_CREDIT" || cls === "FREE_DEV_ENDPOINT" || cls === "LEGAL_REVIEW_REQUIRED" || cls === "FREE_PRODUCT_ONLY") {
+      return "TRIAL";
+    }
     return policy?.kind === "gateway" ? "FREE_ROUTED" : "FREE_NATIVE";
   }
   // Non-zero unit price. Allowance providers expose a recurring free quota despite the

@@ -51,6 +51,7 @@ export class NormalizedModelRegistry {
   readonly overlay = new OverlayStore();
   private _source: RegistrySource = "empty";
   private _lastUpdated: string | null = null;
+  private _lastDoc: ModelsDevDoc | null = null;
   private readonly opts: RegistryOptions;
 
   constructor(opts: RegistryOptions = {}) {
@@ -71,6 +72,12 @@ export class NormalizedModelRegistry {
     this.records = next;
     this._source = source;
     this._lastUpdated = lastUpdated;
+    this._lastDoc = doc;
+  }
+
+  /** The raw Models.dev document last ingested (provider metadata for definition enrichment). */
+  lastDocument(): ModelsDevDoc | null {
+    return this._lastDoc;
   }
 
   /** Load the bundled offline snapshot. Safe to call at construction time. */

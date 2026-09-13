@@ -17,7 +17,8 @@ import {
   type AppSettings,
   type SettingsSnapshot,
 } from "./app-settings.js";
-import { readZeroUnitEnvironmentCredentials } from "./provider-environment.js";
+import { ProviderConnections, type ProviderConnectionsHost } from "./provider-connections.js";
+import { refreshWindowsEnvironment } from "./environment-refresh.js";
 import { offlineCloudAccount } from "./cloud-account.js";
 import {
   CONTROL_PLANE_TOKEN_HEADER,
@@ -35,8 +36,20 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
 
 import { CodeForgeServer, type CodeForgeRuntimeStatus } from "@codeforge/server";
 import { ForgeZero, createGenericFreeRecord, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog, createMockProvider, createOpencodeAdapter, createOpenRouterAdapter, createProviderAdapterById, HostedProviderAdapter, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent } from "@codeforge/providers";
-import { NormalizedModelRegistry, discoverAndVerifyFree, verifyAllowanceViaProbe, getProviderPolicy, type LiveModelInfo } from "@codeforge/model-registry";
+import { InMemoryProviderCatalog, createMockProvider, createProviderAdapterFromDefinition, HostedProviderAdapter, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent, type ProviderResponseObservation } from "@codeforge/providers";
+import {
+  NormalizedModelRegistry,
+  discoverAndVerifyFree,
+  verifyAllowanceViaProbe,
+  getProviderPolicy,
+  createFreeCloudService,
+  mergeModelsDevProviderHints,
+  PROVIDER_DEFINITIONS,
+  environmentVariablesFor,
+  type FreeCloudService,
+  type LiveModelInfo,
+  type EnvironmentCredentialPolicy,
+} from "@codeforge/model-registry";
 import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
 import { describeCloudAuthFailure, CloudAuthError, runCodeForgeCloudAuth, type CloudAuthResult } from "./cloud-auth-flow.js";
 import {
@@ -75,6 +88,10 @@ let firewall: ForgeZero | null = null;
 let providerCatalog: InMemoryProviderCatalog | null = null;
 let desktopCredentialStore: DesktopCredentialStore | null = null;
 let modelRegistry: NormalizedModelRegistry | null = null;
+/** R1: 8-Bit Free Cloud Service — canonical models, routes, admission, shared health/quota. */
+let freeCloud: FreeCloudService | null = null;
+/** R1: trusted-process provider connection authority (secure storage + enabled env credentials). */
+let providerConnections: ProviderConnections | null = null;
 let tray: Tray | null = null;
 let trayStatusTimer: NodeJS.Timeout | null = null;
 let isQuitting = false;
@@ -166,19 +183,22 @@ try {
 }
 const CLOUD_API_URL = RESOLVED_CLOUD_ENDPOINT.url;
 console.log(`[CodeForge] cloud endpoint ${endpointResolutionError ? "unavailable=true" : describeCloudEndpoint(RESOLVED_CLOUD_ENDPOINT)}`);
-const ALLOWED_PROVIDER_IDS = new Set([
-  "opencode",
-  "openrouter",
-  "zai",
-  "google",
-  "groq",
-  "cloudflare-workers-ai",
-  "cloudflare-account-id",
-  "openai",
-  "anthropic",
-]);
-// Providers CodeForge can build a real adapter for (excludes the cloudflare account-id pseudo-credential).
-const ROUTABLE_PROVIDER_IDS = ["opencode", "openrouter", "zai", "google", "groq", "cloudflare-workers-ai", "openai", "anthropic"] as const;
+// R1: provider ids come from the definition registry, not a hand-maintained list. Secure-storage
+// keys may be a provider id or `${providerId}:${fieldId}` (non-secret connection fields); the
+// legacy "cloudflare-account-id" pseudo id is still accepted for existing profiles.
+const ROUTABLE_PROVIDER_IDS: readonly string[] = Object.values(PROVIDER_DEFINITIONS)
+  .filter((d) => d.implemented && d.apiStyle !== "internal" && d.apiStyle !== "hosted")
+  .map((d) => d.id);
+const ALLOWED_PROVIDER_IDS = new Set<string>([...ROUTABLE_PROVIDER_IDS, "cloudflare-account-id"]);
+function isAllowedCredentialKey(key: string): boolean {
+  if (ALLOWED_PROVIDER_IDS.has(key)) return true;
+  const idx = key.indexOf(":");
+  if (idx <= 0) return false;
+  const providerId = key.slice(0, idx);
+  const fieldId = key.slice(idx + 1);
+  const def = providerConnections?.definition(providerId) ?? PROVIDER_DEFINITIONS[providerId];
+  return !!def && def.connection.fields.some((f) => f.id === fieldId && !f.secret);
+}
 const MAX_API_KEY_LENGTH = 512;
 const SETTINGS_FILE = "settings.json";
 const PACKAGED_SMOKE = process.env.CODEFORGE_PACKAGED_SMOKE === "1";
@@ -254,7 +274,14 @@ class DesktopCredentialStore implements CredentialStore {
     this.credentials = getProviderCredentials();
   }
 
+  /**
+   * Resolution order (R1 §60): explicit secure connection > enabled environment credential.
+   * Environment values are read live from the trusted process environment on every call and
+   * are never copied into this store or persisted.
+   */
   get(providerId: string): string | undefined {
+    const composite = providerConnections?.credentialStore().get(providerId);
+    if (composite !== undefined) return composite;
     return this.credentials[providerId];
   }
 
@@ -373,13 +400,15 @@ function saveRecentProject(project: ProjectInfo): void {
   writeSettingsAtomic(settings);
 }
 
+/** Explicit secure-storage credentials only (safeStorage-encrypted). Environment credentials are
+ * resolved separately by ProviderConnections and never merged into persisted state. */
 function getProviderCredentials(): Record<string, string> {
   const settings = readSettings();
   const raw = settings[PROVIDER_CREDENTIALS_KEY];
-  const result = readZeroUnitEnvironmentCredentials(process.env, MAX_API_KEY_LENGTH);
+  const result: Record<string, string> = {};
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return result;
   for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
-    if (!ALLOWED_PROVIDER_IDS.has(k)) continue;
+    if (!isAllowedCredentialKey(k)) continue;
     if (typeof v !== "string") continue;
     const decrypted = decryptCredential(v);
     if (decrypted !== undefined) result[k] = decrypted;
@@ -387,15 +416,18 @@ function getProviderCredentials(): Record<string, string> {
   return result;
 }
 
+/** Connected = a usable credential resolves from secure storage OR an enabled environment credential. */
 function getProviderCredentialStatus(): Record<string, boolean> {
-  const creds = getProviderCredentials();
   const status: Record<string, boolean> = {};
-  for (const id of ROUTABLE_PROVIDER_IDS) status[id] = !!creds[id];
+  const creds = getProviderCredentials();
+  for (const id of ROUTABLE_PROVIDER_IDS) {
+    status[id] = providerConnections ? providerConnections.credentialSourceOf(id) !== "NONE" : !!creds[id];
+  }
   return status;
 }
 
 function setProviderCredential(providerId: string, apiKey: string): void {
-  if (!isValidProviderId(providerId)) throw new Error(`Invalid providerId: ${providerId}`);
+  if (!isAllowedCredentialKey(providerId)) throw new Error(`Invalid providerId: ${providerId}`);
   if (!isValidApiKey(apiKey)) throw new Error("Invalid API key");
   const settings = readSettings();
   const raw = settings[PROVIDER_CREDENTIALS_KEY];
@@ -415,7 +447,7 @@ function setProviderCredential(providerId: string, apiKey: string): void {
 }
 
 function deleteProviderCredential(providerId: string): void {
-  if (!isValidProviderId(providerId)) throw new Error(`Invalid providerId: ${providerId}`);
+  if (!isAllowedCredentialKey(providerId)) throw new Error(`Invalid providerId: ${providerId}`);
   const settings = readSettings();
   const raw = settings[PROVIDER_CREDENTIALS_KEY];
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return;
@@ -751,7 +783,9 @@ async function registerCloudAdapter(): Promise<void> {
   const cloudAdapter = existing instanceof HostedProviderAdapter ? existing : createCloudAdapter();
   if (!(existing instanceof HostedProviderAdapter)) providerCatalog.register(cloudAdapter);
   providerAuthState.set("codeforge-cloud", "ok");
+  freeCloud?.setConnection({ providerId: "codeforge-cloud", connected: true, credentialSource: "FDS_GATEWAY", authState: "ok", planAttested: true });
   await syncCloudFreeModelsIntoFirewall(cloudAdapter);
+  scheduleQualification("codeforge-cloud");
 }
 
 /**
@@ -789,19 +823,14 @@ const providerOracle: ProviderAvailabilityOracle = {
   },
 };
 
-/** Build + register a provider adapter by id using the desktop credential store. Idempotent. */
+/** Build + register a provider adapter by id from its definition using the desktop credential store. Idempotent. */
 function registerProviderAdapter(providerId: string): ProviderAdapter | undefined {
   if (!providerCatalog || !desktopCredentialStore) return undefined;
   const existing = providerCatalog.get(providerId);
   if (existing) return existing;
-  let adapter: ProviderAdapter | undefined;
-  if (providerId === "opencode") {
-    adapter = createOpencodeAdapter({ credentialStore: desktopCredentialStore });
-  } else if (providerId === "openrouter") {
-    adapter = createOpenRouterAdapter({ credentialStore: desktopCredentialStore });
-  } else {
-    adapter = createProviderAdapterById(providerId, { credentialStore: desktopCredentialStore });
-  }
+  const def = providerConnections?.definition(providerId) ?? PROVIDER_DEFINITIONS[providerId];
+  if (!def || !def.implemented) return undefined;
+  const adapter = createProviderAdapterFromDefinition(def, { credentialStore: desktopCredentialStore, onResponse: freeCloud?.onProviderResponse });
   if (adapter) {
     providerCatalog.register(adapter);
     providerAuthState.set(providerId, "ok");
@@ -842,10 +871,16 @@ async function discoverProviderFreeInner(providerId: string, adapter: ProviderAd
     const result = discoverAndVerifyFree(modelRegistry, providerId, live);
     for (const rec of result.records) firewall.register(rec);
     providerAuthState.set(providerId, "ok");
+    freeCloud?.updateConnection(providerId, { authState: "ok", lastCatalogRefreshAt: new Date().toISOString() });
 
-    // Allowance providers (Gemini/Groq/Cloudflare) list paid unit prices, so no $0 model is
-    // found above. Verify their free tier by an actual no-charge probe request instead.
-    if (result.verifiedCount === 0 && getProviderPolicy(providerId)?.hasAllowanceFree) {
+    // Allowance providers (Gemini/Groq/Cloudflare/Mistral/SambaNova) list paid unit prices, so no
+    // $0 model is found above. Their free tier is proven by a no-charge probe — but ONLY once the
+    // user has confirmed the account is on the free plan (R1 §21, §99): on a paid plan the same
+    // probe would be a billable request, so without attestation the routes stay un-admitted.
+    const definition = providerConnections?.definition(providerId) ?? PROVIDER_DEFINITIONS[providerId];
+    const attested = definition?.freeAccess.spillover !== "ACCOUNT_DEPENDENT" || providerConnections?.planAttested(providerId) === true;
+    if (result.verifiedCount === 0 && getProviderPolicy(providerId)?.hasAllowanceFree && attested) {
+      const allowlist = definition?.freeAccess.allowanceScope === "allowlist" ? new Set(definition.freeAccess.allowanceModels ?? []) : null;
       const probe = async (modelId: string): Promise<{ ok: boolean }> => {
         try {
           let ok = false;
@@ -857,18 +892,110 @@ async function discoverProviderFreeInner(providerId: string, adapter: ProviderAd
           return { ok: false };
         }
       };
-      const allowance = await verifyAllowanceViaProbe(modelRegistry, providerId, live, probe);
+      const scoped = allowlist ? live.filter((m) => allowlist.has(m.modelId)) : live;
+      const allowance = await verifyAllowanceViaProbe(modelRegistry, providerId, scoped, probe);
       for (const rec of allowance.records) firewall.register(rec);
+      pruneStaleRoutes(providerId, new Set(allowance.records.map((r) => r.modelId)));
+      scheduleQualification(providerId);
       return allowance.verifiedCount;
     }
+    // R1 §90 dynamic removal: a route the provider no longer lists as free leaves ForgeAuto/Free
+    // on this refresh — no CodeForge release, no 7-day expiry wait.
+    pruneStaleRoutes(providerId, new Set(result.records.map((r) => r.modelId)));
+    if (result.verifiedCount > 0) scheduleQualification(providerId);
     return result.verifiedCount;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (/\b401\b|auth|unauthor/i.test(msg)) {
       providerAuthState.set(providerId, "auth_required");
+      freeCloud?.updateConnection(providerId, { authState: "auth_required" });
     }
     return 0;
   }
+}
+
+/** Drop this provider's ForgeZero records that the latest live catalog did not re-verify as free. */
+function pruneStaleRoutes(providerId: string, keep: Set<string>): void {
+  if (!firewall) return;
+  for (const m of firewall.allModels()) {
+    if (m.providerId !== providerId || m.tier === "gems_paid") continue;
+    if (keep.has(m.modelId)) continue;
+    if (m.freeStatus !== "verified_free") continue;
+    firewall.unregister(m.providerId, m.modelId);
+    smokeRecord(`FREE_ROUTE_REMOVED_${providerId}/${m.modelId}`);
+  }
+}
+
+/**
+ * 8-Bit qualification for newly verified routes (R1 §89): bounded compact probes run in the
+ * background after discovery; ForgeAuto/Free only admits a route once its receipt is QUALIFIED.
+ * Never blocks discovery or window paint; the renderer refreshes on `provider:changed`.
+ */
+function scheduleQualification(providerId?: string): void {
+  if (!freeCloud || PACKAGED_SMOKE) return;
+  setTimeout(() => {
+    void freeCloud
+      ?.qualifyPending({ providerId })
+      .then((receipts) => {
+        if (receipts.length > 0) smokeRecord(`QUALIFIED_${receipts.map((r) => `${r.providerId}/${r.modelId}=${r.qualificationState}`).join(",")}`);
+        notifyProviderChanged();
+      })
+      .catch(() => undefined);
+  }, 250).unref?.();
+}
+
+function notifyProviderChanged(): void {
+  try {
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send("provider:changed");
+  } catch {
+    // renderer may be closing
+  }
+}
+
+/** Provider hints (id/name/env/api/npm/doc) from the last Models.dev document the registry ingested. */
+function readModelsDevProviderHints(registry: NormalizedModelRegistry): Record<string, { id: string; name?: string; env?: string[]; api?: string; npm?: string; doc?: string }> {
+  const doc = registry.lastDocument();
+  const out: Record<string, { id: string; name?: string; env?: string[]; api?: string; npm?: string; doc?: string }> = {};
+  if (!doc) return out;
+  for (const [id, provider] of Object.entries(doc)) {
+    out[id] = { id, name: provider.name, env: provider.env, api: provider.api, npm: provider.npm, doc: provider.doc };
+  }
+  return out;
+}
+
+/** Bridges ProviderConnections (pure) to this process's settings store, safeStorage and runtime. */
+function createProviderConnectionsHost(): ProviderConnectionsHost {
+  return {
+    readSettings,
+    writeSettings: writeSettingsAtomic,
+    secrets: {
+      get: (key) => getProviderCredentials()[key],
+      set: (key, value) => {
+        setProviderCredential(key, value);
+        desktopCredentialStore?.reload();
+      },
+      delete: (key) => {
+        deleteProviderCredential(key);
+        desktopCredentialStore?.reload();
+      },
+      keys: () => Object.keys(getProviderCredentials()),
+    },
+    env: () => process.env,
+    get providerCatalog() {
+      return providerCatalog!;
+    },
+    get firewall() {
+      return firewall!;
+    },
+    get freeCloud() {
+      return freeCloud!;
+    },
+    discoverProviderFree: (providerId) => discoverProviderFree(providerId),
+    providerAuthState: (providerId) => providerAuthState.get(providerId),
+    onResponse: (obs: ProviderResponseObservation) => freeCloud?.onProviderResponse(obs),
+    maxSecretLength: MAX_API_KEY_LENGTH,
+    notifyChanged: notifyProviderChanged,
+  };
 }
 
 async function initializeServer(dbPath: string): Promise<void> {
@@ -885,6 +1012,7 @@ async function initializeServer(dbPath: string): Promise<void> {
       // real provider, the real runtime fails closed and the UI surfaces the missing route.
       useRealRuntime: true,
       controlPlaneToken,
+      freeCloud: freeCloud ?? undefined,
     });
     smokeRecord("INIT_SERVER_INSTANCE_CREATED");
     await server.start();
@@ -1486,7 +1614,7 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   await captureSettings("08-settings-agents", "Agent steering");
   await clickSettingsNav("Verification & Safety");
   await captureSettings("09-settings-safety", "Completion gate");
-  await clickSettingsNav("Connected Providers");
+  await clickSettingsNav("Provider Connections");
   await captureSettings("10-settings-providers", "OpenRouter");
   await clickSettingsNav("About");
   await captureSettings("11-settings-about", "License");
@@ -1634,6 +1762,12 @@ async function startPrimaryInstance(): Promise<void> {
   modelRegistry = new NormalizedModelRegistry();
   modelRegistry.loadSnapshot();
 
+  // R1: 8-Bit Free Cloud Service + trusted provider-connection authority.
+  freeCloud = createFreeCloudService({ firewall, providerCatalog, registry: modelRegistry });
+  providerConnections = new ProviderConnections(createProviderConnectionsHost());
+  providerConnections.migrateEnvironmentPreferences();
+  smokeRecord("WHEN_READY_PROVIDER_CONNECTIONS_DONE");
+
   // Register provider adapters with credentials from storage
   const credentials = getProviderCredentials();
   smokeRecord("WHEN_READY_CREDS_LOADED");
@@ -1641,9 +1775,12 @@ async function startPrimaryInstance(): Promise<void> {
   // Scripted providers remain confined to PACKAGED_SMOKE. Production always uses the real runtime;
   // when no executable free route exists, ForgeZero fails closed and the UI says so.
   if (!PACKAGED_SMOKE) {
+    // Every provider with a resolvable credential (secure storage or an ENABLED environment
+    // credential under the current policy) gets its adapter now; discovery runs in the background.
     for (const id of ROUTABLE_PROVIDER_IDS) {
-      if (credentials[id]) registerProviderAdapter(id);
+      if (credentials[id] || providerConnections.credentialSourceOf(id) !== "NONE") registerProviderAdapter(id);
     }
+    providerConnections.publishAll();
     const cloudTokens = getStoredCloudTokens();
     if (resolveCloudCatalogSyncMode(Boolean(cloudTokens.accessToken)) === "register-adapter-and-sync") {
       // Signed-in: eagerly register before window paint so the account's hosted models are
@@ -1683,12 +1820,28 @@ async function startPrimaryInstance(): Promise<void> {
     // until it ends, "no free route" is not yet a fact the UI may state.
     const pendingDiscovery = ROUTABLE_PROVIDER_IDS.filter((id) => providerCatalog?.get(id));
     for (const id of pendingDiscovery) discoveringProviders.add(id);
-    void modelRegistry
+    const registry = modelRegistry;
+    void registry
       .refresh()
+      .then((result) => {
+        // Models.dev provider metadata extends the definition registry (env aliases + generic
+        // OpenAI-compatible providers as BYOK-only). Curated definitions are never overridden.
+        if (result.ok && freeCloud) {
+          try {
+            const hints = Object.values(readModelsDevProviderHints(registry));
+            freeCloud.setDefinitions(mergeModelsDevProviderHints(hints));
+          } catch {
+            // definition enrichment is best-effort
+          }
+        }
+      })
       .catch(() => {})
       .finally(() => {
         for (const id of pendingDiscovery) {
-          void discoverProviderFree(id).finally(() => discoveringProviders.delete(id));
+          void discoverProviderFree(id).finally(() => {
+            discoveringProviders.delete(id);
+            notifyProviderChanged();
+          });
         }
       });
   }
@@ -2043,6 +2196,7 @@ ipcMain.handle("catalog:refresh", async (event) => {
     await Promise.allSettled(
       ROUTABLE_PROVIDER_IDS.filter((id) => providerCatalog?.get(id)).map((id) => discoverProviderFree(id)),
     );
+    notifyProviderChanged();
     const freeModels = firewall.eligibleModels().length;
     return { ok: true, freeModels };
   } catch (error) {
@@ -2066,8 +2220,154 @@ ipcMain.handle("provider:setCredential", async (event, providerId: string, apiKe
   // models. The cloudflare-account-id pseudo-credential is stored but not itself a provider.
   if (!PACKAGED_SMOKE && (ROUTABLE_PROVIDER_IDS as readonly string[]).includes(providerId)) {
     registerProviderAdapter(providerId);
+    await providerConnections?.reconcile(providerId);
     await discoverProviderFree(providerId);
+    notifyProviderChanged();
   }
+});
+
+// --- R1 provider connections (schemas, environment credentials, ZCode-style connect) ------------
+
+const ENV_POLICIES = new Set<EnvironmentCredentialPolicy>(["OFF", "FREE_ROUTES_ONLY", "ALL_ENABLED_BYOK_ROUTES"]);
+
+function requireConnections(): ProviderConnections {
+  if (!providerConnections) throw new Error("Provider connections are not ready");
+  return providerConnections;
+}
+
+function isKnownProviderId(id: unknown): id is string {
+  return typeof id === "string" && id.length <= 64 && !!providerConnections?.definition(id);
+}
+
+ipcMain.handle("provider:definitions", (event) => {
+  assertMainWindowSender(event);
+  return requireConnections().listDefinitions();
+});
+
+ipcMain.handle("provider:connections", (event) => {
+  assertMainWindowSender(event);
+  return requireConnections().listConnections();
+});
+
+ipcMain.handle("provider:env:list", (event) => {
+  assertMainWindowSender(event);
+  return requireConnections().listEnvironmentCredentials();
+});
+
+ipcMain.handle("provider:env:policy:get", (event) => {
+  assertMainWindowSender(event);
+  return requireConnections().getEnvironmentPolicy();
+});
+
+ipcMain.handle("provider:env:policy:set", async (event, policy: unknown) => {
+  assertMainWindowSender(event);
+  if (!ENV_POLICIES.has(policy as EnvironmentCredentialPolicy)) throw new Error("Invalid policy");
+  await requireConnections().setEnvironmentPolicy(policy as EnvironmentCredentialPolicy);
+  for (const id of ROUTABLE_PROVIDER_IDS) if (providerCatalog?.get(id)) void discoverProviderFree(id).finally(notifyProviderChanged);
+  return requireConnections().getEnvironmentPolicy();
+});
+
+ipcMain.handle("provider:env:setEnabled", async (event, providerId: unknown, enabled: unknown) => {
+  assertMainWindowSender(event);
+  if (!isKnownProviderId(providerId)) throw new Error("Unknown provider");
+  await requireConnections().setEnvironmentEnabled(providerId, enabled === true);
+  if (enabled === true && providerCatalog?.get(providerId)) {
+    discoveringProviders.add(providerId);
+    void discoverProviderFree(providerId).finally(() => {
+      discoveringProviders.delete(providerId);
+      notifyProviderChanged();
+    });
+  }
+  notifyProviderChanged();
+  return requireConnections().listEnvironmentCredentials().find((e) => e.providerId === providerId) ?? null;
+});
+
+ipcMain.handle("provider:env:refresh", async (event) => {
+  assertMainWindowSender(event);
+  const names = Object.values(requireConnections().definitions()).flatMap((d) => environmentVariablesFor(d));
+  const result = await refreshWindowsEnvironment(names);
+  await requireConnections().reconcileAll();
+  notifyProviderChanged();
+  return { platform: result.platform, queried: result.queried, updated: result.updated.length, credentials: requireConnections().listEnvironmentCredentials() };
+});
+
+ipcMain.handle("provider:env:import", async (event, providerId: unknown) => {
+  assertMainWindowSender(event);
+  if (!isKnownProviderId(providerId)) throw new Error("Unknown provider");
+  const result = await requireConnections().importEnvironmentToSecureStorage(providerId);
+  notifyProviderChanged();
+  return result;
+});
+
+ipcMain.handle("provider:validate", async (event, providerId: unknown, fields: unknown) => {
+  assertMainWindowSender(event);
+  if (!isKnownProviderId(providerId)) return { ok: false, error: "Unknown provider" };
+  if (typeof fields !== "object" || fields === null) return { ok: false, error: "Invalid fields" };
+  if (PACKAGED_SMOKE) return { ok: false, error: "Unavailable in smoke mode" };
+  return requireConnections().validate(providerId, fields as Record<string, unknown>);
+});
+
+ipcMain.handle("provider:connect", async (event, providerId: unknown, fields: unknown) => {
+  assertMainWindowSender(event);
+  if (!isKnownProviderId(providerId)) return { ok: false, error: "Unknown provider" };
+  if (typeof fields !== "object" || fields === null) return { ok: false, error: "Invalid fields" };
+  if (PACKAGED_SMOKE) return { ok: false, error: "Unavailable in smoke mode" };
+  const result = await requireConnections().connect(providerId, fields as Record<string, unknown>, "MANUAL_BYOK");
+  notifyProviderChanged();
+  return result;
+});
+
+ipcMain.handle("provider:catalog", async (event, providerId: unknown) => {
+  assertMainWindowSender(event);
+  if (!isKnownProviderId(providerId)) return { ok: false, error: "Unknown provider" };
+  return requireConnections().catalog(providerId);
+});
+
+ipcMain.handle("provider:disconnect", async (event, providerId: unknown) => {
+  assertMainWindowSender(event);
+  if (!isKnownProviderId(providerId)) throw new Error("Unknown provider");
+  await requireConnections().disconnect(providerId);
+  notifyProviderChanged();
+});
+
+ipcMain.handle("provider:attestFreePlan", async (event, providerId: unknown, attested: unknown) => {
+  assertMainWindowSender(event);
+  if (!isKnownProviderId(providerId)) throw new Error("Unknown provider");
+  await requireConnections().setPlanAttested(providerId, attested === true);
+  if (attested === true && providerCatalog?.get(providerId)) {
+    discoveringProviders.add(providerId);
+    void discoverProviderFree(providerId).finally(() => {
+      discoveringProviders.delete(providerId);
+      notifyProviderChanged();
+    });
+  }
+  notifyProviderChanged();
+});
+
+ipcMain.handle("provider:setEnabledModels", (event, providerId: unknown, modelIds: unknown) => {
+  assertMainWindowSender(event);
+  if (!isKnownProviderId(providerId)) throw new Error("Unknown provider");
+  requireConnections().setEnabledModels(providerId, Array.isArray(modelIds) ? modelIds.filter((m): m is string => typeof m === "string") : null);
+});
+
+ipcMain.handle("freecloud:offer", (event) => {
+  assertMainWindowSender(event);
+  return requireConnections().firstRunOffer();
+});
+
+ipcMain.handle("freecloud:summary", (event) => {
+  assertMainWindowSender(event);
+  if (!freeCloud) return null;
+  const snap = freeCloud.snapshot();
+  return { ...snap.summary, qualifying: freeCloud.isQualifying(), pendingQualification: freeCloud.pendingQualification().length, discovering: discoveringProviders.size, generatedAt: snap.generatedAt };
+});
+
+ipcMain.handle("freecloud:qualify", async (event) => {
+  assertMainWindowSender(event);
+  if (!freeCloud || PACKAGED_SMOKE) return { qualified: 0, pending: 0 };
+  const receipts = await freeCloud.qualifyPending();
+  notifyProviderChanged();
+  return { qualified: receipts.length, pending: freeCloud.pendingQualification().length };
 });
 
 /**
@@ -2080,11 +2380,11 @@ ipcMain.handle("oauth:openrouter:start", async (event) => {
   if (PACKAGED_SMOKE) return { ok: false, error: "Unavailable in smoke mode" };
   try {
     const key = await runOpenRouterOAuth();
-    setProviderCredential("openrouter", key);
-    desktopCredentialStore?.reload();
-    registerProviderAdapter("openrouter");
-    const verifiedFree = await discoverProviderFree("openrouter");
-    return { ok: true, verifiedFree };
+    const connections = requireConnections();
+    const result = await connections.connect("openrouter", { apiKey: key }, "OAUTH");
+    notifyProviderChanged();
+    if (!result.ok) return { ok: false, error: result.error };
+    return { ok: true, verifiedFree: result.verifiedFree ?? 0 };
   } catch (e) {
     return { ok: false, error: (e instanceof Error ? e.message : String(e)).slice(0, 200) };
   }
@@ -2095,6 +2395,10 @@ ipcMain.handle("provider:deleteCredential", async (event, providerId: string) =>
   if (!isValidProviderId(providerId)) throw new Error("Invalid providerId");
   deleteProviderCredential(providerId);
   desktopCredentialStore?.reload();
+  if (providerConnections && (ROUTABLE_PROVIDER_IDS as readonly string[]).includes(providerId)) {
+    await providerConnections.reconcile(providerId);
+    notifyProviderChanged();
+  }
 });
 
 ipcMain.handle("provider:testConnection", async (event, providerId: string): Promise<{ status: string; error?: string }> => {

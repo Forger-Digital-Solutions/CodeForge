@@ -82,7 +82,7 @@ describe("Models & Routing page", () => {
   it("surfaces the manual catalog refresh affordance", () => {
     const markup = renderSection(<ModelsRoutingSection />, canonicalContext());
     expect(markup).toContain("Refresh catalog");
-    expect(markup).toContain("8-Bit free catalog");
+    expect(markup).toContain("8-Bit free cloud registry");
   });
 
   it("reports no route only when no verified-free record is executable", () => {

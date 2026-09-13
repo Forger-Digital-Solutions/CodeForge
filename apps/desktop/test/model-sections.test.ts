@@ -229,3 +229,91 @@ describe("routes that cannot drive the agent loop", () => {
     expect(row.description).not.toContain("No tools");
   });
 });
+
+describe("buildCanonicalModelSections (R1 canonical picker)", async () => {
+  const { buildCanonicalModelSections, CANONICAL_PREFIX, resolveCanonicalTrust } = await import("../src/renderer/model-sections.js");
+  const route = (providerId: string, providerModelId: string, overrides: Record<string, unknown> = {}) => ({
+    routeId: `${providerId}::${providerModelId}`,
+    canonicalModelId: "openai/gpt-oss-120b",
+    providerId,
+    providerDisplayName: providerId,
+    providerModelId,
+    displayName: "GPT-OSS 120B",
+    freeAccessClass: "FREE_API" as const,
+    authClass: "ASSISTED_KEY" as const,
+    credentialSource: "SECURE_STORAGE" as const,
+    connected: true,
+    verifiedFree: true,
+    toolSupport: true,
+    structuredOutput: true,
+    vision: false,
+    termsStatus: "CLEARED" as const,
+    health: "HEALTHY" as const,
+    qualificationState: "QUALIFIED" as const,
+    roles: ["PRIMARY_CODING_AGENT" as const],
+    admission: { state: "FORGEAUTO_ELIGIBLE" as const, passed: [] },
+    forgeAutoEligible: true,
+    executable: true,
+    deprecated: false,
+    ...overrides,
+  });
+  const model = (canonicalId: string, displayName: string, readiness: "FREE_AVAILABLE" | "FREE_CONNECT_REQUIRED" | "FREE_TEMPORARILY_UNAVAILABLE" | "PAID_BYOK", routes: ReturnType<typeof route>[], extra: Record<string, unknown> = {}) => ({
+    canonicalId,
+    displayName,
+    family: "gpt-oss",
+    lab: "openai",
+    routes: routes.map((r) => ({ ...r, canonicalModelId: canonicalId })),
+    readiness,
+    freeRouteCount: routes.length,
+    healthyFreeRouteCount: routes.filter((r) => r.forgeAutoEligible).length,
+    connectedFreeRouteCount: routes.filter((r) => r.connected).length,
+    capabilities: { toolCalling: true, structuredOutput: true, vision: false, reasoning: false },
+    contextWindow: 131072,
+    qualificationState: "QUALIFIED" as const,
+    roles: ["PRIMARY_CODING_AGENT" as const],
+    recommendedRole: "PRIMARY_CODING_AGENT" as const,
+    category: "Recommended" as const,
+    forgeAutoEligible: routes.some((r) => r.forgeAutoEligible),
+    freeBadge: readiness === "FREE_AVAILABLE" ? `Free · ${routes.length} of ${routes.length} routes` : readiness === "FREE_CONNECT_REQUIRED" ? "Free · Connect" : readiness === "PAID_BYOK" ? "Paid · BYOK" : "Free · Temporarily unavailable",
+    ...extra,
+  });
+  const snapshot = (models: ReturnType<typeof model>[], healthy = 1) => ({
+    generatedAt: "2026-09-12T00:00:00.000Z",
+    summary: { canonicalModels: models.length, verifiedFreeModels: models.length, verifiedFreeRoutes: 3, healthyFreeRoutes: healthy, connectedProviders: 2, coolingDown: 0, primaryCodingModels: 1, paidRoutesExcluded: 0, sameModelMultiProviderModels: 1 },
+    models,
+    providers: [],
+  });
+
+  it("shows one row per canonical model with a route count — never one row per provider", () => {
+    const gpt = model("openai/gpt-oss-120b", "GPT-OSS 120B", "FREE_AVAILABLE", [route("groq", "openai/gpt-oss-120b"), route("cerebras", "gpt-oss-120b"), route("openrouter", "openai/gpt-oss-120b:free")]);
+    const sections = buildCanonicalModelSections(snapshot([gpt]) as never, [], autoModels);
+    const free = sections.find((s) => s.sectionLabel === "FREE CODING")!;
+    expect(free.models).toHaveLength(1);
+    expect(free.models[0]!.id).toBe(`${CANONICAL_PREFIX}openai/gpt-oss-120b`);
+    expect(free.models[0]!.description).toContain("Free · 3 of 3 routes");
+    expect(free.models[0]!.available).toBe(true);
+    expect(sections[0]!.models[0]!.available).toBe(true);
+  });
+
+  it("marks connect-required models unavailable with the connection offer, and no ForgeAuto route when nothing is healthy", () => {
+    const glm = model("zai/glm-4.7-flash", "GLM-4.7 Flash", "FREE_CONNECT_REQUIRED", [route("zai", "glm-4.7-flash", { connected: false, forgeAutoEligible: false, executable: true })], {
+      connectOffer: { providerId: "zai", providerDisplayName: "Z.AI", authClass: "ASSISTED_KEY", label: "Z.AI · provider key required" },
+    });
+    const sections = buildCanonicalModelSections(snapshot([glm], 0) as never, [], autoModels);
+    expect(sections[0]!.models[0]!.available).toBe(false);
+    const item = sections.find((s) => s.sectionLabel === "FREE CODING")!.models[0]!;
+    expect(item.available).toBe(false);
+    expect(item.unavailableReason).toContain("Z.AI · provider key required");
+    expect(item.description).toContain("Free · Connect");
+  });
+
+  it("keeps paid BYOK models out of the free section and fails trust closed for them", () => {
+    const paid = model("openai/gpt-5", "GPT-5", "PAID_BYOK", [route("openai", "gpt-5", { freeAccessClass: "PAID_API", verifiedFree: false, forgeAutoEligible: false })], { category: "Paid" });
+    const sections = buildCanonicalModelSections(snapshot([paid], 0) as never, [], autoModels);
+    expect(sections.find((s) => s.sectionLabel === "FREE CODING")).toBeUndefined();
+    expect(sections.find((s) => s.sectionLabel === "BYOK / PAID")!.models[0]!.description).toBe("Paid · BYOK");
+    expect(resolveCanonicalTrust(paid as never).verifiedFree).toBe(false);
+    const free = model("openai/gpt-oss-120b", "GPT-OSS 120B", "FREE_AVAILABLE", [route("groq", "openai/gpt-oss-120b")]);
+    expect(resolveCanonicalTrust(free as never).verifiedFree).toBe(true);
+  });
+});

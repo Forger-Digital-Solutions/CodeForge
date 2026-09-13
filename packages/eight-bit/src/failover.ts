@@ -18,11 +18,21 @@ export interface FailoverRequest {
   runId?: string;
   agentId?: string;
   current: RouteKey;
+  /** Legacy: true = exact route pin (no automatic replacement). Superseded by `pinMode`. */
   isExactPin: boolean;
+  /**
+   * R1 §124 lock semantics. `auto` (ForgeAuto): model and route may change. `model` (user picked
+   * a canonical model): only same-model alternate routes may replace the failed one. `route`:
+   * never replaced automatically (== isExactPin).
+   */
+  pinMode?: "auto" | "model" | "route";
+  /** Eligible routes serving the same canonical model as `current`, best first. */
+  sameModelAlternates?: RouteKey[];
   policyMode: SelectRouteOptions["policyMode"];
   error: unknown;
   estimatedContextTokens?: number;
   hasAdapter: (providerId: string) => boolean;
+  routeFilter?: (providerId: string, modelId: string) => boolean;
 }
 
 export type FailoverOutcome =
@@ -60,7 +70,8 @@ export class EightBitFailoverCoordinator {
       return { action: "retry_same", reason };
     }
 
-    if (req.isExactPin) {
+    const pinMode = req.pinMode ?? (req.isExactPin ? "route" : "auto");
+    if (pinMode === "route") {
       const receipt = this.buildReceipt(req, "EXACT_PIN_FAILED", [reason, "EXACT_PIN_NOT_AUTO_REPLACED"]);
       await this.store.recordReceipt(receipt);
       return { action: "no_replacement", reason, receipt };
@@ -71,8 +82,37 @@ export class EightBitFailoverCoordinator {
       policyMode: req.policyMode,
       estimatedContextTokens: req.estimatedContextTokens,
       hasAdapter: req.hasAdapter,
+      routeFilter: req.routeFilter,
     };
-    const result = this.router.selectReplacement(options, req.current);
+    const alternates = req.sameModelAlternates ?? [];
+
+    if (pinMode === "model") {
+      // A user-selected model keeps its identity: only a same-model route swap is allowed. With
+      // no alternate route known for this model, the pin behaves exactly like a route pin — the
+      // failure is surfaced, never silently replaced by a different model.
+      if (alternates.length === 0) {
+        const receipt = this.buildReceipt(req, "EXACT_PIN_FAILED", [reason, "EXACT_PIN_NOT_AUTO_REPLACED", "MODEL_PIN_NO_ALTERNATE_ROUTE"]);
+        await this.store.recordReceipt(receipt);
+        return { action: "no_replacement", reason, receipt };
+      }
+      const restricted: SelectRouteOptions = {
+        ...options,
+        routeFilter: (providerId, modelId) =>
+          alternates.some((a) => a.providerId === providerId && a.modelId === modelId) && (req.routeFilter?.(providerId, modelId) ?? true),
+      };
+      const result = this.router.selectReplacement(restricted, req.current, alternates);
+      if (result.outcome === "no_eligible_route") {
+        const receipt = this.buildReceipt(req, "NO_ELIGIBLE_ROUTE", [reason, "MODEL_PIN_NO_ALTERNATE_ROUTE"]);
+        await this.store.recordReceipt(receipt);
+        return { action: "no_replacement", reason, receipt };
+      }
+      const replacement: RouteKey = { providerId: result.model.providerId, modelId: result.model.modelId };
+      const receipt = this.buildReceipt(req, "ROTATE", [reason, "SAME_MODEL_ALTERNATE_ROUTE"], replacement);
+      await this.store.recordReceipt(receipt);
+      return { action: "rotate", reason, replacement, receipt };
+    }
+
+    const result = this.router.selectReplacement(options, req.current, alternates);
 
     if (result.outcome === "no_eligible_route") {
       const receipt = this.buildReceipt(req, "NO_ELIGIBLE_ROUTE", [reason, ...result.reasonCodes]);
@@ -81,7 +121,8 @@ export class EightBitFailoverCoordinator {
     }
 
     const replacement: RouteKey = { providerId: result.model.providerId, modelId: result.model.modelId };
-    const receipt = this.buildReceipt(req, "ROTATE", [reason, "REPLACEMENT_ELIGIBLE"], replacement);
+    const sameModel = alternates.some((a) => a.providerId === replacement.providerId && a.modelId === replacement.modelId);
+    const receipt = this.buildReceipt(req, "ROTATE", [reason, sameModel ? "SAME_MODEL_ALTERNATE_ROUTE" : "CROSS_MODEL_REPLACEMENT", "REPLACEMENT_ELIGIBLE"], replacement);
     await this.store.recordReceipt(receipt);
     return { action: "rotate", reason, replacement, receipt };
   }
@@ -102,7 +143,7 @@ export class EightBitFailoverCoordinator {
       workstreamId: req.workstreamId,
       role: req.role,
       action,
-      policyMode: req.isExactPin ? "exact-pin" : "adaptive",
+      policyMode: (req.pinMode ?? (req.isExactPin ? "route" : "auto")) === "route" ? "exact-pin" : "adaptive",
       previous: req.current,
       selected,
       reasonCodes,

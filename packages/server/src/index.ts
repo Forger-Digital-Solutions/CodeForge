@@ -19,6 +19,8 @@ import {
   PAID_CATALOG,
 } from "@codeforge/forge-zero";
 import type { FreeModelRecord } from "@codeforge/forge-zero";
+import type { FreeCloudService } from "@codeforge/model-registry";
+import { SqliteQualificationPersistence } from "@codeforge/eight-bit";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/providers";
@@ -100,6 +102,12 @@ export interface ServerOptions {
   controlPlaneToken?: string;
   /** Agent working budget per workflow implementation/repair turn (ms); tests use small values. */
   agentWorkingBudgetMs?: number;
+  /**
+   * R1: the 8-Bit Free Cloud Service (owned by the trusted host process). When supplied, ForgeAuto
+   * routes only through admitted routes, `/api/free-cloud/*` exposes the canonical registry, and
+   * qualification receipts persist in this server's session database.
+   */
+  freeCloud?: FreeCloudService;
 }
 
 /** Minimal desktop-facing shutdown facts. Counts only; task payloads and secrets stay in the runtime. */
@@ -126,6 +134,7 @@ export class CodeForgeServer {
   private persistence: ReturnType<typeof createSessionPersistence>;
   private firewall: ForgeZero;
   private providerCatalog: ProviderCatalog;
+  private readonly freeCloud?: FreeCloudService;
   private runtimes: Map<string, AgentRuntime> = new Map();
   private useRealRuntime: boolean;
   private activeWorkspacePath: string | null = null;
@@ -175,6 +184,7 @@ export class CodeForgeServer {
       entitlementProvider: createDevelopmentEntitlementProvider(),
     });
     this.providerCatalog = options.providerCatalog ?? new InMemoryProviderCatalog();
+    this.freeCloud = options.freeCloud;
     this.useRealRuntime = options.useRealRuntime ?? process.env.CODEFORGE_REAL_RUNTIME === "true";
 
     // Validate that API keys are available if real runtime is requested
@@ -402,6 +412,12 @@ export class CodeForgeServer {
 
   async start(): Promise<void> {
     await this.init();
+    if (this.freeCloud) {
+      // Qualification receipts live next to sessions so a restart never re-spends free quota
+      // re-qualifying routes it already tested.
+      this.freeCloud.attachQualificationStore(new SqliteQualificationPersistence(this.persistence));
+      await this.freeCloud.loadQualification().catch(() => 0);
+    }
     this.server = http.createServer((req, res) => this.handleRequest(req, res));
     const server = this.server;
     // A bind failure (EADDRINUSE when another CodeForge already owns the port, EACCES on a
@@ -625,6 +641,21 @@ export class CodeForgeServer {
 
     if (url.pathname === "/api/free/top" && req.method === "GET") {
       this.handleTopFree(res);
+      return;
+    }
+
+    if (url.pathname === "/api/free-cloud/registry" && req.method === "GET") {
+      this.handleFreeCloudRegistry(res);
+      return;
+    }
+
+    if (url.pathname === "/api/free-cloud/candidates" && req.method === "GET") {
+      this.handleFreeCloudCandidates(res);
+      return;
+    }
+
+    if (url.pathname === "/api/free-cloud/qualify" && req.method === "POST") {
+      void this.handleFreeCloudQualify(res);
       return;
     }
 
@@ -1987,6 +2018,7 @@ export class CodeForgeServer {
         userIntentHold: this.userIntentHold,
         forgeGreenCacheStore: this.forgeGreenCacheStore,
         afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
+        freeCloud: this.freeCloud,
       });
       this.runtimes.set(sessionId, runtime);
     } else {
@@ -2029,6 +2061,28 @@ export class CodeForgeServer {
           return;
         }
 
+        // R1: a canonical-model selection ("openai/gpt-oss-120b") resolves to its best executable
+        // route now; ForgeAuto may later swap to another route of the SAME model (lock: "model").
+        if (typeof data.canonicalModelId === "string" && data.canonicalModelId && this.freeCloud) {
+          const routes = this.freeCloud.executableRoutesFor(data.canonicalModelId);
+          const primary = routes[0];
+          if (!primary) {
+            respond(409, {
+              error: "MODEL_NOT_CONNECTED",
+              message: `No executable route for ${data.canonicalModelId}`,
+              canonicalModelId: data.canonicalModelId,
+            });
+            return;
+          }
+          const lock = data.lock === "route" ? "route" : "model";
+          runtime.setModelSelection({ providerId: primary.providerId, modelId: primary.providerModelId, canonicalModelId: data.canonicalModelId, lock });
+          respond(200, {
+            ok: true,
+            selection: { providerId: primary.providerId, modelId: primary.providerModelId, canonicalModelId: data.canonicalModelId, lock, tier: "free", routes: routes.length },
+          });
+          return;
+        }
+
         if (typeof modelId !== "string" || typeof data.providerId !== "string") {
           respond(400, {
             error: "MODEL_SELECTION_INVALID",
@@ -2048,10 +2102,16 @@ export class CodeForgeServer {
           return;
         }
 
-        runtime.setModelSelection({ providerId: data.providerId, modelId });
+        const lock = data.lock === "route" ? "route" : "model";
+        runtime.setModelSelection({
+          providerId: data.providerId,
+          modelId,
+          canonicalModelId: this.freeCloud?.canonicalIdOf(data.providerId, modelId),
+          lock,
+        });
         respond(200, {
           ok: true,
-          selection: { providerId: data.providerId, modelId, tier: model.tier ?? "free" },
+          selection: { providerId: data.providerId, modelId, tier: model.tier ?? "free", lock },
         });
       } catch {
         res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
@@ -2087,9 +2147,71 @@ export class CodeForgeServer {
         paidFallbackPossible: m.costProfile.paidFallbackPossible,
       } : undefined,
       isPromotional: m.costProfile?.source === "opencode:free",
+      // R1: canonical identity + 8-Bit admission state so the picker can dedupe provider routes.
+      canonicalId: this.freeCloud?.canonicalIdOf(m.providerId, m.modelId),
+      forgeAutoEligible: this.freeCloud ? this.freeCloud.isForgeAutoEligible(m.providerId, m.modelId) : undefined,
     }));
     res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
     res.end(JSON.stringify(models));
+  }
+
+  /**
+   * R1: the 8-Bit Free Cloud Registry — canonical models, their provider routes, admission
+   * pipeline state and summary counts. Secrets never appear here (connection state carries
+   * variable NAMES only).
+   */
+  private handleFreeCloudRegistry(res: http.ServerResponse): void {
+    if (!this.freeCloud) {
+      res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "FREE_CLOUD_UNAVAILABLE" }));
+      return;
+    }
+    const snapshot = this.freeCloud.snapshot();
+    // Compact qualification evidence per route (case ids + pass/fail + error class; never prompts).
+    const receipts: Record<string, { state: string; suite: string; completedAt: string; cases: Array<{ id: string; passed: boolean; error?: string }> }> = {};
+    for (const m of snapshot.models) {
+      for (const r of m.routes) {
+        const receipt = this.freeCloud.getReceipt(r.providerId, r.providerModelId);
+        if (!receipt) continue;
+        receipts[r.routeId] = {
+          state: receipt.qualificationState,
+          suite: receipt.suiteVersion,
+          completedAt: receipt.completedAt,
+          cases: Object.values(receipt.roleResults).flatMap((role) => role.testCases).filter((c, i, arr) => arr.findIndex((x) => x.caseId === c.caseId) === i).map((c) => ({ id: c.caseId, passed: c.passed, error: c.error })),
+        };
+      }
+    }
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify({ ...snapshot, qualifying: this.freeCloud.isQualifying(), pendingQualification: this.freeCloud.pendingQualification().length, receipts }));
+  }
+
+  private handleFreeCloudCandidates(res: http.ServerResponse): void {
+    if (!this.freeCloud) {
+      res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "FREE_CLOUD_UNAVAILABLE" }));
+      return;
+    }
+    const candidates = this.freeCloud.candidates().map((c) => ({
+      canonicalId: c.canonicalModel.canonicalId,
+      displayName: c.canonicalModel.displayName,
+      recommendedRole: c.recommendedRole,
+      healthyRoutes: c.healthyRoutes.map((r) => ({ providerId: r.providerId, modelId: r.providerModelId, health: r.health, quota: r.quota })),
+      reason: c.reason,
+    }));
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify(candidates));
+  }
+
+  /** Trigger a bounded 8-Bit qualification cycle (Settings "Qualify now" / desktop after connect). */
+  private async handleFreeCloudQualify(res: http.ServerResponse): Promise<void> {
+    if (!this.freeCloud) {
+      res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "FREE_CLOUD_UNAVAILABLE" }));
+      return;
+    }
+    const receipts = await this.freeCloud.qualifyPending();
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify({ qualified: receipts.map((r) => ({ providerId: r.providerId, modelId: r.modelId, state: r.qualificationState })), pending: this.freeCloud.pendingQualification().length }));
   }
 
   /**

@@ -20,9 +20,15 @@ const AUTH_FAILURE_PERMANENT_SUSPEND_THRESHOLD = 3;
  */
 export function classifyFailure(error: unknown): FailureReason {
   const msg = (error instanceof Error ? error.message : String(error)).toLowerCase();
+  const status = typeof (error as { status?: unknown })?.status === "number" ? (error as { status: number }).status : undefined;
+  const code = typeof (error as { code?: unknown })?.code === "string" ? (error as { code: string }).code : undefined;
+  if (status === 402 || code === "PAYMENT_REQUIRED" || /\b402\b|payment required|insufficient (credits|balance)|upgrade (your|to a) (plan|paid)|requires (a )?paid plan|workers paid/.test(msg)) return "PAID_PLAN_REQUIRED";
+  if (/free tier (is )?not available|not on the free (tier|plan)|free plan (has )?ended/.test(msg)) return "FREE_TIER_NOT_AVAILABLE";
   if (/\b401\b|invalid api key|unauthor|auth ?error|missing_api_key/.test(msg)) return "AUTH_FAILURE";
   if (/\b429\b|rate.?limit/.test(msg)) return "RATE_LIMITED";
-  if (/quota|insufficient_quota|credits? exhausted/.test(msg)) return "QUOTA_EXHAUSTED";
+  if (/quota|insufficient_quota|credits? exhausted|neurons/.test(msg)) return "QUOTA_EXHAUSTED";
+  if (/content_filter|blocked by (the )?(provider|policy)|harmful content|safety (system|filter|policy)/.test(msg)) return "SAFETY_REJECTION";
+  if (/\b503\b|overloaded|at capacity|capacity exceeded|temporarily unavailable|no available (provider|capacity)/.test(msg)) return "TEMPORARY_CAPACITY";
   if (/\b404\b|model_not_found|model not found|unknown model/.test(msg)) return "MODEL_NOT_FOUND";
   if (/deprecated|retired|no longer (available|supported)/.test(msg)) return "MODEL_RETIRED";
   if (/context.?length|context.?limit|too many tokens|maximum context/.test(msg)) return "CONTEXT_LIMIT";
@@ -31,6 +37,7 @@ export function classifyFailure(error: unknown): FailureReason {
   if (/econnreset|econnrefused|enotfound|network|fetch failed/.test(msg)) return "TRANSIENT_NETWORK";
   if (/invalid.*tool.*(call|output)|malformed.*tool/.test(msg)) return "INVALID_TOOL_OUTPUT";
   if (/structured output|schema validation failed|json parse/.test(msg)) return "STRUCTURED_OUTPUT_FAILURE";
+  if (status === 400 || /\b400\b|bad request|invalid_request_error|unsupported parameter/.test(msg)) return "BAD_REQUEST";
   return "UNKNOWN";
 }
 
@@ -56,8 +63,12 @@ function cooldownMsFor(reason: FailureReason, consecutiveFailures: number): numb
   if (reason === "RATE_LIMITED" || reason === "QUOTA_EXHAUSTED") {
     return Math.min(MAX_COOLDOWN_MS, BASE_COOLDOWN_MS * 2 ** Math.min(5, consecutiveFailures - 1));
   }
-  if (reason === "AUTH_FAILURE" || reason === "PROVIDER_OUTAGE") {
+  if (reason === "AUTH_FAILURE" || reason === "PROVIDER_OUTAGE" || reason === "TEMPORARY_CAPACITY") {
     return Math.min(MAX_COOLDOWN_MS, BASE_COOLDOWN_MS * 2 ** Math.min(4, consecutiveFailures - 1));
+  }
+  if (reason === "PAID_PLAN_REQUIRED" || reason === "FREE_TIER_NOT_AVAILABLE") {
+    // Not a transient condition: keep the route out until the next free-status refresh.
+    return MAX_COOLDOWN_MS;
   }
   return 0;
 }
@@ -73,7 +84,11 @@ function statusFor(reason: FailureReason, consecutiveFailures: number): EightBit
     case "MODEL_NOT_FOUND":
     case "MODEL_RETIRED":
     case "FREE_ELIGIBILITY_REMOVED":
+    case "PAID_PLAN_REQUIRED":
+    case "FREE_TIER_NOT_AVAILABLE":
       return "UNAVAILABLE";
+    case "TEMPORARY_CAPACITY":
+      return "DEGRADED";
     case "PROVIDER_OUTAGE":
       return consecutiveFailures >= SUSTAINED_FAILURE_THRESHOLD ? "UNAVAILABLE" : "DEGRADED";
     case "TRANSIENT_NETWORK":

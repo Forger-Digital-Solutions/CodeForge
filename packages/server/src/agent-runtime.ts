@@ -57,7 +57,8 @@ import {
   type NormalizedIdentity,
 } from "@codeforge/forge-green";
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
-import { createEightBitRuntime, renderHandoffMessage, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt } from "@codeforge/eight-bit";
+import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt } from "@codeforge/eight-bit";
+import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
 import {
@@ -292,6 +293,12 @@ export interface AgentRuntimeOptions {
    * valid; defaults to a real instance backed by the same firewall + persistence. */
   eightBit?: EightBitRuntime;
   hostedWorker?: HostedWorkerOptions;
+  /**
+   * R1: 8-Bit Free Cloud Registry routing hooks. When present, ForgeAuto only routes to
+   * FORGEAUTO_ELIGIBLE routes (verified free + qualified + healthy), failover prefers same-model
+   * alternate routes, and route outcomes feed the shared (cross-session) health/quota view.
+   */
+  freeCloud?: FreeCloudRoutingHooks;
 }
 
 function toWorkerActionType(toolName: string): DesktopWorkerActionType {
@@ -306,6 +313,10 @@ function toWorkerActionType(toolName: string): DesktopWorkerActionType {
 export interface ModelSelection {
   providerId: string;
   modelId: string;
+  /** R1: canonical model id when the user picked a model rather than a route. */
+  canonicalModelId?: string;
+  /** R1 §124: `model` = same-model route failover allowed (default); `route` = exact route pin. */
+  lock?: "model" | "route";
 }
 
 /** Sentinel returned by parseToolArgs when arguments are genuinely un-parseable. */
@@ -380,6 +391,7 @@ export class AgentRuntime {
   private readonly recoveryOriginalStatusByTurn = new Map<string, Exclude<TurnStatus, "idle" | "completed" | "failed" | "cancelled">>();
   private readonly forgeGreenCacheStore?: ForgeGreenCacheStore;
   private readonly eightBit: EightBitRuntime;
+  private readonly freeCloud?: FreeCloudRoutingHooks;
   /**
    * "Allow for Session" grants, keyed by `${action}@${risk}` (e.g. `write@moderate`). Held in
    * memory for this session's runtime only — a grant never outlives the process and is never
@@ -411,6 +423,7 @@ export class AgentRuntime {
     }));
     this.approvalService = new ApprovalService({ defaultTimeoutMs: DEFAULT_APPROVAL_TIMEOUT_MS });
     this.eightBit = options.eightBit ?? createEightBitRuntime({ firewall: this.firewall, persistence: this.persistence });
+    this.freeCloud = options.freeCloud;
     this.hostedWorker = options.hostedWorker;
   }
 
@@ -464,7 +477,12 @@ export class AgentRuntime {
   }
 
   setModelSelection(selection: ModelSelection): void {
-    this.modelSelection = { providerId: selection.providerId, modelId: selection.modelId };
+    this.modelSelection = {
+      providerId: selection.providerId,
+      modelId: selection.modelId,
+      canonicalModelId: selection.canonicalModelId,
+      lock: selection.lock ?? "model",
+    };
   }
 
   clearModelSelection(): void {
@@ -2104,8 +2122,13 @@ export class AgentRuntime {
     // 8-Bit health cooldown (a hard exclusion ForgeZero's own ranking-only health penalty does
     // not provide — this is what makes restart recovery never re-pick a route just rotated
     // away from).
+    // R1: when the 8-Bit Free Cloud Registry is wired, ForgeAuto/Free only routes to routes that
+    // passed the full admission pipeline (terms → connected → verified free → tool capable →
+    // CodeForge-qualified → healthy). A catalog entry alone is never enough (§10-§12).
+    const admitted = (providerId: string, modelId: string): boolean =>
+      !this.freeCloud || this.freeCloud.isForgeAutoEligible(providerId, modelId);
     const best = ranked.find(
-      (r) => this.providerCatalog.get(r.model.providerId) && !this.eightBit.health.isInCooldown(r.model.providerId, r.model.modelId),
+      (r) => this.providerCatalog.get(r.model.providerId) && !this.eightBit.health.isInCooldown(r.model.providerId, r.model.modelId) && admitted(r.model.providerId, r.model.modelId),
     );
     if (best) return best.model;
     // Fallback: any eligible tool-capable model with a registered provider, same cooldown
@@ -2114,14 +2137,43 @@ export class AgentRuntime {
     const eligible = this.firewall.eligibleModels();
     return (
       eligible.find(
-        (m) => m.capabilities.toolCalling && this.providerCatalog.get(m.providerId) && !this.eightBit.health.isInCooldown(m.providerId, m.modelId),
+        (m) => m.capabilities.toolCalling && this.providerCatalog.get(m.providerId) && !this.eightBit.health.isInCooldown(m.providerId, m.modelId) && admitted(m.providerId, m.modelId),
       ) ?? null
     );
+  }
+
+  /**
+   * R1: resolve a canonical-model selection to the best executable route right now. The user
+   * chose WHAT (the model); ForgeAuto chooses WHERE (the route) — preferring ForgeAuto-eligible
+   * routes, then the route the selection was made with.
+   */
+  private resolveCanonicalSelection(selection: ModelSelection): FreeModelRecord | null {
+    if (!selection.canonicalModelId || !this.freeCloud) return null;
+    const candidates = [
+      ...this.freeCloud.sameModelAlternates(selection.providerId, selection.modelId),
+      { providerId: selection.providerId, modelId: selection.modelId },
+    ];
+    const ordered = this.freeCloud.isForgeAutoEligible(selection.providerId, selection.modelId)
+      ? [{ providerId: selection.providerId, modelId: selection.modelId }, ...candidates]
+      : candidates;
+    for (const route of ordered) {
+      if (!this.providerCatalog.get(route.providerId)) continue;
+      if (this.eightBit.health.isInCooldown(route.providerId, route.modelId)) continue;
+      const rec = this.firewall.getModel(route.providerId, route.modelId);
+      if (!rec || !rec.capabilities.toolCalling) continue;
+      if (!this.firewall.verify(route.providerId, route.modelId).ok) continue;
+      return rec;
+    }
+    return null;
   }
 
   private resolveTurnModel(): FreeModelRecord | null {
     if (this.modelSelection) {
       const { providerId, modelId } = this.modelSelection;
+      if (this.modelSelection.lock !== "route") {
+        const viaCanonical = this.resolveCanonicalSelection(this.modelSelection);
+        if (viaCanonical) return viaCanonical;
+      }
       if (providerId && modelId) {
         const requested = this.firewall.getModel(providerId, modelId);
         if (requested) {
@@ -2369,6 +2421,15 @@ export class AgentRuntime {
       const handled = await this.attemptEightBitFailover(turnId, agentId, request, adapter, signal, iteration, duplicateSupervisor, error);
       if (handled) return { kind: "completed" };
       throw error;
+    }
+
+    // A completed model call is live evidence the route is healthy (shared 8-Bit view).
+    {
+      const okState = this.activeTurns.get(turnId);
+      if (okState?.providerId && okState.modelId) {
+        this.eightBit.recordSuccess(okState.providerId, okState.modelId);
+        this.freeCloud?.recordRouteSuccess(okState.providerId, okState.modelId);
+      }
     }
 
     // Close the assistant message segment: persist the final user-facing text so the
@@ -2766,7 +2827,10 @@ export class AgentRuntime {
     const state = this.activeTurns.get(turnId);
     if (!state || !state.providerId || !state.modelId) return false;
     const role: EightBitRole = "CODER";
-    const isExactPin = !!this.modelSelection;
+    // R1 §124: a picked model allows same-model route failover; only an explicit route lock pins.
+    const pinMode: "auto" | "model" | "route" = !this.modelSelection ? "auto" : this.modelSelection.lock === "route" ? "route" : "model";
+    const isExactPin = pinMode === "route";
+    const sameModelAlternates = this.freeCloud?.sameModelAlternates(state.providerId, state.modelId) ?? [];
 
     // FG-3E: use the failing route's own catalog-declared context window as the failover
     // ranking's context estimate when known, instead of a hardcoded guess — never fabricated
@@ -2782,11 +2846,22 @@ export class AgentRuntime {
       agentId,
       current: { providerId: state.providerId, modelId: state.modelId },
       isExactPin,
+      pinMode,
+      sameModelAlternates,
       policyMode: "adaptive",
       error,
       estimatedContextTokens,
       hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
+      routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
     });
+
+    // Shared (cross-session) 8-Bit health: the registry and Settings see the same cooldown the
+    // turn just observed, so a rate-limited route is not re-picked by the next session either.
+    if (outcome.action !== "retry_same" && outcome.action !== "surface") {
+      const retryAfter = (error as { retryAfter?: unknown })?.retryAfter;
+      const retryAfterMs = typeof retryAfter === "number" ? Math.max(0, retryAfter - Date.now()) : undefined;
+      this.freeCloud?.recordRouteFailure(state.providerId, state.modelId, outcome.reason, retryAfterMs);
+    }
 
     if (outcome.action === "retry_same") {
       // Bounded retry against the SAME route — does not consume the iteration/tool budget.
@@ -2810,11 +2885,12 @@ export class AgentRuntime {
     const newProvider = this.providerCatalog.get(outcome.replacement.providerId);
     if (!newProvider) return false;
 
+    const sameModel = outcome.receipt.reasonCodes.includes("SAME_MODEL_ALTERNATE_ROUTE");
     adapter.emitEightBitStatus(
       "ROUTE_ROTATION_STARTED",
       role,
       outcome.receipt.reasonCodes,
-      `8-Bit is switching the CODER route away from ${state.providerId}/${state.modelId} (${outcome.reason}).`,
+      `${FAILURE_USER_MESSAGE[outcome.reason]} ${sameModel ? "Same model, different provider." : "Switching to a compatible free model."}`,
       { providerId: state.providerId, modelId: state.modelId },
       outcome.replacement,
     );

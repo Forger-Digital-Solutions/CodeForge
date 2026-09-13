@@ -4,10 +4,12 @@ import {
   verifyAllowanceViaProbe,
   getProviderPolicy,
   PROVIDER_POLICIES,
+  PROVIDER_DEFINITIONS,
   type LiveModelInfo,
 } from "@codeforge/model-registry";
 import {
   createProviderAdapterById,
+  createProviderAdapterFromDefinition,
   type ProviderAdapter,
   type CredentialStore,
 } from "@codeforge/providers";
@@ -155,11 +157,15 @@ export class CloudProviderRegistry {
     this.timeoutMs = options.timeoutMs ?? 30_000;
     this.adapterFactory =
       options.adapterFactory ??
-      ((providerId: string) =>
-        createProviderAdapterById(providerId, {
-          credentialStore: this.credentialStore,
-          timeoutMs: this.timeoutMs,
-        }));
+      ((providerId: string) => {
+        // R1: every implemented provider definition (Cerebras, SambaNova, Mistral, …) gets a real
+        // adapter; the legacy id switch remains the fallback for the original set.
+        const def = PROVIDER_DEFINITIONS[providerId];
+        const fromDefinition = def?.implemented
+          ? createProviderAdapterFromDefinition(def, { credentialStore: this.credentialStore, timeoutMs: this.timeoutMs })
+          : undefined;
+        return fromDefinition ?? createProviderAdapterById(providerId, { credentialStore: this.credentialStore, timeoutMs: this.timeoutMs });
+      });
   }
 
   /** Provider capacity reports from the most recent discovery, newest snapshot per provider. */

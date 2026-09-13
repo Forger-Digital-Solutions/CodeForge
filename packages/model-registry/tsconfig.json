@@ -10,6 +10,9 @@
   "references": [
     { "path": "../core" },
     { "path": "../protocol" },
-    { "path": "../forge-zero" }
+    { "path": "../forge-zero" },
+    { "path": "../providers" },
+    { "path": "../eight-bit" },
+    { "path": "../sessions" }
   ]
 }
