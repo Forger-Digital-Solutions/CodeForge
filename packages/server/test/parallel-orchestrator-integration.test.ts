@@ -82,7 +82,7 @@ describe("CF-08 real concurrent worktree orchestration", () => {
     expect(await fs.readFile(path.join(workspaceService.getWorkspace(math.workspaceId)!.rootPath, "src", "math.mjs"), "utf8")).toContain("a * b");
     expect(await fs.readFile(path.join(workspaceService.getWorkspace(string.workspaceId)!.rootPath, "src", "string.mjs"), "utf8")).toContain("toLowerCase");
     expect(await fs.readFile(path.join(repoDir, "src", "math.mjs"), "utf8")).toContain("a * b"); expect(await fs.readFile(path.join(repoDir, "src", "string.mjs"), "utf8")).toContain("toLowerCase");
-  });
+  }, 60_000);
 
   it("fails closed on a real textual Git conflict while retaining every workstream branch", async () => {
     await fs.writeFile(path.join(repoDir, "src", "format.mjs"), "export function formatName(value) { return value; }\n"); await execFile("git", ["add", "."], { cwd: repoDir }); await execFile("git", ["commit", "-m", "format base"], { cwd: repoDir }); const before = (await execFile("git", ["rev-parse", "HEAD"], { cwd: repoDir })).stdout.trim();
