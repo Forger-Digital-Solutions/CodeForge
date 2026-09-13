@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "status": "IN_PROGRESS",
+  "allowanceCadence": "monthly_utc_calendar",
+  "fixtureCertification": {
+    "idp": "development-only loopback double",
+    "provider": "devpool scripted fixture",
+    "mayCertify": ["auth", "entitlement", "usage", "gateway", "failover mechanics"],
+    "mayNotCertify": ["real managed-free capacity", "provider terms", "real model qualification"]
+  },
+  "realManagedFreeProvider": {
+    "status": "UNRESOLVED",
+    "blockerCode": "REAL_MANAGED_FREE_PROVIDER_CAPACITY_BLOCKED"
+  }
+}
