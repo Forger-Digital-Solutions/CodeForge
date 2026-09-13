@@ -30,11 +30,11 @@ Expected smoke probes logged an invalid sender and a blocked `about:blank` CORS 
 
 Actual R3 package screenshots are in `apps/desktop/release/r3-ui-evidence/`. The final reviewed task capture is `03-workflow-completed.png`; it shows the terminal state reconciled in header, workflow, and sidebar.
 
-The unpacked executable built for that smoke is `apps/desktop/release/win-unpacked/CodeForge.exe`:
+At the time of the passing smoke, the unpacked executable hash was:
 
 `SHA256 1CF79CA802024AB9D8143A4CF1AAB86B4B5ECA5ECBAD0D3CBC50157E202AFF02`
 
-Existing portable/setup executables have hashes recorded in the accompanying JSON but were not rebuilt by the R3 `--dir` package command; they must not be represented as final-R3 installers.
+The subsequent requested `npm run dist` wrapper stopped before its child build output; a direct installer-package attempt then left the output directory incomplete. The current release directory therefore must not be used as a final artifact. Existing portable/setup executables predate this R3 package attempt and are not represented as final-R3 installers.
 
 ## External and remaining gates
 

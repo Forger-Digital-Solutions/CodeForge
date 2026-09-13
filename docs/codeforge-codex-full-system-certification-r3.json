@@ -18,15 +18,17 @@
     "reviewed": ["01-authenticated-zero-state.png", "03-workflow-completed.png"],
     "manifestComplete": false
   },
-  "artifact": {
+  "smokedArtifact": {
     "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
     "sha256": "1CF79CA802024AB9D8143A4CF1AAB86B4B5ECA5ECBAD0D3CBC50157E202AFF02",
-    "packagingMode": "unpacked directory"
+    "packagingMode": "unpacked directory at time of passing smoke",
+    "currentlyAvailable": false
   },
   "blockers": [
     "No fresh legitimate free-provider live autonomous-run receipt.",
     "No real route-to-route free failover receipt.",
     "Required 20-state packaged screenshot manifest is incomplete.",
-    "Full-suite aggregate total was not available from the host output; no total is asserted."
+    "Full-suite aggregate total was not available from the host output; no total is asserted.",
+    "The requested installer build did not complete and must be rerun successfully before distributing artifacts."
   ]
 }
