@@ -450,6 +450,16 @@ export default function WorkspaceApp({
     ? { code: startFailureEvent.payload.code, message: startFailureEvent.payload.message }
     : undefined;
   const forgeWorkActive = isForgeWorkActive(state);
+  // Terminal task events arrive before the next session-list persistence poll. Keep the selected
+  // row truthful during that short interval instead of leaving it labelled "Verifying" after the
+  // main task surface has already reported completion.
+  const activeSessionTerminalStatus = state.activePhase === "complete" || state.activePhase === "completed"
+    ? "completed"
+    : state.activePhase === "failed_safely" || state.activePhase === "failed"
+      ? "failed"
+      : state.activePhase === "cancelled"
+        ? "cancelled"
+        : undefined;
   const repairFailure = () => {
     handleSend("Review the failure, fix the underlying issue, and rerun the relevant verification.");
     dismissWorkflowError();
@@ -462,6 +472,7 @@ export default function WorkspaceApp({
           <Navigation
             sessions={sessions}
             activeSessionId={state.session?.id ?? null}
+            activeSessionStatus={activeSessionTerminalStatus}
             onSelectSession={(id) => selectSession(id)}
             onNewTask={startNewSession}
             projectName={projectName}

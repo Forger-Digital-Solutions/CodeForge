@@ -19,6 +19,16 @@ export function dedupeSessionSummaries<T extends NavSessionSummary>(sessions: T[
   return [...unique.values()];
 }
 
+/** Apply a just-observed terminal outcome before the next persisted-session refresh arrives. */
+export function overlayActiveSessionStatus<T extends NavSessionSummary>(
+  sessions: T[],
+  activeSessionId: string | null,
+  activeSessionStatus?: string,
+): T[] {
+  if (!activeSessionId || !activeSessionStatus) return sessions;
+  return sessions.map((session) => session.id === activeSessionId ? { ...session, status: activeSessionStatus } : session);
+}
+
 /** Internal bootstrap prompts must never leak into task history. */
 export function displaySessionTitle(session: NavSessionSummary): string {
   const title = (session.taskTitle || session.title || "").replace(/\s+/g, " ").trim();
@@ -92,6 +102,8 @@ export function groupSessionByAge(value: string | undefined, now = Date.now()): 
 interface NavigationProps {
   sessions: NavSessionSummary[];
   activeSessionId: string | null;
+  /** Terminal SSE state takes precedence over a briefly stale persisted session summary. */
+  activeSessionStatus?: string;
   onSelectSession: (id: string) => void;
   onNewTask: () => void;
   projectName?: string;
@@ -260,6 +272,7 @@ function getSessionStatusIcon(status?: string): string {
 export default function Navigation({
   sessions,
   activeSessionId,
+  activeSessionStatus,
   onSelectSession,
   onNewTask,
   projectName,
@@ -278,13 +291,13 @@ export default function Navigation({
     const groups: Record<SessionGroupLabel, NavSessionSummary[]> = {
       Today: [], Yesterday: [], "Previous 7 Days": [], Older: [],
     };
-    for (const session of [...sessions].sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""))) {
+    for (const session of [...overlayActiveSessionStatus(sessions, activeSessionId, activeSessionStatus)].sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""))) {
       const label = displaySessionTitle(session);
       if (normalized && !`${label} ${session.status ?? ""}`.toLocaleLowerCase().includes(normalized)) continue;
       groups[groupSessionByAge(session.updatedAt)].push(session);
     }
     return groups;
-  }, [query, sessions]);
+  }, [query, sessions, activeSessionId, activeSessionStatus]);
 
   useEffect(() => {
     if (searchOpen) searchRef.current?.focus();

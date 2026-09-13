@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dedupeSessionSummaries, displaySessionTitle, formatRelativeSessionTime, humanizeSessionStatus } from "../src/Navigation.js";
+import { dedupeSessionSummaries, displaySessionTitle, formatRelativeSessionTime, humanizeSessionStatus, overlayActiveSessionStatus } from "../src/Navigation.js";
 
 describe("formatRelativeSessionTime", () => {
   const now = Date.UTC(2026, 8, 9, 18, 0, 0);
@@ -26,6 +26,14 @@ describe("humanizeSessionStatus (R9 truthful status labels)", () => {
 });
 
 describe("task-history identity", () => {
+  it("shows the selected task's terminal outcome before a stale session refresh catches up", () => {
+    const summaries = overlayActiveSessionStatus([
+      { id: "task-1", title: "Run", status: "verifying" },
+      { id: "task-2", title: "Other", status: "idle" },
+    ], "task-1", "completed");
+    expect(summaries.map((session) => session.status)).toEqual(["completed", "idle"]);
+  });
+
   it("keeps one row for a session even if the server repeats it during recovery", () => {
     const sessions = dedupeSessionSummaries([
       { id: "task-1", title: "Earlier", updatedAt: "2026-09-09T10:00:00Z" },
