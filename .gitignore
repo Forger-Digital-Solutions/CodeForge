@@ -19,5 +19,6 @@ coverage/
 !.vscode/settings.json
 .zcode/
 .claude/
+.dev-cert/
 *.bak
 packages/vscode/.vscode-test/

@@ -8,7 +8,7 @@ import crypto from "node:crypto";
  * github.com's four OAuth/profile endpoints so the entire CodeForge-side flow — desktop PKCE,
  * cloud transaction store, token exchange, profile fetch, JWT minting, entitlement, ledger — runs
  * as real production code. It never touches github.com, never sees real credentials, and mints
- * tokens for exactly the fixed certification identity below.
+ * tokens for exactly the two fixed certification identities below.
  *
  * NOT for production use. The cloud-api refuses insecure endpoint overrides outside development.
  */
@@ -16,16 +16,41 @@ import crypto from "node:crypto";
 const PORT = Number(process.env.DEV_IDP_PORT ?? 3340);
 const HOST = "127.0.0.1";
 
-const CERT_USER = {
-  id: 867_530,
-  login: "cert-user",
-  name: "Certification User",
-  avatar_url: "https://avatars.githubusercontent.com/u/0?v=4",
-  email: null,
+const CERT_USERS = {
+  "cert-user-a": {
+    id: 867_530,
+    login: "cert-user-a",
+    name: "Certification User A",
+    avatar_url: "https://avatars.githubusercontent.com/u/0?v=4",
+    email: null,
+  },
+  "cert-user-b": {
+    id: 867_531,
+    login: "cert-user-b",
+    name: "Certification User B",
+    avatar_url: "https://avatars.githubusercontent.com/u/1?v=4",
+    email: null,
+  },
 };
 
-/** code -> { codeChallenge, redirectUri, clientId, exchanged } */
+/** code -> { codeChallenge, redirectUri, clientId, identity, exchanged } */
 const issuedCodes = new Map();
+
+function certificationIdentity(identity) {
+  return CERT_USERS[identity] ?? null;
+}
+
+function approvalUrl(params, identity) {
+  const url = new URL("/approve", `http://${HOST}:${PORT}`);
+  for (const [key, value] of params.entries()) url.searchParams.set(key, value);
+  url.searchParams.set("identity", identity);
+  return url.pathname + url.search;
+}
+
+function identityForBearer(req) {
+  const token = req.headers.authorization?.match(/^Bearer devidp_(.+)$/)?.[1];
+  return token ? certificationIdentity(issuedCodes.get(token)?.identity) : null;
+}
 
 const APPROVE_PAGE = (params) => `<!doctype html>
 <html><head><meta charset="utf-8"><title>Dev IdP — Authorize CodeForge</title>
@@ -37,12 +62,9 @@ code{color:#38bdf8}</style></head>
 <h2>Development identity provider</h2>
 <p>This local server doubles GitHub's OAuth endpoints for the CodeForge certification rig.</p>
 <p>Application: <code>${params.get("client_id") ?? "?"}</code><br/>
-Identity: <code>${CERT_USER.login}</code> (id ${CERT_USER.id})<br/>
 Scope: <code>${params.get("scope") ?? "?"}</code></p>
-<form method="get" action="/approve">
-${[...params.entries()].map(([k, v]) => `<input type="hidden" name="${k}" value="${v}"/>`).join("\n")}
-<button type="submit">Approve (cert-user)</button>
-</form>
+<p>Choose the fixed local identity to certify account and usage isolation.</p>
+${Object.values(CERT_USERS).map((user) => `<a href="${approvalUrl(params, user.login)}"><button type="button">Approve (${user.login})</button></a>`).join("\n")}
 </div></body></html>`;
 
 const server = http.createServer((req, res) => {
@@ -66,11 +88,17 @@ const server = http.createServer((req, res) => {
       res.writeHead(400, { "Content-Type": "text/plain" }).end("Refusing non-loopback redirect in dev IdP");
       return;
     }
+    const identity = certificationIdentity(url.searchParams.get("identity"));
+    if (!identity) {
+      res.writeHead(400, { "Content-Type": "text/plain" }).end("Refusing unknown development identity");
+      return;
+    }
     const code = crypto.randomBytes(24).toString("base64url");
     issuedCodes.set(code, {
       codeChallenge: url.searchParams.get("code_challenge") ?? "",
       redirectUri,
       clientId: url.searchParams.get("client_id") ?? "",
+      identity: identity.login,
       exchanged: false,
     });
     parsed.searchParams.set("code", code);
@@ -83,16 +111,30 @@ const server = http.createServer((req, res) => {
     let raw = "";
     req.on("data", (c) => { raw += c; });
     req.on("end", () => {
-      const body = new URLSearchParams(raw);
-      const code = body.get("code") ?? "";
+      let body;
+      try {
+        body = req.headers["content-type"]?.includes("application/json")
+          ? JSON.parse(raw)
+          : Object.fromEntries(new URLSearchParams(raw));
+      } catch {
+        res.writeHead(400, { "Content-Type": "application/json" }).end(JSON.stringify({ error: "invalid_request" }));
+        return;
+      }
+      const code = typeof body.code === "string" ? body.code : "";
       const entry = issuedCodes.get(code);
       if (!entry || entry.exchanged) {
         res.writeHead(400, { "Content-Type": "application/json" })
           .end(JSON.stringify({ error: "bad_verification_code" }));
         return;
       }
-      if (body.get("client_id") && body.get("client_id") !== entry.clientId) {
+      if (typeof body.client_id === "string" && body.client_id !== entry.clientId) {
         res.writeHead(400, { "Content-Type": "application/json" }).end(JSON.stringify({ error: "client_mismatch" }));
+        return;
+      }
+      const verifier = typeof body.code_verifier === "string" ? body.code_verifier : "";
+      const challenge = crypto.createHash("sha256").update(verifier).digest("base64url");
+      if (!verifier || challenge !== entry.codeChallenge) {
+        res.writeHead(400, { "Content-Type": "application/json" }).end(JSON.stringify({ error: "invalid_grant" }));
         return;
       }
       entry.exchanged = true;
@@ -103,13 +145,23 @@ const server = http.createServer((req, res) => {
   }
 
   if (url.pathname === "/user" && req.method === "GET") {
-    res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify(CERT_USER));
+    const identity = identityForBearer(req);
+    if (!identity) {
+      res.writeHead(401, { "Content-Type": "application/json" }).end(JSON.stringify({ message: "Bad credentials" }));
+      return;
+    }
+    res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify(identity));
     return;
   }
 
   if (url.pathname === "/user/emails" && req.method === "GET") {
+    const identity = identityForBearer(req);
+    if (!identity) {
+      res.writeHead(401, { "Content-Type": "application/json" }).end(JSON.stringify({ message: "Bad credentials" }));
+      return;
+    }
     res.writeHead(200, { "Content-Type": "application/json" })
-      .end(JSON.stringify([{ email: "cert-user@example.com", primary: true, verified: true, visibility: "public" }]));
+      .end(JSON.stringify([{ email: `${identity.login}@example.com`, primary: true, verified: true, visibility: "public" }]));
     return;
   }
 
@@ -117,5 +169,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`[dev-idp] development identity provider on http://${HOST}:${PORT} (identity: ${CERT_USER.login})`);
+  console.log(`[dev-idp] development identity provider on http://${HOST}:${PORT} (identities: ${Object.keys(CERT_USERS).join(", ")})`);
 });

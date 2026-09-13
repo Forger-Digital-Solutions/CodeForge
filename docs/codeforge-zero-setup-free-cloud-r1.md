@@ -27,6 +27,9 @@ capacity, real model quality, or production provider authorization.
 - development IdP endpoint overrides: explicit server configuration only; insecure overrides fail
   closed in staging and production
 - isolated local cloud API: connected SQLite ledger and one fixture-only managed route
+- two-user HTTP probe on the isolated loopback rig: distinct OAuth identities and bearer-bound
+  accounts; a settled fixture usage event changed User A's balance/event count and left User B's
+  balance/event count unchanged
 
 ## Remaining certification gate
 

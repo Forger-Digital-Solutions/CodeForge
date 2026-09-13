@@ -6,7 +6,13 @@
     "idp": "development-only loopback double",
     "provider": "devpool scripted fixture",
     "mayCertify": ["auth", "entitlement", "usage", "gateway", "failover mechanics"],
-    "mayNotCertify": ["real managed-free capacity", "provider terms", "real model qualification"]
+    "mayNotCertify": ["real managed-free capacity", "provider terms", "real model qualification"],
+    "twoUserServiceProbe": {
+      "status": "PASS",
+      "mode": "deterministic_fixture_only",
+      "identities": ["cert-user-a", "cert-user-b"],
+      "assertions": ["distinct bearer-bound accounts", "shared server-controlled UTC allowance window", "User A usage event does not change User B usage"]
+    }
   },
   "realManagedFreeProvider": {
     "status": "UNRESOLVED",
