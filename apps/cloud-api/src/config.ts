@@ -45,6 +45,15 @@ export interface CloudRuntimeConfig {
       privateKeyPem: string;
       installationUrl?: string;
     };
+    /**
+     * Dev/test-only endpoint overrides that double the GitHub identity provider locally. Absent in
+     * any real deployment; insecure (http:) overrides are refused in production-like environments.
+     */
+    endpointOverrides?: {
+      authorize?: string;
+      token?: string;
+      apiBase?: string;
+    };
   };
 
   /** Optional Stripe TEST-mode billing integration. Hosted Free does not depend on it. */
@@ -98,6 +107,10 @@ const EnvSchema = z.object({
   JWT_SECRET: z.string().optional(),
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
+  // Dev/test-only identity-provider doubles. Insecure values are refused in production-like envs.
+  GITHUB_OAUTH_AUTHORIZE_URL: z.string().optional(),
+  GITHUB_OAUTH_TOKEN_URL: z.string().optional(),
+  GITHUB_API_BASE_URL: z.string().optional(),
   GITHUB_APP_ID: z.string().optional(),
   GITHUB_APP_PRIVATE_KEY: z.string().optional(),
   GITHUB_APP_INSTALLATION_URL: z.string().optional(),
@@ -248,7 +261,23 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
   const gitHubApp = appId && privateKeyPem
     ? { appId, privateKeyPem, ...(e.GITHUB_APP_INSTALLATION_URL ? { installationUrl: e.GITHUB_APP_INSTALLATION_URL } : {}) }
     : undefined;
-  const gitHub = { clientId: e.GITHUB_CLIENT_ID, clientSecret: e.GITHUB_CLIENT_SECRET, ...(gitHubApp ? { app: gitHubApp } : {}) };
+  const gitHub = {
+    clientId: e.GITHUB_CLIENT_ID,
+    clientSecret: e.GITHUB_CLIENT_SECRET,
+    ...(gitHubApp ? { app: gitHubApp } : {}),
+    ...((e.GITHUB_OAUTH_AUTHORIZE_URL || e.GITHUB_OAUTH_TOKEN_URL || e.GITHUB_API_BASE_URL)
+      ? {
+          endpointOverrides: {
+            ...(e.GITHUB_OAUTH_AUTHORIZE_URL ? { authorize: e.GITHUB_OAUTH_AUTHORIZE_URL } : {}),
+            ...(e.GITHUB_OAUTH_TOKEN_URL ? { token: e.GITHUB_OAUTH_TOKEN_URL } : {}),
+            ...(e.GITHUB_API_BASE_URL ? { apiBase: e.GITHUB_API_BASE_URL } : {}),
+          },
+        }
+      : {}),
+  };
+  if (isProdLike && gitHub.endpointOverrides && Object.values(gitHub.endpointOverrides).some((value) => value?.startsWith("http://"))) {
+    throw new CloudConfigError("GitHub endpoint overrides must use HTTPS in staging/production.");
+  }
   if (isProdLike && (!gitHub.clientId || !gitHub.clientSecret)) {
     throw new CloudConfigError("GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are required in staging/production.");
   }

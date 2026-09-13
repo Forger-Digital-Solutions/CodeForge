@@ -9,6 +9,8 @@ import {
   signAccessToken,
   verifyAccessToken,
   CLOUD_GITHUB_CALLBACK_PATH,
+  configureGitHubEndpoints,
+  getGitHubEndpoints,
 } from "../src/index.js";
 
 const PUBLIC_URL = "https://cloud.codeforge.test";
@@ -71,7 +73,20 @@ describe("AuthService — server-brokered GitHub OAuth", () => {
   });
 
   afterEach(() => {
+    configureGitHubEndpoints(undefined);
     db.close();
+  });
+
+  it("uses official GitHub endpoints by default and permits explicit development doubles only", () => {
+    expect(getGitHubEndpoints()).toEqual({
+      authorize: "https://github.com/login/oauth/authorize",
+      token: "https://github.com/login/oauth/access_token",
+      apiBase: "https://api.github.com",
+    });
+
+    configureGitHubEndpoints({ authorize: "http://127.0.0.1:3341/login/oauth/authorize", token: "http://127.0.0.1:3341/login/oauth/access_token", apiBase: "http://127.0.0.1:3341" });
+    expect(getGitHubEndpoints().apiBase).toBe("http://127.0.0.1:3341");
+    expect(() => configureGitHubEndpoints({ apiBase: "http://127.0.0.1:3341" }, { productionLike: true })).toThrow(/Refusing insecure/);
   });
 
   // --- Architecture: the three callbacks are distinct ------------------------------------------

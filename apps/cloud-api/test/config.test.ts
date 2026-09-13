@@ -57,6 +57,16 @@ describe("loadCloudRuntimeConfig", () => {
     expect(() => loadCloudRuntimeConfig({ ...prodBase, GITHUB_CLIENT_SECRET: undefined })).toThrow(/GITHUB_CLIENT/);
   });
 
+  it("permits local GitHub IdP overrides only outside staging and production", () => {
+    const development = loadCloudRuntimeConfig({
+      GITHUB_OAUTH_AUTHORIZE_URL: "http://127.0.0.1:3341/login/oauth/authorize",
+      GITHUB_OAUTH_TOKEN_URL: "http://127.0.0.1:3341/login/oauth/access_token",
+      GITHUB_API_BASE_URL: "http://127.0.0.1:3341",
+    });
+    expect(development.gitHub.endpointOverrides?.apiBase).toBe("http://127.0.0.1:3341");
+    expect(() => loadCloudRuntimeConfig({ ...prodBase, GITHUB_API_BASE_URL: "http://127.0.0.1:3341" })).toThrow(/endpoint overrides must use HTTPS/);
+  });
+
   it("enables Cloud publication only with a complete GitHub App authority and never exposes its key in startup output", () => {
     expect(() => loadCloudRuntimeConfig({ ...prodBase, GITHUB_APP_ID: "123" })).toThrow(/GITHUB_APP_ID and GITHUB_APP_PRIVATE_KEY/);
     const key = "-----BEGIN PRIVATE KEY-----\\nsynthetic-only\\n-----END PRIVATE KEY-----";

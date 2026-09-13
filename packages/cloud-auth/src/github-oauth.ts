@@ -6,8 +6,50 @@ export interface GitHubAuthUrlOptions {
   scope?: string;
 }
 
+/**
+ * The three GitHub endpoints the OAuth + profile legs need. Overridable ONLY for dev/test rigs that
+ * double the identity provider locally (no production OAuth app exists on a dev machine): production
+ * code paths, real PKCE, real token exchange, real profile fetch — only github.com itself is stood
+ * in for. configureGitHubEndpoints refuses insecure overrides in production-like deployments.
+ */
+export interface GitHubEndpoints {
+  authorize: string;
+  token: string;
+  /** Base for /user and /user/emails (no trailing slash). */
+  apiBase: string;
+}
+
+const DEFAULT_ENDPOINTS: GitHubEndpoints = {
+  authorize: "https://github.com/login/oauth/authorize",
+  token: "https://github.com/login/oauth/access_token",
+  apiBase: "https://api.github.com",
+};
+
+let endpoints: GitHubEndpoints = DEFAULT_ENDPOINTS;
+
+export function configureGitHubEndpoints(
+  next: Partial<GitHubEndpoints> | undefined,
+  opts: { productionLike?: boolean } = {},
+): void {
+  if (!next) {
+    endpoints = DEFAULT_ENDPOINTS;
+    return;
+  }
+  const merged = { ...DEFAULT_ENDPOINTS, ...next };
+  for (const [key, value] of Object.entries(merged)) {
+    if (typeof value === "string" && value.startsWith("http://") && opts.productionLike) {
+      throw new Error(`Refusing insecure GitHub endpoint override for ${key} in a production-like deployment`);
+    }
+  }
+  endpoints = merged;
+}
+
+export function getGitHubEndpoints(): GitHubEndpoints {
+  return endpoints;
+}
+
 export function buildGitHubAuthUrl(options: GitHubAuthUrlOptions): string {
-  const url = new URL("https://github.com/login/oauth/authorize");
+  const url = new URL(getGitHubEndpoints().authorize);
   url.searchParams.set("client_id", options.clientId);
   url.searchParams.set("redirect_uri", options.redirectUri);
   url.searchParams.set("state", options.state);
@@ -47,7 +89,7 @@ export async function exchangeGitHubCode(options: ExchangeGitHubCodeOptions): Pr
   if (options.redirectUri) body.redirect_uri = options.redirectUri;
 
   try {
-    const res = await fetchFn("https://github.com/login/oauth/access_token", {
+    const res = await fetchFn(getGitHubEndpoints().token, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -93,7 +135,7 @@ export async function fetchGitHubUserProfile(
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const res = await fetchFn("https://api.github.com/user", {
+    const res = await fetchFn(`${getGitHubEndpoints().apiBase}/user`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "User-Agent": "CodeForge-Cloud",
@@ -147,7 +189,7 @@ export async function fetchGitHubUserEmails(
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const res = await fetchFn("https://api.github.com/user/emails", {
+    const res = await fetchFn(`${getGitHubEndpoints().apiBase}/user/emails`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "User-Agent": "CodeForge-Cloud",

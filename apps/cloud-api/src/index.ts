@@ -20,6 +20,14 @@ async function main() {
   const config = loadCloudRuntimeConfig(process.env);
   console.log(`[CodeForge Cloud API] config: ${describeConfig(config)}`);
 
+  // Apply dev/test GitHub IdP endpoint overrides (fail-closed in production-like deployments).
+  const overrides = config.gitHub.endpointOverrides;
+  if (overrides) {
+    const { configureGitHubEndpoints } = await import("@codeforge/cloud-auth");
+    configureGitHubEndpoints(overrides, { productionLike: config.environment === "production" || config.environment === "staging" });
+    console.warn("[CodeForge Cloud API] GitHub OAuth endpoint overrides ACTIVE — development identity-provider double only.");
+  }
+
   // The firewall manager owns the operator kill switches + verified-model pool. Build it up front so
   // the same instance backs both the capacity registry (which registers discovered models) and the
   // server (which routes against them).

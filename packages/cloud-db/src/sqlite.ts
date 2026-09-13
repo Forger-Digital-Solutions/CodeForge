@@ -1229,9 +1229,11 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     }
 
     return this.txSync(() => {
-      // Create new usage period (e.g. 30 days) and grant recurring allowance
-      const periodStart = nowIso;
-      const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      // Free allowances are calendar-month grants, matching the plan field and PostgreSQL
+      // implementation. A rolling 30-day SQLite window made desktop reset timestamps disagree
+      // with production and would have let a client fixture certify the wrong product policy.
+      const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+      const periodEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
       const id = randomUUID();
 
       this.db.prepare(`

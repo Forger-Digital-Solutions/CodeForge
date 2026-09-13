@@ -223,6 +223,8 @@ describe("CloudDatabase", () => {
     // Initial period creation grants allowance
     const period1 = await db.getOrCreateCurrentUsagePeriod(user.id, 500_000, new Date("2026-01-01T00:00:00Z"));
     expect(period1.grantedNewAllowance).toBe(true);
+    expect(period1.period.periodStart).toBe("2026-01-01T00:00:00.000Z");
+    expect(period1.period.periodEnd).toBe("2026-02-01T00:00:00.000Z");
     expect(await db.getCreditBalance(user.id)).toBe(500_000);
 
     // Second call in same period does not grant extra allowance
@@ -254,4 +256,3 @@ describe("CloudDatabase", () => {
     }).toThrow(/DATABASE_URL is missing/);
   });
 });
-
