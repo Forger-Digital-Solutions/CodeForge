@@ -1,0 +1,96 @@
+{
+  "schema": "codeforge-free-cloud-platform-r2",
+  "verdict": "CODEFORGE_FREE_CLOUD_PLATFORM_R2_BLOCKED",
+  "sourceCandidate": {
+    "commit": "8b05773dd892de96bec52c5d7325622817e4dc75",
+    "initialR2Head": "c6ac0541117d696e2f1f97c4248154c4b0d75c12"
+  },
+  "runtime": {
+    "fixedPortRemoved": true,
+    "serverPortMode": "ephemeral-loopback-port-0",
+    "rendererEndpointSource": "guarded-main-process-async-ipc",
+    "runtimeManifest": "atomic-owned-instance-manifest",
+    "endpointFallback": "http://127.0.0.1:0"
+  },
+  "verified": {
+    "desktopBuild": true,
+    "focusedTests": { "filesPassed": 5, "testsPassed": 27 },
+    "packagedBrowserSecurityAudit": true,
+    "occupiedPortIsolation": true,
+    "multiInstanceIsolation": true,
+    "fullSuite": {
+      "filesPassed": 312,
+      "filesFailed": 2,
+      "filesSkipped": 7,
+      "testsPassed": 2356,
+      "testsFailed": 2,
+      "testsSkipped": 36,
+      "durationSeconds": 328.21,
+      "inheritedFailures": [
+        "packages/forgegreen-campaign/test/fg11-source-state.test.ts",
+        "packages/forgegreen-campaign/test/fg12e-harness-provenance.test.ts"
+      ]
+    },
+    "liveCatalog": {
+      "provider": "openrouter",
+      "zeroUnitCandidates": 22,
+      "allowanceCandidates": 0,
+      "errors": 0,
+      "qualifiedOrAdmitted": false
+    }
+  },
+  "artifacts": [
+    {
+      "path": "apps/desktop/release/CodeForge-Setup-0.3.0.exe",
+      "bytes": 85944333,
+      "sha256": "9F00742C0A7371DF80A19F983ED37E0EF107EE2B497E261C901A67C1A216064E"
+    },
+    {
+      "path": "apps/desktop/release/CodeForge-Portable.exe",
+      "bytes": 85673584,
+      "sha256": "B9F592F8EEEF47E3D2B7B098102121EBBADAF5F679EA478C0D097914047C7CA8"
+    },
+    {
+      "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+      "bytes": 188875264,
+      "sha256": "54548AE86EDD165EDB3C4F0DA3E739A1244596BA6962435DDC39A22FAF54A5DE"
+    }
+  ],
+  "packagedSmoke": {
+    "full": {
+      "passed": false,
+      "failure": "RENDER_PROCESS_GONE=launch-failed:49",
+      "firstPaint": false,
+      "runtimeEndpointObserved": true
+    },
+    "recovery": {
+      "passed": false,
+      "failure": "RENDER_PROCESS_GONE=launch-failed:49",
+      "firstPaint": false,
+      "staleManifestClassified": true
+    }
+  },
+  "notCertified": [
+    "fresh-profile packaged UI",
+    "environment credential execution",
+    "manual provider connection",
+    "OpenRouter PKCE completion",
+    "qualified real free route",
+    "same-model failover",
+    "cross-model ForgeAuto failover",
+    "real free-cloud coding task",
+    "restart durability through packaged UI",
+    "workspace and settings UX",
+    "inherited ForgeGreen source-state drift"
+  ],
+  "evidencePaths": [
+    "docs/codeforge-free-cloud-platform-r2.md",
+    "docs/codeforge-free-cloud-platform-r2.json",
+    "apps/desktop/release/smoke-result.log",
+    "apps/desktop/release/r1-smoke-retry.stdout.log",
+    "docs/codeforge-free-cloud-platform-r1.md",
+    "docs/codeforge-free-cloud-registry-r1.md",
+    "docs/codeforge-provider-connections-r1.md",
+    "docs/codeforge-provider-env-discovery-r1.md"
+  ]
+}
