@@ -1,12 +1,4 @@
-import {
-  NormalizedModelRegistry,
-  discoverAndVerifyFree,
-  verifyAllowanceViaProbe,
-  getProviderPolicy,
-  PROVIDER_POLICIES,
-  PROVIDER_DEFINITIONS,
-  type LiveModelInfo,
-} from "@codeforge/model-registry";
+import { PROVIDER_DEFINITIONS } from "@codeforge/model-registry";
 import {
   createProviderAdapterById,
   createProviderAdapterFromDefinition,
@@ -14,6 +6,7 @@ import {
   type CredentialStore,
 } from "@codeforge/providers";
 import type { CloudFirewallManager } from "./cloud-firewall.js";
+import { managedRoutesFor } from "./managed-free-inventory.js";
 
 /** Plain in-memory credential store — holds only server-owned keys, never persisted, never exposed. */
 export class MapCredentialStore implements CredentialStore {
@@ -41,34 +34,32 @@ export interface ResolvedProviderCredentials {
 
 /**
  * Resolve which providers have server-owned credentials present in the given environment, honoring
- * each provider policy's env-var aliases (e.g. ZHIPU_API_KEY | ZAI_API_KEY) and Cloudflare's split
- * account-id + token. Reads env only — never performs network calls, never logs values. The returned
+ * the dedicated CodeForge Cloud env vars and Cloudflare's split account-id + token. Reads env only
+ * — never performs network calls, never logs values. The returned
  * store is handed to provider adapters so keys stay inside the process and never reach the desktop.
  */
 export function resolveCloudProviderCredentials(env: Record<string, string | undefined> = process.env): ResolvedProviderCredentials {
   const store = new MapCredentialStore();
   const providerIds: string[] = [];
 
-  for (const [providerId, policy] of Object.entries(PROVIDER_POLICIES)) {
-    if (providerId === "cloudflare-workers-ai") {
-      const accountId = env.CLOUDFLARE_ACCOUNT_ID?.trim();
-      const token = env.CLOUDFLARE_API_KEY?.trim() || env.CLOUDFLARE_API_TOKEN?.trim();
-      if (accountId && token) {
-        store.set(providerId, token);
-        store.set("cloudflare-account-id", accountId);
-        providerIds.push(providerId);
-      }
-      continue;
-    }
-    const key = (policy.env ?? [])
-      .map((name) => env[name]?.trim())
-      .find((v) => !!v);
-    if (key) {
-      store.set(providerId, key);
+  const managed = [
+    { providerId: "groq", key: env.CODEFORGE_GROQ_API_KEY?.trim(), requireFreePlan: true },
+  ] as const;
+  for (const candidate of managed) {
+    if (!candidate.key || (candidate.requireFreePlan && env.CODEFORGE_GROQ_FREE_PLAN_ONLY !== "true")) continue;
+    store.set(candidate.providerId, candidate.key);
+    providerIds.push(candidate.providerId);
+  }
+  {
+    const providerId = "cloudflare-workers-ai";
+    const accountId = env.CODEFORGE_CLOUDFLARE_ACCOUNT_ID?.trim();
+    const token = env.CODEFORGE_CLOUDFLARE_API_TOKEN?.trim();
+    if (accountId && token && env.CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY === "true") {
+      store.set(providerId, token);
+      store.set("cloudflare-account-id", accountId);
       providerIds.push(providerId);
     }
   }
-
   return { store, providerIds };
 }
 
@@ -90,7 +81,8 @@ export type ProviderCapacityStatus =
   | "rate_limited"
   | "offline"
   | "misconfigured"
-  | "skipped_paid_only";
+  | "skipped_paid_only"
+  | "not_approved";
 
 export interface ProviderCapacityReport {
   providerId: string;
@@ -111,8 +103,6 @@ export interface CloudProviderRegistryOptions {
   credentialStore: CredentialStore;
   /** Provider ids to attempt — only those whose credentials are actually present. */
   providerIds: string[];
-  /** Optional shared normalized registry (verification-evidence overlays). */
-  registry?: NormalizedModelRegistry;
   now?: () => Date;
   /** Test seam: build an adapter for a providerId. Defaults to createProviderAdapterById(store). */
   adapterFactory?: (providerId: string) => ProviderAdapter | undefined;
@@ -137,7 +127,6 @@ export class CloudProviderRegistry {
   private readonly firewallManager: CloudFirewallManager;
   private readonly credentialStore: CredentialStore;
   private readonly providerIds: string[];
-  private readonly registry: NormalizedModelRegistry;
   private readonly now: () => Date;
   private readonly adapterFactory: (providerId: string) => ProviderAdapter | undefined;
   private readonly refreshTtlMs: number;
@@ -151,7 +140,6 @@ export class CloudProviderRegistry {
     this.firewallManager = options.firewallManager;
     this.credentialStore = options.credentialStore;
     this.providerIds = options.providerIds;
-    this.registry = options.registry ?? new NormalizedModelRegistry();
     this.now = options.now ?? (() => new Date());
     this.refreshTtlMs = options.refreshTtlMs ?? DEFAULT_REFRESH_TTL_MS;
     this.timeoutMs = options.timeoutMs ?? 30_000;
@@ -209,15 +197,20 @@ export class CloudProviderRegistry {
   }
 
   private async discoverProvider(providerId: string): Promise<ProviderCapacityReport> {
-    const policy = getProviderPolicy(providerId);
-    const displayName = policy?.displayName ?? providerId;
+    const definition = PROVIDER_DEFINITIONS[providerId];
+    const displayName = definition?.displayName ?? providerId;
     const lastCheckedAt = this.now().toISOString();
     const base = { providerId, displayName, lastCheckedAt, verifiedFreeCount: 0, discoveredModelCount: 0 };
 
-    // Owner-spend firewall: a provider with no free access of any kind (OpenAI) is NEVER registered
-    // as hosted-free capacity. Direct/BYOK can still use it on the desktop; the cloud pool cannot.
-    if (policy?.paidOnly) {
-      return { ...base, status: "skipped_paid_only" };
+    const allowedRoutes = managedRoutesFor(providerId);
+    if (allowedRoutes.length === 0) {
+      return { ...base, status: "not_approved", error: "Provider is not in managed-free inventory" };
+    }
+    if (allowedRoutes.some((route) => route.activation !== "ready")) {
+      for (const existingId of this.firewallManager.listProviderModelIds(providerId)) {
+        this.firewallManager.unregisterModel(providerId, existingId);
+      }
+      return { ...base, status: "not_approved", error: "Hosted policy record required" };
     }
 
     // Cloudflare needs an account id in addition to the API token.
@@ -233,7 +226,7 @@ export class CloudProviderRegistry {
     // Register the adapter so the gateway can execute against it and the orphan oracle sees it active.
     this.firewallManager.registerProvider(adapter);
 
-    let live: LiveModelInfo[];
+    let live;
     try {
       const models = await adapter.listModels();
       live = models.map((m) => ({
@@ -254,40 +247,23 @@ export class CloudProviderRegistry {
       return { ...base, status, error: status };
     }
 
-    // Zero-unit free discovery (OpenRouter :free, Z.AI *-flash). ForgeZero re-verifies each record.
-    const zeroUnit = discoverAndVerifyFree(this.registry, providerId, live, { now: this.now });
     const verifiedIds = new Set<string>();
-    for (const rec of zeroUnit.records) {
-      this.firewallManager.registerModel(rec);
-      verifiedIds.add(rec.modelId);
-    }
-    let verifiedFreeCount = zeroUnit.verifiedCount;
-
-    // Allowance providers (Gemini/Groq/Cloudflare) list paid unit prices, so the $0 check above finds
-    // nothing. Prove the account's free tier with an actual no-charge probe request instead.
-    if (verifiedFreeCount === 0 && policy?.hasAllowanceFree) {
-      const probe = async (modelId: string): Promise<{ ok: boolean; error?: string }> => {
-        try {
-          let ok = false;
-          for await (const ev of adapter.streamChat({
-            model: modelId,
-            messages: [{ role: "user", content: "hi" }],
-            maxTokens: 5,
-          })) {
-            if (ev.type === "text_delta" || ev.type === "finish") ok = true;
-          }
-          return { ok };
-        } catch (e) {
-          return { ok: false, error: classifyError(e) };
+    let probeFailure: ProviderCapacityStatus | undefined;
+    for (const route of allowedRoutes) {
+      if (!live.some((model) => model.modelId === route.modelId)) continue;
+      try {
+        let streamed = false;
+        for await (const event of adapter.streamChat({ model: route.modelId, messages: [{ role: "user", content: "Reply with OK." }], maxTokens: 5 })) {
+          if (event.type === "text_delta" || event.type === "finish") streamed = true;
         }
-      };
-      const allowance = await verifyAllowanceViaProbe(this.registry, providerId, live, probe, { now: this.now });
-      for (const rec of allowance.records) {
-        this.firewallManager.registerModel(rec);
-        verifiedIds.add(rec.modelId);
+        if (!streamed) continue;
+        this.firewallManager.registerModel(route.record(lastCheckedAt));
+        verifiedIds.add(route.modelId);
+      } catch (error) {
+        probeFailure ??= classifyError(error);
       }
-      verifiedFreeCount = allowance.verifiedCount;
     }
+    const verifiedFreeCount = verifiedIds.size;
 
     // Owner-spend firewall — cost-transition safety: any model previously registered for this provider
     // that is NO LONGER verified-free (flipped to paid, withdrawn, or now rate-limited out of the free
@@ -300,6 +276,10 @@ export class CloudProviderRegistry {
     if (verifiedFreeCount > 0) {
       return { ...base, status: "healthy", verifiedFreeCount, discoveredModelCount: live.length };
     }
+    if (probeFailure) {
+      this.firewallManager.markProviderHealth(providerId, healthForStatus(probeFailure), { lastError: probeFailure, ...(probeFailure === "rate_limited" ? { retryAfter: Date.now() + 60_000 } : {}) });
+      return { ...base, status: probeFailure, discoveredModelCount: live.length, error: probeFailure };
+    }
     return { ...base, status: "no_free_models", discoveredModelCount: live.length };
   }
 }
@@ -307,7 +287,8 @@ export class CloudProviderRegistry {
 /** Classify a thrown provider error into a capacity status. Never surfaces credential material. */
 function classifyError(e: unknown): ProviderCapacityStatus {
   const code = (e as { code?: string })?.code;
-  if (code === "AUTH_ERROR" || code === "MISSING_API_KEY" || code === "PAYMENT_REQUIRED") return "auth_required";
+  if (code === "PAYMENT_REQUIRED" || code === "PAID_PLAN_REQUIRED") return "no_free_models";
+  if (code === "AUTH_ERROR" || code === "MISSING_API_KEY") return "auth_required";
   if (code === "RATE_LIMITED") return "rate_limited";
   const msg = e instanceof Error ? e.message : String(e);
   if (/\b401\b|\b403\b|unauthor|forbidden|invalid api key/i.test(msg)) return "auth_required";

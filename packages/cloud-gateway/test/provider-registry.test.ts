@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { ProviderAdapter, ProviderModel, StreamEvent, ChatRequest } from "@codeforge/providers";
 import { ProviderError } from "@codeforge/providers";
-import { CloudFirewallManager, CloudProviderRegistry, resolveCloudProviderCredentials, MapCredentialStore } from "../src/index.js";
+import { CloudFirewallManager, CloudProviderRegistry, resolveCloudProviderCredentials, MapCredentialStore, MANAGED_FREE_INVENTORY, isManagedFreeRoute } from "../src/index.js";
 
 interface FakeAdapterConfig {
   providerId: string;
@@ -71,7 +71,20 @@ function makeRegistry(adapters: Record<string, FakeAdapter>, extra: { now?: () =
 }
 
 describe("CloudProviderRegistry — real capacity discovery", () => {
-  it("discovers zero-unit free models from a gateway provider (OpenRouter :free)", async () => {
+  it("uses an exact reviewed model allowlist and disables all provider-billed built-in tools", () => {
+    expect(MANAGED_FREE_INVENTORY.map((route) => `${route.providerId}::${route.modelId}`)).toEqual([
+      "zai::glm-4.7-flash",
+      "groq::openai/gpt-oss-120b",
+      "groq::openai/gpt-oss-20b",
+      "cloudflare-workers-ai::@cf/zai-org/glm-4.7-flash",
+    ]);
+    expect(isManagedFreeRoute("zai", "glm-5.3")).toBe(false);
+    expect(isManagedFreeRoute("groq", "llama-3.3-70b-versatile")).toBe(false);
+    expect(MANAGED_FREE_INVENTORY.every((route) => route.builtInToolsFree === false)).toBe(true);
+    expect(MANAGED_FREE_INVENTORY.find((route) => route.providerId === "zai")?.activation).toBe("policy_record_required");
+  });
+
+  it("never admits a dynamically discovered but unapproved provider", async () => {
     const openrouter = new FakeAdapter({
       providerId: "openrouter",
       models: [model("meta-llama/llama-3.1-8b-instruct:free", true), model("anthropic/claude", false)],
@@ -79,19 +92,15 @@ describe("CloudProviderRegistry — real capacity discovery", () => {
     const { firewallManager, registry } = makeRegistry({ openrouter });
     const reports = await registry.discover();
 
-    expect(reports[0]?.status).toBe("healthy");
-    expect(reports[0]?.verifiedFreeCount).toBe(1);
-    const eligible = firewallManager.firewall.eligibleModels();
-    expect(eligible.map((m) => m.modelId)).toContain("meta-llama/llama-3.1-8b-instruct:free");
-    // The paid model is NOT eligible.
-    expect(eligible.map((m) => m.modelId)).not.toContain("anthropic/claude");
+    expect(reports[0]?.status).toBe("not_approved");
+    expect(firewallManager.firewall.eligibleModels()).toHaveLength(0);
   });
 
   it("verifies allowance-tier free via a real no-charge probe (Groq)", async () => {
     // Groq lists PAID unit prices, so no $0 model is found; the probe proves the free allowance.
     const groq = new FakeAdapter({
       providerId: "groq",
-      models: [model("llama-3.1-8b-instant", false)],
+      models: [model("openai/gpt-oss-120b", false)],
       probeOk: true,
     });
     const { firewallManager, registry } = makeRegistry({ groq });
@@ -105,7 +114,7 @@ describe("CloudProviderRegistry — real capacity discovery", () => {
   it("does NOT verify allowance free when the probe fails (no owner-sponsored access)", async () => {
     const groq = new FakeAdapter({
       providerId: "groq",
-      models: [model("llama-3.1-8b-instant", false)],
+      models: [model("openai/gpt-oss-120b", false)],
       probeOk: false,
     });
     const { firewallManager, registry } = makeRegistry({ groq });
@@ -115,23 +124,23 @@ describe("CloudProviderRegistry — real capacity discovery", () => {
     expect(firewallManager.firewall.eligibleModels()).toHaveLength(0);
   });
 
-  it("NEVER registers a paid-only provider as hosted-free capacity (OpenAI)", async () => {
+  it("NEVER registers an unapproved provider as hosted-free capacity", async () => {
     const openai = new FakeAdapter({ providerId: "openai", models: [model("gpt-4o", false)] });
     const { firewallManager, registry } = makeRegistry({ openai });
     const reports = await registry.discover();
 
-    expect(reports[0]?.status).toBe("skipped_paid_only");
+    expect(reports[0]?.status).toBe("not_approved");
     // The adapter was never even registered into the pool.
     expect(firewallManager.providerCatalog.get("openai")).toBeUndefined();
     expect(firewallManager.firewall.eligibleModels()).toHaveLength(0);
   });
 
   it("classifies a 401 as auth_required and excludes the provider from routing (orphan oracle)", async () => {
-    const openrouter = new FakeAdapter({
-      providerId: "openrouter",
-      listError: new ProviderError("openrouter error (401): invalid key", "AUTH_ERROR"),
+    const groq = new FakeAdapter({
+      providerId: "groq",
+      listError: new ProviderError("groq error (401): invalid key", "AUTH_ERROR"),
     });
-    const { firewallManager, registry } = makeRegistry({ openrouter });
+    const { firewallManager, registry } = makeRegistry({ groq });
     const reports = await registry.discover();
 
     expect(reports[0]?.status).toBe("auth_required");
@@ -163,32 +172,32 @@ describe("CloudProviderRegistry — real capacity discovery", () => {
     expect(reports[0]?.status).toBe("misconfigured");
   });
 
-  it("owner-spend firewall: a model that flips free→paid is reconciled out of the pool on refresh", async () => {
-    const openrouter = new FakeAdapter({
-      providerId: "openrouter",
-      models: [model("x/y:free", true)],
+  it("reconciles a disappeared approved route out of the pool on refresh", async () => {
+    const groq = new FakeAdapter({
+      providerId: "groq",
+      models: [model("openai/gpt-oss-120b", false)],
     });
-    const { firewallManager, registry } = makeRegistry({ openrouter });
+    const { firewallManager, registry } = makeRegistry({ groq });
     await registry.discover({ force: true });
-    expect(firewallManager.firewall.eligibleModels().map((m) => m.modelId)).toContain("x/y:free");
+    expect(firewallManager.firewall.eligibleModels().map((m) => m.modelId)).toContain("openai/gpt-oss-120b");
 
-    // Provider now lists the same model as PAID (pricing changed upstream).
-    openrouter.setConfig({ models: [model("x/y:free", false)] });
+    // A disappeared approved route is reconciled away; a replacement model cannot be discovered in.
+    groq.setConfig({ models: [model("llama-3.3-70b-versatile", false)] });
     await registry.discover({ force: true });
 
     const eligible = firewallManager.firewall.eligibleModels().map((m) => m.modelId);
-    expect(eligible).not.toContain("x/y:free");
+    expect(eligible).not.toContain("openai/gpt-oss-120b");
   });
 
   it("respects the refresh TTL and coalesces concurrent discovery", async () => {
     let listCalls = 0;
-    const openrouter = new FakeAdapter({ providerId: "openrouter", models: [model("x/y:free", true)] });
-    const origList = openrouter.listModels.bind(openrouter);
-    openrouter.listModels = async () => {
+    const groq = new FakeAdapter({ providerId: "groq", models: [model("openai/gpt-oss-120b", false)] });
+    const origList = groq.listModels.bind(groq);
+    groq.listModels = async () => {
       listCalls++;
       return origList();
     };
-    const { registry } = makeRegistry({ openrouter });
+    const { registry } = makeRegistry({ groq });
 
     await registry.discover({ force: true });
     expect(listCalls).toBe(1);
@@ -204,23 +213,23 @@ describe("CloudProviderRegistry — real capacity discovery", () => {
 describe("resolveCloudProviderCredentials", () => {
   it("resolves provider keys honoring env aliases and Cloudflare's split account/token", () => {
     const env = {
-      OPENROUTER_API_KEY: "or-key",
-      ZAI_API_KEY: "zai-key", // alias of ZHIPU_API_KEY
-      GOOGLE_API_KEY: "g-key", // alias of GEMINI_API_KEY
-      CLOUDFLARE_ACCOUNT_ID: "acct",
-      CLOUDFLARE_API_KEY: "cf-token",
+      CODEFORGE_ZAI_API_KEY: "zai-key",
+      CODEFORGE_GROQ_API_KEY: "g-key",
+      CODEFORGE_GROQ_FREE_PLAN_ONLY: "true",
+      CODEFORGE_CLOUDFLARE_ACCOUNT_ID: "acct",
+      CODEFORGE_CLOUDFLARE_API_TOKEN: "cf-token",
+      CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY: "true",
     };
     const { store, providerIds } = resolveCloudProviderCredentials(env);
-    expect(providerIds.sort()).toEqual(["cloudflare-workers-ai", "google", "openrouter", "zai"]);
-    expect(store.get("openrouter")).toBe("or-key");
-    expect(store.get("zai")).toBe("zai-key");
-    expect(store.get("google")).toBe("g-key");
+    expect(providerIds.sort()).toEqual(["cloudflare-workers-ai", "groq"]);
+    expect(store.get("zai")).toBeUndefined();
+    expect(store.get("groq")).toBe("g-key");
     expect(store.get("cloudflare-workers-ai")).toBe("cf-token");
     expect(store.get("cloudflare-account-id")).toBe("acct");
   });
 
   it("omits Cloudflare when only the token (not the account id) is present", () => {
-    const { providerIds } = resolveCloudProviderCredentials({ CLOUDFLARE_API_KEY: "cf-token" });
+    const { providerIds } = resolveCloudProviderCredentials({ CODEFORGE_CLOUDFLARE_API_TOKEN: "cf-token" });
     expect(providerIds).not.toContain("cloudflare-workers-ai");
   });
 

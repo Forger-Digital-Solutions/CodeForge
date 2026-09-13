@@ -6,8 +6,8 @@
  *   1. the GitHub identity provider (scripts/dev-cert/dev-idp.mjs) via the config endpoint
  *      overrides — no GitHub OAuth App exists on a dev machine;
  *   2. the "devpool" fixture managed provider (scripts/dev-cert/fixture-provider.mjs) via the
- *      CloudProviderRegistry adapterFactory seam — no legitimately shareable upstream free
- *      capacity exists on a dev machine (spec §77).
+ *      direct fixture registration — no legitimately shareable upstream free capacity exists on a
+ *      dev machine. It is not part of the reviewed managed-free inventory.
  *
  * Everything between those two doubles — auth, PKCE, JWT, entitlement, per-user allowance,
  * reservation/settlement, ForgeZero verification, 8-Bit qualification, hosted routing, usage
@@ -18,8 +18,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CodeForgeCloudServer, describeConfig, loadCloudRuntimeConfig } from "codeforge-cloud-api";
 import { configureGitHubEndpoints } from "@codeforge/cloud-auth";
-import { CloudFirewallManager, CloudProviderRegistry } from "@codeforge/cloud-gateway";
-import { createFixtureManagedAdapter, FIXTURE_PROVIDER_ID } from "./fixture-provider.mjs";
+import { CloudFirewallManager } from "@codeforge/cloud-gateway";
+import { createGenericFreeRecord } from "@codeforge/forge-zero";
+import { createFixtureManagedAdapter, FIXTURE_MODEL_ID, FIXTURE_PROVIDER_ID } from "./fixture-provider.mjs";
 
 const CERT_DIR = process.env.DEV_CERT_DIR ?? mkdtempSync(join(tmpdir(), "codeforge-dev-cert-"));
 const PORT = Number(process.env.DEV_CLOUD_PORT ?? 3220);
@@ -48,23 +49,9 @@ if (config.gitHub.endpointOverrides) {
 }
 
 const firewallManager = new CloudFirewallManager({ killSwitches: config.killSwitches });
-
-const credentialStore = {
-  store: new Map([[FIXTURE_PROVIDER_ID, "devpool-local-fixture-key"]]),
-  get(providerId) {
-    return this.store.get(providerId);
-  },
-  has(providerId) {
-    return this.store.has(providerId);
-  },
-};
-
-const providerRegistry = new CloudProviderRegistry({
-  firewallManager,
-  credentialStore,
-  providerIds: [FIXTURE_PROVIDER_ID],
-  adapterFactory: () => createFixtureManagedAdapter(),
-});
+const fixtureAdapter = createFixtureManagedAdapter();
+firewallManager.registerProvider(fixtureAdapter);
+firewallManager.registerModel(createGenericFreeRecord({ providerId: FIXTURE_PROVIDER_ID, modelId: FIXTURE_MODEL_ID }));
 
 const server = new CodeForgeCloudServer({
   host: config.host,
@@ -77,7 +64,6 @@ const server = new CodeForgeCloudServer({
   publicUrl: config.publicUrl,
   allowedBrowserReturnUrls: config.allowedBrowserReturnUrls,
   firewallManager,
-  providerRegistry,
   allowedOrigins: config.allowedOrigins,
   maxRequestsPerMinute: config.rateLimits.maxRequestsPerMinute,
   requestTimeoutMs: config.requestTimeoutMs,
@@ -87,10 +73,7 @@ const actualPort = await server.start(config.port, config.host);
 console.log(`[dev-cloud] running on http://127.0.0.1:${actualPort}`);
 console.log(`[dev-cloud] db at ${config.database.path}`);
 
-const reports = await providerRegistry.discover({ force: true });
-for (const r of reports) {
-  console.log(`[dev-cloud] provider ${r.providerId}: ${r.status} (${r.verifiedFreeCount} verified-free)`);
-}
+console.log(`[dev-cloud] deterministic fixture ${FIXTURE_PROVIDER_ID} registered for A/B allowance certification`);
 
 const shutdown = async () => {
   console.log("[dev-cloud] shutting down...");
