@@ -14,11 +14,7 @@ import { computeWorkNotifications, type RunningCounters } from "./settings/notif
 import { describeHeaderActivity, summarizeActiveWork } from "../close-lifecycle.js";
 import type { AppSettings, AppSettingsPatch, CloseBehavior, ExecutionMode, SettingsSnapshot } from "../app-settings.js";
 
-const SERVER_BASE_URL = (() => {
-  if (typeof window === "undefined") return "http://127.0.0.1:3210";
-  const endpoint = window.electronAPI?.getRuntimeEndpoint?.();
-  return typeof endpoint === "string" && endpoint.length > 0 ? endpoint : "http://127.0.0.1:3210";
-})();
+const FALLBACK_SERVER_BASE_URL = "http://127.0.0.1:0";
 const HELP_URL = "https://github.com/Forger-Digital-Solutions/CodeForge#readme";
 const EXECUTION_MODE_KEY = "codeforge:execution-mode";
 const DEFAULT_MODEL_ZOOM: Record<AppSettings["appearance"]["chatTextScale"], number> = {
@@ -35,6 +31,8 @@ interface WorkspaceShellProps {
 }
 
 export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenProjectPath }: WorkspaceShellProps) {
+  const [runtimeEndpoint, setRuntimeEndpoint] = useState<string | null>(null);
+  const serverBaseUrl = runtimeEndpoint ?? FALLBACK_SERVER_BASE_URL;
   const [models, setModels] = useState<ModelSelectorItem[]>([
     { id: "auto", displayName: "ForgeAuto/Free", tier: "free", description: "Automatic free routing" },
   ]);
@@ -73,6 +71,16 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   const previousCountersRef = useRef<RunningCounters | null>(null);
   const discoveringProvidersRef = useRef(0);
 
+  useEffect(() => {
+    let active = true;
+    const endpointPromise = window.electronAPI?.getRuntimeEndpoint?.();
+    if (!endpointPromise) return () => { active = false; };
+    void endpointPromise.then((endpoint) => {
+      if (active && endpoint) setRuntimeEndpoint(endpoint);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+
   const loadCloudAccount = useCallback(async () => {
     try {
       if (window.electronAPI?.getCloudAccount) {
@@ -89,7 +97,8 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   }, []);
 
   useEffect(() => {
-    fetch(`${SERVER_BASE_URL}/api/workspace/set`, {
+    if (!runtimeEndpoint) return;
+    fetch(`${serverBaseUrl}/api/workspace/set`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path: project.path }),
@@ -121,11 +130,12 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       }
     };
     void loadGitInfo();
-  }, [project.path, loadCloudAccount, loadRecentProjects]);
+  }, [project.path, loadCloudAccount, loadRecentProjects, runtimeEndpoint]);
 
   // Canonical settings load. The renderer never invents settings values: everything it shows
   // comes from the validated store in the main process.
   useEffect(() => {
+    if (!runtimeEndpoint) return;
     let active = true;
     void (async () => {
       try {
@@ -149,17 +159,18 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     let active = true;
     const refreshIndex = async () => {
       try {
-        const response = await fetch(`${SERVER_BASE_URL}/api/repository-index/status`);
+        const response = await fetch(`${serverBaseUrl}/api/repository-index/status`);
         if (response.ok && active) setRepositoryIndex(await response.json() as RepositoryIndexStatus);
       } catch {}
     };
     void refreshIndex();
     const interval = setInterval(refreshIndex, repositoryIndex.state === "INDEXING" ? 1000 : 5000);
     return () => { active = false; clearInterval(interval); };
-  }, [project.path, repositoryIndex.state]);
+  }, [project.path, repositoryIndex.state, runtimeEndpoint]);
 
   const setRepositoryIndexEnabled = async (enabled: boolean) => {
-    const response = await fetch(`${SERVER_BASE_URL}/api/repository-index/settings`, {
+    if (!runtimeEndpoint) return;
+    const response = await fetch(`${serverBaseUrl}/api/repository-index/settings`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ enabled }),
@@ -172,20 +183,22 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   };
 
   const rebuildRepositoryIndex = async () => {
-    const response = await fetch(`${SERVER_BASE_URL}/api/repository-index/rebuild`, { method: "POST" });
+    if (!runtimeEndpoint) return;
+    const response = await fetch(`${serverBaseUrl}/api/repository-index/rebuild`, { method: "POST" });
     if (response.ok) setRepositoryIndex((current) => ({ ...current, state: "INDEXING" }));
   };
 
   const refreshModelsAndHealth = useCallback(async () => {
+    if (!runtimeEndpoint) return;
     try {
-      const response = await fetch(`${SERVER_BASE_URL}/api/models`);
+      const response = await fetch(`${serverBaseUrl}/api/models`);
       if (!response.ok) throw new Error(`models request failed: ${response.status}`);
       const data = (await response.json()) as ApiModel[];
       if (!Array.isArray(data)) return;
       setApiModels(data);
       setCatalogLastCheckedAt(Date.now());
       try {
-        const registryRes = await fetch(`${SERVER_BASE_URL}/api/free-cloud/registry`);
+        const registryRes = await fetch(`${serverBaseUrl}/api/free-cloud/registry`);
         if (registryRes.ok) setFreeCloud((await registryRes.json()) as FreeCloudView);
       } catch {}
 
@@ -210,7 +223,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       ])];
       const statuses = await Promise.all(providerIds.map(async (providerId) => {
         try {
-          const res = await fetch(`${SERVER_BASE_URL}/api/providers/${providerId}/health`);
+          const res = await fetch(`${serverBaseUrl}/api/providers/${providerId}/health`);
           if (!res.ok) return [providerId, undefined] as const;
           return [providerId, await res.json() as { status: string; error?: string }] as const;
         } catch {
@@ -219,9 +232,10 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       }));
       setProviderStatus(Object.fromEntries(statuses.filter((entry) => entry[1] !== undefined)) as Record<string, { status: string; error?: string }>);
     } catch {}
-  }, []);
+  }, [runtimeEndpoint]);
 
   useEffect(() => {
+    if (!runtimeEndpoint) return;
     refreshModelsAndHealth();
     const interval = setInterval(refreshModelsAndHealth, 15000);
     return () => clearInterval(interval);
@@ -237,7 +251,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     const defaultModelId = settingsSnapshot.settings.models.defaultModelId;
     if (defaultModelId === "auto") return;
     if (isCanonicalSelection(defaultModelId)) {
-      void fetch(`${SERVER_BASE_URL}/api/model-selection`, {
+      void fetch(`${serverBaseUrl}/api/model-selection`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ modelId: defaultModelId, canonicalModelId: canonicalIdOfSelection(defaultModelId), sessionId: "default" }),
@@ -248,14 +262,14 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     }
     const found = apiModels.find((m) => m.id === defaultModelId);
     if (!found || found.eligible !== true) return;
-    void fetch(`${SERVER_BASE_URL}/api/model-selection`, {
+    void fetch(`${serverBaseUrl}/api/model-selection`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ modelId: defaultModelId, providerId: found.providerId, sessionId: "default" }),
     }).then((response) => {
       if (response.ok) setSelectedModelId(defaultModelId);
     }).catch(() => {});
-  }, [settingsSnapshot, apiModels]);
+  }, [settingsSnapshot, apiModels, runtimeEndpoint]);
 
   // Runtime-status polling: feeds the Settings runtime surfaces and the OS notification policy.
   useEffect(() => {
@@ -314,7 +328,8 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     const body = isCanonicalSelection(modelId)
       ? { modelId, canonicalModelId: canonicalIdOfSelection(modelId), sessionId: "default" }
       : { modelId, providerId, sessionId: "default" };
-    const response = await fetch(`${SERVER_BASE_URL}/api/model-selection`, {
+    if (!runtimeEndpoint) throw new Error("RUNTIME_NOT_READY");
+    const response = await fetch(`${serverBaseUrl}/api/model-selection`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       // The historical endpoint name ("/api/model/select") never existed on the server and the
@@ -323,7 +338,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     });
     if (response.status === 409) throw new Error("MODEL_NOT_CONNECTED");
     if (!response.ok) throw new Error(`Model selection rejected (${response.status})`);
-  }, []);
+  }, [runtimeEndpoint, serverBaseUrl]);
 
   const handleSelectModel = (model: ModelSelectorItem) => {
     const modelId = model.id;
@@ -795,7 +810,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
           style={scaleZoom !== 1 ? ({ zoom: scaleZoom } as React.CSSProperties) : undefined}
         >
           <WorkspaceApp
-            sseUrl={`${SERVER_BASE_URL}/api/events`}
+            sseUrl={`${serverBaseUrl}/api/events`}
             models={models}
             selectedModelId={selectedModelId}
             onSelectModel={handleSelectModel}

@@ -5,7 +5,7 @@ const { contextBridge, ipcRenderer } = require("electron");
 // renderer never holds a secret it could leak.
 const api = {
   getRuntimeEndpoint: () => {
-    return ipcRenderer.sendSync("app:runtime-endpoint");
+    return ipcRenderer.invoke("app:runtime-endpoint");
   },
   selectDirectory: () => {
     return ipcRenderer.invoke("dialog:selectDirectory");

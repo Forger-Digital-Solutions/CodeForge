@@ -7,11 +7,7 @@ import { routeHealthLabel, routeStageLabel } from "../../CanonicalModelDetails.j
 import { fetchFreeCloudSummary, type FreeCloudSummaryView } from "../../provider-connections-client.js";
 import type { FreeCloudView } from "../../model-sections.js";
 
-const SERVER_BASE_URL = (() => {
-  if (typeof window === "undefined") return "http://127.0.0.1:3210";
-  const endpoint = window.electronAPI?.getRuntimeEndpoint?.();
-  return typeof endpoint === "string" && endpoint.length > 0 ? endpoint : "http://127.0.0.1:3210";
-})();
+const FALLBACK_SERVER_BASE_URL = "http://127.0.0.1:0";
 
 export interface ModelsRoutingSectionProps {
   /** Test seam: a static registry snapshot instead of the live server. */
@@ -33,15 +29,28 @@ export function ModelsRoutingSection(props: ModelsRoutingSectionProps = {}): Rea
   const [liveRegistry, setLiveRegistry] = useState<FreeCloudView | null>(null);
   const [liveSummary, setLiveSummary] = useState<FreeCloudSummaryView | null>(null);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const [runtimeEndpoint, setRuntimeEndpoint] = useState<string | null>(null);
+  const serverBaseUrl = runtimeEndpoint ?? FALLBACK_SERVER_BASE_URL;
   const registry = props.registry === undefined ? liveRegistry : props.registry;
   const summary = props.summary === undefined ? liveSummary : props.summary;
 
   useEffect(() => {
+    let active = true;
+    const endpointPromise = window.electronAPI?.getRuntimeEndpoint?.();
+    if (!endpointPromise) return () => { active = false; };
+    void endpointPromise.then((endpoint) => {
+      if (active && endpoint) setRuntimeEndpoint(endpoint);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
     if (props.registry !== undefined) return;
+    if (!runtimeEndpoint) return;
     let cancelled = false;
     const load = async () => {
       try {
-        const res = await fetch(`${SERVER_BASE_URL}/api/free-cloud/registry`);
+        const res = await fetch(`${serverBaseUrl}/api/free-cloud/registry`);
         if (res.ok && !cancelled) setLiveRegistry((await res.json()) as FreeCloudView);
       } catch {}
       const s = await fetchFreeCloudSummary();
@@ -56,7 +65,7 @@ export function ModelsRoutingSection(props: ModelsRoutingSectionProps = {}): Rea
       unsubscribe?.();
       window.removeEventListener("codeforge:provider-updated", onUpdated);
     };
-  }, [props.registry, ctx.apiModels]);
+  }, [props.registry, ctx.apiModels, runtimeEndpoint, serverBaseUrl]);
 
   const [favoritesVersion, setFavoritesVersion] = useState(0);
   const favorites = useMemo(() => [...loadModelFavorites()], [favoritesVersion, ctx.apiModels]);

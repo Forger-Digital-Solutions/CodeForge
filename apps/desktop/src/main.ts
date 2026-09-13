@@ -1170,7 +1170,27 @@ function resolveAppIcon(): string | undefined {
   return undefined;
 }
 
-async function createWindow(): Promise<void> {
+async function createWindowDocument(): Promise<void> {
+  const window = mainWindow;
+  if (!window) throw new Error("Main window was not created");
+  const isDev = process.env.ELECTRON_DEV === "true";
+  if (isDev) {
+    trustedRendererDocumentUrl = "http://localhost:5173/";
+    smokeRecord("LOAD_URL_http://localhost:5173");
+    await window.loadURL("http://localhost:5173");
+  } else {
+    const rendererFile = path.join(__dirname, "renderer", "index.html");
+    trustedRendererDocumentUrl = pathToFileURL(rendererFile).href;
+    smokeRecord(`LOAD_FILE_${rendererFile}`);
+    // loadFile builds a canonical file URL for Windows drive letters and ASAR paths. Hand-building
+    // `file://${path}` produced `file://G:\\...`, which is malformed and can make a sandboxed
+    // renderer fail during launch before the document gets a chance to paint.
+    await window.loadFile(rendererFile);
+  }
+  smokeRecord("WINDOW_CONTENT_LOADED");
+}
+
+async function createWindow(loadDocument = true): Promise<void> {
   smokeRecord("CREATE_WINDOW_START");
   const iconPath = resolveAppIcon();
   const primaryDisplay = screen.getPrimaryDisplay();
@@ -1244,27 +1264,14 @@ async function createWindow(): Promise<void> {
     return { action: "deny" };
   });
 
-  Menu.setApplicationMenu(null);
-
-  const isDev = process.env.ELECTRON_DEV === "true";
-  if (isDev) {
-    trustedRendererDocumentUrl = "http://localhost:5173/";
-    smokeRecord("LOAD_URL_http://localhost:5173");
-    await mainWindow.loadURL("http://localhost:5173");
-  } else {
-    const rendererFile = path.join(__dirname, "renderer", "index.html");
-    trustedRendererDocumentUrl = pathToFileURL(rendererFile).href;
-    smokeRecord(`LOAD_FILE_${rendererFile}`);
-    // loadFile builds a canonical file URL for Windows drive letters and ASAR paths. Hand-building
-    // `file://${path}` produced `file://G:\\...`, which is malformed and can make a sandboxed
-    // renderer fail during launch before the document gets a chance to paint.
-    await mainWindow.loadFile(rendererFile);
-  }
-  smokeRecord("WINDOW_CONTENT_LOADED");
-
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
+
+  Menu.setApplicationMenu(null);
+
+  if (!loadDocument) return;
+  await createWindowDocument();
 }
 
 function delay(ms: number): Promise<void> {
@@ -1849,12 +1856,13 @@ async function startPrimaryInstance(): Promise<void> {
   const previousRuntimeMetadata = readRuntimeMetadata(runtimeMetadataFile);
   smokeRecord(`RUNTIME_METADATA_PREVIOUS_${classifyRuntimeMetadata(previousRuntimeMetadata, app.getPath("userData"))}`);
   smokeRecord(`WHEN_READY_DBPATH_${dbPath}`);
+  // Create the sandboxed window before the heavier runtime initialization. The document is loaded
+  // only after the runtime has bound, so its preload can receive the actual endpoint through guarded IPC.
+  await createWindow(false);
+  smokeRecord("WHEN_READY_WINDOW_CREATED");
   await initializeServer(dbPath);
   smokeRecord("WHEN_READY_SERVER_INITIALIZED");
-  // The runtime binds before the document loads so the renderer receives the actual endpoint from
-  // the main process on first evaluation. Chromium still owns the renderer sandbox boundary.
-  await createWindow();
-  smokeRecord("WHEN_READY_WINDOW_CREATED");
+  await createWindowDocument();
 
   // Background: refresh the live Models.dev catalog, then discover + verify free models for any
   // already-connected providers. Failures are non-fatal (snapshot remains); the UI refreshes when
@@ -2009,14 +2017,13 @@ function assertMainWindowSender(event: Electron.IpcMainInvokeEvent): void {
   if (event.sender !== mainWindow?.webContents) throw new Error("Invalid IPC sender");
 }
 
-ipcMain.on("app:runtime-endpoint", (event) => {
+ipcMain.handle("app:runtime-endpoint", (event) => {
   // The endpoint is routing metadata, not an authentication secret. Returning it only to the
   // primary window keeps secondary or forged renderers from learning another instance's port.
   if (event.sender !== mainWindow?.webContents || localServerPort <= 0) {
-    event.returnValue = null;
-    return;
+    return null;
   }
-  event.returnValue = localServerBaseUrl();
+  return localServerBaseUrl();
 });
 
 ipcMain.handle("app:close-decision", async (event, payload: { decision?: unknown; remember?: unknown }) => {

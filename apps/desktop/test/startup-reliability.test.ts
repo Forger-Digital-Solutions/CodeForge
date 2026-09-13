@@ -15,19 +15,19 @@ describe("packaged desktop startup reliability", () => {
 
   it("loads the packaged renderer through Electron's canonical file-path API", () => {
     const source = readFileSync(resolve(process.cwd(), "apps/desktop/src/main.ts"), "utf8");
-    expect(source).toContain("async function createWindow(): Promise<void>");
-    expect(source).toContain("await mainWindow.loadFile(rendererFile);");
+    expect(source).toContain("async function createWindow(loadDocument = true): Promise<void>");
+    expect(source).toContain("await window.loadFile(rendererFile);");
     expect(source).not.toContain("`file://${path.join(__dirname, \"renderer\", \"index.html\")}`");
   });
 
   it("binds the local runtime before the renderer loads so the real endpoint is available", () => {
     const source = readFileSync(resolve(process.cwd(), "apps/desktop/src/main.ts"), "utf8");
-    const windowIndex = source.indexOf("await createWindow();");
+    const documentIndex = source.indexOf("await createWindowDocument();", source.indexOf('smokeRecord("WHEN_READY_SERVER_INITIALIZED")'));
     const serverIndex = source.indexOf("await initializeServer(dbPath);");
-    expect(windowIndex).toBeGreaterThan(-1);
+    expect(documentIndex).toBeGreaterThan(-1);
     expect(serverIndex).toBeGreaterThan(-1);
-    expect(serverIndex).toBeLessThan(windowIndex);
+    expect(serverIndex).toBeLessThan(documentIndex);
     expect(source).toContain("port: 0,");
-    expect(source).toContain('ipcMain.on("app:runtime-endpoint"');
+    expect(source).toContain('ipcMain.handle("app:runtime-endpoint"');
   });
 });
