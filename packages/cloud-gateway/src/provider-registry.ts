@@ -317,7 +317,7 @@ export class CloudProviderRegistry {
         structuredOutput: m.capabilities.structuredOutput,
       }));
       const matchedRoutes = allowedRoutes.filter((route) => live.some((model) => model.modelId === route.modelId));
-      console.info(`[CodeForge Cloud API] provider ${providerId}: liveModels=${live.length} managedRouteMatches=${matchedRoutes.length}`);
+      console.info(`[CodeForge Cloud API] provider ${providerId}: liveModels=${live.length} managedRouteMatches=${matchedRoutes.length} modelIds=${live.map((model) => model.modelId).join(",")}`);
     } catch (e) {
       const status = classifyError(e);
       this.firewallManager.markProviderHealth(providerId, healthForStatus(status), {
