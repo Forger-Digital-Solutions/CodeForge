@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "certificate": "CodeForge Adaptive Intelligence R1 Release Candidate 2",
+  "schemaVersion": "codeforge-rc-certificate/v1",
+  "issuedAt": "2026-09-14",
+  "verdict": "IMPLEMENTED_PACKAGED_OPERATOR_CREDENTIAL_REQUIRED",
+  "releaseReadiness": "NOT_PUBLIC_RELEASE_READY",
+  "scope": {
+    "repository": "G:/CodeForge-FreeCloud",
+    "branch": "codeforge/adaptive-intelligence-r1",
+    "auditedRevision": "ae269be",
+    "frozenBaseline": {
+      "repository": "G:/CodeForge",
+      "head": "3bba7e218050668c63f670e09b340678a6153ad4",
+      "modified": false
+    },
+    "externalActions": "none — no deployment, push, publication, OAuth approval, or provider-account mutation was performed"
+  },
+  "claims": {
+    "managedFreeProduct": {
+      "zeroUserProviderSetup": "PASS",
+      "serverAuthoritativeRouting": "PASS",
+      "boundedHostedToolCalling": "UNIT_VERIFIED",
+      "truthfulCapacityStates": "UNIT_VERIFIED",
+      "globalProviderCooldownOn429": "UNIT_VERIFIED",
+      "liveManagedFreeInference": "EXTERNAL_ACTIVATION_REQUIRED"
+    },
+    "accountAuthQuota": {
+      "serverBrokeredGithubPkce": "PASS",
+      "freeAccountProvisioning": "PASS",
+      "perUserEntitlementAndQuotaIsolation": "PASS",
+      "reservationReleaseOnProviderFailure": "PASS",
+      "freshUserExternalE2E": "EXTERNAL_ACTIVATION_REQUIRED"
+    },
+    "customAuto": {
+      "implementation": "PASS",
+      "tests": "PASS",
+      "ownerIsolation": "PASS"
+    },
+    "eightBit": {
+      "nativeTypeScriptPipeline": "PASS",
+      "determinismAndPromotionGuards": "PASS",
+      "authorizedEvidenceBoundary": "PASS",
+      "optionalGpuTrainer": "IMPLEMENTED_NOT_EXERCISED"
+    },
+    "desktop": {
+      "build": "PASS",
+      "installerAndPortableArtifacts": "PASS",
+      "packagedSmoke": "PASS",
+      "endpointSecurity": "PASS",
+      "codeSigning": "NOT_CONFIGURED"
+    }
+  },
+  "verification": {
+    "typecheck": {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    "build": {
+      "command": "npm.cmd run build",
+      "exitCode": 0
+    },
+    "testSuite": {
+      "command": "npm.cmd test",
+      "exitCode": 0,
+      "passedTestFiles": 331,
+      "skippedTestFiles": 7,
+      "passedTests": 2435,
+      "skippedTests": 37,
+      "failedTestFiles": 0,
+      "failedTests": 0,
+      "durationSeconds": 304.69
+    },
+    "focusedRc2Suites": {
+      "command": "npm.cmd test -- packages/providers/test/hosted.test.ts packages/cloud-gateway/test/global-capacity-cooldown.test.ts apps/cloud-api/test/hosted-capacity.test.ts apps/cloud-api/test/staging-tooling.test.ts",
+      "passedTestFiles": 4,
+      "passedTests": 46,
+      "failedTests": 0
+    },
+    "packagedBuild": {
+      "command": "npm.cmd run dist --workspace=codeforge-desktop",
+      "exitCode": 0,
+      "channel": "development",
+      "endpoint": "http://127.0.0.1:3220",
+      "note": "Development artifact only; no staging/production endpoint exists to stamp."
+    },
+    "packagedSmoke": {
+      "command": "npm.cmd run smoke:all --workspace=codeforge-desktop",
+      "exitCode": 0,
+      "modes": ["full", "interrupt", "recover"]
+    },
+    "packagedAudits": {
+      "internalDependencies": "PASS",
+      "runtimeDependencies": "PASS",
+      "authEndpoint": "PASS",
+      "browserSecurity": "PASS",
+      "secretSentinelScan": "PASS"
+    },
+    "freshUserAcceptance": {
+      "command": "node apps/desktop/scripts/first-user-acceptance.mjs --cloud-url <real-staging-url> --interactive",
+      "status": "BLOCKED_EXTERNAL_ACTIVATION",
+      "reason": "No public Cloud URL, PostgreSQL deployment, GitHub OAuth approval, or managed provider credential was available in this run. The harness refuses to fabricate a login or live inference."
+    }
+  },
+  "artifacts": [
+    {
+      "kind": "nsis",
+      "path": "apps/desktop/release/CodeForge-Setup-0.3.0.exe",
+      "bytes": 85970186,
+      "sha256": "CABFAD51AB3DE6995CC20190E88CDEE94F46A656AAC129E3504109B65B45F878",
+      "signed": false
+    },
+    {
+      "kind": "portable",
+      "path": "apps/desktop/release/CodeForge-Portable.exe",
+      "bytes": 85699432,
+      "sha256": "FEF5CEC0724E3D5AF71B47EE6077AB122F264FD61DB43A17B1C27CA3BC1FAC6D",
+      "signed": false
+    },
+    {
+      "kind": "unpacked-executable",
+      "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+      "bytes": 188875264,
+      "sha256": "83DB92BA2968A99096F34E38C1146D1ED261B952874818887503F533BA34718F",
+      "signed": false
+    }
+  ],
+  "managedFreeCloud": {
+    "operatorCredentialPresence": {
+      "CODEFORGE_GROQ_API_KEY": false,
+      "CODEFORGE_CLOUDFLARE_ACCOUNT_ID": false,
+      "CODEFORGE_CLOUDFLARE_API_TOKEN": false,
+      "CODEFORGE_ZAI_API_KEY": false
+    },
+    "activeRoutes": [],
+    "routeStates": [
+      { "providerId": "groq", "modelId": "openai/gpt-oss-120b", "qualified": true, "active": false, "state": "qualified_but_inactive", "reason": "operator credential and Free-plan guard absent" },
+      { "providerId": "groq", "modelId": "openai/gpt-oss-20b", "qualified": true, "active": false, "state": "qualified_but_inactive", "reason": "operator credential and Free-plan guard absent" },
+      { "providerId": "cloudflare-workers-ai", "modelId": "@cf/zai-org/glm-4.7-flash", "qualified": true, "active": false, "state": "qualified_but_inactive", "reason": "operator account, token, and Free-plan guard absent" },
+      { "providerId": "zai", "modelId": "glm-4.7-flash", "qualified": false, "active": false, "state": "policy_record_required", "reason": "hosted multi-tenant policy/data-use record absent" }
+    ],
+    "openRouterManagedRoute": "excluded",
+    "reason": "Managed routing correctly fails closed because no server-owned managed-free credential is present. User BYOK credentials are not used to populate this list."
+  },
+  "sourceState": {
+    "document": "docs/certification/codeforge-adaptive-intelligence-r1-rc2-source-state.json",
+    "sourceStateId": "873799ea3b1eeeb5d4c85a5a4168eb89fce1c63bc307815b2f53b454b71a5653",
+    "historicalRc1SourceStatePreserved": true
+  },
+  "limitations": [
+    "No live managed Free inference claim is made without operator credentials and a deployed Cloud.",
+    "The optional Python GPU trainer is developer tooling only and was not exercised in this Windows run.",
+    "Electron artifacts are unsigned because no signing identity was configured.",
+    "The renderer emits the existing Vite large-chunk warning (approximately 655 kB minified); the build and packaged smoke remain passing.",
+    "A real staging/production channel artifact must be rebuilt after an operator supplies the public HTTPS Cloud URL."
+  ],
+  "officialRouteEvidence": {
+    "groqRateLimits": "https://console.groq.com/docs/rate-limits",
+    "cloudflareWorkersAiPricing": "https://developers.cloudflare.com/workers-ai/platform/pricing/",
+    "zaiPricing": "https://docs.z.ai/guides/overview/pricing",
+    "openRouterFaq": "https://openrouter.ai/docs/faq"
+  }
+}
