@@ -149,7 +149,7 @@
   },
   "limitations": [
     "No live managed Free inference claim is made without operator credentials and a deployed Cloud.",
-    "The optional Python GPU trainer is developer tooling only and was not exercised in this Windows run.",
+    "GPU reality check: nvidia-smi sees a Quadro T2000 with driver 610.47 and 4096 MiB, but Python/PyTorch is not installed, so the optional GPU trainer was not exercised; CPU/TypeScript remains the verified baseline.",
     "Electron artifacts are unsigned because no signing identity was configured.",
     "The renderer emits the existing Vite large-chunk warning (approximately 655 kB minified); the build and packaged smoke remain passing.",
     "A real staging/production channel artifact must be rebuilt after an operator supplies the public HTTPS Cloud URL."
