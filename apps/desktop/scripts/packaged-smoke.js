@@ -97,6 +97,9 @@ const child = spawn(exePath, [`--user-data-dir=${smokeProfile}`], {
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 
+console.log(`[PACKAGED SMOKE] Harness PID: ${process.pid}`);
+console.log('[PACKAGED SMOKE] Child launch: detached=false windowsHide=false stdio=pipe args=--user-data-dir=<redacted>');
+
 const watchdog = setTimeout(() => {
   console.error(`[PACKAGED SMOKE] Mode ${mode} timed out`);
   child.kill();

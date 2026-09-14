@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { randomUUID } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { CloudDatabase } from "@codeforge/cloud-db";
 import { runStagingPreflight, formatPreflightReport, preflightReportForSerialization } from "../src/staging-preflight.js";
 import { STAGING_CONFIG_CONTRACT, SECRET_CONFIG_NAMES, redactSecrets, redactKnownValues, secretValuesIn } from "../src/staging-contract.js";
@@ -100,6 +102,40 @@ describe("staging config contract", () => {
 
     // Short values are ignored so unrelated text is not mangled.
     expect(redactKnownValues("the cat sat", ["cat"])).toBe("the cat sat");
+  });
+});
+
+describe("staging launch checklist", () => {
+  const checklist = fileURLToPath(new URL("../../../scripts/cloud/launch-checklist.mjs", import.meta.url));
+
+  function runChecklist(overrides: Record<string, string | undefined>) {
+    const env = { ...process.env };
+    for (const name of [
+      "CODEFORGE_GROQ_API_KEY",
+      "CODEFORGE_GROQ_FREE_PLAN_ONLY",
+      "CODEFORGE_CLOUDFLARE_ACCOUNT_ID",
+      "CODEFORGE_CLOUDFLARE_API_TOKEN",
+      "CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY",
+    ]) {
+      delete env[name];
+    }
+    for (const [name, value] of Object.entries(overrides)) {
+      if (value === undefined) delete env[name];
+      else env[name] = value;
+    }
+    return spawnSync(process.execPath, [checklist], { cwd: process.cwd(), env, encoding: "utf8" });
+  }
+
+  it("does not count personal provider variables as managed Free capacity", () => {
+    const result = runChecklist({ OPENROUTER_API_KEY: "personal-router-key", GROQ_API_KEY: "personal-groq-key" });
+    expect(result.stdout).toContain("[FAIL] Managed Free provider capacity");
+    expect(result.stdout).toContain("complete CODEFORGE_GROQ_* or CODEFORGE_CLOUDFLARE_*");
+  });
+
+  it("counts only a complete, explicitly guarded managed route", () => {
+    const result = runChecklist({ CODEFORGE_GROQ_API_KEY: "gsk_operator-key", CODEFORGE_GROQ_FREE_PLAN_ONLY: "true" });
+    expect(result.stdout).toContain("[PASS] Managed Free provider capacity");
+    expect(result.stdout).toContain("Groq");
   });
 });
 

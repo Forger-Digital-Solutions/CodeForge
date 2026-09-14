@@ -245,6 +245,36 @@ function smokeRecord(line: string): void {
   fs.appendFileSync(outputPath, `${line}\n`, "utf8");
 }
 
+function smokeRecordProcessDiagnostics(): void {
+  if (!process.env.CODEFORGE_SMOKE_OUT) return;
+  const safeArgs = process.argv
+    .map((argument) => (argument.startsWith("--") ? argument.split("=", 1)[0] : path.basename(argument)))
+    .join(" ");
+  smokeRecord(`MAIN_PROCESS_PID=${process.pid}`);
+  smokeRecord(`MAIN_PROCESS_PARENT_PID=${process.ppid}`);
+  smokeRecord(`ELECTRON_VERSION=${process.versions.electron ?? "unknown"}`);
+  smokeRecord(`CHROMIUM_VERSION=${process.versions.chrome ?? "unknown"}`);
+  smokeRecord(`NODE_VERSION=${process.versions.node ?? "unknown"}`);
+  smokeRecord(`PACKAGED_FLAG=${app.isPackaged}`);
+  smokeRecord(`PROCESS_ARGS_SAFE=${safeArgs}`);
+  smokeRecord(`TEMP_DIRECTORY=${os.tmpdir()}`);
+  smokeRecord(`TEMP_DIRECTORY_EXISTS=${fs.existsSync(os.tmpdir())}`);
+}
+
+function smokeRecordGpuDiagnostics(label: string): void {
+  if (!PACKAGED_SMOKE) return;
+  try {
+    smokeRecord(`GPU_FEATURE_STATUS_${label}=${JSON.stringify(app.getGPUFeatureStatus())}`);
+  } catch (error) {
+    smokeRecord(`GPU_FEATURE_STATUS_${label}=unavailable:${error instanceof Error ? error.message : String(error)}`);
+  }
+  void app.getGPUInfo("basic").then((info) => {
+    smokeRecord(`GPU_INFO_BASIC_${label}=${JSON.stringify(info).slice(0, 4000)}`);
+  }).catch((error: unknown) => {
+    smokeRecord(`GPU_INFO_BASIC_${label}=unavailable:${error instanceof Error ? error.message : String(error)}`);
+  });
+}
+
 function createSmokeToolCall(toolName: string, args: Record<string, unknown>, id: string): StreamEvent[] {
   const serialized = JSON.stringify(args);
   return [
@@ -1223,18 +1253,45 @@ async function createWindow(loadDocument = true): Promise<void> {
     show: false,
     backgroundColor: "#0f1012",
   });
+  smokeRecord(`WINDOW_CONSTRUCTED_DETAILS=${JSON.stringify({
+    webContentsId: mainWindow.webContents.id,
+    rendererPidAttempt: mainWindow.webContents.getOSProcessId(),
+    rendererProcessIdAttempt: mainWindow.webContents.getProcessId(),
+  })}`);
+  smokeRecord(`RENDERER_PID_ATTEMPT=${mainWindow.webContents.getOSProcessId()}`);
+  smokeRecord(`RENDERER_PROCESS_ID_ATTEMPT=${mainWindow.webContents.getProcessId()}`);
   smokeRecordTimed("WINDOW_CONSTRUCTED");
   installRendererLifecycleDiagnostics(mainWindow);
 
   mainWindow.webContents.on("render-process-gone", (_event, details) => {
+    smokeRecord(`RENDER_PROCESS_GONE_DETAILS=${JSON.stringify({
+      webContentsId: mainWindow?.webContents.id ?? null,
+      rendererPid: mainWindow?.webContents.getOSProcessId() ?? null,
+      rendererProcessId: mainWindow?.webContents.getProcessId() ?? null,
+      reason: details.reason,
+      exitCode: details.exitCode,
+    })}`);
     const detail = `RENDER_PROCESS_GONE=${details.reason}:${details.exitCode}`;
     smokeRecord(detail);
     console.error(`[CodeForge] ${detail}`);
   });
-  mainWindow.webContents.on("did-fail-load", (_event, code, description) => {
+  mainWindow.webContents.on("did-fail-load", (_event, code, description, _validatedURL, isMainFrame) => {
+    smokeRecord(`RENDER_DID_FAIL_LOAD_DETAILS=${JSON.stringify({
+      webContentsId: mainWindow?.webContents.id ?? null,
+      rendererPid: mainWindow?.webContents.getOSProcessId() ?? null,
+      errorCode: code,
+      errorDescription: description,
+      isMainFrame,
+    })}`);
     const detail = `RENDER_DID_FAIL_LOAD=${code}:${description}`;
     smokeRecord(detail);
     console.error(`[CodeForge] ${detail}`);
+  });
+  mainWindow.webContents.on("unresponsive", () => {
+    smokeRecord(`RENDERER_UNRESPONSIVE=${mainWindow?.webContents.getOSProcessId() ?? "unknown"}`);
+  });
+  mainWindow.webContents.on("responsive", () => {
+    smokeRecord(`RENDERER_RESPONSIVE=${mainWindow?.webContents.getOSProcessId() ?? "unknown"}`);
   });
 
   mainWindow.once("ready-to-show", () => {
@@ -1276,6 +1333,7 @@ async function createWindow(loadDocument = true): Promise<void> {
   });
 
   mainWindow.on("closed", () => {
+    smokeRecord("WINDOW_CLOSED");
     mainWindow = null;
   });
 
@@ -1911,6 +1969,8 @@ async function runPackagedSmoke(): Promise<void> {
 
 async function startPrimaryInstance(): Promise<void> {
   smokeRecord("WHEN_READY_START");
+  smokeRecordProcessDiagnostics();
+  smokeRecordGpuDiagnostics("when-ready");
   // One-time freshness probe for the canonical settings store: a first launch with no stored
   // settings object lets the renderer seed defaults from its pre-canonical local values.
   appSettingsFreshAtStartup = !(APP_SETTINGS_KEY in readSettings());
@@ -2102,8 +2162,21 @@ if (!IS_PRIMARY_INSTANCE) smokeRecord("SECOND_INSTANCE_EXIT");
 app.on("child-process-gone", (_event, details) => {
   const detail = `CHILD_PROCESS_GONE=${details.type}:${details.reason}:${details.exitCode}`;
   smokeRecord(detail);
+  smokeRecord(`CHILD_PROCESS_GONE_DETAILS=${JSON.stringify({
+    type: details.type,
+    reason: details.reason,
+    exitCode: details.exitCode,
+    serviceName: details.serviceName ?? null,
+    name: details.name ?? null,
+  })}`);
   console.error(`[CodeForge] ${detail}`);
 });
+
+if (PACKAGED_SMOKE) {
+  app.on("gpu-info-update", () => {
+    smokeRecordGpuDiagnostics("update");
+  });
+}
 
 app.on("before-quit", (event) => {
   if (isQuitting) return;
@@ -2126,6 +2199,7 @@ app.on("will-quit", () => {
 });
 
 app.on("window-all-closed", () => {
+  smokeRecord("WINDOW_ALL_CLOSED");
   if (isQuitting) return;
   if (process.platform !== "darwin") void requestClose();
 });

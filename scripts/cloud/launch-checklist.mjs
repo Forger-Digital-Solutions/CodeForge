@@ -73,8 +73,24 @@ add(has("GITHUB_CLIENT_ID") ? "PASS" : "FAIL", "GitHub OAuth Client ID", "GITHUB
 add(has("GITHUB_CLIENT_SECRET") ? "PASS" : "FAIL", "GitHub OAuth Client Secret", "GITHUB_CLIENT_SECRET", true);
 add(has("JWT_SECRET") ? "PASS" : "FAIL", "Session signing secret", "JWT_SECRET", true);
 
-const providerKeys = ["OPENROUTER_API_KEY", "GROQ_API_KEY"].filter(has);
-add(providerKeys.length > 0 ? "PASS" : "FAIL", "Provider server credential", providerKeys.join(", ") || "OPENROUTER_API_KEY and/or GROQ_API_KEY", true);
+const managedRoutes = [];
+if (has("CODEFORGE_GROQ_API_KEY") && process.env.CODEFORGE_GROQ_FREE_PLAN_ONLY === "true") {
+  managedRoutes.push("Groq");
+}
+if (
+  has("CODEFORGE_CLOUDFLARE_ACCOUNT_ID") &&
+  has("CODEFORGE_CLOUDFLARE_API_TOKEN") &&
+  process.env.CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY === "true"
+) {
+  managedRoutes.push("Cloudflare Workers AI");
+}
+add(
+  managedRoutes.length > 0 ? "PASS" : "FAIL",
+  "Managed Free provider capacity",
+  managedRoutes.join(", ") ||
+    "complete CODEFORGE_GROQ_* or CODEFORGE_CLOUDFLARE_* credential with FREE_PLAN_ONLY=true",
+  true,
+);
 
 const stripeReady = has("STRIPE_SECRET_KEY") && has("STRIPE_WEBHOOK_SECRET");
 add(

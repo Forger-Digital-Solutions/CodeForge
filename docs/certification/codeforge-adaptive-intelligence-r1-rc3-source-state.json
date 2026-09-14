@@ -1,0 +1,46 @@
+{
+  "sourceStateId": "5aa49b00f029facc850a14897499b44dad5e8fc2321ae2f582b7f75f8475056b",
+  "surfaceVersion": "codeforge-adaptive-intelligence-r1-rc3",
+  "schemaVersion": "forgegreen-source-state/v1",
+  "lineage": {
+    "priorCertificate": "docs/certification/codeforge-adaptive-intelligence-r1-rc2.json",
+    "priorSourceStateDocument": "docs/certification/codeforge-adaptive-intelligence-r1-rc2-source-state.json",
+    "priorSourceStateId": "873799ea3b1eeeb5d4c85a5a4168eb89fce1c63bc307815b2f53b454b71a5653",
+    "purpose": "RC3 source-state evidence for launch-checklist managed-capacity truthfulness and its focused regression coverage; RC2 evidence remains historical and unchanged."
+  },
+  "idAlgorithm": "sha256(JSON.stringify(materialFiles sorted lexicographically, each as [path, gitBlobHash]))",
+  "materialFiles": [
+    "apps/cloud-api/src/server.ts",
+    "apps/cloud-api/src/staging-contract.ts",
+    "apps/cloud-api/src/staging-preflight.ts",
+    "apps/cloud-api/test/staging-tooling.test.ts",
+    "apps/desktop/scripts/first-user-acceptance.mjs",
+    "packages/cloud-gateway/src/gateway-service.ts",
+    "packages/cloud-gateway/src/provider-registry.ts",
+    "packages/cloud-gateway/src/types.ts",
+    "packages/providers/src/hosted.ts",
+    "scripts/cloud/launch-checklist.mjs"
+  ],
+  "materialFileHashes": {
+    "apps/cloud-api/src/server.ts": "9c74f0e931996e74ba0a8ee204ed41bc733329d5",
+    "apps/cloud-api/src/staging-contract.ts": "55b8b2b9840815f9a1bc18e1f7816a05c4d598e0",
+    "apps/cloud-api/src/staging-preflight.ts": "c472d23a9c0d591da8fc2d952b06798e6bf0bfb1",
+    "apps/cloud-api/test/staging-tooling.test.ts": "961ec1af0c51a2f861e0561f1e7207c0426e3d6d",
+    "apps/desktop/scripts/first-user-acceptance.mjs": "18d9e3c7e53ce28813e5d7ca8cf745a20958bcf4",
+    "packages/cloud-gateway/src/gateway-service.ts": "6b73928b70506295a57572029e51841e9d1738d5",
+    "packages/cloud-gateway/src/provider-registry.ts": "c82eeb9dbf98e7998fc5d5eaa516462da9ab30e2",
+    "packages/cloud-gateway/src/types.ts": "2b5635a09f6f84eb5f0eb29d5cb2817cd7810ada",
+    "packages/providers/src/hosted.ts": "dc7863760141f4f5e91e0de38872024f07559c60",
+    "scripts/cloud/launch-checklist.mjs": "80543af4a776342a5e4582141869a736804d397d"
+  },
+  "workingTree": {
+    "head": "c9f100e45d730a03d2512da2eb9e7bfdb0cadd6d",
+    "uncommittedMaterialChanges": true,
+    "newCommitCreated": false
+  },
+  "changes": [
+    "Launch checklist now recognizes only complete, explicitly Free-guarded server-owned Groq or Cloudflare credentials as managed capacity.",
+    "Focused tests prove personal OPENROUTER_API_KEY/GROQ_API_KEY variables do not satisfy the managed-capacity check and a guarded operator route does."
+  ],
+  "createdAt": "2026-09-14"
+}

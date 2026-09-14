@@ -1,0 +1,329 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "certificate": "CodeForge Adaptive Intelligence R1 Release Candidate 3",
+  "schemaVersion": "codeforge-rc-certificate/v1",
+  "issuedAt": "2026-09-14",
+  "verdict": "CODEFORGE_ADAPTIVE_INTELLIGENCE_R1_RC3_OPERATOR_CREDENTIAL_REQUIRED",
+  "releaseReadiness": "NOT_PUBLIC_RELEASE_READY",
+  "scope": {
+    "repository": "G:/CodeForge-FreeCloud",
+    "branch": "codeforge/adaptive-intelligence-r1",
+    "head": "c9f100e45d730a03d2512da2eb9e7bfdb0cadd6d",
+    "workingTree": "dirty — RC3 local-preparation changes are uncommitted",
+    "frozenBaseline": {
+      "repository": "G:/CodeForge",
+      "head": "3bba7e218050668c63f670e09b340678a6153ad4",
+      "modified": false
+    },
+    "externalActions": "none — no deployment, database mutation, OAuth approval, provider-account mutation, signing, push, or publication was performed"
+  },
+  "claims": {
+    "managedFreeProduct": {
+      "zeroUserProviderSetup": "UNIT_VERIFIED",
+      "serverAuthoritativeRouting": "UNIT_VERIFIED",
+      "boundedHostedToolCalling": "UNIT_VERIFIED",
+      "truthfulCapacityStates": "UNIT_VERIFIED",
+      "globalProviderCooldownOn429": "UNIT_VERIFIED",
+      "liveManagedFreeInference": "NOT_ACTIVATED"
+    },
+    "accountAuthQuota": {
+      "serverBrokeredGithubPkce": "UNIT_VERIFIED",
+      "freeAccountProvisioning": "UNIT_VERIFIED",
+      "perUserEntitlementAndQuotaIsolation": "UNIT_VERIFIED",
+      "reservationReleaseOnProviderFailure": "UNIT_VERIFIED",
+      "freshUserExternalE2E": "BLOCKED_EXTERNAL_ACTIVATION"
+    },
+    "customAuto": {
+      "implementation": "PASS",
+      "tests": "PASS",
+      "ownerIsolation": "PASS",
+      "liveExternalProof": "NOT_AVAILABLE"
+    },
+    "eightBit": {
+      "nativeTypeScriptPipeline": "PASS",
+      "determinismAndPromotionGuards": "PASS",
+      "authorizedEvidenceBoundary": "PASS",
+      "optionalGpuTrainer": "IMPLEMENTED_NOT_EXERCISED"
+    },
+    "desktop": {
+      "build": "PASS",
+      "installerAndPortableArtifacts": "PASS",
+      "packagedSmoke": "BLOCKED_LOCAL_RENDERER_SANDBOX_LAUNCH",
+      "endpointSecurity": "PASS",
+      "codeSigning": "NOT_CONFIGURED"
+    }
+  },
+  "verification": {
+    "typecheck": {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    "build": {
+      "command": "npm.cmd run build",
+      "exitCode": 0,
+      "note": "Used the installed system npm prefix because the user-level npm wrapper resolved to a missing npm-cli.js."
+    },
+    "testSuite": {
+      "command": "node node_modules/vitest/vitest.mjs run",
+      "equivalentTo": "npm test",
+      "exitCode": 0,
+      "passedTestFiles": 331,
+      "skippedTestFiles": 7,
+      "passedTests": 2437,
+      "skippedTests": 37,
+      "failedTestFiles": 0,
+      "failedTests": 0,
+      "durationSeconds": 369.79
+    },
+    "focusedRc3Suite": {
+      "command": "node node_modules/vitest/vitest.mjs run apps/cloud-api/test/staging-tooling.test.ts --reporter=verbose",
+      "exitCode": 0,
+      "passedTestFiles": 1,
+      "passedTests": 39,
+      "failedTests": 0
+    },
+    "stagingLaunchChecklist": {
+      "command": "node scripts/cloud/launch-checklist.mjs",
+      "exitCode": 1,
+      "passed": 12,
+      "failed": 6,
+      "externalActions": [
+        "CODEFORGE_PUBLIC_URL",
+        "DATABASE_URL",
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "JWT_SECRET",
+        "complete CODEFORGE_GROQ_* or CODEFORGE_CLOUDFLARE_* credential with FREE_PLAN_ONLY=true"
+      ]
+    },
+    "stagingPreflight": {
+      "command": "node scripts/cloud/staging-preflight.mjs",
+      "exitCode": 1,
+      "passed": 3,
+      "failed": 11,
+      "warnings": 1,
+      "environment": "development"
+    },
+    "postgresValidator": {
+      "command": "node scripts/cloud/pg-validate.mjs",
+      "exitCode": 1,
+      "status": "BLOCKED_EXTERNAL_ACTIVATION",
+      "reason": "No DATABASE_URL or CODEFORGE_TEST_POSTGRES_URL was supplied."
+    },
+    "packagedBuild": {
+      "command": "npm.cmd run dist --workspace=codeforge-desktop",
+      "exitCode": 0,
+      "channel": "development",
+      "endpoint": "http://127.0.0.1:3220",
+      "note": "Freshly rebuilt development artifact only; no staging or production URL was available to stamp."
+    },
+    "packagedSmoke": {
+      "command": "node apps/desktop/scripts/packaged-smoke.js full; node apps/desktop/scripts/packaged-smoke.js interrupt; node apps/desktop/scripts/packaged-smoke.js recover",
+      "modes": {
+        "full": { "exitCode": 1, "failure": "Renderer process launch-failed:49 before document navigation" },
+        "interrupt": { "exitCode": 1, "failure": "Renderer process launch-failed:49 before document navigation" },
+        "recover": { "exitCode": 1, "failure": "Renderer process launch-failed:49 before document navigation" }
+      },
+      "securityPreservingDiagnostic": {
+        "status": "NOT_CERTIFICATION_EVIDENCE",
+        "result": "With a temporary --no-sandbox launch argument, the same package reached first paint, runtime-connected, workspace-interactive, repository indexing, and trust-boundary checks before a later smoke UX assertion failed.",
+        "interpretation": "The normal failure is a renderer-process sandbox launch restriction in this execution host; --no-sandbox is not a release configuration."
+      }
+    },
+    "packagedAudits": {
+      "browserSecurity": "PASS",
+      "browserSecurityEvidence": "sandbox=true; nodeIntegration=false; contextIsolation=true; webSecurity=true; preloadBearerFree=true",
+      "otherRc2Audits": "PRESERVED_FROM_RC2_NOT_RERUN"
+    },
+    "freshUserAcceptance": {
+      "command": "node apps/desktop/scripts/first-user-acceptance.mjs --cloud-url <real-staging-url> --interactive",
+      "status": "BLOCKED_EXTERNAL_ACTIVATION",
+      "reason": "No real public Cloud URL, PostgreSQL deployment, GitHub OAuth registration, or managed provider credential was available. The harness was not pointed at localhost, BYOK, a fixture, or a historical URL."
+    }
+  },
+  "stagingInfrastructure": {
+    "cloudApi": "IMPLEMENTED_NOT_DEPLOYED",
+    "postgresql": "NOT_PROVISIONED_OR_VALIDATED",
+    "https": "NO_PUBLIC_HTTPS_URL_AVAILABLE",
+    "environment": "local development only; preflight correctly rejects it as a deployment",
+    "readyTopology": "Packaged desktop -> expected public HTTPS CodeForge Cloud API -> PostgreSQL + server-owned managed Free routes; no live instance exists in this run."
+  },
+  "realOAuth": {
+    "browserAuth": "NOT_RUN — GitHub OAuth client credentials and a public callback were absent",
+    "pkce": "IMPLEMENTED_AND_UNIT_VERIFIED",
+    "callback": "NOT_REGISTERED_OR_LIVE_VERIFIED",
+    "sessionPersistence": "UNIT_VERIFIED; no real account session created",
+    "logout": "UNIT_VERIFIED; no real session to revoke",
+    "restart": "UNIT_VERIFIED; packaged normal-sandbox smoke blocked before this stage"
+  },
+  "accountProvisioning": {
+    "freshAccount": "NOT_CREATED — requires real OAuth and deployed Cloud",
+    "configuredFreeAllocationCredits": 500000,
+    "allocationEvidence": "Deterministic cloud-auth/cloud-api tests and migration defaults; not a live account allocation."
+  },
+  "operatorCredentialState": {
+    "CODEFORGE_GROQ_API_KEY": false,
+    "CODEFORGE_GROQ_FREE_PLAN_ONLY": false,
+    "CODEFORGE_CLOUDFLARE_ACCOUNT_ID": false,
+    "CODEFORGE_CLOUDFLARE_API_TOKEN": false,
+    "CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY": false,
+    "CODEFORGE_ZAI_API_KEY": false,
+    "GITHUB_CLIENT_ID": false,
+    "GITHUB_CLIENT_SECRET": false,
+    "DATABASE_URL": false,
+    "JWT_SECRET": false,
+    "personal_OPENROUTER_API_KEY_present": true,
+    "personal_GROQ_API_KEY_present": true,
+    "personalKeysUsedForManagedRouting": false
+  },
+  "managedRoutes": [
+    {
+      "route": "groq::openai/gpt-oss-120b",
+      "qualified": true,
+      "credentialed": false,
+      "active": false,
+      "healthy": false,
+      "liveTested": false,
+      "roles": ["primary managed Free route"]
+    },
+    {
+      "route": "groq::openai/gpt-oss-20b",
+      "qualified": true,
+      "credentialed": false,
+      "active": false,
+      "healthy": false,
+      "liveTested": false,
+      "roles": ["primary managed Free route"]
+    },
+    {
+      "route": "cloudflare-workers-ai::@cf/zai-org/glm-4.7-flash",
+      "qualified": true,
+      "credentialed": false,
+      "active": false,
+      "healthy": false,
+      "liveTested": false,
+      "roles": ["limited reserve managed Free route"]
+    },
+    {
+      "route": "zai::glm-4.7-flash",
+      "qualified": false,
+      "credentialed": false,
+      "active": false,
+      "healthy": false,
+      "liveTested": false,
+      "roles": ["policy_record_required"]
+    }
+  ],
+  "providerSpecific": {
+    "groq": "Inventory and Free-plan guard are implemented; no server-owned credential, live discovery, health probe, or inference was available.",
+    "cloudflare": "Reserve route and explicit Free-plan guard are implemented; no operator account/token, live discovery, health probe, or inference was available.",
+    "zai": "Remains policy_record_required; no activation from a key or pricing claim is permitted.",
+    "openrouter": "Excluded from managed pool; personal/BYOK only."
+  },
+  "eightBitLiveRoster": {
+    "revision": "none",
+    "status": "NO_LIVE_MANAGED_ROSTER",
+    "activeDistinctModels": 0
+  },
+  "forgeAutoTeam": {
+    "activeDistinctModels": 0,
+    "status": "NO_ACTIVE_MANAGED_ROUTES"
+  },
+  "managedLiveProviderProof": {
+    "status": "NOT_AVAILABLE",
+    "sanitizedResult": "No public HTTPS Cloud and no server-owned managed Free route were available; no live provider request was attempted."
+  },
+  "byokIsolation": {
+    "status": "PASS_FOR_MANAGED_CAPACITY_CHECKS",
+    "proof": "The RC3 launch checklist ignores personal OPENROUTER_API_KEY/GROQ_API_KEY variables and accepts only complete guarded CODEFORGE_GROQ_* or CODEFORGE_CLOUDFLARE_* configuration. The focused test covers both cases."
+  },
+  "liveAgentToolLoop": {
+    "status": "NOT_AVAILABLE",
+    "steps": ["repo read — local deterministic evidence only", "edit — no live Cloud workspace", "command — no live agent session", "test — unit/integration suites pass", "verification — staging and packaged normal-sandbox gates remain blocked"]
+  },
+  "failureRepair": {
+    "status": "LOCAL_DIAGNOSTIC_ONLY",
+    "failure": "Normal packaged launch loses the renderer with launch-failed:49 before navigation.",
+    "repairEvidence": "A temporary no-sandbox diagnostic allowed the same package to reach renderer lifecycle and trust-boundary checks; the unsafe flag was removed and is not accepted as release evidence."
+  },
+  "multiSpecialistLiveTest": "NOT_AVAILABLE — active managed roster size is zero",
+  "userIsolation": "UNIT_VERIFIED — two-user and two-client authority tests pass; no live accounts existed for external proof.",
+  "customAutoOwnership": "PASS — local implementation, tests, and owner-isolation checks; no live Cloud session.",
+  "databaseMigration": {
+    "status": "NOT_LIVE_VALIDATED",
+    "postgres": "No remote URL supplied; pg-validate refused to proceed.",
+    "sqlite": "Not used to certify staging or production.",
+    "migrationImplementation": "UNIT_VERIFIED"
+  },
+  "security": {
+    "packagedBrowserAudit": "PASS",
+    "findingsFixedInRc3": ["Launch checklist no longer mislabels personal provider keys as managed server capacity."],
+    "secretsInArtifactsOrReports": "none observed; values were not recorded",
+    "productionSecurityCertification": "NOT_AVAILABLE without deployed HTTPS target"
+  },
+  "eightBitTraining": {
+    "cpuAndTypeScriptBaseline": "PASS",
+    "gpu": "Not exercised; historical host check saw Quadro T2000, but Python/PyTorch was unavailable.",
+    "newGpuEvidence": "none"
+  },
+  "productUx": {
+    "freshUser": "NOT_LIVE_VERIFIED",
+    "localRenderer": "Lifecycle and workspace-interactive markers were observed only in the temporary no-sandbox diagnostic.",
+    "managedCapacityMessaging": "Fail-closed capacity states are unit verified."
+  },
+  "artifacts": [
+    {
+      "kind": "nsis",
+      "path": "apps/desktop/release/rc3/CodeForge-Setup-0.3.0.exe",
+      "bytes": 85970181,
+      "sha256": "5866CE99B9E336EF5CDEB3F3303FAF78C734A52DE012EFFC60E2259DBE910883",
+      "signed": false
+    },
+    {
+      "kind": "portable",
+      "path": "apps/desktop/release/rc3/CodeForge-Portable.exe",
+      "bytes": 85699432,
+      "sha256": "BA97CCCF1101B2F6E695510CD5E0F78E8B299979242CB18E5A94565F689A6470",
+      "signed": false
+    },
+    {
+      "kind": "unpacked-executable",
+      "path": "apps/desktop/release/rc3/win-unpacked/CodeForge.exe",
+      "bytes": 188875264,
+      "sha256": "83DB92BA2968A99096F34E38C1146D1ED261B952874818887503F533BA34718F",
+      "signed": false
+    }
+  ],
+  "sourceState": {
+    "document": "docs/certification/codeforge-adaptive-intelligence-r1-rc3-source-state.json",
+    "sourceStateId": "5aa49b00f029facc850a14897499b44dad5e8fc2321ae2f582b7f75f8475056b",
+    "historicalRc2SourceStatePreserved": true
+  },
+  "stagingReadiness": {
+    "status": "BLOCKED_EXTERNAL_RESOURCES_AND_LOCAL_PACKAGED_SANDBOX_VERIFICATION",
+    "publicCloudUrl": false,
+    "postgres": false,
+    "realGithubOAuth": false,
+    "managedFreeCapacity": false,
+    "normalSandboxPackagedSmoke": false
+  },
+  "publicReleaseReadiness": "NO",
+  "codeSigning": "UNSIGNED — no signing identity was configured",
+  "commits": [],
+  "remainingExternalActions": [
+    "Provision a public HTTPS CodeForge Cloud service and durable PostgreSQL database.",
+    "Register the exact GitHub OAuth callback on that public origin and supply the confidential client credentials.",
+    "Supply a fresh JWT_SECRET and explicit CODEFORGE_TRUST_PROXY/CODEFORGE_CLOUD_DB_SSL deployment settings.",
+    "Supply at least one server-owned Groq or Cloudflare credential with its explicit FREE_PLAN_ONLY=true guard.",
+    "Provide an authorized Windows code-signing identity if the package is to be publicly distributed."
+  ],
+  "nonAuthorizationGates": [
+    "Run the normal-sandbox packaged smoke on a supported Windows QA host and resolve any host policy that prevents Chromium renderer creation."
+  ],
+  "officialRouteEvidence": {
+    "groqRateLimits": "https://console.groq.com/docs/rate-limits",
+    "cloudflareWorkersAiPricing": "https://developers.cloudflare.com/workers-ai/platform/pricing/",
+    "zaiPricing": "https://docs.z.ai/guides/overview/pricing",
+    "openRouterFaq": "https://openrouter.ai/docs/faq"
+  }
+}
