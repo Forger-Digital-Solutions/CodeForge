@@ -113,4 +113,32 @@ describe("OpenAICompatibleAdapter transport", () => {
     expect(url).toContain("/accounts/acct_123/ai/v1/models");
     expect(url).not.toContain("${CLOUDFLARE_ACCOUNT_ID}");
   });
+
+  it("Cloudflare discovery uses the account model search response", async () => {
+    let url = "";
+    const direct = new OpenAICompatibleAdapter({
+      providerId: "cloudflare-workers-ai",
+      baseUrl: "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/v1",
+      apiKey: "token",
+      resolveBaseUrl: (u) => u.replace("${CLOUDFLARE_ACCOUNT_ID}", "acct_123"),
+      resolveModelsUrl: (u) => u.replace(/\/ai\/v1$/, "/ai/models/search"),
+      parseModels: (data) => {
+        const result = (data as { result?: unknown }).result;
+        return Array.isArray(result) ? result : [];
+      },
+      mapModel: (raw) => {
+        const model = raw as { id?: string; task?: { name?: string } };
+        return model.id && model.task?.name === "Text Generation"
+          ? { modelId: model.id, displayName: model.id, capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: false }, isFree: false, freeStatus: "unknown" }
+          : null;
+      },
+      fetchFn: (async (u: string) => {
+        url = u;
+        return jsonResponse({ result: [{ id: "@cf/zai-org/glm-4.7-flash", task: { name: "Text Generation" } }] });
+      }) as unknown as typeof fetch,
+    });
+    const models = await direct.listModels();
+    expect(url).toBe("https://api.cloudflare.com/client/v4/accounts/acct_123/ai/models/search");
+    expect(models[0]?.modelId).toBe("@cf/zai-org/glm-4.7-flash");
+  });
 });

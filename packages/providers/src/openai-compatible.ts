@@ -23,6 +23,10 @@ export interface OpenAICompatibleConfig {
   authHeader?: (key: string) => Record<string, string>;
   /** Path for model listing relative to baseUrl. Default "/models". */
   modelsPath?: string;
+  /** Resolve a provider-specific model listing URL when it is not relative to baseUrl. */
+  resolveModelsUrl?: (baseUrl: string) => string;
+  /** Extract model entries from a provider-specific model listing response. */
+  parseModels?: (data: unknown) => unknown[];
   /** Resolve `${VAR}` templates in baseUrl (e.g. CLOUDFLARE_ACCOUNT_ID). */
   resolveBaseUrl?: (baseUrl: string) => string;
   /** Map an upstream model listing entry into a ProviderModel (provider-specific shapes). */
@@ -63,6 +67,11 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     return this.cfg.resolveBaseUrl ? this.cfg.resolveBaseUrl(this.cfg.baseUrl) : this.cfg.baseUrl;
   }
 
+  private modelsUrl(): string {
+    const baseUrl = this.baseUrl();
+    return this.cfg.resolveModelsUrl ? this.cfg.resolveModelsUrl(baseUrl) : `${baseUrl}${this.cfg.modelsPath ?? "/models"}`;
+  }
+
   private getApiKey(): string {
     const key = this.cfg.apiKey ?? this.cfg.credentialStore?.get(this.providerId);
     if (!key) {
@@ -81,7 +90,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
 
   async listModels(): Promise<ProviderModel[]> {
     const key = this.getApiKey();
-    const url = `${this.baseUrl()}${this.cfg.modelsPath ?? "/models"}`;
+    const url = this.modelsUrl();
     let res: Response;
     try {
       res = await this.fetchFn(url, { headers: this.headers(key) });
@@ -94,8 +103,12 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     }
     this.observe(res);
     if (!res.ok) throw this.handleError(res.status, await safeText(res), res);
-    const data = (await res.json()) as { data?: unknown[] };
-    const list = Array.isArray(data.data) ? data.data : [];
+    const data = (await res.json()) as unknown;
+    const list = this.cfg.parseModels
+      ? this.cfg.parseModels(data)
+      : typeof data === "object" && data !== null && Array.isArray((data as { data?: unknown[] }).data)
+        ? (data as { data: unknown[] }).data
+        : [];
     const mapper = this.cfg.mapModel ?? defaultMapModel;
     const out: ProviderModel[] = [];
     for (const raw of list) {
@@ -242,7 +255,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     }
     const start = Date.now();
     try {
-      const res = await this.fetchFn(`${this.baseUrl()}${this.cfg.modelsPath ?? "/models"}`, { headers: this.headers(key) });
+      const res = await this.fetchFn(this.modelsUrl(), { headers: this.headers(key) });
       const latencyMs = Date.now() - start;
       if (res.ok) return { status: "available", latencyMs };
       if (res.status === 401 || res.status === 403) return { status: "auth_required", latencyMs };

@@ -71,6 +71,8 @@ export function createCloudflareAdapter(opts: ProviderFactoryOptions & { account
     providerId: "cloudflare-workers-ai",
     baseUrl: "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/v1",
     ...common(opts),
+    resolveModelsUrl: cloudflareModelsUrl,
+    parseModels: parseCloudflareModels,
     resolveBaseUrl: (url) => {
       const acct = opts.accountId
         ?? opts.credentialStore?.get(configFieldKey("cloudflare-workers-ai", "accountId"))
@@ -127,6 +129,16 @@ function mapCloudflareModel(raw: unknown): ProviderModel | null {
   };
 }
 
+function cloudflareModelsUrl(baseUrl: string): string {
+  return baseUrl.replace(/\/ai\/v1$/, "/ai/models/search");
+}
+
+function parseCloudflareModels(data: unknown): unknown[] {
+  if (typeof data !== "object" || data === null) return [];
+  const result = (data as { result?: unknown }).result;
+  return Array.isArray(result) ? result : [];
+}
+
 /**
  * Build a generic OpenAI-compatible adapter from a transport definition. Non-secret connection
  * fields (account ids, project ids) resolve `${ENV_NAME}` templates in the base URL from the
@@ -164,6 +176,8 @@ export function createProviderAdapterFromDefinition(def: ProviderTransportDefini
       if (def.id === "google") cfg.mapModel = mapGeminiModel;
       if (def.id === "cloudflare-workers-ai") {
         cfg.mapModel = mapCloudflareModel;
+        cfg.resolveModelsUrl = cloudflareModelsUrl;
+        cfg.parseModels = parseCloudflareModels;
         cfg.resolveBaseUrl = (url) => {
           const acct = opts.credentialStore?.get(configFieldKey("cloudflare-workers-ai", "accountId"))
             ?? opts.credentialStore?.get("cloudflare-account-id")
