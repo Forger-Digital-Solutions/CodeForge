@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "codeforge-groq-qualification/v1",
+  "provider": "groq",
+  "qualification": "MANAGED_FREE_ROUTE_QUALIFIED",
+  "qualifiedAt": "2026-09-14",
+  "plan": "Free",
+  "managedCredential": {
+    "present": true,
+    "label": "CodeForge Staging Managed Free",
+    "value": "omitted",
+    "renderGuard": "CODEFORGE_GROQ_FREE_PLAN_ONLY=true"
+  },
+  "discovery": {
+    "discoveredModelCount": 14,
+    "qualifiedModelCount": 2,
+    "qualificationMethod": [
+      "startup live-model discovery",
+      "managed-free route matching",
+      "hosted catalog verification",
+      "authenticated exact-route inference"
+    ]
+  },
+  "qualifiedRoutes": [
+    {
+      "model": "openai/gpt-oss-120b",
+      "freePlanVerified": true,
+      "healthy": true,
+      "toolCallingCapability": true,
+      "exactLiveInference": true,
+      "rateLimits": {
+        "requestsPerMinute": 30,
+        "requestsPerDay": 1000,
+        "tokensPerMinute": 8000,
+        "tokensPerDay": 200000
+      }
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "freePlanVerified": true,
+      "healthy": true,
+      "toolCallingCapability": true,
+      "exactLiveInference": "route-qualified; exact 120B route used for the formal live inference receipt",
+      "rateLimits": {
+        "requestsPerMinute": 30,
+        "requestsPerDay": 1000,
+        "tokensPerMinute": 8000,
+        "tokensPerDay": 200000
+      }
+    }
+  ],
+  "rejectedOrUnqualified": {
+    "count": 12,
+    "reason": "not admitted because no current verified-free route match was present in the managed-free inventory",
+    "identifiers": "omitted; this artifact does not guess or expose non-qualified model identifiers"
+  },
+  "evidence": {
+    "renderService": "codeforge-cloud-staging",
+    "liveProviderHealth": "healthy; 2 verified-free routes",
+    "hostedCatalog": "Groq routes appeared as verified-free",
+    "exactInference": "requested groq::openai/gpt-oss-120b and served the exact route",
+    "freeAccountUsage": "2 API calls observed for the dedicated staging key",
+    "rateLimitSource": "https://console.groq.com/docs/rate-limits"
+  },
+  "safety": {
+    "paidInference": false,
+    "localInference": false,
+    "secretValueIncluded": false
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "codeforge-rc6-live-e2e/v1",
+  "verdict": "CODEFORGE_ADAPTIVE_INTELLIGENCE_R1_RC6_MANAGED_FREE_LIVE_CERTIFIED",
+  "generatedAt": "2026-09-14",
+  "repository": {
+    "path": "G:/CodeForge-FreeCloud",
+    "branch": "codeforge/adaptive-intelligence-r1",
+    "sourceCommit": "d5517b6393df50b78956576ac92a2d0d72419c67",
+    "frozenBaseline": "G:/CodeForge",
+    "frozenBaselineUntouched": true
+  },
+  "scope": {
+    "ownerCashUsd": 0,
+    "environment": "staging",
+    "productionRelease": false,
+    "publicRelease": false,
+    "paidInference": false,
+    "localLlmInference": false,
+    "azureGcp": "not_used_in_RC6"
+  },
+  "render": {
+    "service": "codeforge-cloud-staging",
+    "serviceId": "srv-daa481tg1s2s73c3htsg",
+    "workspaceId": "tea-daa3l35g1s2s73c1t8mg",
+    "url": "https://codeforge-cloud-staging.onrender.com",
+    "branch": "codeforge/adaptive-intelligence-r1",
+    "deploymentAtCloudCertification": "dep-dak1fn3m8hqs73922mtg",
+    "cloudCertificationCommit": "fda1e93f75b06fd6c8726547e3d7219d91715851",
+    "health": "live",
+    "database": "postgres with TLS",
+    "autoDeploy": false
+  },
+  "providerRoutes": {
+    "routeSetDigest": "sha256:75e019a8702ee5c6308323df8b41d46d375b43afe24714805d6ace41c1037a28",
+    "rosterRevision": "runtime-internal; not exposed by the remote diagnostic endpoint",
+    "groq": [
+      "openai/gpt-oss-120b",
+      "openai/gpt-oss-20b"
+    ],
+    "cloudflareWorkersAi": [
+      "@cf/zai-org/glm-4.7-flash"
+    ],
+    "autoSelected": "cloudflare-workers-ai::@cf/zai-org/glm-4.7-flash",
+    "exactModelEvidence": {
+      "groq": "requested groq::openai/gpt-oss-120b and served the exact route",
+      "cloudflareWorkersAi": "served @cf/zai-org/glm-4.7-flash"
+    }
+  },
+  "cloudflare": {
+    "accountIdSha256": "69f7e3157334c96151900052639650a79f31a728a24bb70e327e6ef27462ab6b",
+    "model": "@cf/zai-org/glm-4.7-flash",
+    "verifiedFree": true,
+    "liveHealth": "healthy",
+    "workersAiUsageObserved": "0.46/10k neurons today",
+    "toolRoundTrip": "PASS; one real hosted tool-call event"
+  },
+  "groq": {
+    "plan": "Free",
+    "managedCredential": "dedicated staging key present; value intentionally omitted",
+    "freePlanOnlyGuard": true,
+    "discoveredModelCount": 14,
+    "qualifiedModelCount": 2,
+    "liveHealth": "healthy",
+    "exactLiveInference": "PASS; openai/gpt-oss-120b",
+    "toolRoundTrip": "not observed in the single exact Groq semantic probe; no tool-call event claimed",
+    "qualificationArtifact": "docs/certification/codeforge-adaptive-intelligence-r1-rc6-groq-qualification.json"
+  },
+  "remoteProbe": {
+    "status": "PASS",
+    "passed": 21,
+    "failed": 0,
+    "warnings": 0,
+    "coverage": [
+      "HTTPS, DNS, TLS, live, ready, database",
+      "hosted free capacity",
+      "metadata and hosted catalog",
+      "secure headers, auth required, forged bearer rejection",
+      "exact OAuth start/callback, PKCE verifier non-leakage, hostile redirect rejection",
+      "CORS, body, 404, and hosted inference auth-required behavior"
+    ]
+  },
+  "authenticatedInference": {
+    "realGithubOAuth": "PASS; human-authorized browser flow",
+    "callbackUrl": "https://codeforge-cloud-staging.onrender.com/v1/auth/github/callback",
+    "pkce": true,
+    "autoCloudflare": "PASS",
+    "exactGroq": "PASS",
+    "sessionLogout": "PASS; HTTP 200",
+    "refreshReplayAfterLogout": "PASS; HTTP 401",
+    "desktopOAuthCodeReplay": "PASS; HTTP 400",
+    "unknownExactModel": "PASS; fail closed with no completion"
+  },
+  "accounting": {
+    "plan": "free",
+    "formalCertificationBalanceBefore": 959430,
+    "formalCertificationBalanceAfter": 958826,
+    "formalCertificationSettledCredits": 604,
+    "laterFirstUserAcceptanceBalanceObserved": 956672,
+    "providerCostUsd": 0,
+    "ownerCashUsd": 0
+  },
+  "byokIsolation": {
+    "personalProviderKeysInFreshUserProfile": false,
+    "directByokCloudOutageDeterministicCheck": "PASS",
+    "managedCloudCredentialExposure": "not returned to desktop or written to evidence"
+  },
+  "freshUserPackaged": {
+    "artifact": "apps/desktop/release/rc6",
+    "acceptance": "PASS; 13 passed, 0 failed, 0 blocked",
+    "coverage": [
+      "fresh profile and workspace",
+      "no personal keys",
+      "desktop launch",
+      "cloud ready and hostedInferenceReady",
+      "catalog refresh with 3 verified-free routes",
+      "real loopback OAuth exchange",
+      "Auto Cloudflare inference",
+      "exact Groq 120B inference",
+      "hosted tool round-trip",
+      "usage refresh and logout"
+    ]
+  },
+  "packagedRuntime": {
+    "fullSmoke": "PASS; includes local heuristic autonomous workflow with failure/repair",
+    "interruptSmoke": "PASS; expected exit 73",
+    "recoverySmoke": "PASS; expected exit 0",
+    "limitation": "The packaged autonomous coding smoke uses the deterministic local heuristic path; authenticated hosted inference is certified separately above."
+  },
+  "failover": {
+    "liveInjectedProviderOutage": "NOT_RUN",
+    "bothProvidersUnavailable": "deterministic local fail-closed tests PASS; no live outage injection",
+    "claimBoundary": "Exact Groq and Cloudflare routes plus Auto selection are live-certified; cross-provider live failover remains an explicit follow-up."
+  },
+  "validation": {
+    "fullTest": "331 passed, 7 skipped test files; 2439 passed, 37 skipped tests; 0 failures",
+    "typecheck": "PASS",
+    "desktopBuild": "PASS",
+    "secretRedaction": "PASS; no secret values in certification artifacts"
+  }
+}

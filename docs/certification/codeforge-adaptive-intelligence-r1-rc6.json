@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestamp": "2026-09-14T16:03:13.781Z",
+  "gitSha": "fda1e93f75b06fd6c8726547e3d7219d91715851",
+  "cloudUrl": "https://codeforge-cloud-staging.onrender.com",
+  "cloudEnvironment": "staging",
+  "databaseEngine": "postgres",
+  "databaseTls": true,
+  "oauthFlow": "server-brokered-github-pkce",
+  "oauthCallbackUrl": "https://codeforge-cloud-staging.onrender.com/v1/auth/github/callback",
+  "provider": "cloudflare-workers-ai",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "verifiedFree": true,
+  "requestId": "dc007353-6ca5-49ab-8007-b629cb1507e1",
+  "providerCostUsd": 0,
+  "creditBefore": 959430,
+  "creditAfter": 958826,
+  "sseFirstEventMs": 1456,
+  "sseTerminalEventMs": 9528,
+  "twoClientConcurrencyResult": "PASS",
+  "directByokOutageResult": "PASS",
+  "securityResult": "PASS",
+  "ownerCashUsd": 0,
+  "stages": [
+    {
+      "id": "preflight",
+      "status": "SKIP",
+      "detail": "not applicable to a remote target: this process is not the deployment environment (CODEFORGE_CLOUD_ENV='unset'); https://codeforge-cloud-staging.onrender.com is graded remotely by remote_probe"
+    },
+    {
+      "id": "remote_probe",
+      "status": "PASS",
+      "detail": "21 passed, 0 failed"
+    },
+    {
+      "id": "oauth.real_login",
+      "status": "PASS",
+      "detail": "real GitHub authorization completed by a human and exchanged for a session"
+    },
+    {
+      "id": "account.snapshot",
+      "status": "PASS",
+      "detail": "plan=free balance=959430"
+    },
+    {
+      "id": "catalog.hosted_models",
+      "status": "PASS",
+      "detail": "3 verified-free model(s)"
+    },
+    {
+      "id": "inference.auto",
+      "status": "PASS",
+      "detail": "cloudflare-workers-ai::@cf/zai-org/glm-4.7-flash"
+    },
+    {
+      "id": "sse.progressive",
+      "status": "PASS",
+      "detail": "first event +1456ms, terminal +9528ms"
+    },
+    {
+      "id": "inference.exact_model",
+      "status": "PASS",
+      "detail": "requested groq::openai/gpt-oss-120b, served groq::openai/gpt-oss-120b"
+    },
+    {
+      "id": "accounting.reservation",
+      "status": "PASS",
+      "detail": "balance 959430 -> 958826"
+    },
+    {
+      "id": "accounting.settlement",
+      "status": "PASS",
+      "detail": "settled 604 credits"
+    },
+    {
+      "id": "usage.refresh",
+      "status": "PASS",
+      "detail": "balance=958826"
+    },
+    {
+      "id": "failure.behavior",
+      "status": "PASS",
+      "detail": "unknown model correctly refused"
+    },
+    {
+      "id": "concurrency.two_client",
+      "status": "PASS",
+      "detail": "1 of 2 simultaneous same-account requests completed"
+    },
+    {
+      "id": "auth.logout",
+      "status": "PASS",
+      "detail": "HTTP 200"
+    },
+    {
+      "id": "auth.replay_rejected",
+      "status": "PASS",
+      "detail": "refresh after logout returned HTTP 401"
+    },
+    {
+      "id": "oauth.code_replay_rejected",
+      "status": "PASS",
+      "detail": "replayed desktop code returned HTTP 400"
+    },
+    {
+      "id": "direct_byok.cloud_outage",
+      "status": "PASS",
+      "detail": "Direct and BYOK verified functional with the Cloud unavailable"
+    }
+  ],
+  "verdict": "CODEFORGE_CLOUD_REMOTE_ZERO_SETUP_CERTIFIED"
+}

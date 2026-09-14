@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "codeforge-package-hashes/v1",
+  "surfaceVersion": "codeforge-adaptive-intelligence-r1-rc6",
+  "generatedAt": "2026-09-14",
+  "sourceCommit": "d5517b6393df50b78956576ac92a2d0d72419c67",
+  "packageRoot": "apps/desktop/release/rc6",
+  "signing": "unsigned; no code-signing certificate was used",
+  "artifacts": [
+    {
+      "kind": "installer",
+      "path": "apps/desktop/release/rc6/CodeForge-Setup-0.3.0.exe",
+      "sha256": "BE65ACEE0152D1EDDC2B709C39C8455941E354B41488CE70814F1B6523BFB57"
+    },
+    {
+      "kind": "portable",
+      "path": "apps/desktop/release/rc6/CodeForge-Portable.exe",
+      "sha256": "E0841A9574253BF68AB8E5241C377D7379627FAAC8C8748A2E0FD032C46F068C"
+    },
+    {
+      "kind": "unpacked-executable",
+      "path": "apps/desktop/release/rc6/win-unpacked/CodeForge.exe",
+      "sha256": "0D29B4415E3D771080B45A7AC971F0C22F258B8F04639A8345C24D4398ABE142"
+    }
+  ],
+  "packagedAsarBytes": 23211110,
+  "verification": {
+    "freshUserAcceptance": "13 passed, 0 failed, 0 blocked",
+    "packagedFullSmoke": "PASS",
+    "packagedInterruptSmoke": "PASS; expected exit 73",
+    "packagedRecoverySmoke": "PASS; expected exit 0"
+  }
+}
