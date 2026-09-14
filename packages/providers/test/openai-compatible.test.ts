@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { OpenAICompatibleAdapter } from "../src/openai-compatible.js";
-import { createCloudflareAdapter, createZaiAdapter } from "../src/provider-factory.js";
+import { createCloudflareAdapter, createZaiAdapter, mapCloudflareModel } from "../src/provider-factory.js";
 import { ProviderError } from "../src/index.js";
 import type { StreamEvent } from "../src/chat-types.js";
 
@@ -127,18 +127,24 @@ describe("OpenAICompatibleAdapter transport", () => {
         return Array.isArray(result) ? result : [];
       },
       mapModel: (raw) => {
-        const model = raw as { id?: string; task?: { name?: string } };
-        return model.id && model.task?.name === "Text Generation"
-          ? { modelId: model.id, displayName: model.id, capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: false }, isFree: false, freeStatus: "unknown" }
+        const model = raw as { id?: string; name?: string; task?: { name?: string } };
+        const modelId = model.name ?? model.id;
+        return modelId && model.task?.name === "Text Generation"
+          ? { modelId, displayName: modelId, capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: false }, isFree: false, freeStatus: "unknown" }
           : null;
       },
       fetchFn: (async (u: string) => {
         url = u;
-        return jsonResponse({ result: [{ id: "@cf/zai-org/glm-4.7-flash", task: { name: "Text Generation" } }] });
+        return jsonResponse({ result: [{ id: "uuid-model-id", name: "@cf/zai-org/glm-4.7-flash", task: { name: "Text Generation" } }] });
       }) as unknown as typeof fetch,
     });
     const models = await direct.listModels();
     expect(url).toBe("https://api.cloudflare.com/client/v4/accounts/acct_123/ai/models/search?task=Text%20Generation");
     expect(models[0]?.modelId).toBe("@cf/zai-org/glm-4.7-flash");
+  });
+
+  it("Cloudflare model mapping uses the callable name instead of the catalog UUID", () => {
+    const model = mapCloudflareModel({ id: "uuid-model-id", name: "@cf/zai-org/glm-4.7-flash", task: { name: "Text Generation" } });
+    expect(model?.modelId).toBe("@cf/zai-org/glm-4.7-flash");
   });
 });

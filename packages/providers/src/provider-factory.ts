@@ -115,15 +115,16 @@ function mapGeminiModel(raw: unknown): ProviderModel | null {
 }
 
 /** Cloudflare's OpenAI-compatible listing; only text-generation models are chat candidates. */
-function mapCloudflareModel(raw: unknown): ProviderModel | null {
-  const m = raw as { id?: string; task?: { name?: string } };
-  if (!m?.id) return null;
+export function mapCloudflareModel(raw: unknown): ProviderModel | null {
+  const m = raw as { id?: string; name?: string; task?: { name?: string } };
+  const modelId = typeof m.name === "string" && m.name.length > 0 ? m.name : m.id;
+  if (!modelId) return null;
   if (m.task?.name && !/text generation/i.test(m.task.name)) return null;
-  if (/embed|whisper|guard|rerank|lora|bge|melotts|flux|stable-diffusion|resnet|detr|uform|m2m100|opus-mt|dreamshaper|distilbert/i.test(m.id)) return null;
+  if (/embed|whisper|guard|rerank|lora|bge|melotts|flux|stable-diffusion|resnet|detr|uform|m2m100|opus-mt|dreamshaper|distilbert/i.test(modelId)) return null;
   return {
-    modelId: m.id,
-    displayName: m.id.replace(/^@cf\//, ""),
-    capabilities: { text: true, coding: true, toolCalling: true, vision: /vision|llava/i.test(m.id), structuredOutput: true, longContext: false },
+    modelId,
+    displayName: modelId.replace(/^@cf\//, ""),
+    capabilities: { text: true, coding: true, toolCalling: true, vision: /vision|llava/i.test(modelId), structuredOutput: true, longContext: false },
     isFree: false,
     freeStatus: "unknown",
   };
