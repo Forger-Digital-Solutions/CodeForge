@@ -269,6 +269,46 @@ export const PROVIDER_POLICY_REGISTRY: ProviderPolicyRecord[] = [
     enforcement: "ALLOW",
     reasonCode: "HOSTED_ALLOWED",
   },
+
+  // --- Z.AI (Zhipu GLM) ---------------------------------------------------------------------
+  {
+    providerId: "zai",
+    architecture: "BYOK",
+    serviceTier: "FREE",
+    regionsDenied: [],
+    regionUnknownBehavior: "ALLOW",
+    confidentialDataPolicy: "AVOID_SUBMISSION_RECOMMENDED",
+    providerDataUse: ["UNKNOWN"],
+    hostedResaleStatus: "ALLOWED",
+    qualificationTrafficStatus: "PERMITTED",
+    attorneyReviewStatus: "NONE",
+    authoritySource:
+      "docs/legal/third-party-services-register.md §1; docs/legal/model-license-register.md",
+    reviewedAt: REVIEWED_AT,
+    expiresAt: EXPIRES_AT,
+    enforcement: "ALLOW",
+    reasonCode: "BYOK_ALLOWED",
+  },
+  {
+    providerId: "zai",
+    architecture: "HOSTED_MULTI_TENANT",
+    serviceTier: "FREE",
+    regionsDenied: [],
+    regionUnknownBehavior: "ALLOW",
+    confidentialDataPolicy: "AVOID_SUBMISSION_RECOMMENDED",
+    providerDataUse: ["UNKNOWN"],
+    hostedResaleStatus: "AGREEMENT_REQUIRED",
+    qualificationTrafficStatus: "PROHIBITED",
+    attorneyReviewStatus: "PENDING",
+    authoritySource:
+      "docs/legal/model-license-register.md; docs/legal/third-party-services-register.md §1; Project Owner Directive 2026-09-13 (Attorney review pending)",
+    reviewedAt: REVIEWED_AT,
+    expiresAt: EXPIRES_AT,
+    enforcement: "DENY",
+    reasonCode: "ZAI_HOSTED_POLICY_AUTHORIZATION_REQUIRED",
+    notes:
+      "Z.AI is permitted for Desktop BYOK, but hosted multi-tenant prompt routing requires attorney review and enterprise agreement verification. Quarantined until legal counsel signoff.",
+  },
 ];
 
 function buildRegistryIndex(records: ProviderPolicyRecord[]): Map<string, ProviderPolicyRecord> {

@@ -210,3 +210,47 @@ describe("evaluateRouteEligibility — authority boundary (R1 spec §81)", () =>
     expect(decision.decision).toBe("DENY");
   });
 });
+
+describe("evaluateRouteEligibility — Z.AI hosted governance (R2 spec §7-9)", () => {
+  it("DENYs hosted multi-tenant Z.AI pending attorney review and agreement", () => {
+    const decision = evaluateRouteEligibility({
+      providerId: "zai",
+      architecture: "HOSTED_MULTI_TENANT",
+      serviceTier: "FREE",
+      region: REGION_UNKNOWN,
+    });
+    expect(decision.decision).toBe("DENY");
+    expect(decision.reasonCode).toBe("ZAI_HOSTED_POLICY_AUTHORIZATION_REQUIRED");
+    expect(decision.policyRecord?.attorneyReviewStatus).toBe("PENDING");
+    expect(decision.policyRecord?.enforcement).toBe("DENY");
+  });
+
+  it("ALLOWs Desktop BYOK Z.AI without requiring attorney review", () => {
+    const decision = evaluateRouteEligibility({
+      providerId: "zai",
+      architecture: "BYOK",
+      serviceTier: "FREE",
+      region: REGION_UNKNOWN,
+    });
+    expect(decision.decision).toBe("ALLOW");
+    expect(decision.reasonCode).toBe("BYOK_ALLOWED");
+  });
+
+  it("ALLOWs hosted Z.AI only if an explicit ENTERPRISE_AUTHORIZED override is provided", () => {
+    const override: EnterpriseOverrideConfig = {
+      providerId: "zai",
+      status: "ENTERPRISE_AUTHORIZED",
+      agreementReference: "ZAI-ENTERPRISE-REVIEWED",
+      allowedArchitectures: ["HOSTED_MULTI_TENANT"],
+    };
+    const decision = evaluateRouteEligibility({
+      providerId: "zai",
+      architecture: "HOSTED_MULTI_TENANT",
+      serviceTier: "FREE",
+      region: REGION_UNKNOWN,
+      enterpriseOverride: override,
+    });
+    expect(decision.decision).not.toBe("DENY");
+    expect(decision.reasonCode).toBe("ATTORNEY_REVIEW_PENDING");
+  });
+});
