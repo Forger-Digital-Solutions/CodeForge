@@ -25,7 +25,7 @@ const { store, providerIds } = resolveCloudProviderCredentials(process.env);
 // Free-safe providers only (never OpenAI/Anthropic paid-only).
 const freeSafe = providerIds.filter((p) => !["openai", "anthropic"].includes(p));
 if (freeSafe.length === 0) {
-  console.log("SKIP: no free-safe provider credential present (OPENROUTER_API_KEY / GROQ_API_KEY / …).");
+  console.log("SKIP: no CodeForge-managed free provider credential present (CODEFORGE_GROQ_* / CODEFORGE_CLOUDFLARE_*).");
   process.exit(3);
 }
 console.log(`[smoke] free-safe providers configured: ${freeSafe.join(", ")}`);

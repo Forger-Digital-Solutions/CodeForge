@@ -7,7 +7,7 @@
 #     -e JWT_SECRET=... -e GITHUB_CLIENT_ID=... -e GITHUB_CLIENT_SECRET=... \
 #     -e STRIPE_SECRET_KEY=sk_test_... -e STRIPE_WEBHOOK_SECRET=whsec_... \
 #     -e CODEFORGE_CLOUD_DB_DRIVER=postgres -e DATABASE_URL=postgres://... \
-#     -e OPENROUTER_API_KEY=... -e GROQ_API_KEY=... \
+#     -e CODEFORGE_GROQ_API_KEY=... -e CODEFORGE_GROQ_FREE_PLAN_ONLY=true \
 #     codeforge-cloud-api
 #
 # Secrets are provided at RUN time via env, never baked into the image.

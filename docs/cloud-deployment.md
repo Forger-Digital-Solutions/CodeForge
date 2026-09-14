@@ -23,8 +23,8 @@ Desktop (HostedProviderAdapter) ──HTTPS──▶ CodeForge Cloud API (apps/c
                     │                         │
                     ▼                         ▼
              CloudDatabase (PostgreSQL) CloudProviderRegistry ──▶ real provider adapters
-                                        (server-owned keys:        (OpenRouter / Groq / Z.AI /
-                                         discovers verified-free    Cloudflare / Gemini …)
+                                         (CodeForge-managed keys:    (Groq / Cloudflare Workers AI)
+                                         discovers verified-free     exact reviewed routes)
                                          models at startup)
 ```
 
@@ -57,7 +57,8 @@ See [`.env.example`](../.env.example) for the full annotated list. Server-side e
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | yes | GitHub OAuth app |
 | `CODEFORGE_ALLOWED_BROWSER_RETURN_URLS` | recommended | comma-separated exact FDS sign-in URLs; defaults cover the production custom domain, GitHub Pages fallback, and local Astro development |
 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | optional, together | **TEST mode only** — billing endpoints stay disabled when absent; live keys are refused at boot |
-| `OPENROUTER_API_KEY`, `GROQ_API_KEY`, … | ≥ 1 for Hosted Free | server-owned provider keys (never sent to clients) |
+| `CODEFORGE_GROQ_API_KEY` + `CODEFORGE_GROQ_FREE_PLAN_ONLY=true` | one complete pair for Hosted Free | CodeForge-managed Groq key (never sent to clients) |
+| `CODEFORGE_CLOUDFLARE_ACCOUNT_ID` + `CODEFORGE_CLOUDFLARE_API_TOKEN` + `CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY=true` | alternative complete pair | CodeForge-managed Workers AI reserve (never sent to clients) |
 | `CODEFORGE_HOSTED_INFERENCE_ENABLED` / `CODEFORGE_HOSTED_FREE_ENABLED` | no | operator kill switches (default on) |
 | `CODEFORGE_MAX_REQUEST_COST_USD` / `CODEFORGE_GLOBAL_DAILY_SPEND_LIMIT_USD` | no | owner-spend firewall caps |
 
@@ -79,7 +80,7 @@ NODE_ENV=production CODEFORGE_CLOUD_ENV=staging HOST=127.0.0.1 PORT=3320 \
   JWT_SECRET="<32+ char secret>" \
   GITHUB_CLIENT_ID=... GITHUB_CLIENT_SECRET=... \
   STRIPE_SECRET_KEY=sk_test_... STRIPE_WEBHOOK_SECRET=whsec_... \
-  OPENROUTER_API_KEY=... GROQ_API_KEY=... \
+  CODEFORGE_GROQ_API_KEY=... CODEFORGE_GROQ_FREE_PLAN_ONLY=true \
   node apps/cloud-api/dist/index.js
 ```
 

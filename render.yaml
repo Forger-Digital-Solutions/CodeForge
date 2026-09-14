@@ -1,14 +1,13 @@
 # CodeForge Cloud API — Render Free staging Blueprint.
 #
-# This creates only the public Docker runtime. Persistent PostgreSQL is supplied separately by
-# Neon or Supabase through the encrypted DATABASE_URL field; no short-lived Render database is
-# provisioned by this Blueprint.
+# This creates only the public Docker runtime. Persistent PostgreSQL is supplied separately through
+# the encrypted DATABASE_URL field; no database is provisioned by this Blueprint.
 services:
   - type: web
     name: codeforge-cloud-staging
     runtime: docker
     repo: https://github.com/Forger-Digital-Solutions/CodeForge.git
-    branch: feat/codeforge-cloud
+    branch: codeforge/adaptive-intelligence-r1
     dockerfilePath: ./Dockerfile.cloud
     plan: free
     healthCheckPath: /health/live
@@ -30,6 +29,10 @@ services:
       # PostgreSQL certificate verification remains enabled.
       - key: CODEFORGE_TRUST_PROXY
         value: "true"
+      - key: CODEFORGE_HOSTED_INFERENCE_ENABLED
+        value: "true"
+      - key: CODEFORGE_HOSTED_FREE_ENABLED
+        value: "true"
       # The server uses Render's runtime-assigned RENDER_EXTERNAL_URL until a custom public
       # origin is deliberately configured. No hostname is predicted during Blueprint creation.
       - key: DATABASE_URL
@@ -40,8 +43,9 @@ services:
         sync: false
       - key: GITHUB_CLIENT_SECRET
         sync: false
-      # At least one server-owned provider credential is required before Hosted Free is ready.
-      - key: OPENROUTER_API_KEY
+      # At least one CodeForge-owned managed-free credential is required before Hosted Free is ready.
+      # Personal/BYOK provider variables intentionally do not satisfy this contract.
+      - key: CODEFORGE_GROQ_API_KEY
         sync: false
-      - key: GROQ_API_KEY
-        sync: false
+      - key: CODEFORGE_GROQ_FREE_PLAN_ONLY
+        value: "true"

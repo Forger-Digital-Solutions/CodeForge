@@ -19,9 +19,10 @@ based** — there is no unauthenticated admin HTTP surface. Restart the service 
 Direct / BYOK on the desktop is **never** affected by these switches.
 
 ### Disable a single provider
-Remove (or blank) that provider's key env var and restart. The provider is simply not attempted; its
-models never enter the pool. Example: unset `GROQ_API_KEY` to drop Groq capacity. Remaining providers
-continue to serve. (`GET /health/ready` → `providerCapacity` confirms which providers are active.)
+Remove (or blank) that provider's CodeForge-managed key env var and restart. The provider is simply
+not attempted; its models never enter the pool. Example: unset `CODEFORGE_GROQ_API_KEY` to drop
+managed Groq capacity. Personal/BYOK variables such as `GROQ_API_KEY` are never read by the hosted
+pool. (`GET /health/ready` → `providerCapacity` confirms which providers are active.)
 
 ---
 
@@ -41,7 +42,8 @@ from routing automatically and re-evaluated on the next discovery refresh.
 ## Rotate a provider credential
 
 1. Issue a new key in the provider dashboard.
-2. Update the env var (`OPENROUTER_API_KEY`, `GROQ_API_KEY`, …) in the platform secret store.
+2. Update the provider's CodeForge-managed env var (for example, `CODEFORGE_GROQ_API_KEY`) in the
+   platform secret store. Keep `CODEFORGE_GROQ_FREE_PLAN_ONLY=true` explicit.
 3. Restart the service. Startup discovery re-verifies the provider; `providerCapacity` should return
    `healthy`. Revoke the old key afterward.
 
