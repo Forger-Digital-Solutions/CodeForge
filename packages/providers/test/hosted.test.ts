@@ -57,19 +57,28 @@ describe("HostedProviderAdapter", () => {
     await expect(adapter.listModels()).resolves.toEqual([]);
   });
 
-  it("fails fast when a tool-calling request hits the hosted route (R9 commissioning)", async () => {
-    let inferenceCalled = false;
-    const fetchFn = (async () => {
-      inferenceCalled = true;
-      return new Response('data: {"type":"text_delta","delta":"pretending"}\n\n');
+  it("forwards tool definitions and reconstructs hosted tool-call events", async () => {
+    let inferenceBody: Record<string, unknown> | undefined;
+    const fetchFn = (async (_url: string | URL | Request, init?: RequestInit) => {
+      inferenceBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return new Response([
+        'data: {"type":"assistant.tool_call.started","messageId":"m","toolCallId":"call-1","toolName":"read_file"}\n\n',
+        'data: {"type":"assistant.tool_call.delta","messageId":"m","toolCallId":"call-1","delta":"{\\"path\\":\\"src/index.ts\\"}"}\n\n',
+        'data: {"type":"assistant.tool_call.completed","messageId":"m","toolCallId":"call-1","toolName":"read_file","arguments":"{\\"path\\":\\"src/index.ts\\"}"}\n\n',
+        'data: {"type":"assistant.message.completed","messageId":"m","fullText":"","finishReason":"tool_calls","usage":{"inputTokens":2,"outputTokens":1}}\n\n',
+      ].join(''));
     }) as typeof fetch;
     const adapter = new HostedProviderAdapter({ cloudApiUrl: "https://staging.example", getAccessToken: () => "token", fetchFn });
 
-    await expect(collect(adapter.streamChat({
+    const events = await collect(adapter.streamChat({
       model: "openrouter::acme/coder:free",
       messages: [{ role: "user", content: "fix the bug" }],
       tools: [{ type: "function", function: { name: "read_file", description: "read", parameters: { type: "object", properties: {} } } }],
-    }))).rejects.toThrow(/HOSTED_TOOL_CALLING_UNSUPPORTED/);
-    expect(inferenceCalled).toBe(false);
+      toolChoice: "auto",
+    }));
+    expect(inferenceBody?.tools).toBeDefined();
+    expect(inferenceBody?.toolChoice).toBe("auto");
+    expect(events.map((event) => event.type)).toEqual(["tool_call_started", "tool_call_delta", "tool_call_completed", "usage", "finish"]);
+    expect(events.at(-1)).toMatchObject({ type: "finish", finishReason: "tool_calls" });
   });
 });

@@ -122,17 +122,13 @@ export class HostedProviderAdapter implements ProviderAdapter {
   }
 
   async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
-    // The hosted chat contract carries messages only — tools never reach the model, so a
-    // tool-calling turn on this route would silently degrade to prose that looks like tool
-    // calls while nothing executes. Failing fast keeps 8-Bit's compatibility authority honest:
-    // the failure lands on the safe failover boundary and rotates to a route that can act.
-    if (req.tools && req.tools.length > 0) {
-      throw new Error(`[HOSTED_TOOL_CALLING_UNSUPPORTED] The included free cloud route (${req.model}) cannot execute tools yet.`);
-    }
     let token = this.getAccessToken ? await this.getAccessToken() : null;
     const messages = req.messages.map((m) => ({
-      role: m.role as "system" | "user" | "assistant",
+      role: m.role,
       content: m.content,
+      ...(m.name ? { name: m.name } : {}),
+      ...(m.toolCallId ? { toolCallId: m.toolCallId } : {}),
+      ...(m.toolCalls ? { toolCalls: m.toolCalls } : {}),
     }));
 
     const separator = req.model.indexOf("::");
@@ -143,6 +139,10 @@ export class HostedProviderAdapter implements ProviderAdapter {
       messages,
       modelId: req.model === "codeforge-auto" ? "auto" : exactModelId,
       ...(exactProviderId ? { providerId: exactProviderId } : {}),
+      ...(req.tools ? { tools: req.tools } : {}),
+      ...(req.toolChoice ? { toolChoice: req.toolChoice } : {}),
+      ...(req.temperature !== undefined ? { temperature: req.temperature } : {}),
+      ...(req.maxTokens !== undefined ? { maxTokens: req.maxTokens } : {}),
       taskType: "coding",
     });
 
@@ -213,6 +213,12 @@ export class HostedProviderAdapter implements ProviderAdapter {
 
           if (event.type === "assistant.message.delta") {
             yield { type: "text_delta", delta: event.delta };
+          } else if (event.type === "assistant.tool_call.started") {
+            yield { type: "tool_call_started", toolCallId: event.toolCallId, toolName: event.toolName };
+          } else if (event.type === "assistant.tool_call.delta") {
+            yield { type: "tool_call_delta", toolCallId: event.toolCallId, delta: event.delta };
+          } else if (event.type === "assistant.tool_call.completed") {
+            yield { type: "tool_call_completed", toolCallId: event.toolCallId, toolName: event.toolName, arguments: event.arguments };
           } else if (event.type === "assistant.message.completed") {
             if (event.usage) {
               yield {
@@ -223,7 +229,7 @@ export class HostedProviderAdapter implements ProviderAdapter {
                 },
               };
             }
-            yield { type: "finish", finishReason: "stop" };
+            yield { type: "finish", finishReason: event.finishReason ?? "stop" };
           } else if (event.type === "turn.failed") {
             throw new Error(event.error || "Turn failed on CodeForge Cloud");
           }

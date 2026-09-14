@@ -36,6 +36,8 @@ export const STAGING_CONFIG_CONTRACT: readonly StagingConfigVariable[] = [
     description: "Public HTTPS origin of this deployment. The GitHub OAuth callback is derived from it.",
     example: "https://codeforge-cloud-api.example.com",
   },
+  { name: "RENDER_EXTERNAL_URL", requirement: "optional", secret: false, description: "Render-assigned HTTPS origin fallback when CODEFORGE_PUBLIC_URL is not set.", example: "https://codeforge-cloud-api.onrender.com" },
+  { name: "CODEFORGE_ALLOWED_BROWSER_RETURN_URLS", requirement: "optional", secret: false, description: "Comma-separated exact browser return URLs accepted after server-brokered GitHub OAuth.", example: "https://codeforge.example.com/sign-in" },
   { name: "HOST", requirement: "optional", secret: false, description: "Bind address. Container deployments need 0.0.0.0.", example: "0.0.0.0" },
   { name: "PORT", requirement: "optional", secret: false, description: "Listen port. Defaults to 3220.", example: "3220" },
   {
@@ -76,6 +78,12 @@ export const STAGING_CONFIG_CONTRACT: readonly StagingConfigVariable[] = [
     description: "GitHub OAuth App client secret. Exists ONLY on the server; never shipped to the desktop.",
     example: "<github oauth app client secret>",
   },
+  { name: "GITHUB_OAUTH_AUTHORIZE_URL", requirement: "optional", secret: false, description: "Development/test-only GitHub authorization endpoint override; HTTPS is required in staging/production.", example: "https://github.com/login/oauth/authorize" },
+  { name: "GITHUB_OAUTH_TOKEN_URL", requirement: "optional", secret: false, description: "Development/test-only GitHub token endpoint override; HTTPS is required in staging/production.", example: "https://github.com/login/oauth/access_token" },
+  { name: "GITHUB_API_BASE_URL", requirement: "optional", secret: false, description: "Development/test-only GitHub API endpoint override; HTTPS is required in staging/production.", example: "https://api.github.com" },
+  { name: "GITHUB_APP_ID", requirement: "optional", secret: false, description: "Optional GitHub App publication authority id; required together with the private key when publication is enabled.", example: "123456" },
+  { name: "GITHUB_APP_PRIVATE_KEY", requirement: "optional", secret: true, description: "Optional GitHub App private key for Cloud-only publication; never shipped to clients.", example: "<PEM private key>" },
+  { name: "GITHUB_APP_INSTALLATION_URL", requirement: "optional", secret: false, description: "Optional GitHub App installation URL used by the publication authority.", example: "https://github.com/apps/codeforge/installations/123" },
 
   // --- Stripe (optional, TEST MODE ONLY) -------------------------------------------------------
   { name: "STRIPE_SECRET_KEY", requirement: "optional", secret: true, description: "Optional Stripe TEST-mode key. Configure it only with STRIPE_WEBHOOK_SECRET; Hosted Free does not depend on billing.", example: "sk_test_..." },
@@ -84,7 +92,7 @@ export const STAGING_CONFIG_CONTRACT: readonly StagingConfigVariable[] = [
   { name: "STRIPE_CREDIT_PRICE_ID", requirement: "optional", secret: false, description: "Stripe test price id for credit packs.", example: "price_..." },
 
   // --- Server-owned Hosted Free capacity -------------------------------------------------------
-  { name: "CODEFORGE_ZAI_API_KEY", requirement: "optional", secret: true, description: "Server-only Z.AI key for the exact glm-4.7-flash managed-free route.", example: "<zai key>" },
+  { name: "CODEFORGE_ZAI_API_KEY", requirement: "optional", secret: true, description: "Server-only Z.AI key retained for policy work; it is not admitted to hosted multi-tenant Free until the required policy/data-use record exists.", example: "<zai key>" },
   { name: "CODEFORGE_GROQ_API_KEY", requirement: "optional", secret: true, description: "Server-only Groq key for the exact GPT-OSS managed-free routes.", example: "gsk_..." },
   { name: "CODEFORGE_GROQ_FREE_PLAN_ONLY", requirement: "optional", secret: false, description: "Must be true before a Groq key can enter managed Free; asserts the operator has retained the hard-stop Free plan.", example: "true" },
   { name: "CODEFORGE_CLOUDFLARE_ACCOUNT_ID", requirement: "optional", secret: false, description: "Workers AI account identifier for the limited reserve route.", example: "<account id>" },
@@ -93,6 +101,7 @@ export const STAGING_CONFIG_CONTRACT: readonly StagingConfigVariable[] = [
 
   // --- Operator policy -------------------------------------------------------------------------
   { name: "CODEFORGE_ALLOWED_ORIGINS", requirement: "optional", secret: false, description: "Comma-separated CORS allow-list. Desktop loopback origins are always permitted.", example: "https://codeforge.dev" },
+  { name: "CODEFORGE_TRUSTED_REGION_HEADER", requirement: "optional", secret: false, description: "Trusted edge header carrying a two-letter region code; unset means region-restricted routes fail closed.", example: "X-CodeForge-Region" },
   { name: "CODEFORGE_REQUEST_TIMEOUT_MS", requirement: "optional", secret: false, description: "Upper bound on a single hosted inference.", example: "60000" },
   { name: "CODEFORGE_MAX_REQUESTS_PER_MINUTE", requirement: "optional", secret: false, description: "Per-IP rate limit.", example: "120" },
   { name: "CODEFORGE_HOSTED_INFERENCE_ENABLED", requirement: "optional", secret: false, description: "Master kill switch for hosted inference.", example: "true" },

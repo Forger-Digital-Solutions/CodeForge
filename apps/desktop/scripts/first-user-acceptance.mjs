@@ -181,6 +181,7 @@ async function streamInference(body) {
   let raw = "";
   let provider;
   let model;
+  let toolCallCount = 0;
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -194,11 +195,12 @@ async function streamInference(body) {
         provider = event.provider;
         model = event.model;
       }
+      if (event.type === "assistant.tool_call.completed") toolCallCount += 1;
     } catch {
       /* ignore malformed frames */
     }
   }
-  return { raw, provider, model, completed: raw.includes("turn.completed") };
+  return { raw, provider, model, toolCallCount, completed: raw.includes("turn.completed") };
 }
 
 if (!authHeaders) {
@@ -226,6 +228,26 @@ if (!authHeaders) {
     phase("inference.exact", result.completed && exact ? "PASS" : "FAIL", `requested ${target.providerId}::${target.modelId}, served ${result.provider}::${result.model}`);
   } catch (err) {
     phase("inference.exact", "FAIL", String(err?.message ?? err));
+  }
+
+  try {
+    const result = await streamInference({
+      requestId: randomUUID(),
+      messages: [{ role: "user", content: "Use the required tool once, then stop." }],
+      modelId: "auto",
+      tools: [{
+        type: "function",
+        function: {
+          name: "read_file",
+          description: "Read one workspace file.",
+          parameters: { type: "object", properties: { path: { type: "string" } }, required: ["path"] },
+        },
+      }],
+      toolChoice: "required",
+    });
+    phase("inference.tool_round_trip", result.completed && result.toolCallCount > 0 ? "PASS" : "FAIL", `${result.toolCallCount} hosted tool call(s)`);
+  } catch (err) {
+    phase("inference.tool_round_trip", "FAIL", String(err?.message ?? err));
   }
 
   try {

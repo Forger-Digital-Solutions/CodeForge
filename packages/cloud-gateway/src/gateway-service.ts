@@ -5,6 +5,7 @@ import { UsageEngine } from "@codeforge/cloud-usage";
 import { REGION_UNKNOWN, type RegionResolution } from "@codeforge/legal-policy";
 import { CloudFirewallManager } from "./cloud-firewall.js";
 import type { HostedInferenceRequest, HostedStreamEvent } from "./types.js";
+import type { ProviderError } from "@codeforge/providers";
 
 export interface GatewayServiceConfig {
   firewallManager: CloudFirewallManager;
@@ -64,6 +65,7 @@ export class GatewayService {
     const turnId = request.turnId ?? randomUUID();
     const messageId = randomUUID();
     let hasEmittedTerminalEvent = false;
+    let selectedProviderId: string | undefined;
 
     const emitTerminalEvent = (event: HostedStreamEvent) => {
       if (!hasEmittedTerminalEvent) {
@@ -121,7 +123,7 @@ export class GatewayService {
 
     try {
       // 3. Server-side ForgeZero Model Selection
-      let selectedProviderId = request.providerId;
+      selectedProviderId = request.providerId;
       let selectedModelId = request.modelId;
 
       // Apply the account's privacy routing mode (STRICT / STANDARD / MAXIMUM_FREE) so the setting
@@ -251,6 +253,7 @@ export class GatewayService {
       }, this.inferenceTimeoutMs);
 
       const combinedSignal = signal ? AbortSignal.any([signal, timeoutController.signal]) : timeoutController.signal;
+      let finishReason: "stop" | "tool_calls" | "length" | "content_filter" | "error" = "stop";
 
       try {
         // Stream from provider
@@ -258,7 +261,10 @@ export class GatewayService {
           {
             model: selectedModelId,
             messages: request.messages,
-            maxTokens: 2000,
+            ...(request.tools ? { tools: request.tools } : {}),
+            ...(request.toolChoice ? { toolChoice: request.toolChoice } : {}),
+            ...(request.temperature !== undefined ? { temperature: request.temperature } : {}),
+            maxTokens: request.maxTokens ?? 2000,
           },
           combinedSignal,
         )) {
@@ -268,6 +274,19 @@ export class GatewayService {
           if (chunk.type === "text_delta" && chunk.delta) {
             fullText += chunk.delta;
             onEvent({ type: "assistant.message.delta", messageId, delta: chunk.delta });
+          }
+          if (chunk.type === "tool_call_started") {
+            onEvent({ type: "assistant.tool_call.started", messageId, toolCallId: chunk.toolCallId, toolName: chunk.toolName });
+          }
+          if (chunk.type === "tool_call_delta") {
+            onEvent({ type: "assistant.tool_call.delta", messageId, toolCallId: chunk.toolCallId, delta: chunk.delta });
+          }
+          if (chunk.type === "tool_call_completed") {
+            finishReason = "tool_calls";
+            onEvent({ type: "assistant.tool_call.completed", messageId, toolCallId: chunk.toolCallId, toolName: chunk.toolName, arguments: chunk.arguments });
+          }
+          if (chunk.type === "finish") {
+            finishReason = chunk.finishReason;
           }
           if (chunk.type === "usage" && chunk.usage) {
             inputTokens = chunk.usage.inputTokens ?? inputTokens;
@@ -294,6 +313,7 @@ export class GatewayService {
         type: "assistant.message.completed",
         messageId,
         fullText,
+        finishReason,
         usage: { inputTokens, outputTokens },
       });
 
@@ -330,6 +350,15 @@ export class GatewayService {
       };
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
+      const providerError = err as ProviderError;
+      if (selectedProviderId && (providerError.code === "RATE_LIMITED" || providerError.status === 429 || /\b429\b|rate.?limit|quota/i.test(errorMsg))) {
+        this.firewallManager.markProviderHealth(selectedProviderId, "rate_limited", {
+          retryAfter: providerError.retryAfter ?? Date.now() + 60_000,
+          lastError: "provider_rate_limited",
+        });
+      } else if (selectedProviderId && (providerError.code === "AUTH_ERROR" || providerError.status === 401 || providerError.status === 403)) {
+        this.firewallManager.markProviderHealth(selectedProviderId, "auth_required", { lastError: "provider_auth_required" });
+      }
       if (reservationCreated) {
         try {
           await this.usageEngine.releaseReservation({

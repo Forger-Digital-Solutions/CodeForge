@@ -6,7 +6,7 @@ import {
   type CredentialStore,
 } from "@codeforge/providers";
 import type { CloudFirewallManager } from "./cloud-firewall.js";
-import { managedRoutesFor } from "./managed-free-inventory.js";
+import { MANAGED_FREE_INVENTORY, managedRoutesFor } from "./managed-free-inventory.js";
 
 /** Plain in-memory credential store — holds only server-owned keys, never persisted, never exposed. */
 export class MapCredentialStore implements CredentialStore {
@@ -97,6 +97,20 @@ export interface ProviderCapacityReport {
   error?: string;
 }
 
+export interface ManagedFreeRouteStatus {
+  providerId: string;
+  modelId: string;
+  displayName: string;
+  source: string;
+  qualified: boolean;
+  active: boolean;
+  liveTested: boolean;
+  activationState: "active" | "qualified_but_inactive" | "policy_record_required";
+  providerStatus: ProviderCapacityStatus | "not_configured";
+  lastCheckedAt?: string;
+  reason: string;
+}
+
 export interface CloudProviderRegistryOptions {
   firewallManager: CloudFirewallManager;
   /** Resolves each provider's credential (and `cloudflare-account-id`). */
@@ -159,6 +173,60 @@ export class CloudProviderRegistry {
   /** Provider capacity reports from the most recent discovery, newest snapshot per provider. */
   getReports(): ProviderCapacityReport[] {
     return [...this.reports.values()];
+  }
+
+  /**
+   * Truthful operator-facing state for every reviewed managed-free route. A route is `active` only
+   * when the same ForgeZero catalog that serves inference currently marks its exact provider/model
+   * eligible. Static qualification never masquerades as live capacity.
+   */
+  getManagedFreeRouteStatuses(): ManagedFreeRouteStatus[] {
+    const reportByProvider = new Map([...this.reports.values()].map((report) => [report.providerId, report]));
+    const activeByRoute = new Map(
+      this.firewallManager
+        .listHostedModels()
+        .filter((model) => model.isEligibleFree)
+        .map((model) => [`${model.providerId}::${model.modelId}`, model]),
+    );
+
+    return MANAGED_FREE_INVENTORY.map((route) => {
+      const report = reportByProvider.get(route.providerId);
+      const active = route.activation === "ready" && activeByRoute.has(`${route.providerId}::${route.modelId}`);
+      const qualified = route.activation === "ready";
+      const activationState = route.activation === "policy_record_required"
+        ? "policy_record_required"
+        : active
+          ? "active"
+          : "qualified_but_inactive";
+      const providerStatus = report?.status ?? "not_configured";
+      let reason = "Operator credential and free-plan guard are not configured";
+      if (route.activation === "policy_record_required") {
+        reason = "Hosted multi-tenant policy/data-use record is required before activation";
+      } else if (active) {
+        reason = "Live-listed, live-probed, and ForgeZero-eligible";
+      } else if (report?.status === "auth_required") {
+        reason = "Provider credential was rejected or revoked";
+      } else if (report?.status === "rate_limited") {
+        reason = "Provider is cooling down after a rate limit";
+      } else if (report?.status === "healthy") {
+        reason = "Provider is healthy, but this exact managed route is not active";
+      } else if (report?.error) {
+        reason = report.error;
+      }
+      return {
+        providerId: route.providerId,
+        modelId: route.modelId,
+        displayName: route.displayName,
+        source: route.source,
+        qualified,
+        active,
+        liveTested: active,
+        activationState,
+        providerStatus,
+        ...(report?.lastCheckedAt ? { lastCheckedAt: report.lastCheckedAt } : {}),
+        reason,
+      };
+    });
   }
 
   /** True when at least one provider currently backs >= 1 verified-free model. */

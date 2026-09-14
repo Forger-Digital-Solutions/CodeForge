@@ -7,7 +7,7 @@ import { AuthService, GitHubAppAuthorizationService, GitHubAuthorizationError, t
 import { EntitlementService } from "@codeforge/cloud-entitlements";
 import { UsageEngine } from "@codeforge/cloud-usage";
 import { StripeBillingService, type StripeConfig } from "@codeforge/cloud-billing";
-import { CloudFirewallManager, GatewayService, type HostedInferenceRequest, type HostedStreamEvent, type CloudProviderRegistry, type CloudKillSwitchConfig } from "@codeforge/cloud-gateway";
+import { CloudFirewallManager, GatewayService, MANAGED_FREE_INVENTORY, type HostedInferenceRequest, type HostedStreamEvent, type CloudProviderRegistry, type CloudKillSwitchConfig } from "@codeforge/cloud-gateway";
 import { REGION_UNKNOWN, classifyRegionEvidence, type RegionResolution } from "@codeforge/legal-policy";
 import { deleteAccount } from "./account-deletion.js";
 import { DesktopWorkerActionResultSchema } from "@codeforge/protocol";
@@ -109,11 +109,33 @@ const HostedInferenceSchema = z.object({
   messages: z
     .array(
       z.object({
-        role: z.enum(["system", "user", "assistant"]),
+        role: z.enum(["system", "user", "assistant", "tool"]),
         content: z.string(),
+        name: z.string().max(128).optional(),
+        toolCallId: z.string().max(256).optional(),
+        toolCalls: z.array(z.object({
+          id: z.string().max(256),
+          type: z.literal("function"),
+          function: z.object({ name: z.string().max(128), arguments: z.string().max(64_000) }),
+        })).max(32).optional(),
       }),
     )
     .min(1),
+  tools: z.array(z.object({
+    type: z.literal("function"),
+    function: z.object({
+      name: z.string().min(1).max(128),
+      description: z.string().max(4_000),
+      parameters: z.object({
+        type: z.literal("object"),
+        properties: z.record(z.unknown()),
+        required: z.array(z.string().max(128)).max(128).optional(),
+      }).optional(),
+    }),
+  })).max(64).optional(),
+  toolChoice: z.enum(["auto", "none", "required"]).optional(),
+  temperature: z.number().min(0).max(2).optional(),
+  maxTokens: z.number().int().positive().max(16_384).optional(),
 });
 
 const HostedWorkflowCreateSchema = z.object({
@@ -730,6 +752,34 @@ export class CodeForgeCloudServer {
         this.triggerLazyRefresh();
         const models = this.firewallManager.listHostedModels();
         this.sendJson(res, 200, models, corsOrigin);
+        return;
+      }
+
+      if (url.pathname === "/v1/hosted/status" && method === "GET") {
+        this.triggerLazyRefresh();
+        const routes = this.providerRegistry?.getManagedFreeRouteStatuses() ?? MANAGED_FREE_INVENTORY.map((route) => ({
+          providerId: route.providerId,
+          modelId: route.modelId,
+          displayName: route.displayName,
+          source: route.source,
+          qualified: route.activation === "ready",
+          active: false,
+          liveTested: false,
+          activationState: route.activation === "policy_record_required" ? "policy_record_required" as const : "qualified_but_inactive" as const,
+          providerStatus: "not_configured" as const,
+          reason: route.activation === "policy_record_required"
+            ? "Hosted multi-tenant policy/data-use record is required before activation"
+            : "Operator credential and free-plan guard are not configured",
+        }));
+        const activeRoutes = routes.filter((route) => route.active);
+        this.sendJson(res, 200, {
+          product: "Hosted Free",
+          userSetupRequired: false,
+          providerKeysRequiredFromUsers: false,
+          available: activeRoutes.length > 0,
+          teamCapacity: { seats: 4, activeRoutes: activeRoutes.length },
+          routes,
+        }, corsOrigin);
         return;
       }
 

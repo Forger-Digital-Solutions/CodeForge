@@ -213,6 +213,21 @@ describe("staging preflight", () => {
     const report = runStagingPreflight(env);
     expect(report.checks.find((c) => c.id === "capacity.provider_credential")?.status).toBe("FAIL");
   });
+
+  it("does not treat a policy-pending Z.AI key as admitted hosted capacity", () => {
+    const env = { ...COMPLETE_STAGING_ENV, CODEFORGE_ZAI_API_KEY: "zai-policy-pending-sentinel" };
+    delete env.CODEFORGE_GROQ_API_KEY;
+    const report = runStagingPreflight(env);
+    expect(report.checks.find((c) => c.id === "capacity.provider_credential")?.status).toBe("FAIL");
+    expect(report.checks.find((c) => c.id === "capacity.zai_policy_pending")?.status).toBe("WARN");
+  });
+
+  it("fails closed when a provider key lacks its explicit Free-plan guard", () => {
+    const report = runStagingPreflight({ ...COMPLETE_STAGING_ENV, CODEFORGE_GROQ_FREE_PLAN_ONLY: "false" });
+    expect(report.ok).toBe(false);
+    expect(report.checks.find((c) => c.id === "capacity.groq_free_guard")?.status).toBe("FAIL");
+    expect(report.checks.find((c) => c.id === "capacity.provider_credential")?.status).toBe("FAIL");
+  });
 });
 
 describe("remote deployment probe", () => {

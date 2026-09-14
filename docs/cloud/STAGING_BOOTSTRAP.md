@@ -114,12 +114,20 @@ Set these in your platform's secret store. Never commit them, and never bake the
 | `STRIPE_SECRET_KEY` | optional — **`sk_test_…` only**, and only when Stripe test billing is deliberately enabled — **secret** |
 | `STRIPE_WEBHOOK_SECRET` | optional companion to `STRIPE_SECRET_KEY` — **secret** |
 
-**Strongly recommended** — without at least one, Hosted Free reports unavailable:
+**Strongly recommended** — without at least one complete, explicitly guarded pair, Hosted Free
+reports unavailable:
 
 | Variable | Notes |
 |----------|-------|
-| `OPENROUTER_API_KEY` | server-owned key; supplies verified `$0` (`:free`) capacity — **secret** |
-| `GROQ_API_KEY` | server-owned key; supplies free-allowance capacity — **secret** |
+| `CODEFORGE_GROQ_API_KEY` | server-owned Groq key for the exact GPT-OSS routes — **secret** |
+| `CODEFORGE_GROQ_FREE_PLAN_ONLY` | must be exactly `true`; the firewall refuses the key otherwise |
+| `CODEFORGE_CLOUDFLARE_ACCOUNT_ID` | Workers AI account id for the limited reserve route |
+| `CODEFORGE_CLOUDFLARE_API_TOKEN` | server-owned Workers AI token — **secret** |
+| `CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY` | must be exactly `true`; Paid/unified billing is refused |
+
+`CODEFORGE_ZAI_API_KEY` is retained as a policy-work variable, but it does not activate hosted
+multi-tenant Free. The exact GLM route remains `policy_record_required` until the required
+data-use/terms record is approved. A raw Z.AI key therefore cannot make preflight pass.
 
 The complete contract, including optional operator tuning, is declared once in
 [`apps/cloud-api/src/staging-contract.ts`](../../apps/cloud-api/src/staging-contract.ts). The preflight,

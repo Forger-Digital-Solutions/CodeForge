@@ -107,6 +107,20 @@ describe("Zero-setup real hosted capacity (deterministic, injected provider)", (
     expect(free.accessClass).toBe("free");
   });
 
+  it("reports qualified, inactive, and policy-pending managed routes truthfully", async () => {
+    const status = await (await fetch(`${baseUrl}/v1/hosted/status`)).json();
+    expect(status.available).toBe(true);
+    expect(status.userSetupRequired).toBe(false);
+    expect(status.providerKeysRequiredFromUsers).toBe(false);
+    expect(status.teamCapacity).toEqual({ seats: 4, activeRoutes: 1 });
+    expect(status.routes).toEqual(expect.arrayContaining([
+      expect.objectContaining({ providerId: "groq", modelId: "openai/gpt-oss-120b", activationState: "active", active: true, liveTested: true }),
+      expect.objectContaining({ providerId: "groq", modelId: "openai/gpt-oss-20b", activationState: "qualified_but_inactive", active: false }),
+      expect.objectContaining({ providerId: "zai", activationState: "policy_record_required", qualified: false, active: false }),
+      expect.objectContaining({ providerId: "cloudflare-workers-ai", providerStatus: "not_configured", active: false }),
+    ]));
+  });
+
   it("runs a zero-provider-key hosted inference through Auto and settles usage", async () => {
     // Sign in (no provider account, no provider key from the user).
     const tokens = await loginToCloud(baseUrl, { loopbackPort: 8765 });

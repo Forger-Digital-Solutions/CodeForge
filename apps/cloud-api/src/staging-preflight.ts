@@ -1,4 +1,5 @@
 import { buildCloudGitHubCallbackUrl } from "@codeforge/cloud-auth";
+import { resolveCloudProviderCredentials } from "@codeforge/cloud-gateway";
 import {
   STAGING_CONFIG_CONTRACT,
   SECRET_CONFIG_NAMES,
@@ -201,11 +202,21 @@ export function runStagingPreflight(env: Env = process.env): PreflightReport {
   }
 
   // --- Server-owned Hosted Free capacity ---------------------------------------------------------
-  const providerKeys = ["CODEFORGE_ZAI_API_KEY", "CODEFORGE_GROQ_API_KEY", "CODEFORGE_CLOUDFLARE_API_TOKEN"].filter((n) => present(env, n));
-  if (providerKeys.length > 0) {
-    pass("capacity.provider_credential", `server-owned provider credential present (${providerKeys.join(", ")})`);
+  const resolvedCapacity = resolveCloudProviderCredentials(env);
+  if (present(env, "CODEFORGE_GROQ_API_KEY") && env.CODEFORGE_GROQ_FREE_PLAN_ONLY !== "true") {
+    fail("capacity.groq_free_guard", "CODEFORGE_GROQ_API_KEY is present but CODEFORGE_GROQ_FREE_PLAN_ONLY is not exactly 'true'");
+  }
+  const cloudflarePartiallyConfigured = present(env, "CODEFORGE_CLOUDFLARE_ACCOUNT_ID") || present(env, "CODEFORGE_CLOUDFLARE_API_TOKEN");
+  if (cloudflarePartiallyConfigured && env.CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY !== "true") {
+    fail("capacity.cloudflare_free_guard", "Cloudflare managed capacity is present but CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY is not exactly 'true'");
+  }
+  if (present(env, "CODEFORGE_ZAI_API_KEY")) {
+    warn("capacity.zai_policy_pending", "CODEFORGE_ZAI_API_KEY is intentionally not admitted: hosted multi-tenant policy record is still required");
+  }
+  if (resolvedCapacity.providerIds.length > 0) {
+    pass("capacity.provider_credential", `server-owned managed-free capacity admitted (${resolvedCapacity.providerIds.join(", ")})`);
   } else {
-    fail("capacity.provider_credential", "no server-owned managed-free credential — Hosted Free will report unavailable (set CODEFORGE_ZAI_API_KEY, or a Free-plan-attested Groq/Workers reserve credential)");
+    fail("capacity.provider_credential", "no server-owned managed-free capacity is admitted — configure a complete Groq or Workers AI credential with its explicit Free-plan guard");
   }
 
   // --- Proxy / networking -------------------------------------------------------------------------

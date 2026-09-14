@@ -1,0 +1,39 @@
+{
+  "sourceStateId": "873799ea3b1eeeb5d4c85a5a4168eb89fce1c63bc307815b2f53b454b71a5653",
+  "surfaceVersion": "codeforge-adaptive-intelligence-r1-rc2",
+  "schemaVersion": "forgegreen-source-state/v1",
+  "lineage": {
+    "priorCertificate": "docs/certification/codeforge-adaptive-intelligence-r1-rc1.json",
+    "priorSourceStateDocument": "docs/certification/codeforge-adaptive-intelligence-r1-source-state.json",
+    "priorSourceStateId": "9bf09295f933dd1ccccab94b89a94b2eb2099827e7073d0ea8df85d4d4156d93",
+    "purpose": "RC2 source-state evidence for the hosted managed-free activation boundary and operator deployment contract; prior RC1 evidence remains historical."
+  },
+  "idAlgorithm": "sha256(JSON.stringify(materialFiles sorted lexicographically, each as [path, gitBlobHash]))",
+  "materialFiles": [
+    "apps/cloud-api/src/server.ts",
+    "apps/cloud-api/src/staging-contract.ts",
+    "apps/cloud-api/src/staging-preflight.ts",
+    "apps/desktop/scripts/first-user-acceptance.mjs",
+    "packages/cloud-gateway/src/gateway-service.ts",
+    "packages/cloud-gateway/src/provider-registry.ts",
+    "packages/cloud-gateway/src/types.ts",
+    "packages/providers/src/hosted.ts"
+  ],
+  "materialFileHashes": {
+    "apps/cloud-api/src/server.ts": "9c74f0e931996e74ba0a8ee204ed41bc733329d5",
+    "apps/cloud-api/src/staging-contract.ts": "55b8b2b9840815f9a1bc18e1f7816a05c4d598e0",
+    "apps/cloud-api/src/staging-preflight.ts": "c472d23a9c0d591da8fc2d952b06798e6bf0bfb1",
+    "apps/desktop/scripts/first-user-acceptance.mjs": "18d9e3c7e53ce28813e5d7ca8cf745a20958bcf4",
+    "packages/cloud-gateway/src/gateway-service.ts": "6b73928b70506295a57572029e51841e9d1738d5",
+    "packages/cloud-gateway/src/provider-registry.ts": "c82eeb9dbf98e7998fc5d5eaa516462da9ab30e2",
+    "packages/cloud-gateway/src/types.ts": "2b5635a09f6f84eb5f0eb29d5cb2817cd7810ada",
+    "packages/providers/src/hosted.ts": "dc7863760141f4f5e91e0de38872024f07559c60"
+  },
+  "changes": [
+    "Hosted tool definitions, tool-call messages, stream events, and finish reasons now cross the Cloud boundary with bounded validation.",
+    "Provider 429 and auth failures update the global ForgeZero health state and release reservations safely.",
+    "Managed route status exposes active, qualified-but-inactive, and policy-pending states without inventing capacity.",
+    "The staging contract and preflight admit only complete, explicitly guarded server-owned Free capacity."
+  ],
+  "createdAt": "2026-09-14"
+}

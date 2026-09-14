@@ -131,18 +131,12 @@ describe("Global capacity throttling and allowance isolation under 429", () => {
     const failedEvents = eventsA.filter((e) => e.type === "turn.failed");
     expect(failedEvents).toHaveLength(1);
 
-    // 2. Mark Groq in cooldown/rate_limited globally
-    const cooldownMs = 5000;
-    const cooldownUntil = Date.now() + cooldownMs;
-    firewallManager.markProviderHealth("groq", "rate_limited", {
-      retryAfter: cooldownUntil,
-      lastError: "groq error (429): rate limit reached",
-    });
-
+    // 2. The gateway must mark the provider in cooldown globally as part of the failed request.
     // Groq model must no longer be eligible in the pool
     const eligibleDuringCooldown = firewallManager.firewall.eligibleModels();
     expect(eligibleDuringCooldown.some((m) => m.providerId === "groq")).toBe(false);
     expect(eligibleDuringCooldown.some((m) => m.providerId === "cloudflare-workers-ai")).toBe(true);
+    expect(firewallManager.listHostedModels().find((m) => m.providerId === "groq")?.availability).toBe("rate_limited");
 
     // 3. Next auto-routed request for User A rotates cleanly to Cloudflare reserve route
     const eventsA2: HostedStreamEvent[] = [];
