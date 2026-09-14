@@ -1,0 +1,104 @@
+{
+  "certification": "CODEFORGE_FREE_CLOUD_R2_IMPLEMENTED_OPERATOR_CREDENTIAL_REQUIRED",
+  "timestamp_utc": "2026-09-14T00:16:00Z",
+  "frozen_r5_unchanged": true,
+  "frozen_r5_commit": "3bba7e218050668c63f670e09b340678a6153ad4",
+  "managed_routes": [
+    {
+      "providerId": "zai",
+      "modelId": "glm-4.7-flash",
+      "activation": "policy_record_required",
+      "status": "ZAI_HOSTED_POLICY_AUTHORIZATION_REQUIRED",
+      "policy_record": {
+        "architecture": "HOSTED_MULTI_TENANT",
+        "serviceTier": "FREE",
+        "enforcement": "DENY",
+        "attorneyReviewStatus": "PENDING",
+        "reasonCode": "ZAI_HOSTED_POLICY_AUTHORIZATION_REQUIRED"
+      }
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "activation": "ready",
+      "status": "IMPLEMENTED_AWAITING_OPERATOR_CREDENTIAL",
+      "policy_record": {
+        "architecture": "HOSTED_MULTI_TENANT",
+        "serviceTier": "FREE",
+        "enforcement": "ALLOW",
+        "attorneyReviewStatus": "NONE",
+        "reasonCode": "HOSTED_ALLOWED_WITHIN_FREE_ALLOWANCE"
+      }
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "activation": "ready",
+      "status": "IMPLEMENTED_AWAITING_OPERATOR_CREDENTIAL",
+      "policy_record": {
+        "architecture": "HOSTED_MULTI_TENANT",
+        "serviceTier": "FREE",
+        "enforcement": "ALLOW",
+        "attorneyReviewStatus": "NONE",
+        "reasonCode": "HOSTED_ALLOWED_WITHIN_FREE_ALLOWANCE"
+      }
+    },
+    {
+      "providerId": "cloudflare-workers-ai",
+      "modelId": "@cf/zai-org/glm-4.7-flash",
+      "activation": "ready",
+      "status": "IMPLEMENTED_RESERVE_AWAITING_OPERATOR_CREDENTIAL",
+      "policy_record": {
+        "architecture": "HOSTED_MULTI_TENANT",
+        "serviceTier": "FREE",
+        "enforcement": "ALLOW",
+        "attorneyReviewStatus": "NONE",
+        "reasonCode": "HOSTED_ALLOWED"
+      }
+    }
+  ],
+  "live_routes_verified": [],
+  "zai_hosted_policy_authorized": false,
+  "real_forgeauto_coding_turn": false,
+  "user_provider_credentials_present": false,
+  "paid_fallback_reachable": false,
+  "managed_free_can_consume_byok": false,
+  "dynamic_discovery_can_activate_provider": false,
+  "two_user_isolation_pass": true,
+  "side_effect_replay_safe": true,
+  "operator_credentials": {
+    "CODEFORGE_GROQ_API_KEY": false,
+    "CODEFORGE_GROQ_FREE_PLAN_ONLY": false,
+    "CODEFORGE_CLOUDFLARE_ACCOUNT_ID": false,
+    "CODEFORGE_CLOUDFLARE_API_TOKEN": false,
+    "CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY": false,
+    "CODEFORGE_ZAI_API_KEY": false
+  },
+  "byok_isolation": {
+    "developer_groq_api_key_detected": true,
+    "developer_openrouter_api_key_detected": true,
+    "byok_consumed_by_managed_gateway": false,
+    "isolation_enforced": true
+  },
+  "two_user_isolation_evidence": {
+    "userAEvents": 1,
+    "userBEvents": 0,
+    "status": "pass",
+    "script": "scripts/dev-cert/assert-two-user-isolation.mjs"
+  },
+  "verification_suite": {
+    "full_test_passed": 2386,
+    "full_test_skipped": 36,
+    "full_test_failed": 0,
+    "test_files_passed": 321,
+    "test_files_skipped": 7,
+    "baseline_passed": 2381,
+    "baseline_skipped": 36,
+    "baseline_failed": 0,
+    "delta_passed": 5,
+    "delta_skipped": 0,
+    "delta_failed": 0,
+    "typecheck_pass": true,
+    "build_pass": true
+  }
+}
