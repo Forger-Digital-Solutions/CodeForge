@@ -126,6 +126,16 @@ export interface CloudProviderRegistryOptions {
   timeoutMs?: number;
 }
 
+type LiveProviderModel = {
+  modelId: string;
+  isFree: boolean;
+  displayName: string;
+  contextWindow?: number;
+  toolCalling: boolean;
+  vision: boolean;
+  structuredOutput: boolean;
+};
+
 const DEFAULT_REFRESH_TTL_MS = 5 * 60 * 1000;
 
 /**
@@ -294,7 +304,7 @@ export class CloudProviderRegistry {
     // Register the adapter so the gateway can execute against it and the orphan oracle sees it active.
     this.firewallManager.registerProvider(adapter);
 
-    let live;
+    let live: LiveProviderModel[];
     try {
       const models = await adapter.listModels();
       live = models.map((m) => ({
