@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "artifact": "CodeForge Adaptive Intelligence R1 RC5 staging activation follow-up",
+  "schemaVersion": "codeforge-rc-staging-activation/v1",
+  "observedAt": "2026-09-14T13:33:00Z",
+  "verdict": "CODEFORGE_ADAPTIVE_INTELLIGENCE_R1_RC5_OPERATOR_CREDENTIAL_REQUIRED",
+  "releaseReadiness": "NOT_PUBLIC_RELEASE_READY",
+  "scope": {
+    "repository": "G:/CodeForge-FreeCloud",
+    "branch": "codeforge/adaptive-intelligence-r1",
+    "sourceCommit": "6519b1690f8c2040491c5c1aaf4220855d361023",
+    "remoteBranchVerified": true,
+    "frozenBaselineTouched": false,
+    "productionTouched": false,
+    "paidResourcesCreated": false,
+    "secretValuesReadOrWrittenToSource": false
+  },
+  "render": {
+    "workspace": "CodeForge",
+    "serviceName": "codeforge-cloud-staging",
+    "serviceId": "srv-daa481tg1s2s73c3htsg",
+    "branch": "codeforge/adaptive-intelligence-r1",
+    "publicUrl": "https://codeforge-cloud-staging.onrender.com",
+    "plan": "free",
+    "deploymentId": "dep-dajvdn8ae00c73bi7r0g",
+    "deploymentStatus": "live",
+    "previousLegacyDeploymentDeactivated": true,
+    "database": "postgres",
+    "databaseTls": true,
+    "githubOAuthConfiguration": "configured",
+    "hostedInferenceEnabled": true,
+    "hostedFreeEnabled": true,
+    "providersObservedAtBoot": []
+  },
+  "environmentContract": {
+    "CODEFORGE_GROQ_API_KEY": "absent",
+    "CODEFORGE_GROQ_FREE_PLAN_ONLY": "present",
+    "CODEFORGE_HOSTED_INFERENCE_ENABLED": "present",
+    "CODEFORGE_HOSTED_FREE_ENABLED": "present",
+    "legacyGROQ_API_KEYVariable": "present_but_not_admitted_by_RC5",
+    "legacyOPENROUTER_API_KEYVariable": "present_but_not_admitted_by_RC5",
+    "secretValuesInspected": false
+  },
+  "runtimeEvidence": {
+    "serviceBoot": "pass",
+    "postgresRuntimeSelection": "pass",
+    "httpsListening": "pass",
+    "managedProviderCredentials": "none",
+    "managedProviderDiscovery": "blocked_operator_credential_required",
+    "realGitHubOAuth": "not_run",
+    "freshUserE2E": "not_run",
+    "managedInference": "not_run",
+    "remoteHealthProbe": "not_completed_local_client_tls_and_browser_client_blocked",
+    "migrationValidation": "not_separately_observed; runtime booted with postgres configuration"
+  },
+  "blockers": [
+    "Render staging has no CodeForge-owned CODEFORGE_GROQ_API_KEY. The RC5 runtime correctly fails closed with providers=[none] and reports Hosted Free unavailable until a provider key is configured.",
+    "Real OAuth, managed discovery, inference, fresh-user acceptance, and autonomous coding E2E require the managed credential and were not claimed."
+  ],
+  "nextAuthorizedAction": "Place a CodeForge-owned managed Groq key in Render staging under CODEFORGE_GROQ_API_KEY without printing or committing it, then redeploy and run the guarded discovery and acceptance gates."
+}
