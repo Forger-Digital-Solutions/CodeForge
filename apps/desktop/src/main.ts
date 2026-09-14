@@ -1732,7 +1732,10 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   // Open the Repository Intelligence popover again now that the index is READY, so the smoke
   // verifies the live status surface (READY + file/symbol counts) actually renders.
   await evaluateRenderer<void>(`(() => { const button = Array.from(document.querySelectorAll('button')).find((element) => element.getAttribute('aria-label') === 'Repository Intelligence'); if (button) button.click(); })()`);
-  await delay(150);
+  await waitForCondition(async () => {
+    const text = (await evaluateRenderer<string>("document.body.innerText")).toLowerCase();
+    return text.includes("repository intelligence") && text.includes("local structural index");
+  }, 5_000, "repository index status UX");
   const shellText = await evaluateRenderer<string>("document.body.innerText");
   smokeRecord("packaged_repository_query_known_answer=PASS");
   const shellTextLower = shellText.toLowerCase();
