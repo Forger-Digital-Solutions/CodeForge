@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "artifact": "CodeForge Adaptive Intelligence R1 RC5 sanitized live staging discovery",
+  "schemaVersion": "codeforge-rc-live-e2e/v1",
+  "createdAt": "2026-09-14",
+  "verdict": "CODEFORGE_ADAPTIVE_INTELLIGENCE_R1_RC5_OPERATOR_CREDENTIAL_REQUIRED",
+  "secretValuesWritten": false,
+  "ownerCashUsd": 0,
+  "workspace": {
+    "provider": "Render",
+    "workspaceName": "CodeForge",
+    "workspaceConfirmed": true,
+    "resourceCreation": "none"
+  },
+  "existingInfrastructure": {
+    "serviceName": "codeforge-cloud-staging",
+    "serviceId": "srv-daa481tg1s2s73c3htsg",
+    "publicUrl": "https://codeforge-cloud-staging.onrender.com",
+    "serviceStatus": "not_suspended",
+    "plan": "free",
+    "region": "oregon",
+    "healthPath": "/health/live",
+    "autoDeploy": false,
+    "databaseName": "codeforge-cloud",
+    "databaseStatus": "available",
+    "databasePlan": "free",
+    "databaseRegion": "virginia",
+    "databaseExpiresAt": "2026-10-08T02:19:19.694412Z",
+    "databaseBackupsClaimed": false
+  },
+  "currentRemoteDeployment": {
+    "branch": "feat/codeforge-cloud",
+    "latestLiveCommit": "6b0770b11aab9f71e40b5c953e24e68fabc58707",
+    "rc5BranchPresentOnRemote": false,
+    "rc5SourceCommitPublished": false,
+    "startupSummary": {
+      "environment": "staging",
+      "database": "postgres",
+      "databaseTls": true,
+      "github": "configured",
+      "hostedInference": true,
+      "hostedFree": true,
+      "providersObserved": ["openrouter", "groq"]
+    },
+    "recentErrorLogEntries": 0,
+    "rc5Status": "not_deployed_legacy_commit"
+  },
+  "rc5ActivationBoundary": {
+    "renderWorkspace": "confirmed",
+    "publicHttpsService": "existing_but_legacy_commit",
+    "postgres": "existing_free_instance_available",
+    "githubOAuth": "configured_on_legacy_service_not_rc5_verified",
+    "jwtSecret": "configured_on_legacy_service_not_rc5_verified",
+    "managedFreeCredential": "required_under_CODEFORGE_GROQ_or_CODEFORGE_CLOUDFLARE_contract",
+    "personalProviderVariablesAdmitted": false,
+    "pushPerformed": false,
+    "paidResourceCreated": false
+  },
+  "checks": {
+    "remoteHealthProbe": "not_completed_client_tls_failure",
+    "postgresMigrationValidation": "blocked_secret_not_available_to_local_harness",
+    "realGitHubOAuth": "blocked_rc5_not_deployed",
+    "managedFreeInference": "blocked_rc5_managed_credential_not_supplied",
+    "freshUserE2E": "blocked_rc5_not_deployed",
+    "liveAgentToolLoop": "blocked_rc5_not_deployed"
+  },
+  "blockers": [
+    "The RC5 branch is not present on the remote repository; publishing it requires separate push authorization.",
+    "The existing service logs show legacy openrouter/groq admission. Those variables cannot be reclassified as CodeForge-managed RC5 capacity.",
+    "No CodeForge-owned managed Groq or complete Cloudflare credential was supplied or safely confirmed for RC5.",
+    "The local Windows host could not complete an HTTPS probe because its TLS client lacked a Schannel credential context."
+  ],
+  "nextAuthorizedActions": [
+    "Authorize publishing the local RC5 commit to the configured repository branch.",
+    "Supply or place a CodeForge-owned managed provider credential under the explicit guarded variable contract.",
+    "Deploy the published RC5 commit, run PostgreSQL validation, register/verify the exact GitHub callback, then run real OAuth and fresh-user E2E."
+  ]
+}

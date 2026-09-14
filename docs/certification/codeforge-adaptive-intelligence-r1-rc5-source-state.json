@@ -1,0 +1,57 @@
+{
+  "sourceStateId": "20358e2d7be4252424af9eaae8a83bb8dfb23b3d794fd92eac1821cb4117eccd",
+  "surfaceVersion": "codeforge-adaptive-intelligence-r1-rc5",
+  "schemaVersion": "forgegreen-source-state/v1",
+  "lineage": {
+    "priorCertificate": "docs/certification/codeforge-adaptive-intelligence-r1-rc4.json",
+    "priorSourceStateDocument": "docs/certification/codeforge-adaptive-intelligence-r1-rc4-source-state.json",
+    "priorSourceStateId": "2ce659f3d084363d99976155491cee0570c3b0d81654eeae2d4129d21d16855a",
+    "purpose": "RC5 source-state evidence for real staging activation preparation, managed-provider naming, and truthful separation of local package evidence from the existing legacy Render deployment."
+  },
+  "idAlgorithm": "sha256(JSON.stringify(materialFiles sorted lexicographically, each as [path, gitBlobHash]))",
+  "materialFiles": [
+    "Dockerfile.cloud",
+    "apps/cloud-api/src/config.ts",
+    "apps/cloud-api/src/staging-contract.ts",
+    "apps/cloud-api/src/staging-preflight.ts",
+    "apps/cloud-api/test/staging-tooling.test.ts",
+    "apps/desktop/scripts/packaged-smoke.js",
+    "apps/desktop/src/main.ts",
+    "docs/cloud-deployment.md",
+    "docs/cloud-operator-runbook.md",
+    "packages/cloud-gateway/src/provider-registry.ts",
+    "packages/providers/src/hosted.ts",
+    "render.yaml",
+    "scripts/cloud/launch-checklist.mjs",
+    "scripts/cloud/real-hosted-smoke.mjs"
+  ],
+  "materialFileHashes": {
+    "Dockerfile.cloud": "bb1e521f73f5ecad93c93115820c922b83e12f3e",
+    "apps/cloud-api/src/config.ts": "4f6826777cf421b9b39a3fcef9a217e8a92113fa",
+    "apps/cloud-api/src/staging-contract.ts": "55b8b2b9840815f9a1bc18e1f7816a05c4d598e0",
+    "apps/cloud-api/src/staging-preflight.ts": "c472d23a9c0d591da8fc2d952b06798e6bf0bfb1",
+    "apps/cloud-api/test/staging-tooling.test.ts": "961ec1af0c51a2f861e0561f1e7207c0426e3d6d",
+    "apps/desktop/scripts/packaged-smoke.js": "6621cc3026481c276bc652081c748fa978c441da",
+    "apps/desktop/src/main.ts": "4c065ce5f28e61a5ad3da1d2ff943ec109dbf9a1",
+    "docs/cloud-deployment.md": "20d08cf4d8a43c6a26a6f5e34e5b886c8bd95c49",
+    "docs/cloud-operator-runbook.md": "9f90cb61b86709a2d54a2664cf57598893ecb504",
+    "packages/cloud-gateway/src/provider-registry.ts": "c82eeb9dbf98e7998fc5d5eaa516462da9ab30e2",
+    "packages/providers/src/hosted.ts": "dc7863760141f4f5e91e0de38872024f07559c60",
+    "render.yaml": "d9a867bde7b9a71011d55685c4308fc79496f2a5",
+    "scripts/cloud/launch-checklist.mjs": "80543af4a776342a5e4582141869a736804d397d",
+    "scripts/cloud/real-hosted-smoke.mjs": "b0fe28ec56ea06c94d2a832c8da94950a3a362ac"
+  },
+  "workingTree": {
+    "head": "c3d3bb6",
+    "sourceWorkingTreeBeforeEvidence": "clean",
+    "newCommitCreated": true,
+    "frozenBaselineUntouched": true
+  },
+  "changes": [
+    "Render Blueprint now targets codeforge/adaptive-intelligence-r1 and advertises only the explicitly guarded CodeForge-managed Groq credential contract.",
+    "Cloud deployment and operator docs distinguish managed hosted capacity from personal/BYOK provider variables.",
+    "Hosted smoke messaging names only CodeForge-managed credential families.",
+    "No inference routing, Electron sandbox, OAuth protocol, Forge Auto, 8-Bit, or Custom AUTO redesign was made."
+  ],
+  "createdAt": "2026-09-14"
+}

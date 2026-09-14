@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "certificate": "CodeForge Adaptive Intelligence R1 Release Candidate 5",
+  "schemaVersion": "codeforge-rc-certificate/v1",
+  "issuedAt": "2026-09-14",
+  "verdict": "CODEFORGE_ADAPTIVE_INTELLIGENCE_R1_RC5_OPERATOR_CREDENTIAL_REQUIRED",
+  "releaseReadiness": "NOT_PUBLIC_RELEASE_READY",
+  "scope": {
+    "repository": "G:/CodeForge-FreeCloud",
+    "branch": "codeforge/adaptive-intelligence-r1",
+    "head": "c3d3bb6",
+    "frozenBaseline": {
+      "repository": "G:/CodeForge",
+      "head": "3bba7e218050668c63f670e09b340678a6153ad4",
+      "modified": false
+    },
+    "externalActions": "Existing Render staging infrastructure was discovered read-only. No push, deployment trigger, secret update, database mutation, OAuth registration, provider-account mutation, DNS change, or paid resource was performed."
+  },
+  "rc5Changes": [
+    "Aligned render.yaml with the current RC5 branch and the CodeForge-managed Groq Free-plan guard.",
+    "Removed legacy hosted-capacity examples that could imply personal OpenRouter/Groq keys are valid managed credentials.",
+    "Kept personal/BYOK provider variables separate from hosted managed capacity."
+  ],
+  "verification": {
+    "focusedTests": {
+      "command": "npm.cmd test -- apps/cloud-api/test/staging-tooling.test.ts apps/cloud-api/test/config.test.ts apps/cloud-api/test/hosted-capacity.test.ts packages/cloud-gateway/test/provider-registry.test.ts",
+      "exitCode": 0,
+      "passedTestFiles": 4,
+      "passedTests": 78
+    },
+    "fullBuild": {
+      "command": "npm.cmd run build",
+      "exitCode": 0
+    },
+    "launchChecklist": {
+      "exitCode": 1,
+      "repositoryChecksPassed": 12,
+      "externalActionsRemaining": 6
+    },
+    "stagingPreflightWithoutSecrets": {
+      "exitCode": 1,
+      "passed": 3,
+      "failed": 11,
+      "warnings": 1,
+      "secretValuesPrinted": false
+    }
+  },
+  "desktopArtifact": {
+    "channel": "staging",
+    "endpoint": "https://codeforge-cloud-staging.onrender.com",
+    "endpointManifestEmbedded": true,
+    "artifacts": [
+      {
+        "kind": "nsis",
+        "path": "apps/desktop/release/rc5/CodeForge-Setup-0.3.0.exe",
+        "bytes": 85970680,
+        "sha256": "1F74221ECC477AD445F5C4BCA0C60093142EC12F718534F7CC084C1EAFD1685B",
+        "signed": false
+      },
+      {
+        "kind": "portable",
+        "path": "apps/desktop/release/rc5/CodeForge-Portable.exe",
+        "bytes": 85699924,
+        "sha256": "84A7F610D78EC88268CFC84CA744D7B82E376CC962788EABC76CAE6D4D1E07F7",
+        "signed": false
+      },
+      {
+        "kind": "unpacked-executable",
+        "path": "apps/desktop/release/rc5/win-unpacked/CodeForge.exe",
+        "sha256": "8D0954521AFFBD04E7F290EB2242A8E88D1F3EF7969A5F6494A98D66DE692E46",
+        "signed": false
+      }
+    ],
+    "audits": {
+      "authEndpoint": "PASS",
+      "browserSecurity": "PASS",
+      "internalDependencyGraph": "PASS",
+      "runtimeDependencyGraph": "PASS"
+    },
+    "packagedSmoke": {
+      "status": "HOST_CONTEXT_BLOCKED",
+      "failure": "Electron render-process-gone launch-failed:49 before renderer lifecycle; ERR_FAILED loading the packaged file URL.",
+      "securityFlagsChanged": false,
+      "noSandboxWorkaroundUsed": true,
+      "evidencePath": "apps/desktop/release/rc5/smoke-result.log"
+    }
+  },
+  "stagingReadiness": {
+    "renderWorkspace": "CONFIRMED",
+    "existingService": "DISCOVERED",
+    "existingPostgres": "DISCOVERED_FREE_EXPIRING_2026-10-08",
+    "rc5RemoteBranch": "NOT_PUBLISHED",
+    "rc5Deployment": "NOT_PERFORMED",
+    "managedFreeActivation": "BLOCKED_OPERATOR_CREDENTIAL_REQUIRED",
+    "realOAuth": "NOT_RUN",
+    "freshUserE2E": "NOT_RUN",
+    "publicRelease": false
+  },
+  "sourceState": {
+    "document": "docs/certification/codeforge-adaptive-intelligence-r1-rc5-source-state.json",
+    "sourceStateId": "20358e2d7be4252424af9eaae8a83bb8dfb23b3d794fd92eac1821cb4117eccd"
+  },
+  "sanitizedLiveDiscovery": "docs/certification/codeforge-adaptive-intelligence-r1-rc5-live-e2e.json",
+  "remainingExternalActions": [
+    "Authorize push of the local RC5 commit so Render can build the intended branch.",
+    "Supply a CodeForge-owned managed Groq key with CODEFORGE_GROQ_FREE_PLAN_ONLY=true, or a complete guarded Cloudflare Workers AI pair.",
+    "Run the deployed RC5 PostgreSQL, OAuth, managed inference, packaged staging, and fresh-user acceptance gates."
+  ]
+}
