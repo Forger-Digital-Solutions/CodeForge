@@ -121,7 +121,7 @@ describe("OpenAICompatibleAdapter transport", () => {
       baseUrl: "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/v1",
       apiKey: "token",
       resolveBaseUrl: (u) => u.replace("${CLOUDFLARE_ACCOUNT_ID}", "acct_123"),
-      resolveModelsUrl: (u) => u.replace(/\/ai\/v1$/, "/ai/models/search"),
+      resolveModelsUrl: (u) => `${u.replace(/\/ai\/v1$/, "/ai/models/search")}?task=Text%20Generation`,
       parseModels: (data) => {
         const result = (data as { result?: unknown }).result;
         return Array.isArray(result) ? result : [];
@@ -138,7 +138,7 @@ describe("OpenAICompatibleAdapter transport", () => {
       }) as unknown as typeof fetch,
     });
     const models = await direct.listModels();
-    expect(url).toBe("https://api.cloudflare.com/client/v4/accounts/acct_123/ai/models/search");
+    expect(url).toBe("https://api.cloudflare.com/client/v4/accounts/acct_123/ai/models/search?task=Text%20Generation");
     expect(models[0]?.modelId).toBe("@cf/zai-org/glm-4.7-flash");
   });
 });

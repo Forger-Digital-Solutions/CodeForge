@@ -130,7 +130,7 @@ function mapCloudflareModel(raw: unknown): ProviderModel | null {
 }
 
 function cloudflareModelsUrl(baseUrl: string): string {
-  return baseUrl.replace(/\/ai\/v1$/, "/ai/models/search");
+  return `${baseUrl.replace(/\/ai\/v1$/, "/ai/models/search")}?task=Text%20Generation`;
 }
 
 function parseCloudflareModels(data: unknown): unknown[] {
