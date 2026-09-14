@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "certificate": "CodeForge Adaptive Intelligence R1 Release Candidate 4",
+  "schemaVersion": "codeforge-rc-certificate/v1",
+  "issuedAt": "2026-09-14",
+  "verdict": "CODEFORGE_ADAPTIVE_INTELLIGENCE_R1_RC4_PACKAGED_CERTIFIED_OPERATOR_CREDENTIAL_REQUIRED",
+  "releaseReadiness": "NOT_PUBLIC_RELEASE_READY",
+  "scope": {
+    "repository": "G:/CodeForge-FreeCloud",
+    "branch": "codeforge/adaptive-intelligence-r1",
+    "head": "433d839073ac10f9572684528a5cab2642b9bf95",
+    "workingTree": "clean for source and RC4 evidence after the certification-document commit",
+    "frozenBaseline": {
+      "repository": "G:/CodeForge",
+      "head": "3bba7e218050668c63f670e09b340678a6153ad4",
+      "modified": false
+    },
+    "externalActions": "No staging deployment, database mutation, OAuth registration, provider-account mutation, push, publication, or signing was performed. Local isolated installer execution was performed as requested."
+  },
+  "hostEnvironment": {
+    "productName": "Windows 10 Pro",
+    "displayVersion": "25H2",
+    "currentBuild": "26200",
+    "ubr": 9445,
+    "electron": "33.4.11",
+    "chromium": "130.0.6723.191",
+    "node": "20.18.3"
+  },
+  "rc3Reconciliation": {
+    "status": "PRESERVED_AND_COMMITTED",
+    "preservedChanges": [
+      "Managed-capacity checklist accepts only complete explicitly Free-guarded server-owned Groq or Cloudflare credentials.",
+      "Focused tests reject personal OPENROUTER_API_KEY/GROQ_API_KEY variables as managed capacity.",
+      "RC3 certificate and source-state documents are retained unchanged."
+    ],
+    "rc3SourceStateId": "5aa49b00f029facc850a14897499b44dad5e8fc2321ae2f582b7f75f8475056b"
+  },
+  "rootCause": {
+    "classification": "AUTOMATION_HOST_PROCESS_CONTEXT_LIMITATION",
+    "observed": "The default restricted command context loses the sandboxed Electron renderer before navigation with render-process-gone reason launch-failed and exit code 49, followed by ERR_FAILED for the canonical packaged file URL.",
+    "rc4FailureEvidence": {
+      "mainPid": 70988,
+      "parentHarnessPid": 97712,
+      "rendererPidAttempt": 0,
+      "rendererProcessIdAttempt": 4,
+      "rendererExitReason": "launch-failed",
+      "rendererExitCode": 49,
+      "gpu": "in-process software compositor; no GPU child process required",
+      "documentLifecycleReached": false
+    },
+    "comparison": {
+      "samePackageVisibleInteractive": "PASS",
+      "samePackageEligibleWindowsSmoke": "PASS",
+      "copiedPackageOnCDriveRestrictedSmoke": "FAIL launch-failed:49",
+      "interpretation": "The result follows the execution-host process/sandbox boundary, not the package path or renderer URL. The numeric exit code is recorded as Electron's platform-specific launch-failure code, not as a universal Win32 error meaning."
+    },
+    "hostChecks": {
+      "codeIntegrityEvent3033LastTwoHours": false,
+      "historicalLiveKernelEvent141Observed": true,
+      "productDefectProven": false
+    }
+  },
+  "safeFix": {
+    "status": "PASS",
+    "implementation": [
+      "Added safe main/parent PID, Electron/Chromium/Node version, sanitized-argument, temp-directory, renderer PID-attempt, lifecycle, failure, responsiveness, child-process, and GPU diagnostics.",
+      "Added harness PID and child-launch metadata with secrets redacted.",
+      "Classified the restricted process-context result as a host limitation when an eligible/interactive context passes."
+    ],
+    "securityConfigurationUnchanged": true,
+    "sandbox": true,
+    "nodeIntegration": false,
+    "contextIsolation": true,
+    "webSecurity": true,
+    "unsafeNoSandboxFlagInReleaseLaunch": false,
+    "sandboxFalseInBrowserWindow": false,
+    "disableWebSecurityInReleaseLaunch": false
+  },
+  "claims": {
+    "managedFreeProduct": {
+      "zeroUserProviderSetup": "UNIT_VERIFIED",
+      "serverAuthoritativeRouting": "UNIT_VERIFIED",
+      "boundedHostedToolCalling": "UNIT_VERIFIED",
+      "truthfulCapacityStates": "UNIT_VERIFIED",
+      "liveManagedFreeInference": "NOT_ACTIVATED"
+    },
+    "accountAuthQuota": {
+      "serverBrokeredGithubPkce": "UNIT_VERIFIED",
+      "freeAccountProvisioning": "UNIT_VERIFIED",
+      "perUserEntitlementAndQuotaIsolation": "UNIT_VERIFIED",
+      "reservationReleaseOnProviderFailure": "UNIT_VERIFIED",
+      "freshUserExternalE2E": "BLOCKED_EXTERNAL_ACTIVATION"
+    },
+    "customAuto": {
+      "implementation": "PASS",
+      "tests": "PASS",
+      "ownerIsolation": "PASS",
+      "liveExternalProof": "NOT_AVAILABLE"
+    },
+    "eightBit": {
+      "nativeTypeScriptPipeline": "PASS",
+      "determinismAndPromotionGuards": "PASS",
+      "authorizedEvidenceBoundary": "PASS",
+      "optionalGpuTrainer": "IMPLEMENTED_NOT_EXERCISED"
+    },
+    "desktop": {
+      "build": "PASS",
+      "installerAndPortableArtifacts": "PASS",
+      "packagedSmokeEligibleContext": "PASS",
+      "packagedSmokeDefaultRestrictedContext": "HOST_LIMITATION_LAUNCH_FAILED_49",
+      "endpointSecurity": "PASS",
+      "codeSigning": "NOT_CONFIGURED"
+    }
+  },
+  "verification": {
+    "typecheck": { "command": "npm.cmd run typecheck", "exitCode": 0 },
+    "build": {
+      "command": "npm.cmd run build",
+      "exitCode": 0,
+      "note": "Used the installed system npm prefix because the user-level npm wrapper resolves to a missing npm-cli.js."
+    },
+    "testSuite": {
+      "command": "node node_modules/vitest/vitest.mjs run",
+      "exitCode": 0,
+      "passedTestFiles": 331,
+      "skippedTestFiles": 7,
+      "passedTests": 2437,
+      "skippedTests": 37,
+      "failedTestFiles": 0,
+      "failedTests": 0,
+      "durationSeconds": 396.76
+    },
+    "focusedRc3Suite": {
+      "command": "node node_modules/vitest/vitest.mjs run apps/cloud-api/test/staging-tooling.test.ts --reporter=verbose",
+      "exitCode": 0,
+      "passedTestFiles": 1,
+      "passedTests": 39,
+      "failedTests": 0
+    },
+    "packagedBuild": {
+      "command": "npm.cmd run dist --workspace=codeforge-desktop",
+      "exitCode": 0,
+      "electron": "33.4.11",
+      "channel": "development",
+      "endpoint": "http://127.0.0.1:3220",
+      "signing": "not configured"
+    },
+    "packagedSmoke": {
+      "command": "node apps/desktop/scripts/packaged-smoke.js full; node apps/desktop/scripts/packaged-smoke.js interrupt; node apps/desktop/scripts/packaged-smoke.js recover",
+      "eligibleWindowsContext": {
+        "full": { "exitCode": 0, "result": "PASS" },
+        "interrupt": { "exitCode": 73, "result": "PASS_EXPECTED_INTERRUPT" },
+        "recover": { "exitCode": 0, "result": "PASS" }
+      },
+      "defaultRestrictedContext": {
+        "full": { "exitCode": 1, "result": "HOST_LIMITATION", "failure": "launch-failed:49 before renderer lifecycle" }
+      },
+      "freshProfile": true,
+      "rendererLifecycle": ["preload-entry", "preload-bridge-ready", "bootstrap", "root-mounted", "first-frame", "workspace-root", "runtime-connected", "workspace-interactive"],
+      "fullChecks": ["trust boundary", "repository index/search", "workflow failure repair", "five renderer reloads", "settings/navigation", "safe storage credential round-trip"]
+    },
+    "interactiveLaunch": {
+      "unpacked": { "status": "PASS", "windowTitle": "CodeForge", "windowHandleObserved": true },
+      "installerInstalled": { "status": "PASS", "windowTitle": "CodeForge", "windowHandleObserved": true },
+      "portable": { "status": "PASS", "spawnedChildWindowTitle": "CodeForge", "windowHandleObserved": true },
+      "isolatedInstallTarget": "C:/Users/Daddy_FDS/AppData/Local/CodeForge-RC4-Installed-20260914"
+    },
+    "performance": {
+      "fullSmokeMainPid": 10508,
+      "windowConstructedToDidFinishLoadMs": 316,
+      "windowConstructedToFirstFrameMs": 364,
+      "windowConstructedToWorkspaceInteractiveMs": 2291,
+      "note": "Measured from RC4 full-smoke timestamp markers; no performance claim is made for live cloud inference."
+    },
+    "packagedAudits": {
+      "browserSecurity": "PASS",
+      "browserSecurityEvidence": "sandbox=true; nodeIntegration=false; contextIsolation=true; webSecurity=true; controlPlaneBearerInjection=true; preloadBearerFree=true",
+      "authEndpointDevelopment": "PASS",
+      "internalDependencyGraph": "PASS",
+      "runtimeDependencyGraph": "PASS"
+    }
+  },
+  "stagingReadiness": {
+    "status": "BLOCKED_EXTERNAL_RESOURCES",
+    "launchChecklist": { "exitCode": 1, "passed": 12, "failed": 6, "externalActions": 6 },
+    "preflight": { "exitCode": 1, "passed": 3, "failed": 11, "warnings": 1, "environment": "development" },
+    "publicCloudUrl": false,
+    "postgres": false,
+    "realGithubOAuth": false,
+    "managedFreeCapacity": false,
+    "normalSandboxPackagedSmoke": "PASS_IN_ELIGIBLE_CONTEXT; HOST_LIMITATION_IN_DEFAULT_RESTRICTED_CONTEXT",
+    "publicRelease": false
+  },
+  "operatorCredentialState": {
+    "CODEFORGE_GROQ_API_KEY": false,
+    "CODEFORGE_GROQ_FREE_PLAN_ONLY": false,
+    "CODEFORGE_CLOUDFLARE_ACCOUNT_ID": false,
+    "CODEFORGE_CLOUDFLARE_API_TOKEN": false,
+    "CODEFORGE_CLOUDFLARE_FREE_PLAN_ONLY": false,
+    "CODEFORGE_ZAI_API_KEY": false,
+    "GITHUB_CLIENT_ID": false,
+    "GITHUB_CLIENT_SECRET": false,
+    "DATABASE_URL": false,
+    "JWT_SECRET": false,
+    "personal_OPENROUTER_API_KEY_present": true,
+    "personal_GROQ_API_KEY_present": true,
+    "personalKeysUsedForManagedRouting": false
+  },
+  "managedRoutes": [
+    { "route": "groq::openai/gpt-oss-120b", "qualified": true, "credentialed": false, "active": false, "healthy": false, "liveTested": false, "roles": ["primary managed Free route"] },
+    { "route": "groq::openai/gpt-oss-20b", "qualified": true, "credentialed": false, "active": false, "healthy": false, "liveTested": false, "roles": ["primary managed Free route"] },
+    { "route": "cloudflare-workers-ai::@cf/zai-org/glm-4.7-flash", "qualified": true, "credentialed": false, "active": false, "healthy": false, "liveTested": false, "roles": ["limited reserve managed Free route"] },
+    { "route": "zai::glm-4.7-flash", "qualified": false, "credentialed": false, "active": false, "healthy": false, "liveTested": false, "roles": ["policy_record_required"] }
+  ],
+  "eightBitLiveRoster": { "revision": "none", "status": "NO_LIVE_MANAGED_ROSTER", "activeDistinctModels": 0 },
+  "forgeAutoTeam": { "status": "NO_ACTIVE_MANAGED_ROUTES", "activeDistinctModels": 0 },
+  "managedFreeInference": {
+    "status": "NOT_AVAILABLE",
+    "attempted": false,
+    "reason": "No public HTTPS Cloud and no server-owned managed Free credential were available."
+  },
+  "realOAuth": {
+    "pkce": "IMPLEMENTED_AND_UNIT_VERIFIED",
+    "browserAuth": "NOT_RUN",
+    "callback": "NOT_REGISTERED_OR_LIVE_VERIFIED",
+    "sessionPersistence": "UNIT_VERIFIED",
+    "logout": "UNIT_VERIFIED",
+    "restart": "UNIT_VERIFIED_IN_LOCAL_PACKAGED_RECOVERY"
+  },
+  "postgres": {
+    "migrationImplementation": "UNIT_VERIFIED",
+    "liveValidation": "BLOCKED_EXTERNAL_ACTIVATION",
+    "validator": "No DATABASE_URL or CODEFORGE_TEST_POSTGRES_URL supplied"
+  },
+  "freshUserE2E": {
+    "status": "BLOCKED_EXTERNAL_ACTIVATION",
+    "reason": "No real public Cloud URL, PostgreSQL deployment, GitHub OAuth registration, or managed provider credential was available."
+  },
+  "byokIsolation": {
+    "status": "PASS",
+    "proof": "RC3 checklist regression tests keep personal provider variables out of managed-capacity admission; the hosted managed route remains server-authoritative."
+  },
+  "liveAgentToolLoop": {
+    "status": "NOT_AVAILABLE",
+    "localPackagedWorkflow": "PASS",
+    "externalCloudLoop": "NOT_RUN"
+  },
+  "security": {
+    "packagedBrowserAudit": "PASS",
+    "noSandboxReleaseEvidence": "PASS — no unsafe flag used for any passing evidence",
+    "secretsInArtifactsOrReports": "none observed; values were not recorded",
+    "productionSecurityCertification": "NOT_AVAILABLE without deployed HTTPS target"
+  },
+  "artifacts": [
+    { "kind": "nsis", "path": "apps/desktop/release/rc4/CodeForge-Setup-0.3.0.exe", "bytes": 85970783, "sha256": "12D4A86009B390332FF7A53A2C1C7BD52C19E59857F7B894DC225F4189041D64", "signed": false },
+    { "kind": "portable", "path": "apps/desktop/release/rc4/CodeForge-Portable.exe", "bytes": 85700023, "sha256": "79DDDEE278C28A0D7CCD9C763FC3C4C3FFC37C480B9462EBDE593D5BF4D1ECAB", "signed": false },
+    { "kind": "unpacked-executable", "path": "apps/desktop/release/rc4/win-unpacked/CodeForge.exe", "bytes": 188875264, "sha256": "405FFA482F597F789E4EC77D9635AA31690CFCA46D4D19EE3132C072CE9B394A", "signed": false }
+  ],
+  "sourceState": {
+    "document": "docs/certification/codeforge-adaptive-intelligence-r1-rc4-source-state.json",
+    "sourceStateId": "2ce659f3d084363d99976155491cee0570c3b0d81654eeae2d4129d21d16855a",
+    "sourceCommit": "433d839073ac10f9572684528a5cab2642b9bf95",
+    "historicalRc3SourceStatePreserved": true
+  },
+  "commits": [
+    { "commit": "433d839073ac10f9572684528a5cab2642b9bf95", "message": "fix(desktop): harden packaged sandbox smoke diagnostics" }
+  ],
+  "remainingExternalActions": [
+    "Provision a public HTTPS CodeForge Cloud service and durable PostgreSQL database.",
+    "Register the exact GitHub OAuth callback on that public origin and supply confidential client credentials.",
+    "Supply a fresh JWT_SECRET and explicit deployment trust-proxy/database-SSL settings.",
+    "Supply at least one server-owned Groq or Cloudflare credential with its explicit FREE_PLAN_ONLY=true guard.",
+    "Provide an authorized Windows code-signing identity for public distribution.",
+    "Run staging preflight, PG validation, OAuth, managed inference, and fresh-user E2E only after the external resources exist."
+  ],
+  "nextStep": "Provide the real staging public URL, PostgreSQL URL, GitHub OAuth credentials/callback, JWT secret, and guarded server-owned Free provider credential; then rerun staging-preflight, certify-staging, live OAuth, managed inference, and fresh-user E2E."
+}

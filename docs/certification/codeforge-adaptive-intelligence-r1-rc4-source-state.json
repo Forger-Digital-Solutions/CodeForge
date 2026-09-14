@@ -1,0 +1,51 @@
+{
+  "sourceStateId": "2ce659f3d084363d99976155491cee0570c3b0d81654eeae2d4129d21d16855a",
+  "surfaceVersion": "codeforge-adaptive-intelligence-r1-rc4",
+  "schemaVersion": "forgegreen-source-state/v1",
+  "lineage": {
+    "priorCertificate": "docs/certification/codeforge-adaptive-intelligence-r1-rc3.json",
+    "priorSourceStateDocument": "docs/certification/codeforge-adaptive-intelligence-r1-rc3-source-state.json",
+    "priorSourceStateId": "5aa49b00f029facc850a14897499b44dad5e8fc2321ae2f582b7f75f8475056b",
+    "purpose": "RC4 source-state evidence for truthful managed-capacity checks and safe packaged Chromium sandbox diagnostics; RC3 evidence remains historical and unchanged."
+  },
+  "idAlgorithm": "sha256(JSON.stringify(materialFiles sorted lexicographically, each as [path, gitBlobHash]))",
+  "materialFiles": [
+    "apps/cloud-api/src/server.ts",
+    "apps/cloud-api/src/staging-contract.ts",
+    "apps/cloud-api/src/staging-preflight.ts",
+    "apps/cloud-api/test/staging-tooling.test.ts",
+    "apps/desktop/scripts/first-user-acceptance.mjs",
+    "apps/desktop/scripts/packaged-smoke.js",
+    "apps/desktop/src/main.ts",
+    "packages/cloud-gateway/src/gateway-service.ts",
+    "packages/cloud-gateway/src/provider-registry.ts",
+    "packages/cloud-gateway/src/types.ts",
+    "packages/providers/src/hosted.ts",
+    "scripts/cloud/launch-checklist.mjs"
+  ],
+  "materialFileHashes": {
+    "apps/cloud-api/src/server.ts": "9c74f0e931996e74ba0a8ee204ed41bc733329d5",
+    "apps/cloud-api/src/staging-contract.ts": "55b8b2b9840815f9a1bc18e1f7816a05c4d598e0",
+    "apps/cloud-api/src/staging-preflight.ts": "c472d23a9c0d591da8fc2d952b06798e6bf0bfb1",
+    "apps/cloud-api/test/staging-tooling.test.ts": "961ec1af0c51a2f861e0561f1e7207c0426e3d6d",
+    "apps/desktop/scripts/first-user-acceptance.mjs": "18d9e3c7e53ce28813e5d7ca8cf745a20958bcf4",
+    "apps/desktop/scripts/packaged-smoke.js": "6621cc3026481c276bc652081c748fa978c441da",
+    "apps/desktop/src/main.ts": "4c065ce5f28e61a5ad3da1d2ff943ec109dbf9a1",
+    "packages/cloud-gateway/src/gateway-service.ts": "6b73928b70506295a57572029e51841e9d1738d5",
+    "packages/cloud-gateway/src/provider-registry.ts": "c82eeb9dbf98e7998fc5d5eaa516462da9ab30e2",
+    "packages/cloud-gateway/src/types.ts": "2b5635a09f6f84eb5f0eb29d5cb2817cd7810ada",
+    "packages/providers/src/hosted.ts": "dc7863760141f4f5e91e0de38872024f07559c60",
+    "scripts/cloud/launch-checklist.mjs": "80543af4a776342a5e4582141869a736804d397d"
+  },
+  "workingTree": {
+    "head": "433d839073ac10f9572684528a5cab2642b9bf95",
+    "uncommittedMaterialChanges": false,
+    "newCommitCreated": true
+  },
+  "changes": [
+    "Launch checklist recognizes only complete, explicitly Free-guarded server-owned Groq or Cloudflare credentials as managed capacity; personal provider variables remain BYOK-only.",
+    "Focused staging-tooling tests cover personal-key rejection and guarded operator-route acceptance.",
+    "Packaged desktop smoke diagnostics record safe process/version/PID, renderer launch, GPU, lifecycle, failure, and harness context without weakening renderer sandbox security."
+  ],
+  "createdAt": "2026-09-14"
+}
