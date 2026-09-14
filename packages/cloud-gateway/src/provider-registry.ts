@@ -306,6 +306,8 @@ export class CloudProviderRegistry {
         vision: m.capabilities.vision,
         structuredOutput: m.capabilities.structuredOutput,
       }));
+      const matchedRoutes = allowedRoutes.filter((route) => live.some((model) => model.modelId === route.modelId));
+      console.info(`[CodeForge Cloud API] provider ${providerId}: liveModels=${live.length} managedRouteMatches=${matchedRoutes.length}`);
     } catch (e) {
       const status = classifyError(e);
       this.firewallManager.markProviderHealth(providerId, healthForStatus(status), {
@@ -345,6 +347,7 @@ export class CloudProviderRegistry {
       return { ...base, status: "healthy", verifiedFreeCount, discoveredModelCount: live.length };
     }
     if (probeFailure) {
+      console.info(`[CodeForge Cloud API] provider ${providerId}: managed route probe status=${probeFailure}`);
       this.firewallManager.markProviderHealth(providerId, healthForStatus(probeFailure), { lastError: probeFailure, ...(probeFailure === "rate_limited" ? { retryAfter: Date.now() + 60_000 } : {}) });
       return { ...base, status: probeFailure, discoveredModelCount: live.length, error: probeFailure };
     }
