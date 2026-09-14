@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { loadModelFavorites, saveModelFavorites } from "@codeforge/ui";
 import type { CanonicalModelView } from "@codeforge/model-registry";
 import { useSettings } from "../settings-context.js";
@@ -163,6 +163,8 @@ export function ModelsRoutingSection(props: ModelsRoutingSectionProps = {}): Rea
         />
       </SettingsGroup>
 
+      <MyAutosGroup serverBaseUrl={serverBaseUrl} />
+
       <SettingsGroup title="8-Bit free cloud registry">
         <SettingsRow
           title={registry ? `${registry.summary.verifiedFreeModels} verified free models · ${registry.summary.verifiedFreeRoutes} verified routes · ${registry.summary.healthyFreeRoutes} healthy` : "Qualified free models"}
@@ -275,6 +277,351 @@ export function ModelsRoutingSection(props: ModelsRoutingSectionProps = {}): Rea
   );
 }
 
+interface CustomAutoProfileView {
+  id: string;
+  name: string;
+  description?: string;
+  mode: "pinned" | "auto" | "hybrid";
+  roles: {
+    coder: { providerId: string; modelId: string; displayName?: string };
+    planner?: { providerId: string; modelId: string; displayName?: string };
+    reviewer?: { providerId: string; modelId: string; displayName?: string };
+    verifier?: { providerId: string; modelId: string; displayName?: string };
+  };
+  trustDomain: string;
+}
+
+function MyAutosGroup({ serverBaseUrl }: { serverBaseUrl: string }): React.ReactElement {
+  const [profiles, setProfiles] = useState<CustomAutoProfileView[]>([]);
+  const [showEditor, setShowEditor] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Form state
+  const [id, setId] = useState("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [mode, setMode] = useState<"pinned" | "auto" | "hybrid">("pinned");
+  const [coderProvider, setCoderProvider] = useState("");
+  const [coderModel, setCoderModel] = useState("");
+  const [plannerProvider, setPlannerProvider] = useState("");
+  const [plannerModel, setPlannerModel] = useState("");
+  const [reviewerProvider, setReviewerProvider] = useState("");
+  const [reviewerModel, setReviewerModel] = useState("");
+  const [verifierProvider, setVerifierProvider] = useState("");
+  const [verifierModel, setVerifierModel] = useState("");
+
+  const loadProfiles = useCallback(async () => {
+    try {
+      const res = await fetch(`${serverBaseUrl}/api/custom-autos`);
+      if (res.ok) {
+        const data = await res.json();
+        setProfiles(Array.isArray(data) ? data : []);
+      }
+    } catch {
+      // Best-effort
+    }
+  }, [serverBaseUrl]);
+
+  useEffect(() => {
+    void loadProfiles();
+  }, [loadProfiles]);
+
+  const resetForm = () => {
+    setId("");
+    setName("");
+    setDescription("");
+    setMode("pinned");
+    setCoderProvider("");
+    setCoderModel("");
+    setPlannerProvider("");
+    setPlannerModel("");
+    setReviewerProvider("");
+    setReviewerModel("");
+    setVerifierProvider("");
+    setVerifierModel("");
+    setEditingId(null);
+    setShowEditor(false);
+    setErrorMessage(null);
+  };
+
+  const handleEdit = (p: CustomAutoProfileView) => {
+    setEditingId(p.id);
+    setId(p.id);
+    setName(p.name);
+    setDescription(p.description ?? "");
+    setMode(p.mode ?? "pinned");
+    setCoderProvider(p.roles.coder.providerId);
+    setCoderModel(p.roles.coder.modelId);
+    setPlannerProvider(p.roles.planner?.providerId ?? "");
+    setPlannerModel(p.roles.planner?.modelId ?? "");
+    setReviewerProvider(p.roles.reviewer?.providerId ?? "");
+    setReviewerModel(p.roles.reviewer?.modelId ?? "");
+    setVerifierProvider(p.roles.verifier?.providerId ?? "");
+    setVerifierModel(p.roles.verifier?.modelId ?? "");
+    setShowEditor(true);
+    setErrorMessage(null);
+  };
+
+  const handleDuplicate = async (p: CustomAutoProfileView) => {
+    const newId = `${p.id}-copy`.slice(0, 64);
+    const newName = `${p.name} (Copy)`.slice(0, 80);
+    const payload = {
+      id: newId,
+      name: newName,
+      description: p.description,
+      mode: p.mode,
+      roles: p.roles,
+    };
+    try {
+      const res = await fetch(`${serverBaseUrl}/api/custom-autos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        await loadProfiles();
+        window.dispatchEvent(new CustomEvent("codeforge:custom-autos-updated"));
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setErrorMessage(err.error || "Failed to duplicate profile");
+      }
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const handleDelete = async (profileId: string) => {
+    try {
+      const res = await fetch(`${serverBaseUrl}/api/custom-autos/${profileId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        await loadProfiles();
+        window.dispatchEvent(new CustomEvent("codeforge:custom-autos-updated"));
+      }
+    } catch {
+      // Best-effort
+    }
+  };
+
+  const handleSave = async () => {
+    setErrorMessage(null);
+    if (!id.trim() || !name.trim() || !coderProvider.trim() || !coderModel.trim()) {
+      setErrorMessage("ID, Name, and Coder Route (Provider and Model) are required.");
+      return;
+    }
+
+    const roles: CustomAutoProfileView["roles"] = {
+      coder: { providerId: coderProvider.trim(), modelId: coderModel.trim() },
+    };
+    if (plannerProvider.trim() && plannerModel.trim()) {
+      roles.planner = { providerId: plannerProvider.trim(), modelId: plannerModel.trim() };
+    }
+    if (reviewerProvider.trim() && reviewerModel.trim()) {
+      roles.reviewer = { providerId: reviewerProvider.trim(), modelId: reviewerModel.trim() };
+    }
+    if (verifierProvider.trim() && verifierModel.trim()) {
+      roles.verifier = { providerId: verifierProvider.trim(), modelId: verifierModel.trim() };
+    }
+
+    try {
+      if (editingId) {
+        const res = await fetch(`${serverBaseUrl}/api/custom-autos/${editingId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: name.trim(), description: description.trim() || undefined, mode, roles }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setErrorMessage(err.error || "Failed to update profile");
+          return;
+        }
+      } else {
+        const res = await fetch(`${serverBaseUrl}/api/custom-autos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: id.trim(), name: name.trim(), description: description.trim() || undefined, mode, roles }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setErrorMessage(err.error || "Failed to create profile");
+          return;
+        }
+      }
+      resetForm();
+      await loadProfiles();
+      window.dispatchEvent(new CustomEvent("codeforge:custom-autos-updated"));
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  return (
+    <SettingsGroup title="My AUTOs (Custom AUTO)">
+      <SettingsRow
+        title={profiles.length > 0 ? `${profiles.length} Custom AUTO team${profiles.length === 1 ? "" : "s"} configured` : "No Custom AUTO teams"}
+        description="Configure your own adaptive teams using personal API keys and models. Custom AUTO belongs to your private trust domain and never consumes CodeForge-managed free capacity."
+        control={
+          <SettingsButton onClick={() => { if (showEditor) resetForm(); else setShowEditor(true); }}>
+            {showEditor ? "Cancel" : "Create Custom AUTO"}
+          </SettingsButton>
+        }
+      />
+
+      {showEditor && (
+        <div className="settings-note" style={{ display: "flex", flexDirection: "column", gap: 10, padding: 14, marginTop: 8, background: "var(--cf-surface-secondary, rgba(255,255,255,0.03))", borderRadius: 8 }}>
+          <div style={{ fontWeight: 600, fontSize: 14 }}>{editingId ? `Edit Custom AUTO: ${name}` : "Create New Custom AUTO Team"}</div>
+          {errorMessage && <div style={{ color: "var(--cf-danger, #ef4444)", fontSize: 13 }}>{errorMessage}</div>}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <label style={{ fontSize: 12, opacity: 0.8, display: "block", marginBottom: 4 }}>Profile ID</label>
+              <input
+                type="text"
+                disabled={Boolean(editingId)}
+                value={id}
+                onChange={(e) => setId(e.target.value.replace(/[^A-Za-z0-9_-]/g, ""))}
+                placeholder="e.g. my-coding-team"
+                style={{ width: "100%", padding: "6px 8px", background: "var(--cf-input-bg, #1e1e1e)", border: "1px solid var(--cf-border, #333)", color: "inherit", borderRadius: 4 }}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, opacity: 0.8, display: "block", marginBottom: 4 }}>Display Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Fast Sonnet + Reviewer"
+                style={{ width: "100%", padding: "6px 8px", background: "var(--cf-input-bg, #1e1e1e)", border: "1px solid var(--cf-border, #333)", color: "inherit", borderRadius: 4 }}
+              />
+            </div>
+          </div>
+          <div>
+            <label style={{ fontSize: 12, opacity: 0.8, display: "block", marginBottom: 4 }}>Description</label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g. Claude 3.5 Sonnet for SWE coding with GPT-4o reviewer"
+              style={{ width: "100%", padding: "6px 8px", background: "var(--cf-input-bg, #1e1e1e)", border: "1px solid var(--cf-border, #333)", color: "inherit", borderRadius: 4 }}
+            />
+          </div>
+          <div style={{ borderTop: "1px solid var(--cf-border, #333)", paddingTop: 8, marginTop: 4 }}>
+            <div style={{ fontWeight: 500, fontSize: 13, marginBottom: 6 }}>Specialist Roles:</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div>
+                <span style={{ fontSize: 12, fontWeight: 600 }}>Coder Role (Required):</span>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 8, marginTop: 2 }}>
+                  <input
+                    type="text"
+                    value={coderProvider}
+                    onChange={(e) => setCoderProvider(e.target.value)}
+                    placeholder="Provider (e.g. anthropic, openrouter)"
+                    style={{ padding: "4px 8px", background: "var(--cf-input-bg, #1e1e1e)", border: "1px solid var(--cf-border, #333)", color: "inherit", borderRadius: 4 }}
+                  />
+                  <input
+                    type="text"
+                    value={coderModel}
+                    onChange={(e) => setCoderModel(e.target.value)}
+                    placeholder="Model ID (e.g. claude-3-5-sonnet)"
+                    style={{ padding: "4px 8px", background: "var(--cf-input-bg, #1e1e1e)", border: "1px solid var(--cf-border, #333)", color: "inherit", borderRadius: 4 }}
+                  />
+                </div>
+              </div>
+              <div>
+                <span style={{ fontSize: 12, fontWeight: 600 }}>Planner Role (Optional):</span>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 8, marginTop: 2 }}>
+                  <input
+                    type="text"
+                    value={plannerProvider}
+                    onChange={(e) => setPlannerProvider(e.target.value)}
+                    placeholder="Provider (optional)"
+                    style={{ padding: "4px 8px", background: "var(--cf-input-bg, #1e1e1e)", border: "1px solid var(--cf-border, #333)", color: "inherit", borderRadius: 4 }}
+                  />
+                  <input
+                    type="text"
+                    value={plannerModel}
+                    onChange={(e) => setPlannerModel(e.target.value)}
+                    placeholder="Model ID (optional)"
+                    style={{ padding: "4px 8px", background: "var(--cf-input-bg, #1e1e1e)", border: "1px solid var(--cf-border, #333)", color: "inherit", borderRadius: 4 }}
+                  />
+                </div>
+              </div>
+              <div>
+                <span style={{ fontSize: 12, fontWeight: 600 }}>Reviewer Role (Optional):</span>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 8, marginTop: 2 }}>
+                  <input
+                    type="text"
+                    value={reviewerProvider}
+                    onChange={(e) => setReviewerProvider(e.target.value)}
+                    placeholder="Provider (optional)"
+                    style={{ padding: "4px 8px", background: "var(--cf-input-bg, #1e1e1e)", border: "1px solid var(--cf-border, #333)", color: "inherit", borderRadius: 4 }}
+                  />
+                  <input
+                    type="text"
+                    value={reviewerModel}
+                    onChange={(e) => setReviewerModel(e.target.value)}
+                    placeholder="Model ID (optional)"
+                    style={{ padding: "4px 8px", background: "var(--cf-input-bg, #1e1e1e)", border: "1px solid var(--cf-border, #333)", color: "inherit", borderRadius: 4 }}
+                  />
+                </div>
+              </div>
+              <div>
+                <span style={{ fontSize: 12, fontWeight: 600 }}>Verifier Role (Optional):</span>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 8, marginTop: 2 }}>
+                  <input
+                    type="text"
+                    value={verifierProvider}
+                    onChange={(e) => setVerifierProvider(e.target.value)}
+                    placeholder="Provider (optional)"
+                    style={{ padding: "4px 8px", background: "var(--cf-input-bg, #1e1e1e)", border: "1px solid var(--cf-border, #333)", color: "inherit", borderRadius: 4 }}
+                  />
+                  <input
+                    type="text"
+                    value={verifierModel}
+                    onChange={(e) => setVerifierModel(e.target.value)}
+                    placeholder="Model ID (optional)"
+                    style={{ padding: "4px 8px", background: "var(--cf-input-bg, #1e1e1e)", border: "1px solid var(--cf-border, #333)", color: "inherit", borderRadius: 4 }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8 }}>
+            <SettingsButton onClick={resetForm}>Cancel</SettingsButton>
+            <SettingsButton variant="primary" onClick={handleSave}>
+              {editingId ? "Save Changes" : "Create Profile"}
+            </SettingsButton>
+          </div>
+        </div>
+      )}
+
+      {profiles.length > 0 && !showEditor && (
+        <div className="model-pick-list" style={{ marginTop: 8 }}>
+          {profiles.map((p) => (
+            <div key={p.id} className="model-pick-row" style={{ alignItems: "flex-start", padding: "10px 12px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
+                <span className="model-pick-name" style={{ fontWeight: 600 }}>{p.name}</span>
+                <span style={{ fontSize: 12, opacity: 0.7 }}>
+                  Coder: {p.roles.coder.providerId}/{p.roles.coder.modelId}
+                  {p.roles.planner ? ` · Planner: ${p.roles.planner.providerId}/${p.roles.planner.modelId}` : ""}
+                  {p.roles.reviewer ? ` · Reviewer: ${p.roles.reviewer.providerId}/${p.roles.reviewer.modelId}` : ""}
+                  {p.roles.verifier ? ` · Verifier: ${p.roles.verifier.providerId}/${p.roles.verifier.modelId}` : ""}
+                </span>
+                {p.description && <span style={{ fontSize: 12, opacity: 0.6 }}>{p.description}</span>}
+              </div>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <SettingsButton onClick={() => handleEdit(p)}>Edit</SettingsButton>
+                <SettingsButton onClick={() => void handleDuplicate(p)}>Duplicate</SettingsButton>
+                <SettingsButton variant="danger" onClick={() => void handleDelete(p.id)}>Delete</SettingsButton>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </SettingsGroup>
+  );
+}
 
 function RouteDiagnostics({ models }: { models: CanonicalModelView[] }): React.ReactElement {
   return (

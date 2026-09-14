@@ -33,6 +33,8 @@ export interface FreeCloudRoutingHooks {
   recordRouteFailure(providerId: string, modelId: string, reason: string, retryAfterMs?: number): void;
   recordRouteSuccess(providerId: string, modelId: string): void;
   quotaRemaining(providerId: string, modelId: string): number | undefined;
+  /** Monotonic live roster revision consumed by Forge Auto delegation evidence. */
+  rosterRevision(): number;
 }
 
 export interface FreeCloudServiceOptions {
@@ -108,6 +110,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private readonly qualificationSpend = new Map<string, { day: string; requests: number; lastCycleAt: number }>();
   private qualifying = false;
   private listeners = new Set<() => void>();
+  private rosterRevisionNumber = 1;
 
   constructor(options: FreeCloudServiceOptions) {
     this.firewall = options.firewall;
@@ -356,6 +359,10 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     return this.quota.remainingRequests(providerId, modelId);
   }
 
+  rosterRevision(): number {
+    return this.rosterRevisionNumber;
+  }
+
   // --- snapshot / hooks ----------------------------------------------------------------------
 
   snapshot(): FreeCloudSnapshot {
@@ -422,6 +429,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   }
 
   private emit(): void {
+    this.rosterRevisionNumber += 1;
     for (const l of this.listeners) {
       try {
         l();

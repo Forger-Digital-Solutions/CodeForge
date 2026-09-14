@@ -10,6 +10,15 @@ export function canonicalIdOfSelection(id: string): string {
   return id.slice(CANONICAL_PREFIX.length);
 }
 
+/** Picker item id prefix for a Custom AUTO profile (§25). */
+export const CUSTOM_AUTO_PREFIX = "custom-auto:";
+export function isCustomAutoSelection(id: string | null | undefined): id is string {
+  return typeof id === "string" && id.startsWith(CUSTOM_AUTO_PREFIX);
+}
+export function customAutoIdOfSelection(id: string): string {
+  return id.slice(CUSTOM_AUTO_PREFIX.length);
+}
+
 export interface ApiModel {
   id: string;
   providerId: string;
@@ -102,6 +111,7 @@ export const PROVIDER_SECTION: Record<string, string> = {
 
 export const SECTION_ORDER = [
   "RECOMMENDED",
+  "MY AUTOS",
   "CODEFORGE FREE",
   "GEMS",
   "Z.AI",
@@ -147,7 +157,11 @@ export function accessBadge(m: ApiModel): string {
  * grouping — the picker component itself renders whatever sections it is given rather than
  * deriving its own groups, so there is exactly one place this logic can drift.
  */
-export function buildModelSections(apiModels: ApiModel[], models: ModelSelectorItem[]): ModelSection[] {
+export function buildModelSections(
+  apiModels: ApiModel[],
+  models: ModelSelectorItem[],
+  options: { customAutos?: Array<{ id: string; name: string; description?: string }> } = {},
+): ModelSection[] {
   const sectionMap = new Map<string, ModelSelectorItem[]>();
   const gemsModels: ModelSelectorItem[] = [];
   const codeforgeFreeModels: ModelSelectorItem[] = [];
@@ -167,6 +181,19 @@ export function buildModelSections(apiModels: ApiModel[], models: ModelSelectorI
     unavailableReason: autoAvailable ? undefined : "Connect a verified-free provider or sign in to CodeForge Cloud",
   };
   sectionMap.set("RECOMMENDED", [autoItem]);
+
+  if (options.customAutos && options.customAutos.length > 0) {
+    sectionMap.set(
+      "MY AUTOS",
+      options.customAutos.map((ca) => ({
+        id: `${CUSTOM_AUTO_PREFIX}${ca.id}`,
+        displayName: ca.name,
+        tier: "paid" as const,
+        description: ca.description || "Custom adaptive routing team",
+        available: true,
+      })),
+    );
+  }
 
   for (const m of apiModels) {
     if (isHiddenModel(m.id)) continue;
@@ -234,6 +261,9 @@ export function resolveForgeZeroTrust(selectedModelId: string | null, selected: 
     if (discovering) return { verifiedFree: false, label: "ForgeZero · Discovering free routes…", detail: "Verifying connected providers' live catalogs" };
     return { verifiedFree: false, label: "ForgeZero · No Free Route", detail: "ForgeAuto/Free has no eligible provider right now" };
   }
+  if (isCustomAutoSelection(selectedModelId)) {
+    return { verifiedFree: false, label: "Custom AUTO · BYOK", detail: "Executes using your configured Custom AUTO specialist roles" };
+  }
   if (!selected) {
     return { verifiedFree: false, label: "ForgeZero · Unverified", detail: "No model selection recognized" };
   }
@@ -261,6 +291,9 @@ export interface RuntimeLabel {
 export function resolveRuntimeLabel(selectedModelId: string | null, selected: ApiModel | undefined): RuntimeLabel {
   if (selectedModelId === "auto") {
     return { label: "Auto", detail: "ForgeAuto/Free selects the best eligible free route for each task" };
+  }
+  if (isCustomAutoSelection(selectedModelId)) {
+    return { label: "Custom AUTO", detail: "Executes using your configured Custom AUTO specialist roles" };
   }
   if (!selected) {
     return { label: "Unknown", detail: "No model selection recognized" };
@@ -297,7 +330,15 @@ export function canonicalAvailability(m: CanonicalModelView): { available: boole
  * Recommended (ForgeAuto) · Free coding models · GEMS · BYOK/paid. Provider duplicates collapse
  * into "Free · N routes"; route details live in the model's details panel.
  */
-export function buildCanonicalModelSections(snapshot: FreeCloudView, apiModels: ApiModel[], models: ModelSelectorItem[], options: { showAll?: boolean } = {}): ModelSection[] {
+export function buildCanonicalModelSections(
+  snapshot: FreeCloudView,
+  apiModels: ApiModel[],
+  models: ModelSelectorItem[],
+  options: {
+    showAll?: boolean;
+    customAutos?: Array<{ id: string; name: string; description?: string }>;
+  } = {},
+): ModelSection[] {
   const sections: ModelSection[] = [];
   const autoAvailable = snapshot.summary.healthyFreeRoutes > 0;
   const qualifying = (snapshot.qualifying || (snapshot.pendingQualification ?? 0) > 0) && !autoAvailable;
@@ -316,8 +357,30 @@ export function buildCanonicalModelSections(snapshot: FreeCloudView, apiModels: 
             : "No eligible free route",
         unavailableReason: autoAvailable ? undefined : qualifying ? "8-Bit is qualifying newly verified free routes" : "Enable Free Cloud Models to get started",
       },
+      {
+        id: "forge-auto-gems",
+        displayName: "Forge Auto/GEMS",
+        tier: "gems_paid" as const,
+        available: false,
+        description: "GEMS autonomous routing · Topaz/Sapphire team",
+        unavailableReason: "GEMS subscription required",
+      },
     ],
   });
+
+  if (options.customAutos && options.customAutos.length > 0) {
+    sections.push({
+      sectionId: "my-autos",
+      sectionLabel: "MY AUTOS",
+      models: options.customAutos.map((ca) => ({
+        id: `${CUSTOM_AUTO_PREFIX}${ca.id}`,
+        displayName: ca.name,
+        tier: "paid" as const,
+        description: ca.description || "Custom adaptive routing team",
+        available: true,
+      })),
+    });
+  }
 
   const free: ModelSelectorItem[] = [];
   const paid: ModelSelectorItem[] = [];

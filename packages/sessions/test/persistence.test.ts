@@ -131,6 +131,21 @@ describe("SessionPersistence", () => {
     expect(items[0]!.kind).toBe("activity");
   });
 
+  it("deletes a work item and returns boolean indicator", async () => {
+    await db!.upsertSession(makeSession());
+    const item = makeWorkItem({ id: "wi-del-test" });
+    await db!.upsertWorkItem(item);
+    expect(await db!.getWorkItem("wi-del-test")).toBeDefined();
+
+    const deleted = await db!.deleteWorkItem("wi-del-test");
+    expect(deleted).toBe(true);
+    expect(await db!.getWorkItem("wi-del-test")).toBeUndefined();
+
+    // Second delete returns false
+    const deletedAgain = await db!.deleteWorkItem("wi-del-test");
+    expect(deletedAgain).toBe(false);
+  });
+
   it("persists verification policy and resolution receipts append-only and idempotently across restart", async () => {
     await db!.upsertSession(makeSession());
     const receipt = {

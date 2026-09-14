@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "certificate": "CodeForge Adaptive Intelligence R1 Release Candidate 1",
+  "schemaVersion": "codeforge-rc-certificate/v1",
+  "issuedAt": "2026-09-13",
+  "verdict": "IMPLEMENTED_PACKAGED_OPERATOR_CREDENTIAL_REQUIRED",
+  "scope": {
+    "repository": "G:/CodeForge-FreeCloud",
+    "branch": "codeforge/adaptive-intelligence-r1",
+    "headBeforeAudit": "9d992ac4ad3a2324bf3e684beba320caf7d769d8",
+    "frozenBaseline": {
+      "repository": "G:/CodeForge",
+      "head": "3bba7e218050668c63f670e09b340678a6153ad4",
+      "modified": false
+    }
+  },
+  "claims": {
+    "forgeAuto": {
+      "implementation": "PASS",
+      "tests": "PASS",
+      "liveManagedFree": "OPERATOR_CREDENTIAL_REQUIRED",
+      "qualifiedManagedRoutes": []
+    },
+    "customAuto": {
+      "implementation": "PASS",
+      "tests": "PASS",
+      "ownerIsolation": "PASS"
+    },
+    "eightBit": {
+      "nativeTypeScriptPipeline": "PASS",
+      "determinismAndPromotionGuards": "PASS",
+      "authorizedEvidenceBoundary": "PASS",
+      "optionalGpuTrainer": "IMPLEMENTED_NOT_EXERCISED"
+    },
+    "desktop": {
+      "build": "PASS",
+      "installerAndPortableArtifacts": "PASS",
+      "packagedSmoke": "PASS"
+    }
+  },
+  "verification": {
+    "typecheck": {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    "build": {
+      "command": "npm run build",
+      "exitCode": 0
+    },
+    "testSuite": {
+      "command": ".\\node_modules\\.bin\\vitest.cmd run",
+      "exitCode": 0,
+      "passedTestFiles": 331,
+      "skippedTestFiles": 7,
+      "passedTests": 2432,
+      "skippedTests": 37,
+      "failedTestFiles": 0,
+      "failedTests": 0
+    },
+    "focusedAdaptiveSuites": {
+      "forgeAutoTeam": "8/8 PASS",
+      "serverFailoverAndCustomAuto": "12/12 PASS",
+      "desktopTests": "275/275 PASS",
+      "sourceStateAndHarness": "8/8 PASS"
+    },
+    "packagedSmoke": {
+      "command": "npm.cmd run smoke:all --workspace=codeforge-desktop",
+      "exitCode": 0,
+      "modes": ["full", "interrupt", "recover"]
+    }
+  },
+  "artifacts": [
+    {
+      "kind": "nsis",
+      "path": "apps/desktop/release/CodeForge-Setup-0.3.0.exe",
+      "bytes": 85970068,
+      "sha256": "4781EDB2E3B385BB46D5256D59AEC404A49433AF1A7DA52C7140BAC140A57A0C"
+    },
+    {
+      "kind": "portable",
+      "path": "apps/desktop/release/CodeForge-Portable.exe",
+      "bytes": 85699313,
+      "sha256": "A00237019165AF2A3C8AB4FAB9D8CD591C87622418D5282F4BCA072DAE23FBFC"
+    },
+    {
+      "kind": "unpacked-executable",
+      "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+      "bytes": 188875264,
+      "sha256": "54ECFD1D20937D7553B54A06C2036916525A8967793C7D8F35AF556A0676F8EE"
+    }
+  ],
+  "managedFreeCloud": {
+    "operatorCredentialPresence": {
+      "CODEFORGE_GROQ_API_KEY": false,
+      "CODEFORGE_CLOUDFLARE_API_TOKEN": false
+    },
+    "currentlyQualifiedManagedZeroCostRoutes": [],
+    "reason": "Managed routing is correctly fail-closed because the required operator credentials are absent. User BYOK credentials are not used to populate this list.",
+    "configuredProviderFamilies": [
+      "CodeForge Free hosted entitlement",
+      "OpenRouter free routes",
+      "Z.AI free routes",
+      "Google Gemini free-tier routes",
+      "Groq free allocation",
+      "SambaNova free entitlement",
+      "Mistral Experiment allowance",
+      "Cloudflare Workers AI free allowlist",
+      "OpenCode Zen free routes"
+    ],
+    "admissionRule": "A configured family is not a qualified route; ForgeZero, live free evidence, connection state, and 8-Bit qualification are all required."
+  },
+  "sourceState": {
+    "document": "docs/certification/codeforge-adaptive-intelligence-r1-source-state.json",
+    "sourceStateId": "9bf09295f933dd1ccccab94b89a94b2eb2099827e7073d0ea8df85d4d4156d93",
+    "historicalSourceStatePreserved": true
+  },
+  "limitations": [
+    "No live managed Free inference claim is made without operator credentials.",
+    "The optional Python GPU trainer is developer tooling only and was not exercised in this Windows run.",
+    "Electron artifacts are unsigned because no signing identity was configured.",
+    "The repository npm shim could not launch npm test; the equivalent direct Vitest command completed with zero failures."
+  ]
+}

@@ -21,6 +21,8 @@ import {
 import type { FreeModelRecord } from "@codeforge/forge-zero";
 import type { FreeCloudService } from "@codeforge/model-registry";
 import { SqliteQualificationPersistence } from "@codeforge/eight-bit";
+import { createCustomAutoStore, type CustomAutoProfile, type CustomAutoStore } from "@codeforge/custom-auto";
+import { planForgeAutoTeam, selectForgeAutoTeam, classifyTask } from "@codeforge/forge-auto";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/providers";
@@ -40,6 +42,7 @@ import { createWorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { createRepositoryIntelligence, REPOSITORY_INDEX_VERSION, REPOSITORY_PARSER_VERSION, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
 import { UserIntentHoldController } from "./user-intent-hold.js";
 import { buildActivityOverview, type ActivityOverview, type ActivityPeriod } from "./activity-overview.js";
+import { DEFAULT_CUSTOM_AUTO_OWNER } from "@codeforge/custom-auto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -100,6 +103,8 @@ export interface ServerOptions {
   afterApprovalResolvedBoundary?: () => Promise<void>;
   /** Per-process bearer used by the packaged renderer to authenticate to the loopback API. */
   controlPlaneToken?: string;
+  /** Stable local account identity used to isolate account-scoped Custom AUTO profiles. */
+  userId?: string;
   /** Agent working budget per workflow implementation/repair turn (ms); tests use small values. */
   agentWorkingBudgetMs?: number;
   /**
@@ -154,7 +159,9 @@ export class CodeForgeServer {
   private readonly afterApprovalResolvedBoundary?: () => Promise<void>;
   private readonly configuredDbPath?: string;
   private readonly controlPlaneToken?: string;
+  private readonly userId: string;
   private forgeGreenCacheStore?: ForgeGreenCacheStore;
+  private customAutoStore: CustomAutoStore;
   /**
    * Raw session/turn/work-item data backing the activity overview, cached briefly. The renderer
    * polls this endpoint on the same cadence as its other status polls; without this cache every
@@ -170,11 +177,13 @@ export class CodeForgeServer {
     this.webDist = options.webDist ?? path.join(__dirname, "..", "web", "dist");
     this.configuredDbPath = options.dbPath;
     this.controlPlaneToken = options.controlPlaneToken;
+    this.userId = options.userId?.trim() || DEFAULT_CUSTOM_AUTO_OWNER;
     this.persistence = createSessionPersistence({
       ...(options.dbPath ? { dbPath: options.dbPath } : {}),
       ...(options.databaseUrl ? { databaseUrl: options.databaseUrl } : {}),
       ...(options.databaseDriver ? { driver: options.databaseDriver } : {}),
     });
+    this.customAutoStore = createCustomAutoStore(this.persistence, this.userId);
     this.eventStore = new EventStore();
     this.userIntentHold = new UserIntentHoldController({ eventStore: this.eventStore, persistence: this.persistence });
     this.afterApprovalResolvedBoundary = options.afterApprovalResolvedBoundary;
@@ -202,7 +211,7 @@ export class CodeForgeServer {
     this.deliveryService = createDeliveryService({
       workspaceService: this.workspaceService,
       persistence: this.persistence,
-      getAgentRuntime: (sessionId) => this.getOrCreateRuntime(sessionId),
+      getAgentRuntime: (sessionId) => this.getOrCreateRuntime(sessionId, this.userId),
       findMission: async (missionId) => {
         const stored = await this.persistence.getWorkItem(missionId);
         return stored?.kind === "mission" && stored.sessionId ? (await this.getMissionSupervisor(stored.sessionId)).getMission(missionId) : undefined;
@@ -329,6 +338,10 @@ export class CodeForgeServer {
   /** Bound port after start() (resolves the ephemeral port when started with 0). */
   get httpPort(): number {
     return this.port;
+  }
+
+  getCustomAutoStore(): CustomAutoStore {
+    return this.customAutoStore;
   }
 
   /**
@@ -677,6 +690,43 @@ export class CodeForgeServer {
 
     if (url.pathname === "/api/model-selection" && req.method === "POST") {
       this.handleModelSelection(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/custom-autos" && req.method === "GET") {
+      void this.handleListCustomAutos(res);
+      return;
+    }
+
+    if (url.pathname === "/api/custom-autos" && req.method === "POST") {
+      this.handleCreateCustomAuto(req, res);
+      return;
+    }
+
+    const customAutoIdMatch = url.pathname.match(/^\/api\/custom-autos\/([^/]+)$/);
+    if (customAutoIdMatch) {
+      const customAutoId = customAutoIdMatch[1]!;
+      if (req.method === "GET") {
+        void this.handleGetCustomAuto(customAutoId, res);
+        return;
+      }
+      if (req.method === "PATCH" || req.method === "PUT") {
+        this.handleUpdateCustomAuto(customAutoId, req, res);
+        return;
+      }
+      if (req.method === "DELETE") {
+        void this.handleDeleteCustomAuto(customAutoId, res);
+        return;
+      }
+    }
+
+    if (url.pathname === "/api/forge-auto/team" && req.method === "GET") {
+      void this.handleForgeAutoTeam(req, res, url);
+      return;
+    }
+
+    if (url.pathname === "/api/forge-auto/delegations" && req.method === "GET") {
+      void this.handleForgeAutoDelegations(req, res, url);
       return;
     }
 
@@ -2013,7 +2063,7 @@ export class CodeForgeServer {
         firewall: this.firewall,
         providerCatalog: this.providerCatalog,
         workspacePath: this.activeWorkspacePath ?? undefined,
-        userId,
+        userId: userId ?? this.userId,
         demoMode,
         userIntentHold: this.userIntentHold,
         forgeGreenCacheStore: this.forgeGreenCacheStore,
@@ -2055,6 +2105,42 @@ export class CodeForgeServer {
         };
 
         const modelId = data.modelId;
+        const customAutoProfileId = typeof data.customAutoProfileId === "string" && data.customAutoProfileId
+          ? data.customAutoProfileId
+          : (typeof data.profileId === "string" && data.mode === "custom_auto" ? data.profileId : undefined);
+
+        if (customAutoProfileId) {
+          void (async () => {
+            const profile = await this.customAutoStore.get(customAutoProfileId);
+            if (!profile) {
+              respond(404, {
+                error: "CUSTOM_AUTO_NOT_FOUND",
+                message: `Custom AUTO profile ${customAutoProfileId} not found`,
+              });
+              return;
+            }
+            runtime.setModelSelection({
+              providerId: profile.roles.coder.providerId,
+              modelId: profile.roles.coder.modelId,
+              customAutoProfileId: profile.id,
+              trustDomain: "USER_CUSTOM_AUTO",
+              lock: "model",
+            });
+            respond(200, {
+              ok: true,
+              selection: {
+                customAutoProfileId: profile.id,
+                name: profile.name,
+                trustDomain: "USER_CUSTOM_AUTO",
+                coderRoute: profile.roles.coder,
+              },
+            });
+          })().catch((err: unknown) => {
+            respond(500, { error: err instanceof Error ? err.message : String(err) });
+          });
+          return;
+        }
+
         if (modelId === undefined || modelId === null || modelId === "auto") {
           runtime.clearModelSelection();
           respond(200, { ok: true, selection: { modelId: "auto" } });
@@ -2238,6 +2324,132 @@ export class CodeForgeServer {
     }));
     res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
     res.end(JSON.stringify(out));
+  }
+
+  private async handleListCustomAutos(res: http.ServerResponse): Promise<void> {
+    try {
+      const profiles = await this.customAutoStore.list();
+      this.sendJson(res, 200, profiles);
+    } catch (err) {
+      this.sendJson(res, 500, { error: err instanceof Error ? err.message : "Failed to list Custom AUTO profiles" });
+    }
+  }
+
+  private handleCreateCustomAuto(req: http.IncomingMessage, res: http.ServerResponse): void {
+    void this.readJsonBody(req).then(async (body) => {
+      try {
+        const created = await this.customAutoStore.create(body as unknown as Parameters<CustomAutoStore["create"]>[0]);
+        this.sendJson(res, 201, created);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        const status = msg.includes("ALREADY_EXISTS") ? 409 : 400;
+        this.sendJson(res, status, { error: msg });
+      }
+    }).catch((err: unknown) => {
+      this.sendJson(res, 400, { error: err instanceof Error ? err.message : String(err) });
+    });
+  }
+
+  private async handleGetCustomAuto(id: string, res: http.ServerResponse): Promise<void> {
+    try {
+      const profile = await this.customAutoStore.get(id);
+      if (!profile) {
+        this.sendJson(res, 404, { error: "CUSTOM_AUTO_NOT_FOUND", message: `Custom AUTO profile ${id} not found` });
+        return;
+      }
+      this.sendJson(res, 200, profile);
+    } catch (err) {
+      this.sendJson(res, 500, { error: err instanceof Error ? err.message : "Failed to get Custom AUTO profile" });
+    }
+  }
+
+  private handleUpdateCustomAuto(id: string, req: http.IncomingMessage, res: http.ServerResponse): void {
+    void this.readJsonBody(req).then(async (body) => {
+      try {
+        const updated = await this.customAutoStore.update(id, body as unknown as Parameters<CustomAutoStore["update"]>[1]);
+        this.sendJson(res, 200, updated);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        const status = msg.includes("NOT_FOUND") ? 404 : 400;
+        this.sendJson(res, status, { error: msg });
+      }
+    }).catch((err: unknown) => {
+      this.sendJson(res, 400, { error: err instanceof Error ? err.message : String(err) });
+    });
+  }
+
+  private async handleDeleteCustomAuto(id: string, res: http.ServerResponse): Promise<void> {
+    try {
+      const deleted = await this.customAutoStore.delete(id);
+      if (!deleted) {
+        this.sendJson(res, 404, { error: "CUSTOM_AUTO_NOT_FOUND", message: `Custom AUTO profile ${id} not found` });
+        return;
+      }
+      this.sendJson(res, 200, { ok: true, id });
+    } catch (err) {
+      this.sendJson(res, 500, { error: err instanceof Error ? err.message : "Failed to delete Custom AUTO profile" });
+    }
+  }
+
+  private async handleForgeAutoTeam(req: http.IncomingMessage, res: http.ServerResponse, url: URL): Promise<void> {
+    try {
+      const sessionId = url.searchParams.get("sessionId");
+      const task = url.searchParams.get("task");
+      if (sessionId && !task) {
+        const runtime = this.runtimes.get(sessionId);
+        const latestTeam = runtime?.getLatestTeam();
+        if (latestTeam) {
+          this.sendJson(res, 200, latestTeam);
+          return;
+        }
+      }
+      const admitted = (providerId: string, modelId: string): boolean =>
+        !this.freeCloud || this.freeCloud.isForgeAutoEligible(providerId, modelId);
+      const roster = this.firewall.eligibleModels().filter(
+        (m) => m.capabilities.toolCalling && this.providerCatalog.get(m.providerId) && admitted(m.providerId, m.modelId),
+      );
+      const classification = classifyTask({
+        goal: task ?? "General software engineering task",
+        changedFileScope: 1,
+        repositoryFileCount: 500,
+      });
+      const team = selectForgeAutoTeam({
+        roster,
+        classification,
+        filters: {
+          hasAdapter: (p) => !!this.providerCatalog.get(p),
+          isCoolingDown: (p, m) => {
+            if (!this.freeCloud) return false;
+            for (const model of this.freeCloud.snapshot().models) {
+              const r = model.routes.find((route) => route.providerId === p && route.providerModelId === m);
+              if (r) return r.health === "COOLDOWN" || r.health === "QUOTA_EXHAUSTED";
+            }
+            return false;
+          },
+          isAdmitted: admitted,
+        },
+      });
+      this.sendJson(res, 200, team);
+    } catch (err) {
+      this.sendJson(res, 500, { error: err instanceof Error ? err.message : "Failed to select team" });
+    }
+  }
+
+  private async handleForgeAutoDelegations(req: http.IncomingMessage, res: http.ServerResponse, url: URL): Promise<void> {
+    try {
+      const sessionId = url.searchParams.get("sessionId");
+      let items = await this.persistence.getWorkItemsByKind("forge_auto_delegation_record");
+      if (sessionId) {
+        items = items.filter((item) => item.sessionId === sessionId);
+      }
+      const records = items
+        .map((item) => (item as unknown as { record?: unknown }).record)
+        .filter(Boolean)
+        .sort((a: any, b: any) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+      this.sendJson(res, 200, records);
+    } catch (err) {
+      this.sendJson(res, 500, { error: err instanceof Error ? err.message : "Failed to list delegation records" });
+    }
   }
 
   /**

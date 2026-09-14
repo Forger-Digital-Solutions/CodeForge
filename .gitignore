@@ -12,6 +12,7 @@ release/
 *.tsbuildinfo
 .turbo/
 coverage/
+artifacts/eight-bit-specialist/
 .codeforge/
 .idea/
 .vscode/*

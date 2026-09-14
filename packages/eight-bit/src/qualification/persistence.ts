@@ -113,9 +113,7 @@ export class SqliteQualificationPersistence implements QualificationPersistence 
   }
 
   async delete(providerId: string, modelId: string): Promise<boolean> {
-    // Note: ISessionPersistence doesn't have deleteWorkItem for individual items
-    // For now, we'll leave stale entries - they'll be filtered by isQualificationValid
-    return true;
+    return this.persistence.deleteWorkItem(this.key(providerId, modelId));
   }
 }
 

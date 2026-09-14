@@ -5,7 +5,7 @@ import type { ModelSelectorItem } from "@codeforge/ui";
 import ModelDetails from "./ModelDetails.js";
 import CanonicalModelDetails from "./CanonicalModelDetails.js";
 import FreeCloudEnablePanel from "./FreeCloudEnablePanel.js";
-import { accessBadge, buildModelSections, buildCanonicalModelSections, canDriveAgent, canonicalIdOfSelection, isCanonicalSelection, isHiddenModel, resolveCanonicalTrust, resolveForgeZeroTrust, resolveRuntimeLabel, selectorAvailability, CANONICAL_PREFIX, type ApiModel, type FreeCloudView } from "./model-sections.js";
+import { accessBadge, buildModelSections, buildCanonicalModelSections, canDriveAgent, canonicalIdOfSelection, isCanonicalSelection, isCustomAutoSelection, customAutoIdOfSelection, CUSTOM_AUTO_PREFIX, isHiddenModel, resolveCanonicalTrust, resolveForgeZeroTrust, resolveRuntimeLabel, selectorAvailability, CANONICAL_PREFIX, type ApiModel, type FreeCloudView } from "./model-sections.js";
 import type { CanonicalModelView } from "@codeforge/model-registry";
 import { classifyGitWorkspace, GIT_WORKSPACE_INFO_ARGS, type GitWorkspaceInfo } from "./git-workspace-info.js";
 import SettingsApp from "./settings/SettingsApp.js";
@@ -343,16 +343,43 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     return () => window.removeEventListener("codeforge:provider-updated", handleProviderUpdated);
   }, [refreshModelsAndHealth, loadCloudAccount]);
 
+  const [customAutos, setCustomAutos] = useState<Array<{ id: string; name: string; description?: string }>>([]);
+
+  const refreshCustomAutos = useCallback(async () => {
+    if (!serverBaseUrl) return;
+    try {
+      const res = await fetch(`${serverBaseUrl}/api/custom-autos`);
+      if (res.ok) {
+        const list = await res.json();
+        setCustomAutos(Array.isArray(list) ? list : []);
+      }
+    } catch {
+      // Best-effort
+    }
+  }, [serverBaseUrl]);
+
+  useEffect(() => {
+    void refreshCustomAutos();
+    const handler = () => void refreshCustomAutos();
+    window.addEventListener("codeforge:custom-autos-updated", handler);
+    return () => window.removeEventListener("codeforge:custom-autos-updated", handler);
+  }, [refreshCustomAutos]);
+
   // R1: the canonical picker (one row per model, routes collapsed) whenever the 8-Bit registry is
   // served; the legacy per-route sections remain the fallback for older local runtimes.
   const modelSections = useMemo(
-    (): ModelSection[] => (freeCloud ? buildCanonicalModelSections(freeCloud, apiModels, models) : buildModelSections(apiModels, models)),
-    [freeCloud, apiModels, models],
+    (): ModelSection[] =>
+      freeCloud
+        ? buildCanonicalModelSections(freeCloud, apiModels, models, { customAutos })
+        : buildModelSections(apiModels, models, { customAutos }),
+    [freeCloud, apiModels, models, customAutos],
   );
   const canonicalModels = useMemo(() => new Map<string, CanonicalModelView>((freeCloud?.models ?? []).map((m) => [`${CANONICAL_PREFIX}${m.canonicalId}`, m])), [freeCloud]);
 
   const postModelSelection = useCallback(async (modelId: string, providerId?: string) => {
-    const body = isCanonicalSelection(modelId)
+    const body = isCustomAutoSelection(modelId)
+      ? { customAutoProfileId: customAutoIdOfSelection(modelId), sessionId: "default" }
+      : isCanonicalSelection(modelId)
       ? { modelId, canonicalModelId: canonicalIdOfSelection(modelId), sessionId: "default" }
       : { modelId, providerId, sessionId: "default" };
     if (!runtimeEndpoint) throw new Error("RUNTIME_NOT_READY");

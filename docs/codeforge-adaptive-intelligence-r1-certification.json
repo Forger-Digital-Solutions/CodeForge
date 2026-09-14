@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "status": "SUPERSEDED",
+  "authoritativeDocument": "docs/certification/codeforge-adaptive-intelligence-r1-rc1.json",
+  "note": "This inherited draft contained pre-audit claims and is retained only as a pointer. Use the RC1 certificate for current evidence."
+}

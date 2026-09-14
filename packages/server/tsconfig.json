@@ -19,6 +19,8 @@
     { "path": "../repo-intelligence" },
     { "path": "../forge-green" },
     { "path": "../eight-bit" },
+    { "path": "../forge-auto" },
+    { "path": "../custom-auto" },
     { "path": "../model-registry" },
     { "path": "../context" },
     { "path": "../secrets" },

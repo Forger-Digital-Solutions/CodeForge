@@ -192,6 +192,7 @@ export class SqliteSessionPersistence implements ISessionPersistence {
   private driverName: SqliteDriverName;
   private statements: Map<string, SQLiteStatement> = new Map();
   private inTransaction = false;
+  private closed = false;
 
   constructor(options: PersistenceOptions = {}) {
     this.dbPath = options.dbPath ?? ":memory:";
@@ -268,6 +269,7 @@ export class SqliteSessionPersistence implements ISessionPersistence {
       this.statement("getWorkItem", "SELECT * FROM work_items WHERE id = $id");
       this.statement("getWorkItemsByKind", "SELECT * FROM work_items WHERE kind = $kind");
       this.statement("getAllWorkItems", "SELECT * FROM work_items");
+      this.statement("deleteWorkItem", "DELETE FROM work_items WHERE id = $id");
 
       this.statement("appendEvent", `
       INSERT INTO events (sessionId, data, createdAt)
@@ -422,12 +424,21 @@ export class SqliteSessionPersistence implements ISessionPersistence {
     // PostgreSQL implementation uses SELECT FOR UPDATE here.
   }
 
+  async deleteWorkItem(id: string): Promise<boolean> {
+    const result = this.statements.get("deleteWorkItem")!.run({ $id: id });
+    return Number(result.changes) === 1;
+  }
+
   async getAllWorkItems(): Promise<WorkItem[]> {
     const rows = this.all<StoredWorkItem>("getAllWorkItems", {});
     return rows.map((row) => JSON.parse(row.data) as WorkItem);
   }
 
   async appendEvent(event: unknown): Promise<void> {
+    // Event emission is deliberately best-effort. A late renderer event can arrive after the
+    // server has closed its persistence connection; treating that race as a no-op avoids noisy
+    // ERR_INVALID_STATE logs without reopening or mutating a closed database.
+    if (this.closed) return;
     const safeEvent = sanitizeForPersistence(event) as { sessionId?: string };
     this.run("appendEvent", {
       $sessionId: safeEvent.sessionId ?? "",
@@ -470,6 +481,8 @@ export class SqliteSessionPersistence implements ISessionPersistence {
   }
 
   async close(): Promise<void> {
+    if (this.closed) return;
+    this.closed = true;
     this.db.close();
   }
 

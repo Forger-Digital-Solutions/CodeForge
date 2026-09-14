@@ -44,6 +44,9 @@ export interface SessionPersistenceTx {
   getWorkItemsByKind(kind: string): Promise<WorkItem[]>;
   getAllWorkItems(): Promise<WorkItem[]>;
   lockWorkItem(id: string): Promise<void>;
+  /** Hard-deletes one work item by id (e.g. Custom AUTO profile removal). Returns true iff a
+   * row was deleted. Not used for append-only kinds. */
+  deleteWorkItem(id: string): Promise<boolean>;
 
   appendEvent(event: unknown): Promise<void>;
   getEvents(sessionId: string): Promise<unknown[]>;

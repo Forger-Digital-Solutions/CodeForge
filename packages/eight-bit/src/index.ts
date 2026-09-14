@@ -11,3 +11,5 @@ export * from "./runtime.js";
 export * from "./qualification/index.js";
 export * from "./eviction.js";
 export * from "./receipts.js";
+export * from "./roster-revision.js";
+export * as Training from "./training/index.js";

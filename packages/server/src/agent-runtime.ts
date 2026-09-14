@@ -19,7 +19,7 @@ import os from "node:os";
 import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { redactSecrets } from "@codeforge/secrets";
-import { prepareShellCommand, terminateProcessTree } from "@codeforge/workflow";
+import { evaluateCompletion, prepareShellCommand, runVerification, terminateProcessTree, type CompletionGateDecision, type FailureAnalysis, type ReviewDecision, type WorkflowPlan } from "@codeforge/workflow";
 import { classifyCommand } from "./command-classifier.js";
 import { ApprovalService, type ApprovalRecord, type ApprovalGateResult } from "./approval-service.js";
 import { getSanitizedEnvForChild } from "./env-filter.js";
@@ -58,6 +58,25 @@ import {
 } from "@codeforge/forge-green";
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
 import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt } from "@codeforge/eight-bit";
+import {
+  classifyTask,
+  planForgeAutoTeam,
+  selectForgeAutoTeam,
+  createDelegationRecord,
+  type TaskClassification,
+  type TeamSelection,
+  type SpecialistAssignment,
+  type DelegationRecord,
+  type ForgeAutoSeat,
+  NO_ELIGIBLE_FREE_MODEL,
+} from "@codeforge/forge-auto";
+import {
+  createCustomAutoStore,
+  DEFAULT_CUSTOM_AUTO_OWNER,
+  assertTrustDomain,
+  type CustomAutoProfile,
+  type CustomAutoStore,
+} from "@codeforge/custom-auto";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
@@ -317,6 +336,10 @@ export interface ModelSelection {
   canonicalModelId?: string;
   /** R1 §124: `model` = same-model route failover allowed (default); `route` = exact route pin. */
   lock?: "model" | "route";
+  /** Adaptive profile ID when selecting Custom AUTO profile (§25). */
+  customAutoProfileId?: string;
+  /** Explicit trust domain boundary assertion (§18–§20). */
+  trustDomain?: "FORGE_AUTO_FREE" | "FORGE_AUTO_GEMS" | "USER_CUSTOM_AUTO" | "DIRECT_USER_PROVIDER";
 }
 
 /** Sentinel returned by parseToolArgs when arguments are genuinely un-parseable. */
@@ -402,6 +425,8 @@ export class AgentRuntime {
   private readonly runtimeOwnerId = crypto.randomUUID();
   private parentContinuationId?: string;
   private readonly lastAssistantResponseByTurn = new Map<string, string>();
+  private readonly currentTeamByTurn = new Map<string, TeamSelection>();
+  private readonly currentDelegationByTurn = new Map<string, DelegationRecord>();
 
   constructor(options: AgentRuntimeOptions) {
     this.sessionId = options.sessionId;
@@ -410,7 +435,7 @@ export class AgentRuntime {
     this.firewall = options.firewall;
     this.providerCatalog = options.providerCatalog;
     this.workspacePath = options.workspacePath;
-    this.userId = options.userId ?? "anonymous";
+    this.userId = options.userId?.trim() || DEFAULT_CUSTOM_AUTO_OWNER;
     this.forgeGreen = options.forgeGreen ?? createForgeGreenAdvisor({ enabled: process.env.CODEFORGE_FORGREEN !== "0" });
     this.userIntentHold = options.userIntentHold;
     this.forgeGreenCacheStore = options.forgeGreenCacheStore;
@@ -482,6 +507,8 @@ export class AgentRuntime {
       modelId: selection.modelId,
       canonicalModelId: selection.canonicalModelId,
       lock: selection.lock ?? "model",
+      customAutoProfileId: selection.customAutoProfileId,
+      trustDomain: selection.trustDomain,
     };
   }
 
@@ -491,6 +518,16 @@ export class AgentRuntime {
 
   getModelSelection(): ModelSelection | null {
     return this.modelSelection ? { ...this.modelSelection } : null;
+  }
+
+  getLatestTeam(): TeamSelection | undefined {
+    const entries = [...this.currentTeamByTurn.values()];
+    return entries[entries.length - 1];
+  }
+
+  getLatestDelegation(): DelegationRecord | undefined {
+    const entries = [...this.currentDelegationByTurn.values()];
+    return entries[entries.length - 1];
   }
 
   /**
@@ -1959,20 +1996,157 @@ export class AgentRuntime {
     const duplicateSupervisor = createDuplicateActionSupervisor();
 
     try {
-      const model = this.resolveTurnModel();
-      // No admitted, healthy route is a failed turn, never a finished one: the loop below cannot
-      // run without a model, and letting the turn fall through to "completed" reported a task
-      // that did nothing as a success (observed in R5 after a provider-wide capacity cooldown).
+      let model: FreeModelRecord | null = null;
+      let selectionReasons: string[] = ["forgezero_adaptive", "coding_capable"];
+
+      if (this.modelSelection?.customAutoProfileId) {
+        const store = createCustomAutoStore(this.persistence, this.userId);
+        const profile = await store.get(this.modelSelection.customAutoProfileId);
+        if (!profile) {
+          throw new Error(`Custom AUTO profile ${this.modelSelection.customAutoProfileId} not found`);
+        }
+        assertTrustDomain("USER_CUSTOM_AUTO", profile.trustDomain, "Custom AUTO resolution");
+        const coderRoute = profile.roles.coder;
+        model = this.firewall.getModel(coderRoute.providerId, coderRoute.modelId) ?? ({
+          providerId: coderRoute.providerId,
+          modelId: coderRoute.modelId,
+          displayName: coderRoute.displayName ?? coderRoute.modelId,
+          freeStatus: "user_custom",
+          tier: "byok_custom",
+          accessClass: "USER_CUSTOM",
+          authMode: "user_api_key",
+          privacyClass: "private",
+          family: "custom",
+          upstreamSource: "user",
+          deprecated: false,
+          capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: false },
+        } as unknown as FreeModelRecord);
+        selectionReasons = ["custom_auto_profile", `profile_${profile.id}`];
+
+        const classification = classifyTask({ goal: userMessage, changedFileScope: 1, repositoryFileCount: 500 });
+        const configured: Partial<Record<ForgeAutoSeat, NonNullable<typeof profile.roles.planner>>> = {
+          SWE: coderRoute,
+          ...(profile.roles.planner ? { PLANNER: profile.roles.planner } : {}),
+          ...(profile.roles.reviewer ? { REVIEWER: profile.roles.reviewer } : {}),
+          ...(profile.roles.verifier ? { VERIFIER: profile.roles.verifier } : {}),
+        };
+        const configuredOrder: ForgeAutoSeat[] = (profile.fallbackOrder ?? ["coder", "planner", "reviewer", "verifier"])
+          .map((seat) => seat === "coder" ? "SWE" : seat.toUpperCase() as ForgeAutoSeat);
+        const desiredSeats = profile.mode === "pinned"
+          ? configuredOrder
+          : ["PLANNER", "SWE", "REVIEWER", "VERIFIER"].filter((seat) =>
+            classification.specialistPlan.includes(seat as ForgeAutoSeat) || (profile.mode === "hybrid" && configured[seat as ForgeAutoSeat]),
+          ) as ForgeAutoSeat[];
+        const specialists: SpecialistAssignment[] = desiredSeats
+          .filter((seat, index, seats) => seats.indexOf(seat) === index && configured[seat])
+          .slice(0, profile.maxActiveSpecialists)
+          .map((seat) => {
+            const route = configured[seat]!;
+            return {
+              seat,
+              providerId: route.providerId,
+              modelId: route.modelId,
+              displayName: route.displayName ?? route.modelId,
+              score: 1.0,
+              reasons: [`custom_auto_${seat.toLowerCase()}`],
+            };
+          });
+        this.currentTeamByTurn.set(turnId, {
+          outcome: "SELECTED",
+          specialists,
+          rosterRevision: 1,
+          createdAt: new Date().toISOString(),
+          classification: { ...classification, specialistPlan: specialists.map((s) => s.seat), reasons: [...classification.reasons, "custom_auto_profile"] },
+        });
+
+        const delegation = createDelegationRecord({
+          task: userMessage,
+          trustDomain: "USER_CUSTOM_AUTO",
+          rosterRevision: 1,
+          classification: {
+            kind: classification.kind,
+            complexity: classification.complexity,
+            risk: classification.risk,
+            verificationBurden: classification.verificationBurden,
+          },
+          specialists: specialists.map((s) => ({
+            seat: s.seat,
+            role: `${s.seat.toLowerCase()}_specialist`,
+            providerId: s.providerId,
+            modelId: s.modelId,
+            selectionReasons: s.reasons,
+          })),
+        });
+        this.currentDelegationByTurn.set(turnId, delegation);
+      } else if (this.modelSelection) {
+        model = this.resolveTurnModel();
+      } else {
+        const admitted = (providerId: string, modelId: string): boolean => this.isForgeAutoAdmitted(providerId, modelId);
+        const roster = this.firewall.eligibleModels().filter(
+          (m) => m.capabilities.toolCalling && this.providerCatalog.get(m.providerId) && admitted(m.providerId, m.modelId),
+        );
+        const classification = classifyTask({
+          goal: userMessage,
+          changedFileScope: 1,
+          repositoryFileCount: 500,
+        });
+        const team = selectForgeAutoTeam({
+          roster,
+          classification,
+          rosterRevision: this.freeCloud?.rosterRevision(),
+          filters: {
+            hasAdapter: (p) => !!this.providerCatalog.get(p),
+            isCoolingDown: (p, m) => this.eightBit.health.isInCooldown(p, m),
+            isAdmitted: admitted,
+          },
+        });
+        if (team.outcome === "SELECTED") {
+          this.currentTeamByTurn.set(turnId, team);
+          const swe = team.specialists.find((specialist) => specialist.seat === "SWE");
+          model = swe ? this.firewall.getModel(swe.providerId, swe.modelId) ?? null : null;
+          selectionReasons = team.classification.reasons;
+
+            const delegation = createDelegationRecord({
+              task: userMessage,
+              trustDomain: "FORGE_AUTO_FREE",
+              rosterRevision: team.rosterRevision,
+              classification: {
+                kind: classification.kind,
+                complexity: classification.complexity,
+                risk: classification.risk,
+                verificationBurden: classification.verificationBurden,
+              },
+              specialists: team.specialists.map((s) => ({
+                seat: s.seat,
+                role: `${s.seat.toLowerCase()}_specialist`,
+                providerId: s.providerId,
+                modelId: s.modelId,
+                selectionReasons: s.reasons,
+              })),
+            });
+            this.currentDelegationByTurn.set(turnId, delegation);
+
+            try {
+              await this.persistence.upsertWorkItem({
+                kind: "forge_auto_delegation_record",
+                id: delegation.recordId,
+                sessionId: this.sessionId,
+                record: delegation as unknown as Record<string, unknown>,
+                createdAt: delegation.createdAt,
+              });
+            } catch {
+              // Observational only
+            }
+        }
+      }
+
       if (!model) {
         throw new Error(
           "No eligible free route: ForgeAuto/Free has no admitted, healthy route for this task right now. Retry shortly or connect another free provider.",
         );
       }
       if (model && state) {
-        adapter.emitRouterSelection(turnId, model.modelId, model.providerId, 75, [
-          "forgezero_adaptive",
-          "coding_capable",
-        ]);
+        adapter.emitRouterSelection(turnId, model.modelId, model.providerId, 75, selectionReasons);
         state.modelId = model.modelId;
         state.providerId = model.providerId;
         this.activeTurns.set(turnId, state);
@@ -2022,6 +2196,36 @@ export class AgentRuntime {
         await this.userIntentHold?.resolveForTerminal(this.sessionId, turnId);
         adapter.emitTurnFailed(turnId, reason);
         adapter.emitStatusChanged("running", "failed");
+        return;
+      }
+
+      // Every direct-turn completion transition passes through the shared completion authority.
+      // Managed Free Cloud turns require real workspace verification. A non-managed conversational
+      // adapter has no autonomous verification authority, so it receives an explicit non-configured
+      // evidence record and cannot use that adapter to claim verified engineering completion.
+      const completion = await this.evaluateDirectTurnCompletion(turnId, signal);
+      if (completion.outcome !== "completed") {
+        const reason = completion.rationale;
+        state.status = completion.outcome === "failed" ? "failed" : "blocked";
+        state.completedAt = new Date();
+        state.error = reason;
+        this.activeTurns.set(turnId, state);
+        await this.persistTurn(state);
+        await this.persistence.upsertWorkItem({
+          kind: "verification",
+          id: `agent-completion-gate-${turnId}`,
+          sessionId: this.sessionId,
+          runId: turnId,
+          recordType: "evidence",
+          planId: `direct-turn-plan-${turnId}`,
+          status: completion.outcome,
+          payload: completion as unknown as Record<string, unknown>,
+          createdAt: state.completedAt.toISOString(),
+          updatedAt: state.completedAt.toISOString(),
+        }).catch(() => undefined);
+        await this.userIntentHold?.resolveForTerminal(this.sessionId, turnId);
+        await adapter.emitTurnFailed(turnId, reason);
+        adapter.emitStatusChanged("running", state.status);
         return;
       }
 
@@ -2133,8 +2337,7 @@ export class AgentRuntime {
     // R1: when the 8-Bit Free Cloud Registry is wired, ForgeAuto/Free only routes to routes that
     // passed the full admission pipeline (terms → connected → verified free → tool capable →
     // CodeForge-qualified → healthy). A catalog entry alone is never enough (§10-§12).
-    const admitted = (providerId: string, modelId: string): boolean =>
-      !this.freeCloud || this.freeCloud.isForgeAutoEligible(providerId, modelId);
+    const admitted = (providerId: string, modelId: string): boolean => this.isForgeAutoAdmitted(providerId, modelId);
     const best = ranked.find(
       (r) => this.providerCatalog.get(r.model.providerId) && !this.eightBit.health.isInCooldown(r.model.providerId, r.model.modelId) && admitted(r.model.providerId, r.model.modelId),
     );
@@ -2148,6 +2351,90 @@ export class AgentRuntime {
         (m) => m.capabilities.toolCalling && this.providerCatalog.get(m.providerId) && !this.eightBit.health.isInCooldown(m.providerId, m.modelId) && admitted(m.providerId, m.modelId),
       ) ?? null
     );
+  }
+
+  private async evaluateDirectTurnCompletion(turnId: string, signal: AbortSignal): Promise<CompletionGateDecision> {
+    const workspacePath = this.workspacePath ?? process.cwd();
+    const managed = Boolean(this.freeCloud);
+    const verification = managed
+      ? await runVerification(workspacePath, ["git diff --check", "npm run typecheck"], {
+        signal,
+        runId: turnId,
+      })
+      : {
+        passed: 0,
+        failed: 0,
+        skipped: 0,
+        durationMs: 0,
+        output: "Direct conversational adapter does not own autonomous workspace verification.",
+        exitCode: 0,
+        command: "",
+        failures: [],
+        notConfigured: true,
+      };
+    const verificationReport = managed
+      ? (verification as import("@codeforge/workflow").VerificationReport)
+      : undefined;
+    const now = new Date().toISOString();
+    const plan: WorkflowPlan = {
+      id: `direct-turn-plan-${turnId}`,
+      taskId: turnId,
+      title: "Direct managed Free Cloud turn",
+      status: "completed",
+      steps: [
+        {
+          id: "inspect",
+          description: "Model execution completed",
+          status: "completed",
+          kind: "inspect",
+          risk: "safe",
+          requiresApproval: false,
+        },
+        {
+          id: "verify",
+          description: "Run authoritative workspace verification",
+          status: !managed ? "skipped" : verificationReport?.overallStatus === "passed" ? "completed" : "failed",
+          kind: "verify",
+          risk: "safe",
+          requiresApproval: false,
+        },
+      ],
+      revision: 1,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const review: ReviewDecision = {
+      approved: true,
+      issues: [],
+      findings: [],
+      diffs: [],
+      summary: "No independent edit claim was made by the direct-turn adapter.",
+    };
+    const analysis: FailureAnalysis = {
+      hasFailures: verification.failed > 0,
+      summary: verificationReport?.summary ?? verification.output,
+      diagnostics: verification.failures.map((failure) => failure.message),
+      suggestedRepairs: [],
+      isRepairable: false,
+    };
+    return evaluateCompletion({
+      plan,
+      verification,
+      analysis,
+      review,
+      ...(managed ? {} : { policy: { requireVerification: false, requireFinishedPlan: false } }),
+    });
+  }
+
+  /**
+   * Forge Auto is a managed free-cloud surface. A missing registry is not permission to route to
+   * an arbitrary configured provider; only explicit test adapters and the trusted CodeForge route
+   * remain available in that reduced mode.
+   */
+  private isForgeAutoAdmitted(providerId: string, modelId: string): boolean {
+    if (this.freeCloud) return this.freeCloud.isForgeAutoEligible(providerId, modelId);
+    const adapter = this.providerCatalog.get(providerId);
+    return providerId === "codeforge" || adapter?.isTestProvider === true;
   }
 
   /**
@@ -2259,6 +2546,41 @@ export class AgentRuntime {
 
     const tools = this.getAvailableTools();
 
+    const isCustomAuto = !!this.modelSelection?.customAutoProfileId;
+    const team = this.currentTeamByTurn.get(turnId);
+    const executeSupportingSpecialists = isCustomAuto || (team?.outcome === "SELECTED" && (team.classification.complexity !== "TRIVIAL" || team.classification.verificationBurden === "EXTENSIVE"));
+    const plannerSpecialist = executeSupportingSpecialists && team?.outcome === "SELECTED" ? team.specialists.find((s) => s.seat === "PLANNER") : undefined;
+    if (plannerSpecialist && (isCustomAuto || plannerSpecialist.providerId !== state.providerId || plannerSpecialist.modelId !== state.modelId)) {
+      const plannerProvider = this.providerCatalog.get(plannerSpecialist.providerId);
+      if (plannerProvider) {
+        try {
+          adapter.emitAgentStarted(agentId, `Planner Specialist (${plannerSpecialist.displayName})`, turnId);
+          const plannerRequest: ChatRequest = {
+            model: plannerSpecialist.modelId,
+            messages: [
+              { role: "system", content: "You are CodeForge's Planner Specialist. Analyze the task and provide a concise, structured architectural plan." },
+              { role: "user", content: state.userMessage },
+            ],
+            tools: [],
+            temperature: 0.2,
+            maxTokens: 1024,
+          };
+          let planText = "";
+          for await (const chunk of plannerProvider.streamChat(plannerRequest, signal)) {
+            if (chunk.type === "text_delta" && chunk.delta) planText += chunk.delta;
+          }
+          if (planText) {
+            const planMsgId = crypto.randomUUID();
+            this.messageHistory.push({ role: "assistant", content: `[Architectural Plan by ${plannerSpecialist.displayName}]:\n${planText}` });
+            adapter.emitAssistantMessageStarted(turnId, planMsgId, agentId);
+            adapter.emitAssistantMessageCompleted(turnId, planMsgId, `[Plan]:\n${planText}`, agentId);
+          }
+        } catch {
+          // Fail-soft: SWE continues directly if planner route encounters error
+        }
+      }
+    }
+
     const request: ChatRequest = {
       model: state.modelId,
       messages: [...this.messageHistory],
@@ -2269,6 +2591,94 @@ export class AgentRuntime {
     };
 
     await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, 0, duplicateSupervisor);
+
+    const reviewerSpecialist = executeSupportingSpecialists && team?.outcome === "SELECTED" ? team.specialists.find((s) => s.seat === "REVIEWER") : undefined;
+    let reviewText = "";
+    if (reviewerSpecialist && (isCustomAuto || reviewerSpecialist.providerId !== state.providerId || reviewerSpecialist.modelId !== state.modelId) && !signal.aborted) {
+      const reviewerProvider = this.providerCatalog.get(reviewerSpecialist.providerId);
+      if (reviewerProvider) {
+        try {
+          adapter.emitAgentStarted(agentId, `Reviewer Specialist (${reviewerSpecialist.displayName})`, turnId);
+          const reviewerRequest: ChatRequest = {
+            model: reviewerSpecialist.modelId,
+            messages: [
+              { role: "system", content: "You are CodeForge's Reviewer Specialist. Review the agent's changes against the goal and verify no regressions." },
+              ...this.messageHistory.slice(-4),
+            ],
+            tools: [],
+            temperature: 0.1,
+            maxTokens: 512,
+          };
+          for await (const chunk of reviewerProvider.streamChat(reviewerRequest, signal)) {
+            if (chunk.type === "text_delta" && chunk.delta) reviewText += chunk.delta;
+          }
+          if (reviewText) {
+            const reviewMsgId = crypto.randomUUID();
+            adapter.emitAssistantMessageStarted(turnId, reviewMsgId, agentId);
+            adapter.emitAssistantMessageCompleted(turnId, reviewMsgId, `[Review]:\n${reviewText}`, agentId);
+          }
+        } catch {
+          // Fail-soft
+        }
+      }
+    }
+
+    const verifierSpecialist = executeSupportingSpecialists && team?.outcome === "SELECTED" ? team.specialists.find((s) => s.seat === "VERIFIER") : undefined;
+    let verificationText = "";
+    if (verifierSpecialist && (isCustomAuto || verifierSpecialist.providerId !== state.providerId || verifierSpecialist.modelId !== state.modelId) && !signal.aborted) {
+      const verifierProvider = this.providerCatalog.get(verifierSpecialist.providerId);
+      if (verifierProvider) {
+        try {
+          adapter.emitAgentStarted(agentId, `Verifier Specialist (${verifierSpecialist.displayName})`, turnId);
+          const verifierRequest: ChatRequest = {
+            model: verifierSpecialist.modelId,
+            messages: [
+              { role: "system", content: "You are CodeForge's Verifier Specialist. Determine whether the task result is supported by concrete verification evidence. Report PASS or FAIL with concise reasons." },
+              ...this.messageHistory.slice(-6),
+            ],
+            tools: [],
+            temperature: 0.1,
+            maxTokens: 512,
+          };
+          for await (const chunk of verifierProvider.streamChat(verifierRequest, signal)) {
+            if (chunk.type === "text_delta" && chunk.delta) verificationText += chunk.delta;
+          }
+          if (verificationText) {
+            const verificationMsgId = crypto.randomUUID();
+            adapter.emitAssistantMessageStarted(turnId, verificationMsgId, agentId);
+            adapter.emitAssistantMessageCompleted(turnId, verificationMsgId, `[Verification]:\n${verificationText}`, agentId);
+          }
+        } catch {
+          // A failed verifier is recorded as pending/failed below; it never becomes an invented pass.
+        }
+      }
+    }
+
+    const delegation = this.currentDelegationByTurn.get(turnId);
+    if (delegation) {
+      const findings = reviewText && /\b(revision|required|bug|error|fail|regression|finding|problem)\b/i.test(reviewText) ? 1 : 0;
+      delegation.reviewResult = {
+        performed: !!reviewerSpecialist && reviewText.length > 0,
+        ...(reviewerSpecialist ? { reviewer: reviewerSpecialist.displayName } : {}),
+        findings,
+        outcome: reviewerSpecialist ? (reviewText ? (findings > 0 ? "FINDINGS" : "CLEAN") : "SKIPPED") : "SKIPPED",
+      };
+      const verificationOutcome = verifierSpecialist
+        ? (/\b(pass|passed|verified|success)\b/i.test(verificationText) && !/\b(fail|failed|unverified|regression)\b/i.test(verificationText) ? "PASSED" : verificationText ? "FAILED" : "PENDING")
+        : "SKIPPED";
+      delegation.verificationResult = { required: true, burden: delegation.classification?.verificationBurden ?? "STANDARD", outcome: verificationOutcome };
+      try {
+        await this.persistence.upsertWorkItem({
+          kind: "forge_auto_delegation_record",
+          id: delegation.recordId,
+          sessionId: this.sessionId,
+          record: delegation as unknown as Record<string, unknown>,
+          createdAt: delegation.createdAt,
+        });
+      } catch {
+        // Observational persistence only
+      }
+    }
   }
 
   private async runAgentLoop(
@@ -2757,6 +3167,33 @@ export class AgentRuntime {
     );
 
     if (outcome.kind === "completed") {
+      const completion = await this.evaluateDirectTurnCompletion(turnId, abortController.signal);
+      if (completion.outcome !== "completed") {
+        await store.markResumeAdvanced(continuationId, this.runtimeOwnerId);
+        this.parentContinuationId = undefined;
+        const reason = completion.rationale;
+        turnState.status = completion.outcome === "failed" ? "failed" : "blocked";
+        turnState.error = reason;
+        turnState.completedAt = new Date();
+        this.activeTurns.set(turnId, turnState);
+        await this.persistTurn(turnState);
+        await this.persistence.upsertWorkItem({
+          kind: "verification",
+          id: `agent-completion-gate-${turnId}`,
+          sessionId: this.sessionId,
+          runId: turnId,
+          recordType: "evidence",
+          planId: `direct-turn-plan-${turnId}`,
+          status: completion.outcome,
+          payload: completion as unknown as Record<string, unknown>,
+          createdAt: turnState.completedAt.toISOString(),
+          updatedAt: turnState.completedAt.toISOString(),
+        }).catch(() => undefined);
+        await adapter.emitTurnFailed(turnId, reason);
+        adapter.emitStatusChanged("running", turnState.status);
+        return { kind: "failed", reason };
+      }
+
       await store.markResumeAdvanced(continuationId, this.runtimeOwnerId);
       this.parentContinuationId = undefined;
 

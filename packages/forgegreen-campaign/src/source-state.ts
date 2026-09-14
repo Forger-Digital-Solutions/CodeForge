@@ -30,7 +30,7 @@ function blobHash(repoRoot: string, relativePath: string): string {
 }
 
 /** `sha256(JSON.stringify(files sorted lexicographically, each as [path, gitBlobHash]))` —
- * matches `idAlgorithm` recorded in docs/codeforge-forgegreen-certified-source-state.json. */
+ * matches `idAlgorithm` recorded in the active lineage source-state document. */
 export function computeContentStateId(repoRoot: string, files: readonly string[]): ContentStateId {
   const entries = [...files]
     .sort((a, b) => a.localeCompare(b))
@@ -49,9 +49,15 @@ export interface CertifiedSourceStateDocument {
   candidateD: { kind: string; status: string };
 }
 
+/** The historical ForgeGreen certificate remains immutable; active work binds to its own
+ * explicitly named lineage document so evidence is never silently re-labeled. */
+function certifiedSourceStatePath(repoRoot: string): string {
+  const active = path.join(repoRoot, "docs", "certification", "codeforge-adaptive-intelligence-r1-source-state.json");
+  return fs.existsSync(active) ? active : path.join(repoRoot, "docs", "codeforge-forgegreen-certified-source-state.json");
+}
+
 export function loadCertifiedSourceState(repoRoot: string): CertifiedSourceStateDocument {
-  const docPath = path.join(repoRoot, "docs", "codeforge-forgegreen-certified-source-state.json");
-  return JSON.parse(fs.readFileSync(docPath, "utf8")) as CertifiedSourceStateDocument;
+  return JSON.parse(fs.readFileSync(certifiedSourceStatePath(repoRoot), "utf8")) as CertifiedSourceStateDocument;
 }
 
 export interface SourceStateCheckResult {
@@ -68,7 +74,7 @@ export interface SourceStateCheckResult {
  * never a silent continuation. */
 export function verifyCertifiedSourceState(repoRoot: string, certified: CertifiedSourceStateDocument): SourceStateCheckResult {
   const current = computeContentStateId(repoRoot, certified.materialFiles);
-  const docPath = path.join(repoRoot, "docs", "codeforge-forgegreen-certified-source-state.json");
+  const docPath = certifiedSourceStatePath(repoRoot);
   const raw = JSON.parse(fs.readFileSync(docPath, "utf8")) as { materialFileHashes?: Record<string, string> };
   const priorHashes = new Map(Object.entries(raw.materialFileHashes ?? {}));
   const changedFiles = current.entries.filter((entry) => priorHashes.get(entry.path) !== entry.blobHash).map((entry) => entry.path);

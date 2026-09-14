@@ -800,6 +800,34 @@ export const WorkItemSchema = z.discriminatedUnion("kind", [
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
   }),
+  z.object({
+    /** Custom AUTO: mutable user-defined adaptive routing profile. Lives in a reserved
+     * account-level namespace, never in a user session. Trust domain USER_CUSTOM_AUTO — a
+     * profile resolves only routes the user explicitly configured (§23, §26). */
+    kind: z.literal("custom_auto_profile"),
+    id: z.string(),
+    sessionId: z.string().optional(),
+    profile: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  }),
+  z.object({
+    /** Forge Auto: append-only operational delegation record (reason codes, no chain-of-thought).
+     * Observational/explainability + failover input; never an authority for completion. */
+    kind: z.literal("forge_auto_delegation_record"),
+    id: z.string(),
+    sessionId: z.string().optional(),
+    record: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+  }),
+  z.object({
+    /** 8-Bit: append-only roster revision ledger entry (§38). Reason codes only. */
+    kind: z.literal("eight_bit_roster_revision"),
+    id: z.string(),
+    sessionId: z.string().optional(),
+    revision: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+  }),
 ]);
 export type WorkItem = z.infer<typeof WorkItemSchema>;
 export type WorkItemKind = WorkItem["kind"];

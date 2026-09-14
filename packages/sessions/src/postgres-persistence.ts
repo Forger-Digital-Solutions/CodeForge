@@ -209,6 +209,11 @@ class PostgresQueryOps implements SessionPersistenceTx {
     await this.q.query(`SELECT id FROM work_items WHERE id = $1 FOR UPDATE`, [id]);
   }
 
+  async deleteWorkItem(id: string): Promise<boolean> {
+    const res = await this.q.query(`DELETE FROM work_items WHERE id = $1`, [id]);
+    return (res.rowCount ?? 0) === 1;
+  }
+
   async appendEvent(event: unknown): Promise<void> {
     const safe = sanitizeForPersistence(event) as { sessionId?: string };
     await this.q.query(
@@ -365,6 +370,7 @@ export class PostgresSessionPersistence implements ISessionPersistence {
   getWorkItemsByKind(kind: string): Promise<WorkItem[]> { return this.ops.getWorkItemsByKind(kind); }
   getAllWorkItems(): Promise<WorkItem[]> { return this.ops.getAllWorkItems(); }
   lockWorkItem(id: string): Promise<void> { return this.ops.lockWorkItem(id); }
+  deleteWorkItem(id: string): Promise<boolean> { return this.ops.deleteWorkItem(id); }
   appendEvent(event: unknown): Promise<void> { return this.ops.appendEvent(event); }
   getEvents(sessionId: string): Promise<unknown[]> { return this.ops.getEvents(sessionId); }
 
