@@ -1,7 +1,7 @@
 import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition, ProviderToolExecutionRequest, ProviderToolExecutionResult, ProviderExecutionContext } from "@codeforge/providers";
-import { DesktopWorkerActionTypeSchema, type DesktopWorkerActionType, type WorkspaceEvent } from "@codeforge/protocol";
+import { DesktopWorkerActionTypeSchema, type AgentRunJournal, type AgentRunJournalMessage, type DesktopWorkerActionType, type WorkspaceEvent } from "@codeforge/protocol";
 import {
   createDesktopWorkerBridge,
   createDurableAgentContinuationStore,
@@ -117,6 +117,13 @@ export interface AgentRuntimeRequest {
    * ever rotates within the free fleet (never paid/BYOK).
    */
   roleRouting?: boolean;
+  /**
+   * R2 durable recovery: when present, this run continues a crashed run from its recorded
+   * conversation instead of starting fresh. The caller must have classified the journal as
+   * resume-safe (see classifyRunRecovery); the runtime re-issues only the replay-safe pending
+   * read-only tool calls implied by the transcript and then continues the recorded loop.
+   */
+  resumeJournal?: { journal: AgentRunJournal; replayToolCallIds: string[] };
 }
 
 export interface AgentContextMetrics {
@@ -195,6 +202,43 @@ export async function recoverDurableToolExecutions(persistence: ISessionPersiste
     recovered.push(next);
   }
   return recovered;
+}
+
+const JOURNAL_MESSAGE_MAX_CHARS = 512 * 1024;
+
+/** Conversation ↔ journal transcript conversion. Content is redacted before it ever persists. */
+export function toJournalMessages(messages: ChatMessage[]): AgentRunJournalMessage[] {
+  return messages.map((message) => ({
+    role: message.role,
+    content: redactSecrets(message.content ?? "").slice(0, JOURNAL_MESSAGE_MAX_CHARS),
+    ...(message.toolCallId ? { toolCallId: message.toolCallId } : {}),
+    ...(Array.isArray(message.toolCalls) && message.toolCalls.length > 0
+      ? {
+          toolCalls: message.toolCalls.slice(0, 64).map((tc: { id?: string; function?: { name?: string; arguments?: string } }) => ({
+            id: String(tc.id ?? ""),
+            name: redactSecrets(String(tc.function?.name ?? "")).slice(0, 256),
+            arguments: redactSecrets(String(tc.function?.arguments ?? "")).slice(0, JOURNAL_MESSAGE_MAX_CHARS),
+          })),
+        }
+      : {}),
+  }));
+}
+
+export function fromJournalMessages(records: AgentRunJournalMessage[]): ChatMessage[] {
+  return records.map((record) => ({
+    role: record.role,
+    content: record.content,
+    ...(record.toolCallId ? { toolCallId: record.toolCallId } : {}),
+    ...(record.toolCalls?.length
+      ? {
+          toolCalls: record.toolCalls.map((tc) => ({
+            id: tc.id,
+            type: "function" as const,
+            function: { name: tc.name, arguments: tc.arguments },
+          })),
+        }
+      : {}),
+  }));
 }
 
 const MAX_FILE_READ_BYTES = 100 * 1024;
@@ -701,6 +745,45 @@ export class AgentRuntime {
     const toolCallHistory: string[] = [];
     let intelligence: RepositoryIntelligence | undefined;
 
+    // R2 durable execution journal. Counters and the transcript live outside the try block so a
+    // failing run still persists an honest terminal journal from the catch path.
+    let turnCount = 0;
+    let toolCallCount = 0;
+    let writeCallCount = 0;
+    let commandCallCount = 0;
+    let messages: ChatMessage[] = [];
+    let journalActiveRoute: AgentModelSelection | undefined;
+    let finalSummary = "";
+    let stopReason: AgentStopReason = "completed" as AgentStopReason;
+    const resumeJournal = req.resumeJournal?.journal;
+    const journalEnabled = req.roleRouting === true || resumeJournal !== undefined;
+    const journalId = `agent-run-journal-${req.runId}`;
+    const journalCreatedAt = new Date().toISOString();
+    let journalRecoveryOutcome: AgentRunJournal["recoveryOutcome"] = resumeJournal ? "resume" : "none";
+    let runTerminalState: AgentRunJournal["state"] = "converged_failed";
+    const writeRunJournal = async (state: AgentRunJournal["state"], detail?: string): Promise<void> => {
+      if (!journalEnabled) return;
+      await this.persistence.upsertWorkItem({
+        kind: "agent_run_journal",
+        id: journalId,
+        sessionId: this.sessionId,
+        runId: req.runId,
+        agentId: req.agentId,
+        role: String(req.role),
+        state,
+        recoveryOutcome: journalRecoveryOutcome,
+        messages: toJournalMessages(messages),
+        turnCount,
+        toolCallCount,
+        writeCallCount,
+        commandCallCount,
+        ...(journalActiveRoute ? { route: { providerId: journalActiveRoute.providerId, modelId: journalActiveRoute.modelId } } : {}),
+        ...(detail ? { recoveryDetail: redactSecrets(detail).slice(0, 4_096) } : {}),
+        createdAt: journalCreatedAt,
+        updatedAt: new Date().toISOString(),
+      } as unknown as WorkItem);
+    };
+
     const totalUsage: AgentUsage = {
       inputTokens: 0,
       outputTokens: 0,
@@ -725,6 +808,30 @@ export class AgentRuntime {
         throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent run cancelled before start.`);
       }
 
+      // R2 recovery: when resuming, the recorded transcript already contains the original
+      // bootstrap context. Re-assembling from the current workspace could silently change what
+      // the conversation refers to, so assembly is skipped entirely and counters are restored.
+      let contextMetrics: AgentContextMetrics | undefined;
+      if (resumeJournal) {
+        messages = fromJournalMessages(resumeJournal.messages);
+        turnCount = resumeJournal.turnCount;
+        toolCallCount = resumeJournal.toolCallCount;
+        writeCallCount = resumeJournal.writeCallCount;
+        commandCallCount = resumeJournal.commandCallCount;
+        const restoredContextBytes = Buffer.byteLength(messages.map((message) => message.content).join("\n"), "utf8");
+        contextMetrics = {
+          candidateFileCount: 0,
+          candidateSymbolCount: 0,
+          selectedFileCount: 0,
+          selectedEvidenceCount: 0,
+          contextBytes: restoredContextBytes,
+          estimatedInputTokens: Math.ceil(restoredContextBytes / 4),
+          contextMaximum: resolvedMaxContextTokens,
+          reservedOutputTokens: budget.maxOutputTokens ?? 0,
+          reasonCodes: ["recovery_resume"],
+        };
+      }
+      if (!resumeJournal) {
       // 1. Context Assembly
       let indexStatus: ReturnType<RepositoryIntelligence["status"]> | undefined;
       try {
@@ -787,7 +894,7 @@ export class AgentRuntime {
         }
       }
 
-      const messages: ChatMessage[] = [
+      messages = [
         { role: "system", content: assembled.systemPrompt },
         { role: "user", content: assembled.contextPrompt },
       ];
@@ -806,17 +913,7 @@ export class AgentRuntime {
         });
       }
 
-      let turnCount = 0;
-      let toolCallCount = 0;
-      let writeCallCount = 0;
-      let commandCallCount = 0;
-      let finalSummary = "";
-      let stopReason: AgentStopReason = "completed";
-      let structuredData: StructuredAgentResult | undefined;
-      let structuredRepairs = 0;
-      const expectedStructuredOutput = req.structuredOutput;
-      const maxStructuredOutputRepairs = Math.max(0, req.maxStructuredOutputRepairs ?? 1);
-      const contextMetrics: AgentContextMetrics = {
+      contextMetrics = {
         candidateFileCount: indexStatus?.fileCount ?? 0,
         candidateSymbolCount: indexStatus?.symbolCount ?? 0,
         selectedFileCount: assembled.receipt?.retrievedFiles.length ?? assembled.evidence.filter((item) => item.source === "file" || item.source === "search").length,
@@ -839,6 +936,13 @@ export class AgentRuntime {
         ledger.recordContextPagesReused(assembled.progressive.pagesReused);
         ledger.recordContextPagesPulled(assembled.progressive.pagesPulled);
       }
+      }
+      if (!contextMetrics) throw new Error("Agent run context metrics were not initialized");
+
+      let structuredData: StructuredAgentResult | undefined;
+      let structuredRepairs = 0;
+      const expectedStructuredOutput = req.structuredOutput;
+      const maxStructuredOutputRepairs = Math.max(0, req.maxStructuredOutputRepairs ?? 1);
 
       // 2. Multi-turn Model & Tool Loop
       let responseCacheTelemetry: { classification: "measured" | "unavailable" } = { classification: "unavailable" };
@@ -877,6 +981,9 @@ export class AgentRuntime {
       let activeSelection: AgentModelSelection | undefined = req.modelSelection
         ?? (this.modelSelection ? { providerId: this.modelSelection.providerId, modelId: this.modelSelection.modelId } : undefined);
       let roleRouteRotatable = false;
+      if (activeSelection) {
+        journalActiveRoute = activeSelection;
+      }
       if (!activeSelection && req.roleRouting && this.hasRoutableFleet()) {
         const role = eightBitRoleForAgentRole(req.role);
         const routing = await this.eightBit.selectInitialRoute(
@@ -898,6 +1005,7 @@ export class AgentRuntime {
         }
         activeSelection = { providerId: routing.model.providerId, modelId: routing.model.modelId };
         roleRouteRotatable = true;
+        journalActiveRoute = activeSelection;
         adapter.emitRouterSelection(req.runId, routing.model.modelId, routing.model.providerId, Math.round(routing.score), routing.reasons);
       }
 
@@ -962,6 +1070,163 @@ export class AgentRuntime {
       // neither of which changes mid-run.
       const availableTools = toolBroker.getRegistry().getForRole(req.role, req.permissions);
 
+      // R2 durable recovery: resolve any trailing unobserved tool calls from the restored transcript
+      // before continuing the multi-turn conversation.
+      if (resumeJournal && messages.length > 0) {
+        const observedToolCallIds = new Set<string>();
+        for (const m of messages) {
+          if (m.role === "tool" && m.toolCallId) {
+            observedToolCallIds.add(m.toolCallId);
+          }
+        }
+
+        const pendingCalls: Array<{ id: string; name: string; arguments: string }> = [];
+        for (let i = messages.length - 1; i >= 0; i--) {
+          const m = messages[i];
+          if (!m) continue;
+          if (m.role === "assistant" && Array.isArray(m.toolCalls)) {
+            for (const tc of m.toolCalls) {
+              const tcId = String(tc.id ?? "");
+              if (tcId && !observedToolCallIds.has(tcId)) {
+                pendingCalls.push({
+                  id: tcId,
+                  name: String((tc as any).function?.name ?? (tc as any).name ?? ""),
+                  arguments: String((tc as any).function?.arguments ?? (tc as any).arguments ?? "{}"),
+                });
+              }
+            }
+            break;
+          }
+          if (m.role === "user" || m.role === "system") {
+            break;
+          }
+        }
+
+        if (pendingCalls.length > 0) {
+          const replayIds = new Set(req.resumeJournal?.replayToolCallIds ?? []);
+          const allToolWorkItems = await this.persistence.getWorkItemsByKind("agent_tool_execution");
+          const runToolRecords = allToolWorkItems.filter(
+            (item) => item.kind === "agent_tool_execution" && (item as any).runId === req.runId,
+          ) as unknown as DurableToolExecutionRecord[];
+
+          for (const tc of pendingCalls) {
+            const toolDef = toolBroker.getRegistry().get(tc.name);
+            const isReadOnly = toolDef?.readOnly ?? false;
+            const executionClass: ToolExecutionClass = tc.name === "run_command" ? "command" : isReadOnly ? "read_only" : "write";
+
+            const completedRecord = runToolRecords.find(
+              (r) => r.toolName === tc.name && (r.state === "observation_recorded" || r.state === "completed"),
+            );
+
+            if (completedRecord && !replayIds.has(tc.id)) {
+              const reusedResult: ToolExecutionRecord = {
+                toolExecutionId: completedRecord.id,
+                toolName: tc.name,
+                arguments: {} as Record<string, unknown>,
+                success: completedRecord.state !== "failed",
+                output: completedRecord.resultHash ? "[Recovered from prior execution with large output]" : "[Recovered from prior execution]",
+                durationMs: 0,
+                readOnly: executionClass === "read_only",
+                truncated: false,
+              };
+              toolExecutions.push(reusedResult);
+              messages.push({
+                role: "tool",
+                content: reusedResult.output,
+                toolCallId: tc.id,
+              });
+              toolCallCount++;
+              totalUsage.toolCount++;
+              await writeRunJournal("active");
+              continue;
+            }
+
+            if (replayIds.has(tc.id) || isReadOnly) {
+              for (const r of runToolRecords) {
+                if (r.toolName === tc.name && (r.state === "started" || r.state === "requested")) {
+                  r.state = "failed";
+                  r.updatedAt = new Date().toISOString();
+                  await this.persistence.upsertWorkItem(r as unknown as WorkItem);
+                }
+              }
+
+              const replayExecutionId = `agent-tool-${sha256(`${req.runId}\0${req.agentId}\0${turnCount}\0${tc.id}\0${tc.name}\0${tc.arguments}\0replayed`)}`;
+              const now = new Date().toISOString();
+              const durableExecution: DurableToolExecutionRecord = {
+                kind: "agent_tool_execution",
+                id: replayExecutionId,
+                sessionId: this.sessionId,
+                runId: req.runId,
+                agentId: req.agentId,
+                turnId: `${req.runId}:${req.agentId}:${turnCount}`,
+                toolName: tc.name,
+                argumentsHash: sha256(tc.arguments),
+                executionClass,
+                state: "requested",
+                recoveryDisposition: "safe_to_retry",
+                createdAt: now,
+                updatedAt: now,
+              };
+              await this.persistence.upsertWorkItem(durableExecution as unknown as WorkItem);
+              durableExecution.state = "started";
+              durableExecution.startedAt = new Date().toISOString();
+              durableExecution.recoveryDisposition = classifyToolRecovery(durableExecution);
+              durableExecution.updatedAt = durableExecution.startedAt;
+              await this.persistence.upsertWorkItem(durableExecution as unknown as WorkItem);
+
+              adapter.emitToolCallStarted(req.runId, tc.id, tc.name, req.agentId);
+              adapter.emitToolExecutionStarted(req.runId, tc.id, tc.name, tc.arguments);
+
+              const toolExec = await toolBroker.executeTool(
+                { name: tc.name, arguments: tc.arguments },
+                {
+                  workspacePath: req.workspacePath,
+                  permissions: req.permissions,
+                  role: req.role,
+                  runId: req.runId,
+                  agentId: req.agentId,
+                  signal: req.signal,
+                  customExecutor: async (name, args) => {
+                    if (name.startsWith("repo_")) {
+                      return this.executeRepositoryTool(name, args, req.signal ?? new AbortController().signal, req.workspacePath, intelligence, { ledger, cacheStats: canonicalCacheStats });
+                    }
+                    return req.customToolExecutor?.(name, args);
+                  },
+                },
+              );
+
+              toolExecutions.push(toolExec);
+              durableExecution.state = toolExec.success ? "completed" : "failed";
+              durableExecution.completedAt = new Date().toISOString();
+              durableExecution.resultHash = sha256(toolExec.output);
+              durableExecution.recoveryDisposition = classifyToolRecovery(durableExecution);
+              durableExecution.updatedAt = durableExecution.completedAt;
+              await this.persistence.upsertWorkItem(durableExecution as unknown as WorkItem);
+
+              if (toolExec.success) {
+                adapter.emitToolExecutionCompleted(req.runId, tc.id, tc.name, toolExec.output);
+              } else {
+                adapter.emitToolExecutionFailed(req.runId, tc.id, tc.name, toolExec.error ?? toolExec.output);
+              }
+
+              messages.push({
+                role: "tool",
+                content: toolExec.output,
+                toolCallId: tc.id,
+              });
+              durableExecution.state = "observation_recorded";
+              durableExecution.recoveryDisposition = classifyToolRecovery(durableExecution);
+              durableExecution.updatedAt = new Date().toISOString();
+              await this.persistence.upsertWorkItem(durableExecution as unknown as WorkItem);
+
+              toolCallCount++;
+              totalUsage.toolCount++;
+              await writeRunJournal("active");
+            }
+          }
+        }
+      }
+
       while (turnCount < budget.maxModelTurns) {
         if (req.signal?.aborted) {
           throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
@@ -970,6 +1235,12 @@ export class AgentRuntime {
         turnCount++;
         totalUsage.requestCount++;
         const modelTurnId = `${req.runId}:${req.agentId}:${turnCount}`;
+        // R2: journal the pre-flight boundary before the provider request leaves. If the process
+        // dies between this write and the response, recovery sees no persisted assistant turn
+        // and may safely re-issue the request (at-least-once on a free inference call is
+        // correctness-safe; the user allowance reservation is keyed by requestId and settles
+        // exactly once regardless).
+        await writeRunJournal("active");
         await this.userIntentHold?.waitForDispatch(this.sessionId, "model");
         const modelTurnCreatedAt = new Date().toISOString();
         const persistModelTurn = async (state: "created" | "provider_request_started" | "provider_response_completed" | "tool_requests_decoded" | "agent_result_completed" | "failed" | "cancelled"): Promise<void> => {
@@ -1023,8 +1294,18 @@ export class AgentRuntime {
 
         if (response.text) {
           finalSummary = response.text;
-          messages.push({ role: "assistant", content: response.text });
         }
+
+        // R2: the assistant turn (text and/or decoded tool requests) is durable before any tool
+        // executes, so a crash mid-tool leaves the request visible in the transcript.
+        messages.push({
+          role: "assistant",
+          content: response.text,
+          ...(response.toolCalls?.length
+            ? { toolCalls: response.toolCalls.map((tc) => ({ id: tc.id, type: "function" as const, function: { name: tc.name, arguments: tc.arguments } })) }
+            : {}),
+        });
+        await writeRunJournal("active");
 
         // If no tools requested -> Assistant finished
         if (!response.toolCalls || response.toolCalls.length === 0) {
@@ -1063,18 +1344,6 @@ export class AgentRuntime {
 
         await persistModelTurn("tool_requests_decoded");
 
-        // Tool calls requested
-        const assistantToolMessage: ChatMessage = {
-          role: "assistant",
-          content: response.text || "",
-          toolCalls: response.toolCalls.map((tc) => ({
-            id: tc.id,
-            type: "function" as const,
-            function: { name: tc.name, arguments: tc.arguments },
-          })),
-        };
-        messages.push(assistantToolMessage);
-
         for (const tc of response.toolCalls) {
           if (req.signal?.aborted) {
             throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
@@ -1098,6 +1367,49 @@ export class AgentRuntime {
             if (budget.maxCommandExecutions !== undefined && commandCallCount >= budget.maxCommandExecutions) {
               stopReason = "budget_exhausted";
               break;
+            }
+          }
+
+          // R2 idempotency: when resuming, check if this tool call already has a durable record
+          // in a terminal state. If so, reuse the result instead of re-executing. This prevents
+          // duplicate side effects after a crash.
+          const executionId = `agent-tool-${sha256(`${req.runId}\0${req.agentId}\0${modelTurnId}\0${tc.id}\0${tc.name}\0${tc.arguments}`)}`;
+          const toolDefForDurability = toolBroker.getRegistry().get(tc.name);
+          const executionClass: ToolExecutionClass = tc.name === "run_command"
+            ? "command"
+            : toolDefForDurability?.readOnly ? "read_only"
+            : "write";
+          if (resumeJournal) {
+            const existingRecord = await this.persistence.getWorkItem(executionId) as DurableToolExecutionRecord | undefined;
+            if (existingRecord && (existingRecord.state === "observation_recorded" || existingRecord.state === "completed" || existingRecord.state === "failed")) {
+              // Reuse the recorded result for exactly-once behavior
+              // Note: Large outputs may have been compressed to artifacts; for now we accept
+              // that recovery might lose the original large output and substitute a placeholder.
+              // This is conservative — it's better to fail the tool than to silently replay it.
+              const reusedResult: ToolExecutionRecord = {
+                toolExecutionId: executionId,
+                toolName: tc.name,
+                arguments: {} as Record<string, unknown>,
+                success: existingRecord.state !== "failed",
+                output: existingRecord.resultHash ? "[Recovered from prior execution with large output]" : "[Recovered from prior execution]",
+                error: existingRecord.state === "failed" ? "Tool failed in prior execution" : undefined,
+                durationMs: 0,
+                readOnly: executionClass === "read_only",
+                truncated: false,
+              };
+              toolExecutions.push(reusedResult);
+              messages.push({
+                role: "tool",
+                content: reusedResult.output,
+                toolCallId: tc.id,
+              });
+              // Update counters for the reused tool
+              toolCallCount++;
+              totalUsage.toolCount++;
+              if (toolDef && !toolDef.readOnly) writeCallCount++;
+              if (tc.name === "run_command") commandCallCount++;
+              await writeRunJournal("active");
+              continue;
             }
           }
 
@@ -1208,12 +1520,7 @@ export class AgentRuntime {
           adapter.emitToolCallStarted(req.runId, tc.id, tc.name, req.agentId);
           adapter.emitToolExecutionStarted(req.runId, tc.id, tc.name, tc.arguments);
 
-          const toolDefForDurability = toolBroker.getRegistry().get(tc.name);
-          const executionClass: ToolExecutionClass = tc.name === "run_command"
-            ? "command"
-            : toolDefForDurability?.readOnly ? "read_only"
-            : "write";
-          const executionId = `agent-tool-${sha256(`${req.runId}\0${req.agentId}\0${modelTurnId}\0${tc.id}\0${tc.name}\0${tc.arguments}`)}`;
+          // executionId and executionClass were already computed in the idempotency check above
           const now = new Date().toISOString();
           const durableExecution: DurableToolExecutionRecord = {
             kind: "agent_tool_execution",
@@ -1309,6 +1616,7 @@ export class AgentRuntime {
           durableExecution.recoveryDisposition = classifyToolRecovery(durableExecution);
           durableExecution.updatedAt = new Date().toISOString();
           this.persistence.upsertWorkItem(durableExecution as unknown as WorkItem);
+          await writeRunJournal("active");
 
           // Permission and confinement violations are authority-boundary
           // failures, not ordinary tool errors. Stop this run rather than
@@ -1405,6 +1713,20 @@ export class AgentRuntime {
         error: errorMsg,
       };
     } finally {
+      // R2: write terminal journal state regardless of how the run ended. The terminal state
+      // tells recovery whether the run is already done or converged_failed.
+      if (stopReason === "completed") {
+        runTerminalState = "completed";
+        journalRecoveryOutcome = resumeJournal ? "resume" : "none";
+      } else if (stopReason === "cancelled") {
+        runTerminalState = "converged_failed";
+        journalRecoveryOutcome = "fail";
+      } else {
+        runTerminalState = "converged_failed";
+        journalRecoveryOutcome = "replan";
+      }
+      await writeRunJournal(runTerminalState, `Run ended with stopReason: ${stopReason}`).catch(() => undefined);
+
       await this.persistForgeGreenLedger(ledger).catch(() => undefined);
       await this.persistForgeGreenSustainabilityReceipt(
         req,

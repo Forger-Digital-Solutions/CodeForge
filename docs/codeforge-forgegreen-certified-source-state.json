@@ -1,5 +1,5 @@
 {
-  "sourceStateId": "c7bf94a85fb48f9d091302d4939c27214d037eb199a1003a86ddb95da4fe090c",
+  "sourceStateId": "8ad65aa734c2ad3e51d9c055e2499b66d1ebcf62e38b21c3928d78f26e226e26",
   "surfaceVersion": "fg12f-certified-v1-free-cloud-r5",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
@@ -40,13 +40,13 @@
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
     "packages/router/package.json": "b2b596febe0eab8a591ed016e9783170c35ed096",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
-    "packages/server/src/agent-runtime.ts": "e06b963f4f2e0208c2c9ec669c843a2a22b29e10",
+    "packages/server/src/agent-runtime.ts": "589d4f9b77210505ee1ebe99f925c7acbbd28647",
     "packages/server/src/autonomous-orchestrator.ts": "9d99de07fb6c5ba9ab521451137a341c2382980a",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "a46e0238daf63d31820dd6548c362ef6e77981cb",
     "packages/sessions/src/persistence.ts": "773d64921c840a0ca860b6e1985184dace727c8a",
     "packages/sessions/src/postgres-persistence.ts": "f47a6a0e3cd9e3064c17b00b4e6516082f738068",
-    "packages/sessions/src/session-state.ts": "53d289b6d7a7c8aede5e890939da31b0e1875d76",
+    "packages/sessions/src/session-state.ts": "c03e49dba0bd99f25879ed8dd4918ef0784a6e03",
     "packages/workflow/src/forge-verify.ts": "a2ebe610ad4ec74a68609c57bba7b19fe6869cdc",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
     "packages/workflow/src/types.ts": "a2b484a4acbcac05a4739c1f6cbf5450ff49fe41",
@@ -401,7 +401,30 @@
       "regressionEvidence": "Full Vitest suite (2,384+ passed), the R1-focused orchestrator/subagent suites, the new role-routing suite (fleet resolution, fail-closed no-route, bounded failover rotation, exact-model no-substitution, legacy fallback), the stale-worker reconciliation test, and live Groq/Cloudflare certification plus a live R1 end-to-end run with passing real verification recorded in docs/evidence/.",
       "recertifiedAt": "2026-09-15",
       "sourceStateConstant": "CODEFORGE_SUBAGENTS_R1_PHASE2_SOURCE_STATE"
+    },
+    {
+      "label": "CodeForge Managed-Free R2 — durable worker journal and crash recovery",
+      "reason": "R2 adds durable agent-run journaling and crash recovery to AgentRuntime and SubagentManager. Interrupted workers recover continuation state honestly from durable journals and tool execution records without duplicate side effects. Bounded recovery claims prevent concurrent recovery by multiple callers. ForgeGreen optimization candidates, the verification-evidence-reuse advisor, the FG-12F cost gate and ForgeVerify validity authority are untouched; prior campaign evidence remains historically accurate for its recorded source state.",
+      "priorSourceStateId": "c7bf94a85fb48f9d091302d4939c27214d037eb199a1003a86ddb95da4fe090c",
+      "priorSurfaceVersion": "fg12f-certified-v1-free-cloud-r5",
+      "resultingSourceStateId": "8ad65aa734c2ad3e51d9c055e2499b66d1ebcf62e38b21c3928d78f26e226e26",
+      "resultingSurfaceVersion": "fg12f-certified-v1-free-cloud-r5",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Gained R2 durable execution journaling (agent_run_journal), transcript continuation on resume (continuing from the exact recorded conversation rather than silently re-assembling bootstrap context), trailing unobserved tool replay and observation reconstruction, exactly-once tool execution idempotency, and terminal journal state checkpoints.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/sessions/src/session-state.ts",
+          "change": "Added AgentRunJournalSchema and AgentRecoveryLeaseSchema to the WorkItemSchema discriminated union, establishing durable schema validity for agent run journals and cross-process recovery claims.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Full Vitest suite, the new 18-case run-recovery test suite (real process boundaries, pre/post-provider crash, pre/post-tool crash, write idempotency, unobserved command replan, reviewer recovery, cancellation priority, worktree failure, duplicate lease prevention), role-routing, subagent, and ForgeVerify tests.",
+      "recertifiedAt": "2026-09-15",
+      "sourceStateConstant": "CODEFORGE_MANAGED_FREE_R2_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above."
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above."
 }

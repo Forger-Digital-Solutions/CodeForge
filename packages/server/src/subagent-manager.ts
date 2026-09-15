@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import {
   getAgent,
@@ -19,12 +20,16 @@ import type {
   AgentWorkerTelemetry,
   SubagentRunWorkItem,
   TaskCapsule,
+  AgentRunJournal,
+  AgentRecoveryLease,
 } from "@codeforge/protocol";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
-import type { ISessionPersistence } from "@codeforge/sessions";
+import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import type { WorkspaceService } from "./workspace-service.js";
 import { redactSecrets } from "@codeforge/secrets";
 import { createTaskCapsule } from "./task-capsule.js";
+import { classifyRunRecovery, type RunRecoveryOutcome, type RunRecoveryToolRecord } from "./run-recovery.js";
+import type { DurableToolExecutionState, ToolExecutionClass } from "./agent-runtime.js";
 
 import type { AgentRuntime } from "./agent-runtime.js";
 
@@ -222,6 +227,7 @@ export class SubagentManager {
         kind: options.workspaceKind ?? "local",
         ...(options.workspaceBranch ? { branch: options.workspaceBranch } : {}),
       },
+      workspacePath: child.workspacePath,
       budget: this.executionBudget(def.id),
       telemetry: this.emptyTelemetry(),
       artifacts: [],
@@ -535,6 +541,151 @@ export class SubagentManager {
       reconciled++;
     }
     return reconciled;
+  }
+
+  /**
+   * R2: recover interrupted workers using durable execution journals. This is the authoritative
+   * recovery entry point — it classifies each non-terminal worker into RESUME/REPLAN/FAIL based
+   * on journal content and tool execution records, then executes the corresponding strategy.
+   */
+  async recoverInterruptedWorkers(options?: { recoveryOwnerId?: string }): Promise<{ resumed: number; replanned: number; failed: number; decisions: Array<{ workerId: string; outcome: string; reason: string }> }> {
+    if (!this.persistence) return { resumed: 0, replanned: 0, failed: 0, decisions: [] };
+
+    const ownerId = options?.recoveryOwnerId ?? `recovery-owner-${process.pid}-${crypto.randomUUID().slice(0, 8)}`;
+    const terminal = new Set<AgentWorkerLifecycleState>(["completed", "failed", "cancelled", "blocked"]);
+    const workers = await this.persistence.getWorkItemsByKind("subagent_run");
+    const decisions: Array<{ workerId: string; outcome: string; reason: string }> = [];
+    let resumed = 0;
+    let replanned = 0;
+    let failed = 0;
+
+    for (const item of workers) {
+      if (item.kind !== "subagent_run" || terminal.has(item.status)) continue;
+
+      // Cross-process recovery lease: ensure at most one recovery worker/process resumes this worker
+      const leaseId = `recovery-lease-${item.id}`;
+      const leaseTtlMs = 60_000;
+      const nowMs = Date.now();
+      const acquired = await this.persistence.withTransaction(async (tx) => {
+        const existing = (await tx.getWorkItem(leaseId)) as AgentRecoveryLease | undefined;
+        if (existing && existing.kind === "agent_recovery_lease") {
+          if (Date.parse(existing.expiresAt) > nowMs && existing.ownerId !== ownerId) {
+            return false;
+          }
+        }
+        const lease: AgentRecoveryLease = {
+          kind: "agent_recovery_lease",
+          id: leaseId,
+          sessionId: item.sessionId ?? "default",
+          workerId: item.id,
+          ownerId,
+          expiresAt: new Date(nowMs + leaseTtlMs).toISOString(),
+          createdAt: existing?.createdAt ?? new Date(nowMs).toISOString(),
+          updatedAt: new Date(nowMs).toISOString(),
+        };
+        await tx.upsertWorkItem(lease as unknown as WorkItem);
+        return true;
+      });
+
+      if (!acquired) continue;
+
+      const journal = await this.persistence.getWorkItem(`agent-run-journal-${item.id}`) as AgentRunJournal | undefined;
+      const toolRecords: RunRecoveryToolRecord[] = [];
+      const toolItems = await this.persistence.getWorkItemsByKind("agent_tool_execution");
+      for (const ti of toolItems) {
+        if (ti.kind === "agent_tool_execution" && (ti as any).runId === item.id) {
+          toolRecords.push({
+            toolName: (ti as any).toolName,
+            executionClass: (ti as any).executionClass as RunRecoveryToolRecord["executionClass"],
+            state: (ti as any).state as DurableToolExecutionState,
+          });
+        }
+      }
+
+      const outcome = classifyRunRecovery(journal, toolRecords);
+      decisions.push({ workerId: item.id, outcome: outcome.outcome, reason: outcome.reason });
+
+      if (outcome.outcome === "resume") {
+        const workspacePath = item.workspacePath ?? (item.workspace as any)?.path ?? (this.agentRuntime as any)?.workspacePath ?? process.cwd();
+        if (item.workspace?.kind === "git-worktree" && !existsSync(workspacePath)) {
+          item.status = "failed";
+          item.error = redactSecrets("RECOVERY_REPLAN: worktree path does not exist on disk");
+          item.updatedAt = new Date().toISOString();
+          if (!item.completedAt) item.completedAt = item.updatedAt;
+          await this.persistence.upsertWorkItem(item);
+          if (journal) {
+            journal.state = "converged_failed";
+            journal.recoveryOutcome = "replan";
+            journal.recoveryDetail = item.error;
+            journal.updatedAt = item.updatedAt;
+            await this.persistence.upsertWorkItem(journal as unknown as WorkItem);
+          }
+          replanned++;
+          continue;
+        }
+
+        const runtime = item.sessionId ? (this.getAgentRuntime?.(item.sessionId) ?? this.agentRuntime) : this.agentRuntime;
+        if (runtime && journal) {
+          const runtimeRes = await runtime.executeAgentRun({
+            runId: item.id,
+            agentId: item.agentId,
+            role: item.role,
+            goal: item.task,
+            workspaceId: item.workspace?.id ?? item.id,
+            workspacePath,
+            permissions: item.permissions,
+            initialContext: item.capsule ? JSON.stringify(item.capsule) : undefined,
+            structuredOutput: item.agentId === "reviewer" ? "reviewer" : undefined,
+            roleRouting: this.r1Enabled,
+            resumeJournal: {
+              journal,
+              replayToolCallIds: outcome.replayToolCallIds ?? [],
+            },
+          });
+          item.status = runtimeRes.status === "completed" ? "completed" : runtimeRes.status === "blocked" ? "blocked" : runtimeRes.status === "cancelled" ? "cancelled" : "failed";
+          item.resultSummary = redactSecrets(runtimeRes.summary);
+          item.completedAt = new Date().toISOString();
+          item.updatedAt = item.completedAt;
+          await this.persistence.upsertWorkItem(item);
+          resumed++;
+        } else {
+          item.status = "running";
+          item.updatedAt = new Date().toISOString();
+          await this.persistence.upsertWorkItem(item);
+          resumed++;
+        }
+      } else if (outcome.outcome === "replan") {
+        item.status = "failed";
+        item.error = redactSecrets(outcome.reason);
+        item.updatedAt = new Date().toISOString();
+        if (!item.completedAt) item.completedAt = item.updatedAt;
+        await this.persistence.upsertWorkItem(item);
+        if (journal) {
+          journal.state = "converged_failed";
+          journal.recoveryOutcome = "replan";
+          journal.recoveryDetail = redactSecrets(outcome.reason);
+          journal.updatedAt = item.updatedAt;
+          await this.persistence.upsertWorkItem(journal as unknown as WorkItem);
+        }
+        replanned++;
+      } else {
+        item.status = "failed";
+        item.error = redactSecrets(outcome.reason);
+        item.updatedAt = new Date().toISOString();
+        if (!item.completedAt) item.completedAt = item.updatedAt;
+        await this.persistence.upsertWorkItem(item);
+        if (journal) {
+          journal.state = "converged_failed";
+          journal.recoveryOutcome = "fail";
+          journal.recoveryDetail = redactSecrets(outcome.reason);
+          journal.updatedAt = item.updatedAt;
+          await this.persistence.upsertWorkItem(journal as unknown as WorkItem);
+        }
+        failed++;
+      }
+    }
+
+    return { resumed, replanned, failed, decisions };
   }
 
   /**
