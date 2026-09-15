@@ -1,0 +1,80 @@
+{
+  "sessionId": "corpus-s-001-a1",
+  "startedAt": "2026-09-15T20:20:46.626Z",
+  "finishedAt": "2026-09-15T20:42:10.768Z",
+  "runError": null,
+  "result": {
+    "runId": "run-246ce6ab-80df-49a6-bdca-e99611ab0a32",
+    "status": "blocked",
+    "summary": "Deterministic verification failed in worktree: node:internal/child_process:458\r\n    throw new ErrnoException(err, 'spawn');\r\n          ^\r\n\r\nError: spawn EINVAL\r\n    at ChildProcess.spawn (node:internal/child_process:458:11)\r\n    at spawn (node:child_process:813:9)\r\n    at execFile (node:child_process:349:17)\r\n    at file:///G:/CodeForge/scripts/r3-oracle-wrapper.mjs:74:5\r\n    at new Promise (<anonymous>)\r\n    at runVitest (file:///G:/CodeForge/scripts/r3-oracle-wrapper.mjs:71:10)\r\n    at file:///G:/CodeForge/scripts/r3-oracle-wrapper.mjs:90:19\r\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\r\n    at async node:internal/modules/esm/loader:643:26\r\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\r\n  errno: -4071,\r\n  code: 'EINVAL',\r\n  syscall: 'spawn'\r\n}\r\n\r\nNode.js v24.19.0\r\n",
+    "workspaceId": "ws-982c1efd",
+    "baseRevision": "d45db3547b49f5dcbf7a46cb785c12bf84be26bf",
+    "changedFiles": [],
+    "review": {
+      "passed": true,
+      "findings": []
+    },
+    "verification": [
+      {
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "command": "node G:\\CodeForge\\scripts\\r3-oracle-wrapper.mjs --baseline=G:/CodeForge/tests/evidence/r3/corpus-runs/campaign-1/freeze/baseline-oracle-sandbox-suite.json --out=G:/CodeForge/tests/evidence/r3/corpus-runs/campaign-1/evidence/S-001/attempt-1/oracle-internal.json -- vitest run",
+        "cwd": "G:\\CodeForge\\tests\\evidence\\r3\\corpus-runs\\campaign-1\\evidence\\S-001\\attempt-1\\run-worktrees\\S-001-a1\\wt-49ce0b72",
+        "exitCode": 1,
+        "output": "node:internal/child_process:458\r\n    throw new ErrnoException(err, 'spawn');\r\n          ^\r\n\r\nError: spawn EINVAL\r\n    at ChildProcess.spawn (node:internal/child_process:458:11)\r\n    at spawn (node:child_process:813:9)\r\n    at execFile (node:child_process:349:17)\r\n    at file:///G:/CodeForge/scripts/r3-oracle-wrapper.mjs:74:5\r\n    at new Promise (<anonymous>)\r\n    at runVitest (file:///G:/CodeForge/scripts/r3-oracle-wrapper.mjs:71:10)\r\n    at file:///G:/CodeForge/scripts/r3-oracle-wrapper.mjs:90:19\r\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\r\n    at async node:internal/modules/esm/loader:643:26\r\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\r\n  errno: -4071,\r\n  code: 'EINVAL',\r\n  syscall: 'spawn'\r\n}\r\n\r\nNode.js v24.19.0\r\n",
+        "failures": [
+          {
+            "test": "verifier-1-test",
+            "message": "node:internal/child_process:458\r\n    throw new ErrnoException(err, 'spawn');\r\n          ^\r\n\r\nError: spawn EINVAL\r\n    at ChildProcess.spawn (node:internal/child_process:458:11)\r\n    at spawn (node:child_process:813:9)\r\n    at execFile (node:child_process:349:17)\r\n    at file:///G:/CodeForge/scripts/r3-oracle-wrapper.mjs:74:5\r\n    at new Promise (<anonymous>)\r\n    at runVitest (file:///G:/CodeForge/scripts/r3-oracle-wrapper.mjs:71:10)\r\n    at file:///G:/CodeForge/scripts/r3-oracle-wrapper.mjs:90:19\r\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\r\n    at async node:internal/modules/esm/loader:643:26\r\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\r\n  errno: -4071,\r\n  code: 'EINVAL',\r\n  syscall: 'spawn'\r\n}\r\n\r\nNode.js v24.19.0\r\n"
+          }
+        ],
+        "durationMs": 95
+      }
+    ],
+    "integration": {
+      "status": "blocked",
+      "branch": "codeforge/worktree/run-246ce6ab-80df-49a6-bdca-e99611ab0a32-49ce0b72",
+      "worktreeId": "wt-49ce0b72",
+      "reason": "VERIFICATION_FAILED"
+    },
+    "evidence": [
+      {
+        "kind": "search",
+        "ref": "src/math.ts",
+        "description": "exact_symbol_match, implementation_symbol, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "package-lock.json",
+        "description": "symbol_name_match, implementation_symbol"
+      },
+      {
+        "kind": "search",
+        "ref": "test/math.test.ts",
+        "description": "lexical_content_match, test_filename_convention, test_naming_convention, related_to_relevant_implementation, test_deprioritized_for_implementation_query"
+      },
+      {
+        "kind": "search",
+        "ref": "README.md",
+        "description": "lexical_content_match"
+      },
+      {
+        "kind": "git",
+        "ref": "G:\\CodeForge\\tests\\evidence\\r3\\corpus-runs\\campaign-1\\evidence\\S-001\\attempt-1\\run-worktrees\\S-001-a1\\wt-49ce0b72",
+        "description": "diff_review"
+      },
+      {
+        "kind": "verification",
+        "ref": "G:\\CodeForge\\tests\\evidence\\r3\\corpus-runs\\campaign-1\\evidence\\S-001\\attempt-1\\run-worktrees\\S-001-a1\\wt-49ce0b72",
+        "description": "test_execution"
+      }
+    ],
+    "counters": {
+      "childrenSpawned": 4,
+      "reviewRounds": 0,
+      "taskAttempts": 1,
+      "verificationAttempts": 1
+    }
+  }
+}

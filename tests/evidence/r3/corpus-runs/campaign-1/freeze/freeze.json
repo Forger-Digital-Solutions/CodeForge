@@ -1,6 +1,6 @@
 {
   "schema": "r3-corpus-freeze-v1",
-  "frozenAt": "2026-09-15T20:18:41.582Z",
+  "frozenAt": "2026-09-15T21:45:56.217Z",
   "campaign": "campaign-1",
   "corpus": {
     "manifest": "cbf3caba7f1163b7d4e7dad16e2dd0a70abe5b154930b5037ecb75e4cd909f18",
@@ -9,8 +9,8 @@
     "benchmarkDistR3Corpus": "53f7207f1fc5f2dd496a98e61a51ba3ff8679c04e2d616035c5c31415fa4cea6"
   },
   "runner": {
-    "script": "d008ff9cf4115e63efa50f2a5e85d1e896bfcfe50d7bf50b8345f7a887b73191",
-    "wrapper": "88e9732a1a5cc5cb060da5eaca0bd30c7d4e4c709a41181804ced9fa0b84456f"
+    "script": "efa14754487cf3f55ce15c816e49a836f3b21324e88978b0cb5448ba8b15aff0",
+    "wrapper": "602ad2551250eee5988a519235974f2f67dec81712db52c40e3558f65367b3e0"
   },
   "startStates": {
     "G:/dogfood/sandbox-repo": {
@@ -23,15 +23,15 @@
     },
     "G:/CodeForge": {
       "manifestDeclared": "850513c",
-      "resolved": "3bedc1639f908f72996d3987ac4aa2a8a8a64d62"
+      "resolved": "453ab6e6c01363d95cc5baeea75e39ae9cd9acbd"
     }
   },
   "resolutions": [
     {
       "scope": "codeforge-start-state",
       "manifestDeclared": "850513c",
-      "resolved": "3bedc1639f908f72996d3987ac4aa2a8a8a64d62",
-      "decidedAt": "2026-09-15T20:18:41.582Z",
+      "resolved": "453ab6e6c01363d95cc5baeea75e39ae9cd9acbd",
+      "decidedAt": "2026-09-15T21:45:56.217Z",
       "rationale": "Five adversarial oracle commands reference test files introduced by the certified post-freeze R3-RC2 hardening commits (44ea7b2, 71f7a9a); at 850513c those oracles cannot execute at all. The repository is authoritative and the hardening is certified work, so CodeForge tasks resolve to the certified HEAD, decided before any task executed."
     },
     {

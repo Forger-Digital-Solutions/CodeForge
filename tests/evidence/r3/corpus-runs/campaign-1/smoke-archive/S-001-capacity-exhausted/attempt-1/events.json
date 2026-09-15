@@ -1,0 +1,135 @@
+{
+  "totalEvents": 93,
+  "typeCounts": {
+    "task.created": 1,
+    "task.state_changed": 3,
+    "status.changed": 3,
+    "subagent.started": 3,
+    "subagent.lifecycle": 12,
+    "agent.started": 3,
+    "router.selection": 2,
+    "tool.call_started": 10,
+    "tool.execution_started": 10,
+    "tool.execution_completed": 9,
+    "tool.execution_failed": 1,
+    "turn.failed": 3,
+    "forgegreen.run_started": 3,
+    "forgegreen.model_usage_recorded": 3,
+    "forgegreen.tool_usage_recorded": 3,
+    "forgegreen.verification_usage_recorded": 3,
+    "forgegreen.baseline_generated": 3,
+    "forgegreen.energy_estimated": 3,
+    "forgegreen.run_finalized": 3,
+    "forgegreen.optimization_candidate": 3,
+    "forgegreen.optimization_summary": 3,
+    "subagent.artifact_written": 3,
+    "subagent.failed": 3
+  },
+  "router": [
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-97de64cb-4e5e-4a41-a283-c871ac822a90",
+        "modelId": "openai/gpt-oss-120b",
+        "providerId": "groq",
+        "score": 105,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "strong_tool_use",
+          "long_context_optimized",
+          "access_free_native"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-6e5ea888-cf5d-4efc-85c1-b27632390881",
+        "modelId": "openai/gpt-oss-120b",
+        "providerId": "groq",
+        "score": 105,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "strong_tool_use",
+          "long_context_optimized",
+          "access_free_native"
+        ]
+      }
+    }
+  ],
+  "lifecycle": [
+    {
+      "role": "Repository Explorer",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "failed",
+      "model": {
+        "providerId": "groq",
+        "modelId": "openai/gpt-oss-120b"
+      }
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "failed",
+      "model": {
+        "providerId": "groq",
+        "modelId": "openai/gpt-oss-120b"
+      }
+    },
+    {
+      "role": "Task Planner",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Task Planner",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Task Planner",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Task Planner",
+      "state": "failed",
+      "model": null
+    }
+  ],
+  "recoveryObserved": false
+}

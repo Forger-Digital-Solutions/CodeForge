@@ -1,0 +1,13 @@
+{
+  "updatedAt": "2026-09-15T21:48:23.684Z",
+  "phase": "campaign invocation finished",
+  "attemptedThisInvocation": 1,
+  "halted": null,
+  "byStatus": {
+    "CAPACITY_BLOCKED": 1
+  },
+  "capacityNotes": [
+    "cloudflare probe failed at campaign start; excluded from fleet for this invocation"
+  ],
+  "openP0": []
+}

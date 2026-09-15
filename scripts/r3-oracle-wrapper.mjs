@@ -70,9 +70,9 @@ function collect(report) {
 function runVitest() {
   return new Promise((resolve) => {
     const rawPath = `${outPath}.raw.json`;
-    const full = ["vitest", "run", ...vitestArgs, "--reporter=json", `--outputFile=${rawPath}`];
+    const full = ["node_modules/vitest/vitest.mjs", "run", ...vitestArgs, "--reporter=json", `--outputFile=${rawPath}`];
     execFile(
-      process.platform === "win32" ? "npx.cmd" : "npx",
+      process.execPath,
       full,
       { cwd: process.cwd(), maxBuffer: 64 * 1024 * 1024, timeout: 3 * 60 * 60_000, windowsHide: true },
       (error, stdout, stderr) => {

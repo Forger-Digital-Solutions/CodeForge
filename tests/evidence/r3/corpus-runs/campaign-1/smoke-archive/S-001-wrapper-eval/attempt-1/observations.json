@@ -1,0 +1,9 @@
+[
+  {
+    "providerId": "cloudflare-workers-ai",
+    "modelId": "@cf/openai/gpt-oss-120b",
+    "status": 429,
+    "headers": [],
+    "observedAt": 1789503646112
+  }
+]

@@ -1,0 +1,66 @@
+{
+  "sessionId": "corpus-s-001-a1",
+  "startedAt": "2026-09-15T21:34:21.834Z",
+  "finishedAt": "2026-09-15T21:39:26.651Z",
+  "runError": null,
+  "result": {
+    "runId": "run-d51e7a23-44aa-447e-a8d4-264bbb9dc523",
+    "status": "blocked",
+    "summary": "Planner did not produce an authorized task graph: Agent planner failed: [PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found.",
+    "workspaceId": "ws-4b77f6e2",
+    "baseRevision": "d45db3547b49f5dcbf7a46cb785c12bf84be26bf",
+    "changedFiles": [],
+    "review": {
+      "passed": false,
+      "findings": []
+    },
+    "verification": [],
+    "integration": {
+      "status": "not_attempted",
+      "reason": "AGENT_INVALID_STRUCTURED_OUTPUT"
+    },
+    "evidence": [
+      {
+        "kind": "search",
+        "ref": "src/math.ts",
+        "description": "exact_symbol_match, implementation_symbol, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "package-lock.json",
+        "description": "symbol_name_match, implementation_symbol"
+      },
+      {
+        "kind": "search",
+        "ref": "test/math.test.ts",
+        "description": "lexical_content_match, test_filename_convention, test_naming_convention, related_to_relevant_implementation, test_deprioritized_for_implementation_query"
+      },
+      {
+        "kind": "search",
+        "ref": "README.md",
+        "description": "lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "src/math.ts",
+        "description": "exact_symbol_match, implementation_symbol, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "test/math.test.ts",
+        "description": "lexical_content_match, test_filename_convention, test_naming_convention, related_to_relevant_implementation"
+      },
+      {
+        "kind": "search",
+        "ref": "package-lock.json",
+        "description": "symbol_name_match, implementation_symbol, lexical_content_match"
+      }
+    ],
+    "counters": {
+      "childrenSpawned": 3,
+      "reviewRounds": 0,
+      "taskAttempts": 0,
+      "verificationAttempts": 0
+    }
+  }
+}

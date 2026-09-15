@@ -1,0 +1,242 @@
+{
+  "totalEvents": 172,
+  "typeCounts": {
+    "task.created": 1,
+    "task.state_changed": 6,
+    "status.changed": 6,
+    "subagent.started": 5,
+    "subagent.lifecycle": 20,
+    "agent.started": 5,
+    "router.selection": 5,
+    "tool.call_started": 20,
+    "tool.execution_started": 20,
+    "tool.execution_completed": 18,
+    "tool.execution_failed": 2,
+    "tool.execution_blocked": 3,
+    "turn.failed": 2,
+    "forgegreen.run_started": 5,
+    "forgegreen.model_usage_recorded": 5,
+    "forgegreen.tool_usage_recorded": 5,
+    "forgegreen.verification_usage_recorded": 5,
+    "forgegreen.baseline_generated": 5,
+    "forgegreen.energy_estimated": 5,
+    "forgegreen.run_finalized": 5,
+    "forgegreen.optimization_candidate": 5,
+    "forgegreen.optimization_summary": 5,
+    "subagent.artifact_written": 5,
+    "subagent.failed": 3,
+    "forgegreen.optimization_applied": 1,
+    "agent.completed": 2,
+    "subagent.completed": 2,
+    "checkpoint.created": 1
+  },
+  "router": [
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-4fe71c72-d99e-4cbd-accd-309cfbd8132c",
+        "modelId": "openai/gpt-oss-120b",
+        "providerId": "groq",
+        "score": 105,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "strong_tool_use",
+          "long_context_optimized",
+          "access_free_native"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-2fb12243-be13-4c7a-b369-a8301d8fab88",
+        "modelId": "openai/gpt-oss-120b",
+        "providerId": "groq",
+        "score": 105,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "strong_tool_use",
+          "long_context_optimized",
+          "access_free_native"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-9d29d242-a6f7-4576-b9f7-93b69117acdf",
+        "modelId": "openai/gpt-oss-120b",
+        "providerId": "groq",
+        "score": 82,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "long_context_optimized",
+          "access_free_native"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-464d7b67-5dc1-4ed8-bbd7-85bc5f8c0fbc",
+        "modelId": "openai/gpt-oss-120b",
+        "providerId": "groq",
+        "score": 149,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "high_coding_score",
+          "strong_tool_use",
+          "long_context_optimized",
+          "access_free_native"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-96034a57-3601-4d21-94ed-eda5374fa284",
+        "modelId": "openai/gpt-oss-120b",
+        "providerId": "groq",
+        "score": 82,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "long_context_optimized",
+          "access_free_native"
+        ]
+      }
+    }
+  ],
+  "lifecycle": [
+    {
+      "role": "Repository Explorer",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "blocked",
+      "model": {
+        "providerId": "groq",
+        "modelId": "openai/gpt-oss-120b"
+      }
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "blocked",
+      "model": {
+        "providerId": "groq",
+        "modelId": "openai/gpt-oss-120b"
+      }
+    },
+    {
+      "role": "Task Planner",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Task Planner",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Task Planner",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Task Planner",
+      "state": "completed",
+      "model": {
+        "providerId": "groq",
+        "modelId": "openai/gpt-oss-120b"
+      }
+    },
+    {
+      "role": "Autonomous Builder",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Autonomous Builder",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Autonomous Builder",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Autonomous Builder",
+      "state": "completed",
+      "model": {
+        "providerId": "groq",
+        "modelId": "openai/gpt-oss-120b"
+      }
+    },
+    {
+      "role": "Independent Code Reviewer",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Independent Code Reviewer",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Independent Code Reviewer",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Independent Code Reviewer",
+      "state": "blocked",
+      "model": {
+        "providerId": "groq",
+        "modelId": "openai/gpt-oss-120b"
+      }
+    }
+  ],
+  "recoveryObserved": false
+}

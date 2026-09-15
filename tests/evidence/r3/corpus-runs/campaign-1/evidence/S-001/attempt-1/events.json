@@ -1,0 +1,139 @@
+{
+  "totalEvents": 66,
+  "typeCounts": {
+    "task.created": 1,
+    "task.state_changed": 3,
+    "status.changed": 3,
+    "subagent.started": 3,
+    "subagent.lifecycle": 12,
+    "agent.started": 3,
+    "router.selection": 2,
+    "turn.failed": 3,
+    "forgegreen.run_started": 3,
+    "forgegreen.model_usage_recorded": 3,
+    "forgegreen.tool_usage_recorded": 3,
+    "forgegreen.verification_usage_recorded": 3,
+    "forgegreen.baseline_generated": 3,
+    "forgegreen.energy_estimated": 3,
+    "forgegreen.run_finalized": 3,
+    "forgegreen.optimization_candidate": 3,
+    "forgegreen.optimization_summary": 3,
+    "subagent.artifact_written": 3,
+    "subagent.failed": 3,
+    "tool.call_started": 1,
+    "tool.execution_started": 1,
+    "tool.execution_failed": 1
+  },
+  "router": [
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-50e05ef2-8504-49ee-a73b-bbab959b60a6",
+        "modelId": "openai/gpt-oss-120b",
+        "providerId": "groq",
+        "score": 105,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "strong_tool_use",
+          "long_context_optimized",
+          "access_free_native"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-26716748-4603-4cd7-8a93-eb37ea872d32",
+        "modelId": "openai/gpt-oss-120b",
+        "providerId": "groq",
+        "score": 105,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "strong_tool_use",
+          "long_context_optimized",
+          "access_free_native"
+        ]
+      }
+    }
+  ],
+  "lifecycle": [
+    {
+      "role": "Repository Explorer",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "failed",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "failed",
+      "model": {
+        "providerId": "groq",
+        "modelId": "openai/gpt-oss-120b"
+      }
+    },
+    {
+      "role": "Task Planner",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Task Planner",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Task Planner",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Task Planner",
+      "state": "failed",
+      "model": null
+    }
+  ],
+  "failureEvents": [
+    "[PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199686, Re",
+    "Agent explorer failed: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199686, Re",
+    "[PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199410, Re",
+    "Agent explorer failed: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199410, Re",
+    "[PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found.",
+    "Agent planner failed: [PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found."
+  ],
+  "recoveryObserved": false
+}

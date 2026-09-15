@@ -795,7 +795,8 @@ async function executeTask(fleet, freeze, task, record, context) {
     oracleExternal,
     priorInterruption,
     recoveryObserved: eventsSummary.recoveryObserved,
-    startingSha: record.starting_sha,
+    failureEvents: eventsSummary.failureEvents ?? [],
+    providerFailures: workersSummary.reduce((sum, worker) => sum + (worker.telemetry?.providerFailures ?? 0), 0),
   });
   record.status = classification.status;
   record.failure_class = classification.failureClass;
@@ -850,6 +851,7 @@ function summarizeEvents(events) {
   const typeCounts = {};
   const router = [];
   const lifecycle = [];
+  const failureEvents = [];
   let recoveryObserved = false;
   for (const event of events) {
     typeCounts[event.type] = (typeCounts[event.type] ?? 0) + 1;
@@ -860,9 +862,12 @@ function summarizeEvents(events) {
       lifecycle.push({ role: event.payload?.role, state: event.payload?.state, model: event.payload?.model ?? null });
       if (String(event.payload?.state ?? "").toLowerCase().includes("recover")) recoveryObserved = true;
     }
+    if (event.type === "turn.failed" || event.type === "subagent.failed") {
+      failureEvents.push(String(event.payload?.error ?? "").slice(0, 400));
+    }
     if (String(event.type).toLowerCase().includes("recover")) recoveryObserved = true;
   }
-  return { totalEvents: events.length, typeCounts, router: router.slice(0, 200), lifecycle: lifecycle.slice(0, 300), recoveryObserved };
+  return { totalEvents: events.length, typeCounts, router: router.slice(0, 200), lifecycle: lifecycle.slice(0, 300), failureEvents: failureEvents.slice(0, 50), recoveryObserved };
 }
 
 function sanitizeRouterPayload(payload) {
@@ -884,19 +889,21 @@ function aggregateTelemetry(workersSummary, eventsSummary) {
     const modelId = worker.model?.modelId ?? "unknown";
     const key = `${providerId}/${modelId}`;
     routes[key] = routes[key] ?? { requests: 0, inputTokens: 0, outputTokens: 0 };
-    routes[key].requests += worker.telemetry?.requestCount ?? 0;
+    // Durable worker telemetry records the request count as modelRequests.
+    const workerRequests = worker.telemetry?.modelRequests ?? worker.telemetry?.requestCount ?? 0;
+    routes[key].requests += workerRequests;
     routes[key].inputTokens += worker.telemetry?.inputTokens ?? 0;
     routes[key].outputTokens += worker.telemetry?.outputTokens ?? 0;
     input += worker.telemetry?.inputTokens ?? 0;
     output += worker.telemetry?.outputTokens ?? 0;
-    requests += worker.telemetry?.requestCount ?? 0;
+    requests += workerRequests;
     modelRoles[worker.role] = key;
   }
   const failovers = eventsSummary.router.filter((r) => r.type === "router.failover").length;
   return { routes, modelRoles, tokens: { input, output }, requests, failovers };
 }
 
-function classifyAttempt({ task, result, runError, oracleExternal, priorInterruption, recoveryObserved, startingSha }) {
+function classifyAttempt({ task, result, runError, oracleExternal, priorInterruption, recoveryObserved, failureEvents = [], providerFailures = 0 }) {
   const notes = [];
   if (runError && !result) {
     const capacity = CAPACITY_MARKERS.some((m) => runError.toLowerCase().includes(m.toLowerCase()));
@@ -909,7 +916,13 @@ function classifyAttempt({ task, result, runError, oracleExternal, priorInterrup
   }
 
   const summaryText = JSON.stringify({ summary: result.summary, integration: result.integration, error: result.error ?? null });
-  const capacityMarker = CAPACITY_MARKERS.find((m) => summaryText.toLowerCase().includes(m.toLowerCase()));
+  const failureText = [...failureEvents, summaryText].join(" \n ");
+  const rateLimited = /PROVIDER_RATE_LIMITED|tokens per day|TPD|429|daily free allocation/i.test(failureText);
+  const routeUnavailable = /PROVIDER_MODEL_UNAVAILABLE|PROVIDER_UNAVAILABLE|No eligible or registered model provider/i.test(failureText);
+  // A route that existed and was selected earlier in the run but is unavailable at failure time
+  // is a capacity/health event, not a routing defect: ForgeZero marks provider health provider-
+  // wide, so one exhausted route zeroes the whole provider (certified fail-closed semantics).
+  const capacityUnavailable = routeUnavailable && (rateLimited || providerFailures > 0);
 
   if (result.status === "completed") {
     const changed = (result.changedFiles ?? []).length > 0;
@@ -941,8 +954,9 @@ function classifyAttempt({ task, result, runError, oracleExternal, priorInterrup
     };
   }
 
-  if (capacityMarker) {
-    return { status: "CAPACITY_BLOCKED", failureClass: "capacity_marker_in_run", falseCompletion: false, notes: [`run terminated with capacity marker: ${capacityMarker}`] };
+  if (rateLimited || capacityUnavailable) {
+    const marker = rateLimited ? "provider_rate_limited" : "provider_health_marked_unavailable";
+    return { status: "CAPACITY_BLOCKED", failureClass: marker, falseCompletion: false, notes: [`run terminated on managed-free capacity: ${failureEvents[0]?.slice(0, 260) ?? result.summary?.slice(0, 260) ?? marker}`] };
   }
   return {
     status: "FAILED",
