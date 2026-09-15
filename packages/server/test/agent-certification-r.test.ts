@@ -50,7 +50,7 @@ describe("CF-07R large repository and pre-provider secret boundaries", () => {
     const persistence = createSessionPersistence();
     cleanups.push(async () => persistence.close());
     const firewall = new ForgeZero();
-    firewall.register(createGenericFreeRecord());
+    firewall.register(createGenericFreeRecord({ providerId: "capture", modelId: "free-model-1" }));
     const provider = new CapturingProvider("capture");
     const catalog = new InMemoryProviderCatalog();
     catalog.register(provider);

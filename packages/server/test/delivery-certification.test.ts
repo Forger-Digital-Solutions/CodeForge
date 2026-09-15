@@ -207,7 +207,7 @@ describe("CF-10C adversarial delivery certification", () => {
     const external = path.join(os.tmpdir(), `cf10c-outside-${Date.now()}.txt`); owned.push(external);
     const targets = ["../../outside.txt", external, path.join(sibling.rootPath, "sibling.txt")]; let targetIndex = 0;
     const provider = new MissionProvider((context) => context.role === "coder" && context.call === 1 ? { write: { path: targets[targetIndex++]!, content: "forbidden" } } : { text: "done" });
-    const catalog = new InMemoryProviderCatalog(); catalog.register(provider); const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord());
+    const catalog = new InMemoryProviderCatalog(); catalog.register(provider); const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord({ providerId: "cf09-mission", modelId: "free-model-1" }));
     const runtime = createAgentRuntime({ sessionId: "cf10c-path", eventStore: new EventStore(), persistence: h.persistence, firewall, providerCatalog: catalog, workspacePath: child.rootPath });
     const childHead = await git(child.rootPath, ["rev-parse", "HEAD"]); const siblingHead = await git(sibling.rootPath, ["rev-parse", "HEAD"]);
     for (const index of [0, 1, 2]) {
@@ -234,14 +234,14 @@ describe("CF-10C adversarial delivery certification", () => {
 
   it("recovers one real first commit and completes the remaining commit, verification, and AgentRuntime review exactly once", async () => {
     const f = await fixture(); const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "cf10c-combined-state-")); owned.push(stateDir); const dbPath = path.join(stateDir, "delivery.sqlite");
-    const durable = createSessionPersistence({ dbPath }); const firstProvider = new MissionProvider(() => reviewerPass()); const firstCatalog = new InMemoryProviderCatalog(); firstCatalog.register(firstProvider); const firstFirewall = new ForgeZero(); firstFirewall.register(createGenericFreeRecord());
+    const durable = createSessionPersistence({ dbPath }); const firstProvider = new MissionProvider(() => reviewerPass()); const firstCatalog = new InMemoryProviderCatalog(); firstCatalog.register(firstProvider); const firstFirewall = new ForgeZero(); firstFirewall.register(createGenericFreeRecord({ providerId: "cf09-mission", modelId: "free-model-1" }));
     const firstRuntime = createAgentRuntime({ sessionId: "combined", eventStore: new EventStore(), persistence: durable, firewall: firstFirewall, providerCatalog: firstCatalog, workspacePath: f.root });
     let crashed = false;
     const crashing = new Proxy(durable, { get(target, property) { const value = Reflect.get(target, property) as unknown; if (typeof value !== "function") return value; return (...args: unknown[]) => { if (property === "appendEvent" && (args[0] as { type?: string }).type === "delivery.commit.created" && !crashed) { crashed = true; throw new Error("PROCESS_TERMINATED"); } if (crashed && ["upsertWorkItem", "appendEvent"].includes(String(property))) throw new Error("PROCESS_TERMINATED"); return (value as (...items: unknown[]) => unknown).apply(target, args); }; } });
     const started = await deliveryHarness(f, { persistence: crashing as never, sessionId: "combined", getAgentRuntime: () => firstRuntime });
     await expect(started.delivery.createDelivery({ missionId: started.mission.id, deliveryId: "delivery-combined" })).rejects.toThrow("PROCESS_TERMINATED");
     await durable.close();
-    const recoveredPersistence = createSessionPersistence({ dbPath }); const recoveredProvider = new MissionProvider((context) => context.role === "reviewer" ? reviewerPass("recovered approval") : { text: "done" }); const recoveredCatalog = new InMemoryProviderCatalog(); recoveredCatalog.register(recoveredProvider); const recoveredFirewall = new ForgeZero(); recoveredFirewall.register(createGenericFreeRecord());
+    const recoveredPersistence = createSessionPersistence({ dbPath }); const recoveredProvider = new MissionProvider((context) => context.role === "reviewer" ? reviewerPass("recovered approval") : { text: "done" }); const recoveredCatalog = new InMemoryProviderCatalog(); recoveredCatalog.register(recoveredProvider); const recoveredFirewall = new ForgeZero(); recoveredFirewall.register(createGenericFreeRecord({ providerId: "cf09-mission", modelId: "free-model-1" }));
     const recoveredRuntime = createAgentRuntime({ sessionId: "combined", eventStore: new EventStore(), persistence: recoveredPersistence, firewall: recoveredFirewall, providerCatalog: recoveredCatalog, workspacePath: f.root });
     const recovered = await deliveryHarness(f, { persistence: recoveredPersistence, sessionId: "combined", getAgentRuntime: () => recoveredRuntime });
     const before = await recovered.delivery.getDelivery("delivery-combined")!; const firstSha = before.commits[0]!.sha!;

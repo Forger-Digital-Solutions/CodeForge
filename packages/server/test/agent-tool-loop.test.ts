@@ -99,7 +99,7 @@ describe("AgentRuntime — Tool-Use & Loop Detection Matrix (CF-07)", () => {
     persistence = createSessionPersistence();
     eventStore = new EventStore();
     firewall = new ForgeZero();
-    firewall.register(createGenericFreeRecord());
+    firewall.register(createGenericFreeRecord({ providerId: "test-provider", modelId: "test-model" }));
   });
 
   afterEach(async () => {

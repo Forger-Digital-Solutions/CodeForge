@@ -96,7 +96,7 @@ describe("FG-1 runtime efficiency integration", () => {
     persistence = createSessionPersistence();
     eventStore = new EventStore();
     firewall = new ForgeZero();
-    firewall.register(createGenericFreeRecord());
+    firewall.register(createGenericFreeRecord({ providerId: "test-provider", modelId: "free-model-1" }));
     await fs.writeFile(path.join(tmpDir, "index.ts"), "export const codeforge = 'autonomous';\n", "utf-8");
   });
 

@@ -127,7 +127,7 @@ describe("CF-17 scoped parallel steering", () => {
   function makeOrchestrator(provider: ScopedSteerProvider, events: Array<{ type: string; workstreamId?: string }>): ReturnType<typeof createParallelAutonomousRunOrchestrator> {
     const workspaceService = createWorkspaceService({ persistence, worktreeParentDir: worktreeDir });
     const catalog = new InMemoryProviderCatalog(); catalog.register(provider);
-    const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord());
+    const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord({ providerId: "cf17-scoped-steer", modelId: "free-model-1" }));
     const runtime = createAgentRuntime({ sessionId: SESSION_ID, eventStore: new EventStore(), persistence, firewall, providerCatalog: catalog, workspacePath: repoDir });
     return createParallelAutonomousRunOrchestrator({ workspaceService, agentRuntime: runtime, persistence, onEvent: (event) => { events.push({ type: event.type, ...(event.workstreamId ? { workstreamId: event.workstreamId } : {}) }); } });
   }

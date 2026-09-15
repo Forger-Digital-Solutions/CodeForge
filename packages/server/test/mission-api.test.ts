@@ -43,7 +43,7 @@ describe("CF-09 mission HTTP surface", () => {
     const catalog = new InMemoryProviderCatalog();
     catalog.register(provider);
     const firewall = new ForgeZero();
-    firewall.register(createGenericFreeRecord());
+    firewall.register(createGenericFreeRecord({ providerId: "cf09-mission", modelId: "free-model-1" }));
     // Construction-time injection only: a request body can never choose a provider.
     server = createServer({ port: 0, dbPath: ":memory:", providerCatalog: catalog, firewall, useRealRuntime: true, worktreeParentDir: worktreeDir });
     await server.start();

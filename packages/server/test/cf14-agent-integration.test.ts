@@ -108,7 +108,7 @@ describe("CF-14 Production Agent Runtime Integration", () => {
     cleanups.push(async () => persistence.close());
 
     const firewall = new ForgeZero();
-    firewall.register(createGenericFreeRecord({ modelId: "free-deterministic" }));
+    firewall.register(createGenericFreeRecord({ providerId: "free-provider", modelId: "free-deterministic" }));
 
     const provider = new DeterministicTestProvider("free-provider");
     const catalog = new InMemoryProviderCatalog();
@@ -201,7 +201,7 @@ describe("CF-14 Production Agent Runtime Integration", () => {
     cleanups.push(async () => persistence.close());
 
     const firewall = new ForgeZero();
-    firewall.register(createGenericFreeRecord({ modelId: "free-deterministic" }));
+    firewall.register(createGenericFreeRecord({ providerId: "free-provider", modelId: "free-deterministic" }));
 
     const provider = new DeterministicTestProvider("free-provider");
     const catalog = new InMemoryProviderCatalog();

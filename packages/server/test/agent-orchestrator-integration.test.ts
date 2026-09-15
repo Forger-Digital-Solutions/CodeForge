@@ -156,7 +156,9 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
     persistence = createSessionPersistence();
     eventStore = new EventStore();
     firewall = new ForgeZero();
-    firewall.register(createGenericFreeRecord());
+    firewall.register(createGenericFreeRecord({ providerId: "test-provider", modelId: "free-model-1" }));
+    firewall.register(createGenericFreeRecord({ providerId: "r1-provider", modelId: "free-model-1" }));
+    firewall.register(createGenericFreeRecord({ providerId: "revision-provider", modelId: "free-model-1" }));
 
     // Initialize git repository
     await execFile("git", ["init", "-b", "main"], { cwd: repoDir });

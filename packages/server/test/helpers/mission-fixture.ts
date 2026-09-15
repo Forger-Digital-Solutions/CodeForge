@@ -155,7 +155,7 @@ export async function createHarness(options: HarnessOptions): Promise<MissionHar
   const catalog = new InMemoryProviderCatalog();
   catalog.register(provider);
   const firewall = new ForgeZero();
-  firewall.register(createGenericFreeRecord());
+  firewall.register(createGenericFreeRecord({ providerId: "cf09-mission", modelId: "free-model-1" }));
   const workspaceService = createWorkspaceService({ persistence, worktreeParentDir: options.worktreeDir });
   await workspaceService.init();
   const agentRuntime = createAgentRuntime({ sessionId: options.sessionId, eventStore: new EventStore(), persistence, firewall, providerCatalog: catalog, workspacePath: options.repoDir });

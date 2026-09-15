@@ -113,7 +113,7 @@ describe("CF-08 parallel cancellation preserves autonomous results", () => {
 
     const catalog = new InMemoryProviderCatalog();
     catalog.register(new CancellationProvider(barrier, holdAlpha, alphaParked));
-    const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord());
+    const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord({ providerId: "cf08g-cancellation", modelId: "free-model-1" }));
     const workspaceService = createWorkspaceService({ persistence, worktreeParentDir: worktreeDir });
     const runtime = createAgentRuntime({ sessionId: "cancel-session", eventStore: new EventStore(), persistence, firewall, providerCatalog: catalog, workspacePath: repoDir });
     const orchestrator = createParallelAutonomousRunOrchestrator({

@@ -107,7 +107,7 @@ describe("CF-08 restart-during-synthesis idempotency", () => {
 
   function services(persistence: SessionPersistence, events?: ParallelEvent[]) {
     const catalog = new InMemoryProviderCatalog(); catalog.register(new RecoveryProvider());
-    const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord());
+    const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord({ providerId: "cf08g-recovery", modelId: "free-model-1" }));
     const workspaceService = createWorkspaceService({ persistence, worktreeParentDir: worktreeDir });
     const agentRuntime = createAgentRuntime({ sessionId: SESSION_ID, eventStore: new EventStore(), persistence, firewall, providerCatalog: catalog, workspacePath: repoDir });
     const orchestrator = createParallelAutonomousRunOrchestrator({ workspaceService, agentRuntime, persistence, ...(events ? { onEvent: (event: ParallelEvent) => { events.push(event); } } : {}) });

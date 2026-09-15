@@ -60,13 +60,13 @@ interface RecoveryFixture {
 
 /** Parent-side provider: never crashes. Serves the continuation turns of a resumed run. */
 class CompletionScriptedProvider {
-  providerId = "scripted-recovery";
+  providerId = "codeforge";
   isTestProvider = true;
   modelRequests = 0;
 
   async listModels() {
     return [{
-      modelId: "test-free",
+      modelId: "free-model-1",
       displayName: "Free Model",
       isFree: true,
       freeStatus: "verified_free",

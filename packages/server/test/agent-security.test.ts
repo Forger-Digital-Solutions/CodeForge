@@ -68,7 +68,7 @@ describe("Agent Security, Permission Ceilings & Path Confinement (CF-07)", () =>
     persistence = createSessionPersistence();
     eventStore = new EventStore();
     firewall = new ForgeZero();
-    firewall.register(createGenericFreeRecord());
+    firewall.register(createGenericFreeRecord({ providerId: "test-provider", modelId: "free-model-1" }));
   });
 
   afterEach(async () => {

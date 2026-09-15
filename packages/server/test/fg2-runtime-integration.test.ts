@@ -137,7 +137,7 @@ describe("FG-2 runtime integration", () => {
     persistence = createSessionPersistence();
     eventStore = new EventStore();
     firewall = new ForgeZero();
-    firewall.register(createGenericFreeRecord());
+    firewall.register(createGenericFreeRecord({ providerId: "test-provider", modelId: "free-model-1" }));
     await fs.writeFile(path.join(tmpDir, "helper.ts"), "export function helper(): number { return 1; }\n", "utf-8");
     await fs.writeFile(path.join(tmpDir, "index.ts"), "import { helper } from './helper.js';\nexport const value = helper();\n", "utf-8");
   });

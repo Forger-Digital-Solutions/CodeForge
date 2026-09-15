@@ -75,7 +75,7 @@ describe("AgentRuntime — Production Invocation & Lifecycle Certification (CF-0
     persistence = createSessionPersistence();
     eventStore = new EventStore();
     firewall = new ForgeZero();
-    firewall.register(createGenericFreeRecord());
+    firewall.register(createGenericFreeRecord({ providerId: "test-provider", modelId: "free-model-1" }));
   });
 
   afterEach(async () => {

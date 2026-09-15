@@ -216,7 +216,7 @@ describe("CF-10 autonomous change delivery", () => {
     const workspace = await workspaceService.registerLocalWorkspace(root);
     const provider = new MissionProvider((context) => context.role === "reviewer" ? reviewerPass("delivery reviewed") : { text: "done" });
     const catalog = new InMemoryProviderCatalog(); catalog.register(provider);
-    const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord());
+    const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord({ providerId: "cf09-mission", modelId: "free-model-1" }));
     const runtime = createAgentRuntime({ sessionId: "cf10-review", eventStore: new EventStore(), persistence, firewall, providerCatalog: catalog, workspacePath: root });
     const mission = { id: "mission-review", sessionId: "cf10-review", workspaceId: workspace.id, status: "completed", finalRevision: source, baseRevision: base, acceptanceCriteria: [{ id: "AC-1", mandatory: true, status: "proven" }] };
     const delivery = createDeliveryService({ workspaceService, persistence, getAgentRuntime: () => runtime, findMission: () => mission as never });
@@ -234,7 +234,7 @@ describe("CF-10 autonomous change delivery", () => {
     const workspace = await workspaceService.registerLocalWorkspace(root);
     const provider = new MissionProvider((context) => context.role === "reviewer" ? { write: { path: "reviewer-escape.mjs", content: "export const bad = true;\n" } } : { text: "done" });
     const catalog = new InMemoryProviderCatalog(); catalog.register(provider);
-    const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord());
+    const firewall = new ForgeZero(); firewall.register(createGenericFreeRecord({ providerId: "cf09-mission", modelId: "free-model-1" }));
     const runtime = createAgentRuntime({ sessionId: "cf10-review-deny", eventStore: new EventStore(), persistence, firewall, providerCatalog: catalog, workspacePath: root });
     const mission = { id: "mission-review-deny", sessionId: "cf10-review-deny", workspaceId: workspace.id, status: "completed", finalRevision: source, baseRevision: base, acceptanceCriteria: [{ id: "AC-1", mandatory: true, status: "proven" }] };
     const delivery = createDeliveryService({ workspaceService, persistence, getAgentRuntime: () => runtime, findMission: () => mission as never });

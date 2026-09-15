@@ -26,12 +26,12 @@ function crash() {
 }
 
 class RecoveryScriptedProvider {
-  providerId = "scripted-recovery";
+  providerId = "codeforge";
   isTestProvider = true;
 
   async listModels() {
     return [{
-      modelId: "test-free",
+      modelId: "free-model-1",
       displayName: "Free Model",
       isFree: true,
       freeStatus: "verified_free",
@@ -144,4 +144,5 @@ const result = await manager.spawnChildAgent({
   customToolExecutor: crashToolExecutor,
 });
 
+process.stderr.write(`[fixture] case=${testCase} status=${result?.status} summary=${result?.summary}\n`);
 process.exit(result?.status === "completed" ? 0 : 3);

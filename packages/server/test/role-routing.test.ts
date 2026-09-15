@@ -248,7 +248,10 @@ describe("R1 role-aware SubAgent routing", () => {
     expect(eventStore.getAll().some((event) => event.type === "router.failover")).toBe(false);
   });
 
-  it("keeps the legacy deterministic fallback when no fleet route is registered", async () => {
+  it("fails closed with PROVIDER_MODEL_UNAVAILABLE when no eligible free route exists (no 'default' model reach-through)", async () => {
+    // RC2 §14: the former catalog fallback (`modelId: "default"`) could reach a provider with an
+    // invalid model. With no fleet route and no firewall-eligible free model, the run must fail
+    // truthfully instead of blindly routing.
     const catalog = new InMemoryProviderCatalog();
     const provider = new ScriptedFleetProvider("scripted-only");
     catalog.register(provider);
@@ -265,6 +268,37 @@ describe("R1 role-aware SubAgent routing", () => {
 
     const result = await manager.spawnChildAgent({
       parentRunId: "run-role-4",
+      sessionId: "sess-role-routing",
+      agentId: "explorer",
+      task: "Map the fixture workspace",
+      workspacePath: ws,
+      structuredOutput: "explorer",
+      adapter,
+    });
+
+    expect(result.status).toBe("failed");
+    expect(provider.requests).toBe(0);
+    expect(result.summary).toContain("PROVIDER_MODEL_UNAVAILABLE");
+  });
+
+  it("keeps the legacy deterministic fallback when a firewall-eligible free route exists", async () => {
+    const catalog = new InMemoryProviderCatalog();
+    const provider = new ScriptedFleetProvider("scripted-only");
+    catalog.register(provider);
+    firewall.register(fleetRecord("scripted-only", "model-a"));
+    const runtime = createAgentRuntime({
+      sessionId: "sess-role-routing",
+      eventStore,
+      persistence,
+      firewall,
+      providerCatalog: catalog,
+      workspacePath: ws,
+    });
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-role-routing", eventStore, persistence });
+    const manager = createSubagentManager({ persistence, agentRuntime: runtime, r1Enabled: true });
+
+    const result = await manager.spawnChildAgent({
+      parentRunId: "run-role-4b",
       sessionId: "sess-role-routing",
       agentId: "explorer",
       task: "Map the fixture workspace",
