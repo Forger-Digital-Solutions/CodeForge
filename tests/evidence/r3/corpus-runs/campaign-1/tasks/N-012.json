@@ -1,0 +1,29 @@
+{
+  "task_id": "N-012",
+  "category": "normal",
+  "manifest_declared_start": "ef6b6d4",
+  "starting_sha": "ef6b6d446509714afb234e3c1d34046cc42a11ff",
+  "status": "CAPACITY_BLOCKED",
+  "attempt": 0,
+  "oracle_command": "npm test",
+  "baseline_key": "dogfood-suite",
+  "provider_routes": [],
+  "model_roles": {},
+  "started_at": null,
+  "last_progress_at": "2026-09-15T21:58:20.374Z",
+  "finished_at": null,
+  "verified": false,
+  "completion_gate": null,
+  "intervention": "none",
+  "failure_class": "rate_limited_beyond_bounded_wait",
+  "evidence_path": null,
+  "tokens": {
+    "input": 0,
+    "output": 0
+  },
+  "requests": 0,
+  "false_completion": false,
+  "notes": [
+    "groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199965, Re"
+  ]
+}

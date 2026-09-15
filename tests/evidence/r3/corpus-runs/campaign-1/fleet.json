@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-15T21:47:20.444Z",
+  "updatedAt": "2026-09-15T21:49:35.500Z",
   "cloudflareAvailable": false,
   "capacityNotes": [
     "cloudflare probe failed at campaign start; excluded from fleet for this invocation"
@@ -10,7 +10,7 @@
       "modelId": "@cf/openai/gpt-oss-120b",
       "status": 429,
       "headers": [],
-      "observedAt": 1789508840442
+      "observedAt": 1789508975497
     }
   ]
 }

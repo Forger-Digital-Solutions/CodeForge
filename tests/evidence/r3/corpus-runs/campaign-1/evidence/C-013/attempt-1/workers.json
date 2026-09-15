@@ -1,0 +1,53 @@
+[
+  {
+    "role": "Repository Explorer",
+    "status": "failed",
+    "model": null,
+    "telemetry": {
+      "wallTimeMs": 11533,
+      "modelRequests": 1,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "toolCalls": 0,
+      "retryCount": 0,
+      "duplicateWorkCount": 0,
+      "providerFailures": 1
+    },
+    "startedAt": "2026-09-15T22:39:34.852Z",
+    "completedAt": "2026-09-15T22:39:46.380Z"
+  },
+  {
+    "role": "Repository Explorer",
+    "status": "failed",
+    "model": null,
+    "telemetry": {
+      "wallTimeMs": 883,
+      "modelRequests": 1,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "toolCalls": 0,
+      "retryCount": 0,
+      "duplicateWorkCount": 0,
+      "providerFailures": 1
+    },
+    "startedAt": "2026-09-15T22:39:34.853Z",
+    "completedAt": "2026-09-15T22:39:35.731Z"
+  },
+  {
+    "role": "Task Planner",
+    "status": "failed",
+    "model": null,
+    "telemetry": {
+      "wallTimeMs": 579,
+      "modelRequests": 1,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "toolCalls": 0,
+      "retryCount": 0,
+      "duplicateWorkCount": 0,
+      "providerFailures": 1
+    },
+    "startedAt": "2026-09-15T22:39:46.389Z",
+    "completedAt": "2026-09-15T22:39:46.964Z"
+  }
+]

@@ -1,0 +1,106 @@
+{
+  "sessionId": "corpus-a-014-a1",
+  "startedAt": "2026-09-15T23:30:56.514Z",
+  "finishedAt": "2026-09-15T23:31:17.113Z",
+  "runError": null,
+  "result": {
+    "runId": "run-ee33a112-f1d9-4d10-a279-e6a39cc90209",
+    "status": "blocked",
+    "summary": "Planner did not produce an authorized task graph: Agent planner failed: [PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found.",
+    "workspaceId": "ws-8d2d6f68",
+    "baseRevision": "453ab6e6c01363d95cc5baeea75e39ae9cd9acbd",
+    "changedFiles": [],
+    "review": {
+      "passed": false,
+      "findings": []
+    },
+    "verification": [],
+    "integration": {
+      "status": "not_attempted",
+      "reason": "AGENT_INVALID_STRUCTURED_OUTPUT"
+    },
+    "evidence": [
+      {
+        "kind": "search",
+        "ref": "docs/benchmarks/repository-intelligence/repository-intelligence-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match, lexical_content_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-daily-driver-r6-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match, lexical_content_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-durable-agent-continuation-r3-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-forgegreen-phase3-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/certification/codeforge-cloud-global-staging-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-8bit-activity-integration-report.md",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-forgegreen-phase4-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "apps/desktop/sandbox-minimal-diagnostic/package.json",
+        "description": "path_token_match, multi_token_path_match, path_phrase_match, exact_symbol_match, implementation_symbol, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-r3b-usable-agent-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match"
+      },
+      {
+        "kind": "search",
+        "ref": "packages/eight-bit/src/qualification/fixtures.ts",
+        "description": "lexical_content_match, exact_symbol_match, implementation_symbol, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "packages/forge-green/src/optimization-candidate-a.ts",
+        "description": "path_token_match, multi_token_path_match, filename_match, exact_symbol_match, implementation_symbol, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-forgegreen-fg8-benchmark-fixtures.json",
+        "description": "path_token_match, multi_token_path_match, filename_match, symbol_name_match, implementation_symbol, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-real-agent-loop-r5-certification-report.md",
+        "description": "path_token_match, multi_token_path_match, filename_match, symbol_name_match, implementation_symbol, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "apps/desktop/src/renderer/settings/sections/ProvidersSection.tsx",
+        "description": "lexical_content_match, exact_symbol_match, implementation_symbol"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-daily-driver-r2-certification.json",
+        "description": "path_token_match, multi_token_path_match, lexical_content_match, filename_match, exact_symbol_match, implementation_symbol"
+      }
+    ],
+    "counters": {
+      "childrenSpawned": 3,
+      "reviewRounds": 0,
+      "taskAttempts": 0,
+      "verificationAttempts": 0
+    }
+  }
+}

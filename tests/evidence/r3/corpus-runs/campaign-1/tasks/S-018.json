@@ -1,0 +1,29 @@
+{
+  "task_id": "S-018",
+  "category": "simple",
+  "manifest_declared_start": "d45db35",
+  "starting_sha": "d45db3547b49f5dcbf7a46cb785c12bf84be26bf",
+  "status": "CAPACITY_BLOCKED",
+  "attempt": 0,
+  "oracle_command": "npm test",
+  "baseline_key": "sandbox-suite",
+  "provider_routes": [],
+  "model_roles": {},
+  "started_at": null,
+  "last_progress_at": "2026-09-15T21:52:03.099Z",
+  "finished_at": null,
+  "verified": false,
+  "completion_gate": null,
+  "intervention": "none",
+  "failure_class": "rate_limited_beyond_bounded_wait",
+  "evidence_path": null,
+  "tokens": {
+    "input": 0,
+    "output": 0
+  },
+  "requests": 0,
+  "false_completion": false,
+  "notes": [
+    "groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199985, Re"
+  ]
+}

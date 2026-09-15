@@ -1,0 +1,42 @@
+{
+  "task_id": "S-011",
+  "category": "simple",
+  "manifest_declared_start": "d45db35",
+  "starting_sha": "d45db3547b49f5dcbf7a46cb785c12bf84be26bf",
+  "status": "CAPACITY_BLOCKED",
+  "attempt": 1,
+  "oracle_command": "npm test",
+  "baseline_key": "sandbox-suite",
+  "provider_routes": {
+    "unknown/unknown": {
+      "requests": 3,
+      "inputTokens": 0,
+      "outputTokens": 0
+    }
+  },
+  "model_roles": {
+    "Repository Explorer": "unknown/unknown",
+    "Task Planner": "unknown/unknown"
+  },
+  "started_at": "2026-09-15T21:49:53.767Z",
+  "last_progress_at": "2026-09-15T21:49:55.426Z",
+  "finished_at": "2026-09-15T21:49:55.426Z",
+  "verified": false,
+  "completion_gate": {
+    "status": "blocked",
+    "reviewPassed": false,
+    "integration": "not_attempted"
+  },
+  "intervention": "none",
+  "failure_class": "provider_health_marked_unavailable",
+  "evidence_path": "evidence/S-011/attempt-1",
+  "tokens": {
+    "input": 0,
+    "output": 0
+  },
+  "requests": 3,
+  "false_completion": false,
+  "notes": [
+    "run terminated on managed-free capacity: [PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found."
+  ]
+}

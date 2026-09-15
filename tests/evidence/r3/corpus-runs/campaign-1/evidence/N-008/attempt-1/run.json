@@ -1,0 +1,51 @@
+{
+  "sessionId": "corpus-n-008-a1",
+  "startedAt": "2026-09-15T21:58:14.595Z",
+  "finishedAt": "2026-09-15T21:58:15.692Z",
+  "runError": null,
+  "result": {
+    "runId": "run-0e78f59f-93e8-4d22-849d-b518b071a3bb",
+    "status": "blocked",
+    "summary": "Planner did not produce an authorized task graph: Agent planner failed: [PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found.",
+    "workspaceId": "ws-f6c8609b",
+    "baseRevision": "d45db3547b49f5dcbf7a46cb785c12bf84be26bf",
+    "changedFiles": [],
+    "review": {
+      "passed": false,
+      "findings": []
+    },
+    "verification": [],
+    "integration": {
+      "status": "not_attempted",
+      "reason": "AGENT_INVALID_STRUCTURED_OUTPUT"
+    },
+    "evidence": [
+      {
+        "kind": "search",
+        "ref": "src/math.ts",
+        "description": "exact_symbol_match, implementation_symbol, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "package-lock.json",
+        "description": "symbol_name_match, implementation_symbol"
+      },
+      {
+        "kind": "search",
+        "ref": "test/math.test.ts",
+        "description": "lexical_content_match, test_filename_convention, test_naming_convention, related_to_relevant_implementation, test_deprioritized_for_implementation_query"
+      },
+      {
+        "kind": "search",
+        "ref": "README.md",
+        "description": "lexical_content_match"
+      }
+    ],
+    "counters": {
+      "childrenSpawned": 3,
+      "reviewRounds": 0,
+      "taskAttempts": 0,
+      "verificationAttempts": 0
+    }
+  }
+}

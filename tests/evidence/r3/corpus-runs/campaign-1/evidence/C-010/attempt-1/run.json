@@ -1,0 +1,41 @@
+{
+  "sessionId": "corpus-c-010-a1",
+  "startedAt": "2026-09-15T22:36:03.694Z",
+  "finishedAt": "2026-09-15T22:36:04.714Z",
+  "runError": null,
+  "result": {
+    "runId": "run-3f4bcbe4-2b1a-4270-9550-58cf7921385e",
+    "status": "blocked",
+    "summary": "Planner did not produce an authorized task graph: Agent planner failed: [PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found.",
+    "workspaceId": "ws-5395d2d1",
+    "baseRevision": "d45db3547b49f5dcbf7a46cb785c12bf84be26bf",
+    "changedFiles": [],
+    "review": {
+      "passed": false,
+      "findings": []
+    },
+    "verification": [],
+    "integration": {
+      "status": "not_attempted",
+      "reason": "AGENT_INVALID_STRUCTURED_OUTPUT"
+    },
+    "evidence": [
+      {
+        "kind": "search",
+        "ref": "package-lock.json",
+        "description": "symbol_name_match, implementation_symbol"
+      },
+      {
+        "kind": "search",
+        "ref": "README.md",
+        "description": "lexical_content_match"
+      }
+    ],
+    "counters": {
+      "childrenSpawned": 3,
+      "reviewRounds": 0,
+      "taskAttempts": 0,
+      "verificationAttempts": 0
+    }
+  }
+}

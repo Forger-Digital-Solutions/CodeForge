@@ -1,0 +1,42 @@
+{
+  "task_id": "N-022",
+  "category": "normal",
+  "manifest_declared_start": "ef6b6d4",
+  "starting_sha": "ef6b6d446509714afb234e3c1d34046cc42a11ff",
+  "status": "CAPACITY_BLOCKED",
+  "attempt": 1,
+  "oracle_command": "npm test",
+  "baseline_key": "dogfood-suite",
+  "provider_routes": {
+    "unknown/unknown": {
+      "requests": 3,
+      "inputTokens": 0,
+      "outputTokens": 0
+    }
+  },
+  "model_roles": {
+    "Repository Explorer": "unknown/unknown",
+    "Task Planner": "unknown/unknown"
+  },
+  "started_at": "2026-09-15T22:11:51.566Z",
+  "last_progress_at": "2026-09-15T22:13:06.024Z",
+  "finished_at": "2026-09-15T22:13:06.024Z",
+  "verified": false,
+  "completion_gate": {
+    "status": "blocked",
+    "reviewPassed": false,
+    "integration": "not_attempted"
+  },
+  "intervention": "none",
+  "failure_class": "provider_rate_limited",
+  "evidence_path": "evidence/N-022/attempt-1",
+  "tokens": {
+    "input": 0,
+    "output": 0
+  },
+  "requests": 3,
+  "false_completion": false,
+  "notes": [
+    "run terminated on managed-free capacity: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier "
+  ]
+}

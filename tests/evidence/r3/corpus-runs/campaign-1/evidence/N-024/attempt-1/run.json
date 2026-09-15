@@ -1,0 +1,106 @@
+{
+  "sessionId": "corpus-n-024-a1",
+  "startedAt": "2026-09-15T22:16:01.434Z",
+  "finishedAt": "2026-09-15T22:16:14.330Z",
+  "runError": null,
+  "result": {
+    "runId": "run-d25bab8e-4183-4315-9be6-4afa52803872",
+    "status": "blocked",
+    "summary": "Planner did not produce an authorized task graph: Agent planner failed: [PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found.",
+    "workspaceId": "ws-29f2fb44",
+    "baseRevision": "ef6b6d446509714afb234e3c1d34046cc42a11ff",
+    "changedFiles": [],
+    "review": {
+      "passed": false,
+      "findings": []
+    },
+    "verification": [],
+    "integration": {
+      "status": "not_attempted",
+      "reason": "AGENT_INVALID_STRUCTURED_OUTPUT"
+    },
+    "evidence": [
+      {
+        "kind": "search",
+        "ref": "docs/benchmarks/repository-intelligence/repository-intelligence-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match, lexical_content_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-daily-driver-r6-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-durable-agent-continuation-r3-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-r7u-visual-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/certification/codeforge-cloud-global-staging-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-8bit-activity-integration-report.md",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-hosted-runtime-authority-r2-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-packaged-daily-driver-r7-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-ui-daily-driver-r8-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/free-first-platform-report.md",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "apps/desktop/sandbox-minimal-diagnostic/package.json",
+        "description": "path_token_match, multi_token_path_match, path_phrase_match, exact_symbol_match, implementation_symbol, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-r3b-usable-agent-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match"
+      },
+      {
+        "kind": "search",
+        "ref": "packages/cloud-auth/src/github-app-authorization.ts",
+        "description": "exact_symbol_match, implementation_symbol, symbol_name_match, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "packages/cloud-auth/src/github-app.ts",
+        "description": "exact_symbol_match, implementation_symbol, symbol_name_match, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "packages/context/src/pack.ts",
+        "description": "exact_symbol_match, implementation_symbol, symbol_name_match, lexical_content_match"
+      }
+    ],
+    "counters": {
+      "childrenSpawned": 3,
+      "reviewRounds": 0,
+      "taskAttempts": 0,
+      "verificationAttempts": 0
+    }
+  }
+}

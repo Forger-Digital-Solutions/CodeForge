@@ -1,0 +1,95 @@
+{
+  "schema": "r3-corpus-report-v1",
+  "generatedAt": "2026-09-15T23:34:25.843Z",
+  "total": 100,
+  "records": 100,
+  "statusCounts": {
+    "CAPACITY_BLOCKED": 100
+  },
+  "categories": {
+    "simple": {
+      "total": 20,
+      "PASSED": 0,
+      "RECOVERED_PASS": 0,
+      "HUMAN_ASSISTED": 0,
+      "FAILED": 0,
+      "CAPACITY_BLOCKED": 20,
+      "EXTERNAL_BLOCKED": 0,
+      "INVALID_CASE": 0,
+      "tokens": 1449,
+      "requests": 49,
+      "medianRuntimeMs": 1691,
+      "p95RuntimeMs": 62924
+    },
+    "normal": {
+      "total": 35,
+      "PASSED": 0,
+      "RECOVERED_PASS": 0,
+      "HUMAN_ASSISTED": 0,
+      "FAILED": 0,
+      "CAPACITY_BLOCKED": 35,
+      "EXTERNAL_BLOCKED": 0,
+      "INVALID_CASE": 0,
+      "tokens": 2571,
+      "requests": 89,
+      "medianRuntimeMs": 74458,
+      "p95RuntimeMs": 123646
+    },
+    "complex": {
+      "total": 30,
+      "PASSED": 0,
+      "RECOVERED_PASS": 0,
+      "HUMAN_ASSISTED": 0,
+      "FAILED": 0,
+      "CAPACITY_BLOCKED": 30,
+      "EXTERNAL_BLOCKED": 0,
+      "INVALID_CASE": 0,
+      "tokens": 2552,
+      "requests": 92,
+      "medianRuntimeMs": 73668,
+      "p95RuntimeMs": 105535
+    },
+    "adversarial": {
+      "total": 15,
+      "PASSED": 0,
+      "RECOVERED_PASS": 0,
+      "HUMAN_ASSISTED": 0,
+      "FAILED": 0,
+      "CAPACITY_BLOCKED": 15,
+      "EXTERNAL_BLOCKED": 0,
+      "INVALID_CASE": 0,
+      "tokens": 2659,
+      "requests": 47,
+      "medianRuntimeMs": 102677,
+      "p95RuntimeMs": 144234
+    }
+  },
+  "trust": {
+    "false_completion": 0,
+    "silent_corruption": 0,
+    "unsafe_replay": 0,
+    "recovery_failures": 0,
+    "human_intervention": 0,
+    "verified_completion": 0,
+    "capacity_blocked": 100
+  },
+  "runtime": {
+    "medianMs": 73934,
+    "p95Ms": 123646
+  },
+  "providerUsage": {
+    "groq/openai/gpt-oss-120b": {
+      "requests": 14,
+      "inputTokens": 8591,
+      "outputTokens": 640,
+      "tasksServed": 7
+    },
+    "unknown/unknown": {
+      "requests": 263,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "tasksServed": 90
+    }
+  },
+  "failures": []
+}

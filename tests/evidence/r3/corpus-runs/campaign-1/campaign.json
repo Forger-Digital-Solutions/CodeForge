@@ -1,13 +1,23 @@
 {
-  "updatedAt": "2026-09-15T21:48:23.684Z",
+  "updatedAt": "2026-09-15T23:34:09.481Z",
   "phase": "campaign invocation finished",
-  "attemptedThisInvocation": 1,
+  "attemptedThisInvocation": 89,
   "halted": null,
   "byStatus": {
-    "CAPACITY_BLOCKED": 1
+    "CAPACITY_BLOCKED": 100
   },
   "capacityNotes": [
-    "cloudflare probe failed at campaign start; excluded from fleet for this invocation"
+    "cloudflare probe failed at campaign start; excluded from fleet for this invocation",
+    "exhaustion ladder probe at +0ms still blocked: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per day (TPD): Limit 20000",
+    "capacity recovered during exhaustion ladder after 120000ms wait",
+    "exhaustion ladder probe at +0ms still blocked: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per day (TPD): Limit 20000",
+    "capacity recovered during exhaustion ladder after 120000ms wait",
+    "exhaustion ladder probe at +0ms still blocked: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per day (TPD): Limit 20000",
+    "capacity recovered during exhaustion ladder after 120000ms wait",
+    "exhaustion ladder probe at +0ms still blocked: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per day (TPD): Limit 20000",
+    "capacity recovered during exhaustion ladder after 120000ms wait",
+    "exhaustion ladder probe at +0ms still blocked: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per day (TPD): Limit 20000",
+    "capacity recovered during exhaustion ladder after 120000ms wait"
   ],
   "openP0": []
 }

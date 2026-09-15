@@ -1,0 +1,47 @@
+{
+  "task_id": "C-029",
+  "category": "complex",
+  "manifest_declared_start": "850513c",
+  "starting_sha": "453ab6e6c01363d95cc5baeea75e39ae9cd9acbd",
+  "status": "CAPACITY_BLOCKED",
+  "attempt": 1,
+  "oracle_command": "npm test",
+  "baseline_key": "codeforge-suite",
+  "provider_routes": {
+    "unknown/unknown": {
+      "requests": 2,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "groq/openai/gpt-oss-120b": {
+      "requests": 2,
+      "inputTokens": 1200,
+      "outputTokens": 80
+    }
+  },
+  "model_roles": {
+    "Repository Explorer": "groq/openai/gpt-oss-120b",
+    "Task Planner": "unknown/unknown"
+  },
+  "started_at": "2026-09-15T23:02:33.108Z",
+  "last_progress_at": "2026-09-15T23:04:57.164Z",
+  "finished_at": "2026-09-15T23:04:57.164Z",
+  "verified": false,
+  "completion_gate": {
+    "status": "blocked",
+    "reviewPassed": false,
+    "integration": "not_attempted"
+  },
+  "intervention": "none",
+  "failure_class": "provider_rate_limited",
+  "evidence_path": "evidence/C-029/attempt-1",
+  "tokens": {
+    "input": 1200,
+    "output": 80
+  },
+  "requests": 4,
+  "false_completion": false,
+  "notes": [
+    "run terminated on managed-free capacity: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier "
+  ]
+}

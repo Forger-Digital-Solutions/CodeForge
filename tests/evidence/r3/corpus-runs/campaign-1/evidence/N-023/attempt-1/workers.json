@@ -1,0 +1,56 @@
+[
+  {
+    "role": "Repository Explorer",
+    "status": "failed",
+    "model": null,
+    "telemetry": {
+      "wallTimeMs": 61617,
+      "modelRequests": 1,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "toolCalls": 0,
+      "retryCount": 0,
+      "duplicateWorkCount": 0,
+      "providerFailures": 1
+    },
+    "startedAt": "2026-09-15T22:13:57.537Z",
+    "completedAt": "2026-09-15T22:14:59.149Z"
+  },
+  {
+    "role": "Repository Explorer",
+    "status": "failed",
+    "model": {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b"
+    },
+    "telemetry": {
+      "wallTimeMs": 61581,
+      "modelRequests": 2,
+      "inputTokens": 1206,
+      "outputTokens": 86,
+      "toolCalls": 1,
+      "retryCount": 0,
+      "duplicateWorkCount": 0,
+      "providerFailures": 1
+    },
+    "startedAt": "2026-09-15T22:13:57.543Z",
+    "completedAt": "2026-09-15T22:14:59.113Z"
+  },
+  {
+    "role": "Task Planner",
+    "status": "failed",
+    "model": null,
+    "telemetry": {
+      "wallTimeMs": 643,
+      "modelRequests": 1,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "toolCalls": 0,
+      "retryCount": 0,
+      "duplicateWorkCount": 0,
+      "providerFailures": 1
+    },
+    "startedAt": "2026-09-15T22:14:59.158Z",
+    "completedAt": "2026-09-15T22:14:59.798Z"
+  }
+]

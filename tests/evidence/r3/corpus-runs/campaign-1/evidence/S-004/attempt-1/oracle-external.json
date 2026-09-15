@@ -1,0 +1,13 @@
+{
+  "executed": true,
+  "error": "Command failed: node G:\\CodeForge\\scripts\\r3-oracle-wrapper.mjs --baseline=G:/CodeForge/tests/evidence/r3/corpus-runs/campaign-1/freeze/baseline-oracle-sandbox-suite.json --out=G:/CodeForge/tests/evidence/r3/corpus-runs/campaign-1/evidence/S-004/attempt-1/oracle-external.json -- vitest run\noracle-wrapper: vitest produced no parseable JSON report\n",
+  "evaluation": {
+    "command": "npx vitest run vitest run",
+    "verdict": "error",
+    "reason": "vitest produced no parseable JSON report",
+    "exitCode": 1,
+    "stdoutTail": "",
+    "stderrTail": "\u001b[2mfilter:  \u001b[22m\u001b[33mvitest\u001b[2m, \u001b[22mrun\u001b[39m\n\u001b[2minclude: \u001b[22m\u001b[33m**/*.{test,spec}.?(c|m)[jt]s?(x)\u001b[39m\n\u001b[2mexclude:  \u001b[22m\u001b[33m**/node_modules/**\u001b[2m, \u001b[22m**/dist/**\u001b[2m, \u001b[22m**/cypress/**\u001b[2m, \u001b[22m**/.{idea,git,cache,output,temp}/**\u001b[2m, \u001b[22m**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*\u001b[39m\n\u001b[31m\nNo test files found, exiting with code 1\u001b[39m\n",
+    "at": "2026-09-15T21:49:41.543Z"
+  }
+}

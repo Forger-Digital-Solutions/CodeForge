@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-15T22:26:15.193Z",
+  "resolved": 50,
+  "byStatus": {
+    "CAPACITY_BLOCKED": 50
+  },
+  "byCategory": {
+    "simple": {
+      "CAPACITY_BLOCKED": 20
+    },
+    "normal": {
+      "CAPACITY_BLOCKED": 30
+    }
+  },
+  "lastTask": "N-030"
+}

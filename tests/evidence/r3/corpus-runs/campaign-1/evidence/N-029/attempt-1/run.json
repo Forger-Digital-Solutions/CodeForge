@@ -1,0 +1,106 @@
+{
+  "sessionId": "corpus-n-029-a1",
+  "startedAt": "2026-09-15T22:23:45.151Z",
+  "finishedAt": "2026-09-15T22:24:06.049Z",
+  "runError": null,
+  "result": {
+    "runId": "run-02856a4a-991c-4697-b4f3-29ad1f619c57",
+    "status": "blocked",
+    "summary": "Planner did not produce an authorized task graph: Agent planner failed: [PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found.",
+    "workspaceId": "ws-290bb6a9",
+    "baseRevision": "453ab6e6c01363d95cc5baeea75e39ae9cd9acbd",
+    "changedFiles": [],
+    "review": {
+      "passed": false,
+      "findings": []
+    },
+    "verification": [],
+    "integration": {
+      "status": "not_attempted",
+      "reason": "AGENT_INVALID_STRUCTURED_OUTPUT"
+    },
+    "evidence": [
+      {
+        "kind": "search",
+        "ref": "docs/benchmarks/repository-intelligence/repository-intelligence-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match, lexical_content_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-durable-agent-continuation-r3-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-forgegreen-phase3-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/certification/codeforge-cloud-global-staging-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-8bit-activity-integration-report.md",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-daily-driver-r6-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-forgegreen-phase4-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "apps/desktop/sandbox-minimal-diagnostic/package.json",
+        "description": "path_token_match, multi_token_path_match, path_phrase_match, exact_symbol_match, implementation_symbol, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "packages/eight-bit/src/qualification/fixtures.ts",
+        "description": "lexical_content_match, exact_symbol_match, implementation_symbol, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "apps/cloud-api/src/config.ts",
+        "description": "lexical_content_match, exact_symbol_match, implementation_symbol"
+      },
+      {
+        "kind": "search",
+        "ref": "apps/cloud-api/src/publication-executor.ts",
+        "description": "exact_symbol_match, implementation_symbol, lexical_content_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "apps/cloud-api/src/staging-preflight.ts",
+        "description": "lexical_content_match, exact_symbol_match, implementation_symbol"
+      },
+      {
+        "kind": "search",
+        "ref": "apps/desktop/src/provider-connection-types.ts",
+        "description": "symbol_name_match, implementation_symbol, exact_symbol_match, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "apps/desktop/src/renderer/provider-connections-client.ts",
+        "description": "exact_symbol_match, implementation_symbol, symbol_name_match, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "apps/desktop/src/renderer/settings/sections/ProvidersSection.tsx",
+        "description": "lexical_content_match, exact_symbol_match, implementation_symbol"
+      }
+    ],
+    "counters": {
+      "childrenSpawned": 3,
+      "reviewRounds": 0,
+      "taskAttempts": 0,
+      "verificationAttempts": 0
+    }
+  }
+}

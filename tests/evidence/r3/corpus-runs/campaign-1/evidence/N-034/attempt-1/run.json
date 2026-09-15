@@ -1,0 +1,106 @@
+{
+  "sessionId": "corpus-n-034-a1",
+  "startedAt": "2026-09-15T22:32:59.406Z",
+  "finishedAt": "2026-09-15T22:33:20.243Z",
+  "runError": null,
+  "result": {
+    "runId": "run-7c0b6006-6c9f-4687-8e1a-138cc8523264",
+    "status": "blocked",
+    "summary": "Planner did not produce an authorized task graph: Agent planner failed: [PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found.",
+    "workspaceId": "ws-6e3571b8",
+    "baseRevision": "453ab6e6c01363d95cc5baeea75e39ae9cd9acbd",
+    "changedFiles": [],
+    "review": {
+      "passed": false,
+      "findings": []
+    },
+    "verification": [],
+    "integration": {
+      "status": "not_attempted",
+      "reason": "AGENT_INVALID_STRUCTURED_OUTPUT"
+    },
+    "evidence": [
+      {
+        "kind": "search",
+        "ref": "docs/benchmarks/repository-intelligence/repository-intelligence-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match, lexical_content_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/certification/codeforge-cloud-global-staging-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-durable-agent-continuation-r3-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-forgegreen-phase3-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-8bit-activity-integration-report.md",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, lexical_content_match, filename_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-daily-driver-r6-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-forgegreen-phase4-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol, filename_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "apps/desktop/sandbox-minimal-diagnostic/package.json",
+        "description": "path_token_match, multi_token_path_match, path_phrase_match, exact_symbol_match, implementation_symbol, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "packages/eight-bit/src/qualification/fixtures.ts",
+        "description": "lexical_content_match, exact_symbol_match, implementation_symbol, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-free-cloud-platform-r5.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-hosted-runtime-authority-r2-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-packaged-daily-driver-r7-certification.json",
+        "description": "path_token_match, multi_token_path_match, exact_symbol_match, implementation_symbol"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/codeforge-r7u-visual-certification.json",
+        "description": "exact_symbol_match, implementation_symbol, symbol_name_match, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "docs/legal/pass3/final-reconciliation-report.json",
+        "description": "exact_symbol_match, implementation_symbol, lexical_content_match, symbol_name_match"
+      },
+      {
+        "kind": "search",
+        "ref": "packages/context/src/pack.ts",
+        "description": "exact_symbol_match, implementation_symbol, symbol_name_match, lexical_content_match"
+      }
+    ],
+    "counters": {
+      "childrenSpawned": 3,
+      "reviewRounds": 0,
+      "taskAttempts": 0,
+      "verificationAttempts": 0
+    }
+  }
+}

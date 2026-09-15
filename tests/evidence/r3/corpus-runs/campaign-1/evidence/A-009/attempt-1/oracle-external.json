@@ -1,0 +1,22 @@
+{
+  "executed": true,
+  "stdoutTail": "oracle-wrapper: pass (passed=97 failed=0 newFailures=0 lostFiles=0)\n",
+  "evaluation": {
+    "command": "npx vitest run vitest run packages/server/test/multi-subagent-concurrency.test.ts",
+    "verdict": "pass",
+    "counts": {
+      "passed": 97,
+      "failed": 0,
+      "skipped": 0
+    },
+    "newFailures": [],
+    "lostFiles": [],
+    "baseline": {
+      "file": "G:\\CodeForge\\tests\\evidence\\r3\\corpus-runs\\campaign-1\\freeze\\baseline-oracle-codeforge-target-5ced78aa56.json",
+      "failing": 0,
+      "files": 1
+    },
+    "vitestExitCode": 0,
+    "at": "2026-09-15T23:23:09.616Z"
+  }
+}
