@@ -80,7 +80,7 @@ import {
   formatUntrustedData,
 } from "@codeforge/agent";
 import { ToolBroker, ToolRegistry, createToolBroker, type ToolExecutionRecord } from "@codeforge/tools";
-import { ModelExecutionAdapter, createModelExecutionAdapter, normalizeProviderError } from "./model-execution-adapter.js";
+import { ModelExecutionAdapter, createModelExecutionAdapter, normalizeProviderError, type ModelExecutionResponse } from "./model-execution-adapter.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 
 export interface AgentRuntimeRequest {
@@ -110,6 +110,13 @@ export interface AgentRuntimeRequest {
   userIntentHold?: UserIntentHoldController;
   /** FG-1C: targeted workstream scope; duplicate identities never cross workstreams. */
   workstreamScope?: string;
+  /**
+   * R1: resolve this run's route through 8-Bit's role-scoped eligibility/ranking instead of the
+   * legacy deterministic fallback, so different worker roles can be served by different qualified
+   * models. Explicit `modelSelection` always wins and is never substituted; a route failure only
+   * ever rotates within the free fleet (never paid/BYOK).
+   */
+  roleRouting?: boolean;
 }
 
 export interface AgentContextMetrics {
@@ -321,6 +328,26 @@ export interface ModelSelection {
 
 /** Sentinel returned by parseToolArgs when arguments are genuinely un-parseable. */
 export const PARSE_FAILED = Symbol("parse_failed");
+
+/**
+ * Map an agent task role onto 8-Bit's role contracts for route eligibility. Explorers and coders
+ * drive the tool loop (tools required); planners and reviewers are reasoning-only roles.
+ */
+export function eightBitRoleForAgentRole(role: AgentRoleType | string): EightBitRole {
+  switch (role) {
+    case "explorer":
+      return "TOOL_AGENT";
+    case "planner":
+      return "PLANNER";
+    case "reviewer":
+      return "REVIEWER";
+    default:
+      return "CODER";
+  }
+}
+
+/** Bounded rotation budget for a single agent run: initial route + this many provider failures. */
+export const ROLE_ROUTE_MAX_FAILOVERS = 2;
 
 /**
  * Parse tool-call arguments tolerantly. Handles well-formed JSON, empty args (→ {}), and the
@@ -843,6 +870,98 @@ export class AgentRuntime {
           ...(this.userIntentHold ? { interactiveEfficiency: this.userIntentHold.metrics(this.sessionId) } : {}),
         });
       };
+      // R1 role routing: resolve the qualified free route serving this run's role once, then keep
+      // it sticky for the run. Provider failures rotate within the free fleet (role contract,
+      // cooldown, and — when wired — Free Cloud admission gates still apply to every replacement)
+      // up to the bounded budget; an explicit exact selection is never replaced.
+      let activeSelection: AgentModelSelection | undefined = req.modelSelection
+        ?? (this.modelSelection ? { providerId: this.modelSelection.providerId, modelId: this.modelSelection.modelId } : undefined);
+      let roleRouteRotatable = false;
+      if (!activeSelection && req.roleRouting && this.hasRoutableFleet()) {
+        const role = eightBitRoleForAgentRole(req.role);
+        const routing = await this.eightBit.selectInitialRoute(
+          { sessionId: this.sessionId, role, workstreamId: req.workstreamScope },
+          {
+            policyMode: "adaptive",
+            estimatedContextTokens: budget.maxContextTokens,
+            requiredCapabilities: req.role === "coder" ? ["coding", "toolCalling"] : req.role === "explorer" ? ["toolCalling"] : [],
+            taskType: req.role,
+            hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
+            routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
+          },
+          { runId: req.runId, agentId: req.agentId },
+        );
+        if (routing.outcome === "no_eligible_route") {
+          throw new Error(
+            `[${ERROR_CODES.PROVIDER_UNAVAILABLE}] No eligible free route for role ${req.role}: 8-Bit admission found no healthy route meeting this role's capability contract. No paid or unknown-cost route was used.`,
+          );
+        }
+        activeSelection = { providerId: routing.model.providerId, modelId: routing.model.modelId };
+        roleRouteRotatable = true;
+        adapter.emitRouterSelection(req.runId, routing.model.modelId, routing.model.providerId, Math.round(routing.score), routing.reasons);
+      }
+
+      const requestModelTurn = async (): Promise<ModelExecutionResponse> => {
+        let rotations = 0;
+        for (;;) {
+          try {
+            const response = await modelAdapter.execute({
+              modelSelection: activeSelection,
+              messages,
+              tools: availableTools,
+              signal: req.signal,
+              userId: req.userId ?? this.userId,
+              authorityState: req.authorityState ?? "canonical",
+              dedupeScope: req.runId,
+            });
+            if (activeSelection) {
+              this.eightBit.recordSuccess(activeSelection.providerId, activeSelection.modelId);
+              this.freeCloud?.recordRouteSuccess(activeSelection.providerId, activeSelection.modelId);
+            }
+            return response;
+          } catch (err: unknown) {
+            const isCancelled = req.signal?.aborted || (err instanceof Error && err.message.includes(ERROR_CODES.AGENT_CANCELLED));
+            if (isCancelled || !roleRouteRotatable || !activeSelection || rotations >= ROLE_ROUTE_MAX_FAILOVERS) {
+              throw err;
+            }
+            const failing = activeSelection;
+            const failingModel = this.firewall.getModel(failing.providerId, failing.modelId);
+            const outcome = await this.eightBit.handleTurnFailure({
+              sessionId: this.sessionId,
+              turnId: req.runId,
+              role: eightBitRoleForAgentRole(req.role),
+              workstreamId: req.workstreamScope,
+              runId: req.runId,
+              agentId: req.agentId,
+              current: { providerId: failing.providerId, modelId: failing.modelId },
+              isExactPin: false,
+              pinMode: "auto",
+              sameModelAlternates: this.freeCloud?.sameModelAlternates(failing.providerId, failing.modelId),
+              policyMode: "adaptive",
+              error: err,
+              estimatedContextTokens: failingModel?.contextWindow ?? budget.maxContextTokens,
+              hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
+              routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
+            });
+            if (outcome.action !== "retry_same" && outcome.action !== "surface") {
+              const retryAfter = (err as { retryAfter?: unknown }).retryAfter;
+              const retryAfterMs = typeof retryAfter === "number" ? Math.max(0, retryAfter - Date.now()) : undefined;
+              this.freeCloud?.recordRouteFailure(failing.providerId, failing.modelId, outcome.reason, retryAfterMs);
+            }
+            if (outcome.action === "retry_same") continue;
+            if (outcome.action !== "rotate") throw err;
+            if (!this.providerCatalog.get(outcome.replacement.providerId)) throw err;
+            adapter.emitRouterFailover(req.runId, `${failing.providerId}/${failing.modelId}`, `${outcome.replacement.providerId}/${outcome.replacement.modelId}`, outcome.reason);
+            activeSelection = { providerId: outcome.replacement.providerId, modelId: outcome.replacement.modelId };
+            rotations++;
+          }
+        }
+      };
+
+      // Tools are fixed for the run: they follow the role contract and the run permissions,
+      // neither of which changes mid-run.
+      const availableTools = toolBroker.getRegistry().getForRole(req.role, req.permissions);
+
       while (turnCount < budget.maxModelTurns) {
         if (req.signal?.aborted) {
           throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
@@ -868,22 +987,11 @@ export class AgentRuntime {
         };
         await persistModelTurn("created");
 
-        // Get tools available for this role
-        const availableTools = toolBroker.getRegistry().getForRole(req.role, req.permissions);
-
         // Execute model request
         let response;
         try {
           await persistModelTurn("provider_request_started");
-          response = await modelAdapter.execute({
-            modelSelection: req.modelSelection ?? (this.modelSelection ? { providerId: this.modelSelection.providerId, modelId: this.modelSelection.modelId } : undefined),
-            messages,
-            tools: availableTools,
-            signal: req.signal,
-            userId: req.userId ?? this.userId,
-            authorityState: req.authorityState ?? "canonical",
-            dedupeScope: req.runId,
-          });
+          response = await requestModelTurn();
           await persistModelTurn("provider_response_completed");
         } catch (err: unknown) {
           const norm = normalizeProviderError(err);
@@ -2155,6 +2263,13 @@ export class AgentRuntime {
    * chose WHAT (the model); ForgeAuto chooses WHERE (the route) — preferring ForgeAuto-eligible
    * routes, then the route the selection was made with.
    */
+  /** True when ForgeZero knows at least one eligible model whose provider adapter is registered —
+   * i.e. a real fleet exists to route through. Without a fleet, role routing defers to the legacy
+   * deterministic provider-catalog fallback (test harnesses, demo mode). */
+  private hasRoutableFleet(): boolean {
+    return this.firewall.eligibleModels().some((m) => this.providerCatalog.get(m.providerId));
+  }
+
   private resolveCanonicalSelection(selection: ModelSelection): FreeModelRecord | null {
     if (!selection.canonicalModelId || !this.freeCloud) return null;
     const candidates = [

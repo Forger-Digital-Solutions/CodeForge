@@ -18,6 +18,7 @@ import { createAutonomousRunOrchestrator } from "../src/autonomous-orchestrator.
 import { createWorkspaceService } from "../src/workspace-service.js";
 import { createSubagentManager } from "../src/subagent-manager.js";
 import { createAgentRuntime } from "../src/agent-runtime.js";
+import { createWorkspaceEventAdapter } from "../src/workspace-event-adapter.js";
 
 const execFile = promisify(execFileCallback);
 
@@ -26,6 +27,8 @@ class FullFlowScriptedProvider implements ProviderAdapter {
   readonly isTestProvider = true;
   readonly plannerTasks: unknown[];
   coderCalls = 0;
+  explorerActive = 0;
+  maxExplorerConcurrency = 0;
 
   constructor(providerId: string, plannerTasks?: unknown[]) {
     this.providerId = providerId;
@@ -49,8 +52,15 @@ class FullFlowScriptedProvider implements ProviderAdapter {
     const isCoder = systemPrompt.includes("CodeForge Coder");
 
     if (isExplorer) {
-      yield { type: "text_delta", delta: JSON.stringify({ summary: "Found the math module and its focused test.", findings: [{ id: "explore-math", severity: "advisory", category: "architecture", message: "math.mjs is the target module", evidence: "math.mjs" }], evidence: [{ kind: "file", ref: "math.mjs", description: "target module" }, { kind: "file", ref: "test/math.test.mjs", description: "focused verification" }] }) };
-      yield { type: "finish", finishReason: "stop" };
+      this.explorerActive++;
+      this.maxExplorerConcurrency = Math.max(this.maxExplorerConcurrency, this.explorerActive);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 25));
+        yield { type: "text_delta", delta: JSON.stringify({ summary: "Found the math module and its focused test.", findings: [{ id: "explore-math", severity: "advisory", category: "architecture", message: "math.mjs is the target module", evidence: "math.mjs" }], evidence: [{ kind: "file", ref: "math.mjs", description: "target module" }, { kind: "file", ref: "test/math.test.mjs", description: "focused verification" }] }) };
+        yield { type: "finish", finishReason: "stop" };
+      } finally {
+        this.explorerActive--;
+      }
       return;
     }
 
@@ -209,6 +219,41 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
     // Verify file content in primary repository
     const mainMath = await fs.readFile(path.join(repoDir, "math.mjs"), "utf-8");
     expect(mainMath).toContain("return a * b;");
+  });
+
+  it("runs the flagged R1 path with parallel read-only explorers and one durable isolated writer", async () => {
+    const catalog = new InMemoryProviderCatalog();
+    const provider = new FullFlowScriptedProvider("r1-provider");
+    catalog.register(provider);
+    const workspaceService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
+    const runtime = createAgentRuntime({ sessionId: "session-r1", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: repoDir });
+    const subagentManager = createSubagentManager({ persistence, workspaceService, agentRuntime: runtime, r1Enabled: true });
+    const orchestrator = createAutonomousRunOrchestrator({
+      workspaceService,
+      persistence,
+      agentRuntime: runtime,
+      subagentManager,
+      subagentsR1Enabled: true,
+    });
+
+    const result = await orchestrator.startRun({
+      sessionId: "session-r1",
+      workspacePath: repoDir,
+      goal: "Implement multiply function and make its focused test pass",
+      verificationCommands: ["node --test test/math.test.mjs"],
+      adapter: createWorkspaceEventAdapter({ sessionId: "session-r1", eventStore, persistence }),
+    });
+
+    expect(result.status).toBe("completed");
+    const workers = await persistence.getWorkItemsByKind("subagent_run");
+    expect(workers).toHaveLength(5);
+    expect(workers.filter((item) => item.kind === "subagent_run" && item.agentId === "explorer")).toHaveLength(2);
+    expect(workers.filter((item) => item.kind === "subagent_run" && item.agentId === "coder")).toHaveLength(1);
+    expect(workers.find((item) => item.kind === "subagent_run" && item.agentId === "coder")?.workspace.kind).toBe("git-worktree");
+    expect(workers.every((item) => item.kind !== "subagent_run" || item.status === "completed")).toBe(true);
+    expect(workers.every((item) => item.kind !== "subagent_run" || item.artifacts.length === 1)).toBe(true);
+    expect(eventStore.getAll().filter((event) => event.type === "subagent.lifecycle")).toHaveLength(20);
+    expect(provider.maxExplorerConcurrency).toBeGreaterThanOrEqual(2);
   });
 
   it("rejects a cyclic production Planner graph before the Coder starts", async () => {

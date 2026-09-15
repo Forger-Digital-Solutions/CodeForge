@@ -4,17 +4,27 @@ import path from "node:path";
 import {
   getAgent,
   BUILT_IN_AGENTS,
+  DEFAULT_EXECUTION_BUDGETS,
   type AgentDefinition,
   type AgentPermissions,
   type AgentResult,
+  type AgentUsage,
   type AgentFinding,
   type AgentEvidenceRef,
   type StructuredOutputKind,
 } from "@codeforge/agent";
+import type {
+  AgentArtifactReference,
+  AgentWorkerLifecycleState,
+  AgentWorkerTelemetry,
+  SubagentRunWorkItem,
+  TaskCapsule,
+} from "@codeforge/protocol";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import type { ISessionPersistence } from "@codeforge/sessions";
 import type { WorkspaceService } from "./workspace-service.js";
 import { redactSecrets } from "@codeforge/secrets";
+import { createTaskCapsule } from "./task-capsule.js";
 
 import type { AgentRuntime } from "./agent-runtime.js";
 
@@ -23,6 +33,7 @@ export const MAX_CHILDREN_PER_PARENT = 5;
 
 export interface SpawnChildOptions {
   parentRunId: string;
+  sessionId?: string;
   agentId: string;
   task: string;
   workspacePath: string;
@@ -37,6 +48,9 @@ export interface SpawnChildOptions {
   reviewFeedback?: string;
   structuredOutput?: StructuredOutputKind;
   metadata?: Record<string, unknown>;
+  taskCapsule?: TaskCapsule;
+  workspaceKind?: "local" | "git-worktree";
+  workspaceBranch?: string;
   customToolExecutor?: (name: string, args: Record<string, unknown>) => Promise<string>;
 }
 
@@ -48,25 +62,32 @@ export interface ChildRun {
   task: string;
   workspacePath: string;
   depth: number;
-  status: "queued" | "working" | "completed" | "failed" | "cancelled";
+  status: "queued" | "working" | "completed" | "blocked" | "failed" | "cancelled";
   permissions: AgentPermissions;
   allowedTools: string[];
   controller: AbortController;
   startedAt: Date;
   completedAt?: Date;
   result?: AgentResult;
+  capsule?: TaskCapsule;
+  workerRecord?: SubagentRunWorkItem;
 }
 
 export interface SubagentManagerOptions {
   persistence?: ISessionPersistence;
   workspaceService?: WorkspaceService;
   agentRuntime?: AgentRuntime;
+  getAgentRuntime?: (sessionId: string) => AgentRuntime;
+  /** R1 path: durable worker state, Task Capsules, and artifact references. Off by default. */
+  r1Enabled?: boolean;
 }
 
 export class SubagentManager {
   private readonly persistence?: ISessionPersistence;
   private readonly workspaceService?: WorkspaceService;
   private readonly agentRuntime?: AgentRuntime;
+  private readonly getAgentRuntime?: (sessionId: string) => AgentRuntime;
+  private readonly r1Enabled: boolean;
   private readonly activeChildren: Map<string, ChildRun> = new Map(); // childRunId -> ChildRun
   private readonly childrenByParent: Map<string, Set<string>> = new Map(); // parentRunId -> Set<childRunId>
 
@@ -74,6 +95,140 @@ export class SubagentManager {
     this.persistence = options.persistence;
     this.workspaceService = options.workspaceService;
     this.agentRuntime = options.agentRuntime;
+    this.getAgentRuntime = options.getAgentRuntime;
+    this.r1Enabled = options.r1Enabled ?? false;
+  }
+
+  private emptyTelemetry(): AgentWorkerTelemetry {
+    return {
+      wallTimeMs: 0,
+      modelRequests: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      toolCalls: 0,
+      retryCount: 0,
+      duplicateWorkCount: 0,
+      providerFailures: 0,
+    };
+  }
+
+  private emptyUsage(): AgentUsage {
+    return { inputTokens: 0, outputTokens: 0, requestCount: 0, toolCount: 0 };
+  }
+
+  private executionBudget(agentId: string) {
+    const budget = DEFAULT_EXECUTION_BUDGETS[agentId] ?? DEFAULT_EXECUTION_BUDGETS.default!;
+    return {
+      maxModelTurns: budget.maxModelTurns,
+      maxToolCalls: budget.maxToolCalls,
+      ...(budget.maxWriteToolCalls !== undefined ? { maxWriteToolCalls: budget.maxWriteToolCalls } : {}),
+      ...(budget.maxCommandExecutions !== undefined ? { maxCommandExecutions: budget.maxCommandExecutions } : {}),
+      maxContextTokens: budget.maxContextTokens,
+      ...(budget.maxOutputTokens !== undefined ? { maxOutputTokens: budget.maxOutputTokens } : {}),
+      wallTimeMs: BUILT_IN_AGENTS[agentId]?.budget.timeoutMs ?? 60_000,
+    };
+  }
+
+  private async persistWorker(record: SubagentRunWorkItem): Promise<void> {
+    if (this.r1Enabled && this.persistence) await this.persistence.upsertWorkItem(record);
+  }
+
+  private async transitionWorker(
+    child: ChildRun,
+    state: AgentWorkerLifecycleState,
+    adapter?: WorkspaceEventAdapter,
+    reason?: string,
+  ): Promise<void> {
+    const record = child.workerRecord;
+    if (!record || !this.r1Enabled) return;
+    record.status = state;
+    record.updatedAt = new Date().toISOString();
+    if (!record.startedAt && (state === "starting" || state === "running")) record.startedAt = record.updatedAt;
+    if (reason) record.error = redactSecrets(reason);
+    await this.persistWorker(record);
+    await adapter?.emitSubagentLifecycle({
+      agentId: record.agentId,
+      role: record.role,
+      parentAgentId: record.parentRunId,
+      task: record.task,
+      state,
+      capsuleVersion: record.capsule.schemaVersion,
+      ...(record.model ? { model: record.model } : {}),
+      ...(state === "completed" || state === "blocked" || state === "failed" || state === "cancelled" ? { telemetry: record.telemetry } : {}),
+      ...(reason ? { reason: redactSecrets(reason) } : {}),
+    });
+  }
+
+  private async persistResultArtifact(child: ChildRun, result: AgentResult, adapter?: WorkspaceEventAdapter): Promise<AgentArtifactReference[]> {
+    if (!this.r1Enabled || !this.persistence || !child.workerRecord) return [];
+    const createdAt = new Date().toISOString();
+    const content = redactSecrets(JSON.stringify({
+      schemaVersion: 1,
+      workerId: child.childRunId,
+      status: result.status,
+      summary: result.summary,
+      findings: result.findings,
+      evidence: result.evidence,
+      files: result.files,
+      risks: result.risks,
+      recommendations: result.recommendations,
+      ...(result.structuredData ? { structuredData: result.structuredData } : {}),
+    }));
+    const digest = crypto.createHash("sha256").update(content).digest("hex");
+    const artifactId = `artifact-${child.childRunId}-result`;
+    const reference: AgentArtifactReference = {
+      kind: "worker_result",
+      ref: `forge://run/${child.parentRunId}/worker/${child.childRunId}/result`,
+      digest,
+      producerAgentId: child.agentId,
+      sizeBytes: Buffer.byteLength(content, "utf8"),
+      createdAt,
+    };
+    await this.persistence.upsertWorkItem({
+      kind: "artifact",
+      id: artifactId,
+      sessionId: child.workerRecord.sessionId,
+      turnId: child.childRunId,
+      type: "report",
+      title: `Worker result: ${child.role}`,
+      content,
+      status: "ready",
+      author: child.agentId,
+      createdAt,
+      updatedAt: createdAt,
+    });
+    await adapter?.emitSubagentArtifactWritten(reference, child.childRunId);
+    return [reference];
+  }
+
+  private async initializeWorkerRecord(child: ChildRun, options: SpawnChildOptions, def: AgentDefinition, capsule: TaskCapsule): Promise<void> {
+    if (!this.r1Enabled) return;
+    const now = new Date().toISOString();
+    child.workerRecord = {
+      kind: "subagent_run",
+      id: child.childRunId,
+      sessionId: options.sessionId ?? `subagent-session-${child.parentRunId}`,
+      parentRunId: child.parentRunId,
+      agentId: child.agentId,
+      role: child.role,
+      task: child.task,
+      depth: child.depth,
+      status: "created",
+      capsule,
+      permissions: { ...child.permissions, network: child.permissions.network ?? false },
+      allowedTools: [...child.allowedTools],
+      workspace: {
+        id: child.childRunId,
+        kind: options.workspaceKind ?? "local",
+        ...(options.workspaceBranch ? { branch: options.workspaceBranch } : {}),
+      },
+      budget: this.executionBudget(def.id),
+      telemetry: this.emptyTelemetry(),
+      artifacts: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    await this.persistWorker(child.workerRecord);
   }
 
   /**
@@ -173,6 +328,18 @@ export class SubagentManager {
       startedAt: new Date(),
     };
 
+    const capsule = options.taskCapsule ?? createTaskCapsule({
+      role: def.id,
+      task,
+      contextSummary,
+      explorerEvidence: options.explorerEvidence,
+      findings: options.findings,
+      taskPlan: options.taskPlan,
+      reviewFeedback: options.reviewFeedback,
+    });
+    childRun.capsule = capsule;
+    await this.initializeWorkerRecord(childRun, options, def, capsule);
+
     this.activeChildren.set(childRunId, childRun);
     if (!this.childrenByParent.has(parentRunId)) {
       this.childrenByParent.set(parentRunId, new Set());
@@ -181,17 +348,25 @@ export class SubagentManager {
 
     // 6. Emit subagent.started event
     adapter?.emitSubagentStarted(childRunId, def.role, task, parentRunId);
+    await this.transitionWorker(childRun, "created", adapter);
+    await this.transitionWorker(childRun, "starting", adapter);
 
     try {
       if (controller.signal.aborted) {
         throw new Error("Subagent execution cancelled");
       }
 
+      await this.transitionWorker(childRun, "running", adapter);
+
       // 7. Execute specialized child logic in private context
       let result: AgentResult;
+      let usage = this.emptyUsage();
 
-      if (this.agentRuntime) {
-        const runtimeRes = await this.agentRuntime.executeAgentRun({
+      const runtime = this.r1Enabled && options.sessionId
+        ? this.agentRuntime ?? this.getAgentRuntime?.(options.sessionId)
+        : this.agentRuntime;
+      if (runtime) {
+        const runtimeRes = await runtime.executeAgentRun({
           runId: childRunId,
           agentId: def.id,
           role: def.id,
@@ -201,7 +376,7 @@ export class SubagentManager {
           permissions: effectivePermissions,
           signal: controller.signal,
           adapter,
-          initialContext: contextSummary,
+          initialContext: this.r1Enabled ? JSON.stringify(capsule) : contextSummary,
           explorerEvidence: options.explorerEvidence,
           findings: options.findings,
           taskPlan: options.taskPlan,
@@ -210,7 +385,9 @@ export class SubagentManager {
           verificationEvidence: def.id === "reviewer" ? contextSummary : undefined,
           structuredOutput: options.structuredOutput,
           customToolExecutor: options.customToolExecutor,
+          roleRouting: this.r1Enabled,
         });
+        usage = runtimeRes.usage;
 
         result = {
           status: runtimeRes.status,
@@ -230,22 +407,40 @@ export class SubagentManager {
         result = await this.executeGenericChild(childRun, contextSummary, adapter);
       }
 
-      childRun.status = result.status === "completed" ? "completed" : "failed";
+      childRun.status = result.status === "completed" ? "completed" : result.status === "blocked" ? "blocked" : result.status === "cancelled" ? "cancelled" : "failed";
       childRun.completedAt = new Date();
       childRun.result = result;
 
+      if (childRun.workerRecord) {
+        const startedAt = childRun.startedAt.getTime();
+        childRun.workerRecord.telemetry = {
+          wallTimeMs: Math.max(0, childRun.completedAt.getTime() - startedAt),
+          modelRequests: usage.requestCount,
+          inputTokens: usage.inputTokens,
+          outputTokens: usage.outputTokens,
+          toolCalls: usage.toolCount,
+          retryCount: 0,
+          duplicateWorkCount: 0,
+          providerFailures: result.status === "failed" ? 1 : 0,
+        };
+        if (usage.provider && usage.model) childRun.workerRecord.model = { providerId: usage.provider, modelId: usage.model };
+        childRun.workerRecord.resultSummary = redactSecrets(result.summary);
+        childRun.workerRecord.completedAt = childRun.completedAt.toISOString();
+        childRun.workerRecord.artifacts = await this.persistResultArtifact(childRun, result, adapter);
+        await this.transitionWorker(childRun, result.status, adapter, result.status === "blocked" ? result.summary : undefined);
+      }
+
       // 8. Emit subagent.completed event
-      adapter?.emitSubagentCompleted(childRunId, result.summary);
+      if (result.status === "completed") adapter?.emitSubagentCompleted(childRunId, result.summary);
+      else if (result.status === "blocked") adapter?.emitSubagentFailed(childRunId, result.summary);
+      else if (result.status === "cancelled") adapter?.emitSubagentCompleted(childRunId, "Subagent cancelled");
+      else adapter?.emitSubagentFailed(childRunId, result.summary);
 
       return result;
     } catch (err: unknown) {
       const isCancelled = controller.signal.aborted || (signal && signal.aborted);
       const status = isCancelled ? "cancelled" : "failed";
       const errorMsg = err instanceof Error ? err.message : String(err);
-
-      childRun.status = status;
-      childRun.completedAt = new Date();
-
       const failedResult: AgentResult = {
         status,
         summary: `Subagent ${def.role} ${status}: ${errorMsg}`,
@@ -255,7 +450,22 @@ export class SubagentManager {
         risks: [],
         recommendations: [],
       };
+
+      childRun.status = status;
+      childRun.completedAt = new Date();
       childRun.result = failedResult;
+
+      if (childRun.workerRecord) {
+        childRun.workerRecord.completedAt = childRun.completedAt.toISOString();
+        childRun.workerRecord.resultSummary = redactSecrets(failedResult.summary);
+        childRun.workerRecord.telemetry = {
+          ...childRun.workerRecord.telemetry,
+          wallTimeMs: Math.max(0, childRun.completedAt.getTime() - childRun.startedAt.getTime()),
+          providerFailures: status === "failed" ? 1 : 0,
+        };
+        childRun.workerRecord.artifacts = await this.persistResultArtifact(childRun, failedResult, adapter);
+        await this.transitionWorker(childRun, status, adapter, errorMsg);
+      }
 
       if (isCancelled) {
         adapter?.emitSubagentCompleted(childRunId, "Subagent cancelled");
@@ -272,6 +482,7 @@ export class SubagentManager {
         set.delete(childRunId);
         if (set.size === 0) this.childrenByParent.delete(parentRunId);
       }
+      this.activeChildren.delete(childRunId);
     }
   }
 
@@ -300,6 +511,30 @@ export class SubagentManager {
       if (c) result.push(c);
     }
     return result;
+  }
+
+  /**
+   * R1: converge durable worker records left non-terminal by a process crash/restart into an
+   * honest terminal state. Active execution is deliberately NOT resumed (recovery is replan-only:
+   * no durable execution journal exists), so a worker recorded as running/waiting/recovering must
+   * not appear alive forever — it failed with the process.
+   */
+  async reconcileStaleWorkers(reason: string): Promise<number> {
+    if (!this.persistence) return 0;
+    const terminal = new Set<AgentWorkerLifecycleState>(["completed", "failed", "cancelled", "blocked"]);
+    const workers = await this.persistence.getWorkItemsByKind("subagent_run");
+    let reconciled = 0;
+    for (const item of workers) {
+      if (item.kind !== "subagent_run" || terminal.has(item.status)) continue;
+      const now = new Date().toISOString();
+      item.status = "failed";
+      item.error = redactSecrets(reason);
+      item.updatedAt = now;
+      if (!item.completedAt) item.completedAt = now;
+      await this.persistence.upsertWorkItem(item);
+      reconciled++;
+    }
+    return reconciled;
   }
 
   /**

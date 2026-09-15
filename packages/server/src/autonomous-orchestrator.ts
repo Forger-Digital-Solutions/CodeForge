@@ -152,6 +152,9 @@ export interface OrchestratorOptions {
   integrationService?: IntegrationService;
   checkpointServiceFactory?: (repoRoot: string) => CheckpointService;
   agentRuntime?: AgentRuntime;
+  getAgentRuntime?: (sessionId: string) => AgentRuntime;
+  /** Enables the additive R1 capsule, durable worker, and artifact instrumentation path. */
+  subagentsR1Enabled?: boolean;
 }
 
 export class AutonomousRunOrchestrator {
@@ -161,6 +164,8 @@ export class AutonomousRunOrchestrator {
   private readonly integrationService: IntegrationService;
   private readonly checkpointServiceFactory: (repoRoot: string) => CheckpointService;
   private readonly agentRuntime?: AgentRuntime;
+  private readonly getAgentRuntime?: (sessionId: string) => AgentRuntime;
+  private readonly subagentsR1Enabled: boolean;
   private readonly runs: Map<string, AutonomousRun> = new Map();
   private readonly abortControllers: Map<string, AbortController> = new Map();
 
@@ -168,13 +173,21 @@ export class AutonomousRunOrchestrator {
     this.workspaceService = options.workspaceService;
     this.persistence = options.persistence;
     this.agentRuntime = options.agentRuntime;
+    this.getAgentRuntime = options.getAgentRuntime;
+    this.subagentsR1Enabled = options.subagentsR1Enabled ?? false;
     this.subagentManager = options.subagentManager ?? createSubagentManager({
       persistence: options.persistence,
       workspaceService: options.workspaceService,
       agentRuntime: options.agentRuntime,
+      getAgentRuntime: options.getAgentRuntime,
+      r1Enabled: options.subagentsR1Enabled,
     });
     this.checkpointServiceFactory = options.checkpointServiceFactory ?? ((repoRoot: string) => createCheckpointService(repoRoot, options.persistence));
     this.integrationService = options.integrationService ?? createIntegrationService({ workspaceService: options.workspaceService, checkpointServiceFactory: this.checkpointServiceFactory });
+  }
+
+  private runtimeForSession(sessionId: string): AgentRuntime | undefined {
+    return this.agentRuntime ?? this.getAgentRuntime?.(sessionId);
   }
 
   private async git(cwd: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
@@ -404,28 +417,40 @@ export class AutonomousRunOrchestrator {
       // PHASE 1: REPOSITORY EXPLORATION (Read-Only)
       // ==========================================
       this.transitionRun(run, "exploring", adapter);
-      counters.childrenSpawned++;
-      const explorerResult = await this.subagentManager.spawnChildAgent({
+      const explorerTasks = this.subagentsR1Enabled
+        ? [
+          `Explore repository structure and relevant files for goal: ${goal}`,
+          `Inspect tests, runtime boundaries, and safety constraints relevant to goal: ${goal}`,
+        ]
+        : [`Explore repository for goal: ${goal}`];
+      counters.childrenSpawned += explorerTasks.length;
+      const explorerResults = await Promise.all(explorerTasks.map((task) => this.subagentManager.spawnChildAgent({
         parentRunId: runId,
+        sessionId,
         agentId: "explorer",
-        task: `Explore repository for goal: ${goal}`,
+        task,
         workspacePath: targetWs.rootPath,
         adapter,
         signal: controller.signal,
         structuredOutput: "explorer",
-      });
+      })));
+      const explorerResult = explorerResults[0]!;
 
-      if (explorerResult.findings) allFindings.push(...explorerResult.findings);
-      if (explorerResult.evidence) allEvidence.push(...explorerResult.evidence);
+      for (const result of explorerResults) {
+        if (result.findings) allFindings.push(...result.findings);
+        if (result.evidence) allEvidence.push(...result.evidence);
+      }
 
       // ==========================================
       // PHASE 2: TASK & EXECUTION PLANNING
       // ==========================================
       this.transitionRun(run, "planning", adapter);
-      if (this.agentRuntime) {
+      const runAgentRuntime = this.subagentsR1Enabled ? this.runtimeForSession(sessionId) : this.agentRuntime;
+      if (runAgentRuntime) {
         counters.childrenSpawned++;
         const plannerResult = await this.subagentManager.spawnChildAgent({
           parentRunId: runId,
+          sessionId,
           agentId: "planner",
           task: `Produce the minimal task graph for goal: ${goal}`,
           workspacePath: targetWs.rootPath,
@@ -509,6 +534,44 @@ export class AutonomousRunOrchestrator {
         if (coderExecutor) {
           const codeExecResult = await coderExecutor(worktreeWs.rootPath, goal, reviewFeedback);
           changedFiles = codeExecResult.filesChanged;
+        } else if (this.subagentsR1Enabled) {
+          const codeResult = await this.subagentManager.spawnChildAgent({
+            parentRunId: runId,
+            sessionId,
+            agentId: "coder",
+            task: goal,
+            workspacePath: worktreeWs.rootPath,
+            parentPermissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+            adapter,
+            signal: controller.signal,
+            taskPlan,
+            reviewFeedback,
+            workspaceKind: "git-worktree",
+            workspaceBranch: worktreeWs.branch,
+          });
+          if (codeResult.status !== "completed") {
+            if (codeResult.status === "cancelled") throw new Error(codeResult.summary);
+            const reason = "SUBAGENT_WRITER_BLOCKED";
+            this.transitionRun(run, "blocked", adapter);
+            run.error = reason;
+            const blockedResult: AutonomousRunResult = {
+              runId,
+              status: "blocked",
+              summary: `Writer did not complete: ${codeResult.summary}`,
+              workspaceId: targetWs.id,
+              baseRevision,
+              changedFiles,
+              review: { passed: false, findings: codeResult.findings },
+              verification: verificationResults,
+              integration: { status: "blocked", branch: worktreeWs.branch, worktreeId: worktreeWs.id, reason },
+              evidence: allEvidence,
+              counters,
+            };
+            run.result = blockedResult;
+            this.persistRun(run);
+            return blockedResult;
+          }
+          changedFiles = codeResult.files;
         } else if (this.agentRuntime) {
           const coderRunResult = await this.agentRuntime.executeAgentRun({
             runId,
@@ -542,6 +605,7 @@ export class AutonomousRunOrchestrator {
         // Spawn independent Reviewer child agent with private context
         const reviewResult = await this.subagentManager.spawnChildAgent({
           parentRunId: runId,
+          sessionId,
           agentId: "reviewer",
           task: `Review implementation for goal: ${goal}`,
           workspacePath: worktreeWs.rootPath,
@@ -551,11 +615,40 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
           adapter,
           signal: controller.signal,
           structuredOutput: "reviewer",
+          workspaceKind: "git-worktree",
+          workspaceBranch: worktreeWs.branch,
         });
 
         reviewFindings = reviewResult.findings || [];
         allFindings.push(...reviewFindings);
         if (reviewResult.evidence) allEvidence.push(...reviewResult.evidence);
+
+        // A reviewer that never delivered a verdict (failed or cancelled — e.g. its wall-clock
+        // budget expired) never passes the review: the absence of findings from a reviewer that
+        // died is not approval. Fail closed into a blocked run, same as persistent blocking
+        // findings below.
+        if (reviewResult.status === "cancelled" || reviewResult.status === "failed") {
+          const reason = reviewResult.status === "cancelled" ? "REVIEWER_CANCELLED" : "REVIEWER_FAILED";
+          const summary = `Independent review did not complete (${reason}): ${reviewResult.summary}`;
+          this.transitionRun(run, "blocked", adapter);
+          run.error = reason;
+          const blockedResult: AutonomousRunResult = {
+            runId,
+            status: "blocked",
+            summary,
+            workspaceId: targetWs.id,
+            baseRevision,
+            changedFiles,
+            review: { passed: false, findings: reviewFindings },
+            verification: verificationResults,
+            integration: { status: "blocked", branch: worktreeWs.branch, worktreeId: worktreeWs.id, reason },
+            evidence: allEvidence,
+            counters,
+          };
+          run.result = blockedResult;
+          this.persistRun(run);
+          return blockedResult;
+        }
 
         const hasBlocking = reviewFindings.some((f) => f.severity === "blocking");
 
@@ -853,6 +946,11 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
           if (effectiveStatus === "blocked") blocked++;
         }
       }
+      // R1: converge any durable worker records the crash left non-terminal. Recovery is
+      // replan-only — no worker execution is resumed — so records must not stay "running".
+      await this.subagentManager
+        .reconcileStaleWorkers("Server restarted during active execution; worker execution is not resumed (replan-only recovery)")
+        .catch(() => 0);
     } catch {}
 
     return { recovered, requiresRevalidation, blocked };

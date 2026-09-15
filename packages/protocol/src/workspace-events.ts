@@ -24,6 +24,11 @@ import {
   ReviewCompletedSchema,
   PermissionRequestedSchema,
 } from "./events.js";
+import {
+  AgentArtifactReferenceSchema,
+  AgentWorkerLifecycleStateSchema,
+  AgentWorkerTelemetrySchema,
+} from "./subagent-runtime.js";
 
 const EventBase = <T extends string, S extends z.ZodType>(type: T, schema: S) =>
   z.object({
@@ -559,6 +564,29 @@ export const SubagentFailedSchema = EventBase(
   }),
 );
 
+export const SubagentLifecycleSchema = EventBase(
+  "subagent.lifecycle",
+  z.object({
+    agentId: z.string(),
+    role: z.string(),
+    parentAgentId: z.string().optional(),
+    task: z.string(),
+    state: AgentWorkerLifecycleStateSchema,
+    capsuleVersion: z.number().int().positive(),
+    model: z.object({ providerId: z.string(), modelId: z.string() }).optional(),
+    telemetry: AgentWorkerTelemetrySchema.optional(),
+    reason: z.string().optional(),
+  }),
+);
+
+export const SubagentArtifactWrittenSchema = EventBase(
+  "subagent.artifact_written",
+  z.object({
+    agentId: z.string(),
+    artifact: AgentArtifactReferenceSchema,
+  }),
+);
+
 export const ValidationStartedSchema = EventBase(
   "validation.started",
   z.object({
@@ -832,6 +860,8 @@ export const WorkspaceEventSchema = z.discriminatedUnion("type", [
   SubagentProgressSchema,
   SubagentCompletedSchema,
   SubagentFailedSchema,
+  SubagentLifecycleSchema,
+  SubagentArtifactWrittenSchema,
   ValidationStartedSchema,
   ValidationCompletedSchema,
   ContextUpdatedSchema,

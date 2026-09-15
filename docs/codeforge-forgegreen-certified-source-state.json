@@ -1,5 +1,5 @@
 {
-  "sourceStateId": "464343d9548f70b354d4496caa1de8ad5e4373612b8a847f0ef643bdfa36c84e",
+  "sourceStateId": "c7bf94a85fb48f9d091302d4939c27214d037eb199a1003a86ddb95da4fe090c",
   "surfaceVersion": "fg12f-certified-v1-free-cloud-r5",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
@@ -40,13 +40,13 @@
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
     "packages/router/package.json": "b2b596febe0eab8a591ed016e9783170c35ed096",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
-    "packages/server/src/agent-runtime.ts": "5a47295d1105f60d2804a2f87930f3f4d4caad86",
-    "packages/server/src/autonomous-orchestrator.ts": "75b5f6244034dd38820d6a0efeee299add80afbf",
+    "packages/server/src/agent-runtime.ts": "e06b963f4f2e0208c2c9ec669c843a2a22b29e10",
+    "packages/server/src/autonomous-orchestrator.ts": "9d99de07fb6c5ba9ab521451137a341c2382980a",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "a46e0238daf63d31820dd6548c362ef6e77981cb",
     "packages/sessions/src/persistence.ts": "773d64921c840a0ca860b6e1985184dace727c8a",
     "packages/sessions/src/postgres-persistence.ts": "f47a6a0e3cd9e3064c17b00b4e6516082f738068",
-    "packages/sessions/src/session-state.ts": "92cf36edd5887521521d1246d0bbc80a84d40103",
+    "packages/sessions/src/session-state.ts": "53d289b6d7a7c8aede5e890939da31b0e1875d76",
     "packages/workflow/src/forge-verify.ts": "a2ebe610ad4ec74a68609c57bba7b19fe6869cdc",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
     "packages/workflow/src/types.ts": "a2b484a4acbcac05a4739c1f6cbf5450ff49fe41",
@@ -356,7 +356,52 @@
       "regressionEvidence": "packages/server (incl. the new no-eligible-route-turn regression), packages/workflow, packages/forge-green and packages/forgegreen-campaign suites, followed by the full R5 regression run and the packaged smoke chain; exact results are recorded in docs/codeforge-free-cloud-platform-r5.*.",
       "recertifiedAt": "2026-09-13",
       "sourceStateConstant": "CODEFORGE_FREE_CLOUD_PLATFORM_R5_SOURCE_STATE"
+    },
+    {
+      "label": "CodeForge SubAgents R1 Phase 0A/1A",
+      "reason": "Added the feature-flagged Phase 0A measurement foundation and Phase 1A fixed safe SubAgent runtime instrumentation. Existing ForgeVerify authority and default behavior remain unchanged; new worker records and artifacts reuse the additive work-item path.",
+      "priorSourceStateId": "464343d9548f70b354d4496caa1de8ad5e4373612b8a847f0ef643bdfa36c84e",
+      "priorSurfaceVersion": "fg12f-certified-v1-free-cloud-r5",
+      "resultingSourceStateId": "ccda36904bc704e65921d0a58b6f5bd1f8f11a8be75bdeaff7062a1142114534",
+      "changes": [
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "Feature-flagged R1 execution runs two parallel read-only explorers and routes the single coder through the existing isolated worktree; the session runtime factory reaches the real per-session AgentRuntime, while the default path remains unchanged.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/sessions/src/session-state.ts",
+          "change": "Added versioned Subagent and ForgeEval work-item schemas to the existing JSON work-item union; no SQL migration.",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "Phase 0A/1A targeted tests, the full Vitest suite, and root TypeScript build; source-state recertification refreshed after the authorized production changes.",
+      "recertifiedAt": "2026-09-14",
+      "sourceStateConstant": "CODEFORGE_SUBAGENTS_R1_SOURCE_STATE"
+    },
+    {
+      "label": "CodeForge SubAgents R1 Phase 2 — role-aware routing and fail-closed review",
+      "reason": "R1 Phase 2 wires role-aware Managed-Free routing into the SubAgent execution path (the Managed-Free fleet objective) and closes the observed fail-open where an independent reviewer that never delivered a verdict approved the change. Routing decisions remain inside the certified free boundary: 8-Bit eligibility contracts, cooldowns, and (when wired) Free Cloud admission gates apply to every selection and every failover replacement; explicit model selections are never substituted. ForgeGreen optimization candidates, the verification-evidence-reuse advisor, the FG-12F cost gate and ForgeVerify validity authority are untouched; prior campaign evidence remains historically accurate for its recorded source state.",
+      "priorSourceStateId": "ccda36904bc704e65921d0a58b6f5bd1f8f11a8be75bdeaff7062a1142114534",
+      "priorSurfaceVersion": "fg12f-certified-v1-free-cloud-r5",
+      "resultingSourceStateId": "c7bf94a85fb48f9d091302d4939c27214d037eb199a1003a86ddb95da4fe090c",
+      "resultingSurfaceVersion": "fg12f-certified-v1-free-cloud-r5",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Agent runs (the path SubAgent workers execute) can now resolve their route through 8-Bit's role-scoped eligibility/ranking when the caller enables role routing, so explorer/planner/coder/reviewer workers are served by qualified, healthy free routes instead of one shared fallback model; provider failures rotate within the free fleet under the existing classification/cooldown machinery with the same routeFilter and same-model alternates as the lead turn, while an explicitly selected model is never substituted. When no fleet route exists (no eligible model with a registered adapter) the previous deterministic provider-catalog fallback is preserved. Route success/failure is recorded to 8-Bit health and the shared Free Cloud health view.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "A review phase whose independent reviewer failed or was cancelled now fails the run closed (REVIEWER_CANCELLED/REVIEWER_FAILED) instead of vacuously passing on empty findings, and restart recovery converges durable worker records left non-terminal by a crash into an honest failed state (replan-only recovery: no worker execution is resumed).",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Full Vitest suite (2,384+ passed), the R1-focused orchestrator/subagent suites, the new role-routing suite (fleet resolution, fail-closed no-route, bounded failover rotation, exact-model no-substitution, legacy fallback), the stale-worker reconciliation test, and live Groq/Cloudflare certification plus a live R1 end-to-end run with passing real verification recorded in docs/evidence/.",
+      "recertifiedAt": "2026-09-15",
+      "sourceStateConstant": "CODEFORGE_SUBAGENTS_R1_PHASE2_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above."
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above."
 }

@@ -108,6 +108,8 @@ export interface ServerOptions {
    * qualification receipts persist in this server's session database.
    */
   freeCloud?: FreeCloudService;
+  /** R1 additive instrumentation path; disabled unless explicitly enabled. */
+  subagentsR1Enabled?: boolean;
 }
 
 /** Minimal desktop-facing shutdown facts. Counts only; task payloads and secrets stay in the runtime. */
@@ -135,6 +137,7 @@ export class CodeForgeServer {
   private firewall: ForgeZero;
   private providerCatalog: ProviderCatalog;
   private readonly freeCloud?: FreeCloudService;
+  private readonly subagentsR1Enabled: boolean;
   private runtimes: Map<string, AgentRuntime> = new Map();
   private useRealRuntime: boolean;
   private activeWorkspacePath: string | null = null;
@@ -185,6 +188,7 @@ export class CodeForgeServer {
     });
     this.providerCatalog = options.providerCatalog ?? new InMemoryProviderCatalog();
     this.freeCloud = options.freeCloud;
+    this.subagentsR1Enabled = options.subagentsR1Enabled ?? process.env.CODEFORGE_SUBAGENTS_R1 === "true";
     this.useRealRuntime = options.useRealRuntime ?? process.env.CODEFORGE_REAL_RUNTIME === "true";
 
     // Validate that API keys are available if real runtime is requested
@@ -231,6 +235,8 @@ export class CodeForgeServer {
     this.orchestrator = createAutonomousRunOrchestrator({
       workspaceService: this.workspaceService,
       persistence: this.persistence,
+      ...(this.subagentsR1Enabled ? { getAgentRuntime: (sessionId: string) => this.getOrCreateRuntime(sessionId) } : {}),
+      subagentsR1Enabled: this.subagentsR1Enabled,
     });
     this.workflowService = createWorkflowService({
       eventStore: this.eventStore,
@@ -2479,6 +2485,7 @@ export * from "./parallel-state.js";
 export * from "./parallel-orchestrator.js";
 export * from "./mission-state.js";
 export * from "./mission-supervisor.js";
+export * from "./task-capsule.js";
 export * from "./publication-artifact.js";
 export * from "./cloud-publication-client.js";
 export * from "./cloud-publication-bridge.js";

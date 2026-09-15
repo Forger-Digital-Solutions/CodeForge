@@ -190,6 +190,24 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent);
   }
 
+  emitSubagentLifecycle(input: {
+    agentId: string;
+    role: string;
+    parentAgentId?: string;
+    task: string;
+    state: import("@codeforge/protocol").AgentWorkerLifecycleState;
+    capsuleVersion: number;
+    model?: { providerId: string; modelId: string };
+    telemetry?: import("@codeforge/protocol").AgentWorkerTelemetry;
+    reason?: string;
+  }): Promise<void> {
+    return this.emit({ type: "subagent.lifecycle", payload: input } as WorkspaceEvent);
+  }
+
+  emitSubagentArtifactWritten(artifact: import("@codeforge/protocol").AgentArtifactReference, agentId: string): Promise<void> {
+    return this.emit({ type: "subagent.artifact_written", payload: { agentId, artifact } } as WorkspaceEvent);
+  }
+
   emitFileRead(fileCallId: string, path: string, lines?: number): void {
     this.emitBestEffort({
       type: "file.read",

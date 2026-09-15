@@ -34,6 +34,23 @@ function renderAgentTree(agents: InspectionAgent[]): React.ReactNode {
             {agent.task ? <div className="run-inspection-secondary">{agent.task}</div> : null}
             {agent.failure ? <div className="run-inspection-error">{agent.failure}</div> : null}
             {agent.result ? <div className="run-inspection-secondary">{agent.result}</div> : null}
+            {agent.model || agent.telemetry || agent.artifacts?.length || agent.capsule ? (
+              <details className="run-inspection-agent-details">
+                <summary>Worker details</summary>
+                {agent.model ? <div className="run-inspection-secondary">Model: {agent.model.providerId} / {agent.model.modelId}</div> : null}
+                {agent.telemetry ? <div className="run-inspection-secondary">Usage: {agent.telemetry.inputTokens + agent.telemetry.outputTokens} tokens · {agent.telemetry.toolCalls} tools · {agent.telemetry.wallTimeMs}ms</div> : null}
+                {agent.capsule ? <details>
+                  <summary>Task Capsule</summary>
+                  <div className="run-inspection-secondary">{agent.capsule.assignment}: {agent.capsule.goal}</div>
+                  <div className="run-inspection-secondary">Required output: {agent.capsule.requiredOutput.join(", ")}</div>
+                  <div className="run-inspection-secondary">Constraints: {agent.capsule.constraints.join(" · ")}</div>
+                </details> : null}
+                {agent.artifacts?.length ? <div>
+                  <div className="run-inspection-secondary">Evidence artifacts</div>
+                  <ul className="run-inspection-list">{agent.artifacts.map((artifact) => <li key={artifact.ref}><code>{artifact.ref}</code> · {artifact.digest.slice(0, 12)}</li>)}</ul>
+                </div> : null}
+              </details>
+            ) : null}
             {renderNodes(agent.id)}
           </li>
         ))}

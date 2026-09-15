@@ -14,6 +14,8 @@ import {
   PermissionPolicySchema,
   EvidenceReferenceKindSchema,
   ContextReferenceTypeSchema,
+  SubagentRunWorkItemSchema,
+  ForgeEvalExperimentWorkItemSchema,
 } from "@codeforge/protocol";
 
 export const SessionRecordSchema = z.object({
@@ -49,6 +51,8 @@ export const TurnRecordSchema = z.object({
 export type TurnRecord = z.infer<typeof TurnRecordSchema>;
 
 export const WorkItemSchema = z.discriminatedUnion("kind", [
+  SubagentRunWorkItemSchema,
+  ForgeEvalExperimentWorkItemSchema,
   z.object({
     kind: z.literal("activity"),
     id: z.string(),

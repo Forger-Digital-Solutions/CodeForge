@@ -1,4 +1,5 @@
 import type { WorkspaceEvent } from "@codeforge/protocol";
+import type { AgentWorkerLifecycleState, AgentWorkerTelemetry, AgentArtifactReference, TaskCapsule } from "@codeforge/protocol";
 import type { WorkItem } from "@codeforge/sessions";
 
 type InspectionRecord = Extract<WorkItem, { kind: "run_inspection" }>;
@@ -26,6 +27,10 @@ export interface InspectionAgent {
   completedAt?: string;
   result?: string;
   failure?: string;
+  capsule?: TaskCapsule;
+  model?: { providerId: string; modelId: string };
+  telemetry?: AgentWorkerTelemetry;
+  artifacts?: AgentArtifactReference[];
 }
 
 export interface InspectionTool {
@@ -200,6 +205,14 @@ function upsertTool(tools: Map<string, InspectionTool>, tool: InspectionTool): v
   tools.set(tool.id, { ...tools.get(tool.id), ...tool });
 }
 
+function displayWorkerStatus(state: AgentWorkerLifecycleState): InspectionAgent["status"] {
+  if (state === "blocked") return "blocked";
+  if (state === "failed") return "failed";
+  if (state === "cancelled") return "cancelled";
+  if (state === "completed") return "completed";
+  return "running";
+}
+
 function fromSnapshot(snapshot: InspectionRecord): Pick<RunInspectionState, "changes" | "verification" | "forgeVerify" | "repairs" | "review" | "completion" | "workspace" | "title" | "status" | "phase" | "startedAt" | "completedAt" | "provider" | "usage"> {
   return {
     title: snapshot.taskTitle,
@@ -303,6 +316,24 @@ export function projectRunInspection(events: WorkspaceEvent[], workItems: WorkIt
       case "subagent.failed":
         upsertAgent(agents, { id: event.payload.agentId, role: agents.get(event.payload.agentId)?.role ?? "Subagent", status: "failed", completedAt: event.timestamp, failure: event.payload.error });
         break;
+      case "subagent.lifecycle":
+        upsertAgent(agents, {
+          id: event.payload.agentId,
+          role: event.payload.role,
+          task: event.payload.task,
+          ...(event.payload.parentAgentId ? { parentId: event.payload.parentAgentId } : {}),
+          status: displayWorkerStatus(event.payload.state),
+          ...(event.payload.model ? { model: event.payload.model } : {}),
+          ...(event.payload.telemetry ? { telemetry: event.payload.telemetry } : {}),
+          ...(event.payload.reason ? { failure: event.payload.reason } : {}),
+          ...(event.payload.state === "completed" || event.payload.state === "blocked" || event.payload.state === "failed" || event.payload.state === "cancelled" ? { completedAt: event.timestamp } : {}),
+        });
+        break;
+      case "subagent.artifact_written": {
+        const prior = agents.get(event.payload.agentId);
+        if (prior) upsertAgent(agents, { ...prior, artifacts: [...(prior.artifacts ?? []), event.payload.artifact] });
+        break;
+      }
       case "tool.started":
         upsertTool(tools, { id: event.payload.toolCallId, name: event.payload.tool, status: "running", startedAt: event.timestamp });
         break;
@@ -424,6 +455,24 @@ export function projectRunInspection(events: WorkspaceEvent[], workItems: WorkIt
 
   const snapshot = latestInspectionRecord(workItems, runId);
   if (snapshot) Object.assign(state, fromSnapshot(snapshot));
+  for (const item of workItems) {
+    if (item.kind !== "subagent_run" || item.parentRunId !== runId) continue;
+    upsertAgent(agents, {
+      id: item.id,
+      role: item.role,
+      parentId: item.parentRunId,
+      task: item.task,
+      status: displayWorkerStatus(item.status),
+      ...(item.startedAt ? { startedAt: item.startedAt } : {}),
+      ...(item.completedAt ? { completedAt: item.completedAt } : {}),
+      ...(item.resultSummary ? { result: item.resultSummary } : {}),
+      ...(item.error ? { failure: item.error } : {}),
+      capsule: item.capsule,
+      ...(item.model ? { model: item.model } : {}),
+      telemetry: item.telemetry,
+      artifacts: item.artifacts,
+    });
+  }
   state.agents = [...agents.values()];
   state.tools = [...tools.values()];
   state.changes = snapshot ? state.changes : [...changes.values()];

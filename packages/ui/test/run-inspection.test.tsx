@@ -64,6 +64,50 @@ describe("run inspection projection", () => {
     expect(html).toContain("Unavailable");
   });
 
+  it("renders durable R1 worker details from lifecycle events and work items", () => {
+    const worker: Extract<WorkItem, { kind: "subagent_run" }> = {
+      kind: "subagent_run",
+      id: "worker-1",
+      sessionId: "session-a",
+      parentRunId: "run-a",
+      agentId: "worker-1",
+      role: "Explorer",
+      task: "Map the repository",
+      depth: 1,
+      status: "completed",
+      capsule: {
+        schemaVersion: 1,
+        assignment: "explorer worker",
+        goal: "Map the repository",
+        relevantFiles: ["src/index.ts"],
+        knownEvidence: ["test:fixture"],
+        constraints: ["read only"],
+        requiredOutput: ["evidence references"],
+      },
+      permissions: { read: true, search: true, write: false, executeCommand: false, network: false },
+      allowedTools: ["read_file"],
+      workspace: { id: "workspace-a", kind: "local" },
+      budget: { maxModelTurns: 3, maxToolCalls: 10, maxContextTokens: 1000, wallTimeMs: 5000 },
+      telemetry: { wallTimeMs: 42, modelRequests: 1, inputTokens: 10, outputTokens: 5, toolCalls: 2, retryCount: 0, duplicateWorkCount: 0, providerFailures: 0 },
+      artifacts: [{ kind: "worker_result", ref: "forge://worker-1/result", digest: "digest-1", producerAgentId: "worker-1", createdAt: timestamp }],
+      resultSummary: "Repository map ready",
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      startedAt: timestamp,
+      completedAt: timestamp,
+    };
+    const events = [
+      event("subagent.lifecycle", 1, { agentId: "worker-1", role: "Explorer", parentAgentId: "run-a", task: "Map the repository", state: "completed", capsuleVersion: 1, telemetry: worker.telemetry }),
+    ];
+
+    const result = projectRunInspection(events, [worker], "run-a");
+    expect(result.agents[0]).toMatchObject({ id: "worker-1", status: "completed", capsule: worker.capsule, artifacts: worker.artifacts });
+    const html = renderToStaticMarkup(React.createElement(RunInspection, { events, workItems: [worker], preferredRunId: "run-a" }));
+    expect(html).toContain("Worker details");
+    expect(html).toContain("evidence references");
+    expect(html).toContain("forge://worker-1/result");
+  });
+
   it("keeps Run A evidence out of Run B even when agent IDs collide", () => {
     const events = [
       event("task.created", 1, { taskId: "run-a", title: "A", mode: "autonomous" }, "run-a"),

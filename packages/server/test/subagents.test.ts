@@ -173,4 +173,102 @@ describe("Subagent Foundation — Explorer, Reviewer, Privilege Ceiling & Contex
 
     expect(result.status).toBe("cancelled");
   });
+
+  it("persists the R1 Task Capsule, lifecycle, telemetry, and result artifact", async () => {
+    const adapter = createWorkspaceEventAdapter({
+      sessionId: "sess-sub-1",
+      eventStore,
+      persistence,
+    });
+    const manager = createSubagentManager({ persistence, r1Enabled: true });
+
+    const result = await manager.spawnChildAgent({
+      parentRunId: "run-r1-1",
+      sessionId: "sess-sub-1",
+      agentId: "explorer",
+      task: "Map the fixture workspace",
+      workspacePath: ws,
+      contextSummary: "The parent needs a bounded repository map.",
+      adapter,
+    });
+
+    expect(result.status).toBe("completed");
+    const worker = (await persistence.getWorkItemsByKind("subagent_run")).find((item) => item.kind === "subagent_run");
+    expect(worker).toMatchObject({
+      kind: "subagent_run",
+      sessionId: "sess-sub-1",
+      parentRunId: "run-r1-1",
+      agentId: "explorer",
+      status: "completed",
+      capsule: {
+        schemaVersion: 1,
+        assignment: "explorer worker",
+        goal: "Map the fixture workspace",
+      },
+      telemetry: {
+        inputTokens: 0,
+        outputTokens: 0,
+        toolCalls: 0,
+      },
+    });
+    expect(worker?.capsule.requiredOutput).toContain("evidence references");
+    expect(worker?.artifacts).toHaveLength(1);
+
+    const artifact = (await persistence.getWorkItemsByKind("artifact")).find((item) => item.kind === "artifact" && item.id.includes("child-"));
+    expect(artifact?.content).toContain("Map the fixture workspace");
+
+    const lifecycleStates = eventStore
+      .getAll()
+      .filter((event) => event.type === "subagent.lifecycle")
+      .map((event) => event.payload.state);
+    expect(lifecycleStates).toEqual(["created", "starting", "running", "completed"]);
+    expect(eventStore.getAll().some((event) => event.type === "subagent.artifact_written")).toBe(true);
+  });
+
+  it("keeps the R1 persistence path disabled unless explicitly enabled", async () => {
+    const manager = createSubagentManager({ persistence });
+
+    await expect(manager.spawnChildAgent({
+      parentRunId: "run-r1-disabled",
+      sessionId: "sess-sub-1",
+      agentId: "explorer",
+      task: "Map the fixture workspace",
+      workspacePath: ws,
+    })).resolves.toMatchObject({ status: "completed" });
+
+    expect(await persistence.getWorkItemsByKind("subagent_run")).toEqual([]);
+  });
+
+  it("converges worker records left non-terminal by a crash into an honest failed state", async () => {
+    const adapter = createWorkspaceEventAdapter({
+      sessionId: "sess-sub-1",
+      eventStore,
+      persistence,
+    });
+    const manager = createSubagentManager({ persistence, r1Enabled: true });
+
+    await manager.spawnChildAgent({
+      parentRunId: "run-r1-crash",
+      sessionId: "sess-sub-1",
+      agentId: "explorer",
+      task: "Map the fixture workspace",
+      workspacePath: ws,
+      contextSummary: "The parent needs a bounded repository map.",
+      adapter,
+    });
+
+    const worker = (await persistence.getWorkItemsByKind("subagent_run")).find((item) => item.kind === "subagent_run");
+    if (!worker || worker.kind !== "subagent_run") throw new Error("worker record missing");
+    worker.status = "running";
+    worker.completedAt = undefined;
+    await persistence.upsertWorkItem(worker);
+
+    const reconciled = await manager.reconcileStaleWorkers("Server restarted during active execution");
+    expect(reconciled).toBe(1);
+
+    const workers = await persistence.getWorkItemsByKind("subagent_run");
+    const converged = workers.find((item) => item.kind === "subagent_run");
+    expect(converged && converged.kind === "subagent_run" ? converged.status : undefined).toBe("failed");
+    expect(converged && converged.kind === "subagent_run" ? converged.error : undefined).toContain("Server restarted during active execution");
+  });
 });
