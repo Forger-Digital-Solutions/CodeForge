@@ -200,3 +200,5 @@ export class ForgeEvalHarness {
     };
   }
 }
+
+export * from "./r3-corpus.js";
