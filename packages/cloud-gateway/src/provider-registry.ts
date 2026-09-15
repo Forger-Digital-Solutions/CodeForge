@@ -203,6 +203,13 @@ export class CloudProviderRegistry {
   }
 
   private async runDiscovery(): Promise<ProviderCapacityReport[]> {
+    if (this.registry.source !== "live") {
+      try {
+        await this.registry.refresh({ timeoutMs: this.timeoutMs });
+      } catch {
+        // Degrade gracefully if models.dev unreachable
+      }
+    }
     const results = await Promise.all(this.providerIds.map((id) => this.discoverProvider(id)));
     for (const r of results) this.reports.set(r.providerId, r);
     return results;

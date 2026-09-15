@@ -440,3 +440,15 @@ export {
 export * as OpenRouterOAuth from "./openrouter-oauth.js";
 export { redactSecrets } from "./redact.js";
 export { HostedProviderAdapter, type HostedProviderOptions } from "./hosted.js";
+export {
+  ProviderCapacityGovernor,
+  GovernedProviderAdapter,
+  DEFAULT_FALLBACK_LIMITS,
+  defaultCapacityGovernor,
+  estimatePromptTokens,
+  type ObservedQuota,
+  type ProviderCapacityLimit,
+  type Reservation,
+  type ProviderCapacityGovernorOptions,
+  type ProviderCapacityReport,
+} from "./capacity-governor.js";
