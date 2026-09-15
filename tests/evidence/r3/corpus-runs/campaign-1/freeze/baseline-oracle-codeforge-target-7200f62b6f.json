@@ -1,0 +1,8 @@
+{
+  "key": "codeforge-target-7200f62b6f",
+  "args": "packages/server/test/agent-tool-loop.test.ts",
+  "failingIds": [],
+  "files": [
+    "packages/server/test/agent-tool-loop.test.ts"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "schema": "r3-failure-registry-v1",
+  "updatedAt": "2026-09-15T20:10:00Z",
+  "entries": [
+    {
+      "id": "FR-001",
+      "discoveredAt": "2026-09-15T19:55:00Z",
+      "discoveredBy": "r3-rc2-corpus-freeze-baseline-verification",
+      "severity": "P1",
+      "title": "Build-stamped Cloud endpoint manifest committed to the repository",
+      "description": "Commit 8c14569 committed cloud-endpoints.json with channel='staging', violating the manifest's own documented contract (packaging stamps the channel at build time; the committed default is development). This broke apps/desktop/test/cloud-endpoint.test.ts 'parses the committed repository manifest' (suite went 2453 passed / 1 failed at HEAD 63fa479, contradicting the certified 0-failed claim) and pointed non-packaged developer checkouts at the staging Cloud origin instead of the local development server.",
+      "generalCause": "A release-preparation step mutated a tracked source file instead of a build-local copy, and the change was not re-verified against the full suite before certification evidence was recorded.",
+      "fix": "Restored the committed manifest to channel='development' while keeping the staging endpoint entry recorded for the known staging deployment (commit c217e96).",
+      "regressionCoverage": "apps/desktop/test/cloud-endpoint.test.ts (existing test detected the regression; restored to green).",
+      "status": "FIXED"
+    },
+    {
+      "id": "FR-002",
+      "discoveredAt": "2026-09-15T20:05:00Z",
+      "discoveredBy": "r3-rc2-corpus-runner-design-review",
+      "severity": "P1",
+      "title": "Deterministic verification gate cannot pass real monorepo suites (300s per-command ceiling, no override)",
+      "description": "runVerification enforces a 300s per-command timeout and no caller could override it. This repository's own full 'npm test' runs ~15-20 minutes, so any autonomous run whose verification command is a real monorepo suite has that command killed into a fabricated failure and the run terminates blocked with VERIFICATION_FAILED.",
+      "generalCause": "A defensive default timeout was made non-configurable; the verification-service comment acknowledged long real suites but no opt-in path existed.",
+      "fix": "Added caller-opt-in verificationTimeoutMs to OrchestratorRunOptions, forwarded to runVerification (commit bf6bc14). Default unchanged (300s) for every existing path; the corpus runner passes 45 minutes for monorepo-suite oracles.",
+      "regressionCoverage": "The corpus itself is the regression proof: every CodeForge npm-test task exercises the raised ceiling (its oracle requires >15 minutes of verification). The default ceiling remains covered by existing verification-service timeout tests.",
+      "status": "FIXED"
+    }
+  ]
+}

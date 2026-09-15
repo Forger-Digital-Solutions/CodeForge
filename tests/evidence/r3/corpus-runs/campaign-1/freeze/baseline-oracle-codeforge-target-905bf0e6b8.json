@@ -1,0 +1,8 @@
+{
+  "key": "codeforge-target-905bf0e6b8",
+  "args": "packages/providers/test/capacity-governor.test.ts",
+  "failingIds": [],
+  "files": [
+    "packages/providers/test/capacity-governor.test.ts"
+  ]
+}

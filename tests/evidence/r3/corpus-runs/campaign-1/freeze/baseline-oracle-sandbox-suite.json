@@ -1,0 +1,10 @@
+{
+  "key": "sandbox-suite",
+  "args": "",
+  "failingIds": [
+    "test/math.test.ts::math dividing by zero yields zero"
+  ],
+  "files": [
+    "test/math.test.ts"
+  ]
+}

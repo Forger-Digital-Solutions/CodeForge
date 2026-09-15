@@ -1,0 +1,8 @@
+{
+  "key": "codeforge-target-31e55b9f7e",
+  "args": "packages/workflow/test/completion-gate.test.ts",
+  "failingIds": [],
+  "files": [
+    "packages/workflow/test/completion-gate.test.ts"
+  ]
+}

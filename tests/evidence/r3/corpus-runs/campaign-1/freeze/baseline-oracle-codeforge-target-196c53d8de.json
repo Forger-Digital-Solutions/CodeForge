@@ -1,0 +1,8 @@
+{
+  "key": "codeforge-target-196c53d8de",
+  "args": "packages/server/test/subagents.test.ts",
+  "failingIds": [],
+  "files": [
+    "packages/server/test/subagents.test.ts"
+  ]
+}

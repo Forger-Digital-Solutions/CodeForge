@@ -1,0 +1,213 @@
+{
+  "schema": "r3-corpus-freeze-v1",
+  "frozenAt": "2026-09-15T20:18:41.582Z",
+  "campaign": "campaign-1",
+  "corpus": {
+    "manifest": "cbf3caba7f1163b7d4e7dad16e2dd0a70abe5b154930b5037ecb75e4cd909f18",
+    "r3CorpusSrc": "ec70ca889996a0f820ee11543a5d7282ccb3ab386ab6ebfd5f50f1fdfd7e9f78",
+    "benchmarkIndexSrc": "942ea5265021e639ebb3ab254b7174bf33117f2625cc398f504fcea393357efd",
+    "benchmarkDistR3Corpus": "53f7207f1fc5f2dd496a98e61a51ba3ff8679c04e2d616035c5c31415fa4cea6"
+  },
+  "runner": {
+    "script": "d008ff9cf4115e63efa50f2a5e85d1e896bfcfe50d7bf50b8345f7a887b73191",
+    "wrapper": "88e9732a1a5cc5cb060da5eaca0bd30c7d4e4c709a41181804ced9fa0b84456f"
+  },
+  "startStates": {
+    "G:/dogfood/sandbox-repo": {
+      "manifestDeclared": "d45db35",
+      "resolved": "d45db3547b49f5dcbf7a46cb785c12bf84be26bf"
+    },
+    "G:/dogfood/codeforge-dogfood": {
+      "manifestDeclared": "ef6b6d4",
+      "resolved": "ef6b6d446509714afb234e3c1d34046cc42a11ff"
+    },
+    "G:/CodeForge": {
+      "manifestDeclared": "850513c",
+      "resolved": "3bedc1639f908f72996d3987ac4aa2a8a8a64d62"
+    }
+  },
+  "resolutions": [
+    {
+      "scope": "codeforge-start-state",
+      "manifestDeclared": "850513c",
+      "resolved": "3bedc1639f908f72996d3987ac4aa2a8a8a64d62",
+      "decidedAt": "2026-09-15T20:18:41.582Z",
+      "rationale": "Five adversarial oracle commands reference test files introduced by the certified post-freeze R3-RC2 hardening commits (44ea7b2, 71f7a9a); at 850513c those oracles cannot execute at all. The repository is authoritative and the hardening is certified work, so CodeForge tasks resolve to the certified HEAD, decided before any task executed."
+    },
+    {
+      "scope": "oracle-semantics",
+      "decision": "npm test is equivalent to 'npx vitest run' in all three target repos. Because the frozen sandbox and dogfood starting states carry pre-existing failing tests unrelated to their task targets, the frozen standard is enforced by scripts/r3-oracle-wrapper.mjs: no test may fail that was not already failing in the baseline captured at the frozen starting commit, and every baseline-collected test file must remain collected. Baselines and their hashes are frozen here before execution."
+    },
+    {
+      "scope": "sandbox-untracked-scratch",
+      "decision": "Untracked scratch files NOTES.md and src/scratch.ts were removed from the sandbox working dir before execution so every task worktree starts pristine at the frozen commit."
+    }
+  ],
+  "baselineKeys": {
+    "sandbox-suite": {
+      "args": "",
+      "file": "baseline-oracle-sandbox-suite.json",
+      "hash": "9a82db6950213d684ce653665184e69142f1d7e0e6331ad2269e57d7e8fa2670",
+      "failing": 1,
+      "files": 1
+    },
+    "dogfood-suite": {
+      "args": "",
+      "file": "baseline-oracle-dogfood-suite.json",
+      "hash": "723d6c976156b7247b14419716b0d6875d3c91823efaa1ad26295d73ea50b229",
+      "failing": 15,
+      "files": 240
+    },
+    "codeforge-suite": {
+      "args": "",
+      "file": "baseline-oracle-codeforge-suite.json",
+      "hash": "2f4552e7fec3a0d57d7b122829ef8fb3211df46a7ad91f525613c9973719d348",
+      "failing": 0,
+      "files": 335
+    },
+    "codeforge-target-142bd25603": {
+      "args": "packages/server/test/run-recovery.test.ts",
+      "file": "baseline-oracle-codeforge-target-142bd25603.json",
+      "hash": "b346f6755400dc36d40685835c1415faf9d29cab54d7ea083ea99525f4eae47a",
+      "failing": 0,
+      "files": 1
+    },
+    "codeforge-target-5ced78aa56": {
+      "args": "packages/server/test/multi-subagent-concurrency.test.ts",
+      "file": "baseline-oracle-codeforge-target-5ced78aa56.json",
+      "hash": "b97900ee6bb2db8f137d68c03a12b2be13fa56f4b9f673c1f1aa2b77e81e7b48",
+      "failing": 0,
+      "files": 1
+    },
+    "codeforge-target-196c53d8de": {
+      "args": "packages/server/test/subagents.test.ts",
+      "file": "baseline-oracle-codeforge-target-196c53d8de.json",
+      "hash": "8d9adce3c78c7dc925a1adf348e704c8ad7699fc8aadb9ef2df0b869e192e464",
+      "failing": 0,
+      "files": 1
+    },
+    "codeforge-target-905bf0e6b8": {
+      "args": "packages/providers/test/capacity-governor.test.ts",
+      "file": "baseline-oracle-codeforge-target-905bf0e6b8.json",
+      "hash": "23d28c4762374b6643911d882674cf99962518f5ac82863b30e71cf39b438153",
+      "failing": 0,
+      "files": 1
+    },
+    "codeforge-target-7200f62b6f": {
+      "args": "packages/server/test/agent-tool-loop.test.ts",
+      "file": "baseline-oracle-codeforge-target-7200f62b6f.json",
+      "hash": "f1c0c73d622f8c3601882a9ecde0c97d4d061daa4fadecbc6c32d96215d0f64b",
+      "failing": 0,
+      "files": 1
+    },
+    "codeforge-target-31e55b9f7e": {
+      "args": "packages/workflow/test/completion-gate.test.ts",
+      "file": "baseline-oracle-codeforge-target-31e55b9f7e.json",
+      "hash": "58f72960eb6c2e91abf2bd9eaf61d133e791fbe15188f279b4ffd7da22871382",
+      "failing": 0,
+      "files": 1
+    }
+  },
+  "taskBaselines": {
+    "S-001": "sandbox-suite",
+    "S-002": "sandbox-suite",
+    "S-003": "sandbox-suite",
+    "S-004": "sandbox-suite",
+    "S-005": "sandbox-suite",
+    "S-006": "sandbox-suite",
+    "S-007": "sandbox-suite",
+    "S-008": "sandbox-suite",
+    "S-009": "sandbox-suite",
+    "S-010": "sandbox-suite",
+    "S-011": "sandbox-suite",
+    "S-012": "sandbox-suite",
+    "S-013": "sandbox-suite",
+    "S-014": "sandbox-suite",
+    "S-015": "sandbox-suite",
+    "S-016": "sandbox-suite",
+    "S-017": "sandbox-suite",
+    "S-018": "sandbox-suite",
+    "S-019": "sandbox-suite",
+    "S-020": "sandbox-suite",
+    "N-001": "sandbox-suite",
+    "N-002": "sandbox-suite",
+    "N-003": "sandbox-suite",
+    "N-004": "sandbox-suite",
+    "N-005": "sandbox-suite",
+    "N-006": "sandbox-suite",
+    "N-007": "sandbox-suite",
+    "N-008": "sandbox-suite",
+    "N-009": "sandbox-suite",
+    "N-010": "sandbox-suite",
+    "N-011": "dogfood-suite",
+    "N-012": "dogfood-suite",
+    "N-013": "dogfood-suite",
+    "N-014": "dogfood-suite",
+    "N-015": "dogfood-suite",
+    "N-016": "dogfood-suite",
+    "N-017": "dogfood-suite",
+    "N-018": "dogfood-suite",
+    "N-019": "dogfood-suite",
+    "N-020": "dogfood-suite",
+    "N-021": "dogfood-suite",
+    "N-022": "dogfood-suite",
+    "N-023": "dogfood-suite",
+    "N-024": "dogfood-suite",
+    "N-025": "dogfood-suite",
+    "N-026": "codeforge-suite",
+    "N-027": "codeforge-suite",
+    "N-028": "codeforge-suite",
+    "N-029": "codeforge-suite",
+    "N-030": "codeforge-suite",
+    "N-031": "codeforge-suite",
+    "N-032": "codeforge-suite",
+    "N-033": "codeforge-suite",
+    "N-034": "codeforge-suite",
+    "N-035": "codeforge-suite",
+    "C-001": "sandbox-suite",
+    "C-002": "sandbox-suite",
+    "C-003": "sandbox-suite",
+    "C-004": "sandbox-suite",
+    "C-005": "sandbox-suite",
+    "C-006": "sandbox-suite",
+    "C-007": "sandbox-suite",
+    "C-008": "sandbox-suite",
+    "C-009": "sandbox-suite",
+    "C-010": "sandbox-suite",
+    "C-011": "dogfood-suite",
+    "C-012": "dogfood-suite",
+    "C-013": "dogfood-suite",
+    "C-014": "dogfood-suite",
+    "C-015": "dogfood-suite",
+    "C-016": "dogfood-suite",
+    "C-017": "dogfood-suite",
+    "C-018": "dogfood-suite",
+    "C-019": "dogfood-suite",
+    "C-020": "dogfood-suite",
+    "C-021": "codeforge-suite",
+    "C-022": "codeforge-suite",
+    "C-023": "codeforge-suite",
+    "C-024": "codeforge-suite",
+    "C-025": "codeforge-suite",
+    "C-026": "codeforge-suite",
+    "C-027": "codeforge-suite",
+    "C-028": "codeforge-suite",
+    "C-029": "codeforge-suite",
+    "C-030": "codeforge-suite",
+    "A-001": "codeforge-target-142bd25603",
+    "A-002": "codeforge-target-142bd25603",
+    "A-003": "codeforge-target-142bd25603",
+    "A-004": "codeforge-target-142bd25603",
+    "A-005": "codeforge-target-142bd25603",
+    "A-006": "codeforge-target-142bd25603",
+    "A-007": "codeforge-target-5ced78aa56",
+    "A-008": "codeforge-target-196c53d8de",
+    "A-009": "codeforge-target-5ced78aa56",
+    "A-010": "codeforge-target-5ced78aa56",
+    "A-011": "codeforge-target-905bf0e6b8",
+    "A-012": "codeforge-target-905bf0e6b8",
+    "A-013": "codeforge-target-196c53d8de",
+    "A-014": "codeforge-target-7200f62b6f",
+    "A-015": "codeforge-target-31e55b9f7e"
+  }
+}
