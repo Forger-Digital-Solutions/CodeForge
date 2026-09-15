@@ -139,6 +139,10 @@ export interface OrchestratorRunOptions {
   workspacePath: string;
   goal: string;
   verificationCommands?: string[];
+  /** Per-verification-command ceiling; defaults to runVerification's 300s. Long real suites
+   *  (a monorepo's full `npm test`) need more and must be able to opt in without weakening the
+   *  default for every other caller. */
+  verificationTimeoutMs?: number;
   adapter?: WorkspaceEventAdapter;
   signal?: AbortSignal;
   /** Custom coder executor function for testing or specialized model execution */
@@ -336,7 +340,7 @@ export class AutonomousRunOrchestrator {
    * Execute an autonomous multi-agent engineering run.
    */
   async startRun(options: OrchestratorRunOptions): Promise<AutonomousRunResult> {
-    const { sessionId, workspacePath, goal, verificationCommands = [], adapter, signal, coderExecutor } = options;
+    const { sessionId, workspacePath, goal, verificationCommands = [], verificationTimeoutMs, adapter, signal, coderExecutor } = options;
 
     const runId = `run-${crypto.randomUUID()}`;
     const controller = new AbortController();
@@ -701,7 +705,7 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
 
       const verificationCwd = worktreeWs.rootPath;
       const verificationReport = verificationCommands.length
-        ? await runVerification(verificationCwd, verificationCommands, { signal: controller.signal, runId, ...(this.persistence ? { observer: createForgeVerifyPersistenceObserver(this.persistence, run.sessionId) } : {}) })
+        ? await runVerification(verificationCwd, verificationCommands, { signal: controller.signal, runId, ...(verificationTimeoutMs ? { timeoutMs: verificationTimeoutMs } : {}), ...(this.persistence ? { observer: createForgeVerifyPersistenceObserver(this.persistence, run.sessionId) } : {}) })
         : undefined;
       const verificationPassed = verificationReport ? forgeVerificationPassed(verificationReport) : true;
       if (verificationReport) verificationResults.push(...verificationReport.verifiers.map((verifier) => ({
