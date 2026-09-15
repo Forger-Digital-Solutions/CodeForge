@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-15T00:11:39.941Z",
+  "purpose": "ForgeEval matched A/B: single-agent control vs R1 fixed-team treatment, executed live over the Managed-Free fleet (initial empirical evidence only)",
+  "claimLimit": "One matched pair supports no statistical claim; measurement infrastructure is the deliverable.",
+  "startingStateDigest": "2a4c8306aad4c278628cc2f9036090512c43c3d2e32077490b859a78714cfe50",
+  "control": {
+    "status": "completed",
+    "summary": "Successfully implemented, reviewed, verified, and integrated \"Make the failing test test/math.test.mjs pass by fixing the multiply function in src/math.mjs. Do not modify the tests.\"",
+    "elapsedMs": 96161,
+    "verificationPassed": true,
+    "verification": [
+      {
+        "command": "node --test test/math.test.mjs",
+        "passed": 1
+      }
+    ],
+    "workerCount": 0,
+    "workerModels": [],
+    "tokenCount": 0,
+    "toolCalls": 0,
+    "changedFiles": [
+      "src/math.mjs"
+    ],
+    "counters": {
+      "childrenSpawned": 3,
+      "reviewRounds": 0,
+      "taskAttempts": 1,
+      "verificationAttempts": 1
+    }
+  },
+  "treatment": {
+    "status": "completed",
+    "summary": "Successfully implemented, reviewed, verified, and integrated \"Make the failing test test/math.test.mjs pass by fixing the multiply function in src/math.mjs. Do not modify the tests.\"",
+    "elapsedMs": 151238,
+    "verificationPassed": true,
+    "verification": [
+      {
+        "command": "node --test test/math.test.mjs",
+        "passed": 1
+      }
+    ],
+    "workerCount": 5,
+    "workerModels": [
+      "cloudflare-workers-ai/@cf/openai/gpt-oss-120b"
+    ],
+    "tokenCount": 121594,
+    "toolCalls": 42,
+    "changedFiles": [
+      "src/math.mjs"
+    ],
+    "counters": {
+      "childrenSpawned": 4,
+      "reviewRounds": 0,
+      "taskAttempts": 1,
+      "verificationAttempts": 1
+    }
+  },
+  "experiment": {
+    "kind": "forgeeval_experiment",
+    "id": "forgeeval-ab-2026-09-15-r1-vs-single",
+    "taskId": "math-lib-multiply-fix",
+    "taskType": "single-file-bug-fix",
+    "capsuleDigest": "84976fa75b6e745461e40916fd01c072739721ae69cf364da508ca8c466dee04",
+    "startingStateDigest": "2a4c8306aad4c278628cc2f9036090512c43c3d2e32077490b859a78714cfe50",
+    "controlTopology": "single_agent",
+    "treatmentTopology": "fixed_team",
+    "control": {
+      "status": "pass",
+      "verified": true,
+      "score": 1,
+      "oracleId": "deterministic.node-test",
+      "tier": "deterministic",
+      "reason": "arm status=completed; real verification passed"
+    },
+    "treatment": {
+      "status": "pass",
+      "verified": true,
+      "score": 1,
+      "oracleId": "deterministic.node-test",
+      "tier": "deterministic",
+      "reason": "arm status=completed; real verification passed"
+    },
+    "environmentalDifferences": [
+      "arms ran sequentially against the same live free fleet; provider-side load varies over time",
+      "control arm uses the default single-agent topology; R1 worker records are not persisted on this path"
+    ],
+    "status": "graded",
+    "createdAt": "2026-09-15T00:11:39.941Z",
+    "updatedAt": "2026-09-15T00:11:39.941Z"
+  }
+}
