@@ -57,7 +57,7 @@ export const ModelQualificationReceiptSchema = z.object({
   startedAt: z.string(),
   completedAt: z.string(),
   totalLatencyMs: z.number(),
-  qualificationState: z.enum(["QUALIFIED", "PROBATION", "NOT_QUALIFIED", "HARD_FAILURE"]),
+  qualificationState: z.enum(["QUALIFIED", "PROBATION", "NOT_QUALIFIED", "HARD_FAILURE", "QUOTA_EXHAUSTED"]),
   hardFailureRoles: z.array(EightBitRoleSchema),
   metadata: z.record(z.unknown()).optional(),
 });

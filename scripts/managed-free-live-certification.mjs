@@ -181,8 +181,12 @@ async function certifyProvider(spec) {
   // Provider-observed quota/rate-limit headers only (already filtered upstream); bounded list.
   result.observedResponses = observations.slice(0, 40);
 
+  // A QUOTA_EXHAUSTED route is a capacity wall with a reset time, not a capability verdict —
+  // the provider status must not read as a model failure when the fleet merely hit its allocation.
   if (qualified.length > 0 && qualified.every((state) => state === "QUALIFIED" || state === "PROBATION")) {
     result.status = "CERTIFIED";
+  } else if (qualified.length > 0 && qualified.every((state) => state === "QUOTA_EXHAUSTED")) {
+    result.status = "QUOTA_EXHAUSTED";
   } else if (qualified.length > 0) {
     result.status = "PARTIALLY_CERTIFIED";
   } else if (result.qualifications.length > 0) {

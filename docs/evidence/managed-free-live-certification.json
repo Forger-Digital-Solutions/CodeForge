@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-14T23:50:59.459Z",
+  "generatedAt": "2026-09-15T19:00:09.737Z",
   "purpose": "R1 Managed-Free live provider certification (real external calls; bounded probes; credentials never recorded)",
   "zeroCashPolicy": "Free endpoints only; no upgrade, purchase, or plan activation path was invoked.",
   "providers": [
@@ -10,71 +10,73 @@
       "status": "CERTIFIED",
       "auth": {
         "ok": true,
-        "elapsedMs": 191
+        "elapsedMs": 246
       },
       "catalog": {
         "ok": false,
-        "modelCount": 14,
+        "modelCount": 13,
         "candidatesPresent": [
           "openai/gpt-oss-120b",
           "openai/gpt-oss-20b",
-          "qwen/qwen3.8-27b",
-          "qwen/qwen3.6-27b"
+          "qwen/qwen3.8-27b"
         ],
-        "candidatesAbsent": []
+        "candidatesAbsent": [
+          "qwen/qwen3.6-27b"
+        ]
       },
       "qualifications": [
         {
           "modelId": "openai/gpt-oss-120b",
-          "elapsedMs": 2255,
+          "elapsedMs": 2474,
           "qualificationState": "QUALIFIED",
           "hardFailureRoles": [],
           "roleStatuses": {
             "CODER": "QUALIFIED",
-            "TOOL_AGENT": "QUALIFIED",
-            "ANALYST": "QUALIFIED"
+            "TOOL_AGENT": "PROBATION",
+            "ANALYST": "NOT_QUALIFIED"
           },
           "caseDetails": {
             "CODER:compact.tool_call": {
               "passed": true,
-              "latencyMs": 660,
+              "latencyMs": 419,
               "error": null
             },
             "CODER:compact.edit": {
               "passed": true,
-              "latencyMs": 1065,
+              "latencyMs": 1709,
               "error": null
             },
             "TOOL_AGENT:compact.tool_call": {
               "passed": true,
-              "latencyMs": 660,
+              "latencyMs": 419,
               "error": null
             },
             "TOOL_AGENT:compact.edit": {
               "passed": true,
-              "latencyMs": 1065,
+              "latencyMs": 1709,
               "error": null
             },
             "TOOL_AGENT:compact.structured": {
-              "passed": true,
-              "latencyMs": 530,
+              "passed": false,
+              "latencyMs": 345,
               "error": null
             },
             "ANALYST:compact.structured": {
-              "passed": true,
-              "latencyMs": 530,
+              "passed": false,
+              "latencyMs": 345,
               "error": null
             }
           },
           "metadata": {
             "compact": true,
             "requests": 3,
-            "transient": false
+            "transient": false,
+            "quotaExhausted": false
           }
         },
         {
           "modelId": "openai/gpt-oss-20b",
-          "elapsedMs": 973,
+          "elapsedMs": 1182,
           "qualificationState": "QUALIFIED",
           "hardFailureRoles": [],
           "roleStatuses": {
@@ -85,44 +87,45 @@
           "caseDetails": {
             "CODER:compact.tool_call": {
               "passed": true,
-              "latencyMs": 188,
+              "latencyMs": 204,
               "error": null
             },
             "CODER:compact.edit": {
               "passed": true,
-              "latencyMs": 521,
+              "latencyMs": 596,
               "error": null
             },
             "TOOL_AGENT:compact.tool_call": {
               "passed": true,
-              "latencyMs": 188,
+              "latencyMs": 204,
               "error": null
             },
             "TOOL_AGENT:compact.edit": {
               "passed": true,
-              "latencyMs": 521,
+              "latencyMs": 596,
               "error": null
             },
             "TOOL_AGENT:compact.structured": {
               "passed": true,
-              "latencyMs": 264,
+              "latencyMs": 382,
               "error": null
             },
             "ANALYST:compact.structured": {
               "passed": true,
-              "latencyMs": 264,
+              "latencyMs": 382,
               "error": null
             }
           },
           "metadata": {
             "compact": true,
             "requests": 3,
-            "transient": false
+            "transient": false,
+            "quotaExhausted": false
           }
         },
         {
           "modelId": "qwen/qwen3.8-27b",
-          "elapsedMs": 1163,
+          "elapsedMs": 1639,
           "qualificationState": "QUALIFIED",
           "hardFailureRoles": [],
           "roleStatuses": {
@@ -133,39 +136,40 @@
           "caseDetails": {
             "CODER:compact.tool_call": {
               "passed": true,
-              "latencyMs": 271,
+              "latencyMs": 279,
               "error": null
             },
             "CODER:compact.edit": {
               "passed": true,
-              "latencyMs": 661,
+              "latencyMs": 1160,
               "error": null
             },
             "TOOL_AGENT:compact.tool_call": {
               "passed": true,
-              "latencyMs": 271,
+              "latencyMs": 279,
               "error": null
             },
             "TOOL_AGENT:compact.edit": {
               "passed": true,
-              "latencyMs": 661,
+              "latencyMs": 1160,
               "error": null
             },
             "TOOL_AGENT:compact.structured": {
               "passed": true,
-              "latencyMs": 231,
+              "latencyMs": 200,
               "error": null
             },
             "ANALYST:compact.structured": {
               "passed": true,
-              "latencyMs": 231,
+              "latencyMs": 200,
               "error": null
             }
           },
           "metadata": {
             "compact": true,
             "requests": 3,
-            "transient": false
+            "transient": false,
+            "quotaExhausted": false
           }
         }
       ],
@@ -174,7 +178,7 @@
           "providerId": "groq",
           "status": 200,
           "headers": [],
-          "observedAt": 1789429837092
+          "observedAt": 1789498802360
         },
         {
           "providerId": "groq",
@@ -191,7 +195,7 @@
             ],
             [
               "x-ratelimit-remaining-requests",
-              "995"
+              "999"
             ],
             [
               "x-ratelimit-remaining-tokens",
@@ -199,14 +203,14 @@
             ],
             [
               "x-ratelimit-reset-requests",
-              "7m12s"
+              "1m26.4s"
             ],
             [
               "x-ratelimit-reset-tokens",
               "3.119s"
             ]
           ],
-          "observedAt": 1789429837611
+          "observedAt": 1789498802636
         },
         {
           "providerId": "groq",
@@ -223,22 +227,22 @@
             ],
             [
               "x-ratelimit-remaining-requests",
-              "994"
+              "998"
             ],
             [
               "x-ratelimit-remaining-tokens",
-              "7199"
+              "7264"
             ],
             [
               "x-ratelimit-reset-requests",
-              "8m38.4s"
+              "2m52.8s"
             ],
             [
               "x-ratelimit-reset-tokens",
-              "6.007s"
+              "5.52s"
             ]
           ],
-          "observedAt": 1789429837984
+          "observedAt": 1789498803570
         },
         {
           "providerId": "groq",
@@ -255,22 +259,22 @@
             ],
             [
               "x-ratelimit-remaining-requests",
-              "993"
+              "997"
             ],
             [
               "x-ratelimit-remaining-tokens",
-              "6916"
+              "7091"
             ],
             [
               "x-ratelimit-reset-requests",
-              "10m4.8s"
+              "4m19.2s"
             ],
             [
               "x-ratelimit-reset-tokens",
-              "8.13s"
+              "6.817s"
             ]
           ],
-          "observedAt": 1789429838417
+          "observedAt": 1789498804095
         },
         {
           "providerId": "groq",
@@ -287,22 +291,22 @@
             ],
             [
               "x-ratelimit-remaining-requests",
-              "992"
+              "996"
             ],
             [
               "x-ratelimit-remaining-tokens",
-              "7021"
+              "7032"
             ],
             [
               "x-ratelimit-reset-requests",
-              "11m31.2s"
+              "5m45.6s"
             ],
             [
               "x-ratelimit-reset-tokens",
-              "7.342s"
+              "7.26s"
             ]
           ],
-          "observedAt": 1789429839097
+          "observedAt": 1789498804584
         },
         {
           "providerId": "groq",
@@ -319,22 +323,22 @@
             ],
             [
               "x-ratelimit-remaining-requests",
-              "995"
+              "999"
             ],
             [
               "x-ratelimit-remaining-tokens",
-              "7748"
+              "7584"
             ],
             [
               "x-ratelimit-reset-requests",
-              "7m12s"
+              "1m26.4s"
             ],
             [
               "x-ratelimit-reset-tokens",
-              "1.89s"
+              "3.119s"
             ]
           ],
-          "observedAt": 1789429839470
+          "observedAt": 1789498804997
         },
         {
           "providerId": "groq",
@@ -351,22 +355,22 @@
             ],
             [
               "x-ratelimit-remaining-requests",
-              "994"
+              "998"
             ],
             [
               "x-ratelimit-remaining-tokens",
-              "7390"
+              "7215"
             ],
             [
               "x-ratelimit-reset-requests",
-              "8m38.4s"
+              "2m52.8s"
             ],
             [
               "x-ratelimit-reset-tokens",
-              "4.575s"
+              "5.887s"
             ]
           ],
-          "observedAt": 1789429839834
+          "observedAt": 1789498805259
         },
         {
           "providerId": "groq",
@@ -383,22 +387,22 @@
             ],
             [
               "x-ratelimit-remaining-requests",
-              "993"
+              "997"
             ],
             [
               "x-ratelimit-remaining-tokens",
-              "7217"
+              "6894"
             ],
             [
               "x-ratelimit-reset-requests",
-              "10m4.8s"
+              "4m19.2s"
             ],
             [
               "x-ratelimit-reset-tokens",
-              "5.872s"
+              "8.295s"
             ]
           ],
-          "observedAt": 1789429839961
+          "observedAt": 1789498805512
         },
         {
           "providerId": "groq",
@@ -415,22 +419,22 @@
             ],
             [
               "x-ratelimit-remaining-requests",
-              "992"
+              "996"
             ],
             [
               "x-ratelimit-remaining-tokens",
-              "7011"
+              "6966"
             ],
             [
               "x-ratelimit-reset-requests",
-              "11m31.2s"
+              "5m45.6s"
             ],
             [
               "x-ratelimit-reset-tokens",
-              "7.417s"
+              "7.755s"
             ]
           ],
-          "observedAt": 1789429840194
+          "observedAt": 1789498805882
         },
         {
           "providerId": "groq",
@@ -447,7 +451,7 @@
             ],
             [
               "x-ratelimit-remaining-requests",
-              "995"
+              "999"
             ],
             [
               "x-ratelimit-remaining-tokens",
@@ -455,14 +459,14 @@
             ],
             [
               "x-ratelimit-reset-requests",
-              "7m12s"
+              "1m26.4s"
             ],
             [
               "x-ratelimit-reset-tokens",
               "4.657s"
             ]
           ],
-          "observedAt": 1789429840596
+          "observedAt": 1789498806300
         },
         {
           "providerId": "groq",
@@ -479,22 +483,22 @@
             ],
             [
               "x-ratelimit-remaining-requests",
-              "994"
+              "998"
             ],
             [
               "x-ratelimit-remaining-tokens",
-              "6739"
+              "6816"
             ],
             [
               "x-ratelimit-reset-requests",
-              "8m38.4s"
+              "2m52.8s"
             ],
             [
               "x-ratelimit-reset-tokens",
-              "25.5s"
+              "24.9s"
             ]
           ],
-          "observedAt": 1789429840841
+          "observedAt": 1789498807104
         },
         {
           "providerId": "groq",
@@ -511,22 +515,22 @@
             ],
             [
               "x-ratelimit-remaining-requests",
-              "993"
+              "997"
             ],
             [
               "x-ratelimit-remaining-tokens",
-              "6233"
+              "6307"
             ],
             [
               "x-ratelimit-reset-requests",
-              "10m4.8s"
+              "4m19.2s"
             ],
             [
               "x-ratelimit-reset-tokens",
-              "27s"
+              "26.4s"
             ]
           ],
-          "observedAt": 1789429841256
+          "observedAt": 1789498807458
         },
         {
           "providerId": "groq",
@@ -543,34 +547,34 @@
             ],
             [
               "x-ratelimit-remaining-requests",
-              "992"
+              "996"
             ],
             [
               "x-ratelimit-remaining-tokens",
-              "6437"
+              "6499"
             ],
             [
               "x-ratelimit-reset-requests",
-              "11m31.2s"
+              "5m45.6s"
             ],
             [
               "x-ratelimit-reset-tokens",
-              "13.68s"
+              "11.257s"
             ]
           ],
-          "observedAt": 1789429841419
+          "observedAt": 1789498807591
         }
       ],
       "errors": [],
-      "wallTimeMs": 4583
+      "wallTimeMs": 5541
     },
     {
       "providerId": "cloudflare-workers-ai",
       "displayName": "Cloudflare Workers AI",
-      "status": "CERTIFIED",
+      "status": "QUOTA_EXHAUSTED",
       "auth": {
         "ok": true,
-        "elapsedMs": 1177
+        "elapsedMs": 1578
       },
       "catalog": {
         "ok": false,
@@ -589,146 +593,149 @@
       "qualifications": [
         {
           "modelId": "@cf/openai/gpt-oss-120b",
-          "elapsedMs": 5509,
-          "qualificationState": "QUALIFIED",
+          "elapsedMs": 240,
+          "qualificationState": "QUOTA_EXHAUSTED",
           "hardFailureRoles": [],
           "roleStatuses": {
-            "CODER": "QUALIFIED",
-            "TOOL_AGENT": "QUALIFIED",
-            "ANALYST": "QUALIFIED"
-          },
-          "caseDetails": {
-            "CODER:compact.tool_call": {
-              "passed": true,
-              "latencyMs": 1196,
-              "error": null
-            },
-            "CODER:compact.edit": {
-              "passed": true,
-              "latencyMs": 2528,
-              "error": null
-            },
-            "TOOL_AGENT:compact.tool_call": {
-              "passed": true,
-              "latencyMs": 1196,
-              "error": null
-            },
-            "TOOL_AGENT:compact.edit": {
-              "passed": true,
-              "latencyMs": 2528,
-              "error": null
-            },
-            "TOOL_AGENT:compact.structured": {
-              "passed": true,
-              "latencyMs": 1785,
-              "error": null
-            },
-            "ANALYST:compact.structured": {
-              "passed": true,
-              "latencyMs": 1785,
-              "error": null
-            }
-          },
-          "metadata": {
-            "compact": true,
-            "requests": 3,
-            "transient": false
-          }
-        },
-        {
-          "modelId": "@cf/zai-org/glm-4.7-flash",
-          "elapsedMs": 7303,
-          "qualificationState": "QUALIFIED",
-          "hardFailureRoles": [],
-          "roleStatuses": {
-            "CODER": "QUALIFIED",
-            "TOOL_AGENT": "PROBATION",
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
             "ANALYST": "NOT_QUALIFIED"
           },
           "caseDetails": {
             "CODER:compact.tool_call": {
-              "passed": true,
-              "latencyMs": 1274,
-              "error": null
+              "passed": false,
+              "latencyMs": 239,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
             },
             "CODER:compact.edit": {
-              "passed": true,
-              "latencyMs": 4302,
-              "error": null
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
             },
             "TOOL_AGENT:compact.tool_call": {
-              "passed": true,
-              "latencyMs": 1274,
-              "error": null
+              "passed": false,
+              "latencyMs": 239,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
             },
             "TOOL_AGENT:compact.edit": {
-              "passed": true,
-              "latencyMs": 4302,
-              "error": null
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
             },
             "TOOL_AGENT:compact.structured": {
               "passed": false,
-              "latencyMs": 1727,
-              "error": null
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
             },
             "ANALYST:compact.structured": {
               "passed": false,
-              "latencyMs": 1727,
-              "error": null
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
             }
           },
           "metadata": {
             "compact": true,
-            "requests": 3,
-            "transient": false
+            "requests": 1,
+            "transient": true,
+            "quotaExhausted": true
+          }
+        },
+        {
+          "modelId": "@cf/zai-org/glm-4.7-flash",
+          "elapsedMs": 157,
+          "qualificationState": "QUOTA_EXHAUSTED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 157,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "CODER:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 157,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 1,
+            "transient": true,
+            "quotaExhausted": true
           }
         },
         {
           "modelId": "@cf/nvidia/nemotron-3-120b-a12b",
-          "elapsedMs": 3981,
-          "qualificationState": "QUALIFIED",
+          "elapsedMs": 102,
+          "qualificationState": "QUOTA_EXHAUSTED",
           "hardFailureRoles": [],
           "roleStatuses": {
-            "CODER": "QUALIFIED",
-            "TOOL_AGENT": "QUALIFIED",
-            "ANALYST": "QUALIFIED"
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
+            "ANALYST": "NOT_QUALIFIED"
           },
           "caseDetails": {
             "CODER:compact.tool_call": {
-              "passed": true,
-              "latencyMs": 688,
-              "error": null
+              "passed": false,
+              "latencyMs": 102,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
             },
             "CODER:compact.edit": {
-              "passed": true,
-              "latencyMs": 2428,
-              "error": null
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
             },
             "TOOL_AGENT:compact.tool_call": {
-              "passed": true,
-              "latencyMs": 688,
-              "error": null
+              "passed": false,
+              "latencyMs": 102,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
             },
             "TOOL_AGENT:compact.edit": {
-              "passed": true,
-              "latencyMs": 2428,
-              "error": null
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
             },
             "TOOL_AGENT:compact.structured": {
-              "passed": true,
-              "latencyMs": 865,
-              "error": null
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
             },
             "ANALYST:compact.structured": {
-              "passed": true,
-              "latencyMs": 865,
-              "error": null
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
             }
           },
           "metadata": {
             "compact": true,
-            "requests": 3,
-            "transient": false
+            "requests": 1,
+            "transient": true,
+            "quotaExhausted": true
           }
         }
       ],
@@ -736,90 +743,27 @@
         {
           "providerId": "cloudflare-workers-ai",
           "modelId": "@cf/openai/gpt-oss-120b",
-          "status": 200,
+          "status": 429,
           "headers": [],
-          "observedAt": 1789429843003
-        },
-        {
-          "providerId": "cloudflare-workers-ai",
-          "modelId": "@cf/openai/gpt-oss-120b",
-          "status": 200,
-          "headers": [],
-          "observedAt": 1789429844157
-        },
-        {
-          "providerId": "cloudflare-workers-ai",
-          "modelId": "@cf/openai/gpt-oss-120b",
-          "status": 200,
-          "headers": [],
-          "observedAt": 1789429844902
-        },
-        {
-          "providerId": "cloudflare-workers-ai",
-          "modelId": "@cf/openai/gpt-oss-120b",
-          "status": 200,
-          "headers": [],
-          "observedAt": 1789429846600
+          "observedAt": 1789498809476
         },
         {
           "providerId": "cloudflare-workers-ai",
           "modelId": "@cf/zai-org/glm-4.7-flash",
-          "status": 200,
+          "status": 429,
           "headers": [],
-          "observedAt": 1789429848375
-        },
-        {
-          "providerId": "cloudflare-workers-ai",
-          "modelId": "@cf/zai-org/glm-4.7-flash",
-          "status": 200,
-          "headers": [],
-          "observedAt": 1789429849652
-        },
-        {
-          "providerId": "cloudflare-workers-ai",
-          "modelId": "@cf/zai-org/glm-4.7-flash",
-          "status": 200,
-          "headers": [],
-          "observedAt": 1789429851721
-        },
-        {
-          "providerId": "cloudflare-workers-ai",
-          "modelId": "@cf/zai-org/glm-4.7-flash",
-          "status": 200,
-          "headers": [],
-          "observedAt": 1789429853861
+          "observedAt": 1789498809634
         },
         {
           "providerId": "cloudflare-workers-ai",
           "modelId": "@cf/nvidia/nemotron-3-120b-a12b",
-          "status": 200,
+          "status": 429,
           "headers": [],
-          "observedAt": 1789429855734
-        },
-        {
-          "providerId": "cloudflare-workers-ai",
-          "modelId": "@cf/nvidia/nemotron-3-120b-a12b",
-          "status": 200,
-          "headers": [],
-          "observedAt": 1789429856404
-        },
-        {
-          "providerId": "cloudflare-workers-ai",
-          "modelId": "@cf/nvidia/nemotron-3-120b-a12b",
-          "status": 200,
-          "headers": [],
-          "observedAt": 1789429857097
-        },
-        {
-          "providerId": "cloudflare-workers-ai",
-          "modelId": "@cf/nvidia/nemotron-3-120b-a12b",
-          "status": 200,
-          "headers": [],
-          "observedAt": 1789429858830
+          "observedAt": 1789498809736
         }
       ],
       "errors": [],
-      "wallTimeMs": 17970
+      "wallTimeMs": 2077
     },
     {
       "providerId": "zai",

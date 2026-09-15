@@ -135,6 +135,7 @@ export function getQualificationDisplayState(
 ): string {
   if (!receipt) return "Not Qualified";
   if (!isQualificationValid(receipt)) return "Stale";
+  if (receipt.qualificationState === "QUOTA_EXHAUSTED") return "Quota Exhausted";
 
   const qualifiedRoles = Object.entries(receipt.roleResults)
     .filter(([_, r]) => r.status === "QUALIFIED")

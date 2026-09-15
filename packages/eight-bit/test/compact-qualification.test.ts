@@ -73,6 +73,23 @@ describe("compact qualification suite", () => {
     expect(a.calls.length).toBe(1);
   });
 
+  it("preserves a provider allocation wall as QUOTA_EXHAUSTED, never a capability verdict", async () => {
+    const a = adapter(() => new Error('cloudflare-workers-ai error (429): {"errors":[{"message":"AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare\'s Workers Paid plan"}]}'));
+    const receipt = await runCompactQualification(MODEL, a, { timeoutMs: 1000 });
+    expect(receipt.qualificationState).toBe("QUOTA_EXHAUSTED");
+    expect(receipt.metadata?.transient).toBe(true);
+    expect(receipt.metadata?.quotaExhausted).toBe(true);
+    expect(a.calls.length).toBe(1);
+  });
+
+  it("keeps a plain 429 (no quota markers) as NOT_QUALIFIED-transient, not QUOTA_EXHAUSTED", async () => {
+    const a = adapter(() => new Error("groq error (429): rate limit exceeded, please retry shortly"));
+    const receipt = await runCompactQualification(MODEL, a, { timeoutMs: 1000 });
+    expect(receipt.qualificationState).toBe("NOT_QUALIFIED");
+    expect(receipt.metadata?.transient).toBe(true);
+    expect(receipt.metadata?.quotaExhausted).toBe(false);
+  });
+
   it("marks a tool-protocol rejection as a hard failure", async () => {
     const a = adapter((req) => (req.tools ? new Error("provider error (400): tools are not supported for this model") : text("{}")));
     const receipt = await runCompactQualification(MODEL, a, { timeoutMs: 1000 });

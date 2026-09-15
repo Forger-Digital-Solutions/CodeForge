@@ -272,6 +272,18 @@ function isTransient(c: TestCaseResult): boolean {
 }
 
 /**
+ * A provider-side allocation wall ("daily free allocation … used up", TPM quota drained) says
+ * nothing about the model's capability. It must stay distinguishable from a capability verdict so
+ * a quota-exhausted route is preserved as QUOTA_EXHAUSTED — eligible again at the next reset —
+ * rather than silently demoted to NOT_QUALIFIED.
+ */
+const QUOTA_EXHAUSTED_RE = /daily free allocation|used up your (?:daily )?free|quota (?:exhaust|drain|used)|neurons|allocation of \d+/i;
+
+function isQuotaExhausted(c: TestCaseResult): boolean {
+  return !!c.error && QUOTA_EXHAUSTED_RE.test(c.error);
+}
+
+/**
  * Free routes are shared, load-balanced pools whose upstream serving stack can differ between two
  * consecutive requests. One clean failure (a model answer without the expected tool call) earns a
  * single retry so a momentary upstream swap does not disqualify a capable model; two failures are
@@ -300,8 +312,11 @@ export async function runCompactQualification(
   const editCase = abortEarly ? caseResult("compact.edit", "edit", false, Date.now(), { error: "skipped: provider unavailable during qualification" }) : await withRetry(() => probeEdit(adapter, model.modelId, timeoutMs));
   const structuredCase = abortEarly || isTransient(editCase) ? caseResult("compact.structured", "structured_output", false, Date.now(), { error: "skipped: provider unavailable during qualification" }) : await probeStructured(adapter, model.modelId, timeoutMs);
   // Any provider-side interruption leaves the suite inconclusive: the receipt is marked transient
-  // and the route stays pending rather than being scored on an answer it never gave.
+  // and the route stays pending rather than being scored on an answer it never gave. When the
+  // interruption is specifically a provider allocation wall, the receipt says QUOTA_EXHAUSTED —
+  // a capacity state with a reset time, never a capability verdict.
   const transient = abortEarly || isTransient(editCase) || isTransient(structuredCase);
+  const quotaExhausted = transient && (isQuotaExhausted(toolCase) || isQuotaExhausted(editCase) || isQuotaExhausted(structuredCase));
 
   const coder = roleResult("CODER", [toolCase, editCase], startedAt);
   const toolAgent = roleResult("TOOL_AGENT", [toolCase, editCase, structuredCase], startedAt);
@@ -310,7 +325,9 @@ export async function runCompactQualification(
   const hardFailureRoles = (Object.entries(roleResults) as Array<[EightBitRole, RoleQualificationResult]>).filter(([, r]) => r.status === "HARD_FAILURE").map(([role]) => role);
 
   const qualificationState: ModelQualificationReceipt["qualificationState"] = transient
-    ? "NOT_QUALIFIED"
+    ? quotaExhausted
+      ? "QUOTA_EXHAUSTED"
+      : "NOT_QUALIFIED"
     : hardFailureRoles.length > 0
       ? "HARD_FAILURE"
       : coder.status === "QUALIFIED"
@@ -332,6 +349,6 @@ export async function runCompactQualification(
     totalLatencyMs: Date.now() - t0,
     qualificationState,
     hardFailureRoles,
-    metadata: { compact: true, requests: [toolCase, editCase, structuredCase].reduce((n, c) => n + (c.error?.startsWith("skipped") ? 0 : 1 + (c.retries ?? 0)), 0), transient },
+    metadata: { compact: true, requests: [toolCase, editCase, structuredCase].reduce((n, c) => n + (c.error?.startsWith("skipped") ? 0 : 1 + (c.retries ?? 0)), 0), transient, quotaExhausted },
   };
 }
