@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "8ad65aa734c2ad3e51d9c055e2499b66d1ebcf62e38b21c3928d78f26e226e26",
-  "surfaceVersion": "fg12f-certified-v1-free-cloud-r5",
+  "sourceStateId": "34e5c284a1eabb7da14ad4e8271ce00df9319030618d96e894e34e3c1ce18132",
+  "surfaceVersion": 1,
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -41,7 +41,7 @@
     "packages/router/package.json": "b2b596febe0eab8a591ed016e9783170c35ed096",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/server/src/agent-runtime.ts": "589d4f9b77210505ee1ebe99f925c7acbbd28647",
-    "packages/server/src/autonomous-orchestrator.ts": "9d99de07fb6c5ba9ab521451137a341c2382980a",
+    "packages/server/src/autonomous-orchestrator.ts": "d1740c8be443160e803dbfeb9ca4af3e7d79dea6",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "a46e0238daf63d31820dd6548c362ef6e77981cb",
     "packages/sessions/src/persistence.ts": "773d64921c840a0ca860b6e1985184dace727c8a",
@@ -426,5 +426,18 @@
       "sourceStateConstant": "CODEFORGE_MANAGED_FREE_R2_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above."
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above.",
+  "recertifiedAt": "2026-09-15T18:24:49.950Z",
+  "recertification": {
+    "phase": "R3-RC2",
+    "reason": "Managed-Free R3-RC2 runtime hardening changed one material file",
+    "changedFiles": [
+      {
+        "path": "packages/server/src/autonomous-orchestrator.ts",
+        "summary": "Replaced replan-only crash reconciliation with journal-based worker recovery (resume-safe journals resumed; others converge honestly; stale crash-window tool records converged to cancelled)"
+      }
+    ],
+    "priorSourceStateId": "8ad65aa734c2ad3e51d9c055e2499b66d1ebcf62e38b21c3928d78f26e226e26",
+    "guarded": true
+  }
 }
