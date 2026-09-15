@@ -946,11 +946,13 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
           if (effectiveStatus === "blocked") blocked++;
         }
       }
-      // R1: converge any durable worker records the crash left non-terminal. Recovery is
-      // replan-only — no worker execution is resumed — so records must not stay "running".
+      // R2: recover crash-interrupted workers through the durable execution journal. Workers
+      // with a resume-safe journal are genuinely resumed (RESUME); the rest converge honestly to
+      // failed with RECOVERY_REPLAN / RECOVERY_FAIL reasons (REPLAN / FAIL). Workers without any
+      // journal (pre-R2 records) converge exactly as the R1 replan-only pass did.
       await this.subagentManager
-        .reconcileStaleWorkers("Server restarted during active execution; worker execution is not resumed (replan-only recovery)")
-        .catch(() => 0);
+        .recoverInterruptedWorkers()
+        .catch(() => undefined);
     } catch {}
 
     return { recovered, requiresRevalidation, blocked };

@@ -28,7 +28,7 @@ import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import type { WorkspaceService } from "./workspace-service.js";
 import { redactSecrets } from "@codeforge/secrets";
 import { createTaskCapsule } from "./task-capsule.js";
-import { classifyRunRecovery, type RunRecoveryOutcome, type RunRecoveryToolRecord } from "./run-recovery.js";
+import { classifyRunRecovery, type RunRecoveryToolRecord } from "./run-recovery.js";
 import type { DurableToolExecutionState, ToolExecutionClass } from "./agent-runtime.js";
 
 import type { AgentRuntime } from "./agent-runtime.js";
@@ -76,6 +76,10 @@ export interface ChildRun {
   result?: AgentResult;
   capsule?: TaskCapsule;
   workerRecord?: SubagentRunWorkItem;
+  /** Times the progress watchdog extended this worker's budget instead of aborting a paced wait. */
+  watchdogExtensions?: number;
+  /** Why the watchdog finally aborted: true stall, or budget ceiling reached while still progressing. */
+  watchdogAbortReason?: "stalled" | "watchdog_budget_ceiling";
 }
 
 export interface SubagentManagerOptions {
@@ -85,6 +89,15 @@ export interface SubagentManagerOptions {
   getAgentRuntime?: (sessionId: string) => AgentRuntime;
   /** R1 path: durable worker state, Task Capsules, and artifact references. Off by default. */
   r1Enabled?: boolean;
+  /**
+   * Progress watchdog: a child whose durable model turns/tool executions advanced within this
+   * window is legitimately paced (shared free-provider capacity), not stalled. Defaults to 120s —
+   * provider pacing never silently waits longer (cooldowns >60s throw; TPM/RPM waits are bounded
+   * by the 60s window), so silence beyond this is a real stall.
+   */
+  watchdogProgressWindowMs?: number;
+  /** Hard ceiling on watchdog extensions: budget ≤ timeoutMs + maxExtensions × window. */
+  watchdogMaxExtensions?: number;
 }
 
 export class SubagentManager {
@@ -93,6 +106,8 @@ export class SubagentManager {
   private readonly agentRuntime?: AgentRuntime;
   private readonly getAgentRuntime?: (sessionId: string) => AgentRuntime;
   private readonly r1Enabled: boolean;
+  private readonly watchdogProgressWindowMs: number;
+  private readonly watchdogMaxExtensions: number;
   private readonly activeChildren: Map<string, ChildRun> = new Map(); // childRunId -> ChildRun
   private readonly childrenByParent: Map<string, Set<string>> = new Map(); // parentRunId -> Set<childRunId>
 
@@ -102,6 +117,8 @@ export class SubagentManager {
     this.agentRuntime = options.agentRuntime;
     this.getAgentRuntime = options.getAgentRuntime;
     this.r1Enabled = options.r1Enabled ?? false;
+    this.watchdogProgressWindowMs = options.watchdogProgressWindowMs ?? 120_000;
+    this.watchdogMaxExtensions = options.watchdogMaxExtensions ?? 2;
   }
 
   private emptyTelemetry(): AgentWorkerTelemetry {
@@ -312,12 +329,34 @@ export class SubagentManager {
       }
     }
 
-    // Set child timeout
-    const timeout = setTimeout(() => {
-      if (!controller.signal.aborted) {
+    // Set child timeout, then let the progress watchdog own it. The budget is a stall detector,
+    // not a fixed kill clock: at expiry the worker is aborted only if its durable progress
+    // (model turns, tool executions, journal) went quiet past the window, or the bounded
+    // extension ceiling is exhausted. A worker being paced by shared provider capacity keeps
+    // earning extensions; a genuinely dead worker is killed at the first quiet check.
+    const childTimeoutMs = (options.metadata?.timeoutMs as number | undefined) || def.budget.timeoutMs || 180_000;
+    let watchdogExtensions = 0;
+    const watchdogTimerRef: { timer?: NodeJS.Timeout } = {};
+    const progressWatchdog = (): void => {
+      if (controller.signal.aborted || !this.activeChildren.has(childRunId)) return;
+      void (async () => {
+        const progressAt = await this.latestRunProgressMs(childRunId);
+        if (controller.signal.aborted || !this.activeChildren.has(childRunId)) return;
+        const stalled = progressAt === undefined || Date.now() - progressAt > this.watchdogProgressWindowMs;
+        if (!stalled && watchdogExtensions < this.watchdogMaxExtensions) {
+          watchdogExtensions++;
+          childRun.watchdogExtensions = watchdogExtensions;
+          watchdogTimerRef.timer = setTimeout(progressWatchdog, this.watchdogProgressWindowMs);
+          return;
+        }
+        childRun.watchdogAbortReason = stalled ? "stalled" : "watchdog_budget_ceiling";
         controller.abort();
-      }
-    }, def.budget.timeoutMs || 60_000);
+      })().catch(() => {
+        childRun.watchdogAbortReason = "stalled";
+        if (!controller.signal.aborted) controller.abort();
+      });
+    };
+    watchdogTimerRef.timer = setTimeout(progressWatchdog, childTimeoutMs);
 
     const childRun: ChildRun = {
       childRunId,
@@ -481,7 +520,7 @@ export class SubagentManager {
 
       return failedResult;
     } finally {
-      clearTimeout(timeout);
+      if (watchdogTimerRef.timer) clearTimeout(watchdogTimerRef.timer);
       // Clean up child registry
       const set = this.childrenByParent.get(parentRunId);
       if (set) {
@@ -517,6 +556,30 @@ export class SubagentManager {
       if (c) result.push(c);
     }
     return result;
+  }
+
+  /**
+   * Latest durable activity timestamp for a child run: model-turn boundaries, tool-execution
+   * records, and the run journal all bump `updatedAt` as the worker advances. A recent timestamp
+   * is evidence of legitimate paced progress; prolonged silence is a true stall.
+   */
+  private async latestRunProgressMs(runId: string): Promise<number | undefined> {
+    if (!this.persistence) return undefined;
+    let latest: number | undefined;
+    const consider = (raw: unknown): void => {
+      if (typeof raw !== "string") return;
+      const t = Date.parse(raw);
+      if (!Number.isNaN(t) && (latest === undefined || t > latest)) latest = t;
+    };
+    for (const kind of ["agent_model_turn", "agent_tool_execution"] as const) {
+      for (const item of await this.persistence.getWorkItemsByKind(kind)) {
+        const rec = item as unknown as { runId?: string; updatedAt?: string };
+        if (rec.runId === runId) consider(rec.updatedAt);
+      }
+    }
+    const journal = await this.persistence.getWorkItem(`agent-run-journal-${runId}`) as { updatedAt?: string } | undefined;
+    if (journal) consider(journal.updatedAt);
+    return latest;
   }
 
   /**
@@ -592,24 +655,43 @@ export class SubagentManager {
       const journal = await this.persistence.getWorkItem(`agent-run-journal-${item.id}`) as AgentRunJournal | undefined;
       const toolRecords: RunRecoveryToolRecord[] = [];
       const toolItems = await this.persistence.getWorkItemsByKind("agent_tool_execution");
+      const staleToolRecords: Array<{ id: string; state: string; executionClass: string }> = [];
       for (const ti of toolItems) {
-        if (ti.kind === "agent_tool_execution" && (ti as any).runId === item.id) {
+        if (ti.kind === "agent_tool_execution") {
+          const record = ti as unknown as { id: string; runId: string; toolName: string; executionClass: ToolExecutionClass; state: DurableToolExecutionState };
+          if (record.runId !== item.id) continue;
           toolRecords.push({
-            toolName: (ti as any).toolName,
-            executionClass: (ti as any).executionClass as RunRecoveryToolRecord["executionClass"],
-            state: (ti as any).state as DurableToolExecutionState,
+            toolName: record.toolName,
+            executionClass: record.executionClass,
+            state: record.state,
           });
+          if (record.state !== "observation_recorded" && record.state !== "completed" && record.state !== "failed" && record.state !== "cancelled") {
+            staleToolRecords.push({ id: record.id, state: record.state, executionClass: record.executionClass });
+          }
         }
       }
+
+      /** Crash-window records never stay open: a resumed run re-issues what it needs; everything
+       * else is converged to cancelled so no later recovery mistakes it for live work. */
+      const convergeStaleToolRecords = async (): Promise<void> => {
+        for (const stale of staleToolRecords) {
+          const record = await this.persistence!.getWorkItem(stale.id);
+          if (!record || record.kind !== "agent_tool_execution") continue;
+          const next = { ...(record as unknown as Record<string, unknown>), state: "cancelled", recoveryDisposition: "blocked", updatedAt: new Date().toISOString() };
+          await this.persistence!.upsertWorkItem(next as unknown as WorkItem);
+        }
+      };
 
       const outcome = classifyRunRecovery(journal, toolRecords);
       decisions.push({ workerId: item.id, outcome: outcome.outcome, reason: outcome.reason });
 
       if (outcome.outcome === "resume") {
         const workspacePath = item.workspacePath ?? (item.workspace as any)?.path ?? (this.agentRuntime as any)?.workspacePath ?? process.cwd();
-        if (item.workspace?.kind === "git-worktree" && !existsSync(workspacePath)) {
+        if ((item.workspace?.kind === "git-worktree" && !existsSync(workspacePath)) || (!item.workspacePath && !existsSync(workspacePath))) {
           item.status = "failed";
-          item.error = redactSecrets("RECOVERY_REPLAN: worktree path does not exist on disk");
+          item.error = redactSecrets(item.workspace?.kind === "git-worktree"
+            ? "RECOVERY_REPLAN: worktree path does not exist on disk"
+            : "RECOVERY_REPLAN: workspace path does not exist on disk");
           item.updatedAt = new Date().toISOString();
           if (!item.completedAt) item.completedAt = item.updatedAt;
           await this.persistence.upsertWorkItem(item);
@@ -620,40 +702,64 @@ export class SubagentManager {
             journal.updatedAt = item.updatedAt;
             await this.persistence.upsertWorkItem(journal as unknown as WorkItem);
           }
+          await convergeStaleToolRecords();
           replanned++;
           continue;
         }
 
         const runtime = item.sessionId ? (this.getAgentRuntime?.(item.sessionId) ?? this.agentRuntime) : this.agentRuntime;
-        if (runtime && journal) {
-          const runtimeRes = await runtime.executeAgentRun({
-            runId: item.id,
-            agentId: item.agentId,
-            role: item.role,
-            goal: item.task,
-            workspaceId: item.workspace?.id ?? item.id,
-            workspacePath,
-            permissions: item.permissions,
-            initialContext: item.capsule ? JSON.stringify(item.capsule) : undefined,
-            structuredOutput: item.agentId === "reviewer" ? "reviewer" : undefined,
-            roleRouting: this.r1Enabled,
-            resumeJournal: {
-              journal,
-              replayToolCallIds: outcome.replayToolCallIds ?? [],
-            },
-          });
-          item.status = runtimeRes.status === "completed" ? "completed" : runtimeRes.status === "blocked" ? "blocked" : runtimeRes.status === "cancelled" ? "cancelled" : "failed";
-          item.resultSummary = redactSecrets(runtimeRes.summary);
-          item.completedAt = new Date().toISOString();
-          item.updatedAt = item.completedAt;
-          await this.persistence.upsertWorkItem(item);
-          resumed++;
-        } else {
-          item.status = "running";
+        if (!runtime || !journal) {
+          item.status = "failed";
+          item.error = redactSecrets("RECOVERY_FAIL: no agent runtime or journal available to resume this worker; replan required");
           item.updatedAt = new Date().toISOString();
+          if (!item.completedAt) item.completedAt = item.updatedAt;
           await this.persistence.upsertWorkItem(item);
-          resumed++;
+          if (journal) {
+            journal.state = "converged_failed";
+            journal.recoveryOutcome = "fail";
+            journal.recoveryDetail = item.error;
+            journal.updatedAt = item.updatedAt;
+            await this.persistence.upsertWorkItem(journal as unknown as WorkItem);
+          }
+          await convergeStaleToolRecords();
+          failed++;
+          continue;
         }
+        const runtimeRes = await runtime.executeAgentRun({
+          runId: item.id,
+          agentId: item.agentId,
+          role: item.role,
+          goal: item.task,
+          workspaceId: item.workspace?.id ?? item.id,
+          workspacePath,
+          permissions: item.permissions,
+          initialContext: item.capsule ? JSON.stringify(item.capsule) : undefined,
+          structuredOutput: item.agentId === "reviewer" ? "reviewer" : undefined,
+          roleRouting: this.r1Enabled,
+          resumeJournal: {
+            journal,
+            replayToolCallIds: outcome.outcome === "resume" ? outcome.replayToolCallIds : [],
+          },
+        });
+        item.status = runtimeRes.status === "completed" ? "completed" : runtimeRes.status === "blocked" ? "blocked" : runtimeRes.status === "cancelled" ? "cancelled" : "failed";
+        item.resultSummary = redactSecrets(runtimeRes.summary);
+        item.telemetry = {
+          ...item.telemetry,
+          wallTimeMs: (item.telemetry?.wallTimeMs ?? 0) + 0,
+          modelRequests: (item.telemetry?.modelRequests ?? 0) + runtimeRes.usage.requestCount,
+          inputTokens: (item.telemetry?.inputTokens ?? 0) + runtimeRes.usage.inputTokens,
+          outputTokens: (item.telemetry?.outputTokens ?? 0) + runtimeRes.usage.outputTokens,
+          toolCalls: (item.telemetry?.toolCalls ?? 0) + runtimeRes.usage.toolCount,
+          providerFailures: runtimeRes.status === "failed" ? (item.telemetry?.providerFailures ?? 0) + 1 : item.telemetry?.providerFailures ?? 0,
+        };
+        if (runtimeRes.usage.provider && runtimeRes.usage.model) {
+          item.model = { providerId: runtimeRes.usage.provider, modelId: runtimeRes.usage.model };
+        }
+        item.completedAt = new Date().toISOString();
+        item.updatedAt = item.completedAt;
+        await this.persistence.upsertWorkItem(item);
+        await convergeStaleToolRecords();
+        resumed++;
       } else if (outcome.outcome === "replan") {
         item.status = "failed";
         item.error = redactSecrets(outcome.reason);
@@ -667,6 +773,7 @@ export class SubagentManager {
           journal.updatedAt = item.updatedAt;
           await this.persistence.upsertWorkItem(journal as unknown as WorkItem);
         }
+        await convergeStaleToolRecords();
         replanned++;
       } else {
         item.status = "failed";
@@ -681,6 +788,7 @@ export class SubagentManager {
           journal.updatedAt = item.updatedAt;
           await this.persistence.upsertWorkItem(journal as unknown as WorkItem);
         }
+        await convergeStaleToolRecords();
         failed++;
       }
     }

@@ -1,4 +1,14 @@
-import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition as ProviderToolDefinition, PromptCacheCapability } from "@codeforge/providers";
+import {
+  type ProviderCatalog,
+  type ChatRequest,
+  type ChatMessage,
+  type StreamEvent,
+  type ToolDefinition as ProviderToolDefinition,
+  type PromptCacheCapability,
+  ProviderCapacityGovernor,
+  defaultCapacityGovernor,
+  estimatePromptTokens,
+} from "@codeforge/providers";
 import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
 import { ERROR_CODES, type AgentModelSelection, type AgentUsage } from "@codeforge/agent";
@@ -87,11 +97,35 @@ export class ModelExecutionAdapter {
   private readonly providerCatalog: ProviderCatalog;
   private readonly firewall: ForgeZero;
   private readonly forgeGreen?: ForgeGreenAdvisor;
+  private readonly governor?: ProviderCapacityGovernor;
+  private readonly governorIsExplicit: boolean;
 
-  constructor(providerCatalog: ProviderCatalog, firewall: ForgeZero, forgeGreen?: ForgeGreenAdvisor) {
+  constructor(
+    providerCatalog: ProviderCatalog,
+    firewall: ForgeZero,
+    forgeGreen?: ForgeGreenAdvisor,
+    governor?: ProviderCapacityGovernor,
+  ) {
     this.providerCatalog = providerCatalog;
     this.firewall = firewall;
     this.forgeGreen = forgeGreen;
+    this.governor = governor ?? defaultCapacityGovernor;
+    this.governorIsExplicit = governor !== undefined;
+  }
+
+  /**
+   * Capacity authority for a request. Deterministic test providers (`isTestProvider`) have no real
+   * provider capacity behind them, so the process-wide default governor must not pace or cool them
+   * down — its sliding windows would otherwise leak across isolated runs in the same process and
+   * stall unrelated runs for up to a minute. Callers that supply an explicit governor get exactly
+   * what they asked for, test provider or not.
+   */
+  private governorFor(provider: unknown): ProviderCapacityGovernor | undefined {
+    if (!this.governor) return undefined;
+    if (!this.governorIsExplicit && (provider as { isTestProvider?: boolean } | undefined)?.isTestProvider === true) {
+      return undefined;
+    }
+    return this.governor;
   }
 
   /**
@@ -129,25 +163,29 @@ export class ModelExecutionAdapter {
       requiredCapabilities: ["coding", "toolCalling"],
     });
 
-    const best = ranked.find((r) => this.providerCatalog.get(r.model.providerId));
+    // Prefer highest-ranked available free provider not in 429 cooldown
+    const best = ranked.find((r) => {
+      if (!this.providerCatalog.get(r.model.providerId)) return false;
+      if (this.governorFor(this.providerCatalog.get(r.model.providerId))?.isCoolingDown(r.model.providerId)) return false;
+      return true;
+    }) ?? ranked.find((r) => this.providerCatalog.get(r.model.providerId));
+
     if (best) {
       return { providerId: best.model.providerId, modelId: best.model.modelId };
     }
 
     const eligible = this.firewall.eligibleModels();
-    const fallback = eligible.find((m) => this.providerCatalog.get(m.providerId));
+    const fallback = eligible.find((m) => {
+      if (!this.providerCatalog.get(m.providerId)) return false;
+      if (this.governorFor(this.providerCatalog.get(m.providerId))?.isCoolingDown(m.providerId)) return false;
+      return true;
+    }) ?? eligible.find((m) => this.providerCatalog.get(m.providerId));
+
     if (fallback) {
       return { providerId: fallback.providerId, modelId: fallback.modelId };
     }
 
-    // Direct provider catalog fallback
-    for (const p of this.providerCatalog.all()) {
-      if (p.providerId) {
-        return { providerId: p.providerId, modelId: "default" };
-      }
-    }
-
-    throw new Error(`[${ERROR_CODES.PROVIDER_UNAVAILABLE}] No eligible or registered model provider found.`);
+    throw new Error(`[${ERROR_CODES.PROVIDER_MODEL_UNAVAILABLE}] No eligible or registered model provider found.`);
   }
 
   /**
@@ -171,13 +209,31 @@ export class ModelExecutionAdapter {
       maxTokens: req.maxTokens ?? 4096,
     };
 
+    let reservation: { release: (actualTokens?: number) => void } | undefined;
+    let actualTokens: number | undefined;
+    const pacingGovernor = this.governorFor(provider);
+
+    if (pacingGovernor && !(provider as any).isGoverned) {
+      const estimatedTokens = estimatePromptTokens(chatRequest);
+      reservation = await pacingGovernor.acquire(providerId, estimatedTokens, req.signal);
+    }
+
     try {
       for await (const event of provider.streamChat(chatRequest, req.signal)) {
         if (req.signal?.aborted) {
           return;
         }
+        if (event.type === "usage" && event.usage) {
+          actualTokens = (event.usage.inputTokens ?? 0) + (event.usage.outputTokens ?? 0);
+        } else if ((event as any).usage) {
+          const u = (event as any).usage;
+          actualTokens = (u.inputTokens ?? 0) + (u.outputTokens ?? 0);
+        }
         if (event.type === "error") {
           const norm = normalizeProviderError(event.message);
+          if (norm.code === ERROR_CODES.PROVIDER_RATE_LIMITED && pacingGovernor) {
+            pacingGovernor.recordResponse(providerId, 429, {});
+          }
           yield {
             type: "error",
             code: norm.code,
@@ -193,11 +249,16 @@ export class ModelExecutionAdapter {
         return;
       }
       const norm = normalizeProviderError(err);
+      if (norm.code === ERROR_CODES.PROVIDER_RATE_LIMITED && pacingGovernor) {
+        pacingGovernor.recordResponse(providerId, 429, {});
+      }
       yield {
         type: "error",
         code: norm.code,
         message: norm.message,
       };
+    } finally {
+      reservation?.release(actualTokens);
     }
   }
 
@@ -359,6 +420,7 @@ export function createModelExecutionAdapter(
   providerCatalog: ProviderCatalog,
   firewall: ForgeZero,
   forgeGreen?: ForgeGreenAdvisor,
+  governor?: ProviderCapacityGovernor,
 ): ModelExecutionAdapter {
-  return new ModelExecutionAdapter(providerCatalog, firewall, forgeGreen);
+  return new ModelExecutionAdapter(providerCatalog, firewall, forgeGreen, governor);
 }
