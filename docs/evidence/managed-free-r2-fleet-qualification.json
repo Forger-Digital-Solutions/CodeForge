@@ -1,0 +1,1168 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-15T00:43:38.053Z",
+  "purpose": "R1 Managed-Free live provider certification (real external calls; bounded probes; credentials never recorded)",
+  "zeroCashPolicy": "Free endpoints only; no upgrade, purchase, or plan activation path was invoked.",
+  "providers": [
+    {
+      "providerId": "groq",
+      "displayName": "Groq",
+      "status": "CERTIFIED",
+      "auth": {
+        "ok": true,
+        "elapsedMs": 565
+      },
+      "catalog": {
+        "ok": false,
+        "modelCount": 14,
+        "candidatesPresent": [
+          "openai/gpt-oss-120b",
+          "openai/gpt-oss-20b",
+          "qwen/qwen3.8-27b",
+          "qwen/qwen3.6-27b"
+        ],
+        "candidatesAbsent": []
+      },
+      "qualifications": [
+        {
+          "modelId": "openai/gpt-oss-120b",
+          "elapsedMs": 1892,
+          "qualificationState": "QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "QUALIFIED",
+            "TOOL_AGENT": "PROBATION",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 362,
+              "error": null
+            },
+            "CODER:compact.edit": {
+              "passed": true,
+              "latencyMs": 1080,
+              "error": null
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 362,
+              "error": null
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": true,
+              "latencyMs": 1080,
+              "error": null
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 448,
+              "error": null
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 448,
+              "error": null
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 3,
+            "transient": false
+          }
+        },
+        {
+          "modelId": "openai/gpt-oss-20b",
+          "elapsedMs": 867,
+          "qualificationState": "QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "QUALIFIED",
+            "TOOL_AGENT": "QUALIFIED",
+            "ANALYST": "QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 152,
+              "error": null
+            },
+            "CODER:compact.edit": {
+              "passed": true,
+              "latencyMs": 388,
+              "error": null
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 152,
+              "error": null
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": true,
+              "latencyMs": 388,
+              "error": null
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": true,
+              "latencyMs": 327,
+              "error": null
+            },
+            "ANALYST:compact.structured": {
+              "passed": true,
+              "latencyMs": 327,
+              "error": null
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 3,
+            "transient": false
+          }
+        },
+        {
+          "modelId": "qwen/qwen3.8-27b",
+          "elapsedMs": 998,
+          "qualificationState": "QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "QUALIFIED",
+            "TOOL_AGENT": "QUALIFIED",
+            "ANALYST": "QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 246,
+              "error": null
+            },
+            "CODER:compact.edit": {
+              "passed": true,
+              "latencyMs": 583,
+              "error": null
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 246,
+              "error": null
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": true,
+              "latencyMs": 583,
+              "error": null
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": true,
+              "latencyMs": 168,
+              "error": null
+            },
+            "ANALYST:compact.structured": {
+              "passed": true,
+              "latencyMs": 168,
+              "error": null
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 3,
+            "transient": false
+          }
+        },
+        {
+          "modelId": "qwen/qwen3.6-27b",
+          "elapsedMs": 1094,
+          "qualificationState": "QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "QUALIFIED",
+            "TOOL_AGENT": "QUALIFIED",
+            "ANALYST": "QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 231,
+              "error": null
+            },
+            "CODER:compact.edit": {
+              "passed": true,
+              "latencyMs": 639,
+              "error": null
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 231,
+              "error": null
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": true,
+              "latencyMs": 639,
+              "error": null
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": true,
+              "latencyMs": 224,
+              "error": null
+            },
+            "ANALYST:compact.structured": {
+              "passed": true,
+              "latencyMs": 224,
+              "error": null
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 3,
+            "transient": false
+          }
+        }
+      ],
+      "observedResponses": [
+        {
+          "providerId": "groq",
+          "status": 200,
+          "headers": [],
+          "observedAt": 1789433012122
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-120b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "999"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "7584"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "1m26.4s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "3.119s"
+            ]
+          ],
+          "observedAt": 1789433012410
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-120b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "998"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "7161"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "2m52.8s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "6.292s"
+            ]
+          ],
+          "observedAt": 1789433012842
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-120b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "997"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6901"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "4m19.2s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "8.242s"
+            ]
+          ],
+          "observedAt": 1789433013201
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-120b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "996"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6946"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "5m45.6s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "7.905s"
+            ]
+          ],
+          "observedAt": 1789433013774
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-20b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "999"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "7646"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "1m26.4s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "2.655s"
+            ]
+          ],
+          "observedAt": 1789433014142
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-20b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "998"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "7389"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "2m52.8s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "4.582s"
+            ]
+          ],
+          "observedAt": 1789433014289
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-20b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "997"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "7098"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "4m19.2s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "6.765s"
+            ]
+          ],
+          "observedAt": 1789433014472
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-20b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "996"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6938"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "5m45.6s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "7.965s"
+            ]
+          ],
+          "observedAt": 1789433014739
+        },
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.8-27b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "999"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "7379"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "1m26.4s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "4.657s"
+            ]
+          ],
+          "observedAt": 1789433015141
+        },
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.8-27b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "998"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6737"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "2m52.8s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "9.472s"
+            ]
+          ],
+          "observedAt": 1789433015362
+        },
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.8-27b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "997"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6230"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "4m19.2s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "27s"
+            ]
+          ],
+          "observedAt": 1789433015723
+        },
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.8-27b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "996"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6424"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "5m45.6s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "13.74s"
+            ]
+          ],
+          "observedAt": 1789433015826
+        },
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.6-27b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "999"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "7483"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "1m26.4s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "3.877s"
+            ]
+          ],
+          "observedAt": 1789433016126
+        },
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.6-27b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "998"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6959"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "2m52.8s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "12.299s"
+            ]
+          ],
+          "observedAt": 1789433016399
+        },
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.6-27b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "997"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6439"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "4m19.2s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "14.82s"
+            ]
+          ],
+          "observedAt": 1789433016764
+        },
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.6-27b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "996"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6375"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "5m45.6s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "17.34s"
+            ]
+          ],
+          "observedAt": 1789433016844
+        }
+      ],
+      "errors": [],
+      "wallTimeMs": 5418
+    },
+    {
+      "providerId": "cloudflare-workers-ai",
+      "displayName": "Cloudflare Workers AI",
+      "status": "PARTIALLY_CERTIFIED",
+      "auth": {
+        "ok": true,
+        "elapsedMs": 361
+      },
+      "catalog": {
+        "ok": false,
+        "modelCount": 31,
+        "candidatesPresent": [
+          "@cf/openai/gpt-oss-120b",
+          "@cf/zai-org/glm-4.7-flash",
+          "@cf/nvidia/nemotron-3-120b-a12b",
+          "@cf/qwen/qwen3.8-27b",
+          "@cf/qwen/qwen2.5-coder-32b-instruct",
+          "@cf/qwen/qwen3-30b-a3b-fp8",
+          "@cf/google/gemma-4-26b-a4b-it"
+        ],
+        "candidatesAbsent": []
+      },
+      "qualifications": [
+        {
+          "modelId": "@cf/openai/gpt-oss-120b",
+          "elapsedMs": 186,
+          "qualificationState": "NOT_QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 186,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "CODER:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 186,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 1,
+            "transient": true
+          }
+        },
+        {
+          "modelId": "@cf/zai-org/glm-4.7-flash",
+          "elapsedMs": 127,
+          "qualificationState": "NOT_QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 127,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "CODER:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 127,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 1,
+            "transient": true
+          }
+        },
+        {
+          "modelId": "@cf/nvidia/nemotron-3-120b-a12b",
+          "elapsedMs": 70,
+          "qualificationState": "NOT_QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 70,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "CODER:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 70,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 1,
+            "transient": true
+          }
+        },
+        {
+          "modelId": "@cf/qwen/qwen3.8-27b",
+          "elapsedMs": 51,
+          "qualificationState": "NOT_QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 51,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "CODER:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 51,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 1,
+            "transient": true
+          }
+        },
+        {
+          "modelId": "@cf/qwen/qwen2.5-coder-32b-instruct",
+          "elapsedMs": 120,
+          "qualificationState": "NOT_QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 120,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "CODER:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 120,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 1,
+            "transient": true
+          }
+        },
+        {
+          "modelId": "@cf/qwen/qwen3-30b-a3b-fp8",
+          "elapsedMs": 70,
+          "qualificationState": "NOT_QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 70,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "CODER:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 70,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 1,
+            "transient": true
+          }
+        },
+        {
+          "modelId": "@cf/google/gemma-4-26b-a4b-it",
+          "elapsedMs": 78,
+          "qualificationState": "NOT_QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 78,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "CODER:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 78,
+              "error": "cloudflare-workers-ai error (429): {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would"
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "skipped: provider unavailable during qualification"
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 1,
+            "transient": true
+          }
+        }
+      ],
+      "observedResponses": [
+        {
+          "providerId": "cloudflare-workers-ai",
+          "modelId": "@cf/openai/gpt-oss-120b",
+          "status": 429,
+          "headers": [],
+          "observedAt": 1789433017533
+        },
+        {
+          "providerId": "cloudflare-workers-ai",
+          "modelId": "@cf/zai-org/glm-4.7-flash",
+          "status": 429,
+          "headers": [],
+          "observedAt": 1789433017662
+        },
+        {
+          "providerId": "cloudflare-workers-ai",
+          "modelId": "@cf/nvidia/nemotron-3-120b-a12b",
+          "status": 429,
+          "headers": [],
+          "observedAt": 1789433017732
+        },
+        {
+          "providerId": "cloudflare-workers-ai",
+          "modelId": "@cf/qwen/qwen3.8-27b",
+          "status": 429,
+          "headers": [],
+          "observedAt": 1789433017784
+        },
+        {
+          "providerId": "cloudflare-workers-ai",
+          "modelId": "@cf/qwen/qwen2.5-coder-32b-instruct",
+          "status": 429,
+          "headers": [],
+          "observedAt": 1789433017900
+        },
+        {
+          "providerId": "cloudflare-workers-ai",
+          "modelId": "@cf/qwen/qwen3-30b-a3b-fp8",
+          "status": 429,
+          "headers": [],
+          "observedAt": 1789433017974
+        },
+        {
+          "providerId": "cloudflare-workers-ai",
+          "modelId": "@cf/google/gemma-4-26b-a4b-it",
+          "status": 429,
+          "headers": [],
+          "observedAt": 1789433018052
+        }
+      ],
+      "errors": [],
+      "wallTimeMs": 1063
+    },
+    {
+      "providerId": "zai",
+      "displayName": "Z.AI",
+      "status": "EXTERNAL_AUTHORIZATION_REQUIRED",
+      "requiredEnvironmentVariables": [
+        "ZAI_API_KEY"
+      ],
+      "note": "Operator credential absent; no live call attempted. All other providers proceeded independently.",
+      "wallTimeMs": 0
+    }
+  ]
+}
