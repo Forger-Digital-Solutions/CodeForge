@@ -18,7 +18,12 @@ import { dirname, resolve, join } from "node:path";
 import { tmpdir } from "node:os";
 import { promisify } from "node:util";
 import { ForgeZero, createGenericFreeRecord } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog, createGroqAdapter, createCloudflareAdapter } from "@codeforge/providers";
+import {
+  InMemoryProviderCatalog,
+  createGroqAdapter,
+  createCloudflareAdapter,
+  ProviderCapacityGovernor,
+} from "@codeforge/providers";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 import {
   createAgentRuntime,
@@ -63,6 +68,37 @@ async function main() {
   // The live fleet: verified-free records the runtime routes through per role. Ranking is
   // deterministic — explorers rank by tool reliability, the coder by coding capability, the
   // reviewer by role contract + stable tiebreak — so workers can land on different providers.
+  const governor = new ProviderCapacityGovernor({
+    limits: {
+      groq: { maxTokensPerMinute: 7500, maxRequestsPerMinute: 28, maxConcurrent: 2 },
+      "cloudflare-workers-ai": { maxTokensPerMinute: 60000, maxRequestsPerMinute: 20, maxConcurrent: 2 },
+    },
+  });
+
+  const catalog = new InMemoryProviderCatalog();
+  const groq = createGroqAdapter({ apiKey: process.env.GROQ_API_KEY, timeoutMs: 120_000 });
+  const cloudflare = createCloudflareAdapter({
+    apiKey: process.env.CLOUDFLARE_API_KEY ?? process.env.CLOUDFLARE_API_TOKEN,
+    accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
+    timeoutMs: 120_000,
+  });
+  catalog.register(governor.wrapAdapter(groq));
+  catalog.register(governor.wrapAdapter(cloudflare));
+
+  // Evidence-driven quota check: Cloudflare has 10,000 daily neurons on free tier
+  let cfAvailable = false;
+  try {
+    const probe = await cloudflare.chat({
+      model: "@cf/openai/gpt-oss-120b",
+      messages: [{ role: "user", content: "ping" }],
+      maxTokens: 5,
+    });
+    cfAvailable = !!probe;
+  } catch (err) {
+    governor.recordResponse("cloudflare-workers-ai", 429, { "retry-after": "86400" });
+  }
+
+  // Register qualified free fleet
   firewall.register(fleetRecord("groq", "openai/gpt-oss-120b", {
     codingScore: 90,
     benchmarkProfile: { coding: 92, toolCalling: 85, reasoning: 90, longContext: 85, speed: 80 },
@@ -71,28 +107,21 @@ async function main() {
     codingScore: 55,
     benchmarkProfile: { coding: 60, toolCalling: 75, reasoning: 62, longContext: 60, speed: 92 },
   }));
-  firewall.register(fleetRecord("cloudflare-workers-ai", "@cf/nvidia/nemotron-3-120b-a12b", {
-    codingScore: 70,
-    benchmarkProfile: { coding: 74, toolCalling: 90, reasoning: 78, longContext: 72, speed: 70 },
-  }));
-  firewall.register(fleetRecord("cloudflare-workers-ai", "@cf/openai/gpt-oss-120b", {
-    codingScore: 88,
-    benchmarkProfile: { coding: 88, toolCalling: 84, reasoning: 88, longContext: 84, speed: 78 },
-  }));
-  firewall.register(fleetRecord("cloudflare-workers-ai", "@cf/zai-org/glm-4.7-flash", {
-    codingScore: 62,
-    benchmarkProfile: { coding: 66, toolCalling: 70, reasoning: 68, longContext: 64, speed: 85 },
-  }));
 
-  const catalog = new InMemoryProviderCatalog();
-  const groq = createGroqAdapter({ apiKey: process.env.GROQ_API_KEY, timeoutMs: 90_000 });
-  const cloudflare = createCloudflareAdapter({
-    apiKey: process.env.CLOUDFLARE_API_KEY ?? process.env.CLOUDFLARE_API_TOKEN,
-    accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
-    timeoutMs: 90_000,
-  });
-  catalog.register(groq);
-  catalog.register(cloudflare);
+  if (cfAvailable) {
+    firewall.register(fleetRecord("cloudflare-workers-ai", "@cf/nvidia/nemotron-3-120b-a12b", {
+      codingScore: 70,
+      benchmarkProfile: { coding: 74, toolCalling: 90, reasoning: 78, longContext: 72, speed: 70 },
+    }));
+    firewall.register(fleetRecord("cloudflare-workers-ai", "@cf/openai/gpt-oss-120b", {
+      codingScore: 88,
+      benchmarkProfile: { coding: 88, toolCalling: 84, reasoning: 88, longContext: 84, speed: 78 },
+    }));
+    firewall.register(fleetRecord("cloudflare-workers-ai", "@cf/zai-org/glm-4.7-flash", {
+      codingScore: 62,
+      benchmarkProfile: { coding: 66, toolCalling: 70, reasoning: 68, longContext: 64, speed: 85 },
+    }));
+  }
 
   const sessionId = "session-r1-live";
   persistence.upsertSession({
@@ -222,6 +251,10 @@ async function main() {
     toolEventCount: toolEvents,
     finalMathContents: finalMath,
     independentVerificationProbe: verificationOutput,
+    governorCapacityReports: {
+      groq: governor.getCapacityReport("groq"),
+      "cloudflare-workers-ai": governor.getCapacityReport("cloudflare-workers-ai"),
+    },
     providerCredentialsUsed: ["GROQ_API_KEY (present)", "CLOUDFLARE_API_KEY (present)", "CLOUDFLARE_ACCOUNT_ID (present)"],
   };
 

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-15T18:59:08.764Z",
+  "channel": "staging",
+  "cloudEndpoint": "https://codeforge-cloud-staging.onrender.com",
+  "gitSha": "fecc5546e7087d689634c8c110fa67cb0a15ac90",
+  "artifacts": [
+    {
+      "path": "CodeForge.exe",
+      "sha256": "5f2f6a755e7cda515fb8f1a329c56e520cbeedfc1397b16e96e616a4d283ba37",
+      "sizeBytes": 188875264
+    },
+    {
+      "path": "app.asar",
+      "sha256": "a9438cb0cc0d58bae187d39ddffa69930557b66ca1529df909bee0fcd5f274cf",
+      "sizeBytes": 23211376
+    }
+  ],
+  "packageAudits": {
+    "authEndpoint": "PASS (staging channel, HTTPS endpoint embedded)",
+    "browserSecurity": "PASS (nodeIntegration=false, contextIsolation=true, webSecurity=true, preload bearer-free)",
+    "internalDependencies": "PASS",
+    "runtimeDependencies": "PASS (249 modules, 15 externals)"
+  }
+}
