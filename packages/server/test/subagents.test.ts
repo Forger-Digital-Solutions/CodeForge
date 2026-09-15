@@ -271,4 +271,24 @@ describe("Subagent Foundation — Explorer, Reviewer, Privilege Ceiling & Contex
     expect(converged && converged.kind === "subagent_run" ? converged.status : undefined).toBe("failed");
     expect(converged && converged.kind === "subagent_run" ? converged.error : undefined).toContain("Server restarted during active execution");
   });
+
+  it("tolerantly decodes markdown-fenced JSON responses in validateStructuredAgentResult", async () => {
+    const { validateStructuredAgentResult } = await import("@codeforge/agent");
+
+    // Markdown-fenced planner JSON
+    const fencedPlanner = "```json\n{\n  \"summary\": \"Minimal plan\",\n  \"tasks\": [\n    {\n      \"id\": \"t1\",\n      \"title\": \"Implement fix\",\n      \"objective\": \"Fix function\",\n      \"dependencies\": [],\n      \"assignedRole\": \"coder\"\n    }\n  ]\n}\n```";
+    const planResult = validateStructuredAgentResult("planner", fencedPlanner);
+    expect(planResult.success).toBe(true);
+    if (planResult.success) {
+      expect(planResult.data.summary).toBe("Minimal plan");
+    }
+
+    // Markdown-fenced reviewer JSON
+    const fencedReviewer = "Here is my review:\n```json\n{\n  \"verdict\": \"pass\",\n  \"findings\": [],\n  \"summary\": \"All clean\"\n}\n```\nLooks good!";
+    const reviewResult = validateStructuredAgentResult("reviewer", fencedReviewer);
+    expect(reviewResult.success).toBe(true);
+    if (reviewResult.success) {
+      expect(reviewResult.data.verdict).toBe("pass");
+    }
+  });
 });

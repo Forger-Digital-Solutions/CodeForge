@@ -271,14 +271,43 @@ function validateFindings(value: unknown): AgentFinding[] | StructuredValidation
   return findings;
 }
 
+/** Upper bound for a model-produced structured payload before any parsing. Plans and reviews are
+ * small; a payload beyond this is a runaway generation or an injection attempt, never a plan. */
+const MAX_STRUCTURED_PAYLOAD_CHARS = 1_048_576;
+
 /** Strictly decode model JSON for machine-authoritative agent roles. */
 export function validateStructuredAgentResult(
   kind: StructuredOutputKind,
   raw: unknown,
 ): StructuredValidationResult {
   let value = raw;
-  if (typeof value === "string") {
-    try { value = JSON.parse(value); } catch { return { success: false, error: "Structured output is not valid JSON" }; }
+  if (typeof raw === "string") {
+    if (raw.length > MAX_STRUCTURED_PAYLOAD_CHARS) {
+      return { success: false, error: `Structured output exceeds the ${MAX_STRUCTURED_PAYLOAD_CHARS}-character payload bound` };
+    }
+    let str = raw.trim();
+    if (str.startsWith("```")) {
+      const firstNewline = str.indexOf("\n");
+      const lastFence = str.lastIndexOf("```");
+      if (firstNewline !== -1 && lastFence > firstNewline) {
+        str = str.slice(firstNewline + 1, lastFence).trim();
+      }
+    } else {
+      const firstBrace = str.indexOf("{");
+      const lastBrace = str.lastIndexOf("}");
+      if (firstBrace !== -1 && lastBrace > firstBrace) {
+        str = str.slice(firstBrace, lastBrace + 1).trim();
+      }
+    }
+    try {
+      value = JSON.parse(str);
+    } catch {
+      try {
+        value = JSON.parse(raw);
+      } catch {
+        return { success: false, error: "Structured output is not valid JSON" };
+      }
+    }
   }
   if (!isObject(value)) return { success: false, error: "Structured output must be a JSON object" };
   const summary = readString(value.summary, "summary");
@@ -720,7 +749,7 @@ export const BUILT_IN_AGENTS: Record<string, AgentDefinition> = {
     permissions: ROLE_PROMPTS.explorer.permissionCeiling,
     budget: {
       maxIterations: 15,
-      timeoutMs: 60_000,
+      timeoutMs: 360_000,
     },
   },
   planner: {
@@ -738,7 +767,7 @@ export const BUILT_IN_AGENTS: Record<string, AgentDefinition> = {
     permissions: ROLE_PROMPTS.planner.permissionCeiling,
     budget: {
       maxIterations: 10,
-      timeoutMs: 60_000,
+      timeoutMs: 360_000,
     },
   },
   coder: {
@@ -763,7 +792,7 @@ export const BUILT_IN_AGENTS: Record<string, AgentDefinition> = {
     permissions: ROLE_PROMPTS.coder.permissionCeiling,
     budget: {
       maxIterations: 30,
-      timeoutMs: 300_000,
+      timeoutMs: 600_000,
     },
   },
   reviewer: {
@@ -782,7 +811,7 @@ export const BUILT_IN_AGENTS: Record<string, AgentDefinition> = {
     permissions: ROLE_PROMPTS.reviewer.permissionCeiling,
     budget: {
       maxIterations: 15,
-      timeoutMs: 60_000,
+      timeoutMs: 600_000,
     },
   },
 };
