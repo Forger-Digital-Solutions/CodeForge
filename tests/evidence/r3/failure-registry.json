@@ -1,54 +1,78 @@
 {
-  "schema": "r3-failure-registry-v1",
-  "updatedAt": "2026-09-15T20:10:00Z",
-  "entries": [
-    {
-      "id": "FR-001",
-      "discoveredAt": "2026-09-15T19:55:00Z",
-      "discoveredBy": "r3-rc2-corpus-freeze-baseline-verification",
-      "severity": "P1",
-      "title": "Build-stamped Cloud endpoint manifest committed to the repository",
-      "description": "Commit 8c14569 committed cloud-endpoints.json with channel='staging', violating the manifest's own documented contract (packaging stamps the channel at build time; the committed default is development). This broke apps/desktop/test/cloud-endpoint.test.ts 'parses the committed repository manifest' (suite went 2453 passed / 1 failed at HEAD 63fa479, contradicting the certified 0-failed claim) and pointed non-packaged developer checkouts at the staging Cloud origin instead of the local development server.",
-      "generalCause": "A release-preparation step mutated a tracked source file instead of a build-local copy, and the change was not re-verified against the full suite before certification evidence was recorded.",
-      "fix": "Restored the committed manifest to channel='development' while keeping the staging endpoint entry recorded for the known staging deployment (commit c217e96).",
-      "regressionCoverage": "apps/desktop/test/cloud-endpoint.test.ts (existing test detected the regression; restored to green).",
-      "status": "FIXED"
-    },
-    {
-      "id": "FR-002",
-      "discoveredAt": "2026-09-15T20:05:00Z",
-      "discoveredBy": "r3-rc2-corpus-runner-design-review",
-      "severity": "P1",
-      "title": "Deterministic verification gate cannot pass real monorepo suites (300s per-command ceiling, no override)",
-      "description": "runVerification enforces a 300s per-command timeout and no caller could override it. This repository's own full 'npm test' runs ~15-20 minutes, so any autonomous run whose verification command is a real monorepo suite has that command killed into a fabricated failure and the run terminates blocked with VERIFICATION_FAILED.",
-      "generalCause": "A defensive default timeout was made non-configurable; the verification-service comment acknowledged long real suites but no opt-in path existed.",
-      "fix": "Added caller-opt-in verificationTimeoutMs to OrchestratorRunOptions, forwarded to runVerification (commit bf6bc14). Default unchanged (300s) for every existing path; the corpus runner passes 45 minutes for monorepo-suite oracles.",
-      "regressionCoverage": "The corpus itself is the regression proof: every CodeForge npm-test task exercises the raised ceiling (its oracle requires >15 minutes of verification). The default ceiling remains covered by existing verification-service timeout tests.",
-      "status": "FIXED"
-    },
-    {
-      "id": "FR-003",
-      "discoveredAt": "2026-09-15T20:45:00Z",
-      "discoveredBy": "r3-rc2-corpus-smoke-test-S-001",
-      "severity": "P2",
-      "title": "Oracle wrapper spawned npx.cmd without a shell (spawn EINVAL on Node >= 20.12)",
-      "description": "The corpus oracle wrapper invoked npx.cmd via child_process.execFile without shell:true; Node's post-CVE-2024-27980 restriction rejects spawning .cmd/.bat without an explicit shell, so every verification command died with spawn EINVAL. The S-001 smoke test caught it before campaign execution: the run honestly terminated blocked (VERIFICATION_FAILED) and was classified FAILED with no false completion. The same defect had already been fixed in the runner's freeze path but was missed in the wrapper.",
-      "generalCause": "Windows .cmd shims cannot be spawned directly by Node after the 20.12 security patch; every spawn site must go through a shell or invoke the underlying JS entry with process.execPath.",
-      "fix": "The wrapper now invokes node_modules/vitest/vitest.mjs through process.execPath (no shell shim involved).",
-      "regressionCoverage": "The S-001 corpus run is the regression proof: its verification command exercises the wrapper end-to-end through the pipeline. Smoke evidence archived at corpus-runs/campaign-1/smoke-archive/S-001-wrapper-eval.",
-      "status": "FIXED"
-    },
-    {
-      "id": "FR-004",
-      "discoveredAt": "2026-09-15T21:50:00Z",
-      "discoveredBy": "r3-rc2-corpus-smoke-test-S-001 (attempt 2)",
-      "severity": "P2",
-      "title": "Runner classified managed-free daily-capacity exhaustion as FAILED instead of CAPACITY_BLOCKED",
-      "description": "When Groq's daily TPD bucket (200,000 tokens for openai/gpt-oss-120b) exhausted mid-run, the explorers failed with PROVIDER_RATE_LIMITED, ForgeZero marked the provider unhealthy provider-wide (certified semantics), and the planner truthfully received PROVIDER_MODEL_UNAVAILABLE. The runner classified the run FAILED (run_blocked) because it only scanned the run summary for capacity keywords, not the turn-level failure events; the second S-001 smoke attempt was therefore misclassified.",
-      "generalCause": "Classification relied on the run's top-level summary text; provider health cascades surface the capacity cause only in worker telemetry (providerFailures) and turn.failed events.",
-      "fix": "The runner now persists turn.failed/subagent.failed error strings per attempt and classifies a blocked run as CAPACITY_BLOCKED when rate-limit/TPD markers appear in failure events, or when PROVIDER_MODEL_UNAVAILABLE coincides with providerFailures > 0. A PROVIDER_MODEL_UNAVAILABLE with zero provider failures remains a genuine FAILED routing defect. Also fixed worker request-count aggregation (modelRequests field).",
-      "regressionCoverage": "Smoke evidence archived at corpus-runs/campaign-1/smoke-archive/S-001-capacity-exhausted (the misclassified attempt); the S-001 run executed after this fix is the regression proof of the corrected classification.",
-      "status": "FIXED"
-    }
-  ]
+ "schema": "r3-failure-registry-v1",
+ "updatedAt": "2026-09-16T00:31:05.494Z",
+ "entries": [
+  {
+   "id": "FR-001",
+   "discoveredAt": "2026-09-15T19:55:00Z",
+   "discoveredBy": "r3-rc2-corpus-freeze-baseline-verification",
+   "severity": "P1",
+   "title": "Build-stamped Cloud endpoint manifest committed to the repository",
+   "description": "Commit 8c14569 committed cloud-endpoints.json with channel='staging', violating the manifest's own documented contract (packaging stamps the channel at build time; the committed default is development). This broke apps/desktop/test/cloud-endpoint.test.ts 'parses the committed repository manifest' (suite went 2453 passed / 1 failed at HEAD 63fa479, contradicting the certified 0-failed claim) and pointed non-packaged developer checkouts at the staging Cloud origin instead of the local development server.",
+   "generalCause": "A release-preparation step mutated a tracked source file instead of a build-local copy, and the change was not re-verified against the full suite before certification evidence was recorded.",
+   "fix": "Restored the committed manifest to channel='development' while keeping the staging endpoint entry recorded for the known staging deployment (commit c217e96).",
+   "regressionCoverage": "apps/desktop/test/cloud-endpoint.test.ts (existing test detected the regression; restored to green).",
+   "status": "FIXED"
+  },
+  {
+   "id": "FR-002",
+   "discoveredAt": "2026-09-15T20:05:00Z",
+   "discoveredBy": "r3-rc2-corpus-runner-design-review",
+   "severity": "P1",
+   "title": "Deterministic verification gate cannot pass real monorepo suites (300s per-command ceiling, no override)",
+   "description": "runVerification enforces a 300s per-command timeout and no caller could override it. This repository's own full 'npm test' runs ~15-20 minutes, so any autonomous run whose verification command is a real monorepo suite has that command killed into a fabricated failure and the run terminates blocked with VERIFICATION_FAILED.",
+   "generalCause": "A defensive default timeout was made non-configurable; the verification-service comment acknowledged long real suites but no opt-in path existed.",
+   "fix": "Added caller-opt-in verificationTimeoutMs to OrchestratorRunOptions, forwarded to runVerification (commit bf6bc14). Default unchanged (300s) for every existing path; the corpus runner passes 45 minutes for monorepo-suite oracles.",
+   "regressionCoverage": "The corpus itself is the regression proof: every CodeForge npm-test task exercises the raised ceiling (its oracle requires >15 minutes of verification). The default ceiling remains covered by existing verification-service timeout tests.",
+   "status": "FIXED"
+  },
+  {
+   "id": "FR-003",
+   "discoveredAt": "2026-09-15T20:45:00Z",
+   "discoveredBy": "r3-rc2-corpus-smoke-test-S-001",
+   "severity": "P2",
+   "title": "Oracle wrapper spawned npx.cmd without a shell (spawn EINVAL on Node >= 20.12)",
+   "description": "The corpus oracle wrapper invoked npx.cmd via child_process.execFile without shell:true; Node's post-CVE-2024-27980 restriction rejects spawning .cmd/.bat without an explicit shell, so every verification command died with spawn EINVAL. The S-001 smoke test caught it before campaign execution: the run honestly terminated blocked (VERIFICATION_FAILED) and was classified FAILED with no false completion. The same defect had already been fixed in the runner's freeze path but was missed in the wrapper.",
+   "generalCause": "Windows .cmd shims cannot be spawned directly by Node after the 20.12 security patch; every spawn site must go through a shell or invoke the underlying JS entry with process.execPath.",
+   "fix": "The wrapper now invokes node_modules/vitest/vitest.mjs through process.execPath (no shell shim involved).",
+   "regressionCoverage": "The S-001 corpus run is the regression proof: its verification command exercises the wrapper end-to-end through the pipeline. Smoke evidence archived at corpus-runs/campaign-1/smoke-archive/S-001-wrapper-eval.",
+   "status": "FIXED"
+  },
+  {
+   "id": "FR-004",
+   "discoveredAt": "2026-09-15T21:50:00Z",
+   "discoveredBy": "r3-rc2-corpus-smoke-test-S-001 (attempt 2)",
+   "severity": "P2",
+   "title": "Runner classified managed-free daily-capacity exhaustion as FAILED instead of CAPACITY_BLOCKED",
+   "description": "When Groq's daily TPD bucket (200,000 tokens for openai/gpt-oss-120b) exhausted mid-run, the explorers failed with PROVIDER_RATE_LIMITED, ForgeZero marked the provider unhealthy provider-wide (certified semantics), and the planner truthfully received PROVIDER_MODEL_UNAVAILABLE. The runner classified the run FAILED (run_blocked) because it only scanned the run summary for capacity keywords, not the turn-level failure events; the second S-001 smoke attempt was therefore misclassified.",
+   "generalCause": "Classification relied on the run's top-level summary text; provider health cascades surface the capacity cause only in worker telemetry (providerFailures) and turn.failed events.",
+   "fix": "The runner now persists turn.failed/subagent.failed error strings per attempt and classifies a blocked run as CAPACITY_BLOCKED when rate-limit/TPD markers appear in failure events, or when PROVIDER_MODEL_UNAVAILABLE coincides with providerFailures > 0. A PROVIDER_MODEL_UNAVAILABLE with zero provider failures remains a genuine FAILED routing defect. Also fixed worker request-count aggregation (modelRequests field).",
+   "regressionCoverage": "Smoke evidence archived at corpus-runs/campaign-1/smoke-archive/S-001-capacity-exhausted (the misclassified attempt); the S-001 run executed after this fix is the regression proof of the corrected classification.",
+   "status": "FIXED"
+  },
+  {
+   "id": "FR-005",
+   "discoveredAt": "2026-09-16T00:30:00Z",
+   "discoveredBy": "r3.5-campaign-window1-evidence-analysis",
+   "severity": "P1",
+   "title": "Model-scoped daily-quota 429 marked provider-wide as a transient rate limit, destroying within-provider failover",
+   "description": "On any 429 during real inference, agent-runtime marked EVERY model of the provider rate_limited (retryAfter now+60s). A TPD 429 (model-scoped daily token wall, observed verbatim: Groq openai/gpt-oss-120b Limit 200000/day) therefore (a) cooled down sibling models (gpt-oss-20b, qwen) that shared nothing but the organization, removing within-provider failover exactly when the primary wall hit, and (b) classified a until-midnight condition as a 60-second transient. In window 1 of the frozen R3 corpus this cascade contributed to 25 of 90 attempts failing with provider_health_marked_unavailable and to zero-capacity runs continuing to be dispatched against a dead fleet.",
+   "generalCause": "Failure classification was keyed on the transport signal (429) only, ignoring the quota scope the provider states in the 429 body; the health-marking API only supported provider-wide marking.",
+   "fix": "Added classifyProviderFailure/planFailureHealthMarking (packages/forge-zero/src/health-classify.ts): daily-signal 429 bodies classify model-scoped quota_exhausted with retryAfter at the next 00:00 UTC reset; other 429s classify model-scoped rate_limited with bounded cooldown (default 60s, Retry-After honored, 15 min cap); auth failures remain provider-scoped (credential is org-wide); 5xx/overload remains provider-scoped bounded degraded. ForgeZero.markModelHealth marks a single model. agent-runtime failure path now applies the scoped marking.",
+   "regressionCoverage": "packages/forge-zero/test/health-classify.test.ts: 12 tests including model-scoped sibling-eligibility, provider-wide auth cascade, cooldown expiry, and no-guessing on unclassified errors.",
+   "status": "FIXED"
+  },
+  {
+   "id": "FR-006",
+   "discoveredAt": "2026-09-16T00:30:00Z",
+   "discoveredBy": "r3.5-campaign-quota-policy-review",
+   "severity": "P1",
+   "title": "quota_exhausted health state could never auto-restore at daily quota reset",
+   "description": "verifyProviderAccount hard-excluded quota_exhausted with no expiry path: once a route was marked quota-exhausted it stayed unroutable until process restart or manual re-discovery, violating the §33 requirement that quota reset should restore eligibility automatically. This made the FR-005 fix impossible without also changing the verifier: the correct quota marking (until daily reset) would otherwise have been a permanent ban.",
+   "generalCause": "The health state enum carried a quota_exhausted status with retryAfter support in the schema, but the verifier never consumed retryAfter for that status.",
+   "fix": "quota_exhausted is now excluded only until its marked retryAfter (daily-window reset); without a marked reset time it remains excluded (fail closed). Auto-restore covered by test.",
+   "regressionCoverage": "packages/forge-zero/test/health-classify.test.ts (auto-restore at reset; fail-closed without reset time).",
+   "status": "FIXED"
+  }
+ ]
 }

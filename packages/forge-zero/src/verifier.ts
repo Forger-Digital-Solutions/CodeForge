@@ -198,7 +198,13 @@ const verifyProviderAccount = (model: FreeModelRecord, ctx: VerifyContext): bool
   if (!model.health) return false;
   if (status === "offline" || status === "unknown") return false;
   if (status === "auth_required") return false;
-  if (status === "quota_exhausted") return false;
+  if (status === "quota_exhausted") {
+    // Daily-capacity exhaustion is time-bounded, not permanent: restore eligibility once the
+    // marked daily-window reset elapses (observed TPD walls reset at 00:00 UTC). Without a
+    // marked reset time, fail closed — an unknown reset must not silently reopen the route.
+    const retryAfter = model.health.retryAfter;
+    if (retryAfter === undefined || ctx.now().getTime() < retryAfter) return false;
+  }
   if (status === "rate_limited") {
     // Excluded while cooling down; eligible again after retryAfter elapses.
     const retryAfter = model.health.retryAfter;
@@ -213,7 +219,7 @@ const verifyProviderAccount = (model: FreeModelRecord, ctx: VerifyContext): bool
     if (retryAfter !== undefined && ctx.now().getTime() < retryAfter) return false;
   }
   if (status === "configured" || status === "authenticated") return false;
-  return status === "available" || status === "verified" || status === "rate_limited" || status === "degraded";
+  return status === "available" || status === "verified" || status === "rate_limited" || status === "degraded" || status === "quota_exhausted";
 };
 
 export const assertEligible = (

@@ -4,3 +4,4 @@ export * from "./firewall.js";
 export * from "./entitlement.js";
 export * from "./catalog.js";
 export * from "./canonical.js";
+export * from "./health-classify.js";

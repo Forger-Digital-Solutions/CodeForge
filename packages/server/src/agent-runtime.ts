@@ -1,4 +1,5 @@
 import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
+import { planFailureHealthMarking } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition, ProviderToolExecutionRequest, ProviderToolExecutionResult, ProviderExecutionContext } from "@codeforge/providers";
 import { DesktopWorkerActionTypeSchema, type AgentRunJournal, type AgentRunJournalMessage, type DesktopWorkerActionType, type WorkspaceEvent } from "@codeforge/protocol";
@@ -2526,17 +2527,26 @@ export class AgentRuntime {
         currentProviderId: state.providerId,
       });
 
-      // Invalid-auth / rate-limit exclusion: a 401 (or 429) during real inference marks the
-      // provider's models auth_required/rate_limited in ForgeZero, so Auto immediately stops
-      // selecting them and the same bad credential is never hammered on the next task. The user
-      // is prompted to reconnect; reconnecting (re-discovery) restores eligibility.
+      // Failure-scoped health marking (R3.6): auth failures are provider-scoped (the credential
+      // is organization-wide); rate limits and daily-quota walls are MODEL-scoped (the 429 names
+      // the model), with quota walls marked until the daily reset instead of a fake 60s cooldown.
+      // Provider-wide marking for a model-scoped failure destroyed within-provider failover in
+      // the R3-RC2 window-1 corpus run (25/90 attempts lost to the cascade).
       const providerId = state.providerId;
       if (providerId) {
-        const msg = state.error.toLowerCase();
-        if (/\b401\b|invalid api key|unauthor|auth ?error|missing_api_key/.test(msg)) {
-          this.firewall.markProviderHealth(providerId, "auth_required", { lastError: "Authentication failed" });
-        } else if (/\b429\b|rate.?limit/.test(msg)) {
-          this.firewall.markProviderHealth(providerId, "rate_limited", { retryAfter: Date.now() + 60000, lastError: "Rate limited" });
+        const marking = planFailureHealthMarking(providerId, state.modelId, state.error);
+        if (marking) {
+          if (marking.scope === "model" && marking.modelId) {
+            this.firewall.markModelHealth(marking.providerId, marking.modelId, marking.status, {
+              retryAfter: marking.retryAfter,
+              lastError: marking.reason,
+            });
+          } else if (marking.scope === "provider") {
+            this.firewall.markProviderHealth(marking.providerId, marking.status, {
+              retryAfter: marking.retryAfter,
+              lastError: marking.reason,
+            });
+          }
         }
       }
 

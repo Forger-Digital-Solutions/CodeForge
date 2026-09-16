@@ -82,6 +82,28 @@ export class ForgeZero {
     }
   }
 
+  /**
+   * Mark ONE model of a provider with a health status (R3.6). Model-scoped failures — a TPD
+   * wall or an RPM/TPM 429 that names a specific model — must not cool down sibling models of
+   * the same provider, or within-provider failover is destroyed exactly when it is needed.
+   */
+  markModelHealth(providerId: string, modelId: string, status: ModelHealthState["status"], extra?: { retryAfter?: number; lastError?: string }): void {
+    const key = this.key(providerId, modelId);
+    const model = this.models.get(key);
+    if (!model) return;
+    const nowIso = this.ctx.now().toISOString();
+    this.models.set(key, {
+      ...model,
+      health: {
+        ...(model.health ?? {}),
+        status,
+        lastCheckedAt: nowIso,
+        ...(extra?.retryAfter !== undefined ? { retryAfter: extra.retryAfter } : {}),
+        ...(extra?.lastError !== undefined ? { lastError: extra.lastError } : {}),
+      },
+    });
+  }
+
   unregister(providerId: string, modelId: string): boolean {
     return this.models.delete(this.key(providerId, modelId));
   }
