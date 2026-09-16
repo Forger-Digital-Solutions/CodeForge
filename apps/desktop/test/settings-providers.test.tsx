@@ -142,6 +142,13 @@ describe("Provider Connections page", () => {
     expect(markup).toContain("I understand and accept the Gemini API Free Tier data-use notice.");
     expect(markup).toContain("https://ai.google.dev/gemini-api/terms");
   });
+
+  it("does not represent Cloudflare Paid as unlimited free capacity when usage is unknown", () => {
+    const markup = renderSection(<ProvidersSection connections={[connection({ providerId: "cloudflare-workers-ai", displayName: "Cloudflare Workers AI", freeAccess: { class: "FREE_DAILY_ALLOCATION", quota: "Workers Free: 10,000 Neurons/day", spillover: "ACCOUNT_DEPENDENT", planDetection: "attestation", allowanceScope: "allowlist", allowanceModels: [], paidPlanModels: [] }, cloudflareBudgetStatus: "unknown" })]} environment={[]} summary={SUMMARY} />, createSettingsContext());
+    expect(markup).toContain("usage unknown — route blocked");
+    expect(markup).toContain("8,000 Neurons/day safe ceiling");
+    expect(markup).toContain("paid overflow disabled");
+  });
 });
 
 describe("Models & Routing page — 8-Bit registry", () => {

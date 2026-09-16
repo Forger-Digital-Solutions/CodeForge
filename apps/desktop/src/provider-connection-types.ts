@@ -31,6 +31,8 @@ export interface ProviderCatalogModelView {
   enabled: boolean;
 }
 
+export type CloudflareBudgetStatus = "included_available" | "near_exhausted" | "exhausted" | "unknown";
+
 export interface ProviderConnectionView {
   providerId: string;
   displayName: string;
@@ -45,6 +47,7 @@ export interface ProviderConnectionView {
   policyMetadata?: ProviderDefinition["policyMetadata"];
   geminiPolicyAccepted?: boolean;
   geminiPolicyBlockedReason?: string;
+  cloudflareBudgetStatus?: CloudflareBudgetStatus;
   keyUrl?: string;
   docsUrl?: string;
   connected: boolean;

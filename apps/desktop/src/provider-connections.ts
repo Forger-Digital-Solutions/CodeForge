@@ -702,6 +702,9 @@ export class ProviderConnections {
         sortRank,
         geminiPolicyAccepted: def.id === "google" ? this.geminiFreeAcceptance() !== null : undefined,
         geminiPolicyBlockedReason: def.id === "google" ? evaluateGeminiFreePolicy({ accountId: this.geminiFreePolicyContext().accountId, region: this.geminiFreePolicyContext().region, acceptance: this.geminiFreeAcceptance(), now: this.now() }).reasonCode : undefined,
+        // The desktop host has no trusted dashboard usage source. Unknown is the only honest
+        // renderer state until an account-scoped usage attestation is supplied.
+        cloudflareBudgetStatus: def.id === "cloudflare-workers-ai" ? "unknown" : undefined,
       });
     }
     return views.sort((a, b) => a.sortRank - b.sortRank || a.displayName.localeCompare(b.displayName));

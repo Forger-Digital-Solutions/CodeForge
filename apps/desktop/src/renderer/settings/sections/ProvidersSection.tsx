@@ -79,6 +79,18 @@ function accessLabel(c: ProviderConnectionView): string {
   }
 }
 
+function policyNote(c: ProviderConnectionView): string | undefined {
+  if (c.providerId !== "cloudflare-workers-ai") return undefined;
+  const budget = c.cloudflareBudgetStatus === "exhausted"
+    ? "safe budget exhausted"
+    : c.cloudflareBudgetStatus === "near_exhausted"
+      ? "safe budget nearly exhausted"
+      : c.cloudflareBudgetStatus === "included_available"
+        ? "included allocation available"
+        : "usage unknown — route blocked";
+  return `CodeForge ${budget} · 8,000 Neurons/day safe ceiling · paid overflow disabled`;
+}
+
 export function ProvidersSection(props: ProvidersSectionProps = {}): React.ReactElement {
   const ctx = useSettings();
   const live = useProviderConnections();
@@ -216,6 +228,7 @@ export function ProvidersSection(props: ProvidersSectionProps = {}): React.React
                   <p className="provider-description">
                     {accessLabel(c)}
                     {c.freeAccess.quota ? ` · ${c.freeAccess.quota}` : ""}
+                    {policyNote(c) ? ` · ${policyNote(c)}` : ""}
                     {c.privacy.freeTierClass === "permissive" ? " · Free tier may use prompts to improve the provider's products" : ""}
                   </p>
                 </div>
