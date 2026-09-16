@@ -29,7 +29,8 @@
     "repo-intelligence:ab": "node scripts/repository-intelligence-ab.mjs",
     "legal:normalize-licenses": "node scripts/legal/normalize-package-licenses.mjs",
     "legal:notices": "node scripts/legal/generate-third-party-notices.mjs",
-    "audit:legal-release": "node scripts/legal/audit-legal-release.mjs"
+    "audit:legal-release": "node scripts/legal/audit-legal-release.mjs",
+    "r4:scale": "node scripts/r4-scale-sim.mjs"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.7.0",

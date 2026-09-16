@@ -1,0 +1,1821 @@
+{
+  "schema": "codeforge-r4-scale-v1",
+  "generatedAt": "2026-09-16T01:09:38.356Z",
+  "deterministic": true,
+  "fabricatedUsers": false,
+  "registeredUserScenarios": [
+    1,
+    10,
+    25,
+    50,
+    100,
+    200,
+    373,
+    500,
+    1000
+  ],
+  "routeEvidence": {
+    "groq": "R3.5 dataset manifest / current provider research; account limits remain header-authoritative",
+    "cloudflare": "R3.5 dataset manifest / current Workers AI limits; neurons/day modeled",
+    "openrouter": "live GET /api/v1/credits observed total_credits=10,total_usage=0; official FAQ threshold qualifies 1,000 daily :free requests; daily counter not observable",
+    "kilo": "catalogued but disabled pending current terms/privacy qualification"
+  },
+  "results": [
+    {
+      "scenarioId": "registered-1",
+      "registeredUsers": 1,
+      "dailyActiveUsers": 1,
+      "demand": {
+        "totalTasks": 1,
+        "firstRunTasks": 1,
+        "normalTasks": 0
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.349Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "registered-10",
+      "registeredUsers": 10,
+      "dailyActiveUsers": 10,
+      "demand": {
+        "totalTasks": 10,
+        "firstRunTasks": 1,
+        "normalTasks": 9
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.353Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "registered-25",
+      "registeredUsers": 25,
+      "dailyActiveUsers": 25,
+      "demand": {
+        "totalTasks": 25,
+        "firstRunTasks": 1,
+        "normalTasks": 24
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.354Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "registered-50",
+      "registeredUsers": 50,
+      "dailyActiveUsers": 50,
+      "demand": {
+        "totalTasks": 50,
+        "firstRunTasks": 1,
+        "normalTasks": 49
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.354Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "registered-100",
+      "registeredUsers": 100,
+      "dailyActiveUsers": 100,
+      "demand": {
+        "totalTasks": 100,
+        "firstRunTasks": 1,
+        "normalTasks": 99
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.354Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "registered-200",
+      "registeredUsers": 200,
+      "dailyActiveUsers": 200,
+      "demand": {
+        "totalTasks": 200,
+        "firstRunTasks": 1,
+        "normalTasks": 199
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.354Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "registered-373",
+      "registeredUsers": 373,
+      "dailyActiveUsers": 373,
+      "demand": {
+        "totalTasks": 373,
+        "firstRunTasks": 1,
+        "normalTasks": 372
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.354Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "registered-500",
+      "registeredUsers": 500,
+      "dailyActiveUsers": 500,
+      "demand": {
+        "totalTasks": 500,
+        "firstRunTasks": 1,
+        "normalTasks": 499
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 0.937876,
+        "capacityBlocks": 31,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 4,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.354Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit",
+        "31 tasks capacity-blocked in registered-500",
+        "registered-user scale exceeds the 373-user early-access proof population"
+      ]
+    },
+    {
+      "scenarioId": "registered-1000",
+      "registeredUsers": 1000,
+      "dailyActiveUsers": 1000,
+      "demand": {
+        "totalTasks": 1000,
+        "firstRunTasks": 1,
+        "normalTasks": 999
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 0.468468,
+        "capacityBlocks": 531,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 62,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.355Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit",
+        "531 tasks capacity-blocked in registered-1000",
+        "registered-user scale exceeds the 373-user early-access proof population"
+      ]
+    },
+    {
+      "scenarioId": "registered-373-dau-75",
+      "registeredUsers": 373,
+      "dailyActiveUsers": 75,
+      "demand": {
+        "totalTasks": 150,
+        "firstRunTasks": 25,
+        "normalTasks": 125
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.355Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "registered-373-dau-150",
+      "registeredUsers": 373,
+      "dailyActiveUsers": 150,
+      "demand": {
+        "totalTasks": 300,
+        "firstRunTasks": 25,
+        "normalTasks": 275
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.355Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "registered-373-dau-373",
+      "registeredUsers": 373,
+      "dailyActiveUsers": 373,
+      "demand": {
+        "totalTasks": 746,
+        "firstRunTasks": 25,
+        "normalTasks": 721
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 0.649098,
+        "capacityBlocks": 253,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 30,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.355Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit",
+        "253 tasks capacity-blocked in registered-373-dau-373"
+      ]
+    },
+    {
+      "scenarioId": "peak-new-user-reserve",
+      "registeredUsers": 373,
+      "dailyActiveUsers": 75,
+      "demand": {
+        "totalTasks": 150,
+        "firstRunTasks": 25,
+        "normalTasks": 125
+      },
+      "capacity": {
+        "totalTasks": 520,
+        "firstRunTasks": 52,
+        "normalTasks": 468
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.356Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.255769
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.144231
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.480769
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.119231
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 520,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 520,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.255769,
+          "cloudflare": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "gatewayConcentration": {
+          "direct": 0.255769,
+          "workers-ai": 0.144231,
+          "openrouter": 0.480769,
+          "promo": 0.119231
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.4,
+          "nex": 0.480769,
+          "promo": 0.119231
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "top-provider-outage",
+      "registeredUsers": 373,
+      "dailyActiveUsers": 75,
+      "demand": {
+        "totalTasks": 150,
+        "firstRunTasks": 25,
+        "normalTasks": 125
+      },
+      "capacity": {
+        "totalTasks": 270,
+        "firstRunTasks": 27,
+        "normalTasks": 243
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.356Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.492593
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.277778
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": false,
+            "exclusionReason": "UNHEALTHY",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.22963
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 270,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 270,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.492593,
+          "cloudflare": 0.277778,
+          "promo": 0.22963
+        },
+        "gatewayConcentration": {
+          "direct": 0.492593,
+          "workers-ai": 0.277778,
+          "promo": 0.22963
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.77037,
+          "promo": 0.22963
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "gateway-outage",
+      "registeredUsers": 373,
+      "dailyActiveUsers": 75,
+      "demand": {
+        "totalTasks": 150,
+        "firstRunTasks": 25,
+        "normalTasks": 125
+      },
+      "capacity": {
+        "totalTasks": 270,
+        "firstRunTasks": 27,
+        "normalTasks": 243
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.356Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.492593
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.277778
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": false,
+            "exclusionReason": "UNHEALTHY",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 62,
+            "concentrationShare": 0.22963
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 270,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 270,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.492593,
+          "cloudflare": 0.277778,
+          "promo": 0.22963
+        },
+        "gatewayConcentration": {
+          "direct": 0.492593,
+          "workers-ai": 0.277778,
+          "promo": 0.22963
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.77037,
+          "promo": 0.22963
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "promotion-ended",
+      "registeredUsers": 373,
+      "dailyActiveUsers": 75,
+      "demand": {
+        "totalTasks": 150,
+        "firstRunTasks": 25,
+        "normalTasks": 125
+      },
+      "capacity": {
+        "totalTasks": 458,
+        "firstRunTasks": 46,
+        "normalTasks": 412
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 1,
+        "capacityBlocks": 0,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 0,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.356Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 133,
+            "concentrationShare": 0.290393
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 75,
+            "concentrationShare": 0.163755
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 250,
+            "concentrationShare": 0.545852
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 458,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 458,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.290393,
+          "cloudflare": 0.163755,
+          "openrouter": 0.545852
+        },
+        "gatewayConcentration": {
+          "direct": 0.290393,
+          "workers-ai": 0.163755,
+          "openrouter": 0.545852
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.454148,
+          "nex": 0.545852
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit"
+      ]
+    },
+    {
+      "scenarioId": "50-huge-vs-50-normal",
+      "registeredUsers": 100,
+      "dailyActiveUsers": 100,
+      "demand": {
+        "totalTasks": 450,
+        "firstRunTasks": 0,
+        "normalTasks": 450
+      },
+      "capacity": {
+        "totalTasks": 113,
+        "firstRunTasks": 12,
+        "normalTasks": 101
+      },
+      "outcomes": {
+        "firstRunSuccessRate": 1,
+        "normalSuccessRate": 0.224444,
+        "capacityBlocks": 349,
+        "failoverCoverage": 1,
+        "p95WaitMinutes": 186,
+        "qualityFloorPass": true
+      },
+      "forecast": {
+        "generatedAt": "2026-09-16T01:09:38.356Z",
+        "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+        "routes": [
+          {
+            "routeId": "groq-gpt-oss-120b",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 200000,
+            "estimatedTaskUnits": 29,
+            "concentrationShare": 0.256637
+          },
+          {
+            "routeId": "cloudflare-gpt-oss",
+            "eligible": true,
+            "availableRequests": 300,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 16,
+            "concentrationShare": 0.141593
+          },
+          {
+            "routeId": "openrouter-free-account",
+            "eligible": true,
+            "availableRequests": 1000,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 55,
+            "concentrationShare": 0.486726
+          },
+          {
+            "routeId": "promo-boost",
+            "eligible": true,
+            "availableRequests": 250,
+            "availableTokens": 9007199254740991,
+            "estimatedTaskUnits": 13,
+            "concentrationShare": 0.115044
+          },
+          {
+            "routeId": "kilo-anonymous-free",
+            "eligible": false,
+            "exclusionReason": "DISABLED",
+            "availableRequests": 0,
+            "availableTokens": 0,
+            "estimatedTaskUnits": 0,
+            "concentrationShare": 0
+          }
+        ],
+        "estimatedTaskUnits": 113,
+        "firstRunTaskUnits": 0,
+        "normalTaskUnits": 113,
+        "roleScarcity": {
+          "explorer": 1,
+          "planner": 1,
+          "coder": 1,
+          "reviewer": 1
+        },
+        "providerConcentration": {
+          "groq": 0.256637,
+          "cloudflare": 0.141593,
+          "openrouter": 0.486726,
+          "promo": 0.115044
+        },
+        "gatewayConcentration": {
+          "direct": 0.256637,
+          "workers-ai": 0.141593,
+          "openrouter": 0.486726,
+          "promo": 0.115044
+        },
+        "familyConcentration": {
+          "gpt-oss": 0.39823,
+          "nex": 0.486726,
+          "promo": 0.115044
+        },
+        "alerts": [
+          "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+          "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+          "promo-boost: token capacity is not observed; request window is the only counted limit"
+        ]
+      },
+      "alerts": [
+        "cloudflare-gpt-oss: token capacity is not observed; request window is the only counted limit",
+        "openrouter-free-account: token capacity is not observed; request window is the only counted limit",
+        "promo-boost: token capacity is not observed; request window is the only counted limit",
+        "349 tasks capacity-blocked in 50-huge-vs-50-normal"
+      ]
+    }
+  ]
+}

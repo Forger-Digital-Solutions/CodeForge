@@ -8,6 +8,8 @@ import { EightBitFailoverCoordinator, type FailoverOutcome, type FailoverRequest
 import { EightBitHandoffBuilder } from "./handoff.js";
 import type { DecisionReceipt, EightBitRole, RouteKey } from "./types.js";
 import type { EightBitPolicyMode } from "./eligibility.js";
+import { EightBitCapacityIntelligence } from "./capacity-intelligence.js";
+import type { CapacityForecast, CapacityForecastInput } from "@codeforge/forge-zero";
 
 export interface EightBitRuntimeOptions {
   firewall: ForgeZero;
@@ -28,6 +30,7 @@ export class EightBitRuntime {
   readonly store: EightBitDecisionStore;
   readonly failover: EightBitFailoverCoordinator;
   readonly handoff: EightBitHandoffBuilder;
+  readonly capacity: EightBitCapacityIntelligence;
 
   constructor(private readonly options: EightBitRuntimeOptions) {
     this.health = new EightBitHealthTracker(options.firewall, options.now);
@@ -36,6 +39,11 @@ export class EightBitRuntime {
     this.store = new EightBitDecisionStore(options.persistence);
     this.failover = new EightBitFailoverCoordinator(this.health, this.router, this.store);
     this.handoff = new EightBitHandoffBuilder(options.persistence);
+    this.capacity = new EightBitCapacityIntelligence();
+  }
+
+  forecastCapacity(input: CapacityForecastInput): CapacityForecast {
+    return this.capacity.forecast(input);
   }
 
   /** Restores persisted route bindings + health snapshots for a session into the live
