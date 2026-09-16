@@ -170,9 +170,14 @@ describe("split freeze", () => {
     const rows = Array.from({ length: 30 }, (_, i) =>
       makeRow({ rowId: `r${i}`, canonicalModelId: `lab/model-${i}` }),
     );
-    const a = freezeSplits(rows, { datasetManifestHash: "h", temporalCutoff: "2026-09-16T00:00:00.000Z" });
-    const b = freezeSplits(rows, { datasetManifestHash: "h", temporalCutoff: "2026-09-16T00:00:00.000Z" });
+    // The freeze hash is a freeze-record hash: identical inputs AND identical freeze time
+    // must produce the identical hash (assignments themselves are timestamp-independent).
+    const a = freezeSplits(rows, { datasetManifestHash: "h", temporalCutoff: "2026-09-16T00:00:00.000Z", frozenAt: "2026-09-16T00:01:00.000Z" });
+    const b = freezeSplits(rows, { datasetManifestHash: "h", temporalCutoff: "2026-09-16T00:00:00.000Z", frozenAt: "2026-09-16T00:01:00.000Z" });
     expect(a.sha256).toBe(b.sha256);
+    expect(a.assignments).toEqual(b.assignments);
+    const c = freezeSplits(rows, { datasetManifestHash: "h", temporalCutoff: "2026-09-16T00:00:00.000Z", frozenAt: "2026-09-16T00:02:00.000Z" });
+    expect(c.assignments).toEqual(a.assignments);
   });
 
   it("refuses rows failing the training-use gate", () => {
