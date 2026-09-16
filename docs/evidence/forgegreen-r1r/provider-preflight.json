@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16T11:27:53.800Z",
+  "route": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+  },
+  "request": {
+    "messages": 1,
+    "maxTokens": 1,
+    "fallback": false,
+    "retries": 0
+  },
+  "result": {
+    "state": "PREFLIGHT_FAILED",
+    "httpStatus": 200,
+    "latencyMs": 508,
+    "providerErrorClass": "MALFORMED_PROVIDER_RESPONSE",
+    "responseShape": "not_observed"
+  },
+  "freeClassification": {
+    "value": "EXACT_OPENROUTER_FREE_ROUTE",
+    "source": "DOCUMENTED",
+    "derivation": "The exact route ends with :free and is the route recorded as qualified by provider-recertification-openrouter.json; no paid route or fallback was requested."
+  },
+  "headers": {
+    "source": "OBSERVED",
+    "values": {}
+  },
+  "safety": {
+    "paidInferenceRequested": false,
+    "fallbackRequested": false,
+    "providerRetries": 0,
+    "credentialPersisted": false
+  }
+}

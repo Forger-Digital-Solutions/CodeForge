@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16T11:27:53.802Z",
+  "verdict": "CODEFORGE_FORGEGREEN_R1_EXTERNAL_PROVIDER_PENDING",
+  "reason": "MALFORMED_PROVIDER_RESPONSE",
+  "route": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+  },
+  "pairState": "NOT_STARTED_AFTER_PREFLIGHT_FAILURE",
+  "causality": {
+    "schemaVersion": 1,
+    "verdict": "PRE_EXISTING_FORGEGREEN_FOUNDATION",
+    "causalStatus": "UNRESOLVED_NO_BEHAVIORAL_A_B",
+    "oldObservation": {
+      "controlBytesAvoided": 47094,
+      "experimentBytesAvoided": 47094
+    },
+    "explanation": "The previous ForgeGreen disabled arm disabled advisor-owned caches, stable-prefix observations, model-request deduplication, and verification recommendations, but it did not disable tool-output compression or duplicate/no-progress supervision. Both arms therefore ran the same measured compression path.",
+    "controlExperimentDifference": {
+      "control": "createForgeGreenAdvisor({ enabled: false })",
+      "experiment": "createForgeGreenAdvisor({ enabled: true })",
+      "targetMechanism": "behaviorally identical for tool-output compression and duplicate/no-progress supervision"
+    },
+    "productionTrace": [
+      {
+        "file": "packages/server/src/agent-runtime.ts",
+        "symbols": [
+          "new DuplicateActionSupervisor",
+          "compressToolOutput",
+          "toolExec.modelContextOutput"
+        ],
+        "lines": "732-734, 1535-1592, 1641-1697"
+      },
+      {
+        "file": "packages/tools/src/compress.ts",
+        "symbols": [
+          "compressToolOutput"
+        ],
+        "lines": "1-255",
+        "behavior": "deterministic compression retains a bounded model representation while the authoritative output remains separate"
+      },
+      {
+        "file": "packages/forge-green/src/index.ts",
+        "symbols": [
+          "ForgeGreenAdvisor.getContext",
+          "putContext",
+          "runDeduplicated",
+          "recommendVerification"
+        ],
+        "lines": "214-434",
+        "behavior": "enabled flag gates advisor-owned caches/dedup/recommendation behavior only"
+      },
+      {
+        "file": "packages/workflow/src/completion-gate.ts",
+        "symbols": [
+          "evaluateCompletion"
+        ],
+        "lines": "270-385",
+        "behavior": "final completion authority is independent of ForgeGreen"
+      }
+    ],
+    "evidence": [
+      "packages/tools/test/fg1-compression.test.ts",
+      "packages/server/test/fg1-runtime-efficiency.test.ts",
+      "packages/server/test/fg1-authority-independence.test.ts",
+      "packages/server/test/fg1-duplicate-suppression.test.ts"
+    ],
+    "controlDecision": "No production compression-disable bypass was added. The live pair uses the true historical baseline and normal ForgeGreen advisor path, while causal treatment attribution remains withheld."
+  }
+}

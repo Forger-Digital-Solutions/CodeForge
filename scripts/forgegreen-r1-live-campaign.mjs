@@ -6,6 +6,7 @@
 
 import { execFile as execFileCallback } from "node:child_process";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import crypto from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { promisify } from "node:util";
@@ -22,7 +23,8 @@ const ROUTE = { providerId: "openrouter", modelId: MODEL_ID };
 const GOAL = "Fix the multiply function in src/calc.mjs so test/calc.test.mjs passes. Do not modify the tests.";
 const VERIFY = ["node --test test/calc.test.mjs"];
 const OUT = process.argv.find((arg) => arg.startsWith("--out="))?.slice("--out=".length)
-  ?? "docs/evidence/forgegreen-r1/live-campaign.json";
+  ?? "docs/evidence/forgegreen-r1r/matched-campaign.json";
+const EVIDENCE_DIR = "docs/evidence/forgegreen-r1r";
 
 function fleetRecord() {
   return createGenericFreeRecord({
@@ -146,8 +148,7 @@ function summarizeAgentResult(result) {
   };
 }
 
-async function runArm({ arm, forgeGreenEnabled }) {
-  const workspacePath = await buildFixture();
+async function runArm({ arm, forgeGreenEnabled, workspacePath, startingCommit, fixtureTreeHash }) {
   const persistence = createSessionPersistence({ dbPath: ":memory:" });
   const eventStore = new EventStore();
   const firewall = new ForgeZero();
@@ -217,9 +218,9 @@ async function runArm({ arm, forgeGreenEnabled }) {
   let independentVerification = { passed: false, exitCode: null, output: "" };
   try {
     const verification = await execFile("node", ["--test", "test/calc.test.mjs"], { cwd: workspacePath });
-    independentVerification = { passed: true, exitCode: 0, output: String(verification.stdout).slice(0, 500) };
+    independentVerification = { passed: true, exitCode: 0, output: "recorded externally; output omitted from durable evidence" };
   } catch (error) {
-    independentVerification = { passed: false, exitCode: error.code ?? 1, output: String(error.stdout ?? "").slice(0, 500) };
+    independentVerification = { passed: false, exitCode: error.code ?? 1, output: "recorded externally; output omitted from durable evidence" };
   }
 
   const telemetryItems = (await persistence.getWorkItemsByKind("forgegreen_r0_telemetry"))
@@ -238,6 +239,12 @@ async function runArm({ arm, forgeGreenEnabled }) {
       providerCredentialsUsed: ["OPENROUTER_API_KEY (presence only)"],
       paidInferenceRequested: false,
       exactFreeRoutePinned: true,
+    },
+    repository: {
+      workspaceKind: "disposable_git_worktree",
+      workspaceIdentity: crypto.createHash("sha256").update(workspacePath).digest("hex").slice(0, 16),
+      startingCommit,
+      fixtureTreeHash,
     },
     workloads: {
       repositoryDiscovery: summarizeAgentResult(discovery),
@@ -275,7 +282,6 @@ async function runArm({ arm, forgeGreenEnabled }) {
     workspaceStatus: status.stdout.trim(),
   };
   persistence.close();
-  await rm(workspacePath, { recursive: true, force: true });
   return result;
 }
 
@@ -298,12 +304,16 @@ function flattenArm(arm) {
   const outputTokens = allTelemetry.reduce((total, telemetry) => total + (numberMetric(telemetry.model?.outputTokens) ?? 0), 0);
   const overheadMs = allTelemetry.reduce((total, telemetry) => total + (numberMetric(telemetry.forgeGreenOverheadMs) ?? 0), 0);
   const wallTimeMs = allTelemetry.reduce((total, telemetry) => total + (numberMetric(telemetry.wallTimeMs) ?? 0), 0);
+  const providerFailures = allTelemetry.reduce((total, telemetry) => total + (numberMetric(telemetry.providerFailures?.providerFailures) ?? 0), 0);
+  const retries = allTelemetry.reduce((total, telemetry) => total + (numberMetric(telemetry.retries?.retryCount) ?? 0), 0);
   return {
     workloadCount: 3,
     modelAttempts,
     providerAttempts,
     inputTokens,
     outputTokens,
+    retries,
+    providerFailures,
     rawToolOutputBytes: raw,
     deliveredToolOutputBytes: delivered,
     toolOutputBytesAvoided: compression,
@@ -318,13 +328,170 @@ function flattenArm(arm) {
   };
 }
 
+function classifyProviderResult(status, body) {
+  if (status === 401 || status === 403) return "AUTH_REQUIRED";
+  if (status === 402) return "PAID_OR_CREDITS_REQUIRED";
+  if (status === 404) return "ROUTE_MISSING";
+  if (status === 429) return "RATE_LIMITED";
+  if (status >= 500) return "UPSTREAM_PROVIDER_UNAVAILABLE";
+  if (status < 200 || status >= 300) return "PROVIDER_HTTP_FAILURE";
+  if (!body || !Array.isArray(body.choices) || body.choices.length === 0) return "MALFORMED_PROVIDER_RESPONSE";
+  return "AVAILABLE";
+}
+
+async function preflightExactRoute() {
+  const startedAt = Date.now();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15_000);
+  let status = null;
+  let body = null;
+  let errorClass = null;
+  const headers = {};
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://codeforge.dev",
+        "X-Title": "CodeForge ForgeGreen R1R preflight",
+      },
+      body: JSON.stringify({
+        model: MODEL_ID,
+        messages: [{ role: "user", content: "Return exactly OK." }],
+        temperature: 0,
+        max_tokens: 1,
+        stream: false,
+      }),
+      signal: controller.signal,
+    });
+    status = response.status;
+    for (const name of ["retry-after", "x-ratelimit-limit", "x-ratelimit-remaining", "x-ratelimit-reset", "x-request-id"]) {
+      const value = response.headers.get(name);
+      if (value !== null) headers[name] = value;
+    }
+    const rawBody = await response.text();
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      body = null;
+    }
+    errorClass = classifyProviderResult(status, body);
+  } catch (error) {
+    errorClass = error instanceof Error && error.name === "AbortError" ? "TIMEOUT" : "NETWORK_FAILURE";
+  } finally {
+    clearTimeout(timeout);
+  }
+  return {
+    schemaVersion: 1,
+    generatedAt: new Date().toISOString(),
+    route: ROUTE,
+    request: { messages: 1, maxTokens: 1, fallback: false, retries: 0 },
+    result: {
+      state: errorClass === "AVAILABLE" ? "PREFLIGHT_PASS" : "PREFLIGHT_FAILED",
+      httpStatus: status,
+      latencyMs: Date.now() - startedAt,
+      providerErrorClass: errorClass,
+      responseShape: body && Array.isArray(body.choices) ? "choices_present" : "not_observed",
+    },
+    freeClassification: {
+      value: "EXACT_OPENROUTER_FREE_ROUTE",
+      source: "DOCUMENTED",
+      derivation: "The exact route ends with :free and is the route recorded as qualified by provider-recertification-openrouter.json; no paid route or fallback was requested.",
+    },
+    headers: { source: "OBSERVED", values: headers },
+    safety: {
+      paidInferenceRequested: false,
+      fallbackRequested: false,
+      providerRetries: 0,
+      credentialPersisted: false,
+    },
+  };
+}
+
+async function writeEvidence(name, value) {
+  const target = resolve(EVIDENCE_DIR, name);
+  await mkdir(dirname(target), { recursive: true });
+  await writeFile(target, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+const CAUSALITY_AUDIT = {
+  schemaVersion: 1,
+  verdict: "PRE_EXISTING_FORGEGREEN_FOUNDATION",
+  causalStatus: "UNRESOLVED_NO_BEHAVIORAL_A_B",
+  oldObservation: { controlBytesAvoided: 47094, experimentBytesAvoided: 47094 },
+  explanation: "The previous ForgeGreen disabled arm disabled advisor-owned caches, stable-prefix observations, model-request deduplication, and verification recommendations, but it did not disable tool-output compression or duplicate/no-progress supervision. Both arms therefore ran the same measured compression path.",
+  controlExperimentDifference: {
+    control: "createForgeGreenAdvisor({ enabled: false })",
+    experiment: "createForgeGreenAdvisor({ enabled: true })",
+    targetMechanism: "behaviorally identical for tool-output compression and duplicate/no-progress supervision",
+  },
+  productionTrace: [
+    { file: "packages/server/src/agent-runtime.ts", symbols: ["new DuplicateActionSupervisor", "compressToolOutput", "toolExec.modelContextOutput"], lines: "732-734, 1535-1592, 1641-1697" },
+    { file: "packages/tools/src/compress.ts", symbols: ["compressToolOutput"], lines: "1-255", behavior: "deterministic compression retains a bounded model representation while the authoritative output remains separate" },
+    { file: "packages/forge-green/src/index.ts", symbols: ["ForgeGreenAdvisor.getContext", "putContext", "runDeduplicated", "recommendVerification"], lines: "214-434", behavior: "enabled flag gates advisor-owned caches/dedup/recommendation behavior only" },
+    { file: "packages/workflow/src/completion-gate.ts", symbols: ["evaluateCompletion"], lines: "270-385", behavior: "final completion authority is independent of ForgeGreen" },
+  ],
+  evidence: [
+    "packages/tools/test/fg1-compression.test.ts",
+    "packages/server/test/fg1-runtime-efficiency.test.ts",
+    "packages/server/test/fg1-authority-independence.test.ts",
+    "packages/server/test/fg1-duplicate-suppression.test.ts",
+  ],
+  controlDecision: "No production compression-disable bypass was added. The live pair uses the true historical baseline and normal ForgeGreen advisor path, while causal treatment attribution remains withheld.",
+};
+
 async function main() {
   if (!process.env.OPENROUTER_API_KEY?.trim()) {
     throw new Error("OPENROUTER_API_KEY is required; presence is checked only and the value is never printed or persisted");
   }
   const startedAt = new Date().toISOString();
-  const control = await runArm({ arm: "control", forgeGreenEnabled: false });
-  const experiment = await runArm({ arm: "experiment", forgeGreenEnabled: true });
+  await writeEvidence("causality-audit.json", CAUSALITY_AUDIT);
+  const preflight = await preflightExactRoute();
+  await writeEvidence("provider-preflight.json", preflight);
+  if (preflight.result.state !== "PREFLIGHT_PASS") {
+    const pending = {
+      schemaVersion: 1,
+      generatedAt: new Date().toISOString(),
+      verdict: "CODEFORGE_FORGEGREEN_R1_EXTERNAL_PROVIDER_PENDING",
+      reason: preflight.result.providerErrorClass,
+      route: ROUTE,
+      pairState: "NOT_STARTED_AFTER_PREFLIGHT_FAILURE",
+      causality: CAUSALITY_AUDIT,
+    };
+    await writeEvidence("matched-pair.json", pending);
+    await writeEvidence("tool-efficiency.json", { schemaVersion: 1, state: "NOT_MEASURED_LIVE", claim: "Use existing local within-run tests only; no provider pair was started." });
+    await writeEvidence("verification-parity.json", { schemaVersion: 1, state: "NOT_REACHED" });
+    await writeEvidence("overhead.json", { schemaVersion: 1, state: "NOT_MEASURED_LIVE" });
+    const target = resolve(OUT);
+    await mkdir(dirname(target), { recursive: true });
+    await writeFile(target, `${JSON.stringify(pending, null, 2)}\n`, "utf8");
+    process.stdout.write(`${JSON.stringify({ verdict: pending.verdict, preflight, evidence: target }, null, 2)}\n`);
+    return;
+  }
+
+  const fixtureRoot = await buildFixture();
+  const startingCommit = (await execFile("git", ["rev-parse", "HEAD"], { cwd: fixtureRoot })).stdout.trim();
+  const fixtureTreeHash = (await execFile("git", ["rev-parse", "HEAD^{tree}"], { cwd: fixtureRoot })).stdout.trim();
+  const worktreeParent = await mkdtemp(join(tmpdir(), "forgegreen-r1r-worktrees-"));
+  const workspacePaths = {
+    control: join(worktreeParent, "control"),
+    experiment: join(worktreeParent, "experiment"),
+  };
+  let control;
+  let experiment;
+  try {
+    await execFile("git", ["worktree", "add", "--detach", "-q", workspacePaths.control, startingCommit], { cwd: fixtureRoot });
+    await execFile("git", ["worktree", "add", "--detach", "-q", workspacePaths.experiment, startingCommit], { cwd: fixtureRoot });
+    control = await runArm({ arm: "control", forgeGreenEnabled: false, workspacePath: workspacePaths.control, startingCommit, fixtureTreeHash });
+    experiment = await runArm({ arm: "experiment", forgeGreenEnabled: true, workspacePath: workspacePaths.experiment, startingCommit, fixtureTreeHash });
+  } finally {
+    for (const workspacePath of Object.values(workspacePaths)) {
+      await execFile("git", ["worktree", "remove", "--force", workspacePath], { cwd: fixtureRoot }).catch(() => undefined);
+    }
+    await rm(worktreeParent, { recursive: true, force: true });
+    await rm(fixtureRoot, { recursive: true, force: true });
+  }
   const controlFlat = flattenArm(control);
   const experimentFlat = flattenArm(experiment);
   const verificationParity = controlFlat.verificationPassed === experimentFlat.verificationPassed
@@ -339,22 +506,67 @@ async function main() {
   const matchedOutcome = verificationParity
     && controlFlat.editVerifyStatus === "completed"
     && experimentFlat.editVerifyStatus === "completed";
-  const materialEfficiencyImprovement = matchedOutcome && (
-    experimentFlat.toolOutputBytesAvoided > controlFlat.toolOutputBytesAvoided
-    || experimentFlat.duplicateActionsSuppressed > controlFlat.duplicateActionsSuppressed
-    || experimentFlat.providerAttempts < controlFlat.providerAttempts
-    || experimentFlat.inputTokens < controlFlat.inputTokens
-  );
+  const withinRunEfficiency = (arm) => arm.rawToolOutputBytes > arm.deliveredToolOutputBytes
+    && arm.toolOutputBytesAvoided > 0;
+  const materialEfficiencyImprovement = false;
   const overheadAcceptable = experimentFlat.wallTimeMs === 0
     || experimentFlat.forgeGreenOverheadMs <= experimentFlat.wallTimeMs * 0.1;
+  const pairInvalidProviderFailure = controlFlat.providerFailures > 0 || experimentFlat.providerFailures > 0;
+  const matchedPair = {
+    schemaVersion: 1,
+    state: pairInvalidProviderFailure ? "PAIR_INVALID_PROVIDER_FAILURE" : matchedOutcome ? "PAIR_VALID_VERIFICATION_PARITY" : "PAIR_INVALID_VERIFICATION_PARITY",
+    design: {
+      sameProvider: true,
+      sameExactModel: true,
+      sameStartingCommit: startingCommit,
+      sameFixtureTreeHash: fixtureTreeHash,
+      sameTask: true,
+      sameTools: true,
+      sameSecurityPolicy: true,
+      sameVerificationPolicy: true,
+      sameCompletionGate: true,
+      sameModelConfiguration: true,
+      sameMaximumBudget: true,
+      isolatedTreatment: "ForgeGreen advisor enabled flag only; measured compression and duplicate/no-progress mechanisms are explicitly documented as unchanged",
+    },
+    control: controlFlat,
+    experiment: experimentFlat,
+    providerFailureRule: "Any upstream 5xx/429/provider availability failure invalidates the pair; no provider retry or fallback was attempted.",
+  };
+  await writeEvidence("matched-pair.json", matchedPair);
+  await writeEvidence("tool-efficiency.json", {
+    schemaVersion: 1,
+    claimType: "VERIFIED_WITHIN_RUN_TOOL_EFFICIENCY",
+    causalDeltaSupported: false,
+    control: { rawBytes: controlFlat.rawToolOutputBytes, deliveredBytes: controlFlat.deliveredToolOutputBytes, avoidedBytes: controlFlat.toolOutputBytesAvoided, ratio: controlFlat.toolOutputCompressionRatio, verified: matchedOutcome && withinRunEfficiency(controlFlat) },
+    experiment: { rawBytes: experimentFlat.rawToolOutputBytes, deliveredBytes: experimentFlat.deliveredToolOutputBytes, avoidedBytes: experimentFlat.toolOutputBytesAvoided, ratio: experimentFlat.toolOutputCompressionRatio, verified: matchedOutcome && withinRunEfficiency(experimentFlat) },
+    provenance: "OBSERVED runtime tool records and R0 telemetry; authoritative post-redaction output remains on ToolExecutionRecord.output and emitted tool events, while model history receives modelContextOutput.",
+  });
+  await writeEvidence("verification-parity.json", {
+    schemaVersion: 1,
+    control: { forgeVerify: controlFlat.verificationPassed ? "PASS" : "FAIL_OR_UNKNOWN", completionGate: controlFlat.completionOutcome === "completed" ? "PASS" : "FAIL_OR_UNKNOWN" },
+    experiment: { forgeVerify: experimentFlat.verificationPassed ? "PASS" : "FAIL_OR_UNKNOWN", completionGate: experimentFlat.completionOutcome === "completed" ? "PASS" : "FAIL_OR_UNKNOWN" },
+    parity: verificationParity,
+    authority: "ForgeGreen records efficiency only; ForgeVerify and evaluateCompletion remain independent authorities.",
+  });
+  await writeEvidence("overhead.json", {
+    schemaVersion: 1,
+    control: { forgeGreenOverheadMs: controlFlat.forgeGreenOverheadMs, wallTimeMs: controlFlat.wallTimeMs },
+    experiment: { forgeGreenOverheadMs: experimentFlat.forgeGreenOverheadMs, wallTimeMs: experimentFlat.wallTimeMs },
+    delta: { forgeGreenOverheadMs: experimentFlat.forgeGreenOverheadMs - controlFlat.forgeGreenOverheadMs, wallTimeMs: experimentFlat.wallTimeMs - controlFlat.wallTimeMs },
+    acceptability: overheadAcceptable,
+    promptCache: "UNKNOWN",
+  });
   const evidence = {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
     startedAt,
-    purpose: "ForgeGreen R1 bounded live efficiency campaign over one exact freshly qualified OpenRouter :free route",
-    claimLimit: "Two matched arms and three small workloads are directional evidence only; no population or provider-wide claim is made.",
+    purpose: "ForgeGreen R1R causal tool-efficiency proof and matched real-provider verification recertification",
+    claimLimit: "The advisor toggle is not a behavioral control for compression or duplicate supervision; only within-run efficiency is claimed unless a true treatment difference is demonstrated.",
     route: ROUTE,
     qualificationEvidence: "docs/evidence/forgegreen-r1/provider-recertification-openrouter.json",
+    providerPreflight: preflight,
+    causalityAudit: CAUSALITY_AUDIT,
     workloads: [
       "repository discovery with deliberate repeated read request",
       "large repetitive tool output",
@@ -366,6 +578,9 @@ async function main() {
       verificationParity,
       securityPolicyUnchanged,
       materialEfficiencyImprovement,
+      causalDeltaSupported: false,
+      withinRunEfficiency: matchedOutcome && withinRunEfficiency(controlFlat) && withinRunEfficiency(experimentFlat),
+      pairInvalidProviderFailure,
       overheadAcceptable,
       deltas: {
         toolOutputBytesAvoided: experimentFlat.toolOutputBytesAvoided - controlFlat.toolOutputBytesAvoided,
@@ -377,9 +592,11 @@ async function main() {
         wallTimeMs: experimentFlat.wallTimeMs - controlFlat.wallTimeMs,
       },
     },
-    verdict: materialEfficiencyImprovement && verificationParity && securityPolicyUnchanged && overheadAcceptable
-      ? "CODEFORGE_FORGEGREEN_R1_FULLY_CERTIFIED"
-      : "CODEFORGE_FORGEGREEN_R1_IMPLEMENTED_VERIFICATION_PENDING",
+    verdict: matchedOutcome && securityPolicyUnchanged && overheadAcceptable && !pairInvalidProviderFailure
+      ? "CODEFORGE_FORGEGREEN_R1_VERIFIED_CAUSALITY_UNRESOLVED"
+      : pairInvalidProviderFailure
+        ? "CODEFORGE_FORGEGREEN_R1_EXTERNAL_PROVIDER_PENDING"
+        : "CODEFORGE_FORGEGREEN_R1_IMPLEMENTED_VERIFICATION_PENDING",
   };
   const target = resolve(OUT);
   await mkdir(dirname(target), { recursive: true });

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16",
+  "focused": {
+    "command": "node node_modules/vitest/vitest.mjs run packages/tools/test/fg1-compression.test.ts packages/server/test/fg1-runtime-efficiency.test.ts packages/server/test/fg1-duplicate-suppression.test.ts packages/server/test/fg1-authority-independence.test.ts packages/providers/test/openrouter-stream-errors.test.ts packages/providers/test/openrouter-native-fallback.test.ts packages/workflow/test/completion-gate.test.ts",
+    "status": "PASS",
+    "testFiles": 7,
+    "testsPassed": 52
+  },
+  "typecheckAndBuild": {
+    "command": "node node_modules/typescript/bin/tsc -b --force",
+    "status": "PASS"
+  },
+  "fullVitest": {
+    "command": "node node_modules/vitest/vitest.mjs run",
+    "status": "KNOWN_ARCHIVED_FAILURE_ONLY",
+    "testFilesPassed": 333,
+    "testFilesFailed": 1,
+    "testFilesSkipped": 7,
+    "testsPassed": 2499,
+    "testsFailed": 1,
+    "testsSkipped": 36,
+    "knownFailure": "tests/evidence/r3/corpus-runs/campaign-1/smoke-archive/S-001-wrapper-eval/attempt-1/run-worktrees/S-001-a1/wt-49ce0b72/test/math.test.ts: dividing by zero expected 0, received Infinity"
+  },
+  "npmLauncher": {
+    "status": "HOST_TOOLING_BLOCKED",
+    "detail": "The system npm shim could not locate C:\\Users\\Daddy_FDS\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npm-cli.js; installed node/typecheck/vitest entrypoints were used directly."
+  }
+}

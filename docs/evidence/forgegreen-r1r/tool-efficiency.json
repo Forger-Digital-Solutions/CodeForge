@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "state": "NOT_MEASURED_LIVE",
+  "claim": "Use existing local within-run tests only; no provider pair was started."
+}
