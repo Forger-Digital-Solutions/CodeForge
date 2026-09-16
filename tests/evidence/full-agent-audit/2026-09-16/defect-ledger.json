@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "campaign": "full-agent-app-destruction-audit",
+  "generatedAt": "2026-09-16",
+  "source": {
+    "branch": "forger-digital-solutions-forgegreen-certified",
+    "head": "d0e946bd063bcba69a390b5e94ba65a4200cd560",
+    "workingTreeAtStart": "clean"
+  },
+  "defects": [
+    {
+      "defect_id": "CFA-001",
+      "severity": "P0",
+      "subsystem": "managed-free exact model routing",
+      "reproduction": "Register a provider but omit the explicitly selected model from ForgeZero; ModelExecutionAdapter previously invoked it.",
+      "root_cause": "resolveModel only verified a model when a ForgeZero record was already present.",
+      "fix_commit": "d44b70f",
+      "regression_test": "packages/server/test/agent-provider-contract.test.ts",
+      "status": "fixed_uncommitted",
+      "release_blocker": false
+    },
+    {
+      "defect_id": "CFA-002",
+      "severity": "P1",
+      "subsystem": "server shutdown / durable recovery",
+      "reproduction": "Stop a server with a live AgentRuntime turn; persistence was closed while detached execution could still emit events.",
+      "root_cause": "CodeForgeServer.stop did not cancel or drain AgentRuntime execution promises before closing persistence.",
+      "fix_commit": "d44b70f",
+      "regression_test": "packages/server/test/server-stop.test.ts",
+      "status": "fixed_uncommitted",
+      "release_blocker": false
+    },
+    {
+      "defect_id": "CFA-003",
+      "severity": "P1",
+      "subsystem": "OpenRouter provider adapter",
+      "reproduction": "Return HTTP 200 SSE containing no usable choices and [DONE].",
+      "root_cause": "The stream defaulted to finish=stop when no choice yielded text or a tool call.",
+      "fix_commit": "d44b70f",
+      "regression_test": "packages/providers/test/openrouter-stream-errors.test.ts",
+      "status": "fixed_uncommitted",
+      "release_blocker": false
+    }
+  ],
+  "preserved_external_gates": [
+    "CODEFORGE_FORGEGREEN_R1_EXTERNAL_PROVIDER_PENDING",
+    "CODEFORGE_R4_CAPACITY_LIMITED_EXTERNAL_EVIDENCE_PENDING"
+  ]
+}
