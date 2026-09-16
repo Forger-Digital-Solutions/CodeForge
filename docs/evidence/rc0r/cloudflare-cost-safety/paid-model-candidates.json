@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16T14:26:00Z",
+  "providerId": "cloudflare-workers-ai",
+  "source": "Cloudflare dashboard AI catalog plus official Workers AI pricing",
+  "officialPricingUrl": "https://developers.cloudflare.com/workers-ai/platform/pricing/",
+  "candidates": [
+    {
+      "modelId": "@cf/moonshotai/kimi-k2.6",
+      "accessRequirement": "Workers Paid or separately authorized paid AI Gateway capacity",
+      "contextWindow": null,
+      "functionCalling": null,
+      "structuredOutput": null,
+      "codingReasoningRelevance": "high candidate; not live-qualified",
+      "neuronConversion": { "inputPerMillion": 86364, "cachedInputPerMillion": 14545, "outputPerMillion": 363636 },
+      "eightBitRoleCandidate": "CODER / REVIEWER",
+      "qualificationStatus": "STATIC_CANDIDATE_ONLY"
+    },
+    {
+      "modelId": "@cf/zai-org/glm-5.3-flash",
+      "accessRequirement": "Workers Paid or separately authorized paid AI Gateway capacity",
+      "contextWindow": 1310720,
+      "functionCalling": true,
+      "structuredOutput": true,
+      "codingReasoningRelevance": "high candidate; Flash latency profile",
+      "neuronConversion": { "inputPerMillion": 13636, "cachedInputPerMillion": 2727, "outputPerMillion": 45455 },
+      "eightBitRoleCandidate": "CODER / EXPLORER",
+      "qualificationStatus": "STATIC_CANDIDATE_ONLY"
+    },
+    {
+      "modelId": "@cf/zai-org/glm-5.3",
+      "accessRequirement": "Workers Paid or separately authorized paid AI Gateway capacity",
+      "contextWindow": 1310720,
+      "functionCalling": true,
+      "structuredOutput": true,
+      "codingReasoningRelevance": "high candidate; reasoning-capable catalog entry",
+      "neuronConversion": { "inputPerMillion": 127273, "cachedInputPerMillion": 23636, "outputPerMillion": 400000 },
+      "eightBitRoleCandidate": "CODER / REVIEWER",
+      "qualificationStatus": "STATIC_CANDIDATE_ONLY"
+    },
+    {
+      "modelId": "@cf/deepseek-ai/deepseek-v4-pro-0813",
+      "accessRequirement": "Workers Paid or separately authorized paid AI Gateway capacity",
+      "contextWindow": 1048576,
+      "functionCalling": true,
+      "structuredOutput": true,
+      "codingReasoningRelevance": "high candidate; long-context coding",
+      "neuronConversion": { "inputPerMillion": 120000, "cachedInputPerMillion": 4000, "outputPerMillion": 360000 },
+      "eightBitRoleCandidate": "CODER / REVIEWER",
+      "qualificationStatus": "STATIC_CANDIDATE_ONLY"
+    }
+  ],
+  "notPromoted": "No paid-plan model was live-called or admitted to Managed-Free; Workers Paid base authorization does not authorize AI overage."
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16T14:36:30Z",
+  "command": "npm.cmd run smoke:all --workspace=codeforge-desktop",
+  "package": "apps/desktop/release/win-unpacked/CodeForge.exe",
+  "asar": true,
+  "electronVersion": "33.4.11",
+  "results": {
+    "full": { "exitCode": 0, "status": "PASS", "screenshots": 16 },
+    "interrupt": { "exitCode": 73, "status": "PASS" },
+    "recover": { "exitCode": 0, "status": "PASS" }
+  },
+  "validated": [
+    "renderer lifecycle",
+    "ForgeGreen runtime",
+    "8-Bit runtime",
+    "cloud DB packaged runtime",
+    "workspace and repository index",
+    "model catalog and filter",
+    "workflow completion and repair",
+    "renderer reload count 5",
+    "settings and provider connections",
+    "control-plane trust boundary",
+    "credential absence and encrypted round trip",
+    "restart interruption and recovery"
+  ],
+  "secretsRecorded": false
+}

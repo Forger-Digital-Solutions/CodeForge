@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16T14:26:00Z",
+  "sourceStateFile": "docs/codeforge-forgegreen-certified-source-state.json",
+  "priorSourceStateId": "9aacec0d7f2ca60b44e3e189fe72aa9a1618df06ef7c6b7d3ac581a53b396fbd",
+  "currentSourceStateId": "a40af59269e054e4547ea4aaaf71f5010a9416d3a33a2338067e9600b1264569",
+  "currentCommit": "f07f8cd4698a8d793a327af01a327ab9c094f4b8",
+  "certifiedSurfaceVersion": "fg12f-certified-v1-r4-forgegreen-r0",
+  "changedCertifiedSource": [
+    {
+      "path": "packages/server/src/agent-runtime.ts",
+      "materialGitBlobHash": "96004ed0d535e7a9d64b6c4b88e7a05a967c807d",
+      "semanticImpact": "bounded shutdown now waits for cooperative abort, then preserves durable interrupted state for restart recovery; ForgeGreen and ForgeVerify authority unchanged"
+    }
+  ],
+  "outsideSurfaceChanges": [
+    "Cloudflare provider neuron guard",
+    "provider allowlist/adaptive admission",
+    "Gemini versioned policy gate and disclosure",
+    "Mistral/Cerebras packaging metadata"
+  ],
+  "evidence": {
+    "fg11FocusedTests": "PASS",
+    "fg12eFocusedTests": "PASS",
+    "focusedTestFiles": 2,
+    "focusedTests": 8,
+    "hashWasRewrittenWithoutReview": false
+  }
+}

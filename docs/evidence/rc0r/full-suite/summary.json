@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16T14:35:00Z",
+  "command": "npm.cmd test -- --reporter=json --outputFile=docs\\evidence\\rc0r\\full-suite\\current-full-suite.json",
+  "exitCode": 0,
+  "success": true,
+  "testFiles": { "total": 344, "passed": 344, "failed": 0 },
+  "suites": { "total": 917, "passed": 917, "failed": 0 },
+  "tests": { "total": 2552, "passed": 2516, "failed": 0, "skipped": 36 },
+  "durationMs": 282932.0275878906,
+  "archivedEvidenceExclusion": "Vitest config excludes tests/evidence/** only; active production source tests remain collected."
+}

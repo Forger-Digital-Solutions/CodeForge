@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16T14:26:00Z",
+  "priorObservation": {
+    "rendererEvent": "launch-failed",
+    "exitCode": 49,
+    "loadTarget": "file:///G:/CodeForge/apps/desktop/release/win-unpacked/resources/app.asar/apps/desktop/dist/renderer/index.html",
+    "source": "packaged-smoke run before final clean package"
+  },
+  "forensicChecks": {
+    "explicitCanonicalFileUrlRetried": true,
+    "asarDisabledRetried": true,
+    "productionSandboxWeakened": false,
+    "primarySecuritySettingsPreserved": ["sandbox=true", "nodeIntegration=false", "contextIsolation=true", "webSecurity=true"]
+  },
+  "currentResult": {
+    "package": "win-unpacked asar-enabled Electron 33.4.11",
+    "fullSmokeExitCode": 0,
+    "interruptExitCode": 73,
+    "recoveryExitCode": 0,
+    "rendererLaunchFailed49Reproduced": false,
+    "rootCauseClassification": "NOT_REPRODUCED_AFTER_CLEAN_FINAL_PACKAGE",
+    "releaseDecision": "Electron blocker cleared by current packaged evidence; retain prior failure as historical forensic evidence rather than claim exact original OS cause"
+  },
+  "officialSemantics": "Electron renderer-process-gone launch-failed means the renderer never successfully launched; the original event did not expose a more specific cause."
+}

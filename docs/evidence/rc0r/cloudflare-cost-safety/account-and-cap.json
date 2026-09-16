@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "campaign": "RC0R",
+  "generatedAt": "2026-09-16T14:26:00Z",
+  "providerId": "cloudflare-workers-ai",
+  "browserAccountEvidence": {
+    "authenticatedDashboardObserved": true,
+    "workersPlan": "Paid",
+    "workersPaidBaseSubscriptionAuthorized": true,
+    "workersAiUsageObservedNeuronsToday": 8470,
+    "usageObservationSource": "Cloudflare dashboard",
+    "usageObservationDay": "2026-09-16",
+    "dailyReset": "00:00 UTC",
+    "aiGatewayCreditsObserved": 0,
+    "secretsRecorded": false
+  },
+  "codeforgePolicy": {
+    "policyVersion": "cloudflare-neuron-budget/v1",
+    "includedDailyNeurons": 10000,
+    "safeDailyCeilingNeurons": 8000,
+    "paidOverflowEnabled": false,
+    "overageAuthorization": "UNAUTHORIZED",
+    "statusAtObservedUsage": "BLOCKED_SAFE_CEILING_EXHAUSTED"
+  },
+  "hardeningClaims": {
+    "unknownUsageFailsClosed": true,
+    "unknownModelRateFailsClosed": true,
+    "missingOutputBoundFailsClosed": true,
+    "reservationOccursBeforeProviderFetch": true,
+    "atomicDurableLedger": true,
+    "concurrentRequestsCannotOversubscribe": true,
+    "utcDayRolloverResetsLedger": true,
+    "browserBillingAlertUsedAsCap": false,
+    "adaptiveRoutingSkipsUnroutableCloudflare": true,
+    "exactModelAtExhaustionFailsClosed": true,
+    "restAndAiGatewayBypass": "NOT_PRESENT_IN_CODEFORGE_ROUTE"
+  },
+  "verification": {
+    "testFile": "packages/providers/test/cloudflare-neuron-budget.test.ts",
+    "testsPassed": 7,
+    "testFilesPassed": 1,
+    "command": "npm.cmd test -- --run packages/providers/test/cloudflare-neuron-budget.test.ts",
+    "cloudflareInferenceInvoked": false
+  }
+}

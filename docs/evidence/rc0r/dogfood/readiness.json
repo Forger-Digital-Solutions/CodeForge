@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16T14:26:00Z",
+  "overallVerdict": "CODEFORGE_FULL_AGENT_HARDENED_RELEASE_BLOCKERS_REMAIN",
+  "dogfoodState": "LIMITED_DOGFOOD_READY",
+  "prerequisites": {
+    "currentFullSuite": "PASS",
+    "currentBuild": "PASS",
+    "packagedDesktopSmoke": "PASS",
+    "liveGroqWholeAgent": "BLOCKED",
+    "forgeVerifyWholeAgent": "NOT_PROVEN",
+    "completionGateWholeAgent": "NOT_PROVEN",
+    "codeforgeBuildsCodeforge": "NOT_ATTEMPTED"
+  },
+  "liveRun": {
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "status": "blocked",
+    "exitCode": 1,
+    "changedFiles": [],
+    "verification": [],
+    "reason": "planner cancelled; explorer workers timed out/cancelled; structured task graph was not authorized",
+    "providerFailures": 0,
+    "spend": "$0"
+  },
+  "boundedDogfood": "Not run because the live whole-agent prerequisite did not pass."
+}
