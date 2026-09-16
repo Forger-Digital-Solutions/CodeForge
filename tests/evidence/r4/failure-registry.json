@@ -1,0 +1,47 @@
+{
+  "schema": "codeforge-r4-failure-registry-v1",
+  "generatedAt": "2026-09-15T00:00:00.000Z",
+  "historicalBaseline": {
+    "r3Registry": "../r3/failure-registry.json",
+    "preserved": true,
+    "note": "R3 evidence is not rewritten by R4 remediation."
+  },
+  "entries": [
+    {
+      "id": "CF-FR-001",
+      "severity": "P2",
+      "status": "CLOSED",
+      "title": "Oracle wrapper duplicated Vitest command and lost tooling path in nested worktrees",
+      "source": "R3 FR-007",
+      "fix": "Wrapper now owns the Vitest run verb, accepts an explicit tooling path, creates raw-output directories, and all disposable worktrees are cleaned after evidence persistence.",
+      "verification": ["scripts/r3-oracle-wrapper.mjs", "scripts/r3-corpus-runner.mjs"]
+    },
+    {
+      "id": "CF-FR-002",
+      "severity": "P2",
+      "status": "CLOSED",
+      "title": "Planner completion could lack an authorized task graph",
+      "source": "R3 FR-008",
+      "fix": "Planner payloads are revalidated even when recovered from final summary, and the graph must contain coder and reviewer nodes before execution.",
+      "verification": ["packages/server/src/autonomous-orchestrator.ts", "packages/agent/src/index.ts"]
+    },
+    {
+      "id": "CF-FR-003",
+      "severity": "P1",
+      "status": "OPEN",
+      "title": "Current measured free fleet does not sustain every 373-user/373-DAU scenario",
+      "source": "R4 deterministic scale simulation",
+      "impact": "Capacity blocks are honest and fail closed; R4.6 scale certification is not claimed.",
+      "nextAction": "Qualify additional zero-cash routes or obtain an authorized sponsored allocation; never route paid spillover implicitly."
+    },
+    {
+      "id": "CF-FR-004",
+      "severity": "P2",
+      "status": "OPEN",
+      "title": "OpenRouter daily free counter is not exposed by account endpoints",
+      "source": "R4 live account check",
+      "impact": "The documented 1,000/day threshold is account-qualified, but remaining daily capacity must be learned from runtime headers or a 429 reset.",
+      "nextAction": "Record sanitized response headers and keep capacity reservations conservative."
+    }
+  ]
+}
