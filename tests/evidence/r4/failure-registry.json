@@ -14,7 +14,7 @@
       "title": "Oracle wrapper duplicated Vitest command and lost tooling path in nested worktrees",
       "source": "R3 FR-007",
       "fix": "Wrapper now owns the Vitest run verb, accepts an explicit tooling path, creates raw-output directories, and all disposable worktrees are cleaned after evidence persistence.",
-      "verification": ["scripts/r3-oracle-wrapper.mjs", "scripts/r3-corpus-runner.mjs"]
+      "verification": ["scripts/r3-oracle-wrapper.mjs", "scripts/r3-corpus-runner.mjs", "tests/evidence/r4/oracle-wrapper-smoke.json"]
     },
     {
       "id": "CF-FR-002",

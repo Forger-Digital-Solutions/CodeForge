@@ -1,0 +1,18 @@
+{
+  "command": "npx vitest run packages/providers/test/capacity-governor.test.ts",
+  "verdict": "pass",
+  "counts": {
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0
+  },
+  "newFailures": [],
+  "lostFiles": [],
+  "baseline": {
+    "file": "G:\\CodeForge\\tests\\evidence\\r3\\corpus-runs\\campaign-1\\freeze\\baseline-oracle-codeforge-target-905bf0e6b8.json",
+    "failing": 0,
+    "files": 1
+  },
+  "vitestExitCode": 0,
+  "at": "2026-09-16T01:51:12.517Z"
+}

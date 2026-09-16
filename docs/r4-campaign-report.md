@@ -69,6 +69,15 @@ eligibility evidence remain route-specific.
 closed remediations inherited from R3 and two open R4 limits: current scale capacity and the
 unobservable OpenRouter daily counter. Historical R3 FR-007/FR-008 entries remain unchanged.
 
+## Verification record
+
+The full workspace build passed. The full Vitest invocation recorded 330 passing files, 7 skipped,
+and 3 failures: the source-state checks were captured before the recertification above and pass in
+the post-refresh run; the remaining failure is the intentionally red archived R3 smoke fixture. The
+post-refresh targeted checks pass: 8 source-state/provenance tests, 7 ForgeZero/8-Bit capacity
+tests, 13 oracle-wrapper smoke assertions, and 2,491 of the 2,530 full-run assertions passed. The
+known archived fixture is preserved as evidence and is not silently repaired.
+
 ## Required report matrix
 
 The following is the required R4.0–R4.6 gate matrix. `PASS` means locally evidenced in this
