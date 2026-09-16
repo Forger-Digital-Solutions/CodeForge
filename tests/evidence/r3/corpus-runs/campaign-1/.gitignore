@@ -1,0 +1,3 @@
+# Disposable run worktrees are runner-internal state, not evidence (FR-007 note: the runner
+# leaks them when an attempt terminates blocked at verification). They must never be committed.
+evidence/**/run-worktrees/
