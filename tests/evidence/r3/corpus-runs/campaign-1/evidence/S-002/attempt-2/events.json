@@ -1,0 +1,153 @@
+{
+  "totalEvents": 147,
+  "typeCounts": {
+    "task.created": 1,
+    "task.state_changed": 3,
+    "status.changed": 3,
+    "subagent.started": 3,
+    "subagent.lifecycle": 12,
+    "agent.started": 3,
+    "router.selection": 3,
+    "tool.call_started": 27,
+    "tool.execution_started": 27,
+    "tool.execution_failed": 6,
+    "tool.execution_completed": 21,
+    "agent.completed": 3,
+    "forgegreen.run_started": 3,
+    "forgegreen.model_usage_recorded": 3,
+    "forgegreen.tool_usage_recorded": 3,
+    "forgegreen.verification_usage_recorded": 3,
+    "forgegreen.baseline_generated": 3,
+    "forgegreen.energy_estimated": 3,
+    "forgegreen.run_finalized": 3,
+    "forgegreen.optimization_candidate": 3,
+    "forgegreen.optimization_summary": 3,
+    "subagent.artifact_written": 3,
+    "subagent.completed": 3,
+    "tool.execution_blocked": 1,
+    "forgegreen.optimization_applied": 1
+  },
+  "router": [
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-cefa64ac-4c63-445e-b683-7e39ad4c70b4",
+        "modelId": "@cf/openai/gpt-oss-120b",
+        "providerId": "cloudflare-workers-ai",
+        "score": 105,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "access_free_native"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-e2b07211-453c-4384-885b-63b0f38bd40d",
+        "modelId": "@cf/openai/gpt-oss-120b",
+        "providerId": "cloudflare-workers-ai",
+        "score": 105,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "access_free_native"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-497bf382-eeb5-4563-b3b2-f338f60bf540",
+        "modelId": "@cf/openai/gpt-oss-120b",
+        "providerId": "cloudflare-workers-ai",
+        "score": 82,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "access_free_native"
+        ]
+      }
+    }
+  ],
+  "lifecycle": [
+    {
+      "role": "Repository Explorer",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "completed",
+      "model": {
+        "providerId": "cloudflare-workers-ai",
+        "modelId": "@cf/openai/gpt-oss-120b"
+      }
+    },
+    {
+      "role": "Repository Explorer",
+      "state": "completed",
+      "model": {
+        "providerId": "cloudflare-workers-ai",
+        "modelId": "@cf/openai/gpt-oss-120b"
+      }
+    },
+    {
+      "role": "Task Planner",
+      "state": "created",
+      "model": null
+    },
+    {
+      "role": "Task Planner",
+      "state": "starting",
+      "model": null
+    },
+    {
+      "role": "Task Planner",
+      "state": "running",
+      "model": null
+    },
+    {
+      "role": "Task Planner",
+      "state": "completed",
+      "model": {
+        "providerId": "cloudflare-workers-ai",
+        "modelId": "@cf/openai/gpt-oss-120b"
+      }
+    }
+  ],
+  "failureEvents": [],
+  "recoveryObserved": false
+}

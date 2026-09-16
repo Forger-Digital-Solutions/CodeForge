@@ -1,0 +1,62 @@
+[
+  {
+    "role": "Repository Explorer",
+    "status": "completed",
+    "model": {
+      "providerId": "cloudflare-workers-ai",
+      "modelId": "@cf/openai/gpt-oss-120b"
+    },
+    "telemetry": {
+      "wallTimeMs": 53959,
+      "modelRequests": 10,
+      "inputTokens": 17292,
+      "outputTokens": 992,
+      "toolCalls": 10,
+      "retryCount": 0,
+      "duplicateWorkCount": 0,
+      "providerFailures": 0
+    },
+    "startedAt": "2026-09-16T00:37:48.278Z",
+    "completedAt": "2026-09-16T00:38:42.226Z"
+  },
+  {
+    "role": "Repository Explorer",
+    "status": "completed",
+    "model": {
+      "providerId": "cloudflare-workers-ai",
+      "modelId": "@cf/openai/gpt-oss-120b"
+    },
+    "telemetry": {
+      "wallTimeMs": 62050,
+      "modelRequests": 10,
+      "inputTokens": 16114,
+      "outputTokens": 1127,
+      "toolCalls": 10,
+      "retryCount": 0,
+      "duplicateWorkCount": 0,
+      "providerFailures": 0
+    },
+    "startedAt": "2026-09-16T00:37:48.278Z",
+    "completedAt": "2026-09-16T00:38:50.317Z"
+  },
+  {
+    "role": "Task Planner",
+    "status": "completed",
+    "model": {
+      "providerId": "cloudflare-workers-ai",
+      "modelId": "@cf/openai/gpt-oss-120b"
+    },
+    "telemetry": {
+      "wallTimeMs": 15181,
+      "modelRequests": 8,
+      "inputTokens": 14976,
+      "outputTokens": 803,
+      "toolCalls": 7,
+      "retryCount": 0,
+      "duplicateWorkCount": 0,
+      "providerFailures": 0
+    },
+    "startedAt": "2026-09-16T00:38:50.325Z",
+    "completedAt": "2026-09-16T00:39:05.503Z"
+  }
+]

@@ -1,0 +1,83 @@
+{
+  "sessionId": "corpus-s-001-a2",
+  "startedAt": "2026-09-16T00:33:21.893Z",
+  "finishedAt": "2026-09-16T00:37:46.992Z",
+  "runError": null,
+  "result": {
+    "runId": "run-c2bae6f2-a362-4fd7-8e9a-32052920ea3c",
+    "status": "blocked",
+    "summary": "Deterministic verification failed in worktree: oracle-wrapper: vitest produced no parseable JSON report\n",
+    "workspaceId": "ws-b59d28f2",
+    "baseRevision": "d45db3547b49f5dcbf7a46cb785c12bf84be26bf",
+    "changedFiles": [
+      "tests/math.test.ts",
+      "test/math.test.ts"
+    ],
+    "review": {
+      "passed": true,
+      "findings": []
+    },
+    "verification": [
+      {
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "command": "node G:\\CodeForge\\scripts\\r3-oracle-wrapper.mjs --baseline=G:/CodeForge/tests/evidence/r3/corpus-runs/campaign-1/freeze/baseline-oracle-sandbox-suite.json --out=G:/CodeForge/tests/evidence/r3/corpus-runs/campaign-1/evidence/S-001/attempt-2/oracle-internal.json -- vitest run",
+        "cwd": "G:\\CodeForge\\tests\\evidence\\r3\\corpus-runs\\campaign-1\\evidence\\S-001\\attempt-2\\run-worktrees\\S-001-a2\\wt-d6c6be12",
+        "exitCode": 1,
+        "output": "oracle-wrapper: vitest produced no parseable JSON report\n",
+        "failures": [
+          {
+            "test": "verifier-1-test",
+            "message": "oracle-wrapper: vitest produced no parseable JSON report\n"
+          }
+        ],
+        "durationMs": 154
+      }
+    ],
+    "integration": {
+      "status": "blocked",
+      "branch": "codeforge/worktree/run-c2bae6f2-a362-4fd7-8e9a-32052920ea3c-d6c6be12",
+      "worktreeId": "wt-d6c6be12",
+      "reason": "VERIFICATION_FAILED"
+    },
+    "evidence": [
+      {
+        "kind": "search",
+        "ref": "src/math.ts",
+        "description": "exact_symbol_match, implementation_symbol, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "package-lock.json",
+        "description": "symbol_name_match, implementation_symbol"
+      },
+      {
+        "kind": "search",
+        "ref": "test/math.test.ts",
+        "description": "lexical_content_match, test_filename_convention, test_naming_convention, related_to_relevant_implementation, test_deprioritized_for_implementation_query"
+      },
+      {
+        "kind": "search",
+        "ref": "README.md",
+        "description": "lexical_content_match"
+      },
+      {
+        "kind": "git",
+        "ref": "G:\\CodeForge\\tests\\evidence\\r3\\corpus-runs\\campaign-1\\evidence\\S-001\\attempt-2\\run-worktrees\\S-001-a2\\wt-d6c6be12",
+        "description": "diff_review"
+      },
+      {
+        "kind": "verification",
+        "ref": "G:\\CodeForge\\tests\\evidence\\r3\\corpus-runs\\campaign-1\\evidence\\S-001\\attempt-2\\run-worktrees\\S-001-a2\\wt-d6c6be12",
+        "description": "test_execution"
+      }
+    ],
+    "counters": {
+      "childrenSpawned": 4,
+      "reviewRounds": 0,
+      "taskAttempts": 1,
+      "verificationAttempts": 1
+    }
+  }
+}

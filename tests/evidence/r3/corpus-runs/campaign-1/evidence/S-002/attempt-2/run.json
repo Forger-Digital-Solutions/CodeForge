@@ -1,0 +1,56 @@
+{
+  "sessionId": "corpus-s-002-a2",
+  "startedAt": "2026-09-16T00:37:48.115Z",
+  "finishedAt": "2026-09-16T00:39:05.561Z",
+  "runError": null,
+  "result": {
+    "runId": "run-b722cbc0-37a8-4bcb-b608-79d69e600534",
+    "status": "blocked",
+    "summary": "Planner did not produce an authorized task graph: Agent planner completed",
+    "workspaceId": "ws-cac42a48",
+    "baseRevision": "d45db3547b49f5dcbf7a46cb785c12bf84be26bf",
+    "changedFiles": [],
+    "review": {
+      "passed": false,
+      "findings": []
+    },
+    "verification": [],
+    "integration": {
+      "status": "not_attempted",
+      "reason": "AGENT_INVALID_STRUCTURED_OUTPUT"
+    },
+    "evidence": [
+      {
+        "kind": "search",
+        "ref": "package-lock.json",
+        "description": "path_token_match, multi_token_path_match, symbol_name_match, implementation_symbol"
+      },
+      {
+        "kind": "search",
+        "ref": "src/math.ts",
+        "description": "path_token_match, multi_token_path_match, lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "test/math.test.ts",
+        "description": "path_token_match, multi_token_path_match, lexical_content_match, test_filename_convention, test_naming_convention, related_to_relevant_implementation, test_deprioritized_for_implementation_query"
+      },
+      {
+        "kind": "search",
+        "ref": "README.md",
+        "description": "lexical_content_match"
+      },
+      {
+        "kind": "search",
+        "ref": "package.json",
+        "description": "path_token_match, multi_token_path_match"
+      }
+    ],
+    "counters": {
+      "childrenSpawned": 3,
+      "reviewRounds": 0,
+      "taskAttempts": 0,
+      "verificationAttempts": 0
+    }
+  }
+}

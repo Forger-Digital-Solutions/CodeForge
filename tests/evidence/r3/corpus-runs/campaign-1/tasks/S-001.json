@@ -3,45 +3,45 @@
   "category": "simple",
   "manifest_declared_start": "d45db35",
   "starting_sha": "d45db3547b49f5dcbf7a46cb785c12bf84be26bf",
-  "status": "CAPACITY_BLOCKED",
-  "attempt": 1,
+  "status": "FAILED",
+  "attempt": 2,
   "oracle_command": "npm test",
   "baseline_key": "sandbox-suite",
   "provider_routes": {
-    "groq/openai/gpt-oss-120b": {
-      "requests": 2,
-      "inputTokens": 1343,
-      "outputTokens": 106
-    },
-    "unknown/unknown": {
-      "requests": 2,
-      "inputTokens": 0,
-      "outputTokens": 0
+    "cloudflare-workers-ai/@cf/openai/gpt-oss-120b": {
+      "requests": 52,
+      "inputTokens": 185028,
+      "outputTokens": 12537
     }
   },
   "model_roles": {
-    "Repository Explorer": "unknown/unknown",
-    "Task Planner": "unknown/unknown"
+    "Repository Explorer": "cloudflare-workers-ai/@cf/openai/gpt-oss-120b",
+    "Task Planner": "cloudflare-workers-ai/@cf/openai/gpt-oss-120b",
+    "Autonomous Builder": "cloudflare-workers-ai/@cf/openai/gpt-oss-120b",
+    "Independent Code Reviewer": "cloudflare-workers-ai/@cf/openai/gpt-oss-120b"
   },
   "started_at": "2026-09-15T21:47:20.700Z",
-  "last_progress_at": "2026-09-15T21:48:23.624Z",
-  "finished_at": "2026-09-15T21:48:23.624Z",
+  "last_progress_at": "2026-09-16T00:37:47.557Z",
+  "finished_at": "2026-09-16T00:37:47.557Z",
   "verified": false,
   "completion_gate": {
     "status": "blocked",
-    "reviewPassed": false,
-    "integration": "not_attempted"
+    "reviewPassed": true,
+    "integration": "blocked"
   },
   "intervention": "none",
-  "failure_class": "provider_rate_limited",
-  "evidence_path": "evidence/S-001/attempt-1",
+  "failure_class": "run_blocked",
+  "evidence_path": "evidence/S-001/attempt-2",
   "tokens": {
-    "input": 1343,
-    "output": 106
+    "input": 185028,
+    "output": 12537
   },
-  "requests": 4,
+  "requests": 52,
   "false_completion": false,
   "notes": [
-    "run terminated on managed-free capacity: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier "
+    "run terminated on managed-free capacity: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier ",
+    "capacity-blocked result reset for retry at 2026-09-16T00:33:21.411Z",
+    "prior attempt interrupted; re-attempt 2",
+    "run terminated blocked: Deterministic verification failed in worktree: oracle-wrapper: vitest produced no parseable JSON report\n"
   ]
 }

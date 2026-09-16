@@ -1,6 +1,6 @@
 {
  "schema": "r3-failure-registry-v1",
- "updatedAt": "2026-09-16T00:31:05.494Z",
+ "updatedAt": "2026-09-16T00:39:58.540Z",
  "entries": [
   {
    "id": "FR-001",
@@ -73,6 +73,30 @@
    "fix": "quota_exhausted is now excluded only until its marked retryAfter (daily-window reset); without a marked reset time it remains excluded (fail closed). Auto-restore covered by test.",
    "regressionCoverage": "packages/forge-zero/test/health-classify.test.ts (auto-restore at reset; fail-closed without reset time).",
    "status": "FIXED"
+  },
+  {
+   "id": "FR-007",
+   "discoveredAt": "2026-09-16T00:55:00Z",
+   "discoveredBy": "r3-corpus-window2-S001-attempt2",
+   "severity": "P2",
+   "title": "Oracle wrapper reported vitest produced no parseable JSON report in the worktree (verification blocked a review-passed candidate)",
+   "description": "S-001 attempt 2 (simple, oracle npm test): 52 real model requests through cloudflare-workers-ai/@cf/openai/gpt-oss-120b (fleet rotated from Groq — cross-provider failover worked). Independent Code Reviewer PASSED; integration verification failed with oracle-wrapper: vitest produced no parseable JSON report. The gate honestly blocked the run (false_completion=false), but the verification harness could not evaluate a candidate that reached the verification stage, so the task failed on harness plumbing rather than task merit.",
+   "generalCause": "Under investigation: the wrapper JSON reporter may not be wired in the worktree vitest invocation, or vitest crashed before producing a report (Windows worktree node_modules junction / reporter registration).",
+   "fix": "OPEN — needs reproduction with the preserved attempt evidence (tests/evidence/r3/corpus-runs/campaign-1/evidence/S-001/attempt-2).",
+   "regressionCoverage": "PENDING (open)",
+   "status": "OPEN"
+  },
+  {
+   "id": "FR-008",
+   "discoveredAt": "2026-09-16T00:55:00Z",
+   "discoveredBy": "r3-corpus-window2-S002-attempt2",
+   "severity": "P2",
+   "title": "Planner completed without an authorized task graph; orchestrator honestly blocked the run",
+   "description": "S-002 attempt 2 (simple): 28 real model requests through cloudflare-workers-ai/@cf/openai/gpt-oss-120b. The planner turn reported completion but its output was not an authorized task graph, so the run terminated blocked (Planner did not produce an authorized task graph). No fabricated completion; gate blocked before coder/reviewer. Likely planner-structured-output robustness against the Cloudflare-served gpt-oss-120b response shape.",
+   "generalCause": "Under investigation: planner structured-output contract enforcement vs the Cloudflare-served model output (fenced JSON extraction exists; the planner output may have been valid prose or a schema-violating graph).",
+   "fix": "OPEN — needs reproduction with preserved evidence (tests/evidence/r3/corpus-runs/campaign-1/evidence/S-002/attempt-2).",
+   "regressionCoverage": "PENDING (open)",
+   "status": "OPEN"
   }
  ]
 }
