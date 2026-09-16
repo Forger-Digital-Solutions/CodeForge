@@ -451,6 +451,7 @@ export class AgentRuntime {
   private demoMode: boolean;
   private modelSelection: ModelSelection | null = null;
   private readonly activeTurns: Map<string, TurnState> = new Map();
+  private readonly activeExecutions: Map<string, Promise<void>> = new Map();
   private readonly pendingSteeringByTurn: Map<string, string[]> = new Map();
   private readonly pendingApprovals: Map<string, ApprovalRequest> = new Map();
   private readonly pendingQuestions: Map<string, QuestionRequest> = new Map();
@@ -2075,8 +2076,15 @@ export class AgentRuntime {
     const abortController = new AbortController();
     this.abortControllers.set(turnId, abortController);
 
-    if (!this.demoMode) {
-      this.executeTurn(turnId, userMessage, adapter, abortController.signal).catch(async (error) => {
+    if (!this.demoMode) this.launchTurnExecution(turnId, userMessage, adapter, abortController.signal);
+
+    return turnId;
+  }
+
+  private launchTurnExecution(turnId: string, userMessage: string, adapter: WorkspaceEventAdapter, signal: AbortSignal): void {
+    let execution: Promise<void>;
+    execution = this.executeTurn(turnId, userMessage, adapter, signal)
+      .catch(async (error) => {
         const turnState = this.activeTurns.get(turnId);
         if (turnState && turnState.status === "running") {
           turnState.status = "failed";
@@ -2087,10 +2095,11 @@ export class AgentRuntime {
           await adapter.emitTurnFailed(turnId, turnState.error);
           adapter.emitStatusChanged("running", "failed");
         }
+      })
+      .finally(() => {
+        if (this.activeExecutions.get(turnId) === execution) this.activeExecutions.delete(turnId);
       });
-    }
-
-    return turnId;
+    this.activeExecutions.set(turnId, execution);
   }
 
   async steerTurn(turnId: string, steering: string, steerId?: string): Promise<void> {
@@ -2172,19 +2181,7 @@ export class AgentRuntime {
     if (session) await this.persistence.upsertSession({ ...session, status: "running", updatedAt: new Date().toISOString() });
     const abortController = new AbortController();
     this.abortControllers.set(turnId, abortController);
-    if (!this.demoMode) {
-      this.executeTurn(turnId, state.userMessage, adapter, abortController.signal).catch(async (error) => {
-        const turnState = this.activeTurns.get(turnId);
-        if (turnState && turnState.status === "running") {
-          turnState.status = "failed";
-          turnState.error = error instanceof Error ? error.message : String(error);
-          this.activeTurns.set(turnId, turnState);
-          await this.persistTurn(turnState);
-          await this.userIntentHold?.resolveForTerminal(this.sessionId, turnId);
-          await adapter.emitTurnFailed(turnId, turnState.error);
-        }
-      });
-    }
+    if (!this.demoMode) this.launchTurnExecution(turnId, state.userMessage, adapter, abortController.signal);
   }
 
   async cancelTurn(turnId: string, reason?: string): Promise<void> {
@@ -2308,6 +2305,17 @@ export class AgentRuntime {
     return Array.from(this.activeTurns.values()).filter(
       (t) => t.status === "running" || t.status === "paused" || t.status === "waiting_for_approval" || t.status === "waiting_for_question" || t.status === "recovering",
     );
+  }
+
+  /**
+   * Cancels all active work and waits for the associated execution loops to observe abort before
+   * their persistence backing store is closed. A server restart then recovers from durable state
+   * instead of letting detached loops write into a finalized database.
+   */
+  async shutdown(reason = "Server shutting down"): Promise<void> {
+    const active = this.getActiveTurns();
+    await Promise.all(active.map((turn) => this.cancelTurn(turn.turnId, reason).catch(() => undefined)));
+    await Promise.allSettled(Array.from(this.activeExecutions.values()));
   }
 
   hasPendingApprovals(): boolean {

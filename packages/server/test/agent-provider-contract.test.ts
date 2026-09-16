@@ -49,6 +49,32 @@ describe("Model Execution Adapter & Provider Contract (CF-07)", () => {
     }).toThrow(/PROVIDER_MODEL_UNAVAILABLE/);
   });
 
+  it("fails closed before invoking a registered provider when its exact model is absent from ForgeZero", async () => {
+    const catalog = new InMemoryProviderCatalog();
+    let calls = 0;
+    catalog.register({
+      providerId: "managed-free-provider",
+      isTestProvider: true,
+      listModels: async () => [],
+      chat: async () => { throw new Error("Use streamChat"); },
+      streamChat: async function* () {
+        calls += 1;
+        yield { type: "text_delta", delta: "must not execute" };
+        yield { type: "finish", finishReason: "stop" };
+      },
+      healthCheck: async () => ({ status: "available" }),
+    });
+    const firewall = new ForgeZero();
+    firewall.register(createGenericFreeRecord());
+    const adapter = new ModelExecutionAdapter(catalog, firewall);
+
+    await expect(adapter.execute({
+      modelSelection: { providerId: "managed-free-provider", modelId: "unqualified-or-paid-model" },
+      messages: [{ role: "user", content: "Hello" }],
+    })).rejects.toThrow(/not registered in ForgeZero/);
+    expect(calls).toBe(0);
+  });
+
   it("executes through direct BYOK adapter independently", async () => {
     const catalog = new InMemoryProviderCatalog();
     const mockDirectProvider: ProviderAdapter = {

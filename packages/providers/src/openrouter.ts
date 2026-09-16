@@ -207,6 +207,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
       const decoder = new TextDecoder();
       let buffer = "";
       let currentToolCall: { id: string; name: string; arguments: string } | null = null;
+      let receivedUsableOutput = false;
       // The upstream's own finish reason, when it is one the stream contract can express; a
       // truncated ("length") or filtered answer must not be reported as a clean "stop".
       let finishReason: "stop" | "tool_calls" | "length" | "content_filter" | "error" = "stop";
@@ -223,6 +224,15 @@ export class OpenRouterAdapter implements ProviderAdapter {
           if (!line.startsWith("data: ")) continue;
           const data = line.slice(6);
           if (data === "[DONE]") {
+            if (!receivedUsableOutput) {
+              yield {
+                type: "error",
+                code: "EMPTY_COMPLETION",
+                message: "OpenRouter returned HTTP 200 but no usable completion choices.",
+                retryable: true,
+              };
+              return;
+            }
             if (currentToolCall) {
               yield {
                 type: "tool_call_completed",
@@ -251,12 +261,14 @@ export class OpenRouterAdapter implements ProviderAdapter {
 
             const delta = choice.delta;
             if (delta?.content) {
+              receivedUsableOutput = true;
               yield { type: "text_delta", delta: delta.content };
             }
 
             if (delta?.tool_calls) {
               for (const tc of delta.tool_calls) {
                 if (tc.function?.name && !currentToolCall) {
+                  receivedUsableOutput = true;
                   currentToolCall = {
                     id: tc.id,
                     name: tc.function.name,
@@ -308,6 +320,15 @@ export class OpenRouterAdapter implements ProviderAdapter {
         }
       }
 
+      if (!receivedUsableOutput) {
+        yield {
+          type: "error",
+          code: "EMPTY_COMPLETION",
+          message: "OpenRouter returned HTTP 200 but no usable completion choices.",
+          retryable: true,
+        };
+        return;
+      }
       yield { type: "finish", finishReason };
     } catch (error) {
       clearTimeout(timeout);
@@ -396,6 +417,13 @@ export class OpenRouterAdapter implements ProviderAdapter {
   }
 
   private fromOpenRouterResponse(res: OpenRouterChatResponse): ChatResponse {
+    if (!Array.isArray(res.choices) || res.choices.length === 0) {
+      throw new ProviderError(
+        "OpenRouter returned HTTP 200 but no usable completion choices.",
+        "EMPTY_COMPLETION",
+        true,
+      );
+    }
     return {
       id: res.id,
       model: res.model,

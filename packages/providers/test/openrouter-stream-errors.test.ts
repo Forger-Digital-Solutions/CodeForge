@@ -44,6 +44,18 @@ describe("OpenRouterAdapter — in-band stream failures are never silent", () =>
     expect(events.some((e) => e.type === "finish")).toBe(false);
   });
 
+  it("rejects a 200 stream with no usable choices instead of reporting a clean finish", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(sseResponse([
+      JSON.stringify({ id: "r", choices: [] }),
+      "[DONE]",
+    ])));
+    const events = await collect(new OpenRouterAdapter({ credentialStore: fakeCredentials }));
+    const error = events.find((event) => event.type === "error");
+    expect(error && error.type === "error" ? error.code : "").toBe("EMPTY_COMPLETION");
+    expect(error && error.type === "error" ? error.message : "").toContain("no usable completion choices");
+    expect(events.some((event) => event.type === "finish")).toBe(false);
+  });
+
   it("reports the upstream finish reason instead of an unconditional stop", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(sseResponse([
       JSON.stringify({ id: "r", choices: [{ index: 0, delta: { content: "partial" } }] }),

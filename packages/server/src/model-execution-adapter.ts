@@ -143,9 +143,13 @@ export class ModelExecutionAdapter {
         );
       }
 
-      // Check model in firewall if present
       const modelRec = this.firewall.getModel(selection.providerId, selection.modelId);
-      if (modelRec && modelRec.tier !== "gems_paid") {
+      if (!modelRec) {
+        throw new Error(
+          `[${ERROR_CODES.PROVIDER_MODEL_UNAVAILABLE}] Requested exact model "${selection.providerId}/${selection.modelId}" is not registered in ForgeZero. Exact model execution failed closed.`,
+        );
+      }
+      if (modelRec.tier !== "gems_paid") {
         const verifyResult = this.firewall.verify(selection.providerId, selection.modelId);
         if (!verifyResult.ok) {
           throw new Error(
