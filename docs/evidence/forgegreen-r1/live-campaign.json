@@ -1,0 +1,2495 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16T11:10:27.795Z",
+  "startedAt": "2026-09-16T11:08:30.377Z",
+  "purpose": "ForgeGreen R1 bounded live efficiency campaign over one exact freshly qualified OpenRouter :free route",
+  "claimLimit": "Two matched arms and three small workloads are directional evidence only; no population or provider-wide claim is made.",
+  "route": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+  },
+  "qualificationEvidence": "docs/evidence/forgegreen-r1/provider-recertification-openrouter.json",
+  "workloads": [
+    "repository discovery with deliberate repeated read request",
+    "large repetitive tool output",
+    "edit followed by real ForgeVerify and Completion Gate"
+  ],
+  "control": {
+    "arm": "control",
+    "forgeGreenEnabled": false,
+    "route": {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+    },
+    "security": {
+      "networkPermission": false,
+      "providerCredentialsUsed": [
+        "OPENROUTER_API_KEY (presence only)"
+      ],
+      "paidInferenceRequested": false,
+      "exactFreeRoutePinned": true
+    },
+    "workloads": {
+      "repositoryDiscovery": {
+        "status": "completed",
+        "stopReason": "completed",
+        "error": null,
+        "filesChanged": [],
+        "usage": {
+          "inputTokens": 10917,
+          "outputTokens": 635,
+          "requestCount": 4,
+          "toolCount": 4,
+          "provider": "openrouter",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        },
+        "toolExecutions": [
+          {
+            "toolName": "list_files",
+            "success": false,
+            "readOnly": true,
+            "durationMs": 1,
+            "rawOutputBytes": null,
+            "modelContextBytes": 86,
+            "compression": null
+          },
+          {
+            "toolName": "list_files",
+            "success": true,
+            "readOnly": true,
+            "durationMs": 10,
+            "rawOutputBytes": 45,
+            "modelContextBytes": 45,
+            "compression": null
+          },
+          {
+            "toolName": "repo_search",
+            "success": true,
+            "readOnly": true,
+            "durationMs": 322,
+            "rawOutputBytes": 571,
+            "modelContextBytes": 571,
+            "compression": null
+          },
+          {
+            "toolName": "read_file",
+            "success": true,
+            "readOnly": true,
+            "durationMs": 4,
+            "rawOutputBytes": 162,
+            "modelContextBytes": 162,
+            "compression": null
+          }
+        ],
+        "contextMetrics": {
+          "contextBytes": 2928,
+          "estimatedInputTokens": 1041,
+          "candidateFileCount": 19,
+          "selectedFileCount": 15,
+          "selectedEvidenceCount": 15,
+          "efficiencyReceipt": {
+            "receiptId": "12c6ac8dd12d58cfd92af8af",
+            "workspaceId": "workspace-control",
+            "repositoryGeneration": 2,
+            "contextRequestedTokens": 1041,
+            "contextDeliveredTokens": 1041,
+            "tokensAvoided": 0,
+            "retrievalCacheHits": 0,
+            "promptPrefixCacheHits": 0,
+            "duplicateRequestsAvoided": 0,
+            "fallbackUsed": false,
+            "reasonCodes": [],
+            "policyVersion": "cf15-1",
+            "promptCacheAccounting": "unavailable"
+          }
+        }
+      },
+      "largeToolOutput": {
+        "status": "completed",
+        "stopReason": "completed",
+        "error": null,
+        "filesChanged": [],
+        "usage": {
+          "inputTokens": 5106,
+          "outputTokens": 753,
+          "requestCount": 2,
+          "toolCount": 1,
+          "provider": "openrouter",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        },
+        "toolExecutions": [
+          {
+            "toolName": "read_file",
+            "success": true,
+            "readOnly": true,
+            "durationMs": 4,
+            "rawOutputBytes": 48454,
+            "modelContextBytes": 1360,
+            "compression": {
+              "originalBytes": 48454,
+              "compressedBytes": 1360,
+              "strategies": [
+                "global_repeat_fold",
+                "failure_neighborhood_retention"
+              ],
+              "artifactRef": "agent-tool-a796c6252791c57d797aca3eb5f6e90ef7986a8e85fee91b0cfb3ef574210efe"
+            }
+          }
+        ],
+        "contextMetrics": {
+          "contextBytes": 1921,
+          "estimatedInputTokens": 638,
+          "candidateFileCount": 19,
+          "selectedFileCount": 2,
+          "selectedEvidenceCount": 2,
+          "efficiencyReceipt": {
+            "receiptId": "c0b46837d595892ce6019216",
+            "workspaceId": "workspace-control",
+            "repositoryGeneration": 2,
+            "contextRequestedTokens": 638,
+            "contextDeliveredTokens": 638,
+            "tokensAvoided": 0,
+            "retrievalCacheHits": 0,
+            "promptPrefixCacheHits": 0,
+            "duplicateRequestsAvoided": 0,
+            "fallbackUsed": false,
+            "reasonCodes": [
+              "tool_output_compressed"
+            ],
+            "policyVersion": "cf15-1",
+            "promptCacheAccounting": "unavailable",
+            "toolOutputBytesAvoided": 47094
+          }
+        }
+      }
+    },
+    "editVerify": {
+      "workflowStatus": "completed",
+      "completion": {
+        "outcome": "completed",
+        "blockers": [],
+        "advisories": []
+      },
+      "verification": {
+        "command": "node --test test/calc.test.mjs",
+        "passed": 1,
+        "failed": 0,
+        "exitCode": 0,
+        "durationMs": 173,
+        "forgeVerify": {
+          "planId": "3714f1c0-9ad7-4356-8444-f7eb5efed5d7",
+          "summary": {
+            "planId": "3714f1c0-9ad7-4356-8444-f7eb5efed5d7",
+            "requiredCount": 1,
+            "satisfiedCount": 1,
+            "failedCount": 0,
+            "missingCount": 0,
+            "staleCount": 0,
+            "verificationComplete": true,
+            "satisfiedEvidenceIds": [
+              "01c7501f-320e-4d86-b1b1-cfca805414db"
+            ],
+            "missingRequiredVerifiers": [],
+            "reasons": []
+          }
+        }
+      },
+      "review": {
+        "approved": true,
+        "findings": [],
+        "diffPaths": [
+          "src/calc.mjs"
+        ]
+      },
+      "changedFiles": [
+        "src/calc.mjs"
+      ],
+      "finalCalc": "export function multiply(a, b) { return a * b; }\n\nexport function add(a, b) { return a + b; }\n",
+      "independentVerification": {
+        "passed": true,
+        "exitCode": 0,
+        "output": "✔ multiply (0.7188ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 107.4255\n"
+      }
+    },
+    "telemetry": [
+      {
+        "schemaVersion": "forgegreen-r0-telemetry-1",
+        "policyVersion": "forgegreen-r0-measurement-1",
+        "generatedAt": "2026-09-16T11:08:48.177Z",
+        "identity": {
+          "runId": "control-discovery",
+          "sessionId": "forgegreen-r1-control",
+          "workspaceId": "workspace-control",
+          "agentId": "explorer",
+          "policyRevision": "forgegreen-r0-measurement-1",
+          "repositoryGeneration": 2
+        },
+        "routeClass": {
+          "value": "managed_free_role_route",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "routes": [
+          {
+            "providerId": "openrouter",
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "routeClass": "managed_free_role_route",
+            "attempts": {
+              "value": 4,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        ],
+        "model": {
+          "providerAttempts": {
+            "value": 4,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "modelAttempts": {
+            "value": 4,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "inputTokens": {
+            "value": 10917,
+            "source": "OBSERVED",
+            "origin": "PROVIDER"
+          },
+          "cachedInputTokens": {
+            "source": "UNKNOWN"
+          },
+          "outputTokens": {
+            "value": 635,
+            "source": "OBSERVED",
+            "origin": "PROVIDER"
+          },
+          "totalTokens": {
+            "value": 11552,
+            "source": "DERIVED",
+            "origin": "LOCAL"
+          },
+          "effectiveUncachedInputTokens": {
+            "source": "UNKNOWN"
+          },
+          "stablePromptCacheHits": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "providerPromptCacheReports": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          }
+        },
+        "tools": {
+          "toolCalls": {
+            "value": 4,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "executedToolCalls": {
+            "value": 4,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "failedToolCalls": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "duplicateEquivalentToolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "rawToolOutputBytes": {
+            "source": "UNKNOWN"
+          },
+          "bytesDeliveredToModelContext": {
+            "value": 864,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "toolDurationMs": {
+            "value": 337,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "compression": {
+            "originalBytes": {
+              "value": 864,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "deliveredBytes": {
+              "value": 864,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "bytesAvoided": {
+              "value": 0,
+              "source": "DERIVED",
+              "origin": "LOCAL"
+            },
+            "ratio": {
+              "value": 1,
+              "source": "DERIVED",
+              "origin": "LOCAL"
+            }
+          },
+          "byTool": [
+            {
+              "toolName": "list_files",
+              "calls": {
+                "value": 2,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "executed": {
+                "value": 2,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "suppressed": {
+                "value": 0,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            },
+            {
+              "toolName": "repo_search",
+              "calls": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "executed": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "suppressed": {
+                "value": 0,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            },
+            {
+              "toolName": "read_file",
+              "calls": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "executed": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "suppressed": {
+                "value": 0,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            }
+          ]
+        },
+        "context": {
+          "initialContextBytes": {
+            "value": 2928,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "modelContextBytes": {
+            "value": 12643,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "stablePromptBytes": {
+            "value": 4088,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "sourceCategories": {
+            "repository_evidence": {
+              "value": 15,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "candidate_files": {
+              "value": 19,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "selected_files": {
+              "value": 15,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        },
+        "retries": {
+          "retryCount": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "reasons": []
+        },
+        "providerFailures": {
+          "providerFailures": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "rateLimitSignals": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "failureCodes": []
+        },
+        "wallTimeMs": {
+          "value": 17298,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "actualProviderCost": {
+          "source": "UNKNOWN"
+        },
+        "effectiveProviderCost": {
+          "source": "UNKNOWN"
+        },
+        "forgeVerify": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "completionGate": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "taskCompletionStatus": {
+          "value": "completed",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "stopReason": {
+          "value": "completed",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "forgeGreenOverheadMs": {
+          "value": 0.994200000005776,
+          "source": "OBSERVED",
+          "origin": "LOCAL"
+        },
+        "telemetryId": "fg-r0-b5a7598553de593b230cbdb127ee828d"
+      },
+      {
+        "schemaVersion": "forgegreen-r0-telemetry-1",
+        "policyVersion": "forgegreen-r0-measurement-1",
+        "generatedAt": "2026-09-16T11:09:29.371Z",
+        "identity": {
+          "runId": "control-large-output",
+          "sessionId": "forgegreen-r1-control",
+          "workspaceId": "workspace-control",
+          "agentId": "explorer",
+          "policyRevision": "forgegreen-r0-measurement-1",
+          "repositoryGeneration": 2
+        },
+        "routeClass": {
+          "value": "managed_free_role_route",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "routes": [
+          {
+            "providerId": "openrouter",
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "routeClass": "managed_free_role_route",
+            "attempts": {
+              "value": 2,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        ],
+        "model": {
+          "providerAttempts": {
+            "value": 2,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "modelAttempts": {
+            "value": 2,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "inputTokens": {
+            "value": 5106,
+            "source": "OBSERVED",
+            "origin": "PROVIDER"
+          },
+          "cachedInputTokens": {
+            "source": "UNKNOWN"
+          },
+          "outputTokens": {
+            "value": 753,
+            "source": "OBSERVED",
+            "origin": "PROVIDER"
+          },
+          "totalTokens": {
+            "value": 5859,
+            "source": "DERIVED",
+            "origin": "LOCAL"
+          },
+          "effectiveUncachedInputTokens": {
+            "source": "UNKNOWN"
+          },
+          "stablePromptCacheHits": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "providerPromptCacheReports": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          }
+        },
+        "tools": {
+          "toolCalls": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "executedToolCalls": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "failedToolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "duplicateEquivalentToolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "rawToolOutputBytes": {
+            "value": 48454,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "bytesDeliveredToModelContext": {
+            "value": 1360,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "toolDurationMs": {
+            "value": 4,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "compression": {
+            "originalBytes": {
+              "value": 48454,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "deliveredBytes": {
+              "value": 1360,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "bytesAvoided": {
+              "value": 47094,
+              "source": "DERIVED",
+              "origin": "LOCAL"
+            },
+            "ratio": {
+              "value": 0.028067858174763694,
+              "source": "DERIVED",
+              "origin": "LOCAL"
+            }
+          },
+          "byTool": [
+            {
+              "toolName": "read_file",
+              "calls": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "executed": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "suppressed": {
+                "value": 0,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            }
+          ]
+        },
+        "context": {
+          "initialContextBytes": {
+            "value": 1921,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "modelContextBytes": {
+            "value": 5204,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "stablePromptBytes": {
+            "value": 2044,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "sourceCategories": {
+            "repository_evidence": {
+              "value": 2,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "candidate_files": {
+              "value": 19,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "selected_files": {
+              "value": 2,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        },
+        "retries": {
+          "retryCount": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "reasons": []
+        },
+        "providerFailures": {
+          "providerFailures": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "rateLimitSignals": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "failureCodes": []
+        },
+        "wallTimeMs": {
+          "value": 41178,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "actualProviderCost": {
+          "source": "UNKNOWN"
+        },
+        "effectiveProviderCost": {
+          "source": "UNKNOWN"
+        },
+        "forgeVerify": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "completionGate": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "taskCompletionStatus": {
+          "value": "completed",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "stopReason": {
+          "value": "completed",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "forgeGreenOverheadMs": {
+          "value": 0.20830000000205473,
+          "source": "OBSERVED",
+          "origin": "LOCAL"
+        },
+        "telemetryId": "fg-r0-2133243c2dc0f8b3bc9eb815d8891b6c"
+      },
+      {
+        "schemaVersion": "forgegreen-r0-telemetry-1",
+        "policyVersion": "forgegreen-r0-measurement-1",
+        "generatedAt": "2026-09-16T11:09:49.790Z",
+        "identity": {
+          "runId": "control-edit-verify-coder",
+          "sessionId": "forgegreen-r1-control",
+          "workspaceId": "workspace-control",
+          "agentId": "coder",
+          "policyRevision": "forgegreen-r0-measurement-1",
+          "repositoryGeneration": 2
+        },
+        "routeClass": {
+          "value": "managed_free_role_route",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "routes": [
+          {
+            "providerId": "openrouter",
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "routeClass": "managed_free_role_route",
+            "attempts": {
+              "value": 7,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        ],
+        "model": {
+          "providerAttempts": {
+            "value": 7,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "modelAttempts": {
+            "value": 7,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "inputTokens": {
+            "value": 27136,
+            "source": "OBSERVED",
+            "origin": "PROVIDER"
+          },
+          "cachedInputTokens": {
+            "source": "UNKNOWN"
+          },
+          "outputTokens": {
+            "value": 1427,
+            "source": "OBSERVED",
+            "origin": "PROVIDER"
+          },
+          "totalTokens": {
+            "value": 28563,
+            "source": "DERIVED",
+            "origin": "LOCAL"
+          },
+          "effectiveUncachedInputTokens": {
+            "source": "UNKNOWN"
+          },
+          "stablePromptCacheHits": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "providerPromptCacheReports": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          }
+        },
+        "tools": {
+          "toolCalls": {
+            "value": 7,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "executedToolCalls": {
+            "value": 6,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "failedToolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "duplicateEquivalentToolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "rawToolOutputBytes": {
+            "value": 713,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "bytesDeliveredToModelContext": {
+            "value": 713,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "toolDurationMs": {
+            "value": 107,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "compression": {
+            "originalBytes": {
+              "value": 713,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "deliveredBytes": {
+              "value": 713,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "bytesAvoided": {
+              "value": 0,
+              "source": "DERIVED",
+              "origin": "LOCAL"
+            },
+            "ratio": {
+              "value": 1,
+              "source": "DERIVED",
+              "origin": "LOCAL"
+            }
+          },
+          "byTool": [
+            {
+              "toolName": "read_file",
+              "calls": {
+                "value": 2,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "executed": {
+                "value": 2,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "suppressed": {
+                "value": 0,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            },
+            {
+              "toolName": "edit_file",
+              "calls": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "executed": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "suppressed": {
+                "value": 0,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            },
+            {
+              "toolName": "run_command",
+              "calls": {
+                "value": 3,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "executed": {
+                "value": 2,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "suppressed": {
+                "value": 0,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            },
+            {
+              "toolName": "list_files",
+              "calls": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "executed": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "suppressed": {
+                "value": 0,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            }
+          ]
+        },
+        "context": {
+          "initialContextBytes": {
+            "value": 4232,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "modelContextBytes": {
+            "value": 32090,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "stablePromptBytes": {
+            "value": 6398,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "sourceCategories": {
+            "repository_evidence": {
+              "value": 7,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "candidate_files": {
+              "value": 19,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "selected_files": {
+              "value": 6,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        },
+        "retries": {
+          "retryCount": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "reasons": []
+        },
+        "providerFailures": {
+          "providerFailures": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "rateLimitSignals": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "failureCodes": []
+        },
+        "wallTimeMs": {
+          "value": 19948,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "actualProviderCost": {
+          "source": "UNKNOWN"
+        },
+        "effectiveProviderCost": {
+          "source": "UNKNOWN"
+        },
+        "forgeVerify": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "completionGate": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "taskCompletionStatus": {
+          "value": "blocked",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "stopReason": {
+          "value": "budget_exhausted",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "forgeGreenOverheadMs": {
+          "value": 0.3551999999326654,
+          "source": "OBSERVED",
+          "origin": "LOCAL"
+        },
+        "telemetryId": "fg-r0-3956b8b93787f9e58c7b90f96e05cc33"
+      }
+    ],
+    "ledgers": [
+      {
+        "ledgerId": "febe28e1251bbdf2f87eba94",
+        "ledgerSchemaVersion": "fg1-1",
+        "identity": {
+          "runId": "control-discovery",
+          "operation": "agent_run",
+          "namespace": "workspace-control",
+          "sessionId": "forgegreen-r1-control",
+          "agentId": "explorer"
+        },
+        "events": [
+          {
+            "mechanism": "repository_intelligence",
+            "measurement": "measured",
+            "quantity": 19,
+            "unit": "count",
+            "reason": "files_parsed"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          }
+        ],
+        "totals": {
+          "bytesAvoidedMeasured": 0,
+          "tokensAvoidedMeasured": 0,
+          "eventsWithUnknownQuantity": 4,
+          "duplicateActionsSuppressed": 0,
+          "noProgressInterruptions": 0,
+          "canonicalCacheHits": 0,
+          "canonicalCacheMisses": 0,
+          "canonicalCacheInvalidations": 0,
+          "avoidedModelRequests": 0,
+          "avoidedToolDispatches": 0,
+          "fallbackEvents": 0,
+          "repositoryFilesReparsed": 19,
+          "repositoryFilesReused": 0,
+          "repositoryParseCacheHits": 0,
+          "repositoryInvalidations": 0,
+          "modelFailoverRotations": 0,
+          "modelFailoverBlockedDispatches": 0,
+          "contextPagesReused": 0,
+          "contextPagesPulled": 0,
+          "riskAnalyses": 0,
+          "riskCacheHits": 0,
+          "riskCacheMisses": 0,
+          "riskRoleEscalations": 0,
+          "riskContextExpansions": 0,
+          "verificationObligationsGenerated": 0,
+          "verificationCacheHits": 0,
+          "verificationEvidenceReused": 0,
+          "verificationTargetedSuitesUsed": 0,
+          "verificationFullSuitesAvoided": 0,
+          "verificationFullSuitesRequired": 0,
+          "verificationStaleEvidenceRejected": 0,
+          "verificationRerunsAvoided": 0,
+          "verificationBlockedEvents": 0,
+          "resolutionObligationsReceived": 0,
+          "resolutionDuplicatesRemoved": 0,
+          "resolutionObligationsSubsumed": 0,
+          "resolutionEvidenceReused": 0,
+          "resolutionProducersScheduled": 0,
+          "resolutionDispatchesAvoided": 0,
+          "resolutionCacheHits": 0,
+          "resolutionCacheMisses": 0
+        },
+        "policyVersion": "cf15-1",
+        "featureVersion": "fg1-efficiency-core-1",
+        "createdAt": "2026-09-16T11:08:48.176Z"
+      },
+      {
+        "ledgerId": "b60c2db9069af5492a4a4126",
+        "ledgerSchemaVersion": "fg1-1",
+        "identity": {
+          "runId": "control-large-output",
+          "operation": "agent_run",
+          "namespace": "workspace-control",
+          "sessionId": "forgegreen-r1-control",
+          "agentId": "explorer"
+        },
+        "events": [
+          {
+            "mechanism": "repository_intelligence",
+            "measurement": "measured",
+            "quantity": 19,
+            "unit": "count",
+            "reason": "files_reused"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          },
+          {
+            "mechanism": "tool_output_compression",
+            "measurement": "measured",
+            "quantity": 47094,
+            "unit": "bytes"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          }
+        ],
+        "totals": {
+          "bytesAvoidedMeasured": 47094,
+          "tokensAvoidedMeasured": 0,
+          "eventsWithUnknownQuantity": 2,
+          "duplicateActionsSuppressed": 0,
+          "noProgressInterruptions": 0,
+          "canonicalCacheHits": 0,
+          "canonicalCacheMisses": 0,
+          "canonicalCacheInvalidations": 0,
+          "avoidedModelRequests": 0,
+          "avoidedToolDispatches": 0,
+          "fallbackEvents": 0,
+          "repositoryFilesReparsed": 0,
+          "repositoryFilesReused": 19,
+          "repositoryParseCacheHits": 0,
+          "repositoryInvalidations": 0,
+          "modelFailoverRotations": 0,
+          "modelFailoverBlockedDispatches": 0,
+          "contextPagesReused": 0,
+          "contextPagesPulled": 0,
+          "riskAnalyses": 0,
+          "riskCacheHits": 0,
+          "riskCacheMisses": 0,
+          "riskRoleEscalations": 0,
+          "riskContextExpansions": 0,
+          "verificationObligationsGenerated": 0,
+          "verificationCacheHits": 0,
+          "verificationEvidenceReused": 0,
+          "verificationTargetedSuitesUsed": 0,
+          "verificationFullSuitesAvoided": 0,
+          "verificationFullSuitesRequired": 0,
+          "verificationStaleEvidenceRejected": 0,
+          "verificationRerunsAvoided": 0,
+          "verificationBlockedEvents": 0,
+          "resolutionObligationsReceived": 0,
+          "resolutionDuplicatesRemoved": 0,
+          "resolutionObligationsSubsumed": 0,
+          "resolutionEvidenceReused": 0,
+          "resolutionProducersScheduled": 0,
+          "resolutionDispatchesAvoided": 0,
+          "resolutionCacheHits": 0,
+          "resolutionCacheMisses": 0
+        },
+        "policyVersion": "cf15-1",
+        "featureVersion": "fg1-efficiency-core-1",
+        "createdAt": "2026-09-16T11:09:29.370Z"
+      },
+      {
+        "ledgerId": "14ab868c2b4a5b4bdeac93e9",
+        "ledgerSchemaVersion": "fg1-1",
+        "identity": {
+          "runId": "control-edit-verify-coder",
+          "operation": "agent_run",
+          "namespace": "workspace-control",
+          "sessionId": "forgegreen-r1-control",
+          "agentId": "coder"
+        },
+        "events": [
+          {
+            "mechanism": "repository_intelligence",
+            "measurement": "measured",
+            "quantity": 19,
+            "unit": "count",
+            "reason": "files_reused"
+          },
+          {
+            "mechanism": "context_reuse",
+            "measurement": "measured",
+            "quantity": 3,
+            "unit": "count",
+            "reason": "page_pulled"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          }
+        ],
+        "totals": {
+          "bytesAvoidedMeasured": 0,
+          "tokensAvoidedMeasured": 0,
+          "eventsWithUnknownQuantity": 7,
+          "duplicateActionsSuppressed": 0,
+          "noProgressInterruptions": 0,
+          "canonicalCacheHits": 0,
+          "canonicalCacheMisses": 0,
+          "canonicalCacheInvalidations": 0,
+          "avoidedModelRequests": 0,
+          "avoidedToolDispatches": 0,
+          "fallbackEvents": 0,
+          "repositoryFilesReparsed": 0,
+          "repositoryFilesReused": 19,
+          "repositoryParseCacheHits": 0,
+          "repositoryInvalidations": 0,
+          "modelFailoverRotations": 0,
+          "modelFailoverBlockedDispatches": 0,
+          "contextPagesReused": 0,
+          "contextPagesPulled": 3,
+          "riskAnalyses": 0,
+          "riskCacheHits": 0,
+          "riskCacheMisses": 0,
+          "riskRoleEscalations": 0,
+          "riskContextExpansions": 0,
+          "verificationObligationsGenerated": 0,
+          "verificationCacheHits": 0,
+          "verificationEvidenceReused": 0,
+          "verificationTargetedSuitesUsed": 0,
+          "verificationFullSuitesAvoided": 0,
+          "verificationFullSuitesRequired": 0,
+          "verificationStaleEvidenceRejected": 0,
+          "verificationRerunsAvoided": 0,
+          "verificationBlockedEvents": 0,
+          "resolutionObligationsReceived": 0,
+          "resolutionDuplicatesRemoved": 0,
+          "resolutionObligationsSubsumed": 0,
+          "resolutionEvidenceReused": 0,
+          "resolutionProducersScheduled": 0,
+          "resolutionDispatchesAvoided": 0,
+          "resolutionCacheHits": 0,
+          "resolutionCacheMisses": 0
+        },
+        "policyVersion": "cf15-1",
+        "featureVersion": "fg1-efficiency-core-1",
+        "createdAt": "2026-09-16T11:09:49.790Z"
+      }
+    ],
+    "workspaceStatus": "M src/calc.mjs",
+    "summary": {
+      "workloadCount": 3,
+      "modelAttempts": 13,
+      "providerAttempts": 13,
+      "inputTokens": 43159,
+      "outputTokens": 2815,
+      "rawToolOutputBytes": 49232,
+      "deliveredToolOutputBytes": 2224,
+      "toolOutputBytesAvoided": 47094,
+      "toolOutputCompressionRatio": 0.045173870653233666,
+      "duplicateActionsSuppressed": 0,
+      "forgeGreenOverheadMs": 1.5576999999404961,
+      "wallTimeMs": 78424,
+      "editVerifyStatus": "completed",
+      "completionOutcome": "completed",
+      "verificationPassed": true,
+      "independentVerificationPassed": true
+    }
+  },
+  "experiment": {
+    "arm": "experiment",
+    "forgeGreenEnabled": true,
+    "route": {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+    },
+    "security": {
+      "networkPermission": false,
+      "providerCredentialsUsed": [
+        "OPENROUTER_API_KEY (presence only)"
+      ],
+      "paidInferenceRequested": false,
+      "exactFreeRoutePinned": true
+    },
+    "workloads": {
+      "repositoryDiscovery": {
+        "status": "failed",
+        "stopReason": "error",
+        "error": "[PROVIDER_UNAVAILABLE] [PROVIDER_UNAVAILABLE] OpenRouter stream error (502): Upstream error from Nvidia: Service temporarily overloaded",
+        "filesChanged": [],
+        "usage": {
+          "inputTokens": 6786,
+          "outputTokens": 261,
+          "requestCount": 3,
+          "toolCount": 2,
+          "provider": "openrouter",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        },
+        "toolExecutions": [
+          {
+            "toolName": "list_files",
+            "success": true,
+            "readOnly": true,
+            "durationMs": 13,
+            "rawOutputBytes": 2785,
+            "modelContextBytes": 2785,
+            "compression": null
+          },
+          {
+            "toolName": "repo_search",
+            "success": true,
+            "readOnly": true,
+            "durationMs": 320,
+            "rawOutputBytes": 571,
+            "modelContextBytes": 571,
+            "compression": null
+          }
+        ],
+        "contextMetrics": null
+      },
+      "largeToolOutput": {
+        "status": "completed",
+        "stopReason": "completed",
+        "error": null,
+        "filesChanged": [],
+        "usage": {
+          "inputTokens": 5106,
+          "outputTokens": 847,
+          "requestCount": 2,
+          "toolCount": 1,
+          "provider": "openrouter",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        },
+        "toolExecutions": [
+          {
+            "toolName": "read_file",
+            "success": true,
+            "readOnly": true,
+            "durationMs": 4,
+            "rawOutputBytes": 48454,
+            "modelContextBytes": 1360,
+            "compression": {
+              "originalBytes": 48454,
+              "compressedBytes": 1360,
+              "strategies": [
+                "global_repeat_fold",
+                "failure_neighborhood_retention"
+              ],
+              "artifactRef": "agent-tool-37058ebe55f3267ab178b96cc493862f7f1ff071cebb2507deb3ec8eb85c0232"
+            }
+          }
+        ],
+        "contextMetrics": {
+          "contextBytes": 1921,
+          "estimatedInputTokens": 638,
+          "candidateFileCount": 19,
+          "selectedFileCount": 2,
+          "selectedEvidenceCount": 2,
+          "efficiencyReceipt": {
+            "receiptId": "f4580cea8a9a70c412de6e08",
+            "workspaceId": "workspace-experiment",
+            "repositoryGeneration": 2,
+            "contextRequestedTokens": 638,
+            "contextDeliveredTokens": 638,
+            "tokensAvoided": 0,
+            "retrievalCacheHits": 0,
+            "promptPrefixCacheHits": 4,
+            "duplicateRequestsAvoided": 0,
+            "fallbackUsed": false,
+            "reasonCodes": [
+              "stable_prefix_reused",
+              "tool_output_compressed"
+            ],
+            "policyVersion": "cf15-1",
+            "promptCacheAccounting": "unavailable",
+            "toolOutputBytesAvoided": 47094
+          }
+        }
+      }
+    },
+    "editVerify": {
+      "workflowStatus": "failed",
+      "completion": {
+        "outcome": "failed",
+        "blockers": [
+          "verification_failed"
+        ],
+        "advisories": []
+      },
+      "verification": {
+        "command": "node --test test/calc.test.mjs",
+        "passed": 0,
+        "failed": 1,
+        "exitCode": 1,
+        "durationMs": 196,
+        "forgeVerify": {
+          "planId": "9ea005b3-e957-4bf4-8e37-d72dde7641a6",
+          "summary": {
+            "planId": "9ea005b3-e957-4bf4-8e37-d72dde7641a6",
+            "requiredCount": 1,
+            "satisfiedCount": 0,
+            "failedCount": 1,
+            "missingCount": 1,
+            "staleCount": 0,
+            "verificationComplete": false,
+            "satisfiedEvidenceIds": [],
+            "missingRequiredVerifiers": [
+              "legacy.test.a43e6c7247121246"
+            ],
+            "reasons": [
+              "failed"
+            ]
+          }
+        }
+      },
+      "review": {
+        "approved": true,
+        "findings": [],
+        "diffPaths": []
+      },
+      "changedFiles": [],
+      "finalCalc": "export function multiply(a, b) { return 0; }\n\nexport function add(a, b) { return a + b; }\n",
+      "independentVerification": {
+        "passed": false,
+        "exitCode": 1,
+        "output": "✖ multiply (1.6484ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 106.5389\n\n✖ failing tests:\n\ntest at test\\calc.test.mjs:4:1\n✖ multiply (1.6484ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  0 !== 42\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/forgegreen-r1-live-EdWYX1/test/calc.test.mjs:4:31)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal"
+      }
+    },
+    "telemetry": [
+      {
+        "schemaVersion": "forgegreen-r0-telemetry-1",
+        "policyVersion": "forgegreen-r0-measurement-1",
+        "generatedAt": "2026-09-16T11:10:15.900Z",
+        "identity": {
+          "runId": "experiment-discovery",
+          "sessionId": "forgegreen-r1-experiment",
+          "workspaceId": "workspace-experiment",
+          "agentId": "explorer",
+          "policyRevision": "forgegreen-r0-measurement-1",
+          "repositoryGeneration": 2
+        },
+        "routeClass": {
+          "value": "managed_free_role_route",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "routes": [
+          {
+            "providerId": "openrouter",
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "routeClass": "managed_free_role_route",
+            "attempts": {
+              "value": 3,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        ],
+        "model": {
+          "providerAttempts": {
+            "value": 3,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "modelAttempts": {
+            "value": 3,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "inputTokens": {
+            "value": 6786,
+            "source": "OBSERVED",
+            "origin": "PROVIDER"
+          },
+          "cachedInputTokens": {
+            "source": "UNKNOWN"
+          },
+          "outputTokens": {
+            "value": 261,
+            "source": "OBSERVED",
+            "origin": "PROVIDER"
+          },
+          "totalTokens": {
+            "value": 7047,
+            "source": "DERIVED",
+            "origin": "LOCAL"
+          },
+          "effectiveUncachedInputTokens": {
+            "source": "UNKNOWN"
+          },
+          "stablePromptCacheHits": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "providerPromptCacheReports": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          }
+        },
+        "tools": {
+          "toolCalls": {
+            "value": 2,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "executedToolCalls": {
+            "value": 2,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "failedToolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "duplicateEquivalentToolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "rawToolOutputBytes": {
+            "value": 3356,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "bytesDeliveredToModelContext": {
+            "value": 3356,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "toolDurationMs": {
+            "value": 333,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "compression": {
+            "originalBytes": {
+              "value": 3356,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "deliveredBytes": {
+              "value": 3356,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "bytesAvoided": {
+              "value": 0,
+              "source": "DERIVED",
+              "origin": "LOCAL"
+            },
+            "ratio": {
+              "value": 1,
+              "source": "DERIVED",
+              "origin": "LOCAL"
+            }
+          },
+          "byTool": [
+            {
+              "toolName": "list_files",
+              "calls": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "executed": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "suppressed": {
+                "value": 0,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            },
+            {
+              "toolName": "repo_search",
+              "calls": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "executed": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "suppressed": {
+                "value": 0,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            }
+          ]
+        },
+        "context": {
+          "initialContextBytes": {
+            "value": 2928,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "modelContextBytes": {
+            "value": 14931,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "stablePromptBytes": {
+            "value": 3066,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "sourceCategories": {
+            "repository_evidence": {
+              "value": 15,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "candidate_files": {
+              "value": 19,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "selected_files": {
+              "value": 15,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        },
+        "retries": {
+          "retryCount": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "reasons": []
+        },
+        "providerFailures": {
+          "providerFailures": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "rateLimitSignals": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "failureCodes": [
+            {
+              "code": "PROVIDER_UNAVAILABLE",
+              "count": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            }
+          ]
+        },
+        "wallTimeMs": {
+          "value": 24545,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "actualProviderCost": {
+          "source": "UNKNOWN"
+        },
+        "effectiveProviderCost": {
+          "source": "UNKNOWN"
+        },
+        "forgeVerify": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "completionGate": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "taskCompletionStatus": {
+          "value": "failed",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "stopReason": {
+          "value": "error",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "forgeGreenOverheadMs": {
+          "value": 0.23479999996197876,
+          "source": "OBSERVED",
+          "origin": "LOCAL"
+        },
+        "telemetryId": "fg-r0-ece2f2124666113c1d24fde173358a76"
+      },
+      {
+        "schemaVersion": "forgegreen-r0-telemetry-1",
+        "policyVersion": "forgegreen-r0-measurement-1",
+        "generatedAt": "2026-09-16T11:10:25.163Z",
+        "identity": {
+          "runId": "experiment-large-output",
+          "sessionId": "forgegreen-r1-experiment",
+          "workspaceId": "workspace-experiment",
+          "agentId": "explorer",
+          "policyRevision": "forgegreen-r0-measurement-1",
+          "repositoryGeneration": 2
+        },
+        "routeClass": {
+          "value": "managed_free_role_route",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "routes": [
+          {
+            "providerId": "openrouter",
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "routeClass": "managed_free_role_route",
+            "attempts": {
+              "value": 2,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        ],
+        "model": {
+          "providerAttempts": {
+            "value": 2,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "modelAttempts": {
+            "value": 2,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "inputTokens": {
+            "value": 5106,
+            "source": "OBSERVED",
+            "origin": "PROVIDER"
+          },
+          "cachedInputTokens": {
+            "source": "UNKNOWN"
+          },
+          "outputTokens": {
+            "value": 847,
+            "source": "OBSERVED",
+            "origin": "PROVIDER"
+          },
+          "totalTokens": {
+            "value": 5953,
+            "source": "DERIVED",
+            "origin": "LOCAL"
+          },
+          "effectiveUncachedInputTokens": {
+            "source": "UNKNOWN"
+          },
+          "stablePromptCacheHits": {
+            "value": 2,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "providerPromptCacheReports": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          }
+        },
+        "tools": {
+          "toolCalls": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "executedToolCalls": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "failedToolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "duplicateEquivalentToolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "rawToolOutputBytes": {
+            "value": 48454,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "bytesDeliveredToModelContext": {
+            "value": 1360,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "toolDurationMs": {
+            "value": 4,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "compression": {
+            "originalBytes": {
+              "value": 48454,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "deliveredBytes": {
+              "value": 1360,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "bytesAvoided": {
+              "value": 47094,
+              "source": "DERIVED",
+              "origin": "LOCAL"
+            },
+            "ratio": {
+              "value": 0.028067858174763694,
+              "source": "DERIVED",
+              "origin": "LOCAL"
+            }
+          },
+          "byTool": [
+            {
+              "toolName": "read_file",
+              "calls": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "executed": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              },
+              "suppressed": {
+                "value": 0,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            }
+          ]
+        },
+        "context": {
+          "initialContextBytes": {
+            "value": 1921,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "modelContextBytes": {
+            "value": 5204,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "stablePromptBytes": {
+            "value": 2044,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "sourceCategories": {
+            "repository_evidence": {
+              "value": 2,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "candidate_files": {
+              "value": 19,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "selected_files": {
+              "value": 2,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        },
+        "retries": {
+          "retryCount": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "reasons": []
+        },
+        "providerFailures": {
+          "providerFailures": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "rateLimitSignals": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "failureCodes": []
+        },
+        "wallTimeMs": {
+          "value": 9251,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "actualProviderCost": {
+          "source": "UNKNOWN"
+        },
+        "effectiveProviderCost": {
+          "source": "UNKNOWN"
+        },
+        "forgeVerify": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "completionGate": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "taskCompletionStatus": {
+          "value": "completed",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "stopReason": {
+          "value": "completed",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "forgeGreenOverheadMs": {
+          "value": 0.08370000001741573,
+          "source": "OBSERVED",
+          "origin": "LOCAL"
+        },
+        "telemetryId": "fg-r0-3d0358555eefa91f3e652a942047accc"
+      },
+      {
+        "schemaVersion": "forgegreen-r0-telemetry-1",
+        "policyVersion": "forgegreen-r0-measurement-1",
+        "generatedAt": "2026-09-16T11:10:26.681Z",
+        "identity": {
+          "runId": "experiment-edit-verify-coder",
+          "sessionId": "forgegreen-r1-experiment",
+          "workspaceId": "workspace-experiment",
+          "agentId": "coder",
+          "policyRevision": "forgegreen-r0-measurement-1",
+          "repositoryGeneration": 2
+        },
+        "routeClass": {
+          "value": "managed_free_role_route",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "routes": [
+          {
+            "providerId": "openrouter",
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "routeClass": "managed_free_role_route",
+            "attempts": {
+              "value": 1,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        ],
+        "model": {
+          "providerAttempts": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "modelAttempts": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "inputTokens": {
+            "source": "UNKNOWN"
+          },
+          "cachedInputTokens": {
+            "source": "UNKNOWN"
+          },
+          "outputTokens": {
+            "source": "UNKNOWN"
+          },
+          "totalTokens": {
+            "source": "UNKNOWN"
+          },
+          "effectiveUncachedInputTokens": {
+            "source": "UNKNOWN"
+          },
+          "stablePromptCacheHits": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "providerPromptCacheReports": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          }
+        },
+        "tools": {
+          "toolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "executedToolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "failedToolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "duplicateEquivalentToolCalls": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "rawToolOutputBytes": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "bytesDeliveredToModelContext": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "toolDurationMs": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "compression": {
+            "originalBytes": {
+              "value": 0,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "deliveredBytes": {
+              "value": 0,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "bytesAvoided": {
+              "value": 0,
+              "source": "DERIVED",
+              "origin": "LOCAL"
+            },
+            "ratio": {
+              "value": 1,
+              "source": "DERIVED",
+              "origin": "LOCAL"
+            }
+          },
+          "byTool": []
+        },
+        "context": {
+          "initialContextBytes": {
+            "value": 4232,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "modelContextBytes": {
+            "value": 4232,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "stablePromptBytes": {
+            "value": 914,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "sourceCategories": {
+            "repository_evidence": {
+              "value": 7,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "candidate_files": {
+              "value": 19,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "selected_files": {
+              "value": 6,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        },
+        "retries": {
+          "retryCount": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "reasons": []
+        },
+        "providerFailures": {
+          "providerFailures": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "rateLimitSignals": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "failureCodes": [
+            {
+              "code": "PROVIDER_UNAVAILABLE",
+              "count": {
+                "value": 1,
+                "source": "OBSERVED",
+                "origin": "RUNTIME"
+              }
+            }
+          ]
+        },
+        "wallTimeMs": {
+          "value": 984,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "actualProviderCost": {
+          "source": "UNKNOWN"
+        },
+        "effectiveProviderCost": {
+          "source": "UNKNOWN"
+        },
+        "forgeVerify": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "completionGate": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "taskCompletionStatus": {
+          "value": "failed",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "stopReason": {
+          "value": "error",
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "forgeGreenOverheadMs": {
+          "value": 0.06710000000020955,
+          "source": "OBSERVED",
+          "origin": "LOCAL"
+        },
+        "telemetryId": "fg-r0-c5b9c6457c75a255b84cbd52b1ff9ce6"
+      }
+    ],
+    "ledgers": [
+      {
+        "ledgerId": "2112b08b343a28ac0df8a559",
+        "ledgerSchemaVersion": "fg1-1",
+        "identity": {
+          "runId": "experiment-discovery",
+          "operation": "agent_run",
+          "namespace": "workspace-experiment",
+          "sessionId": "forgegreen-r1-experiment",
+          "agentId": "explorer"
+        },
+        "events": [
+          {
+            "mechanism": "repository_intelligence",
+            "measurement": "measured",
+            "quantity": 19,
+            "unit": "count",
+            "reason": "files_parsed"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          }
+        ],
+        "totals": {
+          "bytesAvoidedMeasured": 0,
+          "tokensAvoidedMeasured": 0,
+          "eventsWithUnknownQuantity": 2,
+          "duplicateActionsSuppressed": 0,
+          "noProgressInterruptions": 0,
+          "canonicalCacheHits": 0,
+          "canonicalCacheMisses": 0,
+          "canonicalCacheInvalidations": 0,
+          "avoidedModelRequests": 0,
+          "avoidedToolDispatches": 0,
+          "fallbackEvents": 0,
+          "repositoryFilesReparsed": 19,
+          "repositoryFilesReused": 0,
+          "repositoryParseCacheHits": 0,
+          "repositoryInvalidations": 0,
+          "modelFailoverRotations": 0,
+          "modelFailoverBlockedDispatches": 0,
+          "contextPagesReused": 0,
+          "contextPagesPulled": 0,
+          "riskAnalyses": 0,
+          "riskCacheHits": 0,
+          "riskCacheMisses": 0,
+          "riskRoleEscalations": 0,
+          "riskContextExpansions": 0,
+          "verificationObligationsGenerated": 0,
+          "verificationCacheHits": 0,
+          "verificationEvidenceReused": 0,
+          "verificationTargetedSuitesUsed": 0,
+          "verificationFullSuitesAvoided": 0,
+          "verificationFullSuitesRequired": 0,
+          "verificationStaleEvidenceRejected": 0,
+          "verificationRerunsAvoided": 0,
+          "verificationBlockedEvents": 0,
+          "resolutionObligationsReceived": 0,
+          "resolutionDuplicatesRemoved": 0,
+          "resolutionObligationsSubsumed": 0,
+          "resolutionEvidenceReused": 0,
+          "resolutionProducersScheduled": 0,
+          "resolutionDispatchesAvoided": 0,
+          "resolutionCacheHits": 0,
+          "resolutionCacheMisses": 0
+        },
+        "policyVersion": "cf15-1",
+        "featureVersion": "fg1-efficiency-core-1",
+        "createdAt": "2026-09-16T11:10:15.899Z"
+      },
+      {
+        "ledgerId": "00803d2450d806e7966a5295",
+        "ledgerSchemaVersion": "fg1-1",
+        "identity": {
+          "runId": "experiment-large-output",
+          "operation": "agent_run",
+          "namespace": "workspace-experiment",
+          "sessionId": "forgegreen-r1-experiment",
+          "agentId": "explorer"
+        },
+        "events": [
+          {
+            "mechanism": "repository_intelligence",
+            "measurement": "measured",
+            "quantity": 19,
+            "unit": "count",
+            "reason": "files_reused"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          },
+          {
+            "mechanism": "tool_output_compression",
+            "measurement": "measured",
+            "quantity": 47094,
+            "unit": "bytes"
+          },
+          {
+            "mechanism": "provider_prompt_cache",
+            "measurement": "unknown",
+            "reason": "telemetry_absent"
+          }
+        ],
+        "totals": {
+          "bytesAvoidedMeasured": 47094,
+          "tokensAvoidedMeasured": 0,
+          "eventsWithUnknownQuantity": 2,
+          "duplicateActionsSuppressed": 0,
+          "noProgressInterruptions": 0,
+          "canonicalCacheHits": 0,
+          "canonicalCacheMisses": 0,
+          "canonicalCacheInvalidations": 0,
+          "avoidedModelRequests": 0,
+          "avoidedToolDispatches": 0,
+          "fallbackEvents": 0,
+          "repositoryFilesReparsed": 0,
+          "repositoryFilesReused": 19,
+          "repositoryParseCacheHits": 0,
+          "repositoryInvalidations": 0,
+          "modelFailoverRotations": 0,
+          "modelFailoverBlockedDispatches": 0,
+          "contextPagesReused": 0,
+          "contextPagesPulled": 0,
+          "riskAnalyses": 0,
+          "riskCacheHits": 0,
+          "riskCacheMisses": 0,
+          "riskRoleEscalations": 0,
+          "riskContextExpansions": 0,
+          "verificationObligationsGenerated": 0,
+          "verificationCacheHits": 0,
+          "verificationEvidenceReused": 0,
+          "verificationTargetedSuitesUsed": 0,
+          "verificationFullSuitesAvoided": 0,
+          "verificationFullSuitesRequired": 0,
+          "verificationStaleEvidenceRejected": 0,
+          "verificationRerunsAvoided": 0,
+          "verificationBlockedEvents": 0,
+          "resolutionObligationsReceived": 0,
+          "resolutionDuplicatesRemoved": 0,
+          "resolutionObligationsSubsumed": 0,
+          "resolutionEvidenceReused": 0,
+          "resolutionProducersScheduled": 0,
+          "resolutionDispatchesAvoided": 0,
+          "resolutionCacheHits": 0,
+          "resolutionCacheMisses": 0
+        },
+        "policyVersion": "cf15-1",
+        "featureVersion": "fg1-efficiency-core-1",
+        "createdAt": "2026-09-16T11:10:25.163Z"
+      },
+      {
+        "ledgerId": "4a3f7a8ccc1932230c043e2c",
+        "ledgerSchemaVersion": "fg1-1",
+        "identity": {
+          "runId": "experiment-edit-verify-coder",
+          "operation": "agent_run",
+          "namespace": "workspace-experiment",
+          "sessionId": "forgegreen-r1-experiment",
+          "agentId": "coder"
+        },
+        "events": [
+          {
+            "mechanism": "repository_intelligence",
+            "measurement": "measured",
+            "quantity": 19,
+            "unit": "count",
+            "reason": "files_reused"
+          },
+          {
+            "mechanism": "context_reuse",
+            "measurement": "measured",
+            "quantity": 3,
+            "unit": "count",
+            "reason": "page_pulled"
+          }
+        ],
+        "totals": {
+          "bytesAvoidedMeasured": 0,
+          "tokensAvoidedMeasured": 0,
+          "eventsWithUnknownQuantity": 0,
+          "duplicateActionsSuppressed": 0,
+          "noProgressInterruptions": 0,
+          "canonicalCacheHits": 0,
+          "canonicalCacheMisses": 0,
+          "canonicalCacheInvalidations": 0,
+          "avoidedModelRequests": 0,
+          "avoidedToolDispatches": 0,
+          "fallbackEvents": 0,
+          "repositoryFilesReparsed": 0,
+          "repositoryFilesReused": 19,
+          "repositoryParseCacheHits": 0,
+          "repositoryInvalidations": 0,
+          "modelFailoverRotations": 0,
+          "modelFailoverBlockedDispatches": 0,
+          "contextPagesReused": 0,
+          "contextPagesPulled": 3,
+          "riskAnalyses": 0,
+          "riskCacheHits": 0,
+          "riskCacheMisses": 0,
+          "riskRoleEscalations": 0,
+          "riskContextExpansions": 0,
+          "verificationObligationsGenerated": 0,
+          "verificationCacheHits": 0,
+          "verificationEvidenceReused": 0,
+          "verificationTargetedSuitesUsed": 0,
+          "verificationFullSuitesAvoided": 0,
+          "verificationFullSuitesRequired": 0,
+          "verificationStaleEvidenceRejected": 0,
+          "verificationRerunsAvoided": 0,
+          "verificationBlockedEvents": 0,
+          "resolutionObligationsReceived": 0,
+          "resolutionDuplicatesRemoved": 0,
+          "resolutionObligationsSubsumed": 0,
+          "resolutionEvidenceReused": 0,
+          "resolutionProducersScheduled": 0,
+          "resolutionDispatchesAvoided": 0,
+          "resolutionCacheHits": 0,
+          "resolutionCacheMisses": 0
+        },
+        "policyVersion": "cf15-1",
+        "featureVersion": "fg1-efficiency-core-1",
+        "createdAt": "2026-09-16T11:10:26.681Z"
+      }
+    ],
+    "workspaceStatus": "",
+    "summary": {
+      "workloadCount": 3,
+      "modelAttempts": 6,
+      "providerAttempts": 6,
+      "inputTokens": 11892,
+      "outputTokens": 1108,
+      "rawToolOutputBytes": 51810,
+      "deliveredToolOutputBytes": 4716,
+      "toolOutputBytesAvoided": 47094,
+      "toolOutputCompressionRatio": 0.09102489866821077,
+      "duplicateActionsSuppressed": 0,
+      "forgeGreenOverheadMs": 0.38559999997960404,
+      "wallTimeMs": 34780,
+      "editVerifyStatus": "failed",
+      "completionOutcome": "failed",
+      "verificationPassed": false,
+      "independentVerificationPassed": false
+    }
+  },
+  "comparison": {
+    "verificationParity": false,
+    "securityPolicyUnchanged": true,
+    "materialEfficiencyImprovement": false,
+    "overheadAcceptable": true,
+    "deltas": {
+      "toolOutputBytesAvoided": 0,
+      "duplicateActionsSuppressed": 0,
+      "providerAttempts": -7,
+      "inputTokens": -31267,
+      "outputTokens": -1707,
+      "forgeGreenOverheadMs": -1.172099999960892,
+      "wallTimeMs": -43644
+    }
+  },
+  "verdict": "CODEFORGE_FORGEGREEN_R1_IMPLEMENTED_VERIFICATION_PENDING"
+}
