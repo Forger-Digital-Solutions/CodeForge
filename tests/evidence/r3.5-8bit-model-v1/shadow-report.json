@@ -1,0 +1,282 @@
+{
+ "purpose": "R3.5 8-Bit shadow evaluation: deterministic vs learned vs hybrid (frozen splits)",
+ "learnedArtifact": "4b722a5ce472d403496479f9b0841fa305dc63aa4b0003eb1f54d4b890d9b65d",
+ "abstainConfidence": 0.6,
+ "splits": {
+  "DEV": {
+   "ROUTE_OUTCOME": {
+    "n": 0,
+    "skipped": "empty"
+   },
+   "ROLE_SUITABILITY": {
+    "deterministic": {
+     "n": 3,
+     "accuracy": 1,
+     "macroF1": 1
+    },
+    "learned": {
+     "n": 3,
+     "accuracy": 1,
+     "macroF1": 1
+    },
+    "hybrid": {
+     "n": 3,
+     "accuracy": 1,
+     "macroF1": 1
+    }
+   },
+   "ECONOMICS_STATE": {
+    "deterministic": {
+     "n": 5,
+     "accuracy": 1,
+     "macroF1": 1
+    },
+    "learned": {
+     "n": 5,
+     "accuracy": 1,
+     "macroF1": 1
+    },
+    "hybrid": {
+     "n": 5,
+     "accuracy": 1,
+     "macroF1": 1
+    }
+   }
+  },
+  "TEMPORAL_HOLDOUT": {
+   "ROUTE_OUTCOME": {
+    "deterministic": {
+     "n": 14,
+     "accuracy": 1,
+     "macroF1": 1
+    },
+    "learned": {
+     "n": 14,
+     "accuracy": 0,
+     "macroF1": 0
+    },
+    "hybrid": {
+     "n": 14,
+     "accuracy": 0.857,
+     "macroF1": 0.938
+    }
+   },
+   "ROLE_SUITABILITY": {
+    "deterministic": {
+     "n": 6,
+     "accuracy": 1,
+     "macroF1": 1
+    },
+    "learned": {
+     "n": 6,
+     "accuracy": 0.667,
+     "macroF1": 0.452
+    },
+    "hybrid": {
+     "n": 6,
+     "accuracy": 1,
+     "macroF1": 1
+    }
+   },
+   "ECONOMICS_STATE": {
+    "n": 0,
+    "skipped": "empty"
+   }
+  },
+  "PROTECTED_HOLDOUT": {
+   "ROUTE_OUTCOME": {
+    "n": 0,
+    "skipped": "empty"
+   },
+   "ROLE_SUITABILITY": {
+    "n": 0,
+    "skipped": "empty"
+   },
+   "ECONOMICS_STATE": {
+    "deterministic": {
+     "n": 3,
+     "accuracy": 1,
+     "macroF1": 1
+    },
+    "learned": {
+     "n": 3,
+     "accuracy": 1,
+     "macroF1": 1
+    },
+    "hybrid": {
+     "n": 3,
+     "accuracy": 1,
+     "macroF1": 1
+    }
+   }
+  }
+ },
+ "safetyFloor": {
+  "learnedPredictionsOverriddenByPolicy": 0,
+  "criticalFalseFree": {
+   "deterministic": 0,
+   "learned": 0,
+   "hybrid": 0
+  }
+ },
+ "disagreements": {
+  "count": 16,
+  "samples": [
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-0acd5537baa7ae26",
+    "deterministic": "RATE_LIMITED",
+    "learned": "HEALTH_MARKED_UNAVAILABLE",
+    "confidence": 0.992,
+    "truth": "RATE_LIMITED"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-0b034628be05fcff",
+    "deterministic": "SUCCESS",
+    "learned": "RATE_LIMITED",
+    "confidence": 0.42,
+    "truth": "SUCCESS"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-20cee8568af31f90",
+    "deterministic": "RATE_LIMITED",
+    "learned": "HEALTH_MARKED_UNAVAILABLE",
+    "confidence": 1,
+    "truth": "RATE_LIMITED"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-21a4f67cc3bb5e92",
+    "deterministic": "RATE_LIMITED",
+    "learned": "HEALTH_MARKED_UNAVAILABLE",
+    "confidence": 0.992,
+    "truth": "RATE_LIMITED"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-2590ba665bcda7b7",
+    "deterministic": "RATE_LIMITED",
+    "learned": "HEALTH_MARKED_UNAVAILABLE",
+    "confidence": 0.992,
+    "truth": "RATE_LIMITED"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-325d2e6b255d7302",
+    "deterministic": "RATE_LIMITED",
+    "learned": "HEALTH_MARKED_UNAVAILABLE",
+    "confidence": 0.992,
+    "truth": "RATE_LIMITED"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-47b1ac249d861d26",
+    "deterministic": "RATE_LIMITED",
+    "learned": "HEALTH_MARKED_UNAVAILABLE",
+    "confidence": 0.992,
+    "truth": "RATE_LIMITED"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-4fb0705f225792fa",
+    "deterministic": "RATE_LIMITED",
+    "learned": "HEALTH_MARKED_UNAVAILABLE",
+    "confidence": 0.992,
+    "truth": "RATE_LIMITED"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-665edc21f59ca8c0",
+    "deterministic": "SUCCESS",
+    "learned": "RATE_LIMITED",
+    "confidence": 0.435,
+    "truth": "SUCCESS"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-8518511801ad6630",
+    "deterministic": "RATE_LIMITED",
+    "learned": "HEALTH_MARKED_UNAVAILABLE",
+    "confidence": 1,
+    "truth": "RATE_LIMITED"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-a31213fb6c266be2",
+    "deterministic": "SUCCESS",
+    "learned": "RATE_LIMITED",
+    "confidence": 0.409,
+    "truth": "SUCCESS"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-c15875836fb0077a",
+    "deterministic": "SUCCESS",
+    "learned": "RATE_LIMITED",
+    "confidence": 0.408,
+    "truth": "SUCCESS"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-c7e71792a31d066a",
+    "deterministic": "RATE_LIMITED",
+    "learned": "HEALTH_MARKED_UNAVAILABLE",
+    "confidence": 0.992,
+    "truth": "RATE_LIMITED"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROUTE_OUTCOME",
+    "rowId": "route-ede548eacc1d0245",
+    "deterministic": "SUCCESS",
+    "learned": "RATE_LIMITED",
+    "confidence": 0.409,
+    "truth": "SUCCESS"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROLE_SUITABILITY",
+    "rowId": "role-28f739ec4332961e",
+    "deterministic": "PROBATION",
+    "learned": "QUALIFIED",
+    "confidence": 1,
+    "truth": "PROBATION"
+   },
+   {
+    "split": "TEMPORAL_HOLDOUT",
+    "taskKind": "ROLE_SUITABILITY",
+    "rowId": "role-dc22f256bd700155",
+    "deterministic": "NOT_QUALIFIED",
+    "learned": "QUALIFIED",
+    "confidence": 1,
+    "truth": "NOT_QUALIFIED"
+   }
+  ]
+ },
+ "learnedBrierTemporalHoldout": 1.335,
+ "promotionEvidence": {
+  "hardViolations": {
+   "unsafePaidRoutePromotion": 0,
+   "policyOverride": 0,
+   "criticalFalseFreeClassification": 0,
+   "privateRepoProhibitedRoutePromotion": "not_evaluable_no_private_repo_rows"
+  },
+  "learnedAddsMeasurableValueOverDeterministic": false,
+  "recommendation": "KEEP_DETERMINISTIC_PRODUCTION_MODEL_EXPERIMENTAL"
+ }
+}

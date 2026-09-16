@@ -1,0 +1,30 @@
+{
+ "8bit_version": "r35-c1",
+ "base_model": "from-scratch compact tabular transformer (no third-party weights)",
+ "base_revision": null,
+ "base_license": "N/A (architecture only; weights are CodeForge-owned)",
+ "parameter_count": 345812,
+ "training_method": "multi-task SFT from scratch, float16 AMP, class-weighted CE",
+ "adapter_config": null,
+ "training_dataset_hash": "8a1d8b5e035da3590362b30893e85115eb8eda3d0aba81c23b6ccb36db5f4c2b",
+ "dev_hash": "6e4f4c81024b8988a172d32d214d493ed92d294ebd93e4b1dbb722638ff0418d",
+ "protected_holdout_hash": "6e4f4c81024b8988a172d32d214d493ed92d294ebd93e4b1dbb722638ff0418d",
+ "temporal_holdout_hash": "6e4f4c81024b8988a172d32d214d493ed92d294ebd93e4b1dbb722638ff0418d",
+ "training_code_sha": "d3d869bb35f752de3fef388dd9be8206fc51f59778582f8757f67fd14ca5d29b",
+ "training_environment": {
+  "gpu": "Quadro T2000",
+  "torch": "2.14.0+cu126",
+  "cuda": "12.6",
+  "seed": 20260915
+ },
+ "GPU": "Quadro T2000",
+ "peak_VRAM": "33.8 MB",
+ "training_duration": "17.9 s",
+ "metrics": {
+  "bestDevMeanMacroF1": 1.0
+ },
+ "artifact_sha256": "d0edd61b872c961a05170d2aea632ed8d11be476973fbbe940a2dc6ac32a74d1",
+ "promotion_state": "candidate",
+ "previous_version": null,
+ "rollback_target": null
+}
