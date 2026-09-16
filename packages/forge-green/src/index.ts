@@ -51,6 +51,9 @@ export * from "./optimization-persistence.js";
 // FG-12F: cost-gated execution policy for Candidate D's ACTIVE_SAFE graduation.
 export * from "./reuse-cost-policy.js";
 
+// ForgeGreen R0: bounded run-level resource telemetry and apples-to-apples experiment comparison.
+export * from "./r0-telemetry.js";
+
 export const FORGE_GREEN_LEDGER_WORK_ITEM_KIND = "forgegreen_ledger";
 
 export type EfficiencyScore = number & { readonly __forgeGreenEfficiencyScore: unique symbol };

@@ -658,6 +658,16 @@ export const WorkItemSchema = z.discriminatedUnion("kind", [
     createdAt: z.string().datetime(),
   }),
   z.object({
+    /** ForgeGreen R0: aggregated, append-only run telemetry. This is evidence only; it is never
+     * consulted by routing, permissions, verification, or Completion Gate. */
+    kind: z.literal("forgegreen_r0_telemetry"),
+    id: z.string(),
+    sessionId: z.string(),
+    runId: z.string(),
+    record: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+  }),
+  z.object({
     /** 8-Bit: append-only, immutable routing-decision receipt. Never an authority input —
      * observational/explainability record only, same posture as `forgegreen_ledger`. */
     kind: z.literal("eight_bit_decision_receipt"),

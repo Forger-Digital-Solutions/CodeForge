@@ -26,6 +26,7 @@
     "cloud:launch:checklist": "node scripts/cloud/launch-checklist.mjs",
     "repo-intelligence:certify": "node scripts/repository-intelligence-certify.mjs",
     "forgegreen:fg8:benchmark": "node scripts/forgegreen-fg8-benchmark.mjs",
+    "forgegreen:r0:baseline": "node scripts/forgegreen-r0-baseline.mjs",
     "repo-intelligence:ab": "node scripts/repository-intelligence-ab.mjs",
     "legal:normalize-licenses": "node scripts/legal/normalize-package-licenses.mjs",
     "legal:notices": "node scripts/legal/generate-third-party-notices.mjs",

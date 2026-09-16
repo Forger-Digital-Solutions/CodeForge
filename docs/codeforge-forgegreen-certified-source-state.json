@@ -1,5 +1,5 @@
 {
-  "sourceStateId": "f8d743549efa2f950c12316de19f58bf64534ee26642ac2e5a363739f56dafc6",
+  "sourceStateId": "9aacec0d7f2ca60b44e3e189fe72aa9a1618df06ef7c6b7d3ac581a53b396fbd",
   "surfaceVersion": 2,
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
@@ -40,13 +40,13 @@
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
     "packages/router/package.json": "b2b596febe0eab8a591ed016e9783170c35ed096",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
-    "packages/server/src/agent-runtime.ts": "5a8e07e4f90473422bb22c947b3d7e2c1de30f97",
+    "packages/server/src/agent-runtime.ts": "5f8d59be1b265e76a89a84fa7f3af261c6d9a35f",
     "packages/server/src/autonomous-orchestrator.ts": "5bc8faaac5d55a08effd56e7161178e2504f0a7e",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "a46e0238daf63d31820dd6548c362ef6e77981cb",
     "packages/sessions/src/persistence.ts": "773d64921c840a0ca860b6e1985184dace727c8a",
     "packages/sessions/src/postgres-persistence.ts": "f47a6a0e3cd9e3064c17b00b4e6516082f738068",
-    "packages/sessions/src/session-state.ts": "c03e49dba0bd99f25879ed8dd4918ef0784a6e03",
+    "packages/sessions/src/session-state.ts": "9af87365dc6bcecb69d36b9754172da4b0699a67",
     "packages/workflow/src/forge-verify.ts": "a2ebe610ad4ec74a68609c57bba7b19fe6869cdc",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
     "packages/workflow/src/types.ts": "a2b484a4acbcac05a4739c1f6cbf5450ff49fe41",
@@ -447,6 +447,29 @@
       "regressionEvidence": "Full workspace build passed; ForgeZero and 8-Bit capacity tests passed; the full Vitest run is the current regression record and is being finalized in the R4 campaign report.",
       "recertifiedAt": "2026-09-16",
       "sourceStateConstant": "CODEFORGE_R4_CAPACITY_SOURCE_STATE"
+    },
+    {
+      "label": "ForgeGreen R0 baseline telemetry",
+      "reason": "R0 added bounded observational run telemetry, durable session-scoped evidence, provider-usage truth classification, raw tool-output byte accounting, and a comparison guard for prompt-cache experiments. Existing routing, ForgeVerify, Completion Gate, and R4 capacity authority remain unchanged.",
+      "priorSourceStateId": "f8d743549efa2f950c12316de19f58bf64534ee26642ac2e5a363739f56dafc6",
+      "priorSurfaceVersion": "fg12f-certified-v1-r4-capacity",
+      "resultingSourceStateId": "9aacec0d7f2ca60b44e3e189fe72aa9a1618df06ef7c6b7d3ac581a53b396fbd",
+      "resultingSurfaceVersion": "fg12f-certified-v1-r4-forgegreen-r0",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Records R0 run/model/provider/tool/context observations and persists the finalized telemetry best-effort in the existing terminal cleanup path; no observation feeds routing, permissions, ForgeVerify, or Completion Gate.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/sessions/src/session-state.ts",
+          "change": "Adds the additive forgegreen_r0_telemetry work-item schema for durable run-scoped evidence.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Root TypeScript build, focused ForgeGreen R0 tests, existing ForgeGreen/provider/runtime efficiency tests, and the repository-wide Vitest run were executed; the only remaining failure is the intentionally red archived R3 smoke fixture.",
+      "recertifiedAt": "2026-09-16",
+      "sourceStateConstant": "CODEFORGE_FORGEGREEN_R0_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above.",

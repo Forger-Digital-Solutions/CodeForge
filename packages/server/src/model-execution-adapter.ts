@@ -34,6 +34,8 @@ export interface ModelExecutionResponse {
   text: string;
   toolCalls: Array<{ id: string; name: string; arguments: string }>;
   usage: AgentUsage;
+  /** Exact provider usage was observed on a usage event; absent provider usage stays unknown. */
+  usageSource: "PROVIDER_REPORTED" | "UNKNOWN";
   finishReason: "stop" | "tool_calls" | "length" | "content_filter" | "error";
   modelId: string;
   providerId: string;
@@ -346,6 +348,7 @@ export class ModelExecutionAdapter {
       requestCount: 1,
       toolCount: 0,
     };
+    let usageSource: ModelExecutionResponse["usageSource"] = "UNKNOWN";
 
     for await (const event of this.streamExecution(req)) {
       if (req.signal?.aborted) {
@@ -377,6 +380,7 @@ export class ModelExecutionAdapter {
           currentToolCall = null;
           break;
         case "usage":
+          usageSource = "PROVIDER_REPORTED";
           usage = {
             inputTokens: event.usage.inputTokens,
             outputTokens: event.usage.outputTokens,
@@ -409,6 +413,7 @@ export class ModelExecutionAdapter {
       text,
       toolCalls,
       usage,
+      usageSource,
       finishReason,
       modelId,
       providerId,

@@ -35,6 +35,8 @@ export interface ToolExecutionRecord {
   success: boolean;
   /** Authoritative post-redaction (bounded) result. Never replaced by compression. */
   output: string;
+  /** Byte count before redaction/size bounding. The content is never retained in this field. */
+  rawOutputBytes?: number;
   error?: string;
   durationMs: number;
   readOnly: boolean;
@@ -673,6 +675,7 @@ export class ToolBroker {
             arguments: args,
             success: !boundedOutput.startsWith("Error:"),
             output: boundedOutput,
+            rawOutputBytes: Buffer.byteLength(rawOutput, "utf8"),
             durationMs: Date.now() - startTime,
             readOnly: toolDef.readOnly,
             truncated,
@@ -937,6 +940,7 @@ export class ToolBroker {
         arguments: args,
         success: true,
         output: boundedOutput,
+        rawOutputBytes: Buffer.byteLength(rawResult, "utf8"),
         durationMs: Date.now() - startTime,
         readOnly: toolDef.readOnly,
         truncated,
@@ -953,6 +957,7 @@ export class ToolBroker {
         arguments: args,
         success: false,
         output: `Error: ${redacted}`,
+        rawOutputBytes: Buffer.byteLength(rawMsg, "utf8"),
         error: errorCode,
         durationMs: Date.now() - startTime,
         readOnly: toolDef.readOnly,

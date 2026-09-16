@@ -1,0 +1,57 @@
+{
+  "schema": "codeforge-forgegreen-r0-evidence-run-v1",
+  "generatedAt": "2026-09-16T03:03:11.856Z",
+  "command": "node scripts/forgegreen-r0-baseline.mjs",
+  "deterministicReplay": true,
+  "workloadRuns": [
+    {
+      "runId": "forgegreen-r0-run-read",
+      "status": {
+        "value": "completed",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "stopReason": {
+        "value": "completed",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      }
+    },
+    {
+      "runId": "forgegreen-r0-run-large",
+      "status": {
+        "value": "completed",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "stopReason": {
+        "value": "completed",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      }
+    },
+    {
+      "runId": "forgegreen-r0-run-duplicate",
+      "status": {
+        "value": "blocked",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "stopReason": {
+        "value": "no_progress_detected",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      }
+    }
+  ],
+  "promptCacheComparison": {
+    "comparable": false,
+    "netPositive": false,
+    "reasons": [
+      "VERIFICATION_PARITY_UNPROVEN",
+      "COMPLETION_PARITY_UNPROVEN",
+      "UNCACHED_INPUT_UNKNOWN"
+    ]
+  },
+  "noPaidInference": true
+}

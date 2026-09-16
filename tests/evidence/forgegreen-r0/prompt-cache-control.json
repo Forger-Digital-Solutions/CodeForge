@@ -1,0 +1,31 @@
+{
+  "schema": "codeforge-forgegreen-r0-prompt-cache-sample-v1",
+  "sampleRole": "CONTROL",
+  "liveInference": false,
+  "cacheMechanism": "no provider cache metadata",
+  "sample": {
+    "workloadId": "r0-prompt-cache-replay-read-file-v1",
+    "providerId": "forgegreen-r0-scripted",
+    "modelId": "forgegreen-r0-free",
+    "routeClass": "explicit_route",
+    "toolsetRevision": "agent-runtime-default-tools-v1",
+    "securityPolicyRevision": "agent-read-only-permissions-v1",
+    "repositoryRevision": "2673f1374fa4d3d623bca187b4068128ce0a9e9c",
+    "verificationPolicyRevision": "forgegreen-r0-measurement-1",
+    "totalInputTokens": 200,
+    "outputTokens": 40,
+    "wallTimeMs": 524,
+    "providerAttempts": 2,
+    "retryCount": 0,
+    "forgeGreenOverheadMs": 0.0924999999983811,
+    "forgeVerifyStatus": {
+      "status": "UNKNOWN",
+      "source": "UNKNOWN"
+    },
+    "completionGateStatus": {
+      "status": "UNKNOWN",
+      "source": "UNKNOWN"
+    },
+    "taskCompletionStatus": "completed"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schema": "codeforge-forgegreen-r0-prompt-cache-comparison-v1",
+  "comparison": {
+    "comparable": false,
+    "reasons": [
+      "VERIFICATION_PARITY_UNPROVEN",
+      "COMPLETION_PARITY_UNPROVEN",
+      "UNCACHED_INPUT_UNKNOWN"
+    ],
+    "control": {},
+    "experiment": {
+      "uncachedInputTokens": 40
+    },
+    "deltas": {
+      "outputTokens": 0,
+      "wallTimeMs": -47,
+      "providerAttempts": 0,
+      "retryCount": 0,
+      "forgeGreenOverheadMs": -0.008099999996829865
+    },
+    "verificationParity": false,
+    "completionParity": false,
+    "netPositive": false
+  },
+  "interpretation": "The replay demonstrates the false-win guard: authority parity is UNKNOWN, so it is not a production efficiency win even though cache-shaped token metadata is lower."
+}

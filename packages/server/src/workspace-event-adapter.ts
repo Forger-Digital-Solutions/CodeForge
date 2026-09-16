@@ -774,6 +774,22 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent);
   }
 
+  emitForgeGreenR0TelemetryRecorded(input: {
+    runId: string;
+    telemetryId: string;
+    taskCompletionStatus: string;
+    providerAttempts?: number;
+    modelAttempts?: number;
+    toolCalls?: number;
+    rawToolOutputBytes?: number;
+    bytesDeliveredToModelContext?: number;
+  }): void {
+    this.emitBestEffort({
+      type: "forgegreen.r0_telemetry_recorded",
+      payload: input,
+    } as WorkspaceEvent);
+  }
+
   /**
    * FG-9: ForgeGreen optimization & efficiency policy lifecycle events. Aggregated once per run
    * per optimization kind — never one event per candidate/suppression instance.

@@ -50,6 +50,10 @@ import {
   finalizeSustainabilityReceipt,
   normalizeMeasurementInput,
   SustainabilityMeasurementError,
+  createForgeGreenR0TelemetryCollector,
+  createForgeGreenR0TelemetryStore,
+  FORGE_GREEN_R0_POLICY_VERSION,
+  type ForgeGreenR0TelemetryCollector,
   type DuplicateToolSuppressionEvent,
   type EfficiencyReceipt,
   type ForgeGreenAdvisor,
@@ -91,6 +95,8 @@ export interface AgentRuntimeRequest {
   goal: string;
   workspaceId: string;
   workspacePath: string;
+  /** Optional caller-supplied repository revision for reproducible telemetry provenance. */
+  repositoryRevision?: string;
   permissions: AgentPermissions;
   modelSelection?: AgentModelSelection;
   executionBudget?: AgentExecutionBudget;
@@ -736,6 +742,21 @@ export class AgentRuntime {
       agentId: req.agentId,
       workstreamScope: req.workstreamScope,
     });
+    const forgeGreenR0RouteClass = req.roleRouting
+      ? "managed_free_role_route"
+      : req.modelSelection || this.modelSelection
+        ? "explicit_route"
+        : "adaptive_free_route";
+    const forgeGreenR0Telemetry = createForgeGreenR0TelemetryCollector({
+      runId: req.runId,
+      sessionId: this.sessionId,
+      workspaceId: req.workspaceId,
+      agentId: req.agentId,
+      repositoryRevision: req.repositoryRevision,
+      policyRevision: FORGE_GREEN_R0_POLICY_VERSION,
+    });
+    forgeGreenR0Telemetry.setRouteClass(forgeGreenR0RouteClass);
+    let forgeGreenR0RunStatus: AgentRuntimeResult["status"] = "failed";
     const canonicalCacheStats = { hits: 0, misses: 0 };
     let toolOutputBytesAvoided = 0;
 
@@ -939,6 +960,15 @@ export class AgentRuntime {
       }
       }
       if (!contextMetrics) throw new Error("Agent run context metrics were not initialized");
+      forgeGreenR0Telemetry.recordRepositoryGeneration(contextMetrics.repositoryGeneration);
+      forgeGreenR0Telemetry.recordContext({
+        initialContextBytes: contextMetrics.contextBytes,
+        sourceCategories: {
+          repository_evidence: contextMetrics.selectedEvidenceCount,
+          candidate_files: contextMetrics.candidateFileCount,
+          selected_files: contextMetrics.selectedFileCount,
+        },
+      });
 
       let structuredData: StructuredAgentResult | undefined;
       let structuredRepairs = 0;
@@ -1013,6 +1043,13 @@ export class AgentRuntime {
       const requestModelTurn = async (): Promise<ModelExecutionResponse> => {
         let rotations = 0;
         for (;;) {
+          forgeGreenR0Telemetry.recordModelAttempt({
+            providerId: activeSelection?.providerId,
+            modelId: activeSelection?.modelId,
+            routeClass: forgeGreenR0RouteClass,
+            contextBytes: Buffer.byteLength(messages.map((message) => message.content).join("\n"), "utf8"),
+            stablePromptBytes: messages[0]?.role === "system" ? Buffer.byteLength(messages[0].content, "utf8") : undefined,
+          });
           try {
             const response = await modelAdapter.execute({
               modelSelection: activeSelection,
@@ -1023,6 +1060,19 @@ export class AgentRuntime {
               authorityState: req.authorityState ?? "canonical",
               dedupeScope: req.runId,
             });
+            if (!response.optimization?.duplicateSuppressed) {
+              forgeGreenR0Telemetry.recordProviderAttempt(response.providerId, response.modelId, forgeGreenR0RouteClass);
+            }
+            forgeGreenR0Telemetry.recordModelResponse({
+              providerId: response.providerId,
+              modelId: response.modelId,
+              routeClass: forgeGreenR0RouteClass,
+              usageSource: response.usageSource,
+              inputTokens: response.usage.inputTokens,
+              cachedInputTokens: response.usage.cachedTokens,
+              outputTokens: response.usage.outputTokens,
+              stablePromptCacheHit: response.optimization?.promptPrefixCacheHit,
+            });
             if (activeSelection) {
               this.eightBit.recordSuccess(activeSelection.providerId, activeSelection.modelId);
               this.freeCloud?.recordRouteSuccess(activeSelection.providerId, activeSelection.modelId);
@@ -1030,6 +1080,14 @@ export class AgentRuntime {
             return response;
           } catch (err: unknown) {
             const isCancelled = req.signal?.aborted || (err instanceof Error && err.message.includes(ERROR_CODES.AGENT_CANCELLED));
+            const normalized = normalizeProviderError(err);
+            forgeGreenR0Telemetry.recordProviderFailure({
+              providerId: activeSelection?.providerId,
+              modelId: activeSelection?.modelId,
+              routeClass: forgeGreenR0RouteClass,
+              code: normalized.code,
+              rateLimited: normalized.code === ERROR_CODES.PROVIDER_RATE_LIMITED,
+            });
             if (isCancelled || !roleRouteRotatable || !activeSelection || rotations >= ROLE_ROUTE_MAX_FAILOVERS) {
               throw err;
             }
@@ -1056,6 +1114,9 @@ export class AgentRuntime {
               const retryAfter = (err as { retryAfter?: unknown }).retryAfter;
               const retryAfterMs = typeof retryAfter === "number" ? Math.max(0, retryAfter - Date.now()) : undefined;
               this.freeCloud?.recordRouteFailure(failing.providerId, failing.modelId, outcome.reason, retryAfterMs);
+            }
+            if (outcome.action === "retry_same" || outcome.action === "rotate") {
+              forgeGreenR0Telemetry.recordRetry(outcome.reason);
             }
             if (outcome.action === "retry_same") continue;
             if (outcome.action !== "rotate") throw err;
@@ -1323,6 +1384,7 @@ export class AgentRuntime {
               }
               const error = ERROR_CODES.AGENT_INVALID_STRUCTURED_OUTPUT;
               adapter.emitTurnFailed(req.runId, `${error}: ${validation.error}`);
+              forgeGreenR0RunStatus = "blocked";
               return {
                 status: "blocked",
                 summary: `${error}: ${validation.error}`,
@@ -1349,6 +1411,7 @@ export class AgentRuntime {
           if (req.signal?.aborted) {
             throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
           }
+          forgeGreenR0Telemetry.recordToolCall(tc.name);
 
           // Budget checks
           if (toolCallCount >= budget.maxToolCalls) {
@@ -1399,6 +1462,12 @@ export class AgentRuntime {
                 truncated: false,
               };
               toolExecutions.push(reusedResult);
+              forgeGreenR0Telemetry.recordToolExecution({
+                toolName: tc.name,
+                success: reusedResult.success,
+                durationMs: 0,
+                deliveredBytes: Buffer.byteLength(reusedResult.output, "utf8"),
+              });
               messages.push({
                 role: "tool",
                 content: reusedResult.output,
@@ -1426,6 +1495,7 @@ export class AgentRuntime {
               const err = `[${ERROR_CODES.AGENT_TOOL_LOOP_DETECTED}] Deterministic loop detected: tool "${tc.name}" called 3 consecutive times with identical arguments.`;
               adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.AGENT_TOOL_LOOP_DETECTED);
               stopReason = "tool_loop_detected";
+              forgeGreenR0RunStatus = "blocked";
               return {
                 status: "blocked",
                 summary: err,
@@ -1447,6 +1517,7 @@ export class AgentRuntime {
               const err = `[${ERROR_CODES.AGENT_TOOL_LOOP_DETECTED}] Deterministic tool oscillation loop detected between "${last6[0]}" and "${last6[1]}".`;
               adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.AGENT_TOOL_LOOP_DETECTED);
               stopReason = "tool_loop_detected";
+              forgeGreenR0RunStatus = "blocked";
               return {
                 status: "blocked",
                 summary: err,
@@ -1487,6 +1558,7 @@ export class AgentRuntime {
             const loopCode = certifiedShape ? ERROR_CODES.AGENT_TOOL_LOOP_DETECTED : ERROR_CODES.AGENT_NO_PROGRESS_DETECTED;
             adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, loopCode);
             stopReason = certifiedShape ? "tool_loop_detected" : "no_progress_detected";
+            forgeGreenR0RunStatus = "blocked";
             contextMetrics.efficiencyReceipt = createRunReceipt();
             return {
               status: "blocked",
@@ -1510,9 +1582,11 @@ export class AgentRuntime {
               avoidedBytes: Buffer.byteLength(duplicateDecision.priorOutput, "utf8"),
             });
             adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, "forgegreen_duplicate_suppressed");
+            const replayedContent = `[forgegreen: duplicate read-only action suppressed — identical action against unchanged workspace state; replaying prior authoritative result ${duplicateDecision.priorExecutionId}]\n${duplicateDecision.priorOutput}`;
+            forgeGreenR0Telemetry.recordDuplicateEquivalentToolCall(tc.name, Buffer.byteLength(replayedContent, "utf8"));
             messages.push({
               role: "tool",
-              content: `[forgegreen: duplicate read-only action suppressed — identical action against unchanged workspace state; replaying prior authoritative result ${duplicateDecision.priorExecutionId}]\n${duplicateDecision.priorOutput}`,
+              content: replayedContent,
               toolCallId: tc.id,
             });
             continue;
@@ -1584,6 +1658,15 @@ export class AgentRuntime {
             ledger.recordToolCompression(compression.originalBytes, compression.compressedBytes, true);
             toolOutputBytesAvoided += Math.max(0, compression.originalBytes - compression.compressedBytes);
           }
+          forgeGreenR0Telemetry.recordToolExecution({
+            toolName: tc.name,
+            success: toolExec.success,
+            durationMs: toolExec.durationMs,
+            rawOutputBytes: toolExec.rawOutputBytes,
+            deliveredBytes: Buffer.byteLength(toolExec.modelContextOutput ?? toolExec.output, "utf8"),
+            originalBytes: toolExec.compression?.originalBytes,
+            compressedBytes: toolExec.compression?.compressedBytes,
+          });
           durableExecution.state = toolExec.success ? "completed" : "failed";
           durableExecution.completedAt = new Date().toISOString();
           durableExecution.resultHash = sha256(toolExec.output);
@@ -1629,6 +1712,7 @@ export class AgentRuntime {
             toolExec.error === ERROR_CODES.TOOL_SENSITIVE_PATH_DENIED
           )) {
             stopReason = "error";
+            forgeGreenR0RunStatus = "blocked";
             return {
               status: "blocked",
               summary: toolExec.output,
@@ -1674,6 +1758,7 @@ export class AgentRuntime {
       const status = stopReason === "completed"
         ? (expectedStructuredOutput === "reviewer" && (structuredData as ReviewResult | undefined)?.verdict === "revision_required" ? "blocked" : "completed")
         : "blocked";
+      forgeGreenR0RunStatus = status;
 
       const result: AgentRuntimeResult = {
         status,
@@ -1699,6 +1784,8 @@ export class AgentRuntime {
       const isCancelled = req.signal?.aborted || (err instanceof Error && err.message.includes(ERROR_CODES.AGENT_CANCELLED));
       const status = isCancelled ? "cancelled" : "failed";
       const errorMsg = err instanceof Error ? err.message : String(err);
+      forgeGreenR0RunStatus = status;
+      stopReason = isCancelled ? "cancelled" : "error";
 
       adapter.emitTurnFailed(req.runId, errorMsg);
 
@@ -1729,6 +1816,16 @@ export class AgentRuntime {
       await writeRunJournal(runTerminalState, `Run ended with stopReason: ${stopReason}`).catch(() => undefined);
 
       await this.persistForgeGreenLedger(ledger).catch(() => undefined);
+      await this.persistForgeGreenR0Telemetry(
+        req,
+        forgeGreenR0Telemetry,
+        forgeGreenR0RunStatus,
+        stopReason,
+        Date.now() - forgeGreenRunStartedAtMs,
+        adapter,
+      ).catch((err: unknown) => {
+        console.error(`[agent-runtime] ForgeGreen R0 telemetry failed for run ${req.runId}`, err);
+      });
       await this.persistForgeGreenSustainabilityReceipt(
         req,
         ledger,
@@ -1896,6 +1993,29 @@ export class AgentRuntime {
       createdAt: now,
       updatedAt: now,
     } as unknown as WorkItem);
+  }
+
+  private async persistForgeGreenR0Telemetry(
+    req: AgentRuntimeRequest,
+    collector: ForgeGreenR0TelemetryCollector,
+    taskCompletionStatus: AgentRuntimeResult["status"],
+    stopReason: AgentStopReason,
+    wallClockMs: number,
+    adapter: WorkspaceEventAdapter,
+  ): Promise<void> {
+    collector.recordResult(taskCompletionStatus, stopReason);
+    const telemetry = collector.finalize({ wallTimeMs: wallClockMs });
+    await createForgeGreenR0TelemetryStore(this.persistence).save(telemetry);
+    adapter.emitForgeGreenR0TelemetryRecorded({
+      runId: req.runId,
+      telemetryId: telemetry.telemetryId,
+      taskCompletionStatus,
+      providerAttempts: telemetry.model.providerAttempts.value,
+      modelAttempts: telemetry.model.modelAttempts.value,
+      toolCalls: telemetry.tools.toolCalls.value,
+      rawToolOutputBytes: telemetry.tools.rawToolOutputBytes.value,
+      bytesDeliveredToModelContext: telemetry.tools.bytesDeliveredToModelContext.value,
+    });
   }
 
   async startTurn(

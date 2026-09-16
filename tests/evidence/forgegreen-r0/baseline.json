@@ -1,0 +1,725 @@
+{
+  "schema": "codeforge-forgegreen-r0-baseline-v1",
+  "generatedAt": "2026-09-16T03:03:11.856Z",
+  "deterministicReplay": true,
+  "liveInference": false,
+  "paidInference": false,
+  "repositoryRevision": "2673f1374fa4d3d623bca187b4068128ce0a9e9c",
+  "workloadCount": 3,
+  "measurementSources": {
+    "modelUsage": "PROVIDER_REPORTED scripted stream events",
+    "toolBytes": "RUNTIME byte counts from bounded ToolExecutionRecord fields",
+    "context": "RUNTIME context assembly byte counts",
+    "authority": "UNKNOWN because this local harness does not invoke ForgeVerify or Completion Gate",
+    "cost": "UNKNOWN because the scripted provider reports no price/quota"
+  },
+  "runs": [
+    {
+      "runId": "forgegreen-r0-run-read",
+      "taskCompletionStatus": {
+        "value": "completed",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "stopReason": {
+        "value": "completed",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "routeClass": {
+        "value": "explicit_route",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "model": {
+        "providerAttempts": {
+          "value": 2,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "modelAttempts": {
+          "value": 2,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "inputTokens": {
+          "value": 200,
+          "source": "OBSERVED",
+          "origin": "PROVIDER"
+        },
+        "cachedInputTokens": {
+          "source": "UNKNOWN"
+        },
+        "outputTokens": {
+          "value": 40,
+          "source": "OBSERVED",
+          "origin": "PROVIDER"
+        },
+        "totalTokens": {
+          "value": 240,
+          "source": "DERIVED",
+          "origin": "LOCAL"
+        },
+        "effectiveUncachedInputTokens": {
+          "source": "UNKNOWN"
+        },
+        "stablePromptCacheHits": {
+          "value": 1,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "providerPromptCacheReports": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        }
+      },
+      "tools": {
+        "toolCalls": {
+          "value": 1,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "executedToolCalls": {
+          "value": 1,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "failedToolCalls": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "duplicateEquivalentToolCalls": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "rawToolOutputBytes": {
+          "value": 114,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "bytesDeliveredToModelContext": {
+          "value": 114,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "toolDurationMs": {
+          "value": 3,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "compression": {
+          "originalBytes": {
+            "value": 114,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "deliveredBytes": {
+            "value": 114,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "bytesAvoided": {
+            "value": 0,
+            "source": "DERIVED",
+            "origin": "LOCAL"
+          },
+          "ratio": {
+            "value": 1,
+            "source": "DERIVED",
+            "origin": "LOCAL"
+          }
+        },
+        "byTool": [
+          {
+            "toolName": "read_file",
+            "calls": {
+              "value": 1,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "executed": {
+              "value": 1,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "suppressed": {
+              "value": 0,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        ]
+      },
+      "context": {
+        "initialContextBytes": {
+          "value": 1285,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "modelContextBytes": {
+          "value": 2686,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "stablePromptBytes": {
+          "value": 2044,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "sourceCategories": {
+          "repository_evidence": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "candidate_files": {
+            "value": 2,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "selected_files": {
+            "value": 0,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          }
+        }
+      },
+      "retries": {
+        "retryCount": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "reasons": []
+      },
+      "providerFailures": {
+        "providerFailures": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "rateLimitSignals": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "failureCodes": []
+      },
+      "wallTimeMs": {
+        "value": 556,
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "forgeGreenOverheadMs": {
+        "value": 0.884600000000205,
+        "source": "OBSERVED",
+        "origin": "LOCAL"
+      },
+      "actualProviderCost": {
+        "source": "UNKNOWN"
+      },
+      "effectiveProviderCost": {
+        "source": "UNKNOWN"
+      },
+      "authority": {
+        "forgeVerify": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "completionGate": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        }
+      },
+      "providerRequestCount": 2
+    },
+    {
+      "runId": "forgegreen-r0-run-large",
+      "taskCompletionStatus": {
+        "value": "completed",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "stopReason": {
+        "value": "completed",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "routeClass": {
+        "value": "explicit_route",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "model": {
+        "providerAttempts": {
+          "value": 2,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "modelAttempts": {
+          "value": 2,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "inputTokens": {
+          "value": 200,
+          "source": "OBSERVED",
+          "origin": "PROVIDER"
+        },
+        "cachedInputTokens": {
+          "source": "UNKNOWN"
+        },
+        "outputTokens": {
+          "value": 40,
+          "source": "OBSERVED",
+          "origin": "PROVIDER"
+        },
+        "totalTokens": {
+          "value": 240,
+          "source": "DERIVED",
+          "origin": "LOCAL"
+        },
+        "effectiveUncachedInputTokens": {
+          "source": "UNKNOWN"
+        },
+        "stablePromptCacheHits": {
+          "value": 1,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "providerPromptCacheReports": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        }
+      },
+      "tools": {
+        "toolCalls": {
+          "value": 1,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "executedToolCalls": {
+          "value": 1,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "failedToolCalls": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "duplicateEquivalentToolCalls": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "rawToolOutputBytes": {
+          "value": 10392,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "bytesDeliveredToModelContext": {
+          "value": 734,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "toolDurationMs": {
+          "value": 3,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "compression": {
+          "originalBytes": {
+            "value": 10392,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "deliveredBytes": {
+            "value": 734,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "bytesAvoided": {
+            "value": 9658,
+            "source": "DERIVED",
+            "origin": "LOCAL"
+          },
+          "ratio": {
+            "value": 0.07063125481139337,
+            "source": "DERIVED",
+            "origin": "LOCAL"
+          }
+        },
+        "byTool": [
+          {
+            "toolName": "read_file",
+            "calls": {
+              "value": 1,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "executed": {
+              "value": 1,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "suppressed": {
+              "value": 0,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        ]
+      },
+      "context": {
+        "initialContextBytes": {
+          "value": 1566,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "modelContextBytes": {
+          "value": 3868,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "stablePromptBytes": {
+          "value": 2044,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "sourceCategories": {
+          "repository_evidence": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "candidate_files": {
+            "value": 2,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "selected_files": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          }
+        }
+      },
+      "retries": {
+        "retryCount": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "reasons": []
+      },
+      "providerFailures": {
+        "providerFailures": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "rateLimitSignals": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "failureCodes": []
+      },
+      "wallTimeMs": {
+        "value": 491,
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "forgeGreenOverheadMs": {
+        "value": 0.11689999999975953,
+        "source": "OBSERVED",
+        "origin": "LOCAL"
+      },
+      "actualProviderCost": {
+        "source": "UNKNOWN"
+      },
+      "effectiveProviderCost": {
+        "source": "UNKNOWN"
+      },
+      "authority": {
+        "forgeVerify": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "completionGate": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        }
+      },
+      "providerRequestCount": 2
+    },
+    {
+      "runId": "forgegreen-r0-run-duplicate",
+      "taskCompletionStatus": {
+        "value": "blocked",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "stopReason": {
+        "value": "no_progress_detected",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "routeClass": {
+        "value": "explicit_route",
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "model": {
+        "providerAttempts": {
+          "value": 6,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "modelAttempts": {
+          "value": 6,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "inputTokens": {
+          "value": 600,
+          "source": "OBSERVED",
+          "origin": "PROVIDER"
+        },
+        "cachedInputTokens": {
+          "source": "UNKNOWN"
+        },
+        "outputTokens": {
+          "value": 120,
+          "source": "OBSERVED",
+          "origin": "PROVIDER"
+        },
+        "totalTokens": {
+          "value": 720,
+          "source": "DERIVED",
+          "origin": "LOCAL"
+        },
+        "effectiveUncachedInputTokens": {
+          "source": "UNKNOWN"
+        },
+        "stablePromptCacheHits": {
+          "value": 5,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "providerPromptCacheReports": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        }
+      },
+      "tools": {
+        "toolCalls": {
+          "value": 6,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "executedToolCalls": {
+          "value": 3,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "failedToolCalls": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "duplicateEquivalentToolCalls": {
+          "value": 2,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "rawToolOutputBytes": {
+          "value": 321,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "bytesDeliveredToModelContext": {
+          "value": 895,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "toolDurationMs": {
+          "value": 317,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "compression": {
+          "originalBytes": {
+            "value": 321,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "deliveredBytes": {
+            "value": 321,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "bytesAvoided": {
+            "value": 0,
+            "source": "DERIVED",
+            "origin": "LOCAL"
+          },
+          "ratio": {
+            "value": 1,
+            "source": "DERIVED",
+            "origin": "LOCAL"
+          }
+        },
+        "byTool": [
+          {
+            "toolName": "read_file",
+            "calls": {
+              "value": 3,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "executed": {
+              "value": 1,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "suppressed": {
+              "value": 1,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          },
+          {
+            "toolName": "list_files",
+            "calls": {
+              "value": 2,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "executed": {
+              "value": 1,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "suppressed": {
+              "value": 1,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          },
+          {
+            "toolName": "repo_search",
+            "calls": {
+              "value": 1,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "executed": {
+              "value": 1,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            },
+            "suppressed": {
+              "value": 0,
+              "source": "OBSERVED",
+              "origin": "RUNTIME"
+            }
+          }
+        ]
+      },
+      "context": {
+        "initialContextBytes": {
+          "value": 1581,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "modelContextBytes": {
+          "value": 11634,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "stablePromptBytes": {
+          "value": 6132,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "sourceCategories": {
+          "repository_evidence": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "candidate_files": {
+            "value": 2,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          },
+          "selected_files": {
+            "value": 1,
+            "source": "OBSERVED",
+            "origin": "RUNTIME"
+          }
+        }
+      },
+      "retries": {
+        "retryCount": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "reasons": []
+      },
+      "providerFailures": {
+        "providerFailures": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "rateLimitSignals": {
+          "value": 0,
+          "source": "OBSERVED",
+          "origin": "RUNTIME"
+        },
+        "failureCodes": []
+      },
+      "wallTimeMs": {
+        "value": 804,
+        "source": "OBSERVED",
+        "origin": "RUNTIME"
+      },
+      "forgeGreenOverheadMs": {
+        "value": 0.19669999999905485,
+        "source": "OBSERVED",
+        "origin": "LOCAL"
+      },
+      "actualProviderCost": {
+        "source": "UNKNOWN"
+      },
+      "effectiveProviderCost": {
+        "source": "UNKNOWN"
+      },
+      "authority": {
+        "forgeVerify": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        },
+        "completionGate": {
+          "status": "UNKNOWN",
+          "source": "UNKNOWN"
+        }
+      },
+      "providerRequestCount": 6
+    }
+  ],
+  "findings": [
+    "Repeated tool discovery is visible in the duplicate workload: duplicate-equivalent calls are suppressed before physical execution.",
+    "Large local output is measured before and after model-context compression; authoritative output remains separate.",
+    "The replay does not establish production provider cache economics or verified-completion parity."
+  ]
+}

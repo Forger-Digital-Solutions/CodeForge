@@ -272,6 +272,22 @@ export const ForgeGreenMeasurementFailedSchema = EventBase(
   }),
 );
 
+/** ForgeGreen R0: one bounded summary event per run. Detailed measurements live in the durable
+ * telemetry work item; this event contains counters only and never source material. */
+export const ForgeGreenR0TelemetryRecordedSchema = EventBase(
+  "forgegreen.r0_telemetry_recorded",
+  z.object({
+    runId: z.string(),
+    telemetryId: z.string(),
+    taskCompletionStatus: z.string(),
+    providerAttempts: z.number().int().nonnegative().optional(),
+    modelAttempts: z.number().int().nonnegative().optional(),
+    toolCalls: z.number().int().nonnegative().optional(),
+    rawToolOutputBytes: z.number().int().nonnegative().optional(),
+    bytesDeliveredToModelContext: z.number().int().nonnegative().optional(),
+  }),
+);
+
 /**
  * FG-9: ForgeGreen optimization & efficiency policy (Phase 4) lifecycle events. Aggregated once
  * per run per optimization kind — never one event per candidate/suppression instance. Narrowly
@@ -828,6 +844,7 @@ export const WorkspaceEventSchema = z.discriminatedUnion("type", [
   ForgeGreenEnergyEstimatedSchema,
   ForgeGreenRunFinalizedSchema,
   ForgeGreenMeasurementFailedSchema,
+  ForgeGreenR0TelemetryRecordedSchema,
   ForgeGreenOptimizationCandidateSchema,
   ForgeGreenOptimizationAppliedSchema,
   ForgeGreenOptimizationRejectedSchema,
