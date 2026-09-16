@@ -1,0 +1,79 @@
+{
+ "schemaVersion": 1,
+ "purpose": "8-Bit learned specialist training dataset (R3.5) — CodeForge-owned structured evidence only",
+ "builtAt": "2026-09-16T00:00:56.787Z",
+ "datasetSchemaVersion": 1,
+ "vectorizationVersion": 1,
+ "simulation": {
+  "samples": 400,
+  "seed": 20260915,
+  "constants": [
+   {
+    "providerId": "groq",
+    "tpm": 8000,
+    "tpd": 200000,
+    "rpm": 20
+   },
+   {
+    "providerId": "cloudflare-workers-ai",
+    "tpm": 6000,
+    "tpd": 10000,
+    "rpm": 20
+   }
+  ]
+ },
+ "temporalCutoff": "2026-09-15T22:30:00.000Z",
+ "datasetManifestHash": "8a1d8b5e035da3590362b30893e85115eb8eda3d0aba81c23b6ccb36db5f4c2b",
+ "inputHashes": {
+  "tests/evidence/r3/corpus-runs/campaign-1/tasks": "638a44458506968c",
+  "tests/evidence/r3/corpus-runs/campaign-1/smoke-archive/S-001-wrapper-eval/attempt-1/workers.json": "8c44fe990c4b90d2",
+  "tests/evidence/r3/corpus-runs/campaign-1/smoke-archive/S-001-capacity-exhausted/attempt-1/workers.json": "3fb1e37092b915ce",
+  "docs/evidence/managed-free-r2-fleet-qualification.json": "be1602a0784fa073",
+  "apps/desktop/release/r5-evidence/free-cloud/discovery-refresh-current.json": "1e2b817e4ec2ac98"
+ },
+ "counts": {
+  "total": 469,
+  "byTaskKind": {
+   "ECONOMICS_STATE": 22,
+   "ROLE_SUITABILITY": 33,
+   "ROUTE_OUTCOME": 414
+  },
+  "bySource": {
+   "DISCOVERY_CATALOG": 22,
+   "QUALIFICATION_PROBE": 33,
+   "DERIVED_SIMULATION": 400,
+   "R3_CORPUS_ATTEMPT": 14
+  },
+  "derived": 400
+ },
+ "splits": {
+  "counts": {
+   "TRAIN": 438,
+   "DEV": 8,
+   "PROTECTED_HOLDOUT": 3,
+   "TEMPORAL_HOLDOUT": 20
+  },
+  "groupsPerSplit": {
+   "TRAIN": 21,
+   "DEV": 5,
+   "PROTECTED_HOLDOUT": 3,
+   "TEMPORAL_HOLDOUT": 1
+  },
+  "realRowsPerSplit": {
+   "TRAIN": 38,
+   "DEV": 8,
+   "PROTECTED_HOLDOUT": 3,
+   "TEMPORAL_HOLDOUT": 20
+  },
+  "leakedGroups": [],
+  "familyCrossSplitOverlap": [
+   "nemotron",
+   "laguna",
+   "gemma",
+   "nemotron",
+   "nex"
+  ],
+  "sha256": "6e4f4c81024b8988a172d32d214d493ed92d294ebd93e4b1dbb722638ff0418d",
+  "frozenAt": "2026-09-16T00:00:56.778Z"
+ }
+}

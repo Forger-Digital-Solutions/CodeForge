@@ -1,0 +1,2372 @@
+{
+ "schemaVersion": 1,
+ "frozenAt": "2026-09-16T00:00:56.778Z",
+ "datasetManifestHash": "8a1d8b5e035da3590362b30893e85115eb8eda3d0aba81c23b6ccb36db5f4c2b",
+ "assignments": [
+  {
+   "rowId": "route-0acd5537baa7ae26",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-2590ba665bcda7b7",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-47b1ac249d861d26",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-c7e71792a31d066a",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "role-28f739ec4332961e",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "role-29f085ec9fafd629",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "role-408fc92106ba96a4",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "role-79b1f018a71d8594",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "role-b5e144e88d205a16",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "role-dc22f256bd700155",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-0b034628be05fcff",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-20cee8568af31f90",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-21a4f67cc3bb5e92",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-325d2e6b255d7302",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-4fb0705f225792fa",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-665edc21f59ca8c0",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-8518511801ad6630",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-a31213fb6c266be2",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-c15875836fb0077a",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-ede548eacc1d0245",
+   "split": "TEMPORAL_HOLDOUT",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "econ-3c89f3ad1a3c1fe9",
+   "split": "TRAIN",
+   "groupKey": "cohere/north-mini-code"
+  },
+  {
+   "rowId": "econ-d215464d52415850",
+   "split": "TRAIN",
+   "groupKey": "dots-studio/dots-3-note-preview"
+  },
+  {
+   "rowId": "econ-5cff4b0e25f79231",
+   "split": "DEV",
+   "groupKey": "google/gemma-4-26b-a4b"
+  },
+  {
+   "rowId": "role-0c7099ffd411fa11",
+   "split": "DEV",
+   "groupKey": "google/gemma-4-26b-a4b"
+  },
+  {
+   "rowId": "role-49a394f42aac7a4d",
+   "split": "DEV",
+   "groupKey": "google/gemma-4-26b-a4b"
+  },
+  {
+   "rowId": "role-f8741bbc3f3b2892",
+   "split": "DEV",
+   "groupKey": "google/gemma-4-26b-a4b"
+  },
+  {
+   "rowId": "econ-4414b7f608ce33cb",
+   "split": "TRAIN",
+   "groupKey": "google/gemma-4-31b"
+  },
+  {
+   "rowId": "econ-6e7dd1182cc9f709",
+   "split": "TRAIN",
+   "groupKey": "google/lyria-3-clip-preview"
+  },
+  {
+   "rowId": "econ-8de7e99572a13bd5",
+   "split": "TRAIN",
+   "groupKey": "google/lyria-3-pro-preview"
+  },
+  {
+   "rowId": "econ-debc04a683ee263f",
+   "split": "TRAIN",
+   "groupKey": "inclusionai/ling-3.0-flash-fin"
+  },
+  {
+   "rowId": "econ-f45a5d4b4388bc0a",
+   "split": "TRAIN",
+   "groupKey": "inclusionai/ling-3.0-flash-sante"
+  },
+  {
+   "rowId": "econ-8272dde7f387ee12",
+   "split": "TRAIN",
+   "groupKey": "inclusionai/ling-3.0-flash-vl"
+  },
+  {
+   "rowId": "econ-4cccffbbb8a8ed8d",
+   "split": "DEV",
+   "groupKey": "liquid/lfm-2.5-2.6b"
+  },
+  {
+   "rowId": "econ-a66705481a917375",
+   "split": "DEV",
+   "groupKey": "nex-agi/nex-n2.5-mini"
+  },
+  {
+   "rowId": "econ-f3403ef555c82b78",
+   "split": "TRAIN",
+   "groupKey": "nex-agi/nex-n2.5-pro"
+  },
+  {
+   "rowId": "econ-6f9ce6efbc79f478",
+   "split": "PROTECTED_HOLDOUT",
+   "groupKey": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning"
+  },
+  {
+   "rowId": "econ-ad52e85bfb0264c7",
+   "split": "TRAIN",
+   "groupKey": "nvidia/nemotron-3-super-120b-a12b"
+  },
+  {
+   "rowId": "role-5ccf7d7d3a429675",
+   "split": "TRAIN",
+   "groupKey": "nvidia/nemotron-3-super-120b-a12b"
+  },
+  {
+   "rowId": "role-6b6d0f39be98d953",
+   "split": "TRAIN",
+   "groupKey": "nvidia/nemotron-3-super-120b-a12b"
+  },
+  {
+   "rowId": "role-f54125a587bc24f4",
+   "split": "TRAIN",
+   "groupKey": "nvidia/nemotron-3-super-120b-a12b"
+  },
+  {
+   "rowId": "econ-681b7e74751e1227",
+   "split": "DEV",
+   "groupKey": "nvidia/nemotron-3-ultra-550b-a55b"
+  },
+  {
+   "rowId": "econ-24197e3e96c95fe1",
+   "split": "TRAIN",
+   "groupKey": "nvidia/nemotron-3.5-content-safety"
+  },
+  {
+   "rowId": "econ-905b0ed34e923993",
+   "split": "TRAIN",
+   "groupKey": "nvidia/nemotron-3.5-lightning"
+  },
+  {
+   "rowId": "role-3c12da6fc87e46b8",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "role-8ed6d61a591f156b",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "role-c2d92ab0c5ffaf2d",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "econ-d5bbc757d596218c",
+   "split": "PROTECTED_HOLDOUT",
+   "groupKey": "openrouter/free"
+  },
+  {
+   "rowId": "econ-7fba1cb67a422852",
+   "split": "DEV",
+   "groupKey": "poolside/laguna-s-2.1"
+  },
+  {
+   "rowId": "econ-b9ab79dc12305326",
+   "split": "PROTECTED_HOLDOUT",
+   "groupKey": "poolside/laguna-xs-2.1"
+  },
+  {
+   "rowId": "role-a461d86ad7657c25",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen2.5-coder-32b"
+  },
+  {
+   "rowId": "role-d0b3184617199119",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen2.5-coder-32b"
+  },
+  {
+   "rowId": "role-ff92aeca4cea7c51",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen2.5-coder-32b"
+  },
+  {
+   "rowId": "role-6492209d6fc59d66",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3-30b-a3b"
+  },
+  {
+   "rowId": "role-c8df82099c8473ca",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3-30b-a3b"
+  },
+  {
+   "rowId": "role-d194a0d23f869d5a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3-30b-a3b"
+  },
+  {
+   "rowId": "role-594f80abd19cf01b",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.6-27b"
+  },
+  {
+   "rowId": "role-86dd2fbf8ca288ce",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.6-27b"
+  },
+  {
+   "rowId": "role-c9d0939b536839fe",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.6-27b"
+  },
+  {
+   "rowId": "role-22d2ce15779c86c5",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "role-7d5a7c0474cd5bfc",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "role-93855aa24815ff3c",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "role-dd4b5e33ede4ff4f",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "role-f04acddc131eb451",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "role-fb9db521581c6f66",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "econ-1609f7ae45f13611",
+   "split": "TRAIN",
+   "groupKey": "thinkingmachines/inkling"
+  },
+  {
+   "rowId": "econ-3dbe3a371290c7f1",
+   "split": "TRAIN",
+   "groupKey": "thinkingmachines/inkling-small"
+  },
+  {
+   "rowId": "role-70df59a5e0d0555c",
+   "split": "TRAIN",
+   "groupKey": "zai/glm-4.7-flash"
+  },
+  {
+   "rowId": "role-846f542dc86af2eb",
+   "split": "TRAIN",
+   "groupKey": "zai/glm-4.7-flash"
+  },
+  {
+   "rowId": "role-ca61508e4959dbe0",
+   "split": "TRAIN",
+   "groupKey": "zai/glm-4.7-flash"
+  },
+  {
+   "rowId": "route-00db704ce347bccb",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-00e547e2069c0232",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-010ef5ee7c24e385",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-01be4b805bb4c5b0",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-01f94da01a4d8684",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-030dd7b2587ffc42",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-034a13b335083db8",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-03acd0744b5d2c28",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-03ad4742a2c4ffca",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-04b889e9bc47acde",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-0513728f39f2e709",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-06ad362aac14847a",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-077b5a865d657cd8",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-08fa4840cd86ed3f",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-095ce40b027baf97",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-09948f9f56b3b516",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-0a00ebd2003d5a42",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-0a4618bc2eed17fe",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-0a4a22f47bbee8f7",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-0c700e2fbb1d5d64",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-0e905565c0dba9a7",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-11436dd0b93890da",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-12184f5662887b8d",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-12823bb4e46e509a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-1300a35863c9af70",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-1331ab3ca3b284cd",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-145742af367f3850",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-155c3e8cdc7f5a55",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-15f3c1bbc35f9ff1",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-1798800f51a1c8ea",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-18086962806fe2ef",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-181829cc19bee8fc",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-191e2cc07c4eadd6",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-1a5e4ddca35e970a",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-1a764f862ec2a185",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-1b26ff1de01383f3",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-1bd327174c5b49c3",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-1c56e24a2bfcc8f3",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-1c73c0a006a025ad",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-1d21655a568c972e",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-1f25466b0d958906",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-1f6ea02b5a7fbbc4",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-1f826a7ecf0e7167",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-1faa974545e63f1f",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-1fcfd3b5f957788c",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-20451badc452d6ca",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-212c5776ca550221",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-233922e84f8b4061",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-234585761137c568",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-2384f2cfc300cb37",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-23b8aceac9bae4c5",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-25216b19980505ca",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-252f59de4360ce80",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-270a9398362b1e78",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-272c35e6c892cad2",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-27684a663833784d",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-2783a9c5886341e6",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-2861f347d2f4c419",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-2a60fa2550c0d81b",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-2bb7db437b5badf5",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-2c484f141b0d3ba5",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-2c62bec0df230680",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-2d8891b3bfef80cb",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-2e164ef8276e719a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-2e235630bd8c4c55",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-2e74e3169ff3383e",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-3021d5af3f8610eb",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-303214e6d7441eb3",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-3046fe5e483263f9",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-30d9ea006d7ec318",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-30e183385540f777",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-3110c2cc003d378e",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-327b2cdf9befd119",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-327d91974c1666a5",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-328c6587fb49ee67",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-32b770ecafe6f4d4",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-330aa96a602b8c10",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-336618b6f0cd771e",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-33739df8694e2521",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-339def7cbc7dae1d",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-33b091ab5117773a",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-33cbaa79092492d4",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-345d55b09e975d91",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-36678703e73fff53",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-3795c0445e9f8205",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-38886ae02344d33f",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-396c1d4f3351396c",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-39dd8c144c4612e5",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-3b2d9fd0f8eecee8",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-3b8068cf5fcaf246",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-3c5875d54de80dcf",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-3c8e4698e7ad546f",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-3ce66aa6a5abe5cb",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-3d0bd9d357d1e783",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-3d0dd80a35599bb7",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-3e5f363e5832a726",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-3e764b18f877b5a1",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-3f3ceb1719f4200a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-3f84244964408e22",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-400ac047ea3a92a6",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-40fa1eb0a0c4446d",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-4158f88bdad34d23",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-41a4c9324c279b1a",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-41a5a083c0b1cdfa",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-41a93bf8d3ab99b7",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-41b69eae4a7f0b02",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-4294037a052d3f1d",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-42c68fb42e7e86e2",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-4342910b20a806bc",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-4411effb960f789f",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-44a0c7ad250d56b6",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-45ee210666df923b",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-464c1a6fdd3ce611",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-47890a68e61315ec",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-484fbe119d605d91",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-496f09f9c66a4658",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-49abeae2a9ba27f7",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-4a2e62afffb6b4d5",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-4a33ff70d2a38112",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-4b0e96710e0f1f74",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-4b3691f8195c3ea9",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-4b38a0b76acb9956",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-4c1469999e1cc908",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-4cdc47ff10213810",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-4d84437258dbd66b",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-4e829049ceb88046",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-4ef2c76cc2eb5d79",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-522d6ff4950453de",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-52a4311b0d9c68d2",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-53cc886998597bd3",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-5465b29bd08b9e5d",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-54673f915aca9930",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-5477f6d599db5224",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-54dd5572211de745",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-559fd553517c7f33",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-55b3c8624514b954",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-55f8f65f309b999b",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-571adf604f751131",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-58845f1cace9922e",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-58866f149e675d3b",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-58939c21a1b241df",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-58a23003532c431a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-58df6964f7684ac3",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-59f695870f1c5afc",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-5b2b45a3ea77dae6",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-5bb5daa15bb1886d",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-5bc3450cf469841f",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-5c44383155be3497",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-5cadc97aa9ac92c2",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-5cd41f835fe8f225",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-5d236c6a7224899b",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-5e0032d978aedb80",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-617a0037ede4344b",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-61ad12c72a2e930a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-61ce07e43c0cdaa2",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-623534ee2e4ccd85",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-631185127027aaa8",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-645a628267f9f455",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-64c79fc2626d8734",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-64d84030fffe7a08",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-652886da0a1dd396",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-65e129dba0ae7043",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-65fc626232add329",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-665549c287087e7a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-66e144c554ac9127",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-6740bb7905555606",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-676a88517f6f18d0",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-67ecd0bc79d60203",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-68a6c7d15d49e798",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-6a03b9b2334bceea",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-6a95c6461bf50fba",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-6ac7fd8d3158b1cc",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-6b1b37b2a7cf939c",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-6b3dab2899d5d404",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-6c8a90176c05b433",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-6d303284e6bf1841",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-6d6990005f806615",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-6f2de132d1389dbe",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-6f33d2d071dd6c35",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-6fcd498d44b9ad84",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-701b475da6a2ec4a",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-70e62921315f007f",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-71a3828b9eb12a87",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-7242e6627175de08",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-72c347230be367c1",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-730f04bb16f2953a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-7319db5dbf480dd4",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-735524c9bac39a11",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-736753891fdcafea",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-73723b25413a736a",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-742337b87928e50b",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-74cc5052c70c0b66",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-74ea0f934c7e034b",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-78b8903278747606",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-79ab2ff18e510330",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-79e1e3882029c3b3",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-79f7210898d81f87",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-7a53271b3a0576ec",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-7aa817594e22aaef",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-7c0fcb4ac3772e71",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-7c3fa4dc2bd809ae",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-7ccf0a0d04999e39",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-7edcba02932ef04f",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-7f40753ab4513e51",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-7f5d5689a05d7109",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-7f6f22d335e2b0bd",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-7f7b85fa90264962",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-7f7ea21aa4e7f08e",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-7fbb2a3e83d3f7ac",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-7fbc274a3daef942",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-801b207acf31a089",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-803e72eb2fbebf9d",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-80c82e5b183bf1f9",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-81189e93c90b3178",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-81380641c097edf8",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-817b0a2bef535d52",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-822b9e13b794db8c",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-82e79370f101f8d9",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-836e43ce275af16d",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-851179263dd62535",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-8536478ffdf8411f",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-853abb5e1b9e2299",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-86e0a38685ecdc7b",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-870e1482ad641748",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-8754f85e5934c53d",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-87c750046ddc609e",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-8912de4d632d174e",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-8b7e51149b1488c2",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-906939099db55a83",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-9171108185407253",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-91b90ea9ca8a6663",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-925abe49f51f2b01",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-92c49cabc34af087",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-937319f35a11c9a0",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-94e353d09c537f5a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-95c1532d2ca383b3",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-960854dab644f2ba",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-9686d97a3af4261c",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-9710df3638cc2e4c",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-982545f8ffc62af0",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-999fd600b8f90f4e",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-99c5847bf90a8b33",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-99db6a044e0c4af1",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-9a3419c426ae92a1",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-9a6047013b8b7a50",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-9a9cb9bb828c5c87",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-9b18168e1a387dce",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-9bdc7f18723bc73d",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-9bee60da07860c67",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-9c287bf23d441bdf",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-9cad93f121ede0ce",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-9cc97a46002927c2",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-9d4da6a19a04c984",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-9d94e41033cea7f3",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-9ece4720b7fa63ce",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-a0987d291a8ba191",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-a0e22ad96c5c75dd",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-a14b00fbafa0a367",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-a1d59648b10cf6c9",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-a2a4ac440a0b429b",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-a2e0b63a7994b0ef",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-a414e696a73b4c2a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-a46845ddb65a963a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-a5c8f00f55d31b30",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-a7629ac38f8bd7e0",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-a784e21d0ce8c3d1",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-a788255d46d4e377",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-a9015fb725c83440",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-a95ec98a956ba536",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-a97f13c0f5466683",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-aa066430670c9c18",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-aa717225e49a0591",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-aaf3e7b986183bc6",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-af2d5706c7c7d495",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-afdf71b2c244ce75",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-affe1a82dec7d3aa",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-b048325ddea1f19a",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-b2057a4f649bc371",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-b327ebeb1c054532",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-b3939c6b14a319e5",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-b40bad44e38c3c77",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-b4921124b2176265",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-b6abd1c949689936",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-b7886feed90563ac",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-b84f106704812970",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-b8659a73f4275e9b",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-b88c0863435dfae8",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-b9ad5043b672905e",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-ba7ffaff42d93f43",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-bc403de590f55f41",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-bcbbcddb64eb3137",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-bce463b4c2ac37a0",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-bf1a04166517e3eb",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-bfad16529c38c025",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-bfc529706dd5dc4f",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-c0fbefbf8a0c7d31",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-c16d3769957abb8c",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-c173c4ea7853b5c2",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-c1d24bfc6c2fad61",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-c3f4c2b5ee8995f9",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-c47d90e1a6f98ea9",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-c4bce2bb585d6113",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-c4fa9934ac7acf1c",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-c6e427bac8ec6b08",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-c7eee6d3a8b0e0ef",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-c87f18b37944d8c9",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-c8dfcc8b4d0c18c8",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-c95641f2b74b8327",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-c99e4f0ddcdf5df7",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-ca27e60df3c93217",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-cacfee0781b9a8e1",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-cc35a831189467d9",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-cc8047cd224c7df0",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d024baf5aa8fa5de",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d0997c336e6f975c",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d18a47400e76e70c",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d2f294d704fb8679",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d31e73946ad996f4",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d4591faa314c2960",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d45c2dff0c2bbb6c",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d4c2ce72af28a027",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-d507624d8c548c6d",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d54af0472ef408e5",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d561015cabdd2398",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d5769ae37f6163c5",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d68f9cc66d586ec6",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-d6928d97f5ed4636",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-d745464c59e254b0",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d7f096ef856880f2",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d805f9c76bc00487",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d8224ca9ae2d188e",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d82355f36943e58a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d9d8369f5cc24dee",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d9de9dece2062426",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-d9e6864413a3381f",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-da8aaf73ebe7d558",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-dbc3ad72c4a7ab5d",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-ddaa1f67cbe57c2f",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-de18ea32ae1ff09f",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-de5b1b4a188ec4ed",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-de9b719f31df8e00",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-debe4081954187ab",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-df5cbbb46742d043",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-df9e55c14b947bda",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-e031af95970136e3",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-e2f16c28e53e4434",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-e306d3bb22e6b975",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-e34bf80075c0e8f5",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-e3582f4fa0468675",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-e3c1ec7cf21ca2a9",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-e3d1884cf0659325",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-e400c45f04c8bc6e",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-e430cf4a0d4a32e7",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-e636791518b52252",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-e6399816aeb9dd15",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-e6af912f052ec7b5",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-e7102c9bb1f51b78",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-e813af2c394ef71c",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-e81f01923b1221e8",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-e84a7041cc4d5010",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-e8fb54b79df4af27",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-e90cbc9c9ce2256a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-e97ad823630b22a1",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-e9fe4963ab26ecc1",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-ea245c8ed941f09a",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-eb9bc48d277eab56",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-ec0a34f2ac505dda",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-ec2c4804d2211b2f",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-ecbc21ff851cc484",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-edaf37f61574f938",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-edf879e23cd33de2",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-ee5da1fc4a5af9dd",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-eed93e4602239c57",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-ef8dbffeaee46e9b",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-efa803ee0e1ad49d",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-effd571c1fdd5828",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-f09ead41dd4c61a1",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-f0eca4ffb899eb72",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-f12952ef2f860ae8",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-f1c989006cd3cca2",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-f3eec474b7820f74",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-f45a00ffbccd15ff",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-20b"
+  },
+  {
+   "rowId": "route-f4cc5c7f58f781b6",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-f4f7a90c973cf7bf",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-f5891f34fe526f60",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-f5d372562d9264f8",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-f5f7aac669f15629",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-f603179aa006d8ed",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-f64553c57bb6d0b5",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-f6f05ce1d67b873d",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-f82d340b65db3369",
+   "split": "TRAIN",
+   "groupKey": "openai/gpt-oss-120b"
+  },
+  {
+   "rowId": "route-fa3099ddfab265d9",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-fa30e9c4b0381e6b",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-fab9f1578ce947aa",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-fafe96d79f0e7df7",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-fba9d22d9acc4030",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-fc43add006c4e520",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-fcacb0ca037383b0",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-fe037929c31e236a",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  },
+  {
+   "rowId": "route-fe7f8b3229f67c2e",
+   "split": "TRAIN",
+   "groupKey": "qwen/qwen3.8-27b"
+  }
+ ],
+ "counts": {
+  "TRAIN": 438,
+  "DEV": 8,
+  "PROTECTED_HOLDOUT": 3,
+  "TEMPORAL_HOLDOUT": 20
+ },
+ "groupsPerSplit": {
+  "TRAIN": 21,
+  "DEV": 5,
+  "PROTECTED_HOLDOUT": 3,
+  "TEMPORAL_HOLDOUT": 1
+ },
+ "realRowsPerSplit": {
+  "TRAIN": 38,
+  "DEV": 8,
+  "PROTECTED_HOLDOUT": 3,
+  "TEMPORAL_HOLDOUT": 20
+ },
+ "leakedGroups": [],
+ "sha256": "6e4f4c81024b8988a172d32d214d493ed92d294ebd93e4b1dbb722638ff0418d"
+}
