@@ -2308,14 +2308,27 @@ export class AgentRuntime {
   }
 
   /**
-   * Cancels all active work and waits for the associated execution loops to observe abort before
-   * their persistence backing store is closed. A server restart then recovers from durable state
-   * instead of letting detached loops write into a finalized database.
+   * Stops cooperative turns cleanly while leaving an abort-ignoring provider stream as durable
+   * interrupted work for restart recovery. The execution path observes abort before any later
+   * persistence write, so an uncooperative stream cannot write into closed persistence.
    */
   async shutdown(reason = "Server shutting down"): Promise<void> {
-    const active = this.getActiveTurns();
-    await Promise.all(active.map((turn) => this.cancelTurn(turn.turnId, reason).catch(() => undefined)));
-    await Promise.allSettled(Array.from(this.activeExecutions.values()));
+    const executions = Array.from(this.activeExecutions.entries());
+    for (const [turnId] of executions) this.abortControllers.get(turnId)?.abort();
+    if (executions.length === 0) return;
+
+    const settled = new Set<string>();
+    const waitForCooperativeTurns = Promise.all(executions.map(async ([turnId, execution]) => {
+      await execution.catch(() => undefined);
+      settled.add(turnId);
+    }));
+    let timeout: NodeJS.Timeout | undefined;
+    await Promise.race([
+      waitForCooperativeTurns,
+      new Promise<void>((resolve) => { timeout = setTimeout(resolve, 1_000); }),
+    ]);
+    if (timeout) clearTimeout(timeout);
+    await Promise.all(Array.from(settled).map((turnId) => this.cancelTurn(turnId, reason).catch(() => undefined)));
   }
 
   hasPendingApprovals(): boolean {

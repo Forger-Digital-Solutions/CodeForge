@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "packageCommand": "npm.cmd run pack --workspace=codeforge-desktop",
+  "packageResult": "completed",
+  "artifact": "apps/desktop/release/win-unpacked/CodeForge.exe",
+  "signing": "No signing information configured; Electron Builder skipped signing.",
+  "smokeCommand": "npm.cmd run smoke:all --workspace=codeforge-desktop",
+  "smokeResult": "blocked",
+  "failure": "Renderer process launch-failed with exit code 49 while loading the packaged renderer.",
+  "assetCheck": "The expected renderer index and assets were confirmed inside app.asar.",
+  "rule": "Renderer sandbox and desktop security settings were not weakened to force a pass."
+}

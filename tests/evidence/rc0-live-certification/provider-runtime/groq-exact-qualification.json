@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16T12:38:08.481Z",
+  "providerId": "groq",
+  "modelId": "openai/gpt-oss-20b",
+  "purpose": "One bounded live free-tier qualification; no fallback providers are constructed.",
+  "credential": "GROQ_API_KEY presence checked only; value never read into evidence or output.",
+  "maxTokens": 128,
+  "result": "completed",
+  "forgeZeroEligible": true,
+  "runtime": {
+    "textDeltas": 4,
+    "finish": true,
+    "usage": {
+      "inputTokens": 79,
+      "outputTokens": 38,
+      "totalTokens": 117
+    },
+    "eventTypes": [
+      "text_delta",
+      "usage",
+      "finish"
+    ]
+  }
+}

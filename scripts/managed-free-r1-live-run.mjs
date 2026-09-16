@@ -5,7 +5,7 @@
 //              ├─ evidence/capsules → SWE Writer (worktree) → Reviewer → Verification → Completion
 //   Explore B ─┘
 //
-//   node scripts/managed-free-r1-live-run.mjs [--out=<file>] [--keep]
+//   node scripts/managed-free-r1-live-run.mjs [--out=<file>] [--keep] [--groq-only]
 //
 // Real provider calls only (Groq / Cloudflare Workers AI operator credentials from the
 // environment; values are never printed or persisted). Worker records, Task Capsules, router
@@ -42,6 +42,8 @@ const option = (name, fallback) => {
 };
 const out = option("out", "docs/evidence/managed-free-r1-live-run.json");
 const keep = args.includes("--keep");
+const groqOnly = args.includes("--groq-only");
+const timeoutMs = Number(option("timeout-ms", "420000"));
 
 function fleetRecord(providerId, modelId, overrides = {}) {
   return createGenericFreeRecord({
@@ -53,7 +55,10 @@ function fleetRecord(providerId, modelId, overrides = {}) {
 }
 
 async function main() {
-  for (const name of ["GROQ_API_KEY", "CLOUDFLARE_API_KEY", "CLOUDFLARE_ACCOUNT_ID"]) {
+  const requiredCredentials = groqOnly
+    ? ["GROQ_API_KEY"]
+    : ["GROQ_API_KEY", "CLOUDFLARE_API_KEY", "CLOUDFLARE_ACCOUNT_ID"];
+  for (const name of requiredCredentials) {
     if (!process.env[name] || process.env[name].trim().length === 0) {
       throw new Error(`Operator credential ${name} is required for the live R1 run (presence only; never printed)`);
     }
@@ -77,17 +82,17 @@ async function main() {
 
   const catalog = new InMemoryProviderCatalog();
   const groq = createGroqAdapter({ apiKey: process.env.GROQ_API_KEY, timeoutMs: 120_000 });
-  const cloudflare = createCloudflareAdapter({
+  const cloudflare = groqOnly ? null : createCloudflareAdapter({
     apiKey: process.env.CLOUDFLARE_API_KEY ?? process.env.CLOUDFLARE_API_TOKEN,
     accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
     timeoutMs: 120_000,
   });
   catalog.register(governor.wrapAdapter(groq));
-  catalog.register(governor.wrapAdapter(cloudflare));
+  if (cloudflare) catalog.register(governor.wrapAdapter(cloudflare));
 
   // Evidence-driven quota check: Cloudflare has 10,000 daily neurons on free tier
   let cfAvailable = false;
-  try {
+  if (cloudflare) try {
     const probe = await cloudflare.chat({
       model: "@cf/openai/gpt-oss-120b",
       messages: [{ role: "user", content: "ping" }],
@@ -142,12 +147,17 @@ async function main() {
   await mkdir(join(repoDir, "src"), { recursive: true });
   await mkdir(join(repoDir, "test"), { recursive: true });
   await writeFile(join(repoDir, "src", "math.mjs"), "export function multiply(a, b) { return 0; }\n\nexport function add(a, b) { return a + b; }\n", "utf-8");
-  await writeFile(join(repoDir, "src", "format.mjs"), "export function format(value) { return `result: \${value}`; }\n", "utf-8");
+  await writeFile(join(repoDir, "src", "format.mjs"), "export function format(value) { return `value: \${value}`; }\n", "utf-8");
   await writeFile(join(repoDir, "src", "stats.mjs"), "export function mean(values) { if (values.length === 0) return 0; return values.reduce((a, b) => a + b, 0) / values.length; }\n", "utf-8");
   await writeFile(join(repoDir, "src", "index.mjs"), "export { multiply, add } from './math.mjs';\nexport { format } from './format.mjs';\nexport { mean } from './stats.mjs';\n", "utf-8");
   await writeFile(
     join(repoDir, "test", "math.test.mjs"),
     "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { multiply } from '../src/math.mjs';\ntest('multiply', () => assert.equal(multiply(6, 7), 42));\n",
+    "utf-8",
+  );
+  await writeFile(
+    join(repoDir, "test", "format.test.mjs"),
+    "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { format } from '../src/format.mjs';\ntest('format', () => assert.equal(format(42), 'result: 42'));\n",
     "utf-8",
   );
   await writeFile(
@@ -183,13 +193,21 @@ async function main() {
 
   const adapter = createWorkspaceEventAdapter({ sessionId, eventStore, persistence });
   const startedAt = new Date().toISOString();
-  const result = await orchestrator.startRun({
-    sessionId,
-    workspacePath: repoDir,
-    goal: "Make the failing test test/math.test.mjs pass by fixing the multiply function in src/math.mjs. Do not modify the tests.",
-    verificationCommands: ["node --test test/math.test.mjs"],
-    adapter,
-  });
+  const runController = new AbortController();
+  const timeout = setTimeout(() => runController.abort(), timeoutMs);
+  let result;
+  try {
+    result = await orchestrator.startRun({
+      sessionId,
+      workspacePath: repoDir,
+      goal: "Inspect the repository and make both failing tests pass by fixing multiply in src/math.mjs and the public output format in src/format.mjs. Do not modify the tests.",
+      verificationCommands: ["node --test test/math.test.mjs test/format.test.mjs"],
+      adapter,
+      signal: runController.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
   const completedAt = new Date().toISOString();
 
   const workers = (await persistence.getWorkItemsByKind("subagent_run")).map((item) => item.kind === "subagent_run" ? {
@@ -226,7 +244,7 @@ async function main() {
   const finalMath = await (await import("node:fs/promises")).readFile(join(repoDir, "src", "math.mjs"), "utf-8").catch(() => null);
   let verificationOutput = null;
   try {
-    const probe = await execFile("node", ["--test", "test/math.test.mjs"], { cwd: repoDir });
+    const probe = await execFile("node", ["--test", "test/math.test.mjs", "test/format.test.mjs"], { cwd: repoDir });
     verificationOutput = { ok: true, stdout: `${probe.stdout}`.slice(0, 2_000) };
   } catch (err) {
     verificationOutput = { ok: false, stdout: `${err.stdout ?? ""}`.slice(0, 2_000) };
@@ -237,7 +255,7 @@ async function main() {
     generatedAt: completedAt,
     startedAt,
     purpose: "R1 live SubAgent run over the Managed-Free fleet (real external model calls; credentials never recorded)",
-    goal: "Implement the multiply function in math.mjs so that the focused test test/math.test.mjs passes.",
+    goal: "Implement the multiply function and repair the formatter so the focused math and format tests pass.",
     runStatus: result.status,
     runSummary: result.summary,
     changedFiles: result.changedFiles,
@@ -253,9 +271,11 @@ async function main() {
     independentVerificationProbe: verificationOutput,
     governorCapacityReports: {
       groq: governor.getCapacityReport("groq"),
-      "cloudflare-workers-ai": governor.getCapacityReport("cloudflare-workers-ai"),
+      "cloudflare-workers-ai": cloudflare ? governor.getCapacityReport("cloudflare-workers-ai") : "not invoked (--groq-only)",
     },
-    providerCredentialsUsed: ["GROQ_API_KEY (present)", "CLOUDFLARE_API_KEY (present)", "CLOUDFLARE_ACCOUNT_ID (present)"],
+    providerCredentialsUsed: groqOnly
+      ? ["GROQ_API_KEY (present)"]
+      : ["GROQ_API_KEY (present)", "CLOUDFLARE_API_KEY (present)", "CLOUDFLARE_ACCOUNT_ID (present)"],
   };
 
   const target = resolve(out);

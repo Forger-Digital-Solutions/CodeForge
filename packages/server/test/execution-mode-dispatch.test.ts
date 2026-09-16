@@ -37,6 +37,7 @@ describe("CF-12 explicit execution-mode dispatch", () => {
       getTurn: (turnId: string) => activeTurns.find((turn) => turn.turnId === turnId),
       startTurn: chatStart,
       steerTurn,
+      shutdown: async () => undefined,
     });
     (server as unknown as { workflowService: { startWorkflow: typeof workflowStart } }).workflowService.startWorkflow = workflowStart;
 
@@ -182,6 +183,7 @@ describe("CF-12 explicit execution-mode dispatch", () => {
       getTurn: (turnId: string) => activeTurns.find((turn) => turn.turnId === turnId),
       startTurn: chatStart,
       steerTurn,
+      shutdown: async () => undefined,
     });
     const result = await post(port, {
       sessionId: "steering",

@@ -69,6 +69,9 @@ export default defineConfig({
       "tests/**/*.test.ts",
     ],
     exclude: [
+      // Certification archives preserve intentionally failing fixture repositories. They are
+      // evidence, not part of the active source test suite.
+      "tests/evidence/**",
       // VS Code test-electron tests must run separately (require real VS Code instance)
       "packages/vscode/src/test/**/*",
       "packages/vscode/test/suite/**/*",

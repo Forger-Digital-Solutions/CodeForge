@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16T00:00:00.000Z",
+  "classification": "nonsecret browser-observed account evidence",
+  "rules": [
+    "No credentials, account identifiers, email addresses, screenshots, or conversation data are recorded.",
+    "No account settings, billing settings, credit settings, or provider limits were changed."
+  ],
+  "providers": {
+    "groq": {
+      "source": "BROWSER_OBSERVED",
+      "plan": "Free",
+      "project": "Default Project",
+      "projectLimitMode": "inherits organization base limits; no custom project limits observed",
+      "allowedModels": [
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
+        "openai/gpt-oss-safeguard-20b",
+        "qwen/qwen3.8-27b"
+      ],
+      "chatCompletionLimits": {
+        "openai/gpt-oss-120b": { "rpm": 30, "rpd": 1000, "tpm": 8000, "tpd": 200000 },
+        "openai/gpt-oss-20b": { "rpm": 30, "rpd": 1000, "tpm": 8000, "tpd": 200000 },
+        "qwen/qwen3.8-27b": { "rpm": 30, "rpd": 1000, "tpm": 8000, "tpd": 200000 }
+      },
+      "interpretation": "Limits are organization-level base limits, not assumed additive independent quotas."
+    },
+    "cloudflare-workers-ai": {
+      "source": "BROWSER_OBSERVED",
+      "plan": "Workers Free active",
+      "paymentMethod": "No payment method on file",
+      "dailyUsage": "8.47k/10k neurons used; resets at 00:00 UTC",
+      "decision": "No live inference was sent because remaining displayed free capacity is limited."
+    },
+    "openrouter": {
+      "source": "BROWSER_OBSERVED",
+      "payAsYouGoBalance": "$10.00",
+      "exactRoute": "nvidia/nemotron-3-super-120b-a12b:free",
+      "exactRoutePrice": "Free",
+      "availability": { "threeDay": "81.62%", "last24Hours": "79.92%" },
+      "decision": "No request was sent and no balance was spent; the exact free route is retained as degraded external evidence, not a healthy qualification route."
+    },
+    "zai-and-samba": {
+      "source": "UNKNOWN",
+      "decision": "No existing authenticated browser session was available for review."
+    }
+  }
+}

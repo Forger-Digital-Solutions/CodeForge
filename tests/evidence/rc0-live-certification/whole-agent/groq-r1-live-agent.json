@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-16T12:50:00.000Z",
+  "providerId": "groq",
+  "modelId": "openai/gpt-oss-20b",
+  "task": "Disposable two-file repair with real repository exploration, isolated worktree, reviewer, and focused node tests.",
+  "providerConstruction": "Groq only; Cloudflare and OpenRouter adapters were not constructed.",
+  "attempts": [
+    {
+      "timeout": "operator interrupted after an unbounded wait",
+      "result": "blocked",
+      "reason": "The orchestration path did not unwind after cancellation."
+    },
+    {
+      "timeoutMs": 420000,
+      "result": "blocked",
+      "reason": "The provider stream did not unwind after the bounded cancellation signal."
+    }
+  ],
+  "certificationStatus": "blocked",
+  "rule": "No ForgeVerify or completion-gate pass is asserted without a terminal whole-agent run."
+}

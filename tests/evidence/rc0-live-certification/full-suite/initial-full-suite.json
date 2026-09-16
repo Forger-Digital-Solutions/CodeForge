@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "command": "npm.cmd test",
+  "durationSeconds": 313.2,
+  "testFiles": { "passed": 330, "failed": 5, "skipped": 7 },
+  "tests": { "passed": 2498, "failed": 5, "skipped": 36 },
+  "failures": [
+    "FG-11 source-state certificate drift",
+    "FG-12E provenance depends on the stale FG-11 source-state certificate",
+    "CF-17 recovery timeout and teardown cascade (fixed after this aggregate run)",
+    "CF-12 runtime shutdown mock contract (fixed after this aggregate run)",
+    "Archived R3 fixture was collected as a live test (excluded after this aggregate run)"
+  ],
+  "status": "not green"
+}
