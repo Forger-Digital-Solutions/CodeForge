@@ -17,7 +17,7 @@ import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 import { createAutonomousRunOrchestrator } from "../src/autonomous-orchestrator.js";
 import { createWorkspaceService } from "../src/workspace-service.js";
 import { createSubagentManager } from "../src/subagent-manager.js";
-import { createAgentRuntime } from "../src/agent-runtime.js";
+import { createAgentRuntime, type AgentRuntime, type AgentRuntimeRequest, type AgentRuntimeResult } from "../src/agent-runtime.js";
 import { createWorkspaceEventAdapter } from "../src/workspace-event-adapter.js";
 
 const execFile = promisify(execFileCallback);
@@ -257,6 +257,60 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
     expect(eventStore.getAll().filter((event) => event.type === "subagent.lifecycle")).toHaveLength(20);
     expect(provider.maxExplorerConcurrency).toBeGreaterThanOrEqual(2);
   });
+
+  it("reserves the Planner phase when R1 explorers exceed their bounded phase ceiling", async () => {
+    let plannerStarted = false;
+    const runtime = {
+      executeAgentRun: async (request: AgentRuntimeRequest): Promise<AgentRuntimeResult> => {
+        if (request.role === "explorer") {
+          await new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(resolve, 100);
+            const onAbort = () => {
+              clearTimeout(timer);
+              reject(new Error("aborted"));
+            };
+            request.signal?.addEventListener("abort", onAbort, { once: true });
+            if (request.signal?.aborted) onAbort();
+          });
+        }
+        if (request.role === "planner") plannerStarted = true;
+        return {
+          status: "completed",
+          summary: request.role === "planner" ? "not authorized JSON" : "exploration complete",
+          findings: [],
+          evidence: [],
+          toolExecutions: [],
+          usage: { inputTokens: 0, outputTokens: 0, requestCount: 1, toolCount: 0 },
+          stopReason: "completed",
+          filesChanged: [],
+        };
+      },
+    } as unknown as AgentRuntime;
+    const workspaceService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
+    const subagentManager = createSubagentManager({ persistence, workspaceService, agentRuntime: runtime, r1Enabled: true });
+    const orchestrator = createAutonomousRunOrchestrator({
+      workspaceService,
+      persistence,
+      agentRuntime: runtime,
+      subagentManager,
+      subagentsR1Enabled: true,
+    });
+
+    const result = await orchestrator.startRun({
+      sessionId: "session-r1-phase-budget",
+      workspacePath: repoDir,
+      goal: "Plan a bounded change",
+      r1PhaseTimeoutMs: { explorer: 20, planner: 20 },
+    });
+
+    expect(plannerStarted).toBe(true);
+    expect(result.status).toBe("blocked");
+    expect(result.integration.reason).toBe("AGENT_INVALID_STRUCTURED_OUTPUT");
+    const workers = await persistence.getWorkItemsByKind("subagent_run");
+    expect(workers.filter((worker) => worker.kind === "subagent_run" && worker.agentId === "explorer")).toHaveLength(2);
+    expect(workers.filter((worker) => worker.kind === "subagent_run" && worker.agentId === "explorer").every((worker) => worker.status === "cancelled")).toBe(true);
+    expect(workers.find((worker) => worker.kind === "subagent_run" && worker.agentId === "planner")?.budget.wallTimeMs).toBe(20);
+  }, 10_000);
 
   it("rejects a cyclic production Planner graph before the Coder starts", async () => {
     const catalog = new InMemoryProviderCatalog();

@@ -47,6 +47,15 @@ import type { AgentRuntime } from "./agent-runtime.js";
 
 export const MAX_REVIEW_REVISION_ROUNDS = 2;
 
+/**
+ * R1 phase ceilings reserve time for planning and execution. Explorers are read-only evidence
+ * producers; a paced provider must not be allowed to consume the parent run's entire deadline
+ * before the Planner gets a chance to produce an authorized graph. These are watchdog ceilings,
+ * so the normal worker watchdog remains extension-aware outside this phase contract.
+ */
+export const R1_EXPLORER_TIMEOUT_MS = 90_000;
+export const R1_PLANNER_TIMEOUT_MS = 90_000;
+
 export type AutonomousRunStatus =
   | "created"
   | "exploring"
@@ -146,6 +155,8 @@ export interface OrchestratorRunOptions {
   verificationTimeoutMs?: number;
   adapter?: WorkspaceEventAdapter;
   signal?: AbortSignal;
+  /** Test/operator seam for proving the R1 phase contract without waiting 90 seconds. */
+  r1PhaseTimeoutMs?: { explorer?: number; planner?: number };
   /** Custom coder executor function for testing or specialized model execution */
   coderExecutor?: (worktreePath: string, goal: string, reviewFeedback?: string) => Promise<{ success: boolean; filesChanged: string[]; output?: string }>;
 }
@@ -363,6 +374,8 @@ export class AutonomousRunOrchestrator {
    */
   async startRun(options: OrchestratorRunOptions): Promise<AutonomousRunResult> {
     const { sessionId, workspacePath, goal, verificationCommands = [], verificationTimeoutMs, adapter, signal, coderExecutor } = options;
+    const r1ExplorerTimeoutMs = options.r1PhaseTimeoutMs?.explorer ?? R1_EXPLORER_TIMEOUT_MS;
+    const r1PlannerTimeoutMs = options.r1PhaseTimeoutMs?.planner ?? R1_PLANNER_TIMEOUT_MS;
 
     const runId = `run-${crypto.randomUUID()}`;
     const controller = new AbortController();
@@ -459,8 +472,8 @@ export class AutonomousRunOrchestrator {
         adapter,
         signal: controller.signal,
         structuredOutput: "explorer",
+        ...(this.subagentsR1Enabled ? { timeoutMs: r1ExplorerTimeoutMs, watchdogMaxExtensions: 0 } : {}),
       })));
-      const explorerResult = explorerResults[0]!;
 
       for (const result of explorerResults) {
         if (result.findings) allFindings.push(...result.findings);
@@ -474,17 +487,27 @@ export class AutonomousRunOrchestrator {
       const runAgentRuntime = this.subagentsR1Enabled ? this.runtimeForSession(sessionId) : this.agentRuntime;
       if (runAgentRuntime) {
         counters.childrenSpawned++;
+        const explorerEvidence = explorerResults.flatMap((result) => result.evidence ?? []);
+        const explorerFindings = explorerResults.flatMap((result) => result.findings ?? []);
+        const incompleteExplorerRoles = explorerResults
+          .map((result, index) => result.status === "completed" ? undefined : `Explorer ${index + 1} ${result.status}`)
+          .filter((status): status is string => status !== undefined);
+        const explorationContext = incompleteExplorerRoles.length > 0
+          ? `R1 exploration was bounded and incomplete: ${incompleteExplorerRoles.join(", ")}. Treat missing evidence as unknown and continue with only the evidence supplied below.`
+          : "R1 exploration completed; use only the evidence supplied below.";
         const plannerResult = await this.subagentManager.spawnChildAgent({
           parentRunId: runId,
           sessionId,
           agentId: "planner",
           task: `Produce the minimal task graph for goal: ${goal}`,
           workspacePath: targetWs.rootPath,
-          explorerEvidence: explorerResult.evidence,
-          findings: explorerResult.findings,
+          explorerEvidence,
+          findings: explorerFindings,
+          contextSummary: explorationContext,
           adapter,
           signal: controller.signal,
           structuredOutput: "planner",
+          ...(this.subagentsR1Enabled ? { timeoutMs: r1PlannerTimeoutMs, watchdogMaxExtensions: 0 } : {}),
         });
         const plan = this.authorizedPlannerResult(plannerResult);
         if (!plan) {

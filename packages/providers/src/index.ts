@@ -430,6 +430,8 @@ export { AnthropicAdapter, type AnthropicOptions, createAnthropicAdapter } from 
 export {
   createZaiAdapter,
   createGroqAdapter,
+  createMistralAdapter,
+  createCerebrasAdapter,
   createGeminiAdapter,
   createCloudflareAdapter,
   createOpenAIAdapter,

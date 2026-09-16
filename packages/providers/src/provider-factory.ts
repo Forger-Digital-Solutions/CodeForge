@@ -11,6 +11,8 @@ export interface ProviderFactoryOptions {
   credentialStore?: CredentialStore;
   apiKey?: string;
   timeoutMs?: number;
+  /** Injectable fetch for deterministic provider contract tests and custom runtimes. */
+  fetchFn?: typeof fetch;
   /** Receives status + rate-limit headers for every upstream response (quota tracking). */
   onResponse?: ProviderResponseObserver;
   /** Cloudflare Workers AI daily-neuron guard. The Cloudflare factory fails closed when omitted. */
@@ -52,6 +54,26 @@ export function createGroqAdapter(opts: ProviderFactoryOptions = {}): OpenAIComp
     providerId: "groq",
     baseUrl: "https://api.groq.com/openai/v1",
     ...common(opts),
+  });
+}
+
+/** Mistral API (OpenAI-compatible). Preview, beta, and labs entries are not normal production routes. */
+export function createMistralAdapter(opts: ProviderFactoryOptions = {}): OpenAICompatibleAdapter {
+  return new OpenAICompatibleAdapter({
+    providerId: "mistral",
+    baseUrl: "https://api.mistral.ai/v1",
+    ...common(opts),
+    mapModel: mapNormalProductionModel,
+  });
+}
+
+/** Cerebras API (OpenAI-compatible). Only live normal-production catalog entries are surfaced. */
+export function createCerebrasAdapter(opts: ProviderFactoryOptions = {}): OpenAICompatibleAdapter {
+  return new OpenAICompatibleAdapter({
+    providerId: "cerebras",
+    baseUrl: "https://api.cerebras.ai/v1",
+    ...common(opts),
+    mapModel: mapNormalProductionModel,
   });
 }
 
@@ -102,11 +124,12 @@ export function createOpenAIAdapter(opts: ProviderFactoryOptions = {}): OpenAICo
   });
 }
 
-function common(opts: ProviderFactoryOptions): Pick<OpenAICompatibleConfig, "credentialStore" | "apiKey" | "timeoutMs" | "onResponse" | "cloudflareNeuronGuard" | "geminiFreePolicyGate" | "geminiServiceTier"> {
+function common(opts: ProviderFactoryOptions): Pick<OpenAICompatibleConfig, "credentialStore" | "apiKey" | "timeoutMs" | "fetchFn" | "onResponse" | "cloudflareNeuronGuard" | "geminiFreePolicyGate" | "geminiServiceTier"> {
   return {
     credentialStore: opts.credentialStore,
     apiKey: opts.apiKey,
     timeoutMs: opts.timeoutMs,
+    fetchFn: opts.fetchFn,
     onResponse: opts.onResponse,
     cloudflareNeuronGuard: opts.cloudflareNeuronGuard,
     geminiFreePolicyGate: opts.geminiFreePolicyGate,
@@ -139,6 +162,27 @@ function mapCloudflareModel(raw: unknown): ProviderModel | null {
     modelId: m.id,
     displayName: m.id.replace(/^@cf\//, ""),
     capabilities: { text: true, coding: true, toolCalling: true, vision: /vision|llava/i.test(m.id), structuredOutput: true, longContext: false },
+    isFree: false,
+    freeStatus: "unknown",
+  };
+}
+
+/**
+ * Normal-production filter shared by providers whose catalogs include preview/beta/labs routes.
+ * Availability and pricing still come from the live catalog and ForgeZero; this only prevents
+ * clearly non-production labels from entering the common chat-model contract.
+ */
+function mapNormalProductionModel(raw: unknown): ProviderModel | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const model = raw as Record<string, unknown>;
+  const id = typeof model.id === "string" ? model.id : "";
+  const name = typeof model.name === "string" ? model.name : "";
+  if (!id || /(?:preview|beta|labs|experimental|deprecated)/i.test(`${id} ${name}`)) return null;
+  return {
+    modelId: id,
+    displayName: name || id,
+    contextWindow: typeof model.context_length === "number" ? model.context_length : undefined,
+    capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: false },
     isFree: false,
     freeStatus: "unknown",
   };
@@ -179,6 +223,7 @@ export function createProviderAdapterFromDefinition(def: ProviderTransportDefini
         },
       };
       if (def.id === "google") cfg.mapModel = mapGeminiModel;
+      if (def.id === "mistral" || def.id === "cerebras") cfg.mapModel = mapNormalProductionModel;
       if (def.id === "cloudflare-workers-ai") {
         cfg.mapModel = mapCloudflareModel;
         cfg.cloudflareNeuronGuard = opts.cloudflareNeuronGuard;
@@ -208,6 +253,10 @@ export function createProviderAdapterById(providerId: string, opts: ProviderFact
       return createZaiAdapter(opts);
     case "groq":
       return createGroqAdapter(opts);
+    case "mistral":
+      return createMistralAdapter(opts);
+    case "cerebras":
+      return createCerebrasAdapter(opts);
     case "google":
       return createGeminiAdapter(opts);
     case "cloudflare-workers-ai":

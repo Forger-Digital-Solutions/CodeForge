@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { OpenAICompatibleAdapter } from "../src/openai-compatible.js";
-import { createCloudflareAdapter, createZaiAdapter } from "../src/provider-factory.js";
+import { createCerebrasAdapter, createCloudflareAdapter, createMistralAdapter, createProviderAdapterById, createZaiAdapter } from "../src/provider-factory.js";
 import { ProviderError } from "../src/index.js";
 import type { StreamEvent } from "../src/chat-types.js";
 
@@ -95,6 +95,27 @@ describe("OpenAICompatibleAdapter transport", () => {
 
   it("Z.AI factory produces a zai-id adapter", () => {
     expect(createZaiAdapter({ apiKey: "k" }).providerId).toBe("zai");
+  });
+
+  it.each([
+    ["mistral", createMistralAdapter],
+    ["cerebras", createCerebrasAdapter],
+  ])("%s factory uses the common production catalog contract", async (providerId, factory) => {
+    const fetchFn = (async () => jsonResponse({ data: [
+      { id: `${providerId}-large`, name: "Large", context_length: 128000 },
+      { id: `${providerId}-preview`, name: "Preview" },
+      { id: `${providerId}-beta`, name: "Beta" },
+    ] })) as unknown as typeof fetch;
+    const adapter = factory({ apiKey: "k", fetchFn });
+    expect(adapter.providerId).toBe(providerId);
+    await expect(adapter.listModels()).resolves.toEqual([
+      expect.objectContaining({ modelId: `${providerId}-large`, contextWindow: 128000 }),
+    ]);
+  });
+
+  it("creates Mistral and Cerebras adapters through the provider-id factory", () => {
+    expect(createProviderAdapterById("mistral", { apiKey: "k" })?.providerId).toBe("mistral");
+    expect(createProviderAdapterById("cerebras", { apiKey: "k" })?.providerId).toBe("cerebras");
   });
 
   it("Cloudflare adapter interpolates ${CLOUDFLARE_ACCOUNT_ID} into the base URL", async () => {

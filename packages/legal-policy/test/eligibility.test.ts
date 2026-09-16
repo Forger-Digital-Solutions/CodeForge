@@ -131,6 +131,28 @@ describe("evaluateRouteEligibility — data use disclosure (R1 spec §52)", () =
     });
     expect(decision.disclosure).toBeNull();
   });
+
+  it("gates Mistral's account-dependent free allowance with an explicit policy record", () => {
+    const decision = evaluateRouteEligibility({
+      providerId: "mistral",
+      architecture: "BYOK",
+      serviceTier: "FREE",
+      region: REGION_UNKNOWN,
+    });
+    expect(decision.decision).toBe("ALLOW");
+    expect(decision.reasonCode).toBe("MISTRAL_FREE_ALLOWANCE_ACCOUNT_ATTESTATION");
+    expect(decision.disclosure?.confidentialDataPolicy).toBe("AVOID_SUBMISSION_RECOMMENDED");
+  });
+
+  it("keeps Cerebras promotional credit out of Managed-Free while permitting explicit paid BYOK", () => {
+    const free = evaluateRouteEligibility({ providerId: "cerebras", architecture: "BYOK", serviceTier: "FREE", region: REGION_UNKNOWN });
+    expect(free.decision).toBe("DENY");
+    expect(free.reasonCode).toBe("CEREBRAS_PROMOTIONAL_CREDIT_NOT_FREE_ROUTING");
+
+    const paid = evaluateRouteEligibility({ providerId: "cerebras", architecture: "BYOK", serviceTier: "PAID", region: REGION_UNKNOWN });
+    expect(paid.decision).toBe("ALLOW");
+    expect(paid.reasonCode).toBe("CEREBRAS_BYOK_PAID_OR_TRIAL_ONLY");
+  });
 });
 
 describe("evaluateRouteEligibility — provider policy change / freshness (R1 spec §49-50)", () => {

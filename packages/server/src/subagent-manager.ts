@@ -12,6 +12,7 @@ import {
   type AgentUsage,
   type AgentFinding,
   type AgentEvidenceRef,
+  type AgentExecutionBudget,
   type StructuredOutputKind,
 } from "@codeforge/agent";
 import type {
@@ -52,6 +53,12 @@ export interface SpawnChildOptions {
   taskPlan?: string;
   reviewFeedback?: string;
   structuredOutput?: StructuredOutputKind;
+  /** Caller-supplied role budget; values never exceed the caller's explicit ceiling. */
+  executionBudget?: AgentExecutionBudget;
+  /** Per-child watchdog base budget. This is a phase ceiling when supplied by the orchestrator. */
+  timeoutMs?: number;
+  /** Phase-scoped watchdog extensions. Zero means the child must converge within timeoutMs. */
+  watchdogMaxExtensions?: number;
   metadata?: Record<string, unknown>;
   taskCapsule?: TaskCapsule;
   workspaceKind?: "local" | "git-worktree";
@@ -138,7 +145,7 @@ export class SubagentManager {
     return { inputTokens: 0, outputTokens: 0, requestCount: 0, toolCount: 0 };
   }
 
-  private executionBudget(agentId: string) {
+  private executionBudget(agentId: string, override?: AgentExecutionBudget): AgentExecutionBudget {
     const budget = DEFAULT_EXECUTION_BUDGETS[agentId] ?? DEFAULT_EXECUTION_BUDGETS.default!;
     return {
       maxModelTurns: budget.maxModelTurns,
@@ -147,7 +154,7 @@ export class SubagentManager {
       ...(budget.maxCommandExecutions !== undefined ? { maxCommandExecutions: budget.maxCommandExecutions } : {}),
       maxContextTokens: budget.maxContextTokens,
       ...(budget.maxOutputTokens !== undefined ? { maxOutputTokens: budget.maxOutputTokens } : {}),
-      wallTimeMs: BUILT_IN_AGENTS[agentId]?.budget.timeoutMs ?? 60_000,
+      ...override,
     };
   }
 
@@ -245,7 +252,13 @@ export class SubagentManager {
         ...(options.workspaceBranch ? { branch: options.workspaceBranch } : {}),
       },
       workspacePath: child.workspacePath,
-      budget: this.executionBudget(def.id),
+      budget: {
+        ...this.executionBudget(def.id, options.executionBudget),
+        wallTimeMs: options.timeoutMs
+          ?? (options.metadata?.timeoutMs as number | undefined)
+          ?? BUILT_IN_AGENTS[def.id]?.budget.timeoutMs
+          ?? 60_000,
+      },
       telemetry: this.emptyTelemetry(),
       artifacts: [],
       createdAt: now,
@@ -334,7 +347,13 @@ export class SubagentManager {
     // (model turns, tool executions, journal) went quiet past the window, or the bounded
     // extension ceiling is exhausted. A worker being paced by shared provider capacity keeps
     // earning extensions; a genuinely dead worker is killed at the first quiet check.
-    const childTimeoutMs = (options.metadata?.timeoutMs as number | undefined) || def.budget.timeoutMs || 180_000;
+    const childTimeoutMs = options.timeoutMs
+      ?? (options.metadata?.timeoutMs as number | undefined)
+      ?? def.budget.timeoutMs
+      ?? 180_000;
+    const watchdogMaxExtensions = options.watchdogMaxExtensions
+      ?? (options.metadata?.watchdogMaxExtensions as number | undefined)
+      ?? this.watchdogMaxExtensions;
     let watchdogExtensions = 0;
     const watchdogTimerRef: { timer?: NodeJS.Timeout } = {};
     const progressWatchdog = (): void => {
@@ -343,7 +362,7 @@ export class SubagentManager {
         const progressAt = await this.latestRunProgressMs(childRunId);
         if (controller.signal.aborted || !this.activeChildren.has(childRunId)) return;
         const stalled = progressAt === undefined || Date.now() - progressAt > this.watchdogProgressWindowMs;
-        if (!stalled && watchdogExtensions < this.watchdogMaxExtensions) {
+        if (!stalled && watchdogExtensions < watchdogMaxExtensions) {
           watchdogExtensions++;
           childRun.watchdogExtensions = watchdogExtensions;
           watchdogTimerRef.timer = setTimeout(progressWatchdog, this.watchdogProgressWindowMs);
@@ -426,6 +445,7 @@ export class SubagentManager {
           findings: options.findings,
           taskPlan: options.taskPlan,
           reviewFeedback: options.reviewFeedback,
+          executionBudget: this.executionBudget(def.id, options.executionBudget),
           diff: def.id === "reviewer" ? contextSummary : undefined,
           verificationEvidence: def.id === "reviewer" ? contextSummary : undefined,
           structuredOutput: options.structuredOutput,

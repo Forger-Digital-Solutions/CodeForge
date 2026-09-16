@@ -1,5 +1,5 @@
 {
-  "sourceStateId": "a40af59269e054e4547ea4aaaf71f5010a9416d3a33a2338067e9600b1264569",
+  "sourceStateId": "7bedbd33bc453ff729356adf6861dbead485cf506076248b926be48c6752a758",
   "surfaceVersion": 2,
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
@@ -41,7 +41,7 @@
     "packages/router/package.json": "b2b596febe0eab8a591ed016e9783170c35ed096",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/server/src/agent-runtime.ts": "96004ed0d535e7a9d64b6c4b88e7a05a967c807d",
-    "packages/server/src/autonomous-orchestrator.ts": "5bc8faaac5d55a08effd56e7161178e2504f0a7e",
+    "packages/server/src/autonomous-orchestrator.ts": "a5de91a0e6732d02bb0f933524c6df348aa87a87",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "a46e0238daf63d31820dd6548c362ef6e77981cb",
     "packages/sessions/src/persistence.ts": "773d64921c840a0ca860b6e1985184dace727c8a",
@@ -488,20 +488,38 @@
       "regressionEvidence": "FG-11 source-state and FG-12E harness provenance focused tests were rerun; the source drift was enumerated to this file before the certificate was renewed. RC0R provider-safety tests are outside this material surface.",
       "recertifiedAt": "2026-09-16",
       "sourceStateConstant": "CODEFORGE_RC0R_SOURCE_STATE"
+    },
+    {
+      "label": "RC1 bounded R1 orchestration recertification",
+      "reason": "R1 live Groq evidence showed that parallel explorers could consume the parent deadline before the Planner started. The orchestrator now gives R1 exploration and planning explicit non-extendable watchdog ceilings, passes effective child execution budgets into AgentRuntime, and forwards all bounded explorer evidence and incomplete statuses to the Planner. Provider, ForgeVerify, and Completion Gate authority remain unchanged.",
+      "priorSourceStateId": "a40af59269e054e4547ea4aaaf71f5010a9416d3a33a2338067e9600b1264569",
+      "priorSurfaceVersion": "fg12f-certified-v1-r4-forgegreen-r0",
+      "resultingSourceStateId": "7bedbd33bc453ff729356adf6861dbead485cf506076248b926be48c6752a758",
+      "resultingSurfaceVersion": "fg12f-certified-v1-rc1-orchestration",
+      "changes": [
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "R1 exploration and planning receive explicit phase ceilings with zero watchdog extensions; cancelled or blocked explorer results remain visible to planning as incomplete evidence instead of preventing the Planner from starting.",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "Focused R1 orchestrator, SubagentManager watchdog, provider, and legal-policy tests passed; root workspace build passed. The bounded Groq reproduction remains preserved as evidence and the post-fix live whole-agent certification is tracked separately without being asserted here.",
+      "recertifiedAt": "2026-09-16",
+      "sourceStateConstant": "CODEFORGE_RC1_ORCHESTRATION_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above.",
-  "recertifiedAt": "2026-09-16T13:28:21.955Z",
+  "recertifiedAt": "2026-09-16T15:55:00.000Z",
   "recertification": {
-    "phase": "R3-RC2",
-    "reason": "Managed-Free R3-RC2 runtime hardening changed one material file",
+    "phase": "RC1 ecosystem integration",
+    "reason": "Bounded R1 phase orchestration changed one material file",
     "changedFiles": [
       {
         "path": "packages/server/src/autonomous-orchestrator.ts",
-        "summary": "Replaced replan-only crash reconciliation with journal-based worker recovery (resume-safe journals resumed; others converge honestly; stale crash-window tool records converged to cancelled)"
+        "summary": "Added non-extendable R1 exploration and planning ceilings, forwarded effective child budgets, and preserved incomplete explorer evidence for bounded Planner continuation"
       }
     ],
-    "priorSourceStateId": "34e5c284a1eabb7da14ad4e8271ce00df9319030618d96e894e34e3c1ce18132",
+    "priorSourceStateId": "a40af59269e054e4547ea4aaaf71f5010a9416d3a33a2338067e9600b1264569",
     "guarded": true
   }
 }
