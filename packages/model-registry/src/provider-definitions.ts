@@ -1,4 +1,4 @@
-import type { PrivacyClass } from "@codeforge/forge-zero";
+import type { PrivacyClass, ProviderPolicyMetadata } from "@codeforge/forge-zero";
 
 /**
  * CodeForge provider definition registry (R1 Free Cloud Platform).
@@ -133,6 +133,8 @@ export interface ProviderDefinition {
   freeAccess: FreeAccessProfile;
   privacy: { class: PrivacyClass; freeTierClass?: PrivacyClass; note?: string };
   terms: { status: TermsStatus; note?: string; source?: string };
+  /** Reporting metadata for 8-Bit; this never grants route eligibility or consent. */
+  policyMetadata?: ProviderPolicyMetadata;
   /** Whether CodeForge recommends this provider in the default free-connection offer. */
   recommendedForFreeDefault: boolean;
   /** True when a CodeForge adapter exists for this provider. */
@@ -248,6 +250,16 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
     },
     privacy: { class: "standard", freeTierClass: "permissive", note: "Free tier: 'Content used to improve our products'." },
     terms: { status: "CLEARED" },
+    policyMetadata: {
+      commercial_packaging_eligible: true,
+      user_policy_acceptance_required: true,
+      region_restrictions: ["EEA", "UK", "CH"],
+      data_use_class: "TRAINING_POSSIBLE",
+      confidential_data_eligible: false,
+      free_or_paid_class: "UNPAID_ALLOWANCE",
+      policy_revision: "gemini-api-unpaid-data-use/2026-03-23",
+      official_terms_url: "https://ai.google.dev/gemini-api/terms",
+    },
     recommendedForFreeDefault: false,
     implemented: true,
     keyUrl: "https://aistudio.google.com/apikey",
@@ -295,6 +307,16 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
     },
     privacy: { class: "standard" },
     terms: { status: "CLEARED" },
+    policyMetadata: {
+      commercial_packaging_eligible: true,
+      user_policy_acceptance_required: false,
+      region_restrictions: [],
+      data_use_class: "STANDARD_PROVIDER_TERMS",
+      confidential_data_eligible: false,
+      free_or_paid_class: "TRIAL_CREDIT",
+      policy_revision: "cerebras-commercial-terms/2024-08-27",
+      official_terms_url: "https://www.cerebras.ai/terms-of-service",
+    },
     recommendedForFreeDefault: false,
     implemented: true,
     keyUrl: "https://cloud.cerebras.ai",
@@ -339,10 +361,20 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
       spillover: "ACCOUNT_DEPENDENT",
       planDetection: "attestation",
       allowanceScope: "all_chat_models",
-      evidence: { source: "https://docs.mistral.ai/admin/billing-usage/usage-limits + https://docs.mistral.ai/admin/billing-usage/subscriptions", checkedAt: CHECKED, note: "Free mode is available, but account-level plan, monthly usage, and pay-as-you-go settings must be attested before managed routing." },
+      evidence: { source: "https://docs.mistral.ai/admin/billing-usage/usage-limits + https://docs.mistral.ai/admin/billing-usage/subscriptions", checkedAt: CHECKED, note: "Free mode is available, but account-level plan, monthly usage, and pay-as-you-go settings must be attested before managed routing; Preview/Beta/Labs routes are excluded from normal production discovery." },
     },
     privacy: { class: "standard", freeTierClass: "permissive", note: "Experiment plan requires opting in to data training." },
     terms: { status: "CLEARED" },
+    policyMetadata: {
+      commercial_packaging_eligible: true,
+      user_policy_acceptance_required: false,
+      region_restrictions: [],
+      data_use_class: "TRAINING_POSSIBLE",
+      confidential_data_eligible: false,
+      free_or_paid_class: "UNPAID_ALLOWANCE",
+      policy_revision: "mistral-commercial-terms/2026-08-05",
+      official_terms_url: "https://legal.mistral.ai/terms/commercial-terms-of-service/",
+    },
     recommendedForFreeDefault: false,
     implemented: true,
     keyUrl: "https://console.mistral.ai/api-keys",

@@ -36,6 +36,7 @@
     "@codeforge/forge-zero": "*",
     "@codeforge/providers": "*",
     "@codeforge/model-registry": "*",
+    "@codeforge/legal-policy": "*",
     "better-sqlite3": "^12.11.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
@@ -132,6 +133,8 @@
           "context/package.json",
           "cloud-db/dist/**/*.js",
           "cloud-db/package.json",
+          "legal-policy/dist/**/*.js",
+          "legal-policy/package.json",
           "ui/dist/**/*.js",
           "ui/package.json",
           "workflow/dist/**/*.js",

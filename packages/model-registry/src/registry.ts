@@ -1,4 +1,5 @@
 import type { FreeModelRecord } from "@codeforge/forge-zero";
+import { getProviderDefinition } from "./provider-definitions.js";
 import { FREE_ACCESS_CLASSES, ZERO_UNIT_ACCESS } from "@codeforge/forge-zero";
 import type { CodeForgeOverlay, ModelRecord } from "./normalized-types.js";
 import { canonicalId } from "./normalized-types.js";
@@ -220,6 +221,7 @@ export class NormalizedModelRegistry {
       lifecycle: overlay?.lifecycle,
       replacementCandidate: overlay?.replacementCandidate,
       lastSuccessfulRuntimeProof: overlay?.lastSuccessfulRuntimeProof,
+      policyMetadata: getProviderDefinition(record.providerId)?.policyMetadata,
       health,
     };
   }

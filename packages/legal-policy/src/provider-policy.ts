@@ -72,23 +72,21 @@ export const PROVIDER_POLICY_REGISTRY: ProviderPolicyRecord[] = [
     providerId: "google-gemini",
     architecture: "BYOK",
     serviceTier: "FREE",
-    regionsDenied: [],
-    regionUnknownBehavior: "ALLOW",
+    regionsDenied: ["EEA", "UK", "CH"],
+    regionUnknownBehavior: "DENY",
     confidentialDataPolicy: "AVOID_SUBMISSION_RECOMMENDED",
     providerDataUse: ["TRAINING_POSSIBLE", "HUMAN_REVIEW_POSSIBLE"],
     hostedResaleStatus: "ALLOWED",
     qualificationTrafficStatus: "PERMITTED",
-    // Q1 of final-attorney-review-packet.md is explicitly unresolved for EEA/UK/CH BYOK.
-    // Do NOT auto-block; represent as attorney-review-pending per R1 remediation spec §13.
-    attorneyReviewStatus: "PENDING",
+    attorneyReviewStatus: "NONE",
     authoritySource:
-      "docs/legal/pass3/final-attorney-review-packet.md Q1; docs/legal/pass3/final-issue-register.md LEG-P1-03",
+      "https://ai.google.dev/gemini-api/terms (effective 2026-03-23), Google Gemini API Additional Terms geographical availability",
     reviewedAt: REVIEWED_AT,
     expiresAt: EXPIRES_AT,
     enforcement: "ALLOW",
-    reasonCode: "BYOK_ALLOWED_ATTORNEY_REVIEW_PENDING_FOR_EEA_UK_CH",
+    reasonCode: "GEMINI_FREE_POLICY_CONSENT_REQUIRED",
     notes:
-      "Desktop BYOK Gemini free tier is not blocked by region. EEA/UK/CH legal status is ATTORNEY_REVIEW_PENDING per Q1, not a confirmed restriction.",
+      "Unpaid Gemini API use requires the versioned CodeForge disclosure/acceptance, a trusted non-paid-only region, and a provider account identity. Paid Gemini is a separate explicit tier.",
   },
   {
     providerId: "google-gemini",

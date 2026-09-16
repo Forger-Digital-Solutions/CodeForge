@@ -42,6 +42,8 @@ export interface ProviderAdapter {
     signal?: AbortSignal,
   ): AsyncIterable<StreamEvent>;
   healthCheck(): Promise<ProviderHealthResponse>;
+  /** Optional local admission gate for providers with account-level spend ceilings. */
+  canRoute?(modelId: string): boolean;
   /** FG-1A: optional so existing adapters stay valid. Absent is equivalent to unsupported. */
   getPromptCacheCapability?(modelId: string): PromptCacheCapability;
 }
@@ -452,3 +454,26 @@ export {
   type ProviderCapacityGovernorOptions,
   type ProviderCapacityReport,
 } from "./capacity-governor.js";
+export {
+  CloudflareNeuronBudgetError,
+  CloudflareNeuronBudgetGuard,
+  FileCloudflareNeuronBudgetStore,
+  InMemoryCloudflareNeuronBudgetStore,
+  StaticCloudflareUsageSource,
+  CLOUDFLARE_INCLUDED_DAILY_NEURONS,
+  CLOUDFLARE_LLM_NEURON_RATES,
+  CLOUDFLARE_NEURON_BUDGET_POLICY_VERSION,
+  CLOUDFLARE_PROVIDER_ID,
+  CLOUDFLARE_SAFE_DAILY_NEURON_CEILING,
+  createFailClosedCloudflareNeuronBudgetGuard,
+  estimateCloudflareRequestNeurons,
+  estimateCloudflareUsageNeurons,
+  type CloudflareNeuronBudgetErrorCode,
+  type CloudflareNeuronBudgetSnapshot,
+  type CloudflareNeuronBudgetStore,
+  type CloudflareNeuronRate,
+  type CloudflareNeuronReservation,
+  type CloudflareNeuronBudgetGuardOptions,
+  type CloudflareUsageObservation,
+  type CloudflareUsageSource,
+} from "./cloudflare-neuron-budget.js";

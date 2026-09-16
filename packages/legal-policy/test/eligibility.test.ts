@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { evaluateRouteEligibility } from "../src/eligibility.js";
 import { classifyRegionEvidence, REGION_UNKNOWN, type RegionEvidence } from "../src/region.js";
 import type { EnterpriseOverrideConfig } from "../src/provider-policy.js";
+import { buildGeminiFreeAcceptance } from "../src/gemini-policy.js";
+
+const GEMINI_ACCOUNT = "gemini-project-fixture";
+const GEMINI_US = region({ countryCode: "US", source: "ACCOUNT_BILLING_COUNTRY", observedAt: new Date().toISOString() });
 
 function region(evidence: RegionEvidence) {
   return classifyRegionEvidence(evidence);
@@ -13,7 +17,9 @@ describe("evaluateRouteEligibility — region restriction (R1 spec §51)", () =>
       providerId: "google-gemini",
       architecture: "HOSTED_MULTI_TENANT",
       serviceTier: "FREE",
-      region: region({ countryCode: "US", source: "ACCOUNT_BILLING_COUNTRY", observedAt: new Date().toISOString() }),
+      region: GEMINI_US,
+      geminiAccountId: GEMINI_ACCOUNT,
+      geminiFreeAcceptance: buildGeminiFreeAcceptance({ accountId: GEMINI_ACCOUNT, region: GEMINI_US }),
     });
     expect(decision.decision).toBe("ALLOW");
   });
@@ -54,15 +60,28 @@ describe("evaluateRouteEligibility — region restriction (R1 spec §51)", () =>
     expect(decision.decision).toBe("DENY");
   });
 
-  it("leaves Desktop BYOK Gemini unaffected by the hosted region restriction (R1 spec §13)", () => {
+  it("requires a current free-tier acceptance for Desktop BYOK Gemini", () => {
     const decision = evaluateRouteEligibility({
       providerId: "google-gemini",
       architecture: "BYOK",
       serviceTier: "FREE",
       region: region({ countryCode: "DE", source: "TRUSTED_EDGE_HEADER", observedAt: new Date().toISOString() }),
     });
-    expect(decision.decision).not.toBe("DENY");
-    expect(decision.reasonCode).toBe("ATTORNEY_REVIEW_PENDING");
+    expect(decision.decision).toBe("DENY");
+    expect(decision.reasonCode).toBe("GEMINI_PAID_REQUIRED_BY_REGION");
+  });
+
+  it("allows Desktop BYOK Gemini only with a current account-bound acceptance", () => {
+    const acceptance = buildGeminiFreeAcceptance({ accountId: GEMINI_ACCOUNT, region: GEMINI_US });
+    const decision = evaluateRouteEligibility({ providerId: "google", architecture: "BYOK", serviceTier: "FREE", region: GEMINI_US, geminiAccountId: GEMINI_ACCOUNT, geminiFreeAcceptance: acceptance });
+    expect(decision.decision).toBe("ALLOW");
+    expect(decision.reasonCode).toBe("GEMINI_FREE_POLICY_CONSENT_REQUIRED");
+  });
+
+  it("fails closed when direct Gemini free routing has no acceptance", () => {
+    const decision = evaluateRouteEligibility({ providerId: "google", architecture: "BYOK", serviceTier: "FREE", region: GEMINI_US, geminiAccountId: GEMINI_ACCOUNT });
+    expect(decision.decision).toBe("DENY");
+    expect(decision.reasonCode).toBe("GEMINI_FREE_POLICY_NOT_ACCEPTED");
   });
 
   it("ALLOWs hosted Gemini paid tier in every region (no unpaid-tier restriction)", () => {
@@ -70,7 +89,9 @@ describe("evaluateRouteEligibility — region restriction (R1 spec §51)", () =>
       providerId: "google-gemini",
       architecture: "HOSTED_MULTI_TENANT",
       serviceTier: "PAID",
-      region: REGION_UNKNOWN,
+      region: GEMINI_US,
+      geminiAccountId: GEMINI_ACCOUNT,
+      geminiFreeAcceptance: buildGeminiFreeAcceptance({ accountId: GEMINI_ACCOUNT, region: GEMINI_US }),
     });
     // Paid-tier record is DENY today only because no Google Cloud DPA is on file — but it must
     // never be rejected for a REGION reason, since the EEA restriction is specifically the

@@ -4,6 +4,8 @@ import { AnthropicAdapter } from "./anthropic.js";
 import { createOpenRouterAdapter } from "./openrouter.js";
 import { createOpencodeAdapter } from "./opencode.js";
 import type { ProviderAdapter } from "./index.js";
+import type { CloudflareNeuronBudgetGuard } from "./cloudflare-neuron-budget.js";
+import type { GeminiFreePolicyGate } from "@codeforge/legal-policy";
 
 export interface ProviderFactoryOptions {
   credentialStore?: CredentialStore;
@@ -11,6 +13,10 @@ export interface ProviderFactoryOptions {
   timeoutMs?: number;
   /** Receives status + rate-limit headers for every upstream response (quota tracking). */
   onResponse?: ProviderResponseObserver;
+  /** Cloudflare Workers AI daily-neuron guard. The Cloudflare factory fails closed when omitted. */
+  cloudflareNeuronGuard?: CloudflareNeuronBudgetGuard;
+  geminiFreePolicyGate?: GeminiFreePolicyGate;
+  geminiServiceTier?: "UNPAID" | "PAID";
 }
 
 /**
@@ -59,6 +65,8 @@ export function createGeminiAdapter(opts: ProviderFactoryOptions = {}): OpenAICo
     baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
     ...common(opts),
     mapModel: mapGeminiModel,
+    geminiFreePolicyGate: opts.geminiFreePolicyGate,
+    geminiServiceTier: opts.geminiServiceTier,
   });
 }
 
@@ -80,6 +88,7 @@ export function createCloudflareAdapter(opts: ProviderFactoryOptions & { account
       return url.replace("${CLOUDFLARE_ACCOUNT_ID}", acct);
     },
     mapModel: mapCloudflareModel,
+    cloudflareNeuronGuard: opts.cloudflareNeuronGuard,
   };
   return new OpenAICompatibleAdapter(cfg);
 }
@@ -93,8 +102,16 @@ export function createOpenAIAdapter(opts: ProviderFactoryOptions = {}): OpenAICo
   });
 }
 
-function common(opts: ProviderFactoryOptions): Pick<OpenAICompatibleConfig, "credentialStore" | "apiKey" | "timeoutMs" | "onResponse"> {
-  return { credentialStore: opts.credentialStore, apiKey: opts.apiKey, timeoutMs: opts.timeoutMs, onResponse: opts.onResponse };
+function common(opts: ProviderFactoryOptions): Pick<OpenAICompatibleConfig, "credentialStore" | "apiKey" | "timeoutMs" | "onResponse" | "cloudflareNeuronGuard" | "geminiFreePolicyGate" | "geminiServiceTier"> {
+  return {
+    credentialStore: opts.credentialStore,
+    apiKey: opts.apiKey,
+    timeoutMs: opts.timeoutMs,
+    onResponse: opts.onResponse,
+    cloudflareNeuronGuard: opts.cloudflareNeuronGuard,
+    geminiFreePolicyGate: opts.geminiFreePolicyGate,
+    geminiServiceTier: opts.geminiServiceTier,
+  };
 }
 
 /** Gemini's OpenAI-compatible listing prefixes ids with "models/" and includes non-chat models. */
@@ -164,6 +181,7 @@ export function createProviderAdapterFromDefinition(def: ProviderTransportDefini
       if (def.id === "google") cfg.mapModel = mapGeminiModel;
       if (def.id === "cloudflare-workers-ai") {
         cfg.mapModel = mapCloudflareModel;
+        cfg.cloudflareNeuronGuard = opts.cloudflareNeuronGuard;
         cfg.resolveBaseUrl = (url) => {
           const acct = opts.credentialStore?.get(configFieldKey("cloudflare-workers-ai", "accountId"))
             ?? opts.credentialStore?.get("cloudflare-account-id")

@@ -11,6 +11,7 @@ import {
   refreshEnvironment,
   setEnvironmentEnabled,
   setEnvironmentPolicy,
+  setGeminiFreePolicyAccepted,
   useProviderConnections,
   type EnvironmentCredentialView,
   type FreeCloudSummaryView,
@@ -227,6 +228,25 @@ export function ProvidersSection(props: ProvidersSectionProps = {}): React.React
                 {c.connected ? <span className={`provider-badge ${c.freeRouteCount > 0 ? "free" : ""}`}>{c.freeRouteCount} free route{c.freeRouteCount === 1 ? "" : "s"} · {c.healthyRouteCount} ForgeAuto-eligible</span> : null}
                 {c.terms.status !== "CLEARED" ? <span className="provider-badge paid">{c.terms.status.replace(/_/g, " ").toLowerCase()}</span> : null}
               </div>
+              {c.policyMetadata?.user_policy_acceptance_required ? (
+                <div className="provider-availability" data-policy="gemini-free">
+                  <p className="settings-note">
+                    {c.geminiPolicyBlockedReason === "GEMINI_FREE_POLICY_ACCEPTED"
+                      ? "Gemini Free Tier data-use notice accepted for this account and region."
+                      : "Gemini Free Tier is policy-gated: a trusted project identity, eligible region, and current acknowledgment are required."}{" "}
+                    <a href={c.policyMetadata.official_terms_url} target="_blank" rel="noreferrer">Read Google's Gemini API Additional Terms</a>.
+                  </p>
+                  <label className="settings-note" style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                    <input
+                      type="checkbox"
+                      checked={c.geminiPolicyAccepted === true}
+                      disabled={busy !== null || c.geminiPolicyBlockedReason === "GEMINI_REGION_UNKNOWN" || c.geminiPolicyBlockedReason === "GEMINI_PAID_REQUIRED_BY_REGION"}
+                      onChange={(e) => void run("gemini-policy", () => setGeminiFreePolicyAccepted(e.target.checked), e.target.checked ? "Gemini Free Tier notice accepted" : "Gemini Free Tier notice withdrawn")}
+                    />
+                    <span>{c.policyMetadata.user_policy_acceptance_required ? "I understand and accept the Gemini API Free Tier data-use notice." : ""}</span>
+                  </label>
+                </div>
+              ) : null}
               {c.connected && c.planAttestationRequired ? (
                 <div className="provider-availability">
                   <label className="settings-note" style={{ display: "flex", alignItems: "center", gap: 8 }}>

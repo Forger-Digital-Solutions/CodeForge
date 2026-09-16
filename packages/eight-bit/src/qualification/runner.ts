@@ -86,6 +86,7 @@ export class ModelQualificationRunner {
       metadata: {
         totalCalls,
         rolesTested: rolesToTest,
+        policyMetadata: model.policyMetadata,
       },
     };
 

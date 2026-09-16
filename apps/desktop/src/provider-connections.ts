@@ -28,6 +28,14 @@ import {
   type ProviderDefinition,
   type CredentialSource,
 } from "@codeforge/model-registry";
+import {
+  createGeminiFreePolicyGate,
+  buildGeminiFreeAcceptance,
+  evaluateGeminiFreePolicy,
+  type GeminiFreeAcceptanceRecord,
+  type RegionResolution,
+  REGION_UNKNOWN,
+} from "@codeforge/legal-policy";
 
 /**
  * Desktop provider connections (R1 §13-§31, §59-§64, §97-§99, §104-§106).
@@ -47,6 +55,7 @@ export const ENV_CREDENTIALS_KEY = "codeforge:env-credentials";
 export const CREDENTIAL_SOURCES_KEY = "codeforge:provider-credential-sources";
 export const PLAN_ATTESTATIONS_KEY = "codeforge:provider-plan-attestations";
 export const ENABLED_MODELS_KEY = "codeforge:provider-enabled-models";
+export const GEMINI_FREE_ACCEPTANCE_KEY = "codeforge:gemini-free-policy-acceptance";
 
 export interface EnvCredentialSettings {
   policy: EnvironmentCredentialPolicy;
@@ -77,6 +86,8 @@ export interface ProviderConnectionsHost {
   maxSecretLength?: number;
   /** Emit a change notification (renderer refresh). */
   notifyChanged?: () => void;
+  /** Trusted server/OS-sourced Gemini identity and region. Absent means fail closed. */
+  geminiPolicyContext?: () => { accountId?: string; region: RegionResolution };
 }
 
 const CONNECTABLE_FIELD_RE = /^[a-zA-Z][a-zA-Z0-9_-]{0,40}$/;
@@ -101,7 +112,7 @@ export class ProviderConnections {
   }
 
   /** Renderer-safe provider definition list (schemas, never values). */
-  listDefinitions(): Array<Pick<ProviderConnectionView, "providerId" | "displayName" | "kind" | "implemented" | "recommendedForFreeDefault" | "authClasses" | "fields" | "freeAccess" | "privacy" | "terms" | "keyUrl" | "docsUrl" | "paidOnly" | "zeroCashFreeAccess">> {
+  listDefinitions(): Array<Pick<ProviderConnectionView, "providerId" | "displayName" | "kind" | "implemented" | "recommendedForFreeDefault" | "authClasses" | "fields" | "freeAccess" | "privacy" | "terms" | "policyMetadata" | "keyUrl" | "docsUrl" | "paidOnly" | "zeroCashFreeAccess">> {
     return Object.values(this.definitions())
       .filter((d) => d.apiStyle !== "internal")
       .map((d) => this.definitionView(d));
@@ -119,6 +130,7 @@ export class ProviderConnections {
       freeAccess: d.freeAccess,
       privacy: d.privacy,
       terms: d.terms,
+      policyMetadata: d.policyMetadata,
       keyUrl: d.keyUrl,
       docsUrl: d.docsUrl,
       paidOnly: d.paidOnly === true || d.freeAccess.class === "PAID_API",
@@ -341,6 +353,44 @@ export class ProviderConnections {
     return typeof v === "object" && v !== null && (v as { freePlan?: unknown }).freePlan === true;
   }
 
+  geminiFreeAcceptance(): GeminiFreeAcceptanceRecord | null {
+    const raw = this.host.readSettings()[GEMINI_FREE_ACCEPTANCE_KEY];
+    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
+    const v = raw as Record<string, unknown>;
+    if (v.providerId !== "google" || v.serviceTier !== "FREE") return null;
+    if (typeof v.accountId !== "string" || typeof v.policyRevision !== "string" || typeof v.acceptedAt !== "string") return null;
+    if (typeof v.disclosureVersion !== "string" || typeof v.termsEffectiveAt !== "string" || typeof v.regionStatus !== "string" || typeof v.regionSource !== "string") return null;
+    if (v.regionCountryCode !== null && typeof v.regionCountryCode !== "string") return null;
+    return v as unknown as GeminiFreeAcceptanceRecord;
+  }
+
+  geminiFreePolicyContext(): { accountId?: string; region: RegionResolution } {
+    return this.host.geminiPolicyContext?.() ?? { region: REGION_UNKNOWN };
+  }
+
+  async setGeminiFreePolicyAccepted(accepted: boolean): Promise<void> {
+    const settings = this.host.readSettings();
+    if (!accepted) {
+      delete settings[GEMINI_FREE_ACCEPTANCE_KEY];
+      this.host.writeSettings(settings);
+      await this.reconcile("google");
+      return;
+    }
+    const context = this.geminiFreePolicyContext();
+    const accountId = context.accountId?.trim();
+    if (!accountId) throw new Error("Gemini free routing requires a trusted project/account identity");
+    const regionDecision = evaluateGeminiFreePolicy({ accountId, region: context.region, acceptance: null, now: this.now() });
+    if (regionDecision.reasonCode !== "GEMINI_FREE_POLICY_NOT_ACCEPTED") throw new Error(`Gemini free routing is blocked: ${regionDecision.reasonCode}`);
+    settings[GEMINI_FREE_ACCEPTANCE_KEY] = buildGeminiFreeAcceptance({ accountId, region: context.region, now: this.now() });
+    this.host.writeSettings(settings);
+    await this.reconcile("google");
+  }
+
+  private geminiPolicyGate() {
+    const context = this.geminiFreePolicyContext();
+    return createGeminiFreePolicyGate({ accountId: context.accountId, region: context.region, acceptance: this.geminiFreeAcceptance(), now: this.now() });
+  }
+
   async setPlanAttested(providerId: string, attested: boolean): Promise<void> {
     if (!this.definition(providerId)) throw new Error("Unknown provider");
     const settings = this.host.readSettings();
@@ -416,7 +466,7 @@ export class ProviderConnections {
       delete: () => true,
       has: (key) => store.get(key) !== undefined,
     };
-    return createProviderAdapterFromDefinition(def, { credentialStore: store, timeoutMs: 20_000, onResponse: this.host.onResponse });
+    return createProviderAdapterFromDefinition(def, { credentialStore: store, timeoutMs: 20_000, onResponse: this.host.onResponse, geminiFreePolicyGate: def.id === "google" ? this.geminiPolicyGate() : undefined });
   }
 
   private classifyCatalog(def: ProviderDefinition, models: ProviderModel[]): ProviderCatalogModelView[] {
@@ -556,7 +606,7 @@ export class ProviderConnections {
       return;
     }
     if (!existing) {
-      const adapter = createProviderAdapterFromDefinition(def, { credentialStore: this.credentialStore(), onResponse: this.host.onResponse });
+      const adapter = createProviderAdapterFromDefinition(def, { credentialStore: this.credentialStore(), onResponse: this.host.onResponse, geminiFreePolicyGate: def.id === "google" ? this.geminiPolicyGate() : undefined });
       if (adapter) catalog.register(adapter);
     }
     this.publishConnection(def, source);
@@ -650,6 +700,8 @@ export class ProviderConnections {
         healthyRouteCount: freeRoutes.filter((r) => r.forgeAutoEligible).length,
         catalogCount: routes.length,
         sortRank,
+        geminiPolicyAccepted: def.id === "google" ? this.geminiFreeAcceptance() !== null : undefined,
+        geminiPolicyBlockedReason: def.id === "google" ? evaluateGeminiFreePolicy({ accountId: this.geminiFreePolicyContext().accountId, region: this.geminiFreePolicyContext().region, acceptance: this.geminiFreeAcceptance(), now: this.now() }).reasonCode : undefined,
       });
     }
     return views.sort((a, b) => a.sortRank - b.sortRank || a.displayName.localeCompare(b.displayName));

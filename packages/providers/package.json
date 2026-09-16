@@ -21,6 +21,7 @@
     "@codeforge/core": "*",
     "@codeforge/protocol": "*",
     "@codeforge/forge-zero": "*",
+    "@codeforge/legal-policy": "*",
     "zod": "^3.24.0"
   }
 }

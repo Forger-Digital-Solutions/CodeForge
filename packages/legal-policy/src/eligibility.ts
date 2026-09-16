@@ -8,6 +8,7 @@ import {
   type ServiceTier,
 } from "./provider-policy.js";
 import type { RegionResolution } from "./region.js";
+import { evaluateGeminiFreePolicy, type GeminiFreeAcceptanceRecord } from "./gemini-policy.js";
 
 export type EligibilityDecisionKind = "ALLOW" | "WARN" | "DENY";
 
@@ -23,6 +24,8 @@ export interface RouteEligibilityInput {
   serviceTier: ServiceTier;
   region: RegionResolution;
   enterpriseOverride?: EnterpriseOverrideConfig;
+  geminiAccountId?: string;
+  geminiFreeAcceptance?: GeminiFreeAcceptanceRecord | null;
   now?: Date;
 }
 
@@ -74,12 +77,18 @@ function decide(
  */
 export function evaluateRouteEligibility(input: RouteEligibilityInput): RouteEligibilityDecision {
   const now = input.now ?? new Date();
-  const record = findProviderPolicy(input.providerId, input.architecture, input.serviceTier);
+  const policyProviderId = input.providerId === "google" ? "google-gemini" : input.providerId;
+  const record = findProviderPolicy(policyProviderId, input.architecture, input.serviceTier);
 
   // No evidenced policy for this provider/architecture pair: default ALLOW so unrelated,
   // unevidenced routes are never broken by this gate (R1 remediation spec mission #13).
   if (!record) {
     return decide("ALLOW", "NO_POLICY_RECORD_DEFAULT_ALLOW", null);
+  }
+
+  if ((input.providerId === "google" || input.providerId === "google-gemini") && input.architecture === "BYOK" && input.serviceTier === "FREE") {
+    const gemini = evaluateGeminiFreePolicy({ accountId: input.geminiAccountId, acceptance: input.geminiFreeAcceptance, region: input.region, now });
+    if (gemini.decision === "DENY") return decide("DENY", gemini.reasonCode, record);
   }
 
   const expired = isPolicyExpired(record, now);

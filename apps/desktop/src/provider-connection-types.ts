@@ -42,6 +42,9 @@ export interface ProviderConnectionView {
   freeAccess: ProviderDefinition["freeAccess"];
   privacy: ProviderDefinition["privacy"];
   terms: ProviderDefinition["terms"];
+  policyMetadata?: ProviderDefinition["policyMetadata"];
+  geminiPolicyAccepted?: boolean;
+  geminiPolicyBlockedReason?: string;
   keyUrl?: string;
   docsUrl?: string;
   connected: boolean;

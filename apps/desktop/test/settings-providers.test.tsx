@@ -135,6 +135,13 @@ describe("Provider Connections page", () => {
     expect(markup).not.toContain("sk-");
     expect(markup).not.toMatch(/value="[^"]*gsk_/);
   });
+
+  it("shows the Gemini free-tier disclosure and terms link when policy metadata requires consent", () => {
+    const markup = renderSection(<ProvidersSection connections={[connection({ providerId: "google", displayName: "Google Gemini", policyMetadata: { commercial_packaging_eligible: true, user_policy_acceptance_required: true, region_restrictions: ["EEA", "UK", "CH"], data_use_class: "TRAINING_POSSIBLE", confidential_data_eligible: false, free_or_paid_class: "UNPAID_ALLOWANCE", policy_revision: "gemini-api-unpaid-data-use/2026-03-23", official_terms_url: "https://ai.google.dev/gemini-api/terms" }, geminiPolicyAccepted: false, geminiPolicyBlockedReason: "GEMINI_REGION_UNKNOWN" })]} environment={[]} summary={SUMMARY} />, createSettingsContext());
+    expect(markup).toContain("Gemini Free Tier is policy-gated");
+    expect(markup).toContain("I understand and accept the Gemini API Free Tier data-use notice.");
+    expect(markup).toContain("https://ai.google.dev/gemini-api/terms");
+  });
 });
 
 describe("Models & Routing page — 8-Bit registry", () => {

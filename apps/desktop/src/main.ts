@@ -1189,9 +1189,8 @@ async function createWindowDocument(): Promise<void> {
     const rendererFile = path.join(__dirname, "renderer", "index.html");
     trustedRendererDocumentUrl = pathToFileURL(rendererFile).href;
     smokeRecord(`LOAD_FILE_${rendererFile}`);
-    // loadFile builds a canonical file URL for Windows drive letters and ASAR paths. Hand-building
-    // `file://${path}` produced `file://G:\\...`, which is malformed and can make a sandboxed
-    // renderer fail during launch before the document gets a chance to paint.
+    // loadFile builds the canonical file URL for Windows drive letters and ASAR paths. Hand-built
+    // `file://${path}` URLs are malformed on Windows and can fail before first paint.
     await window.loadFile(rendererFile);
   }
   smokeRecord("WINDOW_CONTENT_LOADED");
@@ -2520,6 +2519,12 @@ ipcMain.handle("provider:attestFreePlan", async (event, providerId: unknown, att
       notifyProviderChanged();
     });
   }
+  notifyProviderChanged();
+});
+
+ipcMain.handle("provider:setGeminiFreePolicyAccepted", async (event, accepted: unknown) => {
+  assertMainWindowSender(event);
+  await requireConnections().setGeminiFreePolicyAccepted(accepted === true);
   notifyProviderChanged();
 });
 

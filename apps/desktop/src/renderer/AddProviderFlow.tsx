@@ -151,6 +151,7 @@ export function AddProviderFlow({ providers, initialProviderId, onConnected, onC
         <span className={`provider-badge ${provider.zeroCashFreeAccess ? "free" : "paid"}`}>{provider.freeAccess.class.replace(/_/g, " ").toLowerCase()}</span>
         {provider.freeAccess.quota ? <span className="add-provider-quota">{provider.freeAccess.quota}</span> : null}
         {provider.privacy.freeTierClass === "permissive" ? <span className="provider-badge">free tier may train on prompts</span> : null}
+        {provider.policyMetadata?.user_policy_acceptance_required ? <span className="provider-badge paid">free tier requires policy acceptance</span> : null}
       </div>
 
       {oauthFirst && step !== "done" ? (

@@ -6,3 +6,4 @@ export * from "./acceptance.js";
 export * from "./age-policy.js";
 export * from "./retention.js";
 export * from "./claims-scanner.js";
+export * from "./gemini-policy.js";

@@ -44,6 +44,10 @@ export interface ProviderPolicy {
   env?: string[];
   /** Fine-grained R1 free-access class (see provider-definitions). */
   freeAccessClass: FreeAccessClass;
+  /** Allowance model scope copied from the provider definition. */
+  allowanceScope?: "all_chat_models" | "allowlist";
+  allowanceModels?: string[];
+  paidPlanModels?: string[];
 }
 
 const ALLOWANCE_CLASSES: readonly FreeAccessClass[] = [
@@ -80,6 +84,9 @@ export function policyFromDefinition(def: ProviderDefinition): ProviderPolicy {
     ...(def.baseUrl ? { baseUrl: def.baseUrl } : {}),
     ...(env.length > 0 ? { env } : {}),
     freeAccessClass: def.freeAccess.class,
+    ...(def.freeAccess.allowanceScope ? { allowanceScope: def.freeAccess.allowanceScope } : {}),
+    ...(def.freeAccess.allowanceModels ? { allowanceModels: [...def.freeAccess.allowanceModels] } : {}),
+    ...(def.freeAccess.paidPlanModels ? { paidPlanModels: [...def.freeAccess.paidPlanModels] } : {}),
   };
 }
 

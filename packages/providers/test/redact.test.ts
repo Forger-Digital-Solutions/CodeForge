@@ -18,7 +18,7 @@ describe("secret redaction in provider errors", () => {
   it("a 403 error body echoing the api key is redacted before it reaches the ProviderError", async () => {
     const key = "AIzaSyD59YlkCFHE6ssh6Ya9o7e3wtfAY0m6NyA";
     const fetchFn = (async () => new Response(`{"error":{"code":403,"message":"Consumer 'api_key:${key}' suspended"}}`, { status: 403 })) as unknown as typeof fetch;
-    const adapter = new OpenAICompatibleAdapter({ providerId: "google", baseUrl: "https://x/v1", apiKey: key, fetchFn });
+    const adapter = new OpenAICompatibleAdapter({ providerId: "google", baseUrl: "https://x/v1", apiKey: key, fetchFn, geminiServiceTier: "PAID" });
     await expect(adapter.chat({ model: "m", messages: [{ role: "user", content: "x" }] })).rejects.toMatchObject({ code: "AUTH_ERROR" });
     try {
       await adapter.chat({ model: "m", messages: [{ role: "user", content: "x" }] });

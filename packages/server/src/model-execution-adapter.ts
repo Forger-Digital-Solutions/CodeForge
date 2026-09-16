@@ -171,10 +171,14 @@ export class ModelExecutionAdapter {
 
     // Prefer highest-ranked available free provider not in 429 cooldown
     const best = ranked.find((r) => {
-      if (!this.providerCatalog.get(r.model.providerId)) return false;
-      if (this.governorFor(this.providerCatalog.get(r.model.providerId))?.isCoolingDown(r.model.providerId)) return false;
+      const provider = this.providerCatalog.get(r.model.providerId);
+      if (!provider || provider.canRoute?.(r.model.modelId) === false) return false;
+      if (this.governorFor(provider)?.isCoolingDown(r.model.providerId)) return false;
       return true;
-    }) ?? ranked.find((r) => this.providerCatalog.get(r.model.providerId));
+    }) ?? ranked.find((r) => {
+      const provider = this.providerCatalog.get(r.model.providerId);
+      return !!provider && provider.canRoute?.(r.model.modelId) !== false;
+    });
 
     if (best) {
       return { providerId: best.model.providerId, modelId: best.model.modelId };
@@ -182,10 +186,14 @@ export class ModelExecutionAdapter {
 
     const eligible = this.firewall.eligibleModels();
     const fallback = eligible.find((m) => {
-      if (!this.providerCatalog.get(m.providerId)) return false;
-      if (this.governorFor(this.providerCatalog.get(m.providerId))?.isCoolingDown(m.providerId)) return false;
+      const provider = this.providerCatalog.get(m.providerId);
+      if (!provider || provider.canRoute?.(m.modelId) === false) return false;
+      if (this.governorFor(provider)?.isCoolingDown(m.providerId)) return false;
       return true;
-    }) ?? eligible.find((m) => this.providerCatalog.get(m.providerId));
+    }) ?? eligible.find((m) => {
+      const provider = this.providerCatalog.get(m.providerId);
+      return !!provider && provider.canRoute?.(m.modelId) !== false;
+    });
 
     if (fallback) {
       return { providerId: fallback.providerId, modelId: fallback.modelId };

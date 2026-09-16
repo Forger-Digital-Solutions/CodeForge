@@ -2,6 +2,12 @@ import type { CredentialStore, ProviderAdapter, ProviderHealthResponse, Provider
 import { ProviderError, quotaHeadersOf } from "./index.js";
 import { redactSecrets } from "./redact.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
+import {
+  CloudflareNeuronBudgetGuard,
+  createFailClosedCloudflareNeuronBudgetGuard,
+  type CloudflareNeuronReservation,
+} from "./cloudflare-neuron-budget.js";
+import { createFailClosedGeminiFreePolicyGate, type GeminiFreePolicyGate } from "@codeforge/legal-policy";
 
 /**
  * Canonical OpenAI-compatible transport. One maintainable adapter for every provider that
@@ -36,6 +42,12 @@ export interface OpenAICompatibleConfig {
    * implement (e.g. `tool_choice`, `stream_options`); a definition can strip them per provider.
    */
   omitRequestFields?: string[];
+  /** Required safety gate for Cloudflare Workers AI inference; omitted means fail closed. */
+  cloudflareNeuronGuard?: CloudflareNeuronBudgetGuard;
+  /** Unpaid Gemini routes require a current policy acceptance and trusted region. */
+  geminiFreePolicyGate?: GeminiFreePolicyGate;
+  /** Paid Gemini is never selected by Free routing and must be explicitly requested. */
+  geminiServiceTier?: "UNPAID" | "PAID";
 }
 
 interface OaiMessage {
@@ -51,12 +63,22 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
   private readonly cfg: OpenAICompatibleConfig;
   private readonly timeoutMs: number;
   private readonly fetchFn: typeof fetch;
+  private readonly cloudflareNeuronGuard?: CloudflareNeuronBudgetGuard;
+  private readonly geminiFreePolicyGate?: GeminiFreePolicyGate;
+  private readonly geminiServiceTier: "UNPAID" | "PAID";
 
   constructor(cfg: OpenAICompatibleConfig) {
     this.cfg = cfg;
     this.providerId = cfg.providerId;
     this.timeoutMs = cfg.timeoutMs ?? 60000;
     this.fetchFn = cfg.fetchFn ?? fetch;
+    this.cloudflareNeuronGuard = cfg.providerId === "cloudflare-workers-ai"
+      ? cfg.cloudflareNeuronGuard ?? createFailClosedCloudflareNeuronBudgetGuard()
+      : undefined;
+    this.geminiServiceTier = cfg.geminiServiceTier ?? "UNPAID";
+    this.geminiFreePolicyGate = cfg.providerId === "google"
+      ? cfg.geminiFreePolicyGate ?? createFailClosedGeminiFreePolicyGate()
+      : undefined;
   }
 
   private baseUrl(): string {
@@ -106,7 +128,10 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
   }
 
   async chat(req: ChatRequest): Promise<ChatResponse> {
+    this.assertGeminiRouteAllowed();
     const key = this.getApiKey();
+    const reservation = await this.reserveCloudflare(req);
+    let usage: ChatResponse["usage"];
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
@@ -119,7 +144,9 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       this.observe(res, req.model);
       if (!res.ok) throw this.handleError(res.status, await safeText(res), res);
       const data = (await res.json()) as OaiChatResponse;
-      return this.fromResponse(data);
+      const response = this.fromResponse(data);
+      usage = response.usage;
+      return response;
     } catch (e) {
       if (e instanceof ProviderError) throw e;
       if (e instanceof Error && e.name === "AbortError") {
@@ -132,11 +159,15 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       );
     } finally {
       clearTimeout(timeout);
+      await this.settleCloudflare(reservation, usage);
     }
   }
 
   async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+    this.assertGeminiRouteAllowed();
     const key = this.getApiKey();
+    const reservation = await this.reserveCloudflare(req);
+    let usage: ChatResponse["usage"];
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     const onExternalAbort = () => controller.abort();
@@ -206,14 +237,15 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
             }
           }
           if (parsed.usage) {
+            usage = {
+              inputTokens: parsed.usage.prompt_tokens ?? 0,
+              outputTokens: parsed.usage.completion_tokens ?? 0,
+              totalTokens: parsed.usage.total_tokens,
+              ...cachedFieldsFromOaiUsage(parsed.usage),
+            };
             yield {
               type: "usage",
-              usage: {
-                inputTokens: parsed.usage.prompt_tokens ?? 0,
-                outputTokens: parsed.usage.completion_tokens ?? 0,
-                totalTokens: parsed.usage.total_tokens,
-                ...cachedFieldsFromOaiUsage(parsed.usage),
-              },
+              usage,
             };
           }
         }
@@ -230,7 +262,29 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     } finally {
       clearTimeout(timeout);
       if (signal) signal.removeEventListener("abort", onExternalAbort);
+      await this.settleCloudflare(reservation, usage);
     }
+  }
+
+  canRoute(modelId: string): boolean {
+    if (this.providerId === "cloudflare-workers-ai") return this.cloudflareNeuronGuard?.canRoute(modelId) === true;
+    if (this.providerId === "google" && this.geminiServiceTier === "UNPAID") return this.geminiFreePolicyGate?.evaluate().decision === "ALLOW";
+    return true;
+  }
+
+  private assertGeminiRouteAllowed(): void {
+    if (this.providerId !== "google" || this.geminiServiceTier !== "UNPAID") return;
+    const decision = this.geminiFreePolicyGate?.evaluate();
+    if (!decision || decision.decision === "ALLOW") return;
+    throw new ProviderError(`google route blocked by ${decision.reasonCode}`, decision.reasonCode);
+  }
+
+  private async reserveCloudflare(req: ChatRequest): Promise<CloudflareNeuronReservation | undefined> {
+    return this.cloudflareNeuronGuard ? this.cloudflareNeuronGuard.reserve(req) : undefined;
+  }
+
+  private async settleCloudflare(reservation: CloudflareNeuronReservation | undefined, usage: ChatResponse["usage"]): Promise<void> {
+    if (reservation) await reservation.settleUsage(usage);
   }
 
   async healthCheck(): Promise<ProviderHealthResponse> {

@@ -96,6 +96,7 @@ export function discoverAndVerifyFree(
   const overlays: CodeForgeOverlay[] = [];
 
   for (const live of liveModels) {
+    if (!isNormalProductionModel(providerId, live.modelId)) continue;
     const known = registry.get(providerId, live.modelId);
     // The connected provider's own catalog is authoritative for the capabilities of the route it
     // actually serves (a ":free" variant may lack tool calling the base model advertises upstream).
@@ -128,6 +129,13 @@ export interface ProbeResult {
 }
 
 const NON_CHAT_RE = /whisper|embed|tts|\bstt\b|lyria|guard|safety|moderation|rerank/i;
+const EXPERIMENTAL_MODEL_RE = /(^|[-_./:])(beta|preview|labs?)([-_./:]|$)/i;
+
+/** Preview, beta, and Labs routes are not durable production capacity. */
+export function isNormalProductionModel(providerId: string, modelId: string): boolean {
+  if (providerId !== "mistral" && providerId !== "cerebras") return true;
+  return !EXPERIMENTAL_MODEL_RE.test(modelId);
+}
 
 /**
  * Verify an ALLOWANCE provider's free tier by an actual no-charge probe request. Allowance
@@ -149,7 +157,13 @@ export async function verifyAllowanceViaProbe(
   const overlays: CodeForgeOverlay[] = [];
   if (!policy?.hasAllowanceFree) return { records, overlays, verifiedCount: 0 };
 
-  const candidates = liveModels.filter((m) => !NON_CHAT_RE.test(m.modelId));
+  const candidates = liveModels.filter((m) => {
+    if (NON_CHAT_RE.test(m.modelId)) return false;
+    if (!isNormalProductionModel(providerId, m.modelId)) return false;
+    if (policy.allowanceScope === "allowlist" && !policy.allowanceModels?.includes(m.modelId)) return false;
+    if (policy.paidPlanModels?.includes(m.modelId)) return false;
+    return true;
+  });
   if (candidates.length === 0) return { records, overlays, verifiedCount: 0 };
 
   const rep =

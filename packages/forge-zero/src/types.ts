@@ -47,6 +47,19 @@ export const ModelBenchmarkProfileSchema = z.object({
 });
 export type ModelBenchmarkProfile = z.infer<typeof ModelBenchmarkProfileSchema>;
 
+/** Provider/legal facts surfaced to 8-Bit for reporting. Acceptance remains outside 8-Bit. */
+export const ProviderPolicyMetadataSchema = z.object({
+  commercial_packaging_eligible: z.boolean(),
+  user_policy_acceptance_required: z.boolean(),
+  region_restrictions: z.array(z.string()),
+  data_use_class: z.enum(["TRAINING_POSSIBLE", "HUMAN_REVIEW_POSSIBLE", "STANDARD_PROVIDER_TERMS", "UNKNOWN"]),
+  confidential_data_eligible: z.boolean(),
+  free_or_paid_class: z.enum(["UNPAID_ALLOWANCE", "TRIAL_CREDIT", "PAID_API", "UNKNOWN"]),
+  policy_revision: z.string(),
+  official_terms_url: z.string().url().optional(),
+});
+export type ProviderPolicyMetadata = z.infer<typeof ProviderPolicyMetadataSchema>;
+
 export const ModelHealthStateSchema = z.object({
   status: z.enum([
     "configured",
@@ -257,6 +270,7 @@ export const FreeModelRecordSchema = z.object({
   lifecycle: ManagedFreeLifecycleSchema.optional(),
   replacementCandidate: ReplacementCandidateSchema.optional(),
   lastSuccessfulRuntimeProof: RuntimeProofSchema.optional(),
+  policyMetadata: ProviderPolicyMetadataSchema.optional(),
 });
 export type FreeModelRecord = z.infer<typeof FreeModelRecordSchema>;
 

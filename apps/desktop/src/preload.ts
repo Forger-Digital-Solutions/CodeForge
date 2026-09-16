@@ -139,6 +139,7 @@ const api = {
   getProviderCatalog: (providerId: string): Promise<{ ok: boolean; error?: string; models?: unknown[] }> => ipcRenderer.invoke("provider:catalog", providerId),
   disconnectProvider: (providerId: string): Promise<void> => ipcRenderer.invoke("provider:disconnect", providerId),
   attestProviderFreePlan: (providerId: string, attested: boolean): Promise<void> => ipcRenderer.invoke("provider:attestFreePlan", providerId, attested),
+  setGeminiFreePolicyAccepted: (accepted: boolean): Promise<void> => ipcRenderer.invoke("provider:setGeminiFreePolicyAccepted", accepted),
   setProviderEnabledModels: (providerId: string, modelIds: string[] | null): Promise<void> => ipcRenderer.invoke("provider:setEnabledModels", providerId, modelIds),
   getFreeCloudOffer: (): Promise<unknown> => ipcRenderer.invoke("freecloud:offer"),
   getFreeCloudSummary: (): Promise<unknown> => ipcRenderer.invoke("freecloud:summary"),

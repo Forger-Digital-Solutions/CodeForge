@@ -126,6 +126,10 @@ export async function attestFreePlan(providerId: string, attested: boolean): Pro
   await bridge()?.attestProviderFreePlan?.(providerId, attested);
 }
 
+export async function setGeminiFreePolicyAccepted(accepted: boolean): Promise<void> {
+  await bridge()?.setGeminiFreePolicyAccepted?.(accepted);
+}
+
 export async function setEnabledModels(providerId: string, modelIds: string[] | null): Promise<void> {
   await bridge()?.setProviderEnabledModels?.(providerId, modelIds);
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ForgeZero } from "@codeforge/forge-zero";
-import { NormalizedModelRegistry, verifyAllowanceViaProbe, type LiveModelInfo } from "../src/index.js";
+import { NormalizedModelRegistry, verifyAllowanceViaProbe, isNormalProductionModel, type LiveModelInfo } from "../src/index.js";
 
 const NOW = new Date("2026-08-29T12:00:00Z");
 const now = () => NOW;
@@ -40,5 +40,32 @@ describe("FREE_ALLOWANCE verification via live probe", () => {
     const reg = new NormalizedModelRegistry({ now });
     const res = await verifyAllowanceViaProbe(reg, "openrouter", [{ modelId: "x", isFree: false }], async () => ({ ok: true }), { now });
     expect(res.verifiedCount).toBe(0);
+  });
+
+  it("does not promote Cloudflare paid-plan or unlisted catalog models after one allowlist probe", async () => {
+    const reg = new NormalizedModelRegistry({ now });
+    reg.loadSnapshot();
+    const probed: string[] = [];
+    const res = await verifyAllowanceViaProbe(
+      reg,
+      "cloudflare-workers-ai",
+      [
+        { modelId: "@cf/openai/gpt-oss-20b", isFree: false },
+        { modelId: "@cf/zai-org/glm-5.3", isFree: false },
+        { modelId: "@cf/example/unlisted", isFree: false },
+      ],
+      async (modelId) => { probed.push(modelId); return { ok: true }; },
+      { now },
+    );
+    expect(probed).toEqual(["@cf/openai/gpt-oss-20b"]);
+    expect(res.records.map((record) => record.modelId)).toEqual(["@cf/openai/gpt-oss-20b"]);
+  });
+
+  it("excludes Mistral preview, beta, and Labs routes from normal production discovery", () => {
+    expect(isNormalProductionModel("mistral", "mistral-large-preview")).toBe(false);
+    expect(isNormalProductionModel("mistral", "mistral-small-beta")).toBe(false);
+    expect(isNormalProductionModel("mistral", "mistral-labs/coder")).toBe(false);
+    expect(isNormalProductionModel("mistral", "mistral-small-latest")).toBe(true);
+    expect(isNormalProductionModel("groq", "preview-model")).toBe(true);
   });
 });
