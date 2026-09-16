@@ -344,6 +344,23 @@ describe("free cloud snapshot", () => {
     // NVIDIA's $0 listing is a dev endpoint → TRIAL → not a free candidate at all.
     expect(snap.models.find((m) => m.canonicalId.includes("nemotron-3-super"))).toBeUndefined();
   });
+
+  it("does not report a quota-exhausted route as executable for exact selection", () => {
+    const fw = new ForgeZero();
+    fw.register(freeRecord("groq", "openai/gpt-oss-120b"));
+    const snap = buildFreeCloudSnapshot({
+      firewall: fw,
+      connections: [connected("groq", { planAttested: true })],
+      qualification: new Map([["groq::openai/gpt-oss-120b", receipt("groq", "openai/gpt-oss-120b")]]),
+      routeHealth: () => ({ status: "QUOTA_EXHAUSTED" }),
+      now: () => NOW,
+    });
+    const route = snap.models[0]!.routes[0]!;
+    expect(route.health).toBe("QUOTA_EXHAUSTED");
+    expect(route.executable).toBe(false);
+    expect(route.forgeAutoEligible).toBe(false);
+    expect(snap.models[0]!.readiness).toBe("FREE_TEMPORARILY_UNAVAILABLE");
+  });
 });
 
 describe("quota capture", () => {

@@ -209,6 +209,43 @@ describe("CodeForge overlay independence & verification", () => {
     expect(verifyZeroUnitFree(rec, { confirmedByLiveCatalog: true, now })).toBeNull();
     expect(verifyAllowanceFree(rec, { probeSucceeded: true, now })).toBeNull();
   });
+
+  it("bridges fleet qualification and lifecycle evidence into ForgeZero records", () => {
+    const reg = new NormalizedModelRegistry({ now });
+    reg.loadDoc(fakeDoc(), "live", NOW.toISOString());
+    reg.overlay.merge({
+      providerId: "zai",
+      modelId: "glm-4.5-flash",
+      verifiedFree: true,
+      qualificationVersion: "managed-free-2026-09-15",
+      roleSuitability: { PRIMARY_CODING_AGENT: "QUALIFIED", SUBAGENT: "PROBATION" },
+      capacityEvidence: {
+        requestsPerDay: { value: 1000, provenance: "DOCUMENTED" },
+        resetSemantics: "FIXED",
+        runtimeHeadersObserved: false,
+      },
+      lifecycle: "REPLACEMENT_PENDING",
+      replacementCandidate: {
+        providerId: "groq",
+        modelId: "openai/gpt-oss-20b",
+        reason: "replacement proof",
+      },
+      lastSuccessfulRuntimeProof: {
+        status: "PASSED",
+        kind: "QUALIFICATION",
+        verifiedAt: NOW.toISOString(),
+        evidenceRef: "tests/evidence/managed-free-fleet-qualification-2026-09-15.json",
+      },
+    });
+
+    const bridged = reg.toFreeModelRecord(reg.get("zai", "glm-4.5-flash")!);
+    expect(bridged.qualificationVersion).toBe("managed-free-2026-09-15");
+    expect(bridged.roleSuitability?.PRIMARY_CODING_AGENT).toBe("QUALIFIED");
+    expect(bridged.capacityEvidence?.requestsPerDay?.value).toBe(1000);
+    expect(bridged.lifecycle).toBe("REPLACEMENT_PENDING");
+    expect(bridged.replacementCandidate?.modelId).toBe("openai/gpt-oss-20b");
+    expect(bridged.lastSuccessfulRuntimeProof?.status).toBe("PASSED");
+  });
 });
 
 describe("Cache & snapshot fallback (offline resilience)", () => {

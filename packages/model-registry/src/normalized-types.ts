@@ -3,6 +3,11 @@ import {
   AccessClassSchema,
   AuthModeSchema,
   PrivacyClassSchema,
+  ManagedFreeLifecycleSchema,
+  ReplacementCandidateSchema,
+  RoleQualificationStateSchema,
+  RouteCapacityEvidenceSchema,
+  RuntimeProofSchema,
   type AccessClass,
 } from "@codeforge/forge-zero";
 
@@ -110,6 +115,12 @@ export const CodeForgeOverlaySchema = z.object({
 
   lastVerified: z.string().optional(),
   verificationSource: z.string().optional(),
+  qualificationVersion: z.string().optional(),
+  roleSuitability: z.record(RoleQualificationStateSchema).optional(),
+  capacityEvidence: RouteCapacityEvidenceSchema.optional(),
+  lifecycle: ManagedFreeLifecycleSchema.optional(),
+  replacementCandidate: ReplacementCandidateSchema.optional(),
+  lastSuccessfulRuntimeProof: RuntimeProofSchema.optional(),
 });
 export type CodeForgeOverlay = z.infer<typeof CodeForgeOverlaySchema>;
 

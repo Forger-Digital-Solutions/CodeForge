@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "campaign": "managed-free-fleet-qualification",
+  "generatedAt": "2026-09-15",
+  "verdict": "QUALIFIED_WITH_CAPACITY_LIMITATIONS",
+  "zeroCashPolicy": "No purchases, paid inference, paid spillover, local inference, or credential values were used.",
+  "rosterPolicy": "Return only genuinely qualified canonical models; do not pad to thirteen slots.",
+  "counts": {
+    "canonicalQualifiedModels": 5,
+    "freshlyLiveQualifiedRoutes": 3,
+    "temporarilyUnavailableOrStaleRoutes": 3,
+    "userFacingSlotsUsed": 5,
+    "userFacingSlotsRemaining": 8
+  },
+  "currentCatalogDiscovery": {
+    "providerId": "openrouter",
+    "verifiedFreeCandidates": 23,
+    "provenance": "OBSERVED",
+    "qualificationStatus": "DISCOVERY_ONLY",
+    "note": "The full test-suite catalog refresh observed current zero-unit candidates; no role qualification or capacity promotion was inferred from discovery."
+  },
+  "roster": [
+    {
+      "slot": 1,
+      "canonicalModelId": "openai/gpt-oss-120b",
+      "displayName": "GPT-OSS 120B",
+      "providerBackends": [
+        { "providerId": "groq", "modelId": "openai/gpt-oss-120b", "state": "ACTIVE_LIVE_PROOF" },
+        { "providerId": "cloudflare-workers-ai", "modelId": "@cf/openai/gpt-oss-120b", "state": "TEMPORARILY_QUOTA_EXHAUSTED" }
+      ],
+      "qualifiedRoles": { "PRIMARY_CODING_AGENT": "QUALIFIED", "SUBAGENT": "PROBATION", "SEARCH_ASSIST": "NOT_QUALIFIED", "SUMMARIZER": "NOT_QUALIFIED" },
+      "contextWindow": { "value": 131072, "provenance": "DOCUMENTED", "source": "apps/desktop/release/r5-evidence/live/profile/Cache/Cache_Data/f_00023e" },
+      "toolCompatibility": "Agent tool/edit loop observed; structured-output role remains probationary.",
+      "capacityClass": "ACCOUNT_DEPENDENT_FREE_DAILY_ALLOCATION",
+      "capacityEvidence": { "requestsPerMinute": { "value": 30, "provenance": "DOCUMENTED" }, "requestsPerDay": { "value": 1000, "provenance": "OBSERVED" }, "tokensPerMinute": { "value": 8000, "provenance": "OBSERVED" }, "tokensPerDay": { "value": 200000, "provenance": "DOCUMENTED" }, "resetSemantics": "ROLLING", "runtimeHeadersObserved": true },
+      "liveProofState": "GROQ_CERTIFIED_2026-09-15",
+      "policyState": "CLEARED_WITH_ACCOUNT_PLAN_ATTESTATION"
+    },
+    {
+      "slot": 2,
+      "canonicalModelId": "openai/gpt-oss-20b",
+      "displayName": "GPT-OSS 20B",
+      "providerBackends": [
+        { "providerId": "groq", "modelId": "openai/gpt-oss-20b", "state": "ACTIVE_LIVE_PROOF" },
+        { "providerId": "cloudflare-workers-ai", "modelId": "@cf/openai/gpt-oss-20b", "state": "TEMPORARILY_QUOTA_EXHAUSTED" }
+      ],
+      "qualifiedRoles": { "PRIMARY_CODING_AGENT": "QUALIFIED", "SUBAGENT": "QUALIFIED", "SEARCH_ASSIST": "QUALIFIED", "SUMMARIZER": "QUALIFIED" },
+      "contextWindow": { "value": 131072, "provenance": "DOCUMENTED", "source": "apps/desktop/release/r5-evidence/live/profile/Cache/Cache_Data/f_00023e" },
+      "toolCompatibility": "Tool call, edit, and structured-output probes passed on Groq.",
+      "capacityClass": "ACCOUNT_DEPENDENT_FREE_DAILY_ALLOCATION",
+      "capacityEvidence": { "requestsPerMinute": { "value": 30, "provenance": "DOCUMENTED" }, "requestsPerDay": { "value": 1000, "provenance": "OBSERVED" }, "tokensPerMinute": { "value": 8000, "provenance": "OBSERVED" }, "tokensPerDay": { "value": 200000, "provenance": "DOCUMENTED" }, "resetSemantics": "ROLLING", "runtimeHeadersObserved": true },
+      "liveProofState": "GROQ_CERTIFIED_2026-09-15",
+      "policyState": "CLEARED_WITH_ACCOUNT_PLAN_ATTESTATION"
+    },
+    {
+      "slot": 3,
+      "canonicalModelId": "qwen/qwen3.8-27b",
+      "displayName": "Qwen 3.8 27B",
+      "providerBackends": [
+        { "providerId": "groq", "modelId": "qwen/qwen3.8-27b", "state": "ACTIVE_LIVE_PROOF" },
+        { "providerId": "cloudflare-workers-ai", "modelId": "@cf/qwen/qwen3.8-27b", "state": "TEMPORARILY_QUOTA_EXHAUSTED" }
+      ],
+      "qualifiedRoles": { "PRIMARY_CODING_AGENT": "QUALIFIED", "SUBAGENT": "QUALIFIED", "SEARCH_ASSIST": "QUALIFIED", "SUMMARIZER": "QUALIFIED" },
+      "contextWindow": { "value": 262144, "provenance": "DOCUMENTED", "source": "apps/desktop/release/r5-evidence/live/profile/Cache/Cache_Data/f_00023e" },
+      "toolCompatibility": "Tool call, edit, and structured-output probes passed on Groq.",
+      "capacityClass": "ACCOUNT_DEPENDENT_FREE_DAILY_ALLOCATION",
+      "capacityEvidence": { "requestsPerMinute": { "value": 30, "provenance": "DOCUMENTED" }, "requestsPerDay": { "value": 1000, "provenance": "OBSERVED" }, "tokensPerMinute": { "value": 8000, "provenance": "OBSERVED" }, "tokensPerDay": { "value": 200000, "provenance": "DOCUMENTED" }, "resetSemantics": "ROLLING", "runtimeHeadersObserved": true },
+      "liveProofState": "GROQ_CERTIFIED_2026-09-15",
+      "policyState": "CLEARED_WITH_ACCOUNT_PLAN_ATTESTATION"
+    },
+    {
+      "slot": 4,
+      "canonicalModelId": "nvidia/nemotron-3-super-120b-a12b",
+      "displayName": "Nemotron 3 Super",
+      "providerBackends": [
+        { "providerId": "openrouter", "modelId": "nvidia/nemotron-3-super-120b-a12b:free", "state": "QUALIFIED_STALE_CAPACITY" },
+        { "providerId": "cloudflare-workers-ai", "modelId": "@cf/nvidia/nemotron-3-120b-a12b", "state": "TEMPORARILY_QUOTA_EXHAUSTED" }
+      ],
+      "qualifiedRoles": { "PRIMARY_CODING_AGENT": "QUALIFIED", "SUBAGENT": "QUALIFIED", "SEARCH_ASSIST": "QUALIFIED", "SUMMARIZER": "QUALIFIED" },
+      "contextWindow": { "value": 262144, "provenance": "DOCUMENTED", "source": "apps/desktop/release/r5-evidence/live/profile/Cache/Cache_Data/f_00023e" },
+      "toolCompatibility": "Tool and structured-output capability recorded in the OpenRouter qualification receipt.",
+      "capacityClass": "FREE_ROUTED_ACCOUNT_COUNTER_UNKNOWN",
+      "capacityEvidence": { "requestsPerMinute": { "value": 20, "provenance": "DOCUMENTED" }, "requestsPerDay": { "value": 1000, "provenance": "DOCUMENTED" }, "tokensPerMinute": { "value": null, "provenance": "UNKNOWN" }, "tokensPerDay": { "value": null, "provenance": "UNKNOWN" }, "resetSemantics": "UNKNOWN", "runtimeHeadersObserved": false },
+      "liveProofState": "OPENROUTER_R5_QUALIFIED_NOT_CURRENTLY_RECERTIFIED",
+      "policyState": "CLEARED_FREE_ROUTE_EXACT_PIN_REQUIRED"
+    },
+    {
+      "slot": 5,
+      "canonicalModelId": "zai/glm-4.7-flash",
+      "displayName": "GLM-4.7 Flash",
+      "providerBackends": [
+        { "providerId": "cloudflare-workers-ai", "modelId": "@cf/zai-org/glm-4.7-flash", "state": "QUALIFIED_STALE_CAPACITY" },
+        { "providerId": "zai", "modelId": "glm-4.7-flash", "state": "AUTH_PENDING" }
+      ],
+      "qualifiedRoles": { "PRIMARY_CODING_AGENT": "QUALIFIED", "SUBAGENT": "PROBATION", "SEARCH_ASSIST": "NOT_QUALIFIED", "SUMMARIZER": "NOT_QUALIFIED" },
+      "contextWindow": { "value": 131072, "provenance": "DOCUMENTED", "source": "Cloudflare Workers AI model catalog" },
+      "toolCompatibility": "Coder probe passed in earlier Cloudflare qualification; tool-agent evidence is probationary.",
+      "capacityClass": "FREE_DAILY_ALLOCATION_HARD_STOP",
+      "capacityEvidence": { "requestsPerMinute": { "value": null, "provenance": "UNKNOWN" }, "requestsPerDay": { "value": null, "provenance": "UNKNOWN" }, "tokensPerMinute": { "value": null, "provenance": "UNKNOWN" }, "tokensPerDay": { "value": 10000, "provenance": "DOCUMENTED" }, "resetSemantics": "FIXED", "runtimeHeadersObserved": false },
+      "liveProofState": "CLOUDFLARE_PREVIOUSLY_QUALIFIED_CURRENTLY_429_QUOTA_EXHAUSTED",
+      "policyState": "CLEARED_FREE_ALLOWLIST_DIRECT_ZAI_AUTH_PENDING"
+    },
+  ],
+  "providerStates": [
+    { "providerId": "groq", "state": "MANAGED_FREE_QUALIFIED", "reason": "Fresh bounded live certification for three exact models; free plan must be attested because the API does not expose plan state." },
+    { "providerId": "cloudflare-workers-ai", "state": "MANAGED_FREE_LIMITED", "reason": "Free 10,000-neuron/day hard stop observed as HTTP 429; paid-only models remain excluded." },
+    { "providerId": "openrouter", "state": "MANAGED_FREE_LIMITED", "reason": "Exact :free route qualified historically; documented daily allowance exists but current remaining counter is unknown." },
+    { "providerId": "zai", "state": "AUTH_PENDING", "reason": "No operator credential; no live call attempted." },
+    { "providerId": "cerebras", "state": "PROMOTIONAL_ONLY", "reason": "Current offer is a time-boxed $5 Free Trial, not a recurring managed-free tier." },
+    { "providerId": "google", "state": "POLICY_PENDING", "reason": "Free tier is account/project-dependent and documents content use for product improvement." },
+    { "providerId": "sambanova", "state": "AUTH_PENDING", "reason": "Free tier is documented, but no connected account attestation or qualification receipt exists." },
+    { "providerId": "mistral", "state": "POLICY_PENDING", "reason": "Free mode exists, but Admin plan/usage/pay-as-you-go state and free-tier data policy require attestation." },
+    { "providerId": "ollama-cloud", "state": "USER_CONNECTED_FREE", "reason": "Consumer/user-connected starter usage; no managed adapter and no central CodeForge entitlement." },
+    { "providerId": "nvidia", "state": "PROMOTIONAL_ONLY", "reason": "Developer/evaluation access is not a durable production managed-free allowance." },
+    { "providerId": "huggingface", "state": "PROMOTIONAL_ONLY", "reason": "Small promotional credits can spill into PAYG." },
+    { "providerId": "togetherai", "state": "PROMOTIONAL_ONLY", "reason": "Signup credits only; no durable free production class." },
+    { "providerId": "fireworks-ai", "state": "PROMOTIONAL_ONLY", "reason": "Signup credits only; no durable free production class." },
+    { "providerId": "poolside", "state": "POLICY_PENDING", "reason": "Preview terms and capacity are not sufficiently documented for default routing." },
+    { "providerId": "siliconflow", "state": "POLICY_PENDING", "reason": "Free-model program terms are not independently reviewed." },
+    { "providerId": "deepseek", "state": "PAID_ONLY", "reason": "Direct API is pay-as-you-go." },
+    { "providerId": "kilo", "state": "POLICY_PENDING", "reason": "Legal/privacy review remains open." },
+    { "providerId": "opencode", "state": "POLICY_PENDING", "reason": "Preview/free route status requires current external qualification." }
+  ],
+  "r4": {
+    "verdict": "CODEFORGE_R4_CAPACITY_LIMITED_EXTERNAL_EVIDENCE_PENDING",
+    "reassessed": false,
+    "reason": "No new route entered ForgeAuto with fresh capacity proof sufficient to change the 520-task deterministic baseline or the blocked 373-DAU/heavy-user cases.",
+    "evidence": ["docs/r4-campaign-report.md", "tests/evidence/r4-scale/scale-report.json"]
+  },
+  "subscriptionDecision": {
+    "decision": "NOT_NEEDED",
+    "purchases": 0,
+    "reason": "Paid plans would change the economic class or spillover risk; they are not required to preserve the currently qualified free roster."
+  },
+  "security": {
+    "secretsRecorded": false,
+    "localInferenceUsed": false,
+    "paidInferenceUsed": false,
+    "credentialsPrinted": false
+  }
+}

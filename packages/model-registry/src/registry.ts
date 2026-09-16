@@ -214,6 +214,12 @@ export class NormalizedModelRegistry {
       lastVerified: overlay?.lastVerified,
       verificationSource: overlay?.verificationSource,
       empiricalStatus: overlay?.empiricalStatus,
+      qualificationVersion: overlay?.qualificationVersion,
+      roleSuitability: overlay?.roleSuitability,
+      capacityEvidence: overlay?.capacityEvidence,
+      lifecycle: overlay?.lifecycle,
+      replacementCandidate: overlay?.replacementCandidate,
+      lastSuccessfulRuntimeProof: overlay?.lastSuccessfulRuntimeProof,
       health,
     };
   }

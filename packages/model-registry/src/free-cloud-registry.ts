@@ -130,6 +130,12 @@ export interface ProviderRouteView {
   cooldownUntil?: number;
   qualificationState: QualificationState;
   roles: ModelRole[];
+  qualificationVersion?: string;
+  roleSuitability?: Record<string, QualificationState>;
+  capacityEvidence?: FreeModelRecord["capacityEvidence"];
+  lifecycle?: FreeModelRecord["lifecycle"];
+  replacementCandidate?: FreeModelRecord["replacementCandidate"];
+  lastSuccessfulRuntimeProof?: FreeModelRecord["lastSuccessfulRuntimeProof"];
   admission: AdmissionResult;
   forgeAutoEligible: boolean;
   /** True when the route can execute right now for an explicit (non-Auto) selection. */
@@ -226,11 +232,14 @@ function bestAuthClass(def: ProviderDefinition | undefined, conn: ProviderConnec
   return def?.authClasses[0] ?? "UNSUPPORTED";
 }
 
-function qualificationFor(receipt: ModelQualificationReceipt | undefined, now: Date): { state: QualificationState; roles: ModelRole[] } {
+function qualificationFor(receipt: ModelQualificationReceipt | undefined, now: Date): { state: QualificationState; roles: ModelRole[]; version?: string; roleSuitability?: Record<string, QualificationState> } {
   if (!receipt) return { state: "NOT_TESTED", roles: [] };
   const ageMs = now.getTime() - new Date(receipt.completedAt).getTime();
-  if (!(ageMs < 30 * 24 * 60 * 60 * 1000)) return { state: "STALE", roles: [] };
+  if (!(ageMs < 30 * 24 * 60 * 60 * 1000)) return { state: "STALE", roles: [], version: receipt.suiteVersion };
   const qualified = new Set(Object.entries(receipt.roleResults).filter(([, r]) => r.status === "QUALIFIED").map(([role]) => role));
+  const roleSuitability = Object.fromEntries(
+    Object.entries(receipt.roleResults).map(([role, result]) => [role, result.status as QualificationState]),
+  );
   const roles: ModelRole[] = [];
   if (qualified.has("CODER") || qualified.has("TOOL_AGENT")) roles.push("PRIMARY_CODING_AGENT");
   if (qualified.has("PLANNER")) roles.push("PLANNER");
@@ -244,7 +253,7 @@ function qualificationFor(receipt: ModelQualificationReceipt | undefined, now: D
       : receipt.qualificationState === "PROBATION" ? "PROBATION"
         : receipt.qualificationState === "HARD_FAILURE" ? "HARD_FAILURE"
           : "NOT_QUALIFIED";
-  return { state, roles: [...new Set(roles)] };
+  return { state, roles: [...new Set(roles)], version: receipt.suiteVersion, roleSuitability };
 }
 
 function healthFrom(model: FreeModelRecord | undefined, live: { status: RouteHealth; cooldownUntil?: number } | undefined, conn: ProviderConnectionState | undefined, now: Date): { health: RouteHealth; cooldownUntil?: number } {
@@ -427,7 +436,8 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
       roles: q.roles,
     });
     const verifiedFree = seed.model?.freeStatus === "verified_free";
-    const executable = !!seed.model && !!conn?.connected && conn.authState !== "auth_required" && inputs.firewall.canRouteTo(seed.providerId, seed.modelId) && h.health !== "COOLDOWN" && h.health !== "UNAVAILABLE";
+    const executionBlockedHealth: readonly RouteHealth[] = ["COOLDOWN", "UNAVAILABLE", "AUTH_REQUIRED", "QUOTA_EXHAUSTED", "INELIGIBLE"];
+    const executable = !!seed.model && !!conn?.connected && conn.authState !== "auth_required" && inputs.firewall.canRouteTo(seed.providerId, seed.modelId) && !executionBlockedHealth.includes(h.health);
     routes.push({
       routeId: routeKey(seed.providerId, seed.modelId),
       canonicalModelId: identity.canonicalId,
@@ -454,6 +464,12 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
       cooldownUntil: h.cooldownUntil,
       qualificationState: q.state,
       roles: q.roles,
+      qualificationVersion: q.version,
+      roleSuitability: q.roleSuitability,
+      capacityEvidence: seed.model?.capacityEvidence,
+      lifecycle: seed.model?.lifecycle,
+      replacementCandidate: seed.model?.replacementCandidate,
+      lastSuccessfulRuntimeProof: seed.model?.lastSuccessfulRuntimeProof,
       admission,
       forgeAutoEligible: admission.state === "FORGEAUTO_ELIGIBLE",
       executable,

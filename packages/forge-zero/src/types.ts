@@ -70,6 +70,49 @@ export const ModelHealthStateSchema = z.object({
 });
 export type ModelHealthState = z.infer<typeof ModelHealthStateSchema>;
 
+export const EvidenceProvenanceSchema = z.enum(["DOCUMENTED", "OBSERVED", "DERIVED", "UNKNOWN"]);
+export type EvidenceProvenance = z.infer<typeof EvidenceProvenanceSchema>;
+
+const CapacityValueSchema = z.object({
+  value: z.number().nonnegative().nullable(),
+  provenance: EvidenceProvenanceSchema,
+  observedAt: z.string().datetime().optional(),
+  source: z.string().optional(),
+});
+
+export const RouteCapacityEvidenceSchema = z.object({
+  requestsPerMinute: CapacityValueSchema.optional(),
+  requestsPerDay: CapacityValueSchema.optional(),
+  tokensPerMinute: CapacityValueSchema.optional(),
+  tokensPerDay: CapacityValueSchema.optional(),
+  concurrency: CapacityValueSchema.optional(),
+  resetSemantics: z.enum(["ROLLING", "FIXED", "UNKNOWN"]).optional(),
+  runtimeHeadersObserved: z.boolean().optional(),
+});
+export type RouteCapacityEvidence = z.infer<typeof RouteCapacityEvidenceSchema>;
+
+export const ManagedFreeLifecycleSchema = z.enum(["ACTIVE", "DEGRADED", "DEPRECATED", "RETIRED", "REPLACEMENT_PENDING"]);
+export type ManagedFreeLifecycle = z.infer<typeof ManagedFreeLifecycleSchema>;
+
+export const RoleQualificationStateSchema = z.enum(["QUALIFIED", "PROBATION", "NOT_QUALIFIED", "HARD_FAILURE", "NOT_TESTED", "STALE"]);
+export type RoleQualificationState = z.infer<typeof RoleQualificationStateSchema>;
+
+export const ReplacementCandidateSchema = z.object({
+  providerId: z.string(),
+  modelId: z.string(),
+  canonicalModelId: z.string().optional(),
+  reason: z.string(),
+});
+export type ReplacementCandidate = z.infer<typeof ReplacementCandidateSchema>;
+
+export const RuntimeProofSchema = z.object({
+  status: z.enum(["PASSED", "FAILED"]),
+  kind: z.enum(["CATALOG", "INFERENCE", "TOOL_LOOP", "QUALIFICATION"]),
+  verifiedAt: z.string().datetime(),
+  evidenceRef: z.string(),
+});
+export type RuntimeProof = z.infer<typeof RuntimeProofSchema>;
+
 /**
  * CodeForge free-access classification. Preserves meaningful distinctions instead of
  * collapsing everything into a single misleading `free` boolean.
@@ -205,6 +248,15 @@ export const FreeModelRecordSchema = z.object({
   verificationSource: z.string().optional(),
   /** Empirical CodeForge certification-workload status. */
   empiricalStatus: z.enum(["untested", "passing", "degraded", "failing"]).optional(),
+  /** Qualification suite/version that produced the role evidence. */
+  qualificationVersion: z.string().optional(),
+  /** Role-level qualification is intentionally independent; a model may be a Coder but not a Reviewer. */
+  roleSuitability: z.record(RoleQualificationStateSchema).optional(),
+  /** Capacity facts retain provenance; unknown is represented by null, never by zero. */
+  capacityEvidence: RouteCapacityEvidenceSchema.optional(),
+  lifecycle: ManagedFreeLifecycleSchema.optional(),
+  replacementCandidate: ReplacementCandidateSchema.optional(),
+  lastSuccessfulRuntimeProof: RuntimeProofSchema.optional(),
 });
 export type FreeModelRecord = z.infer<typeof FreeModelRecordSchema>;
 

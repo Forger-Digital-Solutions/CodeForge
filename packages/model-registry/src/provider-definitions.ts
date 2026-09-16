@@ -153,7 +153,7 @@ export interface ProviderDefinition {
   discovered?: boolean;
 }
 
-const CHECKED = "2026-09-12";
+const CHECKED = "2026-09-15";
 
 function apiKeyField(aliases: string[], help?: string): ConnectionField {
   return { id: "apiKey", label: "API key", secret: true, environmentAliases: aliases, help };
@@ -195,7 +195,7 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
       quota: "`:free` variants: 20 RPM; 50 requests/day (<10 credits purchased) or 1,000/day (>=10 credits)",
       spillover: "NONE",
       planDetection: "not_required",
-      evidence: { source: "https://openrouter.ai/docs/api-reference/limits + live /api/v1/models pricing", checkedAt: CHECKED, note: "Free variants list prompt/completion price 0; a negative balance can 402 even free routes." },
+      evidence: { source: "https://openrouter.ai/docs/api_reference/limits + live /api/v1/models pricing", checkedAt: CHECKED, note: "Free variants list prompt/completion price 0; a negative balance can 402 even free routes." },
     },
     privacy: { class: "standard", note: "Free variants may be served by providers that log/train; see OpenRouter model data policy." },
     terms: { status: "CLEARED", note: "OpenRouter documents PKCE for third-party desktop apps.", source: "https://openrouter.ai/docs/use-cases/oauth-pkce" },
@@ -335,11 +335,11 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
     discoverySources: ["models.dev", "live-catalog"],
     freeAccess: {
       class: "FREE_MONTHLY_ALLOWANCE",
-      quota: "Experiment plan (free, phone-verified, data-training opt-in); paid workspaces bill",
+      quota: "Free mode includes monthly usage; current RPS, TPM, and monthly token limits are shown in the Admin Limits page; pay-as-you-go extends usage and bills",
       spillover: "ACCOUNT_DEPENDENT",
       planDetection: "attestation",
       allowanceScope: "all_chat_models",
-      evidence: { source: "https://docs.mistral.ai/deployment/laplateforme/tier", checkedAt: CHECKED },
+      evidence: { source: "https://docs.mistral.ai/admin/billing-usage/usage-limits + https://docs.mistral.ai/admin/billing-usage/subscriptions", checkedAt: CHECKED, note: "Free mode is available, but account-level plan, monthly usage, and pay-as-you-go settings must be attested before managed routing." },
     },
     privacy: { class: "standard", freeTierClass: "permissive", note: "Experiment plan requires opting in to data training." },
     terms: { status: "CLEARED" },
