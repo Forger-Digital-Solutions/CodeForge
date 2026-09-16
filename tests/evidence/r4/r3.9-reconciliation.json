@@ -1,0 +1,45 @@
+{
+  "schema": "codeforge-r4-reconciliation-v1",
+  "lockedAt": "2026-09-16T01:10:00.000Z",
+  "repository": {
+    "root": "G:/CodeForge",
+    "branch": "forger-digital-solutions-forgegreen-certified",
+    "head": "7f4b4e2208c0ca6ec655ef0fcf6f715346697eed",
+    "workingTree": "clean",
+    "pushPerformed": false
+  },
+  "r3Truth": {
+    "claimedPostR39State": "not assumed",
+    "actualState": "R3.5 complete; R3.6 hardening complete in the reconciled checkout; no completed R3.7-R3.9 evidence chain found",
+    "verdict": "CODEFORGE_R3_RC2_CAPACITY_LIMITED",
+    "falseCompletion": 0,
+    "eightBitDecision": "8BIT_EXPERIMENTAL",
+    "openHistoricalFailures": ["FR-007", "FR-008"],
+    "historicalEvidencePreserved": true
+  },
+  "r4ScopeCompleted": [
+    "read-only OpenRouter account and credits verification",
+    "deterministic ForgeZero capacity policy, windows, reservations, events, forecasting, and scale simulation",
+    "8-Bit advisory capacity boundary",
+    "oracle wrapper and disposable-worktree hardening",
+    "planner authorized-graph hardening",
+    "dated provider research and R4 failure registry"
+  ],
+  "r4Verdict": "CODEFORGE_R4_CAPACITY_LIMITED_EXTERNAL_EVIDENCE_PENDING",
+  "openGates": [
+    "373-user early-access proof remains unrun; simulator is not real-user telemetry",
+    "current OpenRouter daily remaining :free counter is not exposed by account endpoints",
+    "browser/UI lock, private-repository campaign, and full provider requalification remain pending",
+    "R4.6 scale certification is withheld because 373-DAU and heavy-user scenarios block"
+  ],
+  "evidenceSha256": {
+    "docs/r3.5-campaign-report.md": "ED217751D74DE00F6977D98280D427584C2E9184EC1D4B965EE9438389F29772",
+    "docs/8bit-r35-specialist-model-report.md": "A8CB06556636C48417CD5F5D5F9C312629A7D8EC333B01312256185F9A7A6AD8",
+    "tests/evidence/r3/failure-registry.json": "578F329FF36430758D361468CFF8672E969A6E6D807299A07F71168EC6E7CB72",
+    "tests/evidence/r3.5-8bit-dataset/manifest.json": "D4F5390E98E487EC055515191A9702905BD22ABFC23265A912F7E882FA526369",
+    "tests/evidence/r3.5-8bit-dataset/splits.json": "E1FE5708E416175DFFE20FB911FB724DEED28A6AD51A17D76AF08BAE1C688197",
+    "tests/evidence/r3.5-8bit-model-v1/8bit-r35-c1.json.pt": "4B722A5CE472D403496479F9B0841FA305DC63AA4B0003EB1F54D4B890D9B65D",
+    "docs/research/r4-provider-research-2026-09-15.md": "BB5F06C8FC8A119B9512DBC944AA17B000AD6F132C2DBA48C32D5B2A47D051B0",
+    "tests/evidence/r4-scale/scale-report.json": "8FAC3F14BC4B3790B4A94FF522942DA56B3A80449B9430BD8FAE7CC7D39AD637"
+  }
+}
