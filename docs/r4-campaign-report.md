@@ -28,9 +28,9 @@ learned from runtime headers. The $10 balance does not permit paid fallback.
 ## What was implemented
 
 - ForgeZero now owns deterministic capacity classes, economic sources, scopes, explicit-zero-price
-  policy, privacy-aware route metadata, capacity windows, event expiry, forecasts, reservations,
-  first-run protection, per-user concurrency, lease recovery, concentration alerts, and a scale
-  simulator.
+  policy, privacy-aware route metadata, capacity windows, event expiry, forecasts, role-bound
+  reservations, first-run protection, per-user concurrency, lease recovery, concentration alerts,
+  and a scale simulator.
 - 8-Bit exposes an advisory capacity intelligence boundary. Its recommendation path filters through
   ForgeZero and cannot select paid, unhealthy, disabled, unknown-scope, or non-zero routes.
 - The simulator covers registered-user bands 1/10/25/50/100/200/373/500/1000; 373-user DAU bands

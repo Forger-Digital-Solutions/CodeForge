@@ -68,6 +68,7 @@ export interface CapacityReservationRequest {
   reservationId: string;
   userId: string;
   routeIds: readonly string[];
+  role: string;
   taskKind: string;
   requests: number;
   inputTokens: number;

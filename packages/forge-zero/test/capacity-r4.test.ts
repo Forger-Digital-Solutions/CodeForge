@@ -66,7 +66,7 @@ describe("R4 ForgeZero capacity accounting", () => {
   it("protects first-run capacity, enforces per-user concurrency, and recovers leases", () => {
     let clock = NOW;
     const ledger = new CapacityReservationLedger({ routes: [route({ windows: [{ unit: "requests", limit: 1, remaining: 1, resetAt: RESET, scope: "ORG", observedAt: new Date(NOW).toISOString(), authoritative: true }, { unit: "input_tokens", limit: 1_000, remaining: 1_000, resetAt: RESET, scope: "ORG", observedAt: new Date(NOW).toISOString(), authoritative: true }] })], firstRunReserveRequests: 1, firstRunReserveTokens: 100, maxActiveReservationsPerUser: 1, now: () => clock });
-    const request = (id: string, userId: string, isNewUser: boolean) => ({ reservationId: id, userId, routeIds: ["groq-oss"], taskKind: "normal", requests: 1, inputTokens: 50, outputTokens: 0, isNewUser, priority: isNewUser ? "first_run" as const : "normal" as const, createdAt: new Date(clock).toISOString(), leaseUntil: new Date(clock + 10_000).toISOString() });
+    const request = (id: string, userId: string, isNewUser: boolean) => ({ reservationId: id, userId, routeIds: ["groq-oss"], role: "coder", taskKind: "normal", requests: 1, inputTokens: 50, outputTokens: 0, isNewUser, priority: isNewUser ? "first_run" as const : "normal" as const, createdAt: new Date(clock).toISOString(), leaseUntil: new Date(clock + 10_000).toISOString() });
     expect(ledger.reserve(request("normal-1", "heavy", false)).reason).toBe("FIRST_RUN_RESERVE_PROTECTED");
     expect(ledger.reserve(request("new-1", "new", true)).admitted).toBe(true);
     expect(ledger.reserve(request("new-2", "new", true)).reason).toBe("USER_CONCURRENCY_LIMIT");

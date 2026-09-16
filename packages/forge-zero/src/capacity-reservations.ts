@@ -47,7 +47,7 @@ export class CapacityReservationLedger {
     let protectedByFirstRunReserve = false;
     for (const routeId of request.routeIds) {
       const route = this.routes.get(routeId);
-      if (!route || !isFreeRouteEligible(route, DEFAULT_FREE_CAPACITY_POLICY) || freeRouteExclusionReason(route)) continue;
+      if (!route || !route.roles.includes(request.role) || !isFreeRouteEligible(route, DEFAULT_FREE_CAPACITY_POLICY) || freeRouteExclusionReason(route)) continue;
       sawEligibleRoute = true;
       const active = [...this.reservations.values()].filter((item) => item.routeId === routeId);
       const activeRequests = active.reduce((sum, item) => sum + item.request.requests, 0);
