@@ -435,6 +435,8 @@ export {
   createGeminiAdapter,
   createCloudflareAdapter,
   createOpenAIAdapter,
+  createAlibabaAdapter,
+  createDeepSeekAdapter,
   createProviderAdapterById,
   createProviderAdapterFromDefinition,
   configFieldKey,

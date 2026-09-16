@@ -24,6 +24,7 @@ import { SqliteQualificationPersistence } from "@codeforge/eight-bit";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/providers";
+import { createPaidAutoService, PAID_AUTO_PROVIDER_ID, type PaidAutoService } from "@codeforge/paid-auto";
 import { runDemoRuntime } from "./demo-runtime.js";
 import { AgentRuntime, createAgentRuntime } from "./agent-runtime.js";
 import { resolveWithinWorkspace } from "./path-security.js";
@@ -108,6 +109,10 @@ export interface ServerOptions {
    * qualification receipts persist in this server's session database.
    */
   freeCloud?: FreeCloudService;
+  /** Paid Auto is a separate commercial route family and is disabled unless explicitly enabled. */
+  paidAuto?: PaidAutoService;
+  paidExecutionEnabled?: boolean;
+  openRouterFallbackEnabled?: boolean;
   /** R1 additive instrumentation path; disabled unless explicitly enabled. */
   subagentsR1Enabled?: boolean;
 }
@@ -137,6 +142,7 @@ export class CodeForgeServer {
   private firewall: ForgeZero;
   private providerCatalog: ProviderCatalog;
   private readonly freeCloud?: FreeCloudService;
+  private readonly paidAuto: PaidAutoService;
   private readonly subagentsR1Enabled: boolean;
   private runtimes: Map<string, AgentRuntime> = new Map();
   private useRealRuntime: boolean;
@@ -188,6 +194,11 @@ export class CodeForgeServer {
     });
     this.providerCatalog = options.providerCatalog ?? new InMemoryProviderCatalog();
     this.freeCloud = options.freeCloud;
+    this.paidAuto = options.paidAuto ?? createPaidAutoService({
+      paidExecutionEnabled: options.paidExecutionEnabled ?? process.env.CODEFORGE_PAID_EXECUTION_ENABLED === "true",
+      openRouterFallbackEnabled: options.openRouterFallbackEnabled ?? process.env.CODEFORGE_OPENROUTER_FALLBACK_ENABLED === "true",
+    });
+    this.providerCatalog.register(this.paidAuto.asProviderAdapter());
     this.subagentsR1Enabled = options.subagentsR1Enabled ?? process.env.CODEFORGE_SUBAGENTS_R1 === "true";
     this.useRealRuntime = options.useRealRuntime ?? process.env.CODEFORGE_REAL_RUNTIME === "true";
 
@@ -2007,7 +2018,7 @@ export class CodeForgeServer {
    * server from demo to real without a restart. Test/mock providers never flip it.
    */
   private realRuntimeEnabled(): boolean {
-    return this.useRealRuntime || this.providerCatalog.all().some((a) => a.isTestProvider !== true);
+    return this.useRealRuntime || this.paidAuto.hasExecutableRoute() || this.providerCatalog.all().some((a) => a.isTestProvider !== true && a.providerId !== PAID_AUTO_PROVIDER_ID);
   }
 
   private getOrCreateRuntime(sessionId: string, userId?: string): AgentRuntime {
@@ -2027,6 +2038,7 @@ export class CodeForgeServer {
         forgeGreenCacheStore: this.forgeGreenCacheStore,
         afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
         freeCloud: this.freeCloud,
+        paidAuto: this.paidAuto,
       });
       this.runtimes.set(sessionId, runtime);
     } else {
@@ -2071,7 +2083,7 @@ export class CodeForgeServer {
 
         // R1: a canonical-model selection ("openai/gpt-oss-120b") resolves to its best executable
         // route now; ForgeAuto may later swap to another route of the SAME model (lock: "model").
-        if (typeof data.canonicalModelId === "string" && data.canonicalModelId && this.freeCloud) {
+        if (typeof data.canonicalModelId === "string" && data.canonicalModelId && data.providerId !== PAID_AUTO_PROVIDER_ID && this.freeCloud) {
           const routes = this.freeCloud.executableRoutesFor(data.canonicalModelId);
           const primary = routes[0];
           if (!primary) {
@@ -2095,6 +2107,22 @@ export class CodeForgeServer {
           respond(400, {
             error: "MODEL_SELECTION_INVALID",
             message: "providerId and modelId must be strings when selecting a model",
+          });
+          return;
+        }
+
+        if (data.providerId === PAID_AUTO_PROVIDER_ID) {
+          const paidModel = this.paidAuto.getModel(modelId);
+          if (!paidModel) {
+            respond(400, { error: "MODEL_NOT_FOUND", message: `Unknown Paid Auto model ${modelId}` });
+            return;
+          }
+          const lock = data.lock === "route" ? "route" : "model";
+          const view = this.paidAuto.modelViews().find((candidate) => candidate.id === paidModel.canonicalModelId);
+          runtime.setModelSelection({ providerId: PAID_AUTO_PROVIDER_ID, modelId: paidModel.canonicalModelId, canonicalModelId: paidModel.canonicalModelId, lock });
+          respond(200, {
+            ok: true,
+            selection: { providerId: PAID_AUTO_PROVIDER_ID, modelId: paidModel.canonicalModelId, canonicalModelId: paidModel.canonicalModelId, tier: "paid-auto", lock, available: view?.available ?? false, state: view?.state ?? "DISABLED" },
           });
           return;
         }
@@ -2159,8 +2187,30 @@ export class CodeForgeServer {
       canonicalId: this.freeCloud?.canonicalIdOf(m.providerId, m.modelId),
       forgeAutoEligible: this.freeCloud ? this.freeCloud.isForgeAutoEligible(m.providerId, m.modelId) : undefined,
     }));
+    const paidModels = this.paidAuto.modelViews().map((m) => ({
+      id: m.id,
+      providerId: m.providerId,
+      displayName: m.displayName,
+      tier: m.tier,
+      freeStatus: m.freeStatus,
+      accessClass: m.accessClass,
+      authMode: "API_KEY",
+      deprecated: false,
+      verifiedFree: false,
+      eligible: m.available,
+      canonicalId: m.canonicalId,
+      forgeAutoEligible: false,
+      contextWindow: m.contextWindow,
+      capabilities: m.capabilities,
+      costProfile: m.costProfile,
+      paidAutoState: m.state,
+      paidAutoDirectProviderId: m.directProviderId,
+      paidAutoDirectModelId: m.directModelId,
+      paidAutoOpenRouterSlug: m.openRouterSlug,
+      verification: m.verification,
+    }));
     res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-    res.end(JSON.stringify(models));
+    res.end(JSON.stringify([...models, ...paidModels]));
   }
 
   /**

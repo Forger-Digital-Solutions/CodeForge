@@ -82,6 +82,23 @@ describe("buildModelSections", () => {
     expect(gems?.models[0]).toMatchObject({ id: "topaz", tier: "gems_paid" });
   });
 
+  it("keeps Paid Auto in its own section and unavailable until the server certifies it", () => {
+    const paidAuto = makeModel({
+      id: "gpt-5.6-luna",
+      providerId: "paid-auto",
+      displayName: "GPT-5.6 Luna",
+      tier: "paid-auto",
+      freeStatus: "paid",
+      accessClass: "PAID",
+      costProfile: { inputCostPerMillion: 0.2, outputCostPerMillion: 1.2, isFree: false, paidFallbackPossible: false },
+      eligible: false,
+      paidAutoState: "DISABLED",
+    });
+    const sections = buildModelSections([paidAuto], autoModels);
+    expect(sections.find((s) => s.sectionLabel === "PAID AUTO")?.models[0]).toMatchObject({ id: "gpt-5.6-luna", tier: "paid-auto", available: false });
+    expect(sections.find((s) => s.sectionLabel === "CODEFORGE FREE")).toBeUndefined();
+  });
+
   it("hides the Muse Spark promotional model from every section", () => {
     const apiModels = [makeModel({ id: "muse-spark-1.2", providerId: "codeforge-cloud" })];
     const sections = buildModelSections(apiModels, autoModels);

@@ -31,6 +31,7 @@
   "dependencies": {
     "@codeforge/ui": "*",
     "@codeforge/server": "*",
+    "@codeforge/paid-auto": "*",
     "@codeforge/protocol": "*",
     "@codeforge/sessions": "*",
     "@codeforge/forge-zero": "*",

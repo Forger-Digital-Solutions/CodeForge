@@ -5,7 +5,7 @@ interface ModelDetailsProps {
     id: string;
     providerId: string;
     displayName: string;
-    tier: "free" | "gems_paid" | "paid";
+    tier: "free" | "gems_paid" | "paid" | "paid-auto";
     freeStatus: string;
     contextWindow?: number;
     capabilities?: {
@@ -17,8 +17,8 @@ interface ModelDetailsProps {
       longContext: boolean;
     };
     costProfile?: {
-      inputCostPerMillion: number;
-      outputCostPerMillion: number;
+      inputCostPerMillion: number | null;
+      outputCostPerMillion: number | null;
       isFree: boolean;
       paidFallbackPossible: boolean;
     };
@@ -35,15 +35,15 @@ export default function ModelDetails({ model, onClose }: ModelDetailsProps) {
     if (model.costProfile?.isFree) {
       return "Verified Free";
     }
-    if (model.tier === "paid" || model.tier === "gems_paid") {
+    if (model.tier === "paid" || model.tier === "gems_paid" || model.tier === "paid-auto") {
       return "Paid";
     }
     return model.freeStatus;
   };
 
   const getAutoEligibility = () => {
-    if (model.tier === "paid" || model.tier === "gems_paid") {
-      return { eligible: false, reason: "Paid models are not eligible for Auto" };
+    if (model.tier === "paid" || model.tier === "gems_paid" || model.tier === "paid-auto") {
+      return { eligible: false, reason: model.tier === "paid-auto" ? "Paid Auto is separate from Free Auto and requires certification" : "Paid models are not eligible for Auto" };
     }
     if (model.isPromotional) {
       return { eligible: true, reason: "Eligible (promotional free)" };
@@ -83,7 +83,7 @@ export default function ModelDetails({ model, onClose }: ModelDetailsProps) {
             </div>
             <div className="model-details-row">
               <span className="model-details-label">Status</span>
-              <span className={`model-details-value model-details-status ${model.costProfile?.isFree ? 'free' : model.tier === 'paid' ? 'paid' : ''}`}>
+                <span className={`model-details-value model-details-status ${model.costProfile?.isFree ? 'free' : model.tier === 'paid' || model.tier === 'paid-auto' ? 'paid' : ''}`}>
                 {getFreeStatusDisplay()}
               </span>
             </div>

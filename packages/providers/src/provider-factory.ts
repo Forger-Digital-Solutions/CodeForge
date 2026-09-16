@@ -124,6 +124,25 @@ export function createOpenAIAdapter(opts: ProviderFactoryOptions = {}): OpenAICo
   });
 }
 
+/** Alibaba Model Studio's global OpenAI-compatible endpoint. KYC/authorization stays outside this transport. */
+export function createAlibabaAdapter(opts: ProviderFactoryOptions = {}): OpenAICompatibleAdapter {
+  return new OpenAICompatibleAdapter({
+    providerId: "alibaba",
+    baseUrl: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+    ...common(opts),
+    credentialStore: aliasedCredentialStore(opts.credentialStore, "alibaba", "DASHSCOPE_API_KEY"),
+  });
+}
+
+/** DeepSeek's OpenAI-compatible API. The Paid Auto registry maps its canonical V4.1 id to `deepseek-flash`. */
+export function createDeepSeekAdapter(opts: ProviderFactoryOptions = {}): OpenAICompatibleAdapter {
+  return new OpenAICompatibleAdapter({
+    providerId: "deepseek",
+    baseUrl: "https://api.deepseek.com",
+    ...common(opts),
+  });
+}
+
 function common(opts: ProviderFactoryOptions): Pick<OpenAICompatibleConfig, "credentialStore" | "apiKey" | "timeoutMs" | "fetchFn" | "onResponse" | "cloudflareNeuronGuard" | "geminiFreePolicyGate" | "geminiServiceTier"> {
   return {
     credentialStore: opts.credentialStore,
@@ -134,6 +153,19 @@ function common(opts: ProviderFactoryOptions): Pick<OpenAICompatibleConfig, "cre
     cloudflareNeuronGuard: opts.cloudflareNeuronGuard,
     geminiFreePolicyGate: opts.geminiFreePolicyGate,
     geminiServiceTier: opts.geminiServiceTier,
+  };
+}
+
+function aliasedCredentialStore(base: CredentialStore | undefined, providerId: string, environmentName: string): CredentialStore {
+  return {
+    get: (requestedId) => requestedId === providerId
+      ? base?.get(environmentName) ?? process.env[environmentName]
+      : base?.get(requestedId),
+    set: (requestedId, value) => base?.set(requestedId, value),
+    delete: (requestedId) => base?.delete(requestedId) ?? false,
+    has: (requestedId) => requestedId === providerId
+      ? Boolean(base?.get(environmentName) ?? process.env[environmentName])
+      : base?.has(requestedId) ?? false,
   };
 }
 
@@ -194,6 +226,8 @@ function mapNormalProductionModel(raw: unknown): ProviderModel | null {
  * credential store (`providerId:fieldId`) and then from the environment.
  */
 export function createProviderAdapterFromDefinition(def: ProviderTransportDefinition, opts: ProviderFactoryOptions = {}): ProviderAdapter | undefined {
+  if (def.id === "alibaba") return createAlibabaAdapter(opts);
+  if (def.id === "deepseek") return createDeepSeekAdapter(opts);
   switch (def.apiStyle) {
     case "openrouter":
       return createOpenRouterAdapter({ credentialStore: opts.credentialStore, timeoutMs: opts.timeoutMs });
@@ -263,6 +297,10 @@ export function createProviderAdapterById(providerId: string, opts: ProviderFact
       return createCloudflareAdapter(opts);
     case "openai":
       return createOpenAIAdapter(opts);
+    case "alibaba":
+      return createAlibabaAdapter(opts);
+    case "deepseek":
+      return createDeepSeekAdapter(opts);
     case "anthropic":
       return new AnthropicAdapter({ credentialStore: opts.credentialStore, apiKey: opts.apiKey, timeoutMs: opts.timeoutMs });
     case "openrouter":

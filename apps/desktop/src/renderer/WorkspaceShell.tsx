@@ -229,8 +229,8 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
         ...visible.map((m) => ({
           id: m.id,
           displayName: m.displayName,
-          tier: m.tier === "gems_paid" ? ("gems_paid" as const) : ("free" as const),
-          description: m.eligible === false ? `${accessBadge(m)} · Unavailable` : canDriveAgent(m) ? accessBadge(m) : `${accessBadge(m)} · No tools`,
+          tier: m.tier === "gems_paid" ? ("gems_paid" as const) : m.tier === "paid-auto" ? ("paid-auto" as const) : ("free" as const),
+          description: m.tier === "paid-auto" ? `Direct-first · same-model OpenRouter fallback · ${m.paidAutoState ?? "unverified"}` : m.eligible === false ? `${accessBadge(m)} · Unavailable` : canDriveAgent(m) ? accessBadge(m) : `${accessBadge(m)} · No tools`,
           ...selectorAvailability(m),
         })),
       ];
@@ -241,6 +241,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
         ...data.map((m) => m.providerId),
         "codeforge-cloud", "opencode", "openrouter", "zai", "google", "groq",
         "cloudflare-workers-ai", "openai", "anthropic",
+        "alibaba", "deepseek", "paid-auto",
       ])];
       const statuses = await Promise.all(providerIds.map(async (providerId) => {
         try {
@@ -420,9 +421,10 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
         : { status: "auto", text: "ForgeAuto/Free", detail: "No eligible free route", error: true };
     }
     if (!providerId) return { status: "unknown", text: "Unknown" };
-    const freeLabel = selected?.costProfile?.isFree || selected?.isPromotional ? "Free" : selected?.tier === "paid" || selected?.tier === "gems_paid" ? "Paid" : "Unknown";
+    const freeLabel = selected?.costProfile?.isFree || selected?.isPromotional ? "Free" : selected?.tier === "paid-auto" ? "Paid Auto" : selected?.tier === "paid" || selected?.tier === "gems_paid" ? "Paid" : "Unknown";
     const promo = selected?.isPromotional ? " · Promotional" : "";
     const detail = `${freeLabel}${promo}`;
+    if (selected?.tier === "paid-auto") return { status: selected.eligible === true ? "connected" : "unknown", text: "Paid Auto", detail: `${detail} · ${selected.paidAutoState ?? "unverified"}` };
     if (health?.status === "available") return { status: "connected", text: "Connected", detail };
     if (health?.status === "error") return { status: "error", text: "Error", detail: health.error || detail };
     return { status: "unknown", text: providerId, detail };

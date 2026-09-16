@@ -8,6 +8,7 @@ const packages = [
   "forge-zero",
   "model-registry",
   "providers",
+  "paid-auto",
   "router",
   "agent",
   "director",

@@ -14,7 +14,7 @@ export interface ApiModel {
   id: string;
   providerId: string;
   displayName: string;
-  tier: "free" | "gems_paid" | "paid";
+  tier: "free" | "gems_paid" | "paid" | "paid-auto";
   freeStatus: string;
   accessClass?: string;
   contextWindow?: number;
@@ -27,8 +27,8 @@ export interface ApiModel {
     longContext: boolean;
   };
   costProfile?: {
-    inputCostPerMillion: number;
-    outputCostPerMillion: number;
+    inputCostPerMillion: number | null;
+    outputCostPerMillion: number | null;
     isFree: boolean;
     paidFallbackPossible: boolean;
   };
@@ -39,6 +39,11 @@ export interface ApiModel {
   canonicalId?: string;
   /** R1: passed the full 8-Bit admission pipeline (verified free + qualified + healthy). */
   forgeAutoEligible?: boolean;
+  paidAutoState?: string;
+  paidAutoDirectProviderId?: string;
+  paidAutoDirectModelId?: string;
+  paidAutoOpenRouterSlug?: string;
+  verification?: { verifiedAt: string; sources: string[] };
 }
 
 /** Renderer view of the 8-Bit registry snapshot as served by `/api/free-cloud/registry`. */
@@ -54,7 +59,10 @@ export function canDriveAgent(m: Pick<ApiModel, "capabilities">): boolean {
 }
 
 export function selectorAvailability(m: ApiModel): { available: boolean; unavailableReason?: string } {
-  if (m.eligible !== true) return { available: false, unavailableReason: "Provider or entitlement is unavailable" };
+  if (m.eligible !== true) {
+    if (m.tier === "paid-auto") return { available: false, unavailableReason: `Paid Auto ${m.paidAutoState ?? "is not ready"}; no paid request will be sent` };
+    return { available: false, unavailableReason: "Provider or entitlement is unavailable" };
+  }
   if (!canDriveAgent(m)) return { available: false, unavailableReason: "No tool calling — cannot run agent tasks" };
   return { available: true };
 }
@@ -92,6 +100,8 @@ export const MAX_CODEFORGE_FREE_MODELS = 13;
 // Provider → user-facing BYOK section label. Order follows the spec's model dropdown structure.
 export const PROVIDER_SECTION: Record<string, string> = {
   zai: "Z.AI",
+  alibaba: "ALIBABA MODEL STUDIO",
+  deepseek: "DEEPSEEK",
   openrouter: "OPENROUTER",
   google: "GOOGLE",
   groq: "GROQ",
@@ -105,8 +115,11 @@ export const PROVIDER_SECTION: Record<string, string> = {
 export const SECTION_ORDER = [
   "RECOMMENDED",
   "CODEFORGE FREE",
+  "PAID AUTO",
   "GEMS",
   "Z.AI",
+  "ALIBABA MODEL STUDIO",
+  "DEEPSEEK",
   "OPENROUTER",
   "GOOGLE",
   "GROQ",
@@ -146,7 +159,8 @@ export function accessBadge(m: ApiModel): string {
 
 /**
  * Buckets the live model catalog into the canonical picker sections: Recommended (ForgeAuto),
- * CodeForge Free (no credential required), GEMS (first-party paid, locked until entitled), and
+ * CodeForge Free (no credential required), Paid Auto (four explicitly registered commercial
+ * models), GEMS (first-party paid, locked until entitled), and
  * one section per connected BYOK provider. This is the single source of truth for picker
  * grouping — the picker component itself renders whatever sections it is given rather than
  * deriving its own groups, so there is exactly one place this logic can drift.
@@ -154,6 +168,7 @@ export function accessBadge(m: ApiModel): string {
 export function buildModelSections(apiModels: ApiModel[], models: ModelSelectorItem[]): ModelSection[] {
   const sectionMap = new Map<string, ModelSelectorItem[]>();
   const gemsModels: ModelSelectorItem[] = [];
+  const paidAutoModels: ModelSelectorItem[] = [];
   const codeforgeFreeModels: ModelSelectorItem[] = [];
 
   const autoAvailable = apiModels.some(
@@ -180,13 +195,17 @@ export function buildModelSections(apiModels: ApiModel[], models: ModelSelectorI
     const selectorItem: ModelSelectorItem = {
       id: m.id,
       displayName: m.displayName,
-      tier: m.tier === "gems_paid" ? "gems_paid" : "free",
-      description: canDriveAgent(m) ? accessBadge(m) : `${accessBadge(m)} · No tools`,
+      tier: m.tier === "gems_paid" ? "gems_paid" : m.tier === "paid-auto" ? "paid-auto" : "free",
+      description: m.tier === "paid-auto" ? `Direct-first · same-model OpenRouter fallback · ${m.paidAutoState ?? "unverified"}` : canDriveAgent(m) ? accessBadge(m) : `${accessBadge(m)} · No tools`,
       ...availability,
     };
 
     if (m.tier === "gems_paid") {
       gemsModels.push(selectorItem);
+      continue;
+    }
+    if (m.tier === "paid-auto") {
+      paidAutoModels.push(selectorItem);
       continue;
     }
 
@@ -204,6 +223,7 @@ export function buildModelSections(apiModels: ApiModel[], models: ModelSelectorI
   }
 
   if (codeforgeFreeModels.length > 0) sectionMap.set("CODEFORGE FREE", codeforgeFreeModels);
+  if (paidAutoModels.length > 0) sectionMap.set("PAID AUTO", paidAutoModels);
   if (gemsModels.length > 0) sectionMap.set("GEMS", gemsModels);
 
   const sections: ModelSection[] = [];
@@ -244,6 +264,9 @@ export function resolveForgeZeroTrust(selectedModelId: string | null, selected: 
   if (selected.tier === "gems_paid") {
     return { verifiedFree: false, label: "ForgeZero · Paid (GEMS)", detail: `${selected.displayName} is a first-party paid model` };
   }
+  if (selected.tier === "paid-auto") {
+    return { verifiedFree: false, label: "ForgeZero · Paid Auto", detail: `${selected.displayName} is commercial; Paid Auto state: ${selected.paidAutoState ?? "unknown"}` };
+  }
   const verified = selected.eligible === true && selected.freeStatus === "verified_free" && selected.costProfile?.isFree === true;
   if (verified) {
     return { verifiedFree: true, label: "ForgeZero · Verified Free", detail: `${selected.displayName} · verified $0` };
@@ -271,6 +294,9 @@ export function resolveRuntimeLabel(selectedModelId: string | null, selected: Ap
   }
   if (selected.providerId === "codeforge-cloud" || selected.providerId === "codeforge" || selected.tier === "gems_paid") {
     return { label: "Hosted", detail: `${selected.displayName} runs on CodeForge's hosted infrastructure` };
+  }
+  if (selected.tier === "paid-auto") {
+    return { label: "Paid Auto", detail: `${selected.displayName} uses its direct provider first, with same-model OpenRouter fallback` };
   }
   return { label: "Direct (BYOK)", detail: `${selected.displayName} runs directly against your connected ${selected.providerId} credential` };
 }
@@ -325,6 +351,7 @@ export function buildCanonicalModelSections(snapshot: FreeCloudView, apiModels: 
 
   const free: ModelSelectorItem[] = [];
   const paid: ModelSelectorItem[] = [];
+  const paidAuto: ModelSelectorItem[] = [];
   // Connect-required candidates (discovery only) are capped so a fresh install sees a short,
   // useful list rather than every $0 listing on the internet; search/Show all reveal the rest.
   const MAX_CONNECT_REQUIRED = 12;
@@ -356,6 +383,10 @@ export function buildCanonicalModelSections(snapshot: FreeCloudView, apiModels: 
   const gems = apiModels
     .filter((m) => m.tier === "gems_paid" && !isHiddenModel(m.id))
     .map((m) => ({ id: m.id, displayName: m.displayName, tier: "gems_paid" as const, description: accessBadge(m), ...selectorAvailability(m) }));
+  for (const m of apiModels.filter((candidate) => candidate.tier === "paid-auto" && !isHiddenModel(candidate.id))) {
+    paidAuto.push({ id: m.id, displayName: m.displayName, tier: "paid-auto", description: `Direct-first · same-model OpenRouter fallback · ${m.paidAutoState ?? "unverified"}`, ...selectorAvailability(m) });
+  }
+  if (paidAuto.length > 0) sections.push({ sectionId: "paid-auto", sectionLabel: "PAID AUTO", models: paidAuto });
   if (gems.length > 0) sections.push({ sectionId: "gems", sectionLabel: "GEMS", models: gems });
   if (paid.length > 0) sections.push({ sectionId: "byok", sectionLabel: "BYOK / PAID", models: paid });
   return sections;

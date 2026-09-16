@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { getUpgradeUrl } from "./upgrade-url.js";
 import { loadModelFavorites, saveModelFavorites } from "./model-favorites.js";
 
-export type ModelTier = "free" | "gems_paid";
+export type ModelTier = "free" | "gems_paid" | "paid-auto";
 
 export type ModelEntitlementStatus =
   | "included"
@@ -52,6 +52,9 @@ export function resolveModelSelection(
   model: ModelSelectorItem,
   options: { upgradeUrl: string },
 ): ModelSelectionIntent {
+  if (model.tier === "paid-auto" && model.available === false) {
+    return { allowed: false, navigateToUpgrade: false };
+  }
   if (isModelUsable(model)) {
     return { allowed: true, navigateToUpgrade: false };
   }
@@ -185,6 +188,11 @@ export function ModelSelector({
           models: models.filter((m) => m.tier === "free"),
         },
         {
+          sectionId: "paid-auto",
+          sectionLabel: "Paid Auto",
+          models: models.filter((m) => m.tier === "paid-auto"),
+        },
+        {
           sectionId: "paid",
           sectionLabel: "Premium / BYOK",
           models: models.filter((m) => m.tier === "gems_paid"),
@@ -304,6 +312,9 @@ export function ModelSelector({
                         )}
                         {locked && model.tier === "gems_paid" && (
                           <span className="model-option-badge paid">Coming soon</span>
+                        )}
+                        {locked && model.tier === "paid-auto" && (
+                          <span className="model-option-badge paid">Disabled</span>
                         )}
                         <button
                           type="button"

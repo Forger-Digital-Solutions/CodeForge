@@ -37,6 +37,7 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
 import { CodeForgeServer, type CodeForgeRuntimeStatus } from "@codeforge/server";
 import { ForgeZero, createGenericFreeRecord, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider, createProviderAdapterFromDefinition, HostedProviderAdapter, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent, type ProviderResponseObservation } from "@codeforge/providers";
+import { createPaidAutoService } from "@codeforge/paid-auto";
 import {
   NormalizedModelRegistry,
   discoverAndVerifyFree,
@@ -1049,6 +1050,11 @@ async function initializeServer(dbPath: string): Promise<void> {
       useRealRuntime: true,
       controlPlaneToken,
       freeCloud: freeCloud ?? undefined,
+      paidAuto: createPaidAutoService({
+        credentialStore: desktopCredentialStore ?? undefined,
+        paidExecutionEnabled: process.env.CODEFORGE_PAID_EXECUTION_ENABLED === "true",
+        openRouterFallbackEnabled: process.env.CODEFORGE_OPENROUTER_FALLBACK_ENABLED === "true",
+      }),
     });
     smokeRecord("INIT_SERVER_INSTANCE_CREATED");
     await server.start();

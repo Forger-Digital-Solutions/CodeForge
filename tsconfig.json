@@ -6,6 +6,7 @@
     { "path": "packages/forge-zero" },
     { "path": "packages/model-registry" },
     { "path": "packages/providers" },
+    { "path": "packages/paid-auto" },
     { "path": "packages/director" },
     { "path": "packages/router" },
     { "path": "packages/agent" },

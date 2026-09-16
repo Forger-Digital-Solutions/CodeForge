@@ -118,6 +118,20 @@ describe("HTTP model-selection boundary", () => {
     expect(await currentModelOf(sessionId)).toBe("free-model-1");
   });
 
+  it("exposes exactly four Paid Auto models without adding them to ForgeZero free routing", async () => {
+    const res = await fetch(`${base}/api/models`);
+    expect(res.ok).toBe(true);
+    const models = (await res.json()) as Array<{ id: string; providerId: string; tier: string; eligible?: boolean; paidAutoState?: string }>;
+    const paidAuto = models.filter((model) => model.providerId === "paid-auto");
+    expect(paidAuto.map((model) => model.id)).toEqual([
+      "gpt-5.6-luna",
+      "glm-5.3-flash",
+      "qwen3.8-flash",
+      "deepseek-v4.1-flash",
+    ]);
+    expect(paidAuto.every((model) => model.tier === "paid-auto" && model.eligible === false && model.paidAutoState === "DISABLED")).toBe(true);
+  });
+
   it("valid paid selection for entitled user executes the GEMS model", async () => {
     const sessionId = "boundary-paid";
     const sel = await postJSON("/api/model-selection", {

@@ -87,6 +87,7 @@ import {
 import { ToolBroker, ToolRegistry, createToolBroker, type ToolExecutionRecord } from "@codeforge/tools";
 import { ModelExecutionAdapter, createModelExecutionAdapter, normalizeProviderError, type ModelExecutionResponse } from "./model-execution-adapter.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
+import type { PaidAutoService } from "@codeforge/paid-auto";
 
 export interface AgentRuntimeRequest {
   runId: string;
@@ -357,6 +358,7 @@ export interface AgentRuntimeOptions {
    * alternate routes, and route outcomes feed the shared (cross-session) health/quota view.
    */
   freeCloud?: FreeCloudRoutingHooks;
+  paidAuto?: PaidAutoService;
 }
 
 function toWorkerActionType(toolName: string): DesktopWorkerActionType {
@@ -471,6 +473,7 @@ export class AgentRuntime {
   private readonly forgeGreenCacheStore?: ForgeGreenCacheStore;
   private readonly eightBit: EightBitRuntime;
   private readonly freeCloud?: FreeCloudRoutingHooks;
+  private readonly paidAuto?: PaidAutoService;
   /**
    * "Allow for Session" grants, keyed by `${action}@${risk}` (e.g. `write@moderate`). Held in
    * memory for this session's runtime only — a grant never outlives the process and is never
@@ -503,6 +506,7 @@ export class AgentRuntime {
     this.approvalService = new ApprovalService({ defaultTimeoutMs: DEFAULT_APPROVAL_TIMEOUT_MS });
     this.eightBit = options.eightBit ?? createEightBitRuntime({ firewall: this.firewall, persistence: this.persistence });
     this.freeCloud = options.freeCloud;
+    this.paidAuto = options.paidAuto;
     this.hostedWorker = options.hostedWorker;
   }
 
@@ -2766,6 +2770,13 @@ export class AgentRuntime {
   private resolveTurnModel(): FreeModelRecord | null {
     if (this.modelSelection) {
       const { providerId, modelId } = this.modelSelection;
+      if (providerId === "paid-auto") {
+        const paidModel = this.paidAuto?.runtimeModel(this.modelSelection.canonicalModelId ?? modelId);
+        if (!paidModel) {
+          throw new Error(`Exact Paid Auto model ${modelId} is not registered. Exact model execution failed closed.`);
+        }
+        return paidModel as unknown as FreeModelRecord;
+      }
       if (this.modelSelection.lock !== "route") {
         const viaCanonical = this.resolveCanonicalSelection(this.modelSelection);
         if (viaCanonical) return viaCanonical;
@@ -3014,6 +3025,8 @@ export class AgentRuntime {
       // `toolCalls` accumulated above are only ever executed further down this function, never
       // inside the stream loop itself. So a stream/model-call failure here is a safe point to
       // hand the turn to a replacement route without risking a repeated or partial side effect.
+      const activeState = this.activeTurns.get(turnId);
+      if (activeState?.providerId === "paid-auto") throw error;
       const handled = await this.attemptEightBitFailover(turnId, agentId, request, adapter, signal, iteration, duplicateSupervisor, error);
       if (handled) return { kind: "completed" };
       throw error;
@@ -3422,6 +3435,7 @@ export class AgentRuntime {
   ): Promise<boolean> {
     const state = this.activeTurns.get(turnId);
     if (!state || !state.providerId || !state.modelId) return false;
+    if (state.providerId === "paid-auto") return false;
     const role: EightBitRole = "CODER";
     // R1 §124: a picked model allows same-model route failover; only an explicit route lock pins.
     const pinMode: "auto" | "model" | "route" = !this.modelSelection ? "auto" : this.modelSelection.lock === "route" ? "route" : "model";
