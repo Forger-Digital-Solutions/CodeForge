@@ -54,6 +54,9 @@ export function createGroqAdapter(opts: ProviderFactoryOptions = {}): OpenAIComp
     providerId: "groq",
     baseUrl: "https://api.groq.com/openai/v1",
     ...common(opts),
+    // GPT-OSS returns reasoning separately by default. Excluding it keeps the model's final
+    // answer available to the shared agent loop and avoids treating private reasoning as UI text.
+    requestBodyExtras: { include_reasoning: false },
   });
 }
 

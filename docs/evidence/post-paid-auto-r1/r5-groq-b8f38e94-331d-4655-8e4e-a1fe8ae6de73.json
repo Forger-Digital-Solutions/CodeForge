@@ -1,0 +1,219 @@
+{
+  "schemaVersion": 1,
+  "runId": "r5-groq-b8f38e94-331d-4655-8e4e-a1fe8ae6de73",
+  "certification": "CodeForge R5 exact Groq real end-to-end agent loop",
+  "startedAt": "2026-09-16T17:49:32.610Z",
+  "verdict": "CODEFORGE_R5_REAL_AGENT_LOOP_BLOCKED",
+  "provider": {
+    "id": "groq",
+    "modelId": "openai/gpt-oss-20b",
+    "credentialPresent": true,
+    "liveModelCount": 13,
+    "exactModelListed": true,
+    "verifiedFreeCount": 1,
+    "qualificationProbe": {
+      "textDeltas": 1,
+      "finish": true,
+      "method": "single exact-model live allowance probe"
+    }
+  },
+  "stages": {
+    "server": {
+      "started": true,
+      "transport": "HTTP + SSE",
+      "persistence": "SQLite",
+      "providerCatalog": [
+        "groq"
+      ]
+    },
+    "execution": {
+      "taskId": "2e49a7c4-7ebd-417f-a998-d1a58829445a",
+      "turnId": "de30c756-e7e9-4db5-916b-032ab3999107",
+      "executionMode": "agent",
+      "runtime": "workflow"
+    },
+    "steering": {
+      "accepted": true
+    },
+    "persistence": {
+      "durableEventCount": 72,
+      "firstSseEventCount": 21,
+      "reconnectEventCount": 51,
+      "maxSeq": 72,
+      "toolEventTypes": [
+        "tool.call_started",
+        "tool.execution_started",
+        "tool.execution_failed",
+        "tool.execution_completed"
+      ],
+      "verificationItemKinds": [
+        "run_inspection"
+      ]
+    },
+    "result": {
+      "turnStatus": "failed",
+      "sessionStatus": "failed",
+      "fileChanged": false,
+      "taskCompleted": false,
+      "forgeVerifyRecorded": true,
+      "finalResponsePresent": false
+    },
+    "workItems": [
+      {
+        "kind": "plan",
+        "turnId": "de30c756-e7e9-4db5-916b-032ab3999107",
+        "hasResponse": false
+      },
+      {
+        "kind": "eight_bit_route_state",
+        "hasResponse": false
+      },
+      {
+        "kind": "steer_receipt",
+        "turnId": "de30c756-e7e9-4db5-916b-032ab3999107",
+        "hasResponse": false
+      },
+      {
+        "kind": "eight_bit_decision_receipt",
+        "hasResponse": false
+      },
+      {
+        "kind": "eight_bit_route_health",
+        "hasResponse": false
+      },
+      {
+        "kind": "verification",
+        "hasResponse": false
+      },
+      {
+        "kind": "verification",
+        "hasResponse": false
+      },
+      {
+        "kind": "verification",
+        "hasResponse": false
+      },
+      {
+        "kind": "verification",
+        "hasResponse": false
+      },
+      {
+        "kind": "verification",
+        "hasResponse": false
+      },
+      {
+        "kind": "verification",
+        "hasResponse": false
+      },
+      {
+        "kind": "verification",
+        "hasResponse": false
+      },
+      {
+        "kind": "run_inspection",
+        "turnId": "de30c756-e7e9-4db5-916b-032ab3999107",
+        "hasResponse": false
+      }
+    ],
+    "failures": {
+      "turnError": "# Workflow Summary for \"Fix the calculator bug. Inspect the repository first with list_files using path \"\nTask type: documentation, risk: low\nPlan: plan-2e49a7c4-e0c3a6 — 2/5 steps completed\nImplementation stopped: Turn a43e8041-292d-42de-a",
+      "failedToolEvents": [
+        {
+          "tool": "list_files",
+          "error": "path required"
+        }
+      ]
+    }
+  },
+  "checks": [
+    {
+      "id": "exact-model-listed",
+      "passed": true,
+      "detail": "Groq live catalog contains openai/gpt-oss-20b: true"
+    },
+    {
+      "id": "free-allowance-qualified",
+      "passed": true,
+      "detail": "Groq allowance probe verified 1 exact model route(s)"
+    },
+    {
+      "id": "exact-free-route-selected",
+      "passed": true,
+      "detail": "ForgeRouter selected only the exact verified Groq route"
+    },
+    {
+      "id": "model-selection-persisted",
+      "passed": true,
+      "detail": "Exact Groq selection was accepted by the authoritative runtime boundary"
+    },
+    {
+      "id": "real-workflow-terminal",
+      "passed": false,
+      "detail": "durable workflow turn status=failed"
+    },
+    {
+      "id": "real-tool-loop",
+      "passed": true,
+      "detail": "12 durable tool events observed"
+    },
+    {
+      "id": "real-file-change",
+      "passed": false,
+      "detail": "the disposable repository was changed by the exact Groq agent"
+    },
+    {
+      "id": "real-verification",
+      "passed": true,
+      "detail": "ForgeVerify/run inspection evidence persisted"
+    },
+    {
+      "id": "completion-event",
+      "passed": false,
+      "detail": "task.completed was emitted after the completion gate"
+    },
+    {
+      "id": "durable-final-response",
+      "passed": false,
+      "detail": "final response is reconstructable from a persisted work item"
+    },
+    {
+      "id": "sse-reconnect",
+      "passed": true,
+      "detail": "reconnect replay contained ordered, non-duplicate durable events"
+    },
+    {
+      "id": "event-sequence",
+      "passed": true,
+      "detail": "durable events have strictly increasing unique sequence numbers"
+    },
+    {
+      "id": "steering-boundary",
+      "passed": true,
+      "detail": "steering endpoint accepted=true"
+    },
+    {
+      "id": "approval-boundary",
+      "passed": false,
+      "detail": "0 real approval request(s) resolved through HTTP"
+    },
+    {
+      "id": "adversarial-verification-rejection",
+      "passed": true,
+      "detail": "a failing verifier cannot pass the completion gate"
+    }
+  ],
+  "negativeVerification": {
+    "outcome": "failed",
+    "blockerCodes": [
+      "verification_failed"
+    ]
+  },
+  "blockingReasons": [
+    "real-workflow-terminal: durable workflow turn status=failed",
+    "real-file-change: the disposable repository was changed by the exact Groq agent",
+    "completion-event: task.completed was emitted after the completion gate",
+    "durable-final-response: final response is reconstructable from a persisted work item",
+    "approval-boundary: 0 real approval request(s) resolved through HTTP"
+  ],
+  "completedAt": "2026-09-16T17:49:39.472Z"
+}

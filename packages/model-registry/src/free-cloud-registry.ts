@@ -29,6 +29,7 @@ import type { NormalizedModelRegistry } from "./registry.js";
  */
 
 export type CredentialSource = "OAUTH" | "DEVICE_CODE" | "ENVIRONMENT" | "SECURE_STORAGE" | "MANUAL_BYOK" | "FDS_GATEWAY" | "NONE";
+export type FreePolicyState = "ALLOW" | "DENY" | "UNKNOWN";
 
 export interface ProviderConnectionState {
   providerId: string;
@@ -40,6 +41,10 @@ export interface ProviderConnectionState {
   authState: "ok" | "auth_required" | "rate_limited" | "unknown";
   /** Allowance providers with ACCOUNT_DEPENDENT spillover: user attested the account is on the free plan. */
   planAttested?: boolean;
+  /** Provider-specific policy gate for a zero-cash route. Missing state is fail-closed. */
+  freePolicyState?: FreePolicyState;
+  /** Safe reason code for a denied/unknown free-policy decision; never a credential or payload. */
+  freePolicyReason?: string;
   /** Live catalog discovery in flight. */
   discovering?: boolean;
   lastCatalogRefreshAt?: string;
@@ -311,6 +316,10 @@ export function evaluateAdmission(input: {
   if (conn.authState === "auth_required") return fail("CONNECTED", "Credential rejected by provider");
   passed.push("CONNECTED");
 
+  if (def.id === "google" && conn.freePolicyState !== "ALLOW") {
+    return fail("FREE_VERIFIED", `Gemini free policy gate ${conn.freePolicyReason ?? "not accepted"}`);
+  }
+
   if (def.freeAccess.spillover === "ACCOUNT_DEPENDENT" && !conn.planAttested) {
     return fail("FREE_VERIFIED", "Free plan not confirmed for this account — exhausting the allowance could bill a paid plan");
   }
@@ -437,7 +446,8 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
     });
     const verifiedFree = seed.model?.freeStatus === "verified_free";
     const executionBlockedHealth: readonly RouteHealth[] = ["COOLDOWN", "UNAVAILABLE", "AUTH_REQUIRED", "QUOTA_EXHAUSTED", "INELIGIBLE"];
-    const executable = !!seed.model && !!conn?.connected && conn.authState !== "auth_required" && inputs.firewall.canRouteTo(seed.providerId, seed.modelId) && !executionBlockedHealth.includes(h.health);
+    const freePolicyBlocked = def?.id === "google" && conn?.freePolicyState !== "ALLOW";
+    const executable = !!seed.model && !!conn?.connected && conn.authState !== "auth_required" && !freePolicyBlocked && inputs.firewall.canRouteTo(seed.providerId, seed.modelId) && !executionBlockedHealth.includes(h.health);
     routes.push({
       routeId: routeKey(seed.providerId, seed.modelId),
       canonicalModelId: identity.canonicalId,
@@ -557,6 +567,15 @@ function buildCanonicalViews(
         authClass: r.authClass,
         label: `Confirm ${r.providerDisplayName} account is on the free plan`,
         planAttestation: true,
+      };
+    } else if (connectedFree.some((r) => /Gemini free policy gate/i.test(r.admission.reason ?? ""))) {
+      const r = connectedFree.find((x) => /Gemini free policy gate/i.test(x.admission.reason ?? ""))!;
+      readiness = "FREE_CONNECT_REQUIRED";
+      connectOffer = {
+        providerId: r.providerId,
+        providerDisplayName: r.providerDisplayName,
+        authClass: r.authClass,
+        label: "Accept the Gemini Free Tier policy notice",
       };
     } else if (connectedFree.length > 0) {
       readiness = "FREE_TEMPORARILY_UNAVAILABLE";

@@ -867,7 +867,11 @@ function registerProviderAdapter(providerId: string): ProviderAdapter | undefine
   if (existing) return existing;
   const def = providerConnections?.definition(providerId) ?? PROVIDER_DEFINITIONS[providerId];
   if (!def || !def.implemented) return undefined;
-  const adapter = createProviderAdapterFromDefinition(def, { credentialStore: desktopCredentialStore, onResponse: freeCloud?.onProviderResponse });
+  const adapter = createProviderAdapterFromDefinition(def, {
+    credentialStore: desktopCredentialStore,
+    onResponse: freeCloud?.onProviderResponse,
+    geminiFreePolicyGate: providerId === "google" ? providerConnections?.geminiPolicyGate() : undefined,
+  });
   if (adapter) {
     providerCatalog.register(adapter);
     providerAuthState.set(providerId, "ok");

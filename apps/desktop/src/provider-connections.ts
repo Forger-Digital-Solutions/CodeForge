@@ -29,7 +29,6 @@ import {
   type CredentialSource,
 } from "@codeforge/model-registry";
 import {
-  createGeminiFreePolicyGate,
   buildGeminiFreeAcceptance,
   evaluateGeminiFreePolicy,
   type GeminiFreeAcceptanceRecord,
@@ -386,9 +385,14 @@ export class ProviderConnections {
     await this.reconcile("google");
   }
 
-  private geminiPolicyGate() {
-    const context = this.geminiFreePolicyContext();
-    return createGeminiFreePolicyGate({ accountId: context.accountId, region: context.region, acceptance: this.geminiFreeAcceptance(), now: this.now() });
+  /** Dynamic gate shared by every Google adapter and the free-cloud admission snapshot. */
+  geminiPolicyGate() {
+    return {
+      evaluate: () => {
+        const context = this.geminiFreePolicyContext();
+        return evaluateGeminiFreePolicy({ accountId: context.accountId, region: context.region, acceptance: this.geminiFreeAcceptance(), now: this.now() });
+      },
+    };
   }
 
   async setPlanAttested(providerId: string, attested: boolean): Promise<void> {
@@ -472,6 +476,7 @@ export class ProviderConnections {
   private classifyCatalog(def: ProviderDefinition, models: ProviderModel[]): ProviderCatalogModelView[] {
     const enabled = this.enabledModels(def.id);
     const zeroCash = isZeroCashFreeAccess(def.freeAccess.class) && def.terms.status === "CLEARED";
+    const geminiPolicy = def.id === "google" ? this.geminiPolicyGate().evaluate() : undefined;
     return models
       .filter((m) => !/whisper|embed|tts|guard|moderation|rerank|orpheus|lyria|image|veo/i.test(m.modelId))
       .map((m) => {
@@ -479,12 +484,14 @@ export class ProviderConnections {
         let freeReason = "Paid";
         if (def.paidOnly || def.freeAccess.class === "PAID_API") {
           freeReason = "Paid provider";
-        } else if (m.isFree && zeroCash) {
+        } else if (m.isFree && zeroCash && (!geminiPolicy || geminiPolicy.decision === "ALLOW")) {
           free = true;
           freeReason = "$0 listed by provider";
-        } else if (zeroCash && def.freeAccess.allowanceScope === "all_chat_models") {
+        } else if (zeroCash && def.freeAccess.allowanceScope === "all_chat_models" && (!geminiPolicy || geminiPolicy.decision === "ALLOW")) {
           free = true;
           freeReason = `Free allowance (${def.freeAccess.class})`;
+        } else if (geminiPolicy && geminiPolicy.decision !== "ALLOW") {
+          freeReason = `Gemini free policy gate: ${geminiPolicy.reasonCode}`;
         } else if (zeroCash && def.freeAccess.allowanceScope === "allowlist") {
           if (def.freeAccess.paidPlanModels?.includes(m.modelId)) freeReason = "Requires paid plan";
           else if (def.freeAccess.allowanceModels?.includes(m.modelId)) {
@@ -644,6 +651,7 @@ export class ProviderConnections {
     const connected = source !== "NONE" && (def.apiStyle === "hosted" ? !!this.host.providerCatalog.get(def.id) : !!this.host.providerCatalog.get(def.id));
     const envVariable = source === "ENVIRONMENT" ? this.resolveField(def.id, "apiKey")?.variable : undefined;
     const auth = this.host.providerAuthState(def.id);
+    const geminiPolicy = def.id === "google" ? this.geminiPolicyGate().evaluate() : undefined;
     const state: ProviderConnectionState = {
       providerId: def.id,
       connected,
@@ -651,6 +659,8 @@ export class ProviderConnections {
       environmentVariable: envVariable,
       authState: connected ? auth ?? "ok" : "unknown",
       planAttested: def.freeAccess.spillover === "ACCOUNT_DEPENDENT" ? this.planAttested(def.id) : true,
+      freePolicyState: geminiPolicy?.decision,
+      freePolicyReason: geminiPolicy?.reasonCode,
       connectOffer: connected ? undefined : this.connectOfferFor(def),
     };
     this.host.freeCloud.setConnection(state);

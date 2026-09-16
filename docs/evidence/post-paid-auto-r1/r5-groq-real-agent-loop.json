@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "runId": "r5-groq-8e7908d6-6cd6-40a8-b48d-7c801c847a85",
+  "certification": "CodeForge R5 exact Groq real end-to-end agent loop",
+  "startedAt": "2026-09-16T17:44:15.772Z",
+  "verdict": "CODEFORGE_R5_EXTERNAL_CAPACITY_NOT_READY",
+  "provider": {
+    "id": "groq",
+    "modelId": "openai/gpt-oss-20b",
+    "credentialPresent": true,
+    "liveModelCount": 13,
+    "exactModelListed": true,
+    "verifiedFreeCount": 0,
+    "qualificationProbe": {
+      "textDeltas": 0,
+      "finish": true,
+      "method": "single exact-model live allowance probe"
+    }
+  },
+  "stages": {},
+  "checks": [
+    {
+      "id": "exact-model-listed",
+      "passed": true,
+      "detail": "Groq live catalog contains openai/gpt-oss-20b: true"
+    },
+    {
+      "id": "free-allowance-qualified",
+      "passed": false,
+      "detail": "Groq allowance probe verified 0 exact model route(s)"
+    }
+  ],
+  "negativeVerification": {},
+  "blockingReasons": [
+    "Exact Groq route did not pass the live allowance probe"
+  ],
+  "completedAt": "2026-09-16T17:44:16.177Z"
+}

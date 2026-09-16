@@ -241,6 +241,19 @@ describe("8-Bit admission pipeline", () => {
     expect(evaluateAdmission({ ...base, conn: attested }).state).toBe("FORGEAUTO_ELIGIBLE");
   });
 
+  it("fails closed for Gemini until the current free-tier policy gate allows the route", () => {
+    const fw = new ForgeZero();
+    const model = freeRecord("google", "gemini-3.8-flash");
+    fw.register(model);
+    const base = { def: PROVIDER_DEFINITIONS.google, model, firewall: fw, toolSupport: true, qualification: "QUALIFIED" as const, health: "HEALTHY" as const, roles: [] };
+
+    const denied = evaluateAdmission({ ...base, conn: connected("google") });
+    expect(denied.failedGate).toBe("FREE_VERIFIED");
+    expect(denied.reason).toMatch(/Gemini free policy gate/i);
+
+    expect(evaluateAdmission({ ...base, conn: connected("google", { freePolicyState: "ALLOW", planAttested: true }) }).state).toBe("FORGEAUTO_ELIGIBLE");
+  });
+
   it("never admits promotional, dev-only, paid or legally unreviewed providers", () => {
     const fw = new ForgeZero();
     for (const providerId of ["cerebras", "nvidia", "openai", "kilo", "poolside", "github-copilot"]) {
@@ -360,6 +373,16 @@ describe("free cloud snapshot", () => {
     expect(route.executable).toBe(false);
     expect(route.forgeAutoEligible).toBe(false);
     expect(snap.models[0]!.readiness).toBe("FREE_TEMPORARILY_UNAVAILABLE");
+  });
+
+  it("does not report an unaccepted Gemini route as executable", () => {
+    const fw = new ForgeZero();
+    fw.register(freeRecord("google", "gemini-3.8-flash"));
+    const snap = buildFreeCloudSnapshot({ firewall: fw, connections: [connected("google")], now: () => NOW });
+    const route = snap.models.find((m) => m.canonicalId === "google/gemini-3.8-flash")?.routes[0];
+    expect(route?.executable).toBe(false);
+    expect(route?.forgeAutoEligible).toBe(false);
+    expect(route?.admission.reason).toMatch(/Gemini free policy gate/i);
   });
 });
 

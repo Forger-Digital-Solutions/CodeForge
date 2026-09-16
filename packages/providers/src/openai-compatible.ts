@@ -25,6 +25,8 @@ export interface OpenAICompatibleConfig {
   timeoutMs?: number;
   /** Extra headers sent on every request (e.g. OpenRouter attribution). */
   defaultHeaders?: Record<string, string>;
+  /** Provider-specific request fields that are safe for every model behind this adapter. */
+  requestBodyExtras?: Record<string, unknown>;
   /** Builds the auth header(s) from the resolved key. Defaults to `Authorization: Bearer <key>`. */
   authHeader?: (key: string) => Record<string, string>;
   /** Path for model listing relative to baseUrl. Default "/models". */
@@ -320,6 +322,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       });
     }
     const body: Record<string, unknown> = {
+      ...(this.cfg.requestBodyExtras ?? {}),
       model: req.model,
       messages,
       tools: req.tools?.map((t) => ({ type: "function" as const, function: { name: t.function.name, description: t.function.description, parameters: t.function.parameters } })),

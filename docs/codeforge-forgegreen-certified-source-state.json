@@ -1,5 +1,5 @@
 {
-  "sourceStateId": "7bedbd33bc453ff729356adf6861dbead485cf506076248b926be48c6752a758",
+  "sourceStateId": "37adcc17198051aec4af6137dc2dacfda7c7340dd9eb7e5da69f2f2e9bbd2422",
   "surfaceVersion": 2,
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
@@ -40,7 +40,7 @@
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
     "packages/router/package.json": "b2b596febe0eab8a591ed016e9783170c35ed096",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
-    "packages/server/src/agent-runtime.ts": "96004ed0d535e7a9d64b6c4b88e7a05a967c807d",
+    "packages/server/src/agent-runtime.ts": "156c4e3bc7428c05418088bb3db2e4f565c01398",
     "packages/server/src/autonomous-orchestrator.ts": "a5de91a0e6732d02bb0f933524c6df348aa87a87",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "a46e0238daf63d31820dd6548c362ef6e77981cb",
@@ -506,20 +506,38 @@
       "regressionEvidence": "Focused R1 orchestrator, SubagentManager watchdog, provider, and legal-policy tests passed; root workspace build passed. The bounded Groq reproduction remains preserved as evidence and the post-fix live whole-agent certification is tracked separately without being asserted here.",
       "recertifiedAt": "2026-09-16",
       "sourceStateConstant": "CODEFORGE_RC1_ORCHESTRATION_SOURCE_STATE"
+    },
+    {
+      "label": "Paid Auto R1 routing-boundary reconciliation",
+      "reason": "The inherited Paid Auto R1 commit added an isolated paid-auto selection branch and explicit no-failover behavior to AgentRuntime. The change does not alter ForgeGreen optimization, ForgeVerify, or Completion Gate authority, but it changes a material file in the certified source surface and therefore receives a fresh source-state identity.",
+      "priorSourceStateId": "7bedbd33bc453ff729356adf6861dbead485cf506076248b926be48c6752a758",
+      "priorSurfaceVersion": "fg12f-certified-v1-rc1-orchestration",
+      "resultingSourceStateId": "37adcc17198051aec4af6137dc2dacfda7c7340dd9eb7e5da69f2f2e9bbd2422",
+      "resultingSurfaceVersion": "fg12f-certified-v1-paid-auto-r1-boundary",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Added the optional Paid Auto runtime service, exact paid-auto model resolution, and a hard boundary preventing Managed-Free failover from crossing into Paid Auto.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Inherited Paid Auto R1 mock-only provider, factory, server-boundary, and desktop model-section tests are recorded in docs/paid-auto-r1.md; the fresh repository baseline was 337 passed / 2 failed / 7 skipped files and 2,536 passed / 36 skipped tests, with the two failures limited to this stale source-state identity before this refresh.",
+      "recertifiedAt": "2026-09-16",
+      "sourceStateConstant": "CODEFORGE_PAID_AUTO_R1_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above.",
-  "recertifiedAt": "2026-09-16T15:55:00.000Z",
+  "recertifiedAt": "2026-09-16T17:20:00.000Z",
   "recertification": {
-    "phase": "RC1 ecosystem integration",
-    "reason": "Bounded R1 phase orchestration changed one material file",
+    "phase": "Post-Paid-Auto R1 provider onboarding",
+    "reason": "Reconciled the inherited Paid Auto R1 material-file change without altering ForgeGreen or authority semantics",
     "changedFiles": [
       {
-        "path": "packages/server/src/autonomous-orchestrator.ts",
-        "summary": "Added non-extendable R1 exploration and planning ceilings, forwarded effective child budgets, and preserved incomplete explorer evidence for bounded Planner continuation"
+        "path": "packages/server/src/agent-runtime.ts",
+        "summary": "Recorded the inherited Paid Auto exact-selection branch and its explicit no-failover boundary in the current certified source-state identity"
       }
     ],
-    "priorSourceStateId": "a40af59269e054e4547ea4aaaf71f5010a9416d3a33a2338067e9600b1264569",
+    "priorSourceStateId": "7bedbd33bc453ff729356adf6861dbead485cf506076248b926be48c6752a758",
     "guarded": true
   }
 }

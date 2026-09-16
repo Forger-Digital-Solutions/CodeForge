@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "runId": "provider-onboarding-2026-09-16-r1",
+  "capturedAt": "2026-09-16T17:56:00.000Z",
+  "classification": "fresh-live-account-and-policy-observations",
+  "secretPolicy": "Only presence, type, status, and sanitized classifications are recorded. No credential value, project identifier, account identifier, prompt, or provider response body is recorded.",
+  "providers": {
+    "groq": {
+      "accountPlanObserved": "FREE",
+      "liveCatalogObserved": true,
+      "liveModelCount": 13,
+      "exactModel": "openai/gpt-oss-20b",
+      "exactModelListed": true,
+      "boundedAllowanceProbe": "PASS",
+      "r5WholeAgent": "BLOCKED_MODEL_CONTRACT",
+      "evidence": "docs/evidence/post-paid-auto-r1/r5-groq-b8f38e94-331d-4655-8e4e-a1fe8ae6de73.json"
+    },
+    "cloudflare": {
+      "accountStateObserved": "WORKERS_PAID_ACTIVE",
+      "managedFreeQualification": "UNVERIFIED_AND_NOT_ELIGIBLE_BY_DEFAULT",
+      "overage": "NOT_VERIFIED",
+      "inferenceRun": "NOT_RUN"
+    },
+    "openrouter": {
+      "authObservation": "HTTP_200",
+      "exactGroqModelListed": false,
+      "paidAutoFallback": "NOT_USED"
+    },
+    "google": {
+      "aiStudioKeyCreated": true,
+      "credentialValuePersisted": false,
+      "currentCodeForgeCredentialPresence": true,
+      "currentLiveAuth": "HTTP_403_BLOCKED",
+      "modelDiscovery": "BLOCKED_AUTH",
+      "freePolicy": "REQUIRES_EXPLICIT_ACCEPTANCE_AND_TRUSTED_REGION"
+    },
+    "cerebras": {
+      "accountConsoleObserved": true,
+      "maskedCredentialObserved": true,
+      "economicClass": "PROMOTIONAL_CREDIT",
+      "managedFreeQualification": "DENY",
+      "liveInference": "NOT_RUN_TO_PRESERVE_PROMO_CREDIT"
+    },
+    "mistral": {
+      "status": "MISTRAL_DEFERRED_USER_REQUEST",
+      "liveInference": "NOT_RUN"
+    }
+  },
+  "policyBoundaries": {
+    "paidAuto": "ISOLATED_FOUR_MODEL_MOCK_ONLY_BOUNDARY",
+    "forgeZero": "FREE_ELIGIBILITY_REQUIRED",
+    "forgeAuto": "NO_PAID_OR_GEMS_CROSSOVER",
+    "forgeGreen": "ADVISORY_ONLY_AND_OUTSIDE_COMPLETION_AUTHORITY",
+    "gems": "UNCHANGED_AND_NOT_INTEGRATED"
+  },
+  "verification": {
+    "focusedTests": { "filesPassed": 5, "testsPassed": 75, "filesFailed": 0, "testsFailed": 0 },
+    "fullSuite": { "filesPassed": 339, "filesSkipped": 7, "testsPassed": 2541, "testsSkipped": 36, "exitCode": 0 },
+    "workspaceBuild": "PASS",
+    "npmRepair": "USER_LEVEL_POWERSHELL_NPM_SHIM_AND_GLOBAL_NPM_REPAIR_APPLIED"
+  }
+}

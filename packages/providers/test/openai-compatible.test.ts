@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { OpenAICompatibleAdapter } from "../src/openai-compatible.js";
-import { createCerebrasAdapter, createCloudflareAdapter, createMistralAdapter, createProviderAdapterById, createZaiAdapter } from "../src/provider-factory.js";
+import { createCerebrasAdapter, createCloudflareAdapter, createGroqAdapter, createMistralAdapter, createProviderAdapterById, createZaiAdapter } from "../src/provider-factory.js";
 import { ProviderError } from "../src/index.js";
 import type { StreamEvent } from "../src/chat-types.js";
 
@@ -39,6 +39,23 @@ describe("OpenAICompatibleAdapter transport", () => {
     expect(body.messages[0]).toEqual({ role: "system", content: "sys" });
     expect(res.choices[0]!.message.content).toBe("hello world");
     expect(res.usage?.inputTokens).toBe(5);
+  });
+
+  it("keeps Groq GPT-OSS reasoning out of the shared final-answer channel", async () => {
+    let body: Record<string, unknown> | undefined;
+    const fetchFn = (async (_u: string, init: RequestInit) => {
+      body = JSON.parse(init.body as string) as Record<string, unknown>;
+      return jsonResponse({ id: "groq-1", model: "openai/gpt-oss-20b", choices: [{ message: { role: "assistant", content: "OK" }, finish_reason: "stop" }] });
+    }) as unknown as typeof fetch;
+
+    const response = await createGroqAdapter({ apiKey: "test-groq-key", fetchFn }).chat({
+      model: "openai/gpt-oss-20b",
+      messages: [{ role: "user", content: "Reply only OK." }],
+      maxTokens: 8,
+    });
+
+    expect(body?.include_reasoning).toBe(false);
+    expect(response.choices[0]?.message.content).toBe("OK");
   });
 
   it("streams text deltas then a finish", async () => {
