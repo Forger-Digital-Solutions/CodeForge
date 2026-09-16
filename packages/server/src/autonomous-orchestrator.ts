@@ -11,6 +11,7 @@ import {
   type AgentPermissions,
   type PlannerResult,
   getAgent,
+  validateStructuredAgentResult,
 } from "@codeforge/agent";
 import {
   type WorkspaceService,
@@ -336,6 +337,27 @@ export class AutonomousRunOrchestrator {
     return ordered;
   }
 
+  private authorizedPlannerResult(result: AgentResult): PlannerResult | undefined {
+    if (result.status !== "completed") return undefined;
+    if (result.structuredData) {
+      const validated = validateStructuredAgentResult("planner", result.structuredData);
+      return validated.success ? validated.data as PlannerResult : undefined;
+    }
+    // Some provider adapters preserve a validated JSON payload only in the final summary. Recover
+    // it through the same strict validator; prose or malformed output remains blocked.
+    const recovered = validateStructuredAgentResult("planner", result.summary);
+    return recovered.success ? recovered.data as PlannerResult : undefined;
+  }
+
+  private validateAuthorizedPlannerGraph(graph: TaskGraph): void {
+    const roles = new Set(graph.tasks.map((task) => task.assignedRole));
+    if (graph.tasks.length === 0 || !roles.has("coder") || !roles.has("reviewer")) {
+      const error = new Error("TASK_AUTHORIZATION_FAILED: Planner graph must contain at least one coder and one reviewer");
+      (error as unknown as { code: string }).code = "TASK_AUTHORIZATION_FAILED";
+      throw error;
+    }
+  }
+
   /**
    * Execute an autonomous multi-agent engineering run.
    */
@@ -464,7 +486,8 @@ export class AutonomousRunOrchestrator {
           signal: controller.signal,
           structuredOutput: "planner",
         });
-        if (plannerResult.status !== "completed" || !plannerResult.structuredData) {
+        const plan = this.authorizedPlannerResult(plannerResult);
+        if (!plan) {
           const error = "AGENT_INVALID_STRUCTURED_OUTPUT";
           this.transitionRun(run, "blocked", adapter);
           run.error = error;
@@ -485,8 +508,8 @@ export class AutonomousRunOrchestrator {
           this.persistRun(run);
           return result;
         }
-        const plan = plannerResult.structuredData as PlannerResult;
         run.taskGraph = { tasks: plan.tasks.map((task) => ({ ...task, status: "pending" })) };
+        this.validateAuthorizedPlannerGraph(run.taskGraph);
         this.persistRun(run);
       }
       this.validateTaskGraph(run.taskGraph);

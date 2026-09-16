@@ -719,9 +719,8 @@ async function executeTask(fleet, freeze, task, record, context) {
     WRAPPER_PATH,
     `--baseline=${baselinePathArg(baselineFile)}`,
     `--out=${path.join(attemptDir, "oracle-internal.json").replaceAll("\\", "/")}`,
+    `--vitest=${path.join(worktreePath, "node_modules", "vitest", "vitest.mjs").replaceAll("\\", "/")}`,
     "--",
-    "vitest",
-    "run",
   ];
   const targetArgs = oracleTargetArgs(task.oracleCommand);
   if (targetArgs) wrapperArgs.push(...targetArgs.split(/\s+/).filter(Boolean));
@@ -807,14 +806,9 @@ async function executeTask(fleet, freeze, task, record, context) {
   for (const note of classification.notes) record.notes.push(note);
   await persistRecord(record);
 
-  const retainWorktree = record.status === "FAILED" || record.status === "INVALID_CASE";
-  if (!retainWorktree) {
-    await removeWorktree(task.repo, worktreePath, branch);
-  } else {
-    try {
-      await git(task.repo, "worktree", "remove", worktreePath, "--force");
-    } catch {}
-  }
+  // Attempt evidence is persisted above; disposable worktrees are never evidence and must not
+  // survive a failed run to become embedded repositories or poison the next campaign window.
+  await removeWorktree(task.repo, worktreePath, branch);
   return { record };
 }
 
@@ -829,9 +823,8 @@ async function runExternalOracle(freeze, task, attemptDir, worktreePath) {
     WRAPPER_PATH,
     `--baseline=${baselinePathArg(baselineFile)}`,
     `--out=${outPath.replaceAll("\\", "/")}`,
+    `--vitest=${path.join(worktreePath, "node_modules", "vitest", "vitest.mjs").replaceAll("\\", "/")}`,
     "--",
-    "vitest",
-    "run",
   ];
   const targetArgs = oracleTargetArgs(task.oracleCommand);
   if (targetArgs) wrapperArgs.push(...targetArgs.split(/\s+/).filter(Boolean));

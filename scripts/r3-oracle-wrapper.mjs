@@ -24,6 +24,18 @@ if (sepIndex === -1) {
 }
 const baselinePath = option("baseline");
 const outPath = option("out");
+function findVitestEntry() {
+  let directory = process.cwd();
+  while (true) {
+    const candidate = path.join(directory, "node_modules", "vitest", "vitest.mjs");
+    if (fs.existsSync(candidate)) return candidate;
+    const parent = path.dirname(directory);
+    if (parent === directory) break;
+    directory = parent;
+  }
+  return path.resolve("node_modules", "vitest", "vitest.mjs");
+}
+const vitestEntry = option("vitest") ?? findVitestEntry();
 const vitestArgs = args.slice(sepIndex + 1);
 if (!baselinePath || !outPath || vitestArgs.length === 0) {
   console.error("oracle-wrapper: --baseline and --out and vitest args are required");
@@ -70,7 +82,8 @@ function collect(report) {
 function runVitest() {
   return new Promise((resolve) => {
     const rawPath = `${outPath}.raw.json`;
-    const full = ["node_modules/vitest/vitest.mjs", "run", ...vitestArgs, "--reporter=json", `--outputFile=${rawPath}`];
+    fs.mkdirSync(path.dirname(rawPath), { recursive: true });
+    const full = [vitestEntry, "run", ...vitestArgs, "--reporter=json", `--outputFile=${rawPath}`];
     execFile(
       process.execPath,
       full,
