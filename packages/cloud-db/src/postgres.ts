@@ -1193,7 +1193,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         eventType: "CREDIT_RESERVED",
         requestId: params.requestId,
         description: params.description ?? `Budget reservation for request ${params.requestId}`,
-        metadata: { reservationId: reservation.id, providerId: params.providerId, modelId: params.modelId, ...(params.metadata ?? {}) },
+        metadata: { reservationId: reservation.id, providerId: params.providerId, modelId: params.modelId, ...params.metadata },
       });
 
       return { reservation, balanceAfter: ledger.balanceAfter, created: true };

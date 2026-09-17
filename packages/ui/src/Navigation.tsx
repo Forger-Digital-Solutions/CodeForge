@@ -116,15 +116,6 @@ interface NavigationProps {
   currentNavView?: "tasks" | "files";
 }
 
-interface FileNode {
-  name: string;
-  path: string;
-  type: "file" | "directory";
-  children?: FileNode[];
-  expanded?: boolean;
-  gitStatus?: "modified" | "untracked" | "staged" | "deleted" | "clean";
-}
-
 /** Compact CodeForge diamond/atom brand mark. */
 function BrandMark() {
   return (
@@ -152,11 +143,6 @@ const ICON = {
   settings: "M8 5.6a2.4 2.4 0 1 0 0 4.8 2.4 2.4 0 0 0 0-4.8zM8 1.6l1 1.6 1.9-.4.6 1.8 1.7.9-.5 1.9 1.2 1.5-1.2 1.5.5 1.9-1.7.9-.6 1.8-1.9-.4-1 1.6-1-1.6-1.9.4-.6-1.8-1.7-.9.5-1.9L1.6 8l1.2-1.5-.5-1.9 1.7-.9.6-1.8 1.9.4z",
   help: "M8 14.5A6.5 6.5 0 1 0 8 1.5a6.5 6.5 0 0 0 0 13zM6.4 6.2a1.7 1.7 0 0 1 3.3.5c0 1.1-1.7 1.4-1.7 2.6M8 11.6h.01",
   file: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z",
-  gitModified: "M8 3.5v9M3.5 8h9",
-  gitUntracked: "M8 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z",
-  gitStaged: "M8 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z",
-  chevronRight: "M5 12l5-5 5 5",
-  chevronDown: "M12 5l-5 5 5 5",
 };
 
 function NavIcon({ path, filled }: { path: string; filled?: boolean }) {
@@ -165,93 +151,6 @@ function NavIcon({ path, filled }: { path: string; filled?: boolean }) {
       <path d={path} stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" fill={filled ? "currentColor" : "none"} fillOpacity={filled ? 0.14 : 0} />
     </svg>
   );
-}
-
-function GitStatusIcon({ status }: { status: FileNode["gitStatus"] }) {
-  const colors: Record<NonNullable<FileNode["gitStatus"]>, string> = {
-    modified: "#e5a13a",
-    untracked: "#5eead4",
-    staged: "#3ecf83",
-    deleted: "#ef4d4d",
-    clean: "#63666e",
-  };
-  const icons: Record<NonNullable<FileNode["gitStatus"]>, string> = {
-    modified: ICON.gitModified,
-    untracked: ICON.gitUntracked,
-    staged: ICON.gitStaged,
-    deleted: ICON.gitModified,
-    clean: ICON.gitStaged,
-  };
-  
-  if (!status || status === "clean") return null;
-  
-  return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ color: colors[status], flexShrink: 0, marginLeft: 4 }}>
-      <path d={icons[status]} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-const renderFileNode = (node: FileNode, depth: number = 0, onClick?: (path: string) => void) => {
-  const indent = depth * 16;
-  const isDirectory = node.type === "directory";
-  const hasChildren = isDirectory && node.children && node.children.length > 0;
-  const chevron = hasChildren ? (node.expanded ? ICON.chevronDown : ICON.chevronRight) : null;
-  
-  return (
-    <div key={node.path} className="file-node">
-      <button
-        className={`file-item ${isDirectory ? "directory" : ""}`}
-        style={{ paddingLeft: indent + 8 }}
-        onClick={() => {
-          if (isDirectory) {
-          } else if (onClick) {
-            onClick(node.path);
-          }
-        }}
-      >
-        {chevron && (
-          <span className="file-chevron" style={{ width: 14, display: "inline-flex", marginRight: 2 }}>
-            <NavIcon path={chevron} />
-          </span>
-        )}
-        {!chevron && <span style={{ width: 14, display: "inline-flex", marginRight: 2 }} />}
-        <span className="file-icon" style={{ width: 14, textAlign: "center" }}>
-          {isDirectory ? (node.expanded ? "📂" : "📁") : getFileIcon(node.name)}
-        </span>
-        <span className="file-name">{node.name}</span>
-        <GitStatusIcon status={node.gitStatus} />
-      </button>
-      {isDirectory && node.expanded && node.children && (
-        <div className="file-children">
-          {node.children.map((child) => renderFileNode(child, depth + 1, onClick))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-function getFileIcon(filename: string): string {
-  const ext = filename.split(".").pop()?.toLowerCase();
-  const icons: Record<string, string> = {
-    ts: "📄",
-    tsx: "📄",
-    js: "📄",
-    jsx: "📄",
-    json: "⚙",
-    md: "📝",
-    css: "🎨",
-    html: "🌐",
-    svg: "🖼",
-    png: "🖼",
-    jpg: "🖼",
-    git: "📦",
-    env: "🔒",
-    yaml: "⚙",
-    yml: "⚙",
-    lock: "🔒",
-  };
-  return icons[ext || ""] || "📄";
 }
 
 function getSessionStatusIcon(status?: string): string {

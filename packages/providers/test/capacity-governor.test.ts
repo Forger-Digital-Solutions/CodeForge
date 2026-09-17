@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import {
   ProviderCapacityGovernor,
-  GovernedProviderAdapter,
   type ProviderAdapter,
   type ChatRequest,
   type ChatResponse,

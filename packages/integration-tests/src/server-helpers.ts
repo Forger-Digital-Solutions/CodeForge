@@ -1,6 +1,4 @@
 import { CodeForgeServer } from "@codeforge/server";
-import http from "node:http";
-import { Agent } from "node:https";
 
 /**
  * Start a CodeForge server on an ephemeral port (0) to get a random available port.

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T12:33:01.416Z",
+  "generatedAt": "2026-09-17T10:21:01.565Z",
   "methodology": "Workloads 1-7: deterministic, hand-built synthetic fixtures. Workload 8 (live_integration_shaped): a real RepositoryIntelligence instance indexes a real temp workspace, and authoritative-shaped 8-Bit DecisionReceipt / ForgeZero FreeModelRecord evidence is used for cross-receipt integrity — the real live authorities, not the unused RouteReceipt/FinancialReceipt schema. Zero network calls anywhere.",
   "fixtureSource": "packages/forge-green/src/sustainability-fixtures.ts (workloads 1-7); scripts/forgegreen-fg8-benchmark.mjs (workload 8)",
   "workloadCount": 8,
@@ -15,7 +15,7 @@
         "runId": "small-bug-fix",
         "sessionId": "fixture-session-small-bug-fix",
         "taskId": "fixture-task-small-bug-fix",
-        "createdAt": "2026-09-11T12:33:00.987Z",
+        "createdAt": "2026-09-17T10:21:01.030Z",
         "measurementStatus": "complete",
         "measurementFailureReasonCodes": [],
         "identity": {
@@ -170,7 +170,7 @@
             "denominator": 2,
             "units": "requests_continued_past_dead_end / total_requests",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.986Z",
+            "createdAt": "2026-09-17T10:21:01.028Z",
             "executionRevision": "rev-1",
             "description": "Share of this run's requests that smart routing carried past a provider failure that a fixed single-model deployment could not have continued past."
           },
@@ -187,7 +187,7 @@
             "denominator": 2,
             "units": "doomed_calls_skipped / naive_total_attempts",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.987Z",
+            "createdAt": "2026-09-17T10:21:01.029Z",
             "executionRevision": "rev-1",
             "description": "Share of a naive sequential-retry strategy's attempts that health-aware routing skipped outright instead of dispatching to a known-ineligible route."
           },
@@ -202,7 +202,7 @@
             ],
             "units": "count",
             "confidence": "DIRECT",
-            "createdAt": "2026-09-11T12:33:00.987Z",
+            "createdAt": "2026-09-17T10:21:01.029Z",
             "executionRevision": "rev-1",
             "description": "Verification obligations generated this run: 1 (targeted suites used: 1, full suites required: 0). Informational only — not a savings baseline."
           }
@@ -236,7 +236,7 @@
           "carbon": "unavailable"
         },
         "finalized": true,
-        "finalizedAt": "2026-09-11T12:33:00.987Z"
+        "finalizedAt": "2026-09-17T10:21:01.030Z"
       },
       "summary": {
         "receiptId": "fg8-b3cfdb0096ab6eddffdbec08",
@@ -265,7 +265,7 @@
         "runId": "repository-search",
         "sessionId": "fixture-session-repository-search",
         "taskId": "fixture-task-repository-search",
-        "createdAt": "2026-09-11T12:33:00.988Z",
+        "createdAt": "2026-09-17T10:21:01.030Z",
         "measurementStatus": "complete",
         "measurementFailureReasonCodes": [],
         "identity": {
@@ -420,7 +420,7 @@
             "denominator": 3,
             "units": "requests_continued_past_dead_end / total_requests",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.987Z",
+            "createdAt": "2026-09-17T10:21:01.030Z",
             "executionRevision": "rev-1",
             "description": "Share of this run's requests that smart routing carried past a provider failure that a fixed single-model deployment could not have continued past."
           },
@@ -437,7 +437,7 @@
             "denominator": 3,
             "units": "doomed_calls_skipped / naive_total_attempts",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.988Z",
+            "createdAt": "2026-09-17T10:21:01.030Z",
             "executionRevision": "rev-1",
             "description": "Share of a naive sequential-retry strategy's attempts that health-aware routing skipped outright instead of dispatching to a known-ineligible route."
           },
@@ -452,7 +452,7 @@
             ],
             "units": "count",
             "confidence": "INSUFFICIENT_DATA",
-            "createdAt": "2026-09-11T12:33:00.988Z",
+            "createdAt": "2026-09-17T10:21:01.030Z",
             "executionRevision": "rev-1",
             "description": "Verification obligations generated this run: 0 (targeted suites used: 0, full suites required: 0). Informational only — not a savings baseline."
           }
@@ -486,7 +486,7 @@
           "carbon": "unavailable"
         },
         "finalized": true,
-        "finalizedAt": "2026-09-11T12:33:00.988Z"
+        "finalizedAt": "2026-09-17T10:21:01.030Z"
       },
       "summary": {
         "receiptId": "fg8-aa1c4c807af7f9282312523d",
@@ -515,7 +515,7 @@
         "runId": "multi-file-edit",
         "sessionId": "fixture-session-multi-file-edit",
         "taskId": "fixture-task-multi-file-edit",
-        "createdAt": "2026-09-11T12:33:00.988Z",
+        "createdAt": "2026-09-17T10:21:01.031Z",
         "measurementStatus": "complete",
         "measurementFailureReasonCodes": [],
         "identity": {
@@ -691,7 +691,7 @@
             "denominator": 6,
             "units": "requests_continued_past_dead_end / total_requests",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.988Z",
+            "createdAt": "2026-09-17T10:21:01.030Z",
             "executionRevision": "rev-1",
             "description": "Share of this run's requests that smart routing carried past a provider failure that a fixed single-model deployment could not have continued past."
           },
@@ -708,7 +708,7 @@
             "denominator": 6,
             "units": "doomed_calls_skipped / naive_total_attempts",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.988Z",
+            "createdAt": "2026-09-17T10:21:01.030Z",
             "executionRevision": "rev-1",
             "description": "Share of a naive sequential-retry strategy's attempts that health-aware routing skipped outright instead of dispatching to a known-ineligible route."
           },
@@ -723,7 +723,7 @@
             ],
             "units": "count",
             "confidence": "DIRECT",
-            "createdAt": "2026-09-11T12:33:00.988Z",
+            "createdAt": "2026-09-17T10:21:01.030Z",
             "executionRevision": "rev-1",
             "description": "Verification obligations generated this run: 3 (targeted suites used: 2, full suites required: 0). Informational only — not a savings baseline."
           }
@@ -757,7 +757,7 @@
           "carbon": "unavailable"
         },
         "finalized": true,
-        "finalizedAt": "2026-09-11T12:33:00.988Z"
+        "finalizedAt": "2026-09-17T10:21:01.031Z"
       },
       "summary": {
         "receiptId": "fg8-379055c0dadb6afe60153662",
@@ -786,7 +786,7 @@
         "runId": "tool-heavy-task",
         "sessionId": "fixture-session-tool-heavy-task",
         "taskId": "fixture-task-tool-heavy-task",
-        "createdAt": "2026-09-11T12:33:00.989Z",
+        "createdAt": "2026-09-17T10:21:01.031Z",
         "measurementStatus": "complete",
         "measurementFailureReasonCodes": [],
         "identity": {
@@ -941,7 +941,7 @@
             "denominator": 4,
             "units": "requests_continued_past_dead_end / total_requests",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.988Z",
+            "createdAt": "2026-09-17T10:21:01.031Z",
             "executionRevision": "rev-1",
             "description": "Share of this run's requests that smart routing carried past a provider failure that a fixed single-model deployment could not have continued past."
           },
@@ -958,7 +958,7 @@
             "denominator": 4,
             "units": "doomed_calls_skipped / naive_total_attempts",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.988Z",
+            "createdAt": "2026-09-17T10:21:01.031Z",
             "executionRevision": "rev-1",
             "description": "Share of a naive sequential-retry strategy's attempts that health-aware routing skipped outright instead of dispatching to a known-ineligible route."
           },
@@ -973,7 +973,7 @@
             ],
             "units": "count",
             "confidence": "DIRECT",
-            "createdAt": "2026-09-11T12:33:00.988Z",
+            "createdAt": "2026-09-17T10:21:01.031Z",
             "executionRevision": "rev-1",
             "description": "Verification obligations generated this run: 1 (targeted suites used: 1, full suites required: 0). Informational only — not a savings baseline."
           }
@@ -1007,7 +1007,7 @@
           "carbon": "unavailable"
         },
         "finalized": true,
-        "finalizedAt": "2026-09-11T12:33:00.989Z"
+        "finalizedAt": "2026-09-17T10:21:01.031Z"
       },
       "summary": {
         "receiptId": "fg8-b9dfc845cd2166c0756100da",
@@ -1036,7 +1036,7 @@
         "runId": "verification-heavy-task",
         "sessionId": "fixture-session-verification-heavy-task",
         "taskId": "fixture-task-verification-heavy-task",
-        "createdAt": "2026-09-11T12:33:00.989Z",
+        "createdAt": "2026-09-17T10:21:01.031Z",
         "measurementStatus": "complete",
         "measurementFailureReasonCodes": [],
         "identity": {
@@ -1181,7 +1181,7 @@
             "denominator": 5,
             "units": "requests_continued_past_dead_end / total_requests",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.989Z",
+            "createdAt": "2026-09-17T10:21:01.031Z",
             "executionRevision": "rev-1",
             "description": "Share of this run's requests that smart routing carried past a provider failure that a fixed single-model deployment could not have continued past."
           },
@@ -1198,7 +1198,7 @@
             "denominator": 5,
             "units": "doomed_calls_skipped / naive_total_attempts",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.989Z",
+            "createdAt": "2026-09-17T10:21:01.031Z",
             "executionRevision": "rev-1",
             "description": "Share of a naive sequential-retry strategy's attempts that health-aware routing skipped outright instead of dispatching to a known-ineligible route."
           },
@@ -1213,7 +1213,7 @@
             ],
             "units": "count",
             "confidence": "DIRECT",
-            "createdAt": "2026-09-11T12:33:00.989Z",
+            "createdAt": "2026-09-17T10:21:01.031Z",
             "executionRevision": "rev-1",
             "description": "Verification obligations generated this run: 6 (targeted suites used: 2, full suites required: 1). Informational only — not a savings baseline."
           }
@@ -1247,7 +1247,7 @@
           "carbon": "unavailable"
         },
         "finalized": true,
-        "finalizedAt": "2026-09-11T12:33:00.989Z"
+        "finalizedAt": "2026-09-17T10:21:01.031Z"
       },
       "summary": {
         "receiptId": "fg8-2b417827f31e1f1e0ef61e7e",
@@ -1276,7 +1276,7 @@
         "runId": "provider-failure-fallback-task",
         "sessionId": "fixture-session-provider-failure-fallback-task",
         "taskId": "fixture-task-provider-failure-fallback-task",
-        "createdAt": "2026-09-11T12:33:00.989Z",
+        "createdAt": "2026-09-17T10:21:01.031Z",
         "measurementStatus": "complete",
         "measurementFailureReasonCodes": [],
         "identity": {
@@ -1431,7 +1431,7 @@
             "denominator": 5,
             "units": "requests_continued_past_dead_end / total_requests",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.989Z",
+            "createdAt": "2026-09-17T10:21:01.031Z",
             "executionRevision": "rev-1",
             "description": "Share of this run's requests that smart routing carried past a provider failure that a fixed single-model deployment could not have continued past."
           },
@@ -1448,7 +1448,7 @@
             "denominator": 6,
             "units": "doomed_calls_skipped / naive_total_attempts",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.989Z",
+            "createdAt": "2026-09-17T10:21:01.031Z",
             "executionRevision": "rev-1",
             "description": "Share of a naive sequential-retry strategy's attempts that health-aware routing skipped outright instead of dispatching to a known-ineligible route."
           },
@@ -1463,7 +1463,7 @@
             ],
             "units": "count",
             "confidence": "DIRECT",
-            "createdAt": "2026-09-11T12:33:00.989Z",
+            "createdAt": "2026-09-17T10:21:01.031Z",
             "executionRevision": "rev-1",
             "description": "Verification obligations generated this run: 1 (targeted suites used: 1, full suites required: 0). Informational only — not a savings baseline."
           }
@@ -1497,7 +1497,7 @@
           "carbon": "unavailable"
         },
         "finalized": true,
-        "finalizedAt": "2026-09-11T12:33:00.989Z"
+        "finalizedAt": "2026-09-17T10:21:01.031Z"
       },
       "summary": {
         "receiptId": "fg8-d798563c2996e065f6a7ad1b",
@@ -1526,7 +1526,7 @@
         "runId": "context-heavy-repository-task",
         "sessionId": "fixture-session-context-heavy-repository-task",
         "taskId": "fixture-task-context-heavy-repository-task",
-        "createdAt": "2026-09-11T12:33:00.992Z",
+        "createdAt": "2026-09-17T10:21:01.032Z",
         "measurementStatus": "complete",
         "measurementFailureReasonCodes": [],
         "identity": {
@@ -1702,7 +1702,7 @@
             "denominator": 7,
             "units": "requests_continued_past_dead_end / total_requests",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.989Z",
+            "createdAt": "2026-09-17T10:21:01.031Z",
             "executionRevision": "rev-1",
             "description": "Share of this run's requests that smart routing carried past a provider failure that a fixed single-model deployment could not have continued past."
           },
@@ -1719,7 +1719,7 @@
             "denominator": 2400000,
             "units": "bytes_avoided / naive_full_context_bytes",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.989Z",
+            "createdAt": "2026-09-17T10:21:01.032Z",
             "executionRevision": "rev-1",
             "description": "Bytes avoided by progressive/pull-based context delivery versus an explicit naive full-context policy for the stated eligible population.",
             "contextPopulation": {
@@ -1752,7 +1752,7 @@
             "denominator": 7,
             "units": "doomed_calls_skipped / naive_total_attempts",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:00.989Z",
+            "createdAt": "2026-09-17T10:21:01.032Z",
             "executionRevision": "rev-1",
             "description": "Share of a naive sequential-retry strategy's attempts that health-aware routing skipped outright instead of dispatching to a known-ineligible route."
           },
@@ -1767,7 +1767,7 @@
             ],
             "units": "count",
             "confidence": "DIRECT",
-            "createdAt": "2026-09-11T12:33:00.989Z",
+            "createdAt": "2026-09-17T10:21:01.032Z",
             "executionRevision": "rev-1",
             "description": "Verification obligations generated this run: 2 (targeted suites used: 2, full suites required: 0). Informational only — not a savings baseline."
           }
@@ -1801,7 +1801,7 @@
           "carbon": "unavailable"
         },
         "finalized": true,
-        "finalizedAt": "2026-09-11T12:33:00.992Z"
+        "finalizedAt": "2026-09-17T10:21:01.032Z"
       },
       "summary": {
         "receiptId": "fg8-fc230c817d791824b5b3dd0f",
@@ -1826,11 +1826,11 @@
       "receipt": {
         "receiptSchemaVersion": "fg8-receipt-1",
         "normalizationVersion": "fg8-normalization-1",
-        "receiptId": "fg8-20023a166964209229fbe2d8",
+        "receiptId": "fg8-fa0fb8b206d0e568d4598c6d",
         "runId": "live-integration-shaped",
         "sessionId": "fixture-session-live-integration-shaped",
         "taskId": "fixture-task-live-integration-shaped",
-        "createdAt": "2026-09-11T12:33:01.394Z",
+        "createdAt": "2026-09-17T10:21:01.546Z",
         "measurementStatus": "complete",
         "measurementFailureReasonCodes": [],
         "identity": {
@@ -1838,7 +1838,7 @@
           "sessionId": "fixture-session-live-integration-shaped",
           "agentId": "fixture-agent",
           "taskId": "fixture-task-live-integration-shaped",
-          "namespace": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\fg8r-benchmark-AA0dNe"
+          "namespace": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\fg8r-benchmark-X4TTn8"
         },
         "tokenAccounting": {
           "inputTokens": 1600,
@@ -1976,7 +1976,7 @@
             "denominator": 2,
             "units": "requests_continued_past_dead_end / total_requests",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:01.392Z",
+            "createdAt": "2026-09-17T10:21:01.545Z",
             "description": "Share of this run's requests that smart routing carried past a provider failure that a fixed single-model deployment could not have continued past."
           },
           {
@@ -1992,7 +1992,7 @@
             "denominator": 185,
             "units": "bytes_avoided / naive_full_context_bytes",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:01.393Z",
+            "createdAt": "2026-09-17T10:21:01.545Z",
             "description": "Bytes avoided by progressive/pull-based context delivery versus an explicit naive full-context policy for the stated eligible population.",
             "contextPopulation": {
               "fullContextDefinition": "All files indexed by RepositoryIntelligence (git-tracked, non-ignored, outside node_modules/dist/build/.git/etc.) at the workspace's current content generation, split into analyzable (parsed/fallback/error) vs skipped (binary/too-large/generated/sensitive). Eligible bytes are an EXACT sum over every indexed file's stored size (not a sample) because this workspace fit inside one bounded query page.",
@@ -2022,7 +2022,7 @@
             "denominator": 2,
             "units": "doomed_calls_skipped / naive_total_attempts",
             "confidence": "HIGH_CONFIDENCE_ESTIMATE",
-            "createdAt": "2026-09-11T12:33:01.393Z",
+            "createdAt": "2026-09-17T10:21:01.545Z",
             "description": "Share of a naive sequential-retry strategy's attempts that health-aware routing skipped outright instead of dispatching to a known-ineligible route."
           },
           {
@@ -2036,7 +2036,7 @@
             ],
             "units": "count",
             "confidence": "DIRECT",
-            "createdAt": "2026-09-11T12:33:01.393Z",
+            "createdAt": "2026-09-17T10:21:01.545Z",
             "description": "Verification obligations generated this run: 1 (targeted suites used: 1, full suites required: 0). Informational only — not a savings baseline."
           }
         ],
@@ -2079,10 +2079,10 @@
           "carbon": "estimated"
         },
         "finalized": true,
-        "finalizedAt": "2026-09-11T12:33:01.394Z"
+        "finalizedAt": "2026-09-17T10:21:01.546Z"
       },
       "summary": {
-        "receiptId": "fg8-20023a166964209229fbe2d8",
+        "receiptId": "fg8-fa0fb8b206d0e568d4598c6d",
         "measurementStatus": "complete",
         "headline": "2 model requests · 2.3K tokens",
         "contextLine": "165 context bytes avoided versus naive full-context baseline",
@@ -2124,7 +2124,7 @@
       "policyVersion": "fg9-optimization-1",
       "mode": "ACTIVE_SAFE",
       "kind": "DUPLICATE_READ_ONLY_TOOL_REUSE",
-      "createdAt": "2026-09-11T12:33:01.416Z",
+      "createdAt": "2026-09-17T10:21:01.565Z",
       "targetResource": "read_only_tool_dispatch",
       "sourceEvidenceIds": [
         "benchmark-hash-0:benchmark-exec-0",
@@ -2148,7 +2148,7 @@
       "status": "APPLIED",
       "statusReasonCodes": [],
       "finalized": true,
-      "finalizedAt": "2026-09-11T12:33:01.416Z"
+      "finalizedAt": "2026-09-17T10:21:01.565Z"
     },
     "receipt": {
       "receiptSchemaVersion": "fg9-optimization-receipt-1",
@@ -2157,7 +2157,7 @@
       "runId": "tool-heavy-task",
       "sessionId": "fixture-session-tool-heavy-task",
       "optimizationKind": "DUPLICATE_READ_ONLY_TOOL_REUSE",
-      "createdAt": "2026-09-11T12:33:01.416Z",
+      "createdAt": "2026-09-17T10:21:01.565Z",
       "afterSustainabilityReceiptId": "fg8-b9dfc845cd2166c0756100da",
       "resourceDelta": {
         "basis": "simulated",
@@ -2168,7 +2168,7 @@
       "survivedValidation": true,
       "rollbackStatus": "NOT_APPLICABLE",
       "finalized": true,
-      "finalizedAt": "2026-09-11T12:33:01.416Z"
+      "finalizedAt": "2026-09-17T10:21:01.565Z"
     }
   }
 }

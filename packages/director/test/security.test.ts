@@ -207,7 +207,6 @@ describe("Credential Security — Section 11", () => {
 
     beforeEach(() => {
       loggedMessages = [];
-      const originalConsole = console.log;
       console.log = (...args) => {
         loggedMessages.push(args.join(" "));
       };

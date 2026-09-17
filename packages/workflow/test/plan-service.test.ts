@@ -70,6 +70,21 @@ describe("PlanService R9 regression (read-only commissioning)", () => {
     expect(plan.steps.some((s) => s.kind === "command")).toBe(false);
   });
 
+  it("does not claim an unimplemented checkpoint command for bug-fix plans", () => {
+    const plan = createPlan(
+      {
+        title: "Fix add",
+        rawMessage: "Fix the add bug",
+        taskType: "bugfix",
+        constraints: [],
+      },
+      { primaryFiles: ["src/add.ts"], supportingFiles: [], evidence: [], summary: "" },
+      { root: ".", files: [], searchedMatches: [] },
+      "task-bugfix",
+    );
+    expect(plan.steps.some((step) => step.command === "git checkpoint")).toBe(false);
+  });
+
   it("still plans edits for bugfix tasks", () => {
     const intent = understandTask("Fix add function to return a + b");
     const ctx = buildContext(intent, repoMap);

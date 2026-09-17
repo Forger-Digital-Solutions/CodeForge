@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "source": "docs/codeforge-forgegreen-fg8-benchmark-fixtures.json",
+  "methodology": "Eight deterministic synthetic workloads plus one real RepositoryIntelligence-shaped integration workload; zero network calls. This is mechanism evidence, not a live-provider economics claim.",
+  "workloads": 8,
+  "candidateA": {
+    "control": { "toolCalls": 31, "wallTimeMs": 15260 },
+    "treatment": { "toolCalls": 27, "wallTimeMs": 15200 },
+    "avoidedToolCalls": 4,
+    "toolCallReductionPercent": 12.9,
+    "wallTimeReductionMs": 60,
+    "verificationOutcomeIdentical": true
+  },
+  "conclusion": "ForgeGreen has bounded fixture evidence of lower tool use without a changed verification outcome. Live model token, money, and completion deltas are not yet measured."
+}

@@ -1,31 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { normalizeProviderError, ModelExecutionAdapter } from "../src/model-execution-adapter.js";
 import { ERROR_CODES } from "@codeforge/agent";
-import { InMemoryProviderCatalog, type ProviderAdapter, type ChatRequest, type ChatResponse, type StreamEvent, type ProviderModel } from "@codeforge/providers";
+import { InMemoryProviderCatalog, type ProviderAdapter } from "@codeforge/providers";
 import { ForgeZero, createGenericFreeRecord } from "@codeforge/forge-zero";
-
-class FailingProvider implements ProviderAdapter {
-  readonly providerId: string;
-  readonly isTestProvider = true;
-  private errorToThrow: string;
-
-  constructor(providerId: string, errorToThrow: string) {
-    this.providerId = providerId;
-    this.errorToThrow = errorToThrow;
-  }
-
-  async listModels(): Promise<ProviderModel[]> {
-    return [{ modelId: "test-model", displayName: "Test Model", isFree: true, freeStatus: "verified_free", capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true } }];
-  }
-
-  async chat(_req: ChatRequest): Promise<ChatResponse> { throw new Error(this.errorToThrow); }
-
-  async *streamChat(_req: ChatRequest, _signal?: AbortSignal): AsyncIterable<StreamEvent> {
-    throw new Error(this.errorToThrow);
-  }
-
-  async healthCheck() { return { status: "available" as const }; }
-}
 
 describe("Model Execution Adapter & Provider Contract (CF-07)", () => {
   it("normalizes provider errors into deterministic CodeForge error codes", () => {

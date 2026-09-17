@@ -170,7 +170,11 @@ export function validateCommitPlan(plan: CommitPlan, changedPaths: string[]): { 
 }
 
 export function validCommitTitle(title: string): boolean {
-  return Boolean(title) && title.length <= 120 && !/[\u0000-\u001f\u007f]/.test(title) && !/(?:OPENAI|OPENROUTER|OPENCODE|ANTHROPIC|API[_-]?KEY|PASSWORD|TOKEN)/i.test(title);
+  const hasControlCharacter = [...title].some((character) => {
+    const code = character.charCodeAt(0);
+    return code <= 0x1f || code === 0x7f;
+  });
+  return Boolean(title) && title.length <= 120 && !hasControlCharacter && !/(?:OPENAI|OPENROUTER|OPENCODE|ANTHROPIC|API[_-]?KEY|PASSWORD|TOKEN)/i.test(title);
 }
 
 export class DeliveryStore {

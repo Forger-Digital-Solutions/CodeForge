@@ -9,7 +9,7 @@ import {
   defaultCapacityGovernor,
   estimatePromptTokens,
 } from "@codeforge/providers";
-import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
+import type { ForgeZero } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
 import { ERROR_CODES, type AgentModelSelection, type AgentUsage } from "@codeforge/agent";
 import type { ToolDefinition } from "@codeforge/tools";

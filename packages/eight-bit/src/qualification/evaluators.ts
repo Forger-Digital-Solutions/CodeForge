@@ -136,7 +136,7 @@ export class ReadOnlyDisciplineEvaluator implements FixtureEvaluator {
 
 /** Multi-file synthesis evaluator */
 export class MultiFileSynthesisEvaluator implements FixtureEvaluator {
-  async evaluate(caseDef: FixtureCase, modelResponse: string, metadata?: Record<string, unknown>): Promise<TestCaseResult> {
+  async evaluate(caseDef: FixtureCase, modelResponse: string, _metadata?: Record<string, unknown>): Promise<TestCaseResult> {
     const requiredRefs = caseDef.requiredFileReferences ?? [];
     const response = modelResponse.toLowerCase();
 

@@ -1,4 +1,4 @@
-import { spawn, spawnSync, type ChildProcess } from "node:child_process";
+import { spawnSync, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -132,7 +132,7 @@ function parseDirectArguments(input: string, platform: NodeJS.Platform): string[
       }
       continue;
     }
-    if (/[&|<>`]/.test(character) || (platform !== "win32" && /[$()*?{}\[\]]/.test(character))) {
+    if (/[&|<>`]/.test(character) || (platform !== "win32" && /[$()*?{}[\]]/.test(character))) {
       return undefined;
     }
     current += character;

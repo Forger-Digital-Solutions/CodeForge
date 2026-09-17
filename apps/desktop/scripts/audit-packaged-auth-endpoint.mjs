@@ -10,7 +10,7 @@
  *   node audit-packaged-auth-endpoint.mjs release-r8-staging --channel staging --expected-url https://...
  *   node audit-packaged-auth-endpoint.mjs release-r8-smoke --channel development --mode smoke --expected-url http://127.0.0.1:3220
  */
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { extractFile } from "@electron/asar";

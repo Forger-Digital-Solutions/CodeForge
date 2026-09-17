@@ -1,6 +1,6 @@
 import React from "react";
 import { useSettings } from "../settings-context.js";
-import { Toggle, CfSelect, SettingsGroup, SettingsRow, StatusBadge } from "../settings-controls.js";
+import { CfSelect, SettingsGroup, SettingsRow, StatusBadge } from "../settings-controls.js";
 import type { ExecutionMode } from "../../../app-settings.js";
 
 /**

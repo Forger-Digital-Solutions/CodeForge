@@ -4,7 +4,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { afterEach, describe, expect, it } from "vitest";
 import { createRepositoryIntelligence, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
-import { createForgeGreenCacheStore, type ForgeGreenCacheStore } from "@codeforge/sessions";
+import { createForgeGreenCacheStore } from "@codeforge/sessions";
 import {
   buildDependencyNeighborhoodPage,
   buildFilePage,

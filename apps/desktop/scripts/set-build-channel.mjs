@@ -54,7 +54,7 @@ if (channel !== "development") {
 }
 
 const existing = JSON.parse(readFileSync(manifestPath, "utf8"));
-const endpoints = { ...(existing.endpoints ?? {}) };
+const endpoints = { ...existing.endpoints };
 if (url) {
   const normalized = new URL(url);
   endpoints[channel] = `${normalized.protocol}//${normalized.host}${normalized.pathname.replace(/\/+$/, "")}`;

@@ -1,0 +1,58 @@
+{
+  "campaign": "CODEFORGE_R7_RELEASE_CERTIFICATION",
+  "recordedAt": "2026-09-17",
+  "verdict": "CODEFORGE_R7_ENGINEERING_READY_EXTERNAL_GATES_REMAIN",
+  "gates": {
+    "dependencyIntegrity": { "status": "PASS", "command": "npm ci --dry-run --ignore-scripts --no-audit --no-fund" },
+    "lint": { "status": "PASS", "errors": 0, "warnings": 0, "command": "npm run lint" },
+    "typecheck": { "status": "PASS", "errors": 0, "command": "npm run typecheck" },
+    "workspaceBuild": { "status": "PASS", "command": "npm run build", "actionableWarnings": 0 },
+    "dependencyAudit": { "status": "PASS", "command": "npm audit --omit=dev --json", "vulnerabilities": { "critical": 0, "high": 0, "moderate": 0, "low": 0, "total": 0 } },
+    "fullTestSuite": {
+      "status": "PASS_WITH_EXTERNAL_SKIPS",
+      "command": "npm test -- --maxWorkers=4",
+      "filesPassed": 339,
+      "filesSkipped": 7,
+      "testsPassed": 2545,
+      "testsSkipped": 36,
+      "failures": 0,
+      "durationSeconds": 525.88,
+      "skipClassification": "EXTERNAL_CREDENTIAL_REQUIRED_REAL_POSTGRESQL"
+    },
+    "postgresql": {
+      "status": "BLOCKED_BY_EXTERNAL_AUTHORIZATION",
+      "reason": "Neither CODEFORGE_TEST_POSTGRES_URL nor DATABASE_URL is configured; no psql client or authorized disposable endpoint is available.",
+      "requiredAction": "Supply a disposable PostgreSQL URL through CODEFORGE_TEST_POSTGRES_URL, then run node scripts/postgres-test-harness.mjs -- node C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js test -- --maxWorkers=4."
+    },
+    "liveProviderQualification": {
+      "status": "BLOCKED_BY_EXTERNAL_PROVIDER",
+      "provider": "groq",
+      "credentialPresent": true,
+      "exactModel": "openai/gpt-oss-20b",
+      "modelListed": true,
+      "liveModelCount": 13,
+      "allowanceProbe": "finish event without text; verifiedFreeCount=0",
+      "evidence": "docs/evidence/post-paid-auto-r1/r5-groq-09381e32-d39e-4c55-8ce9-c49397866c27.json"
+    },
+    "managedFreeLiveSubagents": {
+      "status": "BLOCKED_BY_PROVIDER_OR_PHASE_BUDGET",
+      "route": "groq::openai/gpt-oss-120b",
+      "result": "blocked; 3 live workers were cancelled at the documented 90-second phase ceiling; no change, verification, or false completion occurred.",
+      "evidence": "docs/evidence/r7-release-certification/managed-free-r1-live-groq-2026-09-17.json"
+    },
+    "desktopDistribution": { "status": "PASS_UNSIGNED", "command": "npm run dist --workspace=codeforge-desktop", "electron": "44.4.1", "electronBuilder": "26.15.3", "artifacts": ["win-unpacked", "NSIS", "portable"] },
+    "packagedSmoke": { "status": "PASS", "modes": { "full": "PASS", "interrupt": "PASS_EXPECTED_EXIT_73", "recover": "PASS" }, "executionEnvironment": "normal Windows process; restricted shell cannot launch Electron renderer children" },
+    "packageClosure": { "status": "PASS", "internalPackages": 22, "runtimeModulesScanned": 280, "externalPackagesScanned": 15 },
+    "electronSecurity": { "status": "PASS", "sandbox": true, "nodeIntegration": false, "contextIsolation": true, "webSecurity": true, "controlPlaneBearerInjection": true, "preloadBearerFree": true },
+    "hostedOAuth": { "status": "BLOCKED_BY_EXTERNAL_DEPLOYMENT", "channel": "development", "endpoint": "http://127.0.0.1:3220", "healthProbe": "connection actively refused", "chromeAuthorization": "not attempted because no reachable hosted authorization endpoint exists" },
+    "signing": { "status": "BLOCKED_BY_EXTERNAL_AUTHORIZATION", "artifacts": { "setup": "NotSigned", "portable": "NotSigned", "unpacked": "NotSigned" } },
+    "installer": { "status": "BLOCKED", "setupExitCode": 0, "installedSmoke": "PASS against pre-existing Electron 33.4.11 payload", "finding": "same-version setup did not replace the installed payload and registry points at a prior RC4 uninstaller; stale uninstaller was not run to avoid deleting pre-existing user software" },
+    "sourceSignatureProbe": { "status": "PASS_TEST_FIXTURES_AND_DOCUMENTATION_ONLY", "finding": "filename-only scan located explicit fixtures/tests and documentation; no production credential file was identified" }
+  },
+  "warnings": [
+    { "classification": "EXTERNAL_ENVIRONMENT", "detail": "Broken roaming npm shim; R7 used the program-files npm CLI directly." },
+    { "classification": "EXTERNAL_ENVIRONMENT", "detail": "Restricted shell blocks Electron renderer-child creation (launch-failed:49); normal Windows launch and smoke pass." },
+    { "classification": "EXPECTED_NEGATIVE_TEST_OUTPUT", "detail": "Invalid IPC sender and secondary-renderer CORS messages are asserted adversarial smoke evidence." },
+    { "classification": "INFORMATIONAL_ONLY", "detail": "npm update notices, electron-builder duplicate workspace references, and Chromium VizNullHypothesis diagnostics." }
+  ]
+}

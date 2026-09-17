@@ -13,7 +13,7 @@ const SECRET_PATTERNS: Array<{ re: RegExp; type: string }> = [
   { re: /GOOGLE_API_KEY\s*[:=]\s*['"]?[^'"\s]+/gi, type: "google_api_env" },
   { re: /AWS_ACCESS_KEY_ID\s*[:=]\s*['"]?[^'"\s]+/gi, type: "aws_access_key_env" },
   { re: /AWS_SECRET_ACCESS_KEY\s*[:=]\s*['"]?[^'"\s]+/gi, type: "aws_secret_env" },
-  { re: /Bearer\s+[A-Za-z0-9._\-]+/g, type: "bearer" },
+  { re: /Bearer\s+[A-Za-z0-9._-]+/g, type: "bearer" },
   { re: /sk-[A-Za-z0-9\-_]{10,}/g, type: "sk_key" },
   { re: /sk-proj-[A-Za-z0-9\-_]{10,}/g, type: "openai_proj" },
   { re: /gsk_[A-Za-z0-9]{10,}/g, type: "groq_key" },

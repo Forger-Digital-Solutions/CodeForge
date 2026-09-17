@@ -1,10 +1,15 @@
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const desktopRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = path.resolve(desktopRoot, "..", "..");
-const electronRebuildCli = path.join(repositoryRoot, "node_modules", "@electron", "rebuild", "lib", "cli.js");
+const builderRequire = createRequire(path.join(repositoryRoot, "node_modules", "app-builder-lib", "package.json"));
+const electronRebuildEntry = builderRequire.resolve("@electron/rebuild");
+const electronRebuildCli = path.join(path.dirname(electronRebuildEntry), "cli.js");
+const electronVersion = JSON.parse(readFileSync(path.join(repositoryRoot, "node_modules", "electron", "package.json"), "utf8")).version;
 const windowsPathLimit = 2_048;
 
 function compactPath(source) {
@@ -58,7 +63,7 @@ function createBuildEnvironment(source) {
 function runRebuild(extraArgs) {
   return spawnSync(process.execPath, [
     electronRebuildCli,
-    "-v", "33.4.11",
+    "-v", electronVersion,
     "-o", "better-sqlite3",
     ...extraArgs,
   ], {
@@ -70,7 +75,7 @@ function runRebuild(extraArgs) {
 }
 
 // Prefer the official better-sqlite3 prebuilt binary for this Electron version (it is an ABI-stable
-// N-API addon, so the published prebuild matches electron 33 exactly). This is what lets packaging
+// N-API addon, so the published prebuild matches the installed Electron release exactly). This is what lets packaging
 // succeed on a machine WITHOUT a full C/C++ toolchain — and it stays correct even where a newer
 // Visual Studio (e.g. VS 2026 / v18) is present that node-gyp cannot yet drive. Only if no prebuild
 // can be obtained do we fall back to compiling from source (which needs node-gyp + a C++ toolchain).

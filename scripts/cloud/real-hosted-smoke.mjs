@@ -13,7 +13,7 @@
 //
 // Exits 0 on success, 3 when no free-safe provider credential is present (SKIP, not a failure).
 
-import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { CodeForgeCloudServer } from "../../apps/cloud-api/dist/index.js";
 import { CloudFirewallManager, CloudProviderRegistry, resolveCloudProviderCredentials } from "@codeforge/cloud-gateway";
 

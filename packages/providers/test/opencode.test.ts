@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { OpencodeAdapter, ProviderError } from "../src/opencode.js";
+import { OpencodeAdapter } from "../src/opencode.js";
 import type { ChatRequest } from "../src/chat-types.js";
 
 function mockFetchOnce(response: { ok: boolean; status: number; body: unknown; headers?: Record<string, string> }) {
@@ -132,7 +132,7 @@ describe("OpencodeAdapter", () => {
         headers: expect.objectContaining({ Authorization: "Bearer test-opencode-key", "Content-Type": "application/json" }),
       }),
     );
-    const sentBody = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
+    const sentBody = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
     expect(sentBody.model).toBe("muse-spark-1.2-contributor-free");
     expect(sentBody.input).toBeDefined();
     expect(res.model).toBe("muse-spark-1.2-contributor-free");
@@ -158,7 +158,7 @@ describe("OpencodeAdapter", () => {
       `${baseUrl}/chat/completions`,
       expect.objectContaining({ method: "POST" }),
     );
-    const sent = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
+    const sent = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
     expect(sent.model).toBe("deepseek-v4-flash");
     expect(sent.messages).toBeDefined();
   });
@@ -184,7 +184,7 @@ describe("OpencodeAdapter", () => {
       maxTokens: 100,
       tools: [{ type: "function", function: { name: "my_tool", description: "desc", parameters: { type: "object", properties: {} } } }],
     });
-    const sent = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
+    const sent = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
     expect(sent.instructions).toBe("You are helpful");
     expect(sent.temperature).toBe(0.7);
     expect(sent.model).toBe("muse-spark-1.2-contributor-free");

@@ -863,7 +863,7 @@ export function mergeModelsDevProviderHints(
       out[hint.id] = { ...existing, connection: { fields } };
       continue;
     }
-    if (hint.npm !== "@ai-sdk/openai-compatible" || !hint.api || !/^https:\/\//.test(hint.api)) continue;
+    if (hint.npm !== "@ai-sdk/openai-compatible" || !hint.api || !hint.api.startsWith('https://')) continue;
     const env = (hint.env ?? []).filter((v) => /^[A-Z][A-Z0-9_]{2,63}$/.test(v));
     const secretEnv = env.filter((v) => !isConfigVariable(v));
     if (secretEnv.length === 0) continue;

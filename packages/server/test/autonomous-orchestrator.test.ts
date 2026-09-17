@@ -5,12 +5,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
-import crypto from "node:crypto";
-import { createAutonomousRunOrchestrator, AutonomousRunOrchestrator, MAX_REVIEW_REVISION_ROUNDS } from "../src/autonomous-orchestrator.js";
+import { createAutonomousRunOrchestrator, MAX_REVIEW_REVISION_ROUNDS } from "../src/autonomous-orchestrator.js";
 import { createWorkspaceService } from "../src/workspace-service.js";
 import { createSubagentManager } from "../src/subagent-manager.js";
 import { createIntegrationService } from "../src/integration-service.js";
-import { createCheckpointService } from "../src/checkpoint-service.js";
 import { createWorkspaceEventAdapter } from "../src/workspace-event-adapter.js";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 
@@ -102,8 +100,9 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
       sessionId: "sess-rev-loop",
       workspacePath: targetRepo,
       goal: "Implement subtract function with proper verification",
+      verificationCommands: ["node -e \"process.exit(0)\""],
       adapter: createWorkspaceEventAdapter({ sessionId: "sess-rev-loop", eventStore, persistence }),
-      coderExecutor: async (worktreePath, goal, reviewFeedback) => {
+      coderExecutor: async (worktreePath, _goal, _reviewFeedback) => {
         coderRound++;
         const mathFile = join(worktreePath, "src", "math.ts");
         if (coderRound === 1) {
@@ -203,6 +202,7 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
       sessionId: "sess-preserve",
       workspacePath: targetRepo,
       goal: "Add utility function",
+      verificationCommands: ["node -e \"process.exit(0)\""],
       adapter: createWorkspaceEventAdapter({ sessionId: "sess-preserve", eventStore, persistence }),
       coderExecutor: async (worktreePath) => {
         await writeFile(join(worktreePath, "src", "util.ts"), "export const util = 1;\n");
@@ -210,10 +210,33 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
       },
     });
 
-    // User untracked and staged files are 100% intact
+    // User untracked and staged files are 100% intact; integration fails closed rather than
+    // overwriting the dirty primary workspace.
+    expect(result.status).toBe("blocked");
+    const { stdout: statusAfter } = await execFile("git", ["status", "--porcelain=v2"], { cwd: targetRepo });
+    expect(statusAfter).toBe(statusBefore);
     expect(await readFile(join(targetRepo, "user_untracked.txt"), "utf-8")).toBe("important user untracked file\n");
     expect(await readFile(join(targetRepo, "src", "user_staged.ts"), "utf-8")).toBe("export const staged = true;\n");
     expect(await readFile(join(targetRepo, "src", "user_unstaged.ts"), "utf-8")).toBe("export const unstaged = true;\n");
+  });
+
+  it("blocks before integration when no verification command is configured", async () => {
+    const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
+    const orchestrator = createAutonomousRunOrchestrator({ workspaceService: wsService, persistence });
+    const result = await orchestrator.startRun({
+      sessionId: "sess-unverified",
+      workspacePath: targetRepo,
+      goal: "Add an unverified feature",
+      coderExecutor: async (worktreePath) => {
+        await writeFile(join(worktreePath, "src", "unverified.ts"), "export const unverified = true;\n");
+        return { success: true, filesChanged: ["src/unverified.ts"] };
+      },
+    });
+
+    expect(result.status).toBe("blocked");
+    expect(result.integration.status).toBe("retained");
+    expect(result.completion?.blockers.map((blocker) => blocker.code)).toContain("verification_not_run");
+    expect(existsSync(join(targetRepo, "src", "unverified.ts"))).toBe(false);
   });
 
   it("Scenario 7 (Target Divergence Protection): detects when target HEAD moved (A -> U) and fails closed", async () => {
@@ -227,6 +250,7 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
       sessionId: "sess-diverged",
       workspacePath: targetRepo,
       goal: "Implement autonomous change during concurrent user commit",
+      verificationCommands: ["node -e \"process.exit(0)\""],
       adapter: createWorkspaceEventAdapter({ sessionId: "sess-diverged", eventStore, persistence }),
       coderExecutor: async (worktreePath) => {
         // While coder is running in isolated worktree, user makes a commit U in targetRepo!

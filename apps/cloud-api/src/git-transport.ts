@@ -67,7 +67,11 @@ export class GitTransportService {
 
   /** Rejects anything but a bare https GitHub-style URL (or a local path in tests). */
   assertRemoteUrl(remoteUrl: string): void {
-    if (typeof remoteUrl !== "string" || !remoteUrl || remoteUrl.length > 512 || /[\s\x00-\x1f]/.test(remoteUrl)) {
+    if (typeof remoteUrl !== "string" || !remoteUrl || remoteUrl.length > 512) {
+      throw new PublicationError(PUBLICATION_ERROR_CODES.REF_NAME_INVALID);
+    }
+    const hasControlCharacter = [...remoteUrl].some((character) => character.charCodeAt(0) <= 0x1f);
+    if (/\s/.test(remoteUrl) || hasControlCharacter) {
       throw new PublicationError(PUBLICATION_ERROR_CODES.REF_NAME_INVALID);
     }
     if (this.allowLocalRemotes && (path.isAbsolute(remoteUrl) || remoteUrl.startsWith("file://"))) return;

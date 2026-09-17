@@ -1,5 +1,4 @@
 import fs from "node:fs/promises";
-import fsSync from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
@@ -220,7 +219,7 @@ export class FileSystemService {
 
     const maxLines = Math.max(oldLines.length, newLines.length);
     let inHunk = false;
-    let hunkStart = 0;
+    let _hunkStart = 0;
 
     for (let i = 0; i < maxLines; i++) {
       const oldLine = oldLines[i];
@@ -228,7 +227,7 @@ export class FileSystemService {
 
       if (oldLine !== newLine) {
         if (!inHunk) {
-          hunkStart = i + 1;
+          _hunkStart = i + 1;
           inHunk = true;
         }
         if (oldLine !== undefined) {

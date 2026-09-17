@@ -7,7 +7,7 @@ import type { Verifier } from "@codeforge/workflow";
 import type { GenericVerificationEvidence } from "@codeforge/forge-green";
 import { createTimelineObserver, round, timed } from "./timing.js";
 import { alternatingOrder, produceBaselineEvidence, runPair, type PairReceipt } from "./pair-runner.js";
-import { benchVerifiers, disposeBenchWorkspace, materializeBenchWorkspace, mutateBenchWorkspace, readBenchWorkspaceFile, toVerifier, type BenchWorkspace } from "./workloads.js";
+import { benchVerifiers, disposeBenchWorkspace, materializeBenchWorkspace, mutateBenchWorkspace, readBenchWorkspaceFile, toVerifier } from "./workloads.js";
 
 /**
  * FG-12E restart (spec §23) and advisor-failure fallback (spec §24) benchmarks with an EXPENSIVE

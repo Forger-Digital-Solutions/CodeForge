@@ -6,7 +6,6 @@ import type {
   TestCaseResult,
 } from "./types.js";
 import { QUALIFICATION_SUITE_VERSION, DEFAULT_QUALIFICATION_CONFIG } from "./types.js";
-import { EightBitRoleSchema } from "../types.js";
 import type { EightBitRole } from "../types.js";
 import { loadFixturesByCategory, getFixtureCategoriesForRole, getFixtureFiles } from "./fixtures.js";
 import { getEvaluator } from "./evaluators.js";
@@ -66,8 +65,6 @@ export class ModelQualificationRunner {
     const completedAt = new Date().toISOString();
 
     // Determine overall qualification state
-    const qualifiedRoles = Object.entries(roleResults).filter(([_, r]) => r.status === "QUALIFIED").length;
-    const totalRoles = Object.keys(roleResults).length;
     const qualificationState = this.determineQualificationState(roleResults, hardFailureRoles);
 
     const receipt: ModelQualificationReceipt = {

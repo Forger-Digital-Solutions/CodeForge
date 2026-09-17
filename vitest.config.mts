@@ -47,9 +47,9 @@ const packages = [
 
 const aliases: Record<string, string | string[]> = {};
 for (const pkg of packages) {
-  aliases[`@codeforge/${pkg}`] = resolve(__dirname, `packages/${pkg}/src`);
+  aliases[`@codeforge/${pkg}`] = resolve(import.meta.dirname, `packages/${pkg}/src`);
 }
-aliases["codeforge-cloud-api"] = resolve(__dirname, "apps/cloud-api/src");
+aliases["codeforge-cloud-api"] = resolve(import.meta.dirname, "apps/cloud-api/src");
 
 // Real-process integration suites (git worktrees, bare remotes, spawned verification commands,
 // sqlite) saturate a Windows host when every logical CPU runs a worker: measured on a 12-CPU

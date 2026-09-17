@@ -85,7 +85,7 @@ export class GitHubPullRequestClient implements RemotePullRequestProvider {
     if (!token) throw new GitHubClientError("REMOTE_AUTH_FAILED", "GitHub authentication is required");
     let response: Response;
     try {
-      response = await this.fetchFn(new URL(route, this.apiBase).toString(), { ...init, headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, ...(init.headers ?? {}) } });
+      response = await this.fetchFn(new URL(route, this.apiBase).toString(), { ...init, headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, ...init.headers } });
     } catch {
       throw new GitHubClientError("REMOTE_PROVIDER_UNAVAILABLE", "GitHub is unavailable");
     }

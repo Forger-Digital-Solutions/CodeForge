@@ -2,11 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { FreeModelRecord } from "@codeforge/forge-zero";
 import { ForgeZero } from "@codeforge/forge-zero";
 import { createEightBitRuntime, type EightBitRuntime } from "@codeforge/eight-bit";
-import { createEightBitEligibilityPolicy, type EligibilityContext, type EightBitRole } from "@codeforge/eight-bit";
-import { EightBitHealthTracker } from "@codeforge/eight-bit";
-import { EightBitReliabilityTracker } from "@codeforge/eight-bit";
-import { EightBitRouter } from "@codeforge/eight-bit";
-import { ROLE_CONTRACTS } from "@codeforge/eight-bit";
+import { createEightBitEligibilityPolicy, type EligibilityContext } from "@codeforge/eight-bit";
 import type { ISessionPersistence } from "@codeforge/sessions";
 
 // --- Test fixtures ----------------------------------------------------------------------------
@@ -80,12 +76,12 @@ function verifyModel(firewall: ForgeZero, providerId: string, modelId: string): 
 
 describe("8-Bit Qualification Harness", () => {
   let firewall: ForgeZero;
-  let runtime: EightBitRuntime;
+  let _runtime: EightBitRuntime;
   let policy: ReturnType<typeof createEightBitEligibilityPolicy>;
 
   beforeEach(() => {
     firewall = createMockFirewall();
-    runtime = createMockRuntime({ firewall });
+    _runtime = createMockRuntime({ firewall });
     policy = createEightBitEligibilityPolicy();
   });
 

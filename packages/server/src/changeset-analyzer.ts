@@ -26,8 +26,8 @@ function changedDependencies(before: string, after: string, packagePath: string,
   const parse = (value: string) => JSON.parse(value) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
   let prior: ReturnType<typeof parse>; let next: ReturnType<typeof parse>;
   try { prior = parse(before); next = parse(after); } catch { return []; }
-  const priorAll = { ...(prior.dependencies ?? {}), ...(prior.devDependencies ?? {}) };
-  const nextAll = { ...(next.dependencies ?? {}), ...(next.devDependencies ?? {}) };
+  const priorAll = { ...prior.dependencies, ...prior.devDependencies };
+  const nextAll = { ...next.dependencies, ...next.devDependencies };
   return Object.entries(nextAll).filter(([name, version]) => priorAll[name] !== version).map(([name, version]) => ({
     name, version, package: packageFor(packagePath), runtime: name in (next.dependencies ?? {}),
     sourceFiles: changedFiles.filter((file) => packageFor(file) === packageFor(packagePath)), lockfilePresent,

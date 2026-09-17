@@ -7,9 +7,9 @@ export default defineConfig({
   publicDir: "public",
   resolve: {
     alias: {
-      "@codeforge/ui": resolve(__dirname, "../../packages/ui/src"),
-      "@codeforge/protocol": resolve(__dirname, "../../packages/protocol/src"),
-      "@codeforge/core": resolve(__dirname, "../../packages/core/src"),
+      "@codeforge/ui": resolve(import.meta.dirname, "../../packages/ui/src"),
+      "@codeforge/protocol": resolve(import.meta.dirname, "../../packages/protocol/src"),
+      "@codeforge/core": resolve(import.meta.dirname, "../../packages/core/src"),
     },
   },
   optimizeDeps: {
@@ -36,6 +36,11 @@ export default defineConfig({
         "node:module",
         "@codeforge/sessions",
       ],
+      output: {
+        manualChunks(id) {
+          return id.includes("node_modules") ? "vendor" : undefined;
+        },
+      },
     },
   },
 });

@@ -6,8 +6,8 @@ export interface LspDiagnostic {
 }
 
 export class LspClient {
-  constructor(workspaceRoot: string) {}
-  async diagnostics(path: string): Promise<LspDiagnostic[]> {
+  constructor(_workspaceRoot: string) {}
+  async diagnostics(_path: string): Promise<LspDiagnostic[]> {
     return [];
   }
 }

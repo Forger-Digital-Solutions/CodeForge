@@ -32,7 +32,7 @@ class LoopScriptedProvider implements ProviderAdapter {
 
   async chat(_req: ChatRequest): Promise<ChatResponse> { throw new Error("Use streamChat"); }
 
-  async *streamChat(_req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+  async *streamChat(_req: ChatRequest, _signal?: AbortSignal): AsyncIterable<StreamEvent> {
     this.callCount++;
 
     if (this.mode === "repeat_same") {

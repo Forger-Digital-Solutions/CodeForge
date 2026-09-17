@@ -8,11 +8,18 @@ export default defineConfig({
   root: "src/renderer",
   resolve: {
     alias: {
-      "@codeforge/ui": path.resolve(__dirname, "../../packages/ui/src/index.ts"),
+      "@codeforge/ui": path.resolve(import.meta.dirname, "../../packages/ui/src/index.ts"),
     },
   },
   build: {
     outDir: "../../dist/renderer",
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          return id.includes("node_modules") ? "vendor" : undefined;
+        },
+      },
+    },
   },
 });

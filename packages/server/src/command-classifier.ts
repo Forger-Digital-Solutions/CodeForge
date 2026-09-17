@@ -15,11 +15,11 @@ export interface Classification {
   requiresApproval: boolean;
 }
 
-const SHELL_META = /[;&|`$(){}*?!#~]/;
+
 const CHAIN_OPS = /(?:&&|\|\||;|\|)/;
 const REDIRECT_OPS = /[<>]/;
 const SUBSHELL = /\$\(|`[^`]*`/;
-const COMMAND_SUBSTITUTION = /\$\(/;
+
 
 function containsShellOperators(command: string): boolean {
   return CHAIN_OPS.test(command) || REDIRECT_OPS.test(command) || SUBSHELL.test(command) || /`/.test(command);

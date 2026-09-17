@@ -9,11 +9,12 @@ import type { IntegrationService } from "./integration-service.js";
 import { createIntegrationService } from "./integration-service.js";
 import type { AgentFinding, AgentUsage, EngineeringPlanResult, ReviewResult } from "@codeforge/agent";
 import type { ToolExecutionRecord } from "@codeforge/tools";
-import { runVerification, type VerificationResult } from "@codeforge/workflow";
+import { runVerification, type CompletionGateDecision, type VerificationResult } from "@codeforge/workflow";
 import { getSanitizedEnvForChild } from "./env-filter.js";
 import { DEFAULT_PARALLEL_EXECUTION_BUDGET, WorkstreamContractRegistry, type ParallelExecutionBudget, type EngineeringPlan, type EngineeringWorkstream, type WorkstreamContract, type WorkstreamResult, scheduleWorkstreams, validateEngineeringPlan } from "./parallel-workstreams.js";
 import { ParallelRunStore, emptyParallelRunUsage, type DurableParallelRun, type ParallelEvent, type ParallelRunUsage, type ParallelSynthesisState } from "./parallel-state.js";
 import { createForgeVerifyPersistenceObserver } from "./forge-verify-persistence.js";
+import { evaluateAutonomousCompletion } from "./completion-authority.js";
 
 const execFile = promisify(execFileCallback);
 
@@ -31,7 +32,7 @@ export interface ParallelRunOptions {
   runId?: string;
 }
 export interface ParallelResumeOptions { signal?: AbortSignal; verificationCommands?: string[]; privateAgentContext?: PrivateAgentContext; }
-export interface ParallelRunResult { runId: string; status: "completed" | "blocked" | "failed" | "cancelled"; plan?: EngineeringPlan; workstreams: WorkstreamResult[]; synthesis?: ParallelSynthesisState; verification: VerificationResult[]; usage: ParallelRunUsage; error?: string; }
+export interface ParallelRunResult { runId: string; status: "completed" | "blocked" | "failed" | "cancelled"; plan?: EngineeringPlan; workstreams: WorkstreamResult[]; synthesis?: ParallelSynthesisState; verification: VerificationResult[]; completion?: CompletionGateDecision; usage: ParallelRunUsage; error?: string; }
 export interface ParallelOrchestratorOptions { workspaceService: WorkspaceService; agentRuntime: AgentRuntime; integrationService?: IntegrationService; persistence?: ISessionPersistence; onEvent?: (event: ParallelEvent) => void; }
 
 const TERMINAL_STATUSES = ["completed", "blocked", "cancelled", "failed"];
@@ -125,7 +126,7 @@ export class ParallelAutonomousRunOrchestrator {
   private async git(cwd: string, args: string[]) { return execFile("git", args, { cwd, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } }); }
   private async save(run: DurableParallelRun): Promise<void> { run.updatedAt = new Date().toISOString(); await this.store.save(run); }
   private async emit(run: DurableParallelRun, type: string, payload: Record<string, unknown> = {}, workstreamId?: string): Promise<void> { await this.store.emit(run, type, payload, workstreamId); }
-  private result(run: DurableParallelRun, verification: VerificationResult[]): ParallelRunResult { return { runId: run.id, status: run.status === "completed" ? "completed" : run.status === "cancelled" ? "cancelled" : run.status === "failed" ? "failed" : "blocked", ...(run.plan ? { plan: run.plan } : {}), workstreams: run.workstreams, ...(run.synthesis ? { synthesis: run.synthesis } : {}), verification, usage: run.usage ?? emptyParallelRunUsage(), ...(run.error ? { error: run.error } : {}) }; }
+  private result(run: DurableParallelRun, verification: VerificationResult[], completion?: CompletionGateDecision): ParallelRunResult { return { runId: run.id, status: run.status === "completed" ? "completed" : run.status === "cancelled" ? "cancelled" : run.status === "failed" ? "failed" : "blocked", ...(run.plan ? { plan: run.plan } : {}), workstreams: run.workstreams, ...(run.synthesis ? { synthesis: run.synthesis } : {}), verification, ...(completion ? { completion } : {}), usage: run.usage ?? emptyParallelRunUsage(), ...(run.error ? { error: run.error } : {}) }; }
 
   /** Accumulates only metrics the provider boundary actually reports; nothing is estimated. */
   private record(run: DurableParallelRun, results: Array<{ usage: AgentUsage; toolExecutions: ToolExecutionRecord[] }>): void {
@@ -261,13 +262,33 @@ export class ParallelAutonomousRunOrchestrator {
     await this.emit(run, "global_review.completed", { passed: globalReview.status === "completed" && review?.verdict === "pass" });
     if (globalReview.status !== "completed" || review?.verdict !== "pass") { run.status = signal.aborted ? "cancelled" : "blocked"; run.error = signal.aborted ? "PARALLEL_RUN_CANCELLED" : "GLOBAL_REVIEW_BLOCKED"; await this.save(run); return this.result(run, globalVerification); }
 
+    const [{ stdout: completionDiff }, { stdout: changedPathsOut }] = await Promise.all([
+      this.git(synthesisPath, ["diff", run.baseRevision]).catch(() => ({ stdout: "" })),
+      this.git(synthesisPath, ["diff", "--name-only", run.baseRevision]).catch(() => ({ stdout: "" })),
+    ]);
+    const completion = evaluateAutonomousCompletion({
+      runId: run.id,
+      title: run.goal,
+      changedFiles: changedPathsOut.split(/\r?\n/).map((entry) => entry.trim()).filter(Boolean),
+      diff: completionDiff,
+      verification: globalVerification,
+      reviewPassed: true,
+    });
+    await this.emit(run, "parallel.completion.decided", { outcome: completion.outcome, rationale: completion.rationale, blockers: completion.blockers });
+    if (completion.outcome !== "completed") {
+      run.status = "blocked";
+      run.error = `COMPLETION_GATE_${completion.outcome.toUpperCase()}`;
+      await this.save(run);
+      return this.result(run, globalVerification, completion);
+    }
+
     run.status = "integrating"; await this.save(run); await this.emit(run, "promotion.started");
     const promotion = await this.integrationService.integrate({ targetWorkspaceId: target.id, isolatedWorktreeId: synthesisWorkspace.id, expectedBaseSha: run.baseRevision, runId: run.id, reviewFindings: review.findings, verificationResults: globalVerification, commitMessage: `Parallel autonomous implementation: ${run.goal}` });
     run.promotion = { status: promotion.status, ...(promotion.code ? { code: promotion.code } : {}) };
     run.status = promotion.status === "integrated" ? "completed" : "blocked";
     run.error = promotion.status === "integrated" ? undefined : promotion.code === "INTEGRATION_TARGET_DIVERGED" ? "PROMOTION_TARGET_DIVERGED" : promotion.code ?? "PROMOTION_BLOCKED";
     await this.save(run); await this.emit(run, promotion.status === "integrated" ? "promotion.completed" : "promotion.blocked", { code: run.error });
-    return this.result(run, globalVerification);
+    return this.result(run, globalVerification, completion);
   }
 
   /**

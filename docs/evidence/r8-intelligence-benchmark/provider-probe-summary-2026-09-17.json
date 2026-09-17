@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "purpose": "R8 provider status evidence. Credentials are presence-checked only and never recorded. Paid inference is deliberately excluded.",
+  "recordedAt": "2026-09-17T10:20:50.640Z",
+  "providers": [
+    {
+      "providerId": "openrouter",
+      "classification": "managed-free candidate discovery and compact qualification",
+      "metadataDiscovery": {
+        "verifiedZeroUnitCandidates": 24,
+        "toolCapableCandidates": 20,
+        "evidence": "providers/openrouter-free-discovery-2026-09-17.json"
+      },
+      "qualifiedRoute": {
+        "modelId": "cohere/north-mini-code:free",
+        "qualificationState": "QUALIFIED",
+        "requests": 3,
+        "totalLatencyMs": 6415,
+        "roles": ["CODER", "TOOL_AGENT", "ANALYST"],
+        "evidence": "providers/openrouter-cohere-north-mini-code-qualification-2026-09-17.json"
+      }
+    },
+    {
+      "providerId": "groq",
+      "classification": "managed-free probe",
+      "models": [
+        { "modelId": "openai/gpt-oss-20b", "transportOk": true, "contentOk": false, "elapsedMs": 417 },
+        { "modelId": "openai/gpt-oss-120b", "transportOk": true, "contentOk": false, "elapsedMs": 329 }
+      ],
+      "conclusion": "BLOCKED_BY_EMPTY_COMPLETION: the authenticated transport completes, but neither tested route supplies usable text. No route is qualified."
+    },
+    {
+      "providerId": "cloudflare-workers-ai",
+      "classification": "managed-free probe",
+      "inferenceAttempted": false,
+      "conclusion": "FAIL_CLOSED: the Cloudflare neuron guard withheld inference because trustworthy UTC-day usage was unavailable. This is correct safety behavior, not a model capability result."
+    },
+    {
+      "providerId": "openai",
+      "classification": "paid provider connectivity only",
+      "modelsEndpoint": "available",
+      "latencyMs": 959,
+      "inferenceAttempted": false,
+      "conclusion": "Connectivity is available, but no Paid Auto inference was authorised or benchmarked."
+    },
+    {
+      "providerId": "anthropic",
+      "classification": "paid provider",
+      "inferenceAttempted": false,
+      "conclusion": "Credential presence was detected, but even the adapter health check performs a one-token inference request; it was not called without express paid-credit authority."
+    }
+  ]
+}

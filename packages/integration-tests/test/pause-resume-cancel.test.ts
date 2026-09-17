@@ -6,7 +6,6 @@ import {
   pauseTurn,
   resumeTurn,
   cancelTurn,
-  sendRequest,
 } from "../src/server-helpers.js";
 
 describe("Stop/Pause/Resume Integration Tests", () => {

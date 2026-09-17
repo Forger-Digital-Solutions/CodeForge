@@ -12,7 +12,7 @@ import {
   InMemoryProviderCatalog,
 } from "@codeforge/providers";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
-import { createAgentRuntime, AgentRuntime } from "../src/agent-runtime.js";
+import { createAgentRuntime } from "../src/agent-runtime.js";
 import { ERROR_CODES } from "@codeforge/agent";
 import { UserIntentHoldController } from "../src/user-intent-hold.js";
 
@@ -41,7 +41,7 @@ class DeterministicScriptedProvider implements ProviderAdapter {
     ];
   }
 
-  async chat(req: ChatRequest): Promise<ChatResponse> {
+  async chat(_req: ChatRequest): Promise<ChatResponse> {
     throw new Error("Use streamChat");
   }
 

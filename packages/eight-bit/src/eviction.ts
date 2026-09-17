@@ -1,4 +1,4 @@
-import type { FreeModelRecord, ModelHealthState } from "@codeforge/forge-zero";
+import type { FreeModelRecord } from "@codeforge/forge-zero";
 import { ForgeZero } from "@codeforge/forge-zero";
 
 /** Eviction policy configuration */

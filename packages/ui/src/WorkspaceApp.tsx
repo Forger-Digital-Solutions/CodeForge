@@ -1,6 +1,5 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback } from "react";
 import type { ExecutionMode, UserIntentHoldPolicy } from "@codeforge/protocol";
-import type { WorkspaceState } from "./workspace-sse.js";
 import { readRememberedExecutionMode, rememberExecutionMode, useWorkspaceSSE } from "./workspace-sse.js";
 import Header from "./Header.js";
 import Navigation from "./Navigation.js";

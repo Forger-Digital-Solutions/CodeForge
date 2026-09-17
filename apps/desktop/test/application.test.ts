@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 
 describe("Desktop Application Layer", () => {
   describe("Project Management", () => {
@@ -113,10 +113,6 @@ describe("Desktop Application Layer", () => {
     });
 
     it("should handle approval.requested event", () => {
-      const prevState = {
-        pendingApproval: null as object | null,
-      };
-
       const event = {
         type: "approval.requested",
         seq: 3,

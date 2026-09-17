@@ -1,5 +1,4 @@
 import { detectOptionalPrefetchSuppression, fingerprint, type OptionalPrefetchCandidate } from "@codeforge/forge-green";
-import type { ContextPlanResult } from "@codeforge/context";
 import type { ObservationInput } from "./observation-store.js";
 import { CANDIDATE_C_POLICY_VERSION, OBSERVATION_SCHEMA_VERSION } from "./policy.js";
 import type { TurnPlanResult } from "./candidate-b-observer.js";

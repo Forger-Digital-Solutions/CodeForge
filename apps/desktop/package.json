@@ -47,15 +47,11 @@
     "@types/node": "^22.10.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "@vitejs/plugin-react": "^4.7.0",
-    "electron": "33.4.11",
-    "electron-builder": "^25.0.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "electron": "44.4.1",
+    "electron-builder": "^26.15.3",
     "typescript": "^5.9.3",
-    "vite": "^5.4.21"
-  },
-  "allowScripts": {
-    "electron@33.4.11": true,
-    "better-sqlite3@12.11.1": true
+    "vite": "^8.3.0"
   },
   "build": {
     "appId": "app.codeforge.desktop",
@@ -112,6 +108,8 @@
           "forge-zero/package.json",
           "model-registry/dist/**/*.js",
           "model-registry/package.json",
+          "paid-auto/dist/**/*.js",
+          "paid-auto/package.json",
           "permissions/dist/**/*.js",
           "permissions/package.json",
           "protocol/dist/**/*.js",

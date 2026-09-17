@@ -1,16 +1,12 @@
 import crypto from "node:crypto";
-import path from "node:path";
 import fs from "node:fs/promises";
-import { existsSync } from "node:fs";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import {
   type AgentResult,
   type AgentFinding,
   type AgentEvidenceRef,
-  type AgentPermissions,
   type PlannerResult,
-  getAgent,
   validateStructuredAgentResult,
 } from "@codeforge/agent";
 import {
@@ -20,26 +16,31 @@ import {
 } from "./workspace-service.js";
 import {
   type CheckpointService,
-  type CheckpointInfo,
   createCheckpointService,
 } from "./checkpoint-service.js";
 import {
   type SubagentManager,
-  type ChildRun,
   createSubagentManager,
 } from "./subagent-manager.js";
 import {
   type IntegrationService,
   type IntegrateResult,
   createIntegrationService,
-  type IntegrationFailureCode,
 } from "./integration-service.js";
 import type { ISessionPersistence } from "@codeforge/sessions";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
-import { runVerification, verificationPassed as forgeVerificationPassed, type VerificationResult } from "@codeforge/workflow";
+import {
+  evaluateCompletion,
+  runVerification,
+  verificationPassed as forgeVerificationPassed,
+  type CompletionGateDecision,
+  type FailureAnalysis,
+  type ReviewDecision,
+  type VerificationResult,
+  type WorkflowPlan,
+} from "@codeforge/workflow";
 import { createForgeVerifyPersistenceObserver } from "./forge-verify-persistence.js";
 import { redactSecrets } from "@codeforge/secrets";
-import { getSanitizedEnvForChild } from "./env-filter.js";
 
 const execFile = promisify(execFileCallback);
 
@@ -113,6 +114,7 @@ export interface AutonomousRunResult {
     findings: AgentFinding[];
   };
   verification: VerificationResult[];
+  completion?: CompletionGateDecision;
   integration: {
     status: "integrated" | "retained" | "blocked" | "not_attempted";
     branch?: string;
@@ -790,6 +792,92 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
         return blockedResult;
       }
 
+      // Completion is an enforced lifecycle transition, not an inference from a clean reviewer or
+      // a zero exit code. Build the gate input from authoritative worktree state and ForgeVerify's
+      // report; model-reported file lists are never accepted as proof of an effective change.
+      const [{ stdout: completionDiff }, { stdout: changedPathsOut }] = await Promise.all([
+        this.git(worktreeWs.rootPath, ["diff", baseRevision]).catch(() => ({ stdout: "" })),
+        this.git(worktreeWs.rootPath, ["diff", "--name-only", baseRevision]).catch(() => ({ stdout: "" })),
+      ]);
+      const completionChangedFiles = changedPathsOut.split(/\r?\n/).map((entry) => entry.trim()).filter(Boolean);
+      const now = new Date().toISOString();
+      const completionPlan: WorkflowPlan = {
+        id: `completion-${runId}`,
+        title: goal,
+        taskId: runId,
+        status: "completed",
+        createdAt: run.startedAt ?? now,
+        updatedAt: now,
+        steps: [
+          { id: `${runId}-explore`, description: "Repository exploration", status: "completed", kind: "inspect", risk: "safe", requiresApproval: false },
+          { id: `${runId}-implement`, description: "Isolated implementation", status: "completed", kind: "edit", risk: "moderate", requiresApproval: false, targetPath: completionChangedFiles[0] ?? changedFiles[0] ?? "workspace" },
+          { id: `${runId}-review`, description: "Independent review", status: "completed", kind: "review", risk: "safe", requiresApproval: false },
+          { id: `${runId}-verify`, description: "ForgeVerify", status: verificationReport ? "completed" : "blocked", kind: "verify", risk: "safe", requiresApproval: false },
+        ],
+      };
+      const completionVerification: VerificationResult = verificationReport ?? {
+        passed: 0,
+        failed: 0,
+        skipped: 0,
+        durationMs: 0,
+        output: "No verification command was configured.",
+        exitCode: 0,
+        command: "",
+        failures: [],
+        notConfigured: true,
+      };
+      const completionAnalysis: FailureAnalysis = {
+        hasFailures: completionVerification.failed > 0,
+        summary: completionVerification.output,
+        diagnostics: completionVerification.failures.map((failure) => failure.message),
+        suggestedRepairs: [],
+        isRepairable: false,
+      };
+      const completionReview: ReviewDecision = {
+        approved: reviewPassed,
+        issues: reviewFindings.map((finding) => finding.message),
+        findings: [],
+        diffs: completionChangedFiles.map((filePath) => ({
+          path: filePath,
+          changeType: "modified" as const,
+          additions: 0,
+          deletions: 0,
+          diff: completionDiff,
+          beforeHash: baseRevision,
+          afterHash: "worktree",
+        })),
+        summary: completionChangedFiles.length > 0 ? `${completionChangedFiles.length} file(s) changed` : "No effective change",
+      };
+      const completion = evaluateCompletion({
+        plan: completionPlan,
+        verification: completionVerification,
+        analysis: completionAnalysis,
+        review: completionReview,
+      });
+      await adapter?.emitWorkflowCompletionDecided(runId, completion.outcome, completion.rationale, completion.blockers);
+      if (completion.outcome !== "completed") {
+        this.transitionRun(run, "blocked", adapter);
+        run.error = `COMPLETION_GATE_${completion.outcome.toUpperCase()}`;
+        const blockedResult: AutonomousRunResult = {
+          runId,
+          status: "blocked",
+          summary: `Completion gate refused success: ${completion.rationale}`,
+          workspaceId: targetWs.id,
+          baseRevision,
+          changedFiles: completionChangedFiles,
+          review: { passed: reviewPassed, findings: reviewFindings },
+          verification: verificationResults,
+          completion,
+          integration: { status: "retained", branch: worktreeWs.branch, worktreeId: worktreeWs.id, reason: run.error },
+          evidence: allEvidence,
+          counters,
+        };
+        run.result = blockedResult;
+        this.persistRun(run);
+        return blockedResult;
+      }
+      changedFiles = completionChangedFiles;
+
       // ==========================================
       // PHASE 6: SAFE INTEGRATION
       // ==========================================
@@ -842,6 +930,7 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
         changedFiles: intResult.changedFiles.length > 0 ? intResult.changedFiles : changedFiles,
         review: { passed: true, findings: reviewFindings },
         verification: verificationResults,
+        completion,
         integration: { status: "integrated", branch: worktreeWs.branch, worktreeId: worktreeWs.id },
         evidence: allEvidence,
         counters,

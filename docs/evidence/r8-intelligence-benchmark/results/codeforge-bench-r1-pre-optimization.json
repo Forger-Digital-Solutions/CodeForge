@@ -1,0 +1,705 @@
+{
+  "schemaVersion": 1,
+  "benchmarkVersion": "CodeForgeBench-R1",
+  "generatedAt": "2026-09-17T10:18:03.288Z",
+  "phase": "CODEFORGE_R8_PRE_OPTIMIZATION_BASELINE",
+  "executionStatus": "NO_MODEL_EXECUTIONS_RECORDED",
+  "evidencePolicy": "Only independently verified, non-rejected attempts count as successes. Empty or blocked live-route evidence is preserved rather than imputed.",
+  "liveExecutionLimitation": "No R8 model execution is recorded by this manifest. R7's Groq managed-free run ended blocked and paid routes were not authorised; use --attempts only with sanitised, independently verified records.",
+  "cases": [
+    {
+      "id": "CBR1-RU-01",
+      "category": "repository_understanding",
+      "difficulty": "trivial",
+      "fixture": "codeforge",
+      "instructions": "Identify the authority that may transition a workflow run to completed.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Reports the single completion authority with evidence.",
+      "acceptance": [
+        "Independent source assertion matches the reported authority."
+      ],
+      "expectedAffectedAreas": [
+        "packages/workflow/src"
+      ],
+      "failureTraps": [
+        "Confusing a UI state update with completion authority."
+      ]
+    },
+    {
+      "id": "CBR1-RU-02",
+      "category": "repository_understanding",
+      "difficulty": "medium",
+      "fixture": "codeforge",
+      "instructions": "Trace the managed-free route selection path from eligibility through execution.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Produces an ordered call chain and identifies every cost-boundary check.",
+      "acceptance": [
+        "Reviewer validates the chain against source.",
+        "No paid or BYOK path is claimed to be managed-free."
+      ],
+      "expectedAffectedAreas": [
+        "packages/eight-bit/src",
+        "packages/forge-zero/src",
+        "packages/server/src"
+      ],
+      "failureTraps": [
+        "Skipping the route qualification or adapter gate."
+      ]
+    },
+    {
+      "id": "CBR1-SF-01",
+      "category": "small_coding_fix",
+      "difficulty": "easy",
+      "fixture": "synthetic",
+      "instructions": "Repair a seeded serialization edge case while preserving the public schema.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Makes the focused regression test pass with a minimal implementation change.",
+      "acceptance": [
+        "Focused test passes.",
+        "Typecheck passes."
+      ],
+      "expectedAffectedAreas": [
+        "synthetic/serialization"
+      ],
+      "failureTraps": [
+        "Changing the test or widening the schema."
+      ]
+    },
+    {
+      "id": "CBR1-SF-02",
+      "category": "small_coding_fix",
+      "difficulty": "medium",
+      "fixture": "codeforge",
+      "instructions": "Repair a seeded provider error classification defect.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Maps the provider response to the documented failure class.",
+      "acceptance": [
+        "Focused failure-matrix test passes.",
+        "Existing unrelated classifications remain unchanged."
+      ],
+      "expectedAffectedAreas": [
+        "packages/providers/src",
+        "packages/forge-zero/test"
+      ],
+      "failureTraps": [
+        "Masking the error as unknown."
+      ]
+    },
+    {
+      "id": "CBR1-MF-01",
+      "category": "multi_file_engineering",
+      "difficulty": "hard",
+      "fixture": "codeforge",
+      "instructions": "Add a capability field that must remain consistent across a protocol schema, registry adapter, and receipt.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Changes all required layers without a wire-format mismatch.",
+      "acceptance": [
+        "Typecheck passes.",
+        "Contract test passes.",
+        "Receipt test proves the field is recorded."
+      ],
+      "expectedAffectedAreas": [
+        "packages/protocol",
+        "packages/model-registry",
+        "packages/server"
+      ],
+      "failureTraps": [
+        "Updating only the UI or only the provider adapter."
+      ]
+    },
+    {
+      "id": "CBR1-MF-02",
+      "category": "multi_file_engineering",
+      "difficulty": "very_hard",
+      "fixture": "codeforge",
+      "instructions": "Implement a seeded cross-package persistence change with restart behavior.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Persists the requested state and restores it safely after restart.",
+      "acceptance": [
+        "Integration test passes.",
+        "Restart test passes.",
+        "No unauthorised migration bypass."
+      ],
+      "expectedAffectedAreas": [
+        "packages/sessions",
+        "packages/server",
+        "packages/workflow"
+      ],
+      "failureTraps": [
+        "Passing in memory while losing state after restart."
+      ]
+    },
+    {
+      "id": "CBR1-DB-01",
+      "category": "debugging",
+      "difficulty": "medium",
+      "fixture": "synthetic",
+      "instructions": "Given a failing integration symptom, locate the earliest causal failure and propose a minimal repair.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Finds the root cause and fixes it without changing the acceptance test.",
+      "acceptance": [
+        "Targeted regression test passes.",
+        "Patch is reviewed for scope."
+      ],
+      "expectedAffectedAreas": [
+        "synthetic/debugging"
+      ],
+      "failureTraps": [
+        "Treating the final error as the root cause."
+      ]
+    },
+    {
+      "id": "CBR1-DB-02",
+      "category": "debugging",
+      "difficulty": "hard",
+      "fixture": "codeforge",
+      "instructions": "Diagnose a failure that only appears after a provider failover.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Preserves route receipts and repairs the actual failover transition.",
+      "acceptance": [
+        "Failover scenario passes.",
+        "Receipt consistency assertion passes."
+      ],
+      "expectedAffectedAreas": [
+        "packages/eight-bit/src",
+        "packages/server/src"
+      ],
+      "failureTraps": [
+        "Retrying the original route indefinitely."
+      ]
+    },
+    {
+      "id": "CBR1-TR-01",
+      "category": "test_repair",
+      "difficulty": "easy",
+      "fixture": "synthetic",
+      "instructions": "Repair an implementation failure exposed by a protected test.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Fixes production behavior without editing the protected test.",
+      "acceptance": [
+        "Protected test passes.",
+        "Diff contains no test modification."
+      ],
+      "expectedAffectedAreas": [
+        "synthetic/test-repair"
+      ],
+      "failureTraps": [
+        "Deleting or weakening the assertion."
+      ]
+    },
+    {
+      "id": "CBR1-TR-02",
+      "category": "test_repair",
+      "difficulty": "hard",
+      "fixture": "codeforge",
+      "instructions": "Repair a completion-gate defect exposed by a negative-path test.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Keeps failed or unverified work terminally non-successful.",
+      "acceptance": [
+        "Negative-path suite passes.",
+        "No route reaches completed without the gate."
+      ],
+      "expectedAffectedAreas": [
+        "packages/workflow/src",
+        "packages/workflow/test"
+      ],
+      "failureTraps": [
+        "Relaxing the gate to satisfy a happy-path test."
+      ]
+    },
+    {
+      "id": "CBR1-RP-01",
+      "category": "regression_prevention",
+      "difficulty": "medium",
+      "fixture": "codeforge",
+      "instructions": "Implement a small provider parsing repair and add a regression test that distinguishes the prior defect.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Adds a focused, non-tautological test with the implementation fix.",
+      "acceptance": [
+        "New test fails before the fix and passes after it.",
+        "Existing tests pass."
+      ],
+      "expectedAffectedAreas": [
+        "packages/providers/src",
+        "packages/providers/test"
+      ],
+      "failureTraps": [
+        "Writing a test that only restates implementation internals."
+      ]
+    },
+    {
+      "id": "CBR1-RP-02",
+      "category": "regression_prevention",
+      "difficulty": "hard",
+      "fixture": "codeforge",
+      "instructions": "Add coverage for a forged routing receipt while preserving receipt authority boundaries.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Rejects a receipt that names a route different from the executor route.",
+      "acceptance": [
+        "Adversarial test passes.",
+        "Valid receipts still pass."
+      ],
+      "expectedAffectedAreas": [
+        "packages/eight-bit/src",
+        "packages/server/src"
+      ],
+      "failureTraps": [
+        "Trusting user-provided receipt fields."
+      ]
+    },
+    {
+      "id": "CBR1-LR-01",
+      "category": "large_repository",
+      "difficulty": "hard",
+      "fixture": "synthetic",
+      "instructions": "Find the implementation owner for a narrow behavior in a large fixture without loading unrelated source.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Uses targeted retrieval and identifies the correct owner.",
+      "acceptance": [
+        "Owner is independently validated.",
+        "Context budget is recorded."
+      ],
+      "expectedAffectedAreas": [
+        "synthetic/large-repository"
+      ],
+      "failureTraps": [
+        "Reading the entire fixture tree."
+      ]
+    },
+    {
+      "id": "CBR1-LR-02",
+      "category": "large_repository",
+      "difficulty": "very_hard",
+      "fixture": "synthetic",
+      "instructions": "Apply a one-file repair in a large fixture with duplicate symbols and generated files.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Edits only the executable owner and verifies the repair.",
+      "acceptance": [
+        "Hidden acceptance passes.",
+        "Generated files are untouched."
+      ],
+      "expectedAffectedAreas": [
+        "synthetic/large-repository"
+      ],
+      "failureTraps": [
+        "Editing a generated or duplicate-name file."
+      ]
+    },
+    {
+      "id": "CBR1-CP-01",
+      "category": "context_pressure",
+      "difficulty": "hard",
+      "fixture": "codeforge",
+      "instructions": "Explain a behavior requiring evidence from distributed routing, persistence, and workflow modules under a context limit.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Returns an evidence-backed explanation with bounded retrieval.",
+      "acceptance": [
+        "Source review validates each claim.",
+        "Context usage is recorded."
+      ],
+      "expectedAffectedAreas": [
+        "packages/eight-bit",
+        "packages/sessions",
+        "packages/workflow"
+      ],
+      "failureTraps": [
+        "Hallucinating relationships after truncation."
+      ]
+    },
+    {
+      "id": "CBR1-CP-02",
+      "category": "context_pressure",
+      "difficulty": "very_hard",
+      "fixture": "codeforge",
+      "instructions": "Plan a safe cross-package repair from a constrained capsule and retrieve only missing evidence.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Produces a minimal executable plan that identifies uncertainty.",
+      "acceptance": [
+        "Plan review passes.",
+        "No unsupported assumptions."
+      ],
+      "expectedAffectedAreas": [
+        "packages/server",
+        "packages/workflow",
+        "packages/protocol"
+      ],
+      "failureTraps": [
+        "Treating the capsule as complete repository context."
+      ]
+    },
+    {
+      "id": "CBR1-VR-01",
+      "category": "verification_resistance",
+      "difficulty": "medium",
+      "fixture": "synthetic",
+      "instructions": "Repair a seeded defect where a plausible implementation makes a superficial test pass but violates a hidden requirement.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Satisfies both visible and protected behavior.",
+      "acceptance": [
+        "Visible test passes.",
+        "Hidden acceptance passes."
+      ],
+      "expectedAffectedAreas": [
+        "synthetic/verification-resistance"
+      ],
+      "failureTraps": [
+        "Gaming the visible assertion."
+      ]
+    },
+    {
+      "id": "CBR1-VR-02",
+      "category": "verification_resistance",
+      "difficulty": "hard",
+      "fixture": "codeforge",
+      "instructions": "Complete a requested change whose claimed edit is absent from the final diff.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Remains blocked rather than claiming completion.",
+      "acceptance": [
+        "Completion gate blocks the run.",
+        "No completed state is emitted."
+      ],
+      "expectedAffectedAreas": [
+        "packages/workflow/src"
+      ],
+      "failureTraps": [
+        "Claiming success based solely on passing tests."
+      ]
+    },
+    {
+      "id": "CBR1-RC-01",
+      "category": "recovery",
+      "difficulty": "medium",
+      "fixture": "codeforge",
+      "instructions": "Recover from an interruption before the first model call.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Resumes only safe work and records recovery evidence.",
+      "acceptance": [
+        "Recovery test passes.",
+        "No duplicate provider call."
+      ],
+      "expectedAffectedAreas": [
+        "packages/server/src",
+        "packages/server/test"
+      ],
+      "failureTraps": [
+        "Treating all interrupted work as safe to replay."
+      ]
+    },
+    {
+      "id": "CBR1-RC-02",
+      "category": "recovery",
+      "difficulty": "very_hard",
+      "fixture": "codeforge",
+      "instructions": "Recover from an ambiguous write after restart.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Fails closed or replans without repeating the write.",
+      "acceptance": [
+        "Durable recovery test passes.",
+        "No duplicate write."
+      ],
+      "expectedAffectedAreas": [
+        "packages/server/src",
+        "packages/sessions/src"
+      ],
+      "failureTraps": [
+        "Re-executing an unobserved mutation."
+      ]
+    },
+    {
+      "id": "CBR1-TE-01",
+      "category": "tool_efficiency",
+      "difficulty": "easy",
+      "fixture": "codeforge",
+      "instructions": "Locate a named symbol and its direct test using the fewest evidence-preserving tool calls.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Finds both locations without redundant searches.",
+      "acceptance": [
+        "Locations are correct.",
+        "Tool metrics are recorded."
+      ],
+      "expectedAffectedAreas": [
+        "packages/*"
+      ],
+      "failureTraps": [
+        "Repeated identical searches."
+      ]
+    },
+    {
+      "id": "CBR1-TE-02",
+      "category": "tool_efficiency",
+      "difficulty": "hard",
+      "fixture": "codeforge",
+      "instructions": "Investigate a distributed bug while avoiding duplicate file reads and searches.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Builds on prior observations and keeps a traceable tool ledger.",
+      "acceptance": [
+        "Root cause is correct.",
+        "Repeated-search count is recorded."
+      ],
+      "expectedAffectedAreas": [
+        "packages/eight-bit",
+        "packages/forge-zero",
+        "packages/server"
+      ],
+      "failureTraps": [
+        "Re-reading unchanged files without reason."
+      ]
+    },
+    {
+      "id": "CBR1-RD-01",
+      "category": "routing_difficulty",
+      "difficulty": "medium",
+      "fixture": "codeforge",
+      "instructions": "Select a managed-free route for a tool-using coding task from capability and health evidence.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Selects only a qualified free route or returns no eligible route.",
+      "acceptance": [
+        "Zero-billing policy assertion passes.",
+        "Selection receipt is consistent."
+      ],
+      "expectedAffectedAreas": [
+        "packages/eight-bit/src",
+        "packages/forge-zero/src"
+      ],
+      "failureTraps": [
+        "Choosing paid or BYOK as a free fallback."
+      ]
+    },
+    {
+      "id": "CBR1-RD-02",
+      "category": "routing_difficulty",
+      "difficulty": "hard",
+      "fixture": "codeforge",
+      "instructions": "Select a heterogeneous topology for a high-context repair under one degraded provider.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Matches roles to eligible capability profiles and records failover rationale.",
+      "acceptance": [
+        "Synthetic router oracle passes.",
+        "Unfinished GEMS profiles remain non-production."
+      ],
+      "expectedAffectedAreas": [
+        "packages/eight-bit/src",
+        "packages/gems/src",
+        "packages/paid-auto/src"
+      ],
+      "failureTraps": [
+        "Treating a synthetic GEMS profile as executable."
+      ]
+    }
+  ],
+  "summary": {
+    "version": "CodeForgeBench-R1",
+    "cases": 24,
+    "attempts": 0,
+    "verifiedSuccesses": 0,
+    "successRate": null,
+    "unrun": 0,
+    "byCategory": {
+      "repository_understanding": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null
+      },
+      "small_coding_fix": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null
+      },
+      "multi_file_engineering": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null
+      },
+      "debugging": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null
+      },
+      "test_repair": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null
+      },
+      "regression_prevention": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null
+      },
+      "large_repository": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null
+      },
+      "context_pressure": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null
+      },
+      "verification_resistance": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null
+      },
+      "recovery": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null
+      },
+      "tool_efficiency": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null
+      },
+      "routing_difficulty": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null
+      }
+    }
+  },
+  "attempts": []
+}

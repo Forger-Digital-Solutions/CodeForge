@@ -19,7 +19,6 @@ import {
   presenceFromEnv,
   resolveEnvironmentField,
   isZeroCashFreeAccess,
-  type AuthClass,
   type DetectedEnvironmentCredential,
   type EnvironmentCredentialPolicy,
   type EnvironmentCredentialPreference,
@@ -318,23 +317,22 @@ export class ProviderConnections {
 
   /** Credential store view handed to provider adapters: composite of secure storage + enabled env. */
   credentialStore(): CredentialStore {
-    const self = this;
     return {
-      get(key: string): string | undefined {
+      get: (key: string): string | undefined => {
         const idx = key.indexOf(":");
         if (idx > 0) {
           const providerId = key.slice(0, idx);
           const fieldId = key.slice(idx + 1);
-          return self.resolveField(providerId, fieldId)?.value;
+          return this.resolveField(providerId, fieldId)?.value;
         }
-        if (key === "cloudflare-account-id") return self.resolveField("cloudflare-workers-ai", "accountId")?.value;
-        return self.resolveField(key, "apiKey")?.value;
+        if (key === "cloudflare-account-id") return this.resolveField("cloudflare-workers-ai", "accountId")?.value;
+        return this.resolveField(key, "apiKey")?.value;
       },
-      set(key: string, value: string): void {
-        self.host.secrets.set(key, value);
+      set: (key: string, value: string): void => {
+        this.host.secrets.set(key, value);
       },
-      delete(key: string): boolean {
-        self.host.secrets.delete(key);
+      delete: (key: string): boolean => {
+        this.host.secrets.delete(key);
         return true;
       },
       has(key: string): boolean {

@@ -17,7 +17,7 @@ async function fetchJson(url: string, body?: unknown, method = "POST"): Promise<
   const res = await fetch(url, {
     method,
     headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   return { status: res.status, body: await res.json().catch(() => null) };
 }

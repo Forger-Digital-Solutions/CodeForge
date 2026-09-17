@@ -143,7 +143,7 @@ export class GitHubPRClient {
       response = await this.fetchFn(`${this.apiBase}${pathname}`, {
         ...init,
         signal: controller.signal,
-        headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, ...(init.headers ?? {}) },
+        headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, ...init.headers },
       });
     } catch {
       throw new PublicationError(PUBLICATION_ERROR_CODES.GITHUB_TEMPORARY_FAILURE);

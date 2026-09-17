@@ -52,7 +52,7 @@ import {
   type EnvironmentCredentialPolicy,
 } from "@codeforge/model-registry";
 import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
-import { describeCloudAuthFailure, CloudAuthError, runCodeForgeCloudAuth, type CloudAuthResult } from "./cloud-auth-flow.js";
+import { describeCloudAuthFailure, CloudAuthError, runCodeForgeCloudAuth } from "./cloud-auth-flow.js";
 import {
   installSingleInstanceGuard,
   activateWindow,
@@ -513,8 +513,6 @@ function getFirstRunLegalAck(): FirstRunLegalAck | null {
   }
   return null;
 }
-
-type CloseDecision = "cancel" | "tray" | "quit" | "quit-anyway";
 
 function getCloseBehavior(): CloseBehavior {
   const value = readSettings()[CLOSE_BEHAVIOR_KEY];
@@ -1408,10 +1406,10 @@ function installRendererLifecycleDiagnostics(window: BrowserWindow): void {
   contents.on("preload-error", (_event, preloadPath, error) => {
     smokeRecord(`RENDERER_PRELOAD_ERROR path=${path.basename(preloadPath)} message=${error.message}`);
   });
-  contents.on("console-message", (_event, level, message) => {
+  contents.on("console-message", ({ level, message }) => {
     if (message.startsWith("[codeforge:lifecycle] ")) {
       smokeRecord(`RENDERER_LIFECYCLE ${message.slice("[codeforge:lifecycle] ".length)}`);
-    } else if (level === 3) {
+    } else if (level === "error") {
       smokeRecord(`RENDERER_CONSOLE_ERROR ${message.slice(0, 500).replace(/\s+/g, " ")}`);
     }
   });
@@ -1598,7 +1596,7 @@ function verifyCorruptCredentialFailsClosed(): void {
   const storePath = getStorePath();
   const original = fs.readFileSync(storePath, "utf8");
   const parsed = JSON.parse(original) as Record<string, unknown>;
-  const credentials = { ...((parsed[PROVIDER_CREDENTIALS_KEY] as Record<string, string> | undefined) ?? {}) };
+  const credentials = { ...(parsed[PROVIDER_CREDENTIALS_KEY] as Record<string, string> | undefined) };
   credentials.opencode = "enc:not-valid-encrypted-data";
   parsed[PROVIDER_CREDENTIALS_KEY] = credentials;
   writeSettingsAtomic(parsed);

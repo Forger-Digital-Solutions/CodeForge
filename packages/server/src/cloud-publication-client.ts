@@ -236,7 +236,7 @@ export class CloudPublicationClient {
       response = await this.fetchFn(`${this.cloudApiUrl}${path}`, {
         ...init,
         signal: controller.signal,
-        headers: { Accept: "application/json", Authorization: `Bearer ${token}`, ...(init.headers ?? {}) },
+        headers: { Accept: "application/json", Authorization: `Bearer ${token}`, ...init.headers },
       });
     } catch {
       throw new CloudPublicationError(CLOUD_PUBLICATION_ERRORS.CLOUD_REQUEST_FAILED);

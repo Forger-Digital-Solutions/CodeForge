@@ -84,7 +84,6 @@ export default function Composer({
   onStop,
   onPause,
   onResume,
-  onBackground,
   isRunning,
   isPaused,
   models,

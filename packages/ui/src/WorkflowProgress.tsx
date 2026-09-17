@@ -136,7 +136,7 @@ export function phaseIndex(phase: string): number {
   return -1;
 }
 
-export default function WorkflowProgress({ state, onCancel, onApprove, onPublishDelivery, onRetryPublication, onAuthorizeRepository, expanded: controlledExpanded }: WorkflowProgressProps) {
+export default function WorkflowProgress({ state, onCancel, onPublishDelivery, onRetryPublication, onAuthorizeRepository, expanded: controlledExpanded }: WorkflowProgressProps) {
   const [internalExpanded, setInternalExpanded] = useState(false);
   const expanded = controlledExpanded ?? internalExpanded;
   const { activePhase, isRunning, pendingApproval, activeTaskId, workflowError, lastWorkflowResult } = state;

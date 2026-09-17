@@ -5,7 +5,7 @@ export interface McpTool {
 }
 
 export class McpClient {
-  constructor(serverCommand: string) {}
+  constructor(_serverCommand: string) {}
   async listTools(): Promise<McpTool[]> {
     return [];
   }

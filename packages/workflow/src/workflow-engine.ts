@@ -12,7 +12,6 @@ import { reviewDiff, formatDiffSummary, type BeforeSnapshot } from "./diff-revie
 import {
   evaluateCompletion,
   formatCompletionDecision,
-  type CompletionGateDecision,
   type CompletionPolicy,
 } from "./completion-gate.js";
 import type {
@@ -404,6 +403,23 @@ export class WorkflowEngine {
         payload: { approved: review.approved, findings: review.findings, diffCount: review.diffs.length },
       });
 
+      // The completion gate requires every non-skipped plan step to be terminal. Record the
+      // actual verification and review outcomes before asking it for a verdict; leaving these
+      // steps queued would make a successful run indistinguishable from an interrupted one.
+      plan = {
+        ...plan,
+        updatedAt: new Date().toISOString(),
+        steps: plan.steps.map((step) => {
+          if (step.kind === "verify") {
+            return { ...step, status: verificationPassed(verification) ? "completed" as const : "failed" as const };
+          }
+          if (step.kind === "review") {
+            return { ...step, status: review.findings.some((finding) => finding.severity === "blocking") ? "blocked" as const : "completed" as const };
+          }
+          return step;
+        }),
+      };
+
       // 11. Summarize Result — the completion gate, not this method, decides the outcome.
       this.setPhase("summarizing", "validating");
       const evidenceId = crypto.randomUUID();
@@ -598,7 +614,7 @@ export class WorkflowEngine {
     let applied = 0;
     let failed = 0;
 
-    for (const step of [...currentPlan.steps]) {
+    for (const step of currentPlan.steps) {
       if (step.status !== "queued") continue;
       if (step.kind !== "edit" && step.kind !== "write" && step.kind !== "read") continue;
       this.ensureNotAborted();
@@ -638,7 +654,7 @@ export class WorkflowEngine {
             steps: currentPlan.steps.map((s) => (s.id === step.id ? { ...s, status: "failed" as const } : s)),
           };
         }
-      } catch (e) {
+      } catch  {
         failed++;
         currentPlan = {
           ...currentPlan,

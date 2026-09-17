@@ -269,7 +269,7 @@ export function createMuseSparkPaidRecord(overrides: Partial<FreeModelRecord> = 
     ...overrides,
     costProfile: {
       ...MUSE_SPARK_PAID.costProfile,
-      ...(overrides.costProfile ?? {}),
+      ...overrides.costProfile,
     },
     health: overrides.health ?? { status: "available", lastCheckedAt: ts },
   };
@@ -282,7 +282,7 @@ export function createMuseSparkContributorPaidRecord(overrides: Partial<FreeMode
     ...overrides,
     costProfile: {
       ...MUSE_SPARK_CONTRIBUTOR_PAID.costProfile,
-      ...(overrides.costProfile ?? {}),
+      ...overrides.costProfile,
     },
     health: overrides.health ?? { status: "available", lastCheckedAt: ts },
   };
@@ -296,17 +296,17 @@ export function createMuseSparkRecord(overrides: Partial<FreeModelRecord> = {}):
     freeStatusVerifiedAt: overrides.freeStatusVerifiedAt ?? ts,
     costProfile: {
       ...MUSE_SPARK_1_2.costProfile,
-      ...(overrides.costProfile ?? {}),
+      ...overrides.costProfile,
       freeTierVerifiedAt: overrides.costProfile?.freeTierVerifiedAt ?? ts,
     },
     health: overrides.health ?? { status: "available", lastCheckedAt: ts },
     capabilities: {
       ...MUSE_SPARK_1_2.capabilities,
-      ...(overrides.capabilities ?? {}),
+      ...overrides.capabilities,
     },
     benchmarkProfile: {
       ...MUSE_SPARK_1_2.benchmarkProfile,
-      ...(overrides.benchmarkProfile ?? {}),
+      ...overrides.benchmarkProfile,
     },
   };
 }
@@ -319,17 +319,17 @@ export function createGenericFreeRecord(overrides: Partial<FreeModelRecord> = {}
     freeStatusVerifiedAt: overrides.freeStatusVerifiedAt ?? ts,
     costProfile: {
       ...GENERIC_FREE_MODEL.costProfile,
-      ...(overrides.costProfile ?? {}),
+      ...overrides.costProfile,
       freeTierVerifiedAt: overrides.costProfile?.freeTierVerifiedAt ?? ts,
     },
     health: overrides.health ?? { status: "available", lastCheckedAt: ts },
     capabilities: {
       ...GENERIC_FREE_MODEL.capabilities,
-      ...(overrides.capabilities ?? {}),
+      ...overrides.capabilities,
     },
     benchmarkProfile: {
       ...GENERIC_FREE_MODEL.benchmarkProfile,
-      ...(overrides.benchmarkProfile ?? {}),
+      ...overrides.benchmarkProfile,
     },
   };
 }

@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import type { WorkspaceEvent } from "@codeforge/protocol";
 import type { SessionRecord, WorkItem, TurnRecord } from "@codeforge/sessions";
 import FileExplorer from "./FileExplorer.js";
 import RunInspection from "./RunInspection.js";
-import DiffViewer from "./DiffViewer.js";
 
 function isWorkItemKind<K extends WorkItem["kind"]>(
   item: WorkItem,
@@ -37,7 +36,7 @@ const TAB_LABELS: Record<string, string> = {
   overview: "Overview",
 };
 
-export default function Inspector({ activeTab, onTabSelect, session, workItems, turns, events = [], isRunning, workspacePath, activeTaskId, startFailure }: InspectorProps) {
+export default function Inspector({ activeTab, onTabSelect, session, workItems, events = [], isRunning, workspacePath, activeTaskId, startFailure }: InspectorProps) {
   const safeTab = TABS.includes(activeTab) ? activeTab : "changes";
 
   const renderTabContent = () => {

@@ -1,8 +1,6 @@
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
-import fs from "node:fs/promises";
 import path from "node:path";
-import crypto from "node:crypto";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { getSanitizedEnvForChild } from "./env-filter.js";
 import type { ISessionPersistence } from "@codeforge/sessions";
@@ -118,6 +116,7 @@ export class CheckpointService {
       // Push to stash including untracked files
       await this.gitCommandArgs(["stash", "push", "-u", "-m", stashMsg]);
 
+      let snapshotError: unknown;
       try {
         // Resolve immutable commit SHA immediately
         const { stdout: stashShaOut } = await this.gitCommandArgs(["rev-parse", "stash@{0}"]);
@@ -129,21 +128,27 @@ export class CheckpointService {
         // Create permanent durable ref that is independent of mutable stash stack
         await this.gitCommandArgs(["update-ref", durableRef, commitSha]);
         await this.gitCommandArgs(["branch", "-f", shortRef, commitSha]).catch(() => {});
-      } finally {
-        // Restore live workspace back to its exact pre-checkpoint dirty and staged state
+      } catch (error) {
+        snapshotError = error;
+      }
+
+      // Restore live workspace back to its exact pre-checkpoint dirty and staged state. Capture
+      // the snapshot failure first so a restore failure can report both faults without a throw in
+      // `finally` replacing the original error.
+      try {
+        await this.gitCommandArgs(["stash", "pop", "--index"]);
+      } catch {
         try {
-          await this.gitCommandArgs(["stash", "pop", "--index"]);
-        } catch {
-          try {
-            await this.gitCommandArgs(["stash", "pop"]);
-          } catch (popError) {
-            // If pop fails, the workspace may be in an inconsistent state; fail closed
-            throw new Error(
-              `Checkpoint snapshot created (${commitSha}) but restoring live workspace failed: ${popError instanceof Error ? popError.message : String(popError)}`,
-            );
-          }
+          await this.gitCommandArgs(["stash", "pop"]);
+        } catch (popError) {
+          const cause = snapshotError === undefined ? popError : new AggregateError([snapshotError, popError], "Snapshot and restore both failed");
+          throw new Error(
+            `Checkpoint snapshot operation (${commitSha || "unresolved"}) could not restore the live workspace: ${popError instanceof Error ? popError.message : String(popError)}`,
+            { cause },
+          );
         }
       }
+      if (snapshotError !== undefined) throw snapshotError;
 
       // Verify that post-creation workspace state is identical to pre-creation
       const postStatus = await this.getGitStatus();
@@ -503,7 +508,7 @@ export class CheckpointService {
       if (stdout.trim() !== "true") {
         throw new Error("Not a git repository");
       }
-    } catch (e) {
+    } catch  {
       throw new Error(`Workspace is not a valid Git repository: ${this.workspaceRoot}`);
     }
   }

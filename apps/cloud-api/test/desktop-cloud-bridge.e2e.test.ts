@@ -140,7 +140,7 @@ async function desktopHarness(options: { mode?: UploadMode; failMintOnce?: boole
     requests.push({ url, body: capturedBody });
     const response = await fetch(input, nextInit);
     responses.push(await response.clone().text());
-    if (options.revokeAfterUpload && /\/artifact$/.test(url) && response.ok) {
+    if (options.revokeAfterUpload && url.endsWith('/artifact') && response.ok) {
       await db.updateGitHubInstallationStatus(account.installationRowId, "revoked");
     }
     return response;
@@ -180,7 +180,7 @@ describe("CF-11 production Desktop Cloud bridge", () => {
     expect(await remoteRef(h.fixture, `refs/heads/${h.fixture.targetBranch}`)).toBe(h.fixture.targetSha);
     expect(await git(h.fixture.sourceRepo, ["status", "--porcelain=v2"])).toBe(sourceStatus);
     const createRequest = h.requests.find((item) => item.url.endsWith("/v1/publications"));
-    const uploadRequest = h.requests.find((item) => /\/artifact$/.test(item.url));
+    const uploadRequest = h.requests.find((item) => item.url.endsWith('/artifact'));
     const createBody = JSON.parse(String(createRequest?.body)) as { artifactBytes: number; artifactSha256: string };
     const uploaded = Buffer.from(uploadRequest?.body as Uint8Array);
     expect(createBody.artifactBytes).toBe(uploaded.byteLength);

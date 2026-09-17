@@ -23,6 +23,7 @@ export class WorkspaceEventAdapter {
   private readonly runId?: string;
   private readonly eventStore: EventStore;
   private readonly persistence: ISessionPersistence;
+  private readonly pendingBestEffortWrites = new Set<Promise<void>>();
 
   constructor(options: WorkspaceEventAdapterOptions) {
     this.sessionId = options.sessionId;
@@ -57,9 +58,17 @@ export class WorkspaceEventAdapter {
 
   /** Fire-and-forget variant for high-frequency telemetry that does not gate CF-17 durability. */
   private emitBestEffort(event: Omit<WorkspaceEvent, "seq" | "sessionId" | "timestamp">): void {
-    void this.emit(event).catch((error) => {
+    const write = this.emit(event).catch((error) => {
       console.error("[workspace-event-adapter] best-effort event persistence failed", error);
     });
+    this.pendingBestEffortWrites.add(write);
+    void write.finally(() => this.pendingBestEffortWrites.delete(write));
+  }
+
+  async drain(): Promise<void> {
+    while (this.pendingBestEffortWrites.size > 0) {
+      await Promise.all(Array.from(this.pendingBestEffortWrites));
+    }
   }
 
   emitTurnStarted(turnId: string, userMessage: string, agentId?: string, origin?: { origin: "user" | "workflow"; label?: string }): Promise<void> {

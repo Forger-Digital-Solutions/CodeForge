@@ -182,8 +182,6 @@ async function main() {
     check("dogfood-success", hasQParameter, `agent successfully completed the improvement task despite ${terminalTurn?.status ?? "unknown"} terminal status`);
 
     // Run tests to verify
-    const testDir = path.join(workspacePath, "packages", "ui");
-    const testCommand = "npm test";
     // We'll skip actual test execution for this dogfood to keep it simpler
     check("test-verification", true, "test verification would run here in full dogfood");
 

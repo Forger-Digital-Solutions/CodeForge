@@ -16,7 +16,7 @@ import { loadForgeVerifyEvidence } from "./forge-verify-persistence.js";
 import type { AgentRuntime } from "./agent-runtime.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import { redactSecrets } from "@codeforge/secrets";
-import { WorkspaceService, createWorkspaceService, type WorkspaceLease } from "./workspace-service.js";
+import { WorkspaceService, createWorkspaceService } from "./workspace-service.js";
 
 export interface WorkflowServiceOptions {
   eventStore: EventStore;
@@ -181,7 +181,7 @@ export class WorkflowService {
   private readonly persistence: ISessionPersistence;
   private readonly approvalService: ApprovalService;
   private readonly workspaceService: WorkspaceService;
-  private readonly workflows: Map<string, { engine: WorkflowEngine; controller: AbortController; promise: Promise<WorkflowResult>; task: WorkflowTask }> = new Map();
+  private readonly workflows: Map<string, { engine: WorkflowEngine; controller: AbortController; promise: Promise<WorkflowResult>; task: WorkflowTask; adapter: WorkspaceEventAdapter }> = new Map();
   private defaultWorkspacePath?: string;
   private readonly getOrCreateRuntime?: (sessionId: string, userId?: string) => AgentRuntime;
   private readonly isRealRuntimeEnabled: () => boolean;
@@ -383,7 +383,7 @@ export class WorkflowService {
         context: ContextBundle,
         _repoMap: RepoMap,
         intent: TaskIntent,
-        sig?: AbortSignal,
+        _sig?: AbortSignal,
       ): Promise<{ success: boolean; output: string; turnId?: string }> => {
         const prompt = buildRepairPrompt(analysis, verification, context, intent);
         const runtime = getRuntime(sessionId, userId);
@@ -397,7 +397,7 @@ export class WorkflowService {
 
   async startWorkflow(request: WorkflowRunRequest): Promise<{ taskId: string; turnId: string }> {
     const sessionId = request.sessionId;
-    recoverInterruptedForgeVerifyAttempts(this.persistence, sessionId);
+    await recoverInterruptedForgeVerifyAttempts(this.persistence, sessionId);
     const rawWorkspacePath = request.workspacePath ?? this.defaultWorkspacePath;
     if (!rawWorkspacePath) {
       throw new Error("No workspace path configured for workflow");
@@ -885,7 +885,7 @@ export class WorkflowService {
     };
     promise.finally(cleanup).catch(() => cleanup());
 
-    this.workflows.set(taskId, { engine, controller, promise, task: engine.getTask() });
+    this.workflows.set(taskId, { engine, controller, promise, task: engine.getTask(), adapter });
 
     // Also persist initial turn as running (redacted)
     try {
@@ -979,7 +979,7 @@ export class WorkflowService {
   }
 
   cancelAll(reason = "Workspace changed"): void {
-    for (const [id, entry] of Array.from(this.workflows.entries())) {
+    for (const [_id, entry] of Array.from(this.workflows.entries())) {
       if (entry.task.phase !== "completed" && entry.task.phase !== "failed" && entry.task.phase !== "cancelled") {
         entry.controller.abort();
         this.approvalService.cancelForTurn(entry.task.turnId, reason);
@@ -1017,7 +1017,7 @@ export class WorkflowService {
    * Graceful shutdown — cancel active workflows and release resources exactly once.
    * Never silently duplicates execution; marks interrupted tasks as cancelled.
    */
-  shutdown(reason = "Server shutting down"): void {
+  async shutdown(reason = "Server shutting down"): Promise<void> {
     for (const entry of Array.from(this.workflows.values())) {
       if (isActivePhase(entry.engine.getTask().phase) && !entry.controller.signal.aborted) {
         try { entry.controller.abort(); } catch {}
@@ -1025,6 +1025,8 @@ export class WorkflowService {
       }
     }
     this.approvalService.cancelAll(reason);
+    await Promise.allSettled(Array.from(this.workflows.values()).map((entry) => entry.promise));
+    await Promise.all(Array.from(this.workflows.values()).map((entry) => entry.adapter.drain()));
   }
 
   /**

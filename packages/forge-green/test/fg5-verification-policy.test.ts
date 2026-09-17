@@ -3,7 +3,6 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  determineVerificationLevel,
   determineVerificationObligations,
   evaluateVerificationSufficiency,
   FORGE_GREEN_VERIFICATION_POLICY_VERSION,

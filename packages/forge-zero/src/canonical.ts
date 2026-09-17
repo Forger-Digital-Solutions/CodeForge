@@ -199,21 +199,21 @@ function familyFor(slug: string): string {
   const m = slug.match(/^([a-z]+(?:-oss)?)/);
   const head = m ? m[1]! : slug;
   if (head === "gpt" && slug.startsWith("gpt-oss")) return "gpt-oss";
-  if (/^gemma/.test(slug)) return "gemma";
-  if (/^gemini/.test(slug)) return "gemini";
-  if (/^glm/.test(slug)) return "glm";
+  if (slug.startsWith('gemma')) return "gemma";
+  if (slug.startsWith('gemini')) return "gemini";
+  if (slug.startsWith('glm')) return "glm";
   if (/^qwen|^qwq/.test(slug)) return "qwen";
-  if (/^nemotron/.test(slug)) return "nemotron";
-  if (/^laguna/.test(slug)) return "laguna";
-  if (/^kimi/.test(slug)) return "kimi";
-  if (/^deepseek/.test(slug)) return "deepseek";
-  if (/^devstral/.test(slug)) return "devstral";
-  if (/^codestral/.test(slug)) return "codestral";
+  if (slug.startsWith('nemotron')) return "nemotron";
+  if (slug.startsWith('laguna')) return "laguna";
+  if (slug.startsWith('kimi')) return "kimi";
+  if (slug.startsWith('deepseek')) return "deepseek";
+  if (slug.startsWith('devstral')) return "devstral";
+  if (slug.startsWith('codestral')) return "codestral";
   if (/^mistral|^ministral|^magistral/.test(slug)) return "mistral";
-  if (/^llama/.test(slug)) return "llama";
-  if (/^claude/.test(slug)) return "claude";
+  if (slug.startsWith('llama')) return "llama";
+  if (slug.startsWith('claude')) return "claude";
   if (/^ling|^ring/.test(slug)) return "ling";
-  if (/^inkling/.test(slug)) return "inkling";
+  if (slug.startsWith('inkling')) return "inkling";
   return head;
 }
 

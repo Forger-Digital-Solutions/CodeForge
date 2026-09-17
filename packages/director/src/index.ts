@@ -1,7 +1,7 @@
 import { err, ok, type Result } from "@codeforge/core";
 import { CodeForgeError } from "@codeforge/core";
 import type { ForgeZero } from "@codeforge/forge-zero";
-import type { ProviderCatalog, ProviderAdapter } from "@codeforge/providers";
+import type { ProviderCatalog } from "@codeforge/providers";
 import {
   type ExecutionModelSelection,
   type ResolvedModel,

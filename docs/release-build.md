@@ -4,16 +4,16 @@ This is the canonical Windows release procedure. It is designed for a fresh chec
 
 ## Audited environment
 
-- Starting source: `728608472a08f0594526e5390f70d6ea7fb1b86b`
-- Final audited source: the local audit commit containing this document (`git rev-parse HEAD`)
+- R6 audit base: `41e0102d1a860107a6741026944b369ea4eeaa42`
+- Final audited source: the working tree described by the R6 certification report; no R6 commit was created
 - Windows: NT `10.0.26200`, x64
-- Host Node.js: `24.18.0`
-- npm: `11.16.0`
-- Electron: `33.4.11`
-- Embedded Node.js: `20.18.3`
-- Electron module ABI: `130`
+- Host Node.js: `24.19.0`
+- npm: `12.0.2` (repository audit runner)
+- Electron: `44.4.1`
+- Embedded Node.js: `24.21.0`
+- Electron module ABI: `149`
 - `better-sqlite3`: `12.11.1`
-- `electron-builder`: `25.1.8`
+- `electron-builder`: `26.15.3`
 
 ## Prerequisites
 
@@ -40,14 +40,14 @@ npm run smoke:all --workspace=codeforge-desktop
 npm run dist --workspace=codeforge-desktop
 ```
 
-The audited test result is 55/55 files and 556/556 tests passing with zero skipped tests.
+The R6 audited test result is 339 files passed and 7 files skipped; 2,545 tests passed and 36 tests skipped. Every skip is an explicit real-PostgreSQL integration suite gated on external database credentials; no flaky or broken local test was suppressed.
 
 ## Native SQLite build
 
 `npm run build:native --workspace=codeforge-desktop` launches `apps/desktop/scripts/rebuild-native.mjs`. The launcher:
 
 - invokes `@electron/rebuild` through the absolute host Node executable;
-- targets Electron `33.4.11` and ABI `130`;
+- derives the installed Electron version (`44.4.1` in R6) and rebuilds for ABI `149`;
 - rebuilds only `better-sqlite3` from source;
 - gives node-gyp a short, deduplicated, build-tool-prioritized PATH;
 - supplies a strict environment allowlist so provider credentials and unrelated host secrets do not reach verbose build diagnostics.
@@ -74,7 +74,7 @@ Set `CODEFORGE_SMOKE_EXECUTABLE` to run the same full assertions against an inst
 
 `npm run dist --workspace=codeforge-desktop` produces:
 
-- `apps/desktop/release/CodeForge-Setup-0.1.0.exe`
+- `apps/desktop/release/CodeForge-Setup-0.3.0.exe`
 - `apps/desktop/release/CodeForge-Portable.exe`
 - `apps/desktop/release/win-unpacked/CodeForge.exe`
 - `apps/desktop/release/win-unpacked/resources/app.asar`

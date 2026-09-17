@@ -103,7 +103,7 @@ export interface CompletionGateDecision {
 }
 
 function resolvePolicy(policy?: Partial<CompletionPolicy>): CompletionPolicy {
-  return { ...DEFAULT_COMPLETION_POLICY, ...(policy ?? {}) };
+  return { ...DEFAULT_COMPLETION_POLICY, ...policy };
 }
 
 function truncate(value: string, max = 400): string {
@@ -312,7 +312,7 @@ function collectChangeBlockers(
 }
 
 function collectPlanBlockers(plan: WorkflowPlan, policy: CompletionPolicy): CompletionBlocker[] {
-  const unfinished = plan.steps.filter((s) => s.status === "failed" || s.status === "blocked");
+  const unfinished = plan.steps.filter((s) => s.status !== "completed" && s.status !== "skipped");
   if (unfinished.length === 0) return [];
 
   return [

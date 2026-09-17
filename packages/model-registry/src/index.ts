@@ -55,7 +55,7 @@ export const PACKAGED_PROVIDERS = ["opencode", "openrouter", "codeforge"] as con
  * Discovery never becomes authority.
  */
 export class FreeModelRegistry {
-  register(model: unknown): void {}
+  register(_model: unknown): void {}
   all(): unknown[] { return []; }
 }
 

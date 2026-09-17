@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-11T04:10:32.878Z",
+  "generatedAt": "2026-09-17T00:04:26.443Z",
   "source": "npm ls --workspace=codeforge-desktop --all --omit=dev",
   "bundledComponents": [
     {
       "name": "Electron",
-      "version": "33.4.11",
+      "version": "44.4.1",
       "license": "MIT",
       "note": "Bundled automatically by electron-builder as LICENSE.electron.txt in packaged output. Not npm-resolved as a runtime dependency of the app bundle itself."
     },
@@ -66,7 +66,7 @@
       "versions": [
         "1.1.4"
       ],
-      "license": "ISC",
+      "license": "BlueOak-1.0.0",
       "isNativeBinary": false,
       "reviewRequired": false
     },
@@ -505,7 +505,7 @@
     {
       "name": "uuid",
       "versions": [
-        "10.0.0"
+        "14.0.2"
       ],
       "license": "MIT",
       "isNativeBinary": false,

@@ -180,7 +180,7 @@ export async function scheduleWorkstreams<T>(options: ParallelSchedulerOptions<T
   const blocked = new Set<string>();
   while (remaining.size) {
     if (options.signal?.aborted) throw new Error("PARALLEL_RUN_CANCELLED");
-    for (const id of [...remaining]) {
+    for (const id of remaining) {
       const stream = byId.get(id)!;
       if (stream.dependencies.some((dependency) => blocked.has(dependency))) {
         remaining.delete(id); blocked.add(id); options.onState?.(id, "blocked");

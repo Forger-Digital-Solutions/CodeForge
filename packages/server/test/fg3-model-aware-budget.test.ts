@@ -4,7 +4,7 @@ import path from "node:path";
 import os from "node:os";
 import { ForgeZero, createGenericFreeRecord } from "@codeforge/forge-zero";
 import { EventStore, createSessionPersistence, type ISessionPersistence } from "@codeforge/sessions";
-import { InMemoryProviderCatalog, type ChatRequest, type ChatResponse, type ProviderAdapter, type ProviderModel, type StreamEvent } from "@codeforge/providers";
+import { InMemoryProviderCatalog, type ChatResponse, type ProviderAdapter, type ProviderModel, type StreamEvent } from "@codeforge/providers";
 import { createAgentRuntime } from "../src/agent-runtime.js";
 
 /**

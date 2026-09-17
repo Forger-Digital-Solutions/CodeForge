@@ -7,9 +7,7 @@ import {
   createRepositoryIntelligence,
   REPOSITORY_INDEX_VERSION,
   asRetrievalScore,
-  asRelevanceScore,
   asSymbolConfidence,
-  type BlastRadiusEstimate,
 } from "../src/index.js";
 
 const cleanupDirs: string[] = [];

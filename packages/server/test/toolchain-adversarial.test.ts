@@ -1,18 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { mkdtemp, rm, mkdir, writeFile, readFile, symlink } from "node:fs/promises";
+import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
-import { InMemoryProviderCatalog, createMockProvider } from "@codeforge/providers";
-import { CodeForgeServer } from "../src/index.js";
-
-process.env.CODEFORGE_REAL_RUNTIME = "true";
-const catalog = new InMemoryProviderCatalog();
-catalog.register(createMockProvider({ providerId: "codeforge" }));
-
-let base = "";
 let dir = "";
-let server: CodeForgeServer;
 let projectRoot = "";
 
 beforeAll(async () => {
@@ -20,35 +11,11 @@ beforeAll(async () => {
   projectRoot = join(dir, "proj");
   await mkdir(projectRoot, { recursive: true });
   await writeFile(join(projectRoot, "safe.txt"), "hello");
-  server = new CodeForgeServer({ port: 0, dbPath: join(dir, "adv.db"), providerCatalog: catalog });
-  await server.start();
-  base = `http://127.0.0.1:${server.httpPort}`;
-  await fetch(`${base}/api/workspace/set`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path: projectRoot }) });
 });
 
 afterAll(async () => {
-  await server.stop();
   await rm(dir, { recursive: true, force: true });
 });
-
-async function startTurn(message: string, sessionId = "adv-session"): Promise<{ turnId: string }> {
-  const res = await fetch(`${base}/api/send`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId, message }) });
-  const j = await res.json() as { turnId: string };
-  return { turnId: j.turnId };
-}
-async function settled(sessionId: string, turnId: string): Promise<{ status: string; error: string | null }> {
-  const deadline = Date.now() + 8000;
-  while (Date.now() < deadline) {
-    const res = await fetch(`${base}/api/sessions/${sessionId}`);
-    if (res.ok) {
-      const snap = await res.json() as { turns: Array<{ id: string; status: string; error: string | null }> };
-      const t = snap.turns.find(x => x.id === turnId);
-      if (t && (t.status === "completed" || t.status === "failed" || t.status === "cancelled")) return t;
-    }
-    await new Promise(r => setTimeout(r, 80));
-  }
-  throw new Error("not settled");
-}
 
 describe("adversarial toolchain", () => {
   it("Test 1: traversal ../../outside.txt is rejected (no file created outside)", async () => {
@@ -97,11 +64,4 @@ describe("adversarial toolchain", () => {
     expect(redactSecrets("Authorization: Bearer abc.def.ghi")).not.toContain("Bearer abc");
   });
 
-  it("Output truncation and bounded listing work", async () => {
-    // Create many files to test listing cap
-    for (let i = 0; i < 600; i++) await writeFile(join(projectRoot, `f${i}.txt`), "x");
-    const { default: agentRuntime } = await import("../src/agent-runtime.js");
-    // listing bounded to 500 entries via agent-runtime; we test helper directly
-    expect(true).toBe(true);
-  });
 });

@@ -7,7 +7,6 @@ import {
   narrowToStrictEvidence,
   requestVerificationEvidenceReuse,
   runVerificationWithControlledReuse,
-  type ReuseTrialMode,
 } from "../src/verification-evidence-reuse.js";
 import { createVerificationPlan, createVerifierRegistry, executeVerificationPlan, VerificationEvidenceStore, type VerificationEvidence, type VerifierDefinition, type VerifierId, type VerifierVersion } from "../src/forge-verify.js";
 
@@ -70,7 +69,8 @@ describe("FG-12D narrowToStrictEvidence — fail-closed on incomplete/malformed 
   it("rejects evidence missing definitionDigest (incomplete metadata)", async () => {
     const dir = fixture();
     const evidence = await produceBaselineEvidence(dir, "fg12d.narrow.missing", "a.js");
-    const { definitionDigest, ...withoutDigest } = evidence;
+    const withoutDigest = structuredClone(evidence) as Partial<VerificationEvidence>;
+    delete withoutDigest.definitionDigest;
     expect(narrowToStrictEvidence(withoutDigest as unknown as import("@codeforge/forge-green").GenericVerificationEvidence)).toBeUndefined();
   });
 

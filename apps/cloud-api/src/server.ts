@@ -2,7 +2,7 @@ import http from "node:http";
 import { URL } from "node:url";
 import { isIP, type AddressInfo } from "node:net";
 import { z } from "zod";
-import { CloudDatabase, createCloudDatabase, type ICloudDatabase } from "@codeforge/cloud-db";
+import { createCloudDatabase, type ICloudDatabase } from "@codeforge/cloud-db";
 import { AuthService, GitHubAppAuthorizationService, GitHubAuthorizationError, type GitHubAppConfiguration } from "@codeforge/cloud-auth";
 import { EntitlementService } from "@codeforge/cloud-entitlements";
 import { UsageEngine } from "@codeforge/cloud-usage";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ForgeZero } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog, type ProviderAdapter, type ProviderModel } from "@codeforge/providers";
+import { InMemoryProviderCatalog, type ProviderModel } from "@codeforge/providers";
 import { NormalizedModelRegistry, createFreeCloudService } from "@codeforge/model-registry";
 import { ENV_CREDENTIALS_KEY, ProviderConnections, type ProviderConnectionsHost } from "../src/provider-connections.js";
 

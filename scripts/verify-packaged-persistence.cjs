@@ -2,9 +2,8 @@
 // (ELECTRON_RUN_AS_NODE=1 CodeForge.exe scripts/verify-packaged-persistence.cjs).
 // Proves the driver fallback performs a real durable write + fresh-instance read.
 //
-// @codeforge/sessions is pure ESM; Electron 33 bundles Node 20.x where
-// require() of ES modules is unsupported (ERR_REQUIRE_ESM), so the package is
-// loaded with dynamic import() and the entry point is an async main.
+// @codeforge/sessions is pure ESM, so the package is loaded with dynamic import()
+// and every persistence operation is awaited through its public async contract.
 const path = require("node:path");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -59,14 +58,14 @@ async function main() {
   const driverUsed = first.getDriver();
   record("active_driver=" + driverUsed);
 
-  first.upsertSession({
+  await first.upsertSession({
     id: "smoke",
     title: "packaged round trip",
     createdAt: now,
     updatedAt: now,
     status: "completed",
   });
-  first.upsertTurn({
+  await first.upsertTurn({
     id: "smoke-turn",
     sessionId: "smoke",
     seq: 1,
@@ -74,13 +73,13 @@ async function main() {
     status: "completed",
     startedAt: now,
   });
-  first.close();
+  await first.close();
 
   // Fresh instance == application restart
   const second = new sessions.SessionPersistence({ dbPath });
-  const session = second.getSession("smoke");
-  const turns = second.getTurns("smoke");
-  second.close();
+  const session = await second.getSession("smoke");
+  const turns = await second.getTurns("smoke");
+  await second.close();
 
   if (!session || session.title !== "packaged round trip") {
     fail("session did not survive restart");
@@ -101,4 +100,3 @@ async function main() {
 main().catch((error) => {
   fail(error instanceof Error ? error.message : String(error));
 });
-

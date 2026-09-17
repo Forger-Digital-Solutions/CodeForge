@@ -108,19 +108,7 @@ export function createPlan(
     });
   }
 
-  // 5. Special handling per task type
-  if (intent.taskType === "bugfix") {
-    steps.push({
-      id: nextId(),
-      description: "Create checkpoint before fix",
-      status: "queued",
-      kind: "command",
-      command: "git checkpoint",
-      risk: "safe",
-      requiresApproval: false,
-    });
-  }
-
+  // 5. Verification obligations for tasks that change executable behavior.
   if (intent.taskType === "testing" || intent.taskType === "bugfix" || intent.taskType === "implementation") {
     steps.push({
       id: nextId(),

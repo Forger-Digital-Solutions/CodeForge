@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ForgeZero } from "../src/firewall.js";
-import { MUSE_SPARK_1_2, createMuseSparkRecord, createGenericFreeRecord } from "../src/catalog.js";
+import { MUSE_SPARK_1_2, createMuseSparkRecord } from "../src/catalog.js";
 import type { VerifyContext } from "../src/verifier.js";
 
 const now = new Date("2026-08-23T12:00:00Z");
@@ -14,7 +14,7 @@ function freshMuseSpark(overrides: Record<string, unknown> = {}) {
     freeStatusVerifiedAt: now.toISOString(),
     costProfile: {
       ...base.costProfile,
-      ...(overrides.costProfile as object ?? {}),
+      ...(overrides.costProfile as object),
       freeTierVerifiedAt: now.toISOString(),
     },
     health: (overrides.health as { status: string } | undefined) ?? { status: "available", lastCheckedAt: now.toISOString() },
@@ -141,4 +141,3 @@ describe("Muse Spark 1.2 — catalog & ForgeZero", () => {
     expect(fw.canRouteTo("opencode", "muse-spark-1.2-contributor-free")).toBe(false);
   });
 });
-

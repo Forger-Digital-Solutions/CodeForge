@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSettings } from "../settings-context.js";
-import { SettingsGroup, SettingsRow, SettingsButton, StatusBadge } from "../settings-controls.js";
+import { SettingsGroup, SettingsRow, SettingsButton } from "../settings-controls.js";
 
 export function AdvancedSection(): React.ReactElement {
   const ctx = useSettings();

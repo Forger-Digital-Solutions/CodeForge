@@ -72,7 +72,7 @@ export class ForgeZero {
       this.models.set(key, {
         ...model,
         health: {
-          ...(model.health ?? {}),
+          ...model.health,
           status,
           lastCheckedAt: nowIso,
           ...(extra?.retryAfter !== undefined ? { retryAfter: extra.retryAfter } : {}),
@@ -95,7 +95,7 @@ export class ForgeZero {
     this.models.set(key, {
       ...model,
       health: {
-        ...(model.health ?? {}),
+        ...model.health,
         status,
         lastCheckedAt: nowIso,
         ...(extra?.retryAfter !== undefined ? { retryAfter: extra.retryAfter } : {}),

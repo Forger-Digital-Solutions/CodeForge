@@ -47,7 +47,7 @@ async function connectSse(port: number, lastSeq = 0): Promise<SseClient> {
           if (!Number.isSafeInteger(parsed.seq)) continue;
           const event = parsed as WorkspaceEvent;
           events.push(event);
-          for (const waiter of [...waiters]) {
+          for (const waiter of waiters) {
             if (!waiter.predicate(event)) continue;
             clearTimeout(waiter.timer);
             waiters.delete(waiter);
@@ -96,7 +96,7 @@ async function jsonRequest(port: number, pathname: string, body?: unknown, metho
   const response = await fetch(`http://localhost:${port}${pathname}`, {
     method,
     headers: { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   return response.json();
 }

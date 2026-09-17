@@ -357,7 +357,7 @@ async function executeCommand(definition: VerifierDefinition, workspacePath: str
     const finish = (status: VerificationEvidence["status"], exitCode?: number): void => { if (settled) return; settled = true; clearTimeout(timer); signal?.removeEventListener("abort", abort); resolve({ status, exitCode, elapsedMs: Date.now() - started, output }); };
     child.stdout?.on("data", (chunk: Buffer) => { output += chunk.toString(); });
     child.stderr?.on("data", (chunk: Buffer) => { output += chunk.toString(); });
-    child.once("error", (error) => finish("infra_error", undefined));
+    child.once("error", (_error) => finish("infra_error", undefined));
     child.once("close", (code) => finish(reason ?? (code === 0 ? "passed" : "failed"), code ?? undefined));
     const stop = (next: "cancelled" | "timed_out"): void => { if (settled || reason) return; reason = next; void terminateProcessTree(child); };
     const abort = (): void => stop("cancelled");

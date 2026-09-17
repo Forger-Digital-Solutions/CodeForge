@@ -19,7 +19,7 @@ In modern software distribution, a distinct legal boundary often separates the *
                        ▼
 ┌──────────────────────────────────────────────┐
 │  Packaged Desktop Binary (CodeForge.exe)     │
-│  • Includes Electron 33.4.11 runtime         │
+│  • Includes Electron 44.4.1 runtime          │
 │  • Embedded Chromium, Node.js, native addons │
 │  • Proprietary branding, mascot art, icons   │
 │  • Packaged EULA / Terms of Distribution     │

@@ -1,17 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, writeFile, readFile, rm, mkdir } from "node:fs/promises";
+import { mkdtemp, writeFile, rm, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import fs from "node:fs";
 import { EventStore } from "@codeforge/sessions";
-import { createWorkspaceEventAdapter } from "../src/workspace-event-adapter.js";
 import { ForgeZero } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider } from "@codeforge/providers";
-import { AgentRuntime, createAgentRuntime } from "../src/agent-runtime.js";
+import { createAgentRuntime } from "../src/agent-runtime.js";
 import { searchWorkspace } from "../src/search-service.js";
 import { replaceExact, sha256 } from "../src/edit-service.js";
-import { getSanitizedEnvForChild } from "../src/env-filter.js";
-import { spawn } from "node:child_process";
 
 function persistenceStub() {
   return {

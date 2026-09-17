@@ -5,8 +5,6 @@ import {
   PAID_CATALOG,
   ALL_CATALOG,
   MUSE_SPARK_1_2,
-  MUSE_SPARK_PAID,
-  MUSE_SPARK_CONTRIBUTOR_PAID,
   PROVIDER_META,
   createMuseSparkPaidRecord,
 } from "../src/catalog.js";

@@ -6,7 +6,7 @@ import { AgentRuntime, createAgentRuntime } from "../src/agent-runtime.js";
 import { ForgeZero } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider } from "@codeforge/providers";
 import type { FreeModelRecord } from "@codeforge/forge-zero";
-import { mkdtemp, writeFile, readFile, rm, mkdir, stat, access } from "node:fs/promises";
+import { mkdtemp, writeFile, readFile, rm, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { existsSync, symlinkSync as fsSymlink } from "node:fs";

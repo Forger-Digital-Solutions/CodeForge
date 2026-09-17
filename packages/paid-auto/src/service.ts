@@ -480,7 +480,7 @@ export class PaidAutoService {
     }
   }
 
-  private async callChat(route: PaidAutoRoute, req: ChatRequest, logicalRequestId: string): Promise<ChatResponse> {
+  private async callChat(route: PaidAutoRoute, req: ChatRequest, _logicalRequestId: string): Promise<ChatResponse> {
     const response = await this.adapters[route.providerId].chat(this.requestFor(route, req));
     if (!Array.isArray(response.choices) || response.choices.length === 0) {
       throw new PaidAutoExecutionError({ code: "EMPTY_COMPLETION", message: "Provider returned no usable completion choices.", failureClass: "provider_outage", executionCertainty: "no_output", retryable: true, routeId: route.routeId });

@@ -3,11 +3,10 @@ import {
   runVerificationWithControlledReuse,
   type ReuseTrialMode,
   type Verifier,
-  type VerificationEvidence,
   type VerificationReport,
 } from "@codeforge/workflow";
 import type { GenericVerificationEvidence } from "@codeforge/forge-green";
-import { disposeFixture, materializeFixture, mutateFixtureFile, type CampaignFixture, type FixtureFileSet } from "../fixtures.js";
+import { disposeFixture, materializeFixture, type CampaignFixture, type FixtureFileSet } from "../fixtures.js";
 import { buildTrialReceipt, type TrialReceipt } from "./trial-receipt.js";
 
 function nodeCheckCommand(relPath: string): string {

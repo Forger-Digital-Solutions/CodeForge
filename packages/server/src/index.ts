@@ -472,7 +472,7 @@ export class CodeForgeServer {
       server.closeAllConnections();
     }
     this.clients.clear();
-    this.workflowService.shutdown();
+    await this.workflowService.shutdown();
     await Promise.all(Array.from(this.runtimes.values()).map((runtime) => runtime.shutdown()));
     const repoIntel = this.repositoryIntelligence;
     this.repositoryIntelligence = null;

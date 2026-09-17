@@ -553,7 +553,7 @@ function campaignState(context, phase) {
   };
 }
 
-async function capacityGate(fleet, context) {
+async function capacityGate(fleet, _context) {
   const probeStart = Date.now();
   try {
     await probeChat(fleet);
@@ -574,7 +574,7 @@ async function capacityGate(fleet, context) {
   }
 }
 
-async function probeChat(fleet) {
+async function probeChat(_fleet) {
   const { createGroqAdapter } = await import("@codeforge/providers");
   const probe = createGroqAdapter({ apiKey: process.env.GROQ_API_KEY, timeoutMs: 30_000 });
   await probe.chat({ model: "openai/gpt-oss-120b", messages: [{ role: "user", content: "ping" }], maxTokens: 5 });
@@ -753,7 +753,6 @@ async function executeTask(fleet, freeze, task, record, context) {
   const workers = (await persistence.getWorkItemsByKind("subagent_run")).filter(Boolean);
   const events = eventStore.getAll();
   const eventsSummary = summarizeEvents(events);
-  const diffStat = await git(worktreePath, "diff", "--stat", `${record.starting_sha}..HEAD`).catch(() => "");
   const diffPatch = await git(worktreePath, "diff", `${record.starting_sha}..HEAD`).catch(() => "");
   if (diffPatch.length > 0) {
     await fsp.writeFile(path.join(attemptDir, "diff.patch"), diffPatch.slice(0, 1_000_000), "utf8");
@@ -864,7 +863,7 @@ function summarizeEvents(events) {
 }
 
 function sanitizeRouterPayload(payload) {
-  const clone = { ...(payload ?? {}) };
+  const clone = { ...payload };
   for (const key of Object.keys(clone)) {
     if (/key|token|secret|authorization/i.test(key)) clone[key] = "[redacted]";
   }
@@ -896,7 +895,7 @@ function aggregateTelemetry(workersSummary, eventsSummary) {
   return { routes, modelRoles, tokens: { input, output }, requests, failovers };
 }
 
-function classifyAttempt({ task, result, runError, oracleExternal, priorInterruption, recoveryObserved, failureEvents = [], providerFailures = 0 }) {
+function classifyAttempt({ task: _task, result, runError, oracleExternal, priorInterruption, recoveryObserved, failureEvents = [], providerFailures = 0 }) {
   const notes = [];
   if (runError && !result) {
     const capacity = CAPACITY_MARKERS.some((m) => runError.toLowerCase().includes(m.toLowerCase()));

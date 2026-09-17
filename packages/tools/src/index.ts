@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { spawn } from "node:child_process";
-import { type AgentPermissions, ERROR_CODES, formatUntrustedData } from "@codeforge/agent";
+import { type AgentPermissions, ERROR_CODES } from "@codeforge/agent";
 import { redactSecrets } from "@codeforge/secrets";
 
 export interface ToolDefinition {

@@ -177,7 +177,7 @@ function mapGeminiModel(raw: unknown): ProviderModel | null {
   const m = raw as { id?: string };
   if (!m?.id) return null;
   const id = m.id.replace(/^models\//, "");
-  if (!/^gemini/.test(id) || /embedding|tts|image|veo|imagen|native-audio|live|computer-use|robotics/i.test(id)) return null;
+  if (!id.startsWith('gemini') || /embedding|tts|image|veo|imagen|native-audio|live|computer-use|robotics/i.test(id)) return null;
   return {
     modelId: id,
     displayName: id,

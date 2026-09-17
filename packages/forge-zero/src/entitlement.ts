@@ -1,4 +1,4 @@
-import type { CodeForgeError, Result } from "@codeforge/core";
+import type { Result } from "@codeforge/core";
 
 /**
  * User's entitlement status for a model.
@@ -72,7 +72,7 @@ export class DevelopmentEntitlementProvider implements EntitlementProvider {
     modelId: string, 
     providerId: string
   ): Promise<Result<EntitlementCheckResult, EntitlementCheckError>> {
-    const { ok, err } = await import("@codeforge/core");
+    const { ok } = await import("@codeforge/core");
     const now = new Date().toISOString();
     
     // Determine tier based on model ID patterns

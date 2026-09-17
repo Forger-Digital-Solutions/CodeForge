@@ -13,7 +13,7 @@ import {
 } from "@codeforge/providers";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 import { createAgentRuntime } from "../src/agent-runtime.js";
-import { ToolBroker, createToolBroker } from "@codeforge/tools";
+import { createToolBroker } from "@codeforge/tools";
 import { ERROR_CODES, formatUntrustedData } from "@codeforge/agent";
 
 class SecurityAdversarialProvider implements ProviderAdapter {
@@ -32,7 +32,7 @@ class SecurityAdversarialProvider implements ProviderAdapter {
 
   async chat(_req: ChatRequest): Promise<ChatResponse> { throw new Error("Use streamChat"); }
 
-  async *streamChat(_req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+  async *streamChat(_req: ChatRequest, _signal?: AbortSignal): AsyncIterable<StreamEvent> {
     if (this.attempt === "explorer_write") {
       // Explorer attempts to call write_file
       yield { type: "tool_call_started", toolCallId: "tc-bad-write", toolName: "write_file" };

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, beforeAll } from "vitest";
 import { createFreeModelCatalogRefresh } from "@codeforge/model-registry";
 import { createProviderCatalog, createOpenRouterAdapter, createOpencodeAdapter } from "@codeforge/providers";
 import { ForgeZero } from "@codeforge/forge-zero";

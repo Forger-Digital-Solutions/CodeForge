@@ -2,7 +2,6 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { randomUUID, createHmac } from "node:crypto";
 import { PostgresCloudDatabase } from "@codeforge/cloud-db";
 import { AuthService } from "@codeforge/cloud-auth";
-import { StripeBillingService } from "@codeforge/cloud-billing";
 import { EntitlementService } from "@codeforge/cloud-entitlements";
 import { UsageEngine } from "@codeforge/cloud-usage";
 import { CloudFirewallManager, GatewayService } from "@codeforge/cloud-gateway";
@@ -298,7 +297,7 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("Postgres Runtime — Deep Adv
     const pSettle = db.settleReservation({ requestId: reqId, userId: user.id, actualCredits: 4_000 }).catch((e) => ({ error: e.message }));
     const pRelease = db.releaseReservationCredits({ requestId: reqId, userId: user.id }).catch((e) => ({ error: e.message }));
 
-    const [resSettle, resRelease] = await Promise.all([pSettle, pRelease]);
+    await Promise.all([pSettle, pRelease]);
 
     const finalRes = await db.getReservationByRequestId(reqId);
     const finalBalance = await db.getCreditBalance(user.id);

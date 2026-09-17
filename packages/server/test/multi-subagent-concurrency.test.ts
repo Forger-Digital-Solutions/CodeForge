@@ -37,11 +37,11 @@ class ConcurrencyTrackingProvider implements ProviderAdapter {
     ];
   }
 
-  async chat(req: ChatRequest): Promise<ChatResponse> {
+  async chat(_req: ChatRequest): Promise<ChatResponse> {
     throw new Error("Use streamChat");
   }
 
-  async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+  async *streamChat(_req: ChatRequest, _signal?: AbortSignal): AsyncIterable<StreamEvent> {
     this.totalCalls++;
     this.activeExecutions++;
     if (this.activeExecutions > this.maxActiveSeen) {
@@ -133,10 +133,10 @@ describe("ModelExecutionAdapter Concurrency & Fallback Safety", () => {
       async listModels(): Promise<ProviderModel[]> {
         return [];
       }
-      async chat(req: ChatRequest): Promise<ChatResponse> {
+      async chat(_req: ChatRequest): Promise<ChatResponse> {
         throw new Error("Use streamChat");
       }
-      async *streamChat(req: ChatRequest): AsyncIterable<StreamEvent> {
+      async *streamChat(_req: ChatRequest): AsyncIterable<StreamEvent> {
         yield {
           type: "error",
           code: "PROVIDER_RATE_LIMITED",

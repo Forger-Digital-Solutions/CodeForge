@@ -100,7 +100,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
 
   private headers(key: string): Record<string, string> {
     const auth = this.cfg.authHeader ? this.cfg.authHeader(key) : { Authorization: `Bearer ${key}` };
-    return { "Content-Type": "application/json", ...(this.cfg.defaultHeaders ?? {}), ...auth };
+    return { "Content-Type": "application/json", ...this.cfg.defaultHeaders, ...auth };
   }
 
   async listModels(): Promise<ProviderModel[]> {
@@ -322,7 +322,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       });
     }
     const body: Record<string, unknown> = {
-      ...(this.cfg.requestBodyExtras ?? {}),
+      ...this.cfg.requestBodyExtras,
       model: req.model,
       messages,
       tools: req.tools?.map((t) => ({ type: "function" as const, function: { name: t.function.name, description: t.function.description, parameters: t.function.parameters } })),

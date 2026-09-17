@@ -13,7 +13,7 @@ export interface Checkpoint {
 }
 
 export class GitOperations {
-  constructor(workingDir: string) {}
+  constructor(_workingDir: string) {}
   async status(): Promise<GitStatus> {
     return { branch: "main", clean: true, modified: [], untracked: [] };
   }

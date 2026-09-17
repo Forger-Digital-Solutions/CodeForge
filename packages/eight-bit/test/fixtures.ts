@@ -41,8 +41,8 @@ export function makeModel(overrides: Partial<FreeModelRecord> = {}): FreeModelRe
   return {
     ...base,
     ...overrides,
-    costProfile: { ...base.costProfile, ...(overrides.costProfile ?? {}) },
-    capabilities: { ...base.capabilities, ...(overrides.capabilities ?? {}) },
+    costProfile: { ...base.costProfile, ...overrides.costProfile },
+    capabilities: { ...base.capabilities, ...overrides.capabilities },
     health: overrides.health === undefined ? base.health : overrides.health,
   };
 }

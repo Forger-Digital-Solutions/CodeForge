@@ -159,12 +159,12 @@ export function parseAppSettingsPatch(patch: unknown): AppSettingsPatch {
 export function applySettingsPatch(current: AppSettings, patch: AppSettingsPatch): AppSettings {
   return {
     schemaVersion: APP_SETTINGS_SCHEMA_VERSION,
-    general: { ...current.general, ...(patch.general ?? {}) },
-    appearance: { ...current.appearance, ...(patch.appearance ?? {}) },
-    models: { ...current.models, ...(patch.models ?? {}) },
-    notifications: { ...current.notifications, ...(patch.notifications ?? {}) },
-    privacy: { ...current.privacy, ...(patch.privacy ?? {}) },
-    workspace: { ...current.workspace, ...(patch.workspace ?? {}) },
+    general: { ...current.general, ...patch.general },
+    appearance: { ...current.appearance, ...patch.appearance },
+    models: { ...current.models, ...patch.models },
+    notifications: { ...current.notifications, ...patch.notifications },
+    privacy: { ...current.privacy, ...patch.privacy },
+    workspace: { ...current.workspace, ...patch.workspace },
   };
 }
 

@@ -82,7 +82,7 @@ export class ValidationService {
         durationMs,
         success,
       };
-    } catch (error) {
+    } catch  {
       const durationMs = Date.now() - startTime;
 
       adapter.emitTestCompleted(validationId, 0, 1, 0);

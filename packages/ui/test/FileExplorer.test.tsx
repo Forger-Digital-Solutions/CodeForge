@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 
 describe("FileExplorer - Icon Mapping", () => {
   it("maps TypeScript files to ts icon", () => {

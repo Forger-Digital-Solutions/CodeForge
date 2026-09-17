@@ -119,7 +119,7 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
       verificationCommands: ["node -e \"process.exit(0)\""],
       askForApproval: async () => "deny",
     });
-    const result = await engine.run("Delete database and reset schema — dangerous operation");
+    await engine.run("Delete database and reset schema — dangerous operation");
     // This task is high risk but our plan still requires approval; deny should fail
     // However our test task "Implement multi file feature" also requires approval; we test deny there
     const engine2 = createWorkflowEngine({

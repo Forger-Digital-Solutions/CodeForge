@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { ForgeZero } from "@codeforge/forge-zero";
-import { ForgeDirector, createDirector, type ExecutionModelSelection } from "../src/index.js";
-import { ForgeRouter, createRouter } from "@codeforge/router";
+import { createDirector, type ExecutionModelSelection } from "../src/index.js";
+import { createRouter } from "@codeforge/router";
 import { 
   InMemoryProviderCatalog, 
   createMockProvider,

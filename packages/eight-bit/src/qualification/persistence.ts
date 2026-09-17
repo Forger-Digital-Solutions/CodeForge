@@ -1,6 +1,5 @@
 import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import type { ModelQualificationReceipt } from "./types.js";
-import type { EightBitRole } from "../types.js";
 
 /** Qualification persistence interface */
 export interface QualificationPersistence {
@@ -112,7 +111,7 @@ export class SqliteQualificationPersistence implements QualificationPersistence 
       .filter((r): r is ModelQualificationReceipt => r !== null);
   }
 
-  async delete(providerId: string, modelId: string): Promise<boolean> {
+  async delete(_providerId: string, _modelId: string): Promise<boolean> {
     // Note: ISessionPersistence doesn't have deleteWorkItem for individual items
     // For now, we'll leave stale entries - they'll be filtered by isQualificationValid
     return true;
@@ -131,7 +130,7 @@ export function isQualificationValid(
 /** Get qualification status for model picker display */
 export function getQualificationDisplayState(
   receipt: ModelQualificationReceipt | null,
-  model: { freeStatus: string; accessClass?: string; capabilities: { toolCalling: boolean; vision: boolean; longContext: boolean } }
+  _model: { freeStatus: string; accessClass?: string; capabilities: { toolCalling: boolean; vision: boolean; longContext: boolean } }
 ): string {
   if (!receipt) return "Not Qualified";
   if (!isQualificationValid(receipt)) return "Stale";

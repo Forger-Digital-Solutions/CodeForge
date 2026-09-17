@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "lint": "oxlint --deny-warnings --ignore-pattern tests/evidence/** packages apps tests scripts",
     "typecheck": "tsc -b --force",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -31,21 +32,22 @@
     "legal:normalize-licenses": "node scripts/legal/normalize-package-licenses.mjs",
     "legal:notices": "node scripts/legal/generate-third-party-notices.mjs",
     "audit:legal-release": "node scripts/legal/audit-legal-release.mjs",
-    "r4:scale": "node scripts/r4-scale-sim.mjs"
+    "r4:scale": "node scripts/r4-scale-sim.mjs",
+    "r8:benchmark": "node scripts/r8-codeforge-bench.mjs"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.7.0",
+    "@vitejs/plugin-react": "^6.1.1",
     "@types/node": "^22.10.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
-    "@electron/rebuild": "^3.7.1",
     "app-builder-bin": "^5.0.0-alpha.10",
+    "oxlint": "1.83.0",
     "patch-package": "^8.0.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "typescript": "^5.9.3",
-    "vite": "^5.4.21",
-    "vitest": "^2.1.9"
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -55,7 +57,7 @@
     "zod": "^3.24.0"
   },
   "allowScripts": {
-    "electron@33.4.11": true,
+    "electron@44.4.1": true,
     "better-sqlite3@12.11.1": true
   }
 }

@@ -3,19 +3,10 @@ import {
   WorkspaceEventSchema,
   SessionStatusSchema,
   PlanStepStatusSchema,
-  PlanStatusSchema,
   ApprovalDecisionSchema,
-  DisplayModeSchema,
   ChangeTypeSchema,
-  AgentStatusSchema,
-  ArtifactTypeSchema,
-  RestoreTypeSchema,
-  CommandStreamSchema,
   RiskLevelSchema,
-  PermissionPolicySchema,
-  EvidenceReferenceKindSchema,
   ContextReferenceTypeSchema,
-  isWorkspaceEvent,
 } from "@codeforge/protocol";
 import { SessionRecordSchema, TurnRecordSchema, WorkItemSchema, isWorkItem, isWorkItemKind } from "@codeforge/sessions";
 

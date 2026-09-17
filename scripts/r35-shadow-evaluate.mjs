@@ -14,7 +14,6 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { pathToFileURL } from "node:url";
 
 const DATASET_DIR = "tests/evidence/r3.5-8bit-dataset";
 const MODEL_DIR = "tests/evidence/r3.5-8bit-model-v1";
@@ -168,7 +167,6 @@ for (const splitName of EVAL_SPLITS) {
       perTask[taskKind] = { n: taskRows.length, skipped: taskRows.length !== preds.length ? "prediction/row misalignment" : "empty" };
       continue;
     }
-    const nClasses = labelNames[taskKind].length;
     const detPairs = [];
     const learnedPairs = [];
     const hybridPairs = [];

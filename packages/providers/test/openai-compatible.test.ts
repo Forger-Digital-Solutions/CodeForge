@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { OpenAICompatibleAdapter } from "../src/openai-compatible.js";
 import { createCerebrasAdapter, createCloudflareAdapter, createGroqAdapter, createMistralAdapter, createProviderAdapterById, createZaiAdapter } from "../src/provider-factory.js";
-import { ProviderError } from "../src/index.js";
 import type { StreamEvent } from "../src/chat-types.js";
 
 function jsonResponse(body: unknown, status = 200, headers: Record<string, string> = {}): Response {

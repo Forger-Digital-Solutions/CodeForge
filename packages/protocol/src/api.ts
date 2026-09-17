@@ -1,10 +1,4 @@
 import { z } from "zod";
-import {
-  CapabilitySchema,
-  FreeStatusSchema,
-  ModelHealthSchema,
-  PermissionPolicySchema,
-} from "./workspace-state.js";
 
 export const TaskStatusSchema = z.enum([
   "received",

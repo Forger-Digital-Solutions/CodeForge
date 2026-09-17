@@ -48,7 +48,7 @@ function nodeName(node: ts.Node, source: ts.SourceFile): string | undefined {
   if (ts.isConstructorDeclaration(node)) return "constructor";
   if ("name" in node) {
     const named = node as ts.Node & { name?: ts.Node };
-    if (named.name) return named.name.getText(source).replace(/^['\"]|['\"]$/g, "");
+    if (named.name) return named.name.getText(source).replace(/^['"]|['"]$/g, "");
   }
   return undefined;
 }

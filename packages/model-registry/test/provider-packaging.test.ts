@@ -6,7 +6,7 @@ describe("commercial provider packaging metadata", () => {
   it.each([
     ["mistral", "Mistral API commercial terms"],
     ["cerebras", "Cerebras API commercial terms"],
-  ])("registers %s as packageable without promoting its access class", (providerId, _) => {
+  ])("registers %s as packageable without promoting its access class", (providerId, __) => {
     const definition = getProviderDefinition(providerId);
     expect(definition?.implemented).toBe(true);
     expect(definition?.policyMetadata?.commercial_packaging_eligible).toBe(true);

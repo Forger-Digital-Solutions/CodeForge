@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, writeFile, readFile, rm, mkdir } from "node:fs/promises";
+import { mkdtemp, writeFile, rm, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import fs from "node:fs";
 import crypto from "node:crypto";
 import { EventStore } from "@codeforge/sessions";
 import { createWorkspaceEventAdapter } from "../src/workspace-event-adapter.js";
-import { AgentRuntime, createAgentRuntime } from "../src/agent-runtime.js";
+import { createAgentRuntime } from "../src/agent-runtime.js";
 import { ForgeZero } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider } from "@codeforge/providers";
 import { ApprovalService } from "../src/approval-service.js";
@@ -16,7 +16,6 @@ import { resolveWithinWorkspace } from "../src/path-security.js";
 import { searchWorkspace } from "../src/search-service.js";
 import { replaceExact, sha256 } from "../src/edit-service.js";
 import { redactSecrets } from "@codeforge/secrets";
-import { CodeForgeServer } from "../src/index.js";
 
 function persistenceStub() {
   return {
@@ -270,17 +269,12 @@ describe("Environment filtering", () => {
   });
   it("child env does not contain host secrets", async () => {
     const dir = await mkdtemp(join(tmpdir(), "env-test-"));
-    const fw = makeFirewallWithFree();
-    const catalog = new InMemoryProviderCatalog();
-    catalog.register(createMockProvider({ providerId: "test", streamEvents: [[{ type: "text_delta", delta: "hi" }, { type: "finish", finishReason: "stop" }]] }));
-    const es = new EventStore();
     // inject secret into process.env temporarily
     const orig = process.env.OPENROUTER_API_KEY;
     const orig2 = process.env.GROQ_API_KEY;
     process.env.OPENROUTER_API_KEY = "sk-secret-1234567890";
     process.env.GROQ_API_KEY = "gsk_secret123";
     try {
-      const runtime = createAgentRuntime({ sessionId: "s1", eventStore: es, persistence: persistenceStub(), firewall: fw, providerCatalog: catalog, workspacePath: dir });
       // Directly test getSanitizedEnvForChild
       const sanitized = getSanitizedEnvForChild();
       expect(sanitized.OPENROUTER_API_KEY).toBeUndefined();
@@ -292,7 +286,7 @@ describe("Environment filtering", () => {
       let out = "";
       child.stdout.on("data", (d) => out += d.toString());
       await new Promise<void>((resolve, reject) => {
-        child.on("close", (code) => resolve());
+        child.on("close", (_code) => resolve());
         child.on("error", reject);
       });
       expect(out).not.toContain("sk-secret-1234567890");
@@ -497,10 +491,7 @@ describe("Static serving path validation", () => {
     const evilSibling = dist + "-evil";
     await mkdir(evilSibling, { recursive: true });
     await writeFile(join(evilSibling, "secret.txt"), "evil");
-    // Simulate the check in CodeForgeServer.serveStatic
-    const webReal = fs.realpathSync(dist);
-    const fullPath = resolve(join(webReal, "../" + evilSibling.split(/[\\/]/).pop()! + "/secret.txt"));
-    // Our server would resolve fullPath against webReal; lexical check should reject
+    // Simulate the lexical boundary check in CodeForgeServer.serveStatic.
     const lexicalRel = join("..", evilSibling.split(/[\\/]/).pop()!);
     const res = resolveWithinWorkspace(dist, lexicalRel);
     // Path traversal should be denied
@@ -606,17 +597,10 @@ describe("Checkpoint integration", () => {
   });
 
   it("destructive git operations are not exposed as tools", async () => {
-    const fw = makeFirewallWithFree();
-    const catalog = new InMemoryProviderCatalog();
-    catalog.register(createMockProvider({ providerId: "test", streamEvents: [] }));
-    const es = new EventStore();
-    const ws = await mkdtemp(join(tmpdir(), "chk-tools-"));
-    const rt = createAgentRuntime({ sessionId: "s", eventStore: es, persistence: persistenceStub(), firewall: fw, providerCatalog: catalog, workspacePath: ws });
     // getAvailableTools is private; test via search in runtime file that only checkpoint create is exposed, not reset/push
     const toolsStr = fs.readFileSync(resolve("packages/server/src/agent-runtime.ts"), "utf-8");
     expect(toolsStr).toContain("create_checkpoint");
     expect(toolsStr).not.toContain("git reset");
     expect(toolsStr).not.toContain("force push");
-    await rm(ws, { recursive: true, force: true });
   });
 });

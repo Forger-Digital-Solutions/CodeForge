@@ -1,0 +1,87 @@
+{
+  "campaign": "CODEFORGE_R6_PRODUCT_HARDENING",
+  "amendment": "R6.1_ZERO_WARNING_ZERO_ERROR",
+  "recordedAt": "2026-09-17",
+  "repository": "G:\\CodeForge",
+  "branch": "forger-digital-solutions-forgegreen-certified",
+  "startingHead": "41e0102d1a860107a6741026944b369ea4eeaa42",
+  "finalHead": "41e0102d1a860107a6741026944b369ea4eeaa42",
+  "workingTreeCommitted": false,
+  "verdict": "CODEFORGE_R6_PRODUCT_HARDENING_PASS_WITH_DEFERRED_ITEMS",
+  "generalUseVerdict": "CODEFORGE_LIMITED_DOGFOOD_READY",
+  "releaseVerdict": "CODEFORGE_RELEASE_BLOCKERS_REMAIN",
+  "gates": {
+    "lint": {
+      "status": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "command": "npm run lint"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "errors": 0,
+      "command": "npm run typecheck"
+    },
+    "tests": {
+      "status": "PASS",
+      "command": "npm test -- --maxWorkers=4",
+      "filesPassed": 339,
+      "filesSkipped": 7,
+      "testsPassed": 2545,
+      "testsSkipped": 36,
+      "failures": 0,
+      "durationSeconds": 701.24,
+      "skipClassification": "EXTERNAL_CREDENTIAL_REQUIRED_REAL_POSTGRESQL"
+    },
+    "workspaceBuild": {
+      "status": "PASS",
+      "errors": 0,
+      "actionableWarnings": 0
+    },
+    "dependencyAudit": {
+      "status": "PASS",
+      "totalVulnerabilities": 0,
+      "critical": 0,
+      "high": 0,
+      "moderate": 0,
+      "low": 0
+    },
+    "desktopPackage": {
+      "status": "PASS",
+      "electron": "44.4.1",
+      "embeddedNode": "24.21.0",
+      "moduleAbi": 149,
+      "electronBuilder": "26.15.3",
+      "format": "win-unpacked"
+    },
+    "packagedFullSmoke": "PASS",
+    "packagedInterruptSmoke": "PASS_EXPECTED_EXIT_73",
+    "packagedRecoverySmoke": "PASS",
+    "packagedPersistence": "PASS",
+    "packagedInternalDependencyAudit": "PASS",
+    "packagedRuntimeDependencyAudit": "PASS",
+    "packagedAuthEndpointAudit": "PASS",
+    "packagedBrowserSecurityAudit": "PASS",
+    "legalEngineeringGate": "PASS_WITH_BUSINESS_AND_COUNSEL_BLOCKERS",
+    "gitDiffCheck": "PASS",
+    "secretSignatureScan": "PASS_TEST_FIXTURES_ONLY"
+  },
+  "sourceState": {
+    "previousCertificationId": "37adcc...",
+    "r6CertificationId": "af9c0a2124801a5879967543c15cdeb59051129933af5b964b3479a635a86d64",
+    "appendOnlyHistoryPreserved": true
+  },
+  "externalOrDeferred": [
+    "Live Groq exact-model R5 remains blocked by malformed list_files behavior in historical provider evidence.",
+    "Gemini live qualification remains blocked by HTTP 403 authentication/authorization.",
+    "Mistral remains deferred by explicit user request.",
+    "Thirty-six real-PostgreSQL tests require external database credentials and were not run.",
+    "Production code signing and installer/portable artifact certification were not run in R6.",
+    "Root license holder, age-policy activation, and publication of draft legal documents require business/counsel decisions."
+  ],
+  "spend": {
+    "newPurchasesUsd": 0,
+    "liveProviderSpend": "NOT_INCURRED_BY_R6_CURRENT_RUN",
+    "note": "No payment method, subscription, auto-recharge, or overage was enabled."
+  }
+}

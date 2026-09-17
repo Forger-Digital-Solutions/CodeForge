@@ -1,6 +1,6 @@
 export class CodeForgeClient {
-  constructor(baseUrl: string) {}
-  async createSession(title: string): Promise<unknown> {
+  constructor(_baseUrl: string) {}
+  async createSession(_title: string): Promise<unknown> {
     return {};
   }
 }

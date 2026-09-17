@@ -1,9 +1,8 @@
-import type { FreeModelRecord } from "@codeforge/forge-zero";
 import type { ProviderAdapter, ProviderCatalog, ProviderModel } from "@codeforge/providers";
-import { NormalizedModelRegistry, createNormalizedRegistry, type RegistryOptions, type RefreshResultDetailed } from "./registry.js";
+import { NormalizedModelRegistry, createNormalizedRegistry, type RefreshResultDetailed } from "./registry.js";
 import { discoverAndVerifyFree, verifyAllowanceViaProbe, type LiveModelInfo, type DiscoverResult } from "./discovery.js";
 import { ForgeZero } from "@codeforge/forge-zero";
-import { createEightBitRuntime, type EightBitRuntime } from "@codeforge/eight-bit";
+import { type EightBitRuntime } from "@codeforge/eight-bit";
 import type { ISessionPersistence } from "@codeforge/sessions";
 
 export interface RefreshOptions {

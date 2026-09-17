@@ -1,4 +1,4 @@
-import { CodeForgeError, forgeError } from "../types/errors.js";
+import { forgeError } from "../types/errors.js";
 
 export class AssertionError extends Error {
   constructor(message: string) {

@@ -1,0 +1,30 @@
+{
+  "campaign": "CODEFORGE_R8_INTELLIGENCE_BENCHMARK",
+  "recordedAt": "2026-09-17",
+  "repository": "G:\\CodeForge",
+  "startingBranch": "forger-digital-solutions-forgegreen-certified",
+  "startingHead": "41e0102d1a860107a6741026944b369ea4eeaa42",
+  "r7Verdict": "CODEFORGE_R7_ENGINEERING_READY_EXTERNAL_GATES_REMAIN",
+  "inheritedWorkingTree": {
+    "classification": "R6/R6.1/R7 hardening and certification work",
+    "changedTrackedFiles": 210,
+    "untrackedFiles": 6,
+    "deletedFiles": 2,
+    "preservationPolicy": "No inherited change was discarded. The user requested a clean work tree and local commit, so inherited work is included in the final local commit after validation."
+  },
+  "toolchain": {
+    "node": "v24.19.0",
+    "packageManager": "npm 11.17.0",
+    "electron": "44.4.1"
+  },
+  "r8OwnedPaths": [
+    "packages/benchmark/src/codeforge-bench-r1.ts",
+    "packages/benchmark/test/codeforge-bench-r1.test.ts",
+    "packages/gems/src/auto-framework.ts",
+    "packages/gems/test/auto-framework.test.ts",
+    "scripts/r8-codeforge-bench.mjs",
+    "docs/benchmarks/codeforge-bench-r1.md",
+    "docs/evidence/r8-intelligence-benchmark/",
+    "docs/certification/codeforge-r8-intelligence-and-routing-certification-2026-09-17.md"
+  ]
+}

@@ -177,7 +177,7 @@ async function probeEdit(adapter: CompactQualificationAdapter, modelId: string, 
       const oldText = typeof edit.args.oldText === "string" ? edit.args.oldText : "";
       const newText = typeof edit.args.newText === "string" ? edit.args.newText : "";
       const path = typeof edit.args.path === "string" ? edit.args.path.replace(/\\/g, "/") : "";
-      const passed = /src\/calc\.ts$/.test(path) && oldText.length > 0 && CALC_TS.includes(oldText) && oldText.includes("a - b") && newText.includes("a + b");
+      const passed = path.endsWith('src/calc.ts') && oldText.length > 0 && CALC_TS.includes(oldText) && oldText.includes("a - b") && newText.includes("a + b");
       return caseResult("compact.edit", "edit", passed, started, { details: { calls, path, oldTextMatches: oldText.length > 0 && CALC_TS.includes(oldText), oldTextHasBug: oldText.includes("a - b"), newTextOk: newText.includes("a + b"), turns } });
     }
     const read = obs.toolCalls.find((c) => c.name === "read_file");
@@ -294,7 +294,7 @@ async function withRetry(run: () => Promise<TestCaseResult>): Promise<TestCaseRe
   const first = await run();
   if (first.passed || first.error || first.hardFailure) return first;
   const second = await run();
-  return { ...second, retries: 1, details: { ...(second.details ?? {}), firstAttempt: first.details } };
+  return { ...second, retries: 1, details: { ...second.details, firstAttempt: first.details } };
 }
 
 export async function runCompactQualification(

@@ -4,7 +4,7 @@ import { WorkspaceEventAdapter, createWorkspaceEventAdapter } from "../src/works
 import { AgentRuntime, createAgentRuntime } from "../src/agent-runtime.js";
 import { FileSystemService, createFileSystemService } from "../src/filesystem-service.js";
 import { CommandService, createCommandService } from "../src/command-service.js";
-import { ValidationService, createValidationService } from "../src/validation-service.js";
+import { createValidationService } from "../src/validation-service.js";
 import { CheckpointService, createCheckpointService } from "../src/checkpoint-service.js";
 import { ForgeZero } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider } from "@codeforge/providers";

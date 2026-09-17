@@ -246,6 +246,17 @@ describe("completion gate — the runtime, not the model, decides completion", (
     expect(d.blockers.map((b) => b.code)).toContain("plan_steps_unfinished");
   });
 
+  it.each(["queued", "active"] as const)("BLOCKS when a plan step remains %s", (status) => {
+    const d = evaluateCompletion({
+      plan: plan([{ kind: "edit", status }]),
+      verification: passingVerification(),
+      analysis: analysis(),
+      review: review(),
+    });
+    expect(d.outcome).toBe("blocked");
+    expect(d.blockers.map((b) => b.code)).toContain("plan_steps_unfinished");
+  });
+
   it("a failed verifier outranks other blockers and yields `failed`, not `blocked`", () => {
     const d = evaluateCompletion({
       plan: plan([{ kind: "edit", status: "completed" }]),

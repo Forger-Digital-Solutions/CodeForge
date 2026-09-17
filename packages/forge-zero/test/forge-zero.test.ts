@@ -3,8 +3,6 @@ import { ForgeZero } from "../src/firewall.js";
 import type { FreeModelRecord } from "../src/types.js";
 import type { VerifyContext } from "../src/verifier.js";
 import { 
-  DevelopmentEntitlementProvider, 
-  FailingEntitlementProvider,
   createDevelopmentEntitlementProvider,
   createFailingEntitlementProvider,
 } from "../src/entitlement.js";
@@ -54,11 +52,11 @@ const makeModel = (overrides: Partial<FreeModelRecord> = {}): FreeModelRecord =>
   ...overrides,
   costProfile: {
     ...baseEligibleModel.costProfile,
-    ...(overrides.costProfile ?? {}),
+    ...overrides.costProfile,
   },
   capabilities: {
     ...baseEligibleModel.capabilities,
-    ...(overrides.capabilities ?? {}),
+    ...overrides.capabilities,
   },
   health: overrides.health,
 });

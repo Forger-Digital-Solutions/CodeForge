@@ -66,7 +66,7 @@ doc.recertifications.push({
 doc.sourceStateId = sourceStateId;
 doc.surfaceVersion = resultingSurfaceVersion;
 doc.materialFileHashes = hashes;
-if (!/Free Cloud R5 recertification\(s\) above\.$/.test(doc.generationNote)) {
+if (!doc.generationNote.endsWith('Free Cloud R5 recertification(s) above.')) {
   doc.generationNote = `${doc.generationNote.replace(/\.$/, "")}, and the Free Cloud R5 recertification(s) above.`;
 }
 fs.writeFileSync(docPath, `${JSON.stringify(doc, null, 2)}\n`, "utf8");

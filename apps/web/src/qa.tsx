@@ -103,7 +103,6 @@ interface LayoutOpts {
 
 function Layout(opts: LayoutOpts) {
   const {
-    navActive = "sessions",
     session = null,
     turns = [],
     workItems = [],

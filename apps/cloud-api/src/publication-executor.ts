@@ -74,11 +74,15 @@ async function git(cwd: string, args: string[], env: NodeJS.ProcessEnv = cloudGi
 }
 
 /** Git refuses to run in a directory it cannot resolve; `protocol.allow=never` blocks remote fetch. */
-const SAFE_BRANCH = /^(?!\/)(?!.*\/\/)(?!.*\.\.)(?!.*@\{)(?!.*\.lock(\/|$))[A-Za-z0-9][A-Za-z0-9._\/-]{0,199}$/;
+const SAFE_BRANCH = /^(?!\/)(?!.*\/\/)(?!.*\.\.)(?!.*@\{)(?!.*\.lock(\/|$))[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$/;
 
 export function isSafeBranchName(value: string): boolean {
   if (!value || value.endsWith("/") || value.endsWith(".")) return false;
-  if (/[\s~^:?*\[\\\x00-\x1f\x7f]/.test(value)) return false;
+  const hasControlCharacter = [...value].some((character) => {
+    const code = character.charCodeAt(0);
+    return code <= 0x1f || code === 0x7f;
+  });
+  if (/[\s~^:?*[\\]/.test(value) || hasControlCharacter) return false;
   return SAFE_BRANCH.test(value);
 }
 

@@ -20,11 +20,9 @@ import {
   evaluateVerificationCoverage,
   resolveOptimizationMode,
   FORGE_GREEN_VERIFICATION_POLICY_VERSION,
-  type EvidenceResolutionReceipt,
   type GenericVerificationEvidence,
   type VerificationLevel,
   type VerificationPolicyDecision,
-  type VerificationPolicyReceipt,
 } from "@codeforge/forge-green";
 import { adviseCostGatedReuse, reconcileCostGateReceipt } from "./verification-reuse-cost-gate.js";
 

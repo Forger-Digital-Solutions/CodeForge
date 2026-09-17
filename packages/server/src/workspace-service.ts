@@ -66,7 +66,7 @@ export function validateSafeBranchName(name: string): boolean {
   if (!name || typeof name !== "string") return false;
   if (name.length > 200) return false;
   // Ref rules: no .., ~, ^, :, ?, *, [, \, space, control chars, cannot start/end with /
-  if (/(\.\.|[~^:?*\[\]\\\s]|\/\/|^\/|\/$)/.test(name)) return false;
+  if (/(\.\.|[~^:?*[\]\\\s]|\/\/|^\/|\/$)/.test(name)) return false;
   // Cannot contain consecutive slashes or end with .lock
   if (name.includes("//") || name.endsWith(".lock")) return false;
   return true;
@@ -471,7 +471,7 @@ export class WorkspaceService {
       try {
         await fs.rm(worktreePath, { recursive: true, force: true });
         await this.gitCommand(parentRepoRoot, ["worktree", "prune"]);
-      } catch (rmError) {
+      } catch  {
         workspace.status = "retained_dirty";
         this.persistWorkspace(workspace);
         return { cleaned: false, status: "retained_dirty" };

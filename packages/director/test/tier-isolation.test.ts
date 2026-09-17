@@ -419,19 +419,12 @@ describe("Tier Isolation — Section 11", () => {
 
   describe("Execution Snapshot Semantics", () => {
     it("task snapshot is independent of later UI changes", async () => {
-      let taskStarted = false;
-      let selectionAtStart: ExecutionModelSelection | null = null;
-
       const resultPromise = director.runTask({
         id: "task-18",
         title: "Test",
         modelSelection: { mode: "forgezero-adaptive" },
       });
 
-      taskStarted = true;
-      selectionAtStart = { mode: "forgezero-adaptive" };
-
-      
       const difierentSelection: ExecutionModelSelection = {
         mode: "exact-free",
         modelId: "other-model",

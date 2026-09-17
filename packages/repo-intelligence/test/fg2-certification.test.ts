@@ -7,7 +7,6 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   createRepositoryIntelligence,
   REPOSITORY_INDEX_VERSION,
-  type RepositoryIntelligence,
 } from "../src/index.js";
 
 const cleanupDirs: string[] = [];

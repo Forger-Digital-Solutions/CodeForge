@@ -84,7 +84,7 @@ export class EightBitFailoverCoordinator {
     // eligible again by the time the retry issues its next model call.
     this.health.shortenCooldown(req.current.providerId, req.current.modelId, now + waitMs);
     const receipt = this.buildReceipt(req, "COOLDOWN", [reason, "NO_REPLACEMENT_ROUTE", "BOUNDED_SAME_ROUTE_RETRY"]);
-    receipt.evidence = { ...(receipt.evidence ?? {}), waitMs, consecutiveFailures };
+    receipt.evidence = { ...receipt.evidence, waitMs, consecutiveFailures };
     await this.store.recordReceipt(receipt);
     if (waitMs > 0) await this.clock.sleep(waitMs);
     return { action: "retry_same", reason };

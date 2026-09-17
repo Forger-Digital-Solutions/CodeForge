@@ -569,7 +569,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
                 for (const binding of imp.bindings) list.push({ edgeKey, binding: binding.name, importKind: binding.importKind, reExport: binding.reExport });
                 byEdgeKey.set(edgeKey, list);
               }
-              for (const [edgeKey, list] of byEdgeKey) bindings.push(...list);
+              for (const [_edgeKey, list] of byEdgeKey) bindings.push(...list);
             } else {
               filesParsed++;
               symbols = parseStructuredFallback(relativePath, language, content);
@@ -760,7 +760,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
 
   async searchText(query: string, options: QueryOptions = {}): Promise<QueryPage<RepositoryMatch>> {
     if (!query.trim()) return page([], options);
-    const escaped = query.trim().split(/\s+/).map((term) => `\"${term.replace(/\"/g, "\"\"")}\"`).join(" AND ");
+    const escaped = query.trim().split(/\s+/).map((term) => `"${term.replace(/"/g, "\"\"")}"`).join(" AND ");
     let rows: Row[] = [];
     try { rows = this.db!.prepare("SELECT path, snippet(content_fts,1,'','', ' … ',24) preview, bm25(content_fts) rank FROM content_fts WHERE content_fts MATCH $query LIMIT 1000").all({ $query: escaped }) as Row[]; } catch { return page([], options); }
     const results = rows.map((row) => ({ path: String(row.path), preview: redactPreview(String(row.preview)), score: Math.max(1, 50 - Number(row.rank)), reasons: ["lexical_content_match"], confidence: "medium" as const }));

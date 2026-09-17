@@ -55,7 +55,7 @@ try {
   console.error(String(err?.message ?? err));
   process.exit(2);
 }
-const { probeRemoteDeployment, formatProbeReport } = probeMod;
+const { probeRemoteDeployment, } = probeMod;
 const { serializeCertificationReceipt, CERTIFICATION_RECEIPT_SCHEMA_VERSION } = receiptMod;
 
 // --- Stage bookkeeping ---------------------------------------------------------------------------

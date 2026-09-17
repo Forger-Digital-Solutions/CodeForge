@@ -6,23 +6,18 @@ import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
-import type { AgentRunJournal } from "@codeforge/protocol";
 import { createSessionPersistence, EventStore } from "@codeforge/sessions";
 import { ForgeZero, createGenericFreeRecord } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog } from "@codeforge/providers";
 import {
   createAgentRuntime,
   createSubagentManager,
-  createWorkspaceEventAdapter,
-  type AgentRuntime,
   type SubagentManager,
 } from "@codeforge/server";
 import { classifyRunRecovery } from "../src/run-recovery.js";
 
 const execFileAsync = promisify(execFile);
 const fixturePath = fileURLToPath(new URL("./fixtures/run-recovery-worker.mjs", import.meta.url));
-
-type RecoveryReport = Awaited<ReturnType<SubagentManager["recoverInterruptedWorkers"]>>;
 
 const CHILD_TIMEOUT_MS = 90_000;
 

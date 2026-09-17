@@ -3,7 +3,6 @@ import type { RepositoryIntelligence } from "@codeforge/repo-intelligence";
 import { createForgeGreenAdvisor, fingerprint, type EfficiencyReceipt, type ForgeGreenAdvisor } from "@codeforge/forge-green";
 import { formatUntrustedData, ROLE_PROMPTS, type AgentRoleType, type AgentFinding, type AgentEvidenceRef } from "@codeforge/agent";
 import {
-  buildContextPack,
   calculateContextBudget,
   estimateTokens,
   fitToTokens,

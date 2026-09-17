@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { containsSecret } from "@codeforge/secrets";
-import { openSqliteDatabase, type SQLiteDatabase, type SqliteDriverPreference } from "./sqlite.js";
+import { openSqliteDatabase, type SQLiteDatabase } from "./sqlite.js";
 
 /**
  * FG-1D persistent canonical analysis cache.

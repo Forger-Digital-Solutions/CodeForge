@@ -44,7 +44,7 @@ describe("FG-8 realistic workload fixtures (deterministic, zero network)", () =>
       const b = createSustainabilityReceipt({ identity: fixture.identity, normalized: fixture.normalized, contextPopulation: fixture.contextPopulation });
       expect(a.tokenAccounting).toEqual(b.tokenAccounting);
       expect(a.wasteBreakdown).toEqual(b.wasteBreakdown);
-      const stripTimestamps = (baselines: typeof a.baselines) => baselines.map(({ createdAt, ...rest }) => rest);
+      const stripTimestamps = (baselines: typeof a.baselines) => baselines.map(({ createdAt: _createdAt, ...rest }) => rest);
       expect(stripTimestamps(a.baselines)).toEqual(stripTimestamps(b.baselines));
     }
   });

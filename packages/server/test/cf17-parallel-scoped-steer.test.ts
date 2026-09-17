@@ -113,7 +113,7 @@ describe("CF-17 scoped parallel steering", () => {
     await fs.writeFile(path.join(repoDir, "package.json"), JSON.stringify({ type: "module" }));
     await execFile("git", ["add", "."], { cwd: repoDir });
     await execFile("git", ["commit", "-m", "base"], { cwd: repoDir });
-    const headCheck = await execFile("git", ["rev-parse", "HEAD"], { cwd: repoDir });
+    await execFile("git", ["rev-parse", "HEAD"], { cwd: repoDir });
   });
 
   afterEach(async () => {
@@ -140,7 +140,13 @@ describe("CF-17 scoped parallel steering", () => {
     const events: Array<{ type: string; workstreamId?: string }> = [];
     const orchestrator = makeOrchestrator(provider, events);
 
-    const pending = orchestrator.startRun({ runId: RUN_ID, sessionId: SESSION_ID, workspacePath: repoDir, goal: "two independent modules" });
+    const pending = orchestrator.startRun({
+      runId: RUN_ID,
+      sessionId: SESSION_ID,
+      workspacePath: repoDir,
+      goal: "two independent modules",
+      verificationCommands: ["node --check src/partial-a.ts", "node --check src/partial-b.ts"],
+    });
 
     // Both workstreams are genuinely active at the same instant.
     await barrier.reached;

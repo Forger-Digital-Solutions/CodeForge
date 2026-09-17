@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 import crypto from "node:crypto";
-import { CheckpointService, createCheckpointService } from "../src/checkpoint-service.js";
+import { createCheckpointService } from "../src/checkpoint-service.js";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 import { createWorkspaceEventAdapter } from "../src/workspace-event-adapter.js";
 

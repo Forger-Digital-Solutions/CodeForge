@@ -1,0 +1,66 @@
+{
+  "campaign": "CODEFORGE_R7_RELEASE_CERTIFICATION",
+  "recordedAt": "2026-09-17",
+  "repository": "G:\\CodeForge",
+  "branch": "forger-digital-solutions-forgegreen-certified",
+  "head": "41e0102d1a860107a6741026944b369ea4eeaa42",
+  "remote": "https://github.com/Forger-Digital-Solutions/CodeForge.git",
+  "workingTree": {
+    "state": "DIRTY_INHERITED",
+    "changedTrackedFiles": 210,
+    "untrackedFiles": [
+      "docs/certification/codeforge-r6-product-hardening-2026-09-17.md",
+      "docs/evidence/r6-product-hardening/",
+      "packages/server/src/completion-authority.ts",
+      "patches/builder-util+26.15.3.patch",
+      "scripts/r6-recertify-source-state.mjs",
+      "vitest.config.mts"
+    ],
+    "deletedFiles": [
+      "patches/builder-util+25.1.7.patch",
+      "vitest.config.ts"
+    ],
+    "diffStat": {
+      "filesChanged": 213,
+      "insertions": 2704,
+      "deletions": 5184
+    },
+    "classification": "R6/R6.1 hardening and certification work remains uncommitted; no R7 source edit had been made when recorded."
+  },
+  "toolchain": {
+    "hostNode": "v24.19.0",
+    "npmRunner": "11.17.0",
+    "electronDeclared": "44.4.1",
+    "os": "Windows host; OS metadata query was access-denied in the restricted execution environment"
+  },
+  "externalGateAvailability": {
+    "postgresEnvironmentConfigured": false,
+    "postgresClientOnPath": false,
+    "groqCredentialPresent": true,
+    "googleCredentialPresent": false,
+    "packagedWinUnpackedPresent": true
+  },
+  "r6Reconciliation": {
+    "r6RecordedHead": "41e0102d1a860107a6741026944b369ea4eeaa42",
+    "matchesCurrentHead": true,
+    "r6DeferredExternalGates": [
+      "live provider qualification",
+      "authorized PostgreSQL testing",
+      "hosted first-run OAuth acceptance",
+      "signed installer certification",
+      "business/counsel decisions"
+    ]
+  },
+  "warnings": [
+    {
+      "text": "Git cannot access C:\\Users\\Daddy_FDS/.config/git/ignore",
+      "classification": "EXTERNAL_ENVIRONMENT",
+      "impact": "Git emitted the warning during baseline inspection; repository state was otherwise readable."
+    },
+    {
+      "text": "Global npm shim points to a missing roaming npm CLI",
+      "classification": "EXTERNAL_ENVIRONMENT",
+      "impact": "The installed program-files npm CLI is used explicitly for all R7 commands."
+    }
+  ]
+}

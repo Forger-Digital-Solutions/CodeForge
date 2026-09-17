@@ -202,3 +202,4 @@ export class ForgeEvalHarness {
 }
 
 export * from "./r3-corpus.js";
+export * from "./codeforge-bench-r1.js";

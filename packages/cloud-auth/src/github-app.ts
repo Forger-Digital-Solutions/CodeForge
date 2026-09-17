@@ -162,7 +162,7 @@ export class GitHubAppClient {
       response = await this.fetchFn(new URL(path, this.apiBase).toString(), {
         ...init,
         signal: controller.signal,
-        headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${createGitHubAppJwt(this.configuration)}`, ...(init.headers ?? {}) },
+        headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${createGitHubAppJwt(this.configuration)}`, ...init.headers },
       });
     } catch (error) {
       if (error instanceof GitHubAppError) throw error;

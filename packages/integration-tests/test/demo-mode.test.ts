@@ -31,7 +31,6 @@ describe("Demo Mode Isolation Tests", () => {
     const sendResult = await sendMessage(port, sessionId, message);
     expect(sendResult.ok).toBe(true);
     expect(sendResult.turnId).toBeDefined();
-    const turnId = sendResult.turnId!;
 
     // Wait for any async work
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -57,7 +56,6 @@ describe("Demo Mode Isolation Tests", () => {
     // Start a turn
     const sendResult = await sendMessage(port, sessionId, message);
     expect(sendResult.ok).toBe(true);
-    const turnId = sendResult.turnId!;
 
     // Immediately check status - should never be 'failed'
     await new Promise((resolve) => setTimeout(resolve, 100));

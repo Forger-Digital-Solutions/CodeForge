@@ -7,8 +7,8 @@ export interface PermissionRule {
 }
 
 export class PermissionEngine {
-  constructor(rules?: PermissionRule[]) {}
-  evaluate(tool: string, context?: unknown): PermissionPolicy {
+  constructor(_rules?: PermissionRule[]) {}
+  evaluate(_tool: string, _context?: unknown): PermissionPolicy {
     return "ask";
   }
 }

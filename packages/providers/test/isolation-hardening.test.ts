@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { InMemoryProviderCatalog } from "../src/index.js";
+import { InMemoryProviderCatalog, type CredentialStore } from "../src/index.js";
 
-class StubStore implements import("../src/index.js").CredentialStore {
+class StubStore implements CredentialStore {
   private m = new Map<string, string>();
   constructor(init: Record<string, string> = {}) {
     for (const [k, v] of Object.entries(init)) this.m.set(k, v);
@@ -36,7 +36,6 @@ describe("provider isolation — credential separation", () => {
   it("provider A cannot execute provider B model — canonical identity required", () => {
     const catalog = new InMemoryProviderCatalog();
     // register only opencode
-    const store = new StubStore({ opencode: "k" });
     // use dynamic import to avoid top-level side effects
     expect(catalog.get("openrouter")).toBeUndefined();
     expect(catalog.get("opencode")).toBeUndefined();

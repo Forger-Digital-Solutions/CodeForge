@@ -27,7 +27,7 @@ describe("CF-08 cross-worktree ToolBroker firewall", () => {
   });
   it("confines synthesis writers and keeps both reviewer roles read-only", async () => {
     expect(await write(synthesis, path.join(worktreeA, "escape.txt"))).toMatchObject({ success: false }); expect(await write(synthesis, path.join(root, "primary.txt"))).toMatchObject({ success: false });
-    for (const role of ["reviewer", "global-reviewer"]) { const result = await write(synthesis, "reviewer-write.txt", { read: true, search: true, write: false, executeCommand: false, network: false }); expect(result.error).toContain(ERROR_CODES.TOOL_PERMISSION_DENIED); }
+    for (const _role of ["reviewer", "global-reviewer"]) { const result = await write(synthesis, "reviewer-write.txt", { read: true, search: true, write: false, executeCommand: false, network: false }); expect(result.error).toContain(ERROR_CODES.TOOL_PERMISSION_DENIED); }
     expect(await fs.readFile(path.join(synthesis, "reviewer-write.txt"), "utf8").catch(() => "absent")).toBe("absent");
   });
 });
@@ -130,6 +130,7 @@ describe("CF-08 private agent context firewall", () => {
 
     const result = await orchestrator.startRun({
       sessionId: PRIVACY_SESSION, workspacePath: repoDir, goal: "Implement the user API and its consumer",
+      verificationCommands: ["node --check src/user.mjs", "node --check src/beta.mjs"],
       privateAgentContext: { "coder:alpha": `Operator briefing: ${CODER_A_PRIVATE}`, "reviewer:alpha": `Operator briefing: ${REVIEWER_A_PRIVATE}` },
     });
     expect(result.status).toBe("completed");

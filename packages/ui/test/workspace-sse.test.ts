@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import type { SessionRecord, TurnRecord } from "@codeforge/sessions";
+import type { TurnRecord } from "@codeforge/sessions";
 import { applyExecutionLifecycleEvent, clearSessionScopedState, createNewSessionDraft, createSendRequest, executionStartFailureMessage, hasTerminalActiveWorkflow, initialWorkspaceState, mergeHydratedEvents, readRememberedActiveSession, readRememberedExecutionMode, rememberActiveSession, rememberExecutionMode, resolveSendSessionId, upsertPendingApproval, removePendingApproval, type PendingApproval } from "../src/workspace-sse.js";
 
 describe("workspace-sse - task session allocation", () => {

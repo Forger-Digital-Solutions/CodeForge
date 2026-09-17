@@ -22,7 +22,7 @@ describe("FG-8 baseline / counterfactual framework", () => {
     const first = generateAllBaselines(withRouting);
     const second = generateAllBaselines(withRouting);
     // createdAt timestamps may legitimately differ by a few ms; everything else must match exactly.
-    const strip = (arr: typeof first) => arr.map(({ createdAt, ...rest }) => rest);
+    const strip = (arr: typeof first) => arr.map(({ createdAt: _createdAt, ...rest }) => rest);
     expect(strip(first)).toEqual(strip(second));
     const baselineA = first.find((b) => b.baselineKind === "A_FIXED_MODEL_NO_SMART_ROUTING");
     expect(baselineA?.numerator).toBe(1);

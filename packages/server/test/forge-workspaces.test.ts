@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, writeFile, readFile, rm, mkdir } from "node:fs/promises";
+import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
-import crypto from "node:crypto";
-import { createWorkspaceService, WorkspaceService, validateSafeBranchName } from "../src/workspace-service.js";
+import { createWorkspaceService, validateSafeBranchName } from "../src/workspace-service.js";
 import { createCheckpointService } from "../src/checkpoint-service.js";
 import { createSessionPersistence } from "@codeforge/sessions";
 
@@ -191,7 +190,7 @@ describe("ForgeWorkspaces — Structured Identity, Leases & Git Worktrees", () =
     await writeFile(join(parentRepo, "untracked.txt"), "untracked data\n");
 
     const checkpointSvc = createCheckpointService(parentRepo);
-    const chk = await checkpointSvc.createCheckpoint({
+    await checkpointSvc.createCheckpoint({
       checkpointId: "chk-wt-001",
       label: "Worktree base snapshot",
     });

@@ -217,7 +217,7 @@ async function runArm({ arm, forgeGreenEnabled, workspacePath, startingCommit, f
   const finalCalc = await readFile(join(workspacePath, "src", "calc.mjs"), "utf8").catch(() => null);
   let independentVerification = { passed: false, exitCode: null, output: "" };
   try {
-    const verification = await execFile("node", ["--test", "test/calc.test.mjs"], { cwd: workspacePath });
+    await execFile("node", ["--test", "test/calc.test.mjs"], { cwd: workspacePath });
     independentVerification = { passed: true, exitCode: 0, output: "recorded externally; output omitted from durable evidence" };
   } catch (error) {
     independentVerification = { passed: false, exitCode: error.code ?? 1, output: "recorded externally; output omitted from durable evidence" };

@@ -7,7 +7,6 @@ import {
   SMALL_CRITERIA, SMALL_IMPL, SMALL_REPO, TWO_TEST, createHarness, createRepo, crashOnEvent,
   MissionProvider, reviewerPass, scriptFromSpec, smallMilestones, type MilestoneSpec, type MissionHarness, type ScriptContext,
 } from "./helpers/mission-fixture.js";
-import { MISSION_ERRORS } from "../src/mission-state.js";
 
 const GOAL = "Implement the first and second modules";
 const SESSION = "cf09-recovery";

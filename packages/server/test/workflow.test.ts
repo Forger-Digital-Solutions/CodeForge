@@ -9,7 +9,7 @@ async function fetchJson(url: string, body?: unknown, method = "POST"): Promise<
   const res = await fetch(url, {
     method,
     headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   const text = await res.text();
   let json: unknown;
@@ -53,7 +53,7 @@ describe("Workflow Server Integration", () => {
     expect(taskId).toBeDefined();
 
     // Poll until workflow completes (or timeout 15s), auto-resolving approvals when needed
-    let lastState: unknown;
+    let _lastState: unknown;
     for (let i = 0; i < 30; i++) {
       await new Promise((r) => setTimeout(r, 500));
       // Auto-resolve any pending approvals for this session
@@ -67,7 +67,7 @@ describe("Workflow Server Integration", () => {
       const getRes = await fetchJson(`http://localhost:${port}/api/workflow/${taskId}`, undefined, "GET");
       if (getRes.status === 200) {
         const data = getRes.body as { task: { status: string; phase: string } };
-        lastState = data;
+        _lastState = data;
         if (data.task.status === "complete" || data.task.status === "completed" || data.task.status === "failed" || data.task.phase === "completed" || data.task.phase === "failed" || data.task.phase === "cancelled") {
           break;
         }

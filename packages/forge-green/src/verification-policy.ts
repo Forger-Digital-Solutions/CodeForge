@@ -1,10 +1,7 @@
 import crypto from "node:crypto";
 import path from "node:path";
-import { canonicalCacheKey } from "./canonical-cache.js";
 import type { EfficiencyLedgerEvent } from "./ledger.js";
 import {
-  type AnalyzabilityClass,
-  type TaskRiskClass,
   type ChangeKind,
   type StructuralRiskAnalysis,
   analyzeStructuralRisk,
@@ -255,7 +252,7 @@ function normalizePath(p: string): string {
  */
 function isStrictlyDocumentation(
   changedPaths: readonly string[],
-  changeKinds?: Readonly<Record<string, ChangeKind>> | ChangeKind,
+  _changeKinds?: Readonly<Record<string, ChangeKind>> | ChangeKind,
 ): boolean {
   if (changedPaths.length === 0) return true;
   for (const file of changedPaths) {

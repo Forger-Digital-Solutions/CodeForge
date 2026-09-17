@@ -8,8 +8,6 @@ import {
   ChangeTypeSchema,
   AgentStatusSchema,
   ArtifactTypeSchema,
-  RestoreTypeSchema,
-  CommandStreamSchema,
   RiskLevelSchema,
   PermissionPolicySchema,
   EvidenceReferenceKindSchema,

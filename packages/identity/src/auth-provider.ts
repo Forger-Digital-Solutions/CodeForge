@@ -2,7 +2,6 @@ import type { Result } from "@codeforge/core";
 import type { 
   Account, 
   AccountId, 
-  AuthMethod, 
   AuthResult, 
   AuthSession, 
   AuthSessionId,
@@ -123,13 +122,13 @@ export class DevelopmentAuthProvider implements AuthProvider {
   }
 
   async authenticateWithGitHub(_code: string): Promise<Result<AuthResult, Error>> {
-    const { ok, err } = await import("@codeforge/core");
+    const { err } = await import("@codeforge/core");
     // Development scaffold: GitHub OAuth not fully implemented
     return err(new Error("GitHub OAuth not configured in development mode. Use email auth with dev-*@test.codeforge"));
   }
 
   async authenticateWithEmail(email: string, password: string): Promise<Result<AuthResult, Error>> {
-    const { ok, err } = await import("@codeforge/core");
+    const { ok } = await import("@codeforge/core");
     
     // In development, accept any password for test accounts
     const account = this.accounts.get(email);

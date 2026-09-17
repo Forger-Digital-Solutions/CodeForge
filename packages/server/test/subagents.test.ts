@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createSubagentManager, SubagentManager, MAX_SUBAGENT_DEPTH, MAX_CHILDREN_PER_PARENT } from "../src/subagent-manager.js";
+import { createSubagentManager } from "../src/subagent-manager.js";
 import { createWorkspaceEventAdapter } from "../src/workspace-event-adapter.js";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 

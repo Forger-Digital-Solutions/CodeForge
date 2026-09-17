@@ -13,7 +13,7 @@ function freshMuse(overrides: Record<string, unknown> = {}) {
     ...base,
     ...overrides,
     freeStatusVerifiedAt: now.toISOString(),
-    costProfile: { ...base.costProfile, ...(overrides.costProfile as object ?? {}), freeTierVerifiedAt: now.toISOString() },
+    costProfile: { ...base.costProfile, ...(overrides.costProfile as object), freeTierVerifiedAt: now.toISOString() },
     health: (overrides.health as { status: string } | undefined) ?? { status: "available", lastCheckedAt: now.toISOString() },
   } as typeof base;
 }
@@ -23,7 +23,7 @@ function freshGeneric(overrides: Record<string, unknown> = {}) {
     ...base,
     ...overrides,
     freeStatusVerifiedAt: now.toISOString(),
-    costProfile: { ...base.costProfile, ...(overrides.costProfile as object ?? {}), freeTierVerifiedAt: now.toISOString() },
+    costProfile: { ...base.costProfile, ...(overrides.costProfile as object), freeTierVerifiedAt: now.toISOString() },
     health: (overrides.health as { status: string } | undefined) ?? { status: "available", lastCheckedAt: now.toISOString() },
   } as typeof base;
 }

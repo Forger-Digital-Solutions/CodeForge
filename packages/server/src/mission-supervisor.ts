@@ -15,11 +15,12 @@ import { getSanitizedEnvForChild } from "./env-filter.js";
 import { ParallelAutonomousRunOrchestrator, createParallelAutonomousRunOrchestrator, type ParallelRunResult, type PrivateAgentContext } from "./parallel-orchestrator.js";
 import type { ParallelEvent } from "./parallel-state.js";
 import { createForgeVerifyPersistenceObserver } from "./forge-verify-persistence.js";
+import { evaluateAutonomousCompletion } from "./completion-authority.js";
 import {
   BUDGET_WARNING_RATIO, DEFAULT_MISSION_BUDGET, MISSION_ERRORS, MissionStore,
   checkMissionBudget, compactMissionMemory, diffMissionPlans, emptyMissionMemory, emptyMissionUsage,
   markMemoryStaleness, missionIntentDigest, replanFingerprint, unprovenMandatoryCriteria, validateMilestoneRoadmap, verifyMissionIntent,
-  type AcceptanceCriterion, type AutonomousMission, type AutonomousMissionResult, type EvidenceRef,
+  type AutonomousMission, type AutonomousMissionResult, type EvidenceRef,
   type MissionAssumption, type MissionBudget, type MissionEvent, type MissionIntent, type MissionMilestone,
   type MissionPlanVersion, type MissionSteering, type MissionWaveResult, type ReplanTrigger, type RetainedAutonomousWork,
 } from "./mission-state.js";
@@ -833,6 +834,23 @@ export class MissionSupervisor {
     if (finalReview.status !== "completed" || review?.verdict !== "pass") {
       const result = await this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_FINAL_REVIEW_BLOCKED, startedAt);
       return { ...result, findings: review?.findings ?? finalReview.findings };
+    }
+
+    const [{ stdout: completionDiff }, { stdout: changedPathsOut }] = await Promise.all([
+      this.git(workspace.rootPath, ["diff", mission.baseRevision]).catch(() => ({ stdout: "" })),
+      this.git(workspace.rootPath, ["diff", "--name-only", mission.baseRevision]).catch(() => ({ stdout: "" })),
+    ]);
+    const completion = evaluateAutonomousCompletion({
+      runId: mission.id,
+      title: mission.originalGoal,
+      changedFiles: changedPathsOut.split(/\r?\n/).map((entry) => entry.trim()).filter(Boolean),
+      diff: completionDiff,
+      verification,
+      reviewPassed: true,
+    });
+    this.emit(mission, "mission.completion.decided", { outcome: completion.outcome, rationale: completion.rationale, blockers: completion.blockers });
+    if (completion.outcome !== "completed") {
+      return await this.terminate(mission, "blocked", `COMPLETION_GATE_${completion.outcome.toUpperCase()}`, startedAt, completion.rationale);
     }
 
     const drift = await this.classifyTargetDrift(mission);

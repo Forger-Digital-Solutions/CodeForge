@@ -5,8 +5,8 @@ export interface ExternalInferencePolicy {
 }
 
 export class GemsGuard {
-  constructor(policy?: ExternalInferencePolicy) {}
-  classify(path: string): DataClassification {
+  constructor(_policy?: ExternalInferencePolicy) {}
+  classify(_path: string): DataClassification {
     return "public";
   }
   canSendToExternal(data: DataClassification): boolean {
@@ -17,3 +17,5 @@ export class GemsGuard {
 export function createGemsGuard(policy?: ExternalInferencePolicy): GemsGuard {
   return new GemsGuard(policy);
 }
+
+export * from "./auto-framework.js";

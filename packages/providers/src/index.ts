@@ -1,4 +1,4 @@
-import type { ChatRequest, ChatResponse, StreamEvent, ToolDefinition, Usage } from "./chat-types.js";
+import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
 
 export * from "./chat-types.js";
 

@@ -40,7 +40,7 @@ describe("CodeForge Cloud Server API End-to-End", () => {
   const webhookSecret = "whsec_test_12345";
 
   const createMockGitHubFetch = (overrides: { emails?: unknown; emailsStatus?: number; hideProfileEmail?: boolean } = {}) => {
-    return async (url: string | URL | Request, init?: RequestInit) => {
+    return async (url: string | URL | Request, _init?: RequestInit) => {
       const urlStr = url.toString();
       if (urlStr.includes("login/oauth/access_token")) {
         return new Response(JSON.stringify({ access_token: "gho_mock_access_token_123", token_type: "bearer", scope: "read:user user:email" }), {

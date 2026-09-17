@@ -92,7 +92,7 @@ export async function startCloudLogin(baseUrl: string, options: CloudLoginOption
 
   const res = await doFetch(`${baseUrl}/v1/auth/start`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...(options.headers ?? {}) },
+    headers: { "Content-Type": "application/json", ...options.headers },
     body: JSON.stringify({ redirectUri, codeChallenge: pkce.codeChallenge, deviceName: options.deviceName }),
   });
   if (!res.ok) {
@@ -136,7 +136,7 @@ export async function exchangeDesktopCode(
   const doFetch = options.fetchFn ?? fetch;
   return doFetch(`${baseUrl}/v1/auth/exchange`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...(options.headers ?? {}) },
+    headers: { "Content-Type": "application/json", ...options.headers },
     body: JSON.stringify({
       code,
       codeVerifier: start.pkce.codeVerifier,

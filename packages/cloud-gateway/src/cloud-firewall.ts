@@ -121,7 +121,7 @@ export class CloudFirewallManager {
     // Hosted Free is owner-sponsored ongoing free: exclude TRIAL/PROMO from the pool (fail-closed).
     this.firewall = new ForgeZero({ providerOracle, requireOngoingFree: true, privacyMode: options?.privacyMode });
     this.router = new ForgeRouter({ firewall: this.firewall });
-    this.killSwitches = { ...DEFAULT_KILL_SWITCH_CONFIG, ...(options?.killSwitches ?? {}) };
+    this.killSwitches = { ...DEFAULT_KILL_SWITCH_CONFIG, ...options?.killSwitches };
 
     // Register GEMS models (always present in catalog, offline until real inference engine)
     for (const gems of GEMS_MODELS) {

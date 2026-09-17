@@ -138,7 +138,7 @@ function measureArm(arm: ArmMeasurement["arm"], startedAt: number, endedAt: numb
     overallStatus: report.overallStatus,
     requiredPassed: report.requiredPassed,
     verificationComplete: report.forgeVerify?.summary.verificationComplete ?? false,
-    ...(extra ?? {}),
+    ...extra,
   };
 }
 

@@ -9,5 +9,5 @@ export interface CodeForgePlugin {
 }
 
 export class PluginRegistry {
-  async load(plugin: CodeForgePlugin): Promise<void> {}
+  async load(_plugin: CodeForgePlugin): Promise<void> {}
 }

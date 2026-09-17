@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, writeFile, readFile, rm, mkdir } from "node:fs/promises";
+import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import crypto from "node:crypto";
-import { createCheckpointService, CheckpointService } from "../src/checkpoint-service.js";
-import { createSessionPersistence, SessionPersistence } from "@codeforge/sessions";
+import { createCheckpointService } from "../src/checkpoint-service.js";
+import { createSessionPersistence } from "@codeforge/sessions";
 
 const execFile = promisify(execFileCallback);
 
@@ -135,7 +135,7 @@ describe("CF-05 Final Certification — Exact Staging, Restart Recovery & Ref Va
     const hashD_before = sha256(await readFile(join(ws, "fileD.txt")));
 
     const svc = createCheckpointService(ws);
-    const chk = await svc.createCheckpoint({
+    await svc.createCheckpoint({
       checkpointId: "chk-mixed-001",
       label: "Mixed staging checkpoint",
     });
@@ -189,7 +189,7 @@ describe("CF-05 Final Certification — Exact Staging, Restart Recovery & Ref Va
     const svc = createCheckpointService(ws, persistence);
     await writeFile(join(ws, "fileA.txt"), "A_ref_test\n");
 
-    const chk = await svc.createCheckpoint({
+    await svc.createCheckpoint({
       checkpointId: "chk-ref-001",
       sessionId: "sess-ref-1",
       label: "Ref validation test",

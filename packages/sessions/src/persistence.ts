@@ -132,24 +132,6 @@ function parseSession(row: StoredSession): SessionRecord {
   };
 }
 
-function serializeSession(session: SessionRecord): StoredSession {
-  return {
-    id: session.id,
-    title: session.title,
-    createdAt: session.createdAt,
-    updatedAt: session.updatedAt,
-    status: session.status,
-    currentAgentId: session.currentAgentId ?? null,
-    currentModelId: session.currentModelId ?? null,
-    currentProviderId: session.currentProviderId ?? null,
-    permissionMode: session.permissionMode ?? null,
-    displayMode: session.displayMode ?? null,
-    branch: session.branch ?? null,
-    workspacePath: session.workspacePath ?? null,
-    taskTitle: session.taskTitle ?? null,
-  };
-}
-
 function parseTurn(row: StoredTurn): TurnRecord {
   return {
     id: row.id,
@@ -161,20 +143,6 @@ function parseTurn(row: StoredTurn): TurnRecord {
     ...(row.startedAt && { startedAt: row.startedAt }),
     ...(row.completedAt && { completedAt: row.completedAt }),
     ...(row.error && { error: row.error }),
-  };
-}
-
-function serializeTurn(turn: TurnRecord): StoredTurn {
-  return {
-    id: turn.id,
-    sessionId: turn.sessionId,
-    seq: turn.seq,
-    userMessage: turn.userMessage,
-    status: turn.status,
-    agentId: turn.agentId ?? null,
-    startedAt: turn.startedAt ?? null,
-    completedAt: turn.completedAt ?? null,
-    error: turn.error ?? null,
   };
 }
 
@@ -417,7 +385,7 @@ export class SqliteSessionPersistence implements ISessionPersistence {
     return rows.map((row) => JSON.parse(row.data) as WorkItem);
   }
 
-  async lockWorkItem(id: string): Promise<void> {
+  async lockWorkItem(_id: string): Promise<void> {
     // SQLite's single-connection model + explicit transaction provides sufficient isolation.
     // PostgreSQL implementation uses SELECT FOR UPDATE here.
   }

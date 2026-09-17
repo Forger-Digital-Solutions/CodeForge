@@ -11,7 +11,7 @@
 //   docs/legal/remediation/third-party-notices-generated.md   (human-readable)
 //   docs/legal/remediation/third-party-notices-generated.json (machine-readable, for the release gate)
 
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,11 +20,14 @@ const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const OUT_DIR = join(REPO_ROOT, "docs", "legal", "remediation");
 const OUT_MD = join(OUT_DIR, "third-party-notices-generated.md");
 const OUT_JSON = join(OUT_DIR, "third-party-notices-generated.json");
+const DESKTOP_PACKAGE = JSON.parse(
+  readFileSync(join(REPO_ROOT, "apps", "desktop", "package.json"), "utf8"),
+);
 
 const EXPLICIT_BUNDLED_COMPONENTS = [
   {
     name: "Electron",
-    version: "33.4.11",
+    version: DESKTOP_PACKAGE.devDependencies.electron,
     license: "MIT",
     note: "Bundled automatically by electron-builder as LICENSE.electron.txt in packaged output. Not npm-resolved as a runtime dependency of the app bundle itself.",
   },
@@ -78,7 +81,12 @@ function collectThirdPartyDeps(tree) {
 function main() {
   mkdirSync(OUT_DIR, { recursive: true });
 
-  const raw = execSync("npm ls --workspace=codeforge-desktop --all --omit=dev --json", {
+  const npmExecPath = process.env.npm_execpath;
+  const executable = npmExecPath ? process.execPath : "npm";
+  const args = npmExecPath
+    ? [npmExecPath, "ls", "--workspace=codeforge-desktop", "--all", "--omit=dev", "--json"]
+    : ["ls", "--workspace=codeforge-desktop", "--all", "--omit=dev", "--json"];
+  const raw = execFileSync(executable, args, {
     cwd: REPO_ROOT,
     maxBuffer: 32 * 1024 * 1024,
     encoding: "utf8",

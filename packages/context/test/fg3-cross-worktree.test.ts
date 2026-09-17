@@ -40,7 +40,7 @@ function createRepoWithWorktree(): { main: string; worktree: string; cache: stri
   const worktree = fs.mkdtempSync(path.join(os.tmpdir(), "fg3-xwt-side-"));
   fs.rmdirSync(worktree); // git worktree add requires the target not to exist
   cleanupDirs.push(worktree);
-  git(main, ["worktree", "add", "-b", "fg3-side-branch", worktree]);
+  git(main, ["worktree", "add", "-q", "-b", "fg3-side-branch", worktree]);
 
   return { main, worktree, cache };
 }

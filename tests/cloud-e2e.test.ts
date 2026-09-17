@@ -42,7 +42,7 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
   const webhookSecret = "whsec_test_certification_secret";
 
   const createMockGitHubFetch = () => {
-    return async (url: string | URL | Request, init?: RequestInit) => {
+    return async (url: string | URL | Request, _init?: RequestInit) => {
       const urlStr = url.toString();
       if (urlStr.includes("login/oauth/access_token")) {
         return new Response(JSON.stringify({ access_token: "gho_mock_access_token_octo", token_type: "bearer", scope: "read:user user:email" }), {

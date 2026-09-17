@@ -1,14 +1,10 @@
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
-import fs from "node:fs/promises";
 import { existsSync } from "node:fs";
-import path from "node:path";
-import crypto from "node:crypto";
-import type { WorkspaceService, ForgeWorkspace } from "./workspace-service.js";
+import type { WorkspaceService } from "./workspace-service.js";
 import type { CheckpointService } from "./checkpoint-service.js";
 import type { AgentFinding } from "@codeforge/agent";
 import type { VerificationResult } from "@codeforge/workflow";
-import { redactSecrets } from "@codeforge/secrets";
 
 const execFile = promisify(execFileCallback);
 
@@ -234,12 +230,11 @@ export class IntegrationService {
 
     try {
       // 2. Inspect if worktree has commits ahead of base
-      const { stdout: revCountOut } = await this.git(worktreeWs.rootPath, [
+      await this.git(worktreeWs.rootPath, [
         "rev-list",
         "--count",
         `${expectedBaseSha}..HEAD`,
       ]).catch(() => ({ stdout: "0" }));
-      const commitCount = parseInt(revCountOut.trim(), 10) || 0;
 
       // 3. Inspect if worktree has dirty uncommitted changes
       const { stdout: wtStatusOut } = await this.git(worktreeWs.rootPath, ["status", "--porcelain=v2"]);

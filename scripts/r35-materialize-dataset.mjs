@@ -14,7 +14,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
-const ROOT = new URL("..", pathToFileURL(import.meta.url)).pathname.replace(/^\/([A-Za-z]:)/, "$1");
+
 const OUT_DIR = "tests/evidence/r3.5-8bit-dataset";
 const CAMPAIGN_DIR = "tests/evidence/r3/corpus-runs/campaign-1";
 

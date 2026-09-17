@@ -1,5 +1,5 @@
 import { SQLiteCloudDatabase, type SQLiteCloudDatabaseOptions } from "./sqlite.js";
-import { PostgresCloudDatabase, type PostgresCloudDatabaseOptions } from "./postgres.js";
+import { PostgresCloudDatabase } from "./postgres.js";
 import type { ICloudDatabase } from "./interface.js";
 
 export type CloudDatabaseDriver = "sqlite" | "postgres";

@@ -47,7 +47,7 @@ async function buildFixture() {
   await mkdir(join(repoDir, "src"), { recursive: true });
   await mkdir(join(repoDir, "test"), { recursive: true });
   await writeFile(join(repoDir, "src", "math.mjs"), "export function multiply(a, b) { return 0; }\n\nexport function add(a, b) { return a + b; }\n", "utf-8");
-  await writeFile(join(repoDir, "src", "format.mjs"), "export function format(value) { return `result: \${value}`; }\n", "utf-8");
+  await writeFile(join(repoDir, "src", "format.mjs"), "export function format(value) { return `result: ${value}`; }\n", "utf-8");
   await writeFile(join(repoDir, "src", "stats.mjs"), "export function mean(values) { if (values.length === 0) return 0; return values.reduce((a, b) => a + b, 0) / values.length; }\n", "utf-8");
   await writeFile(join(repoDir, "src", "index.mjs"), "export { multiply, add } from './math.mjs';\nexport { format } from './format.mjs';\nexport { mean } from './stats.mjs';\n", "utf-8");
   await writeFile(

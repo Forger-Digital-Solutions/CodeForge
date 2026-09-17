@@ -66,7 +66,7 @@ An empirical inspection of `apps/desktop/release/win-unpacked/resources/app.asar
 
 In addition to JavaScript modules bundled in `app.asar`, the packaged desktop distribution distributes the binary Electron runtime:
 - **Location**: `apps/desktop/release/win-unpacked/`
-- **Electron Version**: 33.4.11 (based on Chromium and Node.js v20/v22).
+- **Electron Version**: 44.4.1 (bundles Node.js 24.21.0 in the audited Windows package).
 - **Provided License Files**:
   - `LICENSE.electron.txt` (MIT License covering Electron wrapper code).
   - `LICENSES.chromium.html` (9.17 MB detailed HTML notice document containing all third-party notices for Chromium, Blink, V8, WebRTC, FFmpeg, and codecs).

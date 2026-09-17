@@ -5,7 +5,7 @@ import path from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import {
-  ONE_TEST, SMALL_CRITERIA, SMALL_IMPL, SMALL_REPO, TWO_TEST, createHarness, createRepo, git,
+  SMALL_CRITERIA, SMALL_IMPL, SMALL_REPO, TWO_TEST, createHarness, createRepo, git,
   reviewerBlock, reviewerPass, scriptFromSpec, smallMilestones, type MilestoneSpec, type MissionHarness,
 } from "./helpers/mission-fixture.js";
 import { MISSION_ERRORS } from "../src/mission-state.js";
@@ -40,7 +40,7 @@ describe("CF-09 acceptance, assumptions, and the final gate", () => {
     await fs.rm(worktreeDir, { recursive: true, force: true });
   });
 
-  it("refuses to complete while a mandatory criterion lacks deterministic evidence", async () => {
+  it("blocks an unverified milestone before it can claim completion or prove acceptance", async () => {
     harness = await createHarness({
       repoDir, worktreeDir, sessionId: SESSION,
       script: scriptFromSpec({ missionId: "small", goal: GOAL, criteria: SMALL_CRITERIA, plans: [{ milestones: [FIRST, unverifiedSecond] }], reviewer: () => reviewerPass() }),
@@ -51,12 +51,13 @@ describe("CF-09 acceptance, assumptions, and the final gate", () => {
     const mission = harness.supervisor.getMission(result.missionId)!;
 
     expect(result.status).toBe("blocked");
-    expect(mission.error).toContain(MISSION_ERRORS.MISSION_ACCEPTANCE_UNPROVEN);
-    expect(mission.error).toContain("AC-2");
-    // Every milestone finished, yet acceptance without a passing command is only partial.
-    expect(mission.milestones.every((milestone) => milestone.status === "completed")).toBe(true);
+    expect(mission.error).toContain("COMPLETION_GATE_BLOCKED");
+    // The first milestone has evidence, while the unverified second milestone is stopped at its
+    // own completion boundary instead of being promoted to a false terminal success.
+    expect(mission.milestones.find((milestone) => milestone.id === "s-one")?.status).toBe("completed");
+    expect(mission.milestones.find((milestone) => milestone.id === "s-two")?.status).not.toBe("completed");
     expect(mission.acceptanceCriteria.find((criterion) => criterion.id === "AC-1")?.status).toBe("proven");
-    expect(mission.acceptanceCriteria.find((criterion) => criterion.id === "AC-2")?.status).toBe("partially_proven");
+    expect(mission.acceptanceCriteria.find((criterion) => criterion.id === "AC-2")?.status).toBe("unproven");
     // No promotion happened.
     expect(await git(repoDir, ["rev-parse", "HEAD"])).toBe(baseRevision);
     expect(mission.finalRevision).toBeUndefined();

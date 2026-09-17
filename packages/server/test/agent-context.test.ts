@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ContextAssembler, calculateContextBudget, estimateTokens } from "@codeforge/context";
+import { ContextAssembler, estimateTokens } from "@codeforge/context";
 
 describe("Context Engineering & Boundary Certification (CF-07)", () => {
   it("assembles specialized context for Explorer containing repository map and search entry points", async () => {
@@ -73,7 +73,6 @@ describe("Context Engineering & Boundary Certification (CF-07)", () => {
 
   it("strictly enforces token budget and fits context within contextWindow limits", async () => {
     const hugeDiff = "+ line\n".repeat(10000);
-    const budget = calculateContextBudget({ contextWindow: 4000 });
 
     const assembler = new ContextAssembler(4000);
     const assembled = await assembler.assemble({

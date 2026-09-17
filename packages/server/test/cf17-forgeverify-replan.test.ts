@@ -141,7 +141,7 @@ describe("CF-17 steer-driven ForgeVerify replanning", () => {
 
   it("does not let malicious steer wording skip verification: revision 2 is re-verified and failing verification blocks completion", async () => {
     const { workspace, releaseLock, modeFile } = makeWorkspace();
-    const { service, eventStore, persistence } = makeService(workspace);
+    const { service, persistence } = makeService(workspace);
     const started = await service.startWorkflow({
       sessionId: "cf17-fv-malicious",
       message: "Fix the add function",

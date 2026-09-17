@@ -37,7 +37,7 @@ async function api(url: string, body?: unknown, method = "POST"): Promise<{ stat
   const res = await fetch(url, {
     method,
     headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   const text = await res.text();
   let json: any;

@@ -1,8 +1,8 @@
 import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
 import { planFailureHealthMarking } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
-import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition, ProviderToolExecutionRequest, ProviderToolExecutionResult, ProviderExecutionContext } from "@codeforge/providers";
-import { DesktopWorkerActionTypeSchema, type AgentRunJournal, type AgentRunJournalMessage, type DesktopWorkerActionType, type WorkspaceEvent } from "@codeforge/protocol";
+import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition, ProviderToolExecutionRequest, ProviderToolExecutionResult } from "@codeforge/providers";
+import { DesktopWorkerActionTypeSchema, type AgentRunJournal, type AgentRunJournalMessage, type DesktopWorkerActionType } from "@codeforge/protocol";
 import {
   createDesktopWorkerBridge,
   createDurableAgentContinuationStore,
@@ -30,7 +30,6 @@ import { createRepositoryIntelligence, type RepositoryIntelligence } from "@code
 import {
   buildContextPack,
   buildDependencyNeighborhoodPage,
-  ContextAssembler,
   createContextAssembler,
   createContextPageStore,
   resolveContextCapacity,
@@ -68,7 +67,6 @@ import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
 import {
   ERROR_CODES,
-  ROLE_PROMPTS,
   DEFAULT_EXECUTION_BUDGETS,
   type AgentPermissions,
   type AgentExecutionBudget,
@@ -84,8 +82,8 @@ import {
   validateStructuredAgentResult,
   formatUntrustedData,
 } from "@codeforge/agent";
-import { ToolBroker, ToolRegistry, createToolBroker, type ToolExecutionRecord } from "@codeforge/tools";
-import { ModelExecutionAdapter, createModelExecutionAdapter, normalizeProviderError, type ModelExecutionResponse } from "./model-execution-adapter.js";
+import { createToolBroker, type ToolExecutionRecord } from "@codeforge/tools";
+import { createModelExecutionAdapter, normalizeProviderError, type ModelExecutionResponse } from "./model-execution-adapter.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import type { PaidAutoService } from "@codeforge/paid-auto";
 
@@ -2934,8 +2932,7 @@ export class AgentRuntime {
     let currentText = "";
     let toolCalls: Array<{ id: string; name: string; arguments: string }> = [];
     let currentToolCall: { id: string; name: string; arguments: string } | null = null;
-    let usage: { inputTokens: number; outputTokens: number; totalTokens?: number } | null = null;
-    let finishReason: "stop" | "tool_calls" | "length" | "content_filter" | "error" = "stop";
+    let _usage: { inputTokens: number; outputTokens: number; totalTokens?: number } | null = null;
     // Assistant message segment boundary for this stream iteration. A turn may produce several
     // assistant messages interleaved with tool activity; each gets a stable messageId so the
     // renderer can segment prose and persist the final user-facing text for reload.
@@ -3005,12 +3002,11 @@ export class AgentRuntime {
             break;
 
           case "usage":
-            usage = event.usage;
+            _usage = event.usage;
             adapter.emitTokenUsage(turnId, event.usage.inputTokens, event.usage.outputTokens, event.usage.totalTokens);
             break;
 
           case "finish":
-            finishReason = event.finishReason;
             break;
 
           case "error":
@@ -3108,7 +3104,7 @@ export class AgentRuntime {
     agentId: string,
     tc: { id: string; name: string; arguments: string },
     adapter: WorkspaceEventAdapter,
-    duplicateSupervisor: DuplicateActionSupervisor,
+    _duplicateSupervisor: DuplicateActionSupervisor,
   ): Promise<AgentLoopOutcome> {
     if (!this.hostedWorker) {
       throw new Error("Hosted worker configuration is required to dispatch hosted tool");
@@ -4190,23 +4186,6 @@ export class AgentRuntime {
     // Emit approval requested for UI
     await adapter.emitApprovalRequested(approvalId, toolName, approvalNeeded.action, `${toolName}: ${approvalNeeded.reason}`, approvalNeeded.risk, this.workspacePath);
 
-    // Legacy map for HTTP handler compatibility
-    const legacyResolveHolder: { decision?: string } = {};
-    const legacyPromise = new Promise<string>((resolve) => {
-      this.pendingApprovals.set(approvalId, {
-        approvalId,
-        tool: toolName,
-        action: approvalNeeded.action,
-        description: `${toolName}: ${approvalNeeded.reason}`,
-        risk: approvalNeeded.risk,
-        scope: this.workspacePath,
-        resolve: (decision) => {
-          legacyResolveHolder.decision = decision;
-          resolve(decision);
-        },
-      });
-    });
-
     // Race the service promise vs legacy resolution via HTTP
     // The service promise resolves via ApprovalService.resolve(); legacy also needs bridging
     // We bridge by having resolveApproval call service.resolve which fulfills promise.
@@ -4260,8 +4239,8 @@ export class AgentRuntime {
   private async executeReadFile(
     filePath: string,
     adapter: WorkspaceEventAdapter,
-    turnId: string,
-    toolCallId: string,
+    _turnId: string,
+    _toolCallId: string,
   ): Promise<string> {
     const validation = this.validatePath(filePath);
     if (!validation.valid) {
@@ -4304,8 +4283,8 @@ export class AgentRuntime {
     filePath: string,
     content: string,
     adapter: WorkspaceEventAdapter,
-    turnId: string,
-    toolCallId: string,
+    _turnId: string,
+    _toolCallId: string,
   ): Promise<string> {
     const validation = this.validatePath(filePath);
     if (!validation.valid) {
@@ -4338,9 +4317,9 @@ export class AgentRuntime {
   private async executeListFiles(
     dirPath: string,
     recursive: boolean,
-    adapter: WorkspaceEventAdapter,
-    turnId: string,
-    toolCallId: string,
+    _adapter: WorkspaceEventAdapter,
+    _turnId: string,
+    _toolCallId: string,
   ): Promise<string> {
     const validation = this.validatePath(dirPath);
     if (!validation.valid) {

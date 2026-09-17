@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSettings } from "../settings-context.js";
-import { Avatar, Toggle, SettingsGroup, SettingsRow, SettingsButton, StatusBadge } from "../settings-controls.js";
+import { Avatar, SettingsGroup, SettingsRow, SettingsButton, StatusBadge } from "../settings-controls.js";
 
 /**
  * Profile & Account. Every value comes from the authenticated cloud account snapshot; missing

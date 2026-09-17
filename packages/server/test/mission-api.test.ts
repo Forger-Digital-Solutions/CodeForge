@@ -14,7 +14,7 @@ const GOAL = "Implement the first and second modules";
 async function request(port: number, route: string, method = "GET", body?: unknown): Promise<{ status: number; body: unknown }> {
   const response = await fetch(`http://localhost:${port}${route}`, {
     method, headers: { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   return { status: response.status, body: await response.json() as unknown };
 }

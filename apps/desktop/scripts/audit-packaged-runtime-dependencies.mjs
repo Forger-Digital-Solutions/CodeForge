@@ -62,7 +62,7 @@ for (const entry of runtimeModules) {
   const source = extractFile(asarPath, archivePath(entry)).toString("utf8");
   for (const match of source.matchAll(/(?:from|import\s*\(|require\s*\()\s*["']([^"']+)["']/g)) {
     const specifier = match[1];
-    if (!specifier || specifier.includes("\${") || specifier.startsWith(".") || specifier.startsWith("/") || specifier.startsWith("node:") || specifier.startsWith("@codeforge/")) continue;
+    if (!specifier || specifier.includes("${") || specifier.startsWith(".") || specifier.startsWith("/") || specifier.startsWith("node:") || specifier.startsWith("@codeforge/")) continue;
     const packageName = externalPackageName(specifier);
     if (ignored.has(packageName)) continue;
     const locations = imports.get(packageName) ?? [];

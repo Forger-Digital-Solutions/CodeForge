@@ -139,7 +139,7 @@ try {
   });
   const start = await startRes.json();
   authorizeUrl = start.authUrl;
-  phase("oauth.start", startRes.ok && /^https:\/\/github\.com\/login\/oauth\/authorize/.test(start.authUrl ?? "") ? "PASS" : "FAIL", `callback to register: ${start.cloudCallbackUrl}`);
+  phase("oauth.start", startRes.ok && (start.authUrl ?? "").startsWith("https://github.com/login/oauth/authorize") ? "PASS" : "FAIL", `callback to register: ${start.cloudCallbackUrl}`);
 
   if (!accessToken && interactive) {
     console.log("");
