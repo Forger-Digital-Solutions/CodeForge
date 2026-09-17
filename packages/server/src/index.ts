@@ -26,7 +26,7 @@ import type { ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/providers";
 import { createPaidAutoService, PAID_AUTO_PROVIDER_ID, type PaidAutoService } from "@codeforge/paid-auto";
 import { runDemoRuntime } from "./demo-runtime.js";
-import { AgentRuntime, createAgentRuntime } from "./agent-runtime.js";
+import { AgentRuntime, createAgentRuntime, type HostedWorkerOptions } from "./agent-runtime.js";
 import { resolveWithinWorkspace } from "./path-security.js";
 import { createWorkflowService, type WorkflowService } from "./workflow-service.js";
 import { WorkspaceService, createWorkspaceService } from "./workspace-service.js";
@@ -254,7 +254,7 @@ export class CodeForgeServer {
       persistence: this.persistence,
       workspacePath: this.activeWorkspacePath ?? undefined,
       workspaceService: this.workspaceService,
-      getOrCreateRuntime: (sessionId: string, userId?: string) => this.getOrCreateRuntime(sessionId, userId),
+      getOrCreateRuntime: (sessionId: string, userId?: string, hostedWorker?: HostedWorkerOptions) => this.getOrCreateRuntime(sessionId, userId, hostedWorker),
       useRealRuntime: () => this.realRuntimeEnabled(),
       userIntentHold: this.userIntentHold,
       ...(options.agentWorkingBudgetMs !== undefined ? { agentWorkingBudgetMs: options.agentWorkingBudgetMs } : {}),
@@ -2026,8 +2026,26 @@ export class CodeForgeServer {
     return this.useRealRuntime || this.paidAuto.hasExecutableRoute() || this.providerCatalog.all().some((a) => a.isTestProvider !== true && a.providerId !== PAID_AUTO_PROVIDER_ID);
   }
 
-  private getOrCreateRuntime(sessionId: string, userId?: string): AgentRuntime {
+  private getOrCreateRuntime(sessionId: string, userId?: string, hostedWorker?: HostedWorkerOptions): AgentRuntime {
     const demoMode = !this.realRuntimeEnabled();
+    if (hostedWorker) {
+      return createAgentRuntime({
+        sessionId,
+        eventStore: this.eventStore,
+        persistence: this.persistence,
+        firewall: this.firewall,
+        providerCatalog: this.providerCatalog,
+        workspacePath: this.activeWorkspacePath ?? undefined,
+        userId,
+        demoMode,
+        userIntentHold: this.userIntentHold,
+        forgeGreenCacheStore: this.forgeGreenCacheStore,
+        afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
+        freeCloud: this.freeCloud,
+        paidAuto: this.paidAuto,
+        hostedWorker,
+      });
+    }
     let runtime = this.runtimes.get(sessionId);
     if (!runtime) {
       runtime = createAgentRuntime({

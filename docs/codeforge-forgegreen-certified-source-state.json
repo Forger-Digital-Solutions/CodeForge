@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "243ea365fa0e83f53b301e102879787b7592c3ac11fde929f59517a51703023a",
-  "surfaceVersion": "fg12f-certified-v1-r11-durable-response",
+  "sourceStateId": "631df80b4c4e1c300950cae0e30a4991daac08a0e3f8f614e586839b361881ee",
+  "surfaceVersion": "fg12f-certified-v1-r11-hosted-postgres",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -40,16 +40,16 @@
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
     "packages/router/package.json": "b2b596febe0eab8a591ed016e9783170c35ed096",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
-    "packages/server/src/agent-runtime.ts": "4ce4d3610c3c10773b1df5a22a1994e7fa50b9c2",
+    "packages/server/src/agent-runtime.ts": "bbffdbafc8d52647e614cc8ea48ac1fac3df3cac",
     "packages/server/src/autonomous-orchestrator.ts": "35e071ab6e2af04d467910f146d34fd10853a835",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "aacb9c1f016639c0caea9084ea4a70b4693eb708",
+    "packages/server/src/workflow-service.ts": "5390826f640ae06fb46c6f48a550175cd7cb5897",
     "packages/sessions/src/persistence.ts": "ada09ba4e0d8577e843e1c9716bb096a0f997ab4",
     "packages/sessions/src/postgres-persistence.ts": "f47a6a0e3cd9e3064c17b00b4e6516082f738068",
     "packages/sessions/src/session-state.ts": "7b9d54ffbcd494b1c1bc58f1c14773a449f5539d",
     "packages/workflow/src/forge-verify.ts": "71b245de6205f05284aea4d250967963789d3adb",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
-    "packages/workflow/src/types.ts": "a2b484a4acbcac05a4739c1f6cbf5450ff49fe41",
+    "packages/workflow/src/types.ts": "e0336c4d38940c17c2306fc8624b600eeff60f39",
     "packages/workflow/src/verification-evidence-reuse.ts": "c68f351d77896e0ee86513d4bbc148c36b922b6d",
     "packages/workflow/src/verification-reuse-cost-gate.ts": "3c3bc502921ef79a9496d762167f366e5589fd02",
     "packages/workflow/src/verification-service.ts": "d7e3cfddc414e7803232dcf5e32cf37eaf7f34a2"
@@ -595,24 +595,56 @@
       "regressionEvidence": "R10 focused benchmark/server suites passed 25/25 during R11 reconciliation. The two frozen-source sentinels are rerun immediately after this guarded recertification, followed by the complete R11 engineering regression.",
       "recertifiedAt": "2026-09-17",
       "sourceStateConstant": "CODEFORGE_R11_DURABLE_RESPONSE_SOURCE_STATE"
+    },
+    {
+      "label": "R11 PostgreSQL hosted-workflow source-state recertification",
+      "reason": "The real PostgreSQL campaign activated a previously skipped restart test and exposed two release-critical defects: hosted workflows had no top-level resume path, and hosted edit dispatch bypassed the normal approval gate. The repaired path is restart-safe, row-locked across competing processes, approval-gated, and can finish only through ForgeVerify plus evaluateCompletion.",
+      "priorSourceStateId": "243ea365fa0e83f53b301e102879787b7592c3ac11fde929f59517a51703023a",
+      "priorSurfaceVersion": "fg12f-certified-v1-r11-durable-response",
+      "resultingSourceStateId": "631df80b4c4e1c300950cae0e30a4991daac08a0e3f8f614e586839b361881ee",
+      "resultingSurfaceVersion": "fg12f-certified-v1-r11-hosted-postgres",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Applies the existing ForgeZero and approval gates before durable hosted-worker dispatch, so a remote edit cannot bypass the same user authorization required by local execution.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "Persists and resumes the approved workflow plan and pre-edit snapshot across hosted-worker process restarts, then returns control to ForgeVerify and the existing completion gate for the only terminal verdict.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/types.ts",
+          "change": "Represents durable worker suspension as an explicit nonterminal workflow outcome; it cannot be counted as completed and carries no completion authority.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Real PostgreSQL campaign passed 12/12 files and 80/80 tests; hosted continuation unit tests passed 2/2; workflow, sessions, and server builds passed before recertification.",
+      "recertifiedAt": "2026-09-17",
+      "sourceStateConstant": "CODEFORGE_R11_HOSTED_POSTGRES_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above, and the R6 product-hardening recertification above, and the R11 durable final-response recertification above.",
-  "recertifiedAt": "2026-09-17T19:34:25.754Z",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above, and the R6 product-hardening recertification above, and the R11 durable final-response recertification above, and the R11 PostgreSQL hosted-workflow recertification above.",
+  "recertifiedAt": "2026-09-17T20:11:13.367Z",
   "recertification": {
     "phase": "R11 release-candidate closure",
-    "reason": "Reviewed R10 durable final-response persistence",
+    "reason": "PostgreSQL-proven hosted workflow suspension, approval, and resumption",
     "changedFiles": [
       {
         "path": "packages/server/src/agent-runtime.ts",
-        "summary": "Persists a durable final-response work item for completion-gated direct autonomous runs and records an explicit runtime summary when a verified tool run ends without model prose. Completion status still originates from the existing runtime and verification boundaries; persistence cannot promote a blocked run."
+        "summary": "Applies the existing ForgeZero and approval gates before durable hosted-worker dispatch, so a remote edit cannot bypass the same user authorization required by local execution."
       },
       {
         "path": "packages/server/src/workflow-service.ts",
-        "summary": "Persists the completion-gated workflow summary against the initiating user turn after and only after the shared completion authority returns completed, preserving restart-visible final output without changing completion policy."
+        "summary": "Persists and resumes the approved workflow plan and pre-edit snapshot across hosted-worker process restarts, then returns control to ForgeVerify and the existing completion gate for the only terminal verdict."
+      },
+      {
+        "path": "packages/workflow/src/types.ts",
+        "summary": "Represents durable worker suspension as an explicit nonterminal workflow outcome; it cannot be counted as completed and carries no completion authority."
       }
     ],
-    "priorSourceStateId": "af9c0a2124801a5879967543c15cdeb59051129933af5b964b3479a635a86d64",
+    "priorSourceStateId": "243ea365fa0e83f53b301e102879787b7592c3ac11fde929f59517a51703023a",
     "guarded": true
   }
 }

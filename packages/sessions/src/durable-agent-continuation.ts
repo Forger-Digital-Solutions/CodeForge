@@ -186,6 +186,10 @@ export class DurableAgentContinuationStore {
     leaseMs: number;
   }): Promise<ContinuationClaim | undefined> {
     return this.persistence.withTransaction(async (tx) => {
+      // PostgreSQL transactions do not serialize plain SELECTs. Lock the continuation before
+      // reading its lease state so two server processes cannot both observe `ready`, both claim
+      // it, and let the later writer invalidate the first process while it is awaiting approval.
+      await tx.lockWorkItem(input.continuationId);
       const current = validateContinuation(await tx.getWorkItem(input.continuationId));
       if (current.version !== 2) throw new Error("Unsupported agent continuation version for runtime resume");
       const now = Date.now();

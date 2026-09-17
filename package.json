@@ -13,6 +13,8 @@
     "lint": "oxlint --deny-warnings --ignore-pattern tests/evidence/** packages apps tests scripts",
     "typecheck": "tsc -b --force",
     "test": "vitest run",
+    "test:postgres": "node scripts/postgres-test-harness.mjs -- node node_modules/vitest/vitest.mjs run packages/cloud-db/test/postgres.test.ts",
+    "test:postgres:full": "node scripts/postgres-test-harness.mjs -- node node_modules/vitest/vitest.mjs run tests/two-client-authority.test.ts tests/cloud-postgres-adversarial.test.ts tests/fg1-postgres-ledger.test.ts tests/migration-namespace-collision.test.ts packages/cloud-db/test/publication-lease.test.ts packages/cloud-db/test/postgres.test.ts packages/cloud-db/test/parity.test.ts packages/cloud-db/test/account-deletion.test.ts packages/server/test/cf17-pg-restart-e2e.test.ts packages/server/test/hosted-workflow-postgres-r4.test.ts packages/server/test/fg7-postgres-persistence.test.ts packages/eight-bit/test/postgres.test.ts",
     "test:watch": "vitest",
     "clean": "npm run clean --workspaces --if-present",
     "postinstall": "patch-package",

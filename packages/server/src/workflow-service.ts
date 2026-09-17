@@ -11,9 +11,10 @@ import {
   type WorkflowResult,
 } from "@codeforge/workflow";
 import type { WorkflowPlan, ContextBundle, RepoMap, FailureAnalysis, VerificationResult, TaskIntent } from "@codeforge/workflow";
+import type { BeforeSnapshot } from "@codeforge/workflow";
 import type { ForgeVerifyObserver, VerificationAttempt, VerificationEvidence, VerificationPlan, VerificationReuseCostGateReceipt } from "@codeforge/workflow";
 import { loadForgeVerifyEvidence } from "./forge-verify-persistence.js";
-import type { AgentRuntime } from "./agent-runtime.js";
+import type { AgentRuntime, HostedWorkerOptions } from "./agent-runtime.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import { redactSecrets } from "@codeforge/secrets";
 import { WorkspaceService, createWorkspaceService } from "./workspace-service.js";
@@ -24,7 +25,7 @@ export interface WorkflowServiceOptions {
   workspacePath?: string;
   workspaceService?: WorkspaceService;
   /** Factory for AgentRuntime per session — connects workflow to real execution pipeline */
-  getOrCreateRuntime?: (sessionId: string, userId?: string) => AgentRuntime;
+  getOrCreateRuntime?: (sessionId: string, userId?: string, hostedWorker?: HostedWorkerOptions) => AgentRuntime;
   /** When true, Implement/Repair phases delegate to AgentRuntime (real LLM + tools); else heuristic */
   /**
    * Boolean or predicate. A predicate is re-evaluated per run so a provider connected AFTER boot
@@ -43,6 +44,8 @@ export interface WorkflowRunRequest {
   workspacePath?: string;
   verificationCommands?: string[];
   userId?: string;
+  /** Existing durable hosted-workflow identity whose desktop worker executes tool actions. */
+  hostedWorkflowId?: string;
   /** Force heuristic even if real runtime available (for deterministic tests) */
   forceHeuristic?: boolean;
 }
@@ -183,7 +186,7 @@ export class WorkflowService {
   private readonly workspaceService: WorkspaceService;
   private readonly workflows: Map<string, { engine: WorkflowEngine; controller: AbortController; promise: Promise<WorkflowResult>; task: WorkflowTask; adapter: WorkspaceEventAdapter }> = new Map();
   private defaultWorkspacePath?: string;
-  private readonly getOrCreateRuntime?: (sessionId: string, userId?: string) => AgentRuntime;
+  private readonly getOrCreateRuntime?: (sessionId: string, userId?: string, hostedWorker?: HostedWorkerOptions) => AgentRuntime;
   private readonly isRealRuntimeEnabled: () => boolean;
   private readonly userIntentHold?: UserIntentHoldController;
   private readonly agentWorkingBudgetMs: number;
@@ -265,9 +268,10 @@ export class WorkflowService {
     userId: string | undefined,
     signal: AbortSignal,
     adapter: WorkspaceEventAdapter,
+    hostedWorker?: HostedWorkerOptions,
   ): NonNullable<import("@codeforge/workflow").WorkflowEngineOptions["agentExecutor"]> {
     const getRuntime = this.getOrCreateRuntime!;
-    const waitForTurn = async (runtime: AgentRuntime, turnId: string): Promise<{ status: string; turn?: ReturnType<AgentRuntime["getTurn"]>; reason?: string }> => {
+    const waitForTurn = async (runtime: AgentRuntime, turnId: string): Promise<{ status: string; turn?: ReturnType<AgentRuntime["getTurn"]>; reason?: string; continuationId?: string }> => {
       // This budget bounds how long the AGENT may work. Time the turn spends parked on a human
       // decision is not the agent working, so it is excluded: otherwise a user who takes longer than
       // the budget to read an approval has their workflow declared failed for having thought about
@@ -296,6 +300,17 @@ export class WorkflowService {
         }
         if (turn.status === "completed" || turn.status === "failed" || turn.status === "cancelled") {
           return { status: turn.status, turn };
+        }
+        if (turn.status === "waiting_for_worker" && hostedWorker) {
+          const continuations = (await this.persistence.getWorkItemsByKind("agent_continuation"))
+            .filter((item) => item.kind === "agent_continuation" && item.workflowId === hostedWorker.workflowId && item.turnId === turnId)
+            .sort((left, right) => {
+              const leftUpdatedAt = "updatedAt" in left ? String(left.updatedAt) : "";
+              const rightUpdatedAt = "updatedAt" in right ? String(right.updatedAt) : "";
+              return rightUpdatedAt.localeCompare(leftUpdatedAt);
+            });
+          const continuationId = continuations[0]?.id;
+          if (continuationId) return { status: "suspended", turn, continuationId };
         }
         if (turn.status === "waiting_for_approval") {
           // Paused on the user, not stalled: do not charge this to the working budget. The runtime
@@ -359,15 +374,18 @@ export class WorkflowService {
         repoMap: RepoMap,
         intent: TaskIntent,
         sig?: AbortSignal,
-      ): Promise<{ success: boolean; output: string; turnId?: string }> => {
+      ): Promise<{ success: boolean; output: string; turnId?: string; suspended?: boolean }> => {
         const prompt = buildImplementPrompt(plan, context, repoMap, intent);
         adapter.emitAgentStarted(`agent-${plan.id.slice(0, 8)}`, "Builder", plan.id);
-        const runtime = getRuntime(sessionId, userId);
+        const runtime = getRuntime(sessionId, userId, hostedWorker);
         const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Implementing the approved plan" });
         const result = await waitForTurn(runtime, turnId);
         if (result.status === "completed") {
           adapter.emitAgentCompleted(`agent-${plan.id.slice(0, 8)}`, plan.id);
           return { success: true, output: `Turn ${turnId} completed`, turnId };
+        }
+        if (result.status === "suspended") {
+          return { success: false, suspended: true, output: `Turn ${turnId} is waiting for the desktop worker`, turnId };
         }
         if (result.status === "budget_exhausted") {
           return { success: false, output: `Turn ${turnId} stopped: ${result.reason}`, turnId };
@@ -386,7 +404,7 @@ export class WorkflowService {
         _sig?: AbortSignal,
       ): Promise<{ success: boolean; output: string; turnId?: string }> => {
         const prompt = buildRepairPrompt(analysis, verification, context, intent);
-        const runtime = getRuntime(sessionId, userId);
+        const runtime = getRuntime(sessionId, userId, hostedWorker);
         const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Repairing verification failures" });
         const result = await waitForTurn(runtime, turnId);
         if (result.status === "completed") return { success: true, output: `Repair turn ${turnId} completed`, turnId };
@@ -407,6 +425,17 @@ export class WorkflowService {
       throw new Error(validated.error ?? "Invalid workspace");
     }
     const workspacePath = validated.resolved;
+    const hostedWorkflow = request.hostedWorkflowId
+      ? await this.persistence.getWorkItem(request.hostedWorkflowId)
+      : undefined;
+    if (request.hostedWorkflowId) {
+      if (!hostedWorkflow || hostedWorkflow.kind !== "hosted_workflow") {
+        throw new Error(`Hosted workflow ${request.hostedWorkflowId} not found`);
+      }
+      if (hostedWorkflow.sessionId !== sessionId || (request.userId && hostedWorkflow.ownerUserId !== request.userId)) {
+        throw new Error("Hosted workflow ownership does not match the requested session");
+      }
+    }
 
     // Concurrency hardening: at most 1 running workflow per session, max 20 global
     const runningForSession = Array.from(this.workflows.values()).filter(
@@ -462,7 +491,12 @@ export class WorkflowService {
     const clearWorkflowTimeout = () => clearTimeout(workflowTimeout);
 
     const shouldUseRealAgent = !request.forceHeuristic && this.isRealRuntimeEnabled() && !!this.getOrCreateRuntime;
-    const agentExecutor = shouldUseRealAgent ? this.createAgentExecutor(sessionId, request.userId, controller.signal, adapter) : undefined;
+    const hostedWorker = hostedWorkflow?.kind === "hosted_workflow"
+      ? { workflowId: hostedWorkflow.id, workerId: hostedWorkflow.workerId, autoResume: false }
+      : undefined;
+    const agentExecutor = shouldUseRealAgent
+      ? this.createAgentExecutor(sessionId, request.userId, controller.signal, adapter, hostedWorker)
+      : undefined;
 
     const repairAttempts: Array<{ attempt: number; summary: string }> = [];
     // Phase callbacks are synchronous, while persistence is asynchronous. Serialize their writes
@@ -689,6 +723,45 @@ export class WorkflowService {
     const promise = engine.run(request.message).then(
       async (result: WorkflowResult) => {
         clearWorkflowTimeout();
+        if (result.status === "suspended" && hostedWorkflow?.kind === "hosted_workflow" && result.plan && result.suspension) {
+          const continuations = (await this.persistence.getWorkItemsByKind("agent_continuation"))
+            .filter((item) => item.kind === "agent_continuation" && item.workflowId === hostedWorkflow.id && item.turnId === result.suspension!.agentTurnId)
+            .sort((left, right) => {
+              const leftUpdatedAt = "updatedAt" in left ? String(left.updatedAt) : "";
+              const rightUpdatedAt = "updatedAt" in right ? String(right.updatedAt) : "";
+              return rightUpdatedAt.localeCompare(leftUpdatedAt);
+            });
+          const continuationId = continuations[0]?.id;
+          if (!continuationId) throw new Error("Hosted workflow suspended without a durable continuation");
+          const updatedAt = new Date().toISOString();
+          await this.persistence.upsertWorkItem({
+            ...hostedWorkflow,
+            status: "waiting_for_worker",
+            execution: {
+              taskId,
+              workflowTurnId: turnId,
+              agentTurnId: result.suspension.agentTurnId,
+              continuationId,
+              message: request.message,
+              workspacePath,
+              verificationCommands: request.verificationCommands ?? [],
+              plan: result.plan,
+              beforeSnapshots: engine.exportBeforeSnapshots(),
+            },
+            updatedAt,
+          });
+          await phaseStatusWrites;
+          await this.persistence.upsertSession({
+            id: sessionId,
+            title: redactedTitle,
+            createdAt: task.createdAt,
+            updatedAt,
+            status: "running",
+            taskTitle: redactedTitle,
+            workspacePath,
+          });
+          return result;
+        }
         // A workflow that has reached a terminal state must not leave a live approval behind it.
         // An approval outliving its workflow is an orphan: it still holds a resolver that could
         // admit a tool execution for work nobody is waiting on any more, and it renders as a card
@@ -921,6 +994,209 @@ export class WorkflowService {
     const entry = this.workflows.get(taskId);
     if (!entry) return undefined;
     return { task: entry.engine.getTask(), promise: entry.promise };
+  }
+
+  /**
+   * Resumes one durable hosted-agent continuation. The continuation lease selects exactly one
+   * caller across competing server processes; only a completed agent loop is handed back to the
+   * normal WorkflowEngine, where ForgeVerify and evaluateCompletion remain the sole authorities.
+   */
+  async resumeHostedWorkflow(
+    workflowId: string,
+    userId: string,
+  ): Promise<{ status: "resumed" | "suspended" | "not_ready" | "cancelled" | "failed" }> {
+    if (!this.getOrCreateRuntime) throw new Error("Agent runtime is not configured");
+    const workflow = await this.persistence.getWorkItem(workflowId);
+    if (!workflow || workflow.kind !== "hosted_workflow") throw new Error(`Hosted workflow ${workflowId} not found`);
+    if (workflow.ownerUserId !== userId) throw new Error("Hosted workflow owner mismatch");
+
+    const execution = workflow.execution as Record<string, unknown> | undefined;
+    const continuationId = execution?.continuationId;
+    const taskId = execution?.taskId;
+    const workflowTurnId = execution?.workflowTurnId;
+    const message = execution?.message;
+    const workspacePath = execution?.workspacePath;
+    const plan = execution?.plan;
+    const rawSnapshots = execution?.beforeSnapshots;
+    const rawCommands = execution?.verificationCommands;
+    if (
+      typeof continuationId !== "string"
+      || typeof taskId !== "string"
+      || typeof workflowTurnId !== "string"
+      || typeof message !== "string"
+      || typeof workspacePath !== "string"
+      || !plan
+      || typeof plan !== "object"
+      || !Array.isArray(rawSnapshots)
+    ) {
+      throw new Error("Hosted workflow execution state is incomplete");
+    }
+
+    const hostedWorker: HostedWorkerOptions = {
+      workflowId,
+      workerId: workflow.workerId,
+      autoResume: false,
+    };
+    const runtime = this.getOrCreateRuntime(workflow.sessionId, userId, hostedWorker);
+    const outcome = await runtime.resumeAgentContinuation(continuationId);
+    if (outcome.kind === "not_ready") return { status: "not_ready" };
+    if (outcome.kind === "cancelled") return { status: "cancelled" };
+    if (outcome.kind === "failed") {
+      await this.persistence.upsertWorkItem({
+        ...workflow,
+        status: "failed",
+        failureReason: outcome.reason,
+        updatedAt: new Date().toISOString(),
+      });
+      return { status: "failed" };
+    }
+    if (outcome.kind === "suspended") {
+      await this.persistence.upsertWorkItem({
+        ...workflow,
+        status: "waiting_for_worker",
+        execution: { ...execution, continuationId: outcome.continuationId, agentTurnId: execution?.agentTurnId },
+        updatedAt: new Date().toISOString(),
+      });
+      return { status: "suspended" };
+    }
+
+    const validated = validateWorkspacePath(workspacePath);
+    if (!validated.valid || !validated.resolved) throw new Error(validated.error ?? "Invalid hosted workspace");
+    const controller = new AbortController();
+    const adapter = createWorkspaceEventAdapter({
+      sessionId: workflow.sessionId,
+      runId: taskId,
+      eventStore: this.eventStore,
+      persistence: this.persistence,
+    });
+    const persistForgeVerify = async (
+      recordType: "plan" | "attempt" | "evidence" | "cost_gate_receipt",
+      id: string,
+      planId: string,
+      value: VerificationPlan | VerificationAttempt | VerificationEvidence | VerificationReuseCostGateReceipt,
+    ): Promise<void> => {
+      const createdAt = "createdAt" in value ? value.createdAt : value.startedAt;
+      const updatedAt = "finishedAt" in value && value.finishedAt ? value.finishedAt : createdAt;
+      const item = {
+        kind: "verification",
+        id,
+        sessionId: workflow.sessionId,
+        runId: taskId,
+        recordType,
+        planId,
+        ...("verifierId" in value ? { verifierId: value.verifierId } : {}),
+        ...("status" in value ? { status: value.status } : {}),
+        payload: JSON.parse(JSON.stringify(value)) as Record<string, unknown>,
+        createdAt,
+        updatedAt,
+      } as import("@codeforge/sessions").WorkItem;
+      if (recordType === "attempt") await this.persistence.upsertWorkItem(item);
+      else await this.persistence.insertImmutableWorkItem(item);
+    };
+    const verificationObserver: ForgeVerifyObserver = {
+      planCreated: async (verificationPlan) => {
+        await persistForgeVerify("plan", verificationPlan.planId, verificationPlan.planId, verificationPlan);
+        await adapter.emitForgeVerifyPlanCreated(taskId, verificationPlan.planId, verificationPlan.policyVersion, verificationPlan.verifiers.filter((verifier) => verifier.requirement === "required").map((verifier) => verifier.verifierId));
+      },
+      attemptStarted: async (attempt) => {
+        await persistForgeVerify("attempt", attempt.attemptId, attempt.planId, attempt);
+        await adapter.emitForgeVerifyAttemptStarted(taskId, attempt.planId, attempt.attemptId, attempt.verifierId);
+      },
+      attemptTerminal: (attempt) => persistForgeVerify("attempt", attempt.attemptId, attempt.planId, attempt),
+      evidenceCreated: async (evidence) => {
+        await persistForgeVerify("evidence", evidence.evidenceId, evidence.planId, evidence);
+        await adapter.emitForgeVerifyEvidenceCreated(taskId, evidence.planId, evidence.attemptId, evidence.evidenceId, evidence.verifierId, evidence.status, evidence.elapsedMs, evidence.outputTruncated);
+      },
+      loadPriorEvidence: () => loadForgeVerifyEvidence(this.persistence, workflow.sessionId),
+      costGateReceiptCreated: (receipt) => persistForgeVerify("cost_gate_receipt", `${receipt.planId}-cost-gate`, receipt.planId, receipt),
+    };
+    const engine = createWorkflowEngine({
+      workspacePath: validated.resolved,
+      sessionId: workflow.sessionId,
+      taskId,
+      turnId: workflowTurnId,
+      signal: controller.signal,
+      verificationCommands: Array.isArray(rawCommands) && rawCommands.every((command) => typeof command === "string") ? rawCommands : undefined,
+      verificationObserver,
+      beforeVerificationDispatch: this.userIntentHold
+        ? () => this.userIntentHold!.waitForDispatch(workflow.sessionId, "verifier")
+        : undefined,
+      resumeState: {
+        plan: plan as WorkflowPlan,
+        beforeSnapshots: rawSnapshots as Array<[string, BeforeSnapshot]>,
+      },
+    });
+    const lease = this.workspaceService.acquireLease(validated.resolved, taskId, "write");
+    const task = engine.getTask();
+    const promise = engine.run(message).then(async (result) => {
+      const safeResult = {
+        ...result,
+        summary: redactSecrets(result.summary),
+        diffSummary: result.diffSummary ? redactSecrets(result.diffSummary) : undefined,
+      };
+      const updatedAt = new Date().toISOString();
+      await this.persistence.upsertWorkItem({
+        ...workflow,
+        status: safeResult.status,
+        ...(safeResult.status === "completed" ? {} : { failureReason: safeResult.summary }),
+        execution: { ...execution, finalStatus: safeResult.status },
+        updatedAt,
+      });
+      if (safeResult.status === "completed") {
+        await this.persistence.upsertWorkItem({
+          kind: "agent_final_response",
+          id: `agent-final-response-${workflowTurnId}`,
+          sessionId: workflow.sessionId,
+          runId: taskId,
+          turnId: workflowTurnId,
+          status: "completed",
+          response: safeResult.summary,
+          source: "workflow_completion_gate",
+          createdAt: updatedAt,
+          updatedAt,
+        } as unknown as import("@codeforge/sessions").WorkItem);
+        adapter.emitTaskCompleted(taskId, safeResult.summary);
+        await adapter.emitTurnCompleted(workflowTurnId, safeResult.summary);
+      } else {
+        await adapter.emitTurnFailed(workflowTurnId, safeResult.summary);
+      }
+      await this.persistence.upsertSession({
+        id: workflow.sessionId,
+        title: redactSecrets(message.slice(0, 80)),
+        taskTitle: redactSecrets(message.slice(0, 80)),
+        workspacePath: validated.resolved,
+        createdAt: workflow.createdAt,
+        updatedAt,
+        status: safeResult.status === "completed" ? "completed" : "failed",
+      });
+      await this.persistence.upsertTurn({
+        id: workflowTurnId,
+        sessionId: workflow.sessionId,
+        seq: this.eventStore.getLastSeq(),
+        userMessage: redactSecrets(message),
+        status: safeResult.status === "completed" ? "completed" : "failed",
+        startedAt: workflow.createdAt,
+        completedAt: updatedAt,
+        ...(safeResult.status === "completed" ? {} : { error: safeResult.summary }),
+      });
+      return safeResult;
+    }, async (error: unknown) => {
+      const summary = redactSecrets(error instanceof Error ? error.message : String(error));
+      await this.persistence.upsertWorkItem({
+        ...workflow,
+        status: "failed",
+        failureReason: summary,
+        execution: { ...execution, finalStatus: "failed" },
+        updatedAt: new Date().toISOString(),
+      });
+      return { taskId, status: "failed" as const, phase: "failed" as const, summary };
+    });
+    promise.finally(() => {
+      try { this.workspaceService.releaseLease(lease.leaseId, taskId); } catch {}
+    }).catch(() => {});
+    this.workflows.set(taskId, { engine, controller, promise, task, adapter });
+    await this.persistence.upsertWorkItem({ ...workflow, status: "verifying", updatedAt: new Date().toISOString() });
+    return { status: "resumed" };
   }
 
   /**

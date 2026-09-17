@@ -3102,7 +3102,7 @@ export class AgentRuntime {
       if (this.hostedWorker) {
         const tc = toolCalls[0];
         if (!tc) return { kind: "completed" };
-        return await this.dispatchHostedTool(turnId, agentId, tc, adapter, duplicateSupervisor);
+        return await this.dispatchHostedTool(turnId, agentId, tc, adapter, signal, duplicateSupervisor);
       }
 
       for (const tc of toolCalls) {
@@ -3139,6 +3139,7 @@ export class AgentRuntime {
     agentId: string,
     tc: { id: string; name: string; arguments: string },
     adapter: WorkspaceEventAdapter,
+    signal: AbortSignal,
     _duplicateSupervisor: DuplicateActionSupervisor,
   ): Promise<AgentLoopOutcome> {
     if (!this.hostedWorker) {
@@ -3153,6 +3154,23 @@ export class AgentRuntime {
     const actionId = crypto.randomUUID();
     const parsedTc = parseToolArgs(tc.arguments);
     const actionArgs = (parsedTc !== PARSE_FAILED && typeof parsedTc === "object" && parsedTc !== null ? parsedTc : {}) as Record<string, unknown>;
+    if (parsedTc === PARSE_FAILED) {
+      return { kind: "failed", reason: "invalid_tool_arguments" };
+    }
+    const approvalNeeded = this.requiresApproval(tc.name, parsedTc);
+    if (approvalNeeded.requires && !this.hasSessionGrant(approvalNeeded)) {
+      const gateResult = await this.gateWithApproval(
+        turnId,
+        tc.name,
+        tc.id,
+        approvalNeeded,
+        adapter,
+        signal,
+      );
+      if (!gateResult.approved) {
+        return { kind: "failed", reason: `approval_${gateResult.state}` };
+      }
+    }
     const actionType = toWorkerActionType(tc.name);
     const now = new Date().toISOString();
     const turnState = this.activeTurns.get(turnId);

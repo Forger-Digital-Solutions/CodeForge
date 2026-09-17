@@ -87,6 +87,11 @@ export interface WorkflowEngineOptions {
   forgeGreen?: ForgeGreenAdvisor;
   /** Timing-only hook used by a client scheduler; it cannot alter verification authority. */
   beforeVerificationDispatch?: () => Promise<void>;
+  /** Durable state restored after a hosted desktop-worker handoff. */
+  resumeState?: {
+    plan: WorkflowPlan;
+    beforeSnapshots: Array<[string, BeforeSnapshot]>;
+  };
   onPhaseChange?: (phase: WorkflowPhase, task: WorkflowTask) => void;
   onEvent?: (event: { type: string; phase: WorkflowPhase; payload: unknown }) => void;
   askForApproval?: (plan: WorkflowPlan) => Promise<"allow_once" | "allow_session" | "deny">;
@@ -110,7 +115,7 @@ export interface WorkflowEngineOptions {
       repoMap: RepoMap,
       intent: TaskIntent,
       signal?: AbortSignal,
-    ) => Promise<{ success: boolean; output: string; turnId?: string }>;
+    ) => Promise<{ success: boolean; output: string; turnId?: string; suspended?: boolean }>;
     executeRepair?: (
       analysis: FailureAnalysis,
       verification: VerificationResult,
@@ -139,6 +144,7 @@ export class WorkflowEngine {
   private readonly agentExecutor?: WorkflowEngineOptions["agentExecutor"];
   private readonly beforeVerificationDispatch?: WorkflowEngineOptions["beforeVerificationDispatch"];
   private readonly forgeGreen: ForgeGreenAdvisor;
+  private readonly resumeState?: WorkflowEngineOptions["resumeState"];
   private task: WorkflowTask;
   private phase: WorkflowPhase = "received";
   private beforeSnapshots: Map<string, BeforeSnapshot> = new Map();
@@ -159,6 +165,8 @@ export class WorkflowEngine {
     this.implementer = options.implementer;
     this.agentExecutor = options.agentExecutor;
     this.beforeVerificationDispatch = options.beforeVerificationDispatch;
+    this.resumeState = options.resumeState;
+    if (options.resumeState) this.beforeSnapshots = new Map(options.resumeState.beforeSnapshots);
     this.forgeGreen = options.forgeGreen ?? createForgeGreenAdvisor();
     const now = new Date().toISOString();
     this.task = {
@@ -178,6 +186,10 @@ export class WorkflowEngine {
 
   getTask(): WorkflowTask {
     return { ...this.task };
+  }
+
+  exportBeforeSnapshots(): Array<[string, BeforeSnapshot]> {
+    return Array.from(this.beforeSnapshots.entries());
   }
 
   /**
@@ -242,7 +254,7 @@ export class WorkflowEngine {
     try {
       this.ensureNotAborted();
       // Snapshot before
-      this.snapshotBefore();
+      if (!this.resumeState) this.snapshotBefore();
 
       // 1. Understand
       this.setPhase("understanding", "reconnaissance");
@@ -266,13 +278,27 @@ export class WorkflowEngine {
 
       // 4. Create Plan
       this.setPhase("planning", "planning");
-      let plan = createPlan(intent, context, repoMap, this.task.id);
-      plan = { ...plan, revision: 1 };
+      let plan = this.resumeState?.plan ?? createPlan(intent, context, repoMap, this.task.id);
+      plan = this.resumeState
+        ? {
+            ...plan,
+            steps: plan.steps.map((step) =>
+              step.kind === "edit" || step.kind === "write" || step.kind === "read" || step.kind === "inspect"
+                ? { ...step, status: "completed" as const }
+                : step,
+            ),
+            updatedAt: new Date().toISOString(),
+          }
+        : { ...plan, revision: 1 };
       this.task.planId = plan.id;
-      this.onEvent?.({ type: "workflow.plan_created", phase: this.phase, payload: { planId: plan.id, steps: plan.steps.length } });
+      if (!this.resumeState) {
+        this.onEvent?.({ type: "workflow.plan_created", phase: this.phase, payload: { planId: plan.id, steps: plan.steps.length } });
+      }
 
       // 5. Ask for approval when appropriate
-      if (planRequiresApproval(plan)) {
+      if (this.resumeState) {
+        this.setPhase("implementing", "implementing");
+      } else if (planRequiresApproval(plan)) {
         this.setPhase("awaiting_approval", "user_input_required");
         this.onEvent?.({ type: "workflow.approval_requested", phase: this.phase, payload: { planId: plan.id, requiresApproval: true } });
         if (this.askForApproval) {
@@ -308,10 +334,22 @@ export class WorkflowEngine {
       // 6. Implement
       this.setPhase("implementing", "implementing");
       this.ensureNotAborted();
-      const implementResult = await this.executeImplementation(plan, context, repoMap, intent);
-      plan = implementResult.plan;
-      if (implementResult.failedSteps > 0 && implementResult.appliedCount === 0) {
-        // If no steps applied and some failed, mark as failed but continue to verification to allow repair
+      if (!this.resumeState) {
+        const implementResult = await this.executeImplementation(plan, context, repoMap, intent);
+        plan = implementResult.plan;
+        if (implementResult.suspended && implementResult.turnId) {
+          return {
+            taskId: this.task.id,
+            status: "suspended",
+            phase: "implementing",
+            summary: "Workflow suspended while waiting for a durable desktop-worker result.",
+            plan,
+            suspension: { reason: "awaiting_worker", agentTurnId: implementResult.turnId },
+          };
+        }
+        if (implementResult.failedSteps > 0 && implementResult.appliedCount === 0) {
+          // If no steps applied and some failed, mark as failed but continue to verification to allow repair
+        }
       }
 
       // 7. Run Verification
@@ -566,12 +604,16 @@ export class WorkflowEngine {
     context: ContextBundle,
     repoMap: RepoMap,
     intent: TaskIntent,
-  ): Promise<{ plan: WorkflowPlan; appliedCount: number; failedSteps: number }> {
+  ): Promise<{ plan: WorkflowPlan; appliedCount: number; failedSteps: number; suspended?: boolean; turnId?: string }> {
     // Real AgentRuntime path: delegate whole plan to the agent for autonomous tool execution
     if (this.agentExecutor) {
       this.onEvent?.({ type: "workflow.implementation_started", phase: this.phase, payload: { planId: plan.id, steps: plan.steps.length } });
       try {
         const result = await this.agentExecutor.executePlan(plan, context, repoMap, intent, this.signal);
+        if (result.suspended) {
+          this.implementationStopReason = null;
+          return { plan, appliedCount: 0, failedSteps: 0, suspended: true, turnId: result.turnId };
+        }
         this.implementationStopReason = result.success ? null : result.output;
         let currentPlan = plan;
         if (result.success) {

@@ -69,7 +69,7 @@ async function createGraph(connectionString: string, sessionId: string, ownerUse
     eventStore: workflowEvents,
     persistence,
     useRealRuntime: true,
-    getOrCreateRuntime: (runtimeSessionId, runtimeUserId) => {
+    getOrCreateRuntime: (runtimeSessionId, runtimeUserId, hostedWorker) => {
       runtime ??= createAgentRuntime({
         sessionId: runtimeSessionId,
         eventStore: new EventStore(),
@@ -77,6 +77,7 @@ async function createGraph(connectionString: string, sessionId: string, ownerUse
         firewall,
         providerCatalog: catalog,
         userId: runtimeUserId ?? ownerUserId,
+        hostedWorker,
       });
       return runtime;
     },
@@ -200,7 +201,12 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("R4 hosted authority through r
     const editApprovalId = await waitForApproval(graphB.persistence, "edit_file");
     const approvalOwner = [runtimeB, competingRuntimeB].find((runtime) => runtime.getApprovalService().getRecord(editApprovalId));
     if (!approvalOwner) throw new Error("hosted edit approval owner was not found");
-    approvalOwner.getApprovalService().resolve(editApprovalId, "allow_once");
+    await approvalOwner.resolveApproval(editApprovalId, "allow_once");
+    expect(await graphB.persistence.getWorkItem(editApprovalId)).toMatchObject({
+      kind: "approval",
+      decision: "allow_once",
+      resolvedAt: expect.any(String),
+    });
     const recoveryStatuses = (await Promise.all([resumedB, competingResume])).map((result) => result.status).sort();
     expect(recoveryStatuses).toEqual(["not_ready", "suspended"]);
     const second = await continuation(graphB.persistence, workflowId);

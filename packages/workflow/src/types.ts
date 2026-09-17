@@ -214,7 +214,7 @@ export interface WorkflowTask {
 
 export interface WorkflowResult {
   taskId: string;
-  status: "completed" | "blocked" | "failed" | "cancelled" | "requires_approval";
+  status: "completed" | "blocked" | "failed" | "cancelled" | "requires_approval" | "suspended";
   phase: WorkflowPhase;
   summary: string;
   plan?: WorkflowPlan;
@@ -228,6 +228,11 @@ export interface WorkflowResult {
   checkpointId?: string;
   diffSummary?: string;
   verificationRecommendation?: import("@codeforge/forge-green").VerificationRecommendation;
+  /** Nonterminal handoff to a durable desktop worker. Completion remains gated after resume. */
+  suspension?: {
+    reason: "awaiting_worker";
+    agentTurnId: string;
+  };
 }
 
 export interface ApprovalRequest {
