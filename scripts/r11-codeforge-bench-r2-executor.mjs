@@ -4,11 +4,11 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import { pathToFileURL } from "node:url";
 import { ForgeZero } from "@codeforge/forge-zero";
 import { discoverAndVerifyFree, NormalizedModelRegistry } from "@codeforge/model-registry";
 import { createOpenRouterAdapter, InMemoryProviderCatalog } from "@codeforge/providers";
 import { CodeForgeServer } from "@codeforge/server";
+import { verifyWorkspace } from "./r11-codeforge-bench-r2-hidden-verifier.mjs";
 
 const execFile = promisify(execFileCallback);
 const ROUTE = "cohere/north-mini-code:free";
@@ -80,7 +80,7 @@ async function materializeFixture(workspace, benchmarkCase) {
     "",
     `Expected behavior: ${benchmarkCase.expectedBehavior}`,
     "",
-    "Preserve public APIs and existing tests. Do not edit files under test/. Run `npm test` after the smallest complete change.",
+    "Preserve public APIs. Do not delete or weaken existing acceptance tests. Run `npm test` after the smallest complete change.",
     "",
   ].join("\n"));
 
@@ -181,58 +181,6 @@ async function materializeFixture(workspace, benchmarkCase) {
   return { family };
 }
 
-async function hiddenVerify(workspace, family, preserved) {
-  const findings = [];
-  const expect = (condition, message) => { if (!condition) findings.push(message); };
-  if (family === "analysis") {
-    const text = await fs.readFile(path.join(workspace, "REPORT.md"), "utf8").catch(() => "");
-    expect(/CompletionGate/.test(text) && /ForgeZero/.test(text) && /EightBit|8-Bit/.test(text), "report omitted an authority owner");
-    expect(/Free/i.test(text) && /BYOK/i.test(text) && /GEMS/i.test(text), "report collapsed routing boundaries");
-  } else if (family === "planning") {
-    const text = await fs.readFile(path.join(workspace, "PLAN.md"), "utf8").catch(() => "");
-    expect(/exact/i.test(text) && /adaptive/i.test(text) && /verification/i.test(text) && /uncertain|assum/i.test(text), "plan omitted selection, verification, or uncertainty");
-  } else if (family === "review") {
-    const text = await fs.readFile(path.join(workspace, "REVIEW.md"), "utf8").catch(() => "");
-    expect(/blocking/i.test(text) && /receipt|verification/i.test(text), "review missed the blocking authority regression");
-  } else if (family === "tests") {
-    const files = await fs.readdir(path.join(workspace, "test")).catch(() => []);
-    const text = (await Promise.all(files.map((file) => fs.readFile(path.join(workspace, "test", file), "utf8")))).join("\n");
-    expect((text.match(/test\s*\(/g) ?? []).length >= 3, "behavioral test suite did not cover three outcomes");
-    const module = await import(`${pathToFileURL(path.join(workspace, "src", "parser.mjs")).href}?v=${Date.now()}`);
-    expect(module.parseResponse("").kind === "empty", "empty response was not classified separately");
-    expect(module.parseResponse(null).kind === "malformed", "malformed response was not classified separately");
-  } else if (family === "routing") {
-    const module = await import(`${pathToFileURL(path.join(workspace, "src", "router.mjs")).href}?v=${Date.now()}`);
-    const routes = [{ id: "paid", free: false, healthy: true }, { id: "free", free: true, healthy: true }];
-    expect(module.selectRoute(routes, { mode: "exact", id: "paid" })?.id === "paid", "exact selection substituted another route");
-    expect(module.selectRoute(routes, { mode: "free-auto" })?.id === "free", "free auto crossed the cost boundary");
-  } else if (family === "recovery") {
-    const module = await import(`${pathToFileURL(path.join(workspace, "src", "continuation.mjs")).href}?v=${Date.now()}`);
-    const state = { writes: [], consumed: [] };
-    module.applyResult(state, { id: "r1", value: "patch" }); module.applyResult(state, { id: "r1", value: "patch" });
-    expect(state.writes.length === 1 && state.consumed.length === 1, "continuation replay duplicated a mutation");
-  } else if (family === "security") {
-    const module = await import(`${pathToFileURL(path.join(workspace, "src", "receipt.mjs")).href}?v=${Date.now()}`);
-    const receipt = module.sanitizeReceipt({ providerId: "p", token: "secret", apiKey: "secret" });
-    expect(!("token" in receipt) && !("apiKey" in receipt), "receipt retained credential material");
-    expect(module.freeEligible({ free: false, byok: true, paid: false }) === false, "BYOK entered Free Auto eligibility");
-  } else if (family === "localization") {
-    const generated = await fs.readFile(path.join(workspace, "src", "generated", "owner.mjs"), "utf8");
-    expect(generated === preserved.generatedOwner, "generated duplicate was edited");
-    const module = await import(`${pathToFileURL(path.join(workspace, "src", "runtime", "owner.mjs")).href}?v=${Date.now()}`);
-    expect(module.normalize("  ALPHA  ") === "alpha", "executable owner remains defective");
-  } else if (family === "verification") {
-    const module = await import(`${pathToFileURL(path.join(workspace, "src", "authorize.mjs")).href}?v=${Date.now()}`);
-    expect(module.authorize("admin") === true && module.authorize("guest") === false && module.authorize("unknown") === false, "negative authorization path remains open");
-  } else {
-    const module = await import(`${pathToFileURL(path.join(workspace, "src", "calculator.mjs")).href}?v=${Date.now()}`);
-    expect(module.add(-2, 3) === 1 && module.add(0, 0) === 0, "add repair failed hidden values");
-  }
-  if (preserved.stagedUser) expect(await fs.readFile(path.join(workspace, "USER-STAGED.txt"), "utf8").catch(() => "") === preserved.stagedUser, "staged user change was overwritten");
-  if (preserved.untrackedUser) expect(await fs.readFile(path.join(workspace, "USER-SCRATCH.txt"), "utf8").catch(() => "") === preserved.untrackedUser, "untracked user file was removed");
-  return { passed: findings.length === 0, findings };
-}
-
 async function initializeHarness() {
   if (!process.env.OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY is not configured");
   const provider = createOpenRouterAdapter({ timeoutMs: 120_000 });
@@ -298,7 +246,9 @@ export async function executeCase(context) {
       context.case.expectedBehavior,
       "Read TASK.md and the repository before acting. Complete the concrete fixture task with the smallest safe change. Do not change acceptance tests. Run npm test. Do not merely describe the fix.",
     ].join("\n\n");
-    const send = await requestJson(live.base, "/api/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId, executionMode: "agent", message: prompt, verificationCommands: ["npm test"] }) });
+    const hiddenVerifierPath = path.resolve("scripts/r11-codeforge-bench-r2-hidden-verifier.mjs").replaceAll("\\", "/");
+    const hiddenVerifierCommand = `node -- ${JSON.stringify(hiddenVerifierPath)} ${JSON.stringify(workspace.replaceAll("\\", "/"))} ${fixture.family}`;
+    const send = await requestJson(live.base, "/api/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId, executionMode: "agent", message: prompt, verificationCommands: ["npm test", hiddenVerifierCommand] }) });
     const approved = new Set();
     let snapshot;
     const deadline = Date.now() + CASE_TIMEOUT_MS;
@@ -316,7 +266,7 @@ export async function executeCase(context) {
     snapshot ??= await requestJson(live.base, `/api/sessions/${encodeURIComponent(sessionId)}`);
     const terminalTurn = (snapshot.turns ?? []).find((candidate) => candidate.id === send.turnId);
     const visible = await run(process.execPath, ["--test"], workspace);
-    const hidden = await hiddenVerify(workspace, fixture.family, preserved);
+    const hidden = await verifyWorkspace(workspace, fixture.family, preserved);
     const diff = (await run("git", ["diff", "--binary", "HEAD"], workspace)).stdout;
     const changedFiles = (await run("git", ["status", "--short"], workspace)).stdout.split(/\r?\n/).filter(Boolean).map((line) => line.slice(3));
     const events = snapshot.events ?? [];
