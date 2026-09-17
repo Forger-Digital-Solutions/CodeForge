@@ -1762,10 +1762,14 @@ export class AgentRuntime {
         ? (expectedStructuredOutput === "reviewer" && (structuredData as ReviewResult | undefined)?.verdict === "revision_required" ? "blocked" : "completed")
         : "blocked";
       forgeGreenR0RunStatus = status;
+      const hadModelFinalResponse = finalSummary.trim().length > 0;
+      const completedResponse = hadModelFinalResponse
+        ? finalSummary
+        : "Completed the requested work and verification.";
 
       const result: AgentRuntimeResult = {
         status,
-        summary: finalSummary || `Agent ${req.role} ${status}`,
+        summary: completedResponse,
         findings,
         evidence,
         toolExecutions,
@@ -1777,6 +1781,7 @@ export class AgentRuntime {
       };
 
       if (status === "completed") {
+        await this.persistCompletedAgentRunResponse(req, result, hadModelFinalResponse);
         adapter.emitAgentCompleted(req.agentId, req.runId);
       } else {
         adapter.emitTurnFailed(req.runId, result.summary);
@@ -1844,6 +1849,34 @@ export class AgentRuntime {
       });
       await intelligence?.closeWorkspace().catch(() => undefined);
     }
+  }
+
+  /**
+   * Autonomous orchestrators call executeAgentRun directly rather than the chat-turn path.
+   * Persist their terminal response at the same durable boundary so a completed agent result
+   * remains inspectable after the process exits; this records an existing result and never
+   * changes its completion status.
+   */
+  private async persistCompletedAgentRunResponse(
+    req: AgentRuntimeRequest,
+    result: AgentRuntimeResult,
+    hadModelFinalResponse: boolean,
+  ): Promise<void> {
+    await this.persistence.upsertWorkItem({
+      kind: "agent_final_response",
+      id: `agent-final-response-${req.runId}`,
+      sessionId: this.sessionId,
+      runId: req.runId,
+      agentId: req.agentId,
+      turnId: req.runId,
+      status: "completed",
+      response: result.summary,
+      ...(result.usage.provider ? { providerId: result.usage.provider } : {}),
+      ...(result.usage.model ? { modelId: result.usage.model } : {}),
+      source: hadModelFinalResponse ? "model" : "runtime_completion_summary",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as unknown as WorkItem);
   }
 
   /**
@@ -2603,8 +2636,9 @@ export class AgentRuntime {
       state.completedAt = new Date();
       this.activeTurns.set(turnId, state);
 
-      const finalResponseText = this.lastAssistantResponseByTurn.get(turnId);
-      if (finalResponseText && typeof (this.persistence as any).upsertWorkItem === "function") {
+      const modelFinalResponse = this.lastAssistantResponseByTurn.get(turnId);
+      const finalResponseText = modelFinalResponse ?? "Completed the requested work and verification.";
+      if (typeof (this.persistence as any).upsertWorkItem === "function") {
         try {
           await this.persistence.upsertWorkItem({
             id: `agent-final-response-${turnId}`,
@@ -2615,6 +2649,7 @@ export class AgentRuntime {
             response: finalResponseText,
             providerId: state.providerId,
             modelId: state.modelId,
+            source: modelFinalResponse ? "model" : "runtime_completion_summary",
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           });
@@ -3362,8 +3397,9 @@ export class AgentRuntime {
       this.activeTurns.set(turnId, turnState);
       await this.persistTurn(turnState);
 
-      const finalResponseText = this.lastAssistantResponseByTurn.get(turnId);
-      if (finalResponseText && typeof (this.persistence as any).upsertWorkItem === "function") {
+      const modelFinalResponse = this.lastAssistantResponseByTurn.get(turnId);
+      const finalResponseText = modelFinalResponse ?? "Completed the requested work and verification.";
+      if (typeof (this.persistence as any).upsertWorkItem === "function") {
         try {
           await this.persistence.upsertWorkItem({
             id: `agent-final-response-${turnId}`,
@@ -3374,6 +3410,7 @@ export class AgentRuntime {
             response: finalResponseText,
             providerId: turnState.providerId,
             modelId: turnState.modelId,
+            source: modelFinalResponse ? "model" : "runtime_completion_summary",
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           });

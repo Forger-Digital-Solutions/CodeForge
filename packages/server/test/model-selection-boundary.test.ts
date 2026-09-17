@@ -10,6 +10,8 @@ process.env.CODEFORGE_REAL_RUNTIME = "true";
 
 interface SelectionResponse {
   ok?: boolean;
+  providerId?: string;
+  modelId?: string;
   selection?: { providerId?: string; modelId?: string; tier?: string };
   error?: string;
   message?: string;
@@ -116,6 +118,22 @@ describe("HTTP model-selection boundary", () => {
     const turn = await settledTurn(sessionId, turnId);
     expect(turn.status).toBe("completed");
     expect(await currentModelOf(sessionId)).toBe("free-model-1");
+  });
+
+  it("reads the persisted model selection without exposing any credential", async () => {
+    const sessionId = "boundary-read-selection";
+    await postJSON("/api/model-selection", {
+      sessionId,
+      providerId: "codeforge",
+      modelId: "free-model-1",
+    });
+
+    const res = await fetch(`${base}/api/model-selection?sessionId=${sessionId}`);
+    expect(res.status).toBe(200);
+    const selection = (await res.json()) as SelectionResponse;
+    expect(selection).toMatchObject({ ok: true, providerId: "codeforge", modelId: "free-model-1" });
+    expect(selection.selection).toMatchObject({ providerId: "codeforge", modelId: "free-model-1" });
+    expect(JSON.stringify(selection)).not.toMatch(/key|token|secret/i);
   });
 
   it("exposes exactly four Paid Auto models without adding them to ForgeZero free routing", async () => {

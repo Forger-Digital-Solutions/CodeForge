@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "campaign": "CodeForge R9 capability campaign",
+  "recordedAt": "2026-09-17T00:00:00.000Z",
+  "repository": "G:\\CodeForge",
+  "branch": "forger-digital-solutions-forgegreen-certified",
+  "head": "2f646ad1054e703b2d99921acc99c6740c3fb175",
+  "headMatchesR8AuthoritativeCommit": true,
+  "worktree": "clean at reconciliation",
+  "remote": "origin=https://github.com/Forger-Digital-Solutions/CodeForge.git",
+  "runtime": {
+    "node": "v24.19.0",
+    "packageManager": "npm workspace configuration; npm launcher unavailable because its global cli module is missing",
+    "lockfile": "package-lock.json present",
+    "electron": "44.4.1"
+  },
+  "host": {
+    "windowsBuild": "BLOCKED: Win32_OperatingSystem query returned Access denied",
+    "gpu": "Quadro T2000, 4096 MiB, driver 610.60; training authorization and compute budget not established",
+    "postgresql": "BLOCKED: CODEFORGE_TEST_POSTGRES_URL unset",
+    "hostedOAuth": "BLOCKED: CODEFORGE_OAUTH_URL unset; R8 endpoint unavailable",
+    "windowsSigning": "BLOCKED: signing certificate configuration unset"
+  },
+  "providerConfiguration": {
+    "openrouterCredentialPresence": true,
+    "groqCredentialPresence": true,
+    "cloudflareCredentialPresence": false,
+    "paidInferenceExecuted": false,
+    "rawCredentialsRecorded": false
+  },
+  "r8Evidence": {
+    "certification": "docs/certification/codeforge-r8-intelligence-and-routing-certification-2026-09-17.md",
+    "preBenchmark": "docs/evidence/r8-intelligence-benchmark/results/codeforge-bench-r1-pre-optimization.json",
+    "providerSummary": "docs/evidence/r8-intelligence-benchmark/provider-probe-summary-2026-09-17.json",
+    "testJunit": "docs/evidence/r8-intelligence-benchmark/results/full-test-junit.xml"
+  },
+  "r9Decision": "Start with benchmark/evidence infrastructure. Do not claim live capability improvement without independently verified model executions.",
+  "gems": "EXCLUDED: no GEMS model, prompt, route, or production behavior was modified"
+}

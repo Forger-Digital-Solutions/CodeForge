@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "benchmarkVersion": "CodeForgeBench-R2",
+  "campaign": "CodeForge R9 capability campaign",
+  "recordedAt": "2026-09-17T00:00:00.000Z",
+  "records": [],
+  "status": "EMPTY_BECAUSE_NO_R9_MODEL_EXECUTIONS_RECORDED",
+  "policy": "Every future failed attempt must be converted to sanitized bounded metadata before it can enter training, development, or routing analysis. Raw prompts, provider bodies, credentials, and transcripts are not corpus fields."
+}

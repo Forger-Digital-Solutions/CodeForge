@@ -20,4 +20,6 @@ coverage/
 .zcode/
 .claude/
 *.bak
+docs/evidence/**/smoke-user-data/
+docs/evidence/**/smoke-workspace/
 packages/vscode/.vscode-test/

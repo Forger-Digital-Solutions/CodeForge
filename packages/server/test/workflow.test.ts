@@ -81,8 +81,14 @@ describe("Workflow Server Integration", () => {
     // Check session has events
     const sessRes = await fetchJson(`http://localhost:${port}/api/sessions/test-sess`, undefined, "GET");
     expect(sessRes.status).toBe(200);
-    const sessBody = sessRes.body as { events: unknown[]; workItems: unknown[] };
+    const sessBody = sessRes.body as { events: unknown[]; workItems: Array<{ kind: string; turnId?: string; response?: string; source?: string }> };
     expect(sessBody.events.length).toBeGreaterThan(5);
+    expect(sessBody.workItems).toContainEqual(expect.objectContaining({
+      kind: "agent_final_response",
+      turnId: body.turnId,
+      source: "workflow_completion_gate",
+      response: expect.any(String),
+    }));
     // Should have workflow-related events like task.created, plan.started, etc.
     const eventsStr = JSON.stringify(sessBody.events);
     expect(eventsStr).toContain("task.created");

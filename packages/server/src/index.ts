@@ -699,6 +699,11 @@ export class CodeForgeServer {
       return;
     }
 
+    if (url.pathname === "/api/model-selection" && req.method === "GET") {
+      this.handleGetModelSelection(res, url.searchParams.get("sessionId"));
+      return;
+    }
+
     if (url.pathname.match(/^\/api\/providers\/[^/]+\/health$/) && req.method === "GET") {
       this.handleProviderHealth(req, res, url.pathname);
       return;
@@ -2154,6 +2159,13 @@ export class CodeForgeServer {
         res.end(JSON.stringify({ error: "Invalid JSON" }));
       }
     });
+  }
+
+  private handleGetModelSelection(res: http.ServerResponse, requestedSessionId: string | null): void {
+    const sessionId = requestedSessionId && requestedSessionId.trim() ? requestedSessionId : "default";
+    const selection = this.getOrCreateRuntime(sessionId).getModelSelection() ?? { modelId: "auto" };
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify({ ok: true, ...selection, selection }));
   }
 
   private handleModels(res: http.ServerResponse): void {

@@ -23,6 +23,7 @@ const smokeSuiteState = resolve(smokeRoot, 'smoke-suite-id');
 const screenshotDirectory = process.env.CODEFORGE_SMOKE_SCREENSHOT_DIR
   ? resolve(process.env.CODEFORGE_SMOKE_SCREENSHOT_DIR)
   : undefined;
+mkdirSync(smokeRoot, { recursive: true });
 if (mode === 'full') writeFileSync(smokeSuiteState, randomUUID(), 'utf8');
 if (!existsSync(smokeSuiteState)) {
   console.error('[PACKAGED SMOKE] Run full mode before interrupt/recover.');

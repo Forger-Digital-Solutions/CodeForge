@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "timestamp": "2026-09-17T15:56:44.516Z",
+  "purpose": "R5 bounded production compact qualification (harness run; the packaged product keeps its own receipts)",
+  "providerId": "openrouter",
+  "modelId": "cohere/north-mini-code:free",
+  "qualificationState": "QUALIFIED",
+  "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+  "totalLatencyMs": 7034,
+  "requestCount": 3,
+  "transient": false,
+  "roles": {
+    "CODER": {
+      "status": "QUALIFIED",
+      "overallScore": 1,
+      "cases": [
+        {
+          "caseId": "compact.tool_call",
+          "category": "tool_call",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 2265,
+          "retries": 0,
+          "error": null,
+          "details": {
+            "toolCalls": [
+              "read_file"
+            ],
+            "path": "src/calc.ts"
+          }
+        },
+        {
+          "caseId": "compact.edit",
+          "category": "edit",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 2089,
+          "retries": 0,
+          "error": null,
+          "details": {
+            "calls": 2,
+            "path": "src/calc.ts",
+            "oldTextMatches": true,
+            "oldTextHasBug": true,
+            "newTextOk": true,
+            "turns": [
+              {
+                "toolCalls": [
+                  "read_file"
+                ],
+                "finishReason": "tool_calls",
+                "textLength": 0,
+                "outputTokens": 87
+              },
+              {
+                "toolCalls": [
+                  "edit_file"
+                ],
+                "finishReason": "tool_calls",
+                "textLength": 0,
+                "outputTokens": 103
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "TOOL_AGENT": {
+      "status": "QUALIFIED",
+      "overallScore": 1,
+      "cases": [
+        {
+          "caseId": "compact.tool_call",
+          "category": "tool_call",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 2265,
+          "retries": 0,
+          "error": null,
+          "details": {
+            "toolCalls": [
+              "read_file"
+            ],
+            "path": "src/calc.ts"
+          }
+        },
+        {
+          "caseId": "compact.edit",
+          "category": "edit",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 2089,
+          "retries": 0,
+          "error": null,
+          "details": {
+            "calls": 2,
+            "path": "src/calc.ts",
+            "oldTextMatches": true,
+            "oldTextHasBug": true,
+            "newTextOk": true,
+            "turns": [
+              {
+                "toolCalls": [
+                  "read_file"
+                ],
+                "finishReason": "tool_calls",
+                "textLength": 0,
+                "outputTokens": 87
+              },
+              {
+                "toolCalls": [
+                  "edit_file"
+                ],
+                "finishReason": "tool_calls",
+                "textLength": 0,
+                "outputTokens": 103
+              }
+            ]
+          }
+        },
+        {
+          "caseId": "compact.structured",
+          "category": "structured_output",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 2678,
+          "retries": 0,
+          "error": null,
+          "details": {
+            "textLength": 61,
+            "parsed": true
+          }
+        }
+      ]
+    },
+    "ANALYST": {
+      "status": "QUALIFIED",
+      "overallScore": 1,
+      "cases": [
+        {
+          "caseId": "compact.structured",
+          "category": "structured_output",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 2678,
+          "retries": 0,
+          "error": null,
+          "details": {
+            "textLength": 61,
+            "parsed": true
+          }
+        }
+      ]
+    }
+  }
+}

@@ -33,7 +33,8 @@
     "legal:notices": "node scripts/legal/generate-third-party-notices.mjs",
     "audit:legal-release": "node scripts/legal/audit-legal-release.mjs",
     "r4:scale": "node scripts/r4-scale-sim.mjs",
-    "r8:benchmark": "node scripts/r8-codeforge-bench.mjs"
+    "r8:benchmark": "node scripts/r8-codeforge-bench.mjs",
+    "r9:benchmark": "node scripts/r9-codeforge-bench.mjs"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.1.1",

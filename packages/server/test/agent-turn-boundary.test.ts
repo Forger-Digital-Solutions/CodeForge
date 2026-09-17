@@ -40,6 +40,23 @@ class RecordingProvider implements ProviderAdapter {
   async healthCheck() { return { status: "available" as const }; }
 }
 
+class ToolThenSilentProvider extends RecordingProvider {
+  private calls = 0;
+
+  override async *streamChat(request: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+    this.requests.push(structuredClone(request));
+    if (signal?.aborted) return;
+    this.calls += 1;
+    if (this.calls === 1) {
+      yield { type: "tool_call_started", toolCallId: "list-root", toolName: "list_files" };
+      yield { type: "tool_call_completed", toolCallId: "list-root", toolName: "list_files", arguments: JSON.stringify({ path: "." }) };
+      yield { type: "finish", finishReason: "tool_calls" };
+      return;
+    }
+    yield { type: "finish", finishReason: "stop" };
+  }
+}
+
 describe("AgentRuntime durable turn boundaries", () => {
   const persistence = createSessionPersistence();
   const eventStore = new EventStore();
@@ -90,6 +107,78 @@ describe("AgentRuntime durable turn boundaries", () => {
       turnId: secondTurn,
       status: "completed",
       response: "second answer",
+    });
+  });
+
+  it("persists an explicit runtime summary when a verified tool run ends without model prose", async () => {
+    const provider = new ToolThenSilentProvider();
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(provider);
+    const firewall = new ForgeZero();
+    firewall.register(createGenericFreeRecord({ providerId: provider.providerId, modelId: "boundary-model" }));
+    const runtime = createAgentRuntime({
+      sessionId: "turn-boundary-silent-final",
+      eventStore,
+      persistence,
+      firewall,
+      providerCatalog: catalog,
+    });
+    runtime.setModelSelection({ providerId: provider.providerId, modelId: "boundary-model" });
+
+    const turnId = await runtime.startTurn("inspect then finish");
+    const deadline = Date.now() + 5_000;
+    while (Date.now() < deadline) {
+      if ((await persistence.getTurn(turnId))?.status === "completed") break;
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    expect((await persistence.getTurn(turnId))?.status).toBe("completed");
+
+    expect(await persistence.getWorkItem(`agent-final-response-${turnId}`)).toMatchObject({
+      kind: "agent_final_response",
+      turnId,
+      status: "completed",
+      response: "Completed the requested work and verification.",
+      source: "runtime_completion_summary",
+    });
+  });
+
+  it("persists a final response for direct autonomous runs as well as chat turns", async () => {
+    const provider = new ToolThenSilentProvider();
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(provider);
+    const firewall = new ForgeZero();
+    firewall.register(createGenericFreeRecord({ providerId: provider.providerId, modelId: "boundary-model" }));
+    const runtime = createAgentRuntime({
+      sessionId: "turn-boundary-direct-run",
+      eventStore,
+      persistence,
+      firewall,
+      providerCatalog: catalog,
+    });
+    runtime.setModelSelection({ providerId: provider.providerId, modelId: "boundary-model" });
+
+    const runId = "direct-tool-then-silent";
+    const result = await runtime.executeAgentRun({
+      runId,
+      agentId: "coder",
+      role: "coder",
+      goal: "Inspect the workspace then finish.",
+      workspaceId: "boundary-workspace",
+      workspacePath: `${process.cwd()}/packages/server/test/fixtures`,
+      permissions: { read: true, search: true, write: false, executeCommand: false, network: false },
+    });
+
+    expect(result).toMatchObject({
+      status: "completed",
+      summary: "Completed the requested work and verification.",
+    });
+    expect(await persistence.getWorkItem(`agent-final-response-${runId}`)).toMatchObject({
+      kind: "agent_final_response",
+      runId,
+      turnId: runId,
+      status: "completed",
+      response: "Completed the requested work and verification.",
+      source: "runtime_completion_summary",
     });
   });
 });

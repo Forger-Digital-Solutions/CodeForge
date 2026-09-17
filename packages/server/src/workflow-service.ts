@@ -815,6 +815,21 @@ export class WorkflowService {
         }
 
         if (safeResult.status === "completed") {
+          // The workflow's turn id is the user-facing durable identity; child AgentRuntime
+          // turns have their own responses, but the completed workflow must retain the final
+          // completion-gated summary against the initiating turn as well.
+          await this.persistence.upsertWorkItem({
+            kind: "agent_final_response",
+            id: `agent-final-response-${turnId}`,
+            sessionId,
+            runId: taskId,
+            turnId,
+            status: "completed",
+            response: safeResult.summary,
+            source: "workflow_completion_gate",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          } as unknown as import("@codeforge/sessions").WorkItem);
           adapter.emitTaskCompleted(taskId, safeResult.summary);
           adapter.emitStatusChanged("running", "completed");
           // Final turn-like completion for compatibility
