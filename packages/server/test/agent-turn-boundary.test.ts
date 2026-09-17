@@ -100,6 +100,9 @@ describe("AgentRuntime durable turn boundaries", () => {
     expect(provider.requests[0]!.messages.some((message) => message.content.includes("first request"))).toBe(true);
     expect(provider.requests[1]!.messages.some((message) => message.content.includes("first request"))).toBe(false);
     expect(provider.requests[1]!.messages.some((message) => message.content.includes("second request"))).toBe(true);
+    const systemPrompt = provider.requests[0]!.messages.find((message) => message.role === "system")?.content ?? "";
+    expect(systemPrompt).toContain("smallest complete change");
+    expect(systemPrompt).toContain("stop using tools once the requirements and checks pass");
 
     const finalResponse = await persistence.getWorkItem(`agent-final-response-${secondTurn}`);
     expect(finalResponse).toMatchObject({
@@ -180,5 +183,42 @@ describe("AgentRuntime durable turn boundaries", () => {
       response: "Completed the requested work and verification.",
       source: "runtime_completion_summary",
     });
+  });
+
+  it("preserves the eligibility reason when an exact route is temporarily unavailable", async () => {
+    const provider = new RecordingProvider();
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(provider);
+    const firewall = new ForgeZero();
+    firewall.register(createGenericFreeRecord({
+      providerId: provider.providerId,
+      modelId: "boundary-model",
+      health: {
+        status: "rate_limited",
+        lastCheckedAt: new Date().toISOString(),
+        retryAfter: Date.now() + 60_000,
+      },
+    }));
+    const runtime = createAgentRuntime({
+      sessionId: "turn-boundary-temporarily-ineligible",
+      eventStore,
+      persistence,
+      firewall,
+      providerCatalog: catalog,
+    });
+    runtime.setModelSelection({ providerId: provider.providerId, modelId: "boundary-model" });
+
+    const turnId = await runtime.startTurn("keep the exact selection");
+    const deadline = Date.now() + 5_000;
+    let turn = await persistence.getTurn(turnId);
+    while (Date.now() < deadline && turn?.status !== "failed") {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      turn = await persistence.getTurn(turnId);
+    }
+
+    expect(turn?.status).toBe("failed");
+    expect(turn?.error).toContain("temporarily ineligible");
+    expect(turn?.error).toContain("health=rate_limited");
+    expect(provider.requests).toHaveLength(0);
   });
 });

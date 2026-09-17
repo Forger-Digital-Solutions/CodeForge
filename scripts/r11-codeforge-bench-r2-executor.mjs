@@ -15,9 +15,14 @@ const ROUTE = "cohere/north-mini-code:free";
 const CASE_TIMEOUT_MS = Number(process.env.CODEFORGE_R2_CASE_TIMEOUT_MS ?? 5 * 60_000);
 const EVIDENCE_ROOT = path.resolve(process.env.CODEFORGE_R2_EVIDENCE_DIR ?? "docs/evidence/r11-release-candidate-closure/r2/raw");
 let harnessPromise;
+let routeNotBefore = 0;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
+const safeDiagnostic = (value) => String(value ?? "")
+  .replace(/(?:sk|key|token)[-_a-z0-9]{12,}/gi, "[REDACTED]")
+  .replace(/bearer\s+[^\s"']+/gi, "Bearer [REDACTED]")
+  .slice(0, 2_000);
 
 async function write(file, value) {
   await fs.mkdir(path.dirname(file), { recursive: true });
@@ -260,6 +265,8 @@ async function harness() {
 export async function executeCase(context) {
   const live = await harness();
   const started = Date.now();
+  const capacityWaitMs = Math.max(0, routeNotBefore - Date.now());
+  if (capacityWaitMs > 0) await sleep(capacityWaitMs);
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), `codeforge-r2-${context.case.id.toLowerCase()}-`));
   const workspace = path.join(tempRoot, "workspace");
   const evidenceDir = path.join(EVIDENCE_ROOT, context.case.id, context.runId);
@@ -318,7 +325,15 @@ export async function executeCase(context) {
     const status = ["completed", "blocked", "failed", "cancelled"].includes(terminalTurn?.status) ? terminalTurn.status : "failed";
     const verified = status === "completed" && visible.exitCode === 0 && hidden.passed && forgeVerifyPassed;
     const toolStarted = events.filter((event) => event.type === "tool.execution_started");
+    const tokenUsage = events.filter((event) => event.type === "token.usage");
+    const routeSelections = events.filter((event) => event.type === "router.selection");
     const payloadTool = (event) => String(event.payload?.toolName ?? event.payload?.tool ?? "");
+    const terminalError = safeDiagnostic(terminalTurn?.error);
+    const providerFailure = /429|rate.?limit|quota|provider|temporarily unavailable|bad gateway|service unavailable|ineligible/i.test(terminalError);
+    if (providerFailure) routeNotBefore = Math.max(routeNotBefore, Date.now() + 65_000);
+    const providerCalls = Math.max(tokenUsage.length, routeSelections.length > 0 ? 1 : 0);
+    const inputTokens = tokenUsage.reduce((sum, event) => sum + Number(event.payload?.inputTokens ?? 0), 0);
+    const outputTokens = tokenUsage.reduce((sum, event) => sum + Number(event.payload?.outputTokens ?? 0), 0);
     const verifierOutput = `${visible.stdout}\n${visible.stderr}`.trim().slice(-4_000);
     const evidence = {
       schemaVersion: 1,
@@ -330,6 +345,7 @@ export async function executeCase(context) {
       taskId: send.taskId,
       turnId: send.turnId,
       terminalStatus: terminalTurn?.status ?? "timeout",
+      terminalError,
       approvedActions: approved.size,
       changedFiles,
       diffHash: sha256(diff),
@@ -352,16 +368,33 @@ export async function executeCase(context) {
       routing: { requestedMode: "exact", selectedProviderId: "openrouter", selectedModelId: ROUTE, alternativesConsidered: 0, fallbackCount: 0, topology: "solo" },
       verification: { verifierId: "r11-r2-independent-fixture-verifier", visibleAcceptance: visible.exitCode === 0 ? "passed" : "failed", protectedAcceptance: "not_run", forgeVerify: forgeVerifyPassed ? "passed" : status === "completed" ? "failed" : "blocked" },
       metrics: {
-        providerCalls: events.filter((event) => /model|provider/.test(event.type) && /start|request/.test(event.type)).length,
+        providerCalls,
+        contextTokens: inputTokens,
+        outputTokens,
         toolCalls: toolStarted.length,
         fileReads: toolStarted.filter((event) => payloadTool(event) === "read_file").length,
         searches: toolStarted.filter((event) => /search/.test(payloadTool(event))).length,
         repeatedSearches: 0,
         retries: events.filter((event) => /retry|failover/.test(event.type)).length,
+        capacityWaitMs,
         wallTimeMs: Date.now() - started,
         estimatedCostUsd: 0,
       },
-      ...(verified ? {} : { failure: { failureMode: terminalTurn?.status === undefined ? "timeout" : !hidden.passed ? "hidden_verifier_failure" : !forgeVerifyPassed ? "forgeverify_or_completion_gate" : "visible_verifier_failure", verifierFindings: hidden.findings, hypothesizedLayer: fixture.family } }),
+      ...(verified ? {} : { failure: {
+        failureMode: terminalTurn?.status === undefined
+          ? "timeout"
+          : providerFailure
+            ? /429|rate.?limit|quota|temporarily ineligible/i.test(terminalError) ? "provider_rate_limited" : "provider_failure"
+            : !hidden.passed
+              ? "hidden_verifier_failure"
+              : !forgeVerifyPassed
+                ? "forgeverify_or_completion_gate"
+                : "visible_verifier_failure",
+        lastCorrectState: routeSelections.length > 0 ? "exact verified-free route selected" : "fixture prepared and exact route requested",
+        incorrectAction: terminalError || undefined,
+        verifierFindings: hidden.findings,
+        hypothesizedLayer: providerFailure ? "provider" : fixture.family,
+      } }),
       fixtureEvidence: { fixtureId: `${context.case.id}-${fixture.family}-v1`, startingCommit, changedFiles, diffHash: sha256(diff), verifierCommand: "node --test", verifierExitCode: visible.exitCode, verifierOutput, cleanup: "completed" },
     };
   } finally {

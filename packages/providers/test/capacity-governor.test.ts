@@ -46,6 +46,16 @@ function createMockClock(initialTime = 1_000_000) {
 }
 
 describe("ProviderCapacityGovernor — evidence-driven capacity control", () => {
+  it("uses a conservative OpenRouter fallback below the observed 15 RPM free-route limit", () => {
+    const governor = new ProviderCapacityGovernor();
+
+    expect(governor.getEffectiveLimits("openrouter")).toEqual({
+      maxTokensPerMinute: 60000,
+      maxRequestsPerMinute: 14,
+      maxConcurrent: 1,
+    });
+  });
+
   it("1. tracks token consumption and prunes history after sliding 60-second window", async () => {
     const clock = createMockClock();
     const governor = new ProviderCapacityGovernor({

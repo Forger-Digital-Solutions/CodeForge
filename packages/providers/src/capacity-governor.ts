@@ -30,6 +30,11 @@ export interface ProviderCapacityLimit {
  * Other providers are given conservative pacing until headers establish true limits.
  */
 export const DEFAULT_FALLBACK_LIMITS: Readonly<Record<string, ProviderCapacityLimit>> = {
+  openrouter: {
+    maxTokensPerMinute: 60000,
+    maxRequestsPerMinute: 14,
+    maxConcurrent: 1,
+  },
   groq: {
     maxTokensPerMinute: 7500,
     maxRequestsPerMinute: 28,

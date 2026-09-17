@@ -2830,6 +2830,9 @@ export class AgentRuntime {
             }
             return requested;
           }
+          throw new Error(
+            `Exact model ${providerId}::${modelId} is temporarily ineligible: ${v.error.message}. Exact model execution failed closed.`,
+          );
         }
         throw new Error(
           `Exact model ${providerId}::${modelId} is no longer registered or available. Exact model execution failed closed.`
@@ -3638,8 +3641,9 @@ export class AgentRuntime {
     const parts: string[] = [
       "You are CodeForge, an autonomous software engineering agent.",
       "You help users with coding tasks by reading files, writing code, and executing commands.",
-      "Before finalizing a plan, use the repository intelligence tools to locate relevant symbols, dependencies, dependents, and tests. Use targeted retrieval again when implementation or verification reveals new relationships.",
-      "Always think step by step and explain your reasoning.",
+      "When task scope or code ownership is unclear, use repository intelligence to locate relevant symbols, dependencies, dependents, and tests. For a small, already-scoped task, inspect the named task and affected files directly before expanding the search.",
+      "Make the smallest complete change, run verification appropriate to the risk, and stop using tools once the requirements and checks pass. Do not repeat successful reads, edits, or commands without new evidence.",
+      "Work methodically and keep explanations concise and evidence-based.",
     ];
 
     if (this.workspacePath) {
