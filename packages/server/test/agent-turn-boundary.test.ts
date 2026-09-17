@@ -7,6 +7,7 @@ import {
   type ChatResponse,
   type StreamEvent,
   InMemoryProviderCatalog,
+  ProviderCapacityGovernor,
 } from "@codeforge/providers";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 import { createAgentRuntime } from "../src/agent-runtime.js";
@@ -71,12 +72,16 @@ describe("AgentRuntime durable turn boundaries", () => {
     catalog.register(provider);
     const firewall = new ForgeZero();
     firewall.register(createGenericFreeRecord({ providerId: provider.providerId, modelId: "boundary-model" }));
+    const capacityGovernor = new ProviderCapacityGovernor({
+      limits: { [provider.providerId]: { maxTokensPerMinute: 100_000, maxRequestsPerMinute: 100, maxConcurrent: 1 } },
+    });
     const runtime = createAgentRuntime({
       sessionId: "turn-boundary",
       eventStore,
       persistence,
       firewall,
       providerCatalog: catalog,
+      capacityGovernor,
     });
     runtime.setModelSelection({ providerId: provider.providerId, modelId: "boundary-model" });
 
@@ -100,6 +105,7 @@ describe("AgentRuntime durable turn boundaries", () => {
     expect(provider.requests[0]!.messages.some((message) => message.content.includes("first request"))).toBe(true);
     expect(provider.requests[1]!.messages.some((message) => message.content.includes("first request"))).toBe(false);
     expect(provider.requests[1]!.messages.some((message) => message.content.includes("second request"))).toBe(true);
+    expect(capacityGovernor.getCapacityReport(provider.providerId).rpmUsed).toBe(2);
     const systemPrompt = provider.requests[0]!.messages.find((message) => message.role === "system")?.content ?? "";
     expect(systemPrompt).toContain("smallest complete change");
     expect(systemPrompt).toContain("stop using tools once the requirements and checks pass");

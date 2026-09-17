@@ -1,7 +1,8 @@
 import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
 import { planFailureHealthMarking } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
-import type { ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition, ProviderToolExecutionRequest, ProviderToolExecutionResult } from "@codeforge/providers";
+import { defaultCapacityGovernor, type ProviderCapacityGovernor } from "@codeforge/providers";
+import type { ProviderAdapter, ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition, ProviderToolExecutionRequest, ProviderToolExecutionResult } from "@codeforge/providers";
 import { DesktopWorkerActionTypeSchema, type AgentRunJournal, type AgentRunJournalMessage, type DesktopWorkerActionType } from "@codeforge/protocol";
 import {
   createDesktopWorkerBridge,
@@ -357,6 +358,8 @@ export interface AgentRuntimeOptions {
    */
   freeCloud?: FreeCloudRoutingHooks;
   paidAuto?: PaidAutoService;
+  /** Shared provider pacing. Supplying one explicitly also governs deterministic test adapters. */
+  capacityGovernor?: ProviderCapacityGovernor;
 }
 
 function toWorkerActionType(toolName: string): DesktopWorkerActionType {
@@ -472,6 +475,8 @@ export class AgentRuntime {
   private readonly eightBit: EightBitRuntime;
   private readonly freeCloud?: FreeCloudRoutingHooks;
   private readonly paidAuto?: PaidAutoService;
+  private readonly capacityGovernor: ProviderCapacityGovernor;
+  private readonly capacityGovernorIsExplicit: boolean;
   /**
    * "Allow for Session" grants, keyed by `${action}@${risk}` (e.g. `write@moderate`). Held in
    * memory for this session's runtime only — a grant never outlives the process and is never
@@ -505,6 +510,8 @@ export class AgentRuntime {
     this.eightBit = options.eightBit ?? createEightBitRuntime({ firewall: this.firewall, persistence: this.persistence });
     this.freeCloud = options.freeCloud;
     this.paidAuto = options.paidAuto;
+    this.capacityGovernor = options.capacityGovernor ?? defaultCapacityGovernor;
+    this.capacityGovernorIsExplicit = options.capacityGovernor !== undefined;
     this.hostedWorker = options.hostedWorker;
   }
 
@@ -2909,13 +2916,14 @@ export class AgentRuntime {
   private async runAgentLoop(
     turnId: string,
     agentId: string,
-    provider: { streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> },
+    provider: ProviderAdapter,
     request: ChatRequest,
     adapter: WorkspaceEventAdapter,
     signal: AbortSignal,
     iteration: number,
     duplicateSupervisor: DuplicateActionSupervisor,
   ): Promise<AgentLoopOutcome> {
+    provider = this.capacityGovernedProvider(provider, turnId);
     await this.userIntentHold?.waitForDispatch(this.sessionId, "model");
     // Safe steering boundary: drain queued steering instructions for this turn before model inference
     const pendingSteering = this.pendingSteeringByTurn.get(turnId) ?? [];
@@ -3135,6 +3143,16 @@ export class AgentRuntime {
       await this.userIntentHold?.waitForDispatch(this.sessionId, "other");
       return { kind: "completed" };
     }
+  }
+
+  private capacityGovernedProvider(provider: ProviderAdapter, turnId: string): ProviderAdapter {
+    if ((provider as { isGoverned?: boolean }).isGoverned === true) return provider;
+    if (!this.capacityGovernorIsExplicit && provider.isTestProvider === true) return provider;
+    if (typeof (provider as { streamChatWithContext?: unknown }).streamChatWithContext === "function") return provider;
+    const state = this.activeTurns.get(turnId);
+    const model = state?.modelId ? this.firewall.getModel(provider.providerId, state.modelId) : undefined;
+    if (provider.providerId === "paid-auto" || model?.tier === "gems_paid") return provider;
+    return this.capacityGovernor.wrapAdapter(provider);
   }
 
   private async dispatchHostedTool(
