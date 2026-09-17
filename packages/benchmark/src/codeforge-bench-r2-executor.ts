@@ -41,11 +41,19 @@ export interface RunCodeForgeBenchR2CampaignInput {
   attemptNumber?: number;
   now?: () => Date;
   newRunId?: () => string;
+  /** Qualification-only selection. Protected cases still require includeProtected. */
+  caseIds?: readonly string[];
 }
 
 function selectedCases(input: RunCodeForgeBenchR2CampaignInput): readonly CodeForgeBenchR2Case[] {
-  if (input.split && input.split !== "ALL") return CODEFORGE_BENCH_R2_CASES.filter((item) => item.split === input.split);
-  return input.includeProtected ? CODEFORGE_BENCH_R2_CASES : CODEFORGE_BENCH_R2_PUBLIC_CASES;
+  const allowed = input.includeProtected ? CODEFORGE_BENCH_R2_CASES : CODEFORGE_BENCH_R2_PUBLIC_CASES;
+  const bySplit = input.split && input.split !== "ALL" ? allowed.filter((item) => item.split === input.split) : allowed;
+  if (!input.caseIds || input.caseIds.length === 0) return bySplit;
+  const requested = new Set(input.caseIds);
+  const selected = bySplit.filter((item) => requested.has(item.id));
+  const missing = [...requested].filter((id) => !selected.some((item) => item.id === id));
+  if (missing.length > 0) throw new Error(`Unknown, protected, or split-excluded CodeForgeBench R2 case(s): ${missing.join(", ")}`);
+  return selected;
 }
 
 function assertTraceability(input: RunCodeForgeBenchR2CampaignInput): void {

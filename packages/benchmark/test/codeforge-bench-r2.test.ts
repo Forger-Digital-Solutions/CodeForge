@@ -111,4 +111,24 @@ describe("CodeForgeBench R2", () => {
       failure: { failureMode: "executor_error" },
     });
   });
+
+  it("supports a bounded public qualification subset without admitting protected cases", async () => {
+    const attempts = await runCodeForgeBenchR2Campaign({
+      repositoryCommit: "fixture-head",
+      codeforgeCommit: "codeforge-head",
+      configDigest: "qualification",
+      mode: "fixed_route",
+      caseIds: ["CBR1-SF-01"],
+      executor: { executeCase: async () => attempt() },
+    });
+    expect(attempts.map((item) => item.caseId)).toEqual(["CBR1-SF-01"]);
+    await expect(runCodeForgeBenchR2Campaign({
+      repositoryCommit: "fixture-head",
+      codeforgeCommit: "codeforge-head",
+      configDigest: "qualification",
+      mode: "fixed_route",
+      caseIds: ["CBR2-CD-02"],
+      executor: { executeCase: async () => attempt() },
+    })).rejects.toThrow(/protected/);
+  });
 });

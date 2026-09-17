@@ -18,6 +18,9 @@ if (!validSplits.has(split)) throw new Error(`--split must be one of ${[...valid
 
 const attemptsPath = option("attempts", null);
 const executorPath = option("executor", null);
+const caseIds = option("case", "").split(",").map((value) => value.trim()).filter(Boolean);
+const includeProtected = args.includes("--include-protected") || split === "PROTECTED_TEST";
+let executorModule;
 if (attemptsPath && executorPath) throw new Error("Use either --attempts to score recorded evidence or --executor to execute a campaign, not both");
 const output = resolve(option("out", `docs/evidence/r9-capability-campaign/results/codeforge-bench-r2-${phase.toLowerCase()}.json`));
 const benchmark = await import(pathToFileURL(resolve("packages/benchmark/dist/index.js")).href);
@@ -37,22 +40,30 @@ if (!modes.has(mode)) throw new Error(`--mode must be one of ${[...modes].join("
 let attempts = attemptsPath ? JSON.parse(await readFile(resolve(attemptsPath), "utf8")) : [];
 if (!Array.isArray(attempts)) throw new Error("--attempts must reference a JSON array of CodeForgeBench R2 attempts");
 
-const selectedCases = split === "ALL" ? benchmark.CODEFORGE_BENCH_R2_CASES : benchmark.CODEFORGE_BENCH_R2_CASES.filter((item) => item.split === split);
+const eligibleCases = includeProtected ? benchmark.CODEFORGE_BENCH_R2_CASES : benchmark.CODEFORGE_BENCH_R2_PUBLIC_CASES;
+const splitCases = split === "ALL" ? eligibleCases : eligibleCases.filter((item) => item.split === split);
+const selectedCases = caseIds.length > 0 ? splitCases.filter((item) => caseIds.includes(item.id)) : splitCases;
 if (executorPath) {
   if (!configDigest) throw new Error("--config-digest is required when executing a campaign");
-  const module = await import(pathToFileURL(resolve(executorPath)).href);
-  const executor = module.default ?? module;
+  executorModule = await import(pathToFileURL(resolve(executorPath)).href);
+  const executor = executorModule.default ?? executorModule;
   if (typeof executor.executeCase !== "function") {
     throw new Error("--executor must export an executeCase(context) function, either directly or as its default export");
   }
-  attempts = await benchmark.runCodeForgeBenchR2Campaign({
-    executor,
-    repositoryCommit,
-    codeforgeCommit,
-    configDigest,
-    mode,
-    split,
-  });
+  try {
+    attempts = await benchmark.runCodeForgeBenchR2Campaign({
+      executor,
+      repositoryCommit,
+      codeforgeCommit,
+      configDigest,
+      mode,
+      split,
+      caseIds,
+      includeProtected,
+    });
+  } finally {
+    if (typeof executorModule?.dispose === "function") await executorModule.dispose();
+  }
 }
 benchmark.validateCodeForgeBenchR2Attempts(attempts);
 const selectedCaseIds = new Set(selectedCases.map((item) => item.id));

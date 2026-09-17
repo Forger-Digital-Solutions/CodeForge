@@ -69,6 +69,16 @@ export interface CodeForgeBenchR2Attempt extends CodeForgeBenchAttempt {
     verifierFindings?: string[];
     hypothesizedLayer?: string;
   };
+  fixtureEvidence?: {
+    fixtureId: string;
+    startingCommit: string;
+    changedFiles: string[];
+    diffHash: string;
+    verifierCommand: string;
+    verifierExitCode: number;
+    verifierOutput: string;
+    cleanup: "completed" | "failed";
+  };
 }
 
 export interface CodeForgeBenchR2Bucket {
