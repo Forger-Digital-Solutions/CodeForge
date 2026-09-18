@@ -6,7 +6,8 @@ Product version: **0.4.0**
 Starting version: 0.3.0
 Starting HEAD: `1b8d60e46558134fa5d2fa06cfd2b7ffa9d1b01b`
 Branch: `forger-digital-solutions-forgegreen-certified`
-Final commit: populated at final local commit; this report is the authoritative campaign record.
+Implementation/hardening commit: `e3b8ac3`.
+Certification finalization commit: reported in the final chat response; this report is the authoritative campaign record.
 
 ## Executive summary
 
@@ -186,4 +187,4 @@ Final post-bump totals are recorded here after the final full run:
 - Push: none
 - Deployment: none
 - Money spent: $0
-- Final Git status and commit hash are recorded in the final chat response and final local commit.
+- The implementation hardening commit is `e3b8ac3`; the certification-only finalization commit is the final HEAD reported in chat. Final working-tree status is clean after that commit.
