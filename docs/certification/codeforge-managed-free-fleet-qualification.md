@@ -212,7 +212,7 @@ No provider subscription is warranted now. Purchases would either violate the ca
 
 ## 17. Live Evidence
 
-The latest bounded live certification evidence is [managed-free-live-certification.json](../evidence/managed-free-live-certification.json): Groq certified three models, Cloudflare returned quota exhaustion, and Z.AI was not called because operator auth was absent. The full-suite catalog refresh independently observed 23 current OpenRouter zero-unit candidates, but did not qualify them. Prior fleet evidence is [managed-free-r2-fleet-qualification.json](../evidence/managed-free-r2-fleet-qualification.json); the OpenRouter exact-route proof is retained under the R5 evidence tree.
+The latest bounded live certification evidence is [managed-free-live-certification.json](../evidence/managed-free-live-certification.json): Groq certified three models, Cloudflare returned quota exhaustion, and Z.AI was not called because operator auth was absent. The full-suite catalog refresh independently observed 23 current OpenRouter zero-unit candidates, but did not qualify them. Prior fleet evidence is [managed-free-r2-fleet-qualification.json](../evidence/managed-free-r2-fleet-qualification.json); the OpenRouter exact-route proof is retained there.
 
 No new inference calls were made solely to manufacture a larger roster during this packaging pass.
 
@@ -221,7 +221,7 @@ No new inference calls were made solely to manufacture a larger roster during th
 - [Machine-readable campaign evidence](../evidence/managed-free-fleet-qualification-2026-09-15.json)
 - [Prior live certification](../evidence/managed-free-live-certification.json)
 - [Prior R2 fleet qualification](../evidence/managed-free-r2-fleet-qualification.json)
-- [R5 exact-route qualification](../../apps/desktop/release/r5-evidence/live/free-cloud-registry-after-qualification.json)
+- [Prior exact-route fleet evidence](../evidence/managed-free-r2-fleet-qualification.json)
 - [R4 capacity report](../../tests/evidence/r4-scale/scale-report.json)
 - [Provider research](../research/r4-provider-research-2026-09-15.md)
 

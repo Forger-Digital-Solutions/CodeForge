@@ -1251,9 +1251,10 @@ async function createWindowDocument(): Promise<void> {
     const rendererFile = path.join(__dirname, "renderer", "index.html");
     trustedRendererDocumentUrl = pathToFileURL(rendererFile).href;
     smokeRecord(`LOAD_FILE_${rendererFile}`);
-    // loadFile builds the canonical file URL for Windows drive letters and ASAR paths. Hand-built
-    // `file://${path}` URLs are malformed on Windows and can fail before first paint.
-    await window.loadFile(rendererFile);
+    // Electron 44's loadFile keeps a Windows drive backslash when the app is loaded from an ASAR
+    // on a non-system volume (for example G:\\CodeForge), producing an invalid file URL. Build
+    // the canonical URL explicitly so installed builds load on any supported Windows volume.
+    await window.loadURL(pathToFileURL(rendererFile).href);
   }
   smokeRecord("WINDOW_CONTENT_LOADED");
 }

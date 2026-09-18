@@ -374,8 +374,6 @@ export class SubagentManager {
         if (!controller.signal.aborted) controller.abort();
       });
     };
-    watchdogTimerRef.timer = setTimeout(progressWatchdog, childTimeoutMs);
-
     const childRun: ChildRun = {
       childRunId,
       parentRunId,
@@ -413,6 +411,10 @@ export class SubagentManager {
     adapter?.emitSubagentStarted(childRunId, def.role, task, parentRunId);
     await this.transitionWorker(childRun, "created", adapter);
     await this.transitionWorker(childRun, "starting", adapter);
+    // Start the watchdog after the child is registered and its durable startup boundaries have
+    // landed. Measuring the budget from before initialization can classify normal setup as a stall
+    // and abort a paced worker before its first model turn has a chance to record progress.
+    watchdogTimerRef.timer = setTimeout(progressWatchdog, childTimeoutMs);
 
     try {
       if (controller.signal.aborted) {
@@ -452,15 +454,18 @@ export class SubagentManager {
           roleRouting: this.r1Enabled,
         });
         usage = runtimeRes.usage;
+        const runtimeStatus = childRun.watchdogAbortReason === "watchdog_budget_ceiling" && runtimeRes.status === "cancelled"
+          ? "blocked" as const
+          : runtimeRes.status;
 
         result = {
-          status: runtimeRes.status,
+          status: runtimeStatus,
           summary: runtimeRes.summary,
           findings: runtimeRes.findings,
           evidence: runtimeRes.evidence,
           files: runtimeRes.filesChanged,
-          risks: runtimeRes.status === "blocked" ? ["Reviewer or budget blocker"] : [],
-          recommendations: runtimeRes.status === "completed" ? ["Proceed"] : ["Resolve blockers"],
+          risks: runtimeStatus === "blocked" ? ["Reviewer or budget blocker"] : [],
+          recommendations: runtimeStatus === "completed" ? ["Proceed"] : ["Resolve blockers"],
           structuredData: runtimeRes.structuredData,
         };
       } else if (def.id === "explorer") {
@@ -503,7 +508,8 @@ export class SubagentManager {
       return result;
     } catch (err: unknown) {
       const isCancelled = controller.signal.aborted || (signal && signal.aborted);
-      const status = isCancelled ? "cancelled" : "failed";
+      const watchdogBlocked = childRun.watchdogAbortReason === "watchdog_budget_ceiling";
+      const status = watchdogBlocked ? "blocked" : isCancelled ? "cancelled" : "failed";
       const errorMsg = err instanceof Error ? err.message : String(err);
       const failedResult: AgentResult = {
         status,

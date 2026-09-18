@@ -449,6 +449,7 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("Postgres Runtime — Deep Adv
 
   it("Phase 34: Real PostgreSQL Full Product E2E via Cloud Server", async () => {
     const pgE2eGitHubId = Math.floor(Math.random() * 1_000_000_000);
+    const pgE2eSubscriptionId = `sub_pg_e2e_${randomUUID()}`;
     const server = new CodeForgeCloudServer({
       jwtSecret: "cert-postgres-e2e-jwt-secret-32-chars-long",
       databaseUrl: TEST_PG,
@@ -500,7 +501,7 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("Postgres Runtime — Deep Adv
           object: {
             client_reference_id: user.id,
             customer: "cus_pg_e2e",
-            subscription: "sub_pg_e2e",
+            subscription: pgE2eSubscriptionId,
             mode: "subscription",
             // Real Stripe checkout objects always carry payment_status; the grant path requires "paid".
             payment_status: "paid",

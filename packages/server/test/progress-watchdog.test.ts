@@ -13,6 +13,7 @@ process.env.CODEFORGE_ALLOW_TEST_PROVIDERS = "1";
 class PacedToolLoopProvider {
   providerId = "codeforge";
   isTestProvider = true;
+  private readIndex = 0;
   constructor(private readonly turnDelayMs: number) {}
   async listModels() {
     return [{
@@ -39,7 +40,8 @@ class PacedToolLoopProvider {
     });
     if (signal?.aborted) throw new Error("aborted");
     yield { type: "tool_call_started", toolCallId: "tc-1", toolName: "read_file" };
-    yield { type: "tool_call_completed", toolCallId: "tc-1", toolName: "read_file", arguments: JSON.stringify({ path: "auth.ts" }) };
+    const path = this.readIndex++ === 0 ? "auth.ts" : `auth-${this.readIndex}.ts`;
+    yield { type: "tool_call_completed", toolCallId: "tc-1", toolName: "read_file", arguments: JSON.stringify({ path }) };
     yield { type: "finish", finishReason: "tool_calls" };
   }
 }
@@ -47,6 +49,9 @@ class PacedToolLoopProvider {
 async function buildHarness(turnDelayMs: number, watchdogOptions: { watchdogProgressWindowMs: number; watchdogMaxExtensions: number }) {
   const ws = await mkdtemp(join(tmpdir(), "cf-watchdog-"));
   await writeFile(join(ws, "auth.ts"), "export function authenticate() { return true; }\n");
+  await writeFile(join(ws, "auth-1.ts"), "export const first = true;\n");
+  await writeFile(join(ws, "auth-2.ts"), "export const second = true;\n");
+  await writeFile(join(ws, "auth-3.ts"), "export const third = true;\n");
   const persistence = createSessionPersistence({ dbPath: ":memory:" });
   persistence.upsertSession({ id: "sess-wd", title: "Watchdog", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "idle" });
   const eventStore = new EventStore();

@@ -13,10 +13,10 @@ describe("packaged desktop startup reliability", () => {
     expect(disableIndex).toBeLessThan(source.indexOf("const __dirname"));
   });
 
-  it("loads the packaged renderer through Electron's canonical file-path API", () => {
+  it("loads the packaged renderer through a canonical ASAR-safe file URL", () => {
     const source = readFileSync(resolve(process.cwd(), "apps/desktop/src/main.ts"), "utf8");
     expect(source).toContain("async function createWindow(loadDocument = true): Promise<void>");
-    expect(source).toContain("await window.loadFile(rendererFile);");
+    expect(source).toContain("await window.loadURL(pathToFileURL(rendererFile).href);");
     expect(source).not.toContain("`file://${path.join(__dirname, \"renderer\", \"index.html\")}`");
   });
 
@@ -43,14 +43,14 @@ describe("packaged desktop startup reliability", () => {
     const documentStart = source.indexOf("async function createWindowDocument()");
     const guardIndex = source.indexOf("if (localServerPort <= 0) throw new Error(", documentStart);
     const installIndex = source.indexOf("installControlPlaneBearerInjection(window);", documentStart);
-    const loadIndex = source.indexOf("await window.loadFile(rendererFile);", documentStart);
+    const loadIndex = source.indexOf("await window.loadURL(pathToFileURL(rendererFile).href);", documentStart);
     expect(guardIndex).toBeGreaterThan(documentStart);
     expect(installIndex).toBeGreaterThan(guardIndex);
     expect(loadIndex).toBeGreaterThan(installIndex);
   });
 
   it("waits for the renderer's loading state to settle instead of a second did-finish-load", () => {
-    // loadFile() resolves on did-finish-load while the main frame still reports loading until
+    // loadURL() resolves on did-finish-load while the main frame still reports loading until
     // did-stop-loading; waiting for another did-finish-load at that point never returns (the R4
     // stall after WINDOW_READY_TO_SHOW).
     const source = readFileSync(resolve(process.cwd(), "apps/desktop/src/main.ts"), "utf8");

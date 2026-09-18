@@ -263,7 +263,9 @@
       ]
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "artifactName": "CodeForge-Setup-${version}.${ext}"
