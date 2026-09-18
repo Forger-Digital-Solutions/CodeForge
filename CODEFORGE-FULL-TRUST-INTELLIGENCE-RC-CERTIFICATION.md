@@ -3,6 +3,7 @@
 **Assessment date:** 2026-09-18  
 **Product version:** 0.4.0 (no version change justified)  
 **Assessed source commit:** `d6f380084a9f2b8f3f0e86e41292adc614ea6c5f`  
+**Supplemental desktop packaging commit:** `f5b4342d2f1fc06ae0a0dfdc8c7e92e11faa2a82`
 **Scope:** local source, deterministic simulations, generated Windows artifacts, and the available managed Windows environment. No production deployment, real-provider inference, paid inference, push, or external legal review was performed.
 
 ## Verdicts
@@ -48,13 +49,22 @@
 | Provider-isolation / ForgeGreen telemetry | PASS — 2 files, 8 tests |
 | PostgreSQL authority suite | BLOCKED — WSL returns `Wsl/Service/E_ACCESSDENIED`; no disposable PostgreSQL URL is configured |
 | Desktop package | PASS — NSIS and portable artifacts built |
+| Packaged internal-dependency audit | PASS — the exact unpacked and portable embedded ASARs contain `@codeforge/intelligence`; `pack` and `dist` now enforce this gate |
 | Packaged smoke | FAIL — `RENDER_PROCESS_GONE=launch-failed:49`, then `ERR_FAILED (-2)` loading the renderer document |
 | Authenticode | NOT SIGNED — expected until OA-07 is completed |
-| Fresh install / installed workflow / uninstall | NOT RUN — renderer fails before application workflow; installation also requires the user’s Windows UI confirmation |
+| Fresh install / installed workflow / uninstall | NOT RUN — the user authorized it, but this host's desktop connector cannot operate native installer controls; no silent-install substitute was used |
 
 ## Reproducible desktop blocker evidence
 
 The generated ASAR contains `apps\\desktop\\dist\\renderer\\index.html`, and its contents were read successfully with `@electron/asar`. The smoke run starts the trusted-process server, constructs the window, then fails while Chromium launches its sandboxed renderer. Current production settings remain `sandbox: true`, `contextIsolation: true`, `webSecurity: true`, and `nodeIntegration: false`. Do not change those settings solely to pass this smoke.
+
+The initially generated portable artifact also omitted `@codeforge/intelligence`, which is imported by the shipped 8-Bit, ForgeGreen, and paid-auto modules. That independent main-process failure is fixed by explicitly packaging the workspace module and enforcing the internal-dependency audit after every `pack` and `dist`. The audit passes against the rebuilt portable's extracted embedded ASAR.
+
+## Current desktop artifacts
+
+- `apps/desktop/release/CodeForge-Setup-0.4.0.exe`: SHA-256 `999C259EAF9419BD45D15F446190105218B28C858462B81102925B275620D2BF`
+- `apps/desktop/release/CodeForge-Portable.exe`: SHA-256 `C74E87C8ED5A663F1D774314F432D0FA15266063575D5BBFB9F5EE99F40C91DE`
+- Both artifacts are `NotSigned`. These hashes supersede the earlier pre-fix artifact hashes.
 
 ## Remaining blockers
 
