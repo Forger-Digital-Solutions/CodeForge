@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-18  
 **Product version:** 0.4.0  
-**Source baseline:** `c01e187779b989e447fb5e6c55f58caa693d1fd5`  
+**Source baseline:** `ce53bc788368473d2d77c644e90337c00ad17b34`
 **Verdict:** `ENVIRONMENT BLOCKER FOR THIS AGENT LAUNCH CONTEXT; HOST-NATIVE VALIDATION STILL REQUIRED`
 
 ## Symptom
@@ -82,11 +82,16 @@ an ordinary interactive Windows process outside this agent containment.
 
 | Artifact | SHA-256 |
 | --- | --- |
-| `apps/desktop/release/CodeForge-Portable.exe` | `C74E87C8ED5A663F1D774314F432D0FA15266063575D5BBFB9F5EE99F40C91DE` |
-| `apps/desktop/release/CodeForge-Setup-0.4.0.exe` | `999C259EAF9419BD45D15F446190105218B28C858462B81102925B275620D2BF` |
+| `apps/desktop/release/CodeForge-Portable.exe` | `A6F607A1E56A637D5E286B574508191C0779561E1939CBEFF9E23797144A0301` |
+| `apps/desktop/release/CodeForge-Setup-0.4.0.exe` | `E56C68D1501B31D94C0BCF6C84D723A48E3971B49CDD13B2199006C25F1C3D82` |
 
 Both artifacts are unsigned. The setup has not been installed; no silent install was substituted
 for the requested normal Windows installation.
+
+The exact rebuilt portable was also launched under a fresh profile from this agent context. It
+passed all main-process startup markers through ForgeZero, provider catalog, credential store, and
+local-server binding, then failed only at secure renderer creation with `launch-failed:49`. Its
+embedded ASAR passed both the internal and external runtime dependency audits.
 
 ## Current regression status
 

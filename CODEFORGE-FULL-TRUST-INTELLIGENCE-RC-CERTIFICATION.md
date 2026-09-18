@@ -64,8 +64,8 @@ The initially generated portable artifact also omitted `@codeforge/intelligence`
 
 ## Current desktop artifacts
 
-- `apps/desktop/release/CodeForge-Setup-0.4.0.exe`: SHA-256 `999C259EAF9419BD45D15F446190105218B28C858462B81102925B275620D2BF`
-- `apps/desktop/release/CodeForge-Portable.exe`: SHA-256 `C74E87C8ED5A663F1D774314F432D0FA15266063575D5BBFB9F5EE99F40C91DE`
+- `apps/desktop/release/CodeForge-Setup-0.4.0.exe`: SHA-256 `E56C68D1501B31D94C0BCF6C84D723A48E3971B49CDD13B2199006C25F1C3D82`
+- `apps/desktop/release/CodeForge-Portable.exe`: SHA-256 `A6F607A1E56A637D5E286B574508191C0779561E1939CBEFF9E23797144A0301`
 - Both artifacts are `NotSigned`. These hashes supersede the earlier pre-fix artifact hashes.
 
 ## Remaining blockers
