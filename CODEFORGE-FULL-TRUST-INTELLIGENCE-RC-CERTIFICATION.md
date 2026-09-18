@@ -10,11 +10,11 @@
 
 | Area | Verdict | Basis |
 | --- | --- | --- |
-| Engineering | **NOT READY** | Source gates pass, but the packaged Electron renderer cannot launch in this managed Windows environment and real PostgreSQL was not exercised. |
+| Engineering | **NOT READY** | Source gates pass, but the current artifact still lacks host-native renderer and installed-workflow evidence; real PostgreSQL was not exercised. |
 | Security | **CONDITIONAL** | The automated security suite and gate pass; production owner actions remain open. This is not a third-party certification. |
 | Intelligence | **NOT CERTIFIED** | Deterministic system tests and selected A/B fixtures pass, but 8-Bit/16-Bit lack live verified task executions and broad repository retrieval recall is insufficient. |
 | Legal / privacy | **OWNER INPUT REQUIRED / COUNSEL REVIEW REQUIRED** | Technical behavior was reconciled with draft disclosures; business facts and legal decisions remain explicitly marked. |
-| Desktop release | **NOT READY** | Packaging succeeds, but the unpacked packaged smoke fails before renderer startup; installer lifecycle and installed workflow testing are therefore incomplete. |
+| Desktop release | **NOT READY** | Secure renderer creation is blocked by this agent's inherited Windows Job Object, and the current artifact has not yet been launched or installed from an ordinary host process. |
 
 ## Security and privacy
 
@@ -42,22 +42,23 @@
 | Typecheck | PASS |
 | Lint | PASS |
 | Workspace build | PASS |
-| Full regression | PASS — 360 files, 2,722 tests; 36 skipped |
+| Full regression | INCONCLUSIVE — the current run's worker exited after the restricted runner detached, so no clean aggregate/exit status was captured; focused desktop and security suites passed |
 | Focused security regression | PASS — 10 files, 120 tests |
 | Security gate | PASS — secret scanner self-test/scan, dependency audit/SBOM, claims scan, documentation links |
 | Staging and Cloud config | PASS — 2 files, 55 tests |
 | Provider-isolation / ForgeGreen telemetry | PASS — 2 files, 8 tests |
-| PostgreSQL authority suite | BLOCKED — WSL returns `Wsl/Service/E_ACCESSDENIED`; no disposable PostgreSQL URL is configured |
+| PostgreSQL authority suite | BLOCKED — `test:postgres:full` exits `4294967295`; WSL returns `Wsl/EnumerateDistros/Service/E_ACCESSDENIED` and no disposable PostgreSQL URL is configured |
 | Desktop package | PASS — NSIS and portable artifacts built |
 | Packaged internal-dependency audit | PASS — the exact unpacked and portable embedded ASARs contain `@codeforge/intelligence`; `pack` and `dist` now enforce this gate |
-| Isolated portable runtime | FAIL only at the renderer — its main process loads the credential store, ForgeZero, catalog, and local server; no module-resolution error occurs |
-| Packaged smoke | FAIL — `RENDER_PROCESS_GONE=launch-failed:49`, then `ERR_FAILED (-2)` loading the renderer document |
+| Isolated portable runtime | BLOCKED BY ENVIRONMENT — its main process loads the credential store, ForgeZero, catalog, and local server; the job-contained renderer cannot launch |
+| Minimal secure Electron 44.4.1 control | BLOCKED BY ENVIRONMENT — no CodeForge modules, a local HTML document, and a minimal preload still yield `launch-failed:49` before document loading |
+| Packaged smoke | BLOCKED BY ENVIRONMENT — `RENDER_PROCESS_GONE=launch-failed:49`, then `ERR_FAILED (-2)` loading the renderer document from the inherited Windows Job Object |
 | Authenticode | NOT SIGNED — expected until OA-07 is completed |
 | Fresh install / installed workflow / uninstall | NOT RUN — the user authorized it, but this host's desktop connector cannot operate native installer controls; no silent-install substitute was used |
 
 ## Reproducible desktop blocker evidence
 
-The generated ASAR contains `apps\\desktop\\dist\\renderer\\index.html`, and its contents were read successfully with `@electron/asar`. Both the unpacked smoke and an isolated launch of the exact portable artifact start the trusted-process server, construct the window, and then fail while Chromium launches its sandboxed renderer. Current production settings remain `sandbox: true`, `contextIsolation: true`, `webSecurity: true`, and `nodeIntegration: false`. Do not change those settings solely to pass this smoke.
+The generated ASAR contains `apps\\desktop\\dist\\renderer\\index.html`, and its contents were read successfully with `@electron/asar`. Both the unpacked smoke and an isolated launch of the exact portable artifact start the trusted-process server, construct the window, and then fail while Chromium launches its sandboxed renderer. A fresh Electron 44.4.1 control with no CodeForge packages, a 278-byte local document, and a 148-byte preload fails the same way before document loading. Both the command runner and control child are in a Windows Job Object. Current production settings remain `sandbox: true`, `contextIsolation: true`, `webSecurity: true`, and `nodeIntegration: false`. Do not change those settings solely to pass this smoke; see `docs/evidence/desktop-release/renderer-blocker-investigation.md`.
 
 The initially generated portable artifact also omitted `@codeforge/intelligence`, which is imported by the shipped 8-Bit, ForgeGreen, and paid-auto modules. That independent main-process failure is fixed by explicitly packaging the workspace module and enforcing the internal-dependency audit after every `pack` and `dist`. The audit passes against the rebuilt portable's extracted embedded ASAR.
 
@@ -69,7 +70,7 @@ The initially generated portable artifact also omitted `@codeforge/intelligence`
 
 ## Remaining blockers
 
-1. **P1 desktop:** reproduce and resolve the Electron 44 sandboxed renderer launch failure on a normal Windows host or obtain vendor/platform evidence that the managed environment prevents renderer child-process creation.
+1. **P1 desktop:** launch the exact current portable or setup from an ordinary interactive Windows process outside the agent Job Object, then complete installed first-run, normal-profile, workflow, recovery, and uninstall validation. The contained launch mechanism is now isolated as an environment blocker.
 2. **P1 persistence evidence:** provide a disposable, non-production PostgreSQL endpoint or enable the repository’s local WSL harness, then run `npm run test:postgres:full`.
 3. **P2 intelligence:** improve and remeasure broad repository-retrieval recall; run versioned, repeated task trials before certifying 8-Bit, 16-Bit, or subagent value.
 4. **Owner / infrastructure:** complete OA-01 through OA-06 before public Cloud release; the remaining owner actions are enumerated in `docs/security/OWNER-ACTIONS.md`.
@@ -83,6 +84,7 @@ The initially generated portable artifact also omitted `@codeforge/intelligence`
 - `docs/codeforge-forgegreen-fg8-benchmark-fixtures.json`
 - `docs/evidence/r8-intelligence-benchmark/results/`
 - `docs/evidence/r9-capability-campaign/results/`
+- `docs/evidence/desktop-release/renderer-blocker-investigation.md`
 - `docs/security/OWNER-ACTIONS.md`
 - `docs/legal/OWNER-LEGAL-INPUTS.md`
 
