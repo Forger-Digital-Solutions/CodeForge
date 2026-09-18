@@ -12,15 +12,8 @@
     "files": [
       "main.cjs",
       "index.html",
-      "package.json",
-      {
-        "from": "../src/preload.cjs",
-        "to": "preload.cjs"
-      },
-      {
-        "from": "../dist/renderer",
-        "to": "renderer"
-      }
+      "preload.cjs",
+      "package.json"
     ],
     "win": {
       "target": [
