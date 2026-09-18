@@ -35,6 +35,7 @@ import type {
   CloudVerificationAttemptRecord,
   CloudVerificationEvidenceRecord,
   AccountDeletionResult,
+  SecurityAuditEventRecord,
   AccountDeletionTableSummary,
 } from "./types.js";
 
@@ -386,7 +387,15 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
 
   private getDeviceSessionByTokenHashSync(refreshTokenHash: string): DeviceSessionRecord | undefined {
     const row = this.db.prepare(`SELECT * FROM device_sessions WHERE refresh_token_hash = @refreshTokenHash`).get({ refreshTokenHash }) as Record<string, unknown> | undefined;
-    if (!row) return undefined;
+    return row ? this.mapDeviceSessionRow(row) : undefined;
+  }
+
+  async getDeviceSessionById(id: string): Promise<DeviceSessionRecord | undefined> {
+    const row = this.db.prepare(`SELECT * FROM device_sessions WHERE id = @id`).get({ id }) as Record<string, unknown> | undefined;
+    return row ? this.mapDeviceSessionRow(row) : undefined;
+  }
+
+  private mapDeviceSessionRow(row: Record<string, unknown>): DeviceSessionRecord {
     return {
       id: String(row.id),
       userId: String(row.user_id),
@@ -1705,6 +1714,55 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return record;
   }
 
+  // --- Security audit trail ---
+
+  async recordSecurityAuditEvent(params: { occurredAt?: string; eventType: string; outcome: string; userId?: string; ipAddress?: string; details?: Record<string, string | number | boolean | null> }): Promise<SecurityAuditEventRecord> {
+    const now = new Date().toISOString();
+    const record: SecurityAuditEventRecord = {
+      id: randomUUID(),
+      occurredAt: params.occurredAt ?? now,
+      eventType: params.eventType,
+      outcome: params.outcome,
+      userId: params.userId,
+      ipAddress: params.ipAddress,
+      details: params.details,
+      createdAt: now,
+    };
+    this.db.prepare(`
+      INSERT INTO security_audit_events (id, occurred_at, event_type, outcome, user_id, ip_address, details, created_at)
+      VALUES (@id, @occurredAt, @eventType, @outcome, @userId, @ipAddress, @details, @createdAt)
+    `).run({
+      id: record.id,
+      occurredAt: record.occurredAt,
+      eventType: record.eventType,
+      outcome: record.outcome,
+      userId: record.userId ?? null,
+      ipAddress: record.ipAddress ?? null,
+      details: record.details ? JSON.stringify(record.details) : null,
+      createdAt: record.createdAt,
+    });
+    return record;
+  }
+
+  async listSecurityAuditEvents(filter: { userId?: string; eventType?: string; limit?: number } = {}): Promise<SecurityAuditEventRecord[]> {
+    const clauses: string[] = [];
+    const params: Record<string, unknown> = { limit: Math.min(Math.max(filter.limit ?? 100, 1), 1000) };
+    if (filter.userId) { clauses.push("user_id = @userId"); params.userId = filter.userId; }
+    if (filter.eventType) { clauses.push("event_type = @eventType"); params.eventType = filter.eventType; }
+    const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+    const rows = this.db.prepare(`SELECT * FROM security_audit_events ${where} ORDER BY occurred_at DESC LIMIT @limit`).all(params) as Record<string, unknown>[];
+    return rows.map((row) => ({
+      id: String(row.id),
+      occurredAt: String(row.occurred_at),
+      eventType: String(row.event_type),
+      outcome: String(row.outcome),
+      userId: row.user_id ? String(row.user_id) : undefined,
+      ipAddress: row.ip_address ? String(row.ip_address) : undefined,
+      details: row.details ? (JSON.parse(String(row.details)) as Record<string, string | number | boolean | null>) : undefined,
+      createdAt: String(row.created_at),
+    }));
+  }
+
   // --- GDPR Article 17 Erasure ---
 
   /**
@@ -1725,6 +1783,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     this.db.exec("BEGIN");
     try {
       const anonymized = this.db.prepare(`UPDATE abuse_events SET user_id = NULL WHERE user_id = @userId`).run({ userId });
+      const auditAnonymized = this.db.prepare(`UPDATE security_audit_events SET user_id = NULL WHERE user_id = @userId`).run({ userId });
 
       // Children of github_installations (repository authorizations, publications) must be
       // deleted before that parent table — node:sqlite defaults foreign key enforcement to ON
@@ -1753,7 +1812,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       del("users", `DELETE FROM users WHERE id = @userId`);
 
       this.db.exec("COMMIT");
-      return { userId, tables, abuseEventsAnonymized: Number(anonymized.changes ?? 0) };
+      return { userId, tables, abuseEventsAnonymized: Number(anonymized.changes ?? 0), securityAuditEventsAnonymized: Number(auditAnonymized.changes ?? 0) };
     } catch (error) {
       this.db.exec("ROLLBACK");
       throw error;
@@ -2031,6 +2090,19 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return Number(result.changes ?? 0);
   }
 
+  async purgeExpiredSecurityArtifacts(params: { nowIso: string; revokedSessionCutoffIso: string }): Promise<Record<string, number>> {
+    const run = (sql: string, args: Record<string, unknown>) => Number(this.db.prepare(sql).run(args).changes ?? 0);
+    const { nowIso, revokedSessionCutoffIso } = params;
+    return {
+      oauth_transactions: run(`DELETE FROM oauth_transactions WHERE expires_at <= @now OR used_at IS NOT NULL`, { now: nowIso }),
+      browser_oauth_transactions: run(`DELETE FROM browser_oauth_transactions WHERE expires_at <= @now OR used_at IS NOT NULL`, { now: nowIso }),
+      desktop_auth_codes: run(`DELETE FROM desktop_auth_codes WHERE expires_at <= @now OR used_at IS NOT NULL`, { now: nowIso }),
+      github_app_callback_states: run(`DELETE FROM github_app_callback_states WHERE expires_at <= @now OR consumed_at IS NOT NULL`, { now: nowIso }),
+      browser_sessions: run(`DELETE FROM browser_sessions WHERE expires_at <= @now OR (revoked_at IS NOT NULL AND revoked_at <= @cutoff)`, { now: nowIso, cutoff: revokedSessionCutoffIso }),
+      device_sessions: run(`DELETE FROM device_sessions WHERE (revoked_at IS NOT NULL AND revoked_at <= @cutoff) OR expires_at <= @cutoff`, { cutoff: revokedSessionCutoffIso }),
+    };
+  }
+
   // --- CF-11B: Publication Records ---
 
   private mapPublicationRow(row: Record<string, unknown>): PublicationRecord {
@@ -2144,6 +2216,11 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
 
   async listPublicationsByUser(userId: string): Promise<PublicationRecord[]> {
     const rows = this.db.prepare(`SELECT * FROM publications WHERE user_id = @userId ORDER BY created_at DESC`).all({ userId }) as Array<Record<string, unknown>>;
+    return rows.map((row) => this.mapPublicationRow(row));
+  }
+
+  async listPublicationsByState(state: PublicationState, limit = 500): Promise<PublicationRecord[]> {
+    const rows = this.db.prepare(`SELECT * FROM publications WHERE state = @state ORDER BY updated_at ASC LIMIT @limit`).all({ state, limit: Math.min(Math.max(limit, 1), 5000) }) as Array<Record<string, unknown>>;
     return rows.map((row) => this.mapPublicationRow(row));
   }
 

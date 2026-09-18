@@ -1,4 +1,5 @@
 import http from "node:http";
+import { randomUUID } from "node:crypto";
 import { URL } from "node:url";
 import { isIP, type AddressInfo } from "node:net";
 import { z } from "zod";
@@ -15,6 +16,10 @@ import { createSessionPersistence, type ISessionPersistence } from "@codeforge/s
 import { HostedWorkflowAuthority } from "./hosted-workflow-authority.js";
 import { PublicationService } from "./publication-service.js";
 import { PublicationError, PUBLICATION_ERROR_CODES, publicationErrorStatus, isPublicationErrorCode } from "./publication-errors.js";
+import { LocalKeyEncryptionProvider, SecretEnvelopeService } from "@codeforge/crypto";
+import { ConsoleSecurityAuditSink, SecurityAuditLog, createRedactingLogger, redactSecrets, type RedactingLogger, type SecurityAuditEvent, type SecurityAuditSink } from "@codeforge/secrets";
+import { buildSecurityTxt } from "./security-txt.js";
+import { isAllowedBillingReturnUrl } from "./billing-return-url.js";
 
 const MAX_BODY_BYTES = 1024 * 1024; // 1 MiB max payload
 const DEFAULT_BROWSER_RETURN_URLS = [
@@ -65,14 +70,17 @@ const AccountDeletionSchema = z.object({
   confirmation: z.literal("DELETE_MY_ACCOUNT"),
 });
 
+// Prices are chosen SERVER-side from the plan id; a client can never name a price, an amount, or a
+// currency. Return URLs are further restricted to trusted origins (see billing-return-url.ts) so a
+// Stripe-hosted page can never bounce a paying user to an attacker-chosen site.
 const BillingCheckoutSchema = z.object({
-  planId: z.string().optional(),
-  successUrl: z.string().url(),
-  cancelUrl: z.string().url(),
+  planId: z.enum(["pro", "credit_pack"]).optional(),
+  successUrl: z.string().url().max(2048),
+  cancelUrl: z.string().url().max(2048),
 });
 
 const BillingPortalSchema = z.object({
-  returnUrl: z.string().url(),
+  returnUrl: z.string().url().max(2048),
 });
 
 // CF-11B: GitHub App authorization + publication schemas.
@@ -180,6 +188,16 @@ export interface CodeForgeCloudServerConfig {
   publicationArtifactDir?: string;
   /** Shared durable runtime state. When omitted, the server creates and owns one. */
   sessionPersistence?: ISessionPersistence;
+  /**
+   * Envelope service for reversible secrets at rest. REQUIRED in production (the entrypoint builds
+   * it from CODEFORGE_DATA_ENCRYPTION_KEYS); tests and development default to an ephemeral key.
+   */
+  secretEnvelope?: SecretEnvelopeService;
+  /** Additional security audit sinks (a database sink is always attached). */
+  securityAuditSinks?: SecurityAuditSink[];
+  /** RFC 9116 security contact. When unset, /.well-known/security.txt is not served. */
+  securityContact?: string;
+  logLevel?: "debug" | "info" | "warn" | "error" | "silent";
 }
 
 export class CodeForgeCloudServer {
@@ -205,6 +223,11 @@ export class CodeForgeCloudServer {
   private readonly trustedRegionHeaderName?: string;
   private actualPort = 0;
   private host: string;
+  private readonly hstsEnabled: boolean;
+  private readonly securityContact?: string;
+  private readonly billingReturnOrigins: string[];
+  public readonly securityAudit: SecurityAuditLog;
+  public readonly logger: RedactingLogger;
 
   constructor(config: CodeForgeCloudServerConfig = {}) {
     const isProduction = process.env.NODE_ENV === "production";
@@ -253,6 +276,13 @@ export class CodeForgeCloudServer {
     this.maxRequestsPerMinute = config.maxRequestsPerMinute ?? 120;
     this.trustProxy = config.trustProxy ?? false;
     this.trustedRegionHeaderName = config.trustedRegionHeaderName;
+    this.securityContact = config.securityContact;
+    this.logger = createRedactingLogger({ name: "cloud-api", level: config.logLevel ?? (isProduction ? "info" : "debug") });
+
+    if (isProduction && !config.secretEnvelope) {
+      throw new Error("Missing secret envelope service for production cloud server (CODEFORGE_DATA_ENCRYPTION_KEYS).");
+    }
+    const secretEnvelope = config.secretEnvelope ?? new SecretEnvelopeService(LocalKeyEncryptionProvider.ephemeral());
 
     if (config.db) {
       this.db = config.db;
@@ -287,6 +317,22 @@ export class CodeForgeCloudServer {
       throw new Error("Missing CODEFORGE_PUBLIC_URL for production cloud server.");
     }
 
+    this.hstsEnabled = Boolean(publicUrl?.startsWith("https:"));
+    this.billingReturnOrigins = [
+      ...this.allowedOrigins,
+      ...(config.allowedBrowserReturnUrls ?? DEFAULT_BROWSER_RETURN_URLS).map((u) => { try { return new URL(u).origin; } catch { return ""; } }).filter(Boolean),
+      ...(publicUrl ? [new URL(publicUrl).origin] : []),
+    ];
+
+    // Security audit trail: every event is persisted (append-only, account link severed on
+    // deletion) and echoed as a redacted JSON line for platform log aggregation.
+    const db = this.db;
+    this.securityAudit = new SecurityAuditLog([
+      { record: (event) => db.recordSecurityAuditEvent({ occurredAt: event.occurredAt, eventType: event.type, outcome: event.outcome, userId: event.userId, ipAddress: event.ipAddress, details: event.details }).then(() => undefined) },
+      new ConsoleSecurityAuditSink((line) => this.logger.info(line)),
+      ...(config.securityAuditSinks ?? []),
+    ]);
+
     this.auth = new AuthService({
       db: this.db,
       jwtSecret,
@@ -297,6 +343,8 @@ export class CodeForgeCloudServer {
       allowedBrowserReturnUrls: config.allowedBrowserReturnUrls ?? DEFAULT_BROWSER_RETURN_URLS,
       browserSessionExpiresInSeconds: config.browserSessionExpiresInSeconds,
       fetchFn: config.fetchFn,
+      secretEnvelope,
+      securityAudit: this.securityAudit,
     });
 
     this.billing = stripeConfig ? new StripeBillingService(this.db, this.entitlements, stripeConfig) : undefined;
@@ -356,6 +404,12 @@ export class CodeForgeCloudServer {
       // Non-fatal — never block boot on reconciliation.
     }
 
+    // Retention sweep (Security R1, Phase 31): expired/consumed short-lived auth artifacts and
+    // terminal publication bundles are removed at boot and then hourly. Never fatal.
+    await this.runRetentionSweep();
+    this.retentionTimer = setInterval(() => void this.runRetentionSweep(), 60 * 60 * 1000);
+    this.retentionTimer.unref();
+
     // Discover real server-owned hosted capacity before serving. Non-fatal: a provider failure is
     // captured in the capacity report and the server still starts (Direct/BYOK stays independent).
     if (this.providerRegistry && this.discoverOnStart) {
@@ -376,7 +430,29 @@ export class CodeForgeCloudServer {
     });
   }
 
+  /** Revoked sessions are kept this long so a replayed rotated refresh token is still recognised as a breach. */
+  private static readonly REVOKED_SESSION_GRACE_MS = 30 * 24 * 60 * 60 * 1000;
+  private retentionTimer?: NodeJS.Timeout;
+
+  async runRetentionSweep(): Promise<Record<string, number>> {
+    const now = new Date();
+    const counts: Record<string, number> = {};
+    try {
+      Object.assign(counts, await this.db.purgeExpiredSecurityArtifacts({
+        nowIso: now.toISOString(),
+        revokedSessionCutoffIso: new Date(now.getTime() - CodeForgeCloudServer.REVOKED_SESSION_GRACE_MS).toISOString(),
+      }));
+      if (this.publicationService) counts.publication_artifacts = await this.publicationService.sweepTerminalArtifacts();
+      const removed = Object.values(counts).reduce((a, b) => a + b, 0);
+      if (removed > 0) this.logger.info("retention sweep", counts);
+    } catch (error) {
+      this.logger.warn("retention sweep failed", { error });
+    }
+    return counts;
+  }
+
   async stop(): Promise<void> {
+    if (this.retentionTimer) clearInterval(this.retentionTimer);
     return new Promise<void>((resolve, reject) => {
       this.server.close(() => {
         const closeOperations: Promise<unknown>[] = [Promise.resolve(this.db.close())];
@@ -471,14 +547,34 @@ export class CodeForgeCloudServer {
     });
   }
 
-  private authenticateRequest(req: http.IncomingMessage): string {
+  private async authenticateRequest(req: http.IncomingMessage): Promise<string> {
     const authHeader = req.headers["authorization"] || "";
     if (!authHeader.startsWith("Bearer ")) {
       throw new Error("Missing or invalid Bearer token");
     }
     const token = authHeader.slice(7).trim();
-    const payload = this.auth.verifyToken(token);
+    if (token.length === 0 || token.length > 4096) throw new Error("Missing or invalid Bearer token");
+    // Signature + expiry + live-session check: a token whose session was logged out or revoked is
+    // refused even though its signature is still valid (see AuthService.verifyAccessSession).
+    const payload = await this.auth.verifyAccessSession(token);
     return payload.sub;
+  }
+
+  private audit(event: SecurityAuditEvent): void {
+    this.securityAudit.emit(event);
+  }
+
+  /** Headers applied to every response that carries data. */
+  private securityHeaders(): Record<string, string> {
+    return {
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "Referrer-Policy": "no-referrer",
+      "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+      "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      ...(this.hstsEnabled ? { "Strict-Transport-Security": "max-age=31536000; includeSubDomains" } : {}),
+    };
   }
 
   private getCookie(req: http.IncomingMessage, name: string): string | undefined {
@@ -496,7 +592,7 @@ export class CodeForgeCloudServer {
 
   private async authenticateBrowserOrBearerRequest(req: http.IncomingMessage): Promise<string> {
     const authHeader = req.headers["authorization"] || "";
-    if (authHeader.startsWith("Bearer ")) return this.authenticateRequest(req);
+    if (authHeader.startsWith("Bearer ")) return await this.authenticateRequest(req);
     const token = this.getCookie(req, this.auth.getBrowserSessionCookieName());
     if (!token) throw new Error("Missing or invalid browser session");
     const user = await this.auth.authenticateBrowserSession(token);
@@ -508,9 +604,7 @@ export class CodeForgeCloudServer {
       Location: location,
       "Cache-Control": "no-store, no-cache, must-revalidate",
       Pragma: "no-cache",
-      "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "DENY",
-      "Referrer-Policy": "no-referrer",
+      ...this.securityHeaders(),
       ...(setCookie ? { "Set-Cookie": setCookie } : {}),
     });
     res.end();
@@ -587,10 +681,8 @@ export class CodeForgeCloudServer {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "no-store, no-cache, must-revalidate",
       Pragma: "no-cache",
-      "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "DENY",
-      "Referrer-Policy": "no-referrer",
-      "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
+      ...this.securityHeaders(),
+      "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
     });
     res.end(body);
   }
@@ -638,9 +730,7 @@ export class CodeForgeCloudServer {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store, no-cache, must-revalidate",
       Pragma: "no-cache",
-      "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "DENY",
-      "Referrer-Policy": "no-referrer",
+      ...this.securityHeaders(),
       ...(setCookie ? { "Set-Cookie": setCookie } : {}),
       ...this.corsHeaders(origin),
     });
@@ -661,8 +751,7 @@ export class CodeForgeCloudServer {
       }
       res.writeHead(204, {
         "Cache-Control": "no-store",
-        "X-Content-Type-Options": "nosniff",
-        "Referrer-Policy": "no-referrer",
+        ...this.securityHeaders(),
         ...this.corsHeaders(corsOrigin),
       });
       res.end();
@@ -670,6 +759,18 @@ export class CodeForgeCloudServer {
     }
 
     try {
+      // 0. RFC 9116 security.txt — served only when an operator configured a real contact.
+      if ((url.pathname === "/.well-known/security.txt" || url.pathname === "/security.txt") && method === "GET") {
+        const body = this.securityContact ? buildSecurityTxt({ contact: this.securityContact, canonicalBase: this.auth.publicBaseUrl }) : undefined;
+        if (!body) {
+          this.sendJson(res, 404, { error: "security.txt is not published for this deployment" }, corsOrigin);
+          return;
+        }
+        res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600", ...this.securityHeaders() });
+        res.end(body);
+        return;
+      }
+
       // 1. Health & Meta Endpoints
       if (url.pathname === "/health/live" && method === "GET") {
         this.sendJson(res, 200, { status: "ok", version: "0.3.0" }, corsOrigin);
@@ -735,6 +836,7 @@ export class CodeForgeCloudServer {
 
       // Rate limit sensitive operations
       if (!this.checkRateLimit(clientIp)) {
+        this.audit({ type: "ratelimit.exceeded", outcome: "denied", ipAddress: clientIp, details: { path: url.pathname } });
         this.sendJson(res, 429, { error: "Too Many Requests. Rate limit exceeded." }, corsOrigin);
         return;
       }
@@ -876,12 +978,13 @@ export class CodeForgeCloudServer {
       }
 
       if (url.pathname === "/v1/account/settings" && method === "POST") {
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         const body = await this.readJson(req, AccountSettingsSchema);
         const updated = await this.db.upsertAccountSettings({
           userId,
           ...body,
         });
+        this.audit({ type: "account.settings.changed", outcome: "success", userId, ipAddress: clientIp, details: { fields: Object.keys(body).join(",") } });
         this.sendJson(res, 200, updated, corsOrigin);
         return;
       }
@@ -894,21 +997,25 @@ export class CodeForgeCloudServer {
       // request. Idempotent: see deleteAccount()/ICloudDatabase.deleteUserAccount() doc comments —
       // a retried call after an ambiguous network failure is safe.
       if (url.pathname === "/v1/account" && method === "DELETE") {
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         await this.readJson(req, AccountDeletionSchema);
         const receipt = await deleteAccount({
           db: this.db,
           sessionPersistence: this.sessionPersistence,
           hostedWorkflowAuthority: this.hostedWorkflowAuthority,
+          ...(this.publicationService ? { publicationService: this.publicationService } : {}),
           userId,
         });
+        // Every live access token of the deleted account stops working immediately, not at expiry.
+        this.auth.forgetSessionsOf(userId);
+        this.audit({ type: "account.deleted", outcome: "success", userId, ipAddress: clientIp, details: { sessionsDeleted: receipt.sessionsDeleted, artifactsPurged: receipt.artifactsPurged } });
         this.sendJson(res, 200, receipt, corsOrigin);
         return;
       }
 
       // 4. Usage Endpoints (Authenticated)
       if (url.pathname === "/v1/usage" && method === "GET") {
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         const summary = await this.usage.getUserUsageSummary(userId);
         this.sendJson(res, 200, summary, corsOrigin);
         return;
@@ -920,14 +1027,20 @@ export class CodeForgeCloudServer {
           this.sendJson(res, 503, { error: "Stripe billing is not configured for this deployment" }, corsOrigin);
           return;
         }
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         const body = await this.readJson(req, BillingCheckoutSchema);
+        if (!isAllowedBillingReturnUrl(body.successUrl, this.billingReturnOrigins) || !isAllowedBillingReturnUrl(body.cancelUrl, this.billingReturnOrigins)) {
+          this.audit({ type: "request.rejected", outcome: "denied", userId, ipAddress: clientIp, details: { reason: "billing_return_url_not_allowed" } });
+          this.sendJson(res, 400, { error: "Checkout return URLs must point at a trusted CodeForge origin", code: "BILLING_RETURN_URL_NOT_ALLOWED" }, corsOrigin);
+          return;
+        }
         const session = await this.billing.createCheckoutSession({
           userId,
           planId: body.planId,
           successUrl: body.successUrl,
           cancelUrl: body.cancelUrl,
         });
+        this.audit({ type: "billing.checkout.started", outcome: "success", userId, ipAddress: clientIp, details: { planId: body.planId ?? "pro" } });
         this.sendJson(res, 200, session, corsOrigin);
         return;
       }
@@ -937,12 +1050,18 @@ export class CodeForgeCloudServer {
           this.sendJson(res, 503, { error: "Stripe billing is not configured for this deployment" }, corsOrigin);
           return;
         }
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         const body = await this.readJson(req, BillingPortalSchema);
+        if (!isAllowedBillingReturnUrl(body.returnUrl, this.billingReturnOrigins)) {
+          this.audit({ type: "request.rejected", outcome: "denied", userId, ipAddress: clientIp, details: { reason: "billing_return_url_not_allowed" } });
+          this.sendJson(res, 400, { error: "Portal return URL must point at a trusted CodeForge origin", code: "BILLING_RETURN_URL_NOT_ALLOWED" }, corsOrigin);
+          return;
+        }
         const session = await this.billing.createCustomerPortalSession({
           userId,
           returnUrl: body.returnUrl,
         });
+        this.audit({ type: "billing.portal.opened", outcome: "success", userId, ipAddress: clientIp });
         this.sendJson(res, 200, session, corsOrigin);
         return;
       }
@@ -956,11 +1075,25 @@ export class CodeForgeCloudServer {
         const sigHeader = (req.headers["stripe-signature"] as string) || "";
         const isValid = this.billing.verifyWebhookSignature(rawBody, sigHeader);
         if (!isValid) {
+          this.audit({ type: "billing.webhook.signature_invalid", outcome: "denied", ipAddress: clientIp });
           this.sendJson(res, 400, { error: "Invalid Stripe webhook signature" }, corsOrigin);
           return;
         }
-        const event = JSON.parse(rawBody);
-        const result = await this.billing.handleWebhookEvent(event);
+        let event: unknown;
+        try {
+          event = JSON.parse(rawBody);
+        } catch {
+          this.audit({ type: "billing.webhook.rejected", outcome: "failure", ipAddress: clientIp, details: { reason: "invalid_json" } });
+          this.sendJson(res, 400, { error: "Invalid webhook payload" }, corsOrigin);
+          return;
+        }
+        const result = await this.billing.handleWebhookEvent(event as Parameters<StripeBillingService["handleWebhookEvent"]>[0]);
+        this.audit({
+          type: result.action === "duplicate_skipped" ? "billing.webhook.duplicate" : result.action === "ignored" || result.action.startsWith("rejected") ? "billing.webhook.rejected" : "billing.webhook.processed",
+          outcome: result.action.startsWith("rejected") ? "denied" : "info",
+          ipAddress: clientIp,
+          details: { action: result.action, eventType: String((event as { type?: unknown }).type ?? "unknown") },
+        });
         this.sendJson(res, 200, result, corsOrigin);
         return;
       }
@@ -968,7 +1101,7 @@ export class CodeForgeCloudServer {
 
       // 6. Hosted Inference Endpoint (Authenticated & Streaming SSE)
       if (url.pathname === "/v1/hosted/inference" && method === "POST") {
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         const body = await this.readJson(req, HostedInferenceSchema);
 
         res.writeHead(200, {
@@ -1025,21 +1158,21 @@ export class CodeForgeCloudServer {
       // Hosted workflows are owner-scoped. Worker actions themselves can only be minted by the
       // server-side workflow authority; the public transport can poll and return results only.
       if (url.pathname === "/v1/workflows" && method === "POST") {
-        const ownerUserId = this.authenticateRequest(req);
+        const ownerUserId = await this.authenticateRequest(req);
         const body = await this.readJson(req, HostedWorkflowCreateSchema);
         this.sendJson(res, 201, await this.hostedWorkflowAuthority.create({ ownerUserId, ...body }), corsOrigin);
         return;
       }
 
       if (url.pathname === "/v1/workflows" && method === "GET") {
-        const ownerUserId = this.authenticateRequest(req);
+        const ownerUserId = await this.authenticateRequest(req);
         this.sendJson(res, 200, await this.hostedWorkflowAuthority.list(ownerUserId), corsOrigin);
         return;
       }
 
       const workflowCancelRoute = url.pathname.match(/^\/v1\/workflows\/([^/]+)\/cancel$/);
       if (workflowCancelRoute && method === "POST") {
-        const ownerUserId = this.authenticateRequest(req);
+        const ownerUserId = await this.authenticateRequest(req);
         const workflowId = workflowCancelRoute[1]!;
         if (!await this.hostedWorkflowAuthority.get(workflowId, ownerUserId)) {
           this.sendJson(res, 404, { error: "Hosted workflow not found" }, corsOrigin);
@@ -1051,7 +1184,7 @@ export class CodeForgeCloudServer {
 
       const workflowStatusRoute = url.pathname.match(/^\/v1\/workflows\/([^/]+)$/);
       if (workflowStatusRoute && method === "GET") {
-        const ownerUserId = this.authenticateRequest(req);
+        const ownerUserId = await this.authenticateRequest(req);
         const workflow = await this.hostedWorkflowAuthority.get(workflowStatusRoute[1]!, ownerUserId);
         if (!workflow) {
           this.sendJson(res, 404, { error: "Hosted workflow not found" }, corsOrigin);
@@ -1062,14 +1195,14 @@ export class CodeForgeCloudServer {
       }
 
       if (url.pathname === "/v1/worker/actions" && method === "GET") {
-        const ownerUserId = this.authenticateRequest(req);
+        const ownerUserId = await this.authenticateRequest(req);
         const workerId = WorkerIdSchema.parse(url.searchParams.get("workerId"));
         this.sendJson(res, 200, await this.hostedWorkflowAuthority.pending(ownerUserId, workerId), corsOrigin);
         return;
       }
 
       if (url.pathname === "/v1/worker/actions/result" && method === "POST") {
-        const ownerUserId = this.authenticateRequest(req);
+        const ownerUserId = await this.authenticateRequest(req);
         const result = await this.readJson(req, DesktopWorkerActionResultSchema);
         this.sendJson(res, 200, await this.hostedWorkflowAuthority.result(ownerUserId, {
           ...result,
@@ -1083,7 +1216,7 @@ export class CodeForgeCloudServer {
       if (url.pathname === "/v1/github-app/authorizations/start" && method === "POST") {
         const service = this.requireGitHubAppAuth(res, corsOrigin);
         if (!service) return;
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         this.sendJson(res, 200, await service.startAuthorization(userId), corsOrigin);
         return;
       }
@@ -1091,15 +1224,17 @@ export class CodeForgeCloudServer {
       if (url.pathname === "/v1/github-app/authorizations/callback" && method === "POST") {
         const service = this.requireGitHubAppAuth(res, corsOrigin);
         if (!service) return;
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         const body = await this.readJson(req, GitHubAppAuthCallbackSchema);
         try {
           const result = await service.handleCallback({ state: body.state, installationId: body.installationId, expectedUserId: userId });
+          this.audit({ type: "github.app.authorized", outcome: "success", userId, ipAddress: clientIp, details: { installationId: result.installation.installationId, repositories: result.repositories.length } });
           this.sendJson(res, 200, {
             installation: { id: result.installation.id, installationId: result.installation.installationId, accountLogin: result.installation.accountLogin, accountType: result.installation.accountType, status: result.installation.status },
             repositories: result.repositories.map((item) => ({ repositoryId: item.repositoryId, fullName: item.fullName, private: item.private, authorizationState: item.authorizationState })),
           }, corsOrigin);
         } catch (error) {
+          this.audit({ type: "github.app.authorization_failed", outcome: "failure", userId, ipAddress: clientIp, details: { code: error instanceof GitHubAuthorizationError ? error.code : "unknown" } });
           this.sendPublicationError(res, error, corsOrigin);
         }
         return;
@@ -1108,7 +1243,7 @@ export class CodeForgeCloudServer {
       if (url.pathname === "/v1/github-app/installations" && method === "GET") {
         const service = this.requireGitHubAppAuth(res, corsOrigin);
         if (!service) return;
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         const installations = await service.listUserInstallations(userId);
         this.sendJson(res, 200, installations.map((item) => ({ id: item.id, installationId: item.installationId, accountLogin: item.accountLogin, accountType: item.accountType, status: item.status, repositorySelection: item.repositorySelection })), corsOrigin);
         return;
@@ -1117,7 +1252,7 @@ export class CodeForgeCloudServer {
       if (url.pathname === "/v1/github-app/repositories" && method === "GET") {
         const service = this.requireGitHubAppAuth(res, corsOrigin);
         if (!service) return;
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         const repositoryId = url.searchParams.get("repositoryId");
         if (repositoryId !== null) {
           const parsed = Number(repositoryId);
@@ -1137,7 +1272,7 @@ export class CodeForgeCloudServer {
       if (url.pathname === "/v1/publications" && method === "POST") {
         const service = this.requirePublicationService(res, corsOrigin);
         if (!service) return;
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         const body = await this.readJson(req, PublicationCreateSchema);
         try {
           const publication = await service.createPublication(userId, body);
@@ -1152,7 +1287,7 @@ export class CodeForgeCloudServer {
       if (artifactRoute && method === "POST") {
         const service = this.requirePublicationService(res, corsOrigin);
         if (!service) return;
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         try {
           // The body streams straight into bounded storage: bundle bytes never become a JSON
           // payload, are never logged, and never reach SQL.
@@ -1168,7 +1303,7 @@ export class CodeForgeCloudServer {
       if (executeRoute && method === "POST") {
         const service = this.requirePublicationService(res, corsOrigin);
         if (!service) return;
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         try {
           this.sendJson(res, 200, await service.execute(userId, executeRoute[1]!), corsOrigin);
         } catch (error) {
@@ -1181,7 +1316,7 @@ export class CodeForgeCloudServer {
       if (retryRoute && method === "POST") {
         const service = this.requirePublicationService(res, corsOrigin);
         if (!service) return;
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         try {
           this.sendJson(res, 200, await service.retry(userId, retryRoute[1]!), corsOrigin);
         } catch (error) {
@@ -1194,7 +1329,7 @@ export class CodeForgeCloudServer {
       if (statusRoute && method === "GET") {
         const service = this.requirePublicationService(res, corsOrigin);
         if (!service) return;
-        const userId = this.authenticateRequest(req);
+        const userId = await this.authenticateRequest(req);
         try {
           this.sendJson(res, 200, await service.getStatus(userId, statusRoute[1]!), corsOrigin);
         } catch (error) {
@@ -1206,22 +1341,36 @@ export class CodeForgeCloudServer {
       this.sendJson(res, 404, { error: "Endpoint not found" }, corsOrigin);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      const isAuthError = msg.includes("Bearer token") || msg.includes("browser session") || msg.includes("JWT") || msg.includes("expired") || msg.includes("revoked");
+      const isAuthError = msg.includes("Bearer token") || msg.includes("browser session") || msg.includes("JWT") || msg.includes("expired") || msg.includes("revoked") || msg.includes("Session has been");
       const isPayloadTooLarge = msg.includes("Payload Too Large");
+      const isValidation = msg.startsWith("Validation error:") || msg === "Invalid JSON body";
+      // Messages a client is entitled to see: authentication outcomes, request-shape problems, and
+      // the deliberately client-facing domain errors (OAuth/PKCE/redirect policy, billing
+      // configuration, ownership). Anything else — driver errors, upstream bodies, filesystem
+      // paths — is an internal error and is replaced by a generic message with a correlation id.
+      const isClientFacingDomainError =
+        /^(OAuth|Desktop authorization code|PKCE|Browser OAuth|Unknown browser OAuth|Invalid (redirect|loopback)|Redirect URI|A base64url|CODEFORGE_PUBLIC_URL|No Stripe customer|User not found|Hosted work|Unknown hosted|GitHub identity|Unable to resolve)/.test(msg);
       const status = isPayloadTooLarge ? 413 : isAuthError ? 401 : 400;
 
-      // Error sanitization: ensure no internal secrets or full stack traces leak
-      const sanitizedMsg = msg
-        .replace(/sk_[a-zA-Z0-9_]+/g, "[REDACTED_STRIPE_KEY]")
-        .replace(/ghp_[a-zA-Z0-9_]+/g, "[REDACTED_GITHUB_KEY]")
-        .replace(/cfr_[a-zA-Z0-9_]+/g, "[REDACTED_REFRESH_TOKEN]");
-
       if (isAuthError) {
-        this.sendJson(res, status, { error: sanitizedMsg, code: PUBLICATION_ERROR_CODES.UNAUTHENTICATED }, corsOrigin);
+        this.audit({ type: "auth.session.rejected", outcome: "denied", ipAddress: clientIp, details: { path: url.pathname, reason: msg.slice(0, 120) } });
+        this.sendJson(res, status, { error: this.redactClientMessage(msg), code: PUBLICATION_ERROR_CODES.UNAUTHENTICATED }, corsOrigin);
         return;
       }
 
-      this.sendJson(res, status, { error: sanitizedMsg }, corsOrigin);
+      if (isPayloadTooLarge || isValidation || isClientFacingDomainError) {
+        this.sendJson(res, status, { error: this.redactClientMessage(msg) }, corsOrigin);
+        return;
+      }
+
+      const correlationId = randomUUID();
+      this.logger.error("unhandled request error", { correlationId, path: url.pathname, method, error: err });
+      this.sendJson(res, 500, { error: "Internal server error", code: "INTERNAL_ERROR", correlationId }, corsOrigin);
     }
+  }
+
+  /** Client-facing text passes through the shared redactor and is bounded; no stack, no internals. */
+  private redactClientMessage(message: string): string {
+    return redactSecrets(message).slice(0, 512);
   }
 }

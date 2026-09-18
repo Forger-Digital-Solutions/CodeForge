@@ -3,6 +3,28 @@ import type { ICloudDatabase } from "@codeforge/cloud-db";
 import type { EntitlementService } from "@codeforge/cloud-entitlements";
 import type { StripeConfig, StripeCheckoutSessionOptions, StripeCustomerPortalOptions, StripeWebhookPayload } from "./types.js";
 
+interface CheckoutSessionObject {
+  id?: string;
+  client_reference_id?: string;
+  customer?: string;
+  subscription?: string;
+  mode?: string;
+  payment_status?: string;
+}
+
+const WEBHOOK_AUDIT_FIELDS = ["id", "object", "customer", "subscription", "mode", "payment_status", "status", "amount_total", "amount_paid", "currency", "billing_reason", "cancel_at_period_end", "current_period_start", "current_period_end", "client_reference_id"] as const;
+
+/** Keep only reconciliation identifiers/amounts from a Stripe object; drop names, emails, addresses. */
+export function minimizeWebhookObject(object: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const field of WEBHOOK_AUDIT_FIELDS) {
+    const value = object[field];
+    if (value === undefined || value === null) continue;
+    out[field] = typeof value === "object" ? (typeof (value as { id?: unknown }).id === "string" ? (value as { id: string }).id : "[object]") : value;
+  }
+  return out;
+}
+
 export class StripeBillingService {
   private readonly db: ICloudDatabase;
   private readonly entitlementService: EntitlementService;
@@ -129,7 +151,70 @@ export class StripeBillingService {
     }
   }
 
+  /**
+   * Grant the entitlement a paid Checkout Session represents. Shared by `checkout.session.completed`
+   * (card payments settle synchronously) and `checkout.session.async_payment_succeeded` (bank
+   * debits and other delayed methods settle later). It is the ONLY place a checkout turns into
+   * credits or a plan, and it requires Stripe's own `payment_status` to say the money arrived —
+   * a completed-but-unpaid session grants nothing.
+   */
+  private async grantCheckoutSession(event: StripeWebhookPayload, session: CheckoutSessionObject): Promise<string> {
+    const userId = session.client_reference_id;
+    if (!userId) return "rejected_missing_client_reference";
+    // The user named by the session must exist: a mis-targeted session cannot create credit for an
+    // account that does not exist, and a deleted account cannot be silently re-credited.
+    if (!(await this.db.getUserById(userId))) return "rejected_unknown_user";
+    const paid = session.payment_status === "paid" || session.payment_status === "no_payment_required";
+    if (!paid) return "deferred_awaiting_payment";
+
+    if (session.mode === "subscription") {
+      if (!session.subscription) return "rejected_subscription_missing";
+      const existing = await this.db.getSubscriptionByStripeSubscriptionId(session.subscription);
+      if (existing && existing.userId !== userId) return "rejected_subscription_owned_by_other_user";
+      await this.db.upsertSubscription({
+        userId,
+        planId: "pro",
+        stripeCustomerId: session.customer,
+        stripeSubscriptionId: session.subscription,
+        status: "active",
+        currentPeriodStart: new Date().toISOString(),
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
+        cancelAtPeriodEnd: false,
+      });
+      await this.entitlementService.syncSubscriptionEntitlements(userId, "pro");
+      await this.db.appendLedgerEvent({
+        userId,
+        amount: 5_000_000,
+        eventType: "SUBSCRIPTION_ALLOWANCE_GRANTED",
+        description: "CodeForge Pro subscription credit grant",
+        metadata: { stripeEventId: event.id, subscriptionId: session.subscription, checkoutSessionId: session.id },
+      });
+      return "pro_subscription_activated";
+    }
+    if (session.mode === "payment") {
+      // One-time credit pack purchase (1,000,000 credits)
+      await this.db.appendLedgerEvent({
+        userId,
+        amount: 1_000_000,
+        eventType: "CREDIT_PURCHASED",
+        description: "CodeForge 1M Credit Pack Purchase",
+        metadata: { stripeEventId: event.id, checkoutSessionId: session.id },
+      });
+      return "credits_purchased";
+    }
+    return "ignored";
+  }
+
   async handleWebhookEvent(event: StripeWebhookPayload): Promise<{ processed: boolean; action: string }> {
+    if (!event || typeof event.id !== "string" || !event.id || typeof event.type !== "string" || !event.data || typeof event.data.object !== "object" || event.data.object === null) {
+      return { processed: false, action: "rejected_malformed_event" };
+    }
+    // This deployment is TEST-mode only. A live-mode event can only mean a misconfigured endpoint;
+    // it must never mutate a balance.
+    if ((event as { livemode?: unknown }).livemode === true) {
+      return { processed: false, action: "rejected_livemode_event" };
+    }
+
     // Atomic claim at database level (exactly one delivery wins the race)
     const { claimed } = await this.db.claimWebhookEvent({
       stripeEventId: event.id,
@@ -142,47 +227,15 @@ export class StripeBillingService {
     let action = "ignored";
 
     switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object as {
-          client_reference_id?: string;
-          customer?: string;
-          subscription?: string;
-          mode?: string;
-        };
-        const userId = session.client_reference_id;
-        if (userId) {
-          if (session.mode === "subscription") {
-            await this.db.upsertSubscription({
-              userId,
-              planId: "pro",
-              stripeCustomerId: session.customer,
-              stripeSubscriptionId: session.subscription,
-              status: "active",
-              currentPeriodStart: new Date().toISOString(),
-              currentPeriodEnd: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
-              cancelAtPeriodEnd: false,
-            });
-            await this.entitlementService.syncSubscriptionEntitlements(userId, "pro");
-            await this.db.appendLedgerEvent({
-              userId,
-              amount: 5_000_000,
-              eventType: "SUBSCRIPTION_ALLOWANCE_GRANTED",
-              description: "CodeForge Pro subscription credit grant",
-              metadata: { stripeEventId: event.id, subscriptionId: session.subscription },
-            });
-            action = "pro_subscription_activated";
-          } else if (session.mode === "payment") {
-            // One-time credit pack purchase (1,000,000 credits)
-            await this.db.appendLedgerEvent({
-              userId,
-              amount: 1_000_000,
-              eventType: "CREDIT_PURCHASED",
-              description: "CodeForge 1M Credit Pack Purchase",
-              metadata: { stripeEventId: event.id },
-            });
-            action = "credits_purchased";
-          }
-        }
+      case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded": {
+        action = await this.grantCheckoutSession(event, event.data.object as CheckoutSessionObject);
+        break;
+      }
+
+      case "checkout.session.async_payment_failed": {
+        // Nothing was granted at completion (payment_status was unpaid), so nothing is reversed.
+        action = "async_payment_failed_no_grant";
         break;
       }
 
@@ -196,7 +249,9 @@ export class StripeBillingService {
         };
         if (invoice.subscription) {
           const existing = await this.db.getSubscriptionByStripeSubscriptionId(invoice.subscription);
-          if (existing) {
+          if (existing && existing.status === "canceled") {
+            action = "invoice_ignored_subscription_canceled";
+          } else if (existing) {
             // Determine period dates from invoice
             const periodData = invoice.lines?.data?.[0]?.period;
             const periodStart = periodData?.start ? new Date(periodData.start * 1000).toISOString() : new Date().toISOString();
@@ -239,18 +294,24 @@ export class StripeBillingService {
         };
         const existing = await this.db.getSubscriptionByStripeSubscriptionId(sub.id);
         if (existing) {
-          const status = sub.status === "active" || sub.status === "trialing" ? "active" : "past_due";
+          // Terminal Stripe states arriving out of order (an `updated` delivered after `deleted`)
+          // must not resurrect a Pro plan; a subscription already recorded as canceled stays so.
+          const terminal = existing.status === "canceled" || sub.status === "canceled" || sub.status === "unpaid" || sub.status === "incomplete_expired";
+          const status = terminal ? "canceled" : sub.status === "active" || sub.status === "trialing" ? "active" : "past_due";
+          const periodStart = Number.isFinite(sub.current_period_start) ? new Date(sub.current_period_start * 1000).toISOString() : existing.currentPeriodStart;
+          const periodEnd = Number.isFinite(sub.current_period_end) ? new Date(sub.current_period_end * 1000).toISOString() : existing.currentPeriodEnd;
           await this.db.upsertSubscription({
             userId: existing.userId,
-            planId: "pro",
-            stripeCustomerId: sub.customer,
+            planId: terminal ? "free" : "pro",
+            stripeCustomerId: sub.customer ?? existing.stripeCustomerId,
             stripeSubscriptionId: sub.id,
             status,
-            currentPeriodStart: new Date(sub.current_period_start * 1000).toISOString(),
-            currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
-            cancelAtPeriodEnd: sub.cancel_at_period_end,
+            currentPeriodStart: periodStart,
+            currentPeriodEnd: periodEnd,
+            cancelAtPeriodEnd: Boolean(sub.cancel_at_period_end),
           });
-          action = "subscription_updated";
+          if (terminal) await this.entitlementService.syncSubscriptionEntitlements(existing.userId, "free");
+          action = terminal ? "subscription_canceled" : "subscription_updated";
         }
         break;
       }
@@ -291,11 +352,14 @@ export class StripeBillingService {
       }
     }
 
+    // Data minimization (Security R1): the durable webhook record keeps only the identifiers needed
+    // to audit and reconcile — never the full Stripe object, which can carry the customer's email,
+    // name, and address. Stripe remains the system of record for those.
     await this.db.recordWebhookEvent({
       stripeEventId: event.id,
       eventType: event.type,
       status: "processed",
-      payload: event.data.object,
+      payload: minimizeWebhookObject(event.data.object),
     });
 
     return { processed: true, action };

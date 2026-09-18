@@ -5,7 +5,19 @@
     "rootDir": "./src",
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
   },
-  "include": ["src/**/*"],
-  "exclude": ["test", "dist"],
-  "references": [{ "path": "../sessions" }]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "test",
+    "dist"
+  ],
+  "references": [
+    {
+      "path": "../sessions"
+    },
+    {
+      "path": "../secrets"
+    }
+  ]
 }

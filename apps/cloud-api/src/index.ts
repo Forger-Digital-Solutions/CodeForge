@@ -61,6 +61,9 @@ async function main() {
     requestTimeoutMs: config.requestTimeoutMs,
     trustProxy: config.trustProxy,
     trustedRegionHeaderName: config.trustedRegionHeaderName,
+    secretEnvelope: config.secretEnvelope.service,
+    securityContact: config.securityContact,
+    logLevel: config.logLevel,
   });
 
   const actualPort = await server.start(config.port, config.host);

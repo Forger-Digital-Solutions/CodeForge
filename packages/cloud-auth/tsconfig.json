@@ -5,11 +5,25 @@
     "rootDir": "./src",
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
   },
-  "include": ["src/**/*"],
-  "exclude": ["test", "dist"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "test",
+    "dist"
+  ],
   "references": [
-    { "path": "../core" },
-    { "path": "../cloud-db" },
-    { "path": "../secrets" }
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../cloud-db"
+    },
+    {
+      "path": "../secrets"
+    },
+    {
+      "path": "../crypto"
+    }
   ]
 }

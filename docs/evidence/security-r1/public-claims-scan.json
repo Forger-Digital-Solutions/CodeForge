@@ -1,0 +1,29 @@
+{
+  "generatedAt": "2026-09-18T14:00:39.137Z",
+  "filesScanned": 118,
+  "totalHits": 7,
+  "blocking": [
+    {
+      "file": "docs/legal/pass3/proposed-drafts/privacy-policy.md",
+      "line": 16,
+      "patternId": "hardware-encryption",
+      "category": "UNSUBSTANTIATED_SECURITY",
+      "matchedText": "hardware encryption",
+      "context": "PUBLIC_MARKETING",
+      "blocking": true,
+      "lineText": "- **Credential Storage**: Third-party AI provider API keys (OpenRouter, Google, Groq) and CodeForge Cloud authentication tokens are stored locally on your device in encrypted form using operating syst"
+    },
+    {
+      "file": "docs/legal/third-party-services-register.md",
+      "line": 33,
+      "patternId": "compliance-certified",
+      "category": "UNSUBSTANTIATED_SECURITY",
+      "matchedText": "PCI-DSS compliant",
+      "context": "PUBLIC_MARKETING",
+      "blocking": true,
+      "lineText": "| **Stripe** | Stripe, Inc. | `https://api.stripe.com/v1/*` | **Cloud Backend Service** (`packages/cloud-billing`). Key restricted to `sk_test_` / `rk_test_`. | Customer ID, email, subscription metada"
+    }
+  ],
+  "informational": 5,
+  "status": "FAIL"
+}

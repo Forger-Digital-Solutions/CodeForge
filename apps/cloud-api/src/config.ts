@@ -4,6 +4,7 @@ import {
   type CloudKillSwitchConfig,
   type ResolvedProviderCredentials,
 } from "@codeforge/cloud-gateway";
+import { createSecretEnvelopeService, KeyProviderError, type SecretEnvelopeRuntime } from "@codeforge/crypto";
 
 /**
  * Canonical CodeForge Cloud runtime configuration. Built and validated exactly once at startup from
@@ -81,6 +82,20 @@ export interface CloudRuntimeConfig {
 
   /** Server-owned provider credentials resolved from env (never logged, never sent to clients). */
   providerCredentials: ResolvedProviderCredentials;
+
+  /**
+   * Envelope encryption for reversible secrets the Cloud stores at rest (today: the server-owned
+   * GitHub PKCE verifier). Built from CODEFORGE_DATA_ENCRYPTION_KEYS; REQUIRED in staging and
+   * production, ephemeral (per-process) in development. The key material itself is never on this
+   * object — only the constructed service and a redacted description.
+   */
+  secretEnvelope: SecretEnvelopeRuntime;
+
+  /**
+   * Security contact published at /.well-known/security.txt (RFC 9116). Unset means the file is
+   * NOT served: CodeForge never publishes a placeholder contact.
+   */
+  securityContact?: string;
 }
 
 const EnvSchema = z.object({
@@ -115,6 +130,9 @@ const EnvSchema = z.object({
   CODEFORGE_REQUEST_TIMEOUT_MS: z.string().optional(),
   CODEFORGE_ALLOWED_ORIGINS: z.string().optional(),
   CODEFORGE_LOG_LEVEL: z.enum(["debug", "info", "warn", "error", "silent"]).optional(),
+  CODEFORGE_DATA_ENCRYPTION_KEYS: z.string().optional(),
+  CODEFORGE_DATA_ENCRYPTION_ACTIVE_KEY: z.string().optional(),
+  CODEFORGE_SECURITY_CONTACT: z.string().optional(),
 });
 
 function parseBool(v: string | undefined, dflt: boolean): boolean {
@@ -291,6 +309,23 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
     globalDailySpendLimitUsd: parseNum(e.CODEFORGE_GLOBAL_DAILY_SPEND_LIMIT_USD, 1000.0),
   };
 
+  // --- Data encryption keys ---------------------------------------------------------------------
+  let secretEnvelope: SecretEnvelopeRuntime;
+  try {
+    secretEnvelope = createSecretEnvelopeService({ environment, env });
+  } catch (error) {
+    throw new CloudConfigError(error instanceof KeyProviderError ? error.message : "CODEFORGE_DATA_ENCRYPTION_KEYS is invalid.");
+  }
+
+  // --- Security contact (RFC 9116) ----------------------------------------------------------------
+  const securityContactRaw = e.CODEFORGE_SECURITY_CONTACT?.trim();
+  if (securityContactRaw && !/^(mailto:[^\s@]+@[^\s@]+\.[^\s@]+|https:\/\/\S+)$/.test(securityContactRaw)) {
+    throw new CloudConfigError("CODEFORGE_SECURITY_CONTACT must be a mailto: address or an https:// URL.");
+  }
+  if (securityContactRaw && /TODO|OWNER|PLACEHOLDER|example\.com/i.test(securityContactRaw)) {
+    throw new CloudConfigError("CODEFORGE_SECURITY_CONTACT is a placeholder, not a real contact.");
+  }
+
   const allowedOrigins = (e.CODEFORGE_ALLOWED_ORIGINS ?? "")
     .split(",")
     .map((s) => s.trim())
@@ -336,6 +371,8 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
     providerCredentials: resolveCloudProviderCredentials(env),
     trustProxy: parseOptionalBool("CODEFORGE_TRUST_PROXY", e.CODEFORGE_TRUST_PROXY) ?? false,
     trustedRegionHeaderName: e.CODEFORGE_TRUSTED_REGION_HEADER || undefined,
+    secretEnvelope,
+    securityContact: securityContactRaw || undefined,
   };
 }
 
@@ -357,6 +394,8 @@ export function describeConfig(config: CloudRuntimeConfig): string {
     `dailyLimitUsd=${config.killSwitches.globalDailySpendLimitUsd}`,
     `trustProxy=${config.trustProxy}`,
     `trustedRegionHeader=${config.trustedRegionHeaderName ?? "unset(fail-closed)"}`,
+    config.secretEnvelope.describe(),
+    `securityTxt=${config.securityContact ? "published" : "not-published(no CODEFORGE_SECURITY_CONTACT)"}`,
     `logLevel=${config.logLevel}`,
   ].join(" ");
 }

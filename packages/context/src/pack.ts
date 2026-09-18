@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { getSanitizedEnvForChild } from "@codeforge/secrets";
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
@@ -183,6 +184,8 @@ export function git(root: string, args: string[]): string | undefined {
       stdio: ["ignore", "pipe", "ignore"],
       maxBuffer: 2 * 1024 * 1024,
       timeout: 10_000,
+      windowsHide: true,
+      env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" },
     }).trim();
   } catch {
     return undefined;

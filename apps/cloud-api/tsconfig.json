@@ -5,21 +5,58 @@
     "rootDir": "./src",
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
   },
-  "include": ["src/**/*"],
-  "exclude": ["test", "dist"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "test",
+    "dist"
+  ],
   "references": [
-    { "path": "../../packages/core" },
-    { "path": "../../packages/cloud-db" },
-    { "path": "../../packages/cloud-auth" },
-    { "path": "../../packages/cloud-entitlements" },
-    { "path": "../../packages/cloud-usage" },
-    { "path": "../../packages/cloud-billing" },
-    { "path": "../../packages/cloud-gateway" },
-    { "path": "../../packages/forge-zero" },
-    { "path": "../../packages/router" },
-    { "path": "../../packages/providers" },
-    { "path": "../../packages/protocol" },
-    { "path": "../../packages/sessions" },
-    { "path": "../../packages/legal-policy" }
+    {
+      "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/cloud-db"
+    },
+    {
+      "path": "../../packages/cloud-auth"
+    },
+    {
+      "path": "../../packages/cloud-entitlements"
+    },
+    {
+      "path": "../../packages/cloud-usage"
+    },
+    {
+      "path": "../../packages/cloud-billing"
+    },
+    {
+      "path": "../../packages/cloud-gateway"
+    },
+    {
+      "path": "../../packages/forge-zero"
+    },
+    {
+      "path": "../../packages/router"
+    },
+    {
+      "path": "../../packages/providers"
+    },
+    {
+      "path": "../../packages/protocol"
+    },
+    {
+      "path": "../../packages/sessions"
+    },
+    {
+      "path": "../../packages/legal-policy"
+    },
+    {
+      "path": "../../packages/crypto"
+    },
+    {
+      "path": "../../packages/secrets"
+    }
   ]
 }

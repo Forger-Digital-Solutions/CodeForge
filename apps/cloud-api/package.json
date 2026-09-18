@@ -32,6 +32,8 @@
     "@codeforge/protocol": "*",
     "@codeforge/sessions": "*",
     "@codeforge/legal-policy": "*",
-    "zod": "^3.24.0"
+    "zod": "^3.24.0",
+    "@codeforge/crypto": "*",
+    "@codeforge/secrets": "*"
   }
 }

@@ -89,17 +89,19 @@ describe("DELETE /v1/account — GDPR erasure", () => {
     // bodies, no task titles, no raw row dumps.
     expect(JSON.stringify(receipt1)).not.toContain("test task");
 
-    // The workflow is gone: fetching it now (still within the same still-cryptographically-valid
-    // access token's lifetime) reports not-found rather than returning stale content.
+    // Security R1: the deleted account's device sessions are gone, and request authentication
+    // requires a LIVE session, not merely a well-signed token. So the still-cryptographically-valid
+    // access token is now refused outright (401) rather than merely finding nothing (404) — the
+    // token stops working the moment the account does.
     const wfAfter = await fetch(`${baseUrl}/v1/workflows/${workflow.id}`, { headers: auth });
-    expect(wfAfter.status).toBe(404);
+    expect(wfAfter.status).toBe(401);
+    expect((await wfAfter.json()).code).toBe("UNAUTHENTICATED");
 
-    // Retry: an already-issued access token remains cryptographically valid for its remaining
-    // lifetime even though the account is gone (a documented, bounded limitation — see server.ts).
-    // The retried deletion call itself must be a safe no-op, not an error or a crash.
+    // Retry after an ambiguous network failure: the second call is refused for the same reason,
+    // which is a safe terminal outcome for the client (the account no longer exists, and the client
+    // clears its local session on 401 — see apps/desktop cloud:account:delete). Nothing crashes and
+    // no second deletion receipt is minted for a non-existent account.
     const del2 = await fetch(`${baseUrl}/v1/account`, { method: "DELETE", headers: auth, body: JSON.stringify({ confirmation: "DELETE_MY_ACCOUNT" }) });
-    expect(del2.status).toBe(200);
-    const receipt2 = await del2.json();
-    expect(receipt2.sessionsDeleted).toBe(0);
+    expect(del2.status).toBe(401);
   });
 });

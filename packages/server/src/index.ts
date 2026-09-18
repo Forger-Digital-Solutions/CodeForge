@@ -44,8 +44,7 @@ import { buildActivityOverview, type ActivityOverview, type ActivityPeriod } fro
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const TRUSTED_RENDERER_ORIGINS = new Set([
-  "null",
+const TRUSTED_DEV_RENDERER_ORIGINS = new Set([
   "http://localhost:5173",
   "http://127.0.0.1:5173",
 ]);
@@ -55,9 +54,35 @@ const TRUSTED_RENDERER_ORIGINS = new Set([
  * from a non-browser client (the desktop main process, curl); browsers always send one for
  * cross-origin requests, so any web page is either in the trusted set or refused. This is the first
  * gate only — every admitted request must still present the per-process bearer.
+ *
+ * `Origin: null` is what the packaged desktop renderer sends (a `file:` document) — but it is also
+ * what ANY web page can send from a sandboxed iframe. It is therefore admitted only when the
+ * server has a per-process bearer to check behind it; an unauthenticated server never trusts it.
  */
-export function isAllowedLocalControlPlaneOrigin(origin: string | undefined): boolean {
-  return origin === undefined || TRUSTED_RENDERER_ORIGINS.has(origin);
+export function isAllowedLocalControlPlaneOrigin(origin: string | undefined, bearerConfigured = false): boolean {
+  if (origin === undefined) return true;
+  if (TRUSTED_DEV_RENDERER_ORIGINS.has(origin)) return true;
+  return origin === "null" && bearerConfigured;
+}
+
+/**
+ * DNS-rebinding guard: when the server is bound to loopback, the Host header a browser sends must
+ * name loopback too. A page on attacker.example that re-points its own hostname at 127.0.0.1 gets
+ * same-origin access to this port from the browser's point of view (no Origin header on simple
+ * GETs), but its requests still carry `Host: attacker.example`, which this refuses.
+ */
+export function isAllowedLocalControlPlaneHost(hostHeader: string | undefined, boundHost: string): boolean {
+  const boundIsLoopback = boundHost === "127.0.0.1" || boundHost === "localhost" || boundHost === "::1" || boundHost === "[::1]";
+  if (!boundIsLoopback) return true;
+  if (!hostHeader) return false;
+  const host = hostHeader.trim().toLowerCase();
+  const name = host.startsWith("[") ? host.slice(0, host.indexOf("]") + 1) : host.split(":")[0] ?? "";
+  return name === "127.0.0.1" || name === "localhost" || name === "[::1]" || name === "::1";
+}
+
+/** Generate a per-process control-plane bearer (256 bits, base64url). */
+export function generateControlPlaneToken(): string {
+  return crypto.randomBytes(32).toString("base64url");
 }
 
 function controlPlaneTokenMatches(supplied: string | undefined, expected: string): boolean {
@@ -99,7 +124,11 @@ export interface ServerOptions {
   cloudFetch?: typeof fetch;
   /** Test-only synchronization point used to prove approval/steer transition ordering. */
   afterApprovalResolvedBoundary?: () => Promise<void>;
-  /** Per-process bearer used by the packaged renderer to authenticate to the loopback API. */
+  /**
+   * Per-process bearer used by the packaged renderer to authenticate to the loopback API. When
+   * omitted the server runs UNAUTHENTICATED on loopback (embedding/test mode): the desktop, the
+   * CLI, and the VS Code extension always supply one (see `generateControlPlaneToken`).
+   */
   controlPlaneToken?: string;
   /** Agent working budget per workflow implementation/repair turn (ms); tests use small values. */
   agentWorkingBudgetMs?: number;
@@ -534,11 +563,21 @@ export class CodeForgeServer {
     }
   }
 
+  /** The per-process bearer this server enforces, if any. Exposed so trusted embedders (CLI) can hand it to clients. */
+  get controlPlaneBearer(): string | undefined {
+    return this.controlPlaneToken;
+  }
+
   private handleRequest(req: http.IncomingMessage, res: http.ServerResponse): void {
+    if (!isAllowedLocalControlPlaneHost(req.headers.host, this.host)) {
+      res.writeHead(421, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Host header is not a loopback name for the local control plane" }));
+      return;
+    }
     const url = new URL(req.url || "/", `http://${req.headers.host}`);
     const origin = Array.isArray(req.headers.origin) ? req.headers.origin[0] : req.headers.origin;
 
-    if (!isAllowedLocalControlPlaneOrigin(origin)) {
+    if (!isAllowedLocalControlPlaneOrigin(origin, Boolean(this.controlPlaneToken))) {
       res.writeHead(403, {
         "Content-Type": "application/json",
         Vary: "Origin",

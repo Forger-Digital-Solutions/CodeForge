@@ -826,6 +826,44 @@ CREATE INDEX IF NOT EXISTS idx_browser_sessions_token_hash ON browser_sessions(s
 CREATE INDEX IF NOT EXISTS idx_browser_sessions_user_id ON browser_sessions(user_id);
 `;
 
+// Migration 008 (Security R1): a dedicated, append-only security audit trail. Rows carry an opaque
+// user id, an IP, a stable event type, an outcome, and small redacted details — never a
+// credential, token, or payload. Account deletion severs the user link (SECURITY_AUDIT retention
+// class) instead of deleting rows, so post-deletion abuse investigation remains possible without
+// keeping an identifiable account.
+const MIGRATION_8_SQLITE = `
+CREATE TABLE IF NOT EXISTS security_audit_events (
+  id TEXT PRIMARY KEY,
+  occurred_at TEXT NOT NULL,
+  event_type TEXT NOT NULL,
+  outcome TEXT NOT NULL,
+  user_id TEXT,
+  ip_address TEXT,
+  details TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_security_audit_events_user_id ON security_audit_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_security_audit_events_type_time ON security_audit_events(event_type, occurred_at);
+`;
+
+const MIGRATION_8_POSTGRES = `
+-- Sealed PKCE verifiers are envelope strings (~220 chars), longer than the original VARCHAR(128).
+ALTER TABLE browser_oauth_transactions ALTER COLUMN github_code_verifier TYPE TEXT;
+
+CREATE TABLE IF NOT EXISTS security_audit_events (
+  id VARCHAR(64) PRIMARY KEY,
+  occurred_at VARCHAR(64) NOT NULL,
+  event_type VARCHAR(128) NOT NULL,
+  outcome VARCHAR(32) NOT NULL,
+  user_id VARCHAR(64),
+  ip_address VARCHAR(64),
+  details TEXT,
+  created_at VARCHAR(64) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_security_audit_events_user_id ON security_audit_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_security_audit_events_type_time ON security_audit_events(event_type, occurred_at);
+`;
+
 export const MIGRATIONS: MigrationDefinition[] = [
   {
     version: 1,
@@ -875,6 +913,13 @@ export const MIGRATIONS: MigrationDefinition[] = [
     sqliteUp: MIGRATION_7_SQLITE,
     postgresUp: MIGRATION_7_POSTGRES,
     checksum: computeChecksum(MIGRATION_7_SQLITE),
+  },
+  {
+    version: 8,
+    name: "008_security_audit_events",
+    sqliteUp: MIGRATION_8_SQLITE,
+    postgresUp: MIGRATION_8_POSTGRES,
+    checksum: computeChecksum(MIGRATION_8_SQLITE),
   },
 ];
 

@@ -149,6 +149,47 @@ export class PublicationService {
     await this.artifactStore.init();
   }
 
+  /**
+   * Remove every staged bundle belonging to a user's publications. Called by account deletion
+   * BEFORE the publication rows are deleted, because the artifact key is derived from the
+   * publication id and a permanently failed publication would otherwise leave the user's source
+   * bundle on Cloud disk indefinitely. Idempotent: missing files are not an error.
+   */
+  async purgeArtifactsForUser(userId: string): Promise<number> {
+    const records = await this.db.listPublicationsByUser(userId);
+    let purged = 0;
+    for (const record of records) {
+      const key = record.artifactKey ?? this.artifactStore.keyForPublication(record.id);
+      try {
+        await this.artifactStore.delete(key);
+        purged++;
+      } catch {
+        // Invalid legacy key shapes cannot resolve to a path we own; nothing to delete.
+      }
+    }
+    return purged;
+  }
+
+  /**
+   * Retention sweep for terminal publications: bundles of publications that can never execute
+   * again (failed permanently, authorization revoked, target diverged) are removed. Completed
+   * publications already delete their bundle at completion.
+   */
+  async sweepTerminalArtifacts(): Promise<number> {
+    let removed = 0;
+    for (const state of ["failed_permanent", "authorization_revoked", "target_diverged"] as const) {
+      for (const record of await this.db.listPublicationsByState(state)) {
+        try {
+          await this.artifactStore.delete(record.artifactKey ?? this.artifactStore.keyForPublication(record.id));
+          removed++;
+        } catch {
+          // See purgeArtifactsForUser.
+        }
+      }
+    }
+    return removed;
+  }
+
   // --- Creation -------------------------------------------------------------------------------
 
   /**

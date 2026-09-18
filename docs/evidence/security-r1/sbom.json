@@ -1,0 +1,5367 @@
+{
+  "bomFormat": "CycloneDX-summary",
+  "specVersion": "1.5-summary",
+  "generatedAt": "2026-09-18T13:59:18.241Z",
+  "lockfileVersion": 3,
+  "componentCount": 540,
+  "installScriptPackages": [
+    "better-sqlite3@12.11.1",
+    "electron-winstaller@5.4.0",
+    "fsevents@2.3.3"
+  ],
+  "components": [
+    {
+      "name": "@codeforge/agent",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/agent",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/benchmark",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/benchmark",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/cli",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/cli",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/cloud-auth",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/cloud-auth",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/cloud-billing",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/cloud-billing",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/cloud-db",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/cloud-db",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/cloud-entitlements",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/cloud-entitlements",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/cloud-gateway",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/cloud-gateway",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/cloud-usage",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/cloud-usage",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/context",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/context",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/core",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/core",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/crypto",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/crypto",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/director",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/director",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/eight-bit",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/eight-bit",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/forge-green",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/forge-green",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/forge-zero",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/forge-zero",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/forgegreen-campaign",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/forgegreen-campaign",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/gems",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/gems",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/git",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/git",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/identity",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/identity",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/integration-tests",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/integration-tests",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/intelligence",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/intelligence",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/legal-policy",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/legal-policy",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/lsp",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/lsp",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/mcp",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/mcp",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/model-registry",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/model-registry",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/paid-auto",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/paid-auto",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/permissions",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/permissions",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/plugins",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/plugins",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/protocol",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/protocol",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/providers",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/providers",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/repo-intelligence",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/repo-intelligence",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/router",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/router",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/sandbox",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/sandbox",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/sdk",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/sdk",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/secrets",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/secrets",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/server",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/server",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/sessions",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/sessions",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/shared",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/shared",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/telemetry",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/telemetry",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/tools",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/tools",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/ui",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/ui",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/web",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "apps/web",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@codeforge/workflow",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/workflow",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "@electron-internal/extract-zip",
+      "version": "1.0.5",
+      "license": "BSD-2-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@electron-internal/extract-zip/-/extract-zip-1.0.5.tgz",
+      "integrity": "sha512-+bqFCP98pLI0T…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@electron/asar",
+      "version": "3.4.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@electron/asar/-/asar-3.4.1.tgz",
+      "integrity": "sha512-i4/rNPRS84t0v…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@electron/fuses",
+      "version": "1.8.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@electron/fuses/-/fuses-1.8.0.tgz",
+      "integrity": "sha512-zx0EIq78WlY/l…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@electron/get",
+      "version": "3.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@electron/get/-/get-3.1.0.tgz",
+      "integrity": "sha512-F+nKc0xW+kVbB…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@electron/get",
+      "version": "5.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@electron/get/-/get-5.1.0.tgz",
+      "integrity": "sha512-3kSBtG8ObcTVf…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@electron/notarize",
+      "version": "2.5.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@electron/notarize/-/notarize-2.5.0.tgz",
+      "integrity": "sha512-jNT8nwH1f9X5G…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@electron/osx-sign",
+      "version": "1.3.3",
+      "license": "BSD-2-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@electron/osx-sign/-/osx-sign-1.3.3.tgz",
+      "integrity": "sha512-KZ8mhXvWv2rIE…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@electron/rebuild",
+      "version": "4.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@electron/rebuild/-/rebuild-4.2.0.tgz",
+      "integrity": "sha512-RKL/O+jGoXJMx…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@electron/universal",
+      "version": "2.0.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@electron/universal/-/universal-2.0.3.tgz",
+      "integrity": "sha512-Wn9sPYIVFRFl5…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@electron/windows-sign",
+      "version": "1.2.2",
+      "license": "BSD-2-Clause",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@electron/windows-sign/-/windows-sign-1.2.2.tgz",
+      "integrity": "sha512-dfZeox66AvdPt…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@isaacs/fs-minipass",
+      "version": "4.0.1",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@isaacs/fs-minipass/-/fs-minipass-4.0.1.tgz",
+      "integrity": "sha512-wgm9Ehl2jpeqP…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@jridgewell/resolve-uri",
+      "version": "3.1.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz",
+      "integrity": "sha512-bRISgCIjP20/t…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@jridgewell/sourcemap-codec",
+      "version": "1.6.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.6.0.tgz",
+      "integrity": "sha512-T7jf+5zgsZHwN…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@jridgewell/trace-mapping",
+      "version": "0.3.31",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz",
+      "integrity": "sha512-zzNR+SdQSDJzc…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@malept/cross-spawn-promise",
+      "version": "2.0.0",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@malept/cross-spawn-promise/-/cross-spawn-promise-2.0.0.tgz",
+      "integrity": "sha512-1DpKU0Z5ThltB…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@malept/flatpak-bundler",
+      "version": "0.4.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@malept/flatpak-bundler/-/flatpak-bundler-0.4.0.tgz",
+      "integrity": "sha512-9QOtNffcOF/c1…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@noble/hashes",
+      "version": "1.4.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@noble/hashes/-/hashes-1.4.0.tgz",
+      "integrity": "sha512-V1JJ1WTRUqHHr…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@noble/hashes",
+      "version": "2.4.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@noble/hashes/-/hashes-2.4.0.tgz",
+      "integrity": "sha512-X5XaVWZIBCT7H…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxc-project/types",
+      "version": "0.150.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@oxc-project/types/-/types-0.150.0.tgz",
+      "integrity": "sha512-rDS5/31E9HfPl…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-android-arm-eabi",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-android-arm-eabi/-/binding-android-arm-eabi-1.83.0.tgz",
+      "integrity": "sha512-0yGY24EwsLk5Y…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-android-arm64",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-android-arm64/-/binding-android-arm64-1.83.0.tgz",
+      "integrity": "sha512-hHfJ0vc17A4iU…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-darwin-arm64",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-darwin-arm64/-/binding-darwin-arm64-1.83.0.tgz",
+      "integrity": "sha512-hsOjYjszLb/3z…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-darwin-x64",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-darwin-x64/-/binding-darwin-x64-1.83.0.tgz",
+      "integrity": "sha512-mjh5oH2EA+wl5…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-freebsd-x64",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-freebsd-x64/-/binding-freebsd-x64-1.83.0.tgz",
+      "integrity": "sha512-fNHr64/YaO8Ys…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-linux-arm-gnueabihf",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-linux-arm-gnueabihf/-/binding-linux-arm-gnueabihf-1.83.0.tgz",
+      "integrity": "sha512-Qpwy3zzAwMj+8…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-linux-arm-musleabihf",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-linux-arm-musleabihf/-/binding-linux-arm-musleabihf-1.83.0.tgz",
+      "integrity": "sha512-s+BirYLFq7JL2…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-linux-arm64-gnu",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-1.83.0.tgz",
+      "integrity": "sha512-7lihXt3vKr+GI…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-linux-arm64-musl",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-linux-arm64-musl/-/binding-linux-arm64-musl-1.83.0.tgz",
+      "integrity": "sha512-q63JalLYVkZiZ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-linux-ppc64-gnu",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-linux-ppc64-gnu/-/binding-linux-ppc64-gnu-1.83.0.tgz",
+      "integrity": "sha512-krQmDF+dRbxvd…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-linux-riscv64-gnu",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-linux-riscv64-gnu/-/binding-linux-riscv64-gnu-1.83.0.tgz",
+      "integrity": "sha512-MmOl8Y6txEAXZ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-linux-riscv64-musl",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-linux-riscv64-musl/-/binding-linux-riscv64-musl-1.83.0.tgz",
+      "integrity": "sha512-u1rMymh0W3JZk…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-linux-s390x-gnu",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-linux-s390x-gnu/-/binding-linux-s390x-gnu-1.83.0.tgz",
+      "integrity": "sha512-y0zK3HNwGysu7…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-linux-x64-gnu",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.83.0.tgz",
+      "integrity": "sha512-rS5gM0NgD7ngm…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-linux-x64-musl",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-linux-x64-musl/-/binding-linux-x64-musl-1.83.0.tgz",
+      "integrity": "sha512-W2IH4EtpcPaWc…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-openharmony-arm64",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-openharmony-arm64/-/binding-openharmony-arm64-1.83.0.tgz",
+      "integrity": "sha512-6LyKkUyoajssT…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-win32-arm64-msvc",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-win32-arm64-msvc/-/binding-win32-arm64-msvc-1.83.0.tgz",
+      "integrity": "sha512-Uz/fObEtF0jmN…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-win32-ia32-msvc",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-win32-ia32-msvc/-/binding-win32-ia32-msvc-1.83.0.tgz",
+      "integrity": "sha512-u7XcvPW6Bk58t…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@oxlint/binding-win32-x64-msvc",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@oxlint/binding-win32-x64-msvc/-/binding-win32-x64-msvc-1.83.0.tgz",
+      "integrity": "sha512-LZRubd7ph13Qm…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@peculiar/asn1-schema",
+      "version": "2.9.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@peculiar/asn1-schema/-/asn1-schema-2.9.4.tgz",
+      "integrity": "sha512-GjzePcT9Iw8Nz…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@peculiar/json-schema",
+      "version": "1.1.12",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@peculiar/json-schema/-/json-schema-1.1.12.tgz",
+      "integrity": "sha512-coUfuoMeIB7B8…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@peculiar/utils",
+      "version": "2.0.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@peculiar/utils/-/utils-2.0.3.tgz",
+      "integrity": "sha512-+oL3HPFRIZ1St…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@peculiar/webcrypto",
+      "version": "1.7.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@peculiar/webcrypto/-/webcrypto-1.7.1.tgz",
+      "integrity": "sha512-ODOov0sGMJMf3…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-android-arm-eabi",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-android-arm-eabi/-/binding-android-arm-eabi-1.2.9.tgz",
+      "integrity": "sha512-tNISae1QEf/vk…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-android-arm64",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-android-arm64/-/binding-android-arm64-1.2.9.tgz",
+      "integrity": "sha512-YC8YsI30o606G…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-darwin-arm64",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-darwin-arm64/-/binding-darwin-arm64-1.2.9.tgz",
+      "integrity": "sha512-IwhlH3qK5urrY…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-darwin-x64",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-darwin-x64/-/binding-darwin-x64-1.2.9.tgz",
+      "integrity": "sha512-XxpJfVzFh+jil…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-freebsd-x64",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-freebsd-x64/-/binding-freebsd-x64-1.2.9.tgz",
+      "integrity": "sha512-kSfvhmgeWyfkb…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-linux-arm-gnueabihf",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-arm-gnueabihf/-/binding-linux-arm-gnueabihf-1.2.9.tgz",
+      "integrity": "sha512-1RVzG17pxqbTf…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-linux-arm64-gnu",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-1.2.9.tgz",
+      "integrity": "sha512-BXqPvZ2drqVD+…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-linux-arm64-musl",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-arm64-musl/-/binding-linux-arm64-musl-1.2.9.tgz",
+      "integrity": "sha512-11vWvo8YDwLzu…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-linux-ppc64-gnu",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-ppc64-gnu/-/binding-linux-ppc64-gnu-1.2.9.tgz",
+      "integrity": "sha512-a1tijMkdwsIAR…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-linux-s390x-gnu",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-s390x-gnu/-/binding-linux-s390x-gnu-1.2.9.tgz",
+      "integrity": "sha512-x6SQNdAvv4c3h…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-linux-x64-gnu",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.9.tgz",
+      "integrity": "sha512-9s0AZ8BFK5/n7…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-linux-x64-musl",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-x64-musl/-/binding-linux-x64-musl-1.2.9.tgz",
+      "integrity": "sha512-P7VWAmV+WdJlu…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-openharmony-arm64",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-openharmony-arm64/-/binding-openharmony-arm64-1.2.9.tgz",
+      "integrity": "sha512-1qixtsE4BK8h+…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-win32-arm64-msvc",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-win32-arm64-msvc/-/binding-win32-arm64-msvc-1.2.9.tgz",
+      "integrity": "sha512-ok8IQjcEPs1AK…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/binding-win32-x64-msvc",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-win32-x64-msvc/-/binding-win32-x64-msvc-1.2.9.tgz",
+      "integrity": "sha512-Ip2mXoU0hM0bo…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@rolldown/pluginutils",
+      "version": "1.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.1.tgz",
+      "integrity": "sha512-2j9bGt5Jh8hj+…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@sindresorhus/is",
+      "version": "4.6.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@sindresorhus/is/-/is-4.6.0.tgz",
+      "integrity": "sha512-t09vSN3MdfsyC…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@szmarczak/http-timer",
+      "version": "4.0.6",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@szmarczak/http-timer/-/http-timer-4.0.6.tgz",
+      "integrity": "sha512-4BAffykYOgO+5…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/cacheable-request",
+      "version": "6.0.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/cacheable-request/-/cacheable-request-6.0.3.tgz",
+      "integrity": "sha512-IQ3EbTzGxIigb…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/chai",
+      "version": "5.2.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/chai/-/chai-5.2.3.tgz",
+      "integrity": "sha512-Mw558oeA9fFbv…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/debug",
+      "version": "4.1.13",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/debug/-/debug-4.1.13.tgz",
+      "integrity": "sha512-KSVgmQmzMwPlm…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/deep-eql",
+      "version": "4.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/deep-eql/-/deep-eql-4.0.2.tgz",
+      "integrity": "sha512-c9h9dVVMigMPc…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/estree",
+      "version": "1.0.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz",
+      "integrity": "sha512-GhdPgy1el4/Im…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/fs-extra",
+      "version": "9.0.13",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/fs-extra/-/fs-extra-9.0.13.tgz",
+      "integrity": "sha512-nEnwB++1u5lVD…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/http-cache-semantics",
+      "version": "4.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/http-cache-semantics/-/http-cache-semantics-4.2.0.tgz",
+      "integrity": "sha512-L3LgimLHXtGkW…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/keyv",
+      "version": "3.1.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/keyv/-/keyv-3.1.4.tgz",
+      "integrity": "sha512-BQ5aZNSCpj7D6…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/mocha",
+      "version": "10.0.10",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/mocha/-/mocha-10.0.10.tgz",
+      "integrity": "sha512-xPyYSz1cMPnJQ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/ms",
+      "version": "2.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/ms/-/ms-2.1.0.tgz",
+      "integrity": "sha512-GsCCIZDE/p3i9…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/node",
+      "version": "22.20.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-22.20.1.tgz",
+      "integrity": "sha512-EANqOCF9QFyra…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/node",
+      "version": "24.13.5",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-24.13.5.tgz",
+      "integrity": "sha512-TXyindR+lBr22…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/pg",
+      "version": "8.23.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/pg/-/pg-8.23.1.tgz",
+      "integrity": "sha512-fKVHpikPdg4GK…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/react",
+      "version": "19.2.18",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/react/-/react-19.2.18.tgz",
+      "integrity": "sha512-AnzbBERsrLKtk…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/react-dom",
+      "version": "19.2.5",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/react-dom/-/react-dom-19.2.5.tgz",
+      "integrity": "sha512-fMPwH9v7r/pp4…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/responselike",
+      "version": "1.0.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/responselike/-/responselike-1.0.3.tgz",
+      "integrity": "sha512-H/+L+UkTV33uf…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/uuid",
+      "version": "10.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/uuid/-/uuid-10.0.0.tgz",
+      "integrity": "sha512-7gqG38EyHgyP1…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@types/vscode",
+      "version": "1.134.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@types/vscode/-/vscode-1.134.0.tgz",
+      "integrity": "sha512-NDEu0hg4sF7+v…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@vitejs/plugin-react",
+      "version": "6.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.1.1.tgz",
+      "integrity": "sha512-yxLaQV9gkhS8e…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@vitest/mocker",
+      "version": "5.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@vitest/mocker/-/mocker-5.0.1.tgz",
+      "integrity": "sha512-6K1DoBNAPGvuO…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@vitest/spy",
+      "version": "5.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@vitest/spy/-/spy-5.0.1.tgz",
+      "integrity": "sha512-rbto/mF/SGERx…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@vscode/test-electron",
+      "version": "2.5.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@vscode/test-electron/-/test-electron-2.5.2.tgz",
+      "integrity": "sha512-8ukpxv4wYe0iW…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@xmldom/xmldom",
+      "version": "0.8.15",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.8.15.tgz",
+      "integrity": "sha512-/5NV/vDALVFDX…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "@yarnpkg/lockfile",
+      "version": "1.1.0",
+      "license": "BSD-2-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/@yarnpkg/lockfile/-/lockfile-1.1.0.tgz",
+      "integrity": "sha512-GpSwvyXOcOOlV…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "abbrev",
+      "version": "4.0.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/abbrev/-/abbrev-4.0.0.tgz",
+      "integrity": "sha512-a1wflyaL0tHtJ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "agent-base",
+      "version": "7.1.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/agent-base/-/agent-base-7.1.4.tgz",
+      "integrity": "sha512-MnA+YT8fwfJPg…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "ajv",
+      "version": "8.20.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/ajv/-/ajv-8.20.0.tgz",
+      "integrity": "sha512-Thbli+OlOj+iM…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "ansi-regex",
+      "version": "5.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-5.0.1.tgz",
+      "integrity": "sha512-quJQXlTSUGL2L…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "ansi-regex",
+      "version": "6.3.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-6.3.0.tgz",
+      "integrity": "sha512-WpDfL7NO6j7tH…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "ansi-styles",
+      "version": "4.3.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-4.3.0.tgz",
+      "integrity": "sha512-zbB9rCJAT1rbj…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "app-builder-bin",
+      "version": "5.0.0-alpha.10",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/app-builder-bin/-/app-builder-bin-5.0.0-alpha.10.tgz",
+      "integrity": "sha512-Ev4jj3D7Bo+O0…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "app-builder-lib",
+      "version": "26.15.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/app-builder-lib/-/app-builder-lib-26.15.3.tgz",
+      "integrity": "sha512-2VnyWkqsP5v5X…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "argparse",
+      "version": "2.0.1",
+      "license": "Python-2.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/argparse/-/argparse-2.0.1.tgz",
+      "integrity": "sha512-8+9WqebbFzpX9…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "asn1js",
+      "version": "3.0.10",
+      "license": "BSD-3-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/asn1js/-/asn1js-3.0.10.tgz",
+      "integrity": "sha512-S2s3aOytiKdFR…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "assertion-error",
+      "version": "2.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/assertion-error/-/assertion-error-2.0.1.tgz",
+      "integrity": "sha512-Izi8RQcffqCeN…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "async",
+      "version": "3.2.6",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/async/-/async-3.2.6.tgz",
+      "integrity": "sha512-htCUDlxyyCLMg…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "async-exit-hook",
+      "version": "2.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/async-exit-hook/-/async-exit-hook-2.0.1.tgz",
+      "integrity": "sha512-NW2cX8m1Q7KPA…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "asynckit",
+      "version": "0.4.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/asynckit/-/asynckit-0.4.0.tgz",
+      "integrity": "sha512-Oei9OH4tRh0Yq…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "at-least-node",
+      "version": "1.0.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/at-least-node/-/at-least-node-1.0.0.tgz",
+      "integrity": "sha512-+q/t7Ekv1EDY2…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "aws4",
+      "version": "1.13.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/aws4/-/aws4-1.13.2.tgz",
+      "integrity": "sha512-lHe62zvbTB5eE…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz",
+      "integrity": "sha512-3oSeUO0TMV67h…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz",
+      "integrity": "sha512-3oSeUO0TMV67h…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz",
+      "integrity": "sha512-3oSeUO0TMV67h…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz",
+      "integrity": "sha512-3oSeUO0TMV67h…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz",
+      "integrity": "sha512-3oSeUO0TMV67h…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "balanced-match",
+      "version": "4.0.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-4.0.4.tgz",
+      "integrity": "sha512-BLrgEcRTwX2o6…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "base64-js",
+      "version": "1.5.1",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/base64-js/-/base64-js-1.5.1.tgz",
+      "integrity": "sha512-AKpaYlHn8t4SV…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "better-sqlite3",
+      "version": "12.11.1",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/better-sqlite3/-/better-sqlite3-12.11.1.tgz",
+      "integrity": "sha512-dq9AtApgg5PGF…",
+      "hasInstallScript": true
+    },
+    {
+      "name": "bindings",
+      "version": "1.5.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/bindings/-/bindings-1.5.0.tgz",
+      "integrity": "sha512-p2q/t/mhvuOj/…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "bl",
+      "version": "4.1.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/bl/-/bl-4.1.0.tgz",
+      "integrity": "sha512-1W07cM9gS6DcL…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "bluebird",
+      "version": "3.7.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-3.7.2.tgz",
+      "integrity": "sha512-XpNj6GDQzdfW+…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "boolean",
+      "version": "3.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/boolean/-/boolean-3.2.0.tgz",
+      "integrity": "sha512-d0II/GO9uf9lf…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "brace-expansion",
+      "version": "1.1.18",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.18.tgz",
+      "integrity": "sha512-Edep/X9fGqVNm…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "brace-expansion",
+      "version": "1.1.18",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.18.tgz",
+      "integrity": "sha512-Edep/X9fGqVNm…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "brace-expansion",
+      "version": "1.1.21",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.21.tgz",
+      "integrity": "sha512-9zeA+KLZNNzgl…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "brace-expansion",
+      "version": "2.1.7",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-2.1.7.tgz",
+      "integrity": "sha512-uZbew1NqdmPDT…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "brace-expansion",
+      "version": "2.1.7",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-2.1.7.tgz",
+      "integrity": "sha512-uZbew1NqdmPDT…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "brace-expansion",
+      "version": "5.0.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.9.tgz",
+      "integrity": "sha512-ScQ4IuvIEF1TM…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "braces",
+      "version": "3.0.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
+      "integrity": "sha512-yQbXgO/OSZVD2…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "browser-stdout",
+      "version": "1.3.1",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/browser-stdout/-/browser-stdout-1.3.1.tgz",
+      "integrity": "sha512-qhAVI1+Av2X7q…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "buffer",
+      "version": "5.7.1",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/buffer/-/buffer-5.7.1.tgz",
+      "integrity": "sha512-EHcyIPBQ4BSGl…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "buffer-from",
+      "version": "1.1.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/buffer-from/-/buffer-from-1.1.2.tgz",
+      "integrity": "sha512-E+XQCRwSbaaiC…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "builder-util",
+      "version": "26.15.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/builder-util/-/builder-util-26.15.3.tgz",
+      "integrity": "sha512-q2hn7Mbo2nFNk…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "builder-util-runtime",
+      "version": "9.7.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/builder-util-runtime/-/builder-util-runtime-9.7.0.tgz",
+      "integrity": "sha512-g/kR520giAFYk…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "bytestreamjs",
+      "version": "2.0.1",
+      "license": "BSD-3-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/bytestreamjs/-/bytestreamjs-2.0.1.tgz",
+      "integrity": "sha512-U1Z/ob71V/bXf…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "cacheable-lookup",
+      "version": "5.0.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/cacheable-lookup/-/cacheable-lookup-5.0.4.tgz",
+      "integrity": "sha512-2/kNscPhpcxrO…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "cacheable-request",
+      "version": "7.0.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/cacheable-request/-/cacheable-request-7.0.4.tgz",
+      "integrity": "sha512-v+p6ongsrp0yT…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "call-bind",
+      "version": "1.0.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/call-bind/-/call-bind-1.0.9.tgz",
+      "integrity": "sha512-a/hy+pNsFUTR+…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "call-bind-apply-helpers",
+      "version": "1.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/call-bind-apply-helpers/-/call-bind-apply-helpers-1.0.2.tgz",
+      "integrity": "sha512-Sp1ablJ0ivDkS…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "call-bound",
+      "version": "1.0.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/call-bound/-/call-bound-1.0.4.tgz",
+      "integrity": "sha512-+ys997U96po4K…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "chai",
+      "version": "6.2.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/chai/-/chai-6.2.2.tgz",
+      "integrity": "sha512-NUPRluOfOiTKB…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "chalk",
+      "version": "4.1.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/chalk/-/chalk-4.1.2.tgz",
+      "integrity": "sha512-oKnbhFyRIXpUu…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "chalk",
+      "version": "5.6.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/chalk/-/chalk-5.6.2.tgz",
+      "integrity": "sha512-7NzBL0rN6fMUW…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "chokidar",
+      "version": "5.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/chokidar/-/chokidar-5.0.0.tgz",
+      "integrity": "sha512-TQMmc3w+5Axjp…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "chownr",
+      "version": "1.1.4",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/chownr/-/chownr-1.1.4.tgz",
+      "integrity": "sha512-jJ0bqzaylmJtV…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "chownr",
+      "version": "3.0.0",
+      "license": "BlueOak-1.0.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/chownr/-/chownr-3.0.0.tgz",
+      "integrity": "sha512-+IxzY9BZOQd/X…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "chromium-pickle-js",
+      "version": "0.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/chromium-pickle-js/-/chromium-pickle-js-0.2.0.tgz",
+      "integrity": "sha512-1R5Fho+jBq0DD…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "ci-info",
+      "version": "3.9.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/ci-info/-/ci-info-3.9.0.tgz",
+      "integrity": "sha512-NIxF55hv4nSqQ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "ci-info",
+      "version": "4.3.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/ci-info/-/ci-info-4.3.1.tgz",
+      "integrity": "sha512-Wdy2Igu8OcBpI…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "ci-info",
+      "version": "4.4.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/ci-info/-/ci-info-4.4.0.tgz",
+      "integrity": "sha512-77PSwercCZU2F…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "cli-cursor",
+      "version": "5.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/cli-cursor/-/cli-cursor-5.0.0.tgz",
+      "integrity": "sha512-aCj4O5wKyszjM…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "cli-spinners",
+      "version": "2.9.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/cli-spinners/-/cli-spinners-2.9.2.tgz",
+      "integrity": "sha512-ywqV+5MmyL4E7…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "cliui",
+      "version": "8.0.1",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/cliui/-/cliui-8.0.1.tgz",
+      "integrity": "sha512-BSeNnyus75C4/…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "clone-response",
+      "version": "1.0.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/clone-response/-/clone-response-1.0.3.tgz",
+      "integrity": "sha512-ROoL94jJH2dUV…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "codeforge-cloud-api",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "apps/cloud-api",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "codeforge-desktop",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "apps/desktop",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "codeforge-vscode",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "resolved": "packages/vscode",
+      "integrity": null,
+      "hasInstallScript": false
+    },
+    {
+      "name": "color-convert",
+      "version": "2.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/color-convert/-/color-convert-2.0.1.tgz",
+      "integrity": "sha512-RRECPsj7iu/xb…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "color-name",
+      "version": "1.1.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz",
+      "integrity": "sha512-dOy+3AuW3a2wN…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "combined-stream",
+      "version": "1.0.8",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/combined-stream/-/combined-stream-1.0.8.tgz",
+      "integrity": "sha512-FQN4MRfuJeHf7…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "commander",
+      "version": "5.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/commander/-/commander-5.1.0.tgz",
+      "integrity": "sha512-P0CysNDQ7rtVw…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "commander",
+      "version": "9.5.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/commander/-/commander-9.5.0.tgz",
+      "integrity": "sha512-KRs7WVDKg86PW…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "compare-version",
+      "version": "0.1.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/compare-version/-/compare-version-0.1.2.tgz",
+      "integrity": "sha512-pJDh5/4wrEnXX…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "concat-map",
+      "version": "0.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/concat-map/-/concat-map-0.0.1.tgz",
+      "integrity": "sha512-/Srv4dswyQNBf…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "core-util-is",
+      "version": "1.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.2.tgz",
+      "integrity": "sha512-3lqz5YjWTYnW6…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "cross-dirname",
+      "version": "0.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/cross-dirname/-/cross-dirname-0.1.0.tgz",
+      "integrity": "sha512-+R08/oI0nl3vf…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "cross-spawn",
+      "version": "7.0.6",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.6.tgz",
+      "integrity": "sha512-uV2QOWP2nWzsy…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "csstype",
+      "version": "3.2.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz",
+      "integrity": "sha512-z1HGKcYy2xA8A…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "debug",
+      "version": "4.4.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+      "integrity": "sha512-RGwwWnwQvkVfa…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "decompress-response",
+      "version": "6.0.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/decompress-response/-/decompress-response-6.0.0.tgz",
+      "integrity": "sha512-aW35yZM6Bb/4o…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "deep-extend",
+      "version": "0.6.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/deep-extend/-/deep-extend-0.6.0.tgz",
+      "integrity": "sha512-LOHxIOaPYdHlJ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "defer-to-connect",
+      "version": "2.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/defer-to-connect/-/defer-to-connect-2.0.1.tgz",
+      "integrity": "sha512-4tvttepXG1VaY…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "define-data-property",
+      "version": "1.1.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/define-data-property/-/define-data-property-1.1.4.tgz",
+      "integrity": "sha512-rBMvIzlpA8v6E…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "define-properties",
+      "version": "1.2.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/define-properties/-/define-properties-1.2.1.tgz",
+      "integrity": "sha512-8QmQKqEASLd5n…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "delayed-stream",
+      "version": "1.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/delayed-stream/-/delayed-stream-1.0.0.tgz",
+      "integrity": "sha512-ZySD7Nf91aLB0…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "detect-libc",
+      "version": "2.1.2",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/detect-libc/-/detect-libc-2.1.2.tgz",
+      "integrity": "sha512-Btj2BOOO83o3W…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "detect-node",
+      "version": "2.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/detect-node/-/detect-node-2.1.0.tgz",
+      "integrity": "sha512-T0NIuQpnTvFDA…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "diff",
+      "version": "9.0.0",
+      "license": "BSD-3-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/diff/-/diff-9.0.0.tgz",
+      "integrity": "sha512-svtcdpS8CgJyq…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "dir-compare",
+      "version": "4.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/dir-compare/-/dir-compare-4.2.0.tgz",
+      "integrity": "sha512-2xMCmOoMrdQIP…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "dmg-builder",
+      "version": "26.15.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/dmg-builder/-/dmg-builder-26.15.3.tgz",
+      "integrity": "sha512-O3zJUFUYHJKgz…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "dotenv",
+      "version": "16.6.1",
+      "license": "BSD-2-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-16.6.1.tgz",
+      "integrity": "sha512-uBq4egWHTcTt3…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "dotenv-expand",
+      "version": "11.0.7",
+      "license": "BSD-2-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/dotenv-expand/-/dotenv-expand-11.0.7.tgz",
+      "integrity": "sha512-zIHwmZPRshsCd…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "dunder-proto",
+      "version": "1.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/dunder-proto/-/dunder-proto-1.0.1.tgz",
+      "integrity": "sha512-KIN/nDJBQRcXw…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "duplexer2",
+      "version": "0.1.4",
+      "license": "BSD-3-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/duplexer2/-/duplexer2-0.1.4.tgz",
+      "integrity": "sha512-asLFVfWWtJ90Z…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "ejs",
+      "version": "3.1.10",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/ejs/-/ejs-3.1.10.tgz",
+      "integrity": "sha512-UeJmFfOrAQS8O…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "electron",
+      "version": "44.4.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/electron/-/electron-44.4.1.tgz",
+      "integrity": "sha512-gXJarQ2Utfn8G…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "electron-builder",
+      "version": "26.15.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/electron-builder/-/electron-builder-26.15.3.tgz",
+      "integrity": "sha512-a1KM5heqS3gQC…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "electron-builder-squirrel-windows",
+      "version": "26.15.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/electron-builder-squirrel-windows/-/electron-builder-squirrel-windows-26.15.3.tgz",
+      "integrity": "sha512-Jc19XPV9y9+2b…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "electron-publish",
+      "version": "26.15.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/electron-publish/-/electron-publish-26.15.3.tgz",
+      "integrity": "sha512-g/2bn8YTavY4c…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "electron-winstaller",
+      "version": "5.4.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/electron-winstaller/-/electron-winstaller-5.4.0.tgz",
+      "integrity": "sha512-bO3y10YikuUwU…",
+      "hasInstallScript": true
+    },
+    {
+      "name": "emoji-regex",
+      "version": "10.6.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-10.6.0.tgz",
+      "integrity": "sha512-toUI84YS5YmxW…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "emoji-regex",
+      "version": "8.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-8.0.0.tgz",
+      "integrity": "sha512-MSjYzcWNOA0ew…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "end-of-stream",
+      "version": "1.4.5",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/end-of-stream/-/end-of-stream-1.4.5.tgz",
+      "integrity": "sha512-ooEGc6HP26xXq…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "env-paths",
+      "version": "2.2.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/env-paths/-/env-paths-2.2.1.tgz",
+      "integrity": "sha512-+h1lkLKhZMTYj…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "env-paths",
+      "version": "3.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/env-paths/-/env-paths-3.0.0.tgz",
+      "integrity": "sha512-dtJUTepzMW3Lm…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "err-code",
+      "version": "2.0.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/err-code/-/err-code-2.0.3.tgz",
+      "integrity": "sha512-2bmlRpNKBxT/C…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "es-define-property",
+      "version": "1.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/es-define-property/-/es-define-property-1.0.1.tgz",
+      "integrity": "sha512-e3nRfgfUZ4rNG…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "es-errors",
+      "version": "1.3.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/es-errors/-/es-errors-1.3.0.tgz",
+      "integrity": "sha512-Zf5H2Kxt2xjTv…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "es-module-lexer",
+      "version": "2.3.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-2.3.2.tgz",
+      "integrity": "sha512-poHGpORABojJJ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "es-object-atoms",
+      "version": "1.1.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/es-object-atoms/-/es-object-atoms-1.1.2.tgz",
+      "integrity": "sha512-HWcBoN6Nileqt…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "es-set-tostringtag",
+      "version": "2.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/es-set-tostringtag/-/es-set-tostringtag-2.1.0.tgz",
+      "integrity": "sha512-j6vWzfrGVfyXx…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "es6-error",
+      "version": "4.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/es6-error/-/es6-error-4.1.1.tgz",
+      "integrity": "sha512-Um/+FxMr9CISW…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "escalade",
+      "version": "3.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/escalade/-/escalade-3.2.0.tgz",
+      "integrity": "sha512-WUj2qlxaQtO4g…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "escape-string-regexp",
+      "version": "4.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz",
+      "integrity": "sha512-TtpcNJ3XAzx3G…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "estree-walker",
+      "version": "3.0.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/estree-walker/-/estree-walker-3.0.3.tgz",
+      "integrity": "sha512-7RUKfXgSMMkzt…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "expand-template",
+      "version": "2.0.3",
+      "license": "(MIT OR WTFPL)",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/expand-template/-/expand-template-2.0.3.tgz",
+      "integrity": "sha512-XYfuKMvj4O35f…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "expect-type",
+      "version": "1.4.0",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/expect-type/-/expect-type-1.4.0.tgz",
+      "integrity": "sha512-KfYbmpRm0VbLj…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "exponential-backoff",
+      "version": "3.1.3",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/exponential-backoff/-/exponential-backoff-3.1.3.tgz",
+      "integrity": "sha512-ZgEeZXj30q+I0…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz",
+      "integrity": "sha512-f3qQ9oQy9j2Ah…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fast-uri",
+      "version": "3.1.8",
+      "license": "BSD-3-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.8.tgz",
+      "integrity": "sha512-GZMtZUTNRpOVI…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fdir",
+      "version": "6.5.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fdir/-/fdir-6.5.0.tgz",
+      "integrity": "sha512-tIbYtZbucOs0B…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "file-uri-to-path",
+      "version": "1.0.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/file-uri-to-path/-/file-uri-to-path-1.0.0.tgz",
+      "integrity": "sha512-0Zt+s3L7Vf1bi…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "filelist",
+      "version": "1.0.6",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/filelist/-/filelist-1.0.6.tgz",
+      "integrity": "sha512-5giy2PkLYY1cP…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fill-range",
+      "version": "7.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fill-range/-/fill-range-7.1.1.tgz",
+      "integrity": "sha512-YsGpe3WHLK8ZY…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "find-up",
+      "version": "8.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/find-up/-/find-up-8.0.0.tgz",
+      "integrity": "sha512-JGG8pvDi2C+Jx…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "find-yarn-workspace-root",
+      "version": "2.0.0",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/find-yarn-workspace-root/-/find-yarn-workspace-root-2.0.0.tgz",
+      "integrity": "sha512-1IMnbjt4KzsQf…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "foreground-child",
+      "version": "3.3.1",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/foreground-child/-/foreground-child-3.3.1.tgz",
+      "integrity": "sha512-gIXjKqtFuWEgz…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "form-data",
+      "version": "4.0.6",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/form-data/-/form-data-4.0.6.tgz",
+      "integrity": "sha512-vKatAh4SlVfgb…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fs-constants",
+      "version": "1.0.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fs-constants/-/fs-constants-1.0.0.tgz",
+      "integrity": "sha512-y6OAwoSIf7Fyj…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fs-extra",
+      "version": "10.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-10.1.0.tgz",
+      "integrity": "sha512-oRXApq54ETRj4…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fs-extra",
+      "version": "11.3.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-11.3.1.tgz",
+      "integrity": "sha512-eXvGGwZ5CL17Z…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fs-extra",
+      "version": "11.4.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-11.4.0.tgz",
+      "integrity": "sha512-EQsFzMUJkCKGr…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fs-extra",
+      "version": "11.4.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-11.4.0.tgz",
+      "integrity": "sha512-EQsFzMUJkCKGr…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fs-extra",
+      "version": "7.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-7.0.1.tgz",
+      "integrity": "sha512-YJDaCJZEnBmcb…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fs-extra",
+      "version": "8.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-8.1.0.tgz",
+      "integrity": "sha512-yhlQgA6mnOJUK…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fs-extra",
+      "version": "9.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-9.1.0.tgz",
+      "integrity": "sha512-hcg3ZmepS30/7…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fs-extra",
+      "version": "9.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-9.1.0.tgz",
+      "integrity": "sha512-hcg3ZmepS30/7…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fs-extra",
+      "version": "9.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-9.1.0.tgz",
+      "integrity": "sha512-hcg3ZmepS30/7…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fs.realpath",
+      "version": "1.0.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz",
+      "integrity": "sha512-OO0pH2lK6a0hZ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "fsevents",
+      "version": "2.3.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz",
+      "integrity": "sha512-5xoDfX+fL7faA…",
+      "hasInstallScript": true
+    },
+    {
+      "name": "function-bind",
+      "version": "1.1.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/function-bind/-/function-bind-1.1.2.tgz",
+      "integrity": "sha512-7XHNxH7qX9xG5…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "get-caller-file",
+      "version": "2.0.5",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/get-caller-file/-/get-caller-file-2.0.5.tgz",
+      "integrity": "sha512-DyFP3BM/3YHTQ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "get-east-asian-width",
+      "version": "1.6.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/get-east-asian-width/-/get-east-asian-width-1.6.0.tgz",
+      "integrity": "sha512-QRbvDIbx6YklU…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "get-intrinsic",
+      "version": "1.3.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/get-intrinsic/-/get-intrinsic-1.3.0.tgz",
+      "integrity": "sha512-9fSjSaos/fRIV…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "get-proto",
+      "version": "1.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/get-proto/-/get-proto-1.0.1.tgz",
+      "integrity": "sha512-sTSfBjoXBp89J…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "get-stream",
+      "version": "5.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/get-stream/-/get-stream-5.2.0.tgz",
+      "integrity": "sha512-nBF+F1rAZVCu/…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "github-from-package",
+      "version": "0.0.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/github-from-package/-/github-from-package-0.0.0.tgz",
+      "integrity": "sha512-SyHy3T1v2NUXn…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "glob",
+      "version": "13.0.6",
+      "license": "BlueOak-1.0.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/glob/-/glob-13.0.6.tgz",
+      "integrity": "sha512-Wjlyrolmm8uDp…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "glob",
+      "version": "7.2.3",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/glob/-/glob-7.2.3.tgz",
+      "integrity": "sha512-nFR0zLpU2YCaR…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "global-agent",
+      "version": "3.0.0",
+      "license": "BSD-3-Clause",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/global-agent/-/global-agent-3.0.0.tgz",
+      "integrity": "sha512-PT6XReJ+D07Jv…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "globalthis",
+      "version": "1.0.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/globalthis/-/globalthis-1.0.4.tgz",
+      "integrity": "sha512-DpLKbNU4Wylpx…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "gopd",
+      "version": "1.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/gopd/-/gopd-1.2.0.tgz",
+      "integrity": "sha512-ZUKRh6/kUFoAi…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "got",
+      "version": "11.8.6",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/got/-/got-11.8.6.tgz",
+      "integrity": "sha512-6tfZ91bOr7bOX…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "graceful-fs",
+      "version": "4.2.11",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.11.tgz",
+      "integrity": "sha512-RbJ5/jmFcNNCc…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "has-flag",
+      "version": "4.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/has-flag/-/has-flag-4.0.0.tgz",
+      "integrity": "sha512-EykJT/Q1KjTWc…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "has-property-descriptors",
+      "version": "1.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/has-property-descriptors/-/has-property-descriptors-1.0.2.tgz",
+      "integrity": "sha512-55JNKuIW+vq4K…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "has-symbols",
+      "version": "1.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/has-symbols/-/has-symbols-1.1.0.tgz",
+      "integrity": "sha512-1cDNdwJ2Jaohm…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "has-tostringtag",
+      "version": "1.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/has-tostringtag/-/has-tostringtag-1.0.2.tgz",
+      "integrity": "sha512-NqADB8VjPFLM2…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "hasown",
+      "version": "2.0.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/hasown/-/hasown-2.0.4.tgz",
+      "integrity": "sha512-T2UbfbBEF32wi…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "hosted-git-info",
+      "version": "4.1.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-4.1.0.tgz",
+      "integrity": "sha512-kyCuEOWjJqZuD…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "http-cache-semantics",
+      "version": "4.2.0",
+      "license": "BSD-2-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/http-cache-semantics/-/http-cache-semantics-4.2.0.tgz",
+      "integrity": "sha512-dTxcvPXqPvXBQ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "http-proxy-agent",
+      "version": "7.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/http-proxy-agent/-/http-proxy-agent-7.0.2.tgz",
+      "integrity": "sha512-T1gkAiYYDWYx3…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "http2-wrapper",
+      "version": "1.0.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/http2-wrapper/-/http2-wrapper-1.0.3.tgz",
+      "integrity": "sha512-V+23sDMr12Wnz…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "https-proxy-agent",
+      "version": "7.0.6",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/https-proxy-agent/-/https-proxy-agent-7.0.6.tgz",
+      "integrity": "sha512-vK9P5/iUfdl95…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "ieee754",
+      "version": "1.2.1",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/ieee754/-/ieee754-1.2.1.tgz",
+      "integrity": "sha512-dcyqhDvX1C46l…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "immediate",
+      "version": "3.0.6",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/immediate/-/immediate-3.0.6.tgz",
+      "integrity": "sha512-XXOFtyqDjNDAQ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "inflight",
+      "version": "1.0.6",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/inflight/-/inflight-1.0.6.tgz",
+      "integrity": "sha512-k92I/b08q4wvF…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "inherits",
+      "version": "2.0.4",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.4.tgz",
+      "integrity": "sha512-k/vGaX4/Yla3W…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "ini",
+      "version": "1.3.8",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/ini/-/ini-1.3.8.tgz",
+      "integrity": "sha512-JV/yugV2uzW5i…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "is-docker",
+      "version": "2.2.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/is-docker/-/is-docker-2.2.1.tgz",
+      "integrity": "sha512-F+i2BKsFrH66i…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "is-fullwidth-code-point",
+      "version": "3.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/is-fullwidth-code-point/-/is-fullwidth-code-point-3.0.0.tgz",
+      "integrity": "sha512-zymm5+u+sCsSW…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "is-interactive",
+      "version": "2.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/is-interactive/-/is-interactive-2.0.0.tgz",
+      "integrity": "sha512-qP1vozQRI+BMO…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "is-number",
+      "version": "7.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/is-number/-/is-number-7.0.0.tgz",
+      "integrity": "sha512-41Cifkg6e8Tyl…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "is-path-inside",
+      "version": "4.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/is-path-inside/-/is-path-inside-4.0.0.tgz",
+      "integrity": "sha512-lJJV/5dYS+RcL…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "is-unicode-supported",
+      "version": "0.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/is-unicode-supported/-/is-unicode-supported-0.1.0.tgz",
+      "integrity": "sha512-knxG2q4UC3u8s…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "is-unicode-supported",
+      "version": "1.3.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/is-unicode-supported/-/is-unicode-supported-1.3.0.tgz",
+      "integrity": "sha512-43r2mRvz+8JRI…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "is-unicode-supported",
+      "version": "2.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/is-unicode-supported/-/is-unicode-supported-2.1.0.tgz",
+      "integrity": "sha512-mE00Gnza5EEB3…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "is-wsl",
+      "version": "2.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/is-wsl/-/is-wsl-2.2.0.tgz",
+      "integrity": "sha512-fKzAra0rGJUUB…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "isarray",
+      "version": "1.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/isarray/-/isarray-1.0.0.tgz",
+      "integrity": "sha512-VLghIWNM6ELQz…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "isarray",
+      "version": "2.0.5",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/isarray/-/isarray-2.0.5.tgz",
+      "integrity": "sha512-xHjhDr3cNBK0B…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "isbinaryfile",
+      "version": "4.0.10",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/isbinaryfile/-/isbinaryfile-4.0.10.tgz",
+      "integrity": "sha512-iHrqe5shvBUcF…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "isbinaryfile",
+      "version": "5.0.7",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/isbinaryfile/-/isbinaryfile-5.0.7.tgz",
+      "integrity": "sha512-gnWD14Jh3FzS3…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "isexe",
+      "version": "2.0.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz",
+      "integrity": "sha512-RHxMLp9lnKHGH…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "isexe",
+      "version": "3.1.5",
+      "license": "BlueOak-1.0.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/isexe/-/isexe-3.1.5.tgz",
+      "integrity": "sha512-6B3tLtFqtQS4e…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "isexe",
+      "version": "4.0.0",
+      "license": "BlueOak-1.0.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/isexe/-/isexe-4.0.0.tgz",
+      "integrity": "sha512-FFUtZMpoZ8RqH…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "jake",
+      "version": "10.9.4",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/jake/-/jake-10.9.4.tgz",
+      "integrity": "sha512-wpHYzhxiVQL+I…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "jiti",
+      "version": "2.7.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/jiti/-/jiti-2.7.0.tgz",
+      "integrity": "sha512-AC/7JofJvZGrr…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "js-yaml",
+      "version": "4.3.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-4.3.2.tgz",
+      "integrity": "sha512-SFNOvSJ+Dgf/9…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "js-yaml",
+      "version": "5.4.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-5.4.2.tgz",
+      "integrity": "sha512-m+aqu+LwO1O6s…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "json-buffer",
+      "version": "3.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/json-buffer/-/json-buffer-3.0.1.tgz",
+      "integrity": "sha512-4bV5BfR2mqfQT…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "json-schema-traverse",
+      "version": "1.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz",
+      "integrity": "sha512-NM8/P9n3XjXhI…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "json-stable-stringify",
+      "version": "1.3.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/json-stable-stringify/-/json-stable-stringify-1.3.0.tgz",
+      "integrity": "sha512-qtYiSSFlwot9X…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "json-stringify-safe",
+      "version": "5.0.1",
+      "license": "ISC",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/json-stringify-safe/-/json-stringify-safe-5.0.1.tgz",
+      "integrity": "sha512-ZClg6AaYvamvY…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "json5",
+      "version": "2.2.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/json5/-/json5-2.2.3.tgz",
+      "integrity": "sha512-XmOWe7eyHYH14…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "jsonfile",
+      "version": "4.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/jsonfile/-/jsonfile-4.0.0.tgz",
+      "integrity": "sha512-m6F1R3z8jjlf2…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "jsonfile",
+      "version": "4.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/jsonfile/-/jsonfile-4.0.0.tgz",
+      "integrity": "sha512-m6F1R3z8jjlf2…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "jsonfile",
+      "version": "6.2.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/jsonfile/-/jsonfile-6.2.1.tgz",
+      "integrity": "sha512-zwOTdL3rFQ/lR…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "jsonify",
+      "version": "0.0.1",
+      "license": "Public Domain",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/jsonify/-/jsonify-0.0.1.tgz",
+      "integrity": "sha512-2/Ki0GcmuqSrg…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "jszip",
+      "version": "3.10.1",
+      "license": "(MIT OR GPL-3.0-or-later)",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz",
+      "integrity": "sha512-xXDvecyTpGLrq…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "keyv",
+      "version": "4.5.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/keyv/-/keyv-4.5.4.tgz",
+      "integrity": "sha512-oxVHkHR/EJf2C…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "klaw-sync",
+      "version": "6.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/klaw-sync/-/klaw-sync-6.0.0.tgz",
+      "integrity": "sha512-nIeuVSzdCCs6T…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lazy-val",
+      "version": "1.0.5",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/lazy-val/-/lazy-val-1.0.5.tgz",
+      "integrity": "sha512-0/BnGCCfyUMkB…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lie",
+      "version": "3.3.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/lie/-/lie-3.3.0.tgz",
+      "integrity": "sha512-UaiMJzeWRlEuj…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lightningcss",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/lightningcss/-/lightningcss-1.33.0.tgz",
+      "integrity": "sha512-WkUDrojuJs0xk…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lightningcss-android-arm64",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/lightningcss-android-arm64/-/lightningcss-android-arm64-1.33.0.tgz",
+      "integrity": "sha512-gEpRTalKdosp4…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lightningcss-darwin-arm64",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.33.0.tgz",
+      "integrity": "sha512-Sciaz8eenNTKn…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lightningcss-darwin-x64",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.33.0.tgz",
+      "integrity": "sha512-Z5UPAxzrjlWNN…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lightningcss-freebsd-x64",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/lightningcss-freebsd-x64/-/lightningcss-freebsd-x64-1.33.0.tgz",
+      "integrity": "sha512-QQM/Ti/hQajJw…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lightningcss-linux-arm-gnueabihf",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/lightningcss-linux-arm-gnueabihf/-/lightningcss-linux-arm-gnueabihf-1.33.0.tgz",
+      "integrity": "sha512-N7FVBe6iS24Ml…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lightningcss-linux-arm64-gnu",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/lightningcss-linux-arm64-gnu/-/lightningcss-linux-arm64-gnu-1.33.0.tgz",
+      "integrity": "sha512-j2v/itmy4HlNx…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lightningcss-linux-arm64-musl",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/lightningcss-linux-arm64-musl/-/lightningcss-linux-arm64-musl-1.33.0.tgz",
+      "integrity": "sha512-yiO5ROMuYQgXb…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lightningcss-linux-x64-gnu",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/lightningcss-linux-x64-gnu/-/lightningcss-linux-x64-gnu-1.33.0.tgz",
+      "integrity": "sha512-ar+Ju7LmcN0Jo…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lightningcss-linux-x64-musl",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/lightningcss-linux-x64-musl/-/lightningcss-linux-x64-musl-1.33.0.tgz",
+      "integrity": "sha512-RYiYbkokw0trf…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lightningcss-win32-arm64-msvc",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/lightningcss-win32-arm64-msvc/-/lightningcss-win32-arm64-msvc-1.33.0.tgz",
+      "integrity": "sha512-1K+MPfLSFVpph…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lightningcss-win32-x64-msvc",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.33.0.tgz",
+      "integrity": "sha512-OlEICDx/Xl0Fq…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "locate-path",
+      "version": "8.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/locate-path/-/locate-path-8.0.0.tgz",
+      "integrity": "sha512-XT9ewWAC43tiA…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lodash",
+      "version": "4.18.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.18.1.tgz",
+      "integrity": "sha512-dMInicTPVE8d1…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "log-symbols",
+      "version": "6.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/log-symbols/-/log-symbols-6.0.0.tgz",
+      "integrity": "sha512-i24m8rpwhmPIS…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lowercase-keys",
+      "version": "2.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/lowercase-keys/-/lowercase-keys-2.0.0.tgz",
+      "integrity": "sha512-tqNXrS78oMOE7…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lru-cache",
+      "version": "11.5.2",
+      "license": "BlueOak-1.0.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.2.tgz",
+      "integrity": "sha512-4pfM1Ff0x50o0…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "lru-cache",
+      "version": "6.0.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-6.0.0.tgz",
+      "integrity": "sha512-Jo6dJ04CmSjuz…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "magic-string",
+      "version": "1.4.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/magic-string/-/magic-string-1.4.1.tgz",
+      "integrity": "sha512-8lyCu36ErXR0J…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "matcher",
+      "version": "3.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/matcher/-/matcher-3.0.0.tgz",
+      "integrity": "sha512-OkeDaAZ/bQCxe…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "math-intrinsics",
+      "version": "1.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/math-intrinsics/-/math-intrinsics-1.1.0.tgz",
+      "integrity": "sha512-/IXtbwEk5HTPy…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "micromatch",
+      "version": "4.0.8",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/micromatch/-/micromatch-4.0.8.tgz",
+      "integrity": "sha512-PXwfBhYu0hBCP…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "mime",
+      "version": "2.6.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/mime/-/mime-2.6.0.tgz",
+      "integrity": "sha512-USPkMeET31rOM…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "mime-db",
+      "version": "1.52.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/mime-db/-/mime-db-1.52.0.tgz",
+      "integrity": "sha512-sPU4uV7dYlvtW…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "mime-types",
+      "version": "2.1.35",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/mime-types/-/mime-types-2.1.35.tgz",
+      "integrity": "sha512-ZDY+bPm5zTTF+…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "mimic-function",
+      "version": "5.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/mimic-function/-/mimic-function-5.0.1.tgz",
+      "integrity": "sha512-VP79XUPxV2Cig…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "mimic-response",
+      "version": "1.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/mimic-response/-/mimic-response-1.0.1.tgz",
+      "integrity": "sha512-j5EctnkH7amfV…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "mimic-response",
+      "version": "3.1.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/mimic-response/-/mimic-response-3.1.0.tgz",
+      "integrity": "sha512-z0yWI+4FDrrwe…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "minimatch",
+      "version": "10.2.6",
+      "license": "BlueOak-1.0.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-10.2.6.tgz",
+      "integrity": "sha512-vpLQEs+VLCr1n…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "minimatch",
+      "version": "3.1.5",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-3.1.5.tgz",
+      "integrity": "sha512-VgjWUsnnT6n+N…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "minimatch",
+      "version": "3.1.5",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-3.1.5.tgz",
+      "integrity": "sha512-VgjWUsnnT6n+N…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "minimatch",
+      "version": "3.1.5",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-3.1.5.tgz",
+      "integrity": "sha512-VgjWUsnnT6n+N…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "minimatch",
+      "version": "5.1.9",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-5.1.9.tgz",
+      "integrity": "sha512-7o1wEA2RyMP7I…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "minimatch",
+      "version": "9.0.9",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-9.0.9.tgz",
+      "integrity": "sha512-OBwBN9AL4dqmE…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "minimist",
+      "version": "1.2.8",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/minimist/-/minimist-1.2.8.tgz",
+      "integrity": "sha512-2yyAR8qBkN3Yu…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "minipass",
+      "version": "7.1.3",
+      "license": "BlueOak-1.0.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/minipass/-/minipass-7.1.3.tgz",
+      "integrity": "sha512-tEBHqDnIoM/1r…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "minizlib",
+      "version": "3.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/minizlib/-/minizlib-3.1.0.tgz",
+      "integrity": "sha512-KZxYo1BUkWD2T…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "mkdirp",
+      "version": "0.5.6",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/mkdirp/-/mkdirp-0.5.6.tgz",
+      "integrity": "sha512-FP+p8RB8OWpF3…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "mkdirp-classic",
+      "version": "0.5.3",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/mkdirp-classic/-/mkdirp-classic-0.5.3.tgz",
+      "integrity": "sha512-gKLcREMhtuZRw…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "mocha",
+      "version": "12.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/mocha/-/mocha-12.0.1.tgz",
+      "integrity": "sha512-/ILgtFHV+R7EJ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "ms",
+      "version": "2.1.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+      "integrity": "sha512-6FlzubTLZG3J2…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "nanoid",
+      "version": "3.3.19",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.19.tgz",
+      "integrity": "sha512-Y2tUNy4ouw6tq…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "napi-build-utils",
+      "version": "2.0.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/napi-build-utils/-/napi-build-utils-2.0.0.tgz",
+      "integrity": "sha512-GEbrYkbfF7MoN…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "node-abi",
+      "version": "3.95.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/node-abi/-/node-abi-3.95.0.tgz",
+      "integrity": "sha512-T9iGctuocf0qI…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "node-abi",
+      "version": "4.35.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/node-abi/-/node-abi-4.35.0.tgz",
+      "integrity": "sha512-ymk4aIzxdPopw…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "node-api-version",
+      "version": "0.2.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/node-api-version/-/node-api-version-0.2.1.tgz",
+      "integrity": "sha512-2xP/IGGMmmSQp…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "node-gyp",
+      "version": "12.4.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/node-gyp/-/node-gyp-12.4.0.tgz",
+      "integrity": "sha512-OMcPNvqTCFUnN…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "node-int64",
+      "version": "0.4.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/node-int64/-/node-int64-0.4.0.tgz",
+      "integrity": "sha512-O5lz91xSOeoXP…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "nopt",
+      "version": "9.0.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/nopt/-/nopt-9.0.0.tgz",
+      "integrity": "sha512-Zhq3a+yFKrYwS…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "normalize-url",
+      "version": "6.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/normalize-url/-/normalize-url-6.1.0.tgz",
+      "integrity": "sha512-DlL+XwOy3NxAQ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "object-keys",
+      "version": "1.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/object-keys/-/object-keys-1.1.1.tgz",
+      "integrity": "sha512-NuAESUOUMrlIX…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "obug",
+      "version": "2.2.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/obug/-/obug-2.2.1.tgz",
+      "integrity": "sha512-XrsrhT5sybtKI…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "once",
+      "version": "1.4.0",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/once/-/once-1.4.0.tgz",
+      "integrity": "sha512-lNaJgI+2Q5URQ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "onetime",
+      "version": "7.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/onetime/-/onetime-7.0.0.tgz",
+      "integrity": "sha512-VXJjc87FScF88…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "open",
+      "version": "7.4.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/open/-/open-7.4.2.tgz",
+      "integrity": "sha512-MVHddDVweXZF3…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "ora",
+      "version": "8.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/ora/-/ora-8.2.0.tgz",
+      "integrity": "sha512-weP+BZ8MVNnlC…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "oxlint",
+      "version": "1.83.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/oxlint/-/oxlint-1.83.0.tgz",
+      "integrity": "sha512-cyDzSzaw3uzP0…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "p-cancelable",
+      "version": "2.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/p-cancelable/-/p-cancelable-2.1.1.tgz",
+      "integrity": "sha512-BZOr3nRQHOntU…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "p-limit",
+      "version": "3.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/p-limit/-/p-limit-3.1.0.tgz",
+      "integrity": "sha512-TYOanM3wGwNGs…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "p-limit",
+      "version": "4.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/p-limit/-/p-limit-4.0.0.tgz",
+      "integrity": "sha512-5b0R4txpzjPWV…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "p-locate",
+      "version": "6.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/p-locate/-/p-locate-6.0.0.tgz",
+      "integrity": "sha512-wPrq66Llhl7/4…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "package-json-from-dist",
+      "version": "1.0.1",
+      "license": "BlueOak-1.0.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/package-json-from-dist/-/package-json-from-dist-1.0.1.tgz",
+      "integrity": "sha512-UEZIS3/by4OC8…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pako",
+      "version": "1.0.11",
+      "license": "(MIT AND Zlib)",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pako/-/pako-1.0.11.tgz",
+      "integrity": "sha512-4hLB8Py4zZce5…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "patch-package",
+      "version": "8.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/patch-package/-/patch-package-8.0.1.tgz",
+      "integrity": "sha512-VsKRIA8f5uqHQ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "path-is-absolute",
+      "version": "1.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/path-is-absolute/-/path-is-absolute-1.0.1.tgz",
+      "integrity": "sha512-AVbw3UJ2e9bq6…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "path-key",
+      "version": "3.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/path-key/-/path-key-3.1.1.tgz",
+      "integrity": "sha512-ojmeN0qd+y0js…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "path-scurry",
+      "version": "2.0.2",
+      "license": "BlueOak-1.0.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/path-scurry/-/path-scurry-2.0.2.tgz",
+      "integrity": "sha512-3O/iVVsJAPsOn…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pe-library",
+      "version": "0.4.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pe-library/-/pe-library-0.4.1.tgz",
+      "integrity": "sha512-eRWB5LBz7PpDu…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pg",
+      "version": "8.23.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pg/-/pg-8.23.0.tgz",
+      "integrity": "sha512-Ip2EQCngowJLG…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pg-cloudflare",
+      "version": "1.4.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/pg-cloudflare/-/pg-cloudflare-1.4.0.tgz",
+      "integrity": "sha512-Vo7z/6rrQYxpN…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pg-connection-string",
+      "version": "2.14.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pg-connection-string/-/pg-connection-string-2.14.0.tgz",
+      "integrity": "sha512-XwWDGcLRGCXAR…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pg-int8",
+      "version": "1.0.1",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pg-int8/-/pg-int8-1.0.1.tgz",
+      "integrity": "sha512-WCtabS6t3c8Sk…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pg-pool",
+      "version": "3.14.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pg-pool/-/pg-pool-3.14.0.tgz",
+      "integrity": "sha512-gKtPkFdQPU3Dk…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pg-protocol",
+      "version": "1.16.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pg-protocol/-/pg-protocol-1.16.0.tgz",
+      "integrity": "sha512-sILXutLVjCLjc…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pg-types",
+      "version": "2.2.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pg-types/-/pg-types-2.2.0.tgz",
+      "integrity": "sha512-qTAAlrEsl8s4O…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pgpass",
+      "version": "1.0.5",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pgpass/-/pgpass-1.0.5.tgz",
+      "integrity": "sha512-FdW9r/jQZhSeo…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "picocolors",
+      "version": "1.1.1",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz",
+      "integrity": "sha512-xceH2snhtb5M9…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "picomatch",
+      "version": "2.3.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/picomatch/-/picomatch-2.3.2.tgz",
+      "integrity": "sha512-V7+vQEJ06Z+c5…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "picomatch",
+      "version": "4.0.7",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.7.tgz",
+      "integrity": "sha512-qcJu88Q2IWqJs…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "picomatch",
+      "version": "4.0.7",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.7.tgz",
+      "integrity": "sha512-qcJu88Q2IWqJs…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "picomatch",
+      "version": "4.0.7",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.7.tgz",
+      "integrity": "sha512-qcJu88Q2IWqJs…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pkijs",
+      "version": "3.4.0",
+      "license": "BSD-3-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pkijs/-/pkijs-3.4.0.tgz",
+      "integrity": "sha512-emEcLuomt2j03…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "plist",
+      "version": "3.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/plist/-/plist-3.1.0.tgz",
+      "integrity": "sha512-uysumyrvkUX0r…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "postcss",
+      "version": "8.5.28",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/postcss/-/postcss-8.5.28.tgz",
+      "integrity": "sha512-RRuzqDtt5Y9h3…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "postgres-array",
+      "version": "2.0.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/postgres-array/-/postgres-array-2.0.0.tgz",
+      "integrity": "sha512-VpZrUqU5A69eQ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "postgres-bytea",
+      "version": "1.0.1",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/postgres-bytea/-/postgres-bytea-1.0.1.tgz",
+      "integrity": "sha512-5+5HqXnsZPE65…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "postgres-date",
+      "version": "1.0.7",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/postgres-date/-/postgres-date-1.0.7.tgz",
+      "integrity": "sha512-suDmjLVQg78nM…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "postgres-interval",
+      "version": "1.2.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/postgres-interval/-/postgres-interval-1.2.0.tgz",
+      "integrity": "sha512-9ZhXKM/rw350N…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "postject",
+      "version": "1.0.0-alpha.6",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/postject/-/postject-1.0.0-alpha.6.tgz",
+      "integrity": "sha512-b9Eb8h2eVqNE8…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "prebuild-install",
+      "version": "7.1.3",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/prebuild-install/-/prebuild-install-7.1.3.tgz",
+      "integrity": "sha512-8Mf2cbV7x1cXP…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "proc-log",
+      "version": "6.1.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/proc-log/-/proc-log-6.1.0.tgz",
+      "integrity": "sha512-iG+GYldRf2BQ0…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "process-nextick-args",
+      "version": "2.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/process-nextick-args/-/process-nextick-args-2.0.1.tgz",
+      "integrity": "sha512-3ouUOpQhtgrbO…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "progress",
+      "version": "2.0.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/progress/-/progress-2.0.3.tgz",
+      "integrity": "sha512-7PiHtLll5LdnK…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "promise-retry",
+      "version": "2.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/promise-retry/-/promise-retry-2.0.1.tgz",
+      "integrity": "sha512-y+WKFlBR8BGXn…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "proper-lockfile",
+      "version": "4.1.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/proper-lockfile/-/proper-lockfile-4.1.2.tgz",
+      "integrity": "sha512-TjNPblN4BwAWM…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pump",
+      "version": "3.0.4",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pump/-/pump-3.0.4.tgz",
+      "integrity": "sha512-VS7sjc6KR7e1u…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pvtsutils",
+      "version": "1.3.6",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pvtsutils/-/pvtsutils-1.3.6.tgz",
+      "integrity": "sha512-PLgQXQ6H2FWCa…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "pvutils",
+      "version": "1.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/pvutils/-/pvutils-1.2.0.tgz",
+      "integrity": "sha512-BbubeCEyTuQjV…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "quick-lru",
+      "version": "5.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/quick-lru/-/quick-lru-5.1.1.tgz",
+      "integrity": "sha512-WuyALRjWPDGtt…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "rc",
+      "version": "1.2.8",
+      "license": "(BSD-2-Clause OR MIT OR Apache-2.0)",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/rc/-/rc-1.2.8.tgz",
+      "integrity": "sha512-y3bGgqKj3QBdx…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "react",
+      "version": "19.2.8",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/react/-/react-19.2.8.tgz",
+      "integrity": "sha512-PWaYA1L/q9u2u…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "react-dom",
+      "version": "19.2.8",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-19.2.8.tgz",
+      "integrity": "sha512-rVprimfGBG3DR…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "read-binary-file-arch",
+      "version": "1.0.6",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/read-binary-file-arch/-/read-binary-file-arch-1.0.6.tgz",
+      "integrity": "sha512-BNg9EN3DD3GsD…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "readable-stream",
+      "version": "2.3.8",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-2.3.8.tgz",
+      "integrity": "sha512-8p0AUk4XODgIe…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "readable-stream",
+      "version": "2.3.8",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-2.3.8.tgz",
+      "integrity": "sha512-8p0AUk4XODgIe…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "readable-stream",
+      "version": "3.6.2",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-3.6.2.tgz",
+      "integrity": "sha512-9u/sniCrY3D5W…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "readdirp",
+      "version": "5.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/readdirp/-/readdirp-5.1.1.tgz",
+      "integrity": "sha512-Kko+Y5XQ6fM+C…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "require-directory",
+      "version": "2.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/require-directory/-/require-directory-2.1.1.tgz",
+      "integrity": "sha512-fGxEI7+wsG9xr…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "require-from-string",
+      "version": "2.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz",
+      "integrity": "sha512-Xf0nWe6RseziF…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "resedit",
+      "version": "1.7.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/resedit/-/resedit-1.7.2.tgz",
+      "integrity": "sha512-vHjcY2MlAITJh…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "resolve-alpn",
+      "version": "1.2.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/resolve-alpn/-/resolve-alpn-1.2.1.tgz",
+      "integrity": "sha512-0a1F4l73/ZFZO…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "responselike",
+      "version": "2.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/responselike/-/responselike-2.0.1.tgz",
+      "integrity": "sha512-4gl03wn3hj1HP…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "restore-cursor",
+      "version": "5.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/restore-cursor/-/restore-cursor-5.1.0.tgz",
+      "integrity": "sha512-oMA2dcrw6u0Yf…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "retry",
+      "version": "0.12.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/retry/-/retry-0.12.0.tgz",
+      "integrity": "sha512-9LkiTwjUh6rT5…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "rimraf",
+      "version": "2.6.3",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/rimraf/-/rimraf-2.6.3.tgz",
+      "integrity": "sha512-mwqeW5XsA2qAe…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "roarr",
+      "version": "2.15.4",
+      "license": "BSD-3-Clause",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/roarr/-/roarr-2.15.4.tgz",
+      "integrity": "sha512-CHhPh+UNHD2GT…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "rolldown",
+      "version": "1.2.9",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.9.tgz",
+      "integrity": "sha512-hx/Pv0N1haXRb…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "safe-buffer",
+      "version": "5.1.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.1.2.tgz",
+      "integrity": "sha512-Gd2UZBJDkXlY7…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "safe-buffer",
+      "version": "5.1.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.1.2.tgz",
+      "integrity": "sha512-Gd2UZBJDkXlY7…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "safe-buffer",
+      "version": "5.2.1",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.2.1.tgz",
+      "integrity": "sha512-rp3So07KcdmmK…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "sanitize-filename",
+      "version": "1.6.4",
+      "license": "WTFPL OR ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/sanitize-filename/-/sanitize-filename-1.6.4.tgz",
+      "integrity": "sha512-9ZyI08PsvdQl2…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "sax",
+      "version": "1.6.1",
+      "license": "BlueOak-1.0.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/sax/-/sax-1.6.1.tgz",
+      "integrity": "sha512-42tBVwLWnaQvW…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "scheduler",
+      "version": "0.27.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/scheduler/-/scheduler-0.27.0.tgz",
+      "integrity": "sha512-eNv+WrVbKu1f3…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "semver",
+      "version": "5.7.2",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/semver/-/semver-5.7.2.tgz",
+      "integrity": "sha512-cBznnQ9KjJqU6…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "semver",
+      "version": "6.3.1",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/semver/-/semver-6.3.1.tgz",
+      "integrity": "sha512-BR7VvDCVHO+q2…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "semver",
+      "version": "7.7.4",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/semver/-/semver-7.7.4.tgz",
+      "integrity": "sha512-vFKC2IEtQnVhp…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "semver",
+      "version": "7.8.5",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/semver/-/semver-7.8.5.tgz",
+      "integrity": "sha512-Y7/KDsb8LjooZ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "semver-compare",
+      "version": "1.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/semver-compare/-/semver-compare-1.0.0.tgz",
+      "integrity": "sha512-YM3/ITh2MJ5Mt…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "serialize-error",
+      "version": "7.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/serialize-error/-/serialize-error-7.0.1.tgz",
+      "integrity": "sha512-8I8TjW5KMOKsZ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "serialize-javascript",
+      "version": "7.1.1",
+      "license": "BSD-3-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-7.1.1.tgz",
+      "integrity": "sha512-k3CMsaIvvdSwm…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "set-function-length",
+      "version": "1.2.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/set-function-length/-/set-function-length-1.2.2.tgz",
+      "integrity": "sha512-pgRc4hJ4/sNjW…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "setimmediate",
+      "version": "1.0.5",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/setimmediate/-/setimmediate-1.0.5.tgz",
+      "integrity": "sha512-MATJdZp8sLqDl…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "shebang-command",
+      "version": "2.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/shebang-command/-/shebang-command-2.0.0.tgz",
+      "integrity": "sha512-kHxr2zZpYtdmr…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "shebang-regex",
+      "version": "3.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/shebang-regex/-/shebang-regex-3.0.0.tgz",
+      "integrity": "sha512-7++dFhtcx3353…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "siginfo",
+      "version": "2.0.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/siginfo/-/siginfo-2.0.0.tgz",
+      "integrity": "sha512-ybx0WO1/8bSBL…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "signal-exit",
+      "version": "3.0.7",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/signal-exit/-/signal-exit-3.0.7.tgz",
+      "integrity": "sha512-wnD2ZE+l+SPC/…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "signal-exit",
+      "version": "4.1.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/signal-exit/-/signal-exit-4.1.0.tgz",
+      "integrity": "sha512-bzyZ1e88w9O1i…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "signal-exit",
+      "version": "4.1.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/signal-exit/-/signal-exit-4.1.0.tgz",
+      "integrity": "sha512-bzyZ1e88w9O1i…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "simple-concat",
+      "version": "1.0.1",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/simple-concat/-/simple-concat-1.0.1.tgz",
+      "integrity": "sha512-cSFtAPtRhljv6…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "simple-get",
+      "version": "4.0.1",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/simple-get/-/simple-get-4.0.1.tgz",
+      "integrity": "sha512-brv7p5WgH0jmQ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "simple-update-notifier",
+      "version": "2.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/simple-update-notifier/-/simple-update-notifier-2.0.0.tgz",
+      "integrity": "sha512-a2B9Y0KlNXl9u…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "slash",
+      "version": "2.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/slash/-/slash-2.0.0.tgz",
+      "integrity": "sha512-ZYKh3Wh2z1PpE…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "source-map",
+      "version": "0.6.1",
+      "license": "BSD-3-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/source-map/-/source-map-0.6.1.tgz",
+      "integrity": "sha512-UjgapumWlbMhk…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "source-map-js",
+      "version": "1.2.1",
+      "license": "BSD-3-Clause",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.1.tgz",
+      "integrity": "sha512-UXWMKhLOwVKb7…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "source-map-support",
+      "version": "0.5.21",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/source-map-support/-/source-map-support-0.5.21.tgz",
+      "integrity": "sha512-uBHU3L3czsIyY…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "split2",
+      "version": "4.2.0",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/split2/-/split2-4.2.0.tgz",
+      "integrity": "sha512-UcjcJOWknrNkF…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "sprintf-js",
+      "version": "1.1.3",
+      "license": "BSD-3-Clause",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.1.3.tgz",
+      "integrity": "sha512-Oo+0REFV59/rz…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "stackback",
+      "version": "0.0.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/stackback/-/stackback-0.0.2.tgz",
+      "integrity": "sha512-1XMJE5fQo1jGH…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "stat-mode",
+      "version": "1.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/stat-mode/-/stat-mode-1.0.0.tgz",
+      "integrity": "sha512-jH9EhtKIjuXZ2…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "std-env",
+      "version": "4.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/std-env/-/std-env-4.2.0.tgz",
+      "integrity": "sha512-oCUKSupKTHX53…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "stdin-discarder",
+      "version": "0.2.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/stdin-discarder/-/stdin-discarder-0.2.2.tgz",
+      "integrity": "sha512-UhDfHmA92YAlN…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "string_decoder",
+      "version": "1.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/string_decoder/-/string_decoder-1.1.1.tgz",
+      "integrity": "sha512-n/ShnvDi6FHbb…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "string_decoder",
+      "version": "1.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/string_decoder/-/string_decoder-1.1.1.tgz",
+      "integrity": "sha512-n/ShnvDi6FHbb…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "string_decoder",
+      "version": "1.3.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/string_decoder/-/string_decoder-1.3.0.tgz",
+      "integrity": "sha512-hkRX8U1WjJFd8…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "string-width",
+      "version": "4.2.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz",
+      "integrity": "sha512-wKyQRQpjJ0sIp…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "string-width",
+      "version": "7.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/string-width/-/string-width-7.2.0.tgz",
+      "integrity": "sha512-tsaTIkKW9b4N+…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "strip-ansi",
+      "version": "6.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz",
+      "integrity": "sha512-Y38VPSHcqkFrC…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "strip-ansi",
+      "version": "7.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-7.2.0.tgz",
+      "integrity": "sha512-yDPMNjp4WyfYB…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "strip-json-comments",
+      "version": "2.0.1",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/strip-json-comments/-/strip-json-comments-2.0.1.tgz",
+      "integrity": "sha512-4gB8na07fecVV…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "strip-json-comments",
+      "version": "5.0.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/strip-json-comments/-/strip-json-comments-5.0.3.tgz",
+      "integrity": "sha512-1tB5mhVo7U+ET…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "sumchecker",
+      "version": "3.0.1",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/sumchecker/-/sumchecker-3.0.1.tgz",
+      "integrity": "sha512-MvjXzkz/BOfyV…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "supports-color",
+      "version": "7.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/supports-color/-/supports-color-7.2.0.tgz",
+      "integrity": "sha512-qpCAvRl9stuOH…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "supports-color",
+      "version": "8.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/supports-color/-/supports-color-8.1.1.tgz",
+      "integrity": "sha512-MpUEN2OodtUzx…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "tar",
+      "version": "7.5.22",
+      "license": "BlueOak-1.0.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/tar/-/tar-7.5.22.tgz",
+      "integrity": "sha512-MFO/QzvtAOmJb…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "tar-fs",
+      "version": "2.1.5",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/tar-fs/-/tar-fs-2.1.5.tgz",
+      "integrity": "sha512-OboTd8mmMhZDN…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "tar-stream",
+      "version": "2.2.0",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/tar-stream/-/tar-stream-2.2.0.tgz",
+      "integrity": "sha512-ujeqbceABgwMZ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "temp",
+      "version": "0.9.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/temp/-/temp-0.9.4.tgz",
+      "integrity": "sha512-yYrrsWnrXMcds…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "temp-file",
+      "version": "3.4.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/temp-file/-/temp-file-3.4.0.tgz",
+      "integrity": "sha512-C5tjlC/HCtVUO…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "tiny-async-pool",
+      "version": "1.3.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/tiny-async-pool/-/tiny-async-pool-1.3.0.tgz",
+      "integrity": "sha512-01EAw5EDrcVrd…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "tinybench",
+      "version": "6.1.4",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/tinybench/-/tinybench-6.1.4.tgz",
+      "integrity": "sha512-9APumHG7r4yOk…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "tinyexec",
+      "version": "1.3.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/tinyexec/-/tinyexec-1.3.0.tgz",
+      "integrity": "sha512-QKAl9m8gWWGHV…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "tinyglobby",
+      "version": "0.2.17",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/tinyglobby/-/tinyglobby-0.2.17.tgz",
+      "integrity": "sha512-wXR/dYpcqKmfW…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "tmp",
+      "version": "0.2.7",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/tmp/-/tmp-0.2.7.tgz",
+      "integrity": "sha512-e0votIpp4Uo2A…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "tmp-promise",
+      "version": "3.0.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/tmp-promise/-/tmp-promise-3.0.3.tgz",
+      "integrity": "sha512-RwM7MoPojPxsO…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "to-regex-range",
+      "version": "5.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/to-regex-range/-/to-regex-range-5.0.1.tgz",
+      "integrity": "sha512-65P7iz6X5yEr1…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "truncate-utf8-bytes",
+      "version": "1.0.2",
+      "license": "WTFPL",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/truncate-utf8-bytes/-/truncate-utf8-bytes-1.0.2.tgz",
+      "integrity": "sha512-95Pu1QXQvruGE…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "tslib",
+      "version": "2.8.1",
+      "license": "0BSD",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz",
+      "integrity": "sha512-oJFu94HQb+KVd…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "tunnel-agent",
+      "version": "0.6.0",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/tunnel-agent/-/tunnel-agent-0.6.0.tgz",
+      "integrity": "sha512-McnNiV1l8RYeY…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "type-fest",
+      "version": "0.13.1",
+      "license": "(MIT OR CC0-1.0)",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-0.13.1.tgz",
+      "integrity": "sha512-34R7HTnG0XIJc…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "typescript",
+      "version": "5.9.3",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
+      "integrity": "sha512-jl1vZzPDinLr9…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "undici",
+      "version": "6.28.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/undici/-/undici-6.28.1.tgz",
+      "integrity": "sha512-zWpdTVD54H48C…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "undici",
+      "version": "7.29.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "resolved": "https://registry.npmjs.org/undici/-/undici-7.29.1.tgz",
+      "integrity": "sha512-RYONW2MeafgYl…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "undici-types",
+      "version": "6.21.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/undici-types/-/undici-types-6.21.0.tgz",
+      "integrity": "sha512-iwDZqg0QAGrg9…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "undici-types",
+      "version": "7.18.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/undici-types/-/undici-types-7.18.2.tgz",
+      "integrity": "sha512-AsuCzffGHJybS…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "unicorn-magic",
+      "version": "0.3.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/unicorn-magic/-/unicorn-magic-0.3.0.tgz",
+      "integrity": "sha512-+QBBXBCvifc56…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "universalify",
+      "version": "0.1.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/universalify/-/universalify-0.1.2.tgz",
+      "integrity": "sha512-rBJeI5CXAlmy1…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "universalify",
+      "version": "0.1.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/universalify/-/universalify-0.1.2.tgz",
+      "integrity": "sha512-rBJeI5CXAlmy1…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "universalify",
+      "version": "2.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/universalify/-/universalify-2.0.1.tgz",
+      "integrity": "sha512-gptHNQghINnc/…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "unzipper",
+      "version": "0.12.5",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/unzipper/-/unzipper-0.12.5.tgz",
+      "integrity": "sha512-tXYOi9R57Uj/2…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "utf8-byte-length",
+      "version": "1.0.5",
+      "license": "(WTFPL OR MIT)",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/utf8-byte-length/-/utf8-byte-length-1.0.5.tgz",
+      "integrity": "sha512-Xn0w3MtiQ6zoz…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "util-deprecate",
+      "version": "1.0.2",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz",
+      "integrity": "sha512-EPD5q1uXyFxJp…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "uuid",
+      "version": "14.0.2",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/uuid/-/uuid-14.0.2.tgz",
+      "integrity": "sha512-xZe/16rV4aa+H…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "vite",
+      "version": "8.3.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/vite/-/vite-8.3.0.tgz",
+      "integrity": "sha512-lhZBVvEHefgE+…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "vitest",
+      "version": "5.0.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/vitest/-/vitest-5.0.1.tgz",
+      "integrity": "sha512-iA95lQbKEkvrt…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "webcrypto-core",
+      "version": "1.9.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/webcrypto-core/-/webcrypto-core-1.9.2.tgz",
+      "integrity": "sha512-gsXecm82UQNlT…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "which",
+      "version": "2.0.2",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/which/-/which-2.0.2.tgz",
+      "integrity": "sha512-BLI3Tl1TW3Pvl…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "which",
+      "version": "5.0.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/which/-/which-5.0.0.tgz",
+      "integrity": "sha512-JEdGzHwwkrbWo…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "which",
+      "version": "6.0.1",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/which/-/which-6.0.1.tgz",
+      "integrity": "sha512-oGLe46MIrCRqX…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "why-is-node-running",
+      "version": "2.3.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/why-is-node-running/-/why-is-node-running-2.3.0.tgz",
+      "integrity": "sha512-hUrmaWBdVDcxv…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "workerpool",
+      "version": "10.0.3",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/workerpool/-/workerpool-10.0.3.tgz",
+      "integrity": "sha512-6z2Iis68Wqth9…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "wrap-ansi",
+      "version": "7.0.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz",
+      "integrity": "sha512-YVGIj2kamLSTx…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "wrappy",
+      "version": "1.0.2",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/wrappy/-/wrappy-1.0.2.tgz",
+      "integrity": "sha512-l4Sp/DRseor9w…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "xmlbuilder",
+      "version": "15.1.1",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/xmlbuilder/-/xmlbuilder-15.1.1.tgz",
+      "integrity": "sha512-yMqGBqtXyeN1e…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "xtend",
+      "version": "4.0.2",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/xtend/-/xtend-4.0.2.tgz",
+      "integrity": "sha512-LKYU1iAXJXUgA…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "y18n",
+      "version": "5.0.8",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/y18n/-/y18n-5.0.8.tgz",
+      "integrity": "sha512-0pfFzegeDWJHJ…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "yallist",
+      "version": "4.0.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/yallist/-/yallist-4.0.0.tgz",
+      "integrity": "sha512-3wdGidZyq5PB0…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "yallist",
+      "version": "5.0.0",
+      "license": "BlueOak-1.0.0",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/yallist/-/yallist-5.0.0.tgz",
+      "integrity": "sha512-YgvUTfwqyc7UX…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "yaml",
+      "version": "2.9.0",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/yaml/-/yaml-2.9.0.tgz",
+      "integrity": "sha512-2AvhNX3mb8zd6…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "yargs",
+      "version": "17.7.3",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/yargs/-/yargs-17.7.3.tgz",
+      "integrity": "sha512-GZtjxm/J/4TSx…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "yargs-parser",
+      "version": "21.1.1",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/yargs-parser/-/yargs-parser-21.1.1.tgz",
+      "integrity": "sha512-tVpsJW7DdjecA…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "yocto-queue",
+      "version": "0.1.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/yocto-queue/-/yocto-queue-0.1.0.tgz",
+      "integrity": "sha512-rVksvsnNCdJ/o…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "yocto-queue",
+      "version": "1.2.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/yocto-queue/-/yocto-queue-1.2.2.tgz",
+      "integrity": "sha512-4LCcse/U2MHZ6…",
+      "hasInstallScript": false
+    },
+    {
+      "name": "zod",
+      "version": "3.25.76",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "resolved": "https://registry.npmjs.org/zod/-/zod-3.25.76.tgz",
+      "integrity": "sha512-gzUt/qt81nXsF…",
+      "hasInstallScript": false
+    }
+  ]
+}

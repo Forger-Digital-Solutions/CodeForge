@@ -10,6 +10,14 @@ type CodeForgeServer = {
   httpPort: number;
 };
 
+// Per-process bearer for the loopback control plane (Security R1). Generated here, handed to the
+// server at construction, and attached to every request this extension makes. Never persisted.
+let controlPlaneToken = "";
+
+function controlPlaneHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  return { "X-CodeForge-Control-Token": controlPlaneToken, ...extra };
+}
+
 // Sync activate - VS Code expects this to return void or Promise<void>
 export function activate(context: vscode.ExtensionContext): void {
   vscode.window.showInformationMessage("Activating CodeForge extension...");
@@ -44,11 +52,13 @@ async function initializeServer(context: vscode.ExtensionContext): Promise<void>
   const dbPath = context.globalStorageUri.fsPath;
 
   // Dynamic import of ESM module from extension (CommonJS context)
-  const { CodeForgeServer } = await import("@codeforge/server");
-  
+  const { CodeForgeServer, generateControlPlaneToken } = await import("@codeforge/server");
+  controlPlaneToken = generateControlPlaneToken();
+
   const serverInstance: CodeForgeServer = new CodeForgeServer({
     port: 3210,
     dbPath,
+    controlPlaneToken,
   });
   server = serverInstance;
 
@@ -80,7 +90,7 @@ async function startSession(): Promise<void> {
   try {
     const response = await fetch(`http://localhost:${httpPort}/api/send`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: controlPlaneHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ sessionId, message: "Start a new session", executionMode: "chat" }),
     });
 
@@ -125,7 +135,7 @@ async function sendMessage(): Promise<void> {
   try {
     const setWorkspaceResponse = await fetch(`http://localhost:${httpPort}/api/workspace/set`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: controlPlaneHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ path: workspacePath }),
     });
 
@@ -162,7 +172,7 @@ async function sendMessage(): Promise<void> {
   try {
     const response = await fetch(`http://localhost:${httpPort}/api/send`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: controlPlaneHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ sessionId, message, executionMode: selectedMode.mode }),
     });
 

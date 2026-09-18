@@ -11,6 +11,8 @@ const prodBase = {
   CODEFORGE_CLOUD_DB_DRIVER: "postgres",
   DATABASE_URL: "postgres://user:pass@host:5432/db",
   CODEFORGE_PUBLIC_URL: "https://cloud.codeforge.test",
+  // 32 zero-entropy bytes in base64 — an obviously synthetic test key, never a real one.
+  CODEFORGE_DATA_ENCRYPTION_KEYS: "1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
 };
 
 describe("loadCloudRuntimeConfig", () => {
@@ -155,5 +157,7 @@ describe("loadCloudRuntimeConfig", () => {
     expect(summary).toContain("providers=[openrouter]");
     expect(summary).not.toContain("or-secret-value");
     expect(summary).not.toContain("postgres://");
+    expect(summary).toContain("secretEnvelope=local-kek activeKey=v1");
+    expect(summary).not.toContain("AAAAAAAA");
   });
 });

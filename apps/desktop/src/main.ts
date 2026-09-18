@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, dialog, Menu, shell, safeStorage, Tray, nativeImage, screen, Notification } from "electron";
+import { migrateLegacyPlaintextCredentials, openCredential, sealCredential } from "./secure-credential-codec.js";
 import { resolveCloudCatalogSyncMode } from "./cloud-catalog-sync.js";
 import { checkGitExecArgs } from "./git-exec-allowlist.js";
 import path from "node:path";
@@ -387,28 +388,62 @@ function writeSettingsAtomic(settings: Record<string, unknown>): void {
   }
 }
 
+/**
+ * Security R1: the codec lives in secure-credential-codec.ts (pure, unit-tested). A stored value
+ * that is not an `enc:` payload is never returned as a credential — the legacy plaintext read path
+ * is closed — and sealing never degrades to plaintext.
+ */
 function decryptCredential(value: string): string | undefined {
-  if (!value) return value;
-  if (value.startsWith("enc:")) {
-    try {
-      if (safeStorage.isEncryptionAvailable()) {
-        const buf = Buffer.from(value.slice(4), "base64");
-        return safeStorage.decryptString(buf);
-      }
-    } catch {
-      return undefined;
-    }
-    return undefined;
-  }
-  return value;
+  return openCredential(safeStorage, value);
 }
 
 function encryptCredential(value: string): string {
-  if (!safeStorage.isEncryptionAvailable()) {
-    throw new Error("Secure credential storage is unavailable; the credential was not saved.");
+  return sealCredential(safeStorage, value);
+}
+
+/**
+ * One-time, idempotent migration of any legacy plaintext secrets left in settings.json by
+ * pre-R1 builds: provider credentials and Cloud tokens are sealed in place when secure storage is
+ * available. Plaintext that cannot be sealed is left untouched (never destroyed) and reported;
+ * it is not usable until re-entered under working secure storage.
+ */
+function migrateLegacyPlaintextSecrets(): { sealed: string[]; blocked: string[] } {
+  const settings = readSettings();
+  const sealed: string[] = [];
+  const blocked: string[] = [];
+  let changed = false;
+
+  const raw = settings[PROVIDER_CREDENTIALS_KEY];
+  if (typeof raw === "object" && raw !== null && !Array.isArray(raw)) {
+    const credentials = { ...(raw as Record<string, unknown>) };
+    const result = migrateLegacyPlaintextCredentials(safeStorage, credentials, isAllowedCredentialKey);
+    if (result.sealed.length > 0) {
+      settings[PROVIDER_CREDENTIALS_KEY] = credentials;
+      changed = true;
+    }
+    sealed.push(...result.sealed.map((k) => `provider:${k}`));
+    blocked.push(...result.blocked.map((k) => `provider:${k}`));
   }
-  const buf = safeStorage.encryptString(value);
-  return `enc:${buf.toString("base64")}`;
+
+  const tokens: Record<string, unknown> = {};
+  for (const key of [CLOUD_ACCESS_TOKEN_KEY, CLOUD_REFRESH_TOKEN_KEY]) {
+    if (typeof settings[key] === "string") tokens[key] = settings[key];
+  }
+  const tokenResult = migrateLegacyPlaintextCredentials(safeStorage, tokens);
+  for (const key of tokenResult.sealed) {
+    settings[key] = tokens[key];
+    changed = true;
+    sealed.push(key);
+  }
+  blocked.push(...tokenResult.blocked);
+
+  if (changed) writeSettingsAtomic(settings);
+  if (sealed.length > 0) smokeRecord(`legacy_plaintext_sealed=${sealed.length}`);
+  if (blocked.length > 0) {
+    console.warn(`[CodeForge] ${blocked.length} stored credential(s) are in a legacy plaintext form and secure storage is unavailable; they will not be used until re-entered.`);
+    smokeRecord(`legacy_plaintext_blocked=${blocked.length}`);
+  }
+  return { sealed, blocked };
 }
 
 function getRecentProjects(): ProjectInfo[] {
@@ -1187,6 +1222,7 @@ async function createWindowDocument(): Promise<void> {
   // request — sessions, models, the event stream — was refused with 401.
   if (localServerPort <= 0) throw new Error("Local runtime is not bound; the renderer document cannot be loaded");
   installControlPlaneBearerInjection(window);
+  installRendererPermissionPolicy(window);
   smokeRecord(`CONTROL_PLANE_BEARER_FILTER_${localServerBaseUrl()}`);
   const isDev = process.env.ELECTRON_DEV === "true";
   if (isDev) {
@@ -1309,6 +1345,25 @@ function controlPlaneTrust(): ControlPlaneTrust {
  * Attaches the per-process bearer to control-plane requests issued by the primary window's own
  * document — and to nothing else. The bearer never reaches the renderer (see control-plane-trust.ts).
  */
+/**
+ * Deny-by-default web permissions and downloads for the renderer session (Security R1, Phase 21).
+ * Electron grants permission requests (notifications, media, geolocation, clipboard-read, …) by
+ * default when no handler is installed. The CodeForge renderer is a local single-page workbench
+ * that needs none of them — OS notifications are raised by the main process — and it never
+ * downloads files, so both are refused outright rather than prompted.
+ */
+function installRendererPermissionPolicy(window: BrowserWindow): void {
+  const session = window.webContents.session;
+  session.setPermissionRequestHandler((_webContents, permission, callback) => {
+    smokeRecord(`RENDERER_PERMISSION_DENIED=${permission}`);
+    callback(false);
+  });
+  session.setPermissionCheckHandler(() => false);
+  session.on("will-download", (event) => {
+    event.preventDefault();
+  });
+}
+
 function installControlPlaneBearerInjection(window: BrowserWindow): void {
   window.webContents.session.webRequest.onBeforeSendHeaders(
     { urls: [`${localServerBaseUrl()}/*`] },
@@ -1592,7 +1647,7 @@ function verifyCredentialPersistence(testSecret: string): void {
   smokeRecord("credential_encrypted_payload=PASS");
 }
 
-function verifyCorruptCredentialFailsClosed(): void {
+function verifyCorruptCredentialFailsClosed(testSecret: string): void {
   const storePath = getStorePath();
   const original = fs.readFileSync(storePath, "utf8");
   const parsed = JSON.parse(original) as Record<string, unknown>;
@@ -1605,6 +1660,26 @@ function verifyCorruptCredentialFailsClosed(): void {
   fs.writeFileSync(storePath, original, "utf8");
   desktopCredentialStore?.reload();
   smokeRecord("corrupt_credential_fails_closed=PASS");
+
+  // Security R1: a legacy PLAINTEXT credential written straight into settings.json is never read
+  // back as a usable credential (the pre-R1 fallback is closed) — it is either sealed in place by
+  // the startup migration or ignored. Here the store reloads without the migration, so the value
+  // must simply be ignored.
+  const plaintextInjected = JSON.parse(original) as Record<string, unknown>;
+  const injectedCredentials = { ...(plaintextInjected[PROVIDER_CREDENTIALS_KEY] as Record<string, string> | undefined) };
+  injectedCredentials.opencode = `${testSecret}-plaintext-injected`;
+  plaintextInjected[PROVIDER_CREDENTIALS_KEY] = injectedCredentials;
+  writeSettingsAtomic(plaintextInjected);
+  desktopCredentialStore?.reload();
+  if (getProviderCredentialStatus().opencode) throw new Error("Legacy plaintext credential was accepted as usable");
+  if (desktopCredentialStore?.get("opencode") !== undefined) throw new Error("Legacy plaintext credential was returned by the store");
+  const migration = migrateLegacyPlaintextSecrets();
+  if (!migration.sealed.includes("provider:opencode")) throw new Error("Legacy plaintext credential was not sealed by the migration");
+  if (fs.readFileSync(storePath, "utf8").includes(`${testSecret}-plaintext-injected`)) throw new Error("Legacy plaintext survived the migration on disk");
+  fs.writeFileSync(storePath, original, "utf8");
+  desktopCredentialStore?.reload();
+  smokeRecord("legacy_plaintext_credential_rejected=PASS");
+  smokeRecord("legacy_plaintext_credential_migrated=PASS");
 }
 
 async function runPackagedFullSmoke(workspacePath: string, testSecret: string): Promise<void> {
@@ -1860,7 +1935,7 @@ async function runPackagedRecoverySmoke(testSecret: string): Promise<void> {
   if (!credentialStatus.opencode) throw new Error("Encrypted credential did not decrypt after restart");
   if (desktopCredentialStore?.get("opencode") !== testSecret) throw new Error("Restarted credential did not match the encrypted smoke value");
   verifyCredentialPersistence(testSecret);
-  verifyCorruptCredentialFailsClosed();
+  verifyCorruptCredentialFailsClosed(testSecret);
   smokeRecord("credential_restart_decrypt=PASS");
 
   const fresh = await rendererWorkflowRequest({
@@ -1921,6 +1996,13 @@ async function startPrimaryInstance(): Promise<void> {
   // One-time freshness probe for the canonical settings store: a first launch with no stored
   // settings object lets the renderer seed defaults from its pre-canonical local values.
   appSettingsFreshAtStartup = !(APP_SETTINGS_KEY in readSettings());
+  // Seal any pre-R1 plaintext secrets BEFORE the credential store loads, so the store only ever
+  // sees sealed values (the plaintext read path no longer exists).
+  try {
+    migrateLegacyPlaintextSecrets();
+  } catch (error) {
+    console.error(`[CodeForge] legacy credential migration failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
   desktopCredentialStore = new DesktopCredentialStore();
   smokeRecord("WHEN_READY_CRED_STORE_DONE");
   // Firewall enforces the orphan-model invariant via the provider oracle: a model can be
@@ -2716,6 +2798,14 @@ ipcMain.handle("cloud:account:delete", async (event) => {
     headers: { Authorization: `Bearer ${tokens.accessToken}`, "Content-Type": "application/json" },
     body: JSON.stringify({ confirmation: "DELETE_MY_ACCOUNT" }),
   });
+  if (res.status === 401) {
+    // The Cloud refuses tokens whose session is gone — which is exactly the state after a deletion
+    // whose response was lost in transit, or after the session was revoked elsewhere. Either way
+    // the local credential is dead: clear it so the app is honestly signed out.
+    clearCloudTokens();
+    providerAuthState.delete("codeforge-cloud");
+    throw new Error("Your CodeForge Cloud session is no longer valid. If the account was already deleted, no further action is needed; otherwise sign in again to delete it.");
+  }
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
     throw new Error(`Account deletion failed (HTTP ${res.status})${detail ? `: ${detail.slice(0, 200)}` : ""}`);

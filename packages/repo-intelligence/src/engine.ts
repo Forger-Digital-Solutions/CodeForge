@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { getSanitizedEnvForChild } from "@codeforge/secrets";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -99,7 +100,7 @@ function normalizeRelative(relativePath: string): string {
 
 function execGit(root: string, args: string[]): string | undefined {
   try {
-    return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 20_000, windowsHide: true }).trim();
+    return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 20_000, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } }).trim();
   } catch {
     return undefined;
   }
@@ -109,7 +110,7 @@ function execGit(root: string, args: string[]): string | undefined {
  * would be corrupted, silently dropping the modified flag for the most common dirty state. */
 function execGitNulDelimited(root: string, args: string[]): string | undefined {
   try {
-    return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 20_000, windowsHide: true });
+    return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 20_000, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } });
   } catch {
     return undefined;
   }

@@ -81,6 +81,8 @@ describe("StripeBillingService", () => {
           customer: "cus_sub_1",
           subscription: "sub_pro_1",
           mode: "subscription",
+          // Real Stripe checkout objects always carry payment_status; the grant path requires "paid".
+          payment_status: "paid",
         },
       },
     };

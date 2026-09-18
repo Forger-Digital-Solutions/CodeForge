@@ -82,6 +82,57 @@ export const UNSUPPORTED_CLAIM_PATTERNS: ClaimPattern[] = [
     category: "UNSUBSTANTIATED_SECURITY",
     suggestion: "name the specific sandbox boundary (e.g. Electron contextIsolation) instead",
   },
+  // Security R1 (Phase 61): claims that require evidence or formal certification CodeForge does
+  // not have. Each pattern is narrow enough that a truthful negation ("is not SOC 2 certified")
+  // is caught only when it asserts the certification; reviewers triage negations by context.
+  {
+    id: "military-or-bank-grade",
+    pattern: /\b(military|bank|government)[\s-]grade\b/i,
+    category: "UNSUBSTANTIATED_SECURITY",
+    suggestion: "name the actual primitive (AES-256-GCM, TLS 1.2+) instead of a grade",
+  },
+  {
+    id: "unhackable-or-unbreakable",
+    pattern: /\b(unhackable|unbreakable|impenetrable|100%\s+secure)\b/i,
+    category: "UNSUBSTANTIATED_SECURITY",
+    suggestion: "describe the control and its tested property",
+  },
+  {
+    id: "zero-knowledge",
+    pattern: /\bzero[\s-]knowledge\b/i,
+    category: "UNSUBSTANTIATED_SECURITY",
+    suggestion: "CodeForge servers can decrypt what they store; do not claim zero knowledge",
+  },
+  {
+    id: "end-to-end-encrypted",
+    pattern: /\bend[\s-]to[\s-]end\s+encrypt/i,
+    category: "UNSUBSTANTIATED_SECURITY",
+    suggestion: "say 'encrypted in transit (TLS) and at rest' — providers and the Cloud process plaintext",
+  },
+  {
+    id: "compliance-certified",
+    pattern: /\b(SOC\s?2|ISO\s?27001|PCI[\s-]DSS|HIPAA|FedRAMP|FIPS[\s-]?140)[\s-]*(certified|compliant|validated|accredited)\b/i,
+    category: "UNSUBSTANTIATED_SECURITY",
+    suggestion: "no formal certification exists; describe the control and mark the certification as not obtained",
+  },
+  {
+    id: "regulation-compliant",
+    pattern: /\b(GDPR|CCPA|CPRA|NJDPA)[\s-]+compliant\b/i,
+    category: "UNSUBSTANTIATED_SECURITY",
+    suggestion: "describe the specific right or mechanism supported; compliance is a legal determination",
+  },
+  {
+    id: "hardware-encryption",
+    pattern: /\bhardware[\s-]+(backed\s+)?encryption\b/i,
+    category: "UNSUBSTANTIATED_SECURITY",
+    suggestion: "say 'operating-system-backed encryption (DPAPI/Keychain/Secret Service)'",
+  },
+  {
+    id: "never-leaves-your-machine",
+    pattern: /\b(never\s+leaves?|stays?\s+on)\s+your\s+(computer|machine|device)\b/i,
+    category: "UNSUBSTANTIATED_SECURITY",
+    suggestion: "prompts and code context are sent to the selected model provider; say exactly what leaves the device",
+  },
 ];
 
 export interface ClaimHit {

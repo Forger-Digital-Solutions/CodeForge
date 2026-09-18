@@ -1,7 +1,8 @@
 import crypto from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
 import { SQLiteCloudDatabase } from "@codeforge/cloud-db";
-import { GitHubAppError, signAccessToken } from "@codeforge/cloud-auth";
+import { GitHubAppError } from "@codeforge/cloud-auth";
+import { mintSessionAccessToken } from "./helpers/session-token.js";
 import { createSessionPersistence, type SessionPersistence } from "@codeforge/sessions";
 import {
   CloudPublicationClient,
@@ -145,7 +146,7 @@ async function desktopHarness(options: { mode?: UploadMode; failMintOnce?: boole
     }
     return response;
   };
-  const token = signAccessToken({ sub: account.userId, sid: "desktop-device" }, JWT_SECRET);
+  const token = await mintSessionAccessToken(db, account.userId, JWT_SECRET);
   const client = new CloudPublicationClient({
     cloudApiUrl: `http://127.0.0.1:${port}`,
     getAuthToken: () => token,

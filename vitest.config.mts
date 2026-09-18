@@ -43,6 +43,7 @@ const packages = [
   "cloud-billing",
   "cloud-gateway",
   "legal-policy",
+  "crypto",
 ];
 
 const aliases: Record<string, string | string[]> = {};

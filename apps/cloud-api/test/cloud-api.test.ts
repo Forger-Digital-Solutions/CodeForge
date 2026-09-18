@@ -240,6 +240,8 @@ describe("CodeForge Cloud Server API End-to-End", () => {
           customer: "cus_123",
           subscription: "sub_123",
           mode: "subscription",
+          // Real Stripe checkout objects always carry payment_status; the grant path requires "paid".
+          payment_status: "paid",
         },
       },
     };

@@ -1,4 +1,5 @@
 import { execFile as execFileCallback } from "node:child_process";
+import { getSanitizedEnvForChild } from "./env-filter.js";
 import { promisify } from "node:util";
 import { existsSync } from "node:fs";
 import type { WorkspaceService } from "./workspace-service.js";
@@ -68,7 +69,7 @@ export class IntegrationService {
   }
 
   private async git(cwd: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
-    return execFile("git", args, { cwd, maxBuffer: 10 * 1024 * 1024, windowsHide: true, env: { ...process.env, GIT_TERMINAL_PROMPT: "0" } });
+    return execFile("git", args, { cwd, maxBuffer: 10 * 1024 * 1024, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } });
   }
 
   /**

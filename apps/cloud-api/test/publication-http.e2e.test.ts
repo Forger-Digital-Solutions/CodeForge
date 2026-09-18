@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
 import { SQLiteCloudDatabase } from "@codeforge/cloud-db";
-import { signAccessToken } from "@codeforge/cloud-auth";
+import { mintSessionAccessToken } from "./helpers/session-token.js";
 import { CodeForgeCloudServer } from "../src/server.js";
 import { publicationRefFor } from "../src/git-transport.js";
 import {
@@ -36,8 +36,8 @@ describe("CF-11 authenticated publication HTTP ownership", () => {
 
     const userA = await seedAccount(db, { owner: "shared-name", name: "repository", repositoryId: 71001, installationId: 72001 });
     const userB = await seedAccount(db, { owner: "shared-name", name: "repository", repositoryId: 71002, installationId: 72002 });
-    const tokenA = signAccessToken({ sub: userA.userId, sid: "session-a" }, JWT_SECRET);
-    const tokenB = signAccessToken({ sub: userB.userId, sid: "session-b" }, JWT_SECRET);
+    const tokenA = await mintSessionAccessToken(db, userA.userId, JWT_SECRET);
+    const tokenB = await mintSessionAccessToken(db, userB.userId, JWT_SECRET);
     const port = await server.start(0);
     const baseUrl = `http://127.0.0.1:${port}`;
     const auth = (token: string) => ({ Authorization: `Bearer ${token}` });

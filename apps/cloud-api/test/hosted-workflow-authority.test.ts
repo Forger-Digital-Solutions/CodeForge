@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SQLiteCloudDatabase } from "@codeforge/cloud-db";
-import { signAccessToken } from "@codeforge/cloud-auth";
+import { mintSessionAccessToken } from "./helpers/session-token.js";
 import { createSessionPersistence } from "@codeforge/sessions";
 import { HostedWorkflowAuthority } from "../src/hosted-workflow-authority.js";
 import { CodeForgeCloudServer } from "../src/server.js";
@@ -33,7 +33,7 @@ describe("HostedWorkflowAuthority", () => {
     const port = await server.start(0);
     const request = async (userId: string, path: string, init: RequestInit = {}) => fetch(`http://127.0.0.1:${port}${path}`, {
       ...init,
-      headers: { authorization: `Bearer ${signAccessToken({ sub: userId, sid: "desktop" }, JWT_SECRET)}`, "content-type": "application/json", ...init.headers },
+      headers: { authorization: `Bearer ${await mintSessionAccessToken(server.db, userId, JWT_SECRET)}`, "content-type": "application/json", ...init.headers },
     });
 
     try {
@@ -79,7 +79,7 @@ describe("HostedWorkflowAuthority", () => {
     const port = await server.start(0);
     const request = async (userId: string, path: string, init: RequestInit = {}) => fetch(`http://127.0.0.1:${port}${path}`, {
       ...init,
-      headers: { authorization: `Bearer ${signAccessToken({ sub: userId, sid: "desktop" }, JWT_SECRET)}`, "content-type": "application/json", ...init.headers },
+      headers: { authorization: `Bearer ${await mintSessionAccessToken(server.db, userId, JWT_SECRET)}`, "content-type": "application/json", ...init.headers },
     });
 
     try {

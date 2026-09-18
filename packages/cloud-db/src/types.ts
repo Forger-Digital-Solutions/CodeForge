@@ -456,6 +456,20 @@ export interface AccountDeletionResult {
   /** abuse_events rows are not deleted (no retention-duration decision exists yet — see
    *  @codeforge/legal-policy RetentionClass "SECURITY_AUDIT"); their user_id link is severed. */
   abuseEventsAnonymized: number;
+  /** security_audit_events rows likewise keep the event but lose the account link. */
+  securityAuditEventsAnonymized: number;
+}
+
+/** One row of the append-only security audit trail (see @codeforge/secrets SecurityAuditEvent). */
+export interface SecurityAuditEventRecord {
+  id: string;
+  occurredAt: string;
+  eventType: string;
+  outcome: string;
+  userId?: string;
+  ipAddress?: string;
+  details?: Record<string, string | number | boolean | null>;
+  createdAt: string;
 }
 
 export interface CloudVerificationEvidenceRecord {

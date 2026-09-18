@@ -502,6 +502,8 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("Postgres Runtime — Deep Adv
             customer: "cus_pg_e2e",
             subscription: "sub_pg_e2e",
             mode: "subscription",
+            // Real Stripe checkout objects always carry payment_status; the grant path requires "paid".
+            payment_status: "paid",
           },
         },
       };

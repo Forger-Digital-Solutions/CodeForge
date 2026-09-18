@@ -167,6 +167,8 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
           customer: "cus_stripe_cert_1",
           subscription: "sub_stripe_cert_1",
           mode: "subscription",
+          // Real Stripe checkout objects always carry payment_status; the grant path requires "paid".
+          payment_status: "paid",
         },
       },
     };

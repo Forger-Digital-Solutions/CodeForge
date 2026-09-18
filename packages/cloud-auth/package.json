@@ -21,6 +21,7 @@
     "@codeforge/core": "*",
     "@codeforge/cloud-db": "*",
     "@codeforge/secrets": "*",
-    "zod": "^3.24.0"
+    "zod": "^3.24.0",
+    "@codeforge/crypto": "*"
   }
 }

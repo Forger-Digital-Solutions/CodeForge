@@ -31,6 +31,7 @@ import type {
   CloudVerificationAttemptRecord,
   CloudVerificationEvidenceRecord,
   AccountDeletionResult,
+  SecurityAuditEventRecord,
 } from "./types.js";
 
 /**
@@ -66,6 +67,8 @@ export interface ICloudDatabase {
   // Device Sessions
   createDeviceSession(params: { userId: string; deviceName?: string; refreshTokenHash: string; ipAddress?: string; userAgent?: string; expiresInSeconds?: number }): Promise<DeviceSessionRecord>;
   getDeviceSessionByTokenHash(refreshTokenHash: string): Promise<DeviceSessionRecord | undefined>;
+  /** Lookup by session id (the `sid` claim of an access token) so revocation is honored before expiry. */
+  getDeviceSessionById(id: string): Promise<DeviceSessionRecord | undefined>;
   updateDeviceSessionLastSeen(id: string): Promise<void>;
   /**
    * Revoke one session. The reason is recorded because reuse of a ROTATED token is a breach signal
@@ -210,6 +213,10 @@ export interface ICloudDatabase {
   // Abuse
   recordAbuseEvent(params: { userId?: string; ipAddress?: string; eventType: string; details?: string }): Promise<AbuseEventRecord>;
 
+  // Security audit trail (append-only; never carries credentials)
+  recordSecurityAuditEvent(params: { occurredAt?: string; eventType: string; outcome: string; userId?: string; ipAddress?: string; details?: Record<string, string | number | boolean | null> }): Promise<SecurityAuditEventRecord>;
+  listSecurityAuditEvents(filter?: { userId?: string; eventType?: string; limit?: number }): Promise<SecurityAuditEventRecord[]>;
+
   /**
    * GDPR Article 17 erasure (LEG-P0-02). Deletes every row in this package's schema that
    * identifies the account — explicitly, table by table, rather than relying on ON DELETE CASCADE
@@ -283,6 +290,15 @@ export interface ICloudDatabase {
   consumeGitHubAppCallbackState(state: string): Promise<GitHubAppCallbackStateRecord | undefined>;
   deleteExpiredGitHubAppCallbackStates(cutoffIso: string): Promise<number>;
 
+  /**
+   * Retention sweep for short-lived authentication artifacts (Security R1, Phase 31). Removes
+   * expired or consumed OAuth transactions, browser OAuth transactions, desktop auth codes, GitHub
+   * App callback states, and browser sessions past their expiry; and device sessions that were
+   * revoked/expired before `revokedSessionCutoffIso` (kept for a grace window so refresh-token
+   * replay of a rotated family is still detectable). Idempotent; safe to run on every boot.
+   */
+  purgeExpiredSecurityArtifacts(params: { nowIso: string; revokedSessionCutoffIso: string }): Promise<Record<string, number>>;
+
   // CF-11B: Publication Records
   createPublication(params: {
     deliveryId: string;
@@ -300,6 +316,8 @@ export interface ICloudDatabase {
   getPublicationById(id: string): Promise<PublicationRecord | undefined>;
   getPublicationByDeliveryId(userId: string, deliveryId: string): Promise<PublicationRecord | undefined>;
   listPublicationsByUser(userId: string): Promise<PublicationRecord[]>;
+  /** Retention sweeps: publications in one state (typically a terminal failure state). */
+  listPublicationsByState(state: PublicationState, limit?: number): Promise<PublicationRecord[]>;
   /** One-way transition guarded on `awaiting_artifact`; a stored artifact can never be replaced. */
   markPublicationArtifactStored(params: { publicationId: string; artifactKey: string }): Promise<boolean>;
 

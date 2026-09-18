@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { getSanitizedEnvForChild } from "./env-filter.js";
 import fs from "node:fs/promises";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
@@ -210,7 +211,7 @@ export class AutonomousRunOrchestrator {
   }
 
   private async git(cwd: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
-    return execFile("git", args, { cwd, maxBuffer: 10 * 1024 * 1024, windowsHide: true, env: { ...process.env, GIT_TERMINAL_PROMPT: "0" } });
+    return execFile("git", args, { cwd, maxBuffer: 10 * 1024 * 1024, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } });
   }
 
   /**

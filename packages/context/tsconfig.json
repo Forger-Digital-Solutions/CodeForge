@@ -5,14 +5,34 @@
     "rootDir": "./src",
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
   },
-  "include": ["src/**/*"],
-  "exclude": ["test", "dist"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "test",
+    "dist"
+  ],
   "references": [
-    { "path": "../core" },
-    { "path": "../protocol" },
-    { "path": "../repo-intelligence" },
-    { "path": "../forge-green" },
-    { "path": "../agent" },
-    { "path": "../sessions" }
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../protocol"
+    },
+    {
+      "path": "../repo-intelligence"
+    },
+    {
+      "path": "../forge-green"
+    },
+    {
+      "path": "../agent"
+    },
+    {
+      "path": "../sessions"
+    },
+    {
+      "path": "../secrets"
+    }
   ]
 }

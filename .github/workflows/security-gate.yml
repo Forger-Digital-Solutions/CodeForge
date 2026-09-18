@@ -1,0 +1,77 @@
+# CodeForge Security Regression Gate (Security / Legal / Trust R1, Phase 57).
+#
+# Deterministic and secret-free. Every job proves a property the R1 certification claims:
+# cryptographic storage, secret isolation, tenant boundaries, OAuth/session hardening, payment
+# integrity, Electron baseline, redaction, repository secret hygiene, dependency health, public
+# claim truthfulness, and documentation link integrity. A failure here blocks the branch.
+name: security-gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["master", "main"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  security-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+
+      - name: Cryptographic storage (envelope, AAD binding, rotation, fail-closed)
+        run: npx vitest run packages/crypto
+
+      - name: Secret redaction, audit log, child-process environment filter
+        run: npx vitest run packages/secrets
+
+      - name: OAuth, PKCE, session liveness, replay protection
+        run: npx vitest run packages/cloud-auth tests/production-auth-bypass-guard.test.ts
+
+      - name: Payment integrity (signature, replay, unpaid, live-mode, out-of-order)
+        run: npx vitest run packages/cloud-billing
+
+      - name: Tenant isolation and cloud adversarial suites
+        run: npx vitest run apps/cloud-api tests/cloud-adversarial-security.test.ts tests/cloud-failure-matrix.test.ts tests/two-client-authority.test.ts
+
+      - name: Local control plane exposure and agent hardening
+        run: npx vitest run packages/server/test/network-exposure.test.ts packages/server/test/hardening-adversarial.test.ts
+
+      - name: Electron security baseline and desktop credential codec
+        run: npx vitest run apps/desktop/test/electron-security-baseline.test.ts apps/desktop/test/secure-credential-codec.test.ts apps/desktop/test/preload-bridge.test.ts apps/desktop/test/renderer-csp.test.ts apps/desktop/test/packaged-browser-security.test.ts apps/desktop/test/control-plane-trust.test.ts
+
+      - name: Security acceptance (ATTACK-001 … ATTACK-016)
+        run: npx vitest run tests/security
+
+      - name: Repository secret scan (self-test + scan)
+        run: node scripts/security/secret-scan.mjs --self-test --scan --json security-gate/secret-scan.json
+
+      - name: Dependency vulnerability gate + SBOM
+        run: node scripts/security/audit-dependencies.mjs --json security-gate/dependency-audit.json --sbom security-gate/sbom.json
+
+      - name: Public security/privacy claim gate
+        run: node scripts/security/public-claims-scan.mjs --json security-gate/public-claims-scan.json
+
+      - name: Documentation link validation
+        run: node scripts/security/validate-doc-links.mjs --json security-gate/doc-links.json
+
+      - name: Upload gate reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-gate-reports
+          path: security-gate/
+          if-no-files-found: ignore

@@ -23,3 +23,8 @@ coverage/
 docs/evidence/**/smoke-user-data/
 docs/evidence/**/smoke-workspace/
 packages/vscode/.vscode-test/
+
+# Local scratch/probe scripts are never committed (they may reference local endpoints or profiles)
+/scratch-*.mjs
+/scratch-*.cjs
+/security-gate/

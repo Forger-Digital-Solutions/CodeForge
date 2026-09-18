@@ -3,6 +3,7 @@ import type { ICloudDatabase } from "@codeforge/cloud-db";
 import type { ISessionPersistence } from "@codeforge/sessions";
 import { DEFAULT_RETENTION_POLICY, classesPurgedOnErasure, classesRetainedOnErasure } from "@codeforge/legal-policy";
 import type { HostedWorkflowAuthority } from "./hosted-workflow-authority.js";
+import type { PublicationService } from "./publication-service.js";
 
 /**
  * Confirms deletion completed without retaining an inventory of the deleted account's content
@@ -16,6 +17,8 @@ export interface AccountDeletionReceipt {
   retainedCategories: string[];
   retentionReasonCodes: Record<string, string>;
   sessionsDeleted: number;
+  /** Staged publication bundles (source code) removed from Cloud disk as part of erasure. */
+  artifactsPurged: number;
 }
 
 /**
@@ -38,10 +41,15 @@ export async function deleteAccount(params: {
   db: ICloudDatabase;
   sessionPersistence: ISessionPersistence;
   hostedWorkflowAuthority: HostedWorkflowAuthority;
+  /** When publication is configured, staged bundles are purged before their rows are deleted. */
+  publicationService?: PublicationService;
   userId: string;
   now?: Date;
 }): Promise<AccountDeletionReceipt> {
   const { db, sessionPersistence, hostedWorkflowAuthority, userId } = params;
+
+  // Bundles first: their keys derive from publication ids that step 2 deletes.
+  const artifactsPurged = params.publicationService ? await params.publicationService.purgeArtifactsForUser(userId) : 0;
 
   const ownedWorkflows = await hostedWorkflowAuthority.list(userId);
   for (const workflow of ownedWorkflows) {
@@ -62,9 +70,10 @@ export async function deleteAccount(params: {
     deletionRequestId: `del-${randomUUID()}`,
     userId,
     completedAt: (params.now ?? new Date()).toISOString(),
-    categoriesProcessed: [...classesPurgedOnErasure(), "SESSION_CONTENT"],
+    categoriesProcessed: [...classesPurgedOnErasure(), "SESSION_CONTENT", ...(artifactsPurged > 0 ? ["PUBLICATION_ARTIFACTS"] : [])],
     retainedCategories: classesRetainedOnErasure(),
     retentionReasonCodes,
     sessionsDeleted: ownedWorkflows.length,
+    artifactsPurged,
   };
 }

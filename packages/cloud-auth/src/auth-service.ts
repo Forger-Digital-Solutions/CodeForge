@@ -12,6 +12,8 @@ import { signAccessToken, verifyAccessToken, generateRefreshToken, hashRefreshTo
 import { generateDesktopAuthCode, hashDesktopAuthCode } from "./desktop-auth-code.js";
 import { generateBrowserSessionToken, hashBrowserSessionToken } from "./browser-session.js";
 import { buildGitHubAuthUrl, exchangeGitHubCode, fetchGitHubUserProfile, fetchGitHubUserEmails, selectGitHubAuthorizedEmail } from "./github-oauth.js";
+import { LocalKeyEncryptionProvider, SecretEnvelopeService, isEnvelope, type EnvelopeContext } from "@codeforge/crypto";
+import { SecurityAuditLog, type SecurityAuditEvent } from "@codeforge/secrets";
 
 /**
  * THE CANONICAL CODEFORGE CLOUD OAUTH FLOW (server-brokered, confidential client).
@@ -59,6 +61,21 @@ export interface AuthServiceConfig {
   allowedBrowserReturnUrls?: readonly string[];
   browserSessionExpiresInSeconds?: number;
   fetchFn?: typeof fetch;
+  /**
+   * Envelope service that seals the server-owned GitHub PKCE verifier at rest. The Cloud server
+   * always supplies one built from CODEFORGE_DATA_ENCRYPTION_KEYS (fail-closed in staging and
+   * production). When omitted — library/test use only — an ephemeral per-process key is used, so
+   * nothing sealed by it is decryptable after a restart.
+   */
+  secretEnvelope?: SecretEnvelopeService;
+  /** Security audit sink. Events never carry a credential (see @codeforge/secrets). */
+  securityAudit?: SecurityAuditLog;
+  /**
+   * How long (ms) a verified access token's session liveness may be cached in memory before the
+   * database is consulted again. Logout/revocation is honored within this window at the latest;
+   * revocations performed through this instance are honored immediately.
+   */
+  sessionLivenessCacheMs?: number;
 }
 
 export interface AuthAccountIdentity {
@@ -135,6 +152,10 @@ export class AuthService {
   private readonly allowedBrowserReturnUrls: readonly string[];
   private readonly browserSessionExpiresInSeconds: number;
   private readonly defaultFetchFn: typeof fetch;
+  private readonly secretEnvelope: SecretEnvelopeService;
+  private readonly securityAudit: SecurityAuditLog;
+  private readonly sessionLivenessCacheMs: number;
+  private readonly liveSessionCache = new Map<string, { userId: string; checkedAt: number }>();
 
   constructor(config: AuthServiceConfig) {
     this.db = config.db;
@@ -149,6 +170,58 @@ export class AuthService {
     this.allowedBrowserReturnUrls = [...(config.allowedBrowserReturnUrls ?? [])];
     this.browserSessionExpiresInSeconds = config.browserSessionExpiresInSeconds ?? 7 * 24 * 60 * 60;
     this.defaultFetchFn = config.fetchFn ?? fetch;
+    this.secretEnvelope = config.secretEnvelope ?? new SecretEnvelopeService(LocalKeyEncryptionProvider.ephemeral());
+    this.securityAudit = config.securityAudit ?? new SecurityAuditLog();
+    this.sessionLivenessCacheMs = config.sessionLivenessCacheMs ?? 15_000;
+  }
+
+  get audit(): SecurityAuditLog {
+    return this.securityAudit;
+  }
+
+  /** The configured public base URL (no trailing slash), or undefined outside a deployment. */
+  get publicBaseUrl(): string | undefined {
+    return this.publicUrl;
+  }
+
+  /** Drop cached liveness for every session of a user (account deletion / breach response). */
+  forgetSessionsOf(userId: string): void {
+    for (const [sid, entry] of this.liveSessionCache) {
+      if (entry.userId === userId) this.liveSessionCache.delete(sid);
+    }
+  }
+
+  private emitAudit(event: SecurityAuditEvent): void {
+    this.securityAudit.emit(event);
+  }
+
+  /**
+   * The server-owned GitHub PKCE verifier is sealed with AES-256-GCM and bound to the transaction
+   * it belongs to (its state) and to the leg (desktop vs browser), so a database disclosure yields
+   * ciphertext that cannot be re-bound to another transaction, and an envelope copied between
+   * rows fails authentication.
+   */
+  private verifierContext(leg: "desktop" | "browser", state: string): EnvelopeContext {
+    return { purpose: "github_pkce_verifier", schema: leg, recordId: state };
+  }
+
+  private sealVerifier(leg: "desktop" | "browser", state: string, verifier: string): string {
+    return this.secretEnvelope.encrypt(verifier, this.verifierContext(leg, state));
+  }
+
+  private openVerifier(leg: "desktop" | "browser", state: string, stored: string | undefined): string {
+    // A plaintext (pre-envelope) verifier is refused rather than honored: the legacy read path is
+    // closed, and a login attempt that straddled the deployment simply restarts (10-minute TTL).
+    if (!stored || !isEnvelope(stored)) {
+      this.emitAudit({ type: "auth.oauth.state_invalid", outcome: "failure", details: { reason: "verifier_not_sealed", leg } });
+      throw new Error("OAuth transaction is missing its sealed server-owned PKCE verifier");
+    }
+    try {
+      return this.secretEnvelope.decryptString(stored, this.verifierContext(leg, state));
+    } catch {
+      this.emitAudit({ type: "crypto.decrypt.failed", outcome: "failure", details: { purpose: "github_pkce_verifier", leg } });
+      throw new Error("OAuth transaction verifier failed authentication");
+    }
   }
 
   /**
@@ -183,7 +256,7 @@ export class AuthService {
     await this.db.createOAuthTransaction({
       state,
       codeChallenge: desktopCodeChallenge,
-      gitHubCodeVerifier: gitHubPkce.codeVerifier,
+      gitHubCodeVerifier: this.sealVerifier("desktop", state, gitHubPkce.codeVerifier),
       redirectUri,
       deviceName: options.deviceName,
       expiresInSeconds: 600, // 10 minutes
@@ -208,7 +281,7 @@ export class AuthService {
 
     await this.db.createBrowserOAuthTransaction({
       state,
-      gitHubCodeVerifier: gitHubPkce.codeVerifier,
+      gitHubCodeVerifier: this.sealVerifier("browser", state, gitHubPkce.codeVerifier),
       returnTarget,
       expiresInSeconds: 600,
     });
@@ -233,6 +306,7 @@ export class AuthService {
   /** Close a denied browser transaction without exchanging a code or creating an account/session. */
   async handleBrowserAuthorizationDenied(state: string): Promise<string> {
     const tx = await this.db.consumeBrowserOAuthTransaction(state);
+    this.emitAudit({ type: "auth.oauth.denied", outcome: "denied", details: { leg: "browser" } });
     const returnTarget = normalizeBrowserReturnUrl(tx.returnTarget, this.allowedBrowserReturnUrls);
     return appendBrowserAuthStatus(returnTarget, "denied");
   }
@@ -247,7 +321,13 @@ export class AuthService {
   /** Complete a browser transaction. The GitHub credential never leaves this server process. */
   async handleBrowserGitHubCallback(options: { code: string; state: string }): Promise<BrowserGitHubCallbackResult> {
     if (!options.code || !options.state) throw new Error("Browser GitHub callback is missing the authorization code or state");
-    const tx = await this.db.consumeBrowserOAuthTransaction(options.state);
+    let tx;
+    try {
+      tx = await this.db.consumeBrowserOAuthTransaction(options.state);
+    } catch (error) {
+      this.emitAudit({ type: "auth.oauth.state_invalid", outcome: "failure", details: { leg: "browser", reason: error instanceof Error ? error.message : "unknown" } });
+      throw error;
+    }
     const returnTarget = normalizeBrowserReturnUrl(tx.returnTarget, this.allowedBrowserReturnUrls);
 
     try {
@@ -256,7 +336,7 @@ export class AuthService {
         clientSecret: this.gitHubClientSecret,
         code: options.code,
         redirectUri: this.getCloudGitHubCallbackUrl(),
-        codeVerifier: tx.gitHubCodeVerifier,
+        codeVerifier: this.openVerifier("browser", options.state, tx.gitHubCodeVerifier),
         fetchFn: this.defaultFetchFn,
       });
       const profile = await fetchGitHubUserProfile(exchange.accessToken, this.defaultFetchFn);
@@ -268,6 +348,7 @@ export class AuthService {
         sessionTokenHash: hashBrowserSessionToken(sessionToken),
         expiresInSeconds: this.browserSessionExpiresInSeconds,
       });
+      this.emitAudit({ type: "auth.login.succeeded", outcome: "success", userId: user.id, details: { leg: "browser", isNewUser } });
       return {
         status: "success",
         redirectTo: appendBrowserAuthStatus(returnTarget, "success"),
@@ -280,6 +361,7 @@ export class AuthService {
         },
       };
     } catch {
+      this.emitAudit({ type: "auth.login.failed", outcome: "failure", details: { leg: "browser" } });
       return { status: "error", redirectTo: appendBrowserAuthStatus(returnTarget, "error") };
     }
   }
@@ -301,7 +383,10 @@ export class AuthService {
   async logoutBrowserSession(token: string): Promise<void> {
     if (!token || token.length > 256) return;
     const session = await this.db.getBrowserSessionByTokenHash(hashBrowserSessionToken(token));
-    if (session) await this.db.revokeBrowserSession(session.id);
+    if (session) {
+      await this.db.revokeBrowserSession(session.id);
+      this.emitAudit({ type: "auth.logout", outcome: "success", userId: session.userId, details: { leg: "browser" } });
+    }
   }
 
   getBrowserSessionCookieName(): string {
@@ -327,23 +412,33 @@ export class AuthService {
     }
 
     // Single-use consumption of the server-authoritative transaction. A replayed callback loses here.
-    const tx = await this.db.consumeOAuthTransaction(options.state);
-    if (!tx.gitHubCodeVerifier) {
-      throw new Error("OAuth transaction is missing its server-owned PKCE verifier");
+    let tx;
+    try {
+      tx = await this.db.consumeOAuthTransaction(options.state);
+    } catch (error) {
+      this.emitAudit({ type: "auth.oauth.state_invalid", outcome: "failure", details: { leg: "desktop", reason: error instanceof Error ? error.message : "unknown" } });
+      throw error;
     }
+    const gitHubCodeVerifier = this.openVerifier("desktop", options.state, tx.gitHubCodeVerifier);
 
     // Re-validate the stored redirect URI. Defense in depth: even a tampered database row cannot
     // turn this endpoint into an open redirector.
     const redirectUri = normalizeDesktopLoopbackRedirectUri(tx.redirectUri);
 
-    const exchange = await exchangeGitHubCode({
-      clientId: this.gitHubClientId,
-      clientSecret: this.gitHubClientSecret,
-      code: options.code,
-      redirectUri: this.getCloudGitHubCallbackUrl(),
-      codeVerifier: tx.gitHubCodeVerifier,
-      fetchFn,
-    });
+    let exchange;
+    try {
+      exchange = await exchangeGitHubCode({
+        clientId: this.gitHubClientId,
+        clientSecret: this.gitHubClientSecret,
+        code: options.code,
+        redirectUri: this.getCloudGitHubCallbackUrl(),
+        codeVerifier: gitHubCodeVerifier,
+        fetchFn,
+      });
+    } catch (error) {
+      this.emitAudit({ type: "auth.login.failed", outcome: "failure", details: { leg: "desktop", stage: "token_exchange" } });
+      throw error;
+    }
 
     const profile = await fetchGitHubUserProfile(exchange.accessToken, fetchFn);
     const displayProfile = await this.resolveDisplayProfile(exchange.accessToken, profile, fetchFn);
@@ -405,6 +500,7 @@ export class AuthService {
       ipAddress: options.ipAddress,
       userAgent: options.userAgent,
     });
+    this.emitAudit({ type: "auth.login.succeeded", outcome: "success", userId: user.id, ipAddress: options.ipAddress, details: { leg: "desktop", isNewUser: record.isNewUser } });
 
     return { user, ...session, isNewUser: record.isNewUser };
   }
@@ -533,13 +629,24 @@ export class AuthService {
     const newRefreshToken = generateRefreshToken();
     const newHash = hashRefreshToken(newRefreshToken);
 
-    const { user, session: newSession } = await this.db.rotateDeviceSession({
-      oldTokenHash: oldHash,
-      newRefreshTokenHash: newHash,
-      ipAddress: options.ipAddress,
-      userAgent: options.userAgent,
-      expiresInSeconds: this.refreshTokenExpiresInSeconds,
-    });
+    let rotated;
+    try {
+      rotated = await this.db.rotateDeviceSession({
+        oldTokenHash: oldHash,
+        newRefreshTokenHash: newHash,
+        ipAddress: options.ipAddress,
+        userAgent: options.userAgent,
+        expiresInSeconds: this.refreshTokenExpiresInSeconds,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const replay = /replay|reuse|breach/i.test(message);
+      this.emitAudit({ type: replay ? "auth.session.replay_detected" : "auth.session.rejected", outcome: "denied", ipAddress: options.ipAddress, details: { reason: message.slice(0, 120) } });
+      throw error;
+    }
+    const { user, session: newSession } = rotated;
+    this.liveSessionCache.clear();
+    this.emitAudit({ type: "auth.session.refreshed", outcome: "success", userId: user.id, ipAddress: options.ipAddress });
 
     // Check if new monthly period has begun
     await this.db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
@@ -574,11 +681,42 @@ export class AuthService {
     const session = await this.db.getDeviceSessionByTokenHash(tokenHash);
     if (session) {
       await this.db.revokeDeviceSession(session.id, "logout");
+      this.liveSessionCache.delete(session.id);
+      this.emitAudit({ type: "auth.logout", outcome: "success", userId: session.userId, details: { leg: "desktop" } });
     }
   }
 
+  /** Signature/expiry verification only. Prefer {@link verifyAccessSession} for request authentication. */
   verifyToken(accessToken: string): AccessTokenPayload {
     return verifyAccessToken(accessToken, this.jwtSecret);
+  }
+
+  /**
+   * Request authentication: a valid signature is necessary but not sufficient. The device session
+   * named by the token's `sid` must still be live — not revoked by logout, not revoked as a
+   * breach family, not expired — so a stolen or lingering access token stops working when the
+   * session does, instead of remaining valid until its own expiry.
+   */
+  async verifyAccessSession(accessToken: string): Promise<AccessTokenPayload> {
+    const payload = verifyAccessToken(accessToken, this.jwtSecret);
+    const cached = this.liveSessionCache.get(payload.sid);
+    const now = Date.now();
+    if (cached && cached.userId === payload.sub && now - cached.checkedAt < this.sessionLivenessCacheMs) return payload;
+    const session = await this.db.getDeviceSessionById(payload.sid);
+    if (!session || session.userId !== payload.sub || session.revokedAt || new Date(session.expiresAt).getTime() <= now) {
+      this.liveSessionCache.delete(payload.sid);
+      const reason = !session ? "session_unknown" : session.revokedAt ? `revoked:${session.revokedReason ?? "unknown"}` : "expired";
+      this.emitAudit({ type: "auth.session.rejected", outcome: "denied", userId: payload.sub, details: { reason } });
+      throw new Error("Session has been revoked or has expired");
+    }
+    this.liveSessionCache.set(payload.sid, { userId: payload.sub, checkedAt: now });
+    return payload;
+  }
+
+  /** Revoke every device session of an account (breach response / account deletion). */
+  async revokeAllSessions(userId: string): Promise<void> {
+    await this.db.revokeAllUserDeviceSessions(userId);
+    this.liveSessionCache.clear();
   }
 
   /**

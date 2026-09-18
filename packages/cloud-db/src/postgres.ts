@@ -35,6 +35,7 @@ import type {
   CloudVerificationAttemptRecord,
   CloudVerificationEvidenceRecord,
   AccountDeletionResult,
+  SecurityAuditEventRecord,
   AccountDeletionTableSummary,
 } from "./types.js";
 
@@ -637,6 +638,12 @@ export class PostgresCloudDatabase implements ICloudDatabase {
 
   async getDeviceSessionByTokenHash(refreshTokenHash: string): Promise<DeviceSessionRecord | undefined> {
     const res = await this.pool.query(`SELECT * FROM device_sessions WHERE refresh_token_hash = $1`, [refreshTokenHash]);
+    if (res.rows.length === 0) return undefined;
+    return this.mapDeviceSessionRow(res.rows[0]);
+  }
+
+  async getDeviceSessionById(id: string): Promise<DeviceSessionRecord | undefined> {
+    const res = await this.pool.query(`SELECT * FROM device_sessions WHERE id = $1`, [id]);
     if (res.rows.length === 0) return undefined;
     return this.mapDeviceSessionRow(res.rows[0]);
   }
@@ -1799,6 +1806,48 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     return record;
   }
 
+  // --- Security audit trail ---
+
+  async recordSecurityAuditEvent(params: { occurredAt?: string; eventType: string; outcome: string; userId?: string; ipAddress?: string; details?: Record<string, string | number | boolean | null> }): Promise<SecurityAuditEventRecord> {
+    const now = new Date().toISOString();
+    const record: SecurityAuditEventRecord = {
+      id: randomUUID(),
+      occurredAt: params.occurredAt ?? now,
+      eventType: params.eventType,
+      outcome: params.outcome,
+      userId: params.userId,
+      ipAddress: params.ipAddress,
+      details: params.details,
+      createdAt: now,
+    };
+    await this.pool.query(
+      `INSERT INTO security_audit_events (id, occurred_at, event_type, outcome, user_id, ip_address, details, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [record.id, record.occurredAt, record.eventType, record.outcome, record.userId ?? null, record.ipAddress ?? null, record.details ? JSON.stringify(record.details) : null, record.createdAt],
+    );
+    return record;
+  }
+
+  async listSecurityAuditEvents(filter: { userId?: string; eventType?: string; limit?: number } = {}): Promise<SecurityAuditEventRecord[]> {
+    const clauses: string[] = [];
+    const values: unknown[] = [];
+    if (filter.userId) { values.push(filter.userId); clauses.push(`user_id = ${values.length}`); }
+    if (filter.eventType) { values.push(filter.eventType); clauses.push(`event_type = ${values.length}`); }
+    values.push(Math.min(Math.max(filter.limit ?? 100, 1), 1000));
+    const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+    const res = await this.pool.query(`SELECT * FROM security_audit_events ${where} ORDER BY occurred_at DESC LIMIT ${values.length}`, values);
+    return res.rows.map((row: Record<string, unknown>) => ({
+      id: String(row.id),
+      occurredAt: String(row.occurred_at),
+      eventType: String(row.event_type),
+      outcome: String(row.outcome),
+      userId: row.user_id ? String(row.user_id) : undefined,
+      ipAddress: row.ip_address ? String(row.ip_address) : undefined,
+      details: row.details ? (JSON.parse(String(row.details)) as Record<string, string | number | boolean | null>) : undefined,
+      createdAt: String(row.created_at),
+    }));
+  }
+
   // --- GDPR Article 17 Erasure ---
 
   async deleteUserAccount(userId: string): Promise<AccountDeletionResult> {
@@ -1810,6 +1859,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       };
 
       const anonymized = await client.query(`UPDATE abuse_events SET user_id = NULL WHERE user_id = $1`, [userId]);
+      const auditAnonymized = await client.query(`UPDATE security_audit_events SET user_id = NULL WHERE user_id = $1`, [userId]);
 
       // Children of github_installations (repository authorizations, publications) must be
       // deleted before that parent table — both PostgreSQL's real ON DELETE CASCADE and, on newer
@@ -1836,7 +1886,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       await del("account_settings", `DELETE FROM account_settings WHERE user_id = $1`);
       await del("users", `DELETE FROM users WHERE id = $1`);
 
-      return { userId, tables, abuseEventsAnonymized: anonymized.rowCount ?? 0 };
+      return { userId, tables, abuseEventsAnonymized: anonymized.rowCount ?? 0, securityAuditEventsAnonymized: auditAnonymized.rowCount ?? 0 };
     });
   }
 
@@ -2088,6 +2138,19 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     return res.rowCount ?? 0;
   }
 
+  async purgeExpiredSecurityArtifacts(params: { nowIso: string; revokedSessionCutoffIso: string }): Promise<Record<string, number>> {
+    const { nowIso, revokedSessionCutoffIso } = params;
+    const count = async (sql: string, args: unknown[]) => (await this.pool.query(sql, args)).rowCount ?? 0;
+    return {
+      oauth_transactions: await count(`DELETE FROM oauth_transactions WHERE expires_at <= $1 OR used_at IS NOT NULL`, [nowIso]),
+      browser_oauth_transactions: await count(`DELETE FROM browser_oauth_transactions WHERE expires_at <= $1 OR used_at IS NOT NULL`, [nowIso]),
+      desktop_auth_codes: await count(`DELETE FROM desktop_auth_codes WHERE expires_at <= $1 OR used_at IS NOT NULL`, [nowIso]),
+      github_app_callback_states: await count(`DELETE FROM github_app_callback_states WHERE expires_at <= $1 OR consumed_at IS NOT NULL`, [nowIso]),
+      browser_sessions: await count(`DELETE FROM browser_sessions WHERE expires_at <= $1 OR (revoked_at IS NOT NULL AND revoked_at <= $2)`, [nowIso, revokedSessionCutoffIso]),
+      device_sessions: await count(`DELETE FROM device_sessions WHERE (revoked_at IS NOT NULL AND revoked_at <= $1) OR expires_at <= $1`, [revokedSessionCutoffIso]),
+    };
+  }
+
   // --- CF-11B: Publication Records ---
 
   private mapPublicationRow(row: Record<string, unknown>): PublicationRecord {
@@ -2187,6 +2250,11 @@ export class PostgresCloudDatabase implements ICloudDatabase {
 
   async listPublicationsByUser(userId: string): Promise<PublicationRecord[]> {
     const res = await this.pool.query(`SELECT * FROM publications WHERE user_id = $1 ORDER BY created_at DESC`, [userId]);
+    return res.rows.map((row) => this.mapPublicationRow(row));
+  }
+
+  async listPublicationsByState(state: PublicationState, limit = 500): Promise<PublicationRecord[]> {
+    const res = await this.pool.query(`SELECT * FROM publications WHERE state = $1 ORDER BY updated_at ASC LIMIT $2`, [state, Math.min(Math.max(limit, 1), 5000)]);
     return res.rows.map((row) => this.mapPublicationRow(row));
   }
 

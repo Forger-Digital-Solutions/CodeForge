@@ -101,12 +101,20 @@ export function verifyAccessToken(token: string, secret: string, issuer = "codef
     throw new Error("JWT payload missing required session id (sid)");
   }
 
+  // Every claim CodeForge mints is mandatory on verification: a token without an expiry or an
+  // issuer is not "lenient", it is malformed and is refused.
   const now = Math.floor(Date.now() / 1000);
-  if (payload.exp && payload.exp < now) {
+  if (typeof payload.exp !== "number" || !Number.isFinite(payload.exp)) {
+    throw new Error("JWT token is missing its expiry");
+  }
+  if (payload.exp < now) {
     throw new Error("JWT token has expired");
   }
-  if (payload.iss && payload.iss !== issuer) {
-    throw new Error(`Invalid JWT issuer: ${payload.iss}`);
+  if (typeof payload.iat === "number" && payload.iat > now + 60) {
+    throw new Error("JWT token issued in the future");
+  }
+  if (payload.iss !== issuer) {
+    throw new Error("Invalid JWT issuer");
   }
 
   return payload;

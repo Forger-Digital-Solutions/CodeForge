@@ -36,7 +36,13 @@
     "audit:legal-release": "node scripts/legal/audit-legal-release.mjs",
     "r4:scale": "node scripts/r4-scale-sim.mjs",
     "r8:benchmark": "node scripts/r8-codeforge-bench.mjs",
-    "r9:benchmark": "node scripts/r9-codeforge-bench.mjs"
+    "r9:benchmark": "node scripts/r9-codeforge-bench.mjs",
+    "security:gate": "node scripts/security/secret-scan.mjs --self-test --scan && node scripts/security/audit-dependencies.mjs && node scripts/security/public-claims-scan.mjs && node scripts/security/validate-doc-links.mjs",
+    "security:secret-scan": "node scripts/security/secret-scan.mjs --self-test --scan",
+    "security:audit": "node scripts/security/audit-dependencies.mjs",
+    "security:claims": "node scripts/security/public-claims-scan.mjs",
+    "security:doc-links": "node scripts/security/validate-doc-links.mjs",
+    "security:tests": "vitest run packages/crypto packages/secrets packages/cloud-auth packages/cloud-billing tests/security apps/desktop/test/electron-security-baseline.test.ts apps/desktop/test/secure-credential-codec.test.ts packages/server/test/network-exposure.test.ts"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.1.1",
