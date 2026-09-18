@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "assessmentDate": "2026-09-18",
+  "sourceCommit": "d6f380084a9f2b8f3f0e86e41292adc614ea6c5f",
+  "liveInference": false,
+  "paidInference": false,
+  "moneySpentUsd": 0,
+  "forgeGreen": {
+    "r0": "PASS_WITH_QUALITY_GUARDS",
+    "fg8Fixture": {
+      "workloads": 8,
+      "candidateAToolCalls": { "control": 31, "treatment": 27 },
+      "verificationOutcomeIdentical": true,
+      "scope": "deterministic fixture only"
+    }
+  },
+  "repositoryIntelligence": {
+    "status": "P2_GAP",
+    "files": 2721,
+    "parserFailures": 0,
+    "recallAt1": 0.5,
+    "recallAt5": 0.6666666666666666,
+    "recallAt10": 0.8333333333333334,
+    "mrr": 0.5763888888888888,
+    "retainedOptimization": false
+  },
+  "eightBit": "NO_MODEL_EXECUTIONS_RECORDED",
+  "sixteenBit": "NO_MODEL_EXECUTIONS_RECORDED",
+  "subagents": "NO_FRESH_TEAM_VS_SINGLE_CAMPAIGN",
+  "verdict": "NOT_CERTIFIED"
+}
