@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "campaign": "CodeForgeBench-R2 R13 public",
+  "status": "BENCHMARK_CAPACITY_READINESS_BLOCKED",
+  "officialScore": null,
+  "officialScoreReason": "The 40-case campaign did not finish and no aggregate r13-public.json was produced. Partial raw attempts are not scored or imputed.",
+  "sourceCommit": "0743bc2",
+  "sourceStateId": "45d31185f356034a6d49dacdae65b1865cf12a4f6b8f25",
+  "route": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "paidInferenceUsd": 0
+  },
+  "rawAttemptCount": 6,
+  "rawVerifiedSuccesses": 0,
+  "rawFalseCompletions": 0,
+  "rawProviderFailures": 6,
+  "rawRateLimitFailures": 6,
+  "observedQuota": {
+    "remainingRequests": 0,
+    "resetAt": "2026-09-19T00:00:00.000Z",
+    "source": "OpenRouter 429 headers captured in the six raw R13 attempt records"
+  },
+  "classification": "All six terminal turns failed safely after the exact verified-free route returned the daily free-model 429. Visible and hidden verification failures are effects of the missing model execution, not hidden as source passes. The Completion Gate blocked every turn.",
+  "nextSafeAction": "Run a new 40-case R13 public campaign only after the documented provider reset and a fresh catalog/capacity check. Keep this aborted launch as non-official evidence."
+}

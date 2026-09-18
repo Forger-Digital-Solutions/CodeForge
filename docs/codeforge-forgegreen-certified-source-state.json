@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "bd3d3f943a3e986ae0c58f9aae8665df3732549482e8d7015e1c9a3c19b9d2a3",
-  "surfaceVersion": "r12-release-closure-v1",
+  "sourceStateId": "45d31185f356034a6d49dacdae65d0c83dd750bc806e65b1865cf12a4f6b8f25",
+  "surfaceVersion": "r13-intelligence-recovery-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -56,14 +56,14 @@
     "packages/router/package.json": "b2b596febe0eab8a591ed016e9783170c35ed096",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "521f14fffd2b92e5952f443a08f6556430e7c67d",
-    "packages/server/src/agent-runtime.ts": "5c11ae79cc08de8f11eba756ba1da259e7686b29",
+    "packages/server/src/agent-runtime.ts": "7889b4701404c50da6bb532856a9f8b377b7d6c4",
     "packages/server/src/autonomous-orchestrator.ts": "83166287da2991d7900eebb0a9c27e328c1c0015",
     "packages/server/src/duplicate-suppression.ts": "f6108024990ce604cc589f1be9a7bf1e1eb43e0a",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "5390826f640ae06fb46c6f48a550175cd7cb5897",
     "packages/sessions/src/persistence.ts": "ada09ba4e0d8577e843e1c9716bb096a0f997ab4",
     "packages/sessions/src/postgres-persistence.ts": "f47a6a0e3cd9e3064c17b00b4e6516082f738068",
-    "packages/sessions/src/session-state.ts": "7b9d54ffbcd494b1c1bc58f1c14773a449f5539d",
+    "packages/sessions/src/session-state.ts": "a43cf0a2933f4e9f9306c6406bcbae8ec9c9f937",
     "packages/tools/src/index.ts": "f3f223254782d387c1fa8ce91f399224746d979d",
     "packages/workflow/src/forge-verify.ts": "71b245de6205f05284aea4d250967963789d3adb",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
@@ -722,26 +722,41 @@
       "regressionEvidence": "R12 focused tests, lint, typecheck, workspace build, dependency audit, secret scan, and the full Vitest rerun were required before final closure.",
       "recertifiedAt": "2026-09-18T02:53:45.868Z",
       "sourceStateConstant": "CODEFORGE_R12_RELEASE_CLOSURE_SOURCE_STATE"
+    },
+    {
+      "label": "R13 capacity and intelligence persistence recertification",
+      "reason": "R13 adds deterministic capacity-aware free-route ranking and additive, session-scoped intelligence and paid-evaluation work-item types. The review confirmed no change to ForgeZero eligibility, paid/BYOK boundaries, ForgeVerify, or Completion Gate authority.",
+      "priorSourceStateId": "bd3d3f943a3e986ae0c58f9aae8665df3732549482e8d7015e1c9a3c19b9d2a3",
+      "priorSurfaceVersion": "r12-release-closure-v1",
+      "resultingSourceStateId": "45d31185f356034a6d49dacdae65d0c83dd750bc806e65b1865cf12a4f6b8f25",
+      "resultingSurfaceVersion": "r13-intelligence-recovery-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Supplies deterministic FreeCloud capacity advice only after existing ForgeZero and admission checks; it cannot create eligibility or select paid/BYOK routes.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/sessions/src/session-state.ts",
+          "change": "Adds typed work-item shapes for session-scoped shadow telemetry and session-bound paid evaluation evidence; these records have no routing, tool, verification, or completion authority.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "R13 focused shadow, privacy, tenant-isolation, deterministic capacity, paid-budget, and topology suites passed before recertification; FG-11 and FG-12E sentinels are rerun immediately after this guarded update.",
+      "recertifiedAt": "2026-09-18T08:06:37.113Z",
+      "sourceStateConstant": "CODEFORGE_R13_INTELLIGENCE_RECOVERY_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above, and the R6 product-hardening recertification above, and the R11 durable final-response recertification above, and the R11 PostgreSQL hosted-workflow recertification above, and the R11.4 definitive-POST recertification above.",
-  "recertifiedAt": "2026-09-18T02:53:45.869Z",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above, and the R6 product-hardening recertification above, and the R11 durable final-response recertification above, and the R11 PostgreSQL hosted-workflow recertification above, and the R11.4 definitive-POST recertification above, and the R13 intelligence and recovery recertification above.",
+  "recertifiedAt": "2026-09-18T08:06:37.114Z",
   "recertification": {
-    "phase": "R12 release closure",
-    "reason": "Intentional R12 remediation source changes; historical R11 benchmark and release evidence remains untouched.",
+    "phase": "R13 intelligence and recovery",
+    "reason": "Reviewed R13 material source changes after source freeze; historical R11/R12 evidence remains untouched.",
     "changedFiles": [
-      "packages/agent/src/index.ts",
-      "packages/agent/src/planning-contract.ts",
-      "packages/benchmark/src/codeforge-bench-r2.ts",
-      "packages/benchmark/src/index.ts",
-      "packages/benchmark/src/protected-acceptance.ts",
-      "packages/context/src/index.ts",
-      "packages/secrets/src/index.ts",
-      "packages/server/src/autonomous-orchestrator.ts",
-      "packages/server/src/duplicate-suppression.ts",
-      "packages/tools/src/index.ts"
+      "packages/server/src/agent-runtime.ts",
+      "packages/sessions/src/session-state.ts"
     ],
-    "priorSourceStateId": "aea1fa2059daaa2e10bd98376bb45109d4c6e8b08ab2defd043343ce85e303c9",
+    "priorSourceStateId": "bd3d3f943a3e986ae0c58f9aae8665df3732549482e8d7015e1c9a3c19b9d2a3",
     "guarded": true
   }
 }

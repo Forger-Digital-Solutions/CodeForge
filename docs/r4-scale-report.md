@@ -1,6 +1,6 @@
 # R4 deterministic scale simulation
 
-Generated at 2026-09-16T01:09:38.356Z. This is a model-based capacity proof, not fabricated early-access telemetry.
+Generated at 2026-09-18T06:17:34.064Z. This is a model-based capacity proof, not fabricated early-access telemetry.
 
 | Scenario | Demand | Counted capacity | First-run success | Normal success | Blocks | p95 wait (min) |
 |---|---:|---:|---:|---:|---:|---:|

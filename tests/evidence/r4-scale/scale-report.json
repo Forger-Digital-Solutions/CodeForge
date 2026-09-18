@@ -1,6 +1,6 @@
 {
   "schema": "codeforge-r4-scale-v1",
-  "generatedAt": "2026-09-16T01:09:38.356Z",
+  "generatedAt": "2026-09-18T06:17:34.064Z",
   "deterministic": true,
   "fabricatedUsers": false,
   "registeredUserScenarios": [
@@ -44,7 +44,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.349Z",
+        "generatedAt": "2026-09-18T06:17:34.061Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -150,7 +150,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.353Z",
+        "generatedAt": "2026-09-18T06:17:34.063Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -256,7 +256,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.354Z",
+        "generatedAt": "2026-09-18T06:17:34.063Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -362,7 +362,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.354Z",
+        "generatedAt": "2026-09-18T06:17:34.063Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -468,7 +468,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.354Z",
+        "generatedAt": "2026-09-18T06:17:34.063Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -574,7 +574,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.354Z",
+        "generatedAt": "2026-09-18T06:17:34.063Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -680,7 +680,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.354Z",
+        "generatedAt": "2026-09-18T06:17:34.063Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -786,7 +786,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.354Z",
+        "generatedAt": "2026-09-18T06:17:34.063Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -894,7 +894,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.355Z",
+        "generatedAt": "2026-09-18T06:17:34.063Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -1002,7 +1002,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.355Z",
+        "generatedAt": "2026-09-18T06:17:34.063Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -1108,7 +1108,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.355Z",
+        "generatedAt": "2026-09-18T06:17:34.063Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -1214,7 +1214,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.355Z",
+        "generatedAt": "2026-09-18T06:17:34.063Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -1321,7 +1321,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.356Z",
+        "generatedAt": "2026-09-18T06:17:34.064Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -1427,7 +1427,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.356Z",
+        "generatedAt": "2026-09-18T06:17:34.064Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -1529,7 +1529,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.356Z",
+        "generatedAt": "2026-09-18T06:17:34.064Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -1631,7 +1631,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.356Z",
+        "generatedAt": "2026-09-18T06:17:34.064Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {
@@ -1733,7 +1733,7 @@
         "qualityFloorPass": true
       },
       "forecast": {
-        "generatedAt": "2026-09-16T01:09:38.356Z",
+        "generatedAt": "2026-09-18T06:17:34.064Z",
         "policy": "DETERMINISTIC_HARD_ACCOUNTING",
         "routes": [
           {

@@ -1,0 +1,262 @@
+{
+  "schema": "codeforge-r13-topology-ablation-v1",
+  "generatedAt": "2026-09-18T06:24:30.718Z",
+  "deterministic": true,
+  "fabricatedMeasurement": false,
+  "method": "Deterministic model with explicitly stated per-task-class assumptions (see TASK_CLASSES in this script). Capacity-advice numbers use the real, unmodified packages/forge-green adviseProviderAwareTopology function, not a reimplementation.",
+  "taskClassResults": [
+    {
+      "taskClass": "tiny-fix",
+      "description": "One-line/typo-shaped fix with a single obvious target file.",
+      "independentSubtasks": 1,
+      "topologies": [
+        {
+          "agents": 1,
+          "editors": 1,
+          "toolCalls": 3,
+          "contextTokens": 6000,
+          "latencySeconds": 15,
+          "conflictProbability": 0,
+          "verifiedSuccessProbability": 0.95,
+          "resourceUnits": 9,
+          "marginalResourceCost": 0,
+          "marginalSuccessGain": 0,
+          "marginalLatencyChangeSeconds": 0
+        },
+        {
+          "agents": 2,
+          "editors": 1,
+          "toolCalls": 6,
+          "contextTokens": 12000,
+          "latencySeconds": 15,
+          "conflictProbability": 0,
+          "verifiedSuccessProbability": 0.95,
+          "resourceUnits": 18,
+          "marginalResourceCost": 9,
+          "marginalSuccessGain": 0,
+          "marginalLatencyChangeSeconds": 0
+        },
+        {
+          "agents": 4,
+          "editors": 1,
+          "toolCalls": 12,
+          "contextTokens": 24000,
+          "latencySeconds": 15,
+          "conflictProbability": 0,
+          "verifiedSuccessProbability": 0.95,
+          "resourceUnits": 36,
+          "marginalResourceCost": 18,
+          "marginalSuccessGain": 0,
+          "marginalLatencyChangeSeconds": 0
+        }
+      ],
+      "verdict": "2 agents: no meaningful success or latency gain over the previous step, for +9 resource units — pure added cost. 4 agents: no meaningful success or latency gain over the previous step, for +18 resource units — pure added cost."
+    },
+    {
+      "taskClass": "multi-file-investigation",
+      "description": "Bug reproduction spanning ~4 plausibly-independent hypotheses/files.",
+      "independentSubtasks": 4,
+      "topologies": [
+        {
+          "agents": 1,
+          "editors": 1,
+          "toolCalls": 12,
+          "contextTokens": 18000,
+          "latencySeconds": 120,
+          "conflictProbability": 0,
+          "verifiedSuccessProbability": 0.65,
+          "resourceUnits": 30,
+          "marginalResourceCost": 0,
+          "marginalSuccessGain": 0,
+          "marginalLatencyChangeSeconds": 0
+        },
+        {
+          "agents": 2,
+          "editors": 1,
+          "toolCalls": 24,
+          "contextTokens": 36000,
+          "latencySeconds": 75,
+          "conflictProbability": 0,
+          "verifiedSuccessProbability": 0.75,
+          "resourceUnits": 60,
+          "marginalResourceCost": 30,
+          "marginalSuccessGain": 0.1,
+          "marginalLatencyChangeSeconds": -45
+        },
+        {
+          "agents": 4,
+          "editors": 1,
+          "toolCalls": 48,
+          "contextTokens": 72000,
+          "latencySeconds": 52.5,
+          "conflictProbability": 0,
+          "verifiedSuccessProbability": 0.835,
+          "resourceUnits": 120,
+          "marginalResourceCost": 60,
+          "marginalSuccessGain": 0.085,
+          "marginalLatencyChangeSeconds": -22.5
+        }
+      ],
+      "verdict": "2 agents: +10.0pp modeled success and 45s faster, for +30 resource units. 4 agents: +8.5pp modeled success and 22.5s faster, for +60 resource units."
+    },
+    {
+      "taskClass": "cross-cutting-refactor",
+      "description": "Rename/shape change touching many files with shared state; edits, not just reads, parallelize.",
+      "independentSubtasks": 3,
+      "topologies": [
+        {
+          "agents": 1,
+          "editors": 1,
+          "toolCalls": 20,
+          "contextTokens": 25000,
+          "latencySeconds": 165,
+          "conflictProbability": 0,
+          "verifiedSuccessProbability": 0.55,
+          "resourceUnits": 45,
+          "marginalResourceCost": 0,
+          "marginalSuccessGain": 0,
+          "marginalLatencyChangeSeconds": 0
+        },
+        {
+          "agents": 2,
+          "editors": 2,
+          "toolCalls": 40,
+          "contextTokens": 50000,
+          "latencySeconds": 105,
+          "conflictProbability": 0.12,
+          "verifiedSuccessProbability": 0.592,
+          "resourceUnits": 90,
+          "marginalResourceCost": 45,
+          "marginalSuccessGain": 0.042,
+          "marginalLatencyChangeSeconds": -60
+        },
+        {
+          "agents": 4,
+          "editors": 3,
+          "toolCalls": 80,
+          "contextTokens": 100000,
+          "latencySeconds": 85,
+          "conflictProbability": 0.226,
+          "verifiedSuccessProbability": 0.598,
+          "resourceUnits": 180,
+          "marginalResourceCost": 90,
+          "marginalSuccessGain": 0.006,
+          "marginalLatencyChangeSeconds": -20
+        }
+      ],
+      "verdict": "2 agents: +4.2pp modeled success and 60s faster, for +45 resource units. 4 agents: 20s faster with no meaningful success change, for +90 resource units."
+    }
+  ],
+  "capacityAdvice": [
+    {
+      "scenario": "diverse-capacity",
+      "capacity": {
+        "distinctHealthyProviders": 4,
+        "minimumRouteConcurrency": 4
+      },
+      "advice4": {
+        "plannedParallelAgents": 4,
+        "recommendedParallelAgents": 4,
+        "shouldReduceParallelism": false,
+        "reasonCodes": [
+          "PROVIDER_CAPACITY_DIVERSE"
+        ]
+      },
+      "advice2": {
+        "plannedParallelAgents": 2,
+        "recommendedParallelAgents": 2,
+        "shouldReduceParallelism": false,
+        "reasonCodes": [
+          "PROVIDER_CAPACITY_DIVERSE"
+        ]
+      }
+    },
+    {
+      "scenario": "two-provider-capacity",
+      "capacity": {
+        "distinctHealthyProviders": 2,
+        "minimumRouteConcurrency": 4
+      },
+      "advice4": {
+        "plannedParallelAgents": 4,
+        "recommendedParallelAgents": 2,
+        "shouldReduceParallelism": true,
+        "reasonCodes": [
+          "PROVIDER_CONCENTRATION"
+        ]
+      },
+      "advice2": {
+        "plannedParallelAgents": 2,
+        "recommendedParallelAgents": 2,
+        "shouldReduceParallelism": false,
+        "reasonCodes": [
+          "PROVIDER_CAPACITY_DIVERSE"
+        ]
+      }
+    },
+    {
+      "scenario": "concentrated-one-provider",
+      "capacity": {
+        "distinctHealthyProviders": 1,
+        "minimumRouteConcurrency": 4
+      },
+      "advice4": {
+        "plannedParallelAgents": 4,
+        "recommendedParallelAgents": 1,
+        "shouldReduceParallelism": true,
+        "reasonCodes": [
+          "PROVIDER_CONCENTRATION"
+        ]
+      },
+      "advice2": {
+        "plannedParallelAgents": 2,
+        "recommendedParallelAgents": 1,
+        "shouldReduceParallelism": true,
+        "reasonCodes": [
+          "PROVIDER_CONCENTRATION"
+        ]
+      }
+    },
+    {
+      "scenario": "one-saturated-route-present",
+      "capacity": {
+        "distinctHealthyProviders": 2,
+        "minimumRouteConcurrency": 2,
+        "saturatedRoutes": 1
+      },
+      "advice4": {
+        "plannedParallelAgents": 4,
+        "recommendedParallelAgents": 2,
+        "shouldReduceParallelism": true,
+        "reasonCodes": [
+          "SATURATED_ROUTE_EXCLUDED",
+          "CAPACITY_CONCURRENCY_LIMIT",
+          "PROVIDER_CONCENTRATION"
+        ]
+      },
+      "advice2": {
+        "plannedParallelAgents": 2,
+        "recommendedParallelAgents": 2,
+        "shouldReduceParallelism": false,
+        "reasonCodes": [
+          "SATURATED_ROUTE_EXCLUDED"
+        ]
+      }
+    }
+  ],
+  "concentrationPenaltyIllustration": {
+    "taskClass": "multi-file-investigation",
+    "plannedAgents": 4,
+    "capacityScenario": "concentrated-one-provider",
+    "forgeGreenRecommendedAgents": 1,
+    "plannedIfIgnoredAdvice": {
+      "latencySeconds": 52.5,
+      "resourceUnits": 120
+    },
+    "realizedFollowingAdvice": {
+      "latencySeconds": 120,
+      "resourceUnits": 30
+    },
+    "note": "Following ForgeGreen's advice here saves resource cost for the same (or better, since the ignored 4-agent plan would have queued behind one provider's real concurrency ceiling anyway) realistic outcome."
+  }
+}
