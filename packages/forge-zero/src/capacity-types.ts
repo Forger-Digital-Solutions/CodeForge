@@ -10,6 +10,7 @@ export type SupplyClass =
   | "DISTRIBUTED_USER_FREE"
   | "DEPOSIT_UNLOCKED_FREE"
   | "PROMOTIONAL_FREE"
+  | "OWNER_DEV_FREE"
   | "TRIAL_CREDIT"
   | "OWNER_CREDIT_RESERVE"
   | "PAID";
@@ -58,7 +59,7 @@ export type CapacityScope =
   | "SPONSORED"
   | "UNKNOWN";
 
-export type CapacityUnit = "requests" | "input_tokens" | "output_tokens" | "neurons";
+export type CapacityUnit = "requests" | "input_tokens" | "output_tokens" | "neurons" | "concurrency" | "credits" | "provider_units";
 
 export interface CapacityWindow {
   unit: CapacityUnit;
@@ -116,6 +117,9 @@ export interface TaskDemandProfile {
   requests: number;
   inputTokens: number;
   outputTokens: number;
+  concurrency?: number;
+  credits?: number;
+  providerUnits?: number;
   roleRequests: Readonly<Record<string, number>>;
 }
 
@@ -129,6 +133,9 @@ export interface TaskCapacityEstimate {
   expectedToolCalls: number;
   expectedInputTokens: number;
   expectedOutputTokens: number;
+  expectedConcurrentRequests?: number;
+  expectedCredits?: number;
+  expectedProviderUnits?: number;
   roleRequests: Readonly<Record<string, number>>;
 }
 
@@ -194,6 +201,9 @@ export interface CapacityForecastRoute {
   exclusionReason?: string;
   availableRequests: number;
   availableTokens: number;
+  availableConcurrent: number;
+  availableCredits: number;
+  availableProviderUnits: number;
   estimatedTaskUnits: number;
   capacityPoolId?: string;
   capacityPoolScope?: CapacityPoolScope;

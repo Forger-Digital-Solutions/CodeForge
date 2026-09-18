@@ -62,6 +62,7 @@ export function freeRouteExclusionReason(
   if (route.supplyClass === "PAID") return "PAID_INFERENCE_DENIED";
   if (route.supplyClass === "TRIAL_CREDIT") return "TRIAL_CREDIT_NOT_PRODUCT_FREE";
   if (route.supplyClass === "PROMOTIONAL_FREE") return "PROMOTIONAL_FREE_NOT_BASELINE";
+  if (route.supplyClass === "OWNER_DEV_FREE") return "OWNER_DEV_FREE_NOT_PRODUCT_FREE";
   if (route.supplyClass === "OWNER_CREDIT_RESERVE") return "OWNER_CREDIT_RESERVE_NOT_PRODUCT_FREE";
   if (route.supplyClass === "DEPOSIT_UNLOCKED_FREE" && !policy.allowDepositUnlockedFree) return "DEPOSIT_UNLOCKED_FREE_NOT_AUTHORIZED";
   if (route.supplyClass === "DISTRIBUTED_USER_FREE" && !policy.allowDistributedUserFree) return "DISTRIBUTED_USER_FREE_NOT_AUTHORIZED";
@@ -71,5 +72,5 @@ export function freeRouteExclusionReason(
 
 /** Whether a supply class is a zero-cash inference class, irrespective of product eligibility. */
 export function supplyClassIsZeroCash(source: SupplyClass): boolean {
-  return source === "PURE_MANAGED_FREE" || source === "DISTRIBUTED_USER_FREE" || source === "DEPOSIT_UNLOCKED_FREE" || source === "PROMOTIONAL_FREE";
+  return source === "PURE_MANAGED_FREE" || source === "DISTRIBUTED_USER_FREE" || source === "DEPOSIT_UNLOCKED_FREE" || source === "PROMOTIONAL_FREE" || source === "OWNER_DEV_FREE";
 }

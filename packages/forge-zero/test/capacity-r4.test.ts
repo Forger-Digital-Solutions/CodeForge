@@ -80,6 +80,25 @@ describe("R4 ForgeZero capacity accounting", () => {
     expect(isFreeRouteEligible(route({ paidFallbackDisabled: false }))).toBe(false);
   });
 
+  it("keeps owner development free out of Managed Free and accounts for concurrency", () => {
+    expect(isFreeRouteEligible(route({ supplyClass: "OWNER_DEV_FREE" }))).toBe(false);
+
+    const constrained = route({
+      windows: [
+        ...route().windows,
+        { unit: "concurrency", limit: 1, remaining: 1, resetAt: RESET, scope: "ORG", observedAt: new Date(NOW).toISOString(), authoritative: true },
+      ],
+    });
+    const forecast = forecastCapacity({ routes: [constrained], taskDemand: { ...demand, concurrency: 1 }, now: NOW });
+    expect(forecast.estimatedTaskUnits).toBe(1);
+    expect(forecast.routes[0]?.availableConcurrent).toBe(1);
+
+    const ledger = new CapacityReservationLedger({ routes: [constrained], now: () => NOW });
+    const request = (id: string) => ({ reservationId: id, userId: id, routeIds: [constrained.routeId], role: "coder", taskKind: "normal", requests: 1, inputTokens: 100, outputTokens: 50, isNewUser: false, priority: "normal" as const, createdAt: new Date(NOW).toISOString(), leaseUntil: new Date(NOW + 10_000).toISOString() });
+    expect(ledger.reserve(request("first")).admitted).toBe(true);
+    expect(ledger.reserve(request("second")).reason).toBe("CAPACITY_EXHAUSTED");
+  });
+
   it("uses an authoritative physical pool once across models and separately protects output quota", () => {
     const pool: ProviderCapacityPool = {
       poolId: "groq-org",

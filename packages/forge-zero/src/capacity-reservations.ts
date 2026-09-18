@@ -71,23 +71,30 @@ export class CapacityReservationLedger {
       const requestWindow = windows.filter((window) => window.unit === "requests").sort((a, b) => a.remaining - b.remaining)[0];
       const inputWindows = windows.filter((window) => window.unit === "input_tokens");
       const outputWindows = windows.filter((window) => window.unit === "output_tokens");
+      const concurrencyWindows = windows.filter((window) => window.unit === "concurrency");
       const inputRemaining = inputWindows.length === 0
         ? 0
         : Math.min(...inputWindows.map((window) => window.remaining));
       // A provider that reports one undifferentiated token window can still serve output; use
       // the input window as the conservative shared ceiling until a separate output header exists.
       const outputRemaining = outputWindows.length === 0 ? inputRemaining : Math.min(...outputWindows.map((window) => window.remaining));
+      const concurrencyRemaining = concurrencyWindows.length === 0 ? undefined : Math.min(...concurrencyWindows.map((window) => window.remaining));
       const requestRemaining = requestWindow?.remaining ?? 0;
       const reservedFloorRequests = request.isNewUser ? 0 : this.firstRunReserveRequests;
       const reservedFloorTokens = request.isNewUser ? 0 : this.firstRunReserveTokens;
       const availableRequests = requestRemaining - activeRequests - reservedFloorRequests;
       const availableInputTokens = inputRemaining - activeInputTokens - reservedFloorTokens;
       const availableOutputTokens = outputRemaining - activeOutputTokens - reservedFloorTokens;
-      if (request.requests <= availableRequests && request.inputTokens <= availableInputTokens && request.outputTokens <= availableOutputTokens) {
+      const availableConcurrency = concurrencyRemaining === undefined ? undefined : concurrencyRemaining - active.length;
+      if (request.requests <= availableRequests
+        && request.inputTokens <= availableInputTokens
+        && request.outputTokens <= availableOutputTokens
+        && (availableConcurrency === undefined || availableConcurrency >= 1)) {
         this.reservations.set(request.reservationId, { request, routeId, admittedAt: nowIso(this.clock) });
         return { admitted: true, reservationId: request.reservationId, routeId, reason: "ADMITTED" };
       }
       if (!request.isNewUser
+        && (this.firstRunReserveRequests > 0 || this.firstRunReserveTokens > 0)
         && requestRemaining - activeRequests >= request.requests
         && inputRemaining - activeInputTokens >= request.inputTokens
         && outputRemaining - activeOutputTokens >= request.outputTokens) {

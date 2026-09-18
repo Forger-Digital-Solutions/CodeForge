@@ -44,8 +44,11 @@ ForgeAuto/Free.
   "free credits" are purchase-dependent bonus credits, so they are not a Free Cloud pool.
 - Kilo's official gateway documentation states that exact `:free` models have $0 pricing and that
   anonymous and authenticated free-model traffic is limited to 200 requests/hour/IP. It also says
-  the live model endpoint is unauthenticated. The browser extension blocked the catalog request,
-  so no exact current model IDs or price records were captured during this pass.
+  the live model endpoint is unauthenticated. The authenticated Kilo profile observed the current
+  exact-free pool on 2026-09-18 as `poolside/laguna-s-2.1:free`,
+  `cohere/north-mini-code:free`, `dots-studio/dots-3-note-preview:free`, and
+  `stepfun/step-3.7-flash:free`; `tencent/hy3:free` was marked unavailable. `openrouter/free`
+  remains an auto-router and is excluded.
 - Kilo explicitly warns that Auto Free can send content to providers that log or improve from
   prompts. Auto routing is therefore prohibited; only future exact-model records can qualify.
   See [models and providers](https://kilo.ai/docs/gateway/models-and-providers) and
@@ -102,9 +105,12 @@ ForgeAuto/Free.
 
 ## OpenRouter
 
-- The current activity view shows $0 spend for the selected period, but the credit view did not
-  establish a qualifying existing balance. R14 therefore did not treat the account as
-  `DEPOSIT_UNLOCKED_FREE` capacity.
+- The authenticated credit view shows `$25.00` available Pay-as-you-go balance and two existing
+  transactions (`$10.00` on 2026-09-15 and `$15.00` on 2026-09-17). No new credit was added by
+  R14. This is account evidence for the documented higher exact-`:free` allowance, not permission
+  to consume the deposit or to route paid models. R14 classifies the higher tier as
+  `DEPOSIT_UNLOCKED_FREE` and keeps it outside default Managed Free until runtime allowance and
+  intermediary policy are reconciled.
 - Existing provider policy records document low no-deposit `:free` allowance and a higher allowance
   unlocked by an existing qualifying balance. This must be reconfirmed against the live account and
   runtime headers before any capacity is counted. Every future route must exact-pin a `:free` model
@@ -124,15 +130,22 @@ ForgeAuto/Free.
   $0 managed inference or a hard no-charge fallback.
 - Ollama publishes a zero-data-retention / no-training claim for Cloud prompts and responses, but
   that does not establish permission for CodeForge to relay one owner account to other users.
-- The direct Cloud transport is registered as a `PROMOTIONAL_CREDIT` candidate with
-  `LEGAL_REVIEW_REQUIRED` terms. It is excluded from ForgeAuto/Free and from capacity totals. No
-  key was created, stored, or used, and the authenticated account's remaining starter usage is
-  still pending a sanitized subscription/usage observation.
+- The authenticated Usage page observed on 2026-09-18 shows the Free plan's six eligible cloud
+  models (`gemma4:31b`, `gpt-oss:120b`, `gpt-oss:20b`, `nemotron-3-nano:30b`,
+  `nemotron-3-super`, and `nemotron-3-ultra`), `0%` free usage used, a provider-displayed reset
+  horizon of five days, `$0` usage-credit balance, and Auto-reload `Off`. The account page does
+  not expose the monthly token-credit amount or an exact API hard-stop receipt, so token capacity
+  remains unknown. The Terms page (last updated May 2026) prohibits automated access without
+  permission and does not clear a CodeForge-managed multi-user relay. R14 therefore records an
+  `OWNER_DEV_FREE` candidate with one observed concurrent Cloud request, excludes it from
+  ForgeAuto/Free, and does not create or use a key.
 - Sources: [Ollama pricing](https://ollama.com/pricing), [Cloud API authentication](https://github.com/ollama/ollama/blob/main/docs/api/authentication.mdx), and [Cloud API documentation](https://github.com/ollama/ollama/blob/main/docs/cloud.mdx).
 
 ## Aggregate R14 Status
 
-There are currently **zero production-approved Managed Free pools** added by R14. This is the
+There are currently **zero production-approved Managed Free pools** added by R14. There is one
+bounded, owner-only `OWNER_DEV_FREE` candidate (Ollama Cloud) with unknown token-credit capacity;
+it is not product capacity. This is the
 correct fail-closed result: account dashboards revealed trial, paid-spillover, privacy, plan, and
 terms constraints that cannot be represented as safe user capacity. The capacity model and
 evidence now preserve those constraints for the next qualification passes.

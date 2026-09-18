@@ -11,3 +11,8 @@ $0 request price, and paid fallback disabled.
 
 The current account observations are in
 [ACCOUNT-CAPACITY-CARDS-2026-09-18.md](ACCOUNT-CAPACITY-CARDS-2026-09-18.md).
+
+The certification result is in
+[R14-FREE-CLOUD-FINAL-REPORT.md](R14-FREE-CLOUD-FINAL-REPORT.md). Provider-normalized cards are
+under [providers](providers/), and the benchmark gate is recorded under
+[benchmark-preflight](benchmark-preflight/CODEFORGE-BENCH-40-PREFLIGHT-2026-09-18.md).

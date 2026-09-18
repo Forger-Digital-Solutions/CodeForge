@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "45d31185f356034a6d49dacdae65d0c83dd750bc806e65b1865cf12a4f6b8f25",
-  "surfaceVersion": "r13-intelligence-recovery-v1",
+  "sourceStateId": "e88bea3a25581ba7d55c491cfeafbfb576615bd577c54154704d91439640ce73",
+  "surfaceVersion": "r14-free-cloud-capacity-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -55,9 +55,9 @@
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
     "packages/router/package.json": "b2b596febe0eab8a591ed016e9783170c35ed096",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
-    "packages/secrets/src/index.ts": "521f14fffd2b92e5952f443a08f6556430e7c67d",
+    "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/src/agent-runtime.ts": "7889b4701404c50da6bb532856a9f8b377b7d6c4",
-    "packages/server/src/autonomous-orchestrator.ts": "83166287da2991d7900eebb0a9c27e328c1c0015",
+    "packages/server/src/autonomous-orchestrator.ts": "548e235188b864168ce7e67c45463a55d7713546",
     "packages/server/src/duplicate-suppression.ts": "f6108024990ce604cc589f1be9a7bf1e1eb43e0a",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "5390826f640ae06fb46c6f48a550175cd7cb5897",
@@ -745,18 +745,41 @@
       "regressionEvidence": "R13 focused shadow, privacy, tenant-isolation, deterministic capacity, paid-budget, and topology suites passed before recertification; FG-11 and FG-12E sentinels are rerun immediately after this guarded update.",
       "recertifiedAt": "2026-09-18T08:06:37.113Z",
       "sourceStateConstant": "CODEFORGE_R13_INTELLIGENCE_RECOVERY_SOURCE_STATE"
+    },
+    {
+      "label": "R14 Free Cloud capacity source-state reconciliation",
+      "reason": "The R14 handoff was clean, but the committed source-state manifest contained stale hashes for two existing material files. Their current content matches HEAD and was reconciled before the final regression; R14 capacity changes remain outside the ForgeGreen material surface.",
+      "priorSourceStateId": "45d31185f356034a6d49dacdae65d0c83dd750bc806e65b1865cf12a4f6b8f25",
+      "priorSurfaceVersion": "r13-intelligence-recovery-v1",
+      "resultingSourceStateId": "e88bea3a25581ba7d55c491cfeafbfb576615bd577c54154704d91439640ce73",
+      "resultingSurfaceVersion": "r14-free-cloud-capacity-v1",
+      "changes": [
+        {
+          "file": "packages/secrets/src/index.ts",
+          "change": "Recomputed the certified hash from the existing repository content; no production source edit was made in this file.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "Recomputed the certified hash from the existing repository content; no production source edit was made in this file.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Full Vitest completed with the two source-state sentinels failing only on the stale manifest; the sentinels are rerun after this guarded reconciliation.",
+      "recertifiedAt": "2026-09-18T15:40:17.393Z",
+      "sourceStateConstant": "CODEFORGE_R14_FREE_CLOUD_CAPACITY_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above, and the R6 product-hardening recertification above, and the R11 durable final-response recertification above, and the R11 PostgreSQL hosted-workflow recertification above, and the R11.4 definitive-POST recertification above, and the R13 intelligence and recovery recertification above.",
-  "recertifiedAt": "2026-09-18T08:06:37.114Z",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above, and the R6 product-hardening recertification above, and the R11 durable final-response recertification above, and the R11 PostgreSQL hosted-workflow recertification above, and the R11.4 definitive-POST recertification above, and the R13 intelligence and recovery recertification above, and the R14 Free Cloud capacity reconciliation above.",
+  "recertifiedAt": "2026-09-18T15:40:17.394Z",
   "recertification": {
-    "phase": "R13 intelligence and recovery",
-    "reason": "Reviewed R13 material source changes after source freeze; historical R11/R12 evidence remains untouched.",
+    "phase": "R14 Free Cloud capacity",
+    "reason": "Reconcile pre-existing certified-source hashes before final regression.",
     "changedFiles": [
-      "packages/server/src/agent-runtime.ts",
-      "packages/sessions/src/session-state.ts"
+      "packages/secrets/src/index.ts",
+      "packages/server/src/autonomous-orchestrator.ts"
     ],
-    "priorSourceStateId": "bd3d3f943a3e986ae0c58f9aae8665df3732549482e8d7015e1c9a3c19b9d2a3",
+    "priorSourceStateId": "45d31185f356034a6d49dacdae65d0c83dd750bc806e65b1865cf12a4f6b8f25",
     "guarded": true
   }
 }

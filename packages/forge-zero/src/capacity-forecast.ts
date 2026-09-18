@@ -38,10 +38,16 @@ function taskUnits(windows: readonly CapacityWindow[], demand: TaskDemandProfile
   const requests = available(windows, "requests");
   const input = available(windows, "input_tokens");
   const output = available(windows, "output_tokens");
+  const concurrency = available(windows, "concurrency");
+  const credits = available(windows, "credits");
+  const providerUnits = available(windows, "provider_units");
   const dimensions = [
     requests === undefined ? Number.POSITIVE_INFINITY : Math.floor(requests / Math.max(1, demand.requests)),
     demand.inputTokens <= 0 || input === undefined ? Number.POSITIVE_INFINITY : Math.floor(input / demand.inputTokens),
     demand.outputTokens <= 0 || output === undefined ? Number.POSITIVE_INFINITY : Math.floor(output / demand.outputTokens),
+    demand.concurrency === undefined || concurrency === undefined ? Number.POSITIVE_INFINITY : Math.floor(concurrency / Math.max(1, demand.concurrency)),
+    demand.credits === undefined || credits === undefined ? Number.POSITIVE_INFINITY : Math.floor(credits / Math.max(1, demand.credits)),
+    demand.providerUnits === undefined || providerUnits === undefined ? Number.POSITIVE_INFINITY : Math.floor(providerUnits / Math.max(1, demand.providerUnits)),
   ];
   const result = Math.min(...dimensions);
   return Number.isFinite(result) ? Math.max(0, result) * multiplier : 0;
@@ -79,6 +85,9 @@ export function forecastCapacity(input: CapacityForecastInput): CapacityForecast
         exclusionReason,
         availableRequests: 0,
         availableTokens: 0,
+        availableConcurrent: 0,
+        availableCredits: 0,
+        availableProviderUnits: 0,
         estimatedTaskUnits: 0,
         capacityPoolId: route.capacityPoolId,
         capacityPoolScope: route.capacityPoolScope,
@@ -95,6 +104,9 @@ export function forecastCapacity(input: CapacityForecastInput): CapacityForecast
         exclusionReason: "CAPACITY_POOL_IDENTITY_MISMATCH",
         availableRequests: 0,
         availableTokens: 0,
+        availableConcurrent: 0,
+        availableCredits: 0,
+        availableProviderUnits: 0,
         estimatedTaskUnits: 0,
         capacityPoolId: route.capacityPoolId,
         capacityPoolScope: route.capacityPoolScope,
@@ -125,6 +137,9 @@ export function forecastCapacity(input: CapacityForecastInput): CapacityForecast
     const requestCapacity = available(windows, "requests") ?? 0;
     const inputCapacity = available(windows, "input_tokens");
     const outputCapacity = available(windows, "output_tokens");
+    const concurrentCapacity = available(windows, "concurrency") ?? 0;
+    const creditsCapacity = available(windows, "credits") ?? 0;
+    const providerUnitsCapacity = available(windows, "provider_units") ?? 0;
     const tokenCapacity = inputCapacity === undefined && outputCapacity === undefined
       ? Number.MAX_SAFE_INTEGER
       : Math.min(inputCapacity ?? Number.MAX_SAFE_INTEGER, outputCapacity ?? Number.MAX_SAFE_INTEGER);
@@ -137,6 +152,9 @@ export function forecastCapacity(input: CapacityForecastInput): CapacityForecast
         eligible: true,
         availableRequests: requestCapacity,
         availableTokens: tokenCapacity,
+        availableConcurrent: concurrentCapacity,
+        availableCredits: creditsCapacity,
+        availableProviderUnits: providerUnitsCapacity,
         estimatedTaskUnits: countedInPool ? units : 0,
         capacityPoolId: poolId,
         capacityPoolScope: scope,
@@ -178,6 +196,9 @@ export function forecastCapacity(input: CapacityForecastInput): CapacityForecast
       exclusionReason: "NO_CAPACITY_ROUTE",
       availableRequests: 0,
       availableTokens: 0,
+      availableConcurrent: 0,
+      availableCredits: 0,
+      availableProviderUnits: 0,
       estimatedTaskUnits: 0,
       capacityPoolId: route.capacityPoolId,
       capacityPoolScope: route.capacityPoolScope,

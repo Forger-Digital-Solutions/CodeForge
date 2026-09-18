@@ -11,6 +11,9 @@ function demandFrom(estimate: CapacityPreflightInput["estimate"]): TaskDemandPro
     requests: Math.max(1, Math.ceil(estimate.expectedModelTurns + estimate.expectedRetryCalls + estimate.expectedVerificationCalls)),
     inputTokens: Math.max(0, Math.ceil(estimate.expectedInputTokens)),
     outputTokens: Math.max(0, Math.ceil(estimate.expectedOutputTokens)),
+    ...(estimate.expectedConcurrentRequests !== undefined ? { concurrency: Math.max(1, Math.ceil(estimate.expectedConcurrentRequests)) } : {}),
+    ...(estimate.expectedCredits !== undefined ? { credits: Math.max(0, estimate.expectedCredits) } : {}),
+    ...(estimate.expectedProviderUnits !== undefined ? { providerUnits: Math.max(0, estimate.expectedProviderUnits) } : {}),
     roleRequests: estimate.roleRequests,
   };
 }
