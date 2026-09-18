@@ -25,6 +25,40 @@ afterEach(() => {
 });
 
 describe("OpenRouterAdapter — 8-Bit provider-native fallback wiring", () => {
+  it("forwards a 429 quota observation and preserves Retry-After for capacity control", async () => {
+    vi.spyOn(Date, "now").mockReturnValue(1_000);
+    const observations: Array<{ providerId: string; modelId?: string; status: number; headers: Array<[string, string]> }> = [];
+    const adapter = new OpenRouterAdapter({
+      credentialStore: fakeCredentials,
+      fetchFn: vi.fn().mockResolvedValue(new Response("free allowance exhausted", {
+        status: 429,
+        headers: {
+          "retry-after": "7",
+          "x-ratelimit-remaining-requests": "0",
+          "x-ratelimit-reset-requests": "2026-09-19T00:00:00.000Z",
+        },
+      })),
+      onResponse: (observation) => observations.push(observation),
+    });
+
+    await expect(adapter.chat({ model: "primary-model", messages: [{ role: "user", content: "hi" }] })).rejects.toMatchObject({
+      code: "RATE_LIMITED",
+      status: 429,
+      retryAfter: 8_000,
+    });
+    expect(observations).toEqual([{
+      providerId: "openrouter",
+      modelId: "primary-model",
+      status: 429,
+      observedAt: 1_000,
+      headers: [
+        ["retry-after", "7"],
+        ["x-ratelimit-remaining-requests", "0"],
+        ["x-ratelimit-reset-requests", "2026-09-19T00:00:00.000Z"],
+      ],
+    }]);
+  });
+
   it("[PASS] omits `models` entirely when no fallback candidates are supplied (unchanged existing request shape)", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(chatResponseBody));
     vi.stubGlobal("fetch", fetchMock);

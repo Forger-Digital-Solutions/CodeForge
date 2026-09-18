@@ -1036,6 +1036,9 @@ export class AgentRuntime {
             taskType: req.role,
             hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
             routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
+            capacityScoreAdjustment: this.freeCloud
+              ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
+              : undefined,
           },
           { runId: req.runId, agentId: req.agentId },
         );
@@ -1119,6 +1122,9 @@ export class AgentRuntime {
               estimatedContextTokens: failingModel?.contextWindow ?? budget.maxContextTokens,
               hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
               routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
+              capacityScoreAdjustment: this.freeCloud
+                ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
+                : undefined,
             });
             if (outcome.action !== "retry_same" && outcome.action !== "surface") {
               const retryAfter = (err as { retryAfter?: unknown }).retryAfter;
@@ -3535,6 +3541,9 @@ export class AgentRuntime {
       estimatedContextTokens,
       hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
       routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
+      capacityScoreAdjustment: this.freeCloud
+        ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
+        : undefined,
     });
 
     // Shared (cross-session) 8-Bit health: the registry and Settings see the same cooldown the

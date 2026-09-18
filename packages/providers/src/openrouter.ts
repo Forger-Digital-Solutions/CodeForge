@@ -1,5 +1,5 @@
 import type { CredentialStore } from "./index.js";
-import { ProviderError, EnvironmentCredentialStore } from "./index.js";
+import { ProviderError, EnvironmentCredentialStore, quotaHeadersOf, type ProviderResponseObserver } from "./index.js";
 import { redactSecrets } from "./redact.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
 
@@ -38,6 +38,10 @@ export interface OpenRouterOptions {
   credentialStore?: CredentialStore;
   baseUrl?: string;
   timeoutMs?: number;
+  /** Receives response status and quota headers; neither prompt text nor credentials are exposed. */
+  onResponse?: ProviderResponseObserver;
+  /** Injectable transport for deterministic provider-capacity contract tests. */
+  fetchFn?: typeof fetch;
 }
 
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
@@ -47,6 +51,8 @@ export class OpenRouterAdapter implements ProviderAdapter {
   private readonly credentialStore: CredentialStore;
   private readonly baseUrl: string;
   private readonly timeoutMs: number;
+  private readonly onResponse?: ProviderResponseObserver;
+  private readonly fetchFn: typeof fetch;
   private modelCache: ProviderModel[] | null = null;
   private modelCacheTime: number = 0;
   private readonly cacheTtlMs = 60000;
@@ -55,6 +61,8 @@ export class OpenRouterAdapter implements ProviderAdapter {
     this.credentialStore = options.credentialStore ?? new EnvironmentCredentialStore();
     this.baseUrl = options.baseUrl ?? OPENROUTER_BASE_URL;
     this.timeoutMs = options.timeoutMs ?? 60000;
+    this.onResponse = options.onResponse;
+    this.fetchFn = options.fetchFn ?? fetch;
   }
 
   async listModels(): Promise<ProviderModel[]> {
@@ -66,11 +74,12 @@ export class OpenRouterAdapter implements ProviderAdapter {
     const apiKey = this.getApiKey();
 
     try {
-      const response = await fetch(`${this.baseUrl}/models`, {
+      const response = await this.fetchFn(`${this.baseUrl}/models`, {
         headers: {
           Authorization: `Bearer ${apiKey}`,
         },
       });
+      this.observe(response);
 
       if (!response.ok) {
         throw new ProviderError(
@@ -131,7 +140,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
 
     try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      const response = await this.fetchFn(`${this.baseUrl}/chat/completions`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
@@ -144,10 +153,11 @@ export class OpenRouterAdapter implements ProviderAdapter {
       });
 
       clearTimeout(timeout);
+      this.observe(response, req.model);
 
       if (!response.ok) {
         const errorBody = await response.text();
-        throw this.handleError(response.status, errorBody);
+        throw this.handleError(response.status, errorBody, response);
       }
 
       const data = (await response.json()) as OpenRouterChatResponse;
@@ -161,6 +171,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
       throw new ProviderError(
         `Chat request failed: ${error instanceof Error ? error.message : String(error)}`,
         "CHAT_FAILED",
+        true,
       );
     }
   }
@@ -180,7 +191,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
       : controller.signal;
 
     try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      const response = await this.fetchFn(`${this.baseUrl}/chat/completions`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
@@ -193,10 +204,11 @@ export class OpenRouterAdapter implements ProviderAdapter {
       });
 
       clearTimeout(timeout);
+      this.observe(response, req.model);
 
       if (!response.ok) {
         const errorBody = await response.text();
-        throw this.handleError(response.status, errorBody);
+        throw this.handleError(response.status, errorBody, response);
       }
 
       if (!response.body) {
@@ -208,6 +220,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
       let buffer = "";
       let currentToolCall: { id: string; name: string; arguments: string } | null = null;
       let receivedUsableOutput = false;
+      let receivedDone = false;
       // The upstream's own finish reason, when it is one the stream contract can express; a
       // truncated ("length") or filtered answer must not be reported as a clean "stop".
       let finishReason: "stop" | "tool_calls" | "length" | "content_filter" | "error" = "stop";
@@ -224,6 +237,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
           if (!line.startsWith("data: ")) continue;
           const data = line.slice(6);
           if (data === "[DONE]") {
+            receivedDone = true;
             if (!receivedUsableOutput) {
               yield {
                 type: "error",
@@ -253,7 +267,14 @@ export class OpenRouterAdapter implements ProviderAdapter {
             if (parsed.error) {
               const message = typeof parsed.error.message === "string" ? parsed.error.message : "upstream stream error";
               const code = String(parsed.error.code ?? "STREAM_ERROR");
-              yield { type: "error", code, message: `OpenRouter stream error (${code}): ${message}`, retryable: /^(5\d\d|429)$/.test(code) };
+              const status = Number(code);
+              yield {
+                type: "error",
+                code,
+                message: `OpenRouter stream error (${code}): ${message}`,
+                retryable: /^(5\d\d|429)$/.test(code),
+                ...(Number.isInteger(status) && status >= 100 && status <= 599 ? { status } : {}),
+              };
               return;
             }
             const choice = parsed.choices?.[0];
@@ -329,6 +350,15 @@ export class OpenRouterAdapter implements ProviderAdapter {
         };
         return;
       }
+      if (!receivedDone) {
+        yield {
+          type: "error",
+          code: "STREAM_INTERRUPTED",
+          message: "OpenRouter stream ended before its terminal [DONE] marker.",
+          retryable: true,
+        };
+        return;
+      }
       yield { type: "finish", finishReason };
     } catch (error) {
       clearTimeout(timeout);
@@ -347,7 +377,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
   async healthCheck(): Promise<ProviderHealthResponse> {
     try {
       const apiKey = this.getApiKey();
-      const response = await fetch(`${this.baseUrl}/models`, {
+      const response = await this.fetchFn(`${this.baseUrl}/models`, {
         method: "GET",
         headers: { Authorization: `Bearer ${apiKey}` },
       });
@@ -453,16 +483,34 @@ export class OpenRouterAdapter implements ProviderAdapter {
     };
   }
 
-  private handleError(status: number, body: string): ProviderError {
+  private observe(response: Response, modelId?: string): void {
+    if (!this.onResponse) return;
+    try {
+      this.onResponse({
+        providerId: this.providerId,
+        modelId,
+        status: response.status,
+        headers: quotaHeadersOf(response),
+        observedAt: Date.now(),
+      });
+    } catch {
+      // Capacity observation is advisory and must never change request semantics.
+    }
+  }
+
+  private handleError(status: number, body: string, response?: Response): ProviderError {
     let retryable = false;
     let code = "PROVIDER_ERROR";
 
-    if (status === 401) {
+    if (status === 401 || status === 403) {
       code = "AUTH_ERROR";
     } else if (status === 402) {
       code = "PAYMENT_REQUIRED";
     } else if (status === 404) {
       code = "MODEL_NOT_FOUND";
+    } else if (status === 408) {
+      code = "TIMEOUT";
+      retryable = true;
     } else if (status === 429) {
       code = "RATE_LIMITED";
       retryable = true;
@@ -478,6 +526,10 @@ export class OpenRouterAdapter implements ProviderAdapter {
       `OpenRouter error (${status}): ${redactSecrets(body, this.credentialStore.get("openrouter")).slice(0, 200)}`,
       code,
       retryable,
+      {
+        status,
+        ...(status === 429 ? { retryAfter: retryAfterFrom(response) } : {}),
+      },
     );
   }
 
@@ -488,6 +540,15 @@ export class OpenRouterAdapter implements ProviderAdapter {
     b.addEventListener("abort", abort);
     return controller.signal;
   }
+}
+
+function retryAfterFrom(response: Response | undefined): number | undefined {
+  const raw = response?.headers.get("retry-after");
+  if (!raw) return undefined;
+  const seconds = Number(raw);
+  if (Number.isFinite(seconds)) return Date.now() + Math.max(0, seconds * 1_000);
+  const date = Date.parse(raw);
+  return Number.isFinite(date) ? date : undefined;
 }
 
 interface OpenRouterModel {

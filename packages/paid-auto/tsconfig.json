@@ -8,6 +8,8 @@
   "include": ["src/**/*"],
   "exclude": ["test", "dist"],
   "references": [
-    { "path": "../providers" }
+    { "path": "../core" },
+    { "path": "../providers" },
+    { "path": "../sessions" }
   ]
 }

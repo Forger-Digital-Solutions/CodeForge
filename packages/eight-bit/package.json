@@ -28,7 +28,8 @@
     "@codeforge/context": "*",
     "zod": "^3.24.0",
     "uuid": "^14.0.2",
-    "@codeforge/providers": "*"
+    "@codeforge/providers": "*",
+    "@codeforge/intelligence": "*"
   },
   "devDependencies": {
     "vitest": "^5.0.1",

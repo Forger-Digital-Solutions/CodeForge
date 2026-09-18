@@ -74,6 +74,25 @@ describe("Adaptive Topology — Deterministic Topology Selection & Baseline Pres
     expect(refactor.topology).toBe("complex");
   });
 
+  it("reduces automatic two-explorer topology when 8-Bit observes only one constrained provider", () => {
+    const plan = resolveAdaptiveTopology({
+      goal: "Refactor architecture across packages",
+      providerCapacity: { distinctHealthyProviders: 1, minimumRouteConcurrency: 1, saturatedRoutes: 1 },
+    });
+    expect(plan.topology).toBe("normal");
+    expect(plan.reason).toContain("CAPACITY_CONCURRENCY_LIMIT");
+    expect(plan.requiresForgeVerify).toBe(true);
+  });
+
+  it("does not let capacity advice override an explicit topology request", () => {
+    const plan = resolveAdaptiveTopology({
+      goal: "Any goal",
+      requestedTopology: "complex",
+      providerCapacity: { distinctHealthyProviders: 1, minimumRouteConcurrency: 1 },
+    });
+    expect(plan.topology).toBe("complex");
+  });
+
   it("strictly enforces that requiresForgeVerify is true across ALL topologies", () => {
     const topologies = ["fixed_r1", "tiny", "normal", "complex", "vision"] as const;
     for (const topo of topologies) {

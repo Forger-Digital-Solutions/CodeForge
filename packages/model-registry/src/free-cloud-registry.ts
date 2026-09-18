@@ -1,4 +1,5 @@
 import type { FreeModelRecord, ForgeZero, PrivacyClass, AccessClass } from "@codeforge/forge-zero";
+import type { ModelIdentity, ProviderIdentity } from "@codeforge/core";
 import { verifyModelEligibility, FREE_ACCESS_CLASSES } from "@codeforge/forge-zero";
 import type { ModelQualificationReceipt } from "@codeforge/eight-bit";
 import { canonicalIdentityFor, type CanonicalIdentity } from "./canonical.js";
@@ -85,6 +86,10 @@ export interface AdmissionResult {
 
 export type RouteHealth = "HEALTHY" | "DEGRADED" | "COOLDOWN" | "UNAVAILABLE" | "INELIGIBLE" | "AUTH_REQUIRED" | "QUOTA_EXHAUSTED" | "UNKNOWN";
 
+/** Stable product state for capacity-aware routing and UI. It maps detailed internal health
+ * evidence into the R13 lifecycle without weakening the underlying admission gates. */
+export type FreeRouteOperationalState = "HEALTHY" | "DEGRADED" | "PROBATION" | "SATURATED" | "QUARANTINED" | "UNAVAILABLE";
+
 export type QualificationState = "QUALIFIED" | "PROBATION" | "NOT_QUALIFIED" | "HARD_FAILURE" | "NOT_TESTED" | "STALE";
 
 /** Product-facing model roles (R1 §11). Mapped from 8-Bit's internal role contracts. */
@@ -111,6 +116,9 @@ export interface RouteQuota {
 
 export interface ProviderRouteView {
   routeId: string;
+  /** Canonical CodeForge and provider identities are both retained; aliases never replace either. */
+  modelIdentity: ModelIdentity;
+  providerIdentity: ProviderIdentity;
   canonicalModelId: string;
   providerId: string;
   providerDisplayName: string;
@@ -132,6 +140,7 @@ export interface ProviderRouteView {
   privacyClass?: PrivacyClass;
   termsStatus: TermsStatus;
   health: RouteHealth;
+  capacityState: FreeRouteOperationalState;
   cooldownUntil?: number;
   qualificationState: QualificationState;
   roles: ModelRole[];
@@ -284,6 +293,34 @@ function healthFrom(model: FreeModelRecord | undefined, live: { status: RouteHea
 }
 
 /**
+ * A successful response can expose an exhausted allowance before a 429 is issued.  Treat that
+ * provider-provided observation as a temporary hard admission fact, but only while its explicit
+ * reset horizon is still in the future.  This deliberately never manufactures a quota or reset.
+ */
+function healthWithObservedQuota(
+  health: { health: RouteHealth; cooldownUntil?: number },
+  quota: RouteQuota | undefined,
+  now: Date,
+): { health: RouteHealth; cooldownUntil?: number } {
+  if (health.health !== "HEALTHY" && health.health !== "DEGRADED" && health.health !== "UNKNOWN") return health;
+  const resetAt = quota?.resetAt === undefined ? Number.NaN : Date.parse(quota.resetAt);
+  const exhausted = quota?.remainingRequests === 0 || quota?.remainingTokens === 0;
+  if (exhausted && Number.isFinite(resetAt) && resetAt > now.getTime()) {
+    return { health: "QUOTA_EXHAUSTED", cooldownUntil: resetAt };
+  }
+  return health;
+}
+
+function operationalStateFor(health: RouteHealth, qualification: QualificationState): FreeRouteOperationalState {
+  if (health === "COOLDOWN" || health === "QUOTA_EXHAUSTED") return "SATURATED";
+  if (health === "UNAVAILABLE" || health === "AUTH_REQUIRED") return "UNAVAILABLE";
+  if (health === "INELIGIBLE" || qualification === "HARD_FAILURE") return "QUARANTINED";
+  if (health === "DEGRADED") return "DEGRADED";
+  if (health === "UNKNOWN" || qualification === "PROBATION" || qualification === "NOT_TESTED" || qualification === "STALE") return "PROBATION";
+  return "HEALTHY";
+}
+
+/**
  * Evaluate the admission pipeline for one route. Deterministic and side-effect free.
  */
 export function evaluateAdmission(input: {
@@ -433,7 +470,8 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
     const receipt = inputs.qualification?.get(routeKey(seed.providerId, seed.modelId));
     const q = qualificationFor(receipt, now);
     const live = inputs.routeHealth?.(seed.providerId, seed.modelId);
-    const h = healthFrom(seed.model, live, conn, now);
+    const quota = inputs.quota?.(seed.providerId, seed.modelId);
+    const h = healthWithObservedQuota(healthFrom(seed.model, live, conn, now), quota, now);
     const admission = evaluateAdmission({
       def,
       conn,
@@ -450,6 +488,16 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
     const executable = !!seed.model && !!conn?.connected && conn.authState !== "auth_required" && !freePolicyBlocked && inputs.firewall.canRouteTo(seed.providerId, seed.modelId) && !executionBlockedHealth.includes(h.health);
     routes.push({
       routeId: routeKey(seed.providerId, seed.modelId),
+      modelIdentity: {
+        canonicalModelId: identity.canonicalId,
+        providerId: seed.providerId,
+        providerModelId: seed.modelId,
+        ...(seed.providerId === "openrouter" ? { gatewayModelId: seed.modelId } : {}),
+      },
+      providerIdentity: {
+        providerId: seed.providerId,
+        ...(conn?.planAttested === undefined ? {} : { accountTier: conn.planAttested ? "free-attested" : "unattested" }),
+      },
       canonicalModelId: identity.canonicalId,
       providerId: seed.providerId,
       providerDisplayName: def?.displayName ?? seed.providerId,
@@ -463,7 +511,7 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
       priceEvidence: seed.model?.verificationSource ?? seed.model?.costProfile.source,
       priceEvidenceAt: seed.model?.freeStatusVerifiedAt ?? seed.model?.lastVerified,
       verifiedFree,
-      quota: inputs.quota?.(seed.providerId, seed.modelId),
+      quota,
       toolSupport: seed.toolCalling,
       structuredOutput: seed.structuredOutput,
       vision: seed.vision,
@@ -471,6 +519,7 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
       privacyClass: seed.privacyClass,
       termsStatus: def?.terms.status ?? "LEGAL_REVIEW_REQUIRED",
       health: h.health,
+      capacityState: operationalStateFor(h.health, q.state),
       cooldownUntil: h.cooldownUntil,
       qualificationState: q.state,
       roles: q.roles,

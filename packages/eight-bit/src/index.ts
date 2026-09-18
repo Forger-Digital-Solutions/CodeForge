@@ -14,3 +14,4 @@ export * from "./receipts.js";
 export * from "./drift.js";
 export * from "./dataset/index.js";
 export * from "./capacity-intelligence.js";
+export * from "./shadow.js";

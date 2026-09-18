@@ -666,12 +666,53 @@ export const WorkItemSchema = z.discriminatedUnion("kind", [
     createdAt: z.string().datetime(),
   }),
   z.object({
+    /** R13 shadow intelligence: a sanitized, append-only advisory observation. It is not read by
+     * routing, money admission, tool permission, ForgeVerify, or Completion Gate. Generic
+     * work_items persistence supports this additive kind in both SQLite and PostgreSQL. */
+    kind: z.literal("shadow_intelligence_telemetry"),
+    id: z.string(),
+    sessionId: z.string(),
+    record: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+  }),
+  z.object({
     /** 8-Bit: append-only, immutable routing-decision receipt. Never an authority input —
      * observational/explainability record only, same posture as `forgegreen_ledger`. */
     kind: z.literal("eight_bit_decision_receipt"),
     id: z.string(),
     sessionId: z.string(),
     receipt: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+  }),
+  z.object({
+    /** 16-Bit: one mutable, transaction-locked budget state for an owner-authorized paid
+     * evaluation campaign. This is financial safety state, not a route-selection authority. */
+    kind: z.literal("paid_evaluation_campaign_ledger"),
+    id: z.string(),
+    sessionId: z.string().optional(),
+    campaignId: z.string(),
+    record: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  }),
+  z.object({
+    /** 16-Bit: one reservation lifecycle record. The request prompt and provider credential are
+     * intentionally absent; the record has only exact route identity and monetary evidence. */
+    kind: z.literal("paid_evaluation_reservation"),
+    id: z.string(),
+    sessionId: z.string().optional(),
+    campaignId: z.string(),
+    record: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  }),
+  z.object({
+    /** 16-Bit: append-only reconciliation evidence for a paid evaluation request. */
+    kind: z.literal("paid_evaluation_receipt"),
+    id: z.string(),
+    sessionId: z.string().optional(),
+    campaignId: z.string(),
+    record: z.record(z.unknown()),
     createdAt: z.string().datetime(),
   }),
   z.object({

@@ -47,6 +47,21 @@ describe("EightBitRouter — deterministic adaptive routing", () => {
     if (result.outcome === "selected") expect(result.model.modelId).toBe("ok-free");
   });
 
+  it("[R13] prefers an otherwise-qualified route with observed capacity over an equally capable scarce route", () => {
+    const { fw, router } = setup();
+    fw.register(makeModel({ modelId: "scarce" }));
+    fw.register(makeModel({ modelId: "available" }));
+    const result = router.selectRoute({
+      ...baseOptions,
+      scope,
+      capacityScoreAdjustment: (_providerId, modelId) => modelId === "scarce"
+        ? { scoreAdjustment: -100, reasonCodes: ["LOW_REQUEST_CAPACITY_CRITICAL"] }
+        : { scoreAdjustment: 0, reasonCodes: ["CAPACITY_AVAILABLE"] },
+    });
+    expect(result.outcome).toBe("selected");
+    if (result.outcome === "selected") expect(result.model.modelId).toBe("available");
+  });
+
   it("[PASS] sticky session retains its bound route across repeated selection when still eligible", () => {
     const { fw, router } = setup();
     fw.register(makeModel({ modelId: "route-a" }));
@@ -101,6 +116,21 @@ describe("EightBitRouter — deterministic adaptive routing", () => {
     const result = router.selectReplacement({ ...baseOptions, scope }, { providerId: "openrouter", modelId: "route-a" });
     expect(result.outcome).toBe("selected");
     if (result.outcome === "selected") expect(result.model.modelId).toBe("route-b");
+  });
+
+  it("[PASS] selectReplacement applies capacity advice after eligibility, so a scarce free route does not win merely by static score", () => {
+    const { fw, router } = setup();
+    fw.register(makeModel({ providerId: "provider-a", modelId: "strong-but-scarce" }));
+    fw.register(makeModel({ providerId: "provider-b", modelId: "healthy-alternate" }));
+    const result = router.selectReplacement({
+      ...baseOptions,
+      scope,
+      capacityScoreAdjustment: (providerId) => providerId === "provider-a"
+        ? { scoreAdjustment: -10_000, reasonCodes: ["KNOWN_CAPACITY_EXHAUSTED"] }
+        : { scoreAdjustment: 0, reasonCodes: ["CAPACITY_HEALTHY"] },
+    }, { providerId: "openrouter", modelId: "failed-route" });
+    expect(result).toMatchObject({ outcome: "selected", model: { providerId: "provider-b", modelId: "healthy-alternate" } });
+    if (result.outcome === "selected") expect(result.reasons).toContain("CAPACITY_HEALTHY");
   });
 
   it("[PASS] no eligible route at all is reported explicitly, not silently substituted", () => {

@@ -6,6 +6,7 @@ import {
   type ToolDefinition as ProviderToolDefinition,
   type PromptCacheCapability,
   ProviderCapacityGovernor,
+  ProviderError,
   defaultCapacityGovernor,
   estimatePromptTokens,
 } from "@codeforge/providers";
@@ -246,13 +247,15 @@ export class ModelExecutionAdapter {
         if (event.type === "error") {
           const norm = normalizeProviderError(event.message);
           if (norm.code === ERROR_CODES.PROVIDER_RATE_LIMITED && pacingGovernor) {
-            pacingGovernor.recordResponse(providerId, 429, {});
+            pacingGovernor.recordRateLimit(providerId, event.retryAfter);
           }
           yield {
             type: "error",
             code: norm.code,
             message: norm.message,
             retryable: event.retryable,
+            status: event.status,
+            retryAfter: event.retryAfter,
           };
           return;
         }
@@ -264,12 +267,14 @@ export class ModelExecutionAdapter {
       }
       const norm = normalizeProviderError(err);
       if (norm.code === ERROR_CODES.PROVIDER_RATE_LIMITED && pacingGovernor) {
-        pacingGovernor.recordResponse(providerId, 429, {});
+        pacingGovernor.recordRateLimit(providerId, (err as { retryAfter?: unknown }).retryAfter as number | undefined);
       }
       yield {
         type: "error",
         code: norm.code,
         message: norm.message,
+        ...(typeof (err as { status?: unknown }).status === "number" ? { status: (err as { status: number }).status } : {}),
+        ...(typeof (err as { retryAfter?: unknown }).retryAfter === "number" ? { retryAfter: (err as { retryAfter: number }).retryAfter } : {}),
       };
     } finally {
       reservation?.release(actualTokens);
@@ -408,7 +413,12 @@ export class ModelExecutionAdapter {
           finishReason = event.finishReason;
           break;
         case "error":
-          throw new Error(`[${event.code}] ${event.message}`);
+          throw new ProviderError(
+            `[${event.code}] ${event.message}`,
+            event.code,
+            event.retryable,
+            { status: event.status, retryAfter: event.retryAfter },
+          );
       }
     }
 

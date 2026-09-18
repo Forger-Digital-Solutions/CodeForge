@@ -1,9 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
 import {
   ProviderCapacityGovernor,
+  ProviderError,
   type ProviderAdapter,
   type ChatRequest,
   type ChatResponse,
+  type StreamEvent,
 } from "../src/index.js";
 
 function createMockClock(initialTime = 1_000_000) {
@@ -406,5 +408,65 @@ describe("ProviderCapacityGovernor — evidence-driven capacity control", () => 
 
     await clock.advanceTime(200);
     expect(governor.isCoolingDown("groq")).toBe(false);
+  });
+
+  it("preserves an exception-carried retry horizon instead of replacing it with a five-second guess", () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({ now: clock.now });
+    governor.recordRateLimit("openrouter", clock.getCurrentTime() + 3 * 60 * 60_000);
+
+    expect(governor.getCapacityReport("openrouter").cooldownRemainingMs).toBe(3 * 60 * 60_000);
+  });
+
+  it("14. GovernedProviderAdapter.chat records a 429 ProviderError into cooldown (previously silently dropped)", async () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep });
+
+    const innerAdapter: ProviderAdapter = {
+      providerId: "openrouter",
+      listModels: vi.fn().mockResolvedValue([]),
+      healthCheck: vi.fn().mockResolvedValue({ status: "healthy" }),
+      chat: vi.fn().mockRejectedValue(new ProviderError("rate limited", "RATE_LIMITED", true, { status: 429, retryAfter: clock.getCurrentTime() + 7_000 })),
+      streamChat: vi.fn(),
+    };
+
+    const governed = governor.wrapAdapter(innerAdapter);
+    expect(governor.isCoolingDown("openrouter")).toBe(false);
+
+    await expect(governed.chat({ model: "m", messages: [{ role: "user", content: "hi" }] })).rejects.toThrow("rate limited");
+
+    // Before this fix, GovernedProviderAdapter.chat's catch block only released the
+    // reservation and rethrew — the governor never learned a 429 happened at all.
+    expect(governor.isCoolingDown("openrouter")).toBe(true);
+    expect(governor.getCapacityReport("openrouter").cooldownRemainingMs).toBe(7_000);
+    // No phantom in-flight state left behind by the failed call.
+    expect(governor.getCapacityReport("openrouter").activeConcurrent).toBe(0);
+  });
+
+  it("15. GovernedProviderAdapter.streamChat records an in-band 429 error event into cooldown", async () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep });
+
+    async function* rateLimitedStream(): AsyncIterable<StreamEvent> {
+      yield { type: "error", code: "429", message: "rate limited", retryable: true, status: 429, retryAfter: clock.getCurrentTime() + 9_000 };
+    }
+
+    const innerAdapter: ProviderAdapter = {
+      providerId: "openrouter",
+      listModels: vi.fn().mockResolvedValue([]),
+      healthCheck: vi.fn().mockResolvedValue({ status: "healthy" }),
+      chat: vi.fn(),
+      streamChat: vi.fn().mockImplementation(() => rateLimitedStream()),
+    };
+
+    const governed = governor.wrapAdapter(innerAdapter);
+    const events: StreamEvent[] = [];
+    for await (const event of governed.streamChat({ model: "m", messages: [{ role: "user", content: "hi" }] })) {
+      events.push(event);
+    }
+
+    expect(events).toHaveLength(1);
+    expect(governor.isCoolingDown("openrouter")).toBe(true);
+    expect(governor.getCapacityReport("openrouter").cooldownRemainingMs).toBe(9_000);
   });
 });

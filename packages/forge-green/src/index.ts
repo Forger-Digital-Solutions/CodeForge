@@ -53,6 +53,8 @@ export * from "./reuse-cost-policy.js";
 
 // ForgeGreen R0: bounded run-level resource telemetry and apples-to-apples experiment comparison.
 export * from "./r0-telemetry.js";
+export * from "./topology-advice.js";
+export * from "./shadow.js";
 
 export const FORGE_GREEN_LEDGER_WORK_ITEM_KIND = "forgegreen_ledger";
 

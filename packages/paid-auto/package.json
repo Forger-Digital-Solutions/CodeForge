@@ -18,6 +18,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@codeforge/providers": "*"
+    "@codeforge/core": "*",
+    "@codeforge/providers": "*",
+    "@codeforge/sessions": "*",
+    "@codeforge/intelligence": "*"
   }
 }

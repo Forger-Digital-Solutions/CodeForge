@@ -4,6 +4,7 @@ import type {
   DatasetFeatures,
   EightBitDatasetRow,
   RouteOutcomeLabel,
+  VerificationOutcomeLabel,
 } from "./schema.js";
 import { DATASET_SCHEMA_VERSION } from "./schema.js";
 import { structuredMetadataProvenance } from "./provenance.js";
@@ -71,6 +72,29 @@ export interface RouteCandidateRecord {
   contextWindow?: number;
   toolCalling?: boolean;
   structuredOutput?: boolean;
+}
+
+/** Sanitized benchmark outcome metadata. It intentionally excludes prompts, repository content,
+ * model output text, command output, credentials, and fixture diffs. */
+export interface BenchmarkOutcomeRecord {
+  caseId: string;
+  providerId: string;
+  providerModelId: string;
+  role: string;
+  taskType: string;
+  passed: boolean;
+  forgeVerifyPassed: boolean;
+  falseCompletion: boolean;
+  failureCategory?: string;
+  rateLimited: boolean;
+  quotaExhausted?: boolean;
+  toolCalls: number;
+  providerCalls: number;
+  contextTokens: number;
+  latencyMs: number;
+  topology: "SOLO" | "DUAL" | "QUAD" | "OTHER";
+  fallbackUsed: boolean;
+  observedAt: string;
 }
 
 function rowIdFor(kind: string, key: string): string {
@@ -328,6 +352,104 @@ export function rowsFromDiscoveryCatalog(
     });
   }
   return rows;
+}
+
+/** Verification-ground-truth rows from a benchmark campaign. A provider rate-limit retains a
+ * provider-failure label elsewhere; this row says only whether ForgeVerify observed completion. */
+export function rowsFromBenchmarkOutcomes(
+  records: readonly BenchmarkOutcomeRecord[],
+  evidencePath: string,
+): EightBitDatasetRow[] {
+  return records.map((record) => {
+    const { canonicalModelId, modelFamily } = familyOf(record.providerId, record.providerModelId);
+    const verificationOutcome: VerificationOutcomeLabel = record.falseCompletion
+      ? "FALSE_COMPLETION"
+      : record.passed && record.forgeVerifyPassed
+        ? "VERIFIED_SUCCESS"
+        : "VERIFICATION_FAILED";
+    const features: DatasetFeatures = {
+      role: record.role,
+      taskType: record.taskType,
+      toolCalls: record.toolCalls,
+      providerCalls: record.providerCalls,
+      contextTokens: record.contextTokens,
+      latencyP50Ms: record.latencyMs,
+      topology: record.topology,
+      verificationPassed: record.forgeVerifyPassed,
+      fallbackUsed: record.fallbackUsed,
+      errorRate: verificationOutcome === "VERIFIED_SUCCESS" ? 0 : 1,
+      observedEconomicsState: "FREE_LIMITED",
+      observedPrivacyState: "PRIVACY_UNKNOWN",
+      observedHealthState: record.rateLimited ? "RATE_LIMITED" : verificationOutcome === "VERIFIED_SUCCESS" ? "HEALTHY" : "DEGRADED",
+      evidenceCompleteness: 0,
+    };
+    features.evidenceCompleteness = completenessOf(features);
+    return {
+      rowId: rowIdFor("verification", `benchmark:${record.caseId}:${record.observedAt}`),
+      datasetSchemaVersion: DATASET_SCHEMA_VERSION,
+      taskKind: "VERIFICATION_OUTCOME",
+      providerId: record.providerId,
+      providerModelId: record.providerModelId,
+      canonicalModelId,
+      modelFamily,
+      features,
+      label: { verificationOutcome },
+      provenance: structuredMetadataProvenance({
+        sourceType: "BENCHMARK_OUTCOME",
+        sourceRefs: [`${evidencePath}#${record.caseId}`],
+        evidenceObservedAt: record.observedAt,
+        originatingProvider: record.providerId,
+      }),
+    };
+  });
+}
+
+/** Provider/capacity labels extracted beside, never instead of, verification ground truth. This
+ * prevents a 429 with no model answer from becoming false evidence of weak model reasoning. */
+export function providerFailureRowsFromBenchmarkOutcomes(
+  records: readonly BenchmarkOutcomeRecord[],
+  evidencePath: string,
+): EightBitDatasetRow[] {
+  return records
+    .filter((record) => record.rateLimited)
+    .map((record) => {
+      const { canonicalModelId, modelFamily } = familyOf(record.providerId, record.providerModelId);
+      const outcome: RouteOutcomeLabel = record.quotaExhausted ? "QUOTA_EXHAUSTED" : "RATE_LIMITED";
+      const features: DatasetFeatures = {
+        role: record.role,
+        taskType: record.taskType,
+        toolCalls: record.toolCalls,
+        providerCalls: record.providerCalls,
+        contextTokens: record.contextTokens,
+        latencyP50Ms: record.latencyMs,
+        topology: record.topology,
+        verificationPassed: record.forgeVerifyPassed,
+        fallbackUsed: record.fallbackUsed,
+        errorRate: 1,
+        observedEconomicsState: "FREE_EXHAUSTED",
+        observedPrivacyState: "PRIVACY_UNKNOWN",
+        observedHealthState: outcome === "QUOTA_EXHAUSTED" ? "QUOTA_EXHAUSTED" : "RATE_LIMITED",
+        evidenceCompleteness: 0,
+      };
+      features.evidenceCompleteness = completenessOf(features);
+      return {
+        rowId: rowIdFor("route", `benchmark-provider:${record.caseId}:${record.observedAt}`),
+        datasetSchemaVersion: DATASET_SCHEMA_VERSION,
+        taskKind: "ROUTE_OUTCOME",
+        providerId: record.providerId,
+        providerModelId: record.providerModelId,
+        canonicalModelId,
+        modelFamily,
+        features,
+        label: { routeOutcome: outcome },
+        provenance: structuredMetadataProvenance({
+          sourceType: "BENCHMARK_OUTCOME",
+          sourceRefs: [`${evidencePath}#${record.caseId}`],
+          evidenceObservedAt: record.observedAt,
+          originatingProvider: record.providerId,
+        }),
+      };
+    });
 }
 
 // --- Derived capacity-model trajectories (train-only by construction) ---------------------------

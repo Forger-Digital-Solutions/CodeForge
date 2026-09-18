@@ -115,6 +115,10 @@ export const StreamEventSchema = z.discriminatedUnion("type", [
     code: z.string(),
     message: z.string(),
     retryable: z.boolean().optional(),
+    /** Upstream HTTP status when the provider supplied one. */
+    status: z.number().int().min(100).max(599).optional(),
+    /** Epoch milliseconds after which the upstream says another request may be attempted. */
+    retryAfter: z.number().int().nonnegative().optional(),
   }),
 ]);
 export type StreamEvent = z.infer<typeof StreamEventSchema>;

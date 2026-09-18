@@ -9,7 +9,7 @@ import { DatasetProvenanceSchema } from "./provenance.js";
  * learn to abstain when evidence is insufficient rather than hallucinate confidence.
  */
 
-export const DATASET_SCHEMA_VERSION = 1;
+export const DATASET_SCHEMA_VERSION = 2;
 
 // --- Governance states (R3.5 §26/§27) ---------------------------------------------------------
 
@@ -53,6 +53,7 @@ export const DatasetTaskKindSchema = z.enum([
   "ROUTE_OUTCOME",
   "ROLE_SUITABILITY",
   "ECONOMICS_STATE",
+  "VERIFICATION_OUTCOME",
 ]);
 export type DatasetTaskKind = z.infer<typeof DatasetTaskKindSchema>;
 
@@ -74,10 +75,18 @@ export const RoleSuitabilityLabelSchema = z.enum([
 ]);
 export type RoleSuitabilityLabel = z.infer<typeof RoleSuitabilityLabelSchema>;
 
+export const VerificationOutcomeLabelSchema = z.enum([
+  "VERIFIED_SUCCESS",
+  "VERIFICATION_FAILED",
+  "FALSE_COMPLETION",
+]);
+export type VerificationOutcomeLabel = z.infer<typeof VerificationOutcomeLabelSchema>;
+
 export const DatasetLabelSchema = z.object({
   routeOutcome: RouteOutcomeLabelSchema.optional(),
   roleSuitability: RoleSuitabilityLabelSchema.optional(),
   economicsState: EconomicsGovernanceStateSchema.optional(),
+  verificationOutcome: VerificationOutcomeLabelSchema.optional(),
 });
 export type DatasetLabel = z.infer<typeof DatasetLabelSchema>;
 
@@ -101,6 +110,14 @@ export const DatasetFeaturesSchema = z.object({
   requestsInObservation: z.number().int().min(0).optional(),
   inputTokensInObservation: z.number().min(0).optional(),
   outputTokensInObservation: z.number().min(0).optional(),
+  contextTokens: z.number().int().min(0).optional(),
+  toolCalls: z.number().int().min(0).optional(),
+  providerCalls: z.number().int().min(0).optional(),
+  attemptNumber: z.number().int().positive().optional(),
+  topology: z.enum(["SOLO", "DUAL", "QUAD", "OTHER"]).optional(),
+  verificationPassed: z.boolean().optional(),
+  fallbackUsed: z.boolean().optional(),
+  observedCostUsd: z.string().regex(/^\d+(?:\.\d{1,6})?$/).optional(),
   role: z.string().optional(),
   taskType: z.string().optional(),
   latencyP50Ms: z.number().min(0).optional(),
@@ -147,5 +164,7 @@ export function rowLabelIsCoherent(row: EightBitDatasetRow): boolean {
       return row.label.roleSuitability !== undefined;
     case "ECONOMICS_STATE":
       return row.label.economicsState !== undefined;
+    case "VERIFICATION_OUTCOME":
+      return row.label.verificationOutcome !== undefined;
   }
 }

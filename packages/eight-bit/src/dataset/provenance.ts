@@ -24,6 +24,7 @@ export const DatasetSourceTypeSchema = z.enum([
   "DRIFT_EVENT",
   "DISCOVERY_CATALOG",
   "DERIVED_SIMULATION",
+  "BENCHMARK_OUTCOME",
 ]);
 export type DatasetSourceType = z.infer<typeof DatasetSourceTypeSchema>;
 

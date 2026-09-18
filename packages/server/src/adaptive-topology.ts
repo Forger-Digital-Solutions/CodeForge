@@ -3,12 +3,16 @@ import {
   type AdaptiveTopologyPlan,
   AdaptiveTopologyPlanSchema,
 } from "@codeforge/protocol";
+import { adviseProviderAwareTopology, type ProviderTopologyCapacity } from "@codeforge/forge-green";
 
 export interface ResolveAdaptiveTopologyInput {
   goal: string;
   hasImages?: boolean;
   complexityHint?: "tiny" | "normal" | "complex";
   requestedTopology?: AdaptiveTopology;
+  /** Observed only after 8-Bit has admitted free routes. ForgeGreen may reduce parallelism; it
+   * never selects a model, admits a route, or overrides an explicit user topology request. */
+  providerCapacity?: ProviderTopologyCapacity;
 }
 
 /**
@@ -33,31 +37,40 @@ export function resolveAdaptiveTopology(input: ResolveAdaptiveTopologyInput): Ad
 
   // Vision assets present
   if (input.hasImages) {
-    return buildTopologyPlan("vision", "Visual/image assets present; routes through Vision worker + Explorer");
+    return capacityAwarePlan("vision", "Visual/image assets present; routes through Vision worker + Explorer", input.providerCapacity);
   }
 
   // Explicit complexity hint
   if (input.complexityHint === "tiny") {
-    return buildTopologyPlan("tiny", "Tiny task: single targeted Coder mutation directly to ForgeVerify");
+    return capacityAwarePlan("tiny", "Tiny task: single targeted Coder mutation directly to ForgeVerify", input.providerCapacity);
   }
   if (input.complexityHint === "normal") {
-    return buildTopologyPlan("normal", "Normal task: Explorer -> Coder -> Reviewer -> ForgeVerify");
+    return capacityAwarePlan("normal", "Normal task: Explorer -> Coder -> Reviewer -> ForgeVerify", input.providerCapacity);
   }
   if (input.complexityHint === "complex") {
-    return buildTopologyPlan("complex", "Complex task: 2 Explorers -> Planner -> Coder -> Reviewer -> ForgeVerify");
+    return capacityAwarePlan("complex", "Complex task: 2 Explorers -> Planner -> Coder -> Reviewer -> ForgeVerify", input.providerCapacity);
   }
 
   // Heuristic / deterministic goal analysis if no explicit hint:
   const lowerGoal = input.goal.toLowerCase();
   if (/\b(typo|fix comment|bump version|single line fix|docstring)\b/.test(lowerGoal)) {
-    return buildTopologyPlan("tiny", "Deterministic goal match: targeted typo/one-line mutation");
+    return capacityAwarePlan("tiny", "Deterministic goal match: targeted typo/one-line mutation", input.providerCapacity);
   }
   if (/\b(refactor architecture|migrate database|multi-package|system redesign)\b/.test(lowerGoal)) {
-    return buildTopologyPlan("complex", "Deterministic goal match: cross-cutting architectural change");
+    return capacityAwarePlan("complex", "Deterministic goal match: cross-cutting architectural change", input.providerCapacity);
   }
 
   // Certified baseline: R1 fixed topology
-  return buildTopologyPlan("fixed_r1", "Default certified baseline: 2 Explorers -> Planner -> Coder -> Reviewer -> ForgeVerify");
+  return capacityAwarePlan("fixed_r1", "Default certified baseline: 2 Explorers -> Planner -> Coder -> Reviewer -> ForgeVerify", input.providerCapacity);
+}
+
+function capacityAwarePlan(topology: AdaptiveTopology, reason: string, capacity: ProviderTopologyCapacity | undefined): AdaptiveTopologyPlan {
+  const plannedParallelAgents: 1 | 2 = topology === "complex" || topology === "fixed_r1" ? 2 : 1;
+  const advice = adviseProviderAwareTopology(plannedParallelAgents, capacity);
+  if (plannedParallelAgents === 2 && advice.shouldReduceParallelism) {
+    return buildTopologyPlan("normal", `${reason}; ForgeGreen capacity advice reduced parallel exploration: ${advice.reasonCodes.join(", ")}`);
+  }
+  return buildTopologyPlan(topology, `${reason}; ForgeGreen capacity advice: ${advice.reasonCodes.join(", ")}`);
 }
 
 function buildTopologyPlan(topology: AdaptiveTopology, reason: string): AdaptiveTopologyPlan {

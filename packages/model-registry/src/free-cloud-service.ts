@@ -33,6 +33,8 @@ export interface FreeCloudRoutingHooks {
   recordRouteFailure(providerId: string, modelId: string, reason: string, retryAfterMs?: number): void;
   recordRouteSuccess(providerId: string, modelId: string): void;
   quotaRemaining(providerId: string, modelId: string): number | undefined;
+  /** Deterministic 8-Bit advice for choosing among already-admitted free routes. */
+  capacityRoutingAdvice(providerId: string, modelId: string): { scoreAdjustment: number; reasonCodes: string[] };
 }
 
 export interface FreeCloudServiceOptions {
@@ -346,7 +348,10 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     const quota = parseRouteQuota(obs.headers, this.now);
     this.quota.record(obs.providerId, obs.modelId, quota);
     if (obs.status === 429 && obs.modelId) {
-      this.recordRouteFailure(obs.providerId, obs.modelId, "RATE_LIMITED", quota?.retryAfterMs);
+      // Providers commonly omit Retry-After but expose an absolute X-RateLimit-Reset value.
+      // The reset is equally authoritative; discarding it caused R12 to retry an OpenRouter
+      // route after a short synthetic cooldown even though its daily free allowance was gone.
+      this.recordRouteFailure(obs.providerId, obs.modelId, "RATE_LIMITED", retryDelayMs(quota?.retryAfterMs, quota?.resetAt, this.now()));
     } else if (obs.status === 402 && obs.modelId) {
       this.recordRouteFailure(obs.providerId, obs.modelId, "PAID_PLAN_REQUIRED");
     }
@@ -354,6 +359,37 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
 
   quotaRemaining(providerId: string, modelId: string): number | undefined {
     return this.quota.remainingRequests(providerId, modelId);
+  }
+
+  capacityRoutingAdvice(providerId: string, modelId: string): { scoreAdjustment: number; reasonCodes: string[] } {
+    const quota = this.quota.get(providerId, modelId);
+    if (!quota) return { scoreAdjustment: 0, reasonCodes: ["CAPACITY_UNOBSERVED"] };
+
+    const reasons: string[] = [];
+    let scoreAdjustment = 0;
+    const resetAt = quota.resetAt === undefined ? Number.NaN : Date.parse(quota.resetAt);
+    const resetsInFuture = Number.isFinite(resetAt) && resetAt > this.now().getTime();
+    if ((quota.remainingRequests === 0 || quota.remainingTokens === 0) && resetsInFuture) {
+      return { scoreAdjustment: -100, reasonCodes: ["KNOWN_CAPACITY_EXHAUSTED"] };
+    }
+    if (quota.remainingRequests !== undefined && quota.limitRequests !== undefined && quota.limitRequests > 0) {
+      const remainingRatio = quota.remainingRequests / quota.limitRequests;
+      if (remainingRatio <= 0.1) {
+        scoreAdjustment -= 30;
+        reasons.push("LOW_REQUEST_CAPACITY_CRITICAL");
+      } else if (remainingRatio <= 0.25) {
+        scoreAdjustment -= 15;
+        reasons.push("LOW_REQUEST_CAPACITY");
+      }
+    } else if (quota.remainingRequests !== undefined && quota.remainingRequests <= 2) {
+      scoreAdjustment -= 10;
+      reasons.push("LOW_REQUEST_CAPACITY");
+    }
+    if (quota.remainingTokens !== undefined && quota.limitTokens !== undefined && quota.limitTokens > 0 && quota.remainingTokens / quota.limitTokens <= 0.1) {
+      scoreAdjustment -= 20;
+      reasons.push("LOW_TOKEN_CAPACITY_CRITICAL");
+    }
+    return { scoreAdjustment, reasonCodes: reasons.length > 0 ? reasons : ["CAPACITY_AVAILABLE"] };
   }
 
   // --- snapshot / hooks ----------------------------------------------------------------------
@@ -430,6 +466,13 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       }
     }
   }
+}
+
+function retryDelayMs(retryAfterMs: number | undefined, resetAt: string | undefined, now: Date): number | undefined {
+  if (retryAfterMs !== undefined) return retryAfterMs;
+  if (!resetAt) return undefined;
+  const reset = Date.parse(resetAt);
+  return Number.isFinite(reset) ? Math.max(0, reset - now.getTime()) : undefined;
 }
 
 export function createFreeCloudService(options: FreeCloudServiceOptions): FreeCloudService {

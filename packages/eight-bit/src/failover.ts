@@ -43,6 +43,8 @@ export interface FailoverRequest {
   estimatedContextTokens?: number;
   hasAdapter: (providerId: string) => boolean;
   routeFilter?: (providerId: string, modelId: string) => boolean;
+  /** Capacity advice is ranking-only; ForgeZero and routeFilter retain admission authority. */
+  capacityScoreAdjustment?: SelectRouteOptions["capacityScoreAdjustment"];
 }
 
 export type FailoverOutcome =
@@ -118,6 +120,7 @@ export class EightBitFailoverCoordinator {
       estimatedContextTokens: req.estimatedContextTokens,
       hasAdapter: req.hasAdapter,
       routeFilter: req.routeFilter,
+      capacityScoreAdjustment: req.capacityScoreAdjustment,
     };
     const alternates = req.sameModelAlternates ?? [];
 

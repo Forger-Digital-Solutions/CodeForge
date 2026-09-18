@@ -11,6 +11,8 @@ import {
   OBSERVED_CAPACITY_CONSTANTS,
   rowsFromCapacitySimulation,
   rowsFromDiscoveryCatalog,
+  rowsFromBenchmarkOutcomes,
+  providerFailureRowsFromBenchmarkOutcomes,
   rowsFromFleetQualification,
   rowsFromSmokeWorkers,
   rowsFromCorpusTasks,
@@ -200,6 +202,56 @@ describe("label coherence", () => {
 });
 
 describe("evidence extractors", () => {
+  it("creates sanitized verification-ground-truth rows without storing task text or model output", () => {
+    const rows = rowsFromBenchmarkOutcomes([
+      {
+        caseId: "CBR2-RV-01",
+        providerId: "openrouter",
+        providerModelId: "cohere/north-mini-code:free",
+        role: "REVIEWER",
+        taskType: "reviewer_quality",
+        passed: false,
+        forgeVerifyPassed: false,
+        falseCompletion: false,
+        failureCategory: "PROVIDER_RATE_LIMIT",
+        rateLimited: true,
+        quotaExhausted: true,
+        toolCalls: 37,
+        providerCalls: 38,
+        contextTokens: 138783,
+        latencyMs: 120000,
+        topology: "SOLO",
+        fallbackUsed: false,
+        observedAt: "2026-09-18T00:00:00.000Z",
+      },
+    ], "docs/evidence/r12-release-closure/codeforge-bench-r2/r12-public.json");
+    expect(rows[0]).toMatchObject({ taskKind: "VERIFICATION_OUTCOME", label: { verificationOutcome: "VERIFICATION_FAILED" } });
+    expect(rows[0]!.features).toMatchObject({ verificationPassed: false, toolCalls: 37, providerCalls: 38, topology: "SOLO" });
+    expect(JSON.stringify(rows)).not.toContain("secret-prompt-content");
+    const providerRows = providerFailureRowsFromBenchmarkOutcomes([
+      {
+        caseId: "CBR2-RV-01",
+        providerId: "openrouter",
+        providerModelId: "cohere/north-mini-code:free",
+        role: "REVIEWER",
+        taskType: "reviewer_quality",
+        passed: false,
+        forgeVerifyPassed: false,
+        falseCompletion: false,
+        rateLimited: true,
+        quotaExhausted: true,
+        toolCalls: 37,
+        providerCalls: 38,
+        contextTokens: 138783,
+        latencyMs: 120000,
+        topology: "SOLO",
+        fallbackUsed: false,
+        observedAt: "2026-09-18T00:00:00.000Z",
+      },
+    ], "docs/evidence/r12-release-closure/codeforge-bench-r2/r12-public.json");
+    expect(providerRows[0]).toMatchObject({ taskKind: "ROUTE_OUTCOME", label: { routeOutcome: "QUOTA_EXHAUSTED" } });
+  });
+
   it("maps corpus task records to route outcomes with quota signal from notes", () => {
     const rows = rowsFromCorpusTasks(
       [

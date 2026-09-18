@@ -77,4 +77,14 @@ describe("OpenRouterAdapter — in-band stream failures are never silent", () =>
     const finish = events.find((e) => e.type === "finish");
     expect(finish && finish.type === "finish" ? finish.finishReason : "").toBe("stop");
   });
+
+  it("does not convert a connection/stream interruption after partial output into a clean finish", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(sseResponse([
+      JSON.stringify({ id: "r", choices: [{ index: 0, delta: { content: "partial" } }] }),
+    ])));
+    const events = await collect(new OpenRouterAdapter({ credentialStore: fakeCredentials }));
+    const error = events.find((event) => event.type === "error");
+    expect(error && error.type === "error" ? error.code : "").toBe("STREAM_INTERRUPTED");
+    expect(events.some((event) => event.type === "finish")).toBe(false);
+  });
 });

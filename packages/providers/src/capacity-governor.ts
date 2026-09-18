@@ -1,4 +1,4 @@
-import type { ProviderAdapter, PromptCacheCapability } from "./index.js";
+import { ProviderError, type ProviderAdapter, type PromptCacheCapability } from "./index.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
 
 /**
@@ -376,6 +376,20 @@ export class ProviderCapacityGovernor {
     };
   }
 
+  /**
+   * Preserve a provider supplied retry horizon when an adapter reports a 429 as an exception
+   * rather than a response object. This is intentionally provider-scoped: provider rate limits
+   * are shared capacity, while 8-Bit still owns the route-level health and failover decision.
+   */
+  recordRateLimit(providerId: string, retryAfter?: number): void {
+    const state = this.getState(providerId);
+    const fallbackUntil = this.now() + 5_000;
+    const suppliedUntil = typeof retryAfter === "number" && Number.isFinite(retryAfter)
+      ? Math.max(this.now(), retryAfter)
+      : fallbackUntil;
+    state.cooldownUntil = Math.max(state.cooldownUntil, suppliedUntil);
+  }
+
   isCoolingDown(providerId: string): boolean {
     const state = this.states.get(providerId);
     return state ? this.now() < state.cooldownUntil : false;
@@ -453,6 +467,12 @@ export class GovernedProviderAdapter implements ProviderAdapter {
       return res;
     } catch (err: unknown) {
       reservation.release(estimatedTokens);
+      // Confirmed gap: this wrapper paced every call but never told the governor about an
+      // observed 429, so its cooldown/backoff (and any future evidence-driven limit) never
+      // engaged for calls that only ever throw rather than returning an error response.
+      if (err instanceof ProviderError && err.status === 429) {
+        this.governor.recordRateLimit(this.providerId, err.retryAfter);
+      }
       throw err;
     }
   }
@@ -481,6 +501,8 @@ export class GovernedProviderAdapter implements ProviderAdapter {
         } else if ((event as any).usage) {
           const u = (event as any).usage;
           totalTokens = (u.inputTokens ?? 0) + (u.outputTokens ?? 0);
+        } else if (event.type === "error" && event.status === 429) {
+          this.governor.recordRateLimit(this.providerId, event.retryAfter);
         }
         yield event;
       }

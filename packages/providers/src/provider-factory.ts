@@ -233,7 +233,12 @@ export function createProviderAdapterFromDefinition(def: ProviderTransportDefini
   if (def.id === "deepseek") return createDeepSeekAdapter(opts);
   switch (def.apiStyle) {
     case "openrouter":
-      return createOpenRouterAdapter({ credentialStore: opts.credentialStore, timeoutMs: opts.timeoutMs });
+      return createOpenRouterAdapter({
+        credentialStore: opts.credentialStore,
+        timeoutMs: opts.timeoutMs,
+        fetchFn: opts.fetchFn,
+        onResponse: opts.onResponse,
+      });
     case "opencode":
       return createOpencodeAdapter({ credentialStore: opts.credentialStore, timeoutMs: opts.timeoutMs });
     case "anthropic-messages":

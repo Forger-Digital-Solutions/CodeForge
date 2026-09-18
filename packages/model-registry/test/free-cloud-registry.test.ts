@@ -454,6 +454,48 @@ describe("FreeCloudService", () => {
     expect(svc.isForgeAutoEligible("groq", "openai/gpt-oss-120b")).toBe(true);
   });
 
+  it("honors a provider reset horizon when a 429 omits Retry-After", async () => {
+    const { svc } = service();
+    await svc.qualifyPending({ budget: 3 });
+    const resetAt = new Date(NOW.getTime() + 6 * 60 * 60_000).toISOString();
+    svc.onProviderResponse({
+      providerId: "openrouter",
+      modelId: "openai/gpt-oss-120b:free",
+      status: 429,
+      headers: [
+        ["x-ratelimit-remaining-requests", "0"],
+        ["x-ratelimit-reset-requests", resetAt],
+      ],
+      observedAt: NOW.getTime(),
+    });
+
+    const route = svc.snapshot().models
+      .flatMap((model) => model.routes)
+      .find((candidate) => candidate.providerId === "openrouter" && candidate.providerModelId === "openai/gpt-oss-120b:free");
+    expect(route?.forgeAutoEligible).toBe(false);
+    expect(route?.cooldownUntil).toBe(Date.parse(resetAt));
+    expect(route?.capacityState).toBe("SATURATED");
+  });
+
+  it("keeps a route out of ForgeAuto before dispatch when a successful response reports zero remaining quota", async () => {
+    const { svc } = service();
+    await svc.qualifyPending({ budget: 3 });
+    const resetAt = new Date(NOW.getTime() + 60 * 60_000).toISOString();
+    svc.onProviderResponse({
+      providerId: "openrouter",
+      modelId: "openai/gpt-oss-120b:free",
+      status: 200,
+      headers: [["x-ratelimit-remaining-requests", "0"], ["x-ratelimit-reset-requests", resetAt]],
+      observedAt: NOW.getTime(),
+    });
+    expect(svc.isForgeAutoEligible("openrouter", "openai/gpt-oss-120b:free")).toBe(false);
+    expect(svc.snapshot().models.flatMap((model) => model.routes).find((route) => route.providerId === "openrouter" && route.providerModelId === "openai/gpt-oss-120b:free")?.capacityState).toBe("SATURATED");
+    expect(svc.capacityRoutingAdvice("openrouter", "openai/gpt-oss-120b:free")).toEqual({
+      scoreAdjustment: -100,
+      reasonCodes: ["KNOWN_CAPACITY_EXHAUSTED"],
+    });
+  });
+
   it("enforces the per-provider daily qualification budget and cycle interval", async () => {
     const fw = new ForgeZero();
     for (let i = 0; i < 6; i++) fw.register(freeRecord("openrouter", `vendor/model-${i}:free`));

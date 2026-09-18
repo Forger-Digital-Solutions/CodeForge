@@ -12,6 +12,7 @@
     { "path": "packages/agent" },
     { "path": "packages/tools" },
     { "path": "packages/sessions" },
+    { "path": "packages/intelligence" },
     { "path": "packages/repo-intelligence" },
     { "path": "packages/forge-green" },
     { "path": "packages/forgegreen-campaign" },
