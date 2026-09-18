@@ -20,4 +20,13 @@ describe("commercial provider packaging metadata", () => {
     expect(definition?.policyMetadata).toMatchObject({ commercial_packaging_eligible: true, user_policy_acceptance_required: true, free_or_paid_class: "UNPAID_ALLOWANCE" });
     expect(definition?.policyMetadata?.official_terms_url).toBe("https://ai.google.dev/gemini-api/terms");
   });
+
+  it("keeps Ollama Cloud direct transport quarantined while starter credits can spill into purchased credits", () => {
+    const definition = getProviderDefinition("ollama-cloud");
+    expect(definition?.implemented).toBe(true);
+    expect(definition?.baseUrl).toBe("https://ollama.com/v1");
+    expect(definition?.freeAccess.class).toBe("PROMOTIONAL_CREDIT");
+    expect(definition?.terms.status).toBe("LEGAL_REVIEW_REQUIRED");
+    expect(createProviderAdapterFromDefinition(definition!, { apiKey: "test-key" })?.providerId).toBe("ollama-cloud");
+  });
 });

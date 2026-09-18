@@ -9,7 +9,7 @@ import { EightBitHandoffBuilder } from "./handoff.js";
 import type { DecisionReceipt, EightBitRole, RouteKey } from "./types.js";
 import type { EightBitPolicyMode } from "./eligibility.js";
 import { EightBitCapacityIntelligence } from "./capacity-intelligence.js";
-import type { CapacityForecast, CapacityForecastInput } from "@codeforge/forge-zero";
+import type { CapacityForecast, CapacityForecastInput, CapacityPreflight, CapacityPreflightInput } from "@codeforge/forge-zero";
 
 export interface EightBitRuntimeOptions {
   firewall: ForgeZero;
@@ -44,6 +44,10 @@ export class EightBitRuntime {
 
   forecastCapacity(input: CapacityForecastInput): CapacityForecast {
     return this.capacity.forecast(input);
+  }
+
+  preflightCapacity(input: CapacityPreflightInput): CapacityPreflight {
+    return this.capacity.preflight(input);
   }
 
   /** Restores persisted route bindings + health snapshots for a session into the live

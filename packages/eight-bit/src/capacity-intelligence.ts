@@ -2,8 +2,11 @@ import {
   DEFAULT_FREE_CAPACITY_POLICY,
   forecastCapacity,
   isFreeRouteEligible,
+  preflightCapacity,
   type CapacityForecast,
   type CapacityForecastInput,
+  type CapacityPreflight,
+  type CapacityPreflightInput,
   type CapacityRoute,
 } from "@codeforge/forge-zero";
 
@@ -21,6 +24,10 @@ export interface EightBitCapacityRecommendation {
 export class EightBitCapacityIntelligence {
   forecast(input: CapacityForecastInput): CapacityForecast {
     return forecastCapacity(input);
+  }
+
+  preflight(input: CapacityPreflightInput): CapacityPreflight {
+    return preflightCapacity(input);
   }
 
   recommend(routes: readonly CapacityRoute[], role: string): EightBitCapacityRecommendation {

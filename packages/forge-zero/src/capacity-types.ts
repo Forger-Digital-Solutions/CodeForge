@@ -119,6 +119,19 @@ export interface TaskDemandProfile {
   roleRequests: Readonly<Record<string, number>>;
 }
 
+/** A bounded estimate made before an autonomous task consumes scarce Free capacity. */
+export interface TaskCapacityEstimate {
+  taskKind: string;
+  topology: string;
+  expectedModelTurns: number;
+  expectedRetryCalls: number;
+  expectedVerificationCalls: number;
+  expectedToolCalls: number;
+  expectedInputTokens: number;
+  expectedOutputTokens: number;
+  roleRequests: Readonly<Record<string, number>>;
+}
+
 export interface CapacityReservationRequest {
   reservationId: string;
   userId: string;
@@ -213,6 +226,33 @@ export interface CapacityForecastInput {
   firstRunReserveRequests?: number;
   firstRunReserveTokens?: number;
   now?: number;
+}
+
+export type CapacityPreflightStatus = "READY" | "AT_RISK" | "INSUFFICIENT_CAPACITY";
+
+export interface CapacityPreflightInput {
+  routes: readonly CapacityRoute[];
+  pools?: readonly ProviderCapacityPool[];
+  estimate: TaskCapacityEstimate;
+  plannedTasks: number;
+  activeUsers?: number;
+  firstRunReserveRequests?: number;
+  firstRunReserveTokens?: number;
+  minimumIndependentProviders?: number;
+  maximumProviderConcentration?: number;
+  now?: number;
+}
+
+/** A capacity forecast is evidence, not an execution authorization. */
+export interface CapacityPreflight {
+  status: CapacityPreflightStatus;
+  plannedTasks: number;
+  safeTaskUnits: number;
+  eligiblePoolCount: number;
+  independentProviderCount: number;
+  nextResetAt?: string;
+  reasons: readonly string[];
+  forecast: CapacityForecast;
 }
 
 export interface CapacityEvent {

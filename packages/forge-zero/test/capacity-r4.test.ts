@@ -4,6 +4,7 @@ import {
   forecastCapacity,
   isCapacityEventActive,
   isFreeRouteEligible,
+  preflightCapacity,
   simulateScale,
   type CapacityRoute,
   type ProviderCapacityPool,
@@ -113,6 +114,37 @@ describe("R4 ForgeZero capacity accounting", () => {
     });
     const decision = ledger.reserve({ reservationId: "mismatch", userId: "user", routeIds: ["groq-oss"], role: "coder", taskKind: "normal", requests: 1, inputTokens: 1, outputTokens: 0, isNewUser: true, priority: "first_run", createdAt: new Date(NOW).toISOString(), leaseUntil: new Date(NOW + 10_000).toISOString() });
     expect(decision.reason).toBe("CAPACITY_POOL_IDENTITY_MISMATCH");
+  });
+
+  it("preflights a task or benchmark without dispatching it", () => {
+    const pool: ProviderCapacityPool = {
+      poolId: "groq-org",
+      providerId: "groq",
+      scope: "SHARED_OWNER_POOL",
+      supplyClass: "PURE_MANAGED_FREE",
+      observedAt: new Date(NOW).toISOString(),
+      authoritative: true,
+      windows: [
+        { unit: "requests", limit: 4, remaining: 4, resetAt: RESET, scope: "ORG", observedAt: new Date(NOW).toISOString(), authoritative: true },
+        { unit: "input_tokens", limit: 1_000, remaining: 1_000, resetAt: RESET, scope: "ORG", observedAt: new Date(NOW).toISOString(), authoritative: true },
+        { unit: "output_tokens", limit: 1_000, remaining: 1_000, resetAt: RESET, scope: "ORG", observedAt: new Date(NOW).toISOString(), authoritative: true },
+      ],
+    };
+    const estimate = { taskKind: "agent", topology: "explorer-coder-reviewer", expectedModelTurns: 2, expectedRetryCalls: 1, expectedVerificationCalls: 1, expectedToolCalls: 4, expectedInputTokens: 100, expectedOutputTokens: 100, roleRequests: { coder: 1 } };
+    const alternate = route({ routeId: "other-oss", providerId: "other", modelId: "other/oss", capacityPoolId: "other-org", gateway: "other", capacityScope: "ACCOUNT" });
+    const alternatePool: ProviderCapacityPool = { ...pool, poolId: "other-org", providerId: "other", windows: pool.windows.map((window) => ({ ...window, scope: "ACCOUNT" })) };
+    const ready = preflightCapacity({ routes: [route(), alternate], pools: [pool, alternatePool], estimate, plannedTasks: 1, now: NOW });
+    expect(ready.status).toBe("READY");
+    expect(ready.safeTaskUnits).toBe(2);
+    expect(ready.nextResetAt).toBe(RESET);
+
+    const insufficient = preflightCapacity({ routes: [route(), alternate], pools: [pool, alternatePool], estimate, plannedTasks: 3, now: NOW });
+    expect(insufficient.status).toBe("INSUFFICIENT_CAPACITY");
+    expect(insufficient.reasons).toContain("PLANNED_TASKS_EXCEED_SAFE_CAPACITY");
+
+    const atRisk = preflightCapacity({ routes: [route()], pools: [pool], estimate, plannedTasks: 1, minimumIndependentProviders: 2, now: NOW });
+    expect(atRisk.status).toBe("AT_RISK");
+    expect(atRisk.reasons).toContain("INSUFFICIENT_INDEPENDENT_PROVIDERS");
   });
 
   it("requires explicit user consent for disclosure-gated public routes and isolates per-user pools", () => {

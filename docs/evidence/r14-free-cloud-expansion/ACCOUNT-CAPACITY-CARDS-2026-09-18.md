@@ -113,6 +113,23 @@ ForgeAuto/Free.
   exact-model privacy, and current terms are verified; higher balance-unlocked tier is
   `DEPOSIT_UNLOCKED_FREE`. Current lifecycle: `CAPACITY_PROBE`.
 
+## Ollama Cloud
+
+- Official Cloud API material establishes a direct, authenticated `https://ollama.com/v1` API and
+  a separate local Ollama API. Only the Cloud endpoint is in scope; CodeForge must not use local
+  Ollama inference.
+- The published Free plan provides a monthly starter amount for a limited starter-model set and
+  one concurrent Cloud request. Published Cloud model prices are non-zero. Included usage is
+  consumed first, then any purchased usage-credit balance; this is not proof of recurring exact
+  $0 managed inference or a hard no-charge fallback.
+- Ollama publishes a zero-data-retention / no-training claim for Cloud prompts and responses, but
+  that does not establish permission for CodeForge to relay one owner account to other users.
+- The direct Cloud transport is registered as a `PROMOTIONAL_CREDIT` candidate with
+  `LEGAL_REVIEW_REQUIRED` terms. It is excluded from ForgeAuto/Free and from capacity totals. No
+  key was created, stored, or used, and the authenticated account's remaining starter usage is
+  still pending a sanitized subscription/usage observation.
+- Sources: [Ollama pricing](https://ollama.com/pricing), [Cloud API authentication](https://github.com/ollama/ollama/blob/main/docs/api/authentication.mdx), and [Cloud API documentation](https://github.com/ollama/ollama/blob/main/docs/cloud.mdx).
+
 ## Aggregate R14 Status
 
 There are currently **zero production-approved Managed Free pools** added by R14. This is the

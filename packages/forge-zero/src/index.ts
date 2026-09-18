@@ -9,5 +9,6 @@ export * from "./capacity-types.js";
 export * from "./capacity-policy.js";
 export * from "./capacity-reservations.js";
 export * from "./capacity-forecast.js";
+export * from "./capacity-preflight.js";
 export * from "./capacity-events.js";
 export * from "./capacity-simulator.js";
