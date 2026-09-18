@@ -2,7 +2,7 @@ import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
 import { planFailureHealthMarking } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
 import { defaultCapacityGovernor, type ProviderCapacityGovernor } from "@codeforge/providers";
-import type { ProviderAdapter, ProviderCatalog, ChatRequest, ChatMessage, StreamEvent, ToolDefinition, ProviderToolExecutionRequest, ProviderToolExecutionResult } from "@codeforge/providers";
+import type { ProviderAdapter, ProviderCatalog, ChatRequest, ChatMessage, ToolDefinition, ProviderToolExecutionRequest, ProviderToolExecutionResult } from "@codeforge/providers";
 import { DesktopWorkerActionTypeSchema, type AgentRunJournal, type AgentRunJournalMessage, type DesktopWorkerActionType } from "@codeforge/protocol";
 import {
   createDesktopWorkerBridge,

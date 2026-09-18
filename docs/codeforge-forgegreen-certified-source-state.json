@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "631df80b4c4e1c300950cae0e30a4991daac08a0e3f8f614e586839b361881ee",
-  "surfaceVersion": "fg12f-certified-v1-r11-hosted-postgres",
+  "sourceStateId": "aea1fa2059daaa2e10bd98376bb45109d4c6e8b08ab2defd043343ce85e303c9",
+  "surfaceVersion": "fg12f-certified-v1-r114-definitive-post",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -40,7 +40,7 @@
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
     "packages/router/package.json": "b2b596febe0eab8a591ed016e9783170c35ed096",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
-    "packages/server/src/agent-runtime.ts": "bbffdbafc8d52647e614cc8ea48ac1fac3df3cac",
+    "packages/server/src/agent-runtime.ts": "5c11ae79cc08de8f11eba756ba1da259e7686b29",
     "packages/server/src/autonomous-orchestrator.ts": "35e071ab6e2af04d467910f146d34fd10853a835",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "5390826f640ae06fb46c6f48a550175cd7cb5897",
@@ -623,28 +623,38 @@
       "regressionEvidence": "Real PostgreSQL campaign passed 12/12 files and 80/80 tests; hosted continuation unit tests passed 2/2; workflow, sessions, and server builds passed before recertification.",
       "recertifiedAt": "2026-09-17",
       "sourceStateConstant": "CODEFORGE_R11_HOSTED_POSTGRES_SOURCE_STATE"
+    },
+    {
+      "label": "R11.4 definitive-POST cleanup source-state recertification",
+      "reason": "The definitive 40-case POST froze at cb4b9cf (33/40 verified, 0 false completions, 7 genuine hidden-verifier failures). After the freeze, the deferred lint debt was removed: an unused StreamEvent import in the agent runtime. A suspended real Google API key used as a redaction-test input was also replaced with a documented synthetic sample in a non-material test file.",
+      "priorSourceStateId": "631df80b4c4e1c300950cae0e30a4991daac08a0e3f8f614e586839b361881ee",
+      "priorSurfaceVersion": "fg12f-certified-v1-r11-hosted-postgres",
+      "resultingSourceStateId": "aea1fa2059daaa2e10bd98376bb45109d4c6e8b08ab2defd043343ce85e303c9",
+      "resultingSurfaceVersion": "fg12f-certified-v1-r114-definitive-post",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Removes an unused StreamEvent type import after the definitive POST freeze. No runtime behavior, routing, verification, approval, ForgeZero, or completion policy changes.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Typecheck PASS, lint 0/0, workspace build PASS; full vitest rerun after recertification plus the 12/12-file 80/80 PostgreSQL campaign.",
+      "recertifiedAt": "2026-09-18",
+      "sourceStateConstant": "CODEFORGE_R114_DEFINITIVE_POST_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above, and the R6 product-hardening recertification above, and the R11 durable final-response recertification above, and the R11 PostgreSQL hosted-workflow recertification above.",
-  "recertifiedAt": "2026-09-17T20:11:13.367Z",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above, and the R6 product-hardening recertification above, and the R11 durable final-response recertification above, and the R11 PostgreSQL hosted-workflow recertification above, and the R11.4 definitive-POST recertification above.",
+  "recertifiedAt": "2026-09-18T00:58:11.711Z",
   "recertification": {
-    "phase": "R11 release-candidate closure",
-    "reason": "PostgreSQL-proven hosted workflow suspension, approval, and resumption",
+    "phase": "R11.4 release-candidate closure",
+    "reason": "Post-freeze lint cleanup and suspended-credential test-input replacement",
     "changedFiles": [
       {
         "path": "packages/server/src/agent-runtime.ts",
-        "summary": "Applies the existing ForgeZero and approval gates before durable hosted-worker dispatch, so a remote edit cannot bypass the same user authorization required by local execution."
-      },
-      {
-        "path": "packages/server/src/workflow-service.ts",
-        "summary": "Persists and resumes the approved workflow plan and pre-edit snapshot across hosted-worker process restarts, then returns control to ForgeVerify and the existing completion gate for the only terminal verdict."
-      },
-      {
-        "path": "packages/workflow/src/types.ts",
-        "summary": "Represents durable worker suspension as an explicit nonterminal workflow outcome; it cannot be counted as completed and carries no completion authority."
+        "summary": "Removes an unused StreamEvent type import after the definitive POST freeze. No runtime behavior, routing, verification, approval, ForgeZero, or completion policy changes."
       }
     ],
-    "priorSourceStateId": "243ea365fa0e83f53b301e102879787b7592c3ac11fde929f59517a51703023a",
+    "priorSourceStateId": "631df80b4c4e1c300950cae0e30a4991daac08a0e3f8f614e586839b361881ee",
     "guarded": true
   }
 }
