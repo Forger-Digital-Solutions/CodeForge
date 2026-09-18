@@ -3,6 +3,9 @@ import {
   type CapacityForecastInput,
   type CapacityForecastRoute,
   type CapacityRoute,
+  type CapacityWindow,
+  type ProviderCapacityPool,
+  type TaskDemandProfile,
 } from "./capacity-types.js";
 import { DEFAULT_FREE_CAPACITY_POLICY, freeRouteExclusionReason, isFreeRouteEligible } from "./capacity-policy.js";
 
@@ -22,69 +25,172 @@ function concentration(routes: readonly CapacityRoute[], capacityByRoute: Readon
   return Object.fromEntries(Object.entries(totals).map(([group, amount]) => [group, ratio(amount, total)]));
 }
 
+function windowsForPool(routes: readonly CapacityRoute[], pool: ProviderCapacityPool | undefined): readonly CapacityWindow[] {
+  return pool?.windows ?? routes[0]?.windows ?? [];
+}
+
+function available(windows: readonly CapacityWindow[], unit: CapacityWindow["unit"]): number | undefined {
+  const matching = windows.filter((window) => window.unit === unit);
+  return matching.length === 0 ? undefined : Math.max(0, Math.min(...matching.map((window) => window.remaining)));
+}
+
+function taskUnits(windows: readonly CapacityWindow[], demand: TaskDemandProfile, multiplier: number): number {
+  const requests = available(windows, "requests");
+  const input = available(windows, "input_tokens");
+  const output = available(windows, "output_tokens");
+  const dimensions = [
+    requests === undefined ? Number.POSITIVE_INFINITY : Math.floor(requests / Math.max(1, demand.requests)),
+    demand.inputTokens <= 0 || input === undefined ? Number.POSITIVE_INFINITY : Math.floor(input / demand.inputTokens),
+    demand.outputTokens <= 0 || output === undefined ? Number.POSITIVE_INFINITY : Math.floor(output / demand.outputTokens),
+  ];
+  const result = Math.min(...dimensions);
+  return Number.isFinite(result) ? Math.max(0, result) * multiplier : 0;
+}
+
+function nextReset(windows: readonly CapacityWindow[], at: number): string | undefined {
+  const values = windows.map((window) => Date.parse(window.resetAt)).filter((value) => value > at);
+  return values.length > 0 ? new Date(Math.min(...values)).toISOString() : undefined;
+}
+
+function poolConcentration(capacityByPool: Readonly<Record<string, number>>): Readonly<Record<string, number>> {
+  const total = Object.values(capacityByPool).reduce((sum, capacity) => sum + capacity, 0);
+  return Object.fromEntries(Object.entries(capacityByPool).map(([poolId, capacity]) => [poolId, ratio(capacity, total)]));
+}
+
+/**
+ * Forecast from physical quota pools, not a list of model names. Routes in one pool are
+ * alternatives: their shared allowance is assigned to one representative for aggregate counting
+ * and never summed. Distributed pools scale only when the caller explicitly supplies a user count.
+ */
 export function forecastCapacity(input: CapacityForecastInput): CapacityForecast {
   const at = input.now ?? Date.now();
   const generatedAt = new Date(at).toISOString();
-  const eligibleRoutes = input.routes.filter((route) => isFreeRouteEligible(route, DEFAULT_FREE_CAPACITY_POLICY));
-  const routeCapacity: CapacityForecastRoute[] = [];
-  const capacityByRoute: Record<string, number> = {};
+  const suppliedPools = new Map((input.pools ?? []).map((pool) => [pool.poolId, pool] as const));
+  const routeCapacity = new Map<string, CapacityForecastRoute>();
+  const eligibleByPool = new Map<string, CapacityRoute[]>();
   const alerts: string[] = [];
+
   for (const route of input.routes) {
     const exclusionReason = freeRouteExclusionReason(route, DEFAULT_FREE_CAPACITY_POLICY);
     if (!isFreeRouteEligible(route, DEFAULT_FREE_CAPACITY_POLICY)) {
-      routeCapacity.push({ routeId: route.routeId, eligible: false, exclusionReason, availableRequests: 0, availableTokens: 0, estimatedTaskUnits: 0, concentrationShare: 0 });
-      if (exclusionReason === "PAID_INFERENCE_DENIED") alerts.push(`${route.routeId}: paid inference excluded`);
+      routeCapacity.set(route.routeId, {
+        routeId: route.routeId,
+        eligible: false,
+        exclusionReason,
+        availableRequests: 0,
+        availableTokens: 0,
+        estimatedTaskUnits: 0,
+        capacityPoolId: route.capacityPoolId,
+        capacityPoolScope: route.capacityPoolScope,
+        countedInPool: false,
+        concentrationShare: 0,
+      });
       continue;
     }
-    const requestWindows = route.windows.filter((window) => window.unit === "requests");
-    const tokenWindows = route.windows.filter((window) => window.unit === "input_tokens" || window.unit === "output_tokens");
-    const availableRequests = requestWindows.length === 0 ? 0 : Math.max(0, Math.min(...requestWindows.map((window) => window.remaining)));
-    const availableTokens = tokenWindows.length === 0 ? Number.MAX_SAFE_INTEGER : Math.max(0, Math.min(...tokenWindows.map((window) => window.remaining)));
-    const taskUnits = Math.min(
-      input.taskDemand.requests > 0 ? Math.floor(availableRequests / input.taskDemand.requests) : Number.POSITIVE_INFINITY,
-      input.taskDemand.inputTokens > 0 ? Math.floor(availableTokens / input.taskDemand.inputTokens) : Number.POSITIVE_INFINITY,
-    );
-    const finiteTaskUnits = Number.isFinite(taskUnits) ? taskUnits : 0;
-    capacityByRoute[route.routeId] = finiteTaskUnits;
-    const resetValues = route.windows.map((window) => Date.parse(window.resetAt)).filter((value) => value > at);
-    routeCapacity.push({
-      routeId: route.routeId,
-      eligible: true,
-      availableRequests,
-      availableTokens,
-      estimatedTaskUnits: finiteTaskUnits,
-      ...(resetValues.length > 0 ? { resetAt: new Date(Math.min(...resetValues)).toISOString() } : {}),
-      concentrationShare: 0,
-    });
-    if (route.capacityScope === "UNKNOWN") alerts.push(`${route.routeId}: capacity scope is unknown`);
-    if (tokenWindows.length === 0) alerts.push(`${route.routeId}: token capacity is not observed; request window is the only counted limit`);
+    const pool = suppliedPools.get(route.capacityPoolId);
+    if (pool && (pool.providerId !== route.providerId || pool.scope !== route.capacityPoolScope || pool.supplyClass !== route.supplyClass)) {
+      routeCapacity.set(route.routeId, {
+        routeId: route.routeId,
+        eligible: false,
+        exclusionReason: "CAPACITY_POOL_IDENTITY_MISMATCH",
+        availableRequests: 0,
+        availableTokens: 0,
+        estimatedTaskUnits: 0,
+        capacityPoolId: route.capacityPoolId,
+        capacityPoolScope: route.capacityPoolScope,
+        countedInPool: false,
+        concentrationShare: 0,
+      });
+      continue;
+    }
+    const entries = eligibleByPool.get(route.capacityPoolId) ?? [];
+    entries.push(route);
+    eligibleByPool.set(route.capacityPoolId, entries);
   }
-  const totalUnits = Object.values(capacityByRoute).reduce((sum, value) => sum + value, 0);
+
+  const capacityByRoute: Record<string, number> = {};
+  const capacityByPool: Record<string, number> = {};
+  const activeUsers = Math.max(1, Math.floor(input.activeUsers ?? 1));
+  for (const [poolId, routes] of eligibleByPool) {
+    const pool = suppliedPools.get(poolId);
+    const scope = pool?.scope ?? routes[0]!.capacityPoolScope;
+    const windows = windowsForPool(routes, pool);
+    const multiplier = scope === "PER_USER_POOL" ? activeUsers : 1;
+    const units = taskUnits(windows, input.taskDemand, multiplier);
+    capacityByPool[poolId] = units;
+    if (!pool) alerts.push(`${poolId}: physical capacity pool was inferred from a route; capture a provider pool observation before certification`);
+    if (scope === "PER_USER_POOL" && input.activeUsers === undefined) alerts.push(`${poolId}: distributed capacity is projected for one user only`);
+    if (windows.length === 0) alerts.push(`${poolId}: no capacity windows observed`);
+    const representative = [...routes].sort((left, right) => right.qualityScore - left.qualityScore || left.routeId.localeCompare(right.routeId))[0]!;
+    const requestCapacity = available(windows, "requests") ?? 0;
+    const inputCapacity = available(windows, "input_tokens");
+    const outputCapacity = available(windows, "output_tokens");
+    const tokenCapacity = inputCapacity === undefined && outputCapacity === undefined
+      ? Number.MAX_SAFE_INTEGER
+      : Math.min(inputCapacity ?? Number.MAX_SAFE_INTEGER, outputCapacity ?? Number.MAX_SAFE_INTEGER);
+    const resetAt = nextReset(windows, at);
+    for (const route of routes) {
+      const countedInPool = route.routeId === representative.routeId;
+      capacityByRoute[route.routeId] = countedInPool ? units : 0;
+      routeCapacity.set(route.routeId, {
+        routeId: route.routeId,
+        eligible: true,
+        availableRequests: requestCapacity,
+        availableTokens: tokenCapacity,
+        estimatedTaskUnits: countedInPool ? units : 0,
+        capacityPoolId: poolId,
+        capacityPoolScope: scope,
+        countedInPool,
+        ...(resetAt ? { resetAt } : {}),
+        concentrationShare: 0,
+      });
+    }
+  }
+
+  const totalUnits = Object.values(capacityByPool).reduce((sum, value) => sum + value, 0);
   const reserveRequests = Math.max(0, input.firstRunReserveRequests ?? 0);
   const reserveTokens = Math.max(0, input.firstRunReserveTokens ?? 0);
   const firstRunTaskUnits = Math.min(
-    reserveRequests > 0 ? Math.floor(reserveRequests / input.taskDemand.requests) : 0,
+    reserveRequests > 0 ? Math.floor(reserveRequests / Math.max(1, input.taskDemand.requests)) : 0,
     reserveTokens > 0 ? Math.floor(reserveTokens / Math.max(1, input.taskDemand.inputTokens)) : Number.POSITIVE_INFINITY,
   );
   const finiteFirstRun = Number.isFinite(firstRunTaskUnits) ? firstRunTaskUnits : 0;
   const normalTaskUnits = Math.max(0, totalUnits - finiteFirstRun);
+  const eligibleRoutes = input.routes.filter((route) => (capacityByRoute[route.routeId] ?? 0) > 0);
   const byProvider = concentration(eligibleRoutes, capacityByRoute, (route) => route.providerId);
   const byGateway = concentration(eligibleRoutes, capacityByRoute, (route) => route.gateway);
   const byFamily = concentration(eligibleRoutes, capacityByRoute, (route) => route.family);
+  const byPool = poolConcentration(capacityByPool);
   const maxConcentration = Math.max(0, ...Object.values(byProvider));
   if (maxConcentration > 0.8) alerts.push(`provider concentration ${(maxConcentration * 100).toFixed(1)}% exceeds 80%`);
+
   const roleScarcity: Record<string, number> = {};
   for (const role of Object.keys(input.taskDemand.roleRequests)) {
-    const roleCapable = eligibleRoutes.filter((route) => route.roles.includes(role));
-    const roleUnits = roleCapable.reduce((sum, route) => sum + (capacityByRoute[route.routeId] ?? 0), 0);
+    const rolePools = [...eligibleByPool.entries()].filter(([, routes]) => routes.some((route) => route.roles.includes(role)));
+    const roleUnits = rolePools.reduce((sum, [poolId]) => sum + (capacityByPool[poolId] ?? 0), 0);
     roleScarcity[role] = ratio(roleUnits, Math.max(1, totalUnits));
-    if (roleCapable.length === 0) alerts.push(`role ${role} has no eligible route`);
+    if (rolePools.length === 0) alerts.push(`role ${role} has no eligible route`);
   }
-  const routeWithShares = routeCapacity.map((route) => ({ ...route, concentrationShare: ratio(route.estimatedTaskUnits, totalUnits) }));
+  const routes = input.routes.map((route) => {
+    const view = routeCapacity.get(route.routeId) ?? {
+      routeId: route.routeId,
+      eligible: false,
+      exclusionReason: "NO_CAPACITY_ROUTE",
+      availableRequests: 0,
+      availableTokens: 0,
+      estimatedTaskUnits: 0,
+      capacityPoolId: route.capacityPoolId,
+      capacityPoolScope: route.capacityPoolScope,
+      countedInPool: false,
+      concentrationShare: 0,
+    };
+    return { ...view, concentrationShare: ratio(view.estimatedTaskUnits, totalUnits) };
+  });
+
   return {
     generatedAt,
     policy: "DETERMINISTIC_HARD_ACCOUNTING",
-    routes: routeWithShares,
+    routes,
     estimatedTaskUnits: totalUnits,
     firstRunTaskUnits: Math.min(finiteFirstRun, totalUnits),
     normalTaskUnits,
@@ -92,6 +198,7 @@ export function forecastCapacity(input: CapacityForecastInput): CapacityForecast
     providerConcentration: byProvider,
     gatewayConcentration: byGateway,
     familyConcentration: byFamily,
+    poolConcentration: byPool,
     alerts,
   };
 }

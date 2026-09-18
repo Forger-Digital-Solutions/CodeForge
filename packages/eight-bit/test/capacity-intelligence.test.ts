@@ -10,10 +10,15 @@ function route(id: string, qualityScore: number, overrides: Partial<CapacityRout
     canonicalModelId: `${id}-free`,
     family: id,
     gateway: id,
-    capacityClass: "RECURRING_SHARED_FREE",
+    supplyClass: "PURE_MANAGED_FREE",
+    capacityPoolId: `${id}-pool`,
+    capacityPoolScope: "SHARED_OWNER_POOL",
     capacityScope: "ORG",
-    economicSource: "RETAIL_FREE",
+    dataPolicyProfile: "PRIVATE_CODE_ALLOWED",
+    lifecycle: "APPROVED",
     explicitZeroPrice: true,
+    paidFallbackDisabled: true,
+    managedMultiUserAllowed: true,
     privacyClass: "standard",
     roles: ["coder"],
     qualityScore,
@@ -27,7 +32,7 @@ function route(id: string, qualityScore: number, overrides: Partial<CapacityRout
 describe("8-Bit capacity intelligence boundary", () => {
   it("is advisory and cannot recommend a paid or unhealthy route", () => {
     const intelligence = new EightBitCapacityIntelligence();
-    expect(intelligence.recommend([route("paid", 100, { economicSource: "PAID", capacityClass: "PAID" }), route("free", 80)], "coder")).toEqual({ advisory: true, role: "coder", routeId: "free", reason: "QUALITY_ORDERED_FREE_ROUTE" });
+    expect(intelligence.recommend([route("paid", 100, { supplyClass: "PAID" }), route("free", 80)], "coder")).toEqual({ advisory: true, role: "coder", routeId: "free", reason: "QUALITY_ORDERED_FREE_ROUTE" });
     expect(intelligence.recommend([route("blocked", 100, { healthy: false })], "coder").routeId).toBeUndefined();
   });
 
