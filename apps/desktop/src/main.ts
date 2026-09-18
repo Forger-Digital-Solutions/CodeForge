@@ -500,6 +500,7 @@ function getProviderCredentialStatus(): Record<string, boolean> {
 
 function setProviderCredential(providerId: string, apiKey: string): void {
   if (!isAllowedCredentialKey(providerId)) throw new Error(`Invalid providerId: ${providerId}`);
+  if (providerId === "ollama-cloud" && !OLLAMA_USER_CONNECTED_FREE_ENABLED) throw new Error("Ollama user-connected Free is disabled by the current feature flag.");
   if (!isValidApiKey(apiKey)) throw new Error("Invalid API key");
   const settings = readSettings();
   const raw = settings[PROVIDER_CREDENTIALS_KEY];
@@ -1081,7 +1082,9 @@ function createProviderConnectionsHost(): ProviderConnectionsHost {
     providerAuthState: (providerId) => providerAuthState.get(providerId),
     onResponse: (obs: ProviderResponseObservation) => freeCloud?.onProviderResponse(obs),
     maxSecretLength: MAX_API_KEY_LENGTH,
-    userId: userConnectedFreeScopeId(),
+    get userId() {
+      return userConnectedFreeScopeId();
+    },
     ollamaUserConnectedFreeEnabled: OLLAMA_USER_CONNECTED_FREE_ENABLED,
     notifyChanged: notifyProviderChanged,
   };
@@ -2745,6 +2748,7 @@ ipcMain.handle("cloud:auth:start", async (event) => {
       cloudApiUrl: CLOUD_API_URL,
     });
     saveCloudTokens(result.accessToken, result.refreshToken, result.user);
+    await providerConnections?.reconcile("ollama-cloud");
     await registerCloudAdapter();
     return { ok: true, user: result.user };
   } catch (error) {
@@ -2818,6 +2822,7 @@ ipcMain.handle("cloud:account:delete", async (event) => {
     // whose response was lost in transit, or after the session was revoked elsewhere. Either way
     // the local credential is dead: clear it so the app is honestly signed out.
     clearCloudTokens();
+    await providerConnections?.reconcile("ollama-cloud");
     providerAuthState.delete("codeforge-cloud");
     throw new Error("Your CodeForge Cloud session is no longer valid. If the account was already deleted, no further action is needed; otherwise sign in again to delete it.");
   }
@@ -2827,6 +2832,7 @@ ipcMain.handle("cloud:account:delete", async (event) => {
   }
   const receipt = await res.json();
   clearCloudTokens();
+  await providerConnections?.reconcile("ollama-cloud");
   providerAuthState.delete("codeforge-cloud");
   if (firewall) {
     for (const model of firewall.allModels()) {
@@ -2849,6 +2855,7 @@ ipcMain.handle("cloud:auth:logout", async (event) => {
     } catch {}
   }
   clearCloudTokens();
+  await providerConnections?.reconcile("ollama-cloud");
   providerAuthState.delete("codeforge-cloud");
   if (firewall) {
     for (const model of firewall.allModels()) {

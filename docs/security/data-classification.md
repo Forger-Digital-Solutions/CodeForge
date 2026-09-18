@@ -69,4 +69,4 @@ database provider's storage encryption (Supabase/Neon), which CodeForge does not
 3. AUTH DATA that must be looked up is stored as a hash; AUTH DATA that must be reversible is sealed with AAD naming its record.
 4. Every SENSITIVE USER DATA query is scoped by the authenticated user id (see [tenant-isolation.md](./tenant-isolation.md)).
 5. USER CONTENT is never sent anywhere the user did not select: the routing mode, the connected provider, and the publication action are the user's choices; the Cloud never trains on it.
-6. Logs carry opaque ids, event names, and counts. The redacting logger and audit sanitizer enforce this at the boundary ([logging-and-audit.md](./logging-and-audit.md)).
+6. Logs carry opaque ids, event names, and counts. The redacting logger and audit sanitizer enforce this at the boundary (the redaction controls in [secrets-management.md](./secrets-management.md)).

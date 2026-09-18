@@ -1,7 +1,7 @@
 {
   "bomFormat": "CycloneDX-summary",
   "specVersion": "1.5-summary",
-  "generatedAt": "2026-09-18T13:59:18.241Z",
+  "generatedAt": "2026-09-18T17:25:31.779Z",
   "lockfileVersion": 3,
   "componentCount": 540,
   "installScriptPackages": [
@@ -5075,7 +5075,7 @@
     },
     {
       "name": "unicorn-magic",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "license": "MIT",
       "dev": true,
       "optional": false,

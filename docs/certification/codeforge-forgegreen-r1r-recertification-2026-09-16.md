@@ -14,7 +14,7 @@ Repository truth at campaign start: branch `forger-digital-solutions-forgegreen-
 
 The previous control and experiment both avoided `47,094` bytes because the old arm toggle changed only the `ForgeGreenAdvisor` behavior. In `packages/server/src/agent-runtime.ts`, `DuplicateActionSupervisor` is created for every run and the runtime calls `compressToolOutput(toolExec.output, ...)` for every executed tool result. The compressed representation is placed in model history while the authoritative output remains on the tool record and event stream.
 
-The disabled arm therefore still compressed the same repetitive log as the enabled arm. The advisor flag gates context caches, immutable-fragment reuse, stable-prefix observation, model-request deduplication, and verification recommendations; it is not a switch for tool-output compression or duplicate/no-progress supervision. The exact trace is recorded in [causality-audit.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/causality-audit.json).
+The disabled arm therefore still compressed the same repetitive log as the enabled arm. The advisor flag gates context caches, immutable-fragment reuse, stable-prefix observation, model-request deduplication, and verification recommendations; it is not a switch for tool-output compression or duplicate/no-progress supervision. The exact trace is recorded in [causality-audit.json](../evidence/forgegreen-r1r/causality-audit.json).
 
 ## 4. Pre-Existing vs R1 Behavior
 
@@ -26,7 +26,7 @@ No production compression-disable bypass was added. A safe behavioral A/B contro
 
 Exact route: `openrouter/nvidia/nemotron-3-super-120b-a12b:free`.
 
-One bounded POST was sent with one message, `max_tokens: 1`, no tools, no fallback, and zero retries. It returned HTTP `200` in `508 ms`, but no usable `choices` response was observed. Classification: `MALFORMED_PROVIDER_RESPONSE` / provider availability ambiguous. Evidence: [provider-preflight.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/provider-preflight.json).
+One bounded POST was sent with one message, `max_tokens: 1`, no tools, no fallback, and zero retries. It returned HTTP `200` in `508 ms`, but no usable `choices` response was observed. Classification: `MALFORMED_PROVIDER_RESPONSE` / provider availability ambiguous. Evidence: [provider-preflight.json](../evidence/forgegreen-r1r/provider-preflight.json).
 
 ## 6. Matched Pair
 
@@ -42,7 +42,7 @@ Not started. The preflight failed closed before live agent execution. The harnes
 
 ## 9. Tool-Efficiency Result
 
-No new live bytes were measured because the pair did not run. The previous live campaign measured `47,094` avoided bytes in both arms; that is valid within-run observation of the existing compression mechanism, not an R1 causal delta. Current evidence is [tool-efficiency.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/tool-efficiency.json).
+No new live bytes were measured because the pair did not run. The previous live campaign measured `47,094` avoided bytes in both arms; that is valid within-run observation of the existing compression mechanism, not an R1 causal delta. Current evidence is [tool-efficiency.json](../evidence/forgegreen-r1r/tool-efficiency.json).
 
 ## 10. Causal Delta
 
@@ -54,7 +54,7 @@ The previous live pair observed zero natural duplicate suppressions and zero no-
 
 ## 12. ForgeVerify Parity
 
-`NOT_REACHED` for the R1R pair. The authority boundary remains intact: ForgeVerify is independent of ForgeGreen efficiency accounting. See [verification-parity.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/verification-parity.json).
+`NOT_REACHED` for the R1R pair. The authority boundary remains intact: ForgeVerify is independent of ForgeGreen efficiency accounting. See [verification-parity.json](../evidence/forgegreen-r1r/verification-parity.json).
 
 ## 13. Completion Gate Parity
 
@@ -62,7 +62,7 @@ The previous live pair observed zero natural duplicate suppressions and zero no-
 
 ## 14. ForgeGreen Overhead
 
-No new live overhead was measured. Prompt-cache telemetry remains `UNKNOWN` for this campaign. The existing local telemetry and compression tests passed; [overhead.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/overhead.json) records the live measurement as not reached.
+No new live overhead was measured. Prompt-cache telemetry remains `UNKNOWN` for this campaign. The existing local telemetry and compression tests passed; [overhead.json](../evidence/forgegreen-r1r/overhead.json) records the live measurement as not reached.
 
 ## 15. Provider Failure Classification
 
@@ -74,18 +74,18 @@ Unchanged: `CODEFORGE_R4_CAPACITY_LIMITED_EXTERNAL_EVIDENCE_PENDING`. The single
 
 ## 17. Tests / Build
 
-Focused ForgeGreen/authority tests: `52 passed` across 7 files. Typecheck/build compilation: PASS. Full Vitest: `2,499 passed, 1 known archived R3 smoke failure, 36 skipped`; no new R1R failure was observed. Details: [test-summary.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/test-summary.json).
+Focused ForgeGreen/authority tests: `52 passed` across 7 files. Typecheck/build compilation: PASS. Full Vitest: `2,499 passed, 1 known archived R3 smoke failure, 36 skipped`; no new R1R failure was observed. Details: [test-summary.json](../evidence/forgegreen-r1r/test-summary.json).
 
 ## 18. Evidence Files
 
-- [causality-audit.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/causality-audit.json)
-- [provider-preflight.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/provider-preflight.json)
-- [matched-pair.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/matched-pair.json)
-- [matched-campaign.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/matched-campaign.json)
-- [tool-efficiency.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/tool-efficiency.json)
-- [verification-parity.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/verification-parity.json)
-- [overhead.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/overhead.json)
-- [test-summary.json](/G:/CodeForge/docs/evidence/forgegreen-r1r/test-summary.json)
+- [causality-audit.json](../evidence/forgegreen-r1r/causality-audit.json)
+- [provider-preflight.json](../evidence/forgegreen-r1r/provider-preflight.json)
+- [matched-pair.json](../evidence/forgegreen-r1r/matched-pair.json)
+- [matched-campaign.json](../evidence/forgegreen-r1r/matched-campaign.json)
+- [tool-efficiency.json](../evidence/forgegreen-r1r/tool-efficiency.json)
+- [verification-parity.json](../evidence/forgegreen-r1r/verification-parity.json)
+- [overhead.json](../evidence/forgegreen-r1r/overhead.json)
+- [test-summary.json](../evidence/forgegreen-r1r/test-summary.json)
 
 ## 19. Commit
 

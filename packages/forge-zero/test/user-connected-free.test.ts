@@ -37,6 +37,7 @@ describe("Ollama user-connected Free boundary", () => {
     expect(evaluateOllamaFreeOnlyAdmission({ usage: usage({ includedRemainingUsd: 0 }), estimatedUsageUsd: 1 }).state).toBe("EXHAUSTED");
     expect(evaluateOllamaFreeOnlyAdmission({ usage: usage({ includedRemainingUsd: 0, purchasedUsageCreditsUsd: 20 }), estimatedUsageUsd: 1 }).allowed).toBe(false);
     expect(evaluateOllamaFreeOnlyAdmission({ usage: usage({ includedRemainingUsd: undefined, purchasedUsageCreditsUsd: 20, hardStopProven: false }), estimatedUsageUsd: 1 }).state).toBe("UNKNOWN_BALANCE");
+    expect(evaluateOllamaFreeOnlyAdmission({ usage: usage({ includedRemainingUsd: undefined, purchasedUsageCreditsUsd: 0 }), estimatedUsageUsd: 1, allowAtRisk: true }).allowed).toBe(false);
   });
 
   it("keeps accounts independent and scopes capacity identities without exposing raw ids", () => {
@@ -67,9 +68,10 @@ describe("Ollama user-connected Free boundary", () => {
     });
     expect(forecastCapacity({ routes: [route], taskDemand: { taskKind: "code", requests: 1, inputTokens: 0, outputTokens: 0, credits: 1, concurrency: 1, roleRequests: { coder: 1 } }, now: Date.parse(observedAt) }).estimatedTaskUnits).toBe(1);
     const ledger = new CapacityReservationLedger({ routes: [route], firstRunReserveRequests: 0, firstRunReserveTokens: 0, now: () => Date.parse(observedAt) });
-    const request = (id: string) => ({ reservationId: id, userId: "user-a", routeIds: [route.routeId], role: "coder", taskKind: "code", requests: 1, inputTokens: 0, outputTokens: 0, credits: 1, isNewUser: true, priority: "normal" as const, createdAt: observedAt, leaseUntil: "2026-09-18T12:05:00.000Z" });
+    const request = (id: string, userId = "user-a") => ({ reservationId: id, userId, routeIds: [route.routeId], role: "coder", taskKind: "code", requests: 1, inputTokens: 0, outputTokens: 0, credits: 1, capacityIdentity: hashUserAccountIdentity(userId), isNewUser: true, priority: "normal" as const, createdAt: observedAt, leaseUntil: "2026-09-18T12:05:00.000Z" });
     expect(ledger.reserve(request("one")).admitted).toBe(true);
     expect(ledger.reserve(request("two")).reason).toBe("CAPACITY_EXHAUSTED");
+    expect(ledger.reserve(request("other-user", "user-b")).reason).toBe("NO_ELIGIBLE_ROUTE");
   });
 
   it("keeps the 8-Bit fleet projection isolated per connected user", () => {

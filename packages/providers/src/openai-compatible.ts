@@ -106,15 +106,22 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
   async listModels(): Promise<ProviderModel[]> {
     const key = this.getApiKey();
     const url = `${this.baseUrl()}${this.cfg.modelsPath ?? "/models"}`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     let res: Response;
     try {
-      res = await this.fetchFn(url, { headers: this.headers(key) });
+      res = await this.fetchFn(url, { headers: this.headers(key), signal: controller.signal });
     } catch (e) {
+      if (e instanceof Error && e.name === "AbortError") {
+        throw new ProviderError(`${this.providerId} model discovery timed out`, "TIMEOUT", true);
+      }
       throw new ProviderError(
         `${this.providerId} listModels failed: ${e instanceof Error ? e.message : String(e)}`,
         "LIST_MODELS_FAILED",
         true,
       );
+    } finally {
+      clearTimeout(timeout);
     }
     this.observe(res);
     if (!res.ok) throw this.handleError(res.status, await safeText(res), res);
@@ -191,6 +198,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      let receivedDone = false;
       let current: { id: string; name: string; arguments: string } | null = null;
 
       while (true) {
@@ -204,6 +212,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
           if (!trimmed.startsWith("data:")) continue;
           const payload = trimmed.slice(5).trim();
           if (payload === "[DONE]") {
+            receivedDone = true;
             if (current) {
               yield { type: "tool_call_completed", toolCallId: current.id, toolName: current.name, arguments: current.arguments };
               current = null;
@@ -252,7 +261,9 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
           }
         }
       }
-      yield { type: "finish", finishReason: "stop" };
+      if (!receivedDone) {
+        throw new ProviderError(`${this.providerId} stream ended before the provider sent [DONE]`, "STREAM_INTERRUPTED", true);
+      }
     } catch (e) {
       if (e instanceof ProviderError) throw e;
       if (e instanceof Error && e.name === "AbortError") return;
@@ -297,15 +308,19 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       return { status: "auth_required", error: "No credential configured" };
     }
     const start = Date.now();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
-      const res = await this.fetchFn(`${this.baseUrl()}${this.cfg.modelsPath ?? "/models"}`, { headers: this.headers(key) });
+      const res = await this.fetchFn(`${this.baseUrl()}${this.cfg.modelsPath ?? "/models"}`, { headers: this.headers(key), signal: controller.signal });
       const latencyMs = Date.now() - start;
       if (res.ok) return { status: "available", latencyMs };
       if (res.status === 401 || res.status === 403) return { status: "auth_required", latencyMs };
       if (res.status === 429) return { status: "rate_limited", latencyMs, retryAfter: parseRetryAfter(res) };
       return { status: "degraded", latencyMs, error: `HTTP ${res.status}` };
     } catch (e) {
-      return { status: "offline", error: e instanceof Error ? e.message : String(e) };
+      return { status: "offline", error: e instanceof Error && e.name === "AbortError" ? "Provider health check timed out" : e instanceof Error ? e.message : String(e) };
+    } finally {
+      clearTimeout(timeout);
     }
   }
 

@@ -24,7 +24,7 @@ silently fall back to paid inference**.
 
 **[⬇ Download the latest release](https://github.com/Forger-Digital-Solutions/CodeForge/releases/latest)** — Windows 10/11 (x64).
 
-Current release: **[v0.2.0](https://github.com/Forger-Digital-Solutions/CodeForge/releases/tag/v0.2.0)** — *Previous: [v0.1.0](https://github.com/Forger-Digital-Solutions/CodeForge/releases/tag/v0.1.0)*
+Current source version: **v0.4.0** — local release candidate; the latest published GitHub release remains [v0.2.0](https://github.com/Forger-Digital-Solutions/CodeForge/releases/tag/v0.2.0).
 
 | Build | File | Notes |
 | --- | --- | --- |
@@ -44,7 +44,7 @@ Current release: **[v0.2.0](https://github.com/Forger-Digital-Solutions/CodeForg
 
 ## Status
 
-**v0.2.0 — released** ([GitHub Release](https://github.com/Forger-Digital-Solutions/CodeForge/releases/tag/v0.2.0)). Built and verified on GitHub-hosted Windows runners (`windows-2022` build + `windows-2025` consumer acceptance) from certified commit `805195f`. Graphite/diamond UI, packaged persistence, and free-only security verified. Previous: **v0.1.0 — released** ([GitHub Release](https://github.com/Forger-Digital-Solutions/CodeForge/releases/tag/v0.1.0)). See `docs/` for architecture and research.
+**v0.4.0 — local release candidate**. The source tree has completed the current hardening campaign locally; no GitHub release or deployment has been created from this campaign. The last published release is **v0.2.0** ([GitHub Release](https://github.com/Forger-Digital-Solutions/CodeForge/releases/tag/v0.2.0)). See `CODEFORGE-FULL-SYSTEM-RC-CERTIFICATION.md` for current evidence, limitations, and external blockers.
 
 ## Quick Start
 
@@ -65,7 +65,7 @@ npm run forge -- version
 - `CONTRIBUTING.md` — how to contribute
 - `AGENTS.md` — AI agent instructions for this repo
 - `.env.example` — optional environment variables
-- `docs/phase-10.6-report.md` — current implementation status (authoritative audit)
+- `CODEFORGE-FULL-SYSTEM-RC-CERTIFICATION.md` — current release-candidate audit and evidence
 - `docs/research/` — OpenCode/Kilo research and CodeForge architecture decisions
 
 Planned documentation (now written):

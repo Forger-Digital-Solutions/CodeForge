@@ -13,7 +13,7 @@ CodeForge is designed with a **local-first, zero-telemetry architecture**. We be
 When you use the CodeForge Desktop Application:
 - **Local SQLite Database (`sessions.db`)**: Your session chat histories, agent event traces, tool execution outputs, and local project paths are stored solely in an SQLite database on your local hard drive.
 - **Source Code**: CodeForge inspects, edits, and creates files locally within your authorized workspace. CodeForge servers never clone, sync, or host your local source code repositories.
-- **Credential Storage**: Third-party AI provider API keys (OpenRouter, Google, Groq) and CodeForge Cloud authentication tokens are stored locally on your device in encrypted form using operating system-backed hardware encryption via Electron's `safeStorage` API (DPAPI on Windows, Keychain on macOS, Secret Service on Linux).
+- **Credential Storage**: Third-party AI provider API keys (OpenRouter, Google, Groq) and CodeForge Cloud authentication tokens are stored locally on your device in encrypted form using Electron's `safeStorage` API, with operating-system protection such as DPAPI on Windows, Keychain on macOS, or Secret Service on Linux when available.
 - **No Access by CodeForge**: Forger Digital Solutions does not have remote access to your local workstation, does not back up your local database, and cannot view your local files.
 
 ## 3. What Data Is Processed by CodeForge Cloud

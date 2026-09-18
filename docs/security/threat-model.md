@@ -60,7 +60,7 @@ a hosted service. The threats that matter are therefore not only "web app" threa
 ## Threat catalogue
 
 Each entry: threat → controls → residual risk. "R-" numbers are tracked in the
-[certification report](../certification/codeforge-security-legal-trust-r1-2026-09-18.md).
+[final campaign report](../../CODEFORGE-FULL-SYSTEM-RC-CERTIFICATION.md).
 
 ### Database compromise (theft of PostgreSQL or a backup)
 - Controls: refresh/session/desktop-code stored as SHA-256 hashes; GitHub access tokens never stored; PKCE verifier AES-256-GCM sealed with a key that lives only in the process env; JWT secret not in DB, so no token can be minted from the dump.
@@ -68,7 +68,7 @@ Each entry: threat → controls → residual risk. "R-" numbers are tracked in t
 
 ### Render/Supabase/CI credential leakage
 - Controls: secrets only in env; `describeConfig` prints a redacted summary; CI jobs are secret-free except the manual real-smoke job; `.env` ignored; secret scan gate.
-- Residual (R-02): a full env leak is a full compromise (as with any service). Playbook: [incident-response.md](./incident-response.md) §"Secret compromise". No managed KMS yet (ARCHITECTURALLY PREPARED).
+- Residual (R-02): a full env leak is a full compromise (as with any service). Playbook: the residual-risk and rotation controls in [key-management-and-rotation.md](./key-management-and-rotation.md) §"Secret compromise". No managed KMS yet (ARCHITECTURALLY PREPARED).
 
 ### Compromised provider adapter / malicious model response
 - Controls: adapters run server-side; the model only ever receives request content; tool-call arguments are validated by the tool layer; outputs are redacted; workspace boundary enforced regardless of what the model asks for.
@@ -123,7 +123,7 @@ Each entry: threat → controls → residual risk. "R-" numbers are tracked in t
 - Residual (R-15): Render's ephemeral disk may retain bundle bytes until the container is replaced — REQUIRES DEPLOYMENT CONFIGURATION (persistent disk with encryption, or object storage with lifecycle rules).
 
 ### Backup compromise
-- See "Database compromise". Backups are provider-managed (Supabase/Neon) — REQUIRES THIRD-PARTY VERIFICATION of encryption and retention. Encrypted rows restore correctly only with the key ring ([backups-and-recovery.md](./backups-and-recovery.md)).
+- See "Database compromise". Backups are provider-managed (Supabase/Neon) — REQUIRES THIRD-PARTY VERIFICATION of encryption and retention. Encrypted rows restore correctly only with the key ring ([encryption.md](./encryption.md)).
 
 ### Secrets entering LLM context, tool output, crash reports
 - Controls: path-based exclusion from context; redaction of tool output, diffs, errors, and journal entries before they reach the model, the UI, or SQLite; no crash reporter.

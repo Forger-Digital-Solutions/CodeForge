@@ -104,7 +104,7 @@ export function evaluateOllamaFreeOnlyAdmission(input: OllamaFreeOnlyAdmissionIn
     return { ...base, allowed: false, state: "PAID_CROSSOVER_BLOCKED", reason: "Included Ollama usage cannot be separated from purchased credits." };
   }
   if (remaining === undefined || !Number.isFinite(remaining)) {
-    return { ...base, allowed: input.allowAtRisk === true && purchased === 0, state: "UNKNOWN_BALANCE", reason: "Included Ollama balance is unknown; automatic Free routing is fail-closed." };
+    return { ...base, allowed: false, state: "UNKNOWN_BALANCE", reason: "Included Ollama balance is unknown; automatic Free routing is fail-closed." };
   }
   if (remaining <= 0 || remaining < estimated) {
     return { ...base, allowed: false, state: "EXHAUSTED", reason: remaining <= 0 ? "Ollama Free allowance exhausted." : "The estimated request exceeds the remaining Ollama Free allowance." };

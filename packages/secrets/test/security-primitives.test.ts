@@ -74,7 +74,7 @@ describe("redactValue — structural redaction for loggers", () => {
     expect(JSON.stringify(redactValue(deep))).toContain("[depth-limit]");
     expect(JSON.stringify(redactValue(Buffer.from("secret")))).toContain("[binary 6 bytes]");
     expect((redactValue("x".repeat(10_000)) as string).length).toBeLessThan(5000);
-    expect((redactValue(new Array(500).fill("a")) as unknown[]).length).toBe(100);
+    expect((redactValue(Array.from({ length: 500 }, () => "a")) as unknown[]).length).toBe(100);
   });
 });
 

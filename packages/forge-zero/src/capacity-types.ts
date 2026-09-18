@@ -158,6 +158,8 @@ export interface CapacityReservationRequest {
   outputTokens: number;
   credits?: number;
   providerUnits?: number;
+  /** Stable owner identity required when reserving a per-user pool. */
+  capacityIdentity?: string;
   isNewUser: boolean;
   priority: "first_run" | "normal" | "recovery";
   createdAt: string;

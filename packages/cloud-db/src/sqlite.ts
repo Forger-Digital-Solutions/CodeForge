@@ -58,6 +58,20 @@ export interface SQLiteDatabase {
   close(): void;
 }
 
+function mapCreditLedgerRow(row: Record<string, unknown>): CreditLedgerRecord {
+  return {
+    id: String(row.id),
+    userId: String(row.user_id),
+    amount: Number(row.amount),
+    balanceAfter: Number(row.balance_after),
+    eventType: row.eventType as CreditEventType,
+    requestId: row.request_id ? String(row.request_id) : undefined,
+    description: row.description ? String(row.description) : undefined,
+    metadata: row.metadata ? JSON.parse(String(row.metadata)) : undefined,
+    createdAt: String(row.created_at),
+  };
+}
+
 function openDatabase(dbPath = ":memory:"): SQLiteDatabase {
   try {
     const { DatabaseSync } = require_("node:sqlite");
@@ -684,6 +698,10 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     description?: string;
     metadata?: Record<string, unknown>;
   }): CreditLedgerRecord {
+    if (params.requestId) {
+      const existing = this.db.prepare(`SELECT * FROM credit_ledger WHERE user_id = @userId AND request_id = @requestId AND eventType = @eventType ORDER BY rowid DESC LIMIT 1`).get({ userId: params.userId, requestId: params.requestId, eventType: params.eventType }) as Record<string, unknown> | undefined;
+      if (existing) return mapCreditLedgerRow(existing);
+    }
     const currentBalance = this.getCreditBalanceSync(params.userId);
     const newBalance = currentBalance + params.amount;
     if (newBalance < 0) {
@@ -1060,6 +1078,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     actualCredits: number;
     settleDescription?: string;
   }): Promise<{ reservation: ReservationRecord; transitioned: boolean; balanceAfter: number }> {
+    if (!Number.isSafeInteger(params.actualCredits) || params.actualCredits < 0) throw new Error("actualCredits must be a non-negative safe integer");
     const res = this.getReservationByRequestIdSync(params.requestId);
     if (!res) {
       throw new Error(`Reservation for request ${params.requestId} not found`);
@@ -1075,9 +1094,14 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     }
 
     return this.txSync(() => {
+      const current = this.getReservationByRequestIdSync(params.requestId);
+      if (!current) throw new Error(`Reservation for request ${params.requestId} not found`);
+      const additionalCredits = Math.max(0, params.actualCredits - current.reservedCredits);
+      const availableBalance = this.getCreditBalanceSync(params.userId);
+      if (additionalCredits > availableBalance) throw new Error(`Insufficient credit balance to settle request ${params.requestId}`);
       const reservation = this.commitReservationSync(params.requestId, params.userId, params.actualCredits);
       const diff = reservation.reservedCredits - params.actualCredits;
-      let balanceAfter = this.getCreditBalanceSync(params.userId);
+      let balanceAfter = availableBalance;
 
       if (diff > 0) {
         const release = this.appendLedgerSync({

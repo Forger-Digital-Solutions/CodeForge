@@ -49,6 +49,7 @@ export class CapacityReservationLedger {
     for (const routeId of request.routeIds) {
       const route = this.routes.get(routeId);
       if (!route || !route.roles.includes(request.role) || !isFreeRouteEligible(route, DEFAULT_FREE_CAPACITY_POLICY, this.dataContext) || freeRouteExclusionReason(route, DEFAULT_FREE_CAPACITY_POLICY, this.dataContext)) continue;
+      if (route.capacityPoolScope === "PER_USER_POOL" && route.capacityIdentity !== undefined && request.capacityIdentity !== route.capacityIdentity) continue;
       sawEligibleRoute = true;
       // Two model routes backed by one provider account must contend for the same reservation
       // budget. Distributed pools are deliberately isolated by their natural end user.

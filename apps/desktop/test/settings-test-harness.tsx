@@ -61,7 +61,7 @@ export function createSettingsContext(overrides: Partial<SettingsContextValue> =
     rebuildRepositoryIndex: async () => undefined,
     runtimeStatus: null,
     systemInfo: {
-      appVersion: "0.3.0",
+      appVersion: "0.4.0",
       electron: "33.4.11",
       node: "22.0.0",
       chrome: "130.0.0.0",

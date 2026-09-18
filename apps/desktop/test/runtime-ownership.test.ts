@@ -19,7 +19,7 @@ const metadata: RuntimeMetadata = {
   profilePath: "C:\\profiles\\one",
   runtimeEndpoint: "http://127.0.0.1:43127/",
   startupTimestamp: "2026-09-13T00:00:00.000Z",
-  applicationVersion: "0.3.0",
+  applicationVersion: "0.4.0",
 };
 
 describe("desktop runtime ownership metadata", () => {

@@ -71,6 +71,17 @@ describe("Cloud Usage Engine", () => {
     expect(summary.recentEvents[0]?.creditsConsumed).toBe(1400);
   });
 
+  it("rejects malformed or over-budget settlement input without creating credit", async () => {
+    const user = await db.createUser({ displayName: "Bounded User", primaryIdentity: "github:bounded" });
+    await db.appendLedgerEvent({ userId: user.id, amount: 10_000, eventType: "FREE_ALLOWANCE_GRANTED" });
+    await expect(engine.reserveBudget({ userId: user.id, estimatedCredits: -1, requestId: "invalid-reserve", providerId: "groq", modelId: "m" })).rejects.toThrow(/estimatedCredits/);
+    const reservation = await engine.reserveBudget({ userId: user.id, estimatedCredits: 10_000, requestId: "over-settlement", providerId: "groq", modelId: "m" });
+    await expect(engine.commitUsage({ userId: user.id, requestId: "over-settlement", reservationId: reservation.reservationId, providerId: "groq", modelId: "m", inputTokens: 10_001, outputTokens: 0 })).rejects.toThrow(/Insufficient credit balance/);
+    expect(await db.getCreditBalance(user.id)).toBe(0);
+    const released = await engine.releaseReservation({ userId: user.id, requestId: "over-settlement", reason: "settlement rejected" });
+    expect(released.balanceAfter).toBe(10_000);
+  });
+
   it("releases entire reservation on failed or cancelled requests", async () => {
     const user = await db.createUser({ displayName: "Coder 2", primaryIdentity: "github:999" });
     await db.appendLedgerEvent({

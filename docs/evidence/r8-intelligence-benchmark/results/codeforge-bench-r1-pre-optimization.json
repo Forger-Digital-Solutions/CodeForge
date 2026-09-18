@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "benchmarkVersion": "CodeForgeBench-R1",
-  "generatedAt": "2026-09-17T10:18:03.288Z",
+  "generatedAt": "2026-09-18T17:22:07.659Z",
   "phase": "CODEFORGE_R8_PRE_OPTIMIZATION_BASELINE",
   "executionStatus": "NO_MODEL_EXECUTIONS_RECORDED",
   "evidencePolicy": "Only independently verified, non-rejected attempts count as successes. Empty or blocked live-route evidence is preserved rather than imputed.",

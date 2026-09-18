@@ -83,6 +83,13 @@ describe("OpenAICompatibleAdapter transport", () => {
     expect(completed.arguments).toBe('{"path":"a.ts"}');
   });
 
+  it("rejects a stream that ends before the provider sends [DONE]", async () => {
+    const fetchFn = (async () => sseResponse([
+      'data: {"choices":[{"delta":{"content":"partial"}}]}',
+    ])) as unknown as typeof fetch;
+    await expect(collect(cfg(fetchFn).streamChat({ model: "m", messages: [{ role: "user", content: "hi" }] }))).rejects.toMatchObject({ code: "STREAM_INTERRUPTED" });
+  });
+
   it("maps 401 to an auth ProviderError and healthCheck auth_required", async () => {
     const fetchFn = (async () => new Response("no", { status: 401 })) as unknown as typeof fetch;
     await expect(cfg(fetchFn).chat({ model: "m", messages: [{ role: "user", content: "x" }] })).rejects.toMatchObject({ code: "AUTH_ERROR" });

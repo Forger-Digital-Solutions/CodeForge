@@ -97,6 +97,26 @@ describe("StripeBillingService", () => {
     expect(dupRes.action).toBe("duplicate_skipped");
     expect(await db.getCreditBalance(user.id)).toBe(5_500_000);
 
+    // Stripe can deliver the initial invoice after checkout.session.completed. The deterministic
+    // ledger request id must prevent a second initial allowance grant.
+    const initialInvoiceEvent = {
+      id: "evt_inv_initial_1",
+      type: "invoice.paid",
+      created: Math.floor(Date.now() / 1000),
+      data: {
+        object: {
+          id: "in_initial_123",
+          subscription: "sub_pro_1",
+          customer: "cus_sub_1",
+          billing_reason: "subscription_create",
+          lines: { data: [{ period: { start: Math.floor(Date.now() / 1000), end: Math.floor(Date.now() / 1000) + 30 * 24 * 3600 } }] },
+        },
+      },
+    };
+    const initialInvoiceResult = await billing.handleWebhookEvent(initialInvoiceEvent);
+    expect(initialInvoiceResult.action).toBe("pro_subscription_renewed");
+    expect(await db.getCreditBalance(user.id)).toBe(5_500_000);
+
     // 2. Monthly recurring renewal invoice
     const renewalInvoiceEvent = {
       id: "evt_inv_renewal_1",

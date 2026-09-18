@@ -186,8 +186,9 @@ export class StripeBillingService {
         userId,
         amount: 5_000_000,
         eventType: "SUBSCRIPTION_ALLOWANCE_GRANTED",
+        requestId: `subscription:${session.subscription}:initial`,
         description: "CodeForge Pro subscription credit grant",
-        metadata: { stripeEventId: event.id, subscriptionId: session.subscription, checkoutSessionId: session.id },
+        metadata: { stripeEventId: event.id, subscriptionId: session.subscription, checkoutSessionId: session.id, billingReason: "subscription_create" },
       });
       return "pro_subscription_activated";
     }
@@ -197,6 +198,7 @@ export class StripeBillingService {
         userId,
         amount: 1_000_000,
         eventType: "CREDIT_PURCHASED",
+        requestId: `stripe:${event.id}:credit-pack`,
         description: "CodeForge 1M Credit Pack Purchase",
         metadata: { stripeEventId: event.id, checkoutSessionId: session.id },
       });
@@ -271,8 +273,9 @@ export class StripeBillingService {
                 userId: existing.userId,
                 amount: 5_000_000,
                 eventType: "SUBSCRIPTION_ALLOWANCE_GRANTED",
+                requestId: invoice.billing_reason === "subscription_create" ? `subscription:${invoice.subscription}:initial` : `subscription:${invoice.subscription}:${periodStart}`,
                 description: `CodeForge Pro Monthly Renewal Allowance (${periodStart.slice(0, 10)})`,
-                metadata: { stripeEventId: event.id, invoiceId: (invoice as any).id, subscriptionId: invoice.subscription },
+                metadata: { stripeEventId: event.id, invoiceId: (invoice as any).id, subscriptionId: invoice.subscription, billingReason: invoice.billing_reason },
               });
               action = "pro_subscription_renewed";
             } else {

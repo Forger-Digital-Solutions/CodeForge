@@ -862,6 +862,10 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       metadata?: Record<string, unknown>;
     },
   ): Promise<CreditLedgerRecord> {
+    if (params.requestId) {
+      const existing = await client.query(`SELECT * FROM credit_ledger WHERE user_id = $1 AND request_id = $2 AND eventType = $3 ORDER BY seq DESC LIMIT 1`, [params.userId, params.requestId, params.eventType]);
+      if (existing.rows.length > 0) return this.mapCreditLedgerRow(existing.rows[0]);
+    }
     const currentBalance = await this.getCreditBalanceWithClient(client, params.userId);
     const newBalance = currentBalance + params.amount;
     if (newBalance < 0) {
@@ -1214,6 +1218,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     actualCredits: number;
     settleDescription?: string;
   }): Promise<{ reservation: ReservationRecord; transitioned: boolean; balanceAfter: number }> {
+    if (!Number.isSafeInteger(params.actualCredits) || params.actualCredits < 0) throw new Error("actualCredits must be a non-negative safe integer");
     return this.withTx(async (client) => {
       const resRes = await client.query(`SELECT * FROM reservations WHERE request_id = $1 FOR UPDATE`, [params.requestId]);
       if (resRes.rows.length === 0) {
@@ -1232,6 +1237,9 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       }
 
       await client.query(`SELECT id FROM users WHERE id = $1 FOR UPDATE`, [params.userId]);
+      const availableBalance = await this.getCreditBalanceWithClient(client, params.userId);
+      const additionalCredits = Math.max(0, params.actualCredits - res.reservedCredits);
+      if (additionalCredits > availableBalance) throw new Error(`Insufficient credit balance to settle request ${params.requestId}`);
 
       const now = new Date().toISOString();
       const updateRes = await client.query(
@@ -1250,7 +1258,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
 
       const updatedReservation = this.mapReservationRow(updateRes.rows[0]);
       const diff = updatedReservation.reservedCredits - params.actualCredits;
-      let balanceAfter = await this.getCreditBalanceWithClient(client, params.userId);
+      let balanceAfter = availableBalance;
 
       if (diff > 0) {
         const release = await this.appendLedgerWithClient(client, {

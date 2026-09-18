@@ -272,6 +272,7 @@ export class ProviderConnections {
   resolveField(providerId: string, fieldId: string): { value: string; source: CredentialSource; variable?: string } | undefined {
     const def = this.definition(providerId);
     if (!def) return undefined;
+    if (def.userConnectedFree && this.host.ollamaUserConnectedFreeEnabled !== true) return undefined;
     const storedKey = fieldId === "apiKey" ? this.credentialStorageKey(providerId) : configFieldKey(providerId, fieldId);
     const stored = this.host.secrets.get(storedKey) ?? (providerId === "cloudflare-workers-ai" && fieldId === "accountId" ? this.host.secrets.get("cloudflare-account-id") : undefined);
     if (stored) return { value: stored, source: this.storedSource(providerId) };
@@ -542,6 +543,7 @@ export class ProviderConnections {
   async validate(providerId: string, fields: Record<string, unknown>): Promise<ConnectResult> {
     const def = this.definition(providerId);
     if (!def || !def.implemented) return { ok: false, error: "Provider is not supported" };
+    if (def.userConnectedFree && this.host.ollamaUserConnectedFreeEnabled !== true) return { ok: false, error: "This user-connected provider is disabled by the current feature flag." };
     let values: Record<string, string>;
     try {
       values = this.validateFields(def, fields);
@@ -562,6 +564,7 @@ export class ProviderConnections {
   async connect(providerId: string, fields: Record<string, unknown>, source: CredentialSource = "MANUAL_BYOK"): Promise<ConnectResult> {
     const def = this.definition(providerId);
     if (!def || !def.implemented) return { ok: false, error: "Provider is not supported" };
+    if (def.userConnectedFree && this.host.ollamaUserConnectedFreeEnabled !== true) return { ok: false, error: "This user-connected provider is disabled by the current feature flag." };
     let values: Record<string, string>;
     try {
       values = this.validateFields(def, fields);
@@ -587,6 +590,7 @@ export class ProviderConnections {
   /** Live catalog for a connected provider (renderer dropdown / advanced view). */
   async catalog(providerId: string): Promise<ConnectResult> {
     const def = this.definition(providerId);
+    if (def?.userConnectedFree && this.host.ollamaUserConnectedFreeEnabled !== true) return { ok: false, error: "This user-connected provider is disabled by the current feature flag." };
     const adapter = this.host.providerCatalog.get(providerId);
     if (!def || !adapter) return { ok: false, error: "Provider is not connected" };
     try {

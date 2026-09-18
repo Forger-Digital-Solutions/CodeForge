@@ -74,7 +74,7 @@ Set `CODEFORGE_SMOKE_EXECUTABLE` to run the same full assertions against an inst
 
 `npm run dist --workspace=codeforge-desktop` produces:
 
-- `apps/desktop/release/CodeForge-Setup-0.3.0.exe`
+- `apps/desktop/release/CodeForge-Setup-0.4.0.exe`
 - `apps/desktop/release/CodeForge-Portable.exe`
 - `apps/desktop/release/win-unpacked/CodeForge.exe`
 - `apps/desktop/release/win-unpacked/resources/app.asar`

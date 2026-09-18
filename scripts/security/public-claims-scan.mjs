@@ -36,7 +36,7 @@ const PUBLIC_SURFACES = [
 const SKIP = [/^docs\/legal\/(pass1|pass2|remediation|drafts)\//, /^docs\/legal\/pass3\/(?!proposed-drafts)/, /\.test\./, /\/test\//];
 
 // A line that names a claim in order to forbid, negate, or scan for it is not making the claim.
-const NEGATION = /\b(not|never|no|neither|nor|without|cannot|can't|isn't|is not|are not|does not|do not|don't|doesn't|must not|MUST NOT|prohibited|forbidden|do NOT|NOT|avoid|instead of|rather than|unless|until|claim|claims|claiming|pattern|patterns|regex|scanner|suggestion|false|prohibits?)\b/;
+const NEGATION = /\b(not|never|no|neither|nor|without|cannot|can't|isn't|is not|are not|does not|do not|don't|doesn't|must not|prohibited|forbidden|avoid|instead of|rather than|unless|until|claim|claims|claiming|pattern|patterns|regex|scanner|suggestion|false|prohibits?)\b/i;
 const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // The phrase itself is quoted ("military-grade", `zero knowledge`): it is being mentioned, not asserted.
 function isQuotedMention(line, matchedText) {
@@ -49,8 +49,8 @@ const THIRD_PARTY_NAMES = "Stripe|Supabase|Neon|Render|GitHub|Google|Cloudflare|
 const THIRD_PARTY_ATTRIBUTION = new RegExp(`\\b(${THIRD_PARTY_NAMES})\\b[^.|]{0,160}\\b(SOC|ISO|PCI|HIPAA|FedRAMP|FIPS)\\b|^\\|\\s*\\*{0,2}(${THIRD_PARTY_NAMES})\\b`, "i");
 
 function contextFor(file) {
-  if (/^docs\/(security|privacy)\//.test(file) || /^docs\/certification\//.test(file)) return "PUBLIC_MARKETING";
-  if (/^(README|SECURITY|ARCHITECTURE|CONTRIBUTING)\.md$/.test(file) || /^docs\/legal\//.test(file) || /^docs\/FAQ\.md$/.test(file)) return "PUBLIC_MARKETING";
+  if (file.startsWith("docs/security/") || file.startsWith("docs/privacy/") || file.startsWith("docs/certification/")) return "PUBLIC_MARKETING";
+  if (/^(README|SECURITY|ARCHITECTURE|CONTRIBUTING)\.md$/.test(file) || file.startsWith("docs/legal/") || file === "docs/FAQ.md") return "PUBLIC_MARKETING";
   return "USER_UI";
 }
 

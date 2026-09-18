@@ -46,7 +46,7 @@ function listFiles() {
     .filter(Boolean)
     .filter((file) => !file.split(/[\\/]/).some((segment) => EXCLUDED_SEGMENTS.has(segment)))
     .filter((file) => !BINARY_EXTENSIONS.test(file))
-    .filter((file) => !/package-lock\.json$/.test(file));
+    .filter((file) => !file.endsWith("package-lock.json"));
 }
 
 async function loadAllowlist() {
@@ -82,7 +82,7 @@ function classify(relativePath, line, type) {
     if (token.length < 20 || !/[0-9]/.test(token) || !/[A-Za-z]/.test(token)) return "synthetic";
   }
   // ENV_NAME = process.env.X / undefined / a variable reference — no literal value present.
-  if (/_env$/.test(type) && /(process\.env|undefined|\$\{|\bz\.|\bstring\b|<[^>]+>|\.\.\.)/.test(line)) return "synthetic";
+  if (type.endsWith("_env") && /(process\.env|undefined|\$\{|\bz\.|\bstring\b|<[^>]+>|\.\.\.)/.test(line)) return "synthetic";
   // KEY=            (empty), KEY=...   (elided), KEY=$VAR / KEY=<value>: documentation of a name, not a value.
   if (/^(openrouter_key|groq_key_env|opencode_key|anthropic_key|cloudflare_token|google_api_env|aws_access_key_env|aws_secret_env)$/.test(type)) {
     const value = /_(?:KEY|TOKEN|ID)\s*[:=]\s*['"]?([^'"\s]*)/i.exec(line)?.[1] ?? "";

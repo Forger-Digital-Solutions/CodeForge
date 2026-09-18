@@ -1,6 +1,14 @@
 import type { ICloudDatabase, UsageEventRecord } from "@codeforge/cloud-db";
 import { calculateTokensAndCredits } from "./types.js";
 
+function assertPositiveSafeInteger(value: number, name: string): void {
+  if (!Number.isSafeInteger(value) || value <= 0) throw new Error(`${name} must be a positive safe integer`);
+}
+
+function assertNonNegativeSafeInteger(value: number, name: string): void {
+  if (!Number.isSafeInteger(value) || value < 0) throw new Error(`${name} must be a non-negative safe integer`);
+}
+
 export interface ReserveBudgetParams {
   userId: string;
   estimatedCredits: number;
@@ -35,6 +43,8 @@ export class UsageEngine {
   }
 
   async reserveBudget(params: ReserveBudgetParams): Promise<{ reservationId: string; reservedCredits: number; balanceAfter: number }> {
+    assertPositiveSafeInteger(params.estimatedCredits, "estimatedCredits");
+    if (params.maxConcurrentTasks !== undefined) assertPositiveSafeInteger(params.maxConcurrentTasks, "maxConcurrentTasks");
     // 1. Check account-level spend limit if configured
     const settings = await this.db.getAccountSettings(params.userId);
     if (settings.spendLimitUsd > 0) {
@@ -78,6 +88,11 @@ export class UsageEngine {
   }
 
   async commitUsage(params: CommitUsageParams): Promise<{ actualCredits: number; providerCostUsd: number; balanceAfter: number }> {
+    assertNonNegativeSafeInteger(params.inputTokens, "inputTokens");
+    assertNonNegativeSafeInteger(params.outputTokens, "outputTokens");
+    if (params.cachedTokens !== undefined) assertNonNegativeSafeInteger(params.cachedTokens, "cachedTokens");
+    if ((params.cachedTokens ?? 0) > params.inputTokens) throw new Error("cachedTokens cannot exceed inputTokens");
+    if (params.providerCostUsd !== undefined && (!Number.isFinite(params.providerCostUsd) || params.providerCostUsd < 0)) throw new Error("providerCostUsd must be a non-negative finite number");
     const calculation = calculateTokensAndCredits({
       inputTokens: params.inputTokens,
       outputTokens: params.outputTokens,

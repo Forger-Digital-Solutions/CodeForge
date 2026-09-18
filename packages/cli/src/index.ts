@@ -5,7 +5,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { createServer, generateControlPlaneToken } from "@codeforge/server";
 
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
 
 function printHelp(): void {
   console.log(`forge ${VERSION} — CodeForge CLI

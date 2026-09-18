@@ -17,7 +17,7 @@ interface Harness {
   discovered: string[];
 }
 
-function harness(env: Record<string, string | undefined>, fetchModels?: (providerId: string) => ProviderModel[]): Harness {
+function harness(env: Record<string, string | undefined>, fetchModels?: (providerId: string) => ProviderModel[], ollamaEnabled = true): Harness {
   const settings: Record<string, unknown> = {};
   const secrets = new Map<string, string>();
   const catalog = new InMemoryProviderCatalog();
@@ -56,7 +56,7 @@ function harness(env: Record<string, string | undefined>, fetchModels?: (provide
     providerAuthState: () => "ok",
     maxSecretLength: 512,
     userId: "user-a",
-    ollamaUserConnectedFreeEnabled: true,
+    ollamaUserConnectedFreeEnabled: ollamaEnabled,
   };
   const connections = new ProviderConnections(host);
   // Restore fetch lazily on process exit; tests only read within this module.
@@ -207,6 +207,13 @@ describe("ProviderConnections — ZCode-style connect", () => {
     expect(serialized).not.toContain(secret);
     expect(serialized).toContain("USER_CONNECTED_FREE");
     await h.connections.disconnect("ollama-cloud");
+    expect(h.secrets.size).toBe(0);
+  });
+
+  it("enforces the Ollama rollout flag in the trusted connection authority", async () => {
+    const h = harness({}, undefined, false);
+    await expect(h.connections.validate("ollama-cloud", { apiKey: "ollama_user_key_0123456789abcdef" })).resolves.toMatchObject({ ok: false });
+    await expect(h.connections.connect("ollama-cloud", { apiKey: "ollama_user_key_0123456789abcdef" })).resolves.toMatchObject({ ok: false });
     expect(h.secrets.size).toBe(0);
   });
 });

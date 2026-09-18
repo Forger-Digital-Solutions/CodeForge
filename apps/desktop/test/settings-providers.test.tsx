@@ -214,7 +214,7 @@ describe("Advanced page", () => {
 describe("About page", () => {
   it("shows real version, channel, and runtime facts", () => {
     const markup = renderSection(<AboutSection />, createSettingsContext());
-    expect(markup).toContain("0.3.0");
+    expect(markup).toContain("0.4.0");
     expect(markup).toContain("development");
     expect(markup).toContain("33.4.11");
   });

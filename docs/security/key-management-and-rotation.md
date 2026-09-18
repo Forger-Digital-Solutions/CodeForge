@@ -2,7 +2,7 @@
 
 Scope: every key or secret the CodeForge Cloud and desktop rely on, how each is versioned, and
 the exact rotation procedure. Emergency rotation (after suspected compromise) is in
-[incident-response.md](./incident-response.md); this document is the routine procedure.
+the incident-response residual-risk section in [threat-model.md](./threat-model.md); this document is the routine procedure.
 
 ## 1. Inventory
 
@@ -67,7 +67,7 @@ tests already support that (`envelope.test.ts` case 11).
 Roll the restricted/secret key in the Stripe dashboard, update `STRIPE_SECRET_KEY`, redeploy. For
 the webhook secret, add the new endpoint secret, update `STRIPE_WEBHOOK_SECRET`, redeploy, then
 delete the old endpoint. Live-mode keys are refused at boot; moving to live mode is an explicit
-business/legal decision tracked in [OWNER-ACTIONS.md](./OWNER-ACTIONS.md).
+business/legal decision tracked in the owner-action blockers in the final campaign report.
 
 ## 7. Provider keys
 
@@ -87,5 +87,5 @@ missing credential).
 ## 9. Key destruction and recovery
 
 - Never delete a KEK version while any envelope may still reference it (step 3 check).
-- A backup taken during step 1 is restorable with the step-1 ring; a backup taken at step 0 needs `1:K1` present. Keep retired KEK material in the operator's secret manager (not in the Cloud env) for the backup retention window — see [backups-and-recovery.md](./backups-and-recovery.md).
+- A backup taken during step 1 is restorable with the step-1 ring; a backup taken at step 0 needs `1:K1` present. Keep retired KEK material in the operator's secret manager (not in the Cloud env) for the backup retention window — see [encryption.md](./encryption.md).
 - Losing every KEK version makes sealed rows unreadable. Today that means at most a few in-flight sign-ins fail and restart; it destroys no user data. This remains true only while sealed rows are short-lived — a feature that seals long-lived data must add the KEK to the operator's escrow procedure first.
