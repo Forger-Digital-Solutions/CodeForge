@@ -14,6 +14,8 @@ export interface GatewayServiceConfig {
   inferenceTimeoutMs?: number;
 }
 
+const MAX_HOSTED_OUTPUT_TOKENS = 8000;
+
 export class GatewayService {
   private readonly firewallManager: CloudFirewallManager;
   private readonly entitlementService: EntitlementService;
@@ -230,6 +232,10 @@ export class GatewayService {
       let fullText = "";
       let inputTokens = Math.ceil(request.messages.reduce((acc, m) => acc + m.content.length / 4, 0));
       let outputTokens = 0;
+      // Tracked from the provider's own finish event — never inferred from whether tool
+      // events happened to stream, because a provider could emit calls and still finish "stop".
+      let sawToolCall = false;
+      let upstreamTruncated = false;
 
       const adapter = this.firewallManager.providerCatalog.get(selectedProviderId);
       if (!adapter) {
@@ -253,12 +259,15 @@ export class GatewayService {
       const combinedSignal = signal ? AbortSignal.any([signal, timeoutController.signal]) : timeoutController.signal;
 
       try {
-        // Stream from provider
+        // Stream from provider. The request's maxTokens can lower the output cap but never
+        // raise it past the hosted ceiling — tool arguments (file writes) routinely exceed
+        // the old flat 2000, which is why the cap became negotiable with HOSTED_TOOLS.
         for await (const chunk of adapter.streamChat(
           {
             model: selectedModelId,
             messages: request.messages,
-            maxTokens: 2000,
+            ...(request.tools?.length ? { tools: request.tools } : {}),
+            maxTokens: Math.min(request.maxTokens ?? 2000, MAX_HOSTED_OUTPUT_TOKENS),
           },
           combinedSignal,
         )) {
@@ -268,6 +277,26 @@ export class GatewayService {
           if (chunk.type === "text_delta" && chunk.delta) {
             fullText += chunk.delta;
             onEvent({ type: "assistant.message.delta", messageId, delta: chunk.delta });
+          }
+          if (chunk.type === "tool_call_started") {
+            sawToolCall = true;
+            onEvent({ type: "assistant.tool_call.started", messageId, toolCallId: chunk.toolCallId, toolName: chunk.toolName });
+          }
+          if (chunk.type === "tool_call_delta") {
+            onEvent({ type: "assistant.tool_call.delta", messageId, toolCallId: chunk.toolCallId, delta: chunk.delta });
+          }
+          if (chunk.type === "tool_call_completed") {
+            sawToolCall = true;
+            onEvent({
+              type: "assistant.tool_call.completed",
+              messageId,
+              toolCallId: chunk.toolCallId,
+              toolName: chunk.toolName,
+              arguments: chunk.arguments,
+            });
+          }
+          if (chunk.type === "finish" && chunk.finishReason === "length") {
+            upstreamTruncated = true;
           }
           if (chunk.type === "usage" && chunk.usage) {
             inputTokens = chunk.usage.inputTokens ?? inputTokens;
@@ -294,6 +323,7 @@ export class GatewayService {
         type: "assistant.message.completed",
         messageId,
         fullText,
+        finishReason: sawToolCall ? "tool_calls" : upstreamTruncated ? "length" : "stop",
         usage: { inputTokens, outputTokens },
       });
 

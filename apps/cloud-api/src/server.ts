@@ -106,6 +106,30 @@ const PublicationCreateSchema = z.object({
   artifactBytes: z.number().int().positive(),
 });
 
+const HostedToolCallSchema = z.object({
+  id: z.string(),
+  type: z.literal("function"),
+  function: z.object({
+    name: z.string(),
+    arguments: z.string(),
+  }),
+});
+
+const HostedToolDefinitionSchema = z.object({
+  type: z.literal("function"),
+  function: z.object({
+    name: z.string(),
+    description: z.string(),
+    parameters: z
+      .object({
+        type: z.literal("object"),
+        properties: z.record(z.unknown()),
+        required: z.array(z.string()).optional(),
+      })
+      .optional(),
+  }),
+});
+
 const HostedInferenceSchema = z.object({
   requestId: z.string().min(1),
   turnId: z.string().optional(),
@@ -117,11 +141,16 @@ const HostedInferenceSchema = z.object({
   messages: z
     .array(
       z.object({
-        role: z.enum(["system", "user", "assistant"]),
+        role: z.enum(["system", "user", "assistant", "tool"]),
         content: z.string(),
+        name: z.string().optional(),
+        toolCallId: z.string().optional(),
+        toolCalls: z.array(HostedToolCallSchema).optional(),
       }),
     )
     .min(1),
+  tools: z.array(HostedToolDefinitionSchema).optional(),
+  maxTokens: z.number().int().positive().optional(),
 });
 
 const HostedWorkflowCreateSchema = z.object({
@@ -820,7 +849,7 @@ export class CodeForgeCloudServer {
             apiVersion: "1.0.0",
             serverVersion: "0.4.0",
             hostedInferenceReady: availableFreeCount > 0,
-            features: ["HOSTED_FREE", "DYNAMIC_MODELS", ...(this.billing ? ["STRIPE_BILLING"] : [])],
+            features: ["HOSTED_FREE", "DYNAMIC_MODELS", "HOSTED_TOOLS", ...(this.billing ? ["STRIPE_BILLING"] : [])],
           },
           corsOrigin,
         );

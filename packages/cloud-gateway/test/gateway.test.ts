@@ -28,6 +28,29 @@ class SlowMockProvider implements ProviderAdapter {
   }
 }
 
+class ToolCallingMockProvider implements ProviderAdapter {
+  readonly providerId = "test-provider";
+  readonly isTestProvider = true;
+  lastRequest: { tools?: unknown[]; maxTokens?: number; messages?: Array<{ role: string }> } = {};
+
+  async *streamChat(req: { tools?: unknown[]; maxTokens?: number; messages?: Array<{ role: string }> }): AsyncIterable<StreamEvent> {
+    this.lastRequest = req;
+    yield { type: "tool_call_started", toolCallId: "call-1", toolName: "read_file" };
+    yield { type: "tool_call_completed", toolCallId: "call-1", toolName: "read_file", arguments: "{\"path\":\"src/a.ts\"}" };
+    yield { type: "usage", usage: { inputTokens: 30, outputTokens: 12 } };
+    yield { type: "finish", finishReason: "tool_calls" };
+  }
+  async healthCheck() {
+    return { status: "available" as const };
+  }
+  async listModels() {
+    return [];
+  }
+  async chat() {
+    return { id: "1", model: "m", choices: [], usage: { inputTokens: 0, outputTokens: 0 } };
+  }
+}
+
 describe("GatewayService Hardening", () => {
   let db: CloudDatabase;
   let firewallManager: CloudFirewallManager;
@@ -157,5 +180,47 @@ describe("GatewayService Hardening", () => {
         () => {},
       ),
     ).rejects.toThrow(/Hosted inference is currently disabled/);
+  });
+
+  it("passes native tools through to the provider and streams tool_call events (HOSTED_TOOLS)", async () => {
+    const toolProvider = new ToolCallingMockProvider();
+    firewallManager.registerProvider(toolProvider);
+
+    const user = await db.createUser({ displayName: "ToolUser", primaryIdentity: "github:tools" });
+    await db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
+    await db.setEntitlement(user.id, "HOSTED_FREE", "true");
+
+    const events: HostedStreamEvent[] = [];
+    await gateway.executeHostedInference(
+      user.id,
+      {
+        requestId: "req-tools-1",
+        messages: [
+          { role: "user", content: "fix it" },
+          { role: "assistant", content: "", toolCalls: [{ id: "c0", type: "function", function: { name: "list_files", arguments: "{}" } }] },
+          { role: "tool", toolCallId: "c0", name: "list_files", content: "src/a.ts" },
+        ],
+        modelId: "test-free",
+        providerId: "test-provider",
+        tools: [{ type: "function", function: { name: "read_file", description: "read", parameters: { type: "object", properties: { path: { type: "string" } } } } }],
+        maxTokens: 999_999,
+      },
+      (e) => events.push(e),
+    );
+
+    // Tools reached the provider and the output cap was clamped to the hosted ceiling.
+    expect(toolProvider.lastRequest.tools).toHaveLength(1);
+    expect(toolProvider.lastRequest.maxTokens).toBe(8000);
+    expect(toolProvider.lastRequest.messages?.some((m) => m.role === "tool")).toBe(true);
+
+    const started = events.filter((e) => e.type === "assistant.tool_call.started");
+    const completed = events.filter((e) => e.type === "assistant.tool_call.completed");
+    expect(started).toHaveLength(1);
+    expect(completed).toHaveLength(1);
+    expect(completed[0]).toMatchObject({ toolName: "read_file", arguments: "{\"path\":\"src/a.ts\"}" });
+
+    const messageCompleted = events.find((e) => e.type === "assistant.message.completed");
+    expect(messageCompleted).toMatchObject({ finishReason: "tool_calls" });
+    expect(events.at(-1)?.type).toBe("turn.completed");
   });
 });
