@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-AU-01",
+  "runId": "6d01a64e-06cb-438c-ac1b-a2978953013d",
+  "fixtureFamily": "analysis",
+  "startingCommit": "5d41f7344e8e2d7d6eed1c4fb41224920b8a4357",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "3822a38e-3339-4a88-add7-be90cebfe344",
+  "turnId": "817e98f2-204f-4ba1-8525-9934bd05342d",
+  "terminalStatus": "failed",
+  "approvedActions": 0,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": false,
+    "exitCode": 1,
+    "output": "✖ source-backed report exists (1.3636ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 279.1957\n\n✖ failing tests:\n\ntest at test\\report.test.mjs:2:1\n✖ source-backed report exists (1.3636ms)\n  Error: ENOENT: no such file or directory, open 'C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\codeforge-r2-cbr2-au-01-RycCAD\\workspace\\REPORT.md'\n      at Object.readFileSync (node:fs:484:20)\n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r2-cbr2-au-01-RycCAD/workspace/test/report.test.mjs:2:61)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    errno: -4058,\n    code: 'ENOENT',\n    syscall: 'open',\n    path: 'C:\\\\Users\\\\DADDY_~1\\\\AppData\\\\Local\\\\Temp\\\\codeforge-r2-cbr2-au-01-RycCAD\\\\workspace\\\\REPORT.md'\n  }"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "report omitted an authority owner",
+      "report collapsed routing boundaries"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "workflow.verification_started": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1
+  },
+  "wallTimeMs": 5980
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-RV-02",
+  "runId": "e1aced91-f4cb-48a8-a753-51a7ccf1cac1",
+  "fixtureFamily": "review",
+  "startingCommit": "578714b11e428572f119c174574752a0f2bddf00",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "72def9e4-7592-44a0-a947-e3a066612c7a",
+  "turnId": "55e010f1-0805-4e9c-9b89-e9a2afa4ab21",
+  "terminalStatus": "completed",
+  "terminalError": "",
+  "approvedActions": 3,
+  "changedFiles": [
+    "REVIEW.md"
+  ],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ review identifies the blocking authority regression (1.1543ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 100.8861"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": true,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 11,
+    "status.changed": 20,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 19,
+    "tool.call_completed": 19,
+    "token.usage": 20,
+    "tool.execution_started": 19,
+    "file.read": 3,
+    "tool.execution_completed": 19,
+    "command.executed": 7,
+    "approval.requested": 3,
+    "approval.resolved": 3,
+    "file.written": 1,
+    "assistant.message.started": 1,
+    "text.delta": 262,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1
+  },
+  "wallTimeMs": 112220
+}

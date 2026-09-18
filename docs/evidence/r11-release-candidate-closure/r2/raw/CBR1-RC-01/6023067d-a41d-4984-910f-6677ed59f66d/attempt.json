@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-RC-01",
+  "runId": "6023067d-a41d-4984-910f-6677ed59f66d",
+  "fixtureFamily": "recovery",
+  "startingCommit": "f5c46452213af0a2d947e0a52e5ae7ba2b5e9b8a",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "a4a2de17-cb59-4b1b-b8b8-d243dfb6a75e",
+  "turnId": "52611709-f86b-4b04-9ba9-2875c71be79a",
+  "terminalStatus": "completed",
+  "terminalError": "",
+  "approvedActions": 1,
+  "changedFiles": [
+    "src/continuation.mjs"
+  ],
+  "diffHash": "69ae237ce7aecc0c8059001c498e761e8614b69c68f6e75d031676cc631a3d56",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ replayed result is idempotent (1.6291ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 152.3604"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": true,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 11,
+    "status.changed": 16,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 7,
+    "tool.call_completed": 7,
+    "token.usage": 8,
+    "tool.execution_started": 7,
+    "file.read": 4,
+    "tool.execution_completed": 7,
+    "checkpoint.created": 2,
+    "approval.requested": 1,
+    "approval.resolved": 1,
+    "file.written": 1,
+    "command.executed": 1,
+    "assistant.message.started": 1,
+    "text.delta": 37,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "task.completed": 1
+  },
+  "wallTimeMs": 41345
+}

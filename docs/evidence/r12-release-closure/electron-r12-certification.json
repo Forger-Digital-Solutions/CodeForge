@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS_WITH_EXTERNAL_SIGNING_BLOCKER",
+  "packageCommand": "npm.cmd run pack --workspace=codeforge-desktop",
+  "electronBuilder": "26.15.3",
+  "electron": "44.4.1",
+  "targets": ["win32-x64-unpacked"],
+  "packaging": "PASS",
+  "authenticode": "NotSigned",
+  "publicReleaseSigning": "BLOCKED_EXTERNAL",
+  "historicalLifecycle": "R11 full, interrupt, recover, upgrade, uninstall, reinstall, and user-data preservation evidence remains authoritative; R12 did not rewrite it."
+}

@@ -1,0 +1,111 @@
+{
+  "phase": "R11.4 final Electron certification",
+  "head": "83dc1db4810de15d1f4663f038122585b65e647e",
+  "electronVersion": "44.4.1",
+  "electronNodeVersion": "24.21.0",
+  "artifacts": {
+    "nsis": {
+      "path": "apps/desktop/release/CodeForge-Setup-0.3.0.exe",
+      "bytes": 115629532,
+      "sha256": "E57AE309E84B10DA981064D4104AF833921F3EAE68E0596C7CD849DC2C21C397",
+      "builtAt": "2026-09-17T21:01:00Z"
+    },
+    "portable": {
+      "path": "apps/desktop/release/CodeForge-Portable.exe",
+      "bytes": 115357294
+    },
+    "winUnpacked": "apps/desktop/release/win-unpacked/CodeForge.exe"
+  },
+  "packagedSmoke": {
+    "full": {
+      "status": "PASS",
+      "markers": [
+        "PACKAGED_STARTUP=PASS",
+        "FORGEGREEN_RUNTIME=PASS",
+        "EIGHT_BIT_RUNTIME=PASS",
+        "CLOUD_DB_PACKAGED_RUNTIME=PASS",
+        "packaged_renderer_lifecycle_chain=PASS",
+        "packaged_failure_repair_pass=PASS",
+        "packaged_renderer_reload_count=5",
+        "packaged_renderer_reload=PASS",
+        "credential_plaintext_absent=PASS",
+        "credential_encrypted_payload=PASS",
+        "safe_storage_available=PASS",
+        "credential_round_trip=PASS",
+        "control_plane_renderer_bearer_absent=PASS",
+        "control_plane_trusted_renderer=PASS",
+        "control_plane_missing_bearer_rejected=PASS",
+        "control_plane_wrong_bearer_rejected=PASS",
+        "control_plane_forged_approval_rejected=PASS",
+        "control_plane_forged_origin_rejected=PASS",
+        "control_plane_secondary_renderer_ipc_rejected=PASS",
+        "control_plane_trust_boundary=PASS",
+        "settings_open=PASS",
+        "account_menu_profile_deeplink=PASS",
+        "settings_search=PASS",
+        "settings_back_to_workspace=PASS",
+        "PACKAGED_FULL_SMOKE_OK"
+      ],
+      "exitCode": 0
+    },
+    "interrupt": {
+      "status": "PASS",
+      "markers": ["PACKAGED_INTERRUPT_EXPECTED_EXIT", "electron_restart_interruption_ready=PASS"],
+      "exitCode": 73
+    },
+    "recover": {
+      "status": "PASS",
+      "markers": [
+        "PACKAGED_RECOVERY_SMOKE_OK",
+        "electron_restart_failed_safely=PASS",
+        "electron_restart_no_approval_replay=PASS",
+        "corrupt_credential_fails_closed=PASS",
+        "credential_restart_decrypt=PASS",
+        "electron_restart_fresh_task=PASS"
+      ],
+      "exitCode": 0,
+      "note": "First recover attempt failed because full mode wipes smoke-user-data; correct suite order is full -> interrupt -> recover. Second ordered run passed all markers."
+    }
+  },
+  "securityInvariants": {
+    "sandbox": true,
+    "contextIsolation": true,
+    "nodeIntegration": false,
+    "webSecurity": true,
+    "evidence": "apps/desktop/src/main.ts webPreferences at both BrowserWindow construction sites (lines ~1224-1228, ~1556-1560); bearer-token control-plane checks passed in packaged smoke",
+    "bearerWithheldFromRenderer": "CONTROL_PLANE_BEARER_WITHHELD markers observed for codeforge/openrouter/paid-auto health URLs"
+  },
+  "installerUpgrade": {
+    "previousInstalled": "CodeForge 0.2.0",
+    "postInstall": "CodeForge 0.3.0 (registry)",
+    "userDataPreserved": true,
+    "preservedFileHashesIdentical": ["codeforge.db", "settings.json", "runtime.json"],
+    "userDataRoot": "%APPDATA%\\codeforge-desktop"
+  },
+  "bareLaunchInvestigation": {
+    "initialSymptom": "Installed/unpacked exe exited immediately with no output",
+    "rootCause": "ELECTRON_RUN_AS_NODE=1 was set in the launching shell session (Devin terminal env artifact, not a persistent user/machine env var). The Electron binary ran as plain Node.js: 'bad option' on --user-data-dir is Node's flag parser, and the app exited before main.ts loaded.",
+    "fix": "packaged-smoke.js already sanitizes NODE_PATH/NODE_OPTIONS/ELECTRON_RUN_AS_NODE; unsetting the var made the bare launch succeed with full lifecycle: window constructed, server bound, renderer loaded, no crash.",
+    "productDefect": false,
+    "diagnosticEvidence": "release/diag-bare.txt full startup lifecycle; process remained running"
+  },
+  "uninstall": {
+    "status": "PASS",
+    "method": "QuietUninstallString: Uninstall CodeForge.exe /currentuser /S",
+    "registryRemoved": true,
+    "installDirRemoved": true,
+    "staleFiles": "none",
+    "shortcutsRemoved": true,
+    "userDataPreservedAcrossUninstall": true,
+    "preservedDbSha256": "1C44C7554D731923E9CCF58371BE579F4948565FFFB7572E47059D6253E344BE",
+    "reinstall": "Silent /S reinstall after uninstall re-registered CodeForge 0.3.0 and restored CodeForge.exe; machine left in installed-0.3.0 state."
+  },
+  "signing": {
+    "nsisSignatureStatus": "NotSigned",
+    "signerCertificate": null,
+    "verdict": "WINDOWS_TRUSTED_SIGNING_EXTERNAL_BLOCKER",
+    "note": "No trusted Current User code-signing certificate and no configured signing identity. Not self-signed; self-signing would not constitute public-production trust."
+  },
+  "functionalVerdict": "PACKAGED_APP_FUNCTIONAL",
+  "signingVerdict": "BLOCKED_EXTERNAL"
+}

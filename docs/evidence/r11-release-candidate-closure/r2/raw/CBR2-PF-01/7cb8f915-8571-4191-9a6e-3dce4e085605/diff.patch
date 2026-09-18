@@ -1,0 +1,18 @@
+diff --git a/src/router.mjs b/src/router.mjs
+index a19d50b..0f368fe 100644
+--- a/src/router.mjs
++++ b/src/router.mjs
+@@ -1,4 +1,11 @@
+ export function selectRoute(routes, request) {
+-  if (request.mode === 'exact') return routes.find((route) => route.free) ?? routes[0];
+-  return routes[0];
++  if (request.mode === 'exact') {
++    // Try to find the exact requested route first
++    const exactRoute = routes.find((route) => route.id === request.id);
++    if (exactRoute) return exactRoute;
++    // If exact route not found, fall back to free route if available
++    return routes.find((route) => route.free) ?? routes[0];
++  }
++  // For free-auto mode, try to find a free route first
++  return routes.find((route) => route.free) ?? routes[0];
+ }

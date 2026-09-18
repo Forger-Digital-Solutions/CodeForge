@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-RP-02",
+  "runId": "6374baf0-0e43-467f-974e-1f1bcc7cab32",
+  "fixtureFamily": "tests",
+  "startingCommit": "e32dc434b832642f3b5ac5587b8087826755acae",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "1ffc8fc9-0a86-48ba-9c31-b3adfaa8c517",
+  "turnId": "ed2371b8-444f-4cab-afec-30dbd6eb9c5d",
+  "terminalStatus": "completed",
+  "terminalError": "",
+  "approvedActions": 22,
+  "changedFiles": [
+    "src/parser.mjs",
+    "test/smoke.test.mjs"
+  ],
+  "diffHash": "1d50bf139b5070ca8568e02a5ca5babc9353b54b593a8fb0eb19ccfc45dc546d",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ valid (1.3094ms)\n✔ empty (0.1295ms)\n✔ malformed (0.1178ms)\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 97.4249"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": true,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 11,
+    "status.changed": 58,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 38,
+    "tool.call_completed": 38,
+    "token.usage": 39,
+    "tool.execution_started": 38,
+    "file.read": 6,
+    "tool.execution_completed": 37,
+    "tool.execution_failed": 1,
+    "command.executed": 23,
+    "approval.requested": 22,
+    "approval.resolved": 22,
+    "file.written": 2,
+    "assistant.message.started": 1,
+    "text.delta": 212,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1
+  },
+  "wallTimeMs": 168119
+}

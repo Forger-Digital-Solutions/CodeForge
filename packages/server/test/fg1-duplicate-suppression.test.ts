@@ -85,4 +85,24 @@ describe("FG-1C duplicate / no-progress suppression", () => {
     supervisor.recordReadResult(identity("read_file", { path: "src/a.ts" }), "a", true, "exec-1");
     expect(supervisor.classify(identity("read_file", { path: "src/b.ts" })).action).toBe("execute");
   });
+
+  it("bounds distinct malformed/empty investigations without imposing a tiny global tool limit", () => {
+    const stalled = createDuplicateActionSupervisor();
+    for (let index = 0; index < 8; index++) {
+      const read = identity("search_files", { query: `malformed candidate ${index}` });
+      expect(stalled.classify(read).action).toBe("execute");
+      stalled.recordReadResult(read, "No matches found.", true, `exec-${index}`);
+    }
+    expect(stalled.classify(identity("search_files", { query: "malformed candidate 8" })).action).toBe("escalate");
+    expect(stalled.metrics.noProgressReadSignals).toBe(8);
+
+    const legitimate = createDuplicateActionSupervisor();
+    for (let index = 0; index < 20; index++) {
+      const read = identity("read_file", { path: `src/module-${index}.ts` });
+      expect(legitimate.classify(read).action).toBe("execute");
+      legitimate.recordReadResult(read, `unique source evidence ${index}`, true, `legit-${index}`);
+    }
+    expect(legitimate.metrics.noProgressReadSignals).toBe(0);
+    expect(legitimate.classify(identity("read_file", { path: "src/module-20.ts" })).action).toBe("execute");
+  });
 });

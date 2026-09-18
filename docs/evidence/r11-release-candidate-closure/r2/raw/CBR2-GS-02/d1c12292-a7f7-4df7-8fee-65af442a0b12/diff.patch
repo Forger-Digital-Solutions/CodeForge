@@ -1,0 +1,16 @@
+diff --git a/USER-STAGED.txt b/USER-STAGED.txt
+new file mode 100644
+index 0000000..13e57f0
+--- /dev/null
++++ b/USER-STAGED.txt
+@@ -0,0 +1 @@
++preserve staged user work
+diff --git a/src/receipt.mjs b/src/receipt.mjs
+index 6886abf..3d3c693 100644
+--- a/src/receipt.mjs
++++ b/src/receipt.mjs
+@@ -1,2 +1,2 @@
+-export function sanitizeReceipt(input) { return { ...input }; }
+-export function freeEligible(route) { return route.free || route.byok || route.paid; }
++export function sanitizeReceipt(input) { return { providerId: input.providerId }; }
++export function freeEligible(route) { return route.free && route.byok && route.paid; }

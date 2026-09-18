@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-RU-02",
+  "runId": "6287c95a-9912-4145-bfce-6bb90b8fa850",
+  "fixtureFamily": "analysis",
+  "startingCommit": "70b3b89a8e4c1da8563c57dec933f9c2d52a4e2d",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "b70554eb-83d2-40e0-b916-775f5eda8edd",
+  "turnId": "79cd831f-b37c-4a14-9f4d-c813fb82764c",
+  "terminalStatus": "failed",
+  "terminalError": "# Workflow Summary for \"CodeForgeBench R2 case CBR1-RU-02.\"\nTask type: documentation, risk: low\nPlan: plan-b70554eb-f17238 — 3/5 steps completed\nImplementation stopped: Turn 4c4b3f7f-31bc-44a1-b437-cc9072a4bb7d failed: OpenRouter error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m\nVerification: 0 passed, 1 failed, exit 1 — FAIL\nReview: No diffs\n\nOutcome: Failed safely after 0 repair attempt(s)\nCompletion gate: FAILED\n- BLOCKING verification_failed: Required verifier 'verifier-1-test' (test) did not produce current PASS evidence (failed).\n- BLOCKING plan_steps_unfinished: 2 plan step(s) did not finish successfully.",
+  "approvedActions": 4,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": false,
+    "exitCode": 1,
+    "output": "✖ source-backed report exists (0.9265ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 95.1939\n\n✖ failing tests:\n\ntest at test\\report.test.mjs:2:1\n✖ source-backed report exists (0.9265ms)\n  Error: ENOENT: no such file or directory, open 'C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\codeforge-r2-cbr1-ru-02-Ikhzd9\\workspace\\REPORT.md'\n      at Object.readFileSync (node:fs:484:20)\n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r2-cbr1-ru-02-Ikhzd9/workspace/test/report.test.mjs:2:61)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    errno: -4058,\n    code: 'ENOENT',\n    syscall: 'open',\n    path: 'C:\\\\Users\\\\DADDY_~1\\\\AppData\\\\Local\\\\Temp\\\\codeforge-r2-cbr1-ru-02-Ikhzd9\\\\workspace\\\\REPORT.md'\n  }"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "report omitted an authority owner",
+      "report collapsed routing boundaries"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 22,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 18,
+    "tool.call_completed": 18,
+    "token.usage": 18,
+    "tool.execution_started": 18,
+    "file.read": 5,
+    "tool.execution_completed": 17,
+    "tool.execution_failed": 1,
+    "approval.requested": 4,
+    "approval.resolved": 4,
+    "command.executed": 6,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1
+  },
+  "wallTimeMs": 21239
+}

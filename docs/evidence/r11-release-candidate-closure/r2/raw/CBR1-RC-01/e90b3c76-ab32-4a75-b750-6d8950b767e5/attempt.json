@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-RC-01",
+  "runId": "e90b3c76-ab32-4a75-b750-6d8950b767e5",
+  "fixtureFamily": "recovery",
+  "startingCommit": "6119b263a74fe4802b087f3c5a26660c3e9a1d3a",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "fae3df79-02ae-4c06-b607-2b9d6e6937eb",
+  "turnId": "9fecbb94-b3aa-41dd-946f-ca33bc5bcdc5",
+  "terminalStatus": "completed",
+  "approvedActions": 3,
+  "changedFiles": [
+    "src/continuation.mjs"
+  ],
+  "diffHash": "1e0697ec41fed88b0755a4ce96f3c966438f08e52b4fdc7e361bca8b72bfabb7",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ replayed result is idempotent (4.1173ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 280.056"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": true,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 11,
+    "status.changed": 20,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 8,
+    "tool.call_completed": 8,
+    "token.usage": 9,
+    "tool.execution_started": 8,
+    "file.read": 4,
+    "tool.execution_completed": 8,
+    "approval.requested": 3,
+    "approval.resolved": 3,
+    "command.executed": 2,
+    "file.written": 1,
+    "assistant.message.started": 1,
+    "text.delta": 113,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1
+  },
+  "wallTimeMs": 25836
+}

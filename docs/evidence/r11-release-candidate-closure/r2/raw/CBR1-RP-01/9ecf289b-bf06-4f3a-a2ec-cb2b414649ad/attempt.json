@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-RP-01",
+  "runId": "9ecf289b-bf06-4f3a-a2ec-cb2b414649ad",
+  "fixtureFamily": "tests",
+  "startingCommit": "a256e0d81fb3ab508117d3b683b326d6ec91b419",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "d73f4ed0-4a80-4ea3-b316-4d4a62946420",
+  "turnId": "b1fbfbcb-041a-4dc4-b158-f5bb57d5022d",
+  "terminalStatus": "completed",
+  "terminalError": "",
+  "approvedActions": 2,
+  "changedFiles": [
+    "src/parser.mjs",
+    "test/smoke.test.mjs"
+  ],
+  "diffHash": "2c8bd16ac52b68763744592bffd91064844a99a5e164cd1d9ae2b08af8413651",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ valid (1.3296ms)\n✔ empty (0.1356ms)\n✔ malformed (0.1285ms)\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 100.7763"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "empty response was not classified separately"
+    ]
+  },
+  "forgeVerifyPassed": true,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 11,
+    "status.changed": 18,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 10,
+    "tool.call_completed": 10,
+    "token.usage": 11,
+    "tool.execution_started": 10,
+    "file.read": 4,
+    "tool.execution_completed": 10,
+    "approval.requested": 2,
+    "approval.resolved": 2,
+    "file.written": 2,
+    "command.executed": 2,
+    "assistant.message.started": 1,
+    "text.delta": 249,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1
+  },
+  "wallTimeMs": 54185
+}

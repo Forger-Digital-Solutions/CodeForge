@@ -1,0 +1,13 @@
+diff --git a/src/continuation.mjs b/src/continuation.mjs
+index 22d2972..cd9bd45 100644
+--- a/src/continuation.mjs
++++ b/src/continuation.mjs
+@@ -1,4 +1,8 @@
+ export function applyResult(state, result) {
++  // If this result id has already been consumed, don't add it again
++  if (state.consumed.includes(result.id)) {
++    return state;
++  }
+   state.writes.push(result.value);
+   state.consumed.push(result.id);
+   return state;

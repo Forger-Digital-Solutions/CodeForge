@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-GS-01",
+  "runId": "4e5ceed3-971d-4082-9b21-aa595ffab882",
+  "fixtureFamily": "security",
+  "startingCommit": "8983c359b4aeb28f7ac5201e7273fd4e15ac7e4e",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "709139da-7ef5-47be-9684-17f18d8263cd",
+  "turnId": "47f6657e-ef08-40e5-8e6e-5e0eb76e8525",
+  "terminalStatus": "failed",
+  "terminalError": "# Workflow Summary for \"CodeForgeBench R2 case CBR2-GS-01.\"\nTask type: documentation, risk: low\nPlan: plan-709139da-56f8c6 — 7/7 steps completed\nVerification: 3 passed, 1 failed, exit 1 — FAIL\nReview: 1 file(s) changed, 0 issue(s) — approved\nChanged files: src/receipt.mjs\n\nOutcome: Failed safely after 0 repair attempt(s)\nCompletion gate: FAILED\n- BLOCKING verification_failed: Required verifier 'verifier-2-custom' (custom) did not produce current PASS evidence (failed).",
+  "approvedActions": 1,
+  "changedFiles": [
+    "USER-STAGED.txt",
+    "src/receipt.mjs",
+    "USER-SCRATCH.txt"
+  ],
+  "diffHash": "89f02b9d054747ee394c0da6eddb100952bf0c694a0e0e1b8436b547ca85850d",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ receipt excludes credential material (1.5337ms)\n✔ free eligibility is strict (0.2069ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 131.7573"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "receipt retained credential material"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 16,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 15,
+    "tool.call_completed": 15,
+    "token.usage": 16,
+    "tool.execution_started": 15,
+    "file.read": 6,
+    "tool.execution_completed": 15,
+    "command.executed": 4,
+    "approval.requested": 1,
+    "approval.resolved": 1,
+    "file.written": 1,
+    "assistant.message.started": 1,
+    "text.delta": 142,
+    "assistant.message.completed": 1,
+    "turn.completed": 1,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "turn.failed": 1
+  },
+  "wallTimeMs": 94775
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-PQ-01",
+  "runId": "7842a193-a26d-422a-a88d-455158d45fc5",
+  "fixtureFamily": "planning",
+  "startingCommit": "60b79660a68456116d717183a18b83286c521705",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "efe38865-115a-4bf7-9870-8c461ecc1a81",
+  "turnId": "fbda4dca-3ca0-401b-a5bb-5e463691e744",
+  "terminalStatus": "failed",
+  "approvedActions": 0,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": false,
+    "exitCode": 1,
+    "output": "✖ plan preserves selection contracts (2.39ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 230.8964\n\n✖ failing tests:\n\ntest at test\\plan.test.mjs:2:1\n✖ plan preserves selection contracts (2.39ms)\n  Error: ENOENT: no such file or directory, open 'C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\codeforge-r2-cbr2-pq-01-Rwx46n\\workspace\\PLAN.md'\n      at Object.readFileSync (node:fs:484:20)\n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r2-cbr2-pq-01-Rwx46n/workspace/test/plan.test.mjs:2:68)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    errno: -4058,\n    code: 'ENOENT',\n    syscall: 'open',\n    path: 'C:\\\\Users\\\\DADDY_~1\\\\AppData\\\\Local\\\\Temp\\\\codeforge-r2-cbr2-pq-01-Rwx46n\\\\workspace\\\\PLAN.md'\n  }"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "plan omitted selection, verification, or uncertainty"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "workflow.verification_started": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1
+  },
+  "wallTimeMs": 6258
+}

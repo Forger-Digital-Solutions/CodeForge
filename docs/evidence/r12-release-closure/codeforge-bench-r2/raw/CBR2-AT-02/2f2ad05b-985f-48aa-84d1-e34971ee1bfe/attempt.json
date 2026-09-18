@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-AT-02",
+  "runId": "2f2ad05b-985f-48aa-84d1-e34971ee1bfe",
+  "fixtureFamily": "planning",
+  "startingCommit": "80644a1ee34fd75bb9c193d9d9570725b94db6b1",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "c2c732a4-e35b-48bb-abd8-7121b074f1d5",
+  "turnId": "ef14ed00-5076-4b3b-9074-1ba80ddddccc",
+  "terminalStatus": "failed",
+  "terminalError": "# Workflow Summary for \"CodeForgeBench R2 case CBR2-AT-02.\"\nTask type: documentation, risk: low\nPlan: plan-c2c732a4-9e8b4c — 5/5 steps completed\nVerification: 2 passed, 1 failed, exit 1 — FAIL\nReview: No diffs\n\nOutcome: Failed safely after 0 repair attempt(s)\nCompletion gate: FAILED\n- BLOCKING verification_failed: Required verifier 'verifier-2-custom' (custom) did not produce current PASS evidence (failed).",
+  "approvedActions": 7,
+  "changedFiles": [
+    "PLAN.md"
+  ],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ plan preserves selection contracts (3.5411ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 116.4088"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "plan omitted selection, verification, or uncertainty"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 28,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 21,
+    "tool.call_completed": 21,
+    "token.usage": 22,
+    "tool.execution_started": 21,
+    "file.read": 4,
+    "tool.execution_completed": 21,
+    "approval.requested": 7,
+    "approval.resolved": 7,
+    "command.executed": 11,
+    "file.written": 1,
+    "assistant.message.started": 1,
+    "text.delta": 266,
+    "assistant.message.completed": 1,
+    "turn.completed": 1,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "turn.failed": 1
+  },
+  "wallTimeMs": 97979
+}

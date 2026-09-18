@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-17T22:49:45.421Z",
+  "verdict": "CODEFORGE_RENDER_VIRGINIA_READY_FOR_CONTINUED_VALIDATION",
+  "production": {
+    "name": "codeforge-cloud-va",
+    "serviceId": "srv-dam6f83m8hqs73clo5ig",
+    "region": "Virginia",
+    "runtime": "Docker",
+    "plan": "Free",
+    "sourceBranch": "feat/codeforge-cloud",
+    "sourceCommit": "6b0770b11aab9f71e40b5c953e24e68fabc58707",
+    "dockerfilePath": "./Dockerfile.cloud",
+    "buildContext": ".",
+    "healthCheckPath": "/health/live",
+    "autoDeploy": false,
+    "url": "https://codeforge-cloud-va.onrender.com",
+    "status": "live",
+    "healthLiveStatus": 200,
+    "healthReadyStatus": 200,
+    "database": "connected",
+    "providerCapacity": [
+      {
+        "providerId": "openrouter",
+        "status": "healthy",
+        "verifiedFreeCount": 25
+      },
+      {
+        "providerId": "groq",
+        "status": "healthy",
+        "verifiedFreeCount": 8
+      }
+    ],
+    "availableFreeCount": 33,
+    "hostedFree": {
+      "authenticated": true,
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "verifiedFree": true,
+      "exactNoSubstitution": true,
+      "httpStatus": 200,
+      "nonemptyResponse": true,
+      "progressiveSse": true,
+      "firstEventMs": 178.9,
+      "terminalMs": 744.5,
+      "usageEventPersisted": true
+    },
+    "oauth": {
+      "desktopPkceLogin": "passed",
+      "stateValidation": "passed",
+      "sessionSurvivedServiceRestart": true,
+      "logoutStatus": 200,
+      "refreshAfterLogoutStatus": 401,
+      "relogin": "passed",
+      "browserCookieLogin": "passed",
+      "browserCookieSurvivedServiceRestart": true,
+      "browserLogoutInitialStatus": 403,
+      "browserLogoutInitialCause": "Virginia hostname absent from CODEFORGE_ALLOWED_ORIGINS",
+      "browserLogoutAfterOriginFixStatus": 200,
+      "browserSessionAfterLogoutStatus": 401,
+      "accountSwitching": "not_tested_no_second_account"
+    },
+    "restart": {
+      "passed": true,
+      "databaseReconnected": true,
+      "providersRediscovered": true,
+      "readinessAfterRestart": 200
+    },
+    "securityHeaders": {
+      "cacheControlNoStore": true,
+      "referrerPolicyNoReferrer": true,
+      "contentTypeOptionsNoSniff": true,
+      "frameOptionsDeny": true
+    },
+    "compute": {
+      "currentPlan": "Free",
+      "cpu": 0.1,
+      "memoryMb": 512,
+      "measuredCpu": null,
+      "measuredMemory": null,
+      "metricLimitation": "Render reports no captured CPU or memory data on the new free service and gates application metrics behind paid compute.",
+      "oomEvidence": false,
+      "smallestPaidPlan": {
+        "name": "0.5c-512mb",
+        "cpu": 0.5,
+        "memoryMb": 512,
+        "monthlyUsd": 7
+      },
+      "purchaseStatus": "not_purchased"
+    }
+  },
+  "staging": {
+    "name": "codeforge-cloud-staging-va",
+    "serviceId": "srv-dam6k36k1f9s73eear80",
+    "region": "Virginia",
+    "runtime": "Docker",
+    "plan": "Free",
+    "sourceBranch": "codeforge/adaptive-intelligence-r1",
+    "sourceCommit": "78cba7f36956388d1bc10f61f877e351bd7c6840",
+    "dockerfilePath": "./Dockerfile.cloud",
+    "buildContext": ".",
+    "healthCheckPath": "/health/live",
+    "autoDeploy": false,
+    "url": "https://codeforge-cloud-staging-va.onrender.com",
+    "status": "live",
+    "healthLiveStatus": 200,
+    "healthReadyStatus": 200,
+    "database": "connected_separate_supabase_staging",
+    "providerCapacity": [
+      {
+        "providerId": "groq",
+        "status": "healthy",
+        "verifiedFreeCount": 2
+      },
+      {
+        "providerId": "cloudflare-workers-ai",
+        "status": "healthy",
+        "verifiedFreeCount": 1
+      }
+    ],
+    "availableFreeCount": 3,
+    "hostedFree": {
+      "authenticated": true,
+      "auto": {
+        "providerId": "cloudflare-workers-ai",
+        "modelId": "@cf/zai-org/glm-4.7-flash",
+        "verifiedFree": true,
+        "httpStatus": 200,
+        "nonemptyResponse": true,
+        "progressiveSse": true,
+        "firstEventMs": 244.5,
+        "terminalMs": 1837.7
+      },
+      "exact": {
+        "providerId": "groq",
+        "modelId": "openai/gpt-oss-120b",
+        "verifiedFree": true,
+        "noSubstitution": true,
+        "httpStatus": 200,
+        "nonemptyResponse": true,
+        "progressiveSse": true,
+        "firstEventMs": 129.7,
+        "terminalMs": 620.2
+      }
+    },
+    "oauth": {
+      "desktopPkceLogin": "passed",
+      "refreshRotated": true,
+      "reloadPersistence": true,
+      "logoutStatus": 200,
+      "refreshAfterLogoutStatus": 401,
+      "relogin": "passed"
+    },
+    "restart": {
+      "passed": true,
+      "databaseReconnected": true,
+      "providersRediscovered": true,
+      "readinessAfterRestart": 200
+    }
+  },
+  "database": {
+    "name": "codeforge-cloud",
+    "serviceId": "dpg-dafn19pt0dsc73erflh0-a",
+    "region": "Virginia",
+    "engine": "PostgreSQL 16",
+    "currentPlan": "Free",
+    "storageUsedPercent": 6.66,
+    "storageGb": 1,
+    "expirationDate": "2026-10-07",
+    "expirationConsequence": "Database is deleted unless upgraded to a paid compute plan.",
+    "smallestPaidPlan": {
+      "name": "0.1c-256mb",
+      "cpu": 0.1,
+      "memoryMb": 256,
+      "monthlyUsd": 6
+    },
+    "renderBackupOnFree": false,
+    "renderExportOnFree": false,
+    "inboundPublicCidr": "0.0.0.0/0",
+    "inboundRuleChanged": false,
+    "privateNetworking": {
+      "attempted": true,
+      "result": "not_accepted",
+      "reason": "Render internal PostgreSQL TLS uses self-signed certificates and does not support verify-ca or verify-full; CodeForge requires certificate-validated TLS.",
+      "activeConnection": "Render external URL with certificate-validated TLS",
+      "status": "PARTIAL"
+    },
+    "purchaseStatus": "not_purchased"
+  },
+  "oauthCallbacks": {
+    "productionOregonPreserved": true,
+    "productionVirginiaAdded": true,
+    "stagingOregonPreserved": true,
+    "stagingVirginiaAdded": true,
+    "wildcardMatching": false
+  },
+  "rollback": {
+    "oregonProductionServiceId": "srv-dafmp7f40ujc73bvr4e0",
+    "oregonStagingServiceId": "srv-daa481tg1s2s73c3htsg",
+    "oregonResourcesDeleted": false,
+    "productionDomainMoved": false,
+    "productionTrafficCutOver": false
+  },
+  "spend": {
+    "paidComputePurchased": false,
+    "databaseUpgradePurchased": false,
+    "newPaidResources": false
+  },
+  "gems": "EXCLUDED_OFFLINE_NOT_FREE_ELIGIBLE",
+  "remainingGates": [
+    "True account switching requires a second authorized GitHub account.",
+    "Production custom-domain cutover has not occurred.",
+    "Private DB networking cannot satisfy CodeForge certificate-verification policy with Render internal TLS.",
+    "Production CPU and memory utilization are not yet measurable on the free service.",
+    "Database must be upgraded or migrated before 2026-10-07; free-tier Render backup/export is unavailable."
+  ]
+}

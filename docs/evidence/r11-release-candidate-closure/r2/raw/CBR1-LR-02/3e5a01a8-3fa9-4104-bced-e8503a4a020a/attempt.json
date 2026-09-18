@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-LR-02",
+  "runId": "3e5a01a8-3fa9-4104-bced-e8503a4a020a",
+  "fixtureFamily": "localization",
+  "startingCommit": "f3ae5eb1e9644a4eece3375e615ccc3b6cdb6e45",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "5f76d4b3-5ab9-4291-ae1c-f13fb674cad8",
+  "turnId": "73e2cd6a-0778-4c2e-aa36-18e680154032",
+  "terminalStatus": "completed",
+  "terminalError": "",
+  "approvedActions": 2,
+  "changedFiles": [
+    "src/runtime/owner.mjs"
+  ],
+  "diffHash": "6ba72d4215e1bb3207520ce5e00445de2ad63696d3cfd5aa7a1f03558dc0d680",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ runtime owner normalizes (0.7972ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 106.8519"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": true,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 11,
+    "status.changed": 18,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 9,
+    "tool.call_completed": 9,
+    "token.usage": 10,
+    "tool.execution_started": 9,
+    "file.read": 5,
+    "tool.execution_completed": 8,
+    "tool.execution_failed": 1,
+    "approval.requested": 2,
+    "approval.resolved": 2,
+    "file.written": 1,
+    "command.executed": 1,
+    "assistant.message.started": 1,
+    "text.delta": 83,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1
+  },
+  "wallTimeMs": 37105
+}

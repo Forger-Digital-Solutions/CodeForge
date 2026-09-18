@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-18T00:55:00.000Z",
+  "campaign": "r11-definitive-post-final-40",
+  "frozenCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+  "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+  "route": "openrouter/cohere/north-mini-code:free",
+  "result": {
+    "validCases": 40,
+    "verifiedSuccesses": 33,
+    "genuineFailures": 7,
+    "passAt1": 0.825,
+    "falseCompletions": 0,
+    "providerFailures": 0,
+    "infrastructureFailures": 0
+  },
+  "failureMatrix": [
+    {
+      "ordinal": 12,
+      "caseId": "CBR1-RP-02",
+      "category": "regression_prevention",
+      "hypothesizedLayer": "tests",
+      "finding": "malformed response was not classified separately",
+      "classification": "model_reasoning/malformed-input reasoning",
+      "toolCalls": 41,
+      "providerCalls": 42,
+      "wallTimeMs": 209000,
+      "severity": "medium",
+      "generalizability": "medium",
+      "fixability": "medium",
+      "notes": "Also the campaign tool-efficiency outlier: 41 tools vs 13.3 mean (~3.1x). Agent looped without converging on the malformed-vs-valid distinction."
+    },
+    {
+      "ordinal": 15,
+      "caseId": "CBR1-CP-01",
+      "category": "context_pressure",
+      "hypothesizedLayer": "analysis",
+      "finding": "report collapsed routing boundaries",
+      "classification": "context/repository-retrieval report fidelity",
+      "toolCalls": 13,
+      "providerCalls": 14,
+      "wallTimeMs": 59000,
+      "severity": "high",
+      "generalizability": "high",
+      "fixability": "medium",
+      "notes": "Report conflated exact vs adaptive routing boundaries - precisely the Free/Paid-Auto/BYOK/GEMS distinction CodeForge must preserve."
+    },
+    {
+      "ordinal": 16,
+      "caseId": "CBR1-CP-02",
+      "category": "context_pressure",
+      "hypothesizedLayer": "analysis",
+      "finding": "report omitted an authority owner; report collapsed routing boundaries",
+      "classification": "context/report completeness + boundary fidelity",
+      "toolCalls": 7,
+      "providerCalls": 9,
+      "wallTimeMs": 47000,
+      "severity": "high",
+      "generalizability": "high",
+      "fixability": "medium",
+      "notes": "Execution also stopped mid-plan (visible acceptance failed as well)."
+    },
+    {
+      "ordinal": 30,
+      "caseId": "CBR2-AT-01",
+      "category": "ambiguous_task",
+      "hypothesizedLayer": "planning",
+      "finding": "plan omitted selection, verification, or uncertainty",
+      "classification": "planning/plan completeness",
+      "toolCalls": 9,
+      "providerCalls": 10,
+      "wallTimeMs": 48000,
+      "severity": "medium",
+      "generalizability": "high",
+      "fixability": "high",
+      "notes": "Plan ran 6/6 steps but never recorded an explicit selection/verification/uncertainty statement."
+    },
+    {
+      "ordinal": 31,
+      "caseId": "CBR2-AT-02",
+      "category": "ambiguous_task",
+      "hypothesizedLayer": "planning",
+      "finding": "plan omitted selection, verification, or uncertainty",
+      "classification": "planning/plan completeness",
+      "toolCalls": 17,
+      "providerCalls": 18,
+      "wallTimeMs": 143000,
+      "severity": "medium",
+      "generalizability": "high",
+      "fixability": "high",
+      "notes": "Same planning signature as CBR2-AT-01 and CBR2-PQ-01."
+    },
+    {
+      "ordinal": 34,
+      "caseId": "CBR2-GS-01",
+      "category": "git_safety",
+      "hypothesizedLayer": "security",
+      "finding": "receipt retained credential material",
+      "classification": "security-sensitive edit/credential handling",
+      "toolCalls": 15,
+      "providerCalls": 16,
+      "wallTimeMs": 95000,
+      "severity": "high",
+      "generalizability": "medium",
+      "fixability": "medium",
+      "notes": "Model edited src/receipt.mjs but sanitizeReceipt still retained credential material; hidden verifier caught what visible tests missed."
+    },
+    {
+      "ordinal": 38,
+      "caseId": "CBR2-PQ-01",
+      "category": "planning_quality",
+      "hypothesizedLayer": "planning",
+      "finding": "plan omitted selection, verification, or uncertainty",
+      "classification": "planning/plan completeness",
+      "toolCalls": 9,
+      "providerCalls": 10,
+      "wallTimeMs": 61000,
+      "severity": "medium",
+      "generalizability": "high",
+      "fixability": "high",
+      "notes": "Third instance of the planning-completeness signature."
+    }
+  ],
+  "rankedClusters": [
+    {
+      "rank": 1,
+      "cluster": "plan completeness (selection/verification/uncertainty statements)",
+      "cases": ["CBR2-AT-01", "CBR2-AT-02", "CBR2-PQ-01"],
+      "frequency": 3,
+      "severity": "medium",
+      "generalizability": "high",
+      "fixability": "high",
+      "rationale": "All three planning-family fixtures failed the same hidden check; the model executes steps but does not document the required decision/verification/uncertainty contract."
+    },
+    {
+      "rank": 2,
+      "cluster": "routing/authority boundary fidelity under context pressure",
+      "cases": ["CBR1-CP-01", "CBR1-CP-02"],
+      "frequency": 2,
+      "severity": "high",
+      "generalizability": "high",
+      "fixability": "medium",
+      "rationale": "Both context-pressure reports collapsed routing boundaries or omitted authority owners - high-severity domain for a routing-governed product."
+    },
+    {
+      "rank": 3,
+      "cluster": "credential-handling edit correctness",
+      "cases": ["CBR2-GS-01"],
+      "frequency": 1,
+      "severity": "high",
+      "generalizability": "medium",
+      "fixability": "medium",
+      "rationale": "Single occurrence but in a security-sensitive edit; visible tests passed while hidden verifier caught retained credential material."
+    },
+    {
+      "rank": 4,
+      "cluster": "malformed-input classification + agent-loop efficiency",
+      "cases": ["CBR1-RP-02"],
+      "frequency": 1,
+      "severity": "medium",
+      "generalizability": "medium",
+      "fixability": "medium",
+      "rationale": "Failure combined a reasoning miss with the campaign's worst tool-loop behavior."
+    }
+  ],
+  "forgeGreenToolEfficiency": {
+    "meanToolCallsPerCase": 13.25,
+    "medianToolCallsPerCase": 13,
+    "totalToolCalls": 530,
+    "totalProviderCalls": 573,
+    "totalInputTokens": 1420429,
+    "totalOutputTokens": 120311,
+    "totalWallTimeMs": 3034216,
+    "outliers": [
+      { "caseId": "CBR1-RP-02", "toolCalls": 41, "providerCalls": 42, "inputTokens": 135835, "note": "~3.1x mean tools; looped without convergence" },
+      { "caseId": "CBR2-GS-02", "toolCalls": 26, "note": "verified success, high but converged" },
+      { "caseId": "CBR2-RV-01", "toolCalls": 25, "note": "verified success, high but converged" }
+    ],
+    "interpretation": "Verified successes average ~13 tool calls; failures are not correlated with tool volume except RP-02, where the loop never converged on the malformed-vs-valid distinction. No evidence of repeated-search loops (repeatedSearches=0 across attempts).",
+    "remediationPolicy": "No intelligence changes were made during or after the definitive POST. Any plan-template or loop-efficiency remediation belongs to a separate R11.4 PUBLIC REMEDIATED VALIDATION phase targeted at the affected public cases."
+  },
+  "quotaAccounting": {
+    "openRouterDailyFreeCeiling": 1000,
+    "observedReset": "2026-09-18T00:00:00Z",
+    "postCampaignRemainingEstimate": "well under 50% consumed by the 40-case definitive POST (573 provider calls total including retries across the whole campaign window)",
+    "capacityImplication": "One OpenRouter free-route daily allotment supports roughly one full 40-case campaign per day at current agent-loop tool/provider-call ratios; parallel campaigns would exhaust it."
+  }
+}

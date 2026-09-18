@@ -1,0 +1,28 @@
+{
+  "phase": "R11.4 protected benchmark reconciliation",
+  "rawResults": "protected-post-8.json",
+  "cases": 8,
+  "executedOnce": true,
+  "finding": "SCHEMA_INSTRUMENTATION_GAP",
+  "analysis": {
+    "schemaRequirement": "summarizeCodeForgeBenchR2 requires verification.protectedAcceptance === 'passed' for PROTECTED_TEST attempts to count as verifiedSuccesses (packages/benchmark/src/codeforge-bench-r2.ts:212)",
+    "executorReality": "The R2 live executor hardcodes protectedAcceptance: 'not_run' (scripts/r11-codeforge-bench-r2-executor.mjs:319). No protected-acceptance mechanism was ever implemented; the field exists in the attempt schema but nothing produces 'passed'.",
+    "consequence": "The strict summarizer reports verifiedSuccesses: 0 and classifies the 6 completed attempts as falseCompletions. That classification is an accounting artifact of the unimplemented field, not evidence that verification was bypassed: each completed attempt still passed visible acceptance, the external hidden verifier, ForgeVerify, and evaluateCompletion.",
+    "notFabricated": "protectedAcceptance was NOT rewritten to 'passed' post hoc. No mechanism exists to legitimately earn it, and rerunning protected cases is disallowed (single controlled run).",
+    "perCase": [
+      { "caseId": "CBR2-CD-02", "implementedGates": "passed_all", "status": "completed_verified" },
+      { "caseId": "CBR2-AU-02", "implementedGates": "passed_all", "status": "completed_verified" },
+      { "caseId": "CBR2-LH-02", "implementedGates": "passed_all", "status": "completed_verified" },
+      { "caseId": "CBR2-PF-02", "implementedGates": "forgeverify_or_completion_gate_failure", "status": "failed" },
+      { "caseId": "CBR2-AV-02", "implementedGates": "passed_all", "status": "completed_verified" },
+      { "caseId": "CBR2-SS-02", "implementedGates": "passed_all", "status": "completed_verified" },
+      { "caseId": "CBR2-SC-02", "implementedGates": "passed_all", "status": "completed_verified" },
+      { "caseId": "CBR2-PQ-02", "implementedGates": "hidden_verifier_failure", "status": "failed" }
+    ],
+    "underImplementedGates": { "passed": 6, "failed": 2, "passRate": 0.75 },
+    "underStrictSchema": { "verifiedSuccesses": 0, "falseCompletions": 6, "reason": "protectedAcceptance field unimplemented" }
+  },
+  "verdict": "PARTIAL",
+  "scorecardLine": "6/8 passed every implemented verification gate (visible acceptance, hidden verifier, ForgeVerify, completion gate). Strict schema counts 0/8 because the protectedAcceptance evidence field is unimplemented in the executor — an instrumentation gap to close before public release, not a false-completion event.",
+  "publicReleaseGate": "Implement a real protected-acceptance verifier (per-case protected criteria: plan review, security acceptance, receipt-chain checks) that can legitimately emit 'passed', or formally retire the field from the summarizer contract."
+}

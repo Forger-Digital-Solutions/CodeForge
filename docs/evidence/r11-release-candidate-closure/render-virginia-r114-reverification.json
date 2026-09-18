@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-18T01:00:00.000Z",
+  "priorEvidence": "render-virginia-live-evidence.json (2026-09-17T22:49:45Z)",
+  "method": "Live external remote-probe (no credentials) + direct health checks; dashboard/API data carries forward from prior evidence.",
+  "virginiaProduction": {
+    "service": "codeforge-cloud-va",
+    "url": "https://codeforge-cloud-va.onrender.com",
+    "healthLive": 200,
+    "healthReady": 200,
+    "remoteProbe": { "checksPassed": 21, "checksFailed": 0, "receipt": "render-va-prod-probe-r114.json" },
+    "hostedFreeCapacity": "32 verified-free models discoverable without credentials",
+    "oauthCallbackRegistered": "https://codeforge-cloud-va.onrender.com/v1/auth/github/callback",
+    "securityHeaders": { "nosniff": true, "noReferrer": true, "noStore": true },
+    "authEnforcement": "401 on /v1/account, /v1/usage, forged bearer, hosted inference stream",
+    "observedColdStart": "first /health/live after idle took 13.3s (free-tier sleep); warm /health/ready 0.24s",
+    "status": "LIVE_VALIDATED"
+  },
+  "virginiaStaging": {
+    "service": "codeforge-cloud-staging-va",
+    "url": "https://codeforge-cloud-staging-va.onrender.com",
+    "healthLive": 200,
+    "healthReady": 200,
+    "remoteProbe": { "checksPassed": 21, "checksFailed": 0, "receipt": "render-va-staging-probe-r114.json" },
+    "hostedFreeCapacity": "3 verified-free models",
+    "observedColdStart": "first /health/live after idle took 22.3s; warm /health/ready 0.21s",
+    "status": "LIVE_VALIDATED"
+  },
+  "oregonProduction": {
+    "domain": "cloud.forgerdigitalsolutions.com",
+    "healthLive": 200,
+    "observedColdStart": "12.4s (also free plan)",
+    "status": "LIVE_RETAINED_AS_ROLLBACK",
+    "domainCutover": "NOT_PERFORMED"
+  },
+  "database": {
+    "carriedForward": {
+      "name": "codeforge-cloud",
+      "region": "Virginia",
+      "engine": "PostgreSQL 16",
+      "plan": "Free",
+      "expirationDate": "2026-10-07",
+      "expirationConsequence": "Database deleted unless upgraded to a paid compute plan (smallest 0.1c-256mb at $6/month).",
+      "privateNetworking": "PARTIAL - Render internal PostgreSQL TLS uses self-signed certificates without verify-ca/verify-full support; CodeForge requires certificate-validated TLS, so the service uses the external URL with certificate-validated TLS. Same-region private connectivity cannot satisfy the CodeForge TLS policy on Render.",
+      "renderBackupOnFree": false,
+      "storageUsedPercent": 6.66
+    },
+    "requiredActionDeadline": "Before 2026-10-07: either upgrade the Render PostgreSQL plan ($6/month) or migrate production data to an alternative (e.g., the Supabase Postgres already proven for Virginia staging)."
+  },
+  "paidComputeCheckpoint": {
+    "service": "codeforge-cloud-va",
+    "region": "Virginia",
+    "currentPlan": "Free",
+    "proposedPlan": "0.5c-512mb",
+    "cpu": "0.1 -> 0.5",
+    "ramMb": 512,
+    "monthlyPriceUsd": 7,
+    "expectedProratedCharge": "prorated from upgrade date (~$0.23/day remainder of September)",
+    "observedPeakMemory": "not measurable - Render gates application metrics behind paid compute on this service",
+    "observedCpu": "not measurable - same limitation",
+    "oomEvents": "none observed in logs",
+    "freeTierSleepImpact": "confirmed: 13-22s cold starts after idle on both Virginia services",
+    "upgradeAssessment": "The only measured degradation on free compute is cold-start latency after sleep; no OOM, no restart instability, healthy readiness. The $7 tier primarily buys always-on behavior and metrics access. DEFERRED TO OWNER - no purchase made.",
+    "purchaseStatus": "NOT_PURCHASED_AWAITING_OWNER_DECISION"
+  },
+  "oauth": {
+    "carriedForward": "desktopPkceLogin passed; session survived restart; logout 200; refresh-after-logout 401; relogin passed; browser cookie login passed; browser logout initially 403 due to missing CODEFORGE_ALLOWED_ORIGINS entry, fixed to 200; accountSwitching = ACCOUNT_SWITCHING_BLOCKED_BY_SECOND_ACCOUNT_AVAILABILITY"
+  },
+  "cutoverReadiness": {
+    "ready": false,
+    "blockers": [
+      "Owner paid-compute decision pending (free vs $7 always-on).",
+      "Custom domain cutover cloud.forgerdigitalsolutions.com not yet performed - requires DNS/domain move + OAuth callback/CORS/CSP updates + post-cutover retest.",
+      "Database lifecycle decision due before 2026-10-07.",
+      "Account-switching OAuth certification blocked by second-account availability."
+    ],
+    "oregonRollback": "retained - do not delete without owner approval"
+  }
+}

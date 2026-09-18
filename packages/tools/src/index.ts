@@ -615,7 +615,7 @@ export class ToolBroker {
     }
 
     // 3. Permission enforcement (Role & Effective Permissions)
-    const isReadOnlyRole = context.role === "explorer" || context.role === "reviewer" || context.role === "planner";
+    const isReadOnlyRole = context.role === "explorer" || context.role === "reviewer" || context.role === "planner" || context.role === "mission-planner" || context.role === "replanner";
     if (isReadOnlyRole && !toolDef.readOnly) {
       const errMsg = `Error: [${ERROR_CODES.TOOL_PERMISSION_DENIED}] Role "${context.role}" is strictly read-only and cannot execute mutating tool "${name}".`;
       return {

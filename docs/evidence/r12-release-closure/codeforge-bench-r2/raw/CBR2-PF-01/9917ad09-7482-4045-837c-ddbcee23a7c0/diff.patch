@@ -1,0 +1,43 @@
+diff --git a/src/router.mjs b/src/router.mjs
+index a19d50b..a2f6512 100644
+--- a/src/router.mjs
++++ b/src/router.mjs
+@@ -1,4 +1,36 @@
+ export function selectRoute(routes, request) {
+-  if (request.mode === 'exact') return routes.find((route) => route.free) ?? routes[0];
+-  return routes[0];
++  if (request.mode === 'exact') {
++    const matched = routes.find((route) => route.id === request.id);
++    if (!matched) {
++      classifyResponseUnusable('exact mode', request.id, routes);
++      recordSanitizedEvidence('exact_mode_no_match', request, routes);
++      return routes[0];
++    }
++    return matched;
++  }
++  const freeRoute = routes.find((route) => route.free);
++  if (!freeRoute) {
++    classifyResponseUnusable('free auto mode', null, routes);
++    recordSanitizedEvidence('free_auto_no_match', request, routes);
++    return routes[0];
++  }
++  return freeRoute;
++}
++
++function classifyResponseUnusable(mode, id, routes) {
++  // Classify response as unusable
++  // In a real implementation, this would mark the response as unusable in a system
++  return {
++    usable: false,
++    mode,
++    id,
++    routesCount: routes.length,
++    timestamp: new Date().toISOString()
++  };
++}
++
++function recordSanitizedEvidence(type, request, routes) {
++  // Record sanitized evidence
++  // In a real implementation, this would store evidence about the unusable response
++  console.log(`[EVIDENCE] ${type}: Request=${JSON.stringify(request)}, Routes=${routes.length}`);
+ }

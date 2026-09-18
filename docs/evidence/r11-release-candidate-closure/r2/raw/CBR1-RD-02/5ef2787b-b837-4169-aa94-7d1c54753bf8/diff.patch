@@ -1,0 +1,11 @@
+diff --git a/src/router.mjs b/src/router.mjs
+index a19d50b..51aca8e 100644
+--- a/src/router.mjs
++++ b/src/router.mjs
+@@ -1,4 +1,4 @@
+ export function selectRoute(routes, request) {
+-  if (request.mode === 'exact') return routes.find((route) => route.free) ?? routes[0];
+-  return routes[0];
++  if (request.mode === 'exact') return routes.find((route) => route.id === request.id);
++  return routes.find((route) => route.free) ?? routes[0];
+ }

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "baseline": {
+    "release": "R11.4",
+    "verifiedSuccesses": 33,
+    "attempts": 40,
+    "passAt1": 0.825,
+    "providerCalls": 573,
+    "toolCalls": 530,
+    "meanToolCalls": 13.25,
+    "outputTokens": 120311,
+    "wallTimeMs": 3034216,
+    "falseCompletions": 0,
+    "providerRateLimitedAttempts": 0
+  },
+  "candidate": {
+    "release": "R12",
+    "verifiedSuccesses": 30,
+    "attempts": 40,
+    "passAt1": 0.75,
+    "providerCalls": 607,
+    "toolCalls": 562,
+    "meanToolCalls": 14.05,
+    "p95ToolCalls": 40,
+    "outputTokens": 149799,
+    "wallTimeMs": 3266669,
+    "falseCompletions": 0,
+    "providerRateLimitedAttempts": 2
+  },
+  "conclusion": "REGRESSED",
+  "notes": [
+    "R12 score decreased by three verified cases.",
+    "R12 used more provider calls, tool calls, output tokens, and wall time.",
+    "The no-progress detector is covered by focused tests, but campaign-level RP-02 improvement was not demonstrated.",
+    "All cost figures remain zero because the route was verified-free."
+  ]
+}

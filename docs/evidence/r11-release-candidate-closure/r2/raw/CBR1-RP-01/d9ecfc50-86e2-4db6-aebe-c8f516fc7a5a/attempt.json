@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-RP-01",
+  "runId": "d9ecfc50-86e2-4db6-aebe-c8f516fc7a5a",
+  "fixtureFamily": "tests",
+  "startingCommit": "1dbdb6b90e84b760f46f1d347d846b2363d88e64",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "b43ac275-a099-437d-a3e6-2f45a74617e5",
+  "turnId": "9d114210-3bae-489c-a9e2-05be4696a0a7",
+  "terminalStatus": "failed",
+  "approvedActions": 0,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ valid (2.6347ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 209.5126"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "behavioral test suite did not cover three outcomes",
+      "empty response was not classified separately",
+      "malformed response was not classified separately"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "workflow.verification_started": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1
+  },
+  "wallTimeMs": 4380
+}

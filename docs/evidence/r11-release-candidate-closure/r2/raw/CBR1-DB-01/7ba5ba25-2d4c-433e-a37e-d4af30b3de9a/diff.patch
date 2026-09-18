@@ -1,0 +1,7 @@
+diff --git a/src/calculator.mjs b/src/calculator.mjs
+index 89b41c0..f643dbe 100644
+--- a/src/calculator.mjs
++++ b/src/calculator.mjs
+@@ -1 +1 @@
+-export function add(a, b) { return a - b; }
++export function add(a, b) { return a + b; }

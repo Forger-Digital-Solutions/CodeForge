@@ -1,0 +1,7 @@
+diff --git a/src/runtime/owner.mjs b/src/runtime/owner.mjs
+index be6c826..2c1e62a 100644
+--- a/src/runtime/owner.mjs
++++ b/src/runtime/owner.mjs
+@@ -1 +1 @@
+-export function normalize(value) { return value.trim(); }
++export function normalize(value) { return value.trim().toLowerCase(); }

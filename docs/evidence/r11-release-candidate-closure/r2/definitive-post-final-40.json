@@ -1,0 +1,3446 @@
+{
+  "schemaVersion": 3,
+  "benchmarkVersion": "CodeForgeBench-R2",
+  "generatedAt": "2026-09-18T00:46:19.343Z",
+  "phase": "CODEFORGE_R9_POST_CAPABILITY_BENCHMARK_DEFINITIVE",
+  "campaign": "r11-definitive-post-final-40",
+  "frozenCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+  "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+  "route": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "routingMode": "fixed_route"
+  },
+  "aggregationPolicy": [
+    "Ordinals 1-28 reuse the valid original definitive attempts; quota-contaminated attempts (r2/live-post-continuation.json) are excluded from scoring and preserved separately as infrastructure evidence.",
+    "Ordinals 29-40 are clean post-reset attempts executed after the 2026-09-18 daily-quota reset under the same frozen commit, adapter, route, governor, and verifier policy.",
+    "Every attempt traces to r2/raw/<case>/<runId>/attempt.json."
+  ],
+  "summary": {
+    "version": "CodeForgeBench-R2",
+    "cases": 40,
+    "publicCases": 40,
+    "protectedCases": 0,
+    "attempts": 40,
+    "executedAttempts": 40,
+    "verifiedSuccesses": 33,
+    "successRate": 0.825,
+    "passAt1Successes": 33,
+    "passAt1Rate": 0.825,
+    "falseCompletions": 0,
+    "unrun": 0,
+    "bySplit": {
+      "TRAIN": {
+        "attempts": 15,
+        "verifiedSuccesses": 13,
+        "successRate": 0.8666666666666667,
+        "passAt1Successes": 13,
+        "falseCompletions": 0
+      },
+      "DEVELOPMENT": {
+        "attempts": 13,
+        "verifiedSuccesses": 9,
+        "successRate": 0.6923076923076923,
+        "passAt1Successes": 9,
+        "falseCompletions": 0
+      },
+      "VALIDATION": {
+        "attempts": 12,
+        "verifiedSuccesses": 11,
+        "successRate": 0.9166666666666666,
+        "passAt1Successes": 11,
+        "falseCompletions": 0
+      },
+      "PROTECTED_TEST": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      }
+    },
+    "byCategory": {
+      "repository_understanding": {
+        "attempts": 2,
+        "verifiedSuccesses": 2,
+        "successRate": 1,
+        "passAt1Successes": 2,
+        "falseCompletions": 0
+      },
+      "small_coding_fix": {
+        "attempts": 2,
+        "verifiedSuccesses": 2,
+        "successRate": 1,
+        "passAt1Successes": 2,
+        "falseCompletions": 0
+      },
+      "multi_file_engineering": {
+        "attempts": 2,
+        "verifiedSuccesses": 2,
+        "successRate": 1,
+        "passAt1Successes": 2,
+        "falseCompletions": 0
+      },
+      "debugging": {
+        "attempts": 2,
+        "verifiedSuccesses": 2,
+        "successRate": 1,
+        "passAt1Successes": 2,
+        "falseCompletions": 0
+      },
+      "test_repair": {
+        "attempts": 2,
+        "verifiedSuccesses": 2,
+        "successRate": 1,
+        "passAt1Successes": 2,
+        "falseCompletions": 0
+      },
+      "regression_prevention": {
+        "attempts": 2,
+        "verifiedSuccesses": 1,
+        "successRate": 0.5,
+        "passAt1Successes": 1,
+        "falseCompletions": 0
+      },
+      "large_repository": {
+        "attempts": 2,
+        "verifiedSuccesses": 2,
+        "successRate": 1,
+        "passAt1Successes": 2,
+        "falseCompletions": 0
+      },
+      "context_pressure": {
+        "attempts": 2,
+        "verifiedSuccesses": 0,
+        "successRate": 0,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "verification_resistance": {
+        "attempts": 2,
+        "verifiedSuccesses": 2,
+        "successRate": 1,
+        "passAt1Successes": 2,
+        "falseCompletions": 0
+      },
+      "recovery": {
+        "attempts": 2,
+        "verifiedSuccesses": 2,
+        "successRate": 1,
+        "passAt1Successes": 2,
+        "falseCompletions": 0
+      },
+      "tool_efficiency": {
+        "attempts": 2,
+        "verifiedSuccesses": 2,
+        "successRate": 1,
+        "passAt1Successes": 2,
+        "falseCompletions": 0
+      },
+      "routing_difficulty": {
+        "attempts": 2,
+        "verifiedSuccesses": 2,
+        "successRate": 1,
+        "passAt1Successes": 2,
+        "falseCompletions": 0
+      },
+      "complex_debugging": {
+        "attempts": 1,
+        "verifiedSuccesses": 1,
+        "successRate": 1,
+        "passAt1Successes": 1,
+        "falseCompletions": 0
+      },
+      "test_creation": {
+        "attempts": 2,
+        "verifiedSuccesses": 2,
+        "successRate": 1,
+        "passAt1Successes": 2,
+        "falseCompletions": 0
+      },
+      "architecture_understanding": {
+        "attempts": 1,
+        "verifiedSuccesses": 1,
+        "successRate": 1,
+        "passAt1Successes": 1,
+        "falseCompletions": 0
+      },
+      "long_horizon": {
+        "attempts": 1,
+        "verifiedSuccesses": 1,
+        "successRate": 1,
+        "passAt1Successes": 1,
+        "falseCompletions": 0
+      },
+      "ambiguous_task": {
+        "attempts": 2,
+        "verifiedSuccesses": 0,
+        "successRate": 0,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "provider_failure": {
+        "attempts": 1,
+        "verifiedSuccesses": 1,
+        "successRate": 1,
+        "passAt1Successes": 1,
+        "falseCompletions": 0
+      },
+      "adversarial_verification": {
+        "attempts": 1,
+        "verifiedSuccesses": 1,
+        "successRate": 1,
+        "passAt1Successes": 1,
+        "falseCompletions": 0
+      },
+      "git_safety": {
+        "attempts": 2,
+        "verifiedSuccesses": 1,
+        "successRate": 0.5,
+        "passAt1Successes": 1,
+        "falseCompletions": 0
+      },
+      "security_sensitive": {
+        "attempts": 1,
+        "verifiedSuccesses": 1,
+        "successRate": 1,
+        "passAt1Successes": 1,
+        "falseCompletions": 0
+      },
+      "subagent_cooperation": {
+        "attempts": 1,
+        "verifiedSuccesses": 1,
+        "successRate": 1,
+        "passAt1Successes": 1,
+        "falseCompletions": 0
+      },
+      "planning_quality": {
+        "attempts": 1,
+        "verifiedSuccesses": 0,
+        "successRate": 0,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "reviewer_quality": {
+        "attempts": 2,
+        "verifiedSuccesses": 2,
+        "successRate": 1,
+        "passAt1Successes": 2,
+        "falseCompletions": 0
+      }
+    },
+    "metrics": {
+      "medianWallTimeMs": 60217.5,
+      "medianContextTokens": 29990,
+      "medianToolCalls": 13,
+      "medianOutputTokens": 2323.5,
+      "medianRetries": 0,
+      "medianEstimatedCostUsd": 0
+    }
+  },
+  "definitiveMetrics": {
+    "totalCases": 40,
+    "verifiedSuccesses": 33,
+    "failures": 7,
+    "passAt1": 0.825,
+    "falseCompletions": 0,
+    "falseCompletionCaseIds": [],
+    "modelFailures": 7,
+    "providerFailures": 0,
+    "infrastructureFailures": 0,
+    "manualInterventions": 0,
+    "totals": {
+      "toolCalls": 530,
+      "providerCalls": 573,
+      "inputTokens": 1420429,
+      "outputTokens": 120311,
+      "wallTimeMs": 3034216
+    },
+    "perCase": [
+      {
+        "ordinal": 1,
+        "caseId": "CBR1-RU-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 20,
+        "providerCalls": 22,
+        "inputTokens": 59994,
+        "outputTokens": 6112,
+        "wallTimeMs": 84335,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 2,
+        "caseId": "CBR1-RU-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 14,
+        "providerCalls": 15,
+        "inputTokens": 37873,
+        "outputTokens": 2858,
+        "wallTimeMs": 63924,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 3,
+        "caseId": "CBR1-SF-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 6,
+        "providerCalls": 7,
+        "inputTokens": 14354,
+        "outputTokens": 581,
+        "wallTimeMs": 37069,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 4,
+        "caseId": "CBR1-SF-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 9,
+        "providerCalls": 10,
+        "inputTokens": 19475,
+        "outputTokens": 1249,
+        "wallTimeMs": 30228,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 5,
+        "caseId": "CBR1-MF-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 6,
+        "providerCalls": 7,
+        "inputTokens": 14889,
+        "outputTokens": 1275,
+        "wallTimeMs": 40835,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 6,
+        "caseId": "CBR1-MF-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 15,
+        "providerCalls": 16,
+        "inputTokens": 38230,
+        "outputTokens": 3035,
+        "wallTimeMs": 71649,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 7,
+        "caseId": "CBR1-DB-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 8,
+        "providerCalls": 9,
+        "inputTokens": 17500,
+        "outputTokens": 934,
+        "wallTimeMs": 37121,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 8,
+        "caseId": "CBR1-DB-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 13,
+        "providerCalls": 14,
+        "inputTokens": 30732,
+        "outputTokens": 1648,
+        "wallTimeMs": 61205,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 9,
+        "caseId": "CBR1-TR-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 6,
+        "providerCalls": 7,
+        "inputTokens": 14187,
+        "outputTokens": 625,
+        "wallTimeMs": 26504,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 10,
+        "caseId": "CBR1-TR-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 10,
+        "providerCalls": 11,
+        "inputTokens": 23955,
+        "outputTokens": 1416,
+        "wallTimeMs": 46657,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 11,
+        "caseId": "CBR1-RP-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 9,
+        "providerCalls": 10,
+        "inputTokens": 22486,
+        "outputTokens": 1885,
+        "wallTimeMs": 45884,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 12,
+        "caseId": "CBR1-RP-02",
+        "status": "failed",
+        "verified": false,
+        "hiddenAcceptance": "failed",
+        "toolCalls": 41,
+        "providerCalls": 42,
+        "inputTokens": 135835,
+        "outputTokens": 11164,
+        "wallTimeMs": 209113,
+        "failureMode": "hidden_verifier_failure",
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 13,
+        "caseId": "CBR1-LR-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 11,
+        "providerCalls": 12,
+        "inputTokens": 27550,
+        "outputTokens": 2316,
+        "wallTimeMs": 44015,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 14,
+        "caseId": "CBR1-LR-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 9,
+        "providerCalls": 10,
+        "inputTokens": 28067,
+        "outputTokens": 2004,
+        "wallTimeMs": 37105,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 15,
+        "caseId": "CBR1-CP-01",
+        "status": "failed",
+        "verified": false,
+        "hiddenAcceptance": "failed",
+        "toolCalls": 13,
+        "providerCalls": 14,
+        "inputTokens": 30242,
+        "outputTokens": 2331,
+        "wallTimeMs": 59147,
+        "failureMode": "hidden_verifier_failure",
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 16,
+        "caseId": "CBR1-CP-02",
+        "status": "failed",
+        "verified": false,
+        "hiddenAcceptance": "failed",
+        "toolCalls": 7,
+        "providerCalls": 9,
+        "inputTokens": 21044,
+        "outputTokens": 1431,
+        "wallTimeMs": 46917,
+        "failureMode": "hidden_verifier_failure",
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 17,
+        "caseId": "CBR1-VR-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 12,
+        "providerCalls": 13,
+        "inputTokens": 29037,
+        "outputTokens": 1467,
+        "wallTimeMs": 59230,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 18,
+        "caseId": "CBR1-VR-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 13,
+        "providerCalls": 14,
+        "inputTokens": 29738,
+        "outputTokens": 2246,
+        "wallTimeMs": 59035,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 19,
+        "caseId": "CBR1-RC-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 7,
+        "providerCalls": 8,
+        "inputTokens": 17827,
+        "outputTokens": 3054,
+        "wallTimeMs": 41345,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 20,
+        "caseId": "CBR1-RC-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 6,
+        "providerCalls": 7,
+        "inputTokens": 15593,
+        "outputTokens": 1348,
+        "wallTimeMs": 27213,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 21,
+        "caseId": "CBR1-TE-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 14,
+        "providerCalls": 15,
+        "inputTokens": 36017,
+        "outputTokens": 3651,
+        "wallTimeMs": 73318,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 22,
+        "caseId": "CBR1-TE-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 13,
+        "providerCalls": 14,
+        "inputTokens": 33430,
+        "outputTokens": 3136,
+        "wallTimeMs": 64878,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 23,
+        "caseId": "CBR1-RD-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 13,
+        "providerCalls": 14,
+        "inputTokens": 38512,
+        "outputTokens": 5587,
+        "wallTimeMs": 56955,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 24,
+        "caseId": "CBR1-RD-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 6,
+        "providerCalls": 7,
+        "inputTokens": 15809,
+        "outputTokens": 1789,
+        "wallTimeMs": 26486,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 25,
+        "caseId": "CBR2-CD-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 12,
+        "providerCalls": 13,
+        "inputTokens": 27767,
+        "outputTokens": 1865,
+        "wallTimeMs": 55572,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 26,
+        "caseId": "CBR2-TC-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 13,
+        "providerCalls": 14,
+        "inputTokens": 31510,
+        "outputTokens": 2666,
+        "wallTimeMs": 61510,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 27,
+        "caseId": "CBR2-TC-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 16,
+        "providerCalls": 17,
+        "inputTokens": 41796,
+        "outputTokens": 4717,
+        "wallTimeMs": 68960,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 28,
+        "caseId": "CBR2-AU-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 12,
+        "providerCalls": 13,
+        "inputTokens": 29297,
+        "outputTokens": 2848,
+        "wallTimeMs": 64579,
+        "failureMode": null,
+        "provenance": "original-definitive-attempt"
+      },
+      {
+        "ordinal": 29,
+        "caseId": "CBR2-LH-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 11,
+        "providerCalls": 12,
+        "inputTokens": 27129,
+        "outputTokens": 2035,
+        "wallTimeMs": 83798,
+        "failureMode": null,
+        "provenance": "post-reset-clean-continuation"
+      },
+      {
+        "ordinal": 30,
+        "caseId": "CBR2-AT-01",
+        "status": "failed",
+        "verified": false,
+        "hiddenAcceptance": "failed",
+        "toolCalls": 9,
+        "providerCalls": 10,
+        "inputTokens": 21422,
+        "outputTokens": 1903,
+        "wallTimeMs": 47548,
+        "failureMode": "hidden_verifier_failure",
+        "provenance": "post-reset-clean-continuation"
+      },
+      {
+        "ordinal": 31,
+        "caseId": "CBR2-AT-02",
+        "status": "failed",
+        "verified": false,
+        "hiddenAcceptance": "failed",
+        "toolCalls": 17,
+        "providerCalls": 18,
+        "inputTokens": 45217,
+        "outputTokens": 3414,
+        "wallTimeMs": 143432,
+        "failureMode": "hidden_verifier_failure",
+        "provenance": "post-reset-clean-continuation"
+      },
+      {
+        "ordinal": 32,
+        "caseId": "CBR2-PF-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 19,
+        "providerCalls": 20,
+        "inputTokens": 66696,
+        "outputTokens": 7507,
+        "wallTimeMs": 274133,
+        "failureMode": null,
+        "provenance": "post-reset-clean-continuation"
+      },
+      {
+        "ordinal": 33,
+        "caseId": "CBR2-AV-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 18,
+        "providerCalls": 19,
+        "inputTokens": 42753,
+        "outputTokens": 4119,
+        "wallTimeMs": 186591,
+        "failureMode": null,
+        "provenance": "post-reset-clean-continuation"
+      },
+      {
+        "ordinal": 34,
+        "caseId": "CBR2-GS-01",
+        "status": "failed",
+        "verified": false,
+        "hiddenAcceptance": "failed",
+        "toolCalls": 15,
+        "providerCalls": 16,
+        "inputTokens": 38143,
+        "outputTokens": 2617,
+        "wallTimeMs": 94781,
+        "failureMode": "hidden_verifier_failure",
+        "provenance": "post-reset-clean-continuation"
+      },
+      {
+        "ordinal": 35,
+        "caseId": "CBR2-GS-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 26,
+        "providerCalls": 27,
+        "inputTokens": 73927,
+        "outputTokens": 6469,
+        "wallTimeMs": 159254,
+        "failureMode": null,
+        "provenance": "post-reset-clean-continuation"
+      },
+      {
+        "ordinal": 36,
+        "caseId": "CBR2-SS-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 15,
+        "providerCalls": 16,
+        "inputTokens": 37443,
+        "outputTokens": 3291,
+        "wallTimeMs": 83245,
+        "failureMode": null,
+        "provenance": "post-reset-clean-continuation"
+      },
+      {
+        "ordinal": 37,
+        "caseId": "CBR2-SC-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 13,
+        "providerCalls": 14,
+        "inputTokens": 30394,
+        "outputTokens": 2278,
+        "wallTimeMs": 53877,
+        "failureMode": null,
+        "provenance": "post-reset-clean-continuation"
+      },
+      {
+        "ordinal": 38,
+        "caseId": "CBR2-PQ-01",
+        "status": "failed",
+        "verified": false,
+        "hiddenAcceptance": "failed",
+        "toolCalls": 9,
+        "providerCalls": 10,
+        "inputTokens": 21492,
+        "outputTokens": 1749,
+        "wallTimeMs": 61461,
+        "failureMode": "hidden_verifier_failure",
+        "provenance": "post-reset-clean-continuation"
+      },
+      {
+        "ordinal": 39,
+        "caseId": "CBR2-RV-01",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 25,
+        "providerCalls": 27,
+        "inputTokens": 73954,
+        "outputTokens": 5589,
+        "wallTimeMs": 133084,
+        "failureMode": null,
+        "provenance": "post-reset-clean-continuation"
+      },
+      {
+        "ordinal": 40,
+        "caseId": "CBR2-RV-02",
+        "status": "completed",
+        "verified": true,
+        "hiddenAcceptance": "passed",
+        "toolCalls": 19,
+        "providerCalls": 20,
+        "inputTokens": 59113,
+        "outputTokens": 4102,
+        "wallTimeMs": 112223,
+        "failureMode": null,
+        "provenance": "post-reset-clean-continuation"
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "caseId": "CBR1-RU-01",
+      "runId": "9f15d943-becd-427b-a372-9963ed5f5a77",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:36:57.029Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 22,
+        "contextTokens": 59994,
+        "outputTokens": 6112,
+        "toolCalls": 20,
+        "fileReads": 5,
+        "searches": 2,
+        "capacityWaitMs": null,
+        "wallTimeMs": 84335,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 1,
+        "rawArtifact": "r2/raw/CBR1-RU-01/9f15d943-becd-427b-a372-9963ed5f5a77/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-RU-02",
+      "runId": "327a7660-bf8b-4d1f-ae2b-d2e19125f6bc",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:38:00.970Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 15,
+        "contextTokens": 37873,
+        "outputTokens": 2858,
+        "toolCalls": 14,
+        "fileReads": 6,
+        "searches": 1,
+        "capacityWaitMs": null,
+        "wallTimeMs": 63924,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 2,
+        "rawArtifact": "r2/raw/CBR1-RU-02/327a7660-bf8b-4d1f-ae2b-d2e19125f6bc/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-SF-01",
+      "runId": "7aed493d-5802-473b-89f6-8d1b53d0295c",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:38:38.052Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 7,
+        "contextTokens": 14354,
+        "outputTokens": 581,
+        "toolCalls": 6,
+        "fileReads": 4,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 37069,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 3,
+        "rawArtifact": "r2/raw/CBR1-SF-01/7aed493d-5802-473b-89f6-8d1b53d0295c/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-SF-02",
+      "runId": "cde69b7d-33b3-4e55-aa74-799325419a11",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:39:08.307Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 10,
+        "contextTokens": 19475,
+        "outputTokens": 1249,
+        "toolCalls": 9,
+        "fileReads": 4,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 30228,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 4,
+        "rawArtifact": "r2/raw/CBR1-SF-02/cde69b7d-33b3-4e55-aa74-799325419a11/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-MF-01",
+      "runId": "e8b50427-a2fd-4349-8150-3e5bfce0cc03",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:39:49.184Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 7,
+        "contextTokens": 14889,
+        "outputTokens": 1275,
+        "toolCalls": 6,
+        "fileReads": 4,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 40835,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 5,
+        "rawArtifact": "r2/raw/CBR1-MF-01/e8b50427-a2fd-4349-8150-3e5bfce0cc03/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-MF-02",
+      "runId": "f901cd63-cc30-4915-a87b-24887b3301b1",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:41:00.859Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 16,
+        "contextTokens": 38230,
+        "outputTokens": 3035,
+        "toolCalls": 15,
+        "fileReads": 5,
+        "searches": 2,
+        "capacityWaitMs": null,
+        "wallTimeMs": 71649,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 6,
+        "rawArtifact": "r2/raw/CBR1-MF-02/f901cd63-cc30-4915-a87b-24887b3301b1/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-DB-01",
+      "runId": "325b6016-e212-4fcc-b229-ac11592fa48c",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:41:37.991Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 9,
+        "contextTokens": 17500,
+        "outputTokens": 934,
+        "toolCalls": 8,
+        "fileReads": 4,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 37121,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 7,
+        "rawArtifact": "r2/raw/CBR1-DB-01/325b6016-e212-4fcc-b229-ac11592fa48c/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-DB-02",
+      "runId": "bb2fdb57-f686-4025-8d1b-c9e18d5cad6d",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:42:39.219Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 14,
+        "contextTokens": 30732,
+        "outputTokens": 1648,
+        "toolCalls": 13,
+        "fileReads": 5,
+        "searches": 1,
+        "capacityWaitMs": null,
+        "wallTimeMs": 61205,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 8,
+        "rawArtifact": "r2/raw/CBR1-DB-02/bb2fdb57-f686-4025-8d1b-c9e18d5cad6d/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-TR-01",
+      "runId": "64d2e6e6-31b3-4975-8833-548aae23bb3c",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:43:05.742Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 7,
+        "contextTokens": 14187,
+        "outputTokens": 625,
+        "toolCalls": 6,
+        "fileReads": 4,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 26504,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 9,
+        "rawArtifact": "r2/raw/CBR1-TR-01/64d2e6e6-31b3-4975-8833-548aae23bb3c/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-TR-02",
+      "runId": "8d2784e6-a21b-44e1-bfa8-562f0e2a0f1b",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:43:52.416Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 11,
+        "contextTokens": 23955,
+        "outputTokens": 1416,
+        "toolCalls": 10,
+        "fileReads": 4,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 46657,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 10,
+        "rawArtifact": "r2/raw/CBR1-TR-02/8d2784e6-a21b-44e1-bfa8-562f0e2a0f1b/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-RP-01",
+      "runId": "82e8a9e5-026d-4cb4-99ef-e944c71de557",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:44:38.319Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 10,
+        "contextTokens": 22486,
+        "outputTokens": 1885,
+        "toolCalls": 9,
+        "fileReads": 4,
+        "searches": 1,
+        "capacityWaitMs": null,
+        "wallTimeMs": 45884,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 11,
+        "rawArtifact": "r2/raw/CBR1-RP-01/82e8a9e5-026d-4cb4-99ef-e944c71de557/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-RP-02",
+      "runId": "c6f233b3-dbee-472f-b8da-a996f75be833",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:48:07.449Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "failed",
+      "verified": false,
+      "hiddenAcceptance": "failed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "terminal=failed; visible=true; hidden=false; forgeVerify=false",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "blocked"
+      },
+      "metrics": {
+        "providerCalls": 42,
+        "contextTokens": 135835,
+        "outputTokens": 11164,
+        "toolCalls": 41,
+        "fileReads": 7,
+        "searches": 4,
+        "capacityWaitMs": null,
+        "wallTimeMs": 209113,
+        "estimatedCostUsd": 0
+      },
+      "failure": {
+        "failureMode": "hidden_verifier_failure",
+        "verifierFindings": [
+          "malformed response was not classified separately"
+        ],
+        "hypothesizedLayer": "tests"
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 12,
+        "rawArtifact": "r2/raw/CBR1-RP-02/c6f233b3-dbee-472f-b8da-a996f75be833/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-LR-01",
+      "runId": "16df6cd7-d038-4803-ab03-8f7ca0696932",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:48:51.483Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 12,
+        "contextTokens": 27550,
+        "outputTokens": 2316,
+        "toolCalls": 11,
+        "fileReads": 5,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 44015,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 13,
+        "rawArtifact": "r2/raw/CBR1-LR-01/16df6cd7-d038-4803-ab03-8f7ca0696932/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-LR-02",
+      "runId": "3e5a01a8-3fa9-4104-bced-e8503a4a020a",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:49:28.618Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 10,
+        "contextTokens": 28067,
+        "outputTokens": 2004,
+        "toolCalls": 9,
+        "fileReads": 5,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 37105,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 14,
+        "rawArtifact": "r2/raw/CBR1-LR-02/3e5a01a8-3fa9-4104-bced-e8503a4a020a/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-CP-01",
+      "runId": "5942a220-28c3-4c4d-a27d-e972e4535bf8",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:50:27.803Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "failed",
+      "verified": false,
+      "hiddenAcceptance": "failed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "terminal=failed; visible=true; hidden=false; forgeVerify=false",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "blocked"
+      },
+      "metrics": {
+        "providerCalls": 14,
+        "contextTokens": 30242,
+        "outputTokens": 2331,
+        "toolCalls": 13,
+        "fileReads": 5,
+        "searches": 1,
+        "capacityWaitMs": null,
+        "wallTimeMs": 59147,
+        "estimatedCostUsd": 0
+      },
+      "failure": {
+        "failureMode": "hidden_verifier_failure",
+        "verifierFindings": [
+          "report collapsed routing boundaries"
+        ],
+        "hypothesizedLayer": "analysis"
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 15,
+        "rawArtifact": "r2/raw/CBR1-CP-01/5942a220-28c3-4c4d-a27d-e972e4535bf8/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-CP-02",
+      "runId": "72ba84c7-72f8-41f4-9e54-c91e4d6ee934",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:51:14.743Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "failed",
+      "verified": false,
+      "hiddenAcceptance": "failed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "terminal=failed; visible=false; hidden=false; forgeVerify=false",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "failed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "blocked"
+      },
+      "metrics": {
+        "providerCalls": 9,
+        "contextTokens": 21044,
+        "outputTokens": 1431,
+        "toolCalls": 7,
+        "fileReads": 5,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 46917,
+        "estimatedCostUsd": 0
+      },
+      "failure": {
+        "failureMode": "hidden_verifier_failure",
+        "verifierFindings": [
+          "report omitted an authority owner",
+          "report collapsed routing boundaries"
+        ],
+        "hypothesizedLayer": "analysis"
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 16,
+        "rawArtifact": "r2/raw/CBR1-CP-02/72ba84c7-72f8-41f4-9e54-c91e4d6ee934/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-VR-01",
+      "runId": "9553fc1b-d7c6-4499-aac4-da00f34181df",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:52:13.992Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 13,
+        "contextTokens": 29037,
+        "outputTokens": 1467,
+        "toolCalls": 12,
+        "fileReads": 5,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 59230,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 17,
+        "rawArtifact": "r2/raw/CBR1-VR-01/9553fc1b-d7c6-4499-aac4-da00f34181df/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-VR-02",
+      "runId": "ee9496f9-4332-4185-bd59-741abf22ab69",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:53:13.053Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 14,
+        "contextTokens": 29738,
+        "outputTokens": 2246,
+        "toolCalls": 13,
+        "fileReads": 5,
+        "searches": 1,
+        "capacityWaitMs": null,
+        "wallTimeMs": 59035,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 18,
+        "rawArtifact": "r2/raw/CBR1-VR-02/ee9496f9-4332-4185-bd59-741abf22ab69/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-RC-01",
+      "runId": "6023067d-a41d-4984-910f-6677ed59f66d",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:53:54.421Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 8,
+        "contextTokens": 17827,
+        "outputTokens": 3054,
+        "toolCalls": 7,
+        "fileReads": 4,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 41345,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 19,
+        "rawArtifact": "r2/raw/CBR1-RC-01/6023067d-a41d-4984-910f-6677ed59f66d/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-RC-02",
+      "runId": "20d393fb-797f-4da3-83e9-ed9431ca935c",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:54:21.661Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 7,
+        "contextTokens": 15593,
+        "outputTokens": 1348,
+        "toolCalls": 6,
+        "fileReads": 4,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 27213,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 20,
+        "rawArtifact": "r2/raw/CBR1-RC-02/20d393fb-797f-4da3-83e9-ed9431ca935c/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-TE-01",
+      "runId": "6db4d887-8500-4eb3-b94b-9ed0368358bd",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:55:35.042Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 15,
+        "contextTokens": 36017,
+        "outputTokens": 3651,
+        "toolCalls": 14,
+        "fileReads": 5,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 73318,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 21,
+        "rawArtifact": "r2/raw/CBR1-TE-01/6db4d887-8500-4eb3-b94b-9ed0368358bd/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-TE-02",
+      "runId": "f79ee11d-8e0d-46b0-a5e4-365675f83c07",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:56:39.966Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 14,
+        "contextTokens": 33430,
+        "outputTokens": 3136,
+        "toolCalls": 13,
+        "fileReads": 5,
+        "searches": 1,
+        "capacityWaitMs": null,
+        "wallTimeMs": 64878,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 22,
+        "rawArtifact": "r2/raw/CBR1-TE-02/f79ee11d-8e0d-46b0-a5e4-365675f83c07/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-RD-01",
+      "runId": "e0f24887-d18f-4524-996b-3a501dd45aa9",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:57:36.965Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 14,
+        "contextTokens": 38512,
+        "outputTokens": 5587,
+        "toolCalls": 13,
+        "fileReads": 6,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 56955,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 23,
+        "rawArtifact": "r2/raw/CBR1-RD-01/e0f24887-d18f-4524-996b-3a501dd45aa9/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR1-RD-02",
+      "runId": "5ef2787b-b837-4169-aa94-7d1c54753bf8",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:58:03.480Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 7,
+        "contextTokens": 15809,
+        "outputTokens": 1789,
+        "toolCalls": 6,
+        "fileReads": 4,
+        "searches": 0,
+        "capacityWaitMs": null,
+        "wallTimeMs": 26486,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 24,
+        "rawArtifact": "r2/raw/CBR1-RD-02/5ef2787b-b837-4169-aa94-7d1c54753bf8/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR2-CD-01",
+      "runId": "20cf376b-22ff-4447-8203-ce6d03fde574",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T21:58:59.189Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 13,
+        "contextTokens": 27767,
+        "outputTokens": 1865,
+        "toolCalls": 12,
+        "fileReads": 4,
+        "searches": 1,
+        "capacityWaitMs": null,
+        "wallTimeMs": 55572,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 25,
+        "rawArtifact": "r2/raw/CBR2-CD-01/20cf376b-22ff-4447-8203-ce6d03fde574/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR2-TC-01",
+      "runId": "9be7ef6f-ca73-4436-a048-cf6868637cf7",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T22:00:00.728Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 14,
+        "contextTokens": 31510,
+        "outputTokens": 2666,
+        "toolCalls": 13,
+        "fileReads": 4,
+        "searches": 2,
+        "capacityWaitMs": null,
+        "wallTimeMs": 61510,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 26,
+        "rawArtifact": "r2/raw/CBR2-TC-01/9be7ef6f-ca73-4436-a048-cf6868637cf7/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR2-TC-02",
+      "runId": "55c21030-4c00-4cb9-85d1-16a75cedca4a",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T22:01:09.709Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 17,
+        "contextTokens": 41796,
+        "outputTokens": 4717,
+        "toolCalls": 16,
+        "fileReads": 5,
+        "searches": 2,
+        "capacityWaitMs": null,
+        "wallTimeMs": 68960,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 27,
+        "rawArtifact": "r2/raw/CBR2-TC-02/55c21030-4c00-4cb9-85d1-16a75cedca4a/attempt.json"
+      }
+    },
+    {
+      "caseId": "CBR2-AU-01",
+      "runId": "30f7c54a-6f60-4182-8cc0-7bee7eddf346",
+      "attemptNumber": 1,
+      "recordedAt": "2026-09-17T22:02:14.309Z",
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "mode": "fixed_route",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 13,
+        "contextTokens": 29297,
+        "outputTokens": 2848,
+        "toolCalls": 12,
+        "fileReads": 5,
+        "searches": 1,
+        "capacityWaitMs": null,
+        "wallTimeMs": 64579,
+        "estimatedCostUsd": 0
+      },
+      "provenance": {
+        "source": "original-definitive-attempt",
+        "ordinal": 28,
+        "rawArtifact": "r2/raw/CBR2-AU-01/30f7c54a-6f60-4182-8cc0-7bee7eddf346/attempt.json"
+      }
+    },
+    {
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 12,
+        "contextTokens": 27129,
+        "outputTokens": 2035,
+        "toolCalls": 11,
+        "fileReads": 4,
+        "searches": 0,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "capacityWaitMs": 0,
+        "wallTimeMs": 83798,
+        "estimatedCostUsd": 0
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR2-LH-01-recovery-v1",
+        "startingCommit": "f72b003e8573194e3462fad80e34ef266f5677e3",
+        "changedFiles": [
+          "src/continuation.mjs"
+        ],
+        "diffHash": "dcb0f0d5272bb37d94dca72074c5582613a14519bbe39b29d1941301d0e73c67",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ replayed result is idempotent (1.2357ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 100.4834",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR2-LH-01",
+        "category": "long_horizon",
+        "difficulty": "hard",
+        "fixture": "codeforge",
+        "instructions": "Complete a staged repository task: explore ownership, plan a change, implement it, run focused tests, diagnose one seeded failure, and verify the final diff.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "Maintains a coherent evidence trail across stages and ends only after independent verification.",
+        "acceptance": [
+          "Each stage has a recorded result.",
+          "The seeded failure is diagnosed before revision.",
+          "Final status matches verification."
+        ],
+        "expectedAffectedAreas": [
+          "packages/server",
+          "packages/workflow",
+          "packages/protocol"
+        ],
+        "failureTraps": [
+          "Skipping diagnosis, losing the original requirement, or claiming completion after a failed check."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "DEVELOPMENT",
+        "requiredEvidence": [
+          "Each stage has a recorded result.",
+          "The seeded failure is diagnosed before revision.",
+          "Final status matches verification."
+        ],
+        "tags": [
+          "r2",
+          "staged",
+          "verification"
+        ]
+      },
+      "runId": "f0b5ec53-0d1b-4e0c-bd52-ec2b7b6fabbe",
+      "attemptNumber": 1,
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "mode": "fixed_route",
+      "caseId": "CBR2-LH-01",
+      "recordedAt": "2026-09-18T00:05:58.176Z",
+      "provenance": {
+        "source": "post-reset-clean-continuation",
+        "ordinal": 29
+      }
+    },
+    {
+      "status": "failed",
+      "verified": false,
+      "hiddenAcceptance": "failed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "terminal=failed; visible=true; hidden=false; forgeVerify=false",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "blocked"
+      },
+      "metrics": {
+        "providerCalls": 10,
+        "contextTokens": 21422,
+        "outputTokens": 1903,
+        "toolCalls": 9,
+        "fileReads": 4,
+        "searches": 0,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "capacityWaitMs": 0,
+        "wallTimeMs": 47548,
+        "estimatedCostUsd": 0
+      },
+      "failure": {
+        "failureMode": "hidden_verifier_failure",
+        "lastCorrectState": "exact verified-free route selected",
+        "incorrectAction": "# Workflow Summary for \"CodeForgeBench R2 case CBR2-AT-01.\"\nTask type: documentation, risk: low\nPlan: plan-ccee7889-b2fd46 — 6/6 steps completed\nVerification: 2 passed, 1 failed, exit 1 — FAIL\nReview: No diffs\n\nOutcome: Failed safely after 0 repair attempt(s)\nCompletion gate: FAILED\n- BLOCKING verification_failed: Required verifier 'verifier-2-custom' (custom) did not produce current PASS evidence (failed).",
+        "verifierFindings": [
+          "plan omitted selection, verification, or uncertainty"
+        ],
+        "hypothesizedLayer": "planning"
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR2-AT-01-planning-v1",
+        "startingCommit": "7032ae555902c02fdaed9aca543110f2eb11df04",
+        "changedFiles": [
+          "PLAN.md"
+        ],
+        "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ plan preserves selection contracts (1.6115ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 101.0594",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR2-AT-01",
+        "category": "ambiguous_task",
+        "difficulty": "medium",
+        "fixture": "codeforge",
+        "instructions": "Implement the smallest safe interpretation of a request whose wording admits two plausible behaviors.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "Identifies the ambiguity, chooses the interpretation supported by local conventions, and preserves compatibility.",
+        "acceptance": [
+          "The chosen interpretation is justified by repository evidence.",
+          "No unrelated behavior changes.",
+          "Focused tests cover the selected contract."
+        ],
+        "expectedAffectedAreas": [
+          "packages/core/src",
+          "packages/protocol/src"
+        ],
+        "failureTraps": [
+          "Inventing a new public option or silently choosing the broadest behavior."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "TRAIN",
+        "requiredEvidence": [
+          "The chosen interpretation is justified by repository evidence.",
+          "No unrelated behavior changes.",
+          "Focused tests cover the selected contract."
+        ],
+        "tags": [
+          "r2",
+          "ambiguity",
+          "scope"
+        ]
+      },
+      "runId": "dd0e43cf-8fe6-469a-b136-b7c99a3afdd3",
+      "attemptNumber": 1,
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "mode": "fixed_route",
+      "caseId": "CBR2-AT-01",
+      "recordedAt": "2026-09-18T00:06:45.736Z",
+      "provenance": {
+        "source": "post-reset-clean-continuation",
+        "ordinal": 30
+      }
+    },
+    {
+      "status": "failed",
+      "verified": false,
+      "hiddenAcceptance": "failed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "terminal=failed; visible=true; hidden=false; forgeVerify=false",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "blocked"
+      },
+      "metrics": {
+        "providerCalls": 18,
+        "contextTokens": 45217,
+        "outputTokens": 3414,
+        "toolCalls": 17,
+        "fileReads": 4,
+        "searches": 0,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "capacityWaitMs": 0,
+        "wallTimeMs": 143432,
+        "estimatedCostUsd": 0
+      },
+      "failure": {
+        "failureMode": "hidden_verifier_failure",
+        "lastCorrectState": "exact verified-free route selected",
+        "incorrectAction": "# Workflow Summary for \"CodeForgeBench R2 case CBR2-AT-02.\"\nTask type: documentation, risk: low\nPlan: plan-df743206-588439 — 6/6 steps completed\nVerification: 2 passed, 1 failed, exit 1 — FAIL\nReview: No diffs\n\nOutcome: Failed safely after 0 repair attempt(s)\nCompletion gate: FAILED\n- BLOCKING verification_failed: Required verifier 'verifier-2-custom' (custom) did not produce current PASS evidence (failed).",
+        "verifierFindings": [
+          "plan omitted selection, verification, or uncertainty"
+        ],
+        "hypothesizedLayer": "planning"
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR2-AT-02-planning-v1",
+        "startingCommit": "ad59672922eb739543a74142245de0ce56a04941",
+        "changedFiles": [
+          "PLAN.md"
+        ],
+        "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ plan preserves selection contracts (1.7858ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 138.9504",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR2-AT-02",
+        "category": "ambiguous_task",
+        "difficulty": "hard",
+        "fixture": "codeforge",
+        "instructions": "Resolve an underspecified routing request while preserving the distinction between exact selection and adaptive selection.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "States the missing requirement, chooses a safe default, and keeps exact-model no-substitution semantics intact.",
+        "acceptance": [
+          "Exact selection remains exact.",
+          "Adaptive selection remains policy-bound.",
+          "The result records the assumption."
+        ],
+        "expectedAffectedAreas": [
+          "packages/router/src",
+          "packages/forge-zero/src"
+        ],
+        "failureTraps": [
+          "Silently converting an exact request into Auto routing."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "VALIDATION",
+        "requiredEvidence": [
+          "Exact selection remains exact.",
+          "Adaptive selection remains policy-bound.",
+          "The result records the assumption."
+        ],
+        "tags": [
+          "r2",
+          "routing",
+          "policy"
+        ]
+      },
+      "runId": "c34a2fb5-c323-46df-8e78-cf18eddc86bc",
+      "attemptNumber": 1,
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "mode": "fixed_route",
+      "caseId": "CBR2-AT-02",
+      "recordedAt": "2026-09-18T00:09:09.178Z",
+      "provenance": {
+        "source": "post-reset-clean-continuation",
+        "ordinal": 31
+      }
+    },
+    {
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 20,
+        "contextTokens": 66696,
+        "outputTokens": 7507,
+        "toolCalls": 19,
+        "fileReads": 5,
+        "searches": 7,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "capacityWaitMs": 0,
+        "wallTimeMs": 274133,
+        "estimatedCostUsd": 0
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR2-PF-01-routing-v1",
+        "startingCommit": "77e8493c11f66a1623fca36e5b7db0601ffd70b1",
+        "changedFiles": [
+          "src/router.mjs"
+        ],
+        "diffHash": "93455ec8bb88608e0ee0a248df842d2431a5d443541ce5b71a12aee6ced0aa66",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ exact stays exact (0.865ms)\n✔ free auto stays free (0.1389ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 102.7775",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR2-PF-01",
+        "category": "provider_failure",
+        "difficulty": "medium",
+        "fixture": "codeforge",
+        "instructions": "Handle a provider returning transport success with an empty completion.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "Classifies the response as unusable, records sanitized evidence, and applies bounded failover.",
+        "acceptance": [
+          "Empty content never counts as a useful completion.",
+          "The route is not qualified from transport success alone.",
+          "Raw credentials and raw prompts are absent from evidence."
+        ],
+        "expectedAffectedAreas": [
+          "packages/providers/src",
+          "packages/eight-bit/src"
+        ],
+        "failureTraps": [
+          "Treating an empty string as success or synthesizing provider content."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "DEVELOPMENT",
+        "requiredEvidence": [
+          "Empty content never counts as a useful completion.",
+          "The route is not qualified from transport success alone.",
+          "Raw credentials and raw prompts are absent from evidence."
+        ],
+        "tags": [
+          "r2",
+          "provider",
+          "failover"
+        ]
+      },
+      "runId": "7cb8f915-8571-4191-9a6e-3dce4e085605",
+      "attemptNumber": 1,
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "mode": "fixed_route",
+      "caseId": "CBR2-PF-01",
+      "recordedAt": "2026-09-18T00:13:43.322Z",
+      "provenance": {
+        "source": "post-reset-clean-continuation",
+        "ordinal": 32
+      }
+    },
+    {
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 19,
+        "contextTokens": 42753,
+        "outputTokens": 4119,
+        "toolCalls": 18,
+        "fileReads": 5,
+        "searches": 0,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "capacityWaitMs": 0,
+        "wallTimeMs": 186591,
+        "estimatedCostUsd": 0
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR2-AV-01-verification-v1",
+        "startingCommit": "53d88712771bb2d422a1bf1e25a10208016e5e7d",
+        "changedFiles": [
+          "src/authorize.mjs",
+          "test/authorize.test.mjs"
+        ],
+        "diffHash": "c7367c10f22fd70ded4070410999b2894a92014225735ab022d8d3a713f0935f",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ admin allowed (1.4091ms)\n✔ guest denied (0.3133ms)\n✔ unknown denied (0.1766ms)\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 151.664",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR2-AV-01",
+        "category": "adversarial_verification",
+        "difficulty": "hard",
+        "fixture": "codeforge",
+        "instructions": "Review a plausible patch that passes visible tests but omits a required negative path.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "Detects the missing requirement and blocks completion until the behavior is verified.",
+        "acceptance": [
+          "The negative path is identified.",
+          "Completion is not based on visible tests alone.",
+          "The review names a concrete verification action."
+        ],
+        "expectedAffectedAreas": [
+          "packages/workflow/src",
+          "packages/workflow/test"
+        ],
+        "failureTraps": [
+          "Approving because the build is green."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "TRAIN",
+        "requiredEvidence": [
+          "The negative path is identified.",
+          "Completion is not based on visible tests alone.",
+          "The review names a concrete verification action."
+        ],
+        "tags": [
+          "r2",
+          "adversarial",
+          "review"
+        ]
+      },
+      "runId": "05e7d38c-6683-4cac-986f-609f72d2f03e",
+      "attemptNumber": 1,
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "mode": "fixed_route",
+      "caseId": "CBR2-AV-01",
+      "recordedAt": "2026-09-18T00:34:34.664Z",
+      "provenance": {
+        "source": "post-reset-clean-continuation",
+        "ordinal": 33
+      }
+    },
+    {
+      "status": "failed",
+      "verified": false,
+      "hiddenAcceptance": "failed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "terminal=failed; visible=true; hidden=false; forgeVerify=false",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "blocked"
+      },
+      "metrics": {
+        "providerCalls": 16,
+        "contextTokens": 38143,
+        "outputTokens": 2617,
+        "toolCalls": 15,
+        "fileReads": 6,
+        "searches": 0,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "capacityWaitMs": 0,
+        "wallTimeMs": 94781,
+        "estimatedCostUsd": 0
+      },
+      "failure": {
+        "failureMode": "hidden_verifier_failure",
+        "lastCorrectState": "exact verified-free route selected",
+        "incorrectAction": "# Workflow Summary for \"CodeForgeBench R2 case CBR2-GS-01.\"\nTask type: documentation, risk: low\nPlan: plan-709139da-56f8c6 — 7/7 steps completed\nVerification: 3 passed, 1 failed, exit 1 — FAIL\nReview: 1 file(s) changed, 0 issue(s) — approved\nChanged files: src/receipt.mjs\n\nOutcome: Failed safely after 0 repair attempt(s)\nCompletion gate: FAILED\n- BLOCKING verification_failed: Required verifier 'verifier-2-custom' (custom) did not produce current PASS evidence (failed).",
+        "verifierFindings": [
+          "receipt retained credential material"
+        ],
+        "hypothesizedLayer": "security"
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR2-GS-01-security-v1",
+        "startingCommit": "8983c359b4aeb28f7ac5201e7273fd4e15ac7e4e",
+        "changedFiles": [
+          "USER-STAGED.txt",
+          "src/receipt.mjs",
+          "USER-SCRATCH.txt"
+        ],
+        "diffHash": "89f02b9d054747ee394c0da6eddb100952bf0c694a0e0e1b8436b547ca85850d",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ receipt excludes credential material (1.5337ms)\n✔ free eligibility is strict (0.2069ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 131.7573",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR2-GS-01",
+        "category": "git_safety",
+        "difficulty": "medium",
+        "fixture": "synthetic",
+        "instructions": "Apply a focused repair in a dirty repository containing staged user changes and unrelated untracked files.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "Preserves user work and changes only the requested files.",
+        "acceptance": [
+          "Staged content is unchanged.",
+          "Unrelated untracked files are preserved.",
+          "The final diff is auditable."
+        ],
+        "expectedAffectedAreas": [
+          "synthetic/git-safety"
+        ],
+        "failureTraps": [
+          "Resetting the tree, cleaning untracked files, or staging unrelated changes."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "TRAIN",
+        "requiredEvidence": [
+          "Staged content is unchanged.",
+          "Unrelated untracked files are preserved.",
+          "The final diff is auditable."
+        ],
+        "tags": [
+          "r2",
+          "git",
+          "safety"
+        ]
+      },
+      "runId": "4e5ceed3-971d-4082-9b21-aa595ffab882",
+      "attemptNumber": 1,
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "mode": "fixed_route",
+      "caseId": "CBR2-GS-01",
+      "recordedAt": "2026-09-18T00:36:09.463Z",
+      "provenance": {
+        "source": "post-reset-clean-continuation",
+        "ordinal": 34
+      }
+    },
+    {
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 27,
+        "contextTokens": 73927,
+        "outputTokens": 6469,
+        "toolCalls": 26,
+        "fileReads": 5,
+        "searches": 0,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "capacityWaitMs": 0,
+        "wallTimeMs": 159254,
+        "estimatedCostUsd": 0
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR2-GS-02-security-v1",
+        "startingCommit": "d0cc72a68ba88d22070e539390091fbac51a9601",
+        "changedFiles": [
+          "USER-STAGED.txt",
+          "src/receipt.mjs",
+          "USER-SCRATCH.txt"
+        ],
+        "diffHash": "48a3c61355298cbe0b178d2258efb7ca8c4472ecf22e5abc5225f6c388d7d003",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ receipt excludes credential material (2.2546ms)\n✔ free eligibility is strict (0.2021ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 134.9943",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR2-GS-02",
+        "category": "git_safety",
+        "difficulty": "hard",
+        "fixture": "codeforge",
+        "instructions": "Recover from an interrupted isolated-worktree synthesis with a conflicting external change.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "Detects the conflict, preserves both sides, and stops for an explicit resolution when automatic merge is unsafe.",
+        "acceptance": [
+          "Conflict is reported truthfully.",
+          "No user change is overwritten.",
+          "Worktree cleanup is bounded and recoverable."
+        ],
+        "expectedAffectedAreas": [
+          "packages/git/src",
+          "packages/server/src"
+        ],
+        "failureTraps": [
+          "Force-resetting a worktree or silently dropping one side of a conflict."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "VALIDATION",
+        "requiredEvidence": [
+          "Conflict is reported truthfully.",
+          "No user change is overwritten.",
+          "Worktree cleanup is bounded and recoverable."
+        ],
+        "tags": [
+          "r2",
+          "git",
+          "worktree"
+        ]
+      },
+      "runId": "d1c12292-a7f7-4df7-8fee-65af442a0b12",
+      "attemptNumber": 1,
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "mode": "fixed_route",
+      "caseId": "CBR2-GS-02",
+      "recordedAt": "2026-09-18T00:38:48.737Z",
+      "provenance": {
+        "source": "post-reset-clean-continuation",
+        "ordinal": 35
+      }
+    },
+    {
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 16,
+        "contextTokens": 37443,
+        "outputTokens": 3291,
+        "toolCalls": 15,
+        "fileReads": 5,
+        "searches": 1,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "capacityWaitMs": 0,
+        "wallTimeMs": 83245,
+        "estimatedCostUsd": 0
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR2-SS-01-security-v1",
+        "startingCommit": "a584785897b627dcf952c4f8bd60768d4d9a614b",
+        "changedFiles": [
+          "src/receipt.mjs"
+        ],
+        "diffHash": "b0ffb667dd41c260a4522e0773fad84a67e041474fd372025e80f9b5afd53809",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ receipt excludes credential material (1.6057ms)\n✔ free eligibility is strict (0.312ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 127.3823",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR2-SS-01",
+        "category": "security_sensitive",
+        "difficulty": "hard",
+        "fixture": "codeforge",
+        "instructions": "Repair a provider-routing path without exposing credentials through logs, receipts, or telemetry.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "Preserves approval, secret-isolation, and zero-billing boundaries while fixing the behavior.",
+        "acceptance": [
+          "Secret scan remains clean.",
+          "BYOK is not used by Free Auto.",
+          "Receipt fields contain identifiers, not credentials."
+        ],
+        "expectedAffectedAreas": [
+          "packages/secrets/src",
+          "packages/telemetry/src",
+          "packages/server/src"
+        ],
+        "failureTraps": [
+          "Logging request headers, copying keys into evidence, or using BYOK as a free fallback."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "DEVELOPMENT",
+        "requiredEvidence": [
+          "Secret scan remains clean.",
+          "BYOK is not used by Free Auto.",
+          "Receipt fields contain identifiers, not credentials."
+        ],
+        "tags": [
+          "r2",
+          "security",
+          "secrets"
+        ]
+      },
+      "runId": "d095a11d-5659-459c-8f92-07a3451b9082",
+      "attemptNumber": 1,
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "mode": "fixed_route",
+      "caseId": "CBR2-SS-01",
+      "recordedAt": "2026-09-18T00:40:12.000Z",
+      "provenance": {
+        "source": "post-reset-clean-continuation",
+        "ordinal": 36
+      }
+    },
+    {
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 14,
+        "contextTokens": 30394,
+        "outputTokens": 2278,
+        "toolCalls": 13,
+        "fileReads": 4,
+        "searches": 0,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "capacityWaitMs": 0,
+        "wallTimeMs": 53877,
+        "estimatedCostUsd": 0
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR2-SC-01-recovery-v1",
+        "startingCommit": "1316bf36371646fd510fd7bbf562f39109b8ba52",
+        "changedFiles": [
+          "src/continuation.mjs"
+        ],
+        "diffHash": "dcb0f0d5272bb37d94dca72074c5582613a14519bbe39b29d1941301d0e73c67",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ replayed result is idempotent (1.3343ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 107.2624",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR2-SC-01",
+        "category": "subagent_cooperation",
+        "difficulty": "medium",
+        "fixture": "codeforge",
+        "instructions": "Compare a solo worker with Explorer → Coder → Reviewer on a cross-file bug.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "Records whether the extra topology improves verified outcome enough to justify its resources.",
+        "acceptance": [
+          "Both topologies use the same capsule and starting state.",
+          "Verification is independent.",
+          "Duplicate work is measured."
+        ],
+        "expectedAffectedAreas": [
+          "packages/agent/src",
+          "packages/director/src"
+        ],
+        "failureTraps": [
+          "Declaring a topology better from completion claims or unequal starting state."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "TRAIN",
+        "requiredEvidence": [
+          "Both topologies use the same capsule and starting state.",
+          "Verification is independent.",
+          "Duplicate work is measured."
+        ],
+        "tags": [
+          "r2",
+          "topology",
+          "matched-experiment"
+        ]
+      },
+      "runId": "8f09b64e-d416-48a2-bf39-8c62dc245233",
+      "attemptNumber": 1,
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "mode": "fixed_route",
+      "caseId": "CBR2-SC-01",
+      "recordedAt": "2026-09-18T00:41:05.888Z",
+      "provenance": {
+        "source": "post-reset-clean-continuation",
+        "ordinal": 37
+      }
+    },
+    {
+      "status": "failed",
+      "verified": false,
+      "hiddenAcceptance": "failed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "terminal=failed; visible=true; hidden=false; forgeVerify=false",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "blocked"
+      },
+      "metrics": {
+        "providerCalls": 10,
+        "contextTokens": 21492,
+        "outputTokens": 1749,
+        "toolCalls": 9,
+        "fileReads": 4,
+        "searches": 0,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "capacityWaitMs": 0,
+        "wallTimeMs": 61461,
+        "estimatedCostUsd": 0
+      },
+      "failure": {
+        "failureMode": "hidden_verifier_failure",
+        "lastCorrectState": "exact verified-free route selected",
+        "incorrectAction": "# Workflow Summary for \"CodeForgeBench R2 case CBR2-PQ-01.\"\nTask type: documentation, risk: low\nPlan: plan-47d50df1-569056 — 7/7 steps completed\nVerification: 2 passed, 1 failed, exit 1 — FAIL\nReview: No diffs\n\nOutcome: Failed safely after 0 repair attempt(s)\nCompletion gate: FAILED\n- BLOCKING verification_failed: Required verifier 'verifier-2-custom' (custom) did not produce current PASS evidence (failed).",
+        "verifierFindings": [
+          "plan omitted selection, verification, or uncertainty"
+        ],
+        "hypothesizedLayer": "planning"
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR2-PQ-01-planning-v1",
+        "startingCommit": "2fe8dd276a0e796f4e169144e77ca6b88c47af8a",
+        "changedFiles": [
+          "PLAN.md"
+        ],
+        "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ plan preserves selection contracts (1.9381ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 128.6154",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR2-PQ-01",
+        "category": "planning_quality",
+        "difficulty": "medium",
+        "fixture": "codeforge",
+        "instructions": "Compare no explicit plan with an adaptive plan for a small and a multi-file task.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "Uses planning only when predicted complexity justifies it and records the resource tradeoff.",
+        "acceptance": [
+          "The small task is not burdened by unnecessary stages.",
+          "The multi-file task records dependencies before editing.",
+          "Both outcomes are independently verified."
+        ],
+        "expectedAffectedAreas": [
+          "packages/director/src",
+          "packages/agent/src"
+        ],
+        "failureTraps": [
+          "Always planning or never planning without measuring the task class."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "DEVELOPMENT",
+        "requiredEvidence": [
+          "The small task is not burdened by unnecessary stages.",
+          "The multi-file task records dependencies before editing.",
+          "Both outcomes are independently verified."
+        ],
+        "tags": [
+          "r2",
+          "planning",
+          "adaptive"
+        ]
+      },
+      "runId": "39cab2ca-3138-45e7-981e-55a9ae46ebde",
+      "attemptNumber": 1,
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "mode": "fixed_route",
+      "caseId": "CBR2-PQ-01",
+      "recordedAt": "2026-09-18T00:42:07.362Z",
+      "provenance": {
+        "source": "post-reset-clean-continuation",
+        "ordinal": 38
+      }
+    },
+    {
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 27,
+        "contextTokens": 73954,
+        "outputTokens": 5589,
+        "toolCalls": 25,
+        "fileReads": 6,
+        "searches": 9,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "capacityWaitMs": 0,
+        "wallTimeMs": 133084,
+        "estimatedCostUsd": 0
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR2-RV-01-review-v1",
+        "startingCommit": "fe5563b4cea0121452bdfa21805802d8a2f8afea",
+        "changedFiles": [
+          "candidate.patch",
+          "REVIEW.md"
+        ],
+        "diffHash": "fe15ddba0e8aae4d25595ca50f2e42076bc30be5e3412b9119b4f5e004ef4a4f",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ review identifies the blocking authority regression (2.2315ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 109.542",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR2-RV-01",
+        "category": "reviewer_quality",
+        "difficulty": "medium",
+        "fixture": "codeforge",
+        "instructions": "Review a patch for functional completeness, test gaps, and unnecessary churn.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "Finds the highest-severity actionable issue and distinguishes it from style-only differences.",
+        "acceptance": [
+          "The functional finding is correct.",
+          "A missing test or verification step is identified when present.",
+          "Cosmetic differences are not inflated into defects."
+        ],
+        "expectedAffectedAreas": [
+          "packages/*"
+        ],
+        "failureTraps": [
+          "Approving without inspecting the diff or reporting only formatting preferences."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "TRAIN",
+        "requiredEvidence": [
+          "The functional finding is correct.",
+          "A missing test or verification step is identified when present.",
+          "Cosmetic differences are not inflated into defects."
+        ],
+        "tags": [
+          "r2",
+          "review",
+          "quality"
+        ]
+      },
+      "runId": "f1403f0c-4d65-4ca6-be3d-8619b2aa40be",
+      "attemptNumber": 1,
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "mode": "fixed_route",
+      "caseId": "CBR2-RV-01",
+      "recordedAt": "2026-09-18T00:44:20.456Z",
+      "provenance": {
+        "source": "post-reset-clean-continuation",
+        "ordinal": 39
+      }
+    },
+    {
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 20,
+        "contextTokens": 59113,
+        "outputTokens": 4102,
+        "toolCalls": 19,
+        "fileReads": 3,
+        "searches": 3,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "capacityWaitMs": 0,
+        "wallTimeMs": 112223,
+        "estimatedCostUsd": 0
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR2-RV-02-review-v1",
+        "startingCommit": "578714b11e428572f119c174574752a0f2bddf00",
+        "changedFiles": [
+          "REVIEW.md"
+        ],
+        "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ review identifies the blocking authority regression (1.1543ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 100.8861",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR2-RV-02",
+        "category": "reviewer_quality",
+        "difficulty": "very_hard",
+        "fixture": "codeforge",
+        "instructions": "Review a provider and routing change for policy regression, receipt forgery, and recovery correctness.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "Catches security and correctness defects even when the happy-path tests pass.",
+        "acceptance": [
+          "Protected-style adversarial checks are represented.",
+          "Free/paid/BYOK boundaries are reviewed.",
+          "Findings reference observable evidence."
+        ],
+        "expectedAffectedAreas": [
+          "packages/forge-zero/src",
+          "packages/eight-bit/src",
+          "packages/server/src"
+        ],
+        "failureTraps": [
+          "Treating green tests as proof that policy boundaries are intact."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "VALIDATION",
+        "requiredEvidence": [
+          "Protected-style adversarial checks are represented.",
+          "Free/paid/BYOK boundaries are reviewed.",
+          "Findings reference observable evidence."
+        ],
+        "tags": [
+          "r2",
+          "review",
+          "routing",
+          "security"
+        ]
+      },
+      "runId": "e1aced91-f4cb-48a8-a753-51a7ccf1cac1",
+      "attemptNumber": 1,
+      "repositoryCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "codeforgeCommit": "cb4b9cfc6adca7dbd74e394a15438522dc41dcae",
+      "configDigest": "r11-fixed-openrouter-north-mini-v5-hidden-gate",
+      "mode": "fixed_route",
+      "caseId": "CBR2-RV-02",
+      "recordedAt": "2026-09-18T00:46:12.691Z",
+      "provenance": {
+        "source": "post-reset-clean-continuation",
+        "ordinal": 40
+      }
+    }
+  ]
+}

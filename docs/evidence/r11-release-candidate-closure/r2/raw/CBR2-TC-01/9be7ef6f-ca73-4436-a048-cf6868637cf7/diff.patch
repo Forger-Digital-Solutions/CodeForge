@@ -1,0 +1,19 @@
+diff --git a/src/parser.mjs b/src/parser.mjs
+index 46a9648..cfddb09 100644
+--- a/src/parser.mjs
++++ b/src/parser.mjs
+@@ -1,4 +1,5 @@
+ export function parseResponse(value) {
+-  if (typeof value !== 'string') return { kind: 'valid', value: '' };
++  if (typeof value !== 'string') return { kind: 'malformed', value };
++  if (value === '') return { kind: 'empty', value: '' };
+   return { kind: 'valid', value };
+ }
+diff --git a/test/smoke.test.mjs b/test/smoke.test.mjs
+index 0a99780..a147595 100644
+--- a/test/smoke.test.mjs
++++ b/test/smoke.test.mjs
+@@ -1 +1,3 @@
+ import test from 'node:test'; import assert from 'node:assert/strict'; import { parseResponse } from '../src/parser.mjs'; test('valid', () => assert.deepEqual(parseResponse('ok'), { kind: 'valid', value: 'ok' }));
++test('empty', () => assert.deepEqual(parseResponse(''), { kind: 'empty', value: '' }));
++test('malformed', () => assert.deepEqual(parseResponse(null), { kind: 'malformed', value: null }));

@@ -1,12 +1,18 @@
 {
-  "sourceStateId": "aea1fa2059daaa2e10bd98376bb45109d4c6e8b08ab2defd043343ce85e303c9",
-  "surfaceVersion": "fg12f-certified-v1-r114-definitive-post",
+  "sourceStateId": "bd3d3f943a3e986ae0c58f9aae8665df3732549482e8d7015e1c9a3c19b9d2a3",
+  "surfaceVersion": "r12-release-closure-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
   "recoveryBranch": "forger-digital-solutions-forgegreen-certified",
   "idAlgorithm": "sha256(JSON.stringify(materialFiles sorted lexicographically, each as [path, gitBlobHash]))",
   "materialFiles": [
+    "packages/agent/src/index.ts",
+    "packages/agent/src/planning-contract.ts",
+    "packages/benchmark/src/codeforge-bench-r2.ts",
+    "packages/benchmark/src/index.ts",
+    "packages/benchmark/src/protected-acceptance.ts",
+    "packages/context/src/index.ts",
     "packages/context/src/planner.ts",
     "packages/forge-green/src/optimization-candidate-a.ts",
     "packages/forge-green/src/optimization-candidates-shadow.ts",
@@ -16,13 +22,16 @@
     "packages/forge-green/src/reuse-cost-policy.ts",
     "packages/router/package.json",
     "packages/router/src/index.ts",
+    "packages/secrets/src/index.ts",
     "packages/server/src/agent-runtime.ts",
     "packages/server/src/autonomous-orchestrator.ts",
+    "packages/server/src/duplicate-suppression.ts",
     "packages/server/src/forge-verify-persistence.ts",
     "packages/server/src/workflow-service.ts",
     "packages/sessions/src/persistence.ts",
     "packages/sessions/src/postgres-persistence.ts",
     "packages/sessions/src/session-state.ts",
+    "packages/tools/src/index.ts",
     "packages/workflow/src/forge-verify.ts",
     "packages/workflow/src/index.ts",
     "packages/workflow/src/types.ts",
@@ -31,6 +40,12 @@
     "packages/workflow/src/verification-service.ts"
   ],
   "materialFileHashes": {
+    "packages/agent/src/index.ts": "20ce287bd79a2d7aa353cd47b39dc06455c14dca",
+    "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
+    "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
+    "packages/benchmark/src/index.ts": "62262a8392a06438d2a4775cc9d49b566d094219",
+    "packages/benchmark/src/protected-acceptance.ts": "0c1538833083910b74c98e8261e02b212753721e",
+    "packages/context/src/index.ts": "c22eef865b066f9fb176f8cceac9f616aec6c727",
     "packages/context/src/planner.ts": "5cab4794355d06008e044ddd80ac1b560ec0f793",
     "packages/forge-green/src/optimization-candidate-a.ts": "9588953b177b1a4864b76a7e8171f8998664b716",
     "packages/forge-green/src/optimization-candidates-shadow.ts": "a3d1f7b3a5a28d46eb127ce83770d1c292053507",
@@ -40,13 +55,16 @@
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
     "packages/router/package.json": "b2b596febe0eab8a591ed016e9783170c35ed096",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
+    "packages/secrets/src/index.ts": "521f14fffd2b92e5952f443a08f6556430e7c67d",
     "packages/server/src/agent-runtime.ts": "5c11ae79cc08de8f11eba756ba1da259e7686b29",
-    "packages/server/src/autonomous-orchestrator.ts": "35e071ab6e2af04d467910f146d34fd10853a835",
+    "packages/server/src/autonomous-orchestrator.ts": "83166287da2991d7900eebb0a9c27e328c1c0015",
+    "packages/server/src/duplicate-suppression.ts": "f6108024990ce604cc589f1be9a7bf1e1eb43e0a",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "5390826f640ae06fb46c6f48a550175cd7cb5897",
     "packages/sessions/src/persistence.ts": "ada09ba4e0d8577e843e1c9716bb096a0f997ab4",
     "packages/sessions/src/postgres-persistence.ts": "f47a6a0e3cd9e3064c17b00b4e6516082f738068",
     "packages/sessions/src/session-state.ts": "7b9d54ffbcd494b1c1bc58f1c14773a449f5539d",
+    "packages/tools/src/index.ts": "f3f223254782d387c1fa8ce91f399224746d979d",
     "packages/workflow/src/forge-verify.ts": "71b245de6205f05284aea4d250967963789d3adb",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
     "packages/workflow/src/types.ts": "e0336c4d38940c17c2306fc8624b600eeff60f39",
@@ -641,20 +659,89 @@
       "regressionEvidence": "Typecheck PASS, lint 0/0, workspace build PASS; full vitest rerun after recertification plus the 12/12-file 80/80 PostgreSQL campaign.",
       "recertifiedAt": "2026-09-18",
       "sourceStateConstant": "CODEFORGE_R114_DEFINITIVE_POST_SOURCE_STATE"
+    },
+    {
+      "label": "R12 public release gate closure",
+      "reason": "General protected-acceptance, planning-completeness, authority-boundary, secret-redaction, and no-progress remediation was reviewed as intended R12 material source work.",
+      "priorSourceStateId": "aea1fa2059daaa2e10bd98376bb45109d4c6e8b08ab2defd043343ce85e303c9",
+      "priorSurfaceVersion": "fg12f-certified-v1-r114-definitive-post",
+      "resultingSourceStateId": "bd3d3f943a3e986ae0c58f9aae8665df3732549482e8d7015e1c9a3c19b9d2a3",
+      "resultingSurfaceVersion": "r12-release-closure-v1",
+      "changes": [
+        {
+          "file": "packages/agent/src/index.ts",
+          "change": "Reviewed R12 remediation source; included in the new deterministic source-state surface.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/agent/src/planning-contract.ts",
+          "change": "Reviewed R12 remediation source; included in the new deterministic source-state surface.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/benchmark/src/codeforge-bench-r2.ts",
+          "change": "Reviewed R12 remediation source; included in the new deterministic source-state surface.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/benchmark/src/index.ts",
+          "change": "Reviewed R12 remediation source; included in the new deterministic source-state surface.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/benchmark/src/protected-acceptance.ts",
+          "change": "Reviewed R12 remediation source; included in the new deterministic source-state surface.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/context/src/index.ts",
+          "change": "Reviewed R12 remediation source; included in the new deterministic source-state surface.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/secrets/src/index.ts",
+          "change": "Reviewed R12 remediation source; included in the new deterministic source-state surface.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "Reviewed R12 remediation source; included in the new deterministic source-state surface.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/duplicate-suppression.ts",
+          "change": "Reviewed R12 remediation source; included in the new deterministic source-state surface.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/tools/src/index.ts",
+          "change": "Reviewed R12 remediation source; included in the new deterministic source-state surface.",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "R12 focused tests, lint, typecheck, workspace build, dependency audit, secret scan, and the full Vitest rerun were required before final closure.",
+      "recertifiedAt": "2026-09-18T02:53:45.868Z",
+      "sourceStateConstant": "CODEFORGE_R12_RELEASE_CLOSURE_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above, and the R6 product-hardening recertification above, and the R11 durable final-response recertification above, and the R11 PostgreSQL hosted-workflow recertification above, and the R11.4 definitive-POST recertification above.",
-  "recertifiedAt": "2026-09-18T00:58:11.711Z",
+  "recertifiedAt": "2026-09-18T02:53:45.869Z",
   "recertification": {
-    "phase": "R11.4 release-candidate closure",
-    "reason": "Post-freeze lint cleanup and suspended-credential test-input replacement",
+    "phase": "R12 release closure",
+    "reason": "Intentional R12 remediation source changes; historical R11 benchmark and release evidence remains untouched.",
     "changedFiles": [
-      {
-        "path": "packages/server/src/agent-runtime.ts",
-        "summary": "Removes an unused StreamEvent type import after the definitive POST freeze. No runtime behavior, routing, verification, approval, ForgeZero, or completion policy changes."
-      }
+      "packages/agent/src/index.ts",
+      "packages/agent/src/planning-contract.ts",
+      "packages/benchmark/src/codeforge-bench-r2.ts",
+      "packages/benchmark/src/index.ts",
+      "packages/benchmark/src/protected-acceptance.ts",
+      "packages/context/src/index.ts",
+      "packages/secrets/src/index.ts",
+      "packages/server/src/autonomous-orchestrator.ts",
+      "packages/server/src/duplicate-suppression.ts",
+      "packages/tools/src/index.ts"
     ],
-    "priorSourceStateId": "631df80b4c4e1c300950cae0e30a4991daac08a0e3f8f614e586839b361881ee",
+    "priorSourceStateId": "aea1fa2059daaa2e10bd98376bb45109d4c6e8b08ab2defd043343ce85e303c9",
     "guarded": true
   }
 }

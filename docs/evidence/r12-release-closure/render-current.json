@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "observedFrom": "Render dashboard UI",
+  "productionService": {
+    "name": "codeforge-cloud-va",
+    "serviceId": "srv-dam6f83m8hqs73clo5ig",
+    "region": "Virginia",
+    "computePlan": "0.5c-512mb",
+    "status": "live",
+    "latestDeploy": "dep-dama02bm8hqs73d2a40g",
+    "latestDeployStatus": "Deploy succeeded | Live",
+    "trigger": "Compute plan updated"
+  },
+  "activeSupportingResource": "Virginia PostgreSQL 16",
+  "suspendedByOwnerRequest": [
+    "codeforge-cloud-staging-va",
+    "codeforge-cloud-staging",
+    "codeforge-cloud"
+  ],
+  "customDomain": "BLOCKED_OWNER_DECISION",
+  "stagingProbe": "BLOCKED_OWNER_DECISION",
+  "databaseDeadline": "2026-10-07"
+}

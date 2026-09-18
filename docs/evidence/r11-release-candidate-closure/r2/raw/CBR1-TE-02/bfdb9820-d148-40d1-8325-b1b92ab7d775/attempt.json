@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-TE-02",
+  "runId": "bfdb9820-d148-40d1-8325-b1b92ab7d775",
+  "fixtureFamily": "localization",
+  "startingCommit": "f968e8ac44297f3fc9083ed71eed4239316c4020",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "bf01bd58-4e60-4381-985c-e37fae81b00b",
+  "turnId": "f4149047-2ae0-4f18-ad5a-f01038bdd31b",
+  "terminalStatus": "failed",
+  "approvedActions": 6,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": false,
+    "exitCode": 1,
+    "output": "✖ runtime owner normalizes (2.4376ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 178.6388\n\n✖ failing tests:\n\ntest at test\\owner.test.mjs:1:126\n✖ runtime owner normalizes (2.4376ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  'ALPHA' !== 'alpha'\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r2-cbr1-te-02-yxmOoA/workspace/test/owner.test.mjs:1:172)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 'ALPHA',\n    expected: 'alpha',\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "executable owner remains defective"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 26,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 24,
+    "tool.call_completed": 24,
+    "token.usage": 24,
+    "tool.execution_started": 24,
+    "file.read": 11,
+    "tool.execution_completed": 24,
+    "approval.requested": 6,
+    "approval.resolved": 6,
+    "command.executed": 7,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1
+  },
+  "wallTimeMs": 40640
+}

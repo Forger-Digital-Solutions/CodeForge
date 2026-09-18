@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-AV-01",
+  "runId": "c2e4ad8c-8765-482d-9c06-d03118d924cf",
+  "fixtureFamily": "verification",
+  "startingCommit": "2afa028a035d65177704daf91be891a1a1486b02",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "05f1a2fc-58e9-497a-8271-dd8864fb0f6a",
+  "turnId": "64de83e0-5ad4-4485-b929-7811db7bafdd",
+  "terminalStatus": "failed",
+  "approvedActions": 16,
+  "changedFiles": [
+    "src/authorize.mjs",
+    "test/authorize.test.mjs"
+  ],
+  "diffHash": "cff207bae233eca44eb3168d0e7c9aef5092d6a5f2cf939144975c55f1eb138c",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ admin allowed (2.8104ms)\n✔ guest denied (0.4112ms)\n✔ unknown role denied (0.4006ms)\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 246.8597"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 46,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 40,
+    "tool.call_completed": 40,
+    "token.usage": 40,
+    "tool.execution_started": 40,
+    "file.read": 8,
+    "tool.execution_completed": 40,
+    "command.executed": 11,
+    "approval.requested": 16,
+    "approval.resolved": 16,
+    "checkpoint.created": 2,
+    "file.written": 11,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1
+  },
+  "wallTimeMs": 126786
+}

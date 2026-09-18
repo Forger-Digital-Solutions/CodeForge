@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-RP-02",
+  "runId": "7df46c03-3c08-4477-b6c1-f5299e7f6aab",
+  "fixtureFamily": "tests",
+  "startingCommit": "1069fbd2dd47ba21489dbfece7ca2d025c0f8692",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "e5cb7801-2765-4e49-bc47-8fe0488a0b79",
+  "turnId": "2bce5ae4-1a7a-42fb-a48c-f2cf88c2dd7b",
+  "terminalStatus": "running",
+  "terminalError": "",
+  "approvedActions": 10,
+  "changedFiles": [
+    "src/parser.mjs",
+    "test/smoke.test.mjs"
+  ],
+  "diffHash": "578105e9b35bae705ae54f82c9504ce69b192af3ec13a4d36414c0cf1a383715",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ valid (1.6439ms)\n✔ empty (0.193ms)\n✔ malformed (0.1559ms)\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 126.7499"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "malformed response was not classified separately"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 6,
+    "status.changed": 27,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 41,
+    "tool.call_completed": 41,
+    "token.usage": 42,
+    "tool.execution_started": 41,
+    "file.read": 7,
+    "tool.execution_completed": 40,
+    "tool.execution_failed": 1,
+    "command.executed": 22,
+    "approval.requested": 10,
+    "approval.resolved": 10,
+    "file.written": 2
+  },
+  "wallTimeMs": 301174
+}

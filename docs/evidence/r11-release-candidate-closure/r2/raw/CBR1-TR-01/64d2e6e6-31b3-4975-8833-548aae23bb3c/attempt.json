@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-TR-01",
+  "runId": "64d2e6e6-31b3-4975-8833-548aae23bb3c",
+  "fixtureFamily": "coding",
+  "startingCommit": "8148a764d97c88bd0ff96a5505ab974a61a829ec",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "93b31062-7567-42ab-974e-7eb564033eb1",
+  "turnId": "b5df41e9-5efb-4a6a-9d28-9dcc0dea91c5",
+  "terminalStatus": "completed",
+  "terminalError": "",
+  "approvedActions": 1,
+  "changedFiles": [
+    "src/calculator.mjs"
+  ],
+  "diffHash": "c474bbfd446209ea06c8741c4419611f13028e37ea7a577bef1aa49500ec8e86",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ adds positive values (0.7164ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 93.2399"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": true,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 11,
+    "status.changed": 16,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 6,
+    "tool.call_completed": 6,
+    "token.usage": 7,
+    "tool.execution_started": 6,
+    "file.read": 4,
+    "tool.execution_completed": 6,
+    "approval.requested": 1,
+    "approval.resolved": 1,
+    "file.written": 1,
+    "command.executed": 1,
+    "assistant.message.started": 1,
+    "text.delta": 59,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1
+  },
+  "wallTimeMs": 26504
+}

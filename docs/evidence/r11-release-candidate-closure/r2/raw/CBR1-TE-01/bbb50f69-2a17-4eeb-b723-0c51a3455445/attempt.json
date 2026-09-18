@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-TE-01",
+  "runId": "bbb50f69-2a17-4eeb-b723-0c51a3455445",
+  "fixtureFamily": "localization",
+  "startingCommit": "7f82363119f97452d52b17195852e685f127a655",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "f3154ca2-727d-44b8-9c44-d68a45a3101b",
+  "turnId": "4b03b82b-7bc5-4afb-be49-717e09001ede",
+  "terminalStatus": "completed",
+  "approvedActions": 2,
+  "changedFiles": [
+    "src/runtime/owner.mjs"
+  ],
+  "diffHash": "6ba72d4215e1bb3207520ce5e00445de2ad63696d3cfd5aa7a1f03558dc0d680",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ runtime owner normalizes (2.066ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 256.6035"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": true,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 11,
+    "status.changed": 18,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 9,
+    "tool.call_completed": 9,
+    "token.usage": 10,
+    "tool.execution_started": 9,
+    "file.read": 6,
+    "tool.execution_completed": 9,
+    "approval.requested": 2,
+    "approval.resolved": 2,
+    "file.written": 1,
+    "command.executed": 1,
+    "assistant.message.started": 1,
+    "text.delta": 224,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1
+  },
+  "wallTimeMs": 31397
+}

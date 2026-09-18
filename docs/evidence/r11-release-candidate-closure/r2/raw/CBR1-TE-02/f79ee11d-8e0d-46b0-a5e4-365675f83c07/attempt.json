@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-TE-02",
+  "runId": "f79ee11d-8e0d-46b0-a5e4-365675f83c07",
+  "fixtureFamily": "localization",
+  "startingCommit": "538f5fce7609fe5e116aafce15c0180ade36e049",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "0f5c0c9d-e32c-4d1a-963e-2a309df67581",
+  "turnId": "5b194aba-556f-4132-acda-6e892b46a043",
+  "terminalStatus": "completed",
+  "terminalError": "",
+  "approvedActions": 1,
+  "changedFiles": [
+    "src/runtime/owner.mjs"
+  ],
+  "diffHash": "6ba72d4215e1bb3207520ce5e00445de2ad63696d3cfd5aa7a1f03558dc0d680",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ runtime owner normalizes (0.743ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 104.7607"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": true,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 11,
+    "status.changed": 16,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 13,
+    "tool.call_completed": 13,
+    "token.usage": 14,
+    "tool.execution_started": 13,
+    "file.read": 5,
+    "tool.execution_completed": 12,
+    "tool.execution_failed": 1,
+    "command.executed": 2,
+    "approval.requested": 1,
+    "approval.resolved": 1,
+    "file.written": 1,
+    "assistant.message.started": 1,
+    "text.delta": 369,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1
+  },
+  "wallTimeMs": 64878
+}

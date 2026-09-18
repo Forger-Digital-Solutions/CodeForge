@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "engineeringVerdict": "ENGINEERING_RC_NOT_READY",
+  "hostedVerdict": "HOSTED_RELEASE_BLOCKED",
+  "windowsVerdict": "WINDOWS_PUBLIC_RELEASE_BLOCKED_EXTERNAL_SIGNING",
+  "gates": {
+    "Engineering RC": "FAIL",
+    "Full regression": "PASS",
+    "CodeForgeBench": "FAIL",
+    "Protected benchmark": "BLOCKED_EXTERNAL",
+    "False-completion safety": "PASS",
+    "ForgeVerify": "PASS",
+    "ForgeGreen efficiency": "FAIL",
+    "Electron package": "PASS",
+    "Electron lifecycle": "PASS",
+    "Upgrade": "PASS",
+    "Uninstall": "PASS",
+    "Data preservation": "PASS",
+    "Dependency security": "PASS",
+    "Secret security": "PASS",
+    "GitHub OAuth": "UNTESTED",
+    "Account switching": "BLOCKED_EXTERNAL",
+    "Virginia production": "PASS",
+    "Virginia staging": "BLOCKED_OWNER_DECISION",
+    "Custom domain": "BLOCKED_OWNER_DECISION",
+    "Database lifecycle": "BLOCKED_OWNER_DECISION",
+    "Trusted Windows signing": "BLOCKED_EXTERNAL",
+    "ForgeAuto/Free separation": "PASS",
+    "BYOK separation": "PASS",
+    "Paid Auto separation": "PASS",
+    "GEMS isolation": "PASS"
+  },
+  "blockingReasons": [
+    "R12 public pass@1 regressed from 0.825 to 0.750.",
+    "The protected campaign was rate-limited before a clean capability measurement.",
+    "The custom domain still routes to Oregon.",
+    "The Render PostgreSQL free-tier deletion deadline is 2026-10-07 and the owner decision is pending.",
+    "No second authorized account was available for real account-switching validation.",
+    "Windows public artifacts remain unsigned until an owner-controlled trusted certificate is supplied."
+  ]
+}

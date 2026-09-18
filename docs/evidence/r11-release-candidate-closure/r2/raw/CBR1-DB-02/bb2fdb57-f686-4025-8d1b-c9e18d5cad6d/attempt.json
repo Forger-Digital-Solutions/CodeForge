@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-DB-02",
+  "runId": "bb2fdb57-f686-4025-8d1b-c9e18d5cad6d",
+  "fixtureFamily": "coding",
+  "startingCommit": "5319bc9c26cfcf97f3b12779a709dd7c8fd16974",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "bf5a9345-1a50-433c-b81b-b88587849fb7",
+  "turnId": "ce060dc0-ee24-4a50-9ba1-20e58da47009",
+  "terminalStatus": "completed",
+  "terminalError": "",
+  "approvedActions": 1,
+  "changedFiles": [
+    "src/calculator.mjs"
+  ],
+  "diffHash": "c474bbfd446209ea06c8741c4419611f13028e37ea7a577bef1aa49500ec8e86",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ adds positive values (0.7281ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 95.1088"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": true,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 11,
+    "status.changed": 16,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 13,
+    "tool.call_completed": 13,
+    "token.usage": 14,
+    "tool.execution_started": 13,
+    "file.read": 5,
+    "tool.execution_completed": 12,
+    "command.executed": 2,
+    "approval.requested": 1,
+    "approval.resolved": 1,
+    "file.written": 1,
+    "tool.execution_failed": 1,
+    "assistant.message.started": 1,
+    "text.delta": 55,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1
+  },
+  "wallTimeMs": 61205
+}

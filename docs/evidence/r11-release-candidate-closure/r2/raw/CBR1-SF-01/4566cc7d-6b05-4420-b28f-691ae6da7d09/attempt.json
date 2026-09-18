@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-SF-01",
+  "runId": "4566cc7d-6b05-4420-b28f-691ae6da7d09",
+  "fixtureFamily": "coding",
+  "startingCommit": "acbef51f2a5705f98088d0fd2a13a94f5679e806",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "16896725-df4c-46c5-a2fb-aa31fce192fe",
+  "turnId": "a9320dd4-fd5f-401d-888d-81f886531d08",
+  "terminalStatus": "failed",
+  "approvedActions": 1,
+  "changedFiles": [
+    "src/calculator.mjs"
+  ],
+  "diffHash": "c474bbfd446209ea06c8741c4419611f13028e37ea7a577bef1aa49500ec8e86",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ adds positive values (0.8666ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 112.3003"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 16,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 6,
+    "tool.call_completed": 6,
+    "token.usage": 6,
+    "tool.execution_started": 6,
+    "file.read": 4,
+    "tool.execution_completed": 6,
+    "approval.requested": 1,
+    "approval.resolved": 1,
+    "file.written": 1,
+    "command.executed": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1
+  },
+  "wallTimeMs": 11758
+}

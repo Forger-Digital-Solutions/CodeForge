@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "probedAt": "2026-09-18T00:01:40.872Z",
+  "route": "cohere/north-mini-code:free",
+  "routeExists": true,
+  "routeIsFree": true,
+  "pricingAllZero": true,
+  "paidSubstitution": false,
+  "requestSucceeded": true,
+  "httpStatus": 200,
+  "nonemptyOutput": true,
+  "outputPreview": "OK",
+  "rateLimitHeaders": {}
+}

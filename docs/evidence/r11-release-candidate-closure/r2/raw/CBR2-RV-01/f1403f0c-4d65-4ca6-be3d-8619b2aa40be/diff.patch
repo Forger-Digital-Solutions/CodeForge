@@ -1,0 +1,8 @@
+diff --git a/candidate.patch b/candidate.patch
+index 459f573..5401aa0 100644
+--- a/candidate.patch
++++ b/candidate.patch
+@@ -1,2 +1,2 @@
+ - if (!receipt.verified) return false;
+-+ return true; // happy path tests pass
+++ return receipt.verified;

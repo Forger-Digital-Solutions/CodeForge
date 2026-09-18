@@ -1,0 +1,7 @@
+diff --git a/USER-STAGED.txt b/USER-STAGED.txt
+new file mode 100644
+index 0000000..13e57f0
+--- /dev/null
++++ b/USER-STAGED.txt
+@@ -0,0 +1 @@
++preserve staged user work

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-17T22:52:12Z",
+  "command": "npm run test:postgres:full",
+  "endpoint": "postgresql://127.0.0.1:5432/codeforge_test_db",
+  "testFiles": {
+    "passed": 12,
+    "failed": 0,
+    "total": 12
+  },
+  "tests": {
+    "passed": 80,
+    "failed": 0,
+    "total": 80
+  },
+  "durationSeconds": 9.59,
+  "status": "PASS",
+  "notes": [
+    "Used the existing isolated local PostgreSQL 16 test setup.",
+    "No database reprovisioning was performed.",
+    "Rerun is required if later accepted remediation changes persistence or orchestration."
+  ]
+}

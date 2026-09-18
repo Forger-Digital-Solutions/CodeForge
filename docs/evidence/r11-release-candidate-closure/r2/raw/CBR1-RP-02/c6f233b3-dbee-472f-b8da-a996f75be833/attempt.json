@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-RP-02",
+  "runId": "c6f233b3-dbee-472f-b8da-a996f75be833",
+  "fixtureFamily": "tests",
+  "startingCommit": "0e988d84886d3f5109c0108bc2ee08cab45cab10",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "5fc95220-6867-44c2-86a0-9e1ef92ff892",
+  "turnId": "69407b4d-8ef9-482e-813d-de788c44bff0",
+  "terminalStatus": "failed",
+  "terminalError": "# Workflow Summary for \"CodeForgeBench R2 case CBR1-RP-02.\"\nTask type: documentation, risk: low\nPlan: plan-5fc95220-1c70f9 — 5/5 steps completed\nVerification: 8 passed, 1 failed, exit 1 — FAIL\nReview: 2 file(s) changed, 0 issue(s) — approved\nChanged files: src/parser.mjs, test/smoke.test.mjs\n\nOutcome: Failed safely after 0 repair attempt(s)\nCompletion gate: FAILED\n- BLOCKING verification_failed: Required verifier 'verifier-2-custom' (custom) did not produce current PASS evidence (failed).",
+  "approvedActions": 14,
+  "changedFiles": [
+    "src/parser.mjs",
+    "test/smoke.test.mjs"
+  ],
+  "diffHash": "65148d9ba42feb6e362441d0f3e2bd89ae258ba4c94e75e19b5ee1ff2cb22084",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ valid (1.4186ms)\n✔ empty (0.1252ms)\n✔ empty null (0.7253ms)\n✔ empty undefined (0.1483ms)\n✔ malformed number (0.1347ms)\n✔ malformed object (0.1244ms)\n✔ malformed array (0.1289ms)\nℹ tests 7\nℹ suites 0\nℹ pass 7\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 102.924"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "malformed response was not classified separately"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 42,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 41,
+    "tool.call_completed": 41,
+    "token.usage": 42,
+    "tool.execution_started": 41,
+    "file.read": 6,
+    "tool.execution_completed": 40,
+    "tool.execution_failed": 1,
+    "command.executed": 21,
+    "approval.requested": 14,
+    "approval.resolved": 14,
+    "file.written": 3,
+    "assistant.message.started": 1,
+    "text.delta": 493,
+    "assistant.message.completed": 1,
+    "turn.completed": 1,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "turn.failed": 1
+  },
+  "wallTimeMs": 209113
+}

@@ -1,0 +1,19 @@
+{
+ "label": "opencode-big-pickle",
+ "caseId": "CBR1-RP-02",
+ "family": "tests",
+ "wallTimeMs": 600236,
+ "agentExitCode": 1,
+ "agentOutputTail": "\n\nCommand failed: C:/Users/Daddy_FDS/AppData/Roaming/npm/node_modules/opencode-ai/bin/opencode.exe run -m opencode/big-pickle --auto CodeForgeBench R2 case CBR1-RP-02.\n\nAdd coverage for a forged routing receipt while preserving receipt authority boundaries.\n\nRejects a receipt that names a route different from the executor route.\n\nRead TASK.md and the repository before acting. Complete the concrete fixture task with the smallest safe change. Do not change acceptance tests. Run npm test. Do not merely describe the fix.\n",
+ "visiblePassed": true,
+ "hidden": {
+  "passed": false,
+  "findings": [
+   "behavioral test suite did not cover three outcomes",
+   "empty response was not classified separately",
+   "malformed response was not classified separately"
+  ]
+ },
+ "changedFiles": [],
+ "verdict": "failed"
+}

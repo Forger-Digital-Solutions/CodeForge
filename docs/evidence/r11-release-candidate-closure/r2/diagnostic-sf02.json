@@ -1,0 +1,375 @@
+{
+  "schemaVersion": 2,
+  "benchmarkVersion": "CodeForgeBench-R2",
+  "generatedAt": "2026-09-17T20:56:10.929Z",
+  "phase": "CODEFORGE_R9_PRE_CAPABILITY_BENCHMARK",
+  "evaluatedSplit": "ALL",
+  "sourceState": {
+    "repositoryCommit": "4a7a782e267052b35cf4a1ceed87b4806244c3e4",
+    "branch": "forger-digital-solutions-forgegreen-certified"
+  },
+  "executionStatus": "EXECUTED_BY_RUNNER",
+  "evidencePolicy": "Only completed, independently verified, non-rejected attempts count as successes. Blocked, failed, unrun, and hidden-test failures remain visible and are never imputed.",
+  "traceabilityPolicy": "Each attempt must carry a run id, repository commit, CodeForge commit, config digest, timestamp, model/route where applicable, and independent verification evidence.",
+  "splitPolicy": {
+    "TRAIN": "Allowed for curriculum and tuning.",
+    "DEVELOPMENT": "Used during engineering iteration.",
+    "VALIDATION": "Used for policy/model/router selection.",
+    "PROTECTED_TEST": "Reserved for final evaluation; do not use for training or routine iteration."
+  },
+  "cases": [
+    {
+      "id": "CBR1-SF-02",
+      "category": "small_coding_fix",
+      "difficulty": "medium",
+      "fixture": "codeforge",
+      "instructions": "Repair a seeded provider error classification defect.",
+      "allowedTools": [
+        "read_file",
+        "search_files",
+        "list_files",
+        "edit_file",
+        "run_command"
+      ],
+      "expectedBehavior": "Maps the provider response to the documented failure class.",
+      "acceptance": [
+        "Focused failure-matrix test passes.",
+        "Existing unrelated classifications remain unchanged."
+      ],
+      "expectedAffectedAreas": [
+        "packages/providers/src",
+        "packages/forge-zero/test"
+      ],
+      "failureTraps": [
+        "Masking the error as unknown."
+      ],
+      "version": "CodeForgeBench-R2",
+      "split": "TRAIN",
+      "requiredEvidence": [
+        "Focused failure-matrix test passes.",
+        "Existing unrelated classifications remain unchanged."
+      ],
+      "tags": [
+        "r1-compatibility",
+        "baseline"
+      ]
+    }
+  ],
+  "summary": {
+    "version": "CodeForgeBench-R2",
+    "cases": 1,
+    "publicCases": 1,
+    "protectedCases": 0,
+    "attempts": 1,
+    "executedAttempts": 1,
+    "verifiedSuccesses": 1,
+    "successRate": 1,
+    "passAt1Successes": 1,
+    "passAt1Rate": 1,
+    "falseCompletions": 0,
+    "unrun": 0,
+    "bySplit": {
+      "TRAIN": {
+        "attempts": 1,
+        "verifiedSuccesses": 1,
+        "successRate": 1,
+        "passAt1Successes": 1,
+        "falseCompletions": 0
+      },
+      "DEVELOPMENT": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "VALIDATION": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "PROTECTED_TEST": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      }
+    },
+    "byCategory": {
+      "repository_understanding": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "small_coding_fix": {
+        "attempts": 1,
+        "verifiedSuccesses": 1,
+        "successRate": 1,
+        "passAt1Successes": 1,
+        "falseCompletions": 0
+      },
+      "multi_file_engineering": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "debugging": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "test_repair": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "regression_prevention": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "large_repository": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "context_pressure": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "verification_resistance": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "recovery": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "tool_efficiency": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "routing_difficulty": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "complex_debugging": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "test_creation": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "architecture_understanding": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "long_horizon": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "ambiguous_task": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "provider_failure": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "adversarial_verification": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "git_safety": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "security_sensitive": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "subagent_cooperation": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "planning_quality": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      },
+      "reviewer_quality": {
+        "attempts": 0,
+        "verifiedSuccesses": 0,
+        "successRate": null,
+        "passAt1Successes": 0,
+        "falseCompletions": 0
+      }
+    },
+    "metrics": {
+      "medianWallTimeMs": 25276,
+      "medianContextTokens": 27176,
+      "medianToolCalls": 12,
+      "medianOutputTokens": 1853,
+      "medianRetries": 0,
+      "medianEstimatedCostUsd": 0
+    }
+  },
+  "attempts": [
+    {
+      "status": "completed",
+      "verified": true,
+      "hiddenAcceptance": "passed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free"
+      },
+      "topology": "solo-production-workflow",
+      "reason": "Production workflow and independent verifier passed.",
+      "routing": {
+        "requestedMode": "exact",
+        "selectedProviderId": "openrouter",
+        "selectedModelId": "cohere/north-mini-code:free",
+        "alternativesConsidered": 0,
+        "fallbackCount": 0,
+        "topology": "solo"
+      },
+      "verification": {
+        "verifierId": "r11-r2-independent-fixture-verifier",
+        "visibleAcceptance": "passed",
+        "protectedAcceptance": "not_run",
+        "forgeVerify": "passed"
+      },
+      "metrics": {
+        "providerCalls": 13,
+        "contextTokens": 27176,
+        "outputTokens": 1853,
+        "toolCalls": 12,
+        "fileReads": 4,
+        "searches": 2,
+        "repeatedSearches": 0,
+        "retries": 0,
+        "wallTimeMs": 25276,
+        "estimatedCostUsd": 0
+      },
+      "fixtureEvidence": {
+        "fixtureId": "CBR1-SF-02-coding-v1",
+        "startingCommit": "9baed3e1a8543ccdc39c191919937b34e5c7e0de",
+        "changedFiles": [
+          "src/calculator.mjs"
+        ],
+        "diffHash": "c474bbfd446209ea06c8741c4419611f13028e37ea7a577bef1aa49500ec8e86",
+        "verifierCommand": "node --test",
+        "verifierExitCode": 0,
+        "verifierOutput": "✔ adds positive values (0.7444ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 109.8012",
+        "cleanup": "completed"
+      },
+      "case": {
+        "id": "CBR1-SF-02",
+        "category": "small_coding_fix",
+        "difficulty": "medium",
+        "fixture": "codeforge",
+        "instructions": "Repair a seeded provider error classification defect.",
+        "allowedTools": [
+          "read_file",
+          "search_files",
+          "list_files",
+          "edit_file",
+          "run_command"
+        ],
+        "expectedBehavior": "Maps the provider response to the documented failure class.",
+        "acceptance": [
+          "Focused failure-matrix test passes.",
+          "Existing unrelated classifications remain unchanged."
+        ],
+        "expectedAffectedAreas": [
+          "packages/providers/src",
+          "packages/forge-zero/test"
+        ],
+        "failureTraps": [
+          "Masking the error as unknown."
+        ],
+        "version": "CodeForgeBench-R2",
+        "split": "TRAIN",
+        "requiredEvidence": [
+          "Focused failure-matrix test passes.",
+          "Existing unrelated classifications remain unchanged."
+        ],
+        "tags": [
+          "r1-compatibility",
+          "baseline"
+        ]
+      },
+      "runId": "dc427fbb-a5e8-4a8e-97e9-fb44f8dfd76f",
+      "attemptNumber": 1,
+      "repositoryCommit": "4a7a782e267052b35cf4a1ceed87b4806244c3e4",
+      "codeforgeCommit": "4a7a782e267052b35cf4a1ceed87b4806244c3e4",
+      "configDigest": "r11-fixed-openrouter-north-mini-v2-diagnostics",
+      "mode": "fixed_route",
+      "caseId": "CBR1-SF-02",
+      "recordedAt": "2026-09-17T20:56:10.920Z"
+    }
+  ]
+}

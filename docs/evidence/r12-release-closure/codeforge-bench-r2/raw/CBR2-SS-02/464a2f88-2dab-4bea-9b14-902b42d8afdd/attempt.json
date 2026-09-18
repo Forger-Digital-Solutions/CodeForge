@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-SS-02",
+  "runId": "464a2f88-2dab-4bea-9b14-902b42d8afdd",
+  "fixtureFamily": "security",
+  "startingCommit": "b569edd352c936e58d3fbeab2fd25df2fa25c02c",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "6d38925e-d4e9-413f-b857-eceb254c5e09",
+  "turnId": "f48a4370-c1f1-4d2a-a7b9-b67111c31659",
+  "terminalStatus": "failed",
+  "terminalError": "# Workflow Summary for \"CodeForgeBench R2 case CBR2-SS-02.\"\nTask type: documentation, risk: low\nPlan: plan-6d38925e-ebacb5 — 3/6 steps completed\nImplementation stopped: Turn e20f7c1f-bd79-4e58-8f08-96e42e6842b0 failed: OpenRouter error (429): {\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day-high-balance. \",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"1000\",\"X-RateLimit-Remaining\":\"0\",\"X-RateLimit-Reset\":\"178977600000\nVerification: 1 passed, 3 failed, exit 1 — FAIL\nReview: No diffs\n\nOutcome: Failed safely after 0 repair attempt(s)\nCompletion gate: FAILED\n- BLOCKING verification_failed: Required verifier 'verifier-1-test' (test) did not produce current PASS evidence (failed).\n- BLOCKING plan_steps_unfinished: 3 plan step(s) did not finish successfully.",
+  "approvedActions": 0,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": false,
+    "exitCode": 1,
+    "output": "✖ receipt excludes credential material (3.0781ms)\n✖ free eligibility is strict (0.3798ms)\nℹ tests 2\nℹ suites 0\nℹ pass 0\nℹ fail 2\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 125.1537\n\n✖ failing tests:\n\ntest at test\\receipt.test.mjs:2:1\n✖ receipt excludes credential material (3.0781ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n    {\n  +   apiKey: 'secret',\n      providerId: 'p'\n    }\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r2-cbr2-ss-02-zCp992/workspace/test/receipt.test.mjs:2:59)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: { providerId: 'p', apiKey: 'secret' },\n    expected: { providerId: 'p' },\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }\n\ntest at test\\receipt.test.mjs:3:1\n✖ free eligibility is strict (0.3798ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  true !== false\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r2-cbr2-ss-02-zCp992/workspace/test/receipt.test.mjs:3:49)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n      at Test.postRun (node:internal/test_runner/test:1522:19)\n      at Test.run (node:internal/test_runner/test:1447:12)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: true,\n    expected: false,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "receipt retained credential material",
+      "BYOK entered Free Auto eligibility"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1
+  },
+  "wallTimeMs": 67664
+}

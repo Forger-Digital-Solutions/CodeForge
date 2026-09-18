@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-LH-01",
+  "runId": "32a391af-3672-4e3b-be25-539ed30d24a1",
+  "fixtureFamily": "recovery",
+  "startingCommit": "a03d71c7d4f94a3ffc8048d16c175ebd6d219290",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "fc93468b-4d60-4069-9f0e-badfd3488365",
+  "turnId": "dc3344a1-9341-4d59-ae2d-25bf4b23a856",
+  "terminalStatus": "failed",
+  "terminalError": "# Workflow Summary for \"CodeForgeBench R2 case CBR2-LH-01.\"\nTask type: documentation, risk: low\nPlan: plan-fc93468b-5f1762 — 3/6 steps completed\nImplementation stopped: Turn b389e18a-16f8-4cb1-a2c6-5b2a7045d4b1 failed: OpenRouter error (429): {\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day-high-balance. \",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"1000\",\"X-RateLimit-Remaining\":\"0\",\"X-RateLimit-Reset\":\"178968960000\nVerification: 1 passed, 2 failed, exit 1 — FAIL\nReview: No diffs\n\nOutcome: Failed safely after 0 repair attempt(s)\nCompletion gate: FAILED\n- BLOCKING verification_failed: Required verifier 'verifier-1-test' (test) did not produce current PASS evidence (failed).\n- BLOCKING plan_steps_unfinished: 3 plan step(s) did not finish successfully.",
+  "approvedActions": 0,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": false,
+    "exitCode": 1,
+    "output": "✖ replayed result is idempotent (2.2517ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 110.3179\n\n✖ failing tests:\n\ntest at test\\continuation.test.mjs:2:1\n✖ replayed result is idempotent (2.2517ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n    [\n      'patch',\n  +   'patch'\n    ]\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r2-cbr2-lh-01-UHHpms/workspace/test/continuation.test.mjs:2:198)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: [ 'patch', 'patch' ],\n    expected: [ 'patch' ],\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "continuation replay duplicated a mutation"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1
+  },
+  "wallTimeMs": 3324
+}

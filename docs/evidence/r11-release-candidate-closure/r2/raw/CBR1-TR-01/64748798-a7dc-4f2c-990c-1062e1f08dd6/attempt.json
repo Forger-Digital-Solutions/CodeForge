@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-TR-01",
+  "runId": "64748798-a7dc-4f2c-990c-1062e1f08dd6",
+  "fixtureFamily": "coding",
+  "startingCommit": "049c1c33a71ba8131702fe1445e4d1bff88c1df4",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "dec043a6-ef2d-464b-8dea-fa7f67fd7eac",
+  "turnId": "8f42721f-f66d-4982-b548-4dec0013ef96",
+  "terminalStatus": "failed",
+  "approvedActions": 0,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": false,
+    "exitCode": 1,
+    "output": "✖ adds positive values (1.492ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 135.4042\n\n✖ failing tests:\n\ntest at test\\calculator.test.mjs:1:117\n✖ adds positive values (1.492ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  -1 !== 5\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r2-cbr1-tr-01-jbcdv9/workspace/test/calculator.test.mjs:1:159)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: -1,\n    expected: 5,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "add repair failed hidden values"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "workflow.verification_started": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1
+  },
+  "wallTimeMs": 4031
+}

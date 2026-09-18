@@ -90,6 +90,8 @@ describe("CF-14 Context Assembly & Provenance", () => {
     });
     expect(explorerCtx.contextPrompt).toContain("Repository Map");
     expect(explorerCtx.contextPrompt).toContain("ActionHandler");
+    expect(explorerCtx.systemPrompt).toContain("CODEFORGE AUTHORITY BOUNDARY CONTRACT");
+    expect(explorerCtx.systemPrompt).toContain("read-only");
     expect(explorerCtx.evidence.some((e) => e.source === "search")).toBe(true);
 
     // 2. Coder: gets task plan and bounded file slices (does not get explorer raw findings)
@@ -116,6 +118,7 @@ describe("CF-14 Context Assembly & Provenance", () => {
     expect(reviewerCtx.contextPrompt).toContain("reviewNeedle");
     expect(reviewerCtx.contextPrompt).toContain("Verification Results");
     expect(reviewerCtx.contextPrompt).not.toContain("Implementation Plan");
+    expect(reviewerCtx.systemPrompt).toContain("ForgeVerify and the completion gate remain the final verification/completion authorities");
 
     await intel.closeWorkspace();
   });

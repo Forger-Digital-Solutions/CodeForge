@@ -20,6 +20,7 @@ const SECRET_PATTERNS: Array<{ re: RegExp; type: string }> = [
   { re: /AIza[0-9A-Za-z\-_]{20,}/g, type: "google_key" },
   { re: /gh[pousr]_[A-Za-z0-9_]{20,}/g, type: "github_pat" },
   { re: /github_pat_[A-Za-z0-9_]{20,}/g, type: "github_fine_grained" },
+  { re: /(?:access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|authorization|password)\s*[:=]\s*["']?[A-Za-z0-9._~+/-]{8,}/gi, type: "credential_field" },
   { re: /AKIA[0-9A-Z]{16}/g, type: "aws_access_key" },
   { re: /aws_secret_access_key\s*[:=]\s*['"]?[^'"\s]+/gi, type: "aws_secret" },
   { re: /-----BEGIN (?:RSA |OPENSSH )?PRIVATE KEY-----/g, type: "private_key" },

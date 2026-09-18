@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "command": "npm.cmd audit --omit=dev",
+  "vulnerabilities": 0,
+  "note": "Production dependency audit completed during R12; npm emitted only an allow-scripts informational warning."
+}

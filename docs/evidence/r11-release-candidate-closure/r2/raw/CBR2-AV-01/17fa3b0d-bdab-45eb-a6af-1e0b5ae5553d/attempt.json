@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-AV-01",
+  "runId": "17fa3b0d-bdab-45eb-a6af-1e0b5ae5553d",
+  "fixtureFamily": "verification",
+  "startingCommit": "5ef452c790a76bde3f1369b4f7a409ba9128215c",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "93d68c7e-c6e4-4412-b175-ef061a387117",
+  "turnId": "aba95100-7eab-4aa7-b248-914003572ebd",
+  "terminalStatus": "failed",
+  "terminalError": "# Workflow Summary for \"CodeForgeBench R2 case CBR2-AV-01.\"\nTask type: documentation, risk: low\nPlan: plan-93d68c7e-68d14c — 3/5 steps completed\nImplementation stopped: Turn cb1cbc97-7626-4555-97bc-49346924cdaa failed: OpenRouter error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m\nVerification: 1 passed, 0 failed, exit 0 — PASS\nReview: No diffs\n\nOutcome: Completed successfully\nCompletion gate: BLOCKED\n- BLOCKING plan_steps_unfinished: 2 plan step(s) did not finish successfully.",
+  "approvedActions": 0,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ admin allowed (0.7625ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 106.2547"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "negative authorization path remains open"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 7,
+    "tool.call_completed": 7,
+    "token.usage": 7,
+    "tool.execution_started": 7,
+    "file.read": 4,
+    "tool.execution_completed": 7,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1
+  },
+  "wallTimeMs": 9689
+}

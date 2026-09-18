@@ -1,0 +1,29 @@
+diff --git a/src/parser.mjs b/src/parser.mjs
+index 46a9648..aab5606 100644
+--- a/src/parser.mjs
++++ b/src/parser.mjs
+@@ -1,4 +1,8 @@
+ export function parseResponse(value) {
+-  if (typeof value !== 'string') return { kind: 'valid', value: '' };
++  if (typeof value !== 'string') {
++    if (value === '' || value === null || value === undefined) return { kind: 'empty', value: '' };
++    return { kind: 'malformed', value: '' };
++  }
++  if (value === '') return { kind: 'empty', value: '' };
+   return { kind: 'valid', value };
+ }
+diff --git a/test/smoke.test.mjs b/test/smoke.test.mjs
+index 0a99780..c8389b6 100644
+--- a/test/smoke.test.mjs
++++ b/test/smoke.test.mjs
+@@ -1 +1,9 @@
+-import test from 'node:test'; import assert from 'node:assert/strict'; import { parseResponse } from '../src/parser.mjs'; test('valid', () => assert.deepEqual(parseResponse('ok'), { kind: 'valid', value: 'ok' }));
++import test from 'node:test'; import assert from 'node:assert/strict'; import { parseResponse } from '../src/parser.mjs';
++
++test('valid', () => assert.deepEqual(parseResponse('ok'), { kind: 'valid', value: 'ok' }));
++test('empty', () => assert.deepEqual(parseResponse(''), { kind: 'empty', value: '' }));
++test('empty null', () => assert.deepEqual(parseResponse(null), { kind: 'empty', value: '' }));
++test('empty undefined', () => assert.deepEqual(parseResponse(undefined), { kind: 'empty', value: '' }));
++test('malformed number', () => assert.deepEqual(parseResponse(123), { kind: 'malformed', value: '' }));
++test('malformed object', () => assert.deepEqual(parseResponse({}), { kind: 'malformed', value: '' }));
++test('malformed array', () => assert.deepEqual(parseResponse([]), { kind: 'malformed', value: '' }));

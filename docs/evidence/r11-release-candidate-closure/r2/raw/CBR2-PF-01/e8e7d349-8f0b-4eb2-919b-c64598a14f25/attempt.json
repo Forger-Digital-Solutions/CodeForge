@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-PF-01",
+  "runId": "e8e7d349-8f0b-4eb2-919b-c64598a14f25",
+  "fixtureFamily": "routing",
+  "startingCommit": "274454ea87c41d1cd32092008992af9ce1605fea",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "7c32cedd-1542-45c3-920c-8d81757fff9f",
+  "turnId": "9d4c0a08-f848-4556-8411-e91a33dee9fd",
+  "terminalStatus": "failed",
+  "approvedActions": 0,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": false,
+    "exitCode": 1,
+    "output": "✖ exact stays exact (3.687ms)\n✖ free auto stays free (0.5833ms)\nℹ tests 2\nℹ suites 0\nℹ pass 0\nℹ fail 2\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 196.2404\n\n✖ failing tests:\n\ntest at test\\router.test.mjs:3:1\n✖ exact stays exact (3.687ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  'free' !== 'paid'\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r2-cbr2-pf-01-Oncm78/workspace/test/router.test.mjs:3:40)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 'free',\n    expected: 'paid',\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n\ntest at test\\router.test.mjs:4:1\n✖ free auto stays free (0.5833ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  'paid' !== 'free'\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r2-cbr2-pf-01-Oncm78/workspace/test/router.test.mjs:4:43)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n      at Test.postRun (node:internal/test_runner/test:1522:19)\n      at Test.run (node:internal/test_runner/test:1447:12)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 'paid',\n    expected: 'free',\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "exact selection substituted another route",
+      "free auto crossed the cost boundary"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "workflow.verification_started": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1
+  },
+  "wallTimeMs": 5539
+}

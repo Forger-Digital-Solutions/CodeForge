@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-LH-01",
+  "runId": "7db115d8-3b51-4f39-b8c1-135a3dd79ec1",
+  "fixtureFamily": "recovery",
+  "startingCommit": "03145ab7e8b72dbb2fb259eba61205befdad0d36",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "8939572e-3533-4eca-8dc8-103cfbb17ec2",
+  "turnId": "65111853-6ca6-4be6-9c1f-2c8372a911ee",
+  "terminalStatus": "failed",
+  "approvedActions": 0,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": false,
+    "exitCode": 1,
+    "output": "✖ replayed result is idempotent (5.7293ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 240.2046\n\n✖ failing tests:\n\ntest at test\\continuation.test.mjs:2:1\n✖ replayed result is idempotent (5.7293ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n    [\n      'patch',\n  +   'patch'\n    ]\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r2-cbr2-lh-01-mfnRCL/workspace/test/continuation.test.mjs:2:198)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: [ 'patch', 'patch' ],\n    expected: [ 'patch' ],\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "continuation replay duplicated a mutation"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "workflow.verification_started": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1
+  },
+  "wallTimeMs": 5620
+}

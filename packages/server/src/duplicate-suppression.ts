@@ -32,6 +32,7 @@ export type DuplicateDecision =
 export interface DuplicateSuppressionMetrics {
   duplicateActionsSuppressed: number;
   noProgressEscalations: number;
+  noProgressReadSignals: number;
 }
 
 interface DuplicateRecord {
@@ -44,6 +45,16 @@ interface DuplicateRecord {
   /** Executions observed at the current state version. */
   attemptsAtState: number;
 }
+
+interface ReadProgressState {
+  stateVersion: number;
+  observations: number;
+  noProgressObservations: number;
+  outputFingerprints: Set<string>;
+}
+
+const MALFORMED_OR_EMPTY_OUTPUT = /(?:no matches?|not found|empty|malformed|invalid|parse|syntax error|cannot read|unable to|error)/i;
+const NO_PROGRESS_READ_LIMIT = 8;
 
 /** Exported for FG-9's own regression proof (packages/server/test/fg9-unsafe-mutating.test.ts)
  * that mutating tools can never reach a "suppress" decision — never redeclared/duplicated
@@ -69,7 +80,8 @@ export const MUTATING_TOOLS = new Set(["write_file", "edit_file", "run_command"]
 export class DuplicateActionSupervisor {
   private stateVersion = 1;
   private readonly records = new Map<string, DuplicateRecord>();
-  readonly metrics: DuplicateSuppressionMetrics = { duplicateActionsSuppressed: 0, noProgressEscalations: 0 };
+  private readonly readProgress = new Map<number, ReadProgressState>();
+  readonly metrics: DuplicateSuppressionMetrics = { duplicateActionsSuppressed: 0, noProgressEscalations: 0, noProgressReadSignals: 0 };
 
   constructor(
     private readonly options: { maxTrackedIdentities?: number; workstreamScope?: string; policyVersion?: string } = {},
@@ -109,6 +121,14 @@ export class DuplicateActionSupervisor {
   classify(identity: DuplicateActionIdentity): DuplicateDecision {
     if (!READ_ONLY_SUPPRESSIBLE.has(identity.tool)) {
       return { action: "execute" };
+    }
+    const progress = this.readProgress.get(this.stateVersion);
+    if (progress && progress.noProgressObservations >= NO_PROGRESS_READ_LIMIT) {
+      this.metrics.noProgressEscalations++;
+      return {
+        action: "escalate",
+        reason: `No-progress investigation: ${progress.noProgressObservations} distinct read-only observations against unchanged state produced only malformed, empty, or repeated evidence.`,
+      };
     }
     const key = this.identityKey(identity);
     const record = this.records.get(key);
@@ -157,12 +177,28 @@ export class DuplicateActionSupervisor {
       suppressionsAtState: sameState && existing ? existing.suppressionsAtState : 0,
       attemptsAtState: sameState && existing ? existing.attemptsAtState + 1 : 1,
     });
+    const fingerprintKey = fingerprint(output.trim().replace(/\s+/g, " ").slice(0, 2_048));
+    const progress = this.readProgress.get(this.stateVersion) ?? {
+      stateVersion: this.stateVersion,
+      observations: 0,
+      noProgressObservations: 0,
+      outputFingerprints: new Set<string>(),
+    };
+    progress.observations++;
+    const repeated = progress.outputFingerprints.has(fingerprintKey);
+    if (!success || repeated || MALFORMED_OR_EMPTY_OUTPUT.test(output)) {
+      progress.noProgressObservations++;
+      this.metrics.noProgressReadSignals++;
+    }
+    progress.outputFingerprints.add(fingerprintKey);
+    this.readProgress.set(this.stateVersion, progress);
     this.bounded();
   }
 
   /** Record a mutating action: it executed and advanced workspace-relevant state. */
   recordMutationExecution(identity: DuplicateActionIdentity, success: boolean): void {
     this.stateVersion++;
+    this.readProgress.delete(this.stateVersion - 1);
     const key = this.identityKey(identity);
     this.records.set(key, {
       stateVersion: this.stateVersion,

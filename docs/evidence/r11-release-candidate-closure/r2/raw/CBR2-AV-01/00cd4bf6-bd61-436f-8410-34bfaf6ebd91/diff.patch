@@ -1,0 +1,7 @@
+diff --git a/src/authorize.mjs b/src/authorize.mjs
+index cf6d32c..f7cf9df 100644
+--- a/src/authorize.mjs
++++ b/src/authorize.mjs
+@@ -1 +1 @@
+-export function authorize(role) { return role === 'admin' || role === 'guest'; }
++export function authorize(role) { return role === 'admin'; }

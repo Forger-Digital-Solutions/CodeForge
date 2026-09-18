@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "productionCaseIdMatches": 0,
+  "productionFixtureSpecificBranches": 0,
+  "legitimateInfrastructure": [
+    "packages/benchmark/**",
+    "scripts/r*-codeforge-bench*"
+  ],
+  "remediation": "General contracts for planning completeness, authority boundaries, secret redaction, and no-progress detection; no individual case-ID branch."
+}

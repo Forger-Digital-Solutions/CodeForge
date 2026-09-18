@@ -8,6 +8,7 @@ import {
   summarizeCodeForgeBenchR2,
   type CodeForgeBenchR2Attempt,
 } from "../src/index.js";
+import { evaluateProtectedAcceptance } from "../src/index.js";
 
 function attempt(overrides: Partial<CodeForgeBenchR2Attempt> = {}): CodeForgeBenchR2Attempt {
   return {
@@ -83,6 +84,56 @@ describe("CodeForgeBench R2", () => {
     }),]);
     expect(summary.verifiedSuccesses).toBe(0);
     expect(summary.falseCompletions).toBe(1);
+  });
+
+  it("accepts protected work only with complete independent final-state evidence", () => {
+    const result = evaluateProtectedAcceptance({
+      split: "PROTECTED_TEST",
+      requiredEvidence: ["Protected acceptance passes."],
+      visibleAcceptance: "passed",
+      hiddenAcceptance: "passed",
+      forgeVerify: "passed",
+      finalState: { terminalStatus: "completed", diffHash: "a".repeat(64), changedFiles: ["src/fix.ts"] },
+      checks: [
+        { id: "workspace-final-state", source: "workspace", observed: true, detail: "Final diff hash and changed-file set recorded." },
+        { id: "execution-trace", source: "trace", observed: true, detail: "Terminal trace contains no duplicate mutation." },
+      ],
+    });
+    expect(result.state).toBe("accepted");
+    expect(result.evidence.stageId).toBe("codeforge-r12-protected-acceptance");
+  });
+
+  it("rejects a protected case when an independent check fails", () => {
+    const result = evaluateProtectedAcceptance({
+      split: "PROTECTED_TEST",
+      requiredEvidence: ["Protected acceptance passes."],
+      visibleAcceptance: "passed",
+      hiddenAcceptance: "passed",
+      forgeVerify: "passed",
+      finalState: { terminalStatus: "completed", diffHash: "b".repeat(64), changedFiles: ["src/fix.ts"] },
+      checks: [
+        { id: "workspace-final-state", source: "workspace", observed: true, detail: "Final state recorded." },
+        { id: "authority-boundary", source: "authority", observed: false, detail: "Reviewer did not see the final diff." },
+      ],
+    });
+    expect(result.state).toBe("rejected");
+  });
+
+  it("distinguishes missing evidence, malformed results, and public cases", () => {
+    const missing = evaluateProtectedAcceptance({ split: "PROTECTED_TEST", requiredEvidence: ["required"], visibleAcceptance: "passed", hiddenAcceptance: "passed", forgeVerify: "passed" });
+    expect(missing.state).toBe("infrastructure_blocked");
+    const malformed = evaluateProtectedAcceptance({
+      split: "PROTECTED_TEST",
+      requiredEvidence: ["required"],
+      visibleAcceptance: "passed",
+      hiddenAcceptance: "passed",
+      forgeVerify: "passed",
+      finalState: { terminalStatus: "completed", diffHash: "c".repeat(64), changedFiles: [] },
+      checks: [{ id: "bad", source: "workspace", observed: true, detail: "" }],
+    });
+    expect(malformed.state).toBe("rejected");
+    const publicCase = evaluateProtectedAcceptance({ split: "PUBLIC", requiredEvidence: [], visibleAcceptance: "passed", hiddenAcceptance: "not_run", forgeVerify: "passed" });
+    expect(publicCase.state).toBe("not_applicable");
   });
 
   it("executes every public case and records an executor failure instead of omitting it", async () => {

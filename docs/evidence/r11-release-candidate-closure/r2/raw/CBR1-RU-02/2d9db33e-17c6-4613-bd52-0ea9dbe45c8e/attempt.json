@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-RU-02",
+  "runId": "2d9db33e-17c6-4613-bd52-0ea9dbe45c8e",
+  "fixtureFamily": "analysis",
+  "startingCommit": "51ac60487a8a515be5bcb00dd29c8d56bed4c851",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "27667af3-9e36-4b75-9862-38ad6ac8b1b4",
+  "turnId": "051d673a-407a-4ab0-a988-f0a95ea2f398",
+  "terminalStatus": "completed",
+  "approvedActions": 5,
+  "changedFiles": [
+    "REPORT.md"
+  ],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ source-backed report exists (3.502ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 132.189"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": true,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 11,
+    "status.changed": 24,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 24,
+    "tool.call_completed": 24,
+    "token.usage": 25,
+    "tool.execution_started": 24,
+    "file.read": 5,
+    "tool.execution_completed": 24,
+    "approval.requested": 5,
+    "approval.resolved": 5,
+    "command.executed": 8,
+    "file.written": 1,
+    "assistant.message.started": 1,
+    "text.delta": 269,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1
+  },
+  "wallTimeMs": 50415
+}

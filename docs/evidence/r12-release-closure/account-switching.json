@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "automatedCoverage": "PASS",
+  "covered": [
+    "PKCE state",
+    "fresh login state",
+    "logout invalidation",
+    "refresh-after-logout rejection",
+    "session persistence",
+    "identity scoping"
+  ],
+  "secondAccountE2E": "EXTERNAL_TEST_BLOCKER_SECOND_ACCOUNT"
+}

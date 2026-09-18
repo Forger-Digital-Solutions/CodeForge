@@ -1,0 +1,56 @@
+{
+  "phase": "R11.4 legitimate competitor subset",
+  "method": "Same R2 fixture generation as the live executor (competitor-subset.mjs), same task prompt, same acceptance: node --test visible suite + real hidden verifier (verifyWorkspace). 10-minute agent bound identical to harness timeout.",
+  "tools": {
+    "codex-cli 0.144.4": {
+      "status": "BLOCKED",
+      "reason": "Account usage limit exhausted: 'You've hit your usage limit... try again at 9:45 PM' on both attempts (pre- and post-stated reset). Infrastructure/quota block, not a capability result.",
+      "evidence": "codex exec noninteractive probe output"
+    },
+    "opencode-ai 1.18.25": {
+      "status": "EXECUTED",
+      "model": "opencode/big-pickle (free)",
+      "runs": [
+        {
+          "caseId": "CBR2-GS-01",
+          "wallTimeMs": 600202,
+          "outcome": "timeout at 10-minute bound; no repair delivered",
+          "visiblePassed": false,
+          "hiddenFindings": ["receipt retained credential material", "BYOK entered Free Auto eligibility"],
+          "changedFiles": ["USER-STAGED.txt", "USER-SCRATCH.txt"],
+          "note": "Touched only the preserve-me user files; target source unmodified.",
+          "verdict": "failed",
+          "artifact": "competitor-opencode-gs01.json"
+        },
+        {
+          "caseId": "CBR1-RP-02",
+          "wallTimeMs": 600236,
+          "outcome": "timeout at 10-minute bound; no files changed",
+          "visiblePassed": true,
+          "hiddenFindings": ["behavioral test suite did not cover three outcomes", "empty response was not classified separately", "malformed response was not classified separately"],
+          "changedFiles": [],
+          "verdict": "failed",
+          "artifact": "competitor-opencode-rp02.json"
+        }
+      ]
+    },
+    "claude-code": { "status": "NOT TESTED", "reason": "claude CLI not installed on this host" },
+    "cursor": { "status": "NOT TESTED", "reason": "no noninteractive CLI available on this host" },
+    "zcode": { "status": "NOT TESTED", "reason": "not available on this host" },
+    "devin": { "status": "NOT TESTED", "reason": "no standalone comparable CLI on this host" }
+  },
+  "comparison": {
+    "codeforgeOnSameCases": {
+      "CBR2-GS-01": "failed hidden verifier (receipt retained credential material) - genuine capability failure, completed in-budget",
+      "CBR1-RP-02": "failed hidden verifier (malformed response not classified separately) - genuine capability failure after 41-tool non-convergent loop, completed in-budget"
+    },
+    "interpretation": "On this 2-case subset, OpenCode/big-pickle delivered no valid repair inside the bound on either case (0/2), while CodeForge's fixed free route at least converged to terminal, honestly-failed states on both (and passed 33/40 overall). The subset is too small for a general capability ranking; the defensible statement is that CodeForge's verification stack produces truthful terminal verdicts where a peer agent produced unbounded non-completion.",
+    "whereCodeForgeTrails": [
+      "Plan completeness: 3 public failures share one signature - plan omitted selection/verification/uncertainty statements (AT-01, AT-02, PQ-01). Frontier agent CLIs generally emit richer explicit planning contracts.",
+      "Routing/authority-boundary fidelity under context pressure (CP-01, CP-02): report synthesis collapsed governance boundaries - a domain where larger frontier models with bigger context budgets perform better.",
+      "Tool-loop convergence on malformed-input reasoning (RP-02, 41 tools, ~3.1x mean): the free-route model did not converge on the malformed-vs-valid distinction; stronger models typically resolve such classification in fewer steps.",
+      "Capability ceiling is bounded by zero-cost routing: the fixed route is a small free model; paid-tier competitors (Codex, Claude Code) have materially larger models, and the Codex quota block itself shows hosted competitors also hit capacity walls."
+    ]
+  },
+  "verdict": "SUBSET_EXECUTED_HONESTLY"
+}

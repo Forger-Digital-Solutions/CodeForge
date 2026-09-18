@@ -1,0 +1,12 @@
+diff --git a/src/receipt.mjs b/src/receipt.mjs
+index 6886abf..cb739c0 100644
+--- a/src/receipt.mjs
++++ b/src/receipt.mjs
+@@ -1,2 +1,5 @@
+-export function sanitizeReceipt(input) { return { ...input }; }
+-export function freeEligible(route) { return route.free || route.byok || route.paid; }
++export function sanitizeReceipt(input) {
++  const { apiKey, ...safe } = input;
++  return safe;
++}
++export function freeEligible(route) { return route.free; }

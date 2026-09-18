@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR1-VR-01",
+  "runId": "91d8b014-92e9-499d-8e44-4b5c937a6639",
+  "fixtureFamily": "verification",
+  "startingCommit": "336f9f5eb354891514ae7e72a7d116d0319a6922",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "386698d6-a00a-4864-8b41-45d37cd43ede",
+  "turnId": "b6f4ee92-6a41-4d04-aa92-3fc3fe9a39c2",
+  "terminalStatus": "failed",
+  "approvedActions": 0,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ admin allowed (0.9897ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 133.2827"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "negative authorization path remains open"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "workflow.verification_started": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1
+  },
+  "wallTimeMs": 4043
+}

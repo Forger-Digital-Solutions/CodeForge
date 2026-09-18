@@ -5,6 +5,7 @@ import type {
   CodeForgeBenchDifficulty,
 } from "./codeforge-bench-r1.js";
 import { CODEFORGE_BENCH_R1_CASES } from "./codeforge-bench-r1.js";
+import type { ProtectedAcceptanceEvidence, ProtectedAcceptanceState } from "./protected-acceptance.js";
 
 /**
  * CodeForgeBench R2 is the evidence contract for the R9 capability campaign. R1 cases are
@@ -51,7 +52,9 @@ export interface CodeForgeBenchR2Attempt extends CodeForgeBenchAttempt {
   verification?: {
     verifierId: string;
     visibleAcceptance: "passed" | "failed" | "not_run";
-    protectedAcceptance: "passed" | "failed" | "not_run";
+    /** R11 legacy values remain readable so historical artifacts can be summarized safely. */
+    protectedAcceptance: ProtectedAcceptanceState | "passed" | "failed" | "not_run";
+    protectedAcceptanceEvidence?: ProtectedAcceptanceEvidence;
     forgeVerify?: "passed" | "failed" | "blocked" | "not_run";
   };
   routing?: {
@@ -209,12 +212,17 @@ function median(values: readonly number[]): number | null {
 }
 
 function isVerifiedSuccess(attempt: CodeForgeBenchR2Attempt, benchmarkCase: CodeForgeBenchR2Case): boolean {
-  const protectedEvidence = benchmarkCase.split !== "PROTECTED_TEST" || attempt.verification?.protectedAcceptance === "passed";
+  const protectedEvidence = benchmarkCase.split !== "PROTECTED_TEST"
+    || attempt.verification?.protectedAcceptance === "accepted"
+    || attempt.verification?.protectedAcceptance === "passed";
   return attempt.status === "completed"
     && attempt.verified
     && attempt.hiddenAcceptance !== "failed"
     && attempt.verification?.visibleAcceptance === "passed"
+    && (benchmarkCase.split !== "PROTECTED_TEST" || attempt.hiddenAcceptance === "passed")
     && attempt.verification?.protectedAcceptance !== "failed"
+    && attempt.verification?.protectedAcceptance !== "rejected"
+    && attempt.verification?.protectedAcceptance !== "infrastructure_blocked"
     && protectedEvidence;
 }
 
@@ -238,6 +246,9 @@ export function validateCodeForgeBenchR2Attempts(attempts: readonly CodeForgeBen
     if (!Number.isInteger(attempt.attemptNumber) || attempt.attemptNumber < 1) errors.push(`attempt ${index}: attemptNumber must be a positive integer`);
     if (attempt.verified && !attempt.verification) errors.push(`attempt ${index}: verified work requires independent verification evidence`);
     if (attempt.verified && attempt.verification?.visibleAcceptance !== "passed") errors.push(`attempt ${index}: verified work requires a passed visible acceptance result`);
+    const benchmarkCase = CODEFORGE_BENCH_R2_CASES.find((item) => item.id === attempt.caseId);
+    if (attempt.verified && benchmarkCase?.split === "PROTECTED_TEST" && attempt.hiddenAcceptance !== "passed") errors.push(`attempt ${index}: verified protected work requires passed hidden acceptance`);
+    if (attempt.verified && benchmarkCase?.split === "PROTECTED_TEST" && attempt.verification?.protectedAcceptance === "accepted" && !attempt.verification.protectedAcceptanceEvidence) errors.push(`attempt ${index}: accepted protected work requires protected acceptance evidence`);
     if (attempt.status === "completed" && attempt.verification?.forgeVerify === "failed" && attempt.verified) {
       errors.push(`attempt ${index}: verified completed attempt cannot report ForgeVerify failure`);
     }

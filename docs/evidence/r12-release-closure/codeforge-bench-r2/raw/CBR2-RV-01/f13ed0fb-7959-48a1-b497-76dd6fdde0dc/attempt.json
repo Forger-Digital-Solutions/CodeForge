@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-RV-01",
+  "runId": "f13ed0fb-7959-48a1-b497-76dd6fdde0dc",
+  "fixtureFamily": "review",
+  "startingCommit": "1a1449471408f22cd8c3588d033a22dd9e3907df",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "bd9d763b-67e1-4b75-91b7-94bfa5fadf03",
+  "turnId": "f96ef042-38fa-4971-b53f-3120741c1dc8",
+  "terminalStatus": "failed",
+  "terminalError": "# Workflow Summary for \"CodeForgeBench R2 case CBR2-RV-01.\"\nTask type: documentation, risk: low\nPlan: plan-bd9d763b-31403e — 3/7 steps completed\nImplementation stopped: Turn 76fffe09-ed66-4b30-bbdc-9d4f778ef005 failed: OpenRouter error (429): {\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day-high-balance. \",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"1000\",\"X-RateLimit-Remaining\":\"0\",\"X-RateLimit-Reset\":\"178977600000\nVerification: 2 passed, 0 failed, exit 0 — PASS\nReview: 1 file(s) changed, 0 issue(s) — approved\nChanged files: candidate.patch\n\nOutcome: Completed successfully\nCompletion gate: BLOCKED\n- BLOCKING plan_steps_unfinished: 4 plan step(s) did not finish successfully.",
+  "approvedActions": 14,
+  "changedFiles": [
+    "candidate.patch",
+    "REVIEW.md"
+  ],
+  "diffHash": "015c3d29d06cb36aca9432f4a41dcc559f6e96581131e299053ae22570facc15",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ review identifies the blocking authority regression (2.5324ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 112.8921"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 42,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 38,
+    "tool.call_completed": 38,
+    "token.usage": 38,
+    "tool.execution_started": 37,
+    "file.read": 9,
+    "tool.execution_completed": 37,
+    "command.executed": 16,
+    "approval.requested": 14,
+    "approval.resolved": 14,
+    "file.written": 6,
+    "tool.execution_blocked": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1
+  },
+  "wallTimeMs": 208073
+}

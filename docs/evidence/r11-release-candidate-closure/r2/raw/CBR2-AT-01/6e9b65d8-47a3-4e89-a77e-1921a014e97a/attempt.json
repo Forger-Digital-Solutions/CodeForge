@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-AT-01",
+  "runId": "6e9b65d8-47a3-4e89-a77e-1921a014e97a",
+  "fixtureFamily": "planning",
+  "startingCommit": "300452ec4d201f414f5fb0bc661e676684f5d325",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "d8e65a00-1f4f-481b-92cc-0859eb3ddd18",
+  "turnId": "75d6daef-9c2a-45ab-a92a-d0609639fa50",
+  "terminalStatus": "failed",
+  "terminalError": "# Workflow Summary for \"CodeForgeBench R2 case CBR2-AT-01.\"\nTask type: documentation, risk: low\nPlan: plan-d8e65a00-6b291e — 3/5 steps completed\nImplementation stopped: Turn be446fa5-1fa5-4240-8c08-d2f96fc9f644 failed: OpenRouter error (429): {\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day-high-balance. \",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"1000\",\"X-RateLimit-Remaining\":\"0\",\"X-RateLimit-Reset\":\"178968960000\nVerification: 1 passed, 2 failed, exit 1 — FAIL\nReview: No diffs\n\nOutcome: Failed safely after 0 repair attempt(s)\nCompletion gate: FAILED\n- BLOCKING verification_failed: Required verifier 'verifier-1-test' (test) did not produce current PASS evidence (failed).\n- BLOCKING plan_steps_unfinished: 2 plan step(s) did not finish successfully.",
+  "approvedActions": 0,
+  "changedFiles": [],
+  "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible": {
+    "passed": false,
+    "exitCode": 1,
+    "output": "✖ plan preserves selection contracts (0.9044ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 101.4384\n\n✖ failing tests:\n\ntest at test\\plan.test.mjs:2:1\n✖ plan preserves selection contracts (0.9044ms)\n  Error: ENOENT: no such file or directory, open 'C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\codeforge-r2-cbr2-at-01-c0HqDv\\workspace\\PLAN.md'\n      at Object.readFileSync (node:fs:484:20)\n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r2-cbr2-at-01-c0HqDv/workspace/test/plan.test.mjs:2:68)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    errno: -4058,\n    code: 'ENOENT',\n    syscall: 'open',\n    path: 'C:\\\\Users\\\\DADDY_~1\\\\AppData\\\\Local\\\\Temp\\\\codeforge-r2-cbr2-at-01-c0HqDv\\\\workspace\\\\PLAN.md'\n  }"
+  },
+  "hidden": {
+    "passed": false,
+    "findings": [
+      "plan omitted selection, verification, or uncertainty"
+    ]
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 12,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 2,
+    "forgeverify.evidence_created": 2,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1
+  },
+  "wallTimeMs": 67593
+}

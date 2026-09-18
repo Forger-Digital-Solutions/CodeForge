@@ -8,6 +8,7 @@ import {
   type AgentEvidenceRef,
   type PlannerResult,
   validateStructuredAgentResult,
+  validatePlanningCompleteness,
 } from "@codeforge/agent";
 import {
   type WorkspaceService,
@@ -350,16 +351,20 @@ export class AutonomousRunOrchestrator {
     return ordered;
   }
 
-  private authorizedPlannerResult(result: AgentResult): PlannerResult | undefined {
+  private authorizedPlannerResult(result: AgentResult, goal: string): PlannerResult | undefined {
     if (result.status !== "completed") return undefined;
     if (result.structuredData) {
       const validated = validateStructuredAgentResult("planner", result.structuredData);
-      return validated.success ? validated.data as PlannerResult : undefined;
+      if (!validated.success) return undefined;
+      const plan = validated.data as PlannerResult;
+      return validatePlanningCompleteness(goal, plan).valid ? plan : undefined;
     }
     // Some provider adapters preserve a validated JSON payload only in the final summary. Recover
     // it through the same strict validator; prose or malformed output remains blocked.
     const recovered = validateStructuredAgentResult("planner", result.summary);
-    return recovered.success ? recovered.data as PlannerResult : undefined;
+    if (!recovered.success) return undefined;
+    const plan = recovered.data as PlannerResult;
+    return validatePlanningCompleteness(goal, plan).valid ? plan : undefined;
   }
 
   private validateAuthorizedPlannerGraph(graph: TaskGraph): void {
@@ -511,7 +516,7 @@ export class AutonomousRunOrchestrator {
           structuredOutput: "planner",
           ...(this.subagentsR1Enabled ? { timeoutMs: r1PlannerTimeoutMs, watchdogMaxExtensions: 0 } : {}),
         });
-        const plan = this.authorizedPlannerResult(plannerResult);
+        const plan = this.authorizedPlannerResult(plannerResult, goal);
         if (!plan) {
           const error = "AGENT_INVALID_STRUCTURED_OUTPUT";
           this.transitionRun(run, "blocked", adapter);

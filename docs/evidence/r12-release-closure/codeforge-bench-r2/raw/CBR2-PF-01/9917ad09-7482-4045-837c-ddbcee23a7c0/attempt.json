@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CBR2-PF-01",
+  "runId": "9917ad09-7482-4045-837c-ddbcee23a7c0",
+  "fixtureFamily": "routing",
+  "startingCommit": "76cd4135d62242613f8bee29f6a1f1c4c3e72782",
+  "selectedRoute": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "verifiedFree": true
+  },
+  "taskId": "81ab0342-66e6-4050-98ac-6e20e2a9a921",
+  "turnId": "207e5075-892e-43c6-b518-4d3142952112",
+  "terminalStatus": "running",
+  "terminalError": "",
+  "approvedActions": 21,
+  "changedFiles": [
+    "src/router.mjs"
+  ],
+  "diffHash": "426209ce999d310e131c126bdc9a058cd0c9aaedb3ac35e7815c0b8c3eed42a7",
+  "visible": {
+    "passed": true,
+    "exitCode": 0,
+    "output": "✔ exact stays exact (0.884ms)\n✔ free auto stays free (0.1492ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 110.9521"
+  },
+  "hidden": {
+    "passed": true,
+    "findings": []
+  },
+  "forgeVerifyPassed": false,
+  "eventTypeCounts": {
+    "execution.requested": 1,
+    "task.created": 1,
+    "task.started": 1,
+    "task.state_changed": 6,
+    "status.changed": 49,
+    "plan.started": 1,
+    "agent.started": 2,
+    "turn.started": 1,
+    "router.selection": 1,
+    "tool.call_started": 42,
+    "tool.call_completed": 42,
+    "token.usage": 42,
+    "tool.execution_started": 42,
+    "file.read": 7,
+    "tool.execution_completed": 40,
+    "tool.execution_failed": 2,
+    "approval.requested": 21,
+    "approval.resolved": 21,
+    "command.executed": 24,
+    "file.written": 4
+  },
+  "wallTimeMs": 301187
+}

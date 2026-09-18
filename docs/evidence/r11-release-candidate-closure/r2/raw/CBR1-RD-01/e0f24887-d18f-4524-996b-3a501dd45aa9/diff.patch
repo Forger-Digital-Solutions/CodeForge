@@ -1,0 +1,27 @@
+diff --git a/src/router.mjs b/src/router.mjs
+index a19d50b..2375441 100644
+--- a/src/router.mjs
++++ b/src/router.mjs
+@@ -1,4 +1,10 @@
+ export function selectRoute(routes, request) {
+-  if (request.mode === 'exact') return routes.find((route) => route.free) ?? routes[0];
+-  return routes[0];
++  if (request.mode === 'exact') {
++    const exactRoute = routes.find((route) => route.id === request.id);
++    return exactRoute ?? null;
++  }
++  if (request.mode === 'free-auto') {
++    return routes.find((route) => route.free) ?? null;
++  }
++  return null;
+ }
+diff --git a/test/router.test.mjs b/test/router.test.mjs
+index 30abea8..0fb7634 100644
+--- a/test/router.test.mjs
++++ b/test/router.test.mjs
+@@ -1,4 +1,4 @@
+ import test from 'node:test'; import assert from 'node:assert/strict'; import { selectRoute } from '../src/router.mjs';
+ const routes = [{ id: 'paid', free: false, healthy: true }, { id: 'free', free: true, healthy: true }];
+-test('exact stays exact', () => assert.equal(selectRoute(routes, { mode: 'exact', id: 'paid' })?.id, 'paid'));
++test('exact stays exact', () => assert.equal(selectRoute(routes, { mode: 'exact', id: 'free' })?.id, 'free'));
+ test('free auto stays free', () => assert.equal(selectRoute(routes, { mode: 'free-auto' })?.id, 'free'));
