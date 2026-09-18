@@ -50,13 +50,14 @@
 | PostgreSQL authority suite | BLOCKED — WSL returns `Wsl/Service/E_ACCESSDENIED`; no disposable PostgreSQL URL is configured |
 | Desktop package | PASS — NSIS and portable artifacts built |
 | Packaged internal-dependency audit | PASS — the exact unpacked and portable embedded ASARs contain `@codeforge/intelligence`; `pack` and `dist` now enforce this gate |
+| Isolated portable runtime | FAIL only at the renderer — its main process loads the credential store, ForgeZero, catalog, and local server; no module-resolution error occurs |
 | Packaged smoke | FAIL — `RENDER_PROCESS_GONE=launch-failed:49`, then `ERR_FAILED (-2)` loading the renderer document |
 | Authenticode | NOT SIGNED — expected until OA-07 is completed |
 | Fresh install / installed workflow / uninstall | NOT RUN — the user authorized it, but this host's desktop connector cannot operate native installer controls; no silent-install substitute was used |
 
 ## Reproducible desktop blocker evidence
 
-The generated ASAR contains `apps\\desktop\\dist\\renderer\\index.html`, and its contents were read successfully with `@electron/asar`. The smoke run starts the trusted-process server, constructs the window, then fails while Chromium launches its sandboxed renderer. Current production settings remain `sandbox: true`, `contextIsolation: true`, `webSecurity: true`, and `nodeIntegration: false`. Do not change those settings solely to pass this smoke.
+The generated ASAR contains `apps\\desktop\\dist\\renderer\\index.html`, and its contents were read successfully with `@electron/asar`. Both the unpacked smoke and an isolated launch of the exact portable artifact start the trusted-process server, construct the window, and then fail while Chromium launches its sandboxed renderer. Current production settings remain `sandbox: true`, `contextIsolation: true`, `webSecurity: true`, and `nodeIntegration: false`. Do not change those settings solely to pass this smoke.
 
 The initially generated portable artifact also omitted `@codeforge/intelligence`, which is imported by the shipped 8-Bit, ForgeGreen, and paid-auto modules. That independent main-process failure is fixed by explicitly packaging the workspace module and enforcing the internal-dependency audit after every `pack` and `dist`. The audit passes against the rebuilt portable's extracted embedded ASAR.
 
