@@ -1,12 +1,35 @@
 import { randomUUID } from "node:crypto";
-import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
+import type { ChatRequest, ChatResponse, StreamEvent, ToolCall } from "./chat-types.js";
 import type { ProviderAdapter, ProviderModel, ProviderHealthResponse } from "./index.js";
+import { normalizeMessagesForTextTools, parseTextToolCalls } from "./hosted-text-tools.js";
 
 export interface HostedProviderOptions {
   cloudApiUrl?: string;
   getAccessToken?: () => Promise<string | null> | string | null;
   onAuthExpired?: () => Promise<string | null>;
   fetchFn?: typeof fetch;
+}
+
+/**
+ * Cloud capability negotiation: a gateway that understands the native tools
+ * extension advertises "HOSTED_TOOLS" in /v1/meta `features`. Anything older
+ * (the deployed v0.2.0 line) answers without it, and the adapter transparently
+ * drives the same chat endpoint with the text-level tool contract instead — so
+ * Managed Free executes the CodeForge tool loop on the gateway that exists
+ * TODAY and upgrades itself the day a newer gateway ships.
+ */
+const HOSTED_TOOLS_FEATURE = "HOSTED_TOOLS";
+
+/** SSE frames emitted by /v1/hosted/inference (unknown fields are ignored). */
+interface HostedSseEvent {
+  type?: string;
+  delta?: string;
+  toolCallId?: string;
+  toolName?: string;
+  arguments?: string;
+  finishReason?: string;
+  error?: string;
+  usage?: { inputTokens?: number; outputTokens?: number };
 }
 
 export class HostedProviderAdapter implements ProviderAdapter {
@@ -16,6 +39,7 @@ export class HostedProviderAdapter implements ProviderAdapter {
   private readonly getAccessToken?: () => Promise<string | null> | string | null;
   private readonly onAuthExpired?: () => Promise<string | null>;
   private readonly fetchFn: typeof fetch;
+  private metaProbe?: Promise<boolean>;
 
   constructor(options: HostedProviderOptions = {}) {
     this.cloudApiUrl = (options.cloudApiUrl ?? "http://127.0.0.1:3220").replace(/\/$/, "");
@@ -35,6 +59,21 @@ export class HostedProviderAdapter implements ProviderAdapter {
     } catch (err) {
       return { status: "offline", error: err instanceof Error ? err.message : String(err) };
     }
+  }
+
+  /** True when the gateway advertises native hosted tools. Never throws; unknown → false. */
+  private supportsNativeTools(): Promise<boolean> {
+    this.metaProbe ??= (async () => {
+      try {
+        const res = await this.fetchFn(`${this.cloudApiUrl}/v1/meta`);
+        if (!res.ok) return false;
+        const meta = (await res.json()) as { features?: unknown };
+        return Array.isArray(meta.features) && meta.features.includes(HOSTED_TOOLS_FEATURE);
+      } catch {
+        return false;
+      }
+    })();
+    return this.metaProbe;
   }
 
   async listModels(): Promise<ProviderModel[]> {
@@ -89,12 +128,21 @@ export class HostedProviderAdapter implements ProviderAdapter {
     let fullText = "";
     let inputTokens = 0;
     let outputTokens = 0;
+    const toolCalls: ToolCall[] = [];
+    let finishReason: ChatResponse["choices"][number]["finishReason"] = "stop";
 
     for await (const chunk of this.streamChat(req)) {
       if (chunk.type === "text_delta") {
         fullText += chunk.delta;
-      }
-      if (chunk.type === "usage") {
+      } else if (chunk.type === "tool_call_completed") {
+        toolCalls.push({
+          id: chunk.toolCallId,
+          type: "function",
+          function: { name: chunk.toolName, arguments: chunk.arguments },
+        });
+      } else if (chunk.type === "finish") {
+        finishReason = chunk.finishReason;
+      } else if (chunk.type === "usage") {
         inputTokens = chunk.usage.inputTokens;
         outputTokens = chunk.usage.outputTokens;
       }
@@ -109,8 +157,9 @@ export class HostedProviderAdapter implements ProviderAdapter {
           message: {
             role: "assistant",
             content: fullText,
+            ...(toolCalls.length > 0 ? { toolCalls } : {}),
           },
-          finishReason: "stop",
+          finishReason,
         },
       ],
       usage: {
@@ -121,31 +170,15 @@ export class HostedProviderAdapter implements ProviderAdapter {
     };
   }
 
-  async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
-    // The hosted chat contract carries messages only — tools never reach the model, so a
-    // tool-calling turn on this route would silently degrade to prose that looks like tool
-    // calls while nothing executes. Failing fast keeps 8-Bit's compatibility authority honest:
-    // the failure lands on the safe failover boundary and rotates to a route that can act.
-    if (req.tools && req.tools.length > 0) {
-      throw new Error(`[HOSTED_TOOL_CALLING_UNSUPPORTED] The included free cloud route (${req.model}) cannot execute tools yet.`);
-    }
-    let token = this.getAccessToken ? await this.getAccessToken() : null;
-    const messages = req.messages.map((m) => ({
-      role: m.role as "system" | "user" | "assistant",
-      content: m.content,
-    }));
+  private splitModel(model: string): { exactProviderId?: string; modelId: string } {
+    const separator = model.indexOf("::");
+    return {
+      exactProviderId: separator > 0 ? model.slice(0, separator) : undefined,
+      modelId: separator > 0 ? model.slice(separator + 2) : model === "codeforge-auto" ? "auto" : model,
+    };
+  }
 
-    const separator = req.model.indexOf("::");
-    const exactProviderId = separator > 0 ? req.model.slice(0, separator) : undefined;
-    const exactModelId = separator > 0 ? req.model.slice(separator + 2) : req.model;
-    const body = JSON.stringify({
-      requestId: randomUUID(),
-      messages,
-      modelId: req.model === "codeforge-auto" ? "auto" : exactModelId,
-      ...(exactProviderId ? { providerId: exactProviderId } : {}),
-      taskType: "coding",
-    });
-
+  private async postInference(body: string, signal: AbortSignal | undefined): Promise<Response> {
     const makeRequest = async (authToken: string | null) => {
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -154,7 +187,6 @@ export class HostedProviderAdapter implements ProviderAdapter {
       if (authToken) {
         headers["Authorization"] = `Bearer ${authToken}`;
       }
-
       return this.fetchFn(`${this.cloudApiUrl}/v1/hosted/inference`, {
         method: "POST",
         headers,
@@ -163,14 +195,13 @@ export class HostedProviderAdapter implements ProviderAdapter {
       });
     };
 
-    let res = await makeRequest(token);
+    let res = await makeRequest(this.getAccessToken ? await this.getAccessToken() : null);
 
     // Auth recovery: if 401 and onAuthExpired provided, refresh token and retry ONCE
     if (res.status === 401 && this.onAuthExpired) {
       const newToken = await this.onAuthExpired();
       if (newToken) {
-        token = newToken;
-        res = await makeRequest(token);
+        res = await makeRequest(newToken);
       }
     }
 
@@ -187,10 +218,44 @@ export class HostedProviderAdapter implements ProviderAdapter {
     if (!res.body) {
       throw new Error("No response body received from CodeForge Cloud");
     }
+    return res;
+  }
 
-    const reader = res.body.getReader();
+  async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+    const needsToolTransport =
+      (req.tools?.length ?? 0) > 0 ||
+      req.messages.some((m) => m.role === "tool" || (Array.isArray(m.toolCalls) && m.toolCalls.length > 0));
+    const native = needsToolTransport && (await this.supportsNativeTools());
+    const textToolMode = needsToolTransport && !native;
+
+    const { exactProviderId, modelId } = this.splitModel(req.model);
+    const messages = native
+      ? req.messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+          ...(m.name ? { name: m.name } : {}),
+          ...(m.toolCallId ? { toolCallId: m.toolCallId } : {}),
+          ...(m.toolCalls ? { toolCalls: m.toolCalls } : {}),
+        }))
+      : normalizeMessagesForTextTools(req.messages, req.tools);
+
+    const body = JSON.stringify({
+      requestId: randomUUID(),
+      messages,
+      modelId,
+      ...(exactProviderId ? { providerId: exactProviderId } : {}),
+      taskType: "coding",
+      ...(native && req.tools?.length ? { tools: req.tools } : {}),
+      ...(native && req.maxTokens ? { maxTokens: req.maxTokens } : {}),
+    });
+
+    const res = await this.postInference(body, signal);
+    const reader = res.body!.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
+    // Text-tool mode buffers the whole response: a <tool_call> payload must never leak into the
+    // text stream as if the model said it, so text is emitted only once the call spans are known.
+    let fullText = "";
 
     while (true) {
       const { done, value } = await reader.read();
@@ -202,32 +267,66 @@ export class HostedProviderAdapter implements ProviderAdapter {
 
       for (const line of lines) {
         const trimmed = line.trim();
-        if (trimmed.startsWith("data: ")) {
-          const raw = trimmed.slice(6);
-          let event: any;
-          try {
-            event = JSON.parse(raw);
-          } catch {
-            continue;
-          }
-
-          if (event.type === "assistant.message.delta") {
-            yield { type: "text_delta", delta: event.delta };
-          } else if (event.type === "assistant.message.completed") {
-            if (event.usage) {
-              yield {
-                type: "usage",
-                usage: {
-                  inputTokens: event.usage.inputTokens,
-                  outputTokens: event.usage.outputTokens,
-                },
-              };
-            }
-            yield { type: "finish", finishReason: "stop" };
-          } else if (event.type === "turn.failed") {
-            throw new Error(event.error || "Turn failed on CodeForge Cloud");
-          }
+        if (!trimmed.startsWith("data: ")) continue;
+        let event: HostedSseEvent;
+        try {
+          event = JSON.parse(trimmed.slice(6)) as HostedSseEvent;
+        } catch {
+          continue;
         }
+
+        if (event.type === "assistant.message.delta" && typeof event.delta === "string") {
+          if (textToolMode) {
+            fullText += event.delta;
+          } else {
+            yield { type: "text_delta", delta: event.delta };
+          }
+        } else if (event.type === "assistant.tool_call.started" && event.toolCallId && event.toolName) {
+          yield { type: "tool_call_started", toolCallId: event.toolCallId, toolName: event.toolName };
+        } else if (event.type === "assistant.tool_call.delta" && event.toolCallId && typeof event.delta === "string") {
+          yield { type: "tool_call_delta", toolCallId: event.toolCallId, delta: event.delta };
+        } else if (event.type === "assistant.tool_call.completed" && event.toolCallId && event.toolName) {
+          yield {
+            type: "tool_call_completed",
+            toolCallId: event.toolCallId,
+            toolName: event.toolName,
+            arguments: event.arguments ?? "",
+          };
+        } else if (event.type === "assistant.message.completed") {
+          if (event.usage) {
+            yield {
+              type: "usage",
+              usage: {
+                inputTokens: event.usage.inputTokens ?? 0,
+                outputTokens: event.usage.outputTokens ?? 0,
+              },
+            };
+          }
+          if (!textToolMode) {
+            yield { type: "finish", finishReason: event.finishReason === "tool_calls" ? "tool_calls" : "stop" };
+          }
+        } else if (event.type === "turn.failed") {
+          throw new Error(event.error || "Turn failed on CodeForge Cloud");
+        }
+      }
+    }
+
+    if (textToolMode) {
+      const parsed = parseTextToolCalls(fullText);
+      if (parsed.text.length > 0) {
+        yield { type: "text_delta", delta: parsed.text };
+      }
+      for (const [index, call] of parsed.toolCalls.entries()) {
+        const id = `text-call-${index + 1}`;
+        yield { type: "tool_call_started", toolCallId: id, toolName: call.name };
+        yield { type: "tool_call_completed", toolCallId: id, toolName: call.name, arguments: call.arguments };
+      }
+      if (parsed.toolCalls.length > 0) {
+        yield { type: "finish", finishReason: "tool_calls" };
+      } else if (parsed.truncated) {
+        yield { type: "finish", finishReason: "length" };
+      } else {
+        yield { type: "finish", finishReason: "stop" };
       }
     }
   }

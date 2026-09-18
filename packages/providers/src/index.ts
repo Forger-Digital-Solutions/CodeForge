@@ -448,6 +448,15 @@ export * as OpenRouterOAuth from "./openrouter-oauth.js";
 export { redactSecrets } from "./redact.js";
 export { HostedProviderAdapter, type HostedProviderOptions } from "./hosted.js";
 export {
+  TEXT_TOOL_OPEN,
+  TEXT_TOOL_CLOSE,
+  buildTextToolContract,
+  normalizeMessagesForTextTools,
+  parseTextToolCalls,
+  type ParsedTextToolCall,
+  type TextToolParseResult,
+} from "./hosted-text-tools.js";
+export {
   ProviderCapacityGovernor,
   GovernedProviderAdapter,
   DEFAULT_FALLBACK_LIMITS,

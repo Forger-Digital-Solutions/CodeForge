@@ -68,10 +68,21 @@ export class RouteQuotaTracker {
   private readonly byRoute = new Map<string, RouteQuota>();
   private readonly byProvider = new Map<string, RouteQuota>();
 
+  /**
+   * Route-scoped recording (R15): a quota observed on a named model applies to that route ONLY.
+   * Writing it into the provider bucket let one OpenRouter `:free` model's daily-cap 429 mark
+   * every sibling route QUOTA_EXHAUSTED — including routes still returning 200 — and a healthy
+   * response records no quota, so the false provider-level observation could never clear. The
+   * provider bucket is reserved for observations with no model attached (genuinely
+   * account-scoped signals), which `get` still honours as a fallback.
+   */
   record(providerId: string, modelId: string | undefined, quota: RouteQuota | undefined): void {
     if (!quota) return;
-    if (modelId) this.byRoute.set(`${providerId}::${modelId}`, quota);
-    this.byProvider.set(providerId, quota);
+    if (modelId) {
+      this.byRoute.set(`${providerId}::${modelId}`, quota);
+    } else {
+      this.byProvider.set(providerId, quota);
+    }
   }
 
   get(providerId: string, modelId: string): RouteQuota | undefined {

@@ -569,6 +569,48 @@ describe("FreeCloudService", () => {
     expect(pending).toEqual(["vendor/model-c:free", "poolside/laguna-xs-2.1:free"]);
   });
 
+  it("a model-scoped 429 must not contaminate sibling routes on the same provider (R15 regression)", () => {
+    // Observed native smoke 2026-09-18: one OpenRouter :free model's daily-cap 429 poisoned the
+    // provider-level quota bucket, so every OpenRouter route showed QUOTA_EXHAUSTED — including
+    // deepseek-v4-flash, which was still returning HTTP 200.
+    const { svc } = service();
+    svc.onProviderResponse({
+      providerId: "openrouter",
+      modelId: "poolside/laguna-s-2.1:free",
+      status: 429,
+      headers: [
+        ["x-ratelimit-limit", "1000"],
+        ["x-ratelimit-remaining", "0"],
+        ["x-ratelimit-reset", String(NOW.getTime() + 60 * 60_000)],
+      ],
+      observedAt: NOW.getTime(),
+    });
+    const routes = svc.snapshot().models.flatMap((m) => m.routes).filter((r) => r.providerId === "openrouter");
+    const laguna = routes.find((r) => r.providerModelId === "poolside/laguna-s-2.1:free");
+    const sibling = routes.find((r) => r.providerModelId === "openai/gpt-oss-120b:free");
+    // The route that took the 429 is blocked (rate-limit cooldown toward the observed reset).
+    expect(["COOLDOWN", "QUOTA_EXHAUSTED"]).toContain(laguna?.health);
+    // The sibling route observed nothing itself: it must NOT inherit the exhausted verdict.
+    expect(sibling?.health).toBe("HEALTHY");
+    expect(sibling?.cooldownUntil).toBeUndefined();
+    expect(svc.quotaRemaining("openrouter", "openai/gpt-oss-120b:free")).toBeUndefined();
+  });
+
+  it("a genuinely provider-scoped observation (no model attached) still applies provider-wide", () => {
+    const { svc } = service();
+    svc.onProviderResponse({
+      providerId: "openrouter",
+      modelId: undefined,
+      status: 200,
+      headers: [
+        ["x-ratelimit-remaining", "0"],
+        ["x-ratelimit-reset", String(NOW.getTime() + 60 * 60_000)],
+      ],
+      observedAt: NOW.getTime(),
+    });
+    expect(svc.quotaRemaining("openrouter", "openai/gpt-oss-120b:free")).toBe(0);
+  });
+
   it("records quota from provider responses and reacts to 429/402", () => {
     const { svc } = service();
     svc.onProviderResponse({ providerId: "groq", modelId: "openai/gpt-oss-120b", status: 200, headers: [["x-ratelimit-remaining-requests", "5"]], observedAt: NOW.getTime() });
