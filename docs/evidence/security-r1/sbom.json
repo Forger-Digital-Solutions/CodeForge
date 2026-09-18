@@ -1,7 +1,7 @@
 {
   "bomFormat": "CycloneDX-summary",
   "specVersion": "1.5-summary",
-  "generatedAt": "2026-09-18T20:52:52.126Z",
+  "generatedAt": "2026-09-18T20:59:18.825Z",
   "lockfileVersion": 3,
   "componentCount": 540,
   "installScriptPackages": [
