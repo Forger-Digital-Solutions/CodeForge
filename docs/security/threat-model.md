@@ -60,7 +60,7 @@ a hosted service. The threats that matter are therefore not only "web app" threa
 ## Threat catalogue
 
 Each entry: threat → controls → residual risk. "R-" numbers are tracked in the
-[final campaign report](../../CODEFORGE-FULL-SYSTEM-RC-CERTIFICATION.md).
+[certification report](../certification/codeforge-security-legal-trust-r1-2026-09-18.md).
 
 ### Database compromise (theft of PostgreSQL or a backup)
 - Controls: refresh/session/desktop-code stored as SHA-256 hashes; GitHub access tokens never stored; PKCE verifier AES-256-GCM sealed with a key that lives only in the process env; JWT secret not in DB, so no token can be minted from the dump.
@@ -68,7 +68,7 @@ Each entry: threat → controls → residual risk. "R-" numbers are tracked in t
 
 ### Render/Supabase/CI credential leakage
 - Controls: secrets only in env; `describeConfig` prints a redacted summary; CI jobs are secret-free except the manual real-smoke job; `.env` ignored; secret scan gate.
-- Residual (R-02): a full env leak is a full compromise (as with any service). Playbook: the residual-risk and rotation controls in [key-management-and-rotation.md](./key-management-and-rotation.md) §"Secret compromise". No managed KMS yet (ARCHITECTURALLY PREPARED).
+- Residual (R-02): a full env leak is a full compromise (as with any service). Playbook: [incident-response.md](./incident-response.md) §"P1 — Secret compromise". No managed KMS yet (ARCHITECTURALLY PREPARED).
 
 ### Compromised provider adapter / malicious model response
 - Controls: adapters run server-side; the model only ever receives request content; tool-call arguments are validated by the tool layer; outputs are redacted; workspace boundary enforced regardless of what the model asks for.

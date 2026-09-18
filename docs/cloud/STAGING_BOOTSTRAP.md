@@ -109,6 +109,7 @@ Set these in your platform's secret store. Never commit them, and never bake the
 | `DATABASE_URL` | from step 2 — **secret** |
 | `CODEFORGE_CLOUD_DB_SSL` | `true` |
 | `JWT_SECRET` | 32+ random characters — **secret**. Rotating it signs everyone out |
+| `CODEFORGE_DATA_ENCRYPTION_KEYS` | `1:<base64 of 32 random bytes>` — **secret**. Seals server-side secrets at rest; rotate by staging `2:<new>,1:<old>` (see `docs/security/key-management-and-rotation.md`) |
 | `GITHUB_CLIENT_ID` | from step 5 |
 | `GITHUB_CLIENT_SECRET` | from step 5 — **secret** |
 | `STRIPE_SECRET_KEY` | optional — **`sk_test_…` only**, and only when Stripe test billing is deliberately enabled — **secret** |

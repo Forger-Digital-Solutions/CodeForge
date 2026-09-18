@@ -40,7 +40,7 @@ export function DataPrivacySection(): React.ReactElement {
       <SettingsGroup title="Local history">
         <SettingsRow
           title="Task history"
-          description="Tasks, turns, and verification evidence are stored locally in this computer's CodeForge data folder and are not uploaded anywhere."
+          description="Tasks, turns, and verification evidence are stored locally in this computer's CodeForge data folder. CodeForge Cloud receives only what a Cloud feature you use needs: model requests routed through Hosted Free (relayed, not stored) and the commit bundle of a delivery you choose to publish (deleted after the push)."
         />
         <SettingsRow
           title="Clear recent projects"

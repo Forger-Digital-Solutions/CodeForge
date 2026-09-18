@@ -15,10 +15,10 @@
     "totalInputTokens": 200,
     "cachedInputTokens": 160,
     "outputTokens": 40,
-    "wallTimeMs": 477,
+    "wallTimeMs": 311,
     "providerAttempts": 2,
     "retryCount": 0,
-    "forgeGreenOverheadMs": 0.08440000000155123,
+    "forgeGreenOverheadMs": 0.07099999999854845,
     "forgeVerifyStatus": {
       "status": "UNKNOWN",
       "source": "UNKNOWN"

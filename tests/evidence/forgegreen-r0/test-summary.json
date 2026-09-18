@@ -1,6 +1,6 @@
 {
   "schema": "codeforge-forgegreen-r0-evidence-run-v1",
-  "generatedAt": "2026-09-16T03:03:11.856Z",
+  "generatedAt": "2026-09-18T20:44:02.050Z",
   "command": "node scripts/forgegreen-r0-baseline.mjs",
   "deterministicReplay": true,
   "workloadRuns": [

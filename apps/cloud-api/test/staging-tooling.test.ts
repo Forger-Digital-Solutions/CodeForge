@@ -33,6 +33,8 @@ const SENTINEL = {
   STRIPE_SECRET_KEY: "sk_test_SENTINELSTRIPETESTKEY0123456789",
   STRIPE_WEBHOOK_SECRET: "whsec_SENTINELWEBHOOKSECRET0123456789",
   OPENROUTER_API_KEY: "sk-or-v1-SENTINELOPENROUTERKEY0123456789abcd",
+  // Security R1 key ring sentinel: 32 zero bytes in base64 is syntactically valid and obviously fake.
+  CODEFORGE_DATA_ENCRYPTION_KEYS: "1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
 };
 
 const COMPLETE_STAGING_ENV: Record<string, string> = {
@@ -59,7 +61,7 @@ describe("staging config contract", () => {
   });
 
   it("marks every credential-bearing variable as secret", () => {
-    for (const name of ["DATABASE_URL", "JWT_SECRET", "GITHUB_CLIENT_SECRET", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "OPENROUTER_API_KEY", "GROQ_API_KEY"]) {
+    for (const name of ["DATABASE_URL", "JWT_SECRET", "CODEFORGE_DATA_ENCRYPTION_KEYS", "GITHUB_CLIENT_SECRET", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "OPENROUTER_API_KEY", "GROQ_API_KEY"]) {
       expect(SECRET_CONFIG_NAMES.has(name), `${name} must be marked secret`).toBe(true);
     }
     // Public configuration is deliberately NOT marked secret, so it can appear in reports.

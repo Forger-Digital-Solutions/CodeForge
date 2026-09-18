@@ -14,10 +14,10 @@
     "verificationPolicyRevision": "forgegreen-r0-measurement-1",
     "totalInputTokens": 200,
     "outputTokens": 40,
-    "wallTimeMs": 524,
+    "wallTimeMs": 320,
     "providerAttempts": 2,
     "retryCount": 0,
-    "forgeGreenOverheadMs": 0.0924999999983811,
+    "forgeGreenOverheadMs": 0.1056000000005497,
     "forgeVerifyStatus": {
       "status": "UNKNOWN",
       "source": "UNKNOWN"

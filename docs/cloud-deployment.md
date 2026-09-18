@@ -54,6 +54,8 @@ See [`.env.example`](../.env.example) for the full annotated list. Server-side e
 | `DATABASE_URL` | postgres | Postgres connection string |
 | `CODEFORGE_CLOUD_DB_SSL` | non-loopback postgres | certificate-validated TLS; staging/production reject a remote URL that disables or weakens TLS |
 | `JWT_SECRET` | yes | ≥ 32 strong chars (not the dev default) |
+| `CODEFORGE_DATA_ENCRYPTION_KEYS` | yes | Versioned KEK ring for secrets sealed at rest (`1:<base64 32 bytes>`); boot fails without it — see `docs/security/key-management-and-rotation.md` |
+| `CODEFORGE_SECURITY_CONTACT` | no | `mailto:` or `https://` contact; enables `/.well-known/security.txt` |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | yes | GitHub OAuth app |
 | `CODEFORGE_ALLOWED_BROWSER_RETURN_URLS` | recommended | comma-separated exact FDS sign-in URLs; defaults cover the production custom domain, GitHub Pages fallback, and local Astro development |
 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | optional, together | **TEST mode only** — billing endpoints stay disabled when absent; live keys are refused at boot |
@@ -77,6 +79,7 @@ npm run build
 NODE_ENV=production CODEFORGE_CLOUD_ENV=staging HOST=127.0.0.1 PORT=3320 \
   CODEFORGE_CLOUD_DB_DRIVER=postgres DATABASE_URL=postgresql://... \
   JWT_SECRET="<32+ char secret>" \
+  CODEFORGE_DATA_ENCRYPTION_KEYS="1:$(openssl rand -base64 32)" \
   GITHUB_CLIENT_ID=... GITHUB_CLIENT_SECRET=... \
   STRIPE_SECRET_KEY=sk_test_... STRIPE_WEBHOOK_SECRET=whsec_... \
   OPENROUTER_API_KEY=... GROQ_API_KEY=... \

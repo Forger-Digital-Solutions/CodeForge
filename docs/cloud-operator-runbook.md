@@ -49,6 +49,7 @@ No client action is needed — provider keys never leave the server.
 
 ## Rotate the JWT secret
 
+Rotating `CODEFORGE_DATA_ENCRYPTION_KEYS` is staged and loses nothing (`docs/security/key-management-and-rotation.md`).
 Rotating `JWT_SECRET` invalidates all existing **access** tokens immediately. Desktops recover
 transparently: the next hosted request 401s, the main process uses its (still-valid) refresh token to
 mint a fresh access token, and the request retries once. Refresh tokens are unaffected (they are hashed

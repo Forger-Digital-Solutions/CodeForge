@@ -1,4 +1,5 @@
 import { buildCloudGitHubCallbackUrl } from "@codeforge/cloud-auth";
+import { parseKeyRing } from "@codeforge/crypto";
 import {
   STAGING_CONFIG_CONTRACT,
   SECRET_CONFIG_NAMES,
@@ -170,6 +171,19 @@ export function runStagingPreflight(env: Env = process.env): PreflightReport {
     fail("session.secret_strength", "JWT_SECRET looks like a development placeholder");
   } else {
     pass("session.secret_present", `session signing secret present (${jwtSecret.length} chars)`);
+  }
+
+  // --- Data encryption keys (Security R1) ----------------------------------------------------
+  const keyRing = env.CODEFORGE_DATA_ENCRYPTION_KEYS;
+  if (!keyRing) {
+    fail("crypto.key_ring_present", "CODEFORGE_DATA_ENCRYPTION_KEYS is not set (sealed secrets cannot be stored; boot will fail)");
+  } else {
+    try {
+      const entries = parseKeyRing(keyRing);
+      pass("crypto.key_ring_present", `data-encryption key ring present (${entries.length} version(s), active v${entries[0]?.version})`);
+    } catch (error) {
+      fail("crypto.key_ring_present", `CODEFORGE_DATA_ENCRYPTION_KEYS is invalid: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   // --- GitHub OAuth ---------------------------------------------------------------------------

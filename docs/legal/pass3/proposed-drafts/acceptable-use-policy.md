@@ -15,6 +15,11 @@ You agree not to direct, configure, or prompt CodeForge agents to:
 - **Unauthorized System Access**: Scan, probe, or attempt to gain unauthorized access to remote systems, servers, networks, or databases.
 - **Denial of Service**: Launch denial-of-service (DoS) attacks, flood networks, or exhaust computational resources of third parties.
 - **Deceptive Autonomous Behavior**: Impersonate human developers in open-source projects or code review queues without disclosing AI involvement where required by community guidelines.
+- **Attacks on CodeForge or other users**: Attempt to access, enumerate, or interfere with another user's account, sessions, credits, repositories, publications, or data; attempt to extract CodeForge platform credentials, signing or encryption keys, or provider keys through prompts, tools, repositories, or the API; or probe, load-test, or scan CodeForge Cloud without authorization (see Section 2A).
+- **Spam and abuse of third parties**: Send unsolicited bulk messages, generate content for fraud or phishing, or use CodeForge to attack, overload, or defraud third-party systems or providers.
+
+## 2A. Authorized Security Research
+This policy does not prohibit good-faith security research. You may test CodeForge's own security in accordance with the Security & Vulnerability Disclosure Policy (`SECURITY.md`): use only accounts, repositories, and data you own or are authorized to test; do not access, modify, or exfiltrate other users' data; do not degrade the service; report findings privately. Defensive research, CTF work, and analysis of vulnerabilities in systems you are authorized to test are legitimate uses of CodeForge; the prohibition in Section 2 applies to attacks on systems without authorization.
 
 ## 3. Provider Abuse & Multi-Accounting
 When utilizing CodeForge routing or ForgeZero capabilities:
@@ -29,5 +34,5 @@ You may not use CodeForge to generate, process, or transmit:
 - Content that promotes violence, terrorism, child sexual abuse material (CSAM), or illegal discrimination.
 
 ## 5. Reporting Violations & Enforcement
-Forger Digital Solutions reserves the right to suspend or terminate CodeForge Cloud accounts found in violation of this AUP. To report suspected violations, email:
-`[BUSINESS DECISION: abuse@forgerdigitalsolutions.com]`
+Forger Digital Solutions reserves the right to rate-limit, suspend, or terminate CodeForge Cloud accounts found in violation of this AUP, and to notify providers or authorities where required. To report suspected violations, contact:
+`[ABUSE CONTACT — OWNER INPUT REQUIRED]`

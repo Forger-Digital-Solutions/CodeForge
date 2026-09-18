@@ -1,0 +1,12 @@
+# CodeForge security.txt (RFC 9116) — TEMPLATE
+#
+# The CodeForge Cloud API serves this file at /.well-known/security.txt automatically once the
+# operator sets CODEFORGE_SECURITY_CONTACT (see docs/security/OWNER-ACTIONS.md, OA-02). Until a
+# real contact exists the route returns 404: CodeForge never publishes a placeholder contact.
+# Publish the same content on the FDS website domain (OA-14). Renew "Expires" at least yearly.
+
+Contact: TODO_OWNER_SECURITY_CONTACT
+Expires: TODO_SET_WHEN_PUBLISHED
+Policy: https://github.com/Forger-Digital-Solutions/CodeForge/blob/master/SECURITY.md
+Preferred-Languages: en
+Canonical: https://TODO_PUBLIC_API_HOST/.well-known/security.txt

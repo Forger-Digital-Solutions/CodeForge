@@ -36,6 +36,16 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
+      # Security R1: versioned key ring that wraps per-record data keys for secrets sealed at rest
+      # (see docs/security/key-management-and-rotation.md). Render generates an opaque random
+      # value; the Cloud stretches it with HKDF-SHA256 into a 256-bit KEK (version 1). Rotations
+      # replace this with an explicit "2:<base64>,1:<base64>" ring. Boot fails without it.
+      - key: CODEFORGE_DATA_ENCRYPTION_KEYS
+        generateValue: true
+      # RFC 9116 security.txt is served only when a real contact is configured (mailto: or https://).
+      # Left unset until the owner supplies one — CodeForge never publishes a placeholder contact.
+      - key: CODEFORGE_SECURITY_CONTACT
+        sync: false
       - key: GITHUB_CLIENT_ID
         sync: false
       - key: GITHUB_CLIENT_SECRET

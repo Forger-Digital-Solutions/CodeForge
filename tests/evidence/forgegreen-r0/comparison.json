@@ -13,10 +13,10 @@
     },
     "deltas": {
       "outputTokens": 0,
-      "wallTimeMs": -47,
+      "wallTimeMs": -9,
       "providerAttempts": 0,
       "retryCount": 0,
-      "forgeGreenOverheadMs": -0.008099999996829865
+      "forgeGreenOverheadMs": -0.03460000000200125
     },
     "verificationParity": false,
     "completionParity": false,

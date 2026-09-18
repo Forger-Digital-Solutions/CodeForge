@@ -1,11 +1,11 @@
 {
   "schemaVersion": 2,
   "benchmarkVersion": "CodeForgeBench-R2",
-  "generatedAt": "2026-09-18T17:22:07.793Z",
+  "generatedAt": "2026-09-18T20:43:14.943Z",
   "phase": "CODEFORGE_R9_PRE_CAPABILITY_BENCHMARK",
   "evaluatedSplit": "ALL",
   "sourceState": {
-    "repositoryCommit": "1b8d60e46558134fa5d2fa06cfd2b7ffa9d1b01b",
+    "repositoryCommit": "b8ee1157e5e0c4a95d091181c277d168367caf4c",
     "branch": "forger-digital-solutions-forgegreen-certified"
   },
   "executionStatus": "NO_MODEL_EXECUTIONS_RECORDED",

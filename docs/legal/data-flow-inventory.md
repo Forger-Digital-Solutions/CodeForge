@@ -1,5 +1,7 @@
 # CodeForge Data Flow Inventory & Retention Audit
 
+> **Status (2026-09-18):** historical Pass-1 evidence. Several technical facts below are superseded: account deletion (`DELETE /v1/account`) with artifact purge and session revocation now exists; expired sign-in artifacts and terminal publication bundles are purged automatically; the server-side PKCE verifier is sealed with AES-256-GCM; `hosted_requests` stores accounting fields only (no payload column); there is no `auth.json`, `telemetry.ts`, or logs folder. The current inventory is `docs/security/data-flow.md` and `docs/security/data-classification.md`; retention is `docs/privacy/retention-and-deletion.md`.
+
 **Audit Date**: September 10, 2026
 **Auditor**: Primary Audit Agent (Pass 1)
 **Standard**: GDPR Art. 30 (Records of Processing Activities), CCPA/CPRA Data Inventory, SOC 2 Data Classification.

@@ -21,7 +21,7 @@ CodeForge has certified a zero-cost desktop platform supporting Direct/BYOK prov
 | **Hosting** | Node.js / Fastify / HTTP Server (Containerized / Fly.io / Cloudflare / Node runtime) | Low latency, strict ESM TypeScript alignment with monorepo packages, streaming SSE compatibility. |
 | **Gateway** | Native TypeScript AI Gateway with Upstream Multi-Provider Routing | Eliminates external gateway dependencies, integrates server-side ForgeZero natively, unifies token/cost reconciliation. |
 | **Billing** | Stripe Billing (Test Mode Only) Subscriptions, Checkout Sessions & Webhooks | Server-authoritative idempotency, webhook signature verification, automatic portal lifecycle management. |
-| **Secrets** | Envelope Encryption & OS Secure Storage (DPAPI/safeStorage on Desktop, KMS/Env on Cloud) | Zero plaintext secrets in database or client bundles; renderer credential isolation. |
+| **Secrets** | Envelope encryption and OS secure storage (DPAPI/safeStorage on Desktop; versioned server-side environment key ring on Cloud) | Reversible Cloud secrets are sealed before database storage; local renderer credential isolation. The Cloud key ring is not a managed KMS; the crypto interface preserves a future KMS integration seam. |
 | **Observability** | Structured JSON Logs with Request Correlation IDs & Metrics Aggregator | No prompt or source code logging; high cardinality token and cost attribution. |
 | **Rate Limiting** | Server-Authoritative Token Bucket + Concurrency & Global Spend Kill-Switch | Strict budget controls, fail-closed concurrency caps, prevention of runaway provider billing. |
 

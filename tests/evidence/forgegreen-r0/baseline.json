@@ -1,6 +1,6 @@
 {
   "schema": "codeforge-forgegreen-r0-baseline-v1",
-  "generatedAt": "2026-09-16T03:03:11.856Z",
+  "generatedAt": "2026-09-18T20:44:02.050Z",
   "deterministicReplay": true,
   "liveInference": false,
   "paidInference": false,
@@ -106,7 +106,7 @@
           "origin": "RUNTIME"
         },
         "toolDurationMs": {
-          "value": 3,
+          "value": 4,
           "source": "OBSERVED",
           "origin": "RUNTIME"
         },
@@ -155,17 +155,17 @@
       },
       "context": {
         "initialContextBytes": {
-          "value": 1285,
+          "value": 2129,
           "source": "OBSERVED",
           "origin": "RUNTIME"
         },
         "modelContextBytes": {
-          "value": 2686,
+          "value": 4374,
           "source": "OBSERVED",
           "origin": "RUNTIME"
         },
         "stablePromptBytes": {
-          "value": 2044,
+          "value": 3732,
           "source": "OBSERVED",
           "origin": "RUNTIME"
         },
@@ -209,12 +209,12 @@
         "failureCodes": []
       },
       "wallTimeMs": {
-        "value": 556,
+        "value": 393,
         "source": "OBSERVED",
         "origin": "RUNTIME"
       },
       "forgeGreenOverheadMs": {
-        "value": 0.884600000000205,
+        "value": 0.6136999999999944,
         "source": "OBSERVED",
         "origin": "LOCAL"
       },
@@ -377,17 +377,17 @@
       },
       "context": {
         "initialContextBytes": {
-          "value": 1566,
+          "value": 2410,
           "source": "OBSERVED",
           "origin": "RUNTIME"
         },
         "modelContextBytes": {
-          "value": 3868,
+          "value": 5556,
           "source": "OBSERVED",
           "origin": "RUNTIME"
         },
         "stablePromptBytes": {
-          "value": 2044,
+          "value": 3732,
           "source": "OBSERVED",
           "origin": "RUNTIME"
         },
@@ -431,12 +431,12 @@
         "failureCodes": []
       },
       "wallTimeMs": {
-        "value": 491,
+        "value": 320,
         "source": "OBSERVED",
         "origin": "RUNTIME"
       },
       "forgeGreenOverheadMs": {
-        "value": 0.11689999999975953,
+        "value": 0.09080000000017208,
         "source": "OBSERVED",
         "origin": "LOCAL"
       },
@@ -550,7 +550,7 @@
           "origin": "RUNTIME"
         },
         "toolDurationMs": {
-          "value": 317,
+          "value": 202,
           "source": "OBSERVED",
           "origin": "RUNTIME"
         },
@@ -635,17 +635,17 @@
       },
       "context": {
         "initialContextBytes": {
-          "value": 1581,
+          "value": 2425,
           "source": "OBSERVED",
           "origin": "RUNTIME"
         },
         "modelContextBytes": {
-          "value": 11634,
+          "value": 16698,
           "source": "OBSERVED",
           "origin": "RUNTIME"
         },
         "stablePromptBytes": {
-          "value": 6132,
+          "value": 11196,
           "source": "OBSERVED",
           "origin": "RUNTIME"
         },
@@ -689,12 +689,12 @@
         "failureCodes": []
       },
       "wallTimeMs": {
-        "value": 804,
+        "value": 525,
         "source": "OBSERVED",
         "origin": "RUNTIME"
       },
       "forgeGreenOverheadMs": {
-        "value": 0.19669999999905485,
+        "value": 0.2065999999988435,
         "source": "OBSERVED",
         "origin": "LOCAL"
       },

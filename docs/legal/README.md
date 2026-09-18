@@ -68,6 +68,14 @@ The CodeForge legal readiness audit is conducted through an independent, multi-t
 
 ---
 
+### F. Security / Legal / Trust R1 additions (2026-09-18)
+- [`subprocessor-list.md`](./subprocessor-list.md) — Sub-processors and service providers generated from the deployed architecture, in three tiers (production infrastructure, hosted-route model providers, optional BYOK destinations).
+- [`ai-and-third-party-model-disclosure.md`](./ai-and-third-party-model-disclosure.md) — Plain-language disclosure of what is sent to AI providers, per route family, and what CodeForge does and does not promise about their retention.
+- [`data-processing-addendum-draft.md`](./data-processing-addendum-draft.md) — Processor-agreement draft with the implemented security measures as Annex II (counsel review required).
+- [`OWNER-LEGAL-INPUTS.md`](./OWNER-LEGAL-INPUTS.md) — The only remaining facts and decisions the owner/counsel must supply; every placeholder used in the drafts is indexed there.
+- Privacy documentation now lives in [`docs/privacy/`](../privacy/data-inventory.md) (data inventory, retention and deletion, third-party processing, privacy-rights workflow, cookies and tracking) and the engineering source of truth in [`docs/security/`](../security/README.md).
+- The Pass-3 proposed drafts for the Privacy Policy, Security Disclosure Policy, Terms of Service, Acceptable Use Policy, and Subscription Terms were reconciled with the implemented architecture on 2026-09-18 (see the header comment in each). The Pass-1 registers in sections A–D remain historical evidence; where a technical fact differs, `docs/security/data-flow.md` and `docs/security/data-classification.md` are current.
+
 ## 3. Governance & Usage Notes
 
 1. **Unresolved Decision Markers**: All policy drafts retain explicit markers (`[BUSINESS DECISION REQUIRED]`, `[ATTORNEY REVIEW REQUIRED]`, `[MINIMUM AGE / PROVIDER FLOW-DOWN DECISION REQUIRED]`). These must not be removed until project leadership and counsel formally establish the governing terms.

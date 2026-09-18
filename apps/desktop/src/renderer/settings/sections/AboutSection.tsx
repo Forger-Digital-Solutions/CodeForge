@@ -4,6 +4,8 @@ import { SettingsGroup, SettingsRow, SettingsButton, StatusBadge } from "../sett
 
 const REPO_URL = "https://github.com/Forger-Digital-Solutions/CodeForge";
 const DOCS_URL = "https://github.com/Forger-Digital-Solutions/CodeForge#readme";
+const SECURITY_URL = "https://github.com/Forger-Digital-Solutions/CodeForge/blob/master/SECURITY.md";
+const DATA_FLOW_URL = "https://github.com/Forger-Digital-Solutions/CodeForge/blob/master/docs/security/data-flow.md";
 
 export function AboutSection(): React.ReactElement {
   const ctx = useSettings();
@@ -46,8 +48,18 @@ export function AboutSection(): React.ReactElement {
           control={<SettingsButton onClick={() => ctx.openExternal(REPO_URL)}>Open</SettingsButton>}
         />
         <SettingsRow
+          title="Security & privacy"
+          description="How credentials are stored, what leaves this computer, and how to report a vulnerability."
+          control={<SettingsButton onClick={() => ctx.openExternal(SECURITY_URL)}>Security policy</SettingsButton>}
+        />
+        <SettingsRow
+          title="Where your code goes"
+          description="Prompts and selected code context go to the model provider serving the route; repositories stay on this computer unless you publish."
+          control={<SettingsButton onClick={() => ctx.openExternal(DATA_FLOW_URL)}>Data flow</SettingsButton>}
+        />
+        <SettingsRow
           title="License"
-          description="MIT License. Third-party notices are included with the distribution and in the source repository."
+          description="MIT is the declared license type; the operative license file is pending the project owner's authorization. Third-party notices are included with the distribution and in the source repository."
         />
       </SettingsGroup>
     </div>

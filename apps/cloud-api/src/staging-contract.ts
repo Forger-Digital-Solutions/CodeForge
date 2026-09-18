@@ -67,6 +67,17 @@ export const STAGING_CONFIG_CONTRACT: readonly StagingConfigVariable[] = [
     example: "<32+ random characters>",
   },
 
+  // --- Data encryption (Security R1) ----------------------------------------------------------
+  {
+    name: "CODEFORGE_DATA_ENCRYPTION_KEYS",
+    requirement: "required",
+    secret: true,
+    description: "Versioned key-encryption-key ring for secrets sealed at rest (AES-256-GCM envelopes). 32 random bytes (base64) per version; boot fails without it in staging/production.",
+    example: "1:<base64 32 bytes>",
+  },
+  { name: "CODEFORGE_DATA_ENCRYPTION_ACTIVE_KEY", requirement: "optional", secret: false, description: "Key version new envelopes are sealed with (defaults to the highest version).", example: "1" },
+  { name: "CODEFORGE_SECURITY_CONTACT", requirement: "optional", secret: false, description: "RFC 9116 security contact (mailto: or https://). When unset, /.well-known/security.txt is not served.", example: "mailto:security@example.org" },
+
   // --- GitHub OAuth (server-owned confidential client) ----------------------------------------
   { name: "GITHUB_CLIENT_ID", requirement: "required", secret: false, description: "GitHub OAuth App client id.", example: "Iv1.xxxxxxxxxxxxxxxx" },
   {

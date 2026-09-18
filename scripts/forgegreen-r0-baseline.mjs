@@ -12,6 +12,10 @@ import {
 } from "@codeforge/forge-green";
 import { createAgentRuntime } from "@codeforge/server";
 
+// This deterministic, offline harness owns its scripted adapter. Keep the opt-in process-local so
+// ForgeZero's production provider isolation remains the default everywhere else.
+process.env.CODEFORGE_ALLOW_TEST_PROVIDERS = "1";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const evidenceDir = path.join(root, "tests", "evidence", "forgegreen-r0");
 const providerId = "forgegreen-r0-scripted";
