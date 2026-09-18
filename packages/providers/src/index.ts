@@ -437,6 +437,7 @@ export {
   createOpenAIAdapter,
   createAlibabaAdapter,
   createDeepSeekAdapter,
+  createOllamaCloudAdapter,
   createProviderAdapterById,
   createProviderAdapterFromDefinition,
   configFieldKey,

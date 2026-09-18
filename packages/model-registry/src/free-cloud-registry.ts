@@ -29,7 +29,7 @@ import type { NormalizedModelRegistry } from "./registry.js";
  * so diagnostics can show exactly why a route is not in ForgeAuto/Free.
  */
 
-export type CredentialSource = "OAUTH" | "DEVICE_CODE" | "ENVIRONMENT" | "SECURE_STORAGE" | "MANUAL_BYOK" | "FDS_GATEWAY" | "NONE";
+export type CredentialSource = "OAUTH" | "DEVICE_CODE" | "USER_CONNECTED_FREE_API_KEY" | "ENVIRONMENT" | "SECURE_STORAGE" | "MANUAL_BYOK" | "FDS_GATEWAY" | "NONE";
 export type FreePolicyState = "ALLOW" | "DENY" | "UNKNOWN";
 
 export interface ProviderConnectionState {
@@ -51,6 +51,22 @@ export interface ProviderConnectionState {
   lastCatalogRefreshAt?: string;
   /** For not-connected providers: the lowest-friction way CodeForge can connect it right now. */
   connectOffer?: { authClass: AuthClass; label: string; environmentVariable?: string; planAttestation?: boolean };
+  /** Sanitized metadata for a user-owned Free Cloud connection; never a credential. */
+  userConnectedFree?: {
+    featureFlag: string;
+    supplyClass: "USER_CONNECTED_FREE";
+    status: "DISCONNECTED" | "VALIDATING" | "CONNECTED" | "REAUTH_REQUIRED" | "AT_RISK" | "EXHAUSTED";
+    capacityScope: "USER_ACCOUNT";
+    capacityPoolId?: string;
+    capacityIdentity?: string;
+    freeOnly: true;
+    concurrencyLimit: 1;
+    starterModelCount: number;
+    includedUsageRemainingUsd?: number;
+    includedUsageResetAt?: string;
+    capacityConfidence: "HIGH" | "LIMITED" | "UNKNOWN";
+    termsStatus: "USER_CONNECTED_FREE_ALLOWED" | "USER_CONNECTED_FREE_PERMISSION_REQUIRED" | "USER_CONNECTED_FREE_TERMS_BLOCKED";
+  };
 }
 
 export type AdmissionGate =
@@ -238,6 +254,7 @@ function routeKey(providerId: string, modelId: string): string {
 function bestAuthClass(def: ProviderDefinition | undefined, conn: ProviderConnectionState | undefined): AuthClass {
   if (conn?.connected) {
     if (conn.credentialSource === "OAUTH") return "OAUTH_PKCE";
+    if (conn.credentialSource === "USER_CONNECTED_FREE_API_KEY") return "ASSISTED_KEY";
     if (conn.credentialSource === "FDS_GATEWAY") return "ZERO_TOUCH";
     if (conn.credentialSource === "ENVIRONMENT") return "ENVIRONMENT_CREDENTIAL";
     return "ASSISTED_KEY";

@@ -35,7 +35,7 @@ export class CapacityReservationLedger {
 
   reserve(request: CapacityReservationRequest): CapacityReservationDecision {
     this.recoverExpired();
-    if (request.requests < 1 || request.inputTokens < 0 || request.outputTokens < 0 || request.routeIds.length === 0) {
+    if (request.requests < 1 || request.inputTokens < 0 || request.outputTokens < 0 || (request.credits ?? 0) < 0 || (request.providerUnits ?? 0) < 0 || request.routeIds.length === 0) {
       return { admitted: false, reservationId: request.reservationId, reason: "INVALID_REQUEST" };
     }
     const activeForUser = [...this.reservations.values()].filter((item) => item.request.userId === request.userId).length;
@@ -60,10 +60,13 @@ export class CapacityReservationLedger {
       const activeRequests = active.reduce((sum, item) => sum + item.request.requests, 0);
       const activeInputTokens = active.reduce((sum, item) => sum + item.request.inputTokens, 0);
       const activeOutputTokens = active.reduce((sum, item) => sum + item.request.outputTokens, 0);
+      const activeCredits = active.reduce((sum, item) => sum + (item.request.credits ?? 0), 0);
+      const activeProviderUnits = active.reduce((sum, item) => sum + (item.request.providerUnits ?? 0), 0);
       const physicalRoute = this.pools.get(route.capacityPoolId);
       if (physicalRoute && (physicalRoute.providerId !== route.providerId
         || physicalRoute.scope !== route.capacityPoolScope
-        || physicalRoute.supplyClass !== route.supplyClass)) {
+        || physicalRoute.supplyClass !== route.supplyClass
+        || (physicalRoute.capacityIdentity !== undefined && route.capacityIdentity !== undefined && physicalRoute.capacityIdentity !== route.capacityIdentity))) {
         continue;
       }
       sawUsablePool = true;
@@ -72,24 +75,36 @@ export class CapacityReservationLedger {
       const inputWindows = windows.filter((window) => window.unit === "input_tokens");
       const outputWindows = windows.filter((window) => window.unit === "output_tokens");
       const concurrencyWindows = windows.filter((window) => window.unit === "concurrency");
+      const creditWindows = windows.filter((window) => window.unit === "credits");
+      const providerUnitWindows = windows.filter((window) => window.unit === "provider_units");
+      // A credit window is the authoritative accounting dimension for
+      // user-connected Free pools; absent token/request headers should not
+      // turn an otherwise admitted credit reservation into a false denial.
+      const hasCreditAccounting = creditWindows.length > 0;
       const inputRemaining = inputWindows.length === 0
-        ? 0
+        ? (hasCreditAccounting ? Number.MAX_SAFE_INTEGER : 0)
         : Math.min(...inputWindows.map((window) => window.remaining));
       // A provider that reports one undifferentiated token window can still serve output; use
       // the input window as the conservative shared ceiling until a separate output header exists.
       const outputRemaining = outputWindows.length === 0 ? inputRemaining : Math.min(...outputWindows.map((window) => window.remaining));
       const concurrencyRemaining = concurrencyWindows.length === 0 ? undefined : Math.min(...concurrencyWindows.map((window) => window.remaining));
-      const requestRemaining = requestWindow?.remaining ?? 0;
+      const requestRemaining = requestWindow?.remaining ?? (hasCreditAccounting ? Number.MAX_SAFE_INTEGER : 0);
+      const creditRemaining = creditWindows.length === 0 ? undefined : Math.min(...creditWindows.map((window) => window.remaining));
+      const providerUnitsRemaining = providerUnitWindows.length === 0 ? undefined : Math.min(...providerUnitWindows.map((window) => window.remaining));
       const reservedFloorRequests = request.isNewUser ? 0 : this.firstRunReserveRequests;
       const reservedFloorTokens = request.isNewUser ? 0 : this.firstRunReserveTokens;
       const availableRequests = requestRemaining - activeRequests - reservedFloorRequests;
       const availableInputTokens = inputRemaining - activeInputTokens - reservedFloorTokens;
       const availableOutputTokens = outputRemaining - activeOutputTokens - reservedFloorTokens;
       const availableConcurrency = concurrencyRemaining === undefined ? undefined : concurrencyRemaining - active.length;
+      const availableCredits = creditRemaining === undefined ? undefined : creditRemaining - activeCredits;
+      const availableProviderUnits = providerUnitsRemaining === undefined ? undefined : providerUnitsRemaining - activeProviderUnits;
       if (request.requests <= availableRequests
         && request.inputTokens <= availableInputTokens
         && request.outputTokens <= availableOutputTokens
-        && (availableConcurrency === undefined || availableConcurrency >= 1)) {
+        && (availableConcurrency === undefined || availableConcurrency >= 1)
+        && (availableCredits === undefined || (request.credits ?? 0) <= availableCredits)
+        && (availableProviderUnits === undefined || (request.providerUnits ?? 0) <= availableProviderUnits)) {
         this.reservations.set(request.reservationId, { request, routeId, admittedAt: nowIso(this.clock) });
         return { admitted: true, reservationId: request.reservationId, routeId, reason: "ADMITTED" };
       }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { OpenAICompatibleAdapter } from "../src/openai-compatible.js";
-import { createCerebrasAdapter, createCloudflareAdapter, createGroqAdapter, createMistralAdapter, createProviderAdapterById, createZaiAdapter } from "../src/provider-factory.js";
+import { createCerebrasAdapter, createCloudflareAdapter, createGroqAdapter, createMistralAdapter, createOllamaCloudAdapter, createProviderAdapterById, createZaiAdapter } from "../src/provider-factory.js";
 import type { StreamEvent } from "../src/chat-types.js";
 
 function jsonResponse(body: unknown, status = 200, headers: Record<string, string> = {}): Response {
@@ -132,6 +132,28 @@ describe("OpenAICompatibleAdapter transport", () => {
   it("creates Mistral and Cerebras adapters through the provider-id factory", () => {
     expect(createProviderAdapterById("mistral", { apiKey: "k" })?.providerId).toBe("mistral");
     expect(createProviderAdapterById("cerebras", { apiKey: "k" })?.providerId).toBe("cerebras");
+  });
+
+  it("uses direct Ollama Cloud only, authenticates with a bearer key, and discovers models", async () => {
+    let url = "";
+    let headers: Record<string, string> | undefined;
+    const adapter = createOllamaCloudAdapter({
+      apiKey: "ollama-secret",
+      fetchFn: (async (u: string, init: RequestInit) => {
+        url = u;
+        headers = init.headers as Record<string, string>;
+        return jsonResponse({ data: [{ id: "gpt-oss:120b" }, { id: "embeddinggemma" }] });
+      }) as unknown as typeof fetch,
+    });
+    const models = await adapter.listModels();
+    expect(url).toBe("https://ollama.com/v1/models");
+    expect(url).not.toContain("localhost:11434");
+    expect(headers?.Authorization).toBe("Bearer ollama-secret");
+    expect(models.map((m) => m.modelId)).toEqual(["gpt-oss:120b"]);
+  });
+
+  it("maps Ollama Cloud through the provider-id factory", () => {
+    expect(createProviderAdapterById("ollama-cloud", { apiKey: "k" })?.providerId).toBe("ollama-cloud");
   });
 
   it("Cloudflare adapter interpolates ${CLOUDFLARE_ACCOUNT_ID} into the base URL", async () => {

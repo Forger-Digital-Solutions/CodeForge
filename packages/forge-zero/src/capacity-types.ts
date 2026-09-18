@@ -7,6 +7,7 @@ import type { PrivacyClass } from "./types.js";
  */
 export type SupplyClass =
   | "PURE_MANAGED_FREE"
+  | "USER_CONNECTED_FREE"
   | "DISTRIBUTED_USER_FREE"
   | "DEPOSIT_UNLOCKED_FREE"
   | "PROMOTIONAL_FREE"
@@ -55,6 +56,7 @@ export type CapacityScope =
   | "SOURCE_IP"
   | "INSTALLATION"
   | "DEVICE"
+  | "USER_ACCOUNT"
   | "PROMO_ACCOUNT"
   | "SPONSORED"
   | "UNKNOWN";
@@ -83,6 +85,8 @@ export interface ProviderCapacityPool {
   windows: readonly CapacityWindow[];
   observedAt: string;
   authoritative: boolean;
+  /** Stable, non-secret identity for the physical account that owns this pool. */
+  capacityIdentity?: string;
 }
 
 export interface CapacityRoute {
@@ -100,6 +104,8 @@ export interface CapacityRoute {
   dataPolicyProfile: DataPolicyProfile;
   lifecycle: FreeProviderLifecycle;
   explicitZeroPrice: boolean;
+  /** For token-priced user accounts, true only after included-only admission is proven. */
+  freeOnlyAdmissionProven?: boolean;
   /** ForgeAuto/Free must never turn a failed $0 call into a billable request. */
   paidFallbackDisabled: boolean;
   /** Managed use must be contractually cleared; owner-only routes leave this false. */
@@ -110,6 +116,8 @@ export interface CapacityRoute {
   healthy: boolean;
   enabled: boolean;
   windows: readonly CapacityWindow[];
+  /** Stable, non-secret identity for the physical account that owns this route. */
+  capacityIdentity?: string;
 }
 
 export interface TaskDemandProfile {
@@ -148,6 +156,8 @@ export interface CapacityReservationRequest {
   requests: number;
   inputTokens: number;
   outputTokens: number;
+  credits?: number;
+  providerUnits?: number;
   isNewUser: boolean;
   priority: "first_run" | "normal" | "recovery";
   createdAt: string;

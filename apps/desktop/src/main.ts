@@ -36,7 +36,7 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
 }
 
 import { CodeForgeServer, type CodeForgeRuntimeStatus } from "@codeforge/server";
-import { ForgeZero, createGenericFreeRecord, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
+import { ForgeZero, createGenericFreeRecord, hashUserAccountIdentity, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider, createProviderAdapterFromDefinition, HostedProviderAdapter, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent, type ProviderResponseObservation } from "@codeforge/providers";
 import { createPaidAutoService } from "@codeforge/paid-auto";
 import {
@@ -201,6 +201,7 @@ const ROUTABLE_PROVIDER_IDS: readonly string[] = Object.values(PROVIDER_DEFINITI
 const ALLOWED_PROVIDER_IDS = new Set<string>([...ROUTABLE_PROVIDER_IDS, "cloudflare-account-id"]);
 function isAllowedCredentialKey(key: string): boolean {
   if (ALLOWED_PROVIDER_IDS.has(key)) return true;
+  if (/^ollama-cloud:user:[a-f0-9]{24}$/.test(key)) return true;
   const idx = key.indexOf(":");
   if (idx <= 0) return false;
   const providerId = key.slice(0, idx);
@@ -211,6 +212,7 @@ function isAllowedCredentialKey(key: string): boolean {
 const MAX_API_KEY_LENGTH = 512;
 const SETTINGS_FILE = "settings.json";
 const PACKAGED_SMOKE = process.env.CODEFORGE_PACKAGED_SMOKE === "1";
+const OLLAMA_USER_CONNECTED_FREE_ENABLED = process.env.CODEFORGE_OLLAMA_USER_CONNECTED_FREE === "1";
 /** Legacy developer/extension preference; desktop instances bind to an OS-assigned port. */
 const LOCAL_SERVER_PREFERRED_PORT = 3210;
 let localServerPort = 0;
@@ -506,7 +508,8 @@ function setProviderCredential(providerId: string, apiKey: string): void {
       ? { ...(raw as Record<string, string>) }
       : {};
   // Use Object prototype-safe assignment
-  Object.defineProperty(credentials, providerId, {
+  const storageKey = providerId === "ollama-cloud" ? `ollama-cloud:user:${hashUserAccountIdentity(userConnectedFreeScopeId())}` : providerId;
+  Object.defineProperty(credentials, storageKey, {
     value: encryptCredential(apiKey),
     writable: true,
     enumerable: true,
@@ -522,7 +525,8 @@ function deleteProviderCredential(providerId: string): void {
   const raw = settings[PROVIDER_CREDENTIALS_KEY];
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return;
   const credentials = { ...(raw as Record<string, string>) };
-  delete credentials[providerId];
+  const storageKey = providerId === "ollama-cloud" ? `ollama-cloud:user:${hashUserAccountIdentity(userConnectedFreeScopeId())}` : providerId;
+  delete credentials[storageKey];
   settings[PROVIDER_CREDENTIALS_KEY] = credentials;
   writeSettingsAtomic(settings);
 }
@@ -782,6 +786,15 @@ function clearCloudTokens(): void {
   delete settings[CLOUD_REFRESH_TOKEN_KEY];
   delete settings[CLOUD_USER_KEY];
   writeSettingsAtomic(settings);
+}
+
+function userConnectedFreeScopeId(): string {
+  const user = getStoredCloudTokens().user;
+  if (user && typeof user === "object") {
+    const candidate = (user as Record<string, unknown>).id ?? (user as Record<string, unknown>).userId ?? (user as Record<string, unknown>).login;
+    if (typeof candidate === "string" && candidate.trim().length > 0) return candidate.trim();
+  }
+  return `desktop-profile:${app.getPath("userData")}`;
 }
 
 function createCloudAdapter(): HostedProviderAdapter {
@@ -1068,6 +1081,8 @@ function createProviderConnectionsHost(): ProviderConnectionsHost {
     providerAuthState: (providerId) => providerAuthState.get(providerId),
     onResponse: (obs: ProviderResponseObservation) => freeCloud?.onProviderResponse(obs),
     maxSecretLength: MAX_API_KEY_LENGTH,
+    userId: userConnectedFreeScopeId(),
+    ollamaUserConnectedFreeEnabled: OLLAMA_USER_CONNECTED_FREE_ENABLED,
     notifyChanged: notifyProviderChanged,
   };
 }

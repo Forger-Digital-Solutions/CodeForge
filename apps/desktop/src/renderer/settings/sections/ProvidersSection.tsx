@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useSettings } from "../settings-context.js";
 import { CfSelect, SettingsButton, SettingsGroup, SettingsRow, StatusBadge, Toggle } from "../settings-controls.js";
 import { AddProviderFlow } from "../../AddProviderFlow.js";
+import { OllamaUserConnectedFreePanel } from "../../OllamaUserConnectedFreePanel.js";
 import {
   attestFreePlan,
   connectOpenRouterOAuth,
@@ -49,6 +50,8 @@ function sourceLabel(c: ProviderConnectionView): string {
     case "MANUAL_BYOK":
     case "SECURE_STORAGE":
       return "Secure key · user provided";
+    case "USER_CONNECTED_FREE_API_KEY":
+      return "Secure key · your Ollama Free account";
     default:
       return "Not connected";
   }
@@ -151,6 +154,8 @@ export function ProvidersSection(props: ProvidersSectionProps = {}): React.React
           control={<StatusBadge kind={summary && summary.healthyFreeRoutes > 0 ? "ok" : summary?.qualifying ? "info" : "warn"}>{summary && summary.healthyFreeRoutes > 0 ? "Ready" : summary?.qualifying ? "Qualifying…" : "No free route"}</StatusBadge>}
         />
       </SettingsGroup>
+
+      <OllamaUserConnectedFreePanel connection={connections.find((c) => c.providerId === "ollama-cloud")} onChanged={() => void live.reload()} />
 
       <SettingsGroup title={`Detected environment credentials (${detected.length})`}>
         <SettingsRow

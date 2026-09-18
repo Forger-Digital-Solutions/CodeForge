@@ -97,7 +97,7 @@ export function forecastCapacity(input: CapacityForecastInput): CapacityForecast
       continue;
     }
     const pool = suppliedPools.get(route.capacityPoolId);
-    if (pool && (pool.providerId !== route.providerId || pool.scope !== route.capacityPoolScope || pool.supplyClass !== route.supplyClass)) {
+    if (pool && (pool.providerId !== route.providerId || pool.scope !== route.capacityPoolScope || pool.supplyClass !== route.supplyClass || (pool.capacityIdentity !== undefined && route.capacityIdentity !== undefined && pool.capacityIdentity !== route.capacityIdentity))) {
       routeCapacity.set(route.routeId, {
         routeId: route.routeId,
         eligible: false,

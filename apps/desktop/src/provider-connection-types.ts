@@ -63,6 +63,26 @@ export interface ProviderConnectionView {
   catalogCount: number;
   paidOnly: boolean;
   zeroCashFreeAccess: boolean;
+  userConnectedFree?: {
+    featureFlag: string;
+    supplyClass: "USER_CONNECTED_FREE";
+    authTypes: readonly string[];
+    freeOnlyDefault: true;
+    capacityScope: "USER_ACCOUNT";
+    concurrencyLimit: 1;
+    starterModels: readonly string[];
+    signupUrl: string;
+    apiKeysUrl: string;
+    usageUrl: string;
+    termsClassification: "USER_CONNECTED_FREE_ALLOWED" | "USER_CONNECTED_FREE_PERMISSION_REQUIRED" | "USER_CONNECTED_FREE_TERMS_BLOCKED";
+    enabled: boolean;
+    status: "DISCONNECTED" | "VALIDATING" | "CONNECTED" | "REAUTH_REQUIRED" | "AT_RISK" | "EXHAUSTED";
+    capacityPoolId?: string;
+    capacityIdentity?: string;
+    capacityConfidence: "HIGH" | "LIMITED" | "UNKNOWN";
+    includedUsageRemainingUsd?: number;
+    includedUsageResetAt?: string;
+  };
   /** Sorting bucket (R1 §180): 0 connected · 1 detected env · 2 one-click · 3 recommended · 4 other. */
   sortRank: number;
 }

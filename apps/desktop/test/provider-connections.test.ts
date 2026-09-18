@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ForgeZero } from "@codeforge/forge-zero";
+import { ForgeZero, hashUserAccountIdentity } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, type ProviderModel } from "@codeforge/providers";
 import { NormalizedModelRegistry, createFreeCloudService } from "@codeforge/model-registry";
 import { ENV_CREDENTIALS_KEY, ProviderConnections, type ProviderConnectionsHost } from "../src/provider-connections.js";
@@ -27,7 +27,7 @@ function harness(env: Record<string, string | undefined>, fetchModels?: (provide
   const discovered: string[] = [];
   const fetchFn: typeof fetch = async (input) => {
     const url = String(input);
-    const providerId = url.includes("groq") ? "groq" : url.includes("openai.com") ? "openai" : url.includes("openrouter") ? "openrouter" : "unknown";
+    const providerId = url.includes("groq") ? "groq" : url.includes("openai.com") ? "openai" : url.includes("openrouter") ? "openrouter" : url.includes("ollama.com") ? "ollama-cloud" : "unknown";
     const models = fetchModels?.(providerId) ?? [];
     if (providerId === "unknown") return new Response("not found", { status: 404 });
     const raw = models.map((m) => ({ id: m.modelId, name: m.displayName, context_length: m.contextWindow, pricing: m.isFree ? { prompt: "0", completion: "0" } : { prompt: "1", completion: "1" } }));
@@ -55,6 +55,8 @@ function harness(env: Record<string, string | undefined>, fetchModels?: (provide
     },
     providerAuthState: () => "ok",
     maxSecretLength: 512,
+    userId: "user-a",
+    ollamaUserConnectedFreeEnabled: true,
   };
   const connections = new ProviderConnections(host);
   // Restore fetch lazily on process exit; tests only read within this module.
@@ -191,5 +193,20 @@ describe("ProviderConnections — ZCode-style connect", () => {
     expect(withEnv.connections.firstRunOffer()).toMatchObject({ kind: "environment", providerId: "groq", variable: "GROQ_API_KEY" });
     const empty = harness({});
     expect(empty.connections.firstRunOffer()).toMatchObject({ kind: "oauth", providerId: "openrouter" });
+  });
+
+  it("scopes the Ollama user-connected credential and exposes only sanitized Free metadata", async () => {
+    const h = harness({}, () => [{ modelId: "gpt-oss:120b", displayName: "GPT-OSS 120B", capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true }, isFree: false, freeStatus: "unknown" }]);
+    const secret = "ollama_user_key_0123456789abcdef";
+    const result = await h.connections.connect("ollama-cloud", { apiKey: secret });
+    expect(result.ok).toBe(true);
+    expect(h.secrets.get(`ollama-cloud:user:${hashUserAccountIdentity("user-a")}`)).toBe(secret);
+    expect(h.secrets.get("ollama-cloud")).toBeUndefined();
+    expect(h.connections.listConnections().find((c) => c.providerId === "ollama-cloud")?.credentialSource).toBe("USER_CONNECTED_FREE_API_KEY");
+    const serialized = JSON.stringify(h.connections.listConnections());
+    expect(serialized).not.toContain(secret);
+    expect(serialized).toContain("USER_CONNECTED_FREE");
+    await h.connections.disconnect("ollama-cloud");
+    expect(h.secrets.size).toBe(0);
   });
 });

@@ -100,6 +100,20 @@ export type ProviderApiStyle =
 
 export type ProviderDefinitionKind = "direct" | "gateway" | "fds-gateway" | "bundled";
 
+export interface UserConnectedFreeProfile {
+  featureFlag: string;
+  supplyClass: "USER_CONNECTED_FREE";
+  authTypes: readonly ["API_KEY"] | readonly ["API_KEY", "OAUTH"] | readonly ["API_KEY", "DEVICE_AUTH"];
+  freeOnlyDefault: true;
+  capacityScope: "USER_ACCOUNT";
+  concurrencyLimit: 1;
+  starterModels: readonly string[];
+  signupUrl: string;
+  apiKeysUrl: string;
+  usageUrl: string;
+  termsClassification: "USER_CONNECTED_FREE_ALLOWED" | "USER_CONNECTED_FREE_PERMISSION_REQUIRED" | "USER_CONNECTED_FREE_TERMS_BLOCKED";
+}
+
 export interface FreeAccessProfile {
   class: FreeAccessClass;
   /** Human-readable quota description ("10,000 neurons/day", "50 requests/day for :free"). */
@@ -153,6 +167,8 @@ export interface ProviderDefinition {
   hasTrial?: boolean;
   /** Providers discovered from Models.dev with no hand-written definition (generic OpenAI-compatible). */
   discovered?: boolean;
+  /** An opt-in, user-owned Free Cloud connection. It is not managed/shared capacity. */
+  userConnectedFree?: UserConnectedFreeProfile;
 }
 
 const CHECKED = "2026-09-15";
@@ -410,7 +426,7 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
     kind: "direct",
     apiStyle: "openai-compatible",
     baseUrl: "https://ollama.com/v1",
-    authClasses: ["ENVIRONMENT_CREDENTIAL", "ASSISTED_KEY"],
+    authClasses: ["ASSISTED_KEY", "ENVIRONMENT_CREDENTIAL"],
     connection: { fields: [apiKeyField(["OLLAMA_API_KEY"])] },
     discoverySources: ["live-catalog"],
     freeAccess: {
@@ -431,6 +447,19 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
       free_or_paid_class: "UNKNOWN",
       policy_revision: "ollama-cloud-pricing/2026-09",
       official_terms_url: "https://ollama.com/terms",
+    },
+    userConnectedFree: {
+      featureFlag: "ollamaUserConnectedFree",
+      supplyClass: "USER_CONNECTED_FREE",
+      authTypes: ["API_KEY"],
+      freeOnlyDefault: true,
+      capacityScope: "USER_ACCOUNT",
+      concurrencyLimit: 1,
+      starterModels: ["gemma4", "gpt-oss:120b", "gpt-oss:20b", "nemotron-3-nano", "nemotron-3-super", "nemotron-3-ultra"],
+      signupUrl: "https://ollama.com/signup",
+      apiKeysUrl: "https://ollama.com/settings/keys",
+      usageUrl: "https://ollama.com/settings/usage",
+      termsClassification: "USER_CONNECTED_FREE_PERMISSION_REQUIRED",
     },
     recommendedForFreeDefault: false,
     implemented: true,

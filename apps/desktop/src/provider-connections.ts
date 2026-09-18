@@ -1,6 +1,6 @@
 import type { CredentialStore, ProviderAdapter, ProviderModel, ProviderCatalog, ProviderResponseObserver } from "@codeforge/providers";
 import { configFieldKey, createProviderAdapterFromDefinition, InMemoryProviderCatalog } from "@codeforge/providers";
-import type { ForgeZero } from "@codeforge/forge-zero";
+import { hashUserAccountIdentity, userConnectedPoolId, type ForgeZero } from "@codeforge/forge-zero";
 import type {
   ConnectResult,
   EnvironmentCredentialView,
@@ -86,6 +86,8 @@ export interface ProviderConnectionsHost {
   notifyChanged?: () => void;
   /** Trusted server/OS-sourced Gemini identity and region. Absent means fail closed. */
   geminiPolicyContext?: () => { accountId?: string; region: RegionResolution };
+  userId?: string;
+  ollamaUserConnectedFreeEnabled?: boolean;
 }
 
 const CONNECTABLE_FIELD_RE = /^[a-zA-Z][a-zA-Z0-9_-]{0,40}$/;
@@ -128,6 +130,7 @@ export class ProviderConnections {
       freeAccess: d.freeAccess,
       privacy: d.privacy,
       terms: d.terms,
+      userConnectedFree: d.userConnectedFree,
       policyMetadata: d.policyMetadata,
       keyUrl: d.keyUrl,
       docsUrl: d.docsUrl,
@@ -269,7 +272,8 @@ export class ProviderConnections {
   resolveField(providerId: string, fieldId: string): { value: string; source: CredentialSource; variable?: string } | undefined {
     const def = this.definition(providerId);
     if (!def) return undefined;
-    const stored = fieldId === "apiKey" ? this.host.secrets.get(providerId) : this.host.secrets.get(configFieldKey(providerId, fieldId)) ?? (providerId === "cloudflare-workers-ai" && fieldId === "accountId" ? this.host.secrets.get("cloudflare-account-id") : undefined);
+    const storedKey = fieldId === "apiKey" ? this.credentialStorageKey(providerId) : configFieldKey(providerId, fieldId);
+    const stored = this.host.secrets.get(storedKey) ?? (providerId === "cloudflare-workers-ai" && fieldId === "accountId" ? this.host.secrets.get("cloudflare-account-id") : undefined);
     if (stored) return { value: stored, source: this.storedSource(providerId) };
     const envValue = this.environmentValue(def, fieldId);
     if (envValue) {
@@ -288,9 +292,15 @@ export class ProviderConnections {
     const raw = this.host.readSettings()[CREDENTIAL_SOURCES_KEY];
     if (typeof raw === "object" && raw !== null && !Array.isArray(raw)) {
       const v = (raw as Record<string, unknown>)[providerId];
-      if (v === "OAUTH" || v === "MANUAL_BYOK" || v === "SECURE_STORAGE" || v === "DEVICE_CODE") return v;
+      if (v === "OAUTH" || v === "MANUAL_BYOK" || v === "USER_CONNECTED_FREE_API_KEY" || v === "SECURE_STORAGE" || v === "DEVICE_CODE") return v;
     }
     return "SECURE_STORAGE";
+  }
+
+  private credentialStorageKey(providerId: string): string {
+    const def = this.definition(providerId);
+    if (def?.userConnectedFree && this.host.userId) return `${providerId}:user:${hashUserAccountIdentity(this.host.userId)}`;
+    return providerId;
   }
 
   private setStoredSource(providerId: string, source: CredentialSource | null): void {
@@ -448,7 +458,7 @@ export class ProviderConnections {
     for (const field of def.connection.fields) {
       const v = values[field.id];
       if (!v) continue;
-      if (field.id === "apiKey") this.host.secrets.set(def.id, v);
+      if (field.id === "apiKey") this.host.secrets.set(this.credentialStorageKey(def.id), v);
       else this.host.secrets.set(configFieldKey(def.id, field.id), v);
       if (def.id === "cloudflare-workers-ai" && field.id === "accountId") this.host.secrets.set("cloudflare-account-id", v);
     }
@@ -496,6 +506,14 @@ export class ProviderConnections {
             free = true;
             freeReason = "Free plan allocation";
           } else freeReason = "Not covered by free allocation";
+        } else if (def.userConnectedFree) {
+          const starter = def.userConnectedFree.starterModels.some((candidate) => candidate === m.modelId || candidate === m.modelId.replace(/-cloud$/, ""));
+          if (starter && this.host.ollamaUserConnectedFreeEnabled === true) {
+            free = true;
+            freeReason = "Uses your included Ollama Free allowance (Free-only)";
+          } else {
+            freeReason = starter ? "User-connected Free preview is disabled" : "Not an Ollama Free starter model";
+          }
         } else if (def.freeAccess.class === "PROMOTIONAL_CREDIT") {
           freeReason = "Promotional credit — not ForgeAuto/Free";
         } else if (def.freeAccess.class === "FREE_DEV_ENDPOINT") {
@@ -559,7 +577,7 @@ export class ProviderConnections {
         return { ok: false, error: friendlyProviderError(e) };
       }
     }
-    this.storeFields(def, values, source);
+    this.storeFields(def, values, def.userConnectedFree ? "USER_CONNECTED_FREE_API_KEY" : source);
     await this.reconcile(providerId);
     const verifiedFree = await this.host.discoverProviderFree(providerId).catch(() => 0);
     this.host.notifyChanged?.();
@@ -582,7 +600,7 @@ export class ProviderConnections {
   async disconnect(providerId: string): Promise<void> {
     const def = this.definition(providerId);
     if (!def) throw new Error("Unknown provider");
-    this.host.secrets.delete(providerId);
+    this.host.secrets.delete(this.credentialStorageKey(providerId));
     for (const field of def.connection.fields) if (field.id !== "apiKey") this.host.secrets.delete(configFieldKey(providerId, field.id));
     if (providerId === "cloudflare-workers-ai") this.host.secrets.delete("cloudflare-account-id");
     this.setStoredSource(providerId, null);
@@ -660,6 +678,21 @@ export class ProviderConnections {
       freePolicyState: geminiPolicy?.decision,
       freePolicyReason: geminiPolicy?.reasonCode,
       connectOffer: connected ? undefined : this.connectOfferFor(def),
+      ...(def.userConnectedFree ? {
+        userConnectedFree: {
+          featureFlag: def.userConnectedFree.featureFlag,
+          supplyClass: def.userConnectedFree.supplyClass,
+          status: !connected ? "DISCONNECTED" as const : auth === "auth_required" ? "REAUTH_REQUIRED" as const : "CONNECTED" as const,
+          capacityScope: def.userConnectedFree.capacityScope,
+          capacityPoolId: this.host.userId ? userConnectedPoolId(this.host.userId) : undefined,
+          capacityIdentity: this.host.userId ? hashUserAccountIdentity(this.host.userId) : undefined,
+          freeOnly: true as const,
+          concurrencyLimit: def.userConnectedFree.concurrencyLimit,
+          starterModelCount: def.userConnectedFree.starterModels.length,
+          capacityConfidence: "UNKNOWN" as const,
+          termsStatus: def.userConnectedFree.termsClassification,
+        },
+      } : {}),
     };
     this.host.freeCloud.setConnection(state);
   }
@@ -713,6 +746,16 @@ export class ProviderConnections {
         // The desktop host has no trusted dashboard usage source. Unknown is the only honest
         // renderer state until an account-scoped usage attestation is supplied.
         cloudflareBudgetStatus: def.id === "cloudflare-workers-ai" ? "unknown" : undefined,
+        userConnectedFree: def.userConnectedFree ? {
+          ...def.userConnectedFree,
+          enabled: this.host.ollamaUserConnectedFreeEnabled === true,
+          status: conn?.userConnectedFree?.status ?? "DISCONNECTED",
+          capacityPoolId: conn?.userConnectedFree?.capacityPoolId,
+          capacityIdentity: conn?.userConnectedFree?.capacityIdentity,
+          capacityConfidence: conn?.userConnectedFree?.capacityConfidence ?? "UNKNOWN",
+          includedUsageRemainingUsd: conn?.userConnectedFree?.includedUsageRemainingUsd,
+          includedUsageResetAt: conn?.userConnectedFree?.includedUsageResetAt,
+        } : undefined,
       });
     }
     return views.sort((a, b) => a.sortRank - b.sortRank || a.displayName.localeCompare(b.displayName));

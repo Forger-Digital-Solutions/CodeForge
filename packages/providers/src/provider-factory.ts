@@ -146,6 +146,16 @@ export function createDeepSeekAdapter(opts: ProviderFactoryOptions = {}): OpenAI
   });
 }
 
+/** Ollama Cloud only. The fixed remote URL is intentional: local Ollama is not Free Cloud. */
+export function createOllamaCloudAdapter(opts: ProviderFactoryOptions = {}): OpenAICompatibleAdapter {
+  return new OpenAICompatibleAdapter({
+    providerId: "ollama-cloud",
+    baseUrl: "https://ollama.com/v1",
+    ...common(opts),
+    mapModel: mapOllamaModel,
+  });
+}
+
 function common(opts: ProviderFactoryOptions): Pick<OpenAICompatibleConfig, "credentialStore" | "apiKey" | "timeoutMs" | "fetchFn" | "onResponse" | "cloudflareNeuronGuard" | "geminiFreePolicyGate" | "geminiServiceTier"> {
   return {
     credentialStore: opts.credentialStore,
@@ -223,6 +233,30 @@ function mapNormalProductionModel(raw: unknown): ProviderModel | null {
   };
 }
 
+function mapOllamaModel(raw: unknown): ProviderModel | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const model = raw as Record<string, unknown>;
+  const id = typeof model.id === "string" ? model.id : typeof model.name === "string" ? model.name : "";
+  if (!id || /embed|vision|image|audio|whisper|rerank/i.test(id)) return null;
+  const displayName = typeof model.name === "string" ? model.name : id;
+  const contextLength = typeof model.context_length === "number" ? model.context_length : undefined;
+  return {
+    modelId: id,
+    displayName,
+    contextWindow: contextLength,
+    capabilities: {
+      text: true,
+      coding: true,
+      toolCalling: true,
+      vision: /vision/i.test(id),
+      structuredOutput: true,
+      longContext: (contextLength ?? 0) >= 64_000,
+    },
+    isFree: false,
+    freeStatus: "unknown",
+  };
+}
+
 /**
  * Build a generic OpenAI-compatible adapter from a transport definition. Non-secret connection
  * fields (account ids, project ids) resolve `${ENV_NAME}` templates in the base URL from the
@@ -266,6 +300,7 @@ export function createProviderAdapterFromDefinition(def: ProviderTransportDefini
       };
       if (def.id === "google") cfg.mapModel = mapGeminiModel;
       if (def.id === "mistral" || def.id === "cerebras") cfg.mapModel = mapNormalProductionModel;
+      if (def.id === "ollama-cloud") cfg.mapModel = mapOllamaModel;
       if (def.id === "cloudflare-workers-ai") {
         cfg.mapModel = mapCloudflareModel;
         cfg.cloudflareNeuronGuard = opts.cloudflareNeuronGuard;
@@ -309,6 +344,8 @@ export function createProviderAdapterById(providerId: string, opts: ProviderFact
       return createAlibabaAdapter(opts);
     case "deepseek":
       return createDeepSeekAdapter(opts);
+    case "ollama-cloud":
+      return createOllamaCloudAdapter(opts);
     case "anthropic":
       return new AnthropicAdapter({ credentialStore: opts.credentialStore, apiKey: opts.apiKey, timeoutMs: opts.timeoutMs });
     case "openrouter":

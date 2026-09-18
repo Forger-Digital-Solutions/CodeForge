@@ -4,6 +4,8 @@ export type { RouteDataClass, RouteDataContext } from "./capacity-types.js";
 
 export interface FreeCapacityPolicy {
   paidInferenceAllowed: false;
+  /** User-connected accounts are opt-in and must pass a provider-specific free-only guard. */
+  allowUserConnectedFree: boolean;
   allowDistributedUserFree: boolean;
   /** Disabled by default: a deposit must never become an invisible product subsidy. */
   allowDepositUnlockedFree: boolean;
@@ -11,6 +13,7 @@ export interface FreeCapacityPolicy {
 
 export const DEFAULT_FREE_CAPACITY_POLICY: FreeCapacityPolicy = {
   paidInferenceAllowed: false,
+  allowUserConnectedFree: true,
   allowDistributedUserFree: true,
   allowDepositUnlockedFree: false,
 };
@@ -28,6 +31,7 @@ export function isDataPolicyEligible(profile: DataPolicyProfile, context: RouteD
 
 function supplyEligible(route: CapacityRoute, policy: FreeCapacityPolicy): boolean {
   if (route.supplyClass === "PURE_MANAGED_FREE") return route.capacityPoolScope === "SHARED_OWNER_POOL";
+  if (route.supplyClass === "USER_CONNECTED_FREE") return policy.allowUserConnectedFree && route.capacityPoolScope === "PER_USER_POOL";
   if (route.supplyClass === "DISTRIBUTED_USER_FREE") return policy.allowDistributedUserFree && route.capacityPoolScope === "PER_USER_POOL";
   if (route.supplyClass === "DEPOSIT_UNLOCKED_FREE") return policy.allowDepositUnlockedFree && route.capacityPoolScope === "SHARED_OWNER_POOL";
   return false;
@@ -53,7 +57,7 @@ export function freeRouteExclusionReason(
 ): string | undefined {
   if (!route.enabled) return "DISABLED";
   if (!route.healthy) return "UNHEALTHY";
-  if (!route.explicitZeroPrice) return "PRICE_NOT_EXPLICITLY_ZERO";
+  if (!route.explicitZeroPrice && !(route.supplyClass === "USER_CONNECTED_FREE" && route.freeOnlyAdmissionProven === true)) return "PRICE_NOT_EXPLICITLY_ZERO";
   if (!route.paidFallbackDisabled) return "PAID_FALLBACK_NOT_DISABLED";
   if (!route.managedMultiUserAllowed) return "MANAGED_MULTI_USER_TERMS_NOT_CLEARED";
   if (route.lifecycle !== "APPROVED") return `LIFECYCLE_${route.lifecycle}`;
@@ -66,11 +70,13 @@ export function freeRouteExclusionReason(
   if (route.supplyClass === "OWNER_CREDIT_RESERVE") return "OWNER_CREDIT_RESERVE_NOT_PRODUCT_FREE";
   if (route.supplyClass === "DEPOSIT_UNLOCKED_FREE" && !policy.allowDepositUnlockedFree) return "DEPOSIT_UNLOCKED_FREE_NOT_AUTHORIZED";
   if (route.supplyClass === "DISTRIBUTED_USER_FREE" && !policy.allowDistributedUserFree) return "DISTRIBUTED_USER_FREE_NOT_AUTHORIZED";
+  if (route.supplyClass === "USER_CONNECTED_FREE" && !policy.allowUserConnectedFree) return "USER_CONNECTED_FREE_NOT_AUTHORIZED";
+  if (route.supplyClass === "USER_CONNECTED_FREE" && route.freeOnlyAdmissionProven !== true) return "USER_CONNECTED_FREE_ONLY_GUARD_NOT_PROVEN";
   if (!supplyEligible(route, policy)) return "SUPPLY_POOL_SCOPE_INVALID";
   return undefined;
 }
 
 /** Whether a supply class is a zero-cash inference class, irrespective of product eligibility. */
 export function supplyClassIsZeroCash(source: SupplyClass): boolean {
-  return source === "PURE_MANAGED_FREE" || source === "DISTRIBUTED_USER_FREE" || source === "DEPOSIT_UNLOCKED_FREE" || source === "PROMOTIONAL_FREE" || source === "OWNER_DEV_FREE";
+  return source === "PURE_MANAGED_FREE" || source === "USER_CONNECTED_FREE" || source === "DISTRIBUTED_USER_FREE" || source === "DEPOSIT_UNLOCKED_FREE" || source === "PROMOTIONAL_FREE" || source === "OWNER_DEV_FREE";
 }
