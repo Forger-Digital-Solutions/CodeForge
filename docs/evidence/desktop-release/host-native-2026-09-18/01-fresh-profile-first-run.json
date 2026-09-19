@@ -1,0 +1,49 @@
+{
+  "capturedAt": "2026-09-18T18:10:55.0699799-04:00",
+  "window": {
+    "handle": "0x110018",
+    "title": "CodeForge",
+    "ownerPid": 34152,
+    "rect": {
+      "left": 170,
+      "top": 60,
+      "width": 3500,
+      "height": 2040
+    },
+    "isForeground": false
+  },
+  "mainProcess": {
+    "pid": 34152,
+    "sessionId": 3,
+    "path": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe",
+    "startTime": "2026-09-18T18:06:17.2793721-04:00",
+    "ancestry": "CodeForge.exe[34152] <- explorer.exe[26456]"
+  },
+  "processes": [
+    {
+      "pid": 27520,
+      "type": "utility:network.mojom.NetworkService",
+      "parentPid": 34152,
+      "sessionId": 3,
+      "workingSetMB": 54.9,
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe"
+    },
+    {
+      "pid": 34152,
+      "type": "browser(main)",
+      "parentPid": 26456,
+      "sessionId": 3,
+      "workingSetMB": 254.2,
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe"
+    },
+    {
+      "pid": 40400,
+      "type": "renderer",
+      "parentPid": 34152,
+      "sessionId": 3,
+      "workingSetMB": 93.8,
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe"
+    }
+  ],
+  "png": "G:\\CodeForge\\docs\\evidence\\desktop-release\\host-native-2026-09-18\\01-fresh-profile-first-run.png"
+}

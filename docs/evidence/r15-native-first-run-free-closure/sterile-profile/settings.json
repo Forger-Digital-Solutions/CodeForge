@@ -1,0 +1,66 @@
+{
+  "codeforge:env-credentials": {
+    "policy": "FREE_ROUTES_ONLY",
+    "preferences": {},
+    "migratedAt": "2026-09-18T23:45:08.363Z"
+  },
+  "codeforge:first-run-legal-ack": {
+    "ageConfirmed": true,
+    "hostExecutionAcknowledged": true,
+    "acknowledgedAt": "2026-09-18T23:46:19.024Z"
+  },
+  "codeforge:cloud-access-token": "enc:djEwonIyknXbCtCuenCYByeuyB5LgPInj+qeKXsz9oK28MpoGcZ9wlqjoz74sHDYpq5hh3HJ5eNrwG6vSSyAqG4Mek7+PM1X/E15iku+g3dPlXFhxml9cP5I3KTiY5GaJQrDHvf5ugJ+//G5S1ECNmcYqfFBjAQtoF7XftQ2i9CfFEsyS9lXOHmOk716ehZ1DKQwGHZKyX806XAlIdPVaD/OsVeKetcL1tk3pjcLuYEt2YEnGdRo5IFTygFrEyN7Bwhvo+VXKLXqcJisG7b1HDGec0CFO7HRL3gYOL6JvBlNRfoBa50zPOmTEj2X4YZOG6mwQjwXSxiEUkpAK406AbJLxVAHCZA5/T5snEavBz43ar7dsOBT69by4vEgejetF9wi1+dhpKl1oM0xa1gv4Wy3Mk4ag+dpxQlYQEtuwSfE7/vXy3iE9pCWx8qs8S/Lk7iq3Oyq+N2wBZyKrvXJFaIgxqYb0okGJvbFfjIdh9//vbmTaldYhfCNZIU5iQPrxFu5",
+  "codeforge:cloud-refresh-token": "enc:djEw7ZLkMT+BTpG0u1rAxUBOwd+19bqUm05f1gNGeCWJ5FvmhSqltjod6M5bELHOVaueiiyem0mJxpByGpuel29MlX5waQi+Ay7Rqk3WMCSFd8NgEZZs2ozKcD13/2+K0Cpd",
+  "codeforge:cloud-user": {
+    "id": "5a5f0e20-9ee0-429d-b1de-d123e81015a0",
+    "displayName": "Forger Digital Solutions",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/278725975?v=4",
+    "primaryIdentity": "github:278725975",
+    "createdAt": "2026-09-08T03:12:59.295Z",
+    "updatedAt": "2026-09-18T23:46:18.938Z"
+  },
+  "codeforge:recent-projects": [
+    {
+      "id": "fff0b79a-2e98-4b75-9520-d2b98459f2e0",
+      "path": "C:\\Users\\Daddy_FDS\\Documents\\cf-hostnative-sample",
+      "name": "cf-hostnative-sample",
+      "lastOpened": "2026-09-18T23:46:34.549Z"
+    }
+  ],
+  "codeforge:app-settings": {
+    "schemaVersion": 1,
+    "general": {
+      "openLastWorkspaceOnStartup": true,
+      "continueInterruptedAgents": true,
+      "defaultSteeringPolicy": "expensive_actions_only"
+    },
+    "appearance": {
+      "chatTextScale": "medium",
+      "reducedMotion": false
+    },
+    "models": {
+      "defaultModelId": "canonical:openrouter::deepseek/deepseek-v4-flash"
+    },
+    "notifications": {
+      "enabled": true,
+      "onApprovalNeeded": true,
+      "onAgentCompleted": true,
+      "onlyWhenInBackground": true
+    },
+    "privacy": {
+      "routingMode": "STANDARD"
+    },
+    "workspace": {
+      "repositoryIndexEnabled": true
+    }
+  },
+  "codeforge:window-state": {
+    "bounds": {
+      "x": 68,
+      "y": 24,
+      "width": 1400,
+      "height": 816
+    },
+    "isMaximized": false
+  }
+}

@@ -1,0 +1,278 @@
+MAIN_TS_LOADED
+WHEN_READY_START
+WHEN_READY_CRED_STORE_DONE
+WHEN_READY_FIREWALL_DONE
+WHEN_READY_CATALOG_DONE
+WHEN_READY_SMOKE_PROV_DONE
+WHEN_READY_PROVIDER_CONNECTIONS_DONE
+WHEN_READY_CREDS_LOADED
+WHEN_READY_MODELS_REGISTERED
+RUNTIME_METADATA_PREVIOUS_missing
+WHEN_READY_DBPATH_G:\CodeForge\apps\desktop\release\smoke-user-data\codeforge.db
+CREATE_WINDOW_START
+WINDOW_CONSTRUCTED t=1789782307390
+WHEN_READY_WINDOW_CREATED
+INIT_SERVER_START
+INIT_SERVER_HAS_CREDS_true
+INIT_SERVER_INSTANCE_CREATED
+RUNTIME_ENDPOINT_50527
+RUNTIME_METADATA_G:\CodeForge\apps\desktop\release\smoke-user-data\runtime.json
+INIT_SERVER_STARTED
+WHEN_READY_SERVER_INITIALIZED
+CONTROL_PLANE_BEARER_FILTER_http://127.0.0.1:50527
+LOAD_FILE_G:\CodeForge\apps\desktop\release\win-unpacked\resources\app.asar\apps\desktop\dist\renderer\index.html
+RENDERER_LIFECYCLE preload-entry 1789782307849
+RENDERER_LIFECYCLE preload-bridge-ready 1789782307850
+RENDERER_LIFECYCLE bootstrap 1789782307966
+RENDERER_DOM_READY t=1789782307975
+RENDERER_DID_FRAME_FINISH_LOAD t=1789782307976
+RENDERER_DID_FINISH_LOAD t=1789782307977
+WINDOW_CONTENT_LOADED
+WHEN_READY_LAUNCHING_SMOKE
+WAIT_RENDERER_START
+RENDERER_DID_STOP_LOADING t=1789782307982
+WAIT_RENDERER_FRAME_LOADED t=1789782307984
+WINDOW_READY_TO_SHOW t=1789782307986
+WINDOW_STATE_AFTER_SHOW={"t":1789782308440,"bounds":{"x":68,"y":24,"width":1400,"height":816},"isVisible":true,"isMinimized":false,"isFocused":true,"isDestroyed":false,"isLoading":false,"isLoadingMainFrame":false,"isCrashed":false,"url":"file:///G:/CodeForge/apps/desktop/release/win-unpacked/resources/app.asar/apps/desktop/dist/renderer/index.html","rendererOsPid":18968,"rendererProcessId":4}
+PACKAGED_STARTUP=PASS
+FORGEGREEN_RUNTIME=PASS
+EIGHT_BIT_RUNTIME=PASS
+CLOUD_DB_PACKAGED_RUNTIME=PASS
+smoke_mode=full
+smoke_run_id=76ecb309-8ccf-4acf-9071-b7e9460c0ad3
+electron_version=44.4.1
+electron_node_version=24.21.0
+app_is_packaged=true
+RENDERER_LIFECYCLE root-mounted 1789782308032
+RENDERER_LIFECYCLE first-frame 1789782308033
+RENDERER_LIFECYCLE preload-entry 1789782310584
+RENDERER_LIFECYCLE preload-bridge-ready 1789782310585
+RENDERER_LIFECYCLE bootstrap 1789782310795
+RENDERER_DOM_READY t=1789782310837
+RENDERER_DID_FRAME_FINISH_LOAD t=1789782310838
+RENDERER_DID_FINISH_LOAD t=1789782310839
+RENDERER_DID_STOP_LOADING t=1789782310840
+RENDERER_LIFECYCLE root-mounted 1789782310800
+RENDERER_LIFECYCLE first-frame 1789782310815
+RENDERER_LIFECYCLE workspace-root 1789782311133
+packaged_auth_restore=PASS
+packaged_authenticated_workspace=PASS
+renderer_raw_credential_api_absent=PASS
+RENDERER_LIFECYCLE runtime-connected 1789782311687
+RENDERER_LIFECYCLE workspace-interactive 1789782311687
+control_plane_endpoint_propagated=http://127.0.0.1:50527=PASS
+control_plane_renderer_bearer_absent=PASS
+control_plane_trusted_renderer=PASS
+control_plane_trusted_event_stream=PASS
+control_plane_missing_bearer_rejected=PASS
+control_plane_wrong_bearer_rejected=PASS
+control_plane_forged_approval_rejected=PASS
+control_plane_forged_origin_rejected=PASS
+control_plane_secondary_renderer_ipc_rejected=PASS
+CONTROL_PLANE_BEARER_WITHHELD wc=2 frame=about:blank url=http://127.0.0.1:50527/api/sessions
+control_plane_secondary_renderer_result=network-error
+control_plane_secondary_renderer_unauthenticated=PASS
+control_plane_trust_boundary=PASS
+RENDERER_LIFECYCLE_SNAPSHOT={"bootstrap":1789782310795,"root-mounted":1789782310800,"first-frame":1789782310815,"workspace-root":1789782311133,"runtime-connected":1789782311687,"workspace-interactive":1789782311687}
+WINDOW_STATE_WORKSPACE_INTERACTIVE={"t":1789782312522,"bounds":{"x":68,"y":24,"width":1400,"height":816},"isVisible":true,"isMinimized":false,"isFocused":true,"isDestroyed":false,"isLoading":false,"isLoadingMainFrame":false,"isCrashed":false,"url":"file:///G:/CodeForge/apps/desktop/release/win-unpacked/resources/app.asar/apps/desktop/dist/renderer/index.html","rendererOsPid":18968,"rendererProcessId":4}
+packaged_renderer_lifecycle_chain=PASS
+packaged_workspace_name_visible=PASS
+packaged_workspace_tree_ready=PASS
+packaged_repository_status_terminal=PASS
+packaged_repository_status={"state":"READY","workspaceId":"df2668c9ce52b100a4375d35f1b2a6a4790f9c43","repositoryNamespace":"04adbc22ddfbeeab9001a999d73dbfb65c00d09d978311dfe4b1f462b46f9a08","root":"G:\\CodeForge\\apps\\desktop\\release\\smoke-workspace","indexPath":"G:\\CodeForge\\apps\\desktop\\release\\smoke-repository-indexes\\df2668c9ce52b100a4375d35f1b2a6a4790f9c43\\repository-index.sqlite","indexVersion":2,"parserVersion":"typescript-5.9+deterministic-2","fileCount":258,"symbolCount":259,"edgeCount":0,"errorCount":0,"generation":2,"graphGeneration":2,"lastSuccessfulUpdate":"2026-09-19T01:45:12.050Z","createdAt":"2026-09-19T01:45:12.050Z","updatedAt":"2026-09-19T01:45:12.050Z","sizeBytes":4096,"enabled":true,"local":true}
+packaged_repository_query_known_answer=PASS
+packaged_workspace_restore=PASS
+packaged_workspace_escape_blocked=PASS
+packaged_repository_index_ready=PASS
+packaged_repository_search=PASS
+packaged_repository_index_ui_responsive=PASS
+packaged_substantial_repository=PASS
+TASK_TERMINAL_PHASE_completed_SUMMARY__ERROR_
+packaged_zero_prompt_workflow=PASS
+packaged_workflow=PASS
+packaged_failure_repair_pass=PASS
+RENDERER_LIFECYCLE preload-entry 1789782319523
+RENDERER_LIFECYCLE preload-bridge-ready 1789782319524
+RENDERER_LIFECYCLE bootstrap 1789782319575
+RENDERER_DOM_READY t=1789782319577
+RENDERER_DID_FRAME_FINISH_LOAD t=1789782319578
+RENDERER_DID_FINISH_LOAD t=1789782319580
+RENDERER_DID_STOP_LOADING t=1789782319582
+RENDERER_LIFECYCLE root-mounted 1789782319580
+RENDERER_LIFECYCLE workspace-root 1789782319614
+RENDERER_LIFECYCLE first-frame 1789782319667
+RENDERER_LIFECYCLE runtime-connected 1789782319710
+RENDERER_LIFECYCLE workspace-interactive 1789782319711
+RENDERER_LIFECYCLE preload-entry 1789782319865
+RENDERER_LIFECYCLE preload-bridge-ready 1789782319866
+RENDERER_LIFECYCLE bootstrap 1789782319914
+RENDERER_DOM_READY t=1789782319917
+RENDERER_DID_FRAME_FINISH_LOAD t=1789782319919
+RENDERER_DID_FINISH_LOAD t=1789782319920
+RENDERER_DID_STOP_LOADING t=1789782319923
+RENDERER_LIFECYCLE root-mounted 1789782319922
+RENDERER_LIFECYCLE first-frame 1789782319935
+RENDERER_LIFECYCLE workspace-root 1789782319969
+RENDERER_LIFECYCLE runtime-connected 1789782320050
+RENDERER_LIFECYCLE workspace-interactive 1789782320050
+RENDERER_LIFECYCLE preload-entry 1789782320200
+RENDERER_LIFECYCLE preload-bridge-ready 1789782320201
+RENDERER_LIFECYCLE bootstrap 1789782320252
+RENDERER_DOM_READY t=1789782320253
+RENDERER_DID_FRAME_FINISH_LOAD t=1789782320260
+RENDERER_DID_FINISH_LOAD t=1789782320261
+RENDERER_DID_STOP_LOADING t=1789782320262
+RENDERER_LIFECYCLE root-mounted 1789782320256
+RENDERER_LIFECYCLE first-frame 1789782320263
+RENDERER_LIFECYCLE workspace-root 1789782320293
+RENDERER_LIFECYCLE runtime-connected 1789782320373
+RENDERER_LIFECYCLE workspace-interactive 1789782320373
+RENDERER_LIFECYCLE preload-entry 1789782320556
+RENDERER_LIFECYCLE preload-bridge-ready 1789782320557
+RENDERER_LIFECYCLE bootstrap 1789782320605
+RENDERER_DOM_READY t=1789782320607
+RENDERER_DID_FRAME_FINISH_LOAD t=1789782320608
+RENDERER_DID_FINISH_LOAD t=1789782320609
+RENDERER_DID_STOP_LOADING t=1789782320616
+RENDERER_LIFECYCLE root-mounted 1789782320610
+RENDERER_LIFECYCLE workspace-root 1789782320644
+RENDERER_LIFECYCLE first-frame 1789782320659
+RENDERER_LIFECYCLE runtime-connected 1789782320736
+RENDERER_LIFECYCLE workspace-interactive 1789782320736
+RENDERER_LIFECYCLE preload-entry 1789782320944
+RENDERER_LIFECYCLE preload-bridge-ready 1789782320944
+RENDERER_LIFECYCLE bootstrap 1789782320984
+RENDERER_DOM_READY t=1789782320987
+RENDERER_DID_FRAME_FINISH_LOAD t=1789782320989
+RENDERER_DID_FINISH_LOAD t=1789782320991
+RENDERER_DID_STOP_LOADING t=1789782320994
+RENDERER_LIFECYCLE root-mounted 1789782320994
+RENDERER_LIFECYCLE workspace-root 1789782321032
+RENDERER_LIFECYCLE first-frame 1789782321035
+RENDERER_LIFECYCLE runtime-connected 1789782321137
+RENDERER_LIFECYCLE workspace-interactive 1789782321137
+packaged_renderer_reload_count=5
+packaged_renderer_reload=PASS
+settings_open=PASS
+account_menu_profile_deeplink=PASS
+settings_search=PASS
+settings_back_to_workspace=PASS
+credential_plaintext_absent=PASS
+credential_encrypted_payload=PASS
+safe_storage_available=PASS
+credential_round_trip=PASS
+PACKAGED_FULL_SMOKE_OK
+MAIN_TS_LOADED
+WHEN_READY_START
+WHEN_READY_CRED_STORE_DONE
+WHEN_READY_FIREWALL_DONE
+WHEN_READY_CATALOG_DONE
+WHEN_READY_SMOKE_PROV_DONE
+WHEN_READY_PROVIDER_CONNECTIONS_DONE
+WHEN_READY_CREDS_LOADED
+WHEN_READY_MODELS_REGISTERED
+RUNTIME_METADATA_PREVIOUS_stale
+WHEN_READY_DBPATH_G:\CodeForge\apps\desktop\release\smoke-user-data\codeforge.db
+CREATE_WINDOW_START
+WINDOW_CONSTRUCTED t=1789782331238
+WHEN_READY_WINDOW_CREATED
+INIT_SERVER_START
+INIT_SERVER_HAS_CREDS_true
+INIT_SERVER_INSTANCE_CREATED
+RUNTIME_ENDPOINT_61227
+RUNTIME_METADATA_G:\CodeForge\apps\desktop\release\smoke-user-data\runtime.json
+INIT_SERVER_STARTED
+WHEN_READY_SERVER_INITIALIZED
+CONTROL_PLANE_BEARER_FILTER_http://127.0.0.1:61227
+LOAD_FILE_G:\CodeForge\apps\desktop\release\win-unpacked\resources\app.asar\apps\desktop\dist\renderer\index.html
+RENDERER_LIFECYCLE preload-entry 1789782332594
+RENDERER_LIFECYCLE preload-bridge-ready 1789782332595
+RENDERER_LIFECYCLE bootstrap 1789782332657
+RENDERER_DOM_READY t=1789782332663
+RENDERER_DID_FRAME_FINISH_LOAD t=1789782332664
+RENDERER_DID_FINISH_LOAD t=1789782332665
+WINDOW_CONTENT_LOADED
+WHEN_READY_LAUNCHING_SMOKE
+WAIT_RENDERER_START
+RENDERER_DID_STOP_LOADING t=1789782332674
+WAIT_RENDERER_FRAME_LOADED t=1789782332675
+RENDERER_LIFECYCLE root-mounted 1789782332696
+RENDERER_LIFECYCLE first-frame 1789782332696
+WINDOW_READY_TO_SHOW t=1789782332699
+WINDOW_STATE_AFTER_SHOW={"t":1789782332770,"bounds":{"x":68,"y":24,"width":1400,"height":816},"isVisible":true,"isMinimized":false,"isFocused":true,"isDestroyed":false,"isLoading":false,"isLoadingMainFrame":false,"isCrashed":false,"url":"file:///G:/CodeForge/apps/desktop/release/win-unpacked/resources/app.asar/apps/desktop/dist/renderer/index.html","rendererOsPid":6864,"rendererProcessId":4}
+PACKAGED_STARTUP=PASS
+FORGEGREEN_RUNTIME=PASS
+EIGHT_BIT_RUNTIME=PASS
+CLOUD_DB_PACKAGED_RUNTIME=PASS
+smoke_mode=interrupt
+smoke_run_id=bf5b960a-a9a3-47a8-8140-fbb3e3a64763
+electron_version=44.4.1
+electron_node_version=24.21.0
+app_is_packaged=true
+RENDERER_LIFECYCLE workspace-root 1789782333166
+RENDERER_LIFECYCLE runtime-connected 1789782333383
+RENDERER_LIFECYCLE workspace-interactive 1789782333383
+electron_restart_interruption_ready=PASS
+PACKAGED_INTERRUPT_EXPECTED_EXIT
+MAIN_TS_LOADED
+WHEN_READY_START
+WHEN_READY_CRED_STORE_DONE
+WHEN_READY_FIREWALL_DONE
+WHEN_READY_CATALOG_DONE
+WHEN_READY_SMOKE_PROV_DONE
+WHEN_READY_PROVIDER_CONNECTIONS_DONE
+WHEN_READY_CREDS_LOADED
+WHEN_READY_MODELS_REGISTERED
+RUNTIME_METADATA_PREVIOUS_stale
+WHEN_READY_DBPATH_G:\CodeForge\apps\desktop\release\smoke-user-data\codeforge.db
+CREATE_WINDOW_START
+WINDOW_CONSTRUCTED t=1789782340271
+WHEN_READY_WINDOW_CREATED
+INIT_SERVER_START
+INIT_SERVER_HAS_CREDS_true
+INIT_SERVER_INSTANCE_CREATED
+RUNTIME_ENDPOINT_54056
+RUNTIME_METADATA_G:\CodeForge\apps\desktop\release\smoke-user-data\runtime.json
+INIT_SERVER_STARTED
+WHEN_READY_SERVER_INITIALIZED
+CONTROL_PLANE_BEARER_FILTER_http://127.0.0.1:54056
+LOAD_FILE_G:\CodeForge\apps\desktop\release\win-unpacked\resources\app.asar\apps\desktop\dist\renderer\index.html
+RENDERER_LIFECYCLE preload-entry 1789782342451
+RENDERER_LIFECYCLE preload-bridge-ready 1789782342451
+RENDERER_LIFECYCLE bootstrap 1789782342545
+RENDERER_DOM_READY t=1789782342550
+RENDERER_DID_FRAME_FINISH_LOAD t=1789782342551
+RENDERER_DID_FINISH_LOAD t=1789782342552
+WINDOW_CONTENT_LOADED
+WHEN_READY_LAUNCHING_SMOKE
+WAIT_RENDERER_START
+RENDERER_DID_STOP_LOADING t=1789782342562
+WAIT_RENDERER_FRAME_LOADED t=1789782342563
+WINDOW_READY_TO_SHOW t=1789782342564
+WINDOW_STATE_AFTER_SHOW={"t":1789782343027,"bounds":{"x":68,"y":24,"width":1400,"height":816},"isVisible":true,"isMinimized":false,"isFocused":true,"isDestroyed":false,"isLoading":false,"isLoadingMainFrame":false,"isCrashed":false,"url":"file:///G:/CodeForge/apps/desktop/release/win-unpacked/resources/app.asar/apps/desktop/dist/renderer/index.html","rendererOsPid":26232,"rendererProcessId":4}
+PACKAGED_STARTUP=PASS
+FORGEGREEN_RUNTIME=PASS
+EIGHT_BIT_RUNTIME=PASS
+CLOUD_DB_PACKAGED_RUNTIME=PASS
+smoke_mode=recover
+smoke_run_id=91b05556-bbd7-4d6a-aee7-d1602b81ff37
+electron_version=44.4.1
+electron_node_version=24.21.0
+app_is_packaged=true
+RENDERER_LIFECYCLE root-mounted 1789782342604
+RENDERER_LIFECYCLE first-frame 1789782342605
+electron_restart_failed_safely=PASS
+electron_restart_no_approval_replay=PASS
+credential_plaintext_absent=PASS
+credential_encrypted_payload=PASS
+corrupt_credential_fails_closed=PASS
+legacy_plaintext_sealed=1
+legacy_plaintext_credential_rejected=PASS
+legacy_plaintext_credential_migrated=PASS
+credential_restart_decrypt=PASS
+RENDERER_LIFECYCLE workspace-root 1789782343529
+TASK_TERMINAL_PHASE_blocked_SUMMARY__ERROR_
+electron_restart_fresh_task=PASS
+PACKAGED_RECOVERY_SMOKE_OK
+RENDERER_LIFECYCLE runtime-connected 1789782348074
+RENDERER_LIFECYCLE workspace-interactive 1789782348075

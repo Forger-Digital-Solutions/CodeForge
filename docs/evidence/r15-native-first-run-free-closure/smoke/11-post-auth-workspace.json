@@ -1,0 +1,49 @@
+﻿{
+    "capturedAt":  "2026-09-18T19:55:52.7243485-04:00",
+    "window":  {
+                   "handle":  "0xE0600",
+                   "title":  "CodeForge",
+                   "ownerPid":  22916,
+                   "rect":  {
+                                "left":  170,
+                                "top":  60,
+                                "width":  3500,
+                                "height":  2040
+                            },
+                   "isForeground":  true
+               },
+    "mainProcess":  {
+                        "pid":  22916,
+                        "sessionId":  1,
+                        "path":  "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe",
+                        "startTime":  "2026-09-18T19:45:07.8024604-04:00",
+                        "ancestry":  "CodeForge.exe[22916] \u003c- cmd.exe[22660] \u003c- bash.exe[11336]"
+                    },
+    "processes":  [
+                      {
+                          "pid":  20716,
+                          "type":  "renderer",
+                          "parentPid":  22916,
+                          "sessionId":  1,
+                          "workingSetMB":  168,
+                          "path":  "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe"
+                      },
+                      {
+                          "pid":  22700,
+                          "type":  "utility:network.mojom.NetworkService",
+                          "parentPid":  22916,
+                          "sessionId":  1,
+                          "workingSetMB":  56.4,
+                          "path":  "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe"
+                      },
+                      {
+                          "pid":  22916,
+                          "type":  "browser(main)",
+                          "parentPid":  22660,
+                          "sessionId":  1,
+                          "workingSetMB":  325.9,
+                          "path":  "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe"
+                      }
+                  ],
+    "png":  "G:\\CodeForge\\docs\\evidence\\r15-native-first-run-free-closure\\smoke\\11-post-auth-workspace.png"
+}

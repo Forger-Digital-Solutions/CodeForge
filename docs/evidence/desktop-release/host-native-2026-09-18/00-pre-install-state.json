@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-09-18T18:03:44.8068270-04:00",
+  "previousInstall": {
+    "path": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop",
+    "exeSha256": "58CEE2FF8DA615BFCDEAF31AC3BC5BED658ACC1C45FC20E4F99AAA1CEBADCA17",
+    "exeVersion": "0.3.0.0",
+    "registryDisplayName": "CodeForge 0.3.0"
+  },
+  "setup": {
+    "path": "G:\\CodeForge\\apps\\desktop\\release\\CodeForge-Setup-0.4.0.exe",
+    "sha256": "AB7CA1A860FC301F298AA8BF19F2B53861321C5B971350836D52014755950622",
+    "signature": "NotSigned",
+    "motw": false
+  },
+  "portable": {
+    "path": "G:\\CodeForge\\apps\\desktop\\release\\CodeForge-Portable.exe",
+    "sha256": "A57AA848EE49D26D5E3A0070F514FF1B75819DCD0BE0DFC990F556C27114A930",
+    "signature": "NotSigned"
+  },
+  "normalProfile": {
+    "path": "C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop",
+    "backup": "C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop.backup-20260918-180302",
+    "files": 141,
+    "bytes": 17836173
+  },
+  "runner": {
+    "isProcessInJob": true,
+    "jobLimitFlags": "0x800 (JOB_OBJECT_LIMIT_BREAKAWAY_OK)",
+    "sessionId": 3,
+    "ancestry": "pwsh.exe <- cmd.exe <- claude.exe <- claude.exe <- explorer.exe"
+  }
+}

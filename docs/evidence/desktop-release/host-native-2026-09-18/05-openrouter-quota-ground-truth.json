@@ -1,0 +1,45 @@
+{
+  "capturedAt": "2026-09-18T22:41:17.836Z",
+  "provider": "openrouter",
+  "credentialSource": "user-scope environment OPENROUTER_API_KEY (value never recorded)",
+  "keyStatus": {
+    "is_free_tier": false,
+    "usage_daily_usd": 0,
+    "limit": null,
+    "limit_remaining": null
+  },
+  "probes": [
+    {
+      "model": "deepseek/deepseek-v4-flash-0731:free",
+      "status": 200,
+      "cost": 0,
+      "rateLimitHeaders": "none"
+    },
+    {
+      "model": "poolside/laguna-s-2.1:free",
+      "status": 429,
+      "error": "Rate limit exceeded: free-models-per-day-high-balance",
+      "headers": {
+        "X-RateLimit-Limit": "1000",
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": "1789776000000"
+      },
+      "limit_source": "openrouter_free_tier_daily"
+    },
+    {
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 429,
+      "error": "Rate limit exceeded: free-models-per-day-high-balance",
+      "headers": {
+        "X-RateLimit-Limit": "1000",
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": "1789776000000"
+      }
+    }
+  ],
+  "resetAtIso": "2026-09-19T00:00:00.000Z",
+  "desktopObservation": "Installed app (fresh profile) shows every OpenRouter free route as Quota exhausted · 0% quota; DeepSeek V4 Flash detail dialog: 8-Bit qualification qualified, ForgeAuto/Free Not eligible right now, OpenRouter route health Quota exhausted · 0% quota",
+  "interpretation": "Truthful for the daily-capped routes. False demotion for deepseek-v4-flash-0731:free, which still returns 200//usr/bin/bash: RouteQuotaTracker.get() falls back to the provider-level observation recorded from another model's 429, and healthWithObservedQuota() turns that into a hard QUOTA_EXHAUSTED admission block for every OpenRouter route until the reset.",
+  "moneySpentUsd": 0,
+  "requestsSpentForDiagnosis": 4
+}
