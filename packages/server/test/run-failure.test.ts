@@ -103,4 +103,48 @@ describe("describeRunFailure", () => {
     expect(failure.message).not.toContain("<html>");
     expect(failure.detail).toContain("upstream returned 502");
   });
+
+  it("a no-progress loop stop is a CodeForge runtime guard, not an unknown route error", () => {
+    const failure = describeRunFailure(
+      new Error('[AGENT_NO_PROGRESS_DETECTED] No-progress loop: read-only action "read_file" was executed and then suppressed once against unchanged workspace state and is being requested again.'),
+      { providerId: "openrouter", modelId: "deepseek/deepseek-v4-flash-0731:free" },
+    );
+    expect(failure.ownership).toBe("runtime");
+    expect(failure.code).toBe("invalid_model_output");
+    expect(failure.message).not.toMatch(/could not classify/i);
+    expect(failure.message).toContain("AGENT_NO_PROGRESS_DETECTED");
+  });
+
+  it("a deterministic tool loop stop is a CodeForge runtime guard", () => {
+    const failure = describeRunFailure(
+      new Error('[AGENT_TOOL_LOOP_DETECTED] Deterministic loop detected: tool "read_file" called 3 consecutive times with identical arguments.'),
+    );
+    expect(failure.ownership).toBe("runtime");
+    expect(failure.message).not.toMatch(/could not classify/i);
+  });
+
+  it("a bracketed provider rate limit keeps managed ownership", () => {
+    const failure = describeRunFailure(
+      new Error("[PROVIDER_RATE_LIMITED] Provider 'codeforge-cloud' is in cooldown (42s remaining)"),
+      { providerId: "codeforge-cloud" },
+    );
+    expect(failure.code).toBe("provider_rate_limited");
+    expect(failure.ownership).toBe("managed_free");
+  });
+
+  it("a bracketed provider rate limit keeps byok ownership", () => {
+    const failure = describeRunFailure(
+      new Error("[PROVIDER_RATE_LIMITED] Provider 'openrouter' is in cooldown (42s remaining)"),
+      { providerId: "openrouter" },
+    );
+    expect(failure.code).toBe("provider_rate_limited");
+    expect(failure.ownership).toBe("byok");
+    expect(failure.message).not.toMatch(/your (api )?key/i);
+  });
+
+  it("a workspace-escape tool refusal is not a route error", () => {
+    const failure = describeRunFailure(new Error("[TOOL_WORKSPACE_ESCAPE] path outside workspace"));
+    expect(failure.ownership).toBe("runtime");
+    expect(failure.code).toBe("workspace_error");
+  });
 });

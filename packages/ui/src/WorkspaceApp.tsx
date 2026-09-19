@@ -638,7 +638,7 @@ export default function WorkspaceApp({
                   {failureDetail.repairs > 0 && <div className="task-failure-meta">CodeForge attempted {failureDetail.repairs} {failureDetail.repairs === 1 ? "repair" : "repairs"}.</div>}
                 </div>
               ) : (
-                <div className="task-failure-message">{humanizeError(state.workflowError)}</div>
+                <div className="task-failure-message">{state.workflowError}</div>
               )}
               <div className="task-failure-actions">
                 <button type="button" className="btn-sm primary" onClick={repairFailure}>Fix and continue</button>

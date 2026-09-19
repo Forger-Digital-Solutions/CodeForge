@@ -50,7 +50,9 @@ const REASON_TO_CODE: Record<FailureReason, RunFailureCode> = {
  * "paid" means the account, not a credential. The bracketed code stays in the message so the denial
  * reason is never flattened into something unrecognizable.
  */
-const FORGE_CODE_FAILURES: Record<string, { code: RunFailureCode; ownership: RunFailureOwnership; retryable: boolean; message: string }> = {
+// Entries without `ownership` keep the route-derived ownership: a rate limit on a managed free
+// route is CodeForge's problem, the same limit on a connected BYOK provider is the user's.
+const FORGE_CODE_FAILURES: Record<string, { code: RunFailureCode; ownership?: RunFailureOwnership; retryable: boolean; message: string }> = {
   REQUIRES_SUBSCRIPTION: { code: "paid_plan_required", ownership: "paid", retryable: false, message: "This route requires a paid plan or entitlement this account does not have. CodeForge did not run it" },
   NOT_ENTITLED: { code: "paid_plan_required", ownership: "paid", retryable: false, message: "This route requires a paid plan or entitlement this account does not have. CodeForge did not run it" },
   FORGE_ZERO_VIOLATION: { code: "paid_plan_required", ownership: "paid", retryable: false, message: "The zero-cost policy refused this route. CodeForge did not run it" },
@@ -58,7 +60,22 @@ const FORGE_CODE_FAILURES: Record<string, { code: RunFailureCode; ownership: Run
   PAID_FALLBACK_REJECTED: { code: "paid_plan_required", ownership: "paid", retryable: false, message: "This route can fall back to paid usage, so CodeForge refused it" },
   PROVIDER_UNAVAILABLE: { code: "provider_outage", ownership: "runtime", retryable: true, message: "Access to this route could not be confirmed right now, so the run was stopped safely" },
   PROVIDER_MODEL_UNAVAILABLE: { code: "model_unavailable", ownership: "runtime", retryable: true, message: "This route is not available from its provider right now" },
+  PROVIDER_RATE_LIMITED: { code: "provider_rate_limited", retryable: true, message: "This route is temporarily rate limited, so CodeForge stopped safely" },
+  PROVIDER_CAPACITY_EXCEEDED: { code: "provider_capacity", retryable: true, message: "This route is at capacity right now, so CodeForge stopped safely" },
   NOT_FOUND: { code: "model_unavailable", ownership: "runtime", retryable: false, message: "This route is not registered in CodeForge's catalog" },
+  AGENT_CANCELLED: { code: "cancelled", ownership: "user", retryable: false, message: "Stopped by you" },
+  AGENT_NO_PROGRESS_DETECTED: { code: "invalid_model_output", ownership: "runtime", retryable: true, message: "The agent kept repeating actions without making progress, so CodeForge stopped the run" },
+  AGENT_TOOL_LOOP_DETECTED: { code: "invalid_model_output", ownership: "runtime", retryable: true, message: "The agent repeated the same tool calls in a loop, so CodeForge stopped the run" },
+  AGENT_CONTEXT_BUDGET_EXCEEDED: { code: "context_limit", ownership: "runtime", retryable: true, message: "The task exceeded its context budget, so CodeForge stopped the run" },
+  AGENT_MODEL_TURN_LIMIT: { code: "budget_exhausted", ownership: "runtime", retryable: true, message: "The run reached its turn limit before finishing" },
+  AGENT_TOOL_LIMIT: { code: "budget_exhausted", ownership: "runtime", retryable: true, message: "The run reached its tool-call limit before finishing" },
+  AGENT_INVALID_STRUCTURED_OUTPUT: { code: "invalid_model_output", ownership: "runtime", retryable: true, message: "The model returned output CodeForge could not use, so the run stopped" },
+  CONTEXT_EVIDENCE_STALE: { code: "unknown", ownership: "runtime", retryable: true, message: "CodeForge's workspace context went stale mid-run, so the run was stopped safely" },
+  TOOL_TIMEOUT: { code: "unknown", ownership: "runtime", retryable: true, message: "A tool ran past its time limit, so the run was stopped safely" },
+  TOOL_WORKSPACE_ESCAPE: { code: "workspace_error", ownership: "runtime", retryable: false, message: "A tool tried to act outside the workspace, so CodeForge refused it" },
+  TOOL_PATH_ESCAPE: { code: "workspace_error", ownership: "runtime", retryable: false, message: "A tool tried to reach a path outside the workspace, so CodeForge refused it" },
+  TOOL_PERMISSION_DENIED: { code: "workspace_error", ownership: "runtime", retryable: false, message: "A tool was denied permission to run" },
+  TOOL_SENSITIVE_PATH_DENIED: { code: "safety_rejection", ownership: "runtime", retryable: false, message: "A tool tried to touch a protected path, so CodeForge refused it" },
 };
 
 function routeLabel(context: RunFailureContext): string {
@@ -121,7 +138,7 @@ export function describeRunFailure(error: unknown, context: RunFailureContext = 
     return {
       ...base,
       ...detail,
-      ownership: forge.ownership,
+      ownership: forge.ownership ?? ownership,
       code: forge.code,
       retryable: forge.retryable,
       message: `${forge.message} (${forgeCode})`,

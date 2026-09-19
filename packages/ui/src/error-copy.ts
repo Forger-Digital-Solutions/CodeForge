@@ -5,9 +5,11 @@
 /** Turn provider/runtime errors into concise, actionable guidance. */
 export function humanizeError(msg: string): string {
   const m = msg.toLowerCase();
+  // Ownership is unknown at this layer: managed CodeForge routes and user-connected providers both
+  // land here, so never assert "your API key". Classified RunFailure messages bypass this entirely.
   if (m.includes("401") || m.includes("invalid api key") || m.includes("autherror") || m.includes("unauthorized"))
-    return "Provider authentication failed — your API key is invalid or expired. Update it in Settings → Providers.";
-  if (m.includes("403")) return "Access denied by the provider. Check your API key permissions in Settings → Providers.";
+    return "Provider authentication failed — the credentials on this route were rejected. If you connected this provider yourself, update its key in Settings → Providers.";
+  if (m.includes("403")) return "The provider denied access on this route. If you connected this provider yourself, check its key permissions in Settings → Providers.";
   if (m.includes("429") || m.includes("rate limit")) {
     // A daily cap is not "a moment": say what the provider said.
     if (m.includes("per-day") || m.includes("per day") || m.includes("daily")) {
