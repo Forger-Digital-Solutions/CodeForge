@@ -19,6 +19,7 @@ import type {
   FailureAnalysis,
   PlanStep,
   RepoMap,
+  ReviewDecision,
   TaskIntent,
   VerificationResult,
   WorkflowPlan,
@@ -121,7 +122,7 @@ export interface WorkflowEngineOptions {
       repoMap: RepoMap,
       intent: TaskIntent,
       signal?: AbortSignal,
-    ) => Promise<{ success: boolean; output: string; turnId?: string; suspended?: boolean }>;
+    ) => Promise<AgentExecutionResult>;
     executeRepair?: (
       analysis: FailureAnalysis,
       verification: VerificationResult,
@@ -129,8 +130,22 @@ export interface WorkflowEngineOptions {
       repoMap: RepoMap,
       intent: TaskIntent,
       signal?: AbortSignal,
-    ) => Promise<{ success: boolean; output: string; turnId?: string }>;
+    ) => Promise<AgentExecutionResult>;
   };
+}
+
+/** What an agent turn dispatched by the workflow reports back. */
+export interface AgentExecutionResult {
+  success: boolean;
+  output: string;
+  turnId?: string;
+  suspended?: boolean;
+  /**
+   * Structured classification of a failed turn. `terminal` failures (no eligible route left) end
+   * the run immediately: there is no model to verify, repair or review with, and continuing would
+   * present a run the routing layer already stopped as if it were still being worked.
+   */
+  failure?: { code: string; message: string; terminal?: boolean };
 }
 
 export class WorkflowEngine {
@@ -140,6 +155,8 @@ export class WorkflowEngine {
   private readonly verificationCommands?: string[];
   /** Why the agent's implementation stopped short, when it did — surfaced in the summary. */
   private implementationStopReason: string | null = null;
+  /** A failure that ends the run outright (route exhaustion): set by the executor, honoured by run(). */
+  private terminalStop: { code: string; message: string } | null = null;
   private readonly verificationObserver?: ForgeVerifyObserver;
   private readonly completionPolicy?: Partial<CompletionPolicy>;
   private readonly signal?: AbortSignal;
@@ -363,6 +380,7 @@ export class WorkflowEngine {
         if (implementResult.failedSteps > 0 && implementResult.appliedCount === 0) {
           // If no steps applied and some failed, mark as failed but continue to verification to allow repair
         }
+        if (this.terminalStop) return this.stopTerminally(plan);
       }
 
       // 7. Run Verification
@@ -403,6 +421,7 @@ export class WorkflowEngine {
         this.onEvent?.({ type: "workflow.repair_attempted", phase: this.phase, payload: { attempt: attempts, analysis } });
 
         const repaired = await this.attemptRepair(plan, context, repoMap, intent, verification, analysis);
+        if (this.terminalStop) return this.stopTerminally(plan, { verification, verificationAttempts });
         if (!repaired.success) {
           break;
         }
@@ -494,7 +513,7 @@ export class WorkflowEngine {
       });
 
       const summary = [
-        this.buildSummary(intent, plan, verification, analysis, review, passed, attempts),
+        this.buildSummary(intent, plan, verification, analysis, review, passed, attempts, decision),
         formatCompletionDecision(decision),
       ].join("\n");
 
@@ -627,7 +646,8 @@ export class WorkflowEngine {
           this.implementationStopReason = null;
           return { plan, appliedCount: 0, failedSteps: 0, suspended: true, turnId: result.turnId };
         }
-        this.implementationStopReason = result.success ? null : result.output;
+        this.implementationStopReason = result.success ? null : (result.failure?.message ?? result.output);
+        if (!result.success && result.failure?.terminal) this.terminalStop = { code: result.failure.code, message: result.failure.message };
         let currentPlan = plan;
         if (result.success) {
           currentPlan = {
@@ -824,6 +844,10 @@ export class WorkflowEngine {
       try {
         const res = await this.agentExecutor.executeRepair(analysis, verification, context, repoMap, intent, this.signal);
         if (res.success) return { success: true };
+        if (res.failure?.terminal) {
+          this.terminalStop = { code: res.failure.code, message: res.failure.message };
+          return { success: false };
+        }
       } catch {
         // fall back to heuristic
       }
@@ -874,6 +898,45 @@ export class WorkflowEngine {
     return { success: false };
   }
 
+  /**
+   * The run ends here because the routing layer has nothing left to run it with. No verification,
+   * repair or review is attempted — reporting any of them would describe work that did not happen.
+   * The changed-file list is still recorded (a local diff needs no model) so the user can see what
+   * the interrupted implementation touched.
+   */
+  private async stopTerminally(
+    plan: WorkflowPlan,
+    partial: { verification?: VerificationResult; verificationAttempts?: VerificationResult[] } = {},
+  ): Promise<WorkflowResult> {
+    const stop = this.terminalStop!;
+    let review: ReviewDecision | undefined;
+    try {
+      review = await reviewDiff(this.workspacePath, { beforeSnapshots: this.beforeSnapshots, signal: this.signal });
+    } catch {
+      review = undefined;
+    }
+    const changed = review?.diffs.length ?? 0;
+    const summary = [
+      stop.message,
+      changed > 0
+        ? `${changed} file${changed === 1 ? "" : "s"} changed before the stop; the changes were not verified.`
+        : "No files were changed.",
+    ].join(" ");
+    this.setPhase("failed", "failed_safely");
+    return {
+      taskId: this.task.id,
+      status: "failed",
+      phase: "failed",
+      summary,
+      plan,
+      ...(partial.verification ? { verification: partial.verification } : {}),
+      ...(partial.verificationAttempts ? { verificationAttempts: partial.verificationAttempts } : {}),
+      ...(review ? { review: { ...review, approved: false, summary: "Not reviewed — the run stopped before review." } } : {}),
+      stop: { code: stop.code, message: stop.message },
+      diffSummary: review ? formatDiffSummary(review.diffs) : undefined,
+    };
+  }
+
   private buildSummary(
     intent: TaskIntent,
     plan: WorkflowPlan,
@@ -882,6 +945,7 @@ export class WorkflowEngine {
     review: { summary: string; diffs: Array<{ path: string }> },
     passed: boolean,
     repairAttempts: number,
+    decision?: import("./completion-gate.js").CompletionGateDecision,
   ): string {
     const parts: string[] = [];
     parts.push(`# Workflow Summary for "${intent.title}"`);
@@ -898,11 +962,16 @@ export class WorkflowEngine {
     if (repairAttempts > 0) parts.push(`Repair attempts: ${repairAttempts}`);
     parts.push(`Review: ${review.summary}`);
     if (review.diffs.length) parts.push(`Changed files: ${review.diffs.map((d) => d.path).join(", ")}`);
-    const outcome = verification.notConfigured
-      ? "Completed — changes applied, but nothing was verified"
-      : passed
-        ? "Completed successfully"
-        : `Failed safely after ${repairAttempts} repair attempt(s)`;
+    // The outcome line follows the completion gate, which is the only authority on completion.
+    // Verification passing alone never reads as "completed": a run the gate blocked (unfinished
+    // plan steps, stale evidence) is reported as blocked here, exactly as it is everywhere else.
+    const outcome = decision
+      ? decision.outcome === "completed"
+        ? verification.notConfigured ? "Completed — changes applied, but nothing was verified" : "Completed successfully"
+        : decision.outcome === "blocked"
+          ? "Not completed — the completion gate blocked this run"
+          : `Failed — required verification did not pass${repairAttempts > 0 ? ` after ${repairAttempts} repair attempt(s)` : ""}`
+      : passed ? "Completed successfully" : `Failed safely after ${repairAttempts} repair attempt(s)`;
     parts.push(`\nOutcome: ${outcome}`);
     return parts.join("\n");
   }

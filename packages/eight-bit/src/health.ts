@@ -13,6 +13,37 @@ const MAX_COOLDOWN_MS = 15 * 60_000;
 const AUTH_FAILURE_PERMANENT_SUSPEND_THRESHOLD = 3;
 
 /**
+ * A rate limit with a short window (tokens/requests per minute, or an explicit retry-after of at
+ * most this long) is a capacity blip, not a closed door: the route recovers within the minute.
+ */
+export const SHORT_RATE_LIMIT_MAX_WAIT_MS = 90_000;
+
+/**
+ * How long a 429 asks the caller to wait when that wait is short enough to be worth it, else
+ * undefined. Daily/monthly caps ("per day", "free-models-per-day", quota) never qualify: waiting
+ * a minute does not help, and pretending it might would burn the user's time.
+ */
+export function shortRateLimitWaitMs(error: unknown, now: number = Date.now()): number | undefined {
+  const msg = (error instanceof Error ? error.message : String(error ?? "")).toLowerCase();
+  if (/per[\s-]?day|daily|per[\s-]?month|monthly|free-models-per-day|quota/.test(msg)) return undefined;
+  const retryAfter = (error as { retryAfter?: unknown })?.retryAfter;
+  if (typeof retryAfter === "number" && Number.isFinite(retryAfter)) {
+    const wait = retryAfter > 1e12 ? retryAfter - now : retryAfter * 1000;
+    if (wait >= 0 && wait <= SHORT_RATE_LIMIT_MAX_WAIT_MS) return Math.ceil(wait);
+    if (wait > SHORT_RATE_LIMIT_MAX_WAIT_MS) return undefined;
+  }
+  const explicit = msg.match(/try again in\s*(\d+(?:\.\d+)?)\s*(ms|s|sec|seconds?|m|min|minutes?)/);
+  if (explicit) {
+    const value = Number(explicit[1]);
+    const unit = explicit[2]!;
+    const ms = unit === "ms" ? value : unit.startsWith("m") ? value * 60_000 : value * 1000;
+    return ms <= SHORT_RATE_LIMIT_MAX_WAIT_MS ? Math.ceil(ms) : undefined;
+  }
+  if (/per[\s-]?minute|\btpm\b|\brpm\b|per[\s-]?second/.test(msg)) return 60_000;
+  return undefined;
+}
+
+/**
  * Classifies a raw error (message/status) into a `FailureReason`. Kept deliberately simple and
  * pattern-based (mirrors the existing 401/429 detection already used in agent-runtime.ts) —
  * this is the single place that pattern lives for 8-Bit, so it can be tested and extended

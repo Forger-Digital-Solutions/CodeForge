@@ -17,8 +17,8 @@ describe("formatRelativeSessionTime", () => {
 describe("humanizeSessionStatus (R9 truthful status labels)", () => {
   it("maps internal phase names to user vocabulary", () => {
     expect(humanizeSessionStatus("testing")).toBe("Verifying");
-    expect(humanizeSessionStatus("failed_safely")).toBe("Stopped safely");
-    expect(humanizeSessionStatus("user_input_required")).toBe("Needs your input");
+    expect(humanizeSessionStatus("failed_safely")).toBe("Failed");
+    expect(humanizeSessionStatus("user_input_required")).toBe("Needs your approval");
     expect(humanizeSessionStatus("cancelled")).toBe("Stopped");
     expect(humanizeSessionStatus(undefined)).toBe("Idle");
     expect(humanizeSessionStatus("completed")).toBe("Completed");

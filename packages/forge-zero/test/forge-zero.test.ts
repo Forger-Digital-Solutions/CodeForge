@@ -471,3 +471,14 @@ describe("FailingEntitlementProvider", () => {
     expect(health.healthy).toBe(false);
   });
 });
+
+describe("canonical identity of managed-gateway routes (R16)", () => {
+  it("collapses a CodeForge Cloud route and the user's own route for the same model into one canonical id", async () => {
+    const { canonicalIdentityFor } = await import("../src/canonical.js");
+    const own = canonicalIdentityFor("openrouter", "deepseek/deepseek-v4-flash-0731:free", "DeepSeek V4 Flash 0731 (free)");
+    const hosted = canonicalIdentityFor("codeforge-cloud", "openrouter::deepseek/deepseek-v4-flash-0731:free", "DeepSeek V4 Flash 0731 (free)");
+    expect(hosted.canonicalId).toBe(own.canonicalId);
+    expect(hosted.canonicalId).toBe("deepseek/deepseek-v4-flash");
+    expect(canonicalIdentityFor("codeforge-cloud", "groq::openai/gpt-oss-120b", "GPT OSS 120B").canonicalId).toBe("openai/gpt-oss-120b");
+  });
+});

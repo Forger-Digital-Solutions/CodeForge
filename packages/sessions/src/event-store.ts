@@ -53,12 +53,25 @@ export class EventStore {
   }
 
   hydrate(events: WorkspaceEvent[]): void {
-    const bySequence = new Map<number, WorkspaceEvent>();
-    for (const event of events) {
-      if (!Number.isSafeInteger(event.seq) || event.seq <= 0) continue;
-      bySequence.set(event.seq, event);
+    const valid = events.filter((event) => Number.isSafeInteger(event.seq) && event.seq > 0);
+    const uniqueSeqs = new Set(valid.map((event) => event.seq));
+    if (uniqueSeqs.size === valid.length) {
+      this.events = [...valid].sort((left, right) => left.seq - right.seq);
+    } else {
+      // Sequence numbers restarted at some point in this store's history (releases before the
+      // sequence was hydrated from persistence numbered every process from 1), so seq alone can
+      // neither order nor dedupe. Keying by seq would silently drop whole turns and interleave a
+      // later run's events before an earlier one. Re-sequence deterministically by wall-clock
+      // timestamp (then original seq, then persisted order) so replay, the conversation timeline
+      // and the SSE cursor all agree on one chronological order.
+      this.events = valid
+        .map((event, index) => ({ event, index }))
+        .sort((left, right) =>
+          (left.event.timestamp ?? "").localeCompare(right.event.timestamp ?? "") ||
+          left.event.seq - right.event.seq ||
+          left.index - right.index)
+        .map(({ event }, position) => ({ ...event, seq: position + 1 }) as WorkspaceEvent);
     }
-    this.events = [...bySequence.values()].sort((left, right) => left.seq - right.seq);
     this.seq = this.events.at(-1)?.seq ?? 0;
   }
 

@@ -638,7 +638,12 @@ function categoryFor(view: Omit<CanonicalModelView, "category" | "freeBadge">): 
 function freeBadgeFor(view: Omit<CanonicalModelView, "category" | "freeBadge">): string {
   switch (view.readiness) {
     case "FREE_AVAILABLE": {
-      const executable = view.routes.filter((r) => r.executable && isFreeRoute(r)).length;
+      const executableRoutes = view.routes.filter((r) => r.executable && isFreeRoute(r));
+      const executable = executableRoutes.length;
+      // Every runnable route is served by CodeForge Cloud: the user needs no key or provider of
+      // their own, which is the one fact a new user has to be able to see in the picker.
+      const hostedOnly = executable > 0 && executableRoutes.every((r) => r.supplyClass === "PURE_MANAGED_FREE" || r.providerId === "codeforge-cloud");
+      if (hostedOnly) return executable > 1 ? `CodeForge Free · ${executable} routes` : "CodeForge Free · Ready";
       return executable > 1 ? `Free · ${executable} routes` : "Free · Ready";
     }
     case "FREE_CONNECT_REQUIRED":

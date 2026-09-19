@@ -233,6 +233,8 @@ export interface WorkflowResult {
     reason: "awaiting_worker";
     agentTurnId: string;
   };
+  /** Set when the run ended before its phases could finish (e.g. "route_exhausted"). */
+  stop?: { code: string; message: string };
 }
 
 export interface ApprovalRequest {

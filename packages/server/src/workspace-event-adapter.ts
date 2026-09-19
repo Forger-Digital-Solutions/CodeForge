@@ -1,4 +1,4 @@
-import type { WorkspaceEvent } from "@codeforge/protocol";
+import type { RunFailure, RunOutcome, WorkspaceEvent } from "@codeforge/protocol";
 import type { EventStore, ISessionPersistence } from "@codeforge/sessions";
 import { redactSecrets } from "@codeforge/secrets";
 
@@ -71,7 +71,7 @@ export class WorkspaceEventAdapter {
     }
   }
 
-  emitTurnStarted(turnId: string, userMessage: string, agentId?: string, origin?: { origin: "user" | "workflow"; label?: string }): Promise<void> {
+  emitTurnStarted(turnId: string, userMessage: string, agentId?: string, origin?: { origin: "user" | "workflow" | "repair"; label?: string }): Promise<void> {
     return this.emit({
       type: "turn.started",
       payload: { turnId, userMessage, agentId, ...(origin ? { origin: origin.origin, ...(origin.label ? { label: origin.label } : {}) } : {}) },
@@ -118,10 +118,18 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent);
   }
 
-  emitTurnFailed(turnId: string, error: string): Promise<void> {
+  emitTurnFailed(turnId: string, error: string, failure?: RunFailure): Promise<void> {
     return this.emit({
       type: "turn.failed",
-      payload: { turnId, error },
+      payload: { turnId, error, ...(failure ? { failure } : {}) },
+    } as WorkspaceEvent);
+  }
+
+  /** The one terminal record of a run; see RunOutcomeSchema. Awaited so nothing can follow it out of order. */
+  emitRunOutcome(outcome: Omit<RunOutcome["payload"], "runId"> & { runId?: string }): Promise<void> {
+    return this.emit({
+      type: "run.outcome",
+      payload: { ...outcome, runId: outcome.runId ?? this.runId ?? outcome.turnId ?? "run" },
     } as WorkspaceEvent);
   }
 

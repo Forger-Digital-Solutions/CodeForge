@@ -40,6 +40,12 @@ export const SessionRecordSchema = z.object({
   branch: z.string().optional(),
   workspacePath: z.string().optional(),
   taskTitle: z.string().optional(),
+  /**
+   * How the most recent run of this task ended, as a stable reason code ("completed",
+   * "verification_failed", "route_exhausted", "user_stopped", ...). `status` alone collapses
+   * every non-success into "failed"; the sidebar and the restored conversation read this.
+   */
+  outcome: z.string().max(64).optional(),
 });
 export type SessionRecord = z.infer<typeof SessionRecordSchema>;
 

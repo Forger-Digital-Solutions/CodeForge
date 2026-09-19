@@ -49,6 +49,7 @@ interface SessionRow {
   branch: string | null;
   workspacePath: string | null;
   taskTitle: string | null;
+  outcome?: string | null;
 }
 
 function parseSession(row: SessionRow): SessionRecord {
@@ -67,6 +68,7 @@ function parseSession(row: SessionRow): SessionRecord {
     ...(row.branch && { branch: row.branch }),
     ...(row.workspacePath && { workspacePath: row.workspacePath }),
     ...(row.taskTitle && { taskTitle: row.taskTitle }),
+    ...(row.outcome && { outcome: row.outcome }),
   };
 }
 
@@ -108,19 +110,19 @@ class PostgresQueryOps implements SessionPersistenceTx {
   async upsertSession(session: SessionRecord): Promise<void> {
     const s = sanitizeForPersistence(session);
     await this.q.query(
-      `INSERT INTO sessions (id, title, "createdAt", "updatedAt", status, "currentAgentId", "currentModelId", "currentProviderId", "permissionMode", "planMode", "displayMode", branch, "workspacePath", "taskTitle")
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+      `INSERT INTO sessions (id, title, "createdAt", "updatedAt", status, "currentAgentId", "currentModelId", "currentProviderId", "permissionMode", "planMode", "displayMode", branch, "workspacePath", "taskTitle", outcome)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
        ON CONFLICT (id) DO UPDATE SET
          title = excluded.title, "updatedAt" = excluded."updatedAt", status = excluded.status,
          "currentAgentId" = excluded."currentAgentId", "currentModelId" = excluded."currentModelId",
          "currentProviderId" = excluded."currentProviderId", "permissionMode" = excluded."permissionMode",
          "planMode" = excluded."planMode",
          "displayMode" = excluded."displayMode", branch = excluded.branch,
-         "workspacePath" = excluded."workspacePath", "taskTitle" = excluded."taskTitle"`,
+         "workspacePath" = excluded."workspacePath", "taskTitle" = excluded."taskTitle", outcome = excluded.outcome`,
       [
         s.id, s.title, s.createdAt, s.updatedAt, s.status,
         s.currentAgentId ?? null, s.currentModelId ?? null, s.currentProviderId ?? null,
-        s.permissionMode ?? null, s.planMode ?? null, s.displayMode ?? null, s.branch ?? null, s.workspacePath ?? null, s.taskTitle ?? null,
+        s.permissionMode ?? null, s.planMode ?? null, s.displayMode ?? null, s.branch ?? null, s.workspacePath ?? null, s.taskTitle ?? null, s.outcome ?? null,
       ],
     );
   }

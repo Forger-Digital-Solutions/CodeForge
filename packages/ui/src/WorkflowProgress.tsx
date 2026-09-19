@@ -137,7 +137,7 @@ export function phaseIndex(phase: string): number {
 export default function WorkflowProgress({ state, onPublishDelivery, onRetryPublication, onAuthorizeRepository, expanded: controlledExpanded }: WorkflowProgressProps) {
   const [internalExpanded, setInternalExpanded] = useState(false);
   const expanded = controlledExpanded ?? internalExpanded;
-  const { activePhase, isRunning, pendingApproval, activeTaskId, workflowError, lastWorkflowResult } = state;
+  const { activePhase, isRunning, isPaused, pendingApproval, activeTaskId, workflowError, lastWorkflowResult } = state;
   const parallelRun = [...state.workItems].reverse().find((item) => item.kind === "parallel_run");
   const missionRun = [...state.workItems].reverse().find((item) => item.kind === "mission");
   const deliveryRun = [...state.workItems].reverse().find((item) => item.kind === "change_delivery");
@@ -288,7 +288,9 @@ export default function WorkflowProgress({ state, onPublishDelivery, onRetryPubl
         : activePhase === "cancelled"
           ? "Cancelled"
           : "Failed"
-    : isRunning
+    : isPaused
+      ? `Paused · ${phaseLabel}`
+      : isRunning
       ? `Working · ${phaseLabel}`
       : `${completedCount}/${PHASES.length} stages`;
 

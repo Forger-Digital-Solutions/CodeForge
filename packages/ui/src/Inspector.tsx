@@ -19,6 +19,8 @@ interface InspectorProps {
   turns: TurnRecord[];
   events?: WorkspaceEvent[];
   isRunning: boolean;
+  /** Canonical run status word (from `presentRun`); falls back to the running flag. */
+  statusLabel?: string;
   workspacePath?: string;
   activeTaskId?: string | null;
   startFailure?: { code: string; message: string };
@@ -36,7 +38,7 @@ const TAB_LABELS: Record<string, string> = {
   overview: "Overview",
 };
 
-export default function Inspector({ activeTab, onTabSelect, session, workItems, events = [], isRunning, workspacePath, activeTaskId, startFailure }: InspectorProps) {
+export default function Inspector({ activeTab, onTabSelect, session, workItems, events = [], isRunning, statusLabel, workspacePath, activeTaskId, startFailure }: InspectorProps) {
   const safeTab = TABS.includes(activeTab) ? activeTab : "changes";
 
   const renderTabContent = () => {
@@ -52,7 +54,7 @@ export default function Inspector({ activeTab, onTabSelect, session, workItems, 
       case "evidence":
         return renderEvidence(workItems);
       case "overview":
-        return renderOverview(session, workItems, isRunning);
+        return renderOverview(session, workItems, isRunning, statusLabel);
       default:
         return null;
     }
@@ -78,7 +80,7 @@ export default function Inspector({ activeTab, onTabSelect, session, workItems, 
   );
 }
 
-function renderOverview(session: SessionRecord | null, workItems: WorkItem[], isRunning: boolean) {
+function renderOverview(session: SessionRecord | null, workItems: WorkItem[], isRunning: boolean, statusLabel?: string) {
   const changes = workItems.filter((w) => isWorkItemKind(w, "file_change"));
   const tests = workItems.filter((w) => isWorkItemKind(w, "test_run"));
   const totalPassed = tests.reduce((sum, t) => sum + t.passed, 0);
@@ -98,7 +100,7 @@ function renderOverview(session: SessionRecord | null, workItems: WorkItem[], is
         <div className="overview-row">
           <span className="overview-row-label">Status</span>
           <span className="overview-row-value" style={{ color: isRunning ? "var(--cf-success)" : "var(--cf-text-secondary)" }}>
-            {isRunning ? "Running" : "Idle"}
+            {statusLabel ?? (isRunning ? "Running" : "Idle")}
           </span>
         </div>
         <div className="overview-row">

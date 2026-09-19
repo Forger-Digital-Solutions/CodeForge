@@ -1,3 +1,4 @@
+import { splitMessageAttachments } from "@codeforge/protocol";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import type { TurnRecord, WorkItem } from "@codeforge/sessions";
 import type { WorkspaceEvent } from "@codeforge/protocol";
@@ -299,16 +300,33 @@ const CommandActivity = ({ item }: { item: Extract<TimelineItem, { kind: "comman
   );
 };
 
+/** The user's own words, with any attached files folded back into collapsible chips. */
+const UserMessage = ({ text }: { text: string }) => {
+  const { text: body, attachments } = splitMessageAttachments(text);
+  const [open, setOpen] = useState<string | null>(null);
+  return (
+    <div className="user-message">
+      <div className="user-message-label">You</div>
+      <div className="user-message-body">{body}</div>
+      {attachments.length > 0 && (
+        <div className="user-message-attachments" role="list" aria-label="Attached files">
+          {attachments.map((a, i) => (
+            <button key={`${a.name}-${i}`} type="button" role="listitem" className="user-message-attachment" aria-expanded={open === `${a.name}-${i}`} onClick={() => setOpen((v) => (v === `${a.name}-${i}` ? null : `${a.name}-${i}`))} title="Show attached text">
+              <span aria-hidden="true">⎘</span>{a.name}<span className="activity-meta">{a.content.length.toLocaleString()} chars</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {open !== null && (() => { const idx = attachments.findIndex((a, i) => `${a.name}-${i}` === open); return idx >= 0 ? <pre className="user-message-attachment-body">{attachments[idx]!.content.slice(0, 20_000)}</pre> : null; })()}
+    </div>
+  );
+};
+
 /** Renders one reconstructed timeline item: user prompt, assistant prose, or tool activity. */
 const TimelineItemView = ({ item, workspacePath }: { item: TimelineItem; workspacePath?: string }) => {
   switch (item.kind) {
     case "user":
-      return (
-        <div className="user-message">
-          <div className="user-message-label">You</div>
-          <div className="user-message-body">{item.text}</div>
-        </div>
-      );
+      return <UserMessage text={item.text} />;
     case "assistant":
       return (
         <div className="assistant-message">
@@ -326,7 +344,8 @@ const TimelineItemView = ({ item, workspacePath }: { item: TimelineItem; workspa
     case "phase": {
       const kinds = { testing: "test", repairing: "execute", reviewing: "verify", outcome: "complete" } as const;
       const verbs = { testing: "Verify", repairing: "Repair", reviewing: "Review", outcome: "CodeForge" } as const;
-      return <ActivityLine kind={kinds[item.phase]} state={item.phase === "outcome" && item.text !== "Done" ? "failed" : "completed"} verb={verbs[item.phase]} target={item.text} meta={item.detail} />;
+      const outcomeState = item.phase !== "outcome" || item.text === "Done" ? "completed" : item.text === "Stopped" ? "blocked" : "failed";
+      return <ActivityLine kind={kinds[item.phase]} state={outcomeState} verb={verbs[item.phase]} target={item.text} meta={item.detail} />;
     }
     case "file":
       return (

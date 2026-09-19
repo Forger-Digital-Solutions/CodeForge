@@ -1,3 +1,5 @@
+import { MAX_ATTACHMENT_CHARS, MAX_ATTACHMENTS_PER_MESSAGE } from "@codeforge/protocol";
+import type { RunPresentation } from "./run-lifecycle.js";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { USER_INTENT_HOLD_QUIET_GRACE_MS, type ExecutionMode } from "@codeforge/protocol";
 import SlashCommands, { SLASH_COMMANDS } from "./SlashCommands.js";
@@ -44,6 +46,13 @@ interface ComposerProps {
   onBackground: () => void;
   isRunning: boolean;
   isPaused: boolean;
+  /**
+   * Canonical projection of the run. When provided, the "working" indicator, its label and its
+   * visibility come from it — a terminal run can never show "Agent working".
+   */
+  run?: RunPresentation;
+  /** True while the run is actively doing work (lifecycle.active); gates the working indicator. */
+  working?: boolean;
   models?: ModelSelectorItem[];
   selectedModelId?: string | null;
   onSelectModel?: (model: ModelSelectorItem) => void;
@@ -85,10 +94,12 @@ export default function Composer({
   onSend,
   onSteer,
   onStop,
-  onPause,
-  onResume,
+  onPause: _onPause,
+  onResume: _onResume,
   isRunning,
   isPaused,
+  run,
+  working,
   models,
   selectedModelId,
   onSelectModel,
@@ -113,6 +124,8 @@ export default function Composer({
   const [contextMatches, setContextMatches] = useState<ContextMatch[] | null>(null);
   const contextSearchSeq = useRef(0);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  /** Why the last attachment attempt was refused or trimmed — shown beside the chips, never silent. */
+  const [attachmentNotice, setAttachmentNotice] = useState<string | null>(null);
   const [contextQuery, setContextQuery] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const holdReleaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -146,33 +159,38 @@ export default function Composer({
   }, []);
 
   const processFiles = async (files: File[]) => {
+    const notices: string[] = [];
+    let accepted = 0;
     for (const file of files) {
-      const attachment: Attachment = {
-        id: crypto.randomUUID(),
-        type: file.type.startsWith("image/") ? "image" : "file",
-        name: file.name,
-        size: file.size,
-      };
-
-      if (file.type.startsWith("image/")) {
-        const base64 = await fileToBase64(file);
-        attachment.content = base64;
-      } else {
-        const text = await fileToText(file);
-        attachment.content = text;
+      const verdict = classifyAttachmentCandidate(file, attachments.length + accepted);
+      if (verdict !== "ok") {
+        notices.push(verdict);
+        continue;
       }
-
+      let text: string;
+      try {
+        text = await fileToText(file);
+      } catch {
+        notices.push(`"${file.name}" could not be read (it may be locked or no longer exist).`);
+        continue;
+      }
+      if (looksBinary(text)) {
+        notices.push(`"${file.name}" is not a text file. Only text and code files can be attached.`);
+        continue;
+      }
+      if (text.length > MAX_ATTACHMENT_CHARS) {
+        notices.push(`"${file.name}" is large; only the first ${Math.round(MAX_ATTACHMENT_CHARS / 1000)}K characters were attached.`);
+        text = text.slice(0, MAX_ATTACHMENT_CHARS);
+      }
+      if (attachments.some((a) => a.name === file.name && a.size === file.size)) {
+        notices.push(`"${file.name}" is already attached.`);
+        continue;
+      }
+      accepted += 1;
+      const attachment: Attachment = { id: crypto.randomUUID(), type: "file", name: file.name, size: file.size, content: text };
       setAttachments((prev) => [...prev, attachment]);
     }
-  };
-
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+    setAttachmentNotice(notices.length > 0 ? notices.join(" ") : null);
   };
 
   const fileToText = (file: File): Promise<string> => {
@@ -188,25 +206,19 @@ export default function Composer({
   const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const items = Array.from(e.clipboardData.items);
     const imageItems = items.filter((item) => item.type.startsWith("image/"));
-    
-    if (imageItems.length > 0) {
+    const fileItems = items.filter((item) => item.kind === "file" && !item.type.startsWith("image/"));
+    if (imageItems.length > 0 && fileItems.length === 0) {
+      // The free routes are text models: an image would be dropped on the way to the model. Say so.
       e.preventDefault();
-      for (const item of imageItems) {
-        const file = item.getAsFile();
-        if (file) {
-          const base64 = await fileToBase64(file);
-          const attachment: Attachment = {
-            id: crypto.randomUUID(),
-            type: "image",
-            name: file.name || "pasted-image.png",
-            content: base64,
-            size: file.size,
-          };
-          setAttachments((prev) => [...prev, attachment]);
-        }
-      }
+      setAttachmentNotice(IMAGE_UNSUPPORTED_NOTICE);
+      return;
     }
-  }, []);
+    if (fileItems.length > 0) {
+      e.preventDefault();
+      const files = fileItems.map((item) => item.getAsFile()).filter((f): f is File => Boolean(f));
+      await processFiles(files);
+    }
+  }, [attachments]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -366,33 +378,47 @@ export default function Composer({
       onDrop={handleDrop}
     >
       {/* Status strips inform only — Pause/Stop/Resume live canonically in the
-          task header so each visible control has exactly one meaning. */}
+          task header so each visible control has exactly one meaning. The working
+          indicator follows the canonical lifecycle: terminal or waiting states
+          never claim the agent is working. */}
       {isPaused && (
         <div className="composer-status">
           <span className="composer-status-dot paused" />
           <span style={{ fontSize: 11, color: "var(--cf-warning)" }}>Paused</span>
         </div>
       )}
-      {isRunning && !isPaused && executionState === "user_intent_hold" && (
+      {!isPaused && isRunning && executionState === "user_intent_hold" && (
         <div className="composer-status" role="status" aria-live="polite">
           <span className="composer-status-dot paused" />
           <span style={{ fontSize: 11, color: "var(--cf-warning)" }}>Waiting for your steer…</span>
         </div>
       )}
-      {isRunning && !isPaused && executionState !== "user_intent_hold" && (
+      {!isPaused && executionState !== "user_intent_hold" && (working ?? isRunning) && (
         <div className="composer-status">
           <span className="composer-status-dot running" />
-          <span style={{ fontSize: 11, color: "var(--cf-success)" }}>Agent working</span>
+          <span style={{ fontSize: 11, color: "var(--cf-success)" }}>{run?.label ?? "Agent working"}</span>
+        </div>
+      )}
+      {!isPaused && !working && run && run.tone === "waiting" && executionState !== "user_intent_hold" && (
+        <div className="composer-status" role="status" aria-live="polite">
+          <span className="composer-status-dot paused" />
+          <span style={{ fontSize: 11, color: "var(--cf-warning)" }}>{run.label}</span>
         </div>
       )}
 
+      {attachmentNotice && (
+        <div className="composer-attachment-notice" role="status">
+          <span>{attachmentNotice}</span>
+          <button type="button" className="attachment-remove" aria-label="Dismiss" onClick={() => setAttachmentNotice(null)}>×</button>
+        </div>
+      )}
       {/* Attachments preview */}
       {attachments.length > 0 && (
         <div className="composer-attachments" ref={attachmentsRef} role="list" aria-label="Attachments">
           {attachments.map((att) => (
-            <div key={att.id} className="attachment-chip" role="listitem">
+            <div key={att.id} className="attachment-chip" role="listitem" title={`${att.name} — attached as text; sent with your message`}>
               <span className="attachment-icon" aria-hidden="true">
-                {att.type === "image" ? "🖼" : att.type === "folder" ? "📁" : "📄"}
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 2.5h5.5L12.5 5.5V13.5H4V2.5Z" stroke="currentColor" strokeWidth="1.3" /><path d="M9.5 2.5v3h3" stroke="currentColor" strokeWidth="1.3" /></svg>
               </span>
               <span className="attachment-name" title={att.name}>{att.name}</span>
               {att.size && <span className="attachment-size">{formatSize(att.size)}</span>}
@@ -416,7 +442,7 @@ export default function Composer({
           <div className="context-picker-items">
             {!searchContext ? (
               <div className="context-picker-item" role="option" aria-disabled="true">
-                <span>📄</span>
+                <span aria-hidden="true">≡</span>
                 <span>Repository search is not available in this workspace</span>
               </div>
             ) : contextMatches === null ? (
@@ -426,7 +452,7 @@ export default function Composer({
               </div>
             ) : contextMatches.length === 0 ? (
               <div className="context-picker-item" role="option" aria-disabled="true">
-                <span>📄</span>
+                <span aria-hidden="true">≡</span>
                 <span>No matches for "@{contextQuery}"</span>
               </div>
             ) : (
@@ -440,7 +466,7 @@ export default function Composer({
                   onClick={() => insertContextReference(match)}
                   title={match.reason ? `${match.path} · ${match.reason}` : match.path}
                 >
-                  <span>{match.symbol ? "ƒ" : "📄"}</span>
+                  <span>{match.symbol ? "ƒ" : "≡"}</span>
                   <span className="context-picker-path">{match.path}</span>
                   {match.symbol && <span className="context-picker-symbol">{match.symbol}{match.line ? `:${match.line}` : ""}</span>}
                 </button>
@@ -498,21 +524,16 @@ export default function Composer({
                 onClick={() => setShowAttachments(!showAttachments)}
                 aria-expanded={showAttachments}
                 aria-label={showAttachments ? "Hide attachments" : "Add attachment"}
-                title={showAttachments ? "Hide attachments" : "Add file, image, or folder (Ctrl+Shift+A)"}
+                title={showAttachments ? "Hide attachments" : "Attach a text or code file (Ctrl+Shift+A)"}
               >
                 +
               </button>
               {showAttachments && (
                 <div className="attachment-menu" role="menu">
-                  <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => triggerFileInput("file")}>
-                    <span>📄</span> Add file
+                  <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => { triggerFileInput(); setShowAttachments(false); }}>
+                    Attach a text or code file…
                   </button>
-                  <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => triggerFileInput("image")}>
-                    <span>🖼</span> Add image
-                  </button>
-                  <button type="button" className="attachment-menu-item" role="menuitem" onClick={() => triggerFileInput("folder")}>
-                    <span>📁</span> Add folder
-                  </button>
+                  <div className="attachment-menu-hint">Up to {MAX_ATTACHMENTS_PER_MESSAGE} files, {Math.round(MAX_ATTACHMENT_CHARS / 1000)}K characters each. Images are not supported by the free models yet.</div>
                 </div>
               )}
               <input
@@ -617,11 +638,34 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
 }
 
-function triggerFileInput(type: "file" | "image" | "folder") {
+function triggerFileInput() {
   const input = document.getElementById("hidden-file-input") as HTMLInputElement;
   if (input) {
-    input.accept = type === "image" ? "image/*" : "*/*";
-    input.webkitdirectory = type === "folder";
+    input.accept = "*/*";
+    input.webkitdirectory = false;
     input.click();
   }
+}
+
+export const IMAGE_UNSUPPORTED_NOTICE = "Image attachments aren't supported by the free models yet — paste the text or describe the image instead.";
+const MAX_ATTACHMENT_BYTES = 4 * 1024 * 1024;
+
+/** Refuse, up front, what cannot honestly be attached: images, oversized or too many files. */
+export function classifyAttachmentCandidate(file: Pick<File, "name" | "size" | "type">, alreadyAttached: number): "ok" | string {
+  if (alreadyAttached >= MAX_ATTACHMENTS_PER_MESSAGE) return `Only ${MAX_ATTACHMENTS_PER_MESSAGE} files can be attached to one message; "${file.name}" was not added.`;
+  if (file.type.startsWith("image/")) return IMAGE_UNSUPPORTED_NOTICE;
+  if (file.size > MAX_ATTACHMENT_BYTES) return `"${file.name}" is ${formatSize(file.size)}; files over ${formatSize(MAX_ATTACHMENT_BYTES)} can't be attached. Point CodeForge at the file in your project instead.`;
+  return "ok";
+}
+
+/** Text files contain no NUL bytes and few control characters; anything else is a binary. */
+export function looksBinary(text: string): boolean {
+  const sample = text.slice(0, 8000);
+  if (sample.includes("\u0000")) return true;
+  let control = 0;
+  for (let i = 0; i < sample.length; i++) {
+    const c = sample.charCodeAt(i);
+    if (c < 32 && c !== 9 && c !== 10 && c !== 13) control++;
+  }
+  return sample.length > 0 && control / sample.length > 0.02;
 }

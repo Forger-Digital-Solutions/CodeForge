@@ -176,3 +176,36 @@ describe("EventStore", () => {
     expect(store.getLastSeq()).toBe(6);
   });
 });
+
+describe("EventStore.hydrate with a restarted sequence (R16)", () => {
+  it("keeps every event and re-sequences chronologically when persisted seqs collide", () => {
+    const store = new EventStore();
+    // Two process lifetimes that both numbered from 1: the later run (small seqs, later timestamps)
+    // must sort AFTER the earlier run instead of being interleaved before it or dropped.
+    const early = (seq: number, type: string, ts: string) => makeEvent({ seq, type: type as WorkspaceEvent["type"], timestamp: ts, payload: { turnId: `e${seq}`, userMessage: "x" } as never });
+    const persisted = [
+      early(50, "turn.started", "2026-08-29T20:45:00.000Z"),
+      early(51, "status.changed", "2026-08-29T20:45:01.000Z"),
+      early(52, "task.state_changed", "2026-08-29T20:45:02.000Z"),
+      early(5, "turn.failed", "2026-08-29T20:46:04.694Z"),
+      early(6, "status.changed", "2026-08-29T20:46:04.700Z"),
+      early(7, "agent.completed", "2026-08-29T20:46:04.701Z"),
+      early(5, "turn.started", "2026-08-29T20:46:04.556Z"),
+    ];
+    store.hydrate(persisted);
+    const all = store.getAll();
+    expect(all).toHaveLength(7);
+    expect(all.map((e) => e.seq)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(all.map((e) => e.type)).toEqual(["turn.started", "status.changed", "task.state_changed", "turn.started", "turn.failed", "status.changed", "agent.completed"]);
+    expect(store.getLastSeq()).toBe(7);
+    store.append(makeEvent({ type: "turn.started" }));
+    expect(store.getAll().at(-1)!.seq).toBe(8);
+  });
+
+  it("leaves a healthy monotonic history untouched", () => {
+    const store = new EventStore();
+    store.hydrate([makeEvent({ seq: 3 }), makeEvent({ seq: 1 }), makeEvent({ seq: 2 })]);
+    expect(store.getAll().map((e) => e.seq)).toEqual([1, 2, 3]);
+    expect(store.getLastSeq()).toBe(3);
+  });
+});

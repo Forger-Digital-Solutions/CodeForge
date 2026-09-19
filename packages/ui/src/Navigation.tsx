@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { WorkItem } from "@codeforge/sessions";
+import { presentSessionSummary, type RunTone } from "./run-lifecycle.js";
 
 export interface NavSessionSummary {
   id: string;
   title?: string;
   taskTitle?: string;
   status?: string;
+  /** How the last run ended ("route_exhausted", "verification_failed", …); refines `status`. */
+  outcome?: string;
   updatedAt?: string;
 }
 
@@ -24,9 +27,10 @@ export function overlayActiveSessionStatus<T extends NavSessionSummary>(
   sessions: T[],
   activeSessionId: string | null,
   activeSessionStatus?: string,
+  activeSessionOutcome?: string,
 ): T[] {
   if (!activeSessionId || !activeSessionStatus) return sessions;
-  return sessions.map((session) => session.id === activeSessionId ? { ...session, status: activeSessionStatus } : session);
+  return sessions.map((session) => session.id === activeSessionId ? { ...session, status: activeSessionStatus, ...(activeSessionOutcome ? { outcome: activeSessionOutcome } : {}) } : session);
 }
 
 /** Internal bootstrap prompts must never leak into task history. */
@@ -48,42 +52,11 @@ export function formatRelativeSessionTime(value?: string, now = Date.now()): str
   return `${Math.floor(hours / 24)}d`;
 }
 
-/** Internal run states (phases, terminal enums) are not user vocabulary. */
+/** Internal run states (phases, terminal enums) are not user vocabulary. Shares its wording with
+ *  the canonical presentation (`presentSessionSummary`) so a sidebar row can never disagree with
+ *  the header of the task it names. */
 export function humanizeSessionStatus(status?: string): string {
-  switch (status) {
-    case undefined:
-    case "":
-      return "Idle";
-    case "running":
-      return "Working";
-    case "testing":
-      return "Verifying";
-    case "verifying":
-      return "Verifying";
-    case "repairing":
-      return "Repairing";
-    case "diagnosing":
-      return "Diagnosing";
-    case "reviewing":
-      return "Reviewing";
-    case "user_input_required":
-      return "Needs your input";
-    case "waiting_for_approval":
-      return "Needs your approval";
-    case "failed":
-      return "Failed";
-    case "failed_safely":
-      return "Stopped safely";
-    case "cancelled":
-      return "Stopped";
-    case "blocked":
-      return "Blocked";
-    case "completed":
-    case "complete":
-      return "Completed";
-    default:
-      return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ");
-  }
+  return presentSessionSummary({ status }).label;
 }
 
 export type SessionGroupLabel = "Today" | "Yesterday" | "Previous 7 Days" | "Older";
@@ -104,6 +77,8 @@ interface NavigationProps {
   activeSessionId: string | null;
   /** Terminal SSE state takes precedence over a briefly stale persisted session summary. */
   activeSessionStatus?: string;
+  /** The live run's outcome code when it refines the overlaid status ("route_exhausted", …). */
+  activeSessionOutcome?: string;
   onSelectSession: (id: string) => void;
   onNewTask: () => void;
   projectName?: string;
@@ -153,25 +128,24 @@ function NavIcon({ path, filled }: { path: string; filled?: boolean }) {
   );
 }
 
-function getSessionStatusIcon(status?: string): string {
-  switch (status) {
-    case "running": return "●";
-    case "completed": return "✓";
-    case "failed": return "✕";
-    case "cancelled": return "⏹";
-    case "blocked": return "⛔";
-    case "user_input_required": return "?";
-    case "waiting_for_approval": return "⏳";
-    case "paused": return "Ⅱ";
-    case "interrupted": return "Ⅱ";
-    default: return "○";
-  }
-}
+/** One restrained glyph per presentation tone — historical rows stay quiet instead of
+ *  accumulating a wall of loud failure markers. */
+const TONE_TO_ICON: Record<RunTone, string> = {
+  active: "●",
+  waiting: "⏳",
+  paused: "Ⅱ",
+  success: "✓",
+  danger: "✕",
+  warning: "⚠",
+  muted: "○",
+  idle: "○",
+};
 
 export default function Navigation({
   sessions,
   activeSessionId,
   activeSessionStatus,
+  activeSessionOutcome,
   onSelectSession,
   onNewTask,
   projectName,
@@ -190,13 +164,13 @@ export default function Navigation({
     const groups: Record<SessionGroupLabel, NavSessionSummary[]> = {
       Today: [], Yesterday: [], "Previous 7 Days": [], Older: [],
     };
-    for (const session of [...overlayActiveSessionStatus(sessions, activeSessionId, activeSessionStatus)].sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""))) {
+    for (const session of [...overlayActiveSessionStatus(sessions, activeSessionId, activeSessionStatus, activeSessionOutcome)].sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""))) {
       const label = displaySessionTitle(session);
       if (normalized && !`${label} ${session.status ?? ""}`.toLocaleLowerCase().includes(normalized)) continue;
       groups[groupSessionByAge(session.updatedAt)].push(session);
     }
     return groups;
-  }, [query, sessions, activeSessionId, activeSessionStatus]);
+  }, [query, sessions, activeSessionId, activeSessionStatus, activeSessionOutcome]);
 
   useEffect(() => {
     if (searchOpen) searchRef.current?.focus();
@@ -290,25 +264,24 @@ export default function Navigation({
                     {groupedSessions[group].map((session) => {
                       const label = displaySessionTitle(session);
                       const isActive = session.id === activeSessionId;
-                      const running = session.status === "running";
+                      const summary = presentSessionSummary({ status: session.status, outcome: session.outcome });
                       const relativeTime = formatRelativeSessionTime(session.updatedAt);
-                      const statusIcon = getSessionStatusIcon(session.status);
                       return (
                         <button
                           type="button"
                           key={session.id}
-                          className={`nav-item nav-task ${isActive ? "active" : ""} status-${session.status ?? "idle"}`}
+                          className={`nav-item nav-task ${isActive ? "active" : ""} status-${session.status ?? "idle"} tone-${summary.tone}`}
                           onClick={() => onSelectSession(session.id)}
                           title={label}
                           aria-current={isActive ? "page" : undefined}
-                          aria-label={`${label} — ${humanizeSessionStatus(session.status)}${relativeTime ? `, ${relativeTime}` : ""}`}
+                          aria-label={`${label} — ${summary.label}${relativeTime ? `, ${relativeTime}` : ""}`}
                         >
-                          <span className={`nav-task-dot ${running ? "running" : ""}`} />
+                          <span className={`nav-task-dot ${summary.tone === "active" ? "running" : ""}`} />
                           <span className="nav-task-copy">
                             <span className="nav-label">{label}</span>
-                            <span className="nav-task-meta">{running ? "Working" : humanizeSessionStatus(session.status)}{relativeTime ? ` · ${relativeTime}` : ""}</span>
+                            <span className="nav-task-meta">{summary.label}{relativeTime ? ` · ${relativeTime}` : ""}</span>
                           </span>
-                          <span className="nav-task-status-icon" title={humanizeSessionStatus(session.status)} aria-hidden="true">{statusIcon}</span>
+                          <span className={`nav-task-status-icon tone-${summary.tone}`} title={summary.label} aria-hidden="true">{TONE_TO_ICON[summary.tone]}</span>
                         </button>
                       );
                     })}

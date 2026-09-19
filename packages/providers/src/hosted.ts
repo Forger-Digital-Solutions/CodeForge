@@ -3,6 +3,13 @@ import type { ChatRequest, ChatResponse, StreamEvent, ToolCall } from "./chat-ty
 import type { ProviderAdapter, ProviderModel, ProviderHealthResponse } from "./index.js";
 import { checkCloudCompatibility, CloudCompatibilityError, type CloudCompatibilityResult } from "./cloud-compatibility.js";
 
+/** Catalog/health/compatibility round trips: bounded so an unreachable Cloud fails fast and visibly. */
+const HOSTED_CONTROL_REQUEST_TIMEOUT_MS = 10_000;
+/** A compatible Cloud stays trusted for this long before it is re-probed. */
+const COMPATIBILITY_OK_TTL_MS = 10 * 60_000;
+/** A Cloud that answered but is too old is re-probed this often (it may be redeployed). */
+const COMPATIBILITY_RETRY_MS = 60_000;
+
 export interface HostedProviderOptions {
   cloudApiUrl?: string;
   getAccessToken?: () => Promise<string | null> | string | null;
@@ -35,13 +42,20 @@ export class HostedProviderAdapter implements ProviderAdapter {
   private readonly getAccessToken?: () => Promise<string | null> | string | null;
   private readonly onAuthExpired?: () => Promise<string | null>;
   private readonly fetchFn: typeof fetch;
+  /** Unbounded fetch for the inference stream itself (a long generation is legitimate). */
+  private readonly inferenceFetch: typeof fetch;
   private compatibilityProbe?: Promise<CloudCompatibilityResult>;
+
+  private compatibility: { result: CloudCompatibilityResult; checkedAt: number } | undefined;
 
   constructor(options: HostedProviderOptions = {}) {
     this.cloudApiUrl = (options.cloudApiUrl ?? "http://127.0.0.1:3220").replace(/\/$/, "");
     this.getAccessToken = options.getAccessToken;
     this.onAuthExpired = options.onAuthExpired;
-    this.fetchFn = options.fetchFn ?? fetch;
+    const rawFetch = options.fetchFn ?? fetch;
+    // Catalog, health and compatibility round trips are bounded; only inference streams may run long.
+    this.fetchFn = (input, init) => rawFetch(input, init?.signal ? init : { ...init, signal: AbortSignal.timeout(HOSTED_CONTROL_REQUEST_TIMEOUT_MS) });
+    this.inferenceFetch = rawFetch;
   }
 
   async healthCheck(): Promise<ProviderHealthResponse> {
@@ -62,7 +76,19 @@ export class HostedProviderAdapter implements ProviderAdapter {
   }
 
   async getCloudCompatibility(): Promise<CloudCompatibilityResult> {
-    this.compatibilityProbe ??= checkCloudCompatibility(this.cloudApiUrl, this.fetchFn);
+    // A definitive answer from the Cloud is cached; an UNREACHABLE Cloud is not. Caching the
+    // unreachable verdict pinned the adapter to "incompatible" for the life of the process, so an
+    // app started offline could never use CodeForge Free again without a restart.
+    const now = Date.now();
+    if (this.compatibility && now - this.compatibility.checkedAt < (this.compatibility.result.compatible ? COMPATIBILITY_OK_TTL_MS : COMPATIBILITY_RETRY_MS)) {
+      return this.compatibility.result;
+    }
+    this.compatibilityProbe ??= checkCloudCompatibility(this.cloudApiUrl, this.fetchFn)
+      .then((result) => {
+        if (!/could not be reached/i.test(result.message ?? "") || result.compatible) this.compatibility = { result, checkedAt: Date.now() };
+        return result;
+      })
+      .finally(() => { this.compatibilityProbe = undefined; });
     return this.compatibilityProbe;
   }
 
@@ -93,7 +119,7 @@ export class HostedProviderAdapter implements ProviderAdapter {
         return [
           {
             modelId: "codeforge-auto",
-            displayName: "CodeForge Auto · Included Free (Cloud)",
+            displayName: "CodeForge Auto",
             contextWindow: 128000,
             capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
             isFree: true,
@@ -101,7 +127,9 @@ export class HostedProviderAdapter implements ProviderAdapter {
           },
           ...eligible.map((m) => ({
             modelId: `${m.providerId}::${m.modelId}`,
-            displayName: `${m.displayName} · Included Free (Cloud)`,
+            // The route is identified by its provider ("codeforge-cloud"); the picker badges it as
+            // CodeForge Free. Decorating the name would stop it merging with the same model elsewhere.
+            displayName: m.displayName.trim(),
             contextWindow: m.contextWindow || 128000,
             capabilities: {
               text: m.capabilities?.text ?? true,
@@ -184,7 +212,7 @@ export class HostedProviderAdapter implements ProviderAdapter {
       if (authToken) {
         headers["Authorization"] = `Bearer ${authToken}`;
       }
-      return this.fetchFn(`${this.cloudApiUrl}/v1/hosted/inference`, {
+      return this.inferenceFetch(`${this.cloudApiUrl}/v1/hosted/inference`, {
         method: "POST",
         headers,
         body,

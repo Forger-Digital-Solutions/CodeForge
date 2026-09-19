@@ -1,8 +1,18 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import type { ExecutionMode, SendRequest, WorkspaceEvent, SessionStatus, UserIntentHoldRequest } from "@codeforge/protocol";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import type { ExecutionMode, SendAttachment, SendRequest, WorkspaceEvent, SessionStatus, UserIntentHoldRequest } from "@codeforge/protocol";
 import { DEFAULT_EXECUTION_MODE, ExecutionModeSchema, WorkspaceEventSchema, isWorkspaceEvent } from "@codeforge/protocol";
 import type { SessionRecord, TurnRecord, WorkItem } from "@codeforge/sessions";
 import { isEventForSession, mergeEvent } from "./session-events.js";
+import { humanizeError } from "./error-copy.js";
+import {
+  deriveRunLifecycle,
+  describeReasonCode,
+  lastTerminalEventSeq,
+  presentRun,
+  type RunLifecycle,
+  type RunPresentation,
+  type RunState,
+} from "./run-lifecycle.js";
 
 /** Workflow terminal reasons arrive as internal summaries; keep the chat language human. */
 function humanizeWorkflowError(reason: string): string {
@@ -65,6 +75,16 @@ export interface WorkspaceState {
   steerQueued: boolean;
   /** Task authority contract reported by the server lease. */
   authority: { permissionMode: string; planMode: string; grants: string[] } | null;
+  /**
+   * The terminal event whose failure card the user dismissed. Renderer-local only; clearing it on
+   * session switch is deliberate — reopening a failed task re-surfaces its outcome.
+   */
+  dismissedTerminalSeq: number | null;
+  /**
+   * A failure with no run behind it (the send POST itself failed, before any event existed).
+   * Lifecycle projection cannot describe it, so it rides the failure banner directly.
+   */
+  actionFailure: string | null;
 }
 
 export const initialWorkspaceState: WorkspaceState = {
@@ -100,6 +120,8 @@ export const initialWorkspaceState: WorkspaceState = {
   holdReason: null,
   steerQueued: false,
   authority: null,
+  dismissedTerminalSeq: null,
+  actionFailure: null,
 };
 
 export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
@@ -133,6 +155,8 @@ export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
     holdReason: null,
     steerQueued: false,
     authority: null,
+    dismissedTerminalSeq: null,
+    actionFailure: null,
   };
 }
 
@@ -184,13 +208,16 @@ export function createSendRequest(
   executionMode: ExecutionMode,
   steer = false,
   repair = false,
+  attachments?: SendAttachment[],
 ): SendRequest {
-  if (steer) return { sessionId, message, turnId, steer: true };
+  const attached = attachments && attachments.length > 0 ? { attachments } : {};
+  if (steer) return { sessionId, message, turnId, steer: true, ...attached };
   return {
     sessionId,
     message,
     turnId,
     executionMode,
+    ...attached,
     ...(repair ? { repair: true } : {}),
   };
 }
@@ -223,7 +250,8 @@ export function hasTerminalActiveWorkflow(state: Pick<WorkspaceState, "activeTas
 
 export function applyExecutionLifecycleEvent(state: WorkspaceState, event: WorkspaceEvent): WorkspaceState {
   if (event.type === "execution.requested") {
-    return { ...state, activeExecutionMode: event.payload.executionMode };
+    // A real run is starting: a previous action-level failure no longer applies.
+    return { ...state, activeExecutionMode: event.payload.executionMode, actionFailure: null };
   }
   if (event.type === "execution.start_failed") {
     const workflowError = executionStartFailureMessage(event.payload.executionMode, event.payload.message);
@@ -268,6 +296,100 @@ export function removePendingApproval(queue: PendingApproval[], approvalId: stri
   return queue.filter((a) => a.id !== approvalId);
 }
 
+// ---------------------------------------------------------------------------
+// Canonical lifecycle projection. `deriveRunLifecycle` is the ONLY interpreter of run state;
+// the legacy display fields below are filled from its presentation so no surface can disagree
+// with another (the "Failed · Agent working" contradiction this replaces).
+// ---------------------------------------------------------------------------
+
+const RUN_STATE_TO_SESSION_STATUS: Record<RunState, SessionStatus> = {
+  IDLE: "idle",
+  QUEUED: "running",
+  ROUTING: "running",
+  RUNNING: "running",
+  VERIFYING: "running",
+  REPAIRING: "running",
+  REVIEWING: "running",
+  REROUTING: "running",
+  WAITING_FOR_APPROVAL: "waiting_for_approval",
+  WAITING_FOR_INPUT: "waiting_for_question",
+  PAUSED: "paused",
+  INTERRUPTED: "recovering",
+  COMPLETED: "completed",
+  FAILED: "failed",
+  BLOCKED: "failed",
+  CANCELLED: "cancelled",
+  ROUTE_EXHAUSTED: "failed",
+};
+
+const RUN_PHASE_TO_WORKFLOW_PHASE: Record<NonNullable<RunLifecycle["phase"]>, string> = {
+  exploring: "reconnaissance",
+  planning: "planning",
+  implementing: "implementing",
+  verifying: "verifying",
+  diagnosing: "diagnosing",
+  repairing: "repairing",
+  reviewing: "reviewing",
+  summarizing: "summarizing",
+  answering: "implementing",
+};
+
+/** The legacy `activePhase` vocabulary (WorkflowProgress stepper keys) for a canonical state. */
+export function lifecycleActivePhase(lifecycle: RunLifecycle): string {
+  switch (lifecycle.state) {
+    case "IDLE": return "idle";
+    case "QUEUED":
+    case "ROUTING": return "received";
+    case "RUNNING":
+    case "REROUTING":
+    case "PAUSED": return RUN_PHASE_TO_WORKFLOW_PHASE[lifecycle.phase ?? "implementing"];
+    case "VERIFYING": return lifecycle.phase === "diagnosing" ? "diagnosing" : "verifying";
+    case "REPAIRING": return "repairing";
+    case "REVIEWING": return "reviewing";
+    case "WAITING_FOR_APPROVAL": return "awaiting_approval";
+    case "WAITING_FOR_INPUT": return "user_input_required";
+    case "INTERRUPTED": return "recovering";
+    case "COMPLETED": return "complete";
+    case "FAILED": return "failed_safely";
+    case "BLOCKED":
+    case "ROUTE_EXHAUSTED": return "blocked";
+    case "CANCELLED": return "cancelled";
+  }
+}
+
+/**
+ * Fill the legacy display fields of `state` from the canonical lifecycle. Anything a user can
+ * see — running flag, pause flag, status enum, phase, progress, failure banner — comes from the
+ * one projection; the raw per-event mutations in the SSE handler stay as inputs, never as truth.
+ */
+export function projectRunPresentation(state: WorkspaceState, lifecycle: RunLifecycle, presentation: RunPresentation): WorkspaceState {
+  let workflowError: string | null;
+  if (lifecycle.terminal) {
+    const isFailure = lifecycle.state === "FAILED" || lifecycle.state === "BLOCKED" || lifecycle.state === "ROUTE_EXHAUSTED";
+    const terminalSeq = lastTerminalEventSeq(state.events);
+    const dismissed = state.dismissedTerminalSeq !== null && state.dismissedTerminalSeq === terminalSeq;
+    workflowError = isFailure && !dismissed
+      ? (lifecycle.failure?.message ?? describeReasonCode(lifecycle.reasonCode, lifecycle.state) ?? state.workflowError)
+      : null;
+  } else if (lifecycle.state === "IDLE") {
+    // No run at all: the only error worth showing is one with no run behind it (send failed).
+    workflowError = state.workflowError;
+  } else {
+    // A run in flight clears a stale terminal banner the moment it starts.
+    workflowError = null;
+  }
+  const activePhase = lifecycleActivePhase(lifecycle);
+  return {
+    ...state,
+    isRunning: presentation.inProgress,
+    isPaused: lifecycle.state === "PAUSED",
+    agentStatus: RUN_STATE_TO_SESSION_STATUS[lifecycle.state],
+    activePhase,
+    workflowProgress: phaseToProgress(activePhase),
+    workflowError: state.actionFailure ?? workflowError,
+  };
+}
+
 function phaseToProgress(phase: string): number {
   const order: Record<string, number> = {
     received: 5,
@@ -302,6 +424,40 @@ function phaseToProgress(phase: string): number {
  * dropped once the server reports a turn with the same user message, so the
  * conversation never double-renders the prompt.
  */
+/**
+ * The run state a restored conversation should show, derived from the persisted records rather than
+ * from replayed events. Event replay races the snapshot fetch (whichever lands first wins the seq
+ * cursor), so without this a relaunched failed task could present as "Completed" with no answer.
+ * Only terminal, non-running states are derived; a live run keeps whatever the stream reports.
+ */
+export function deriveRestoredRunState(
+  session: SessionRecord | null | undefined,
+  turns: TurnRecord[] | undefined,
+): Partial<Pick<WorkspaceState, "agentStatus" | "activePhase" | "isRunning" | "workflowError" | "workflowProgress">> | null {
+  if (!session) return null;
+  const inFlight = (turns ?? []).some((turn) => ["running", "paused", "recovering", "waiting_for_approval", "waiting_for_question"].includes(turn.status));
+  if (inFlight) return null;
+  const lastTurn = [...(turns ?? [])].sort((a, b) => (a.startedAt ?? "").localeCompare(b.startedAt ?? "")).at(-1);
+  // Persisted status is wider than the live enum (older records carry workflow phases).
+  const status = String(session.status);
+  switch (status) {
+    case "failed":
+    case "failed_safely": {
+      const error = lastTurn?.status === "failed" && lastTurn.error ? humanizeError(lastTurn.error) : null;
+      return { agentStatus: "failed", activePhase: status, isRunning: false, workflowProgress: 100, ...(error ? { workflowError: error } : {}) };
+    }
+    case "cancelled":
+      return { agentStatus: "cancelled", activePhase: "cancelled", isRunning: false, workflowProgress: 0 };
+    case "completed":
+    case "complete":
+      return { agentStatus: "completed", activePhase: "complete", isRunning: false, workflowProgress: 100 };
+    case "blocked":
+      return { agentStatus: "failed", activePhase: "blocked", isRunning: false, workflowProgress: 100 };
+    default:
+      return null;
+  }
+}
+
 function mergeServerTurns(serverTurns: TurnRecord[], prevTurns: TurnRecord[]): TurnRecord[] {
   const serverMessages = new Set(serverTurns.map((t) => t.userMessage));
   const pendingOptimistic = prevTurns.filter(
@@ -424,8 +580,12 @@ export function useWorkspaceSSE(url: string) {
             ? mergeHydratedEvents(prev.events, data.events, sessionId)
             : prev.events;
           lastSeqRef.current = Math.max(lastSeqRef.current, events.at(-1)?.seq ?? 0);
+          // A run the stream already reports as live keeps its live state; otherwise the persisted
+          // session/turn records decide what terminal state this conversation is in.
+          const restored = prev.isRunning ? null : deriveRestoredRunState(data.session, data.turns);
           return {
             ...prev,
+            ...restored,
             session: data.session ?? prev.session,
             turns: Array.isArray(data.turns) ? mergeServerTurns(data.turns, prev.turns) : prev.turns,
             workItems: Array.isArray(data.workItems) ? data.workItems : prev.workItems,
@@ -757,7 +917,7 @@ export function useWorkspaceSSE(url: string) {
   }, [url, activeSessionId, clearReconnect, scheduleHydrate]);
 
   const sendMessage = useCallback(
-    async (message: string, steer = false, executionMode: ExecutionMode = DEFAULT_EXECUTION_MODE, options?: { repair?: boolean }) => {
+    async (message: string, steer = false, executionMode: ExecutionMode = DEFAULT_EXECUTION_MODE, options?: { repair?: boolean; attachments?: SendAttachment[] }) => {
       const sessionId = resolveSendSessionId(state.session?.id);
       rememberActiveSession(sessionId);
       if (!state.session?.id) {
@@ -767,7 +927,7 @@ export function useWorkspaceSSE(url: string) {
       const turnId = crypto.randomUUID();
       const endpoint = resolveApiPath(url, "/api/send");
 
-      const request = createSendRequest(sessionId, message, turnId, executionMode, steer, options?.repair === true);
+      const request = createSendRequest(sessionId, message, turnId, executionMode, steer, options?.repair === true, options?.attachments);
       const body = JSON.stringify(request);
 
       // Optimistically render the user's message so pressing Enter has an
@@ -786,6 +946,7 @@ export function useWorkspaceSSE(url: string) {
         isRunning: true,
         workflowError: null,
         workflowActionError: null,
+        actionFailure: null,
       }));
 
       try {
@@ -808,6 +969,7 @@ export function useWorkspaceSSE(url: string) {
             isRunning: false,
             workflowError: msg,
             workflowActionError: msg,
+            actionFailure: msg,
           }));
           return;
         }
@@ -820,6 +982,7 @@ export function useWorkspaceSSE(url: string) {
           isRunning: false,
           workflowError: msg,
           workflowActionError: msg,
+          actionFailure: msg,
         }));
       }
     },
@@ -951,13 +1114,13 @@ export function useWorkspaceSSE(url: string) {
             const data = (await res.json()) as { error?: string; message?: string };
             msg = data.error || data.message || msg;
           } catch {}
-          setState((prev) => ({ ...prev, workflowActionError: msg, workflowError: msg, workflowActionPending: "none" }));
+          setState((prev) => ({ ...prev, workflowActionError: msg, workflowError: msg, actionFailure: msg, workflowActionPending: "none" }));
           return;
         }
         setState((prev) => ({ ...prev, workflowActionPending: "none" }));
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Network error";
-        setState((prev) => ({ ...prev, workflowActionError: msg, workflowError: msg, workflowActionPending: "none" }));
+        setState((prev) => ({ ...prev, workflowActionError: msg, workflowError: msg, actionFailure: msg, workflowActionPending: "none" }));
       }
     },
     [state.session?.id, url]
@@ -994,7 +1157,9 @@ export function useWorkspaceSSE(url: string) {
   );
 
   const dismissWorkflowError = useCallback(() => {
-    setState((prev) => ({ ...prev, workflowError: null, workflowActionError: null }));
+    // Scope the dismissal to THIS terminal outcome (its event seq) — a later run's failure is a
+    // new banner, never silenced by dismissing the previous one.
+    setState((prev) => ({ ...prev, workflowError: null, workflowActionError: null, actionFailure: null, dismissedTerminalSeq: lastTerminalEventSeq(prev.events) }));
   }, []);
 
   // Load a different persisted session into the view (task history navigation). Switching the
@@ -1035,6 +1200,8 @@ export function useWorkspaceSSE(url: string) {
       lastWorkflowResult: null,
       lastEvidenceId: null,
       lastCheckpointId: null,
+      dismissedTerminalSeq: null,
+      actionFailure: null,
     }));
   }, []);
 
@@ -1063,8 +1230,28 @@ export function useWorkspaceSSE(url: string) {
     [state.session?.id, url],
   );
 
+  // ── Canonical run lifecycle ──────────────────────────────────────────────
+  // One reducer over the durable event stream (session/turn records fill in for history that
+  // predates events). `lifecycle` is what the run IS; `run` is how it should look; `viewState`
+  // is `state` with every run-status display field projected from them. Components must render
+  // `viewState`/`run`, never re-interpret raw event mutations themselves.
+  const lifecycle = useMemo(
+    () =>
+      deriveRunLifecycle(state.events, {
+        session: state.session,
+        turns: state.turns,
+        pendingApprovals: state.pendingApprovals.length,
+        pendingQuestion: Boolean(state.pendingQuestion),
+      }),
+    [state.events, state.session, state.turns, state.pendingApprovals, state.pendingQuestion],
+  );
+  const run = useMemo(() => presentRun(lifecycle), [lifecycle]);
+  const viewState = useMemo(() => projectRunPresentation(state, lifecycle, run), [state, lifecycle, run]);
+
   return {
-    state,
+    state: viewState,
+    lifecycle,
+    run,
     setState,
     sendMessage,
     setAuthority,

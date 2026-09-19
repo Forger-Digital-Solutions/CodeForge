@@ -17,6 +17,9 @@ import { loadForgeVerifyEvidence } from "./forge-verify-persistence.js";
 import type { AgentRuntime, HostedWorkerOptions } from "./agent-runtime.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import { redactSecrets } from "@codeforge/secrets";
+import { describeRunFailure } from "./run-failure.js";
+import type { RunFailure, RunOutcome } from "@codeforge/protocol";
+import type { TurnState } from "./agent-runtime.js";
 import type { PolicyReceipt, TaskAuthority } from "@codeforge/permissions";
 import { WorkspaceService, createWorkspaceService } from "./workspace-service.js";
 
@@ -184,6 +187,138 @@ function safeVerificationAttempt(result: VerificationResult, attempt: number) {
       durationMs: verifier.durationMs,
       ...(verifier.failures[0]?.message ? { failureSummary: sanitizeInspectionText(verifier.failures[0].message, 500) } : {}),
     })),
+  };
+}
+
+/**
+ * The structured failure a dispatched turn ended with, in the executor's vocabulary. Route
+ * exhaustion is terminal for the whole run: there is no model left to verify or repair with.
+ */
+function describeExecutorFailure(turn: TurnState | undefined): { failure?: { code: string; message: string; terminal?: boolean } } {
+  const failure = turn?.failure;
+  if (!failure) return {};
+  return { failure: { code: failure.code, message: failure.message, terminal: failure.code === "route_exhausted" } };
+}
+
+type RunOutcomePayload = Omit<RunOutcome["payload"], "runId"> & { runId?: string };
+
+/**
+ * The four outcome dimensions of a finished workflow, kept apart. A review that passed while
+ * required verification failed is reported as exactly that — never collapsed into one label.
+ */
+export function describeWorkflowOutcome(result: WorkflowResult, turnId: string): RunOutcomePayload {
+  const blockers = result.completion?.blockers ?? [];
+  const blockerCodes = new Set(blockers.map((b) => b.code));
+  const verificationFailed = blockerCodes.has("verification_failed") || (result.verification ? !result.verification.notConfigured && (result.verification.failed > 0 || result.verification.exitCode !== 0) : false);
+  const verification: RunOutcomePayload["verification"] = result.stop
+    ? "not_run"
+    : !result.verification
+      ? "not_run"
+      : result.verification.notConfigured
+        ? "not_configured"
+        : verificationFailed ? "failed" : "passed";
+  const review: RunOutcomePayload["review"] = result.stop || !result.review
+    ? "not_run"
+    : result.review.findings.some((f) => f.severity === "blocking") ? "findings" : "passed";
+  const changedFiles = result.review?.diffs.length;
+  const interrupted = blockerCodes.has("plan_steps_unfinished");
+  const base = { turnId, executionMode: "agent" as const, ...(changedFiles !== undefined ? { changedFiles } : {}) };
+  const filesNote = changedFiles ? ` ${changedFiles} file${changedFiles === 1 ? "" : "s"} changed.` : "";
+
+  if (result.status === "cancelled") {
+    const timedOut = /timed out/i.test(result.summary);
+    return {
+      ...base,
+      outcome: "cancelled",
+      reasonCode: timedOut ? "timed_out" : "user_stopped",
+      summary: timedOut ? "The task ran longer than allowed and was stopped." : "Stopped by you.",
+      execution: "cancelled",
+      verification,
+      review,
+      completion: "not_evaluated",
+    };
+  }
+  if (result.stop) {
+    const routeExhausted = result.stop.code === "route_exhausted";
+    const failure: RunFailure = { code: routeExhausted ? "route_exhausted" : "unknown", ownership: routeExhausted ? "managed_free" : "runtime", message: result.stop.message, retryable: true };
+    return {
+      ...base,
+      outcome: routeExhausted ? "route_exhausted" : "failed",
+      reasonCode: result.stop.code,
+      summary: `${result.stop.message}${changedFiles ? ` ${changedFiles} file${changedFiles === 1 ? "" : "s"} changed before the stop; not verified.` : ""}`,
+      execution: routeExhausted ? "route_exhausted" : "failed",
+      verification: "not_run",
+      review: "not_run",
+      completion: "not_evaluated",
+      failure,
+    };
+  }
+  if (result.status === "completed") {
+    return {
+      ...base,
+      outcome: "completed",
+      reasonCode: "completed",
+      summary: verification === "not_configured"
+        ? `Completed. Changes were applied, but this workspace has no verification command, so nothing was verified.${filesNote}`
+        : `Completed. Required verification passed${review === "passed" ? " and review found no issues" : ""}.${filesNote}`,
+      execution: "completed",
+      verification,
+      review,
+      completion: "completed",
+    };
+  }
+  if (result.status === "blocked") {
+    const first = blockers[0];
+    const reasonCode = first?.code ?? "blocked";
+    const reviewNote = review === "passed" ? "Review found no issues" : review === "findings" ? "Review found blocking issues" : "";
+    const verificationNote = verification === "passed" ? "verification passed" : verification === "failed" ? "verification failed" : verification === "not_configured" ? "nothing was verified" : "verification did not run";
+    // The gate's code says WHAT is missing; the engine's stop line says WHY (budget, cancellation).
+    // Both belong in the headline — a run stopped by its working budget must not read as a bare
+    // unfinished plan.
+    const stopDetail = /^Implementation stopped: (.+)$/m.exec(result.summary)?.[1];
+    const why = reasonCode === "plan_steps_unfinished"
+      ? `The implementation did not finish every planned step${stopDetail ? ` — ${stopDetail}` : ""}`
+      : reasonCode === "verification_not_current"
+        ? "The verification evidence is not current for the final changes"
+        : reasonCode === "verification_not_run"
+          ? "Required verification did not run"
+          : reasonCode === "no_effective_change"
+            ? "The run produced no effective change"
+            : reasonCode === "review_rejected"
+              ? "The review found blocking issues"
+              : first?.message ?? "The completion gate blocked this run";
+    return {
+      ...base,
+      outcome: "blocked",
+      reasonCode,
+      summary: `${why}, so CodeForge did not mark this task complete.${reviewNote || verificationNote ? ` ${[reviewNote, verificationNote].filter(Boolean).join("; ")}.` : ""}${filesNote}`,
+      execution: interrupted ? "interrupted" : "completed",
+      verification,
+      review,
+      completion: "blocked",
+    };
+  }
+  // failed
+  const planRejected = /plan rejected by user/i.test(result.summary);
+  const reasonCode = planRejected ? "plan_rejected" : verificationFailed ? "verification_failed" : interrupted ? "implementation_failed" : "failed";
+  const failure: RunFailure | undefined = verificationFailed
+    ? { code: "verification_failed", ownership: "runtime", message: "Required verification failed.", retryable: true }
+    : planRejected ? { code: "plan_rejected", ownership: "user", message: "You declined the plan, so nothing was changed.", retryable: true } : undefined;
+  const summary = planRejected
+    ? "You declined the plan, so nothing was changed."
+    : verificationFailed
+      ? `Required verification failed${review === "passed" ? " (review found no additional issues)" : ""}.${filesNote}`
+      : `${result.summary.split("\n")[0] ?? "The run failed."}${filesNote}`;
+  return {
+    ...base,
+    outcome: "failed",
+    reasonCode,
+    summary,
+    execution: interrupted ? "interrupted" : verificationFailed ? "completed" : "failed",
+    verification,
+    review,
+    completion: result.completion ? "failed" : "not_evaluated",
+    ...(failure ? { failure } : {}),
   };
 }
 
@@ -389,7 +524,7 @@ export class WorkflowService {
         repoMap: RepoMap,
         intent: TaskIntent,
         sig?: AbortSignal,
-      ): Promise<{ success: boolean; output: string; turnId?: string; suspended?: boolean }> => {
+      ): Promise<{ success: boolean; output: string; turnId?: string; suspended?: boolean; failure?: { code: string; message: string; terminal?: boolean } }> => {
         const prompt = buildImplementPrompt(plan, context, repoMap, intent);
         adapter.emitAgentStarted(`agent-${plan.id.slice(0, 8)}`, "Builder", plan.id);
         const runtime = getRuntime(sessionId, userId, hostedWorker);
@@ -403,12 +538,12 @@ export class WorkflowService {
           return { success: false, suspended: true, output: `Turn ${turnId} is waiting for the desktop worker`, turnId };
         }
         if (result.status === "budget_exhausted") {
-          return { success: false, output: `Turn ${turnId} stopped: ${result.reason}`, turnId };
+          return { success: false, output: `Turn ${turnId} stopped: ${result.reason}`, failure: { code: "budget_exhausted", message: result.reason ?? "The agent working budget was exhausted." }, turnId };
         }
         if (result.status === "cancelled" || sig?.aborted || signal.aborted) {
           return { success: false, output: `Turn ${turnId} cancelled` };
         }
-        return { success: false, output: `Turn ${turnId} failed: ${result.turn?.error ?? "unknown"}` };
+        return { success: false, output: `Turn ${turnId} failed: ${result.turn?.error ?? "unknown"}`, ...describeExecutorFailure(result.turn) };
       },
       executeRepair: async (
         analysis: FailureAnalysis,
@@ -417,13 +552,13 @@ export class WorkflowService {
         _repoMap: RepoMap,
         intent: TaskIntent,
         _sig?: AbortSignal,
-      ): Promise<{ success: boolean; output: string; turnId?: string }> => {
+      ): Promise<{ success: boolean; output: string; turnId?: string; failure?: { code: string; message: string; terminal?: boolean } }> => {
         const prompt = buildRepairPrompt(analysis, verification, context, intent);
         const runtime = getRuntime(sessionId, userId, hostedWorker);
         const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Repairing verification failures" });
         const result = await waitForTurn(runtime, turnId);
         if (result.status === "completed") return { success: true, output: `Repair turn ${turnId} completed`, turnId };
-        return { success: false, output: `Repair turn ${turnId} ${result.status}${result.reason ? `: ${result.reason}` : ""}` };
+        return { success: false, output: `Repair turn ${turnId} ${result.status}${result.reason ? `: ${result.reason}` : ""}`, ...describeExecutorFailure(result.turn) };
       },
     };
   }
@@ -448,8 +583,10 @@ export class WorkflowService {
         .map((v) => clip(v.failureSummary ?? `${v.command} exited ${v.exitCode}`, 200))
         .filter((s) => s.length > 0) ?? [];
       const blockers = last.completion?.blockers.map((b) => clip(b.message, 200)) ?? [];
+      const ended = last.status === "failed" ? "failed" : last.status === "blocked" ? "was blocked" : last.status === "cancelled" ? "was stopped" : `ended with status ${last.status}`;
+      const during = last.phase === "failed" || last.phase === "blocked" || last.phase === "completed" || last.phase === "cancelled" ? "" : ` during the ${String(last.phase).replace(/_/g, " ")} phase`;
       const parts = [
-        `Continuing the same task. The previous run ended ${last.status} during ${last.phase}.`,
+        `Continuing the same task. The previous run ${ended}${during}.`,
         last.completion?.rationale ? `Outcome: ${clip(last.completion.rationale, 300)}` : "",
         failing.length > 0 ? `Failing verification: ${failing.join(" | ")}` : "",
         blockers.length > 0 ? `Blockers: ${blockers.join(" | ")}` : "",
@@ -524,6 +661,13 @@ export class WorkflowService {
     const redactedTitle = redactSecrets(request.message.slice(0, 80));
     adapter.emitTaskCreated(taskId, redactedTitle, "autonomous");
     adapter.emitTaskStarted(taskId);
+    // The run's root turn is the user's own request (or their "fix and continue"), so the thread
+    // shows what was asked, and the lifecycle knows which turn is the run — internal implement /
+    // repair turns are dispatched under it and never end the run on their own.
+    // The root turn record itself is written at the end of the run (see the terminal path): a
+    // "running" root record would be hydrated by AgentRuntime after a restart as if it were an
+    // interrupted agent turn of its own.
+    await adapter.emitTurnStarted(turnId, redactSecrets(request.message), undefined, { origin: request.repair ? "repair" : "user", ...(request.repair ? { label: "Fix and continue" } : {}) });
     adapter.emitTaskStateChanged(taskId, "received", "reconnaissance");
     adapter.emitStatusChanged("idle", "running");
 
@@ -555,19 +699,30 @@ export class WorkflowService {
     // so a slow "verifying" save can never land after the terminal "completed" save and revive a
     // finished task in the sidebar on the next session refresh.
     let phaseStatusWrites: Promise<void> = Promise.resolve();
-    const persistPhaseStatus = (task: WorkflowTask, status: string): void => {
-      const record = {
+    // The task's identity (title, creation time) is set by the first user request and never by
+    // a later run: a repair continuation or an internal prompt must not rename the sidebar entry.
+    const sessionIdentity = async (fallbackTitle: string, fallbackCreatedAt: string) => {
+      const existing = await this.persistence.getSession(sessionId).catch(() => undefined);
+      return {
+        ...(existing ?? {}),
         id: sessionId,
-        title: task.title,
-        createdAt: task.createdAt,
-        updatedAt: new Date().toISOString(),
-        status: status as unknown as "running",
-        taskTitle: task.title,
-        workspacePath,
+        title: existing?.title || fallbackTitle,
+        taskTitle: existing?.taskTitle || existing?.title || fallbackTitle,
+        createdAt: existing?.createdAt ?? fallbackCreatedAt,
+        workspacePath: existing?.workspacePath ?? workspacePath,
       };
+    };
+    const persistPhaseStatus = (task: WorkflowTask, status: string): void => {
       phaseStatusWrites = phaseStatusWrites
         .catch(() => {})
-        .then(() => this.persistence.upsertSession(record))
+        .then(async () => {
+          const identity = await sessionIdentity(redactedTitle, task.createdAt);
+          await this.persistence.upsertSession({
+            ...identity,
+            updatedAt: new Date().toISOString(),
+            status: status as unknown as "running",
+          });
+        })
         .catch(() => {});
     };
     const persistForgeVerify = async (recordType: "plan" | "attempt" | "evidence" | "cost_gate_receipt", id: string, planId: string, value: VerificationPlan | VerificationAttempt | VerificationEvidence | VerificationReuseCostGateReceipt): Promise<void> => {
@@ -842,13 +997,9 @@ export class WorkflowService {
           });
           await phaseStatusWrites;
           await this.persistence.upsertSession({
-            id: sessionId,
-            title: redactedTitle,
-            createdAt: task.createdAt,
+            ...(await sessionIdentity(redactedTitle, task.createdAt)),
             updatedAt,
             status: "running",
-            taskTitle: redactedTitle,
-            workspacePath,
           });
           return result;
         }
@@ -977,6 +1128,7 @@ export class WorkflowService {
           }
         }
 
+        const runOutcome = describeWorkflowOutcome(safeResult, turnId);
         if (safeResult.status === "completed") {
           // The workflow's turn id is the user-facing durable identity; child AgentRuntime
           // turns have their own responses, but the completed workflow must retain the final
@@ -999,29 +1151,28 @@ export class WorkflowService {
           await adapter.emitTurnCompleted(turnId, safeResult.summary);
         } else if (safeResult.status === "blocked") {
           adapter.emitTaskStateChanged(taskId, "implementing", "blocked");
-          await adapter.emitTurnFailed(turnId, safeResult.summary);
+          await adapter.emitTurnFailed(turnId, runOutcome.summary, runOutcome.failure);
           adapter.emitStatusChanged("running", "failed");
         } else if (safeResult.status === "failed") {
           adapter.emitTaskStateChanged(taskId, "implementing", "failed_safely");
-          await adapter.emitTurnFailed(turnId, safeResult.summary);
+          await adapter.emitTurnFailed(turnId, runOutcome.summary, runOutcome.failure);
           adapter.emitStatusChanged("running", "failed");
         } else if (safeResult.status === "cancelled") {
           adapter.emitTaskCancelled(taskId, safeResult.summary);
           await adapter.emitTurnCancelled(turnId, safeResult.summary);
           adapter.emitStatusChanged("running", "cancelled");
         }
+        // The single terminal record every surface reads. Emitted after the per-phase events
+        // and awaited, so nothing about this run can arrive after it.
+        try { await adapter.emitRunOutcome(runOutcome); } catch {}
         // Persist final session status (redacted)
         try {
           await phaseStatusWrites;
-          const safeMsg = redactSecrets(request.message.slice(0, 80));
           await this.persistence.upsertSession({
-            id: sessionId,
-            title: safeMsg,
-            createdAt: task.createdAt,
+            ...(await sessionIdentity(redactedTitle, task.createdAt)),
             updatedAt: new Date().toISOString(),
             status: safeResult.status === "completed" ? "completed" : safeResult.status === "cancelled" ? "cancelled" : "failed",
-            taskTitle: safeMsg,
-            workspacePath,
+            outcome: runOutcome.reasonCode,
           });
           await this.persistence.upsertTurn({
             id: turnId,
@@ -1031,7 +1182,7 @@ export class WorkflowService {
             status: safeResult.status === "completed" ? "completed" : safeResult.status === "cancelled" ? "cancelled" : "failed",
             startedAt: task.createdAt,
             completedAt: new Date().toISOString(),
-            error: safeResult.status !== "completed" ? safeResult.summary : undefined,
+            error: safeResult.status !== "completed" ? runOutcome.summary : undefined,
           });
         } catch {}
         return safeResult;
@@ -1042,9 +1193,33 @@ export class WorkflowService {
         try { this.approvalService.cancelForTurn(turnId, "Workflow failed before this approval was answered"); } catch {}
         const raw = error instanceof Error ? error.message : String(error);
         const msg = redactSecrets(raw);
-        await adapter.emitTurnFailed(turnId, msg);
+        const failure = describeRunFailure(new Error(msg));
+        await adapter.emitTurnFailed(turnId, failure.message, failure);
         adapter.emitTaskStateChanged(taskId, "running", "failed_safely");
         adapter.emitStatusChanged("running", "failed");
+        try {
+          await adapter.emitRunOutcome({
+            turnId,
+            executionMode: "agent",
+            outcome: failure.code === "route_exhausted" ? "route_exhausted" : "failed",
+            reasonCode: failure.code === "unknown" ? "workflow_error" : failure.code,
+            summary: failure.message,
+            execution: failure.code === "route_exhausted" ? "route_exhausted" : "failed",
+            verification: "not_run",
+            review: "not_run",
+            completion: "not_evaluated",
+            failure,
+          });
+        } catch {}
+        try {
+          await phaseStatusWrites;
+          await this.persistence.upsertSession({
+            ...(await sessionIdentity(redactedTitle, task.createdAt)),
+            updatedAt: new Date().toISOString(),
+            status: "failed",
+            outcome: failure.code === "unknown" ? "workflow_error" : failure.code,
+          });
+        } catch {}
         return {
           taskId,
           status: "failed" as const,
@@ -1250,12 +1425,16 @@ export class WorkflowService {
       } else {
         await adapter.emitTurnFailed(workflowTurnId, safeResult.summary);
       }
+      // The user's task identity survives a hosted resume: the resumed execution message may be a
+      // repair-context blob ("Continuing the same task…"), which must never rename the sidebar task.
+      const existingSession = await this.persistence.getSession(workflow.sessionId).catch(() => undefined);
       await this.persistence.upsertSession({
+        ...(existingSession ?? {}),
         id: workflow.sessionId,
-        title: redactSecrets(message.slice(0, 80)),
-        taskTitle: redactSecrets(message.slice(0, 80)),
-        workspacePath: validated.resolved,
-        createdAt: workflow.createdAt,
+        title: existingSession?.title || redactSecrets(message.slice(0, 80)),
+        taskTitle: existingSession?.taskTitle || existingSession?.title || redactSecrets(message.slice(0, 80)),
+        workspacePath: existingSession?.workspacePath ?? validated.resolved,
+        createdAt: existingSession?.createdAt ?? workflow.createdAt,
         updatedAt,
         status: safeResult.status === "completed" ? "completed" : "failed",
       });

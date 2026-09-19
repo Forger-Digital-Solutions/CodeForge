@@ -54,11 +54,58 @@ export const TurnStartedSchema = EventBase(
      * Who authored the turn's message. A workflow dispatches internal turns (the builder and repair
      * prompts) on the user's behalf; those must never be rendered as something the user typed.
      */
-    origin: z.enum(["user", "workflow"]).optional(),
+    origin: z.enum(["user", "workflow", "repair"]).optional(),
     /** Short human label for an internal turn, e.g. "Implementing the plan". */
     label: z.string().optional(),
   }),
 );
+
+/**
+ * Who owns a failure and what kind it is — the taxonomy every visible failure string is written
+ * from. `managed_free` failures belong to CodeForge's own free routing (the user configured no
+ * credential and cannot fix one); `byok` failures belong to a credential the user supplied.
+ */
+export const RunFailureOwnershipSchema = z.enum(["managed_free", "byok", "paid", "runtime", "user", "workspace"]);
+export type RunFailureOwnership = z.infer<typeof RunFailureOwnershipSchema>;
+
+export const RunFailureCodeSchema = z.enum([
+  "provider_auth_failed",
+  "provider_rate_limited",
+  "provider_quota_exhausted",
+  "provider_capacity",
+  "provider_outage",
+  "provider_timeout",
+  "provider_network",
+  "model_unavailable",
+  "paid_plan_required",
+  "context_limit",
+  "route_exhausted",
+  "safety_rejection",
+  "invalid_model_output",
+  "budget_exhausted",
+  "verification_failed",
+  "plan_rejected",
+  "workflow_timeout",
+  "start_failed",
+  "workspace_error",
+  "cancelled",
+  "unknown",
+]);
+export type RunFailureCode = z.infer<typeof RunFailureCodeSchema>;
+
+export const RunFailureSchema = z.object({
+  code: RunFailureCodeSchema,
+  ownership: RunFailureOwnershipSchema,
+  /** Human sentence already written for the owner of the failure. Never a raw provider body. */
+  message: z.string(),
+  providerId: z.string().optional(),
+  modelId: z.string().optional(),
+  /** Whether trying the same task again (later, or after the user acts) makes sense. */
+  retryable: z.boolean().optional(),
+  /** Short technical detail for the inspector (redacted, clipped). Never the headline. */
+  detail: z.string().max(400).optional(),
+});
+export type RunFailure = z.infer<typeof RunFailureSchema>;
 
 export const TurnSteeredSchema = EventBase(
   "turn.steered",
@@ -85,8 +132,41 @@ export const TurnCancelledSchema = EventBase(
 );
 export const TurnFailedSchema = EventBase(
   "turn.failed",
-  z.object({ turnId: z.string(), error: z.string() }),
+  z.object({
+    turnId: z.string(),
+    error: z.string(),
+    /** Structured classification of `error`; present for every failure the runtime classified. */
+    failure: RunFailureSchema.optional(),
+  }),
 );
+
+/**
+ * The single terminal record of a run. Emitted exactly once when a run ends, after every
+ * per-turn/per-phase event, and it is what every surface (sidebar, header, composer, thread)
+ * reads to present the terminal state. The four outcome dimensions are kept apart on purpose:
+ * a review can pass while required verification fails, and the presentation must say both.
+ */
+export const RunOutcomeSchema = EventBase(
+  "run.outcome",
+  z.object({
+    runId: z.string(),
+    turnId: z.string().optional(),
+    executionMode: z.enum(["agent", "chat"]),
+    outcome: z.enum(["completed", "failed", "blocked", "cancelled", "route_exhausted"]),
+    /** Short machine reason, e.g. "verification_failed", "route_exhausted", "user_stopped". */
+    reasonCode: z.string(),
+    /** One or two human sentences describing how the run ended. */
+    summary: z.string(),
+    execution: z.enum(["completed", "failed", "interrupted", "cancelled", "route_exhausted", "not_run"]),
+    verification: z.enum(["passed", "failed", "not_configured", "not_run"]),
+    review: z.enum(["passed", "findings", "not_run"]),
+    completion: z.enum(["completed", "blocked", "failed", "not_evaluated"]),
+    changedFiles: z.number().int().nonnegative().optional(),
+    failure: RunFailureSchema.optional(),
+  }),
+);
+export type RunOutcome = z.infer<typeof RunOutcomeSchema>;
+export type RunOutcomeCode = RunOutcome["payload"]["outcome"];
 export const TurnCompletedSchema = EventBase(
   "turn.completed",
   z.object({ turnId: z.string(), result: z.string().optional() }),
@@ -824,6 +904,7 @@ export const WorkspaceEventSchema = z.discriminatedUnion("type", [
   TurnCancelledSchema,
   TurnFailedSchema,
   TurnCompletedSchema,
+  RunOutcomeSchema,
   UserIntentHoldEnteredSchema,
   UserIntentHoldReleasedSchema,
   UserIntentSteerQueuedSchema,

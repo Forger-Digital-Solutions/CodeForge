@@ -14,6 +14,9 @@ export { default as RunInspection } from "./RunInspection.js";
 export { projectRunInspection, selectInspectableRunId, dedupeRunEvents } from "./run-inspection.js";
 export { useWorkspaceSSE } from "./workspace-sse.js";
 export type { WorkspaceState, WorkflowTaskSummary } from "./workspace-sse.js";
+export { deriveRunLifecycle, lifecycleFromSessionRecord, presentRun, presentSessionSummary, describeReasonCode, lastTerminalEventSeq, TERMINAL_RUN_STATES, WAITING_RUN_STATES } from "./run-lifecycle.js";
+export type { RunLifecycle, RunPresentation, RunState, RunPhase, RunTone, RunLifecycleContext } from "./run-lifecycle.js";
+export { humanizeError, describeTurnStop } from "./error-copy.js";
 export {
   ModelSelector,
   isModelUsable,

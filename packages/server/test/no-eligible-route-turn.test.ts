@@ -45,7 +45,7 @@ describe("AgentRuntime — no eligible route fails closed", () => {
       state = runtime.getTurn(turnId);
     }
     expect(state?.status).toBe("failed");
-    expect(state?.error).toMatch(/No eligible free route/);
+    expect(state?.error).toMatch(/No eligible (verified-)?free route/);
     // The failure event is emitted after the state flips; give the adapter a beat.
     await new Promise((r) => setTimeout(r, 150));
     const events = eventStore.getAll({ afterSeq: 0 });

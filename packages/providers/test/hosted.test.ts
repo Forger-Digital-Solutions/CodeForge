@@ -65,7 +65,7 @@ describe("HostedProviderAdapter", () => {
   });
 
   it("refuses a v0.2 gateway rather than silently falling back to its text-level tool protocol", async () => {
-    const fetchFn = (async (url: string | URL | Request, init?: RequestInit) => {
+    const fetchFn = (async (url: string | URL | Request, _init?: RequestInit) => {
       const u = url.toString();
       if (u.endsWith("/v1/meta")) {
         return new Response(JSON.stringify({ apiVersion: "1.0.0", serverVersion: "0.2.0", features: ["HOSTED_FREE", "DYNAMIC_MODELS"] }));
@@ -155,5 +155,37 @@ describe("HostedProviderAdapter", () => {
     expect(inferenceBody?.tools).toBeDefined();
     expect(events.filter((e) => e.type === "tool_call_completed")).toHaveLength(1);
     expect(events.at(-1)).toMatchObject({ type: "finish", finishReason: "tool_calls" });
+  });
+});
+
+describe("HostedProviderAdapter — offline recovery without restart (R16)", () => {
+  it("recovers the catalog once the Cloud becomes reachable again", async () => {
+    let reachable = false;
+    let metaProbes = 0;
+    const fetchFn = (async (url: string | URL | Request) => {
+      const u = url.toString();
+      if (!reachable) throw new TypeError("fetch failed: ENOTFOUND");
+      if (u.endsWith("/v1/meta")) { metaProbes++; return new Response(JSON.stringify(compatibleMetadata)); }
+      if (u.endsWith("/v1/hosted/models")) {
+        return new Response(JSON.stringify([{ providerId: "groq", modelId: "openai/gpt-oss-120b", displayName: "GPT OSS 120B", contextWindow: 128000, capabilities: { text: true, coding: true, toolCalling: true }, accessClass: "free", isEligibleFree: true }]));
+      }
+      if (u.endsWith("/health/ready")) return new Response(JSON.stringify({ hostedInferenceReady: true }));
+      return new Response("nope", { status: 404 });
+    }) as typeof fetch;
+    const adapter = new HostedProviderAdapter({ cloudApiUrl: "https://cloud.example", fetchFn });
+
+    // Started offline: nothing is advertised, and the health check says offline.
+    await expect(adapter.listModels()).resolves.toEqual([]);
+    expect((await adapter.healthCheck()).status).toBe("offline");
+    expect(metaProbes).toBe(0);
+
+    // Network comes back: the same adapter instance must serve the catalog again.
+    reachable = true;
+    const models = await adapter.listModels();
+    expect(models.map((m) => m.modelId)).toEqual(["codeforge-auto", "groq::openai/gpt-oss-120b"]);
+    expect(models[1]!.displayName).toBe("GPT OSS 120B");
+    expect((await adapter.healthCheck()).status).toBe("available");
+    // A compatible verdict is cached: the second listing does not re-probe /v1/meta.
+    expect(metaProbes).toBe(1);
   });
 });

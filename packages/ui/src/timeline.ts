@@ -1,4 +1,5 @@
 import type { WorkspaceEvent } from "@codeforge/protocol";
+import { describeTurnStop, humanizeError } from "./error-copy.js";
 
 /**
  * A single rendered item in the conversation timeline, reconstructed from the event stream.
@@ -23,7 +24,7 @@ export type TimelineItem =
       fileDetail?: string;
     }
   | { kind: "system"; id: string; seq: number; turnId: string; text: string }
-  | { kind: "phase"; id: string; seq: number; phase: "testing" | "repairing" | "reviewing" | "outcome"; text: string; detail?: string }
+  | { kind: "phase"; id: string; seq: number; turnId?: string; phase: "testing" | "repairing" | "reviewing" | "outcome"; text: string; detail?: string }
   | { kind: "file"; id: string; seq: number; turnId?: string; path: string; action: "read" | "written"; detail?: string }
   | { kind: "command"; id: string; seq: number; turnId?: string; command: string; exitCode: number; output?: string };
 
@@ -41,6 +42,10 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
   const seenUserTurns = new Set<string>();
   // Track the last open assistant message per turn for delta fallback (no messageId case).
   const lastOpenMsgByTurn = new Map<string, string>();
+  // A workflow's own outcome row supersedes the raw turn terminal event that follows it, and the
+  // internal implement/repair turns a workflow dispatches report through that outcome, not per turn.
+  let outcomeShown = false;
+  const workflowTurns = new Set<string>();
 
   const ensureAssistant = (turnId: string, messageId: string, seq: number): Extract<TimelineItem, { kind: "assistant" }> => {
     let item = assistantByMsg.get(messageId);
@@ -64,6 +69,8 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
           // row per dispatch is event spam, not conversation.
           if (p.origin !== "workflow") {
             items.push({ kind: "user", id: `user-${p.turnId}`, seq: e.seq, turnId: p.turnId, text: p.userMessage });
+          } else {
+            workflowTurns.add(p.turnId);
           }
         }
         break;
@@ -87,6 +94,36 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
       case "workflow.completion_decided": {
         const p = e.payload as { outcome: string; rationale?: string };
         items.push({ kind: "phase", id: `outcome-${e.seq}`, seq: e.seq, phase: "outcome", text: p.outcome === "completed" ? "Done" : p.outcome === "blocked" ? "Blocked" : "Failed", detail: p.rationale });
+        outcomeShown = true;
+        break;
+      }
+      // A turn that ends without an answer must still leave a visible trace: after a relaunch the
+      // live failure banner is gone, and "Completed" with an empty conversation is a false story.
+      case "turn.failed": {
+        const p = e.payload as { turnId: string; error: string; failure?: { message: string } };
+        if (workflowTurns.has(p.turnId)) break;
+        if (outcomeShown) { outcomeShown = false; break; }
+        // The classified sentence is already owner-aware; humanizeError would re-map "rate limited"
+        // inside a managed-free message to generic BYOK wording.
+        const detail = p.failure?.message ?? humanizeError(p.error ?? "The task could not be completed.");
+        items.push({ kind: "phase", id: `turn-failed-${p.turnId}-${e.seq}`, seq: e.seq, turnId: p.turnId, phase: "outcome", text: "Failed", detail });
+        break;
+      }
+      case "turn.cancelled": {
+        const p = e.payload as { turnId: string; reason?: string };
+        if (workflowTurns.has(p.turnId)) break;
+        if (outcomeShown) { outcomeShown = false; break; }
+        items.push({ kind: "phase", id: `turn-cancelled-${p.turnId}-${e.seq}`, seq: e.seq, turnId: p.turnId, phase: "outcome", text: "Stopped", detail: describeTurnStop(p.reason) });
+        break;
+      }
+      case "turn.completed": {
+        // A workflow outcome row already told the story; a plain chat turn needs nothing extra.
+        outcomeShown = false;
+        break;
+      }
+      case "execution.start_failed": {
+        const p = e.payload as { requestId: string; code: string; message: string };
+        items.push({ kind: "phase", id: `start-failed-${p.requestId}-${e.seq}`, seq: e.seq, phase: "outcome", text: "Failed", detail: humanizeError(p.message ?? p.code) });
         break;
       }
       case "assistant.message.started": {

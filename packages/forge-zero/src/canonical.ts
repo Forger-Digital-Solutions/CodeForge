@@ -159,6 +159,10 @@ const FREE_VARIANT_RE = /(:free|-free|\(free\)|_free)$/i;
 /** Lowercase, strip host prefixes and free-variant markers, unify separators. */
 export function normalizeSlug(raw: string): { slug: string; freeVariant: boolean; labFromPath?: string } {
   let s = raw.trim();
+  // A managed-gateway route id carries the upstream provider it fans out to ("openrouter::x/y").
+  // That is routing detail, not identity: the same model reached through CodeForge Cloud and
+  // through the user's own key must collapse to one canonical model.
+  s = s.replace(/^[a-z0-9._-]+::/i, "");
   // Host-specific prefixes.
   s = s.replace(/^@cf\//i, "").replace(/^models\//i, "").replace(/^accounts\/[^/]+\/models\//i, "");
   // Gateway variant suffixes (":free", ":nitro", ":extended", ":exacto", ":thinking").

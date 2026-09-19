@@ -3,7 +3,7 @@ import { planFailureHealthMarking } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
 import { defaultCapacityGovernor, type ProviderCapacityGovernor } from "@codeforge/providers";
 import type { ProviderAdapter, ProviderCatalog, ChatRequest, ChatMessage, ToolDefinition, ProviderToolExecutionRequest, ProviderToolExecutionResult } from "@codeforge/providers";
-import { DesktopWorkerActionTypeSchema, type AgentRunJournal, type AgentRunJournalMessage, type DesktopWorkerActionType } from "@codeforge/protocol";
+import { DesktopWorkerActionTypeSchema, type AgentRunJournal, type AgentRunJournalMessage, type DesktopWorkerActionType, type RunFailure } from "@codeforge/protocol";
 import {
   createDesktopWorkerBridge,
   createDurableAgentContinuationStore,
@@ -20,6 +20,7 @@ import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
 import { redactSecrets } from "@codeforge/secrets";
+import { describeRunFailure } from "./run-failure.js";
 import { prepareShellCommand } from "@codeforge/workflow";
 import { executePrepared } from "@codeforge/terminal";
 import { classifyCommand } from "./command-classifier.js";
@@ -301,6 +302,12 @@ export interface TurnState {
    * finished. Exhausting a budget is not success and must never complete the turn.
    */
   budgetExhausted?: boolean;
+  /** Who authored the turn: the user (chat / repair) or a workflow dispatching an internal turn. */
+  origin?: "user" | "workflow" | "repair";
+  /** 8-Bit found no eligible replacement route after a failure; the turn ends for routing reasons. */
+  routeExhausted?: boolean;
+  /** Classified terminal failure (what `error` says, structured). */
+  failure?: RunFailure;
 }
 
 export interface ApprovalRequest {
@@ -1150,6 +1157,13 @@ export class AgentRuntime {
               capacityScoreAdjustment: this.freeCloud
                 ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
                 : undefined,
+              onWait: ({ waitMs, reason }) => adapter.emitEightBitStatus(
+                "ROUTE_COOLDOWN",
+                eightBitRoleForAgentRole(req.role),
+                [reason, "BOUNDED_SAME_ROUTE_RETRY"],
+                `Free capacity on ${failing.modelId} is briefly exhausted; waiting ${Math.ceil(waitMs / 1000)} s, then continuing on the same route.`,
+                failing,
+              ),
             });
             if (outcome.action !== "retry_same" && outcome.action !== "surface") {
               const retryAfter = (err as { retryAfter?: unknown }).retryAfter;
@@ -2095,7 +2109,7 @@ export class AgentRuntime {
   async startTurn(
     userMessage: string,
     eventAdapter?: WorkspaceEventAdapter,
-    options?: { origin?: "user" | "workflow"; label?: string },
+    options?: { origin?: "user" | "workflow" | "repair"; label?: string },
   ): Promise<string> {
     // Single-turn exclusivity per session for real active turns
     if (this.demoMode) {
@@ -2123,6 +2137,7 @@ export class AgentRuntime {
       status: "running",
       userMessage,
       startedAt: new Date(),
+      origin: options?.origin ?? "user",
     };
 
     this.activeTurns.set(turnId, state);
@@ -2160,12 +2175,16 @@ export class AgentRuntime {
       .catch(async (error) => {
         const turnState = this.activeTurns.get(turnId);
         if (turnState && turnState.status === "running") {
+          const failure = describeRunFailure(error, { providerId: turnState.providerId, modelId: turnState.modelId, routeExhausted: turnState.routeExhausted });
           turnState.status = "failed";
-          turnState.error = error instanceof Error ? error.message : String(error);
+          turnState.error = failure.message;
+          turnState.failure = failure;
           this.activeTurns.set(turnId, turnState);
           await this.persistTurn(turnState);
           await this.userIntentHold?.resolveForTerminal(this.sessionId, turnId);
-          await adapter.emitTurnFailed(turnId, turnState.error);
+          await this.persistSessionOutcome(turnState, "failed", failure.code);
+          await adapter.emitTurnFailed(turnId, turnState.error, failure);
+          await this.emitStandaloneTurnOutcome(turnState, adapter, "failed", failure);
           adapter.emitStatusChanged("running", "failed");
         }
       })
@@ -2288,8 +2307,10 @@ export class AgentRuntime {
     state.completedAt = new Date();
     this.activeTurns.set(turnId, state);
     await this.persistTurn(state);
+    await this.persistSessionOutcome(state, "cancelled", "user_stopped");
     const adapter = this.createAdapter();
     await adapter.emitTurnCancelled(turnId, reason);
+    await this.emitStandaloneTurnOutcome(state, adapter, "cancelled");
     adapter.emitStatusChanged(state.status, "cancelled");
   }
 
@@ -2659,13 +2680,17 @@ export class AgentRuntime {
       // fake-completion this runtime must never produce.
       if (state.budgetExhausted) {
         const reason = `Stopped after ${this.maxIterations} iterations without finishing. The task is incomplete and unverified.`;
+        const failure = describeRunFailure(new Error(reason), { providerId: state.providerId, modelId: state.modelId });
         state.status = "failed";
         state.completedAt = new Date();
         state.error = reason;
+        state.failure = failure;
         this.activeTurns.set(turnId, state);
         await this.persistTurn(state);
         await this.userIntentHold?.resolveForTerminal(this.sessionId, turnId);
-        adapter.emitTurnFailed(turnId, reason);
+        await this.persistSessionOutcome(state, "failed", failure.code);
+        await adapter.emitTurnFailed(turnId, reason, failure);
+        await this.emitStandaloneTurnOutcome(state, adapter, "failed", failure);
         adapter.emitStatusChanged("running", "failed");
         return;
       }
@@ -2705,6 +2730,8 @@ export class AgentRuntime {
         }),
         updatedAt: new Date().toISOString(),
         status: "completed",
+        // A workflow-dispatched turn is one step of a run the workflow will conclude itself.
+        ...(state.origin === "workflow" ? {} : { outcome: "completed" }),
         currentAgentId: agentId,
         currentModelId: state.modelId,
         currentProviderId: state.providerId,
@@ -2713,6 +2740,7 @@ export class AgentRuntime {
       await this.userIntentHold?.resolveForTerminal(this.sessionId, turnId);
 
       await adapter.emitTurnCompleted(turnId, "Task completed successfully");
+      await this.emitStandaloneTurnOutcome(state, adapter, "completed");
       adapter.emitStatusChanged("running", "completed");
       adapter.emitAgentCompleted(agentId, turnId);
     } catch (error) {
@@ -2723,8 +2751,14 @@ export class AgentRuntime {
       state = this.activeTurns.get(turnId);
       if (!state) return;
 
+      // The raw provider text drives health marking below; what the user reads is the
+      // classified, owner-aware sentence (never a provider body, never "your API key" for a
+      // route the user configured no credential for).
+      const rawError = error instanceof Error ? error.message : String(error);
+      const failure = describeRunFailure(error, { providerId: state.providerId, modelId: state.modelId, routeExhausted: state.routeExhausted });
       state.status = "failed";
-      state.error = error instanceof Error ? error.message : String(error);
+      state.error = failure.message;
+      state.failure = failure;
       state.completedAt = new Date();
       this.activeTurns.set(turnId, state);
       await this.persistTurn(state);
@@ -2738,6 +2772,7 @@ export class AgentRuntime {
         }),
         updatedAt: state.completedAt.toISOString(),
         status: "failed",
+        ...(state.origin === "workflow" ? {} : { outcome: failure.code }),
         currentAgentId: agentId,
         currentModelId: state.modelId,
         currentProviderId: state.providerId,
@@ -2750,7 +2785,7 @@ export class AgentRuntime {
       // the R3-RC2 window-1 corpus run (25/90 attempts lost to the cascade).
       const providerId = state.providerId;
       if (providerId) {
-        const marking = planFailureHealthMarking(providerId, state.modelId, state.error);
+        const marking = planFailureHealthMarking(providerId, state.modelId, rawError);
         if (marking) {
           if (marking.scope === "model" && marking.modelId) {
             this.firewall.markModelHealth(marking.providerId, marking.modelId, marking.status, {
@@ -2766,9 +2801,56 @@ export class AgentRuntime {
         }
       }
 
-      adapter.emitTurnFailed(turnId, state.error);
+      await adapter.emitTurnFailed(turnId, state.error, failure);
+      await this.emitStandaloneTurnOutcome(state, adapter, "failed", failure);
       adapter.emitStatusChanged("running", "failed");
       adapter.emitAgentCompleted(agentId, turnId);
+    }
+  }
+
+  /**
+   * A user-originated turn IS the run (chat mode, or a direct agent turn outside a workflow), so
+   * its end is the run's end and gets the single `run.outcome` record. Workflow-dispatched turns
+   * are steps inside a run the WorkflowService concludes with its own outcome.
+   */
+  private async emitStandaloneTurnOutcome(
+    state: TurnState,
+    adapter: WorkspaceEventAdapter,
+    outcome: "completed" | "failed" | "cancelled",
+    failure?: RunFailure,
+  ): Promise<void> {
+    if (state.origin === "workflow") return;
+    const routeExhausted = failure?.code === "route_exhausted";
+    try {
+      await adapter.emitRunOutcome({
+        turnId: state.turnId,
+        executionMode: "chat",
+        outcome: routeExhausted ? "route_exhausted" : outcome,
+        reasonCode: outcome === "completed" ? "completed" : outcome === "cancelled" ? "user_stopped" : failure?.code ?? "unknown",
+        summary: outcome === "completed"
+          ? "CodeForge answered."
+          : outcome === "cancelled"
+            ? "Stopped by you."
+            : failure?.message ?? state.error ?? "The run failed.",
+        execution: outcome === "completed" ? "completed" : outcome === "cancelled" ? "cancelled" : routeExhausted ? "route_exhausted" : "failed",
+        verification: "not_run",
+        review: "not_run",
+        completion: "not_evaluated",
+        ...(failure ? { failure } : {}),
+      });
+    } catch {
+      // The per-turn terminal event already went out; the outcome record is best-effort.
+    }
+  }
+
+  private async persistSessionOutcome(state: TurnState, status: "completed" | "failed" | "cancelled", outcome: string): Promise<void> {
+    if (state.origin === "workflow") return;
+    try {
+      const existing = await this.persistence.getSession(this.sessionId);
+      if (!existing) return;
+      await this.persistence.upsertSession({ ...existing, updatedAt: new Date().toISOString(), status, outcome });
+    } catch {
+      // Best-effort sidebar truth; the events remain authoritative.
     }
   }
 
@@ -3573,6 +3655,14 @@ export class AgentRuntime {
       capacityScoreAdjustment: this.freeCloud
         ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
         : undefined,
+      // The user sees the wait as it happens, not as a silent pause in the stream.
+      onWait: ({ waitMs, reason }) => adapter.emitEightBitStatus(
+        "ROUTE_COOLDOWN",
+        role,
+        [reason, "BOUNDED_SAME_ROUTE_RETRY"],
+        `Free capacity on ${state.modelId} is briefly exhausted; waiting ${Math.ceil(waitMs / 1000)} s, then continuing on the same route.`,
+        { providerId: state.providerId!, modelId: state.modelId! },
+      ),
     });
 
     // Shared (cross-session) 8-Bit health: the registry and Settings see the same cooldown the
@@ -3591,6 +3681,9 @@ export class AgentRuntime {
 
     if (outcome.action !== "rotate") {
       if (outcome.action === "no_replacement" && outcome.receipt.action === "NO_ELIGIBLE_ROUTE") {
+        // The turn is over for routing reasons; the terminal failure names that, not the last 429.
+        state.routeExhausted = true;
+        this.activeTurns.set(turnId, state);
         adapter.emitEightBitStatus(
           "NO_ELIGIBLE_FREE_MODEL",
           role,

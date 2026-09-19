@@ -71,6 +71,11 @@ const MIGRATION_2_POSTGRES = `
 ALTER TABLE sessions ADD COLUMN IF NOT EXISTS "planMode" TEXT;
 `;
 
+// The run outcome code is additive as well; see SessionRecord.outcome.
+const MIGRATION_3_POSTGRES = `
+ALTER TABLE sessions ADD COLUMN IF NOT EXISTS outcome TEXT;
+`;
+
 export const SESSIONS_MIGRATIONS: SessionsMigrationDefinition[] = [
   {
     version: 1,
@@ -83,5 +88,11 @@ export const SESSIONS_MIGRATIONS: SessionsMigrationDefinition[] = [
     name: "session_plan_mode",
     postgresUp: MIGRATION_2_POSTGRES,
     checksum: computeChecksum(MIGRATION_2_POSTGRES),
+  },
+  {
+    version: 3,
+    name: "session_run_outcome",
+    postgresUp: MIGRATION_3_POSTGRES,
+    checksum: computeChecksum(MIGRATION_3_POSTGRES),
   },
 ];

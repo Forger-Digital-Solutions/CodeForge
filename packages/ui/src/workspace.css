@@ -8,7 +8,8 @@
 
   --cf-text: #e6e7ea;
   --cf-text-secondary: #9a9ea7;
-  --cf-text-muted: #63666e;
+  /* R16: ≥4.5:1 on every surface token (base → hover); the previous #63666e read at ~2.5–3.3:1. */
+  --cf-text-muted: #868a92;
 
   /* Accent used sparingly — a calmer blue than the previous dashboard tone. */
   --cf-accent: #b7c0cc;
@@ -458,6 +459,11 @@ body {
 
 .nav-status-dot.failed {
   background: var(--cf-danger);
+}
+
+.nav-status-dot.paused,
+.nav-status-dot.waiting {
+  background: var(--cf-warning);
 }
 
 /* ────────────────────────────────────────────
@@ -3188,6 +3194,15 @@ body {
   margin-bottom: 8px;
 }
 
+.forgezero-popover-note {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--cf-border-subtle);
+  color: var(--cf-text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
 .forgezero-popover-row {
   display: flex;
   align-items: center;
@@ -3793,3 +3808,56 @@ body {
 .run-inspection-file[aria-pressed="true"] { color: var(--cf-accent); }
 .run-inspection-verifier { margin: 5px 0 0 8px; overflow-wrap: anywhere; }
 .diff-truncated { color: var(--cf-text-muted); padding: 8px; font-size: 11px; }
+
+/* ── Attachments: truthful state (R16) ─────────────────────────────────── */
+.attachment-menu { min-width: 260px; }
+.attachment-menu-hint {
+  padding: 6px 10px 4px;
+  color: var(--cf-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.composer-attachment-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius);
+  background: var(--cf-bg-raised);
+  color: var(--cf-text-secondary);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.composer-attachment-notice span { flex: 1; }
+.user-message-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.user-message-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border: 1px solid var(--cf-border);
+  border-radius: 999px;
+  background: var(--cf-bg-raised);
+  color: var(--cf-text-secondary);
+  font: 11px var(--cf-font-mono);
+  cursor: pointer;
+}
+.user-message-attachment-body {
+  margin: 8px 0 0;
+  max-height: 260px;
+  overflow: auto;
+  padding: 8px 10px;
+  border: 1px solid var(--cf-border-subtle);
+  border-radius: var(--cf-radius);
+  background: var(--cf-bg-input);
+  color: var(--cf-text-secondary);
+  font: 11px/1.5 var(--cf-font-mono);
+  white-space: pre-wrap;
+}

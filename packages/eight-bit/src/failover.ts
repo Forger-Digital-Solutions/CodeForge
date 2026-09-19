@@ -1,5 +1,5 @@
 import type { EightBitHealthTracker } from "./health.js";
-import { classifyFailure } from "./health.js";
+import { classifyFailure, shortRateLimitWaitMs, SHORT_RATE_LIMIT_MAX_WAIT_MS } from "./health.js";
 import type { EightBitRouter, SelectRouteOptions } from "./router.js";
 import type { EightBitDecisionStore } from "./persistence.js";
 import { newReceiptId } from "./persistence.js";
@@ -45,6 +45,8 @@ export interface FailoverRequest {
   routeFilter?: (providerId: string, modelId: string) => boolean;
   /** Capacity advice is ranking-only; ForgeZero and routeFilter retain admission authority. */
   capacityScoreAdjustment?: SelectRouteOptions["capacityScoreAdjustment"];
+  /** Called before a bounded same-route wait so the caller can tell the user what is happening. */
+  onWait?: (info: { waitMs: number; reason: FailureReason }) => void;
 }
 
 export type FailoverOutcome =
@@ -79,15 +81,30 @@ export class EightBitFailoverCoordinator {
    * ordinary NO_ELIGIBLE_ROUTE / EXACT_PIN_FAILED path, so the retry is bounded like every other.
    */
   private async retrySameAfterCapacityBlip(req: FailoverRequest, reason: FailureReason, consecutiveFailures: number, cooldownUntil: number | undefined): Promise<FailoverOutcome | null> {
-    if (!NO_TARGET_TRANSIENT_RETRY_REASONS.has(reason) || consecutiveFailures >= BOUNDED_RETRY_ESCALATION_THRESHOLD) return null;
+    if (consecutiveFailures >= BOUNDED_RETRY_ESCALATION_THRESHOLD) return null;
     const now = this.clock.now();
-    const waitMs = Math.max(0, Math.min(NO_TARGET_RETRY_MAX_WAIT_MS, (cooldownUntil ?? 0) - now));
+    let waitMs: number;
+    const reasonCodes = [reason, "NO_REPLACEMENT_ROUTE", "BOUNDED_SAME_ROUTE_RETRY"];
+    if (NO_TARGET_TRANSIENT_RETRY_REASONS.has(reason)) {
+      waitMs = Math.max(0, Math.min(NO_TARGET_RETRY_MAX_WAIT_MS, (cooldownUntil ?? 0) - now));
+    } else if (reason === "RATE_LIMITED") {
+      // A per-minute limit on the only admitted route (the normal first-day state on shared free
+      // capacity) used to end the whole task on the first 429. The window is short and known, so
+      // wait it out once or twice instead — never for daily caps, which stay a closed door.
+      const shortWait = shortRateLimitWaitMs(req.error, now);
+      if (shortWait === undefined) return null;
+      waitMs = Math.min(SHORT_RATE_LIMIT_MAX_WAIT_MS, shortWait);
+      reasonCodes.push("SHORT_RATE_LIMIT_WAIT");
+    } else {
+      return null;
+    }
     // The bounded wait is the cooldown: the route (and ForgeZero's provider projection) must be
     // eligible again by the time the retry issues its next model call.
     this.health.shortenCooldown(req.current.providerId, req.current.modelId, now + waitMs);
-    const receipt = this.buildReceipt(req, "COOLDOWN", [reason, "NO_REPLACEMENT_ROUTE", "BOUNDED_SAME_ROUTE_RETRY"]);
+    const receipt = this.buildReceipt(req, "COOLDOWN", reasonCodes);
     receipt.evidence = { ...receipt.evidence, waitMs, consecutiveFailures };
     await this.store.recordReceipt(receipt);
+    req.onWait?.({ waitMs, reason });
     if (waitMs > 0) await this.clock.sleep(waitMs);
     return { action: "retry_same", reason };
   }

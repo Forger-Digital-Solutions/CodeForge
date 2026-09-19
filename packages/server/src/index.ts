@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import {
   MISSING_EXECUTION_MODE_FALLBACK,
   SendRequestSchema,
+  composeMessageWithAttachments,
   isWorkspaceEvent,
   type ExecutionMode,
   type WorkspaceEvent,
@@ -167,6 +168,18 @@ export interface CodeForgeRuntimeStatus {
   unrecoverableResources: string[];
 }
 
+/** Same repository on disk: resolved paths compared case-insensitively on Windows (drive letters, user dirs). */
+const PROVIDER_HEALTH_CACHE_TTL_MS = 60_000;
+const PROVIDER_HEALTH_PROBE_TIMEOUT_MS = 8_000;
+
+export function sameWorkspacePath(a: string, b: string): boolean {
+  const normalize = (value: string) => {
+    const resolved = path.resolve(value).replace(/[\\/]+$/, "");
+    return process.platform === "win32" ? resolved.toLowerCase() : resolved;
+  };
+  return normalize(a) === normalize(b);
+}
+
 export class CodeForgeServer {
   private port: number;
   private readonly host: string;
@@ -199,6 +212,8 @@ export class CodeForgeServer {
   private readonly afterApprovalResolvedBoundary?: () => Promise<void>;
   private readonly configuredDbPath?: string;
   private readonly controlPlaneToken?: string;
+  private readonly providerHealthCache = new Map<string, { at: number; value: unknown }>();
+  private readonly providerHealthInFlight = new Map<string, Promise<unknown>>();
   private forgeGreenCacheStore?: ForgeGreenCacheStore;
   /**
    * Raw session/turn/work-item data backing the activity overview, cached briefly. The renderer
@@ -530,14 +545,41 @@ export class CodeForgeServer {
       // Preserve mode/display/workspace fields — upsertSession writes every
       // column, so omitting them here would null the user's authority contract
       // on every message.
-      ...(existing ?? {}),
+      ...existing,
       id: sessionId,
       title: existing?.title ?? userMessage.slice(0, 80),
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
       status: "running",
+      // A conversation is bound to the repository it starts in. Stamping it here (not only when a
+      // workflow starts) means chat turns and legacy sessions carry the binding too.
+      workspacePath: existing?.workspacePath ?? this.activeWorkspacePath ?? undefined,
     });
     this.hydrateAuthority(sessionId, existing);
+  }
+
+  /**
+   * Refuse to continue a conversation under a different repository than the one it belongs to.
+   * The sidebar can show a task from another project; sending into it would otherwise run that
+   * task's plan (and tools, and commands) against the currently open workspace. The send is
+   * refused with an explicit reason — never silently redirected to the active repository.
+   */
+  private async checkSessionWorkspace(sessionId: string): Promise<{ ok: true } | { ok: false; sessionWorkspace: string; activeWorkspace: string | undefined }> {
+    const existing = await this.persistence.getSession(sessionId);
+    const bound = existing?.workspacePath;
+    if (!bound) return { ok: true };
+    const active = this.activeWorkspacePath;
+    if (active && sameWorkspacePath(bound, active)) return { ok: true };
+    return { ok: false, sessionWorkspace: bound, activeWorkspace: active ?? undefined };
+  }
+
+  private rejectWorkspaceMismatch(res: http.ServerResponse, mismatch: { sessionWorkspace: string; activeWorkspace: string | undefined }, requestId: string, executionMode: ExecutionMode): void {
+    const boundName = path.basename(mismatch.sessionWorkspace) || mismatch.sessionWorkspace;
+    const message = mismatch.activeWorkspace
+      ? `This conversation belongs to the "${boundName}" project. Open that project to continue it, or start a new task here.`
+      : `This conversation belongs to the "${boundName}" project. Open that project to continue it.`;
+    res.writeHead(409, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify({ error: "WORKSPACE_MISMATCH", message, executionMode, requestId, sessionWorkspace: mismatch.sessionWorkspace }));
   }
 
   /** Task-scoped authorities, keyed by session. Hydrated from the session
@@ -1062,10 +1104,10 @@ export class CodeForgeServer {
       : { code: "CHAT_START_FAILED", message: "The chat turn could not start.", status: 500 };
   }
 
-  private async markSessionFailed(sessionId: string): Promise<void> {
+  private async markSessionFailed(sessionId: string, outcome = "start_failed"): Promise<void> {
     const session = await this.persistence.getSession(sessionId);
     if (session) {
-      await this.persistence.upsertSession({ ...session, status: "failed", updatedAt: new Date().toISOString() });
+      await this.persistence.upsertSession({ ...session, status: "failed", outcome, updatedAt: new Date().toISOString() });
     }
   }
 
@@ -1087,7 +1129,10 @@ export class CodeForgeServer {
         }
         const data = parsed.data;
         const sessionId = data.sessionId ?? "default";
-        const message = data.message;
+        // Attached text files travel inside the message the runtime executes, in delimited blocks
+        // the conversation view collapses back into chips. Before R16 the composer offered
+        // attachments that never left the renderer.
+        const message = composeMessageWithAttachments(data.message, data.attachments);
 
         // Handle steer flag from UI or API caller
         if (data.steer === true) {
@@ -1120,6 +1165,11 @@ export class CodeForgeServer {
 
         const executionMode = data.executionMode ?? MISSING_EXECUTION_MODE_FALLBACK;
         const requestId = data.turnId ?? crypto.randomUUID();
+        const workspaceCheck = await this.checkSessionWorkspace(sessionId);
+        if (!workspaceCheck.ok) {
+          this.rejectWorkspaceMismatch(res, workspaceCheck, requestId, executionMode);
+          return;
+        }
         await this.persistSession(sessionId, message);
         await this.appendExecutionEvent(sessionId, "execution.requested", {
           requestId,
@@ -1606,6 +1656,11 @@ export class CodeForgeServer {
           return;
         }
         const workspacePath = typeof data.workspacePath === "string" && data.workspacePath ? data.workspacePath : this.activeWorkspacePath ?? undefined;
+        const workspaceCheck = await this.checkSessionWorkspace(sessionId);
+        if (!workspaceCheck.ok && !(workspacePath && sameWorkspacePath(workspaceCheck.sessionWorkspace, workspacePath))) {
+          this.rejectWorkspaceMismatch(res, workspaceCheck, requestId, "agent");
+          return;
+        }
         if (!workspacePath) {
           await this.persistSession(sessionId, message);
           await this.appendExecutionEvent(sessionId, "execution.requested", { requestId, executionMode: "agent", runtime: "workflow" });
@@ -2204,7 +2259,7 @@ export class CodeForgeServer {
         const session = await this.persistence.getSession(sessionId);
         const now = new Date().toISOString();
         await this.persistence.upsertSession({
-          ...(session ?? {}),
+          ...session,
           id: sessionId,
           title: session?.title ?? "Session",
           createdAt: session?.createdAt ?? now,
@@ -2564,7 +2619,26 @@ export class CodeForgeServer {
       return;
     }
 
-    adapter.healthCheck()
+    // A health probe is a real network round trip to the provider (or to CodeForge Cloud). The
+    // renderer polls this endpoint for every provider it shows, so results are shared for a
+    // minute and each probe is bounded: an idle desktop must not hammer providers, and an
+    // unreachable one must not accumulate hanging sockets.
+    const cached = this.providerHealthCache.get(providerId);
+    if (cached && Date.now() - cached.at < PROVIDER_HEALTH_CACHE_TTL_MS) {
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify(cached.value));
+      return;
+    }
+    const probe = this.providerHealthInFlight.get(providerId) ?? Promise.race([
+      adapter.healthCheck(),
+      new Promise<{ status: string; error: string }>((resolve) => setTimeout(() => resolve({ status: "offline", error: "Provider health check timed out" }), PROVIDER_HEALTH_PROBE_TIMEOUT_MS).unref?.()),
+    ]).then((value) => {
+      this.providerHealthCache.set(providerId, { at: Date.now(), value });
+      return value;
+    }).finally(() => this.providerHealthInFlight.delete(providerId));
+    this.providerHealthInFlight.set(providerId, probe);
+
+    probe
       .then((health) => {
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
         res.end(JSON.stringify(health));

@@ -31,6 +31,7 @@ interface StoredSession {
   branch: string | null;
   workspacePath: string | null;
   taskTitle: string | null;
+  outcome: string | null;
 }
 
 interface StoredTurn {
@@ -78,7 +79,8 @@ CREATE TABLE IF NOT EXISTS sessions (
   displayMode TEXT,
   branch TEXT,
   workspacePath TEXT,
-  taskTitle TEXT
+  taskTitle TEXT,
+  outcome TEXT
 );
 
 CREATE TABLE IF NOT EXISTS turns (
@@ -132,6 +134,7 @@ function parseSession(row: StoredSession): SessionRecord {
     ...(row.branch && { branch: row.branch }),
     ...(row.workspacePath && { workspacePath: row.workspacePath }),
     ...(row.taskTitle && { taskTitle: row.taskTitle }),
+    ...(row.outcome && { outcome: row.outcome }),
   };
 }
 
@@ -189,10 +192,14 @@ export class SqliteSessionPersistence implements ISessionPersistence {
       if (sessionColumns.length > 0 && !sessionColumns.some((col) => col.name === "planMode")) {
         this.db.exec("ALTER TABLE sessions ADD COLUMN planMode TEXT");
       }
+      // Same additive pattern for the run outcome column.
+      if (sessionColumns.length > 0 && !sessionColumns.some((col) => col.name === "outcome")) {
+        this.db.exec("ALTER TABLE sessions ADD COLUMN outcome TEXT");
+      }
 
       this.statement("upsertSession", `
-      INSERT INTO sessions (id, title, createdAt, updatedAt, status, currentAgentId, currentModelId, currentProviderId, permissionMode, planMode, displayMode, branch, workspacePath, taskTitle)
-      VALUES ($id, $title, $createdAt, $updatedAt, $status, $currentAgentId, $currentModelId, $currentProviderId, $permissionMode, $planMode, $displayMode, $branch, $workspacePath, $taskTitle)
+      INSERT INTO sessions (id, title, createdAt, updatedAt, status, currentAgentId, currentModelId, currentProviderId, permissionMode, planMode, displayMode, branch, workspacePath, taskTitle, outcome)
+      VALUES ($id, $title, $createdAt, $updatedAt, $status, $currentAgentId, $currentModelId, $currentProviderId, $permissionMode, $planMode, $displayMode, $branch, $workspacePath, $taskTitle, $outcome)
       ON CONFLICT(id) DO UPDATE SET
         title = excluded.title,
         updatedAt = excluded.updatedAt,
@@ -205,7 +212,8 @@ export class SqliteSessionPersistence implements ISessionPersistence {
         displayMode = excluded.displayMode,
         branch = excluded.branch,
         workspacePath = excluded.workspacePath,
-        taskTitle = excluded.taskTitle
+        taskTitle = excluded.taskTitle,
+        outcome = excluded.outcome
     `);
 
       this.statement("getSession", "SELECT * FROM sessions WHERE id = $id");
@@ -301,6 +309,7 @@ export class SqliteSessionPersistence implements ISessionPersistence {
       $branch: safeSession.branch ?? null,
       $workspacePath: safeSession.workspacePath ?? null,
       $taskTitle: safeSession.taskTitle ?? null,
+      $outcome: safeSession.outcome ?? null,
     });
   }
 

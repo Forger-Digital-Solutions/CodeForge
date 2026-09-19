@@ -13,41 +13,38 @@ import CommandPalette, { type Command } from "./CommandPalette.js";
 import WorkflowProgress from "./WorkflowProgress.js";
 import { type ModelSelectorItem, type ModelSection } from "./ModelSelector.js";
 import { ForgeWorkingIndicator } from "./activity-icons.js";
-import { isForgeWorkActive } from "./forge-activity.js";
+
 import { loadModelFavorites } from "./model-favorites.js";
 import { ContextBar } from "./ContextBar.js";
 import type { ActivityOverviewData, ActivityPeriod } from "./ActivityOverview.js";
 import type { WorkspaceBriefData } from "./Conversation.js";
 import "./workspace.css";
-
-/** Turn provider/runtime errors into concise, actionable guidance. */
-export function humanizeError(msg: string): string {
-  const m = msg.toLowerCase();
-  if (m.includes("401") || m.includes("invalid api key") || m.includes("autherror") || m.includes("unauthorized"))
-    return "Provider authentication failed — your API key is invalid or expired. Update it in Settings → Providers.";
-  if (m.includes("403")) return "Access denied by the provider. Check your API key permissions in Settings → Providers.";
-  if (m.includes("429") || m.includes("rate limit")) {
-    // A daily cap is not "a moment": say what the provider said.
-    if (m.includes("per-day") || m.includes("per day") || m.includes("daily")) {
-      return "The provider's daily free-request limit is exhausted and resets on the provider's schedule. Connect another verified free route or try again later.";
-    }
-    return "The provider is rate limited. Wait a moment and try again.";
-  }
-  if (m.includes("not found in catalog") || m.includes("no free provider") || m.includes("no verified free"))
-    return "No verified free model is available. Connect a provider in Settings → Providers.";
-  if (m.includes("payment") || m.includes("paid model")) return "That model requires a paid plan. Choose a verified free model or connect a provider.";
-  if (m.includes("timeout")) return "The request timed out — the provider may be slow or unavailable. Try again.";
-  if (m.includes("network") || m.includes("failed to fetch") || m.includes("econn")) return "Network error — check your connection and that the CodeForge server is running.";
-  if (m.includes("no workspace")) return "No workspace is set. Open a project folder first.";
-  return msg.length > 200 ? `${msg.slice(0, 200)}…` : msg;
-}
+import { humanizeError } from "./error-copy.js";
+export { humanizeError } from "./error-copy.js";
 
 export interface SessionSummary {
   id: string;
   title?: string;
   taskTitle?: string;
   status?: string;
+  /** How the last run ended ("route_exhausted", "verification_failed", …); refines `status`. */
+  outcome?: string;
   updatedAt?: string;
+  /** Repository the conversation is bound to; absent for sessions created before binding existed. */
+  workspacePath?: string;
+}
+
+/**
+ * Only this repository's conversations belong in this repository's task list. A task from another
+ * project would read as continuable here, and continuing it is exactly what the runtime refuses
+ * (WORKSPACE_MISMATCH). Sessions without a binding (pre-binding history) stay visible: the runtime
+ * binds them to the active workspace on their next message.
+ */
+export function sessionsForWorkspace<T extends { workspacePath?: string }>(sessions: T[], activeWorkspacePath?: string): T[] {
+  if (!activeWorkspacePath) return sessions;
+  const normalize = (value: string) => value.replace(/[\\/]+$/, "").replace(/\\/g, "/").toLowerCase();
+  const active = normalize(activeWorkspacePath);
+  return sessions.filter((session) => !session.workspacePath || normalize(session.workspacePath) === active);
 }
 
 export interface Attachment {
@@ -122,7 +119,7 @@ export default function WorkspaceApp({
   defaultExecutionMode,
   workspaceBrief,
 }: WorkspaceAppProps) {
-  const { state, setState, sendMessage, setAuthority, requestUserIntentHold, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession, startNewSession, hydrate } = useWorkspaceSSE(sseUrl ?? "/api/events");
+  const { state, lifecycle, run, setState, sendMessage, setAuthority, requestUserIntentHold, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession, startNewSession, hydrate } = useWorkspaceSSE(sseUrl ?? "/api/events");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try { return window.localStorage.getItem("codeforge:sidebar-collapsed") === "true"; } catch { return false; }
@@ -212,11 +209,11 @@ export default function WorkspaceApp({
       const res = await fetch(`${apiOrigin}/api/sessions`);
       if (!res.ok) return;
       const data = (await res.json()) as SessionSummary[];
-      if (Array.isArray(data)) setSessions(dedupeSessionSummaries(data));
+      if (Array.isArray(data)) setSessions(dedupeSessionSummaries(sessionsForWorkspace(data, workspacePath)));
     } catch {
       // server may still be starting
     }
-  }, [apiOrigin]);
+  }, [apiOrigin, workspacePath]);
 
   React.useEffect(() => {
     refreshSessions();
@@ -235,7 +232,7 @@ export default function WorkspaceApp({
       id: "open-workspace",
       label: "Open Workspace",
       description: "Switch to a different project folder",
-      icon: "📁",
+      icon: "▣",
       action: onOpenProjects ?? (() => {}),
       shortcut: "Ctrl+Shift+O",
     },
@@ -243,7 +240,7 @@ export default function WorkspaceApp({
       id: "search-sessions",
       label: "Search Sessions",
       description: "Find previous tasks and sessions",
-      icon: "🔍",
+      icon: "⌕",
       action: () => setShowQuickActions(true),
       shortcut: "Ctrl+K",
     },
@@ -251,7 +248,7 @@ export default function WorkspaceApp({
       id: "search-files",
       label: "Search Files",
       description: "Find files in the current workspace",
-      icon: "📄",
+      icon: "≡",
       action: () => setState((prev) => ({ ...prev, leftNav: "files" })),
       shortcut: "Ctrl+P",
     },
@@ -259,7 +256,7 @@ export default function WorkspaceApp({
       id: "attach-file",
       label: "Attach File",
       description: "Add a file reference to the current task",
-      icon: "📎",
+      icon: "⎘",
       action: () => {},
       shortcut: "Ctrl+Shift+A",
     },
@@ -275,7 +272,7 @@ export default function WorkspaceApp({
       id: "toggle-inspector",
       label: "Toggle Inspector",
       description: "Show or hide the right details panel",
-      icon: "🔍",
+      icon: "⌕",
       action: () => setInspectorCollapsed(!inspectorCollapsed),
       shortcut: "Ctrl+Alt+B",
     },
@@ -283,7 +280,7 @@ export default function WorkspaceApp({
       id: "model-picker",
       label: "Model Picker",
       description: "Choose a model for the current task",
-      icon: "🤖",
+      icon: "◈",
       action: () => {},
       shortcut: "Ctrl+M",
     },
@@ -291,7 +288,7 @@ export default function WorkspaceApp({
       id: "usage-billing",
       label: "Usage & Billing",
       description: "View your plan, credits, and usage",
-      icon: "💳",
+      icon: "◆",
       action: () => onUpgradeNavigation?.(""),
       shortcut: "",
     },
@@ -299,7 +296,7 @@ export default function WorkspaceApp({
       id: "repository-intelligence",
       label: "Repository Intelligence",
       description: "View indexing status and settings",
-      icon: "📊",
+      icon: "▤",
       action: () => {},
       shortcut: "",
     },
@@ -307,7 +304,7 @@ export default function WorkspaceApp({
       id: "permissions",
       label: "Permissions & Approvals",
       description: "Review approval and agent behavior settings",
-      icon: "🔐",
+      icon: "⚿",
       action: onOpenSettingsSection
         ? () => onOpenSettingsSection("agents")
         : onOpenSettings ?? (() => {}),
@@ -317,7 +314,7 @@ export default function WorkspaceApp({
       id: "settings",
       label: "Settings",
       description: "Open application settings",
-      icon: "⚙",
+      icon: "◎",
       action: onOpenSettingsSection
         ? () => onOpenSettingsSection("general")
         : onOpenSettings ?? (() => {}),
@@ -406,12 +403,16 @@ export default function WorkspaceApp({
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
   }, [handleGlobalKeyDown]);
 
+  // Text attachments go to the runtime with the message; the composer only produces text ones.
+  const toSendAttachments = (attachments?: Attachment[]) =>
+    (attachments ?? []).filter((a) => typeof a.content === "string" && a.type === "file").map((a) => ({ name: a.name, content: a.content as string, size: a.size }));
+
   const handleSend = (message: string, attachments?: Attachment[]) => {
     const requestMode = executionMode;
     if (onSendMessage) {
       onSendMessage(message, false, requestMode, attachments);
     } else {
-      sendMessage(message, false, requestMode);
+      sendMessage(message, false, requestMode, { attachments: toSendAttachments(attachments) });
     }
   };
 
@@ -420,7 +421,7 @@ export default function WorkspaceApp({
     if (onSendMessage) {
       onSendMessage(message, true, requestMode, attachments);
     } else {
-      sendMessage(message, true, requestMode);
+      sendMessage(message, true, requestMode, { attachments: toSendAttachments(attachments) });
     }
   };
 
@@ -434,31 +435,31 @@ export default function WorkspaceApp({
     if (defaultExecutionMode) setExecutionMode(defaultExecutionMode);
   }, [defaultExecutionMode]);
 
-  const placeholder = state.pendingApproval?.tool === "workflow"
+  const placeholder = state.pendingApproval?.tool === "workflow" || run.composer === "approve"
     ? "Add context, or use the approval controls above…"
-    : state.isRunning
-      ? state.activePhase === "awaiting_approval"
-        ? "Awaiting plan approval…"
-        : "Steer the agent…"
-      : state.pendingQuestion
-        ? "Answer the agent..."
-        : "Describe a task or ask about your code…";
+    : run.composer === "answer"
+      ? "Answer the agent…"
+      : run.composer === "resume"
+        ? "Resume the task, or steer it…"
+        : run.composer === "steer"
+          ? "Steer the agent…"
+          : "Describe a task or ask about your code…";
 
   const startFailureEvent = [...state.events].reverse().find((event) => event.type === "execution.start_failed");
   const startFailure = startFailureEvent?.type === "execution.start_failed"
     ? { code: startFailureEvent.payload.code, message: startFailureEvent.payload.message }
     : undefined;
-  const forgeWorkActive = isForgeWorkActive(state);
+  const forgeWorkActive = lifecycle.active && state.isEventStreamConnected;
   // Terminal task events arrive before the next session-list persistence poll. Keep the selected
   // row truthful during that short interval instead of leaving it labelled "Verifying" after the
-  // main task surface has already reported completion.
-  const activeSessionTerminalStatus = state.activePhase === "complete" || state.activePhase === "completed"
-    ? "completed"
-    : state.activePhase === "failed_safely" || state.activePhase === "failed"
-      ? "failed"
-      : state.activePhase === "cancelled"
-        ? "cancelled"
-        : undefined;
+  // main task surface has already reported completion. The overlay carries the outcome code too
+  // so "No free route" is distinguishable from a plain failure.
+  const activeSessionOverlay = lifecycle.terminal
+    ? {
+        status: lifecycle.state === "COMPLETED" ? "completed" : lifecycle.state === "CANCELLED" ? "cancelled" : lifecycle.state === "BLOCKED" ? "blocked" : "failed",
+        outcome: lifecycle.reasonCode,
+      }
+    : undefined;
   // "Fix and continue" continues the same task: the server injects the previous
   // run's failure context and the session lease carries the authority — it is
   // never a fresh task asking for the same plan approval again.
@@ -491,7 +492,8 @@ export default function WorkspaceApp({
           <Navigation
             sessions={sessions}
             activeSessionId={state.session?.id ?? null}
-            activeSessionStatus={activeSessionTerminalStatus}
+            activeSessionStatus={activeSessionOverlay?.status}
+            activeSessionOutcome={activeSessionOverlay?.outcome}
             onSelectSession={(id) => selectSession(id)}
             onNewTask={startNewSession}
             projectName={projectName}
@@ -525,17 +527,22 @@ export default function WorkspaceApp({
                 isPaused={state.isPaused}
                 activePhase={state.activePhase}
                 workflowProgress={state.workflowProgress}
+                run={run}
+                runStartedAt={lifecycle.startedAt}
                 onStop={() => {
-                  const activeTurn = state.turns.find((t) => t.status === "running");
-                  if (activeTurn && state.session) stopTurn(state.session.id, activeTurn.id);
+                  // The lifecycle's activeTurnId is authoritative; the turn list is the fallback
+                  // for a run whose executing turn has not been hydrated yet.
+                  const targetTurnId = lifecycle.activeTurnId ?? state.turns.find((t) => t.status === "running")?.id;
+                  if (targetTurnId && state.session) void stopTurn(state.session.id, targetTurnId);
+                  else if (lifecycle.runId && state.session) void cancelWorkflow(lifecycle.runId);
                 }}
                 onPause={() => {
-                  const activeTurn = state.turns.find((t) => t.status === "running");
-                  if (activeTurn && state.session) pauseTurn(state.session.id, activeTurn.id);
+                  const targetTurnId = lifecycle.activeTurnId ?? state.turns.find((t) => t.status === "running")?.id;
+                  if (targetTurnId && state.session) void pauseTurn(state.session.id, targetTurnId);
                 }}
                 onResume={() => {
-                  const pausedTurn = state.turns.find((t) => t.status === "paused");
-                  if (pausedTurn && state.session) resumeTurn(state.session.id, pausedTurn.id);
+                  const targetTurnId = lifecycle.interruptedTurnId ?? lifecycle.activeTurnId ?? state.turns.find((t) => t.status === "paused" || t.status === "recovering")?.id;
+                  if (targetTurnId && state.session) void resumeTurn(state.session.id, targetTurnId);
                 }}
               />
             )}
@@ -567,7 +574,10 @@ export default function WorkspaceApp({
               aria-label={inspectorCollapsed ? "Show inspector" : "Hide inspector"}
               aria-expanded={!inspectorCollapsed}
             >
-              🔍
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+                <path d="M10 2.5v11" stroke="currentColor" strokeWidth="1.3" />
+              </svg>
             </button>
           </div>
 
@@ -654,20 +664,23 @@ export default function WorkspaceApp({
             onSend={handleSend}
             onSteer={handleSteer}
             onStop={() => {
-              const activeTurn = state.turns.find((t) => t.status === "running");
-              if (activeTurn && state.session) stopTurn(state.session.id, activeTurn.id);
+              const targetTurnId = lifecycle.activeTurnId ?? state.turns.find((t) => t.status === "running")?.id;
+              if (targetTurnId && state.session) void stopTurn(state.session.id, targetTurnId);
+              else if (lifecycle.runId && state.session) void cancelWorkflow(lifecycle.runId);
             }}
             onPause={() => {
-              const activeTurn = state.turns.find((t) => t.status === "running");
-              if (activeTurn && state.session) pauseTurn(state.session.id, activeTurn.id);
+              const targetTurnId = lifecycle.activeTurnId ?? state.turns.find((t) => t.status === "running")?.id;
+              if (targetTurnId && state.session) void pauseTurn(state.session.id, targetTurnId);
             }}
             onResume={() => {
-              const pausedTurn = state.turns.find((t) => t.status === "paused");
-              if (pausedTurn && state.session) resumeTurn(state.session.id, pausedTurn.id);
+              const targetTurnId = lifecycle.interruptedTurnId ?? lifecycle.activeTurnId ?? state.turns.find((t) => t.status === "paused" || t.status === "recovering")?.id;
+              if (targetTurnId && state.session) void resumeTurn(state.session.id, targetTurnId);
             }}
             onBackground={() => setState((prev) => ({ ...prev, leftNav: "agents" }))}
             isRunning={state.isRunning}
             isPaused={state.isPaused}
+            run={run}
+            working={lifecycle.active}
             models={models}
             selectedModelId={selectedModelId}
             onSelectModel={(model) => onSelectModel?.(model, state.session?.id)}
@@ -700,6 +713,7 @@ export default function WorkspaceApp({
             turns={state.turns}
             events={state.events}
             isRunning={state.isRunning}
+            statusLabel={run.sidebarStatus}
             workspacePath={state.session?.workspacePath}
             activeTaskId={state.activeTaskId}
             startFailure={startFailure}
