@@ -4,6 +4,7 @@ import CloseDialog, { type CloseRequest } from "./CloseDialog.js";
 import WelcomeScreen from "./WelcomeScreen.js";
 import WorkspaceShell from "./WorkspaceShell.js";
 import { migrateLegacyAppSettings, type AppSettings, type SettingsSnapshot } from "../app-settings.js";
+import type { CloudAccount } from "../cloud-account.js";
 import { markRendererLifecycle } from "./lifecycle.js";
 
 export interface Project {
@@ -13,12 +14,35 @@ export interface Project {
   lastOpened: string;
 }
 
+/**
+ * Startup placeholder. It normally lasts well under a second; when CodeForge Cloud is slow the
+ * main process hands over the remembered identity after a short budget, so this screen should
+ * never be where a user waits out an outage — but if it does linger, it says why.
+ */
+function BootstrapScreen(): React.ReactElement {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSlow(true), 4000);
+    return () => window.clearTimeout(timer);
+  }, []);
+  return (
+    <div className="app-bootstrap" role="status" aria-live="polite">
+      <div className="app-bootstrap-row">
+        <span className="app-bootstrap-mark" aria-hidden="true">◆</span>
+        <span>Restoring your CodeForge session…</span>
+      </div>
+      {slow && <div className="app-bootstrap-hint">CodeForge Cloud is taking longer than usual to respond. Your projects and conversations are safe; the workspace opens as soon as your account is confirmed.</div>}
+    </div>
+  );
+}
+
 export default function App() {
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [recentProjects, setRecentProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [authState, setAuthState] = useState<"loading" | "signed-out" | "authenticated">("loading");
+  const [startupAccount, setStartupAccount] = useState<CloudAccount | null>(null);
 
   const [closeRequest, setCloseRequest] = useState<CloseRequest | null>(null);
 
@@ -73,6 +97,7 @@ export default function App() {
           setAuthState("signed-out");
           return;
         }
+        setStartupAccount(account as CloudAccount);
         setAuthState("authenticated");
         const openLastWorkspace = startupSettings?.general.openLastWorkspaceOnStartup !== false;
         await loadRecentProjects(openLastWorkspace);
@@ -161,7 +186,7 @@ export default function App() {
   const closeOverlay = closeRequest ? <CloseDialog request={closeRequest} onDecision={(decision, remember) => void handleCloseDecision(decision, remember)} /> : null;
 
   if (authState === "loading") {
-    return <><div className="app-bootstrap" role="status" aria-live="polite"><span className="app-bootstrap-mark">◆</span><span>Restoring your CodeForge session…</span></div>{closeOverlay}</>;
+    return <><BootstrapScreen />{closeOverlay}</>;
   }
 
   if (authState === "signed-out") {
@@ -176,6 +201,7 @@ export default function App() {
         onClose={handleCloseProject}
         onSignedOut={handleSignedOut}
         onOpenProjectPath={handleOpenProject}
+        initialAccount={startupAccount}
       />
       {closeOverlay}
       </>

@@ -51,6 +51,9 @@ for (const pkg of packages) {
   aliases[`@codeforge/${pkg}`] = resolve(import.meta.dirname, `packages/${pkg}/src`);
 }
 aliases["codeforge-cloud-api"] = resolve(import.meta.dirname, "apps/cloud-api/src");
+// The desktop renderer's build stamp is a Vite virtual module (apps/desktop/vite.config.ts); tests
+// get an unstamped stand-in so importing the About section does not depend on the Vite plugin.
+aliases["virtual:codeforge-build-identity"] = resolve(import.meta.dirname, "apps/desktop/test/build-identity.stub.ts");
 
 // Real-process integration suites (git worktrees, bare remotes, spawned verification commands,
 // sqlite) saturate a Windows host when every logical CPU runs a worker: measured on a 12-CPU

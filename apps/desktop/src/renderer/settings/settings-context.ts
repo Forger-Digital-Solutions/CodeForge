@@ -27,6 +27,8 @@ export interface SystemInfoView {
   osRelease: string;
   buildChannel: string;
   isPackaged: boolean;
+  /** Source identity stamped at build time; null when the build was not stamped. */
+  build?: { version: string; commit: string; shortCommit: string; branch: string; dirty: boolean; builtAt: string } | null;
 }
 
 export interface RepositoryIndexStatus {

@@ -68,7 +68,9 @@ export function selectorAvailability(m: ApiModel): { available: boolean; unavail
 }
 
 // Muse Spark is a promotional model excluded from normal routing entirely — hide any stray record.
-const HIDDEN_MODEL_RE = /muse[-\s]?spark/i;
+// "codeforge-auto" is the hosted adapter's alias for automatic routing, which the picker already
+// represents as the pinned ForgeAuto/Free row; a second "Auto" row would only confuse.
+const HIDDEN_MODEL_RE = /muse[-\s]?spark|(^|\/|::)codeforge-auto$/i;
 export function isHiddenModel(id: string): boolean {
   return HIDDEN_MODEL_RE.test(id);
 }

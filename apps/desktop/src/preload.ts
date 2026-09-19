@@ -85,6 +85,16 @@ const api = {
   getCloudUsage: (): Promise<CloudUsage | null> => {
     return ipcRenderer.invoke("cloud:usage:get");
   },
+  /**
+   * Fired when the startup account fast path handed the renderer the remembered identity and the
+   * live answer arrived afterwards (the account with its plan, or null when the Cloud refused the
+   * session). Also used for any later authoritative re-check.
+   */
+  onCloudAccountChanged: (callback: (account: CloudAccount | null) => void): (() => void) => {
+    const listener = (_event: unknown, account: CloudAccount | null) => callback(account);
+    ipcRenderer.on("cloud:account:changed", listener);
+    return () => ipcRenderer.removeListener("cloud:account:changed", listener);
+  },
   onCloseRequested: (callback: (request: unknown) => void): (() => void) => {
     const listener = (_event: unknown, request: unknown) => callback(request);
     ipcRenderer.on("app:close-requested", listener);

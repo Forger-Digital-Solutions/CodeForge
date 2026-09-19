@@ -9,6 +9,22 @@ interface WelcomeScreenProps {
   error: string | null;
 }
 
+function FolderGlyph(): React.ReactElement {
+  return (
+    <svg className="btn-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M1.5 4.5A1.5 1.5 0 0 1 3 3h3.2l1.5 1.5H13a1.5 1.5 0 0 1 1.5 1.5v6A1.5 1.5 0 0 1 13 13.5H3A1.5 1.5 0 0 1 1.5 12v-7.5Z" stroke="currentColor" strokeWidth="1.3" />
+    </svg>
+  );
+}
+
+function PlusGlyph(): React.ReactElement {
+  return (
+    <svg className="btn-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function WelcomeScreen({
   recentProjects,
   onOpenProject,
@@ -50,9 +66,9 @@ export default function WelcomeScreen({
             </svg>
           </div>
           <h1 className="welcome-title">CodeForge</h1>
-          <p className="welcome-subtitle">Free-first autonomous software engineering platform</p>
-          
-          <p className="welcome-context-note">Choose a project to open your authenticated workspace.</p>
+          <p className="welcome-subtitle">Your AI coding agent, ready to work.</p>
+
+          <p className="welcome-context-note">Open the folder that holds your code to start a task there.</p>
         </div>
 
         {error && (
@@ -67,16 +83,17 @@ export default function WelcomeScreen({
             onClick={() => onOpenProject()}
             disabled={loading}
           >
-            <span className="btn-icon">📂</span>
-            <span>Open Project</span>
+            <FolderGlyph />
+            <span>Open a folder…</span>
           </button>
           <button
             className="welcome-btn secondary"
             onClick={onCreateProject}
             disabled={loading}
+            title="Pick a location and create a new, empty project folder"
           >
-            <span className="btn-icon">➕</span>
-            <span>New Project</span>
+            <PlusGlyph />
+            <span>New empty project…</span>
           </button>
         </div>
 
@@ -91,7 +108,7 @@ export default function WelcomeScreen({
                     onClick={() => onOpenProject(project.path)}
                     disabled={loading}
                   >
-                    <span className="recent-icon">📁</span>
+                    <span className="recent-icon" aria-hidden="true"><FolderGlyph /></span>
                     <div className="recent-info">
                       <span className="recent-name">{project.name}</span>
                       <span className="recent-path">{project.path}</span>
@@ -104,7 +121,7 @@ export default function WelcomeScreen({
         )}
 
         <div className="welcome-footer">
-          <p>Windows Desktop • Zero-Billing Firewall • Free Cloud Models</p>
+          <p>Free CodeForge models included · No API key needed · Every change is verified before it is called done</p>
         </div>
       </div>
     </div>

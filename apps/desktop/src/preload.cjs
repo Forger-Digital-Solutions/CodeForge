@@ -84,6 +84,11 @@ const api = {
   getCloudUsage: () => {
     return ipcRenderer.invoke("cloud:usage:get");
   },
+  onCloudAccountChanged: (callback) => {
+    const listener = (_event, account) => callback(account);
+    ipcRenderer.on("cloud:account:changed", listener);
+    return () => ipcRenderer.removeListener("cloud:account:changed", listener);
+  },
   onCloseRequested: (callback) => {
     const listener = (_event, request) => callback(request);
     ipcRenderer.on("app:close-requested", listener);

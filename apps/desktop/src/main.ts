@@ -106,6 +106,9 @@ let tray: Tray | null = null;
 let trayStatusTimer: NodeJS.Timeout | null = null;
 let isQuitting = false;
 let closeRequestInFlight = false;
+/** Renderer crashes recovered by reloading the interface in this process lifetime. */
+let rendererRecoveries = 0;
+const RENDERER_RECOVERY_LIMIT = 3;
 let shutdownPromise: Promise<void> | null = null;
 /** How long a requested quit may linger after app.quit() before the process is exited outright. */
 const QUIT_GRACE_MS = 2_000;
@@ -192,6 +195,16 @@ try {
   console.error(`[CodeForge] cloud endpoint unavailable: ${error.message}`);
 }
 const CLOUD_API_URL = RESOLVED_CLOUD_ENDPOINT.url;
+/**
+ * Every Cloud request the desktop makes on its own behalf is bounded. Node's fetch has no
+ * connect/idle timeout of its own, so a black-holed or half-open connection would otherwise park
+ * the renderer on "Restoring your CodeForge session…" for minutes; a bounded failure falls through
+ * to the offline-identity path instead.
+ */
+const CLOUD_REQUEST_TIMEOUT_MS = 15_000;
+function cloudFetch(pathname: string, init?: RequestInit, timeoutMs = CLOUD_REQUEST_TIMEOUT_MS): Promise<Response> {
+  return fetch(`${CLOUD_API_URL}${pathname}`, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+}
 console.log(`[CodeForge] cloud endpoint ${endpointResolutionError ? "unavailable=true" : describeCloudEndpoint(RESOLVED_CLOUD_ENDPOINT)}`);
 // R1: provider ids come from the definition registry, not a hand-maintained list. Secure-storage
 // keys may be a provider id or `${providerId}:${fieldId}` (non-secret connection fields); the
@@ -798,7 +811,7 @@ function createCloudAdapter(): HostedProviderAdapter {
       const tokens = getStoredCloudTokens();
       if (!tokens.refreshToken) return null;
       try {
-        const refreshRes = await fetch(`${CLOUD_API_URL}/v1/auth/refresh`, {
+        const refreshRes = await cloudFetch("/v1/auth/refresh", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refreshToken: tokens.refreshToken }),
@@ -1287,6 +1300,31 @@ async function createWindow(loadDocument = true): Promise<void> {
     const detail = `RENDER_PROCESS_GONE=${details.reason}:${details.exitCode}`;
     smokeRecord(detail);
     console.error(`[CodeForge] ${detail}`);
+    logDiagnostic("error", "renderer_gone", { reason: details.reason, exitCode: details.exitCode });
+    if (details.reason === "clean-exit" || isQuitting) return;
+    // The local runtime, its sessions and any running task live in this process, not in the
+    // renderer, so a crashed interface is recoverable by reloading it: the conversation re-hydrates
+    // from the runtime and live work keeps streaming. A renderer that keeps dying is reported
+    // instead of reloaded forever.
+    rendererRecoveries += 1;
+    if (rendererRecoveries > RENDERER_RECOVERY_LIMIT) {
+      try {
+        dialog.showErrorBox("CodeForge needs to restart", "The CodeForge interface stopped responding repeatedly. Your projects, conversations and running tasks are saved; please start CodeForge again.");
+      } catch {
+        // dialogs may be unavailable this late
+      }
+      void completeSafeQuit();
+      return;
+    }
+    setTimeout(() => {
+      const window = mainWindow;
+      if (!window || window.isDestroyed()) return;
+      console.warn(`[CodeForge] reloading the interface after renderer ${details.reason} (attempt ${rendererRecoveries}/${RENDERER_RECOVERY_LIMIT})`);
+      // Same document, same trust boundary (bearer filter and permission policy stay installed on
+      // the session); only the renderer process is new.
+      const reload = trustedRendererDocumentUrl ? window.loadURL(trustedRendererDocumentUrl) : createWindowDocument();
+      void reload.catch((error) => console.error(`[CodeForge] interface reload failed: ${error instanceof Error ? error.message : String(error)}`));
+    }, 250);
   });
   mainWindow.webContents.on("did-fail-load", (_event, code, description) => {
     const detail = `RENDER_DID_FAIL_LOAD=${code}:${description}`;
@@ -2025,6 +2063,8 @@ async function startPrimaryInstance(): Promise<void> {
   // Persistent sanitized diagnostics before anything can fail: RC-7 — an installed build must
   // always leave a support-grade log under userData, never depend on OS-captured stdout.
   initDiagnostics();
+  const buildIdentity = readBuildIdentity();
+  logDiagnostic("info", "build_identity", buildIdentity ? { commit: buildIdentity.shortCommit, dirty: buildIdentity.dirty, builtAt: buildIdentity.builtAt } : { stamped: false });
   // One-time freshness probe for the canonical settings store: a first launch with no stored
   // settings object lets the renderer seed defaults from its pre-canonical local values.
   appSettingsFreshAtStartup = !(APP_SETTINGS_KEY in readSettings());
@@ -2070,9 +2110,11 @@ async function startPrimaryInstance(): Promise<void> {
     providerConnections.publishAll();
     const cloudTokens = getStoredCloudTokens();
     if (resolveCloudCatalogSyncMode(Boolean(cloudTokens.accessToken)) === "register-adapter-and-sync") {
-      // Signed-in: eagerly register before window paint so the account's hosted models are
-      // selectable the instant the workspace opens (existing behavior, unchanged).
-      await registerCloudAdapter();
+      // Signed-in: register the hosted adapter and sync its catalog in the background. Awaiting it
+      // here made window creation wait on the Cloud (a black-holed connection kept the user staring
+      // at nothing for 10+ s); the picker refreshes through provider:changed the moment the sync
+      // lands, which on a healthy network is before the workspace is interactive anyway.
+      void registerCloudAdapter().then(notifyProviderChanged).catch(() => {});
     } else {
       // CodeForge's hosted free catalog (CloudProviderRegistry, backed by CodeForge's own
       // server-owned provider keys) requires no sign-in to LIST — only /v1/hosted/inference
@@ -2482,6 +2524,25 @@ ipcMain.handle("settings:reset", async (event): Promise<SettingsSnapshot> => {
   return resetAppSettings();
 });
 
+/**
+ * Source identity stamped at build time (scripts/build-identity.mjs): commit, dirty flag, build
+ * time. Read once; a missing or unreadable stamp is reported as such, never guessed.
+ */
+interface BuildIdentity { version: string; commit: string; shortCommit: string; branch: string; dirty: boolean; builtAt: string }
+let cachedBuildIdentity: BuildIdentity | null | undefined;
+function readBuildIdentity(): BuildIdentity | null {
+  if (cachedBuildIdentity !== undefined) return cachedBuildIdentity;
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(__dirname, "build-identity.json"), "utf8")) as Partial<BuildIdentity>;
+    cachedBuildIdentity = typeof raw.commit === "string" && typeof raw.builtAt === "string"
+      ? { version: String(raw.version ?? ""), commit: raw.commit, shortCommit: String(raw.shortCommit ?? raw.commit.slice(0, 12)), branch: String(raw.branch ?? ""), dirty: raw.dirty === true, builtAt: raw.builtAt }
+      : null;
+  } catch {
+    cachedBuildIdentity = null;
+  }
+  return cachedBuildIdentity;
+}
+
 ipcMain.handle("app:getSystemInfo", (event) => {
   assertMainWindowSender(event);
   return {
@@ -2494,6 +2555,7 @@ ipcMain.handle("app:getSystemInfo", (event) => {
   osRelease: os.release(),
   buildChannel: RESOLVED_CLOUD_ENDPOINT.channel,
   isPackaged: app.isPackaged,
+  build: readBuildIdentity(),
   };
 });
 
@@ -2817,25 +2879,23 @@ ipcMain.handle("cloud:auth:start", async (event) => {
   }
 });
 
-ipcMain.handle("cloud:account:get", async (event) => {
-  assertMainWindowSender(event);
-  if (PACKAGED_SMOKE) {
-    return {
-      user: { displayName: "Packaged smoke" },
-      planId: "free",
-      planName: "Free",
-      creditBalance: 500000,
-    };
-  }
+/**
+ * How long the renderer's startup may wait on the live account round trip before it is handed the
+ * remembered identity instead. The real answer still arrives (cloud:account:changed) — a slow or
+ * dead Cloud must never hold the whole application behind "Restoring your session…".
+ */
+const CLOUD_ACCOUNT_FAST_PATH_MS = 2_500;
+let cloudAccountFetchInFlight: Promise<unknown> | null = null;
+
+async function fetchCloudAccountAuthoritative(): Promise<unknown> {
   const tokens = getStoredCloudTokens();
   if (!tokens.accessToken) return null;
-
   try {
-    const res = await fetch(`${CLOUD_API_URL}/v1/account`, {
+    const res = await cloudFetch("/v1/account", {
       headers: { Authorization: `Bearer ${tokens.accessToken}` },
     });
     if (res.status === 401 && tokens.refreshToken) {
-      const refreshRes = await fetch(`${CLOUD_API_URL}/v1/auth/refresh`, {
+      const refreshRes = await cloudFetch("/v1/auth/refresh", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: tokens.refreshToken }),
@@ -2843,7 +2903,7 @@ ipcMain.handle("cloud:account:get", async (event) => {
       if (refreshRes.ok) {
         const data = (await refreshRes.json()) as any;
         saveCloudTokens(data.accessToken, data.refreshToken, data.user);
-        const retryRes = await fetch(`${CLOUD_API_URL}/v1/account`, {
+        const retryRes = await cloudFetch("/v1/account", {
           headers: { Authorization: `Bearer ${data.accessToken}` },
         });
         if (retryRes.ok) return await retryRes.json();
@@ -2861,6 +2921,41 @@ ipcMain.handle("cloud:account:get", async (event) => {
     // identity, claim nothing about plan or credits.
     return offlineCloudAccount(tokens.user);
   }
+}
+
+ipcMain.handle("cloud:account:get", async (event) => {
+  assertMainWindowSender(event);
+  if (PACKAGED_SMOKE) {
+    return {
+      user: { displayName: "Packaged smoke" },
+      planId: "free",
+      planName: "Free",
+      creditBalance: 500000,
+    };
+  }
+  const tokens = getStoredCloudTokens();
+  if (!tokens.accessToken) return null;
+  const remembered = offlineCloudAccount(tokens.user);
+  // One authoritative fetch at a time; concurrent callers share it.
+  const authoritative = cloudAccountFetchInFlight ?? fetchCloudAccountAuthoritative().finally(() => { cloudAccountFetchInFlight = null; });
+  cloudAccountFetchInFlight = authoritative;
+  if (!remembered) return authoritative;
+  let settled = false;
+  const result = await Promise.race([
+    authoritative.then((value) => { settled = true; return value; }),
+    new Promise<unknown>((resolve) => setTimeout(() => resolve({ ...remembered, pending: true }), CLOUD_ACCOUNT_FAST_PATH_MS).unref?.()),
+  ]);
+  if (!settled) {
+    // The renderer proceeds with the remembered identity; the real answer follows as an event.
+    void authoritative.then((value) => {
+      try {
+        if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send("cloud:account:changed", value);
+      } catch {
+        // renderer may be closing
+      }
+    });
+  }
+  return result;
 });
 
 // GDPR Article 17 erasure (LEG-P0-02). No parameters accepted from the renderer beyond the
@@ -2870,7 +2965,7 @@ ipcMain.handle("cloud:account:delete", async (event) => {
   assertMainWindowSender(event);
   const tokens = getStoredCloudTokens();
   if (!tokens.accessToken) throw new Error("Must be signed in to CodeForge Cloud to delete your account");
-  const res = await fetch(`${CLOUD_API_URL}/v1/account`, {
+  const res = await cloudFetch("/v1/account", {
     method: "DELETE",
     headers: { Authorization: `Bearer ${tokens.accessToken}`, "Content-Type": "application/json" },
     body: JSON.stringify({ confirmation: "DELETE_MY_ACCOUNT" }),
@@ -2905,7 +3000,7 @@ ipcMain.handle("cloud:auth:logout", async (event) => {
   const tokens = getStoredCloudTokens();
   if (tokens.refreshToken) {
     try {
-      await fetch(`${CLOUD_API_URL}/v1/auth/logout`, {
+      await cloudFetch("/v1/auth/logout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: tokens.refreshToken }),
@@ -2926,7 +3021,7 @@ ipcMain.handle("cloud:billing:checkout", async (event) => {
   assertMainWindowSender(event);
   const tokens = getStoredCloudTokens();
   if (!tokens.accessToken) throw new Error("Must be logged in to CodeForge Cloud");
-  const res = await fetch(`${CLOUD_API_URL}/v1/billing/checkout`, {
+  const res = await cloudFetch("/v1/billing/checkout", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -2937,7 +3032,7 @@ ipcMain.handle("cloud:billing:checkout", async (event) => {
       successUrl: "https://codeforge.dev/app/billing/success",
       cancelUrl: "https://codeforge.dev/app/billing/cancel",
     }),
-  });
+  }, 30_000);
   if (!res.ok) throw new Error(`Failed to create checkout session: HTTP ${res.status}`);
   const data = (await res.json()) as { checkoutUrl?: string };
   if (data.checkoutUrl) {
@@ -2949,7 +3044,7 @@ ipcMain.handle("cloud:billing:portal", async (event) => {
   assertMainWindowSender(event);
   const tokens = getStoredCloudTokens();
   if (!tokens.accessToken) throw new Error("Must be logged in to CodeForge Cloud");
-  const res = await fetch(`${CLOUD_API_URL}/v1/billing/portal`, {
+  const res = await cloudFetch("/v1/billing/portal", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -2958,7 +3053,7 @@ ipcMain.handle("cloud:billing:portal", async (event) => {
     body: JSON.stringify({
       returnUrl: "https://codeforge.dev/app/billing/portal",
     }),
-  });
+  }, 30_000);
   if (!res.ok) throw new Error(`Failed to create portal session: HTTP ${res.status}`);
   const data = (await res.json()) as { portalUrl?: string };
   if (data.portalUrl) {
@@ -2970,9 +3065,13 @@ ipcMain.handle("cloud:usage:get", async (event) => {
   assertMainWindowSender(event);
   const tokens = getStoredCloudTokens();
   if (!tokens.accessToken) return null;
-  const res = await fetch(`${CLOUD_API_URL}/v1/usage`, {
-    headers: { Authorization: `Bearer ${tokens.accessToken}` },
-  });
-  if (res.ok) return await res.json();
+  try {
+    const res = await cloudFetch("/v1/usage", {
+      headers: { Authorization: `Bearer ${tokens.accessToken}` },
+    });
+    if (res.ok) return await res.json();
+  } catch {
+    // Unreachable Cloud: usage is simply unknown right now, not an error the renderer must handle.
+  }
   return null;
 });

@@ -43,6 +43,11 @@ export interface CloudAccount {
    * usable with local/BYOK routes; Cloud-backed features report the outage themselves.
    */
   offline?: boolean;
+  /**
+   * True when this is the remembered identity handed over while the live account round trip is
+   * still running (startup fast path). The live result follows through `onCloudAccountChanged`.
+   */
+  pending?: boolean;
 }
 
 /**

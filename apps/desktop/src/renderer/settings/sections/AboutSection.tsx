@@ -1,4 +1,5 @@
 import React from "react";
+import { RENDERER_BUILD_IDENTITY_JSON } from "virtual:codeforge-build-identity";
 import { useSettings } from "../settings-context.js";
 import { SettingsGroup, SettingsRow, SettingsButton, StatusBadge } from "../settings-controls.js";
 
@@ -6,6 +7,31 @@ const REPO_URL = "https://github.com/Forger-Digital-Solutions/CodeForge";
 const DOCS_URL = "https://github.com/Forger-Digital-Solutions/CodeForge#readme";
 const SECURITY_URL = "https://github.com/Forger-Digital-Solutions/CodeForge/blob/master/SECURITY.md";
 const DATA_FLOW_URL = "https://github.com/Forger-Digital-Solutions/CodeForge/blob/master/docs/security/data-flow.md";
+
+function rendererBuildStamp(): { commit: string; shortCommit: string; builtAt: string; dirty: boolean } | null {
+  try {
+    const parsed = JSON.parse(RENDERER_BUILD_IDENTITY_JSON) as { commit?: unknown; shortCommit?: unknown; builtAt?: unknown; dirty?: unknown };
+    return typeof parsed.commit === "string" && typeof parsed.builtAt === "string"
+      ? { commit: parsed.commit, shortCommit: String(parsed.shortCommit ?? parsed.commit.slice(0, 12)), builtAt: parsed.builtAt, dirty: parsed.dirty === true }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The installed binary's exact source. The renderer bundle carries its own stamp; when it differs
+ * from the main process's, the two halves of the app came from different builds — say so rather
+ * than showing one of them as if it were the truth.
+ */
+export function describeBuild(build: { commit: string; shortCommit: string; builtAt: string; dirty: boolean } | null | undefined): string {
+  if (!build) return "Not stamped (development build)";
+  const rendererStamp = rendererBuildStamp();
+  const built = Number.isNaN(Date.parse(build.builtAt)) ? build.builtAt : new Date(build.builtAt).toLocaleString();
+  const base = `${build.shortCommit}${build.dirty ? " (built from modified sources)" : ""} · built ${built}`;
+  if (rendererStamp && rendererStamp.commit !== build.commit) return `${base} — interface bundle is from ${rendererStamp.shortCommit}; this installation is inconsistent`;
+  return base;
+}
 
 export function AboutSection(): React.ReactElement {
   const ctx = useSettings();
@@ -21,6 +47,7 @@ export function AboutSection(): React.ReactElement {
       <SettingsGroup title="Application">
         <SettingsRow title="Version" description={info ? info.appVersion : "Unavailable"} />
         <SettingsRow title="Build channel" description={info?.buildChannel ?? "Unknown"} />
+        <SettingsRow title="Build" description={describeBuild(info?.build)} />
         <SettingsRow title="Packaged build" description={info ? (info.isPackaged ? "Running from an installed package." : "Running from a development checkout.") : "Unavailable"} />
         {info ? (
           <SettingsRow

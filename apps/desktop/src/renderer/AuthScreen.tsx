@@ -4,8 +4,10 @@ interface AuthScreenProps {
   onAuthenticated: () => void;
 }
 
-const PRIVACY_URL = "https://codeforge.dev/privacy";
-const TERMS_URL = "https://codeforge.dev/terms";
+import { PRODUCT_LINKS, isConfiguredLink } from "./product-links.js";
+
+const PRIVACY_URL = PRODUCT_LINKS.privacyPolicy;
+const TERMS_URL = PRODUCT_LINKS.termsOfService;
 const SIGN_IN_UNAVAILABLE = "CodeForge sign-in is unavailable right now. Check your connection and try again.";
 const SIGN_IN_CANCELLED = "Sign-in was cancelled.";
 const SIGN_IN_REJECTED = "We couldn't complete GitHub sign-in. Please try again.";
@@ -95,7 +97,10 @@ export default function AuthScreen({ onAuthenticated }: AuthScreenProps): React.
         <CodeForgeMark />
         <div className="auth-wordmark">CODEFORGE</div>
         <h1 id="auth-title">Build software with AI.</h1>
-        <p className="auth-subtitle">A free-first engineering workspace with durable, verifiable execution.</p>
+        <p className="auth-subtitle">
+          CodeForge is an AI coding agent for your Windows projects. It reads your code, makes changes, runs your
+          tests, and shows you exactly what it did — starting on the free CodeForge models, no API key required.
+        </p>
         {error && <AuthErrorMessage message={error} />}
         {!checkingAck && !acknowledged && (
           <label className="auth-first-run-ack">
@@ -116,12 +121,17 @@ export default function AuthScreen({ onAuthenticated }: AuthScreenProps): React.
           <span className="github-glyph" aria-hidden="true">●</span>
           {signingIn ? "Opening GitHub…" : "Continue with GitHub"}
         </button>
-        <p className="auth-identity-note">Your GitHub account is your CodeForge identity. Provider configuration comes after sign-in.</p>
-        <div className="auth-links">
-          <button type="button" onClick={() => void window.electronAPI?.openExternal?.(PRIVACY_URL)}>Privacy</button>
-          <span aria-hidden="true">·</span>
-          <button type="button" onClick={() => void window.electronAPI?.openExternal?.(TERMS_URL)}>Terms</button>
-        </div>
+        <p className="auth-identity-note">
+          Signing in with GitHub creates your free CodeForge account; CodeForge only asks for your public profile.
+          You can connect your own AI providers later — you never need to for the free models.
+        </p>
+        {(isConfiguredLink(PRIVACY_URL) || isConfiguredLink(TERMS_URL)) && (
+          <div className="auth-links">
+            {isConfiguredLink(PRIVACY_URL) && <button type="button" onClick={() => void window.electronAPI?.openExternal?.(PRIVACY_URL)}>Privacy</button>}
+            {isConfiguredLink(PRIVACY_URL) && isConfiguredLink(TERMS_URL) && <span aria-hidden="true">·</span>}
+            {isConfiguredLink(TERMS_URL) && <button type="button" onClick={() => void window.electronAPI?.openExternal?.(TERMS_URL)}>Terms</button>}
+          </div>
+        )}
       </section>
     </main>
   );

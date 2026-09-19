@@ -79,7 +79,12 @@ export function runCodeForgeCloudAuth(opts: CodeForgeCloudAuthOptions = {}): Pro
   const cloudApiUrl = configuredCloudApiUrl.replace(/\/$/, "");
   const timeoutMs = opts.timeoutMs ?? 180000;
   const openExternal = opts.openExternal ?? ((url: string) => shell.openExternal(url));
-  const fetchFn = opts.fetchFn ?? fetch;
+  const rawFetch = opts.fetchFn ?? fetch;
+  // The overall timeout covers the human part (authorizing in the browser). The Cloud round trips
+  // before and after that are bounded separately: a black-holed Cloud must fail the sign-in in
+  // seconds with "unavailable", not leave the button on "Opening GitHub…" for three minutes.
+  const CLOUD_ROUND_TRIP_MS = Math.min(20_000, timeoutMs);
+  const fetchFn: typeof fetch = (input, init) => rawFetch(input, { ...init, signal: init?.signal ?? AbortSignal.timeout(CLOUD_ROUND_TRIP_MS) });
 
   return new Promise<CloudAuthResult>((resolve, reject) => {
     void (async () => {

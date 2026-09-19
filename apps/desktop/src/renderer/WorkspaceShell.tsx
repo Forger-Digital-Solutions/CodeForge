@@ -14,9 +14,11 @@ import { computeWorkNotifications, type RunningCounters } from "./settings/notif
 import { describeHeaderActivity, summarizeActiveWork } from "../close-lifecycle.js";
 import type { AppSettings, AppSettingsPatch, CloseBehavior, ExecutionMode, SettingsSnapshot } from "../app-settings.js";
 import { markRendererLifecycle, markWorkspaceInteractiveWhenReady } from "./lifecycle.js";
+import { PRODUCT_LINKS } from "./product-links.js";
 
 const FALLBACK_SERVER_BASE_URL = "http://127.0.0.1:0";
-const HELP_URL = "https://github.com/Forger-Digital-Solutions/CodeForge#readme";
+const MODEL_HEALTH_REFRESH_MS = 60_000;
+const HELP_URL = PRODUCT_LINKS.help;
 const DEFAULT_MODEL_ZOOM: Record<AppSettings["appearance"]["chatTextScale"], number> = {
   small: 0.9,
   medium: 1,
@@ -28,9 +30,11 @@ interface WorkspaceShellProps {
   onClose: () => void;
   onSignedOut?: () => void;
   onOpenProjectPath?: (projectPath: string) => Promise<void>;
+  /** The account App already resolved at startup, so the header never flashes a sign-in button for a signed-in user. */
+  initialAccount?: CloudAccountView | null;
 }
 
-export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenProjectPath }: WorkspaceShellProps) {
+export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenProjectPath, initialAccount = null }: WorkspaceShellProps) {
   const [runtimeEndpoint, setRuntimeEndpoint] = useState<string | null>(null);
   const serverBaseUrl = runtimeEndpoint ?? FALLBACK_SERVER_BASE_URL;
   const [models, setModels] = useState<ModelSelectorItem[]>([
@@ -53,7 +57,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   const [settingsSection, setSettingsSection] = useState<string | null>(null);
   const [isRepoIntelligenceOpen, setIsRepoIntelligenceOpen] = useState(false);
   const [settingsSnapshot, setSettingsSnapshot] = useState<SettingsSnapshot | null>(null);
-  const [cloudAccount, setCloudAccount] = useState<CloudAccountView | null>(null);
+  const [cloudAccount, setCloudAccount] = useState<CloudAccountView | null>(initialAccount);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [repositoryIndex, setRepositoryIndex] = useState<RepositoryIndexStatus>({ state: "NOT_INDEXED" });
   const [gitInfo, setGitInfo] = useState<GitWorkspaceInfo>({ isGitRepo: false, branch: null, isDetached: false, isWorktree: false });
@@ -226,12 +230,10 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       setModels(modelItems);
       setModelProviders(Object.fromEntries(data.map((m) => [m.id, m.providerId])));
 
-      const providerIds = [...new Set([
-        ...data.map((m) => m.providerId),
-        "codeforge-cloud", "opencode", "openrouter", "zai", "google", "groq",
-        "cloudflare-workers-ai", "openai", "anthropic",
-        "alibaba", "deepseek", "paid-auto",
-      ])];
+      // Only providers that actually back a listed model are probed: probing a fixed list of
+      // every provider CodeForge knows about produced a 404 per unconnected provider on every poll
+      // and a real network round trip per connected one.
+      const providerIds = [...new Set(data.map((m) => m.providerId))];
       const statuses = await Promise.all(providerIds.map(async (providerId) => {
         try {
           const res = await fetch(`${serverBaseUrl}/api/providers/${providerId}/health`);
@@ -248,9 +250,33 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   useEffect(() => {
     if (!runtimeEndpoint) return;
     refreshModelsAndHealth();
-    const interval = setInterval(refreshModelsAndHealth, 15000);
+    // Catalog + health is a background refresh, not a live signal (provider changes arrive through
+    // provider:changed). A minute keeps the picker current without an idle app polling every 15 s,
+    // and a hidden window does no work at all.
+    const interval = setInterval(() => { if (!document.hidden) void refreshModelsAndHealth(); }, MODEL_HEALTH_REFRESH_MS);
     return () => clearInterval(interval);
   }, [refreshModelsAndHealth]);
+
+  // The startup fast path may hand over the remembered identity first; the authoritative answer
+  // (plan and credits, or a refused session) replaces it here without a reload.
+  useEffect(() => {
+    const unsubscribe = window.electronAPI?.onCloudAccountChanged?.((account) => {
+      setCloudAccount(account);
+      void refreshModelsAndHealth();
+    });
+    return () => unsubscribe?.();
+  }, [refreshModelsAndHealth]);
+
+  // Main-process provider changes (discovery finished, qualification landed, Cloud catalog synced,
+  // network came back) refresh the picker, the header status and the account immediately. Before
+  // this the shell only learned about them from its own poll or from renderer-side actions.
+  useEffect(() => {
+    const unsubscribe = window.electronAPI?.onProviderChanged?.(() => {
+      void refreshModelsAndHealth();
+      void loadCloudAccount();
+    });
+    return () => unsubscribe?.();
+  }, [refreshModelsAndHealth, loadCloudAccount]);
 
   // Re-apply the persisted default model exactly once per workspace mount, after the catalog
   // has loaded — the local server's model selection is per-process, so without this the user's
@@ -625,7 +651,11 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
             aria-label="Repository Intelligence"
             title="Repository Intelligence"
           >
-            📊
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <rect x="2" y="9" width="3" height="5" rx="0.8" stroke="currentColor" strokeWidth="1.3" />
+              <rect x="6.5" y="5" width="3" height="9" rx="0.8" stroke="currentColor" strokeWidth="1.3" />
+              <rect x="11" y="2" width="3" height="12" rx="0.8" stroke="currentColor" strokeWidth="1.3" />
+            </svg>
           </button>
           {isRepoIntelligenceOpen && (
             <>
@@ -798,7 +828,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
                   }}
                 />
                 <div className="forgezero-popover" onClick={(e) => e.stopPropagation()}>
-                  <div className="forgezero-popover-title">ForgeZero Trust Status</div>
+                  <div className="forgezero-popover-title">Free routing status</div>
                   <div className="forgezero-popover-row">
                     <span className="forgezero-popover-icon">{forgeZeroTrust.verifiedFree ? "✓" : "⚠"}</span>
                     <span className="forgezero-popover-label">Provider: {currentStatus.text}</span>
@@ -807,17 +837,9 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
                     <span className="forgezero-popover-icon">{forgeZeroTrust.verifiedFree ? "✓" : "⚠"}</span>
                     <span className="forgezero-popover-label">{forgeZeroTrust.detail}</span>
                   </div>
-                  <div className="forgezero-popover-row">
-                    <span className="forgezero-popover-icon">✓</span>
-                    <span className="forgezero-popover-label">Workspace Boundary Isolated</span>
-                  </div>
-                  <div className="forgezero-popover-row">
-                    <span className="forgezero-popover-icon">✓</span>
-                    <span className="forgezero-popover-label">Secrets Redaction Active</span>
-                  </div>
-                  <div className="forgezero-popover-row">
-                    <span className="forgezero-popover-icon">✓</span>
-                    <span className="forgezero-popover-label">Safety Timeout Enforced</span>
+                  {/* Architecture, stated as description — not as live checks this popover cannot re-verify. */}
+                  <div className="forgezero-popover-note">
+                    Work stays inside the open project folder, secrets are redacted from logs, and every run has a time limit.
                   </div>
                 </div>
               </>

@@ -1,4 +1,5 @@
 {
+  "$comment": "Renderer type-check project only. It must NEVER emit: Vite bundles the TSX sources, and renderer imports use .js specifiers, so an emitted AuthScreen.js beside AuthScreen.tsx would shadow the real source in every following build (R16 release-integrity defect). Emission stays in tsconfig.main.json (outDir dist).",
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2022",
@@ -8,7 +9,12 @@
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "noEmit": true
   },
   "include": ["src/renderer/**/*", "src/close-lifecycle.ts", "src/app-settings.ts", "src/cloud-account.ts", "src/provider-connection-types.ts"],
   "exclude": ["node_modules"]

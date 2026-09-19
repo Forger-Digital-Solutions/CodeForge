@@ -13,7 +13,7 @@
 
   --cf-text: #e4e5e9;
   --cf-text-secondary: #9ca0a8;
-  --cf-text-muted: #5c6068;
+  --cf-text-muted: #868a92; /* R16: WCAG AA on all surfaces; was #5c6068 (~2.5:1) */
 
   --cf-accent: #4f8fff;
   --cf-accent-hover: #6aa0ff;
@@ -1163,14 +1163,20 @@ body {
 
 .app-bootstrap {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 14px;
   color: #8d929b;
   font-size: 13px;
+  padding: 24px;
 }
 
-.app-bootstrap-mark { color: #d8dce3; font-size: 15px; }
+.app-bootstrap-row { display: flex; align-items: center; gap: 10px; }
+.app-bootstrap-mark { color: #d8dce3; font-size: 15px; animation: app-bootstrap-pulse 1.6s ease-in-out infinite; }
+.app-bootstrap-hint { max-width: 420px; text-align: center; color: #6f747d; font-size: 12px; line-height: 1.55; }
+@keyframes app-bootstrap-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .app-bootstrap-mark { animation: none; } }
 .auth-screen { display: grid; place-items: center; padding: 24px; }
 .auth-card { width: min(100%, 390px); display: flex; align-items: center; flex-direction: column; text-align: center; padding: 42px 34px 36px; }
 .auth-mark { width: 74px; height: 74px; margin-bottom: 18px; }

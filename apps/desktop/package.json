@@ -3,7 +3,9 @@
   "version": "0.4.0",
   "private": true,
   "license": "MIT",
-  "author": "CodeForge Team",
+  "author": {
+    "name": "CodeForge Team"
+  },
   "description": "CodeForge Desktop - AI-powered coding agent for Windows",
   "main": "./dist/main.js",
   "type": "module",
@@ -11,12 +13,12 @@
     "dev": "npm run build && npm run build:native && electron .",
     "build": "npm run build:main && npm run build:renderer",
     "build:native": "node scripts/rebuild-native.mjs",
-    "build:main": "tsc -p tsconfig.main.json && node -e \"require('fs').copyFileSync('src/preload.cjs', 'dist/preload.cjs')\"",
-    "build:renderer": "vite build",
+    "build:main": "tsc -p tsconfig.main.json && node -e \"require('fs').copyFileSync('src/preload.cjs', 'dist/preload.cjs')\" && node scripts/build-identity.mjs",
+    "build:renderer": "node scripts/check-renderer-sources.mjs && vite build",
     "build:prod": "npm run dist",
     "pack": "npm run build && npm run build:native && electron-builder --dir && npm run audit:internal-deps",
     "dist": "node scripts/package-release.mjs",
-    "dist:builder": "npm run build && npm run build:native && electron-builder && npm run audit:internal-deps",
+    "dist:builder": "npm run build && npm run build:native && electron-builder && npm run audit:internal-deps && npm run audit:build-identity",
     "rebuild:native": "node scripts/rebuild-native.mjs",
     "smoke": "node scripts/packaged-smoke.js full",
     "smoke:interrupt": "node scripts/packaged-smoke.js interrupt",
@@ -26,6 +28,7 @@
     "audit:runtime-deps": "node scripts/audit-packaged-runtime-dependencies.mjs",
     "audit:auth-endpoint": "node scripts/audit-packaged-auth-endpoint.mjs",
     "audit:browser-security": "node scripts/audit-packaged-browser-security.mjs",
+    "audit:build-identity": "node scripts/audit-packaged-build-identity.mjs",
     "clean": "rm -rf dist",
     "build:channel": "node scripts/set-build-channel.mjs"
   },
@@ -78,7 +81,9 @@
       "version": "0.4.0",
       "type": "module",
       "main": "apps/desktop/dist/main.js",
-      "author": "CodeForge Team",
+      "author": {
+        "name": "CodeForge Team"
+      },
       "description": "CodeForge Desktop - AI-powered coding agent for Windows"
     },
     "files": [
@@ -248,10 +253,14 @@
         "filter": [
           "package.json",
           "LICENSE",
-          "lib/**/*",
-          "prebuilds/**/*",
-          "build/**/*",
-          "typings/**/*"
+          "lib/**/*.js",
+          "!lib/**/*.test.js",
+          "prebuilds/win32-x64/**/*",
+          "!prebuilds/**/*.pdb",
+          "build/Release/*.node",
+          "build/Release/*.dll",
+          "build/Release/*.exe",
+          "build/Release/conpty/**/*"
         ]
       },
       {
@@ -287,7 +296,9 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "artifactName": "CodeForge-Setup-${version}.${ext}"
+      "artifactName": "CodeForge-Setup-${version}.${ext}",
+      "include": "installer.nsh",
+      "uninstallDisplayName": "CodeForge"
     },
     "portable": {
       "artifactName": "CodeForge-Portable.exe"
