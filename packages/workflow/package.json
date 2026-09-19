@@ -23,6 +23,7 @@
     "@codeforge/repo-intelligence": "*",
     "@codeforge/forge-green": "*",
     "@codeforge/sessions": "*",
+    "@codeforge/terminal": "*",
     "zod": "^3.24.0"
   }
 }

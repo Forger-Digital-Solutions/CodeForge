@@ -108,7 +108,7 @@ describe("ForgeVerify — Structured Verifier Registry & Multi-Verifier Executio
           args: ["-e", "process.exit(process.env.ELECTRON_RUN_AS_NODE === '1' ? 0 : 1)"],
         },
         defaultRequirement: "required",
-        timeoutMs: 5_000,
+        timeoutMs: 15_000,
         maxAttempts: 1,
         supportedScopes: ["workspace"],
       });

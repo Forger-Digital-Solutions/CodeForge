@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import { spawn } from "node:child_process";
 import { type AgentPermissions, ERROR_CODES } from "@codeforge/agent";
 import { redactSecrets } from "@codeforge/secrets";
+import { execute } from "@codeforge/terminal";
 
 export interface ToolDefinition {
   name: string;
@@ -874,56 +874,39 @@ export class ToolBroker {
             throw new Error(`[${ERROR_CODES.TOOL_WORKSPACE_ESCAPE}] ${confinement.error}`);
           }
 
-          rawResult = await new Promise<string>((resolve, reject) => {
+          {
             const sanitizedEnv = getSanitizedEnvForChild();
-            const isWin = process.platform === "win32";
-            const shellExecutable = nodeEval ? process.execPath : (isWin ? "cmd.exe" : "/bin/sh");
-            const shellArgs = nodeEval
-              ? ["-e", nodeEval[2] ?? nodeEval[3] ?? ""]
-              : (isWin ? ["/d", "/c", executionCommand] : ["-c", executionCommand]);
-
-            const proc = spawn(shellExecutable, shellArgs, {
-              cwd: confinement.resolvedPath,
-              env: sanitizedEnv,
-              windowsHide: true,
-            });
-
-            let stdout = "";
-            let stderr = "";
-            let timer: NodeJS.Timeout | undefined;
-
-            const cleanup = () => {
-              if (timer) clearTimeout(timer);
-            };
-
-            timer = setTimeout(() => {
-              cleanup();
-              try { proc.kill("SIGKILL"); } catch {}
-              reject(new Error(`[${ERROR_CODES.TOOL_TIMEOUT}] Command timed out after 60 seconds: ${cmd}`));
-            }, 60_000);
-
-            if (context.signal) {
-              context.signal.addEventListener("abort", () => {
-                cleanup();
-                try { proc.kill("SIGKILL"); } catch {}
-                reject(new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Command execution cancelled`));
-              }, { once: true });
+            // Headless ConPTY execution keeps console-subsystem grandchildren
+            // (npm shims, cmd internals) invisible on Windows; pipes on POSIX.
+            const result = await execute(
+              nodeEval
+                ? {
+                    file: process.execPath,
+                    args: ["-e", nodeEval[2] ?? nodeEval[3] ?? ""],
+                    cwd: confinement.resolvedPath,
+                    env: sanitizedEnv,
+                    timeoutMs: 60_000,
+                    signal: context.signal,
+                  }
+                : {
+                    commandLine: executionCommand,
+                    cwd: confinement.resolvedPath,
+                    env: sanitizedEnv,
+                    timeoutMs: 60_000,
+                    signal: context.signal,
+                  },
+            );
+            if (result.timedOut) {
+              throw new Error(`[${ERROR_CODES.TOOL_TIMEOUT}] Command timed out after 60 seconds: ${cmd}`);
             }
-
-            proc.stdout.on("data", (d) => { stdout += d.toString(); });
-            proc.stderr.on("data", (d) => { stderr += d.toString(); });
-
-            proc.on("close", (code) => {
-              cleanup();
-              const combined = [stdout, stderr].filter(Boolean).join("\n") || "(no output)";
-              resolve(`Exit code: ${code ?? 0}\n${combined}`);
-            });
-
-            proc.on("error", (err) => {
-              cleanup();
-              reject(err);
-            });
-          });
+            if (result.cancelled) {
+              throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Command execution cancelled`);
+            }
+            if (result.spawnError) {
+              throw new Error(result.spawnError);
+            }
+            rawResult = `Exit code: ${result.exitCode}\n${result.output || "(no output)"}`;
+          }
           break;
         }
 

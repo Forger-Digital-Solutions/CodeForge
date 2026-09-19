@@ -1,5 +1,5 @@
 {
-  "name": "@codeforge/tools",
+  "name": "@codeforge/terminal",
   "version": "0.4.0",
   "private": true,
   "license": "MIT",
@@ -17,12 +17,8 @@
     "typecheck": "tsc -b --force",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
-    "@codeforge/core": "*",
-    "@codeforge/agent": "*",
-    "@codeforge/secrets": "*",
-    "@codeforge/protocol": "*",
-    "@codeforge/terminal": "*",
-    "zod": "^3.24.0"
+  "dependencies": {},
+  "optionalDependencies": {
+    "node-pty": "^1.1.0"
   }
 }

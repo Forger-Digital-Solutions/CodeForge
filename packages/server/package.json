@@ -32,6 +32,7 @@
     "@codeforge/eight-bit": "*",
     "@codeforge/context": "*",
     "@codeforge/workflow": "*",
+    "@codeforge/terminal": "*",
     "zod": "^3.24.0",
     "@codeforge/model-registry": "*",
     "@codeforge/paid-auto": "*"

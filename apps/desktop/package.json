@@ -38,6 +38,7 @@
     "@codeforge/providers": "*",
     "@codeforge/model-registry": "*",
     "@codeforge/legal-policy": "*",
+    "@codeforge/terminal": "*",
     "better-sqlite3": "^12.11.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
@@ -63,7 +64,8 @@
       "smartUnpack": false
     },
     "asarUnpack": [
-      "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
+      "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+      "node_modules/node-pty/**"
     ],
     "directories": {
       "app": "../..",
@@ -128,6 +130,8 @@
           "server/package.json",
           "sessions/dist/**/*.js",
           "sessions/package.json",
+          "terminal/dist/**/*.js",
+          "terminal/package.json",
           "tools/dist/**/*.js",
           "tools/package.json",
           "context/dist/**/*.js",
@@ -235,6 +239,18 @@
           "LICENSE",
           "lib/**/*",
           "build/Release/better_sqlite3.node"
+        ]
+      },
+      {
+        "from": "node_modules/node-pty",
+        "to": "node_modules/node-pty",
+        "filter": [
+          "package.json",
+          "LICENSE",
+          "lib/**/*",
+          "prebuilds/**/*",
+          "build/**/*",
+          "typings/**/*"
         ]
       },
       {

@@ -1,10 +1,9 @@
 import { createHash, randomUUID } from "node:crypto";
-import { spawn } from "node:child_process";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { terminateProcessTree } from "./child-process.js";
 import { prepareShellCommand } from "./child-process.js";
+import { execute } from "@codeforge/terminal";
 import type { Verifier } from "./types.js";
 
 export type Brand<Value, Name extends string> = Value & { readonly __brand: Name };
@@ -343,27 +342,35 @@ export class VerificationEvidenceStore {
 
 async function executeCommand(definition: VerifierDefinition, workspacePath: string, signal?: AbortSignal): Promise<{ status: VerificationEvidence["status"]; exitCode?: number; elapsedMs: number; output: string }> {
   const started = Date.now();
-  return new Promise((resolve) => {
-    let settled = false;
-    let reason: "cancelled" | "timed_out" | undefined;
-    let output = "";
-    let child: ReturnType<typeof spawn>;
-    const environment = verifierEnvironment();
-    if (process.versions.electron && path.resolve(definition.execution.executable) === path.resolve(process.execPath)) {
-      environment.ELECTRON_RUN_AS_NODE = "1";
-    }
-    try { child = spawn(definition.execution.executable, [...definition.execution.args], { cwd: workspacePath, env: environment, shell: false, windowsHide: true, detached: process.platform !== "win32" }); }
-    catch (error) { resolve({ status: "infra_error", elapsedMs: Date.now() - started, output: error instanceof Error ? error.message : String(error) }); return; }
-    const finish = (status: VerificationEvidence["status"], exitCode?: number): void => { if (settled) return; settled = true; clearTimeout(timer); signal?.removeEventListener("abort", abort); resolve({ status, exitCode, elapsedMs: Date.now() - started, output }); };
-    child.stdout?.on("data", (chunk: Buffer) => { output += chunk.toString(); });
-    child.stderr?.on("data", (chunk: Buffer) => { output += chunk.toString(); });
-    child.once("error", (_error) => finish("infra_error", undefined));
-    child.once("close", (code) => finish(reason ?? (code === 0 ? "passed" : "failed"), code ?? undefined));
-    const stop = (next: "cancelled" | "timed_out"): void => { if (settled || reason) return; reason = next; void terminateProcessTree(child); };
-    const abort = (): void => stop("cancelled");
-    const timer = setTimeout(() => stop("timed_out"), definition.timeoutMs);
-    if (signal?.aborted) abort(); else signal?.addEventListener("abort", abort, { once: true });
+  const environment = verifierEnvironment();
+  if (process.versions.electron && path.resolve(definition.execution.executable) === path.resolve(process.execPath)) {
+    environment.ELECTRON_RUN_AS_NODE = "1";
+  }
+  // ConPTY on Windows keeps console-subsystem grandchildren inside an invisible
+  // pseudo console; pipe fallback elsewhere. Timeout/cancel map to evidence statuses.
+  const result = await execute({
+    file: definition.execution.executable,
+    args: [...definition.execution.args],
+    cwd: workspacePath,
+    env: environment,
+    timeoutMs: definition.timeoutMs,
+    signal,
   });
+  const status: VerificationEvidence["status"] = result.spawnError
+    ? "infra_error"
+    : result.timedOut
+      ? "timed_out"
+      : result.cancelled
+        ? "cancelled"
+        : result.exitCode === 0
+          ? "passed"
+          : "failed";
+  return {
+    status,
+    exitCode: result.spawnError ? undefined : result.exitCode,
+    elapsedMs: Date.now() - started,
+    output: result.spawnError ?? result.output,
+  };
 }
 
 export async function executeVerificationPlan(

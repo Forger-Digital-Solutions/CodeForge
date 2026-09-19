@@ -22,6 +22,7 @@ coverage/
 *.bak
 docs/evidence/**/smoke-user-data/
 docs/evidence/**/smoke-workspace/
+docs/evidence/**/sterile-profile/
 packages/vscode/.vscode-test/
 
 # Local scratch/probe scripts are never committed (they may reference local endpoints or profiles)

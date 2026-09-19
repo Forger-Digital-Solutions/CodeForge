@@ -1,8 +1,8 @@
-import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import type { VerificationResult } from "./types.js";
-import { prepareShellCommand, terminateProcessTree } from "./child-process.js";
+import { prepareShellCommand } from "./child-process.js";
+import { executePrepared } from "@codeforge/terminal";
 import {
   adaptTrustedLegacyVerifiers,
   categoryForLegacy,
@@ -125,112 +125,62 @@ export async function runCommand(options: RunOptions): Promise<VerificationResul
     throw new Error(`Workspace not found: ${workspacePath}`);
   }
   const start = Date.now();
-  return new Promise((resolve) => {
-    let prepared: ReturnType<typeof prepareShellCommand>;
-    try {
-      prepared = prepareShellCommand(command, getSanitizedEnv(), workspacePath);
-    } catch (error) {
-      const message = redact(error instanceof Error ? error.message : String(error));
-      resolve({
-        passed: 0,
-        failed: 1,
-        skipped: 0,
-        durationMs: Date.now() - start,
-        output: message,
-        exitCode: 1,
-        command,
-        failures: [{ test: "runtime-resolution", message }],
-      });
-      return;
-    }
-
-    let settled = false;
-    let stopReason: "timeout" | "aborted" | null = null;
-    let terminationStarted = false;
-    let timeout: ReturnType<typeof setTimeout> | null = null;
-    let terminationFallback: ReturnType<typeof setTimeout> | null = null;
-    const spawnOptions = {
-      cwd: workspacePath,
-      env: prepared.env,
-      windowsHide: true,
-      detached: process.platform !== "win32",
+  let prepared: ReturnType<typeof prepareShellCommand>;
+  try {
+    prepared = prepareShellCommand(command, getSanitizedEnv(), workspacePath);
+  } catch (error) {
+    const message = redact(error instanceof Error ? error.message : String(error));
+    return {
+      passed: 0,
+      failed: 1,
+      skipped: 0,
+      durationMs: Date.now() - start,
+      output: message,
+      exitCode: 1,
+      command,
+      failures: [{ test: "runtime-resolution", message }],
     };
-    const proc = prepared.shell
-      ? spawn(prepared.command, { ...spawnOptions, shell: true })
-      : spawn(prepared.command, prepared.args, { ...spawnOptions, shell: false });
-    let stdout = "";
-    let stderr = "";
-    proc.stdout?.on("data", (d) => { stdout += d.toString(); });
-    proc.stderr?.on("data", (d) => { stderr += d.toString(); });
+  }
 
-    const cleanup = (): void => {
-      if (timeout) clearTimeout(timeout);
-      if (terminationFallback) clearTimeout(terminationFallback);
-      signal?.removeEventListener("abort", abortHandler);
-    };
-
-    const finish = (code: number | null, spawnError?: Error): void => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      const captured = [stdout, stderr].filter(Boolean).join("\n") || "(no output)";
-      const reasonOutput = stopReason === "timeout"
-        ? `[Command timed out after ${timeoutMs} ms]`
-        : stopReason === "aborted"
-          ? "[Command aborted]"
-          : "";
-      const raw = [reasonOutput, spawnError?.message, captured].filter(Boolean).join("\n");
-      const sanitized = redact(raw);
-      const truncated = truncateOutput(sanitized);
-      const parsed = parseTestOutput(truncated);
-      const exitCode = stopReason === "timeout" ? 124 : stopReason === "aborted" ? 130 : (code ?? 1);
-      let failed = parsed.failed;
-      let passed = parsed.passed;
-      if (exitCode !== 0 && failed === 0 && passed === 0) {
-        failed = 1;
-      }
-      if (exitCode === 0 && failed === 0 && passed === 0) {
-        passed = 1;
-      }
-      resolve({
-        passed,
-        failed,
-        skipped: parsed.skipped,
-        durationMs: Date.now() - start,
-        output: truncated,
-        exitCode,
-        command,
-        failures: stopReason
-          ? [{ test: stopReason, message: reasonOutput }]
-          : spawnError
-            ? [{ test: "spawn-error", message: redact(spawnError.message) }]
-            : parsed.failures,
-        timedOut: stopReason === "timeout",
-        cancelled: stopReason === "aborted",
-      });
-    };
-
-    const stop = (reason: "timeout" | "aborted"): void => {
-      if (settled || terminationStarted) return;
-      terminationStarted = true;
-      stopReason = reason;
-      void terminateProcessTree(proc).finally(() => {
-        if (!settled) terminationFallback = setTimeout(() => finish(null), 250);
-      });
-    };
-
-    const abortHandler = (): void => stop("aborted");
-    proc.once("close", (code) => {
-      if (!terminationStarted) finish(code);
-    });
-    proc.once("error", (error) => finish(null, error));
-    timeout = setTimeout(() => stop("timeout"), timeoutMs);
-    if (signal?.aborted) {
-      abortHandler();
-    } else {
-      signal?.addEventListener("abort", abortHandler, { once: true });
-    }
-  });
+  // ConPTY-backed execution keeps console-subsystem grandchildren (npm shims, cmd
+  // internals) inside an invisible pseudo console on Windows; pipes on POSIX.
+  const result = await executePrepared(prepared, { cwd: workspacePath, timeoutMs, signal });
+  const stopReason = result.timedOut ? "timeout" : result.cancelled ? "aborted" : null;
+  const captured = result.output || "(no output)";
+  const reasonOutput = stopReason === "timeout"
+    ? `[Command timed out after ${timeoutMs} ms]`
+    : stopReason === "aborted"
+      ? "[Command aborted]"
+      : "";
+  const raw = [reasonOutput, result.spawnError, captured].filter(Boolean).join("\n");
+  const sanitized = redact(raw);
+  const truncated = truncateOutput(sanitized);
+  const parsed = parseTestOutput(truncated);
+  const exitCode = result.exitCode;
+  let failed = parsed.failed;
+  let passed = parsed.passed;
+  if (exitCode !== 0 && failed === 0 && passed === 0) {
+    failed = 1;
+  }
+  if (exitCode === 0 && failed === 0 && passed === 0) {
+    passed = 1;
+  }
+  return {
+    passed,
+    failed,
+    skipped: parsed.skipped,
+    durationMs: Date.now() - start,
+    output: truncated,
+    exitCode,
+    command,
+    failures: stopReason
+      ? [{ test: stopReason, message: reasonOutput }]
+      : result.spawnError
+        ? [{ test: "spawn-error", message: redact(result.spawnError) }]
+        : parsed.failures,
+    timedOut: stopReason === "timeout",
+    cancelled: stopReason === "aborted",
+  };
 }
 
 /**

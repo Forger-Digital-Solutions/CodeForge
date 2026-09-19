@@ -19,9 +19,9 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
-import { spawn } from "node:child_process";
 import { redactSecrets } from "@codeforge/secrets";
-import { prepareShellCommand, terminateProcessTree } from "@codeforge/workflow";
+import { prepareShellCommand } from "@codeforge/workflow";
+import { executePrepared } from "@codeforge/terminal";
 import { classifyCommand } from "./command-classifier.js";
 import {
   createTaskAuthority,
@@ -4532,90 +4532,38 @@ export class AgentRuntime {
       return `Error: ${workDir.error}`;
     }
 
-    return new Promise((resolve) => {
-      let settled = false;
-      let stopReason: "timeout" | "aborted" | null = null;
-      let terminationStarted = false;
-      let prepared: ReturnType<typeof prepareShellCommand>;
-      try {
-        prepared = prepareShellCommand(command, getSanitizedEnvForChild(), workDir.resolvedPath);
-      } catch (error) {
-        resolve(`Error executing command: ${redactSecrets(error instanceof Error ? error.message : String(error))}`);
-        return;
-      }
-      const spawnOptions = {
-        cwd: workDir.resolvedPath,
-        env: prepared.env,
-        windowsHide: true,
-        detached: process.platform !== "win32",
-      };
-      const proc = prepared.shell
-        ? spawn(prepared.command, { ...spawnOptions, shell: true })
-        : spawn(prepared.command, prepared.args, { ...spawnOptions, shell: false });
+    let prepared: ReturnType<typeof prepareShellCommand>;
+    try {
+      prepared = prepareShellCommand(command, getSanitizedEnvForChild(), workDir.resolvedPath);
+    } catch (error) {
+      return `Error executing command: ${redactSecrets(error instanceof Error ? error.message : String(error))}`;
+    }
 
-      let stdout = "";
-      let stderr = "";
-      const timeout = setTimeout(() => stop("timeout"), 60_000);
-
-      const cleanup = (): void => {
-        clearTimeout(timeout);
-        signal.removeEventListener("abort", abortHandler);
-      };
-
-      const finish = (code: number | null, error?: Error): void => {
-        if (settled) return;
-        settled = true;
-        cleanup();
-        if (error && !stopReason) {
-          resolve(`Error executing command: ${redactSecrets(error.message)}`);
-          return;
-        }
-        if (stopReason === "aborted") {
-          resolve("[Command aborted]");
-          return;
-        }
-        if (stopReason === "timeout") {
-          adapter.emitCommandExecuted(crypto.randomUUID(), command, "[Command timed out after 60000 ms]", 124);
-          resolve("Exit code: 124\n[Command timed out after 60000 ms]");
-          return;
-        }
-        const output = [stdout, stderr].filter(Boolean).join("\n") || "(no output)";
-        const sanitized = redactSecrets(output);
-        const truncated = Buffer.byteLength(sanitized, "utf-8") > MAX_COMMAND_OUTPUT_BYTES
-          ? truncateOutput(sanitized, MAX_COMMAND_OUTPUT_BYTES, "command")
-          : sanitized;
-        const exitCode = code ?? 1;
-        adapter.emitCommandExecuted(crypto.randomUUID(), command, truncated, exitCode);
-        resolve(`Exit code: ${exitCode}\n${truncated}`);
-      };
-
-      const stop = (reason: "timeout" | "aborted"): void => {
-        if (settled || terminationStarted) return;
-        terminationStarted = true;
-        stopReason = reason;
-        void terminateProcessTree(proc).finally(() => {
-          setTimeout(() => finish(null), 250);
-        });
-      };
-
-      const abortHandler = (): void => stop("aborted");
-
-      proc.stdout?.on("data", (data) => {
-        stdout += data.toString();
-      });
-
-      proc.stderr?.on("data", (data) => {
-        stderr += data.toString();
-      });
-
-      proc.once("close", (code) => finish(code));
-      proc.once("error", (error) => finish(null, error));
-      if (signal.aborted) {
-        abortHandler();
-      } else {
-        signal.addEventListener("abort", abortHandler, { once: true });
-      }
+    // ConPTY-backed execution keeps console-subsystem grandchildren invisible on Windows.
+    const result = await executePrepared(prepared, {
+      cwd: workDir.resolvedPath,
+      timeoutMs: 60_000,
+      signal,
     });
+
+    if (result.cancelled) {
+      return "[Command aborted]";
+    }
+    if (result.timedOut) {
+      adapter.emitCommandExecuted(crypto.randomUUID(), command, "[Command timed out after 60000 ms]", 124);
+      return "Exit code: 124\n[Command timed out after 60000 ms]";
+    }
+    if (result.spawnError) {
+      return `Error executing command: ${redactSecrets(result.spawnError)}`;
+    }
+
+    const output = result.output || "(no output)";
+    const sanitized = redactSecrets(output);
+    const truncated = Buffer.byteLength(sanitized, "utf-8") > MAX_COMMAND_OUTPUT_BYTES
+      ? truncateOutput(sanitized, MAX_COMMAND_OUTPUT_BYTES, "command")
+      : sanitized;
+    adapter.emitCommandExecuted(crypto.randomUUID(), command, truncated, result.exitCode);
+    return `Exit code: ${result.exitCode}\n${truncated}`;
   }
 
   private async executeSearch(

@@ -23,6 +23,7 @@
     { "path": "../model-registry" },
     { "path": "../context" },
     { "path": "../secrets" },
+    { "path": "../terminal" },
     { "path": "../workflow" }
   ]
 }

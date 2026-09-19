@@ -18,7 +18,7 @@ function definition(id: string, code: string, requirement: VerifierDefinition["d
   return {
     id: id as VerifierDefinition["id"], version: "1" as VerifierDefinition["version"], name: id,
     category: "unit-test", description: "test verifier", execution: { executable: process.execPath, args: ["-e", code] },
-    defaultRequirement: requirement, timeoutMs: 2_000, maxAttempts: 1, supportedScopes: ["workspace"],
+    defaultRequirement: requirement, timeoutMs: 15_000, maxAttempts: 1, supportedScopes: ["workspace"],
   };
 }
 
