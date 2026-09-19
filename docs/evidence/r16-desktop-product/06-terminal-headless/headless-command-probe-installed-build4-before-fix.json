@@ -1,0 +1,91 @@
+{
+  "generatedAt": "2026-09-19T15:25:34.5486689Z",
+  "installDirectory": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge",
+  "appVersion": "0.4.0.0",
+  "cwd": "C:\\Users\\Daddy_FDS\\Documents\\r16-fixtures\\bugfix-repo",
+  "packagesDirectory": "installed",
+  "npmScriptShell": "C:\\Program Files\\Git\\bin\\bash.exe",
+  "defaultTerminalDelegation": "{E12CFF52-A866-4C77-9A90-F570A7AA2C6B}",
+  "runs": [
+    {
+      "command": "npm test",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "electron-as-node",
+      "spawnError": null,
+      "outputTail": "",
+      "samples": 55,
+      "consoleWindowsSeen": [
+        {
+          "firstSeenUtc": "2026-09-19T15:25:25.0284416Z",
+          "pid": 37224,
+          "title": "Terminal",
+          "class": "CASCADIA_HOSTING_WINDOW_CLASS"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "command": "node -e \"console.log(1)\"",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "electron-as-node",
+      "spawnError": null,
+      "outputTail": "",
+      "samples": 42,
+      "consoleWindowsSeen": [],
+      "pass": true
+    },
+    {
+      "command": "npm run --silent test",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "electron-as-node",
+      "spawnError": null,
+      "outputTail": "",
+      "samples": 56,
+      "consoleWindowsSeen": [
+        {
+          "firstSeenUtc": "2026-09-19T15:25:30.2365676Z",
+          "pid": 29556,
+          "title": "Terminal",
+          "class": "CASCADIA_HOSTING_WINDOW_CLASS"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "command": "cmd /c echo cmd-child",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "shell",
+      "spawnError": null,
+      "outputTail": "cmd-child\n",
+      "samples": 22,
+      "consoleWindowsSeen": [],
+      "pass": true
+    },
+    {
+      "command": "bash -c \"echo bash-child\"",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "shell",
+      "spawnError": null,
+      "outputTail": "bash-child\n",
+      "samples": 24,
+      "consoleWindowsSeen": [],
+      "pass": true
+    }
+  ],
+  "verdict": "FAIL"
+}

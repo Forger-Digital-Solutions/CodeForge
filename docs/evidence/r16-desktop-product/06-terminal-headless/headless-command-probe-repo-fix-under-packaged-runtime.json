@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-09-19T15:25:45.4860564Z",
+  "installDirectory": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge",
+  "appVersion": "0.4.0.0",
+  "cwd": "C:\\Users\\Daddy_FDS\\Documents\\r16-fixtures\\bugfix-repo",
+  "packagesDirectory": "G:\\CodeForge\\packages",
+  "npmScriptShell": "C:\\Program Files\\Git\\bin\\bash.exe",
+  "defaultTerminalDelegation": "{E12CFF52-A866-4C77-9A90-F570A7AA2C6B}",
+  "runs": [
+    {
+      "command": "npm test",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "electron-as-node",
+      "spawnError": null,
+      "outputTail": "\n> inventory-service@1.0.0 test\n> node --test✔ adds and removes stock (0.9521ms)\n✔ rejects removing more than available (0.4444ms)\n✔ computes total value (0.158ms)\n✔ low stock includes items AT the threshold (1.5009ms)\nℹ tests 4\nℹ suites 0\nℹ pass 4\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 100.8968\n",
+      "samples": 30,
+      "consoleWindowsSeen": [],
+      "pass": true
+    },
+    {
+      "command": "node -e \"console.log(1)\"",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "electron-as-node",
+      "spawnError": null,
+      "outputTail": "1\n",
+      "samples": 23,
+      "consoleWindowsSeen": [],
+      "pass": true
+    },
+    {
+      "command": "npm run --silent test",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "electron-as-node",
+      "spawnError": null,
+      "outputTail": "✔ adds and removes stock (1.0327ms)\n✔ rejects removing more than available (0.5409ms)\n✔ computes total value (0.1794ms)\n✔ low stock includes items AT the threshold (1.5723ms)\nℹ tests 4\nℹ suites 0\nℹ pass 4\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 112.9898\n",
+      "samples": 31,
+      "consoleWindowsSeen": [],
+      "pass": true
+    },
+    {
+      "command": "cmd /c echo cmd-child",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "shell",
+      "spawnError": null,
+      "outputTail": "cmd-child\n",
+      "samples": 24,
+      "consoleWindowsSeen": [],
+      "pass": true
+    },
+    {
+      "command": "bash -c \"echo bash-child\"",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "shell",
+      "spawnError": null,
+      "outputTail": "bash-child\n",
+      "samples": 24,
+      "consoleWindowsSeen": [],
+      "pass": true
+    }
+  ],
+  "verdict": "PASS"
+}

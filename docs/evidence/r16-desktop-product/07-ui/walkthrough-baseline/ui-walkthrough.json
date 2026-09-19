@@ -1,0 +1,1455 @@
+{
+  "startedAt": "2026-09-19T10:15:13.132Z",
+  "steps": [
+    {
+      "name": "workspace",
+      "ok": true,
+      "result": {
+        "lifecycle": {
+          "data-cf-lifecycle-bootstrap": "1789812378181",
+          "data-cf-lifecycle-root-mounted": "1789812378246",
+          "data-cf-lifecycle-first-frame": "1789812378247",
+          "data-cf-lifecycle-workspace-root": "1789812378701",
+          "data-cf-lifecycle-runtime-connected": "1789812379057",
+          "data-cf-lifecycle-workspace-interactive": "1789812379058"
+        }
+      },
+      "screenshot": "01-workspace.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed · 8d ✓ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ Explain how CodeForge routes a task to a model under ForgeAuto/Free: which compo Failed · 8d ✕ Explain how CodeForge routes a task"
+    },
+    {
+      "name": "model-picker-open",
+      "ok": true,
+      "result": {
+        "items": [
+          "⚡ ForgeAuto/Free Automatic free routing · 2 qualified models Verified $0 ★",
+          "GPT OSS 120B · Included Free (Cloud) Free · Ready · Recommended ★ ℹ",
+          "GPT OSS 20B · Included Free (Cloud) Free · Ready · Recommended ★ ℹ",
+          "ALLaM-2-7b · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Big Pickle Free · Ready ★ ℹ",
+          "CodeForge Auto · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Compound · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Compound Mini · Included Free (Cloud) Free · Ready ★ ℹ",
+          "DeepSeek V4 Flash Free · 2 routes ★ ℹ",
+          "DeepSeek V4 Flash 0731 (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Dots3 Note Preview Free · Ready ★ ℹ",
+          "Dots3-Note Preview (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Free Models Router Free · Ready ★ ℹ",
+          "Free Models Router · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Gemma 4 26B A4B Free · Ready ★ ℹ",
+          "Gemma 4 26B A4B (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Gemma 4 31B Free · Ready ★ ℹ",
+          "Gemma 4 31B (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "GLM 5.2 (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "GLM-5.2 Free · Ready ★ ℹ",
+          "Inkling Free · Ready ★ ℹ",
+          "Inkling (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Inkling Small Free · Ready ★ ℹ",
+          "Inkling Small (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Laguna S 2.1 Free · Ready ★ ℹ",
+          "Laguna XS 2.1 Free · Ready ★ ℹ",
+          "Laguna XS 2.1 (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "LFM 2.5 2.6B Free · Ready ★ ℹ",
+          "LFM2.5-2.6B (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Ling 3.0 Flash Fin Free · Ready ★ ℹ",
+          "Ling 3.0 Flash Fin (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Ling 3.0 Flash Sante Free · Ready ★ ℹ",
+          "Ling 3.0 Flash Sante (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Ling 3.0 Flash VL Free · Ready ★ ℹ",
+          "Ling 3.0 Flash VL (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "MiMo V2.5 Free · Ready ★ ℹ",
+          "Nemotron 3 Nano Omni Free · Ready ★ ℹ",
+          "Nemotron 3 Nano Omni (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Nemotron 3 Super Free · Ready ★ ℹ",
+          "Nemotron 3 Super (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Nemotron 3 Ultra Free · Ready ★ ℹ",
+          "Nemotron 3 Ultra Free · Ready ★ ℹ",
+          "Nemotron 3 Ultra (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Nemotron 3.5 Lightning Free · 2 routes ★ ℹ",
+          "Nemotron 3.5 Lightning (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Nex N2.5 Mini Free · Ready ★ ℹ",
+          "Nex N2.5 Pro Free · Ready ★ ℹ",
+          "Nex-N2.5-Mini (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Nex-N2.5-Pro (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "North Mini Code Free · Ready ★ ℹ",
+          "North Mini Code (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Qwen 3.8 27B Free · Ready ★ ℹ",
+          "Qwen3.8 27B · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Qwen3.8 27B (free) · Included Free (Cloud) Free · Ready ★ ℹ",
+          "Laguna S 2.1 (free) · Included Free (Cloud) Free · Ready · Experimental ★ ℹ",
+          "Codestral Free · Connect ★ ℹ",
+          "Deep Research Max Preview (Apr-21-2026) Free · Connect ★ ℹ",
+          "Deep Research Preview (Apr-21-2026) Free · Connect ★ ℹ",
+          "DeepSeek V4 Pro Free · Connect ★ ℹ",
+          "Devstral 2 Free · Connect ★ ℹ"
+        ],
+        "headings": [
+          "WORKSPACES",
+          "Tasks\nFiles"
+        ]
+      },
+      "screenshot": "02-model-picker-open.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed · 8d ✓ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ Explain how CodeForge routes a task to a model under ForgeAuto/Free: which compo Failed · 8d ✕ Explain how CodeForge routes a task"
+    },
+    {
+      "name": "model-picker-filter",
+      "ok": true,
+      "result": {
+        "after": "←\nsandbox-repo\n• main\n📊\nForger Digital Solutions\nCodeForge Free\n◈\nForgeAuto/Free · Verified Free\n?\nCodeForge\nNew task\n⌕\nSearch\nCtrl K\nWORKSPACES\nsandbox-repo\nSwitch\nTasks\nFiles\nOlder\nWhat does the divide function in src/math.ts currently return when the divisor i\nCompleted · 8d\n✓\nThe test suite in "
+      },
+      "screenshot": "03-model-picker-filter.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed · 8d ✓ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ Explain how CodeForge routes a task to a model under ForgeAuto/Free: which compo Failed · 8d ✕ Explain how CodeForge routes a task"
+    },
+    {
+      "name": "account-menu",
+      "ok": true,
+      "screenshot": "04-account-menu.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free Forger Digital Solutions @Forger-Digital-Solutions ForgerDigitalSolutions@outlook.com Profile & Account Settings Sign Out ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed · 8d ✓ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ Explain "
+    },
+    {
+      "name": "trust-popover",
+      "ok": true,
+      "screenshot": "05-trust-popover.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed · 8d ✓ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ Explain how CodeForge routes a task to a model under ForgeAuto/Free: which compo Failed · 8d ✕ Explain how CodeForge routes a task"
+    },
+    {
+      "name": "repo-intelligence-popover",
+      "ok": true,
+      "screenshot": "06-repo-intelligence-popover.png",
+      "textExcerpt": "← sandbox-repo • main 📊 REPOSITORY INTELLIGENCE Status Ready Indexed 6 files · 1,053 symbols Mode Local structural index Disable index Rebuild Open Workspace Settings Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed · 8d ✓ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ The test suite in this repository fails. Find the root cause and fix it so that F"
+    },
+    {
+      "name": "composer-typing",
+      "ok": true,
+      "result": {
+        "value": "",
+        "rows": {
+          "rows": 1,
+          "height": 44,
+          "scrollHeight": 44
+        },
+        "hasNewline": false
+      },
+      "screenshot": "07-composer-typing.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed · 8d ✓ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ Explain how CodeForge routes a task to a model under ForgeAuto/Free: which compo Failed · 8d ✕ Explain how CodeForge routes a task"
+    },
+    {
+      "name": "composer-large-paste",
+      "ok": true,
+      "result": {
+        "length": 0,
+        "height": 44,
+        "top": 659.4000244140625,
+        "bottom": 703.4000244140625,
+        "viewport": 781,
+        "sendVisible": true
+      },
+      "screenshot": "08-composer-large-paste.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed · 8d ✓ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ Explain how CodeForge routes a task to a model under ForgeAuto/Free: which compo Failed · 8d ✕ Explain how CodeForge routes a task"
+    },
+    {
+      "name": "composer-clear",
+      "ok": true,
+      "screenshot": "09-composer-clear.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed · 8d ✓ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ Explain how CodeForge routes a task to a model under ForgeAuto/Free: which compo Failed · 8d ✕ Explain how CodeForge routes a task"
+    },
+    {
+      "name": "keyboard-tab-order",
+      "ok": true,
+      "result": [
+        "BUTTON[Account]",
+        "DIV[ForgeAuto/Free · Automatic free routing]",
+        "BUTTON[Help and documentation]",
+        "BUTTON[New task]",
+        "BUTTON[⌕\nSearch\nCtrl K]",
+        "BUTTON[Switch project]",
+        "BUTTON[Tasks]",
+        "BUTTON[Files]",
+        "BUTTON[What does the divide function in src/mat]",
+        "BUTTON[The test suite in this repository fails.]",
+        "BUTTON[The test suite in this repository fails.]",
+        "BUTTON[Explain how CodeForge routes a task to a]",
+        "BUTTON[Explain how CodeForge routes a task to a]",
+        "BUTTON[Explain how CodeForge routes a task to a]",
+        "BUTTON[Explain how CodeForge routes a task to a]",
+        "BUTTON[Explain the architecture of this reposit]",
+        "BUTTON[hello there — Failed, 20d]",
+        "BUTTON[What files are in the repository root? —]",
+        "BUTTON[List the top-level folders in this repos]",
+        "BUTTON[Explain this repository structure — Fail]",
+        "BUTTON[Explain this repository structure — Fail]",
+        "BUTTON[Fix add function through packaged failur]",
+        "BUTTON[Settings]",
+        "BUTTON[Help & docs]",
+        "BUTTON[Hide sidebar]",
+        "BUTTON[Command Center]",
+        "BUTTON[Show inspector]",
+        "TEXTAREA[Describe a task]",
+        "BUTTON[Add attachment]",
+        "BUTTON[Agent runs the full autonomous workflow ]"
+      ],
+      "screenshot": "10-keyboard-tab-order.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed · 8d ✓ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ Explain how CodeForge routes a task to a model under ForgeAuto/Free: which compo Failed · 8d ✕ Explain how CodeForge routes a task"
+    },
+    {
+      "name": "contrast-workspace",
+      "ok": true,
+      "result": {
+        "checked": 71,
+        "lowContrastCount": 33,
+        "lowest": [
+          {
+            "text": "main",
+            "ratio": 2.24,
+            "fontSize": 11,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(42,43,48)",
+            "cls": "project-branch"
+          },
+          {
+            "text": "Ctrl K",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-shortcut"
+          },
+          {
+            "text": "Workspaces",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-section-title"
+          },
+          {
+            "text": "Files",
+            "ratio": 2.52,
+            "fontSize": 11,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-view-btn "
+          },
+          {
+            "text": "Older",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-group-label"
+          },
+          {
+            "text": "Completed",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "· 8d",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "Failed",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "· 8d",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "Failed",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "· 8d",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "Failed",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "· 8d",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "Stopped",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "· 8d",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "Stopped",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "· 8d",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "Stopped",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "· 8d",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "Failed",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "· 20d",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "Failed",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "· 20d",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "Failed",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          },
+          {
+            "text": "· 21d",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "nav-task-meta"
+          }
+        ],
+        "byClass": {
+          "project-branch": {
+            "count": 1,
+            "worst": 2.24,
+            "sample": "main"
+          },
+          "nav-shortcut": {
+            "count": 1,
+            "worst": 2.52,
+            "sample": "Ctrl K"
+          },
+          "nav-section-title": {
+            "count": 1,
+            "worst": 2.52,
+            "sample": "Workspaces"
+          },
+          "nav-view-btn ": {
+            "count": 1,
+            "worst": 2.52,
+            "sample": "Files"
+          },
+          "nav-group-label": {
+            "count": 1,
+            "worst": 2.52,
+            "sample": "Older"
+          },
+          "nav-task-meta": {
+            "count": 26,
+            "worst": 2.52,
+            "sample": "Completed"
+          },
+          "composer-hint": {
+            "count": 1,
+            "worst": 2.52,
+            "sample": "Enter to send · Shift+Enter for newline "
+          },
+          "execution-mode-option ": {
+            "count": 1,
+            "worst": 2.73,
+            "sample": "Chat"
+          }
+        }
+      },
+      "screenshot": "11-contrast-workspace.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed · 8d ✓ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ Explain how CodeForge routes a task to a model under ForgeAuto/Free: which compo Failed · 8d ✕ Explain how CodeForge routes a task"
+    },
+    {
+      "name": "settings-open",
+      "ok": true,
+      "screenshot": "12-settings-open.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About General Core CodeForge behavior on this computer. ACCOUNT Forger Digital Solutions @Forger-Digital-Solutions Plan: CodeForge Free · GitHub connected ✓ View profile STARTUP Open last workspace on startup Co"
+    },
+    {
+      "name": "settings-general",
+      "ok": true,
+      "result": {
+        "controls": 5,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "View profile",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Open last workspace on startup",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Continue interrupted CodeForge agents",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Repository Intelligence indexing",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Change in Models & Routing",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "13-settings-general.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About General Core CodeForge behavior on this computer. ACCOUNT Forger Digital Solutions @Forger-Digital-Solutions Plan: CodeForge Free · GitHub connected ✓ View profile STARTUP Open last workspace on startup Co"
+    },
+    {
+      "name": "settings-profile-account",
+      "ok": true,
+      "result": {
+        "controls": 4,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Reconnect GitHub",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Sign out",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Delete account…",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "14-settings-profile-account.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Profile & Account Your CodeForge account and the GitHub identity connected to it. Forger Digital Solutions @Forger-Digital-Solutions ForgerDigitalSolutions@outlook.com GITHUB Connection Connected as @Forge"
+    },
+    {
+      "name": "settings-appearance",
+      "ok": true,
+      "result": {
+        "controls": 4,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Compact",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Default",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Large",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Reduce motion",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "15-settings-appearance.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Appearance How CodeForge looks on this computer. THEME Theme CodeForge ships with a single dark theme tuned for long coding sessions. Light and system themes are not available yet. Dark DENSITY & MOTION In"
+    },
+    {
+      "name": "settings-models-routing",
+      "ok": true,
+      "result": {
+        "controls": 4,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Change model",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Show",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Refresh catalog",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Change",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "16-settings-models-routing.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Models & Routing How CodeForge chooses the model that works on each task. Connecting extra providers is optional — see Provider Connections. DEFAULT MODEL ForgeAuto/Free Automatically routes each task to t"
+    },
+    {
+      "name": "settings-agents",
+      "ok": true,
+      "result": {
+        "controls": 2,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Default new task mode",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Agent steering while typing",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "17-settings-agents.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Agents How CodeForge's autonomous agents plan, act, and stay under your control. DEFAULT BEHAVIOR Default new task mode Agent runs the full autonomous workflow with approval and verification gates. Chat ru"
+    },
+    {
+      "name": "settings-verification-safety",
+      "ok": true,
+      "result": {
+        "controls": 0,
+        "disabled": 0,
+        "list": [],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "18-settings-verification-safety.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Verification & Safety CodeForge verifies work before claiming success and protects your workspace while agents operate. These safeguards are part of the product's architecture and are always enforced. VERI"
+    },
+    {
+      "name": "settings-gems",
+      "ok": true,
+      "result": {
+        "controls": 0,
+        "disabled": 0,
+        "list": [],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "19-settings-gems.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About GEMS GEMS is CodeForge's first-party premium model layer — a product layer above the free catalog, not a provider. Running a GEMS model will always require a CodeForge entitlement; it never silently substi"
+    },
+    {
+      "name": "settings-workspaces",
+      "ok": true,
+      "result": {
+        "controls": 6,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Open last workspace on startup",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Repository Intelligence indexing",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Rebuild",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "20-settings-workspaces.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Workspaces Where CodeForge works: the open workspace, recent projects, and Repository Intelligence. CURRENT WORKSPACE sandbox-repo G:\\dogfood\\sandbox-repo ✓ branch: main Open last workspace on startup Reop"
+    },
+    {
+      "name": "settings-git-github",
+      "ok": true,
+      "result": {
+        "controls": 1,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Manage",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "21-settings-git-github.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Git & GitHub Local Git configuration for this workspace and the GitHub identity CodeForge uses for it. GIT IDENTITY (DETECTED) Git user.name AlrikByteForger Git user.email schmidtyboy92.es@gmail.com Reposi"
+    },
+    {
+      "name": "settings-runtime-execution",
+      "ok": true,
+      "result": {
+        "controls": 1,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open General",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "22-settings-runtime-execution.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Runtime & Execution Where agent work executes and what the local runtime is doing right now. EXECUTION TARGET Execution model CodeForge executes on this computer against your local files. Model inference r"
+    },
+    {
+      "name": "settings-notifications",
+      "ok": true,
+      "result": {
+        "controls": 4,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "System notifications",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Agent needs approval notifications",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Agent completed notifications",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Only notify when in background",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "23-settings-notifications.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Notifications Operating-system notifications about agent work. Approval requests and failures always appear inside the app too — these are an extra signal, never the only one. SYSTEM NOTIFICATIONS System n"
+    },
+    {
+      "name": "settings-application-background",
+      "ok": true,
+      "result": {
+        "controls": 3,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Close behavior while tasks are active",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Open last workspace on startup",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Continue interrupted agents",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "24-settings-application-background.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Application & Background Window close behavior, background execution, and what happens to active work. BACKGROUND EXECUTION Keep CodeForge running in the system tray While running in the background, the tr"
+    },
+    {
+      "name": "settings-data-privacy",
+      "ok": true,
+      "result": {
+        "controls": 5,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Privacy routing mode",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Review providers",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Clear list",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open data folder",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Export bundle",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "25-settings-data-privacy.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Data & Privacy How your code and data are handled, and what stays on this computer. CODE & CONTENT HANDLING Provider routing ForgeAuto only uses ForgeZero-verified $0 routes. The privacy mode below control"
+    },
+    {
+      "name": "settings-provider-connections",
+      "ok": true,
+      "result": {
+        "controls": 39,
+        "disabled": 5,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect Free Ollama",
+            "disabled": true
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Create Free Ollama Account",
+            "disabled": true
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Create Ollama API Key",
+            "disabled": true
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Environment credential policy",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use OpenRouter environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use Google Gemini environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use Groq environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use Cerebras environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use Mistral environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use Cloudflare Workers AI environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use OpenAI environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Refresh detected credentials",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "search",
+            "label": "Search providers",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Show all providers",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Disconnect",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Disable",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Copies the value into CodeForge's encrypted storag",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Use Environment Credential",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Add key instead",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Use Environment Credential",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Add key instead",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "I understand and accept the Gemini API Free Tier d",
+            "disabled": true
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Use Environment Credential",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Add key instead",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Use Environment Credential",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Add key instead",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Use Environment Credential",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Add key instead",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect OpenAI",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect Z.AI",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect Alibaba Model Studio",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect Anthropic",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect DeepSeek",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect Moonshot (Kimi)",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect SambaNova",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Provider",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "password",
+            "label": "API key",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Show value",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Validate",
+            "disabled": true
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "26-settings-provider-connections.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Provider Connections Optional providers expand CodeForge beyond the built-in Free / ForgeAuto model catalog. CodeForge Free and ForgeAuto/Free remain fully usable without any provider configuration where e"
+    },
+    {
+      "name": "settings-advanced",
+      "ok": true,
+      "result": {
+        "controls": 3,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Models & Routing",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Reset…",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "27-settings-advanced.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Advanced Diagnostics and maintenance. Normal use of CodeForge never requires anything on this page. RUNTIME DIAGNOSTICS Local API The embedded CodeForge server uses an isolated loopback port for this CodeF"
+    },
+    {
+      "name": "settings-about",
+      "ok": true,
+      "result": {
+        "controls": 4,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Security policy",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Data flow",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "28-settings-about.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About About CodeForge — free-first autonomous software engineering agent. APPLICATION Version 0.4.0 Build channel production Packaged build Running from an installed package. Runtime Electron 44.4.1 · Node 24.21"
+    },
+    {
+      "name": "settings-search",
+      "ok": true,
+      "result": {
+        "results": [
+          "NotificationsSystem"
+        ]
+      },
+      "screenshot": "29-settings-search.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings NotificationsSystem GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About About CodeForge — free-first autonomous software engineering agent. APPLICATION Version 0.4.0 Build channel production Packaged build Running from an installed package. Runtime Electron"
+    },
+    {
+      "name": "contrast-settings",
+      "ok": true,
+      "result": {
+        "checked": 60,
+        "lowContrastCount": 9,
+        "lowest": [
+          {
+            "text": "main",
+            "ratio": 2.24,
+            "fontSize": 11,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(42,43,48)",
+            "cls": "project-branch"
+          },
+          {
+            "text": "System",
+            "ratio": 2.24,
+            "fontSize": 11,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(42,43,48)",
+            "cls": "settings-search-result-hint"
+          },
+          {
+            "text": "General",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "settings-nav-group-label"
+          },
+          {
+            "text": "CodeForge",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "settings-nav-group-label"
+          },
+          {
+            "text": "Workspace",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "settings-nav-group-label"
+          },
+          {
+            "text": "System",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "settings-nav-group-label"
+          },
+          {
+            "text": "Integrations",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "settings-nav-group-label"
+          },
+          {
+            "text": "Advanced",
+            "ratio": 2.52,
+            "fontSize": 10,
+            "color": "rgb(92, 96, 104)",
+            "bg": "rgb(33,34,38)",
+            "cls": "settings-nav-group-label"
+          },
+          {
+            "text": "Manual",
+            "ratio": 4.28,
+            "fontSize": 11,
+            "color": "rgb(79, 143, 255)",
+            "bg": "rgb(39,47,64)",
+            "cls": "status-badge info"
+          }
+        ],
+        "byClass": {
+          "project-branch": {
+            "count": 1,
+            "worst": 2.24,
+            "sample": "main"
+          },
+          "settings-search-result-hint": {
+            "count": 1,
+            "worst": 2.24,
+            "sample": "System"
+          },
+          "settings-nav-group-label": {
+            "count": 6,
+            "worst": 2.52,
+            "sample": "General"
+          },
+          "status-badge info": {
+            "count": 1,
+            "worst": 4.28,
+            "sample": "Manual"
+          }
+        }
+      },
+      "screenshot": "30-contrast-settings.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings NotificationsSystem GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About About CodeForge — free-first autonomous software engineering agent. APPLICATION Version 0.4.0 Build channel production Packaged build Running from an installed package. Runtime Electron"
+    },
+    {
+      "name": "settings-back",
+      "ok": true,
+      "screenshot": "31-settings-back.png",
+      "textExcerpt": "← sandbox-repo • main 📊 Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed · 8d ✓ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ The test suite in this repository fails. Find the root cause and fix it so that Failed · 8d ✕ Explain how CodeForge routes a task to a model under ForgeAuto/Free: which compo Failed · 8d ✕ Explain how CodeForge routes a task"
+    }
+  ],
+  "settingsSections": [
+    "General",
+    "Profile & Account",
+    "Appearance",
+    "Models & Routing",
+    "Agents",
+    "Verification & Safety",
+    "GEMS",
+    "Workspaces",
+    "Git & GitHub",
+    "Runtime & Execution",
+    "Notifications",
+    "Application & Background",
+    "Data & Privacy",
+    "Provider Connections",
+    "Advanced",
+    "About"
+  ],
+  "consoleEntries": [
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "completedAt": "2026-09-19T10:15:54.106Z"
+}

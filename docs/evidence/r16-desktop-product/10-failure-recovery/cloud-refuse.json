@@ -1,0 +1,367 @@
+{
+  "schemaVersion": 1,
+  "label": "cloud-refuse",
+  "mode": "refuse",
+  "latencyMs": 2500,
+  "startedAtUtc": "2026-09-19T14:56:41.0160560Z",
+  "checks": {
+    "startsWhileCloudDead": {
+      "status": "PASS",
+      "detail": "App started with Cloud traffic refuse; DevTools at 671 ms."
+    },
+    "noEndlessSpinner": {
+      "status": "PASS",
+      "detail": "Bootstrap screen left within 1009 ms while the Cloud was refuse."
+    },
+    "keepsSignedInIdentityOffline": {
+      "status": "PASS",
+      "detail": "A previously signed-in user is not thrown to the sign-in screen by an unreachable Cloud."
+    },
+    "offlineIsCommunicated": {
+      "status": "PASS",
+      "detail": "The UI names the Cloud outage: 'Cloud offline'."
+    },
+    "responsiveWhileOffline": {
+      "status": "PASS",
+      "detail": "Idle CPU 0.1% while the Cloud is refuse (no retry storm)."
+    },
+    "recoversWithoutRestart": {
+      "status": "PASS",
+      "detail": "After the network healed, the same process re-established the Cloud account (Forger Digital Solutions, CodeForge Free) — no restart."
+    },
+    "catalogRecovers": {
+      "status": "PASS",
+      "detail": "Catalog refresh after recovery: 65 free models."
+    },
+    "headerReflectsRecovery": {
+      "status": "PASS",
+      "detail": "The header dropped the 'Cloud offline' state on its own after the network healed."
+    },
+    "cleanExitAfterFault": {
+      "status": "PASS",
+      "detail": "Process tree exited in 2303 ms after the fault run."
+    }
+  },
+  "timeline": [
+    {
+      "at": "2026-09-19T14:56:41.1697122Z",
+      "event": "launch"
+    },
+    {
+      "at": "2026-09-19T14:56:41.9042800Z",
+      "event": "devtools",
+      "ms": 671
+    },
+    {
+      "at": "2026-09-19T14:56:42.9243009Z",
+      "event": "bootstrap-settled",
+      "settled": true,
+      "ms": 1009
+    },
+    {
+      "at": "2026-09-19T14:56:53.9178164Z",
+      "event": "network-restored"
+    }
+  ],
+  "proxyPort": 60498,
+  "bootstrapMs": 1009,
+  "settledText": "ΓåÉ sandbox-repo ΓÇó main Forger Digital Solutions Cloud offline Γùç ForgeAuto/Free ┬╖ No Free Route ? CodeForge New task Γîò Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed ┬╖ 8d Γ£ô The test suite in this repository fails. Find the root cause and fix it so that Failed ┬╖ 8d Γ£ò The test suite in this repository fails. Find the root cause and fix it so that Failed ┬╖ 8d Γ£ò Explain the architecture of this repository. Failed ┬╖ 19d Γ£ò hello there Failed ┬╖ 20d Γ£ò What files are in the repository root? Failed ┬╖ 21d Γ£ò List the top-level folders in this repository Failed ┬╖ 21d Γ£ò Ex",
+  "offlineScreenshot": "docs\\evidence\\r16-desktop-product\\10-failure-recovery\\cloud-refuse-offline.png",
+  "offlineConsole": null,
+  "offlineAccountMenu": "ΓåÉ sandbox-repo ΓÇó main Forger Digital Solutions Cloud offline Forger Digital Solutions GitHub connected Γ£ô CodeForge Cloud is unreachable ΓÇö local routes still work Profile & Account Settings Sign Out Γùç ForgeAuto/Free ┬╖ No Free Route ? CodeForge New task Γîò Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divisor i Completed ┬╖ 8d Γ£ô The test suite in this repository fails. Find the root cause and fix it so that Failed ┬╖ 8d Γ£ò The test suite in this repository fails. Find the root cause and fix it so that Failed ┬╖ 8d Γ£ò Explain the architecture of this repository. Failed ┬╖ 19d Γ£ò hello there Failed ┬╖ 20d Γ£ò What files are in the repository root? Failed ┬╖ 21d Γ£ò List the top-level folders in this repository Failed ┬╖ 21d Γ£ò Explain this repository structure Failed ┬╖ 21d Γ£ò Explain this repository structure Failed ┬╖ 21d Γ£ò Settings Help & docs Γÿ░ Explain the architecture of this repository. Idle Γîò ΓÇ║ Failed You Explain the architecture of this repository. CodeForge Failed Provider authentication failed ΓÇö your API key is invalid or expired. Update it in Settings ΓåÆ Providers. RUN STOPPED Task ├ù Provider authentication failed ΓÇö your API key is invalid or expired. Update it in Settings ΓåÆ Providers. Fix and continue Review failure Auto sandbox-repo main + Agent Chat Auto Review Ask More Full Auto Plan: Auto Plan: Review ForgeAuto/Free ┬╖ Automatic free routing Γû╛ Γåæ Enter to send ┬╖ Shift+Enter for newline ┬╖ Esc to stop ┬╖ / for commands ┬╖ @ for context ForgeAuto/Free has no free model connection yet. Enable Free Cloud Models",
+  "offlineResources": {
+    "sampleSeconds": 5.0,
+    "logicalCores": 12,
+    "totalCpuPercentOfMachine": 0.1,
+    "totalWorkingSetBytes": 541908992,
+    "totalPrivateBytes": 276520960,
+    "processes": [
+      {
+        "pid": 19712,
+        "kind": "main",
+        "cpuPercentOfMachine": 0.1,
+        "workingSetBytes": 336068608,
+        "privateBytes": 211841024,
+        "handles": 1189,
+        "threads": 55
+      },
+      {
+        "pid": 23332,
+        "kind": "utility",
+        "cpuPercentOfMachine": 0.0,
+        "workingSetBytes": 58109952,
+        "privateBytes": 13221888,
+        "handles": 371,
+        "threads": 25
+      },
+      {
+        "pid": 35432,
+        "kind": "renderer",
+        "cpuPercentOfMachine": 0.0,
+        "workingSetBytes": 147730432,
+        "privateBytes": 51458048,
+        "handles": 330,
+        "threads": 17
+      }
+    ]
+  },
+  "recovery": {
+    "refresh": {
+      "ok": true,
+      "freeModels": 65
+    },
+    "account": {
+      "offline": false,
+      "plan": "CodeForge Free",
+      "name": "Forger Digital Solutions"
+    }
+  },
+  "recoveredText": "ΓåÉ sandbox-repo ΓÇó main Forger Digital Solutions CodeForge Free Forger Digital Solutions @Forger-Digital-Solutions ForgerDigitalSolutions@outlook.com Profile & Account Settings Sign Out Γùç ForgeAuto/Free ┬╖ Discovering free routesΓÇª ? CodeForge New task Γîò Search Ctrl K WORKSPACES sandbox-repo Switch Tasks Files Older What does the divide function in src/math.ts currently return when the divi",
+  "shutdown": {
+    "method": "WM_CLOSE",
+    "processTreeBefore": [
+      {
+        "pid": 19712,
+        "parentPid": 35764,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 410402816,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop\" --remote-debugging-port=9232"
+      },
+      {
+        "pid": 23332,
+        "parentPid": 19712,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 58114048,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --use-angle=d3d11-warp-webgl --use-gl=angle --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop\" --field-trial-handle=2324,i,3057312181988899385,15416732010017320325,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2328,i,9787478785966286314,4523251509300204393,4 --trace-process-track-uuid=3190708989122997041 --mojo-platform-channel-handle=2320 /prefetch:11"
+      },
+      {
+        "pid": 35432,
+        "parentPid": 19712,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 158146560,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=renderer --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop\" --app-path=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\resources\\app.asar\" --enable-sandbox --remote-debugging-port=9232 --disable-gpu-compositing --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=2.5 --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=4 --launch-time-ticks=57384934913 --field-trial-handle=2324,i,3057312181988899385,15416732010017320325,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2328,i,9787478785966286314,4523251509300204393,4 --trace-process-track-uuid=3190708990060038890 --mojo-platform-channel-handle=2908 /prefetch:1"
+      }
+    ],
+    "exitedWithinGraceMs": true,
+    "exitMs": 2303,
+    "rootExitCode": 0,
+    "survivorsForceKilled": []
+  },
+  "proxyEvents": [
+    {
+      "id": 1,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "refuse",
+      "event": "connect",
+      "at": "2026-09-19T14:56:41.871Z"
+    },
+    {
+      "id": 1,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "refuse",
+      "event": "refused",
+      "at": "2026-09-19T14:56:41.873Z"
+    },
+    {
+      "id": 2,
+      "host": "models.dev",
+      "port": 443,
+      "mode": "refuse",
+      "event": "connect",
+      "at": "2026-09-19T14:56:42.464Z"
+    },
+    {
+      "id": 2,
+      "host": "models.dev",
+      "port": 443,
+      "mode": "refuse",
+      "event": "refused",
+      "at": "2026-09-19T14:56:42.465Z"
+    },
+    {
+      "id": 3,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "refuse",
+      "event": "connect",
+      "at": "2026-09-19T14:56:42.482Z"
+    },
+    {
+      "id": 3,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "refuse",
+      "event": "refused",
+      "at": "2026-09-19T14:56:42.482Z"
+    },
+    {
+      "id": 4,
+      "host": "opencode.ai",
+      "port": 443,
+      "mode": "refuse",
+      "event": "connect",
+      "at": "2026-09-19T14:56:42.483Z"
+    },
+    {
+      "id": 4,
+      "host": "opencode.ai",
+      "port": 443,
+      "mode": "refuse",
+      "event": "refused",
+      "at": "2026-09-19T14:56:42.483Z"
+    },
+    {
+      "id": 5,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "refuse",
+      "event": "connect",
+      "at": "2026-09-19T14:56:42.483Z"
+    },
+    {
+      "id": 5,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "refuse",
+      "event": "refused",
+      "at": "2026-09-19T14:56:42.483Z"
+    },
+    {
+      "id": 6,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "refuse",
+      "event": "connect",
+      "at": "2026-09-19T14:56:42.653Z"
+    },
+    {
+      "id": 6,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "refuse",
+      "event": "refused",
+      "at": "2026-09-19T14:56:42.653Z"
+    },
+    {
+      "id": 7,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "refuse",
+      "event": "connect",
+      "at": "2026-09-19T14:56:42.745Z"
+    },
+    {
+      "id": 7,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "refuse",
+      "event": "refused",
+      "at": "2026-09-19T14:56:42.746Z"
+    },
+    {
+      "id": 8,
+      "host": "models.dev",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T14:56:54.035Z"
+    },
+    {
+      "id": 8,
+      "host": "models.dev",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T14:56:54.069Z"
+    },
+    {
+      "id": 9,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T14:56:54.415Z"
+    },
+    {
+      "id": 9,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T14:56:54.439Z"
+    },
+    {
+      "id": 10,
+      "host": "opencode.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T14:56:54.649Z"
+    },
+    {
+      "id": 11,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T14:56:54.65Z"
+    },
+    {
+      "id": 10,
+      "host": "opencode.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T14:56:54.673Z"
+    },
+    {
+      "id": 11,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T14:56:54.675Z"
+    },
+    {
+      "id": 12,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T14:56:55.03Z"
+    },
+    {
+      "id": 12,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T14:56:55.042Z"
+    },
+    {
+      "id": 13,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T14:56:55.206Z"
+    },
+    {
+      "id": 13,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T14:56:55.23Z"
+    }
+  ],
+  "completedAtUtc": "2026-09-19T14:56:58.7379857Z",
+  "summary": {
+    "fail": 0,
+    "warn": 0,
+    "pass": 9,
+    "verdict": "PASS"
+  }
+}

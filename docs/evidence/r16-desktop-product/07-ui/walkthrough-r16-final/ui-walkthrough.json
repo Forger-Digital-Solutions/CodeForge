@@ -1,0 +1,1042 @@
+{
+  "startedAt": "2026-09-19T17:16:21.595Z",
+  "steps": [
+    {
+      "name": "workspace",
+      "ok": true,
+      "result": {
+        "lifecycle": {
+          "data-cf-lifecycle-bootstrap": "1789838155325",
+          "data-cf-lifecycle-root-mounted": "1789838155352",
+          "data-cf-lifecycle-first-frame": "1789838155353",
+          "data-cf-lifecycle-workspace-root": "1789838155934",
+          "data-cf-lifecycle-runtime-connected": "1789838156097",
+          "data-cf-lifecycle-workspace-interactive": "1789838156097"
+        }
+      },
+      "screenshot": "01-workspace.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES CodeForge-R5-Portable-Sample Switch Tasks Files No tasks yet Settings Help & docs ☰ ⌕ What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge · CodeForge-R5-Portable-Sample · master SELECTED WORKSPACE Clean working tree CodeForge-R5-Portable-Sample Branch master Repository intelligence 3 files · 2 symbols FAVORITE MODELS + Add favorite Explain this repository Review"
+    },
+    {
+      "name": "model-picker-open",
+      "ok": true,
+      "result": {
+        "items": [
+          "⚡ ForgeAuto/Free Automatic free routing · 4 qualified models Verified $0 ★",
+          "DeepSeek V4 Flash Free · 2 routes · Recommended ★ ℹ",
+          "GPT-OSS 120B CodeForge Free · Ready · Recommended ★ ℹ",
+          "GPT-OSS 20B CodeForge Free · Ready · Recommended ★ ℹ",
+          "Qwen 3.8 27B Free · 3 routes · Recommended ★ ℹ",
+          "Allam 2 7B CodeForge Free · Ready ★ ℹ",
+          "Compound CodeForge Free · Ready ★ ℹ",
+          "Compound Mini CodeForge Free · Ready ★ ℹ",
+          "Dots3 Note Preview Free · 2 routes ★ ℹ",
+          "Free Models Router Free · 2 routes ★ ℹ",
+          "Gemma 4 31B Free · 2 routes ★ ℹ",
+          "GLM-5.2 Free · 2 routes ★ ℹ",
+          "Inkling Free · 2 routes ★ ℹ",
+          "Inkling Small Free · 2 routes ★ ℹ",
+          "LFM 2.5 2.6B Free · 2 routes ★ ℹ",
+          "Ling 3.0 Flash Fin Free · 2 routes ★ ℹ",
+          "Ling 3.0 Flash Sante Free · 2 routes ★ ℹ",
+          "Ling 3.0 Flash VL Free · 2 routes ★ ℹ",
+          "Nex N2.5 Mini Free · 2 routes ★ ℹ",
+          "Nex N2.5 Pro Free · 2 routes ★ ℹ",
+          "North Mini Code Free · 2 routes ★ ℹ",
+          "Gemma 4 26B A4B Free · 2 routes · Experimental ★ ℹ",
+          "Laguna S 2.1 Free · 2 routes · Experimental ★ ℹ",
+          "Laguna XS 2.1 Free · 2 routes · Experimental ★ ℹ",
+          "Nemotron 3 Nano Omni Free · 2 routes · Experimental ★ ℹ",
+          "Nemotron 3 Super Free · 2 routes · Experimental ★ ℹ",
+          "Nemotron 3 Ultra Free · 2 routes · Experimental ★ ℹ",
+          "Nemotron 3.5 Lightning Free · 2 routes · Experimental ★ ℹ",
+          "Big Pickle Free · Connect ★ ℹ",
+          "Codestral Free · Connect ★ ℹ",
+          "Deep Research Max Preview (Apr-21-2026) Free · Connect ★ ℹ",
+          "Deep Research Preview (Apr-21-2026) Free · Connect ★ ℹ",
+          "DeepSeek V4 Pro Free · Connect ★ ℹ",
+          "Devstral 2 Free · Connect ★ ℹ",
+          "Devstral 2 Free · Connect ★ ℹ",
+          "Devstral 2 Free · Connect ★ ℹ",
+          "Devstral Medium Free · Connect ★ ℹ",
+          "Devstral Small Free · Connect ★ ℹ",
+          "Devstral Small 2 Free · Connect ★ ℹ",
+          "Devstral Small 2505 Free · Connect ★ ℹ",
+          "GPT-5.6 Luna Direct-first · same-model OpenRouter fallback · DISABLED Disabled ★ ℹ",
+          "GLM-5.3 Flash Direct-first · same-model OpenRouter fallback · DISABLED Disabled ★ ℹ",
+          "Qwen3.8 Flash Direct-first · same-model OpenRouter fallback · DISABLED Disabled ★ ℹ",
+          "DeepSeek V4.1 Flash Direct-first · same-model OpenRouter fallback · DISABLED Disabled ★ ℹ",
+          "Topaz Paid Coming soon ★ ℹ",
+          "Sapphire Paid Coming soon ★ ℹ",
+          "Peridot Paid Coming soon ★ ℹ",
+          "Garnet Paid Coming soon ★ ℹ"
+        ],
+        "headings": [
+          "WORKSPACES",
+          "Tasks\nFiles"
+        ]
+      },
+      "screenshot": "02-model-picker-open.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES CodeForge-R5-Portable-Sample Switch Tasks Files No tasks yet Settings Help & docs ☰ ⌕ What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge · CodeForge-R5-Portable-Sample · master SELECTED WORKSPACE Clean working tree CodeForge-R5-Portable-Sample Branch master Repository intelligence 3 files · 2 symbols FAVORITE MODELS + Add favorite Explain this repository Review"
+    },
+    {
+      "name": "model-picker-filter",
+      "ok": true,
+      "result": {
+        "after": "←\nCodeForge-R5-Portable-Sample\n• master\nForger Digital Solutions\nCodeForge Free\n◈\nForgeAuto/Free · Verified Free\n?\nCodeForge\nNew task\n⌕\nSearch\nCtrl K\nWORKSPACES\nCodeForge-R5-Portable-Sample\nSwitch\nTasks\nFiles\nNo tasks yet\nSettings\nHelp & docs\n☰\n⌕\nWhat's next, Forger Digital Solutions?\nStart with a r"
+      },
+      "screenshot": "03-model-picker-filter.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES CodeForge-R5-Portable-Sample Switch Tasks Files No tasks yet Settings Help & docs ☰ ⌕ What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge · CodeForge-R5-Portable-Sample · master SELECTED WORKSPACE Clean working tree CodeForge-R5-Portable-Sample Branch master Repository intelligence 3 files · 2 symbols FAVORITE MODELS + Add favorite Explain this repository Review"
+    },
+    {
+      "name": "account-menu",
+      "ok": true,
+      "screenshot": "04-account-menu.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free Forger Digital Solutions @Forger-Digital-Solutions ForgerDigitalSolutions@outlook.com Profile & Account Settings Sign Out ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES CodeForge-R5-Portable-Sample Switch Tasks Files No tasks yet Settings Help & docs ☰ ⌕ What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge · CodeForge-R5-Portable-Sample · master SELECTED WORKSPACE Clean working tree CodeForge-R5-Portable-Samp"
+    },
+    {
+      "name": "trust-popover",
+      "ok": true,
+      "screenshot": "05-trust-popover.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES CodeForge-R5-Portable-Sample Switch Tasks Files No tasks yet Settings Help & docs ☰ ⌕ What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge · CodeForge-R5-Portable-Sample · master SELECTED WORKSPACE Clean working tree CodeForge-R5-Portable-Sample Branch master Repository intelligence 3 files · 2 symbols FAVORITE MODELS + Add favorite Explain this repository Review"
+    },
+    {
+      "name": "repo-intelligence-popover",
+      "ok": true,
+      "screenshot": "06-repo-intelligence-popover.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master REPOSITORY INTELLIGENCE Status Ready Indexed 3 files · 2 symbols Mode Local structural index Disable index Rebuild Open Workspace Settings Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES CodeForge-R5-Portable-Sample Switch Tasks Files No tasks yet Settings Help & docs ☰ ⌕ What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge · CodeForge-R5-Portable-Sample · master SELECTED WORKSPACE Clean working tree CodeForge"
+    },
+    {
+      "name": "composer-typing",
+      "ok": true,
+      "result": {
+        "value": "",
+        "rows": {
+          "rows": 1,
+          "height": 44,
+          "scrollHeight": 44
+        },
+        "hasNewline": false
+      },
+      "screenshot": "07-composer-typing.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES CodeForge-R5-Portable-Sample Switch Tasks Files No tasks yet Settings Help & docs ☰ ⌕ What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge · CodeForge-R5-Portable-Sample · master SELECTED WORKSPACE Clean working tree CodeForge-R5-Portable-Sample Branch master Repository intelligence 3 files · 2 symbols FAVORITE MODELS + Add favorite Explain this repository Review"
+    },
+    {
+      "name": "composer-large-paste",
+      "ok": true,
+      "result": {
+        "length": 0,
+        "height": 44,
+        "top": 659.4000244140625,
+        "bottom": 703.4000244140625,
+        "viewport": 781,
+        "sendVisible": true
+      },
+      "screenshot": "08-composer-large-paste.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES CodeForge-R5-Portable-Sample Switch Tasks Files No tasks yet Settings Help & docs ☰ ⌕ What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge · CodeForge-R5-Portable-Sample · master SELECTED WORKSPACE Clean working tree CodeForge-R5-Portable-Sample Branch master Repository intelligence 3 files · 2 symbols FAVORITE MODELS + Add favorite Explain this repository Review"
+    },
+    {
+      "name": "composer-clear",
+      "ok": true,
+      "screenshot": "09-composer-clear.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES CodeForge-R5-Portable-Sample Switch Tasks Files No tasks yet Settings Help & docs ☰ ⌕ What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge · CodeForge-R5-Portable-Sample · master SELECTED WORKSPACE Clean working tree CodeForge-R5-Portable-Sample Branch master Repository intelligence 3 files · 2 symbols FAVORITE MODELS + Add favorite Explain this repository Review"
+    },
+    {
+      "name": "keyboard-tab-order",
+      "ok": true,
+      "result": [
+        "BUTTON[Account]",
+        "DIV[ForgeAuto/Free · Automatic free routing]",
+        "BUTTON[Help and documentation]",
+        "BUTTON[New task]",
+        "BUTTON[⌕\nSearch\nCtrl K]",
+        "BUTTON[Switch project]",
+        "BUTTON[Tasks]",
+        "BUTTON[Files]",
+        "BUTTON[Settings]",
+        "BUTTON[Help & docs]",
+        "BUTTON[Hide sidebar]",
+        "BUTTON[Command Center]",
+        "BUTTON[Show inspector]",
+        "BUTTON[+ Add favorite]",
+        "BUTTON[Explain this repository]",
+        "BUTTON[Review the architecture]",
+        "BUTTON[Create an implementation plan]",
+        "BUTTON[Run the test suite]",
+        "BUTTON[Find TODOs in this workspace]",
+        "BUTTON[Review current changes]",
+        "TEXTAREA[Describe a task]",
+        "BUTTON[Add attachment]",
+        "BUTTON[Agent runs the full autonomous workflow ]",
+        "BUTTON[Chat starts a conversational runtime tur]",
+        "SELECT[Permission mode]",
+        "SELECT[Plan mode]",
+        "BUTTON[Select model]",
+        "BUTTON[Back to projects]",
+        "BUTTON[Repository Intelligence]",
+        "BUTTON[Account]"
+      ],
+      "screenshot": "10-keyboard-tab-order.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES CodeForge-R5-Portable-Sample Switch Tasks Files No tasks yet Settings Help & docs ☰ ⌕ What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge · CodeForge-R5-Portable-Sample · master SELECTED WORKSPACE Clean working tree CodeForge-R5-Portable-Sample Branch master Repository intelligence 3 files · 2 symbols FAVORITE MODELS + Add favorite Explain this repository Review"
+    },
+    {
+      "name": "contrast-workspace",
+      "ok": true,
+      "result": {
+        "checked": 41,
+        "lowContrastCount": 1,
+        "lowest": [
+          {
+            "text": "master",
+            "ratio": 4.08,
+            "fontSize": 11,
+            "color": "rgb(134, 138, 146)",
+            "bg": "rgb(42,43,48)",
+            "cls": "project-branch"
+          }
+        ],
+        "byClass": {
+          "project-branch": {
+            "count": 1,
+            "worst": 4.08,
+            "sample": "master"
+          }
+        }
+      },
+      "screenshot": "11-contrast-workspace.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES CodeForge-R5-Portable-Sample Switch Tasks Files No tasks yet Settings Help & docs ☰ ⌕ What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge · CodeForge-R5-Portable-Sample · master SELECTED WORKSPACE Clean working tree CodeForge-R5-Portable-Sample Branch master Repository intelligence 3 files · 2 symbols FAVORITE MODELS + Add favorite Explain this repository Review"
+    },
+    {
+      "name": "settings-open",
+      "ok": true,
+      "screenshot": "12-settings-open.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About General Core CodeForge behavior on this computer. ACCOUNT Forger Digital Solutions @Forger-Digital-Solutions Plan: CodeForge Free · GitHub connected ✓ View profile STARTUP Open last workspac"
+    },
+    {
+      "name": "settings-general",
+      "ok": true,
+      "result": {
+        "controls": 5,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "View profile",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Open last workspace on startup",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Continue interrupted CodeForge agents",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Repository Intelligence indexing",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Change in Models & Routing",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "13-settings-general.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About General Core CodeForge behavior on this computer. ACCOUNT Forger Digital Solutions @Forger-Digital-Solutions Plan: CodeForge Free · GitHub connected ✓ View profile STARTUP Open last workspac"
+    },
+    {
+      "name": "settings-profile-account",
+      "ok": true,
+      "result": {
+        "controls": 4,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Reconnect GitHub",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Sign out",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Delete account…",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "14-settings-profile-account.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Profile & Account Your CodeForge account and the GitHub identity connected to it. Forger Digital Solutions @Forger-Digital-Solutions ForgerDigitalSolutions@outlook.com GITHUB Connection Conn"
+    },
+    {
+      "name": "settings-appearance",
+      "ok": true,
+      "result": {
+        "controls": 4,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Compact",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Default",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Large",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Reduce motion",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "15-settings-appearance.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Appearance How CodeForge looks on this computer. THEME Theme CodeForge ships with a single dark theme tuned for long coding sessions. Light and system themes are not available yet. Dark DENS"
+    },
+    {
+      "name": "settings-models-routing",
+      "ok": true,
+      "result": {
+        "controls": 4,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Change model",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Show",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Refresh catalog",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Change",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "16-settings-models-routing.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Models & Routing How CodeForge chooses the model that works on each task. Connecting extra providers is optional — see Provider Connections. DEFAULT MODEL ForgeAuto/Free Automatically routes"
+    },
+    {
+      "name": "settings-agents",
+      "ok": true,
+      "result": {
+        "controls": 2,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Default new task mode",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Agent steering while typing",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "17-settings-agents.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Agents How CodeForge's autonomous agents plan, act, and stay under your control. DEFAULT BEHAVIOR Default new task mode Agent runs the full autonomous workflow with approval and verification"
+    },
+    {
+      "name": "settings-verification-safety",
+      "ok": true,
+      "result": {
+        "controls": 0,
+        "disabled": 0,
+        "list": [],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "18-settings-verification-safety.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Verification & Safety CodeForge verifies work before claiming success and protects your workspace while agents operate. These safeguards are part of the product's architecture and are always"
+    },
+    {
+      "name": "settings-gems",
+      "ok": true,
+      "result": {
+        "controls": 0,
+        "disabled": 0,
+        "list": [],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "19-settings-gems.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About GEMS GEMS is CodeForge's first-party premium model layer — a product layer above the free catalog, not a provider. Running a GEMS model will always require a CodeForge entitlement; it never "
+    },
+    {
+      "name": "settings-workspaces",
+      "ok": true,
+      "result": {
+        "controls": 3,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Open last workspace on startup",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Repository Intelligence indexing",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Rebuild",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "20-settings-workspaces.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Workspaces Where CodeForge works: the open workspace, recent projects, and Repository Intelligence. CURRENT WORKSPACE CodeForge-R5-Portable-Sample C:\\Users\\Daddy_FDS\\Documents\\CodeForge-R5-P"
+    },
+    {
+      "name": "settings-git-github",
+      "ok": true,
+      "result": {
+        "controls": 1,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Manage",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "21-settings-git-github.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Git & GitHub Local Git configuration for this workspace and the GitHub identity CodeForge uses for it. GIT IDENTITY (DETECTED) Git user.name AlrikByteForger Git user.email schmidtyboy92.es@g"
+    },
+    {
+      "name": "settings-runtime-execution",
+      "ok": true,
+      "result": {
+        "controls": 1,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open General",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "22-settings-runtime-execution.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Runtime & Execution Where agent work executes and what the local runtime is doing right now. EXECUTION TARGET Execution model CodeForge executes on this computer against your local files. Mo"
+    },
+    {
+      "name": "settings-notifications",
+      "ok": true,
+      "result": {
+        "controls": 4,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "System notifications",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Agent needs approval notifications",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Agent completed notifications",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Only notify when in background",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "23-settings-notifications.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Notifications Operating-system notifications about agent work. Approval requests and failures always appear inside the app too — these are an extra signal, never the only one. SYSTEM NOTIFIC"
+    },
+    {
+      "name": "settings-application-background",
+      "ok": true,
+      "result": {
+        "controls": 3,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Close behavior while tasks are active",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Open last workspace on startup",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Continue interrupted agents",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "24-settings-application-background.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Application & Background Window close behavior, background execution, and what happens to active work. BACKGROUND EXECUTION Keep CodeForge running in the system tray While running in the bac"
+    },
+    {
+      "name": "settings-data-privacy",
+      "ok": true,
+      "result": {
+        "controls": 5,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Privacy routing mode",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Review providers",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Clear list",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open data folder",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Export bundle",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "25-settings-data-privacy.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Data & Privacy How your code and data are handled, and what stays on this computer. CODE & CONTENT HANDLING Provider routing ForgeAuto only uses ForgeZero-verified $0 routes. The privacy mod"
+    },
+    {
+      "name": "settings-provider-connections",
+      "ok": true,
+      "result": {
+        "controls": 40,
+        "disabled": 5,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect Free Ollama",
+            "disabled": true
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Create Free Ollama Account",
+            "disabled": true
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Create Ollama API Key",
+            "disabled": true
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Environment credential policy",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use OpenRouter environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use Google Gemini environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use Groq environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use Cerebras environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use Mistral environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use Cloudflare Workers AI environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use Anthropic environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Use OpenAI environment credential",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Refresh detected credentials",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "search",
+            "label": "Search providers",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "Show all providers",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Disable",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Copies the value into CodeForge's encrypted storag",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect Anthropic",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Use Environment Credential",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Add key instead",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Use Environment Credential",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Add key instead",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": "I understand and accept the Gemini API Free Tier d",
+            "disabled": true
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Use Environment Credential",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Add key instead",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Use Environment Credential",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Add key instead",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Use Environment Credential",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Add key instead",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect OpenAI",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect Z.AI",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect Alibaba Model Studio",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect DeepSeek",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect Moonshot (Kimi)",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect OpenCode Zen",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Connect SambaNova",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Provider",
+            "disabled": false
+          },
+          {
+            "tag": "INPUT",
+            "type": "password",
+            "label": "API key",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Show value",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Validate",
+            "disabled": true
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "26-settings-provider-connections.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Provider Connections Optional providers expand CodeForge beyond the built-in Free / ForgeAuto model catalog. CodeForge Free and ForgeAuto/Free remain fully usable without any provider config"
+    },
+    {
+      "name": "settings-advanced",
+      "ok": true,
+      "result": {
+        "controls": 3,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Models & Routing",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Reset…",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "27-settings-advanced.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About Advanced Diagnostics and maintenance. Normal use of CodeForge never requires anything on this page. RUNTIME DIAGNOSTICS Local API The embedded CodeForge server uses an isolated loopback port"
+    },
+    {
+      "name": "settings-about",
+      "ok": true,
+      "result": {
+        "controls": 4,
+        "disabled": 0,
+        "list": [
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Open",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Security policy",
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "type": "button",
+            "label": "Data flow",
+            "disabled": false
+          }
+        ],
+        "overflow": {
+          "horizontal": false
+        }
+      },
+      "screenshot": "28-settings-about.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About About CodeForge — free-first autonomous software engineering agent. APPLICATION Version 0.4.0 Build channel production Build ce6bd6c521d4 (built from modified sources) · built 9/19/2026, 1:0"
+    },
+    {
+      "name": "settings-search",
+      "ok": true,
+      "result": {
+        "results": [
+          "NotificationsSystem"
+        ]
+      },
+      "screenshot": "29-settings-search.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings NotificationsSystem GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About About CodeForge — free-first autonomous software engineering agent. APPLICATION Version 0.4.0 Build channel production Build ce6bd6c521d4 (built from modified sources) · "
+    },
+    {
+      "name": "contrast-settings",
+      "ok": true,
+      "result": {
+        "checked": 58,
+        "lowContrastCount": 3,
+        "lowest": [
+          {
+            "text": "master",
+            "ratio": 4.08,
+            "fontSize": 11,
+            "color": "rgb(134, 138, 146)",
+            "bg": "rgb(42,43,48)",
+            "cls": "project-branch"
+          },
+          {
+            "text": "System",
+            "ratio": 4.08,
+            "fontSize": 11,
+            "color": "rgb(134, 138, 146)",
+            "bg": "rgb(42,43,48)",
+            "cls": "settings-search-result-hint"
+          },
+          {
+            "text": "Manual",
+            "ratio": 4.28,
+            "fontSize": 11,
+            "color": "rgb(79, 143, 255)",
+            "bg": "rgb(39,47,64)",
+            "cls": "status-badge info"
+          }
+        ],
+        "byClass": {
+          "project-branch": {
+            "count": 1,
+            "worst": 4.08,
+            "sample": "master"
+          },
+          "settings-search-result-hint": {
+            "count": 1,
+            "worst": 4.08,
+            "sample": "System"
+          },
+          "status-badge info": {
+            "count": 1,
+            "worst": 4.28,
+            "sample": "Manual"
+          }
+        }
+      },
+      "screenshot": "30-contrast-settings.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? ← Back Settings NotificationsSystem GENERAL General Profile & Account Appearance CODEFORGE Models & Routing Agents Verification & Safety GEMS WORKSPACE Workspaces Git & GitHub Runtime & Execution SYSTEM Notifications Application & Background Data & Privacy INTEGRATIONS Provider Connections ADVANCED Advanced About About CodeForge — free-first autonomous software engineering agent. APPLICATION Version 0.4.0 Build channel production Build ce6bd6c521d4 (built from modified sources) · "
+    },
+    {
+      "name": "settings-back",
+      "ok": true,
+      "screenshot": "31-settings-back.png",
+      "textExcerpt": "← CodeForge-R5-Portable-Sample • master Forger Digital Solutions CodeForge Free ◈ ForgeAuto/Free · Verified Free ? CodeForge New task ⌕ Search Ctrl K WORKSPACES CodeForge-R5-Portable-Sample Switch Tasks Files No tasks yet Settings Help & docs ☰ ⌕ What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge · CodeForge-R5-Portable-Sample · master SELECTED WORKSPACE Clean working tree CodeForge-R5-Portable-Sample Branch master Repository intelligence 3 files · 2 symbols FAVORITE MODELS + Add favorite Explain this repository Review"
+    }
+  ],
+  "settingsSections": [
+    "General",
+    "Profile & Account",
+    "Appearance",
+    "Models & Routing",
+    "Agents",
+    "Verification & Safety",
+    "GEMS",
+    "Workspaces",
+    "Git & GitHub",
+    "Runtime & Execution",
+    "Notifications",
+    "Application & Background",
+    "Data & Privacy",
+    "Provider Connections",
+    "Advanced",
+    "About"
+  ],
+  "consoleEntries": [],
+  "completedAt": "2026-09-19T17:16:47.102Z"
+}

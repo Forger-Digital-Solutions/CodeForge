@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "label": "resilience-e118c8e",
+  "startedAtUtc": "2026-09-19T18:06:57.1942953Z",
+  "checks": {
+    "singleInstance": {
+      "status": "PASS",
+      "detail": "A second launch exited in 414 ms (code 0); exactly one CodeForge instance remains."
+    },
+    "singleInstanceFocus": {
+      "status": "PASS",
+      "detail": "Existing window is visible and restored after the second launch (foreground=True)."
+    },
+    "closeProtectsActiveWork": {
+      "status": "PASS",
+      "detail": "Closing during a running task shows the safe-close dialog instead of quitting."
+    },
+    "closeDialogCancel": {
+      "status": "PASS",
+      "detail": "Cancel dismisses the dialog and the task keeps running."
+    },
+    "stopCancelsWork": {
+      "status": "PASS",
+      "detail": "Stop settled the run in 291 ms (turn states: cancelled,cancelled); no phantom completion (session cancelled)."
+    },
+    "stopNoPhantomCompletion": {
+      "status": "PASS",
+      "detail": "The stopped task is not presented as completed."
+    },
+    "uiSettlesAfterStop": {
+      "status": "PASS",
+      "detail": "Composer is enabled after Stop; the next message can be sent."
+    },
+    "rendererCrashRecovery": {
+      "status": "PASS",
+      "detail": "After the renderer process was killed, the interface came back on its own within 20 s; the main process and runtime stayed up."
+    },
+    "rendererCrashKeepsConversation": {
+      "status": "PASS",
+      "detail": "The conversation (50 events) is intact after the interface reload."
+    },
+    "forceKillRestart": {
+      "status": "PASS",
+      "detail": "App restarted after a force-kill mid-task (stale runtime.json present before relaunch: True)."
+    },
+    "forceKillNoPhantomCompletion": {
+      "status": "PASS",
+      "detail": "The interrupted task is not reported as completed after restart (session 'recovering', turns: recovering,recovering)."
+    },
+    "forceKillDatabaseUsable": {
+      "status": "PASS",
+      "detail": "Session database opened cleanly after the crash (34 events preserved)."
+    },
+    "forceKillNoStaleLock": {
+      "status": "PASS",
+      "detail": "No orphaned CodeForge processes from the killed instance."
+    },
+    "noConsoleWindows": {
+      "status": "PASS",
+      "detail": "No console window appeared during tasks, Stop, crash or restart (583 samples)."
+    }
+  },
+  "timeline": [
+    {
+      "at": "2026-09-19T18:07:00.0825000Z",
+      "event": "launched"
+    },
+    {
+      "at": "2026-09-19T18:07:05.1369293Z",
+      "event": "task-running",
+      "session": "be4570d9-7dda-4aaf-9019-954e5f4d7fd2"
+    },
+    {
+      "at": "2026-09-19T18:07:11.2906891Z",
+      "event": "stop-requested"
+    },
+    {
+      "at": "2026-09-19T18:07:13.2053721Z",
+      "event": "renderer-crash",
+      "rendererPid": 13612
+    },
+    {
+      "at": "2026-09-19T18:07:18.8697348Z",
+      "event": "task2-running",
+      "session": "18fd98b6-aab4-46ae-bf15-66a721a0791d"
+    },
+    {
+      "at": "2026-09-19T18:07:21.1763517Z",
+      "event": "force-killed",
+      "survivors": 0,
+      "staleRuntimeJson": true
+    }
+  ],
+  "shutdown": {
+    "method": "WM_CLOSE",
+    "processTreeBefore": [
+      {
+        "pid": 38716,
+        "parentPid": 38152,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 404746240,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --remote-debugging-port=9238"
+      },
+      {
+        "pid": 39180,
+        "parentPid": 38716,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 58040320,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --use-angle=d3d11-warp-webgl --use-gl=angle --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop\" --field-trial-handle=2272,i,7662886398422597625,10863602440701493745,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2276,i,7377075404447538365,13410967987520324867,4 --trace-process-track-uuid=3190708989122997041 --mojo-platform-channel-handle=2268 /prefetch:11"
+      },
+      {
+        "pid": 39768,
+        "parentPid": 38716,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 165515264,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=renderer --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop\" --app-path=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\resources\\app.asar\" --enable-sandbox --remote-debugging-port=9238 --disable-gpu-compositing --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=2.5 --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=4 --launch-time-ticks=68825098955 --field-trial-handle=2272,i,7662886398422597625,10863602440701493745,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2276,i,7377075404447538365,13410967987520324867,4 --trace-process-track-uuid=3190708990060038890 --mojo-platform-channel-handle=3008 /prefetch:1"
+      }
+    ],
+    "exitedWithinGraceMs": true,
+    "exitMs": 2286,
+    "rootExitCode": 0,
+    "survivorsForceKilled": []
+  },
+  "consoleWindows": {
+    "samples": 583,
+    "consoleWindowsSeen": []
+  },
+  "completedAtUtc": "2026-09-19T18:07:30.0509898Z",
+  "summary": {
+    "fail": 0,
+    "warn": 0,
+    "pass": 14,
+    "verdict": "PASS"
+  }
+}

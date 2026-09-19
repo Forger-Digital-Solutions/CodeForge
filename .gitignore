@@ -32,3 +32,8 @@ packages/vscode/.vscode-test/
 /scratch-*.mjs
 /scratch-*.cjs
 /security-gate/
+
+# R16 native-audit profile copies (sealed tokens, databases) never belong in evidence
+docs/evidence/**/profile-*/
+docs/evidence/**/*.stdout.log
+docs/evidence/**/*.stderr.log

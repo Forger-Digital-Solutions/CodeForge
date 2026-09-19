@@ -1,0 +1,2333 @@
+{
+  "schemaVersion": 1,
+  "label": "baseline-install-state",
+  "startedAtUtc": "2026-09-19T09:50:57.5511370Z",
+  "machine": {
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "user": "Daddy_FDS",
+    "cores": 12,
+    "dpiPercent": 250
+  },
+  "installer": {
+    "path": "G:\\CodeForge\\apps\\desktop\\release\\CodeForge-Setup-0.4.0.exe",
+    "fileName": "CodeForge-Setup-0.4.0.exe",
+    "sizeBytes": 125288165,
+    "lastWriteUtc": "2026-09-19T09:16:13.8107153Z",
+    "sha256": "5181B8B5888B9B513F36C139390ABD83A2C95F3E61D7473DA1CC9B8369739B3D",
+    "architecture": "x86",
+    "productName": "CodeForge",
+    "productVersion": "0.4.0",
+    "fileVersion": "0.4.0",
+    "companyName": "",
+    "fileDescription": "CodeForge Desktop - AI-powered coding agent for Windows",
+    "legalCopyright": "Copyright © 2026 CodeForge",
+    "signatureStatus": "NotSigned",
+    "signerSubject": null
+  },
+  "checks": {
+    "installerHash": {
+      "status": "PASS",
+      "detail": "Installer SHA-256 matches the expected release hash."
+    },
+    "installerArchitecture": {
+      "status": "PASS",
+      "detail": "NSIS stub is x86; it installs the x64 payload."
+    },
+    "installerSignature": {
+      "status": "WARN",
+      "detail": "Installer is not code-signed (status: NotSigned). Windows SmartScreen will warn on first run."
+    },
+    "installerIdentity": {
+      "status": "PASS",
+      "detail": "Installer identifies as CodeForge 0.4.0."
+    },
+    "installed": {
+      "status": "PASS",
+      "detail": "Installed at C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop (142 files, 449 MB)."
+    },
+    "installedArchitecture": {
+      "status": "PASS",
+      "detail": "Installed executable is x64."
+    },
+    "installedVersionMatchesInstaller": {
+      "status": "PASS",
+      "detail": "Installed executable version 0.4.0.0 matches installer 0.4.0."
+    },
+    "installedCompanyName": {
+      "status": "FAIL",
+      "detail": "Executable CompanyName is 'GitHub, Inc.' (Electron's default, not CodeForge's publisher)."
+    },
+    "installedSignature": {
+      "status": "WARN",
+      "detail": "Installed executable is not code-signed (NotSigned)."
+    },
+    "installedFileHygiene": {
+      "status": "WARN",
+      "detail": "30 suspicious file(s) in the program directory.",
+      "files": [
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\conpty_console_list_agent.js.map",
+          "sizeBytes": 475
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\eventEmitter2.js.map",
+          "sizeBytes": 1155
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\eventEmitter2.test.js.map",
+          "sizeBytes": 1396
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\index.js.map",
+          "sizeBytes": 987
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\interfaces.js.map",
+          "sizeBytes": 124
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\terminal.js.map",
+          "sizeBytes": 5845
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\terminal.test.js.map",
+          "sizeBytes": 4151
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\testUtils.test.js.map",
+          "sizeBytes": 622
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\types.js.map",
+          "sizeBytes": 114
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\unixTerminal.js.map",
+          "sizeBytes": 9657
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\unixTerminal.test.js.map",
+          "sizeBytes": 11425
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\utils.js.map",
+          "sizeBytes": 1142
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsConoutConnection.js.map",
+          "sizeBytes": 1660
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsPtyAgent.js.map",
+          "sizeBytes": 9105
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsPtyAgent.test.js.map",
+          "sizeBytes": 2951
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsTerminal.js.map",
+          "sizeBytes": 5021
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsTerminal.test.js.map",
+          "sizeBytes": 8847
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\shared\\conout.js.map",
+          "sizeBytes": 204
+        },
+        {
+          "class": "source-map",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\worker\\conoutSocketWorker.js.map",
+          "sizeBytes": 635
+        },
+        {
+          "class": "pdb",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty_console_list.pdb",
+          "sizeBytes": 4231168
+        },
+        {
+          "class": "pdb",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty.pdb",
+          "sizeBytes": 6066176
+        },
+        {
+          "class": "pdb",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\pty.pdb",
+          "sizeBytes": 5902336
+        },
+        {
+          "class": "pdb",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\winpty-agent.pdb",
+          "sizeBytes": 5648384
+        },
+        {
+          "class": "pdb",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\winpty.pdb",
+          "sizeBytes": 4952064
+        },
+        {
+          "class": "pdb",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty_console_list.pdb",
+          "sizeBytes": 4313088
+        },
+        {
+          "class": "pdb",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty.pdb",
+          "sizeBytes": 6467584
+        },
+        {
+          "class": "pdb",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\pty.pdb",
+          "sizeBytes": 6279168
+        },
+        {
+          "class": "pdb",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty-agent.pdb",
+          "sizeBytes": 6090752
+        },
+        {
+          "class": "pdb",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty.pdb",
+          "sizeBytes": 5369856
+        },
+        {
+          "class": "typescript-source",
+          "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\typings\\node-pty.d.ts",
+          "sizeBytes": 6463
+        }
+      ]
+    },
+    "asarUnpackedPresent": {
+      "status": "PASS",
+      "detail": "app.asar.unpacked (native modules) is present."
+    },
+    "releaseArchiveMatch": {
+      "status": "PASS",
+      "detail": "Installed app.asar matches the release archive.",
+      "sha256": "4FFDB4D2F5DE34563E22DCB0C9B6B9312CE83A8BB2970274625338D8D64FA2F0"
+    },
+    "registryUninstall": {
+      "status": "PASS",
+      "detail": "Registered as 'CodeForge 0.3.0' with quiet uninstall '\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\Uninstall CodeForge.exe\" /currentuser /S'."
+    },
+    "registryVersion": {
+      "status": "FAIL",
+      "detail": "Apps & Features shows version 0.3.0 but the installed executable is 0.4.0."
+    },
+    "registryPublisher": {
+      "status": "FAIL",
+      "detail": "Publisher is blank in Apps & Features."
+    },
+    "registryIcon": {
+      "status": "PASS",
+      "detail": "DisplayIcon points at an existing file."
+    },
+    "registryUninstallCommand": {
+      "status": "PASS",
+      "detail": "Uninstall command targets an existing uninstaller."
+    },
+    "registryPerMachine": {
+      "status": "PASS",
+      "detail": "No per-machine (HKLM) registration; install is per-user as intended."
+    },
+    "startMenuShortcut": {
+      "status": "PASS",
+      "detail": "Start Menu shortcut → C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe."
+    },
+    "desktopShortcut": {
+      "status": "PASS",
+      "detail": "Desktop shortcut → C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe."
+    },
+    "shortcutHygiene": {
+      "status": "PASS",
+      "detail": "Shortcuts point at the installed executable with no stale arguments."
+    },
+    "userDataSecrets": {
+      "status": "PASS",
+      "detail": "No plaintext credential values in settings.json (sealed keys: codeforge:cloud-access-token, codeforge:cloud-refresh-token, provider:opencode."
+    },
+    "updaterCache": {
+      "status": "INFO",
+      "detail": "Installer cache exists at C:\\Users\\Daddy_FDS\\AppData\\Local\\codeforge-desktop-updater (82 MB)."
+    }
+  },
+  "installed": {
+    "installed": true,
+    "installDirectory": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop",
+    "fileCount": 142,
+    "totalBytes": 470495158.0,
+    "executable": {
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe",
+      "fileName": "CodeForge.exe",
+      "sizeBytes": 246415872,
+      "lastWriteUtc": "2026-09-19T09:15:48.0000000Z",
+      "sha256": "195D55AE8AEB09EAC5929BAE4BAF490B320330484250DBDAE9D86F397469A9DB",
+      "architecture": "x64",
+      "productName": "CodeForge",
+      "productVersion": "0.4.0.0",
+      "fileVersion": "0.4.0",
+      "companyName": "GitHub, Inc.",
+      "fileDescription": "CodeForge",
+      "legalCopyright": "Copyright © 2026 CodeForge",
+      "signatureStatus": "NotSigned",
+      "signerSubject": null
+    },
+    "asarSha256": "4FFDB4D2F5DE34563E22DCB0C9B6B9312CE83A8BB2970274625338D8D64FA2F0",
+    "asarBytes": 22410205,
+    "unpackedDirectory": true,
+    "topLevel": [
+      "locales",
+      "resources",
+      "chrome_100_percent.pak",
+      "chrome_200_percent.pak",
+      "CodeForge.exe",
+      "d3dcompiler_47.dll",
+      "dxcompiler.dll",
+      "dxil.dll",
+      "ffmpeg.dll",
+      "icudtl.dat",
+      "LICENSE.electron.txt",
+      "LICENSES.chromium.html",
+      "resources.pak",
+      "snapshot_blob.bin",
+      "Uninstall CodeForge.exe",
+      "v8_context_snapshot.bin",
+      "vk_swiftshader_icd.json",
+      "vk_swiftshader.dll",
+      "vulkan-1.dll"
+    ],
+    "largestFiles": [
+      {
+        "path": "CodeForge.exe",
+        "sizeBytes": 246415872
+      },
+      {
+        "path": "dxcompiler.dll",
+        "sizeBytes": 25745408
+      },
+      {
+        "path": "resources\\app.asar",
+        "sizeBytes": 22410205
+      },
+      {
+        "path": "LICENSES.chromium.html",
+        "sizeBytes": 20472830
+      },
+      {
+        "path": "resources.pak",
+        "sizeBytes": 12435445
+      },
+      {
+        "path": "icudtl.dat",
+        "sizeBytes": 10876560
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty.pdb",
+        "sizeBytes": 6467584
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\pty.pdb",
+        "sizeBytes": 6279168
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty-agent.pdb",
+        "sizeBytes": 6090752
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty.pdb",
+        "sizeBytes": 6066176
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\pty.pdb",
+        "sizeBytes": 5902336
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\winpty-agent.pdb",
+        "sizeBytes": 5648384
+      }
+    ],
+    "suspiciousFiles": [
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\conpty_console_list_agent.js.map",
+        "sizeBytes": 475
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\eventEmitter2.js.map",
+        "sizeBytes": 1155
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\eventEmitter2.test.js.map",
+        "sizeBytes": 1396
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\index.js.map",
+        "sizeBytes": 987
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\interfaces.js.map",
+        "sizeBytes": 124
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\terminal.js.map",
+        "sizeBytes": 5845
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\terminal.test.js.map",
+        "sizeBytes": 4151
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\testUtils.test.js.map",
+        "sizeBytes": 622
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\types.js.map",
+        "sizeBytes": 114
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\unixTerminal.js.map",
+        "sizeBytes": 9657
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\unixTerminal.test.js.map",
+        "sizeBytes": 11425
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\utils.js.map",
+        "sizeBytes": 1142
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsConoutConnection.js.map",
+        "sizeBytes": 1660
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsPtyAgent.js.map",
+        "sizeBytes": 9105
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsPtyAgent.test.js.map",
+        "sizeBytes": 2951
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsTerminal.js.map",
+        "sizeBytes": 5021
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsTerminal.test.js.map",
+        "sizeBytes": 8847
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\shared\\conout.js.map",
+        "sizeBytes": 204
+      },
+      {
+        "class": "source-map",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\worker\\conoutSocketWorker.js.map",
+        "sizeBytes": 635
+      },
+      {
+        "class": "pdb",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty_console_list.pdb",
+        "sizeBytes": 4231168
+      },
+      {
+        "class": "pdb",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty.pdb",
+        "sizeBytes": 6066176
+      },
+      {
+        "class": "pdb",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\pty.pdb",
+        "sizeBytes": 5902336
+      },
+      {
+        "class": "pdb",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\winpty-agent.pdb",
+        "sizeBytes": 5648384
+      },
+      {
+        "class": "pdb",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\winpty.pdb",
+        "sizeBytes": 4952064
+      },
+      {
+        "class": "pdb",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty_console_list.pdb",
+        "sizeBytes": 4313088
+      },
+      {
+        "class": "pdb",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty.pdb",
+        "sizeBytes": 6467584
+      },
+      {
+        "class": "pdb",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\pty.pdb",
+        "sizeBytes": 6279168
+      },
+      {
+        "class": "pdb",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty-agent.pdb",
+        "sizeBytes": 6090752
+      },
+      {
+        "class": "pdb",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty.pdb",
+        "sizeBytes": 5369856
+      },
+      {
+        "class": "typescript-source",
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\typings\\node-pty.d.ts",
+        "sizeBytes": 6463
+      }
+    ],
+    "files": [
+      {
+        "path": "chrome_100_percent.pak",
+        "sizeBytes": 719654,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "chrome_200_percent.pak",
+        "sizeBytes": 1269017,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "CodeForge.exe",
+        "sizeBytes": 246415872,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "d3dcompiler_47.dll",
+        "sizeBytes": 4741488,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "dxcompiler.dll",
+        "sizeBytes": 25745408,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "dxil.dll",
+        "sizeBytes": 1509760,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "ffmpeg.dll",
+        "sizeBytes": 3113472,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "icudtl.dat",
+        "sizeBytes": 10876560,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "LICENSE.electron.txt",
+        "sizeBytes": 1096,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "LICENSES.chromium.html",
+        "sizeBytes": 20472830,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources.pak",
+        "sizeBytes": 12435445,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "snapshot_blob.bin",
+        "sizeBytes": 368768,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "Uninstall CodeForge.exe",
+        "sizeBytes": 285493,
+        "lastWriteUtc": "2026-09-19T09:15:52.0000000Z"
+      },
+      {
+        "path": "v8_context_snapshot.bin",
+        "sizeBytes": 742200,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "vk_swiftshader_icd.json",
+        "sizeBytes": 106,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "vk_swiftshader.dll",
+        "sizeBytes": 5520384,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "vulkan-1.dll",
+        "sizeBytes": 939008,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\af.pak",
+        "sizeBytes": 636155,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\am.pak",
+        "sizeBytes": 1029450,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\ar.pak",
+        "sizeBytes": 1130933,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\bg.pak",
+        "sizeBytes": 1178203,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\bn.pak",
+        "sizeBytes": 1513545,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\ca.pak",
+        "sizeBytes": 716908,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\cs.pak",
+        "sizeBytes": 743351,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\da.pak",
+        "sizeBytes": 666465,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\de.pak",
+        "sizeBytes": 717834,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\el.pak",
+        "sizeBytes": 1295538,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\en-GB.pak",
+        "sizeBytes": 580030,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\en-US.pak",
+        "sizeBytes": 586582,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\es-419.pak",
+        "sizeBytes": 707635,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\es.pak",
+        "sizeBytes": 703926,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\et.pak",
+        "sizeBytes": 642216,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\fa.pak",
+        "sizeBytes": 1063054,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\fi.pak",
+        "sizeBytes": 655113,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\fil.pak",
+        "sizeBytes": 741385,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\fr.pak",
+        "sizeBytes": 763453,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\gu.pak",
+        "sizeBytes": 1495625,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\he.pak",
+        "sizeBytes": 928748,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\hi.pak",
+        "sizeBytes": 1586592,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\hr.pak",
+        "sizeBytes": 715279,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\hu.pak",
+        "sizeBytes": 765640,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\id.pak",
+        "sizeBytes": 635080,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\it.pak",
+        "sizeBytes": 693990,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\ja.pak",
+        "sizeBytes": 842132,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\kn.pak",
+        "sizeBytes": 1720240,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\ko.pak",
+        "sizeBytes": 718709,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\lt.pak",
+        "sizeBytes": 777281,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\lv.pak",
+        "sizeBytes": 774751,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\ml.pak",
+        "sizeBytes": 1767850,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\mr.pak",
+        "sizeBytes": 1467313,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\ms.pak",
+        "sizeBytes": 668356,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\nb.pak",
+        "sizeBytes": 638121,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\nl.pak",
+        "sizeBytes": 664767,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\pl.pak",
+        "sizeBytes": 742064,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\pt-BR.pak",
+        "sizeBytes": 697044,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\pt-PT.pak",
+        "sizeBytes": 701056,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\ro.pak",
+        "sizeBytes": 728144,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\ru.pak",
+        "sizeBytes": 1200996,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\sk.pak",
+        "sizeBytes": 755475,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\sl.pak",
+        "sizeBytes": 722720,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\sr.pak",
+        "sizeBytes": 1112919,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\sv.pak",
+        "sizeBytes": 646537,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\sw.pak",
+        "sizeBytes": 685130,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\ta.pak",
+        "sizeBytes": 1758067,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\te.pak",
+        "sizeBytes": 1629379,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\th.pak",
+        "sizeBytes": 1368866,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\tr.pak",
+        "sizeBytes": 697368,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\uk.pak",
+        "sizeBytes": 1211565,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\ur.pak",
+        "sizeBytes": 1047994,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\vi.pak",
+        "sizeBytes": 830059,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\zh-CN.pak",
+        "sizeBytes": 592116,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "locales\\zh-TW.pak",
+        "sizeBytes": 583860,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar",
+        "sizeBytes": 22410205,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\elevate.exe",
+        "sizeBytes": 107520,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\better-sqlite3\\build\\Release\\better_sqlite3.node",
+        "sizeBytes": 1936896,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\LICENSE",
+        "sizeBytes": 3326,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\package.json",
+        "sizeBytes": 915,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\build\\Release\\conpty\\conpty.dll",
+        "sizeBytes": 109600,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\build\\Release\\conpty\\OpenConsole.exe",
+        "sizeBytes": 1148448,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\conpty_console_list_agent.js",
+        "sizeBytes": 721,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\conpty_console_list_agent.js.map",
+        "sizeBytes": 475,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\eventEmitter2.js",
+        "sizeBytes": 1600,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\eventEmitter2.js.map",
+        "sizeBytes": 1155,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\eventEmitter2.test.js",
+        "sizeBytes": 1266,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\eventEmitter2.test.js.map",
+        "sizeBytes": 1396,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\index.js",
+        "sizeBytes": 2008,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\index.js.map",
+        "sizeBytes": 987,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\interfaces.js",
+        "sizeBytes": 233,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\interfaces.js.map",
+        "sizeBytes": 124,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\terminal.js",
+        "sizeBytes": 7454,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\terminal.js.map",
+        "sizeBytes": 5845,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\terminal.test.js",
+        "sizeBytes": 6250,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\terminal.test.js.map",
+        "sizeBytes": 4151,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\testUtils.test.js",
+        "sizeBytes": 807,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\testUtils.test.js.map",
+        "sizeBytes": 622,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\types.js",
+        "sizeBytes": 228,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\types.js.map",
+        "sizeBytes": 114,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\unixTerminal.js",
+        "sizeBytes": 13372,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\unixTerminal.js.map",
+        "sizeBytes": 9657,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\unixTerminal.test.js",
+        "sizeBytes": 19310,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\unixTerminal.test.js.map",
+        "sizeBytes": 11425,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\utils.js",
+        "sizeBytes": 1548,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\utils.js.map",
+        "sizeBytes": 1142,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsConoutConnection.js",
+        "sizeBytes": 6119,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsConoutConnection.js.map",
+        "sizeBytes": 1660,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsPtyAgent.js",
+        "sizeBytes": 12388,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsPtyAgent.js.map",
+        "sizeBytes": 9105,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsPtyAgent.test.js",
+        "sizeBytes": 4147,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsPtyAgent.test.js.map",
+        "sizeBytes": 2951,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsTerminal.js",
+        "sizeBytes": 7852,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsTerminal.js.map",
+        "sizeBytes": 5021,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsTerminal.test.js",
+        "sizeBytes": 10760,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsTerminal.test.js.map",
+        "sizeBytes": 8847,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\shared\\conout.js",
+        "sizeBytes": 348,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\shared\\conout.js.map",
+        "sizeBytes": 204,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\worker\\conoutSocketWorker.js",
+        "sizeBytes": 848,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\worker\\conoutSocketWorker.js.map",
+        "sizeBytes": 635,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\darwin-arm64\\pty.node",
+        "sizeBytes": 85496,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\darwin-arm64\\spawn-helper",
+        "sizeBytes": 50480,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\darwin-x64\\pty.node",
+        "sizeBytes": 52864,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\darwin-x64\\spawn-helper",
+        "sizeBytes": 9248,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty_console_list.node",
+        "sizeBytes": 122368,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty_console_list.pdb",
+        "sizeBytes": 4231168,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty.node",
+        "sizeBytes": 302592,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty.pdb",
+        "sizeBytes": 6066176,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\pty.node",
+        "sizeBytes": 293376,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\pty.pdb",
+        "sizeBytes": 5902336,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\winpty-agent.pdb",
+        "sizeBytes": 5648384,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-arm64\\winpty.pdb",
+        "sizeBytes": 4952064,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty_console_list.node",
+        "sizeBytes": 134656,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty_console_list.pdb",
+        "sizeBytes": 4313088,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty.node",
+        "sizeBytes": 312320,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty.pdb",
+        "sizeBytes": 6467584,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\pty.node",
+        "sizeBytes": 303104,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\pty.pdb",
+        "sizeBytes": 6279168,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty-agent.exe",
+        "sizeBytes": 307712,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty-agent.pdb",
+        "sizeBytes": 6090752,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty.dll",
+        "sizeBytes": 256000,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty.pdb",
+        "sizeBytes": 5369856,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty\\conpty.dll",
+        "sizeBytes": 109600,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty\\OpenConsole.exe",
+        "sizeBytes": 1148448,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\typings\\node-pty.d.ts",
+        "sizeBytes": 6463,
+        "lastWriteUtc": "2026-09-19T09:15:48.0000000Z"
+      }
+    ]
+  },
+  "registry": {
+    "uninstallKey": {
+      "key": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\5f9ca3ee-d929-5c0e-815d-8c970892966c",
+      "displayName": "CodeForge 0.3.0",
+      "displayVersion": "0.3.0",
+      "publisher": null,
+      "displayIcon": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe,0",
+      "uninstallString": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\Uninstall CodeForge.exe\" /currentuser",
+      "quietUninstallString": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\Uninstall CodeForge.exe\" /currentuser /S",
+      "installLocation": null,
+      "estimatedSizeKb": 298990,
+      "noModify": 1,
+      "noRepair": 1,
+      "comments": null,
+      "helpLink": null,
+      "urlInfoAbout": null
+    },
+    "installKey": {
+      "key": "HKCU\\Software\\5f9ca3ee-d929-5c0e-815d-8c970892966c",
+      "installLocation": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop",
+      "keepShortcuts": "true",
+      "shortcutName": "CodeForge"
+    },
+    "perMachineUninstallKeys": []
+  },
+  "shortcuts": [
+    {
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\CodeForge.lnk",
+      "target": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe",
+      "workingDirectory": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop",
+      "arguments": "",
+      "iconLocation": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe,0",
+      "targetExists": true
+    },
+    {
+      "path": "C:\\Users\\Daddy_FDS\\Desktop\\CodeForge.lnk",
+      "target": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe",
+      "workingDirectory": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop",
+      "arguments": "",
+      "iconLocation": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\CodeForge.exe,0",
+      "targetExists": true
+    }
+  ],
+  "userData": {
+    "profile": {
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop",
+      "exists": true,
+      "fileCount": 145,
+      "totalBytes": 18178194,
+      "topLevel": [
+        "blob_storage",
+        "Cache",
+        "Code Cache",
+        "DawnGraphiteCache",
+        "DawnWebGPUCache",
+        "GPUCache",
+        "Local Storage",
+        "logs",
+        "Network",
+        "Session Storage",
+        "Shared Dictionary",
+        "codeforge.db",
+        "codeforge.db-shm",
+        "codeforge.db-wal",
+        "declarative_performance_observer.db",
+        "declarative_performance_observer.db-journal",
+        "DIPS",
+        "DIPS-wal",
+        "forgegreen-cache.db",
+        "Local State",
+        "Preferences",
+        "runtime.json",
+        "settings.json",
+        "SharedStorage",
+        "SharedStorage-wal"
+      ],
+      "files": [
+        {
+          "path": "codeforge.db",
+          "sizeBytes": 3375104
+        },
+        {
+          "path": "codeforge.db-shm",
+          "sizeBytes": 32768
+        },
+        {
+          "path": "codeforge.db-wal",
+          "sizeBytes": 0
+        },
+        {
+          "path": "declarative_performance_observer.db",
+          "sizeBytes": 32768
+        },
+        {
+          "path": "declarative_performance_observer.db-journal",
+          "sizeBytes": 0
+        },
+        {
+          "path": "DIPS",
+          "sizeBytes": 4096
+        },
+        {
+          "path": "DIPS-wal",
+          "sizeBytes": 45352
+        },
+        {
+          "path": "forgegreen-cache.db",
+          "sizeBytes": 12288
+        },
+        {
+          "path": "Local State",
+          "sizeBytes": 490
+        },
+        {
+          "path": "Preferences",
+          "sizeBytes": 57
+        },
+        {
+          "path": "runtime.json",
+          "sizeBytes": 401
+        },
+        {
+          "path": "settings.json",
+          "sizeBytes": 2570
+        },
+        {
+          "path": "SharedStorage",
+          "sizeBytes": 4096
+        },
+        {
+          "path": "SharedStorage-wal",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Cache\\Cache_Data\\data_0",
+          "sizeBytes": 45056
+        },
+        {
+          "path": "Cache\\Cache_Data\\data_1",
+          "sizeBytes": 270336
+        },
+        {
+          "path": "Cache\\Cache_Data\\data_2",
+          "sizeBytes": 1056768
+        },
+        {
+          "path": "Cache\\Cache_Data\\data_3",
+          "sizeBytes": 4202496
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000001",
+          "sizeBytes": 117548
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000002",
+          "sizeBytes": 137818
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000003",
+          "sizeBytes": 20668
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000004",
+          "sizeBytes": 50305
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000005",
+          "sizeBytes": 48488
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000006",
+          "sizeBytes": 48996
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000007",
+          "sizeBytes": 61309
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000008",
+          "sizeBytes": 48703
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000009",
+          "sizeBytes": 38010
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00000a",
+          "sizeBytes": 26213
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00000b",
+          "sizeBytes": 70401
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00000c",
+          "sizeBytes": 44056
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00000d",
+          "sizeBytes": 29118
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00000e",
+          "sizeBytes": 18984
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00000f",
+          "sizeBytes": 25197
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000010",
+          "sizeBytes": 58693
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000011",
+          "sizeBytes": 31784
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000012",
+          "sizeBytes": 17214
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000013",
+          "sizeBytes": 46000
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000014",
+          "sizeBytes": 16421
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000015",
+          "sizeBytes": 43721
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000016",
+          "sizeBytes": 124081
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000017",
+          "sizeBytes": 45717
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000018",
+          "sizeBytes": 1005743
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000019",
+          "sizeBytes": 16617
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00001e",
+          "sizeBytes": 43340
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00001f",
+          "sizeBytes": 289221
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000143",
+          "sizeBytes": 1081966
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000232",
+          "sizeBytes": 466801
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000335",
+          "sizeBytes": 478640
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000383",
+          "sizeBytes": 139619
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_0003c8",
+          "sizeBytes": 327104
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_0003ed",
+          "sizeBytes": 18606
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000408",
+          "sizeBytes": 126938
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00041c",
+          "sizeBytes": 23429
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00041d",
+          "sizeBytes": 185070
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00041f",
+          "sizeBytes": 18606
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000420",
+          "sizeBytes": 78727
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000421",
+          "sizeBytes": 188465
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000422",
+          "sizeBytes": 18606
+        },
+        {
+          "path": "Cache\\Cache_Data\\index",
+          "sizeBytes": 524656
+        },
+        {
+          "path": "Cache\\No_Vary_Search\\journal.baj",
+          "sizeBytes": 4
+        },
+        {
+          "path": "Cache\\No_Vary_Search\\snapshot.baf",
+          "sizeBytes": 20
+        },
+        {
+          "path": "Code Cache\\electron-preload\\C3A6F4C2219B13EE8C87E50E3976A1CD743AACBFD6EDDF504888F6D6BD2B0524-046EE14B76106E2E39DCF4D74A8AEE393DEDA01000D21673491EB8D652BB29D2.cache",
+          "sizeBytes": 8772
+        },
+        {
+          "path": "Code Cache\\electron-preload\\EF09FCDFAC95DEF0725E65DF6B36580B6CEC53296FFF930814B5FA6180F99EB5-046EE14B76106E2E39DCF4D74A8AEE393DEDA01000D21673491EB8D652BB29D2.cache",
+          "sizeBytes": 8924
+        },
+        {
+          "path": "Code Cache\\js\\01a0601c7ef27739_0",
+          "sizeBytes": 234
+        },
+        {
+          "path": "Code Cache\\js\\046a721bcfe4f22c_0",
+          "sizeBytes": 199
+        },
+        {
+          "path": "Code Cache\\js\\08c9fc6f0e30db56_0",
+          "sizeBytes": 231
+        },
+        {
+          "path": "Code Cache\\js\\0b885c280605fe79_0",
+          "sizeBytes": 197
+        },
+        {
+          "path": "Code Cache\\js\\0be356864f32569e_0",
+          "sizeBytes": 193
+        },
+        {
+          "path": "Code Cache\\js\\0ddeac7d2ef98cf8_0",
+          "sizeBytes": 233
+        },
+        {
+          "path": "Code Cache\\js\\0e39198d3b51c3f7_0",
+          "sizeBytes": 267
+        },
+        {
+          "path": "Code Cache\\js\\138a6c9ea2d42d9a_0",
+          "sizeBytes": 244
+        },
+        {
+          "path": "Code Cache\\js\\1e71259a0a4035e3_0",
+          "sizeBytes": 235
+        },
+        {
+          "path": "Code Cache\\js\\310d3c57e41dc55f_0",
+          "sizeBytes": 236
+        },
+        {
+          "path": "Code Cache\\js\\32ee7b2261382336_0",
+          "sizeBytes": 231
+        },
+        {
+          "path": "Code Cache\\js\\35f8ee4f2bb5356b_0",
+          "sizeBytes": 202
+        },
+        {
+          "path": "Code Cache\\js\\3621cf328482911e_0",
+          "sizeBytes": 239
+        },
+        {
+          "path": "Code Cache\\js\\3abdee86a470070d_0",
+          "sizeBytes": 234
+        },
+        {
+          "path": "Code Cache\\js\\4fa466cb95d8c436_0",
+          "sizeBytes": 233
+        },
+        {
+          "path": "Code Cache\\js\\5d25297504e658f2_0",
+          "sizeBytes": 203
+        },
+        {
+          "path": "Code Cache\\js\\5df14e5286ac5e0c_0",
+          "sizeBytes": 274
+        },
+        {
+          "path": "Code Cache\\js\\63b44ddf34cdd08a_0",
+          "sizeBytes": 234
+        },
+        {
+          "path": "Code Cache\\js\\6f25c1b7bbfa4e6a_0",
+          "sizeBytes": 234
+        },
+        {
+          "path": "Code Cache\\js\\79aaebfd86250259_0",
+          "sizeBytes": 228
+        },
+        {
+          "path": "Code Cache\\js\\7b495a329b4a55ea_0",
+          "sizeBytes": 236
+        },
+        {
+          "path": "Code Cache\\js\\7bb3d3b5df48bbba_0",
+          "sizeBytes": 230
+        },
+        {
+          "path": "Code Cache\\js\\8271eb894c4d0357_0",
+          "sizeBytes": 192
+        },
+        {
+          "path": "Code Cache\\js\\859f30a6dea2fa11_0",
+          "sizeBytes": 269
+        },
+        {
+          "path": "Code Cache\\js\\8f80d6b5e71dab19_0",
+          "sizeBytes": 195
+        },
+        {
+          "path": "Code Cache\\js\\a27c2aa1515af2ee_0",
+          "sizeBytes": 232
+        },
+        {
+          "path": "Code Cache\\js\\a376fbbedf0ad423_0",
+          "sizeBytes": 203
+        },
+        {
+          "path": "Code Cache\\js\\af94007f2966c322_0",
+          "sizeBytes": 202
+        },
+        {
+          "path": "Code Cache\\js\\b411dc1962b7ad56_0",
+          "sizeBytes": 243
+        },
+        {
+          "path": "Code Cache\\js\\bd4125c611b72658_0",
+          "sizeBytes": 201
+        },
+        {
+          "path": "Code Cache\\js\\bd9721b4f3939a64_0",
+          "sizeBytes": 234
+        },
+        {
+          "path": "Code Cache\\js\\c0d99f4b109e10ad_0",
+          "sizeBytes": 267
+        },
+        {
+          "path": "Code Cache\\js\\d57be36ee5842faf_0",
+          "sizeBytes": 235
+        },
+        {
+          "path": "Code Cache\\js\\d59a70b8c88386a0_0",
+          "sizeBytes": 232
+        },
+        {
+          "path": "Code Cache\\js\\d8319ac5ee8f7cf0_0",
+          "sizeBytes": 232
+        },
+        {
+          "path": "Code Cache\\js\\e1f988ed46f7453f_0",
+          "sizeBytes": 226
+        },
+        {
+          "path": "Code Cache\\js\\f450e1933971180c_0",
+          "sizeBytes": 256
+        },
+        {
+          "path": "Code Cache\\js\\f6dcc4357bd9509d_0",
+          "sizeBytes": 238
+        },
+        {
+          "path": "Code Cache\\js\\faa533a7d08612d4_0",
+          "sizeBytes": 231
+        },
+        {
+          "path": "Code Cache\\js\\index",
+          "sizeBytes": 24
+        },
+        {
+          "path": "Code Cache\\js\\index-dir\\the-real-index",
+          "sizeBytes": 984
+        },
+        {
+          "path": "Code Cache\\wasm\\index",
+          "sizeBytes": 24
+        },
+        {
+          "path": "Code Cache\\wasm\\index-dir\\the-real-index",
+          "sizeBytes": 48
+        },
+        {
+          "path": "DawnGraphiteCache\\data_0",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "DawnGraphiteCache\\data_1",
+          "sizeBytes": 270336
+        },
+        {
+          "path": "DawnGraphiteCache\\data_2",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "DawnGraphiteCache\\data_3",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "DawnGraphiteCache\\index",
+          "sizeBytes": 262512
+        },
+        {
+          "path": "DawnWebGPUCache\\data_0",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "DawnWebGPUCache\\data_1",
+          "sizeBytes": 270336
+        },
+        {
+          "path": "DawnWebGPUCache\\data_2",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "DawnWebGPUCache\\data_3",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "DawnWebGPUCache\\index",
+          "sizeBytes": 262512
+        },
+        {
+          "path": "GPUCache\\data_0",
+          "sizeBytes": 45056
+        },
+        {
+          "path": "GPUCache\\data_1",
+          "sizeBytes": 270336
+        },
+        {
+          "path": "GPUCache\\data_2",
+          "sizeBytes": 1056768
+        },
+        {
+          "path": "GPUCache\\data_3",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "GPUCache\\index",
+          "sizeBytes": 262512
+        },
+        {
+          "path": "Local Storage\\leveldb\\000003.log",
+          "sizeBytes": 1516
+        },
+        {
+          "path": "Local Storage\\leveldb\\CURRENT",
+          "sizeBytes": 16
+        },
+        {
+          "path": "Local Storage\\leveldb\\LOCK",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Local Storage\\leveldb\\LOG",
+          "sizeBytes": 316
+        },
+        {
+          "path": "Local Storage\\leveldb\\LOG.old",
+          "sizeBytes": 316
+        },
+        {
+          "path": "Local Storage\\leveldb\\MANIFEST-000001",
+          "sizeBytes": 41
+        },
+        {
+          "path": "logs\\codeforge-main.log",
+          "sizeBytes": 536
+        },
+        {
+          "path": "Network\\Cookies",
+          "sizeBytes": 20480
+        },
+        {
+          "path": "Network\\Cookies-journal",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Network\\Network Persistent State",
+          "sizeBytes": 229
+        },
+        {
+          "path": "Network\\NetworkDataMigrated",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Network\\TransportSecurity",
+          "sizeBytes": 189
+        },
+        {
+          "path": "Network\\Trust Tokens",
+          "sizeBytes": 36864
+        },
+        {
+          "path": "Network\\Trust Tokens-journal",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Session Storage\\000003.log",
+          "sizeBytes": 206
+        },
+        {
+          "path": "Session Storage\\CURRENT",
+          "sizeBytes": 16
+        },
+        {
+          "path": "Session Storage\\LOCK",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Session Storage\\LOG",
+          "sizeBytes": 304
+        },
+        {
+          "path": "Session Storage\\LOG.old",
+          "sizeBytes": 304
+        },
+        {
+          "path": "Session Storage\\MANIFEST-000001",
+          "sizeBytes": 41
+        },
+        {
+          "path": "Shared Dictionary\\db",
+          "sizeBytes": 45056
+        },
+        {
+          "path": "Shared Dictionary\\db-journal",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Shared Dictionary\\cache\\index",
+          "sizeBytes": 24
+        },
+        {
+          "path": "Shared Dictionary\\cache\\index-dir\\the-real-index",
+          "sizeBytes": 48
+        }
+      ]
+    },
+    "settingsKeys": [
+      "codeforge:onboarding-completed",
+      "codeforge:recent-projects",
+      "codeforge:provider-credentials",
+      "codeforge:cloud-access-token",
+      "codeforge:cloud-refresh-token",
+      "codeforge:cloud-user",
+      "codeforge:window-state",
+      "codeforge:env-credentials"
+    ],
+    "sealedCredentialKeys": [
+      "codeforge:cloud-access-token",
+      "codeforge:cloud-refresh-token",
+      "provider:opencode"
+    ],
+    "plaintextSecretSuspects": [],
+    "hasCloudSession": true,
+    "updaterCache": {
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Local\\codeforge-desktop-updater",
+      "exists": true,
+      "fileCount": 1,
+      "totalBytes": 85948057,
+      "topLevel": [
+        "installer.exe"
+      ],
+      "files": [
+        {
+          "path": "installer.exe",
+          "sizeBytes": 85948057
+        }
+      ]
+    },
+    "localAppData": {
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Local\\CodeForge",
+      "exists": true,
+      "fileCount": 279,
+      "totalBytes": 438716646,
+      "topLevel": [
+        "repository-indexes",
+        "worktrees"
+      ],
+      "files": [
+        {
+          "path": "repository-indexes\\008ce93bfb78473be1518c9180be8750429677de\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\021a0d4867dbc7fdf17e89a2e183f98153a496a2\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\029a880522ab69820d4ff05e2bbe3f7f44c2451b\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\054c81895204a45f99b948a1b10501618db89670\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\0653fc23ce898bc3284fa83352a4f5ccfa051958\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\071e33b7456bd8c8dbb37b82d147ff85bf38ccb5\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\0867b74f1af1898dbee4398da95521a73d2abf15\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\097249bebbbdef4d1b39bde2511ea33e25f6f6e2\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\0cb710747ab5c6af0d02f004dfb462eed8473273\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\0cd201282630593c4be269b21310230172477789\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\0d66e9bf935e60a32b48c4dd421e73572e211133\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\0d9d51dd4c1423704d45e7d37c24c4b90c3ed26b\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\0ee800ebda9c9b7eb5d67f70da2bfa197ab41c33\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\0f6316ce14e34f1d6fff576017e81aa2c1b7eed3\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\12e7567034a308c1c41a26fe3033928787ac8905\\repository-index.sqlite",
+          "sizeBytes": 4096
+        },
+        {
+          "path": "repository-indexes\\12e7567034a308c1c41a26fe3033928787ac8905\\repository-index.sqlite-shm",
+          "sizeBytes": 32768
+        },
+        {
+          "path": "repository-indexes\\12e7567034a308c1c41a26fe3033928787ac8905\\repository-index.sqlite-wal",
+          "sizeBytes": 288432
+        },
+        {
+          "path": "repository-indexes\\13334429b1dc9e36fbfd004e99d34440ac6a2ae1\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\135415068185d787f7632973df2d50a971da68bc\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\1556f2b5cd5ae76e453d19ec87db3c7ea9425446\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\16671ad3a85576c752a559225927abaa7d36962e\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\170ac613c197631d26872089e43cedda2aeee4b6\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\1836cca9746d3986fceeda294e32ed4595c73ee9\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\1b055ee7502caa21f527504a1b0ce3eb425b3fb8\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\1c7dfded30b629f09a84aa5c04f04c010c614a46\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\1d19170eba447ac698c8ef9ab613b976a0320e17\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\1dddf3f6f3f06e7341c781be59333caa85feb0fe\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\1e1502d185a0387fe9e17a4d5a681b3f243c55d7\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\1f2dea3602a1f8cf6a48f1c2a5450727422446e2\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\20860cb3a52d11f48bfbc92f769651d3b9194d97\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\21828f6ad1866e59c2b2f212b746b9148e022e20\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\24fa5c829c2534afc9b6dbf226a90883023622a1\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\25067e07fc0773817a1729e813d94a518a7ab1cf\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\256be9362788b44ea3a6cd5cb77fcedb1e7a6dc4\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\26490eac14829f9f1f6ed35e5443d37de2b38391\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\26ab257d80e68ea7fdafe32793689e58a5f7426f\\repository-index.sqlite",
+          "sizeBytes": 4096
+        },
+        {
+          "path": "repository-indexes\\26ab257d80e68ea7fdafe32793689e58a5f7426f\\repository-index.sqlite-shm",
+          "sizeBytes": 32768
+        },
+        {
+          "path": "repository-indexes\\26ab257d80e68ea7fdafe32793689e58a5f7426f\\repository-index.sqlite-wal",
+          "sizeBytes": 309032
+        },
+        {
+          "path": "repository-indexes\\27e9a7505adc57284bf781edbd7144fa0c638e38\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\2a732746cf9295b3d2cc1f1241a25abcd735a4c3\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\2ceec95976fdee582d7c7ad834f7e0590487cb36\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\2d4ec4942d556815a787a4bba3cba429cb0f77e0\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\2e5929ccef956b53c4fc2d42ace8dd22d851c405\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\2f301b60ac4bf21ccc6549ef660beeafbe8d8ca3\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\305e2dde36d32f26e7a96dd7ce6143cb3e170507\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\30fa42d597efee09bf14803f243ac3e6412a3870\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\31d165ff6b22e001fa7eabe9e2d3dd128e4370f7\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\34ef4e10b21411e9fa349829212f76b62f2a41f1\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\35feb52cb3c1aaa522e264de14fbf3dcddb253ed\\repository-index.sqlite",
+          "sizeBytes": 98304
+        },
+        {
+          "path": "repository-indexes\\3617807e16c2bb51439a1808db190933c585b2a3\\repository-index.sqlite",
+          "sizeBytes": 98304
+        }
+      ]
+    },
+    "legacyRoaming": {
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Roaming\\@codeforge",
+      "exists": true,
+      "fileCount": 43,
+      "totalBytes": 1793255,
+      "topLevel": [
+        "desktop"
+      ],
+      "files": [
+        {
+          "path": "desktop\\DevToolsActivePort",
+          "sizeBytes": 60
+        },
+        {
+          "path": "desktop\\DIPS",
+          "sizeBytes": 36864
+        },
+        {
+          "path": "desktop\\Local State",
+          "sizeBytes": 434
+        },
+        {
+          "path": "desktop\\Preferences",
+          "sizeBytes": 57
+        },
+        {
+          "path": "desktop\\Code Cache\\js\\index",
+          "sizeBytes": 24
+        },
+        {
+          "path": "desktop\\Code Cache\\js\\index-dir\\the-real-index",
+          "sizeBytes": 48
+        },
+        {
+          "path": "desktop\\Code Cache\\wasm\\index",
+          "sizeBytes": 24
+        },
+        {
+          "path": "desktop\\Code Cache\\wasm\\index-dir\\the-real-index",
+          "sizeBytes": 48
+        },
+        {
+          "path": "desktop\\DawnGraphiteCache\\data_0",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "desktop\\DawnGraphiteCache\\data_1",
+          "sizeBytes": 270336
+        },
+        {
+          "path": "desktop\\DawnGraphiteCache\\data_2",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "desktop\\DawnGraphiteCache\\data_3",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "desktop\\DawnGraphiteCache\\index",
+          "sizeBytes": 262512
+        },
+        {
+          "path": "desktop\\DawnWebGPUCache\\data_0",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "desktop\\DawnWebGPUCache\\data_1",
+          "sizeBytes": 270336
+        },
+        {
+          "path": "desktop\\DawnWebGPUCache\\data_2",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "desktop\\DawnWebGPUCache\\data_3",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "desktop\\DawnWebGPUCache\\index",
+          "sizeBytes": 262512
+        },
+        {
+          "path": "desktop\\GPUCache\\data_0",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "desktop\\GPUCache\\data_1",
+          "sizeBytes": 270336
+        },
+        {
+          "path": "desktop\\GPUCache\\data_2",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "desktop\\GPUCache\\data_3",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "desktop\\GPUCache\\index",
+          "sizeBytes": 262512
+        },
+        {
+          "path": "desktop\\Local Storage\\leveldb\\000003.log",
+          "sizeBytes": 0
+        },
+        {
+          "path": "desktop\\Local Storage\\leveldb\\CURRENT",
+          "sizeBytes": 16
+        },
+        {
+          "path": "desktop\\Local Storage\\leveldb\\LOCK",
+          "sizeBytes": 0
+        },
+        {
+          "path": "desktop\\Local Storage\\leveldb\\LOG",
+          "sizeBytes": 318
+        },
+        {
+          "path": "desktop\\Local Storage\\leveldb\\LOG.old",
+          "sizeBytes": 318
+        },
+        {
+          "path": "desktop\\Local Storage\\leveldb\\MANIFEST-000001",
+          "sizeBytes": 41
+        },
+        {
+          "path": "desktop\\Network\\Network Persistent State",
+          "sizeBytes": 111
+        },
+        {
+          "path": "desktop\\Network\\NetworkDataMigrated",
+          "sizeBytes": 0
+        },
+        {
+          "path": "desktop\\Network\\Trust Tokens",
+          "sizeBytes": 36864
+        },
+        {
+          "path": "desktop\\Network\\Trust Tokens-journal",
+          "sizeBytes": 0
+        },
+        {
+          "path": "desktop\\Session Storage\\000003.log",
+          "sizeBytes": 0
+        },
+        {
+          "path": "desktop\\Session Storage\\CURRENT",
+          "sizeBytes": 16
+        },
+        {
+          "path": "desktop\\Session Storage\\LOCK",
+          "sizeBytes": 0
+        },
+        {
+          "path": "desktop\\Session Storage\\LOG",
+          "sizeBytes": 306
+        },
+        {
+          "path": "desktop\\Session Storage\\LOG.old",
+          "sizeBytes": 265
+        },
+        {
+          "path": "desktop\\Session Storage\\MANIFEST-000001",
+          "sizeBytes": 41
+        },
+        {
+          "path": "desktop\\Shared Dictionary\\db",
+          "sizeBytes": 45056
+        },
+        {
+          "path": "desktop\\Shared Dictionary\\db-journal",
+          "sizeBytes": 0
+        },
+        {
+          "path": "desktop\\Shared Dictionary\\cache\\index",
+          "sizeBytes": 24
+        },
+        {
+          "path": "desktop\\Shared Dictionary\\cache\\index-dir\\the-real-index",
+          "sizeBytes": 48
+        }
+      ]
+    }
+  },
+  "releaseArchiveMatch": {
+    "status": "PASS",
+    "detail": "Installed app.asar matches the release archive.",
+    "sha256": "4FFDB4D2F5DE34563E22DCB0C9B6B9312CE83A8BB2970274625338D8D64FA2F0"
+  },
+  "completedAtUtc": "2026-09-19T09:51:02.4823358Z",
+  "summary": {
+    "fail": 3,
+    "warn": 3,
+    "pass": 16,
+    "verdict": "FAIL"
+  }
+}

@@ -1,0 +1,17 @@
+# refuse-e118c8e
+
+Cloud traffic mode: **refuse** (latency 2500 ms) via fault proxy on 127.0.0.1:53390
+
+| Check | Status | Detail |
+|---|---|---|
+| startsWhileCloudDead | PASS | App started with Cloud traffic refuse; DevTools at 1335 ms. |
+| noEndlessSpinner | PASS | Bootstrap screen left within 1981 ms while the Cloud was refuse. |
+| keepsSignedInIdentityOffline | PASS | A previously signed-in user is not thrown to the sign-in screen by an unreachable Cloud. |
+| offlineIsCommunicated | PASS | The UI names the Cloud outage: 'Cloud offline'. |
+| responsiveWhileOffline | PASS | Idle CPU 0.03% while the Cloud is refuse (no retry storm). |
+| recoversWithoutRestart | PASS | After the network healed, the same process re-established the Cloud account (Forger Digital Solutions, CodeForge Free) — no restart. |
+| catalogRecovers | PASS | Catalog refresh after recovery: 59 free models. |
+| headerReflectsRecovery | PASS | The header dropped the 'Cloud offline' state on its own after the network healed. |
+| cleanExitAfterFault | PASS | Process tree exited in 2138 ms after the fault run. |
+
+Verdict: **PASS**

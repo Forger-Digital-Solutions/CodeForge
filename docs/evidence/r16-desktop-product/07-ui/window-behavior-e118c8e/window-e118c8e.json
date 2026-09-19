@@ -1,0 +1,386 @@
+{
+  "schemaVersion": 1,
+  "label": "window-e118c8e",
+  "startedAtUtc": "2026-09-19T18:12:58.1527898Z",
+  "checks": {
+    "initialLayout": {
+      "status": "PASS",
+      "detail": "Initial window 1488x816 at DPR 2.5: no horizontal overflow; composer visible."
+    },
+    "maximize": {
+      "status": "PASS",
+      "detail": "Maximized: viewport 1536x842, no overflow."
+    },
+    "restore": {
+      "status": "PASS",
+      "detail": "Restore returns to the previous size (1488x816)."
+    },
+    "minimize": {
+      "status": "PASS",
+      "detail": "Minimize applies."
+    },
+    "restoreFromMinimize": {
+      "status": "PASS",
+      "detail": "Restores from the taskbar."
+    },
+    "smallLaptop": {
+      "status": "PASS",
+      "detail": "1280x720 CSS viewport: no overflow, composer and send visible."
+    },
+    "minimumSize": {
+      "status": "PASS",
+      "detail": "At the smallest allowed size the composer stays reachable and nothing overflows horizontally (viewport 1020x610)."
+    },
+    "secondMonitor": {
+      "status": "WARN",
+      "detail": "Second monitor move: onSecond=False overflow=False composer=True."
+    },
+    "windowStatePersists": {
+      "status": "PASS",
+      "detail": "Window size restored across relaunch (1112x688 vs 1109x686)."
+    }
+  },
+  "states": [
+    {
+      "state": "initial",
+      "window": {
+        "handle": 176752624,
+        "pid": 40148,
+        "visible": true,
+        "left": 24,
+        "top": 24,
+        "width": 1488,
+        "height": 816,
+        "minimized": false,
+        "maximized": false,
+        "foreground": true
+      },
+      "layout": {
+        "viewport": [
+          1476,
+          781
+        ],
+        "dpr": 2.5,
+        "horizontalOverflow": false,
+        "composerVisible": true,
+        "sendVisible": true,
+        "sidebarVisible": true,
+        "headerVisible": true
+      },
+      "screenshot": "docs\\evidence\\r16-desktop-product\\07-ui\\window-behavior-e118c8e\\window-e118c8e-initial.png"
+    },
+    {
+      "state": "baseline-normal",
+      "window": {
+        "handle": 176752624,
+        "pid": 40148,
+        "visible": true,
+        "left": 24,
+        "top": 24,
+        "width": 1488,
+        "height": 816,
+        "minimized": false,
+        "maximized": false,
+        "foreground": true
+      },
+      "layout": {
+        "viewport": [
+          1476,
+          781
+        ],
+        "dpr": 2.5,
+        "horizontalOverflow": false,
+        "composerVisible": true,
+        "sendVisible": true,
+        "sidebarVisible": true,
+        "headerVisible": true
+      },
+      "screenshot": "docs\\evidence\\r16-desktop-product\\07-ui\\window-behavior-e118c8e\\window-e118c8e-baseline-normal.png"
+    },
+    {
+      "state": "maximized",
+      "window": {
+        "handle": 176752624,
+        "pid": 40148,
+        "visible": true,
+        "left": -6,
+        "top": -6,
+        "width": 1549,
+        "height": 877,
+        "minimized": false,
+        "maximized": true,
+        "foreground": true
+      },
+      "layout": {
+        "viewport": [
+          1536,
+          842
+        ],
+        "dpr": 2.5,
+        "horizontalOverflow": false,
+        "composerVisible": true,
+        "sendVisible": true,
+        "sidebarVisible": true,
+        "headerVisible": true
+      },
+      "screenshot": "docs\\evidence\\r16-desktop-product\\07-ui\\window-behavior-e118c8e\\window-e118c8e-maximized.png"
+    },
+    {
+      "state": "restored",
+      "window": {
+        "handle": 176752624,
+        "pid": 40148,
+        "visible": true,
+        "left": 24,
+        "top": 24,
+        "width": 1488,
+        "height": 816,
+        "minimized": false,
+        "maximized": false,
+        "foreground": true
+      },
+      "layout": {
+        "viewport": [
+          1476,
+          781
+        ],
+        "dpr": 2.5,
+        "horizontalOverflow": false,
+        "composerVisible": true,
+        "sendVisible": true,
+        "sidebarVisible": true,
+        "headerVisible": true
+      },
+      "screenshot": "docs\\evidence\\r16-desktop-product\\07-ui\\window-behavior-e118c8e\\window-e118c8e-restored.png"
+    },
+    {
+      "state": "small-1280x720",
+      "window": {
+        "handle": 176752624,
+        "pid": 40148,
+        "visible": true,
+        "left": 20,
+        "top": 20,
+        "width": 1290,
+        "height": 726,
+        "minimized": false,
+        "maximized": false,
+        "foreground": true
+      },
+      "layout": {
+        "viewport": [
+          1278,
+          691
+        ],
+        "dpr": 2.5,
+        "horizontalOverflow": false,
+        "composerVisible": true,
+        "sendVisible": true,
+        "sidebarVisible": true,
+        "headerVisible": true
+      },
+      "screenshot": "docs\\evidence\\r16-desktop-product\\07-ui\\window-behavior-e118c8e\\window-e118c8e-small-1280x720.png"
+    },
+    {
+      "state": "minimum-1024x640",
+      "window": {
+        "handle": 176752624,
+        "pid": 40148,
+        "visible": true,
+        "left": 20,
+        "top": 20,
+        "width": 1032,
+        "height": 645,
+        "minimized": false,
+        "maximized": false,
+        "foreground": true
+      },
+      "layout": {
+        "viewport": [
+          1020,
+          610
+        ],
+        "dpr": 2.5,
+        "horizontalOverflow": false,
+        "composerVisible": true,
+        "sendVisible": true,
+        "sidebarVisible": true,
+        "headerVisible": true
+      },
+      "screenshot": "docs\\evidence\\r16-desktop-product\\07-ui\\window-behavior-e118c8e\\window-e118c8e-minimum-1024x640.png"
+    },
+    {
+      "state": "second-monitor",
+      "window": {
+        "handle": 176752624,
+        "pid": 40148,
+        "visible": true,
+        "left": 20,
+        "top": 20,
+        "width": 1344,
+        "height": 840,
+        "minimized": false,
+        "maximized": false,
+        "foreground": true
+      },
+      "layout": {
+        "viewport": [
+          1332,
+          805
+        ],
+        "dpr": 2.5,
+        "horizontalOverflow": false,
+        "composerVisible": true,
+        "sendVisible": true,
+        "sidebarVisible": true,
+        "headerVisible": true
+      },
+      "screenshot": "docs\\evidence\\r16-desktop-product\\07-ui\\window-behavior-e118c8e\\window-e118c8e-second-monitor.png"
+    },
+    {
+      "state": "final",
+      "window": {
+        "handle": 176752624,
+        "pid": 40148,
+        "visible": true,
+        "left": 90,
+        "top": 60,
+        "width": 1109,
+        "height": 686,
+        "minimized": false,
+        "maximized": false,
+        "foreground": true
+      },
+      "layout": {
+        "viewport": [
+          1097,
+          651
+        ],
+        "dpr": 2.5,
+        "horizontalOverflow": false,
+        "composerVisible": true,
+        "sendVisible": true,
+        "sidebarVisible": true,
+        "headerVisible": true
+      },
+      "screenshot": "docs\\evidence\\r16-desktop-product\\07-ui\\window-behavior-e118c8e\\window-e118c8e-final.png"
+    },
+    {
+      "state": "relaunched",
+      "window": {
+        "handle": 16058040,
+        "pid": 39004,
+        "visible": true,
+        "left": 90,
+        "top": 60,
+        "width": 1112,
+        "height": 688,
+        "minimized": false,
+        "maximized": false,
+        "foreground": false
+      },
+      "layout": {
+        "viewport": [
+          1100,
+          653
+        ],
+        "dpr": 2.5,
+        "horizontalOverflow": false,
+        "composerVisible": true,
+        "sendVisible": true,
+        "sidebarVisible": true,
+        "headerVisible": true
+      },
+      "screenshot": "docs\\evidence\\r16-desktop-product\\07-ui\\window-behavior-e118c8e\\window-e118c8e-relaunched.png"
+    }
+  ],
+  "screens": [
+    {
+      "device": "\\\\.\\DISPLAY1",
+      "primary": true,
+      "bounds": [
+        0,
+        0,
+        1536,
+        864
+      ]
+    },
+    {
+      "device": "\\\\.\\DISPLAY2",
+      "primary": false,
+      "bounds": [
+        -1680,
+        0,
+        1680,
+        1050
+      ]
+    }
+  ],
+  "shutdown": {
+    "method": "WM_CLOSE",
+    "processTreeBefore": [
+      {
+        "pid": 40148,
+        "parentPid": 38376,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 441495552,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\cf-fault-profile-e118c8e\" --remote-debugging-port=9233"
+      },
+      {
+        "pid": 27716,
+        "parentPid": 40148,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 58273792,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --use-angle=d3d11-warp-webgl --use-gl=angle --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\cf-fault-profile-e118c8e\" --field-trial-handle=2288,i,9605816878514566416,10692786451375265918,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2292,i,14092938631061397391,13640210574947360698,4 --trace-process-track-uuid=3190708989122997041 --mojo-platform-channel-handle=2284 /prefetch:11"
+      },
+      {
+        "pid": 14260,
+        "parentPid": 40148,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 183664640,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=renderer --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\cf-fault-profile-e118c8e\" --app-path=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\resources\\app.asar\" --enable-sandbox --remote-debugging-port=9233 --disable-gpu-compositing --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=2.5 --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=4 --launch-time-ticks=69162111880 --field-trial-handle=2288,i,9605816878514566416,10692786451375265918,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2292,i,14092938631061397391,13640210574947360698,4 --trace-process-track-uuid=3190708990060038890 --mojo-platform-channel-handle=3032 /prefetch:1"
+      }
+    ],
+    "exitedWithinGraceMs": true,
+    "exitMs": 2119,
+    "rootExitCode": 0,
+    "survivorsForceKilled": []
+  },
+  "shutdown2": {
+    "method": "WM_CLOSE",
+    "processTreeBefore": [
+      {
+        "pid": 39004,
+        "parentPid": 38376,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 369037312,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\cf-fault-profile-e118c8e\" --remote-debugging-port=9233"
+      },
+      {
+        "pid": 13468,
+        "parentPid": 39004,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 59445248,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --use-angle=d3d11-warp-webgl --use-gl=angle --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\cf-fault-profile-e118c8e\" --field-trial-handle=2284,i,10545030062051047248,14614967408829129249,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2220,i,13016286653083893939,409689552102306841,4 --trace-process-track-uuid=3190708989122997041 --mojo-platform-channel-handle=2276 /prefetch:11"
+      },
+      {
+        "pid": 37960,
+        "parentPid": 39004,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 167116800,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=renderer --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\cf-fault-profile-e118c8e\" --app-path=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\resources\\app.asar\" --enable-sandbox --remote-debugging-port=9233 --disable-gpu-compositing --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=2.5 --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=4 --launch-time-ticks=69192476452 --field-trial-handle=2284,i,10545030062051047248,14614967408829129249,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2220,i,13016286653083893939,409689552102306841,4 --trace-process-track-uuid=3190708990060038890 --mojo-platform-channel-handle=3016 /prefetch:1"
+      }
+    ],
+    "exitedWithinGraceMs": true,
+    "exitMs": 2231,
+    "rootExitCode": 0,
+    "survivorsForceKilled": []
+  },
+  "completedAtUtc": "2026-09-19T18:13:37.9915639Z",
+  "summary": {
+    "fail": 0,
+    "warn": 1,
+    "pass": 8,
+    "verdict": "PASS"
+  }
+}

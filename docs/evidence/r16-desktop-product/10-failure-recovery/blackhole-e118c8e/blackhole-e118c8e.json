@@ -1,0 +1,320 @@
+{
+  "schemaVersion": 1,
+  "label": "blackhole-e118c8e",
+  "mode": "blackhole",
+  "latencyMs": 2500,
+  "startedAtUtc": "2026-09-19T18:02:35.4469960Z",
+  "checks": {
+    "startsWhileCloudDead": {
+      "status": "PASS",
+      "detail": "App started with Cloud traffic blackhole; DevTools at 2211 ms."
+    },
+    "noEndlessSpinner": {
+      "status": "PASS",
+      "detail": "Bootstrap screen left within 2923 ms while the Cloud was blackhole."
+    },
+    "keepsSignedInIdentityOffline": {
+      "status": "PASS",
+      "detail": "A previously signed-in user is not thrown to the sign-in screen by an unreachable Cloud."
+    },
+    "offlineIsCommunicated": {
+      "status": "PASS",
+      "detail": "The UI names the Cloud outage: 'Cloud offline'."
+    },
+    "responsiveWhileOffline": {
+      "status": "PASS",
+      "detail": "Idle CPU 0.42% while the Cloud is blackhole (no retry storm)."
+    },
+    "recoversWithoutRestart": {
+      "status": "PASS",
+      "detail": "After the network healed, the same process re-established the Cloud account (Forger Digital Solutions, CodeForge Free) — no restart."
+    },
+    "catalogRecovers": {
+      "status": "PASS",
+      "detail": "Catalog refresh after recovery: 59 free models."
+    },
+    "headerReflectsRecovery": {
+      "status": "PASS",
+      "detail": "The header dropped the 'Cloud offline' state on its own after the network healed."
+    },
+    "cleanExitAfterFault": {
+      "status": "PASS",
+      "detail": "Process tree exited in 2099 ms after the fault run."
+    }
+  },
+  "timeline": [
+    {
+      "at": "2026-09-19T18:02:35.7495058Z",
+      "event": "launch"
+    },
+    {
+      "at": "2026-09-19T18:02:38.1038707Z",
+      "event": "devtools",
+      "ms": 2211
+    },
+    {
+      "at": "2026-09-19T18:02:41.0524432Z",
+      "event": "bootstrap-settled",
+      "settled": true,
+      "ms": 2923
+    },
+    {
+      "at": "2026-09-19T18:02:53.3940956Z",
+      "event": "network-restored"
+    }
+  ],
+  "proxyPort": 54272,
+  "bootstrapMs": 2923,
+  "settledText": "ΓåÉ bugfix-repo Forger Digital Solutions Cloud offline Γùç ForgeAuto/Free ┬╖ Discovering free routesΓÇª ? CodeForge New task Γîò Search Ctrl K WORKSPACES bugfix-repo Switch Tasks Files No tasks yet Settings Help & docs Γÿ░ Γîò What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge ┬╖ bugfix-repo SELECTED WORKSPACE Git status unavailable bugfix-repo Branch Detached HEAD Repository intelligence NOT_INDEXED FAVORITE MODELS + Add favorite Explain this repository Review the architecture Create an implementation plan Run the test suite Find TODOs in this workspace Review current changes Auto bugfix-repo + Agent Chat Auto Revie",
+  "offlineScreenshot": "docs\\evidence\\r16-desktop-product\\10-failure-recovery\\blackhole-e118c8e\\blackhole-e118c8e-offline.png",
+  "offlineConsole": null,
+  "offlineAccountMenu": "ΓåÉ bugfix-repo ΓÇó master Forger Digital Solutions Cloud offline Forger Digital Solutions GitHub connected Γ£ô CodeForge Cloud is unreachable ΓÇö local routes still work Profile & Account Settings Sign Out Γùç ForgeAuto/Free ┬╖ Discovering free routesΓÇª ? CodeForge New task Γîò Search Ctrl K WORKSPACES bugfix-repo Switch Tasks Files Today The inventory test suite is failing. Find the failing test, fix the bug in src/i Blocked ┬╖ 5m ΓÜá The test suite fails. Find the root cause and fix it so that npm test passes. Do Failed ┬╖ 44m Γ£ò Settings Help & docs Γÿ░ Γîò ΓÇ║ 0/11 stages What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge ┬╖ bugfix-repo ┬╖ master SELECTED WORKSPACE Changes detected bugfix-repo Branch master Repository intelligence 5 files ┬╖ 22 symbols OVERVIEW All 30d 7d 2 TASKS 5 MESSAGES 0 TOKENS (AGENT RUNS) 1 ACTIVE DAYS 1d STREAK deepseek/deepseek-v4-flash-0731:free MOST-USED MODEL FAVORITE MODELS + Add favorite Explain this repository Review the architecture Create an implementation plan Run the test suite Find TODOs in this workspace Review current changes RUN STOPPED Task ├ù The implementation did not finish every planned step ΓÇö The agent kept repeating actions without making progress, so CodeForge stopped the run (AGENT_NO_PROGRESS_DETECTED), so CodeForge did not mark this task complete. Review found no issues; verification passed. 1 file changed. Fix and continue Review failure Auto bugfix-repo master + Agent Chat Auto Review Ask More Full Auto Plan: Auto Plan: Review ForgeAuto/Free ┬╖ Automatic free routing Γû╛ Γåæ Enter to send ┬╖ Shift+Enter for newline ┬╖ Esc to stop ┬╖ / for commands ┬╖ @ for context",
+  "offlineResources": {
+    "sampleSeconds": 5.01,
+    "logicalCores": 12,
+    "totalCpuPercentOfMachine": 0.42,
+    "totalWorkingSetBytes": 551403520,
+    "totalPrivateBytes": 255967232,
+    "processes": [
+      {
+        "pid": 40544,
+        "kind": "main",
+        "cpuPercentOfMachine": 0.13,
+        "workingSetBytes": 328200192,
+        "privateBytes": 180359168,
+        "handles": 1191,
+        "threads": 55
+      },
+      {
+        "pid": 40692,
+        "kind": "utility",
+        "cpuPercentOfMachine": 0.03,
+        "workingSetBytes": 58175488,
+        "privateBytes": 13246464,
+        "handles": 383,
+        "threads": 25
+      },
+      {
+        "pid": 7100,
+        "kind": "renderer",
+        "cpuPercentOfMachine": 0.26,
+        "workingSetBytes": 165027840,
+        "privateBytes": 62361600,
+        "handles": 341,
+        "threads": 18
+      }
+    ]
+  },
+  "recovery": {
+    "refresh": {
+      "ok": true,
+      "freeModels": 59
+    },
+    "account": {
+      "offline": false,
+      "pending": false,
+      "plan": "CodeForge Free",
+      "name": "Forger Digital Solutions"
+    }
+  },
+  "recoveredText": "ΓåÉ bugfix-repo ΓÇó master Forger Digital Solutions CodeForge Free Forger Digital Solutions @Forger-Digital-Solutions ForgerDigitalSolutions@outlook.com Profile & Account Settings Sign Out Γùê ForgeAuto/Free ┬╖ Verified Free ? CodeForge New task Γîò Search Ctrl K WORKSPACES bugfix-repo Switch Tasks Files Today The inventory test suite is failing. Find the failing test, fix the bug in src/i Blocked",
+  "shutdown": {
+    "method": "WM_CLOSE",
+    "processTreeBefore": [
+      {
+        "pid": 40544,
+        "parentPid": 40144,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 432332800,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\cf-fault-profile-e118c8e\" --remote-debugging-port=9232"
+      },
+      {
+        "pid": 40692,
+        "parentPid": 40544,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 58097664,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --use-angle=d3d11-warp-webgl --use-gl=angle --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\cf-fault-profile-e118c8e\" --field-trial-handle=2276,i,11534560779387810792,12795577189755442817,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2280,i,8968025393702239411,10457688122720623566,4 --trace-process-track-uuid=3190708989122997041 --mojo-platform-channel-handle=2244 /prefetch:11"
+      },
+      {
+        "pid": 7100,
+        "parentPid": 40544,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 171024384,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=renderer --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\cf-fault-profile-e118c8e\" --app-path=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\resources\\app.asar\" --enable-sandbox --remote-debugging-port=9232 --disable-gpu-compositing --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=2.5 --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=4 --launch-time-ticks=68540462711 --field-trial-handle=2276,i,11534560779387810792,12795577189755442817,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2280,i,8968025393702239411,10457688122720623566,4 --trace-process-track-uuid=3190708990060038890 --mojo-platform-channel-handle=2908 /prefetch:1"
+      }
+    ],
+    "exitedWithinGraceMs": true,
+    "exitMs": 2099,
+    "rootExitCode": 0,
+    "survivorsForceKilled": []
+  },
+  "proxyEvents": [
+    {
+      "id": 1,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "blackhole",
+      "event": "connect",
+      "at": "2026-09-19T18:02:37.466Z"
+    },
+    {
+      "id": 1,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "blackhole",
+      "event": "blackhole-hold",
+      "at": "2026-09-19T18:02:37.468Z"
+    },
+    {
+      "id": 2,
+      "host": "models.dev",
+      "port": 443,
+      "mode": "blackhole",
+      "event": "connect",
+      "at": "2026-09-19T18:02:38.268Z"
+    },
+    {
+      "id": 2,
+      "host": "models.dev",
+      "port": 443,
+      "mode": "blackhole",
+      "event": "blackhole-hold",
+      "at": "2026-09-19T18:02:38.268Z"
+    },
+    {
+      "id": 3,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "blackhole",
+      "event": "connect",
+      "at": "2026-09-19T18:02:38.282Z"
+    },
+    {
+      "id": 3,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "blackhole",
+      "event": "blackhole-hold",
+      "at": "2026-09-19T18:02:38.282Z"
+    },
+    {
+      "id": 4,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "blackhole",
+      "event": "connect",
+      "at": "2026-09-19T18:02:41.32Z"
+    },
+    {
+      "id": 4,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "blackhole",
+      "event": "blackhole-hold",
+      "at": "2026-09-19T18:02:41.32Z"
+    },
+    {
+      "id": 5,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "blackhole",
+      "event": "connect",
+      "at": "2026-09-19T18:02:53.203Z"
+    },
+    {
+      "id": 5,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "blackhole",
+      "event": "blackhole-hold",
+      "at": "2026-09-19T18:02:53.204Z"
+    },
+    {
+      "id": 6,
+      "host": "models.dev",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T18:02:53.586Z"
+    },
+    {
+      "id": 6,
+      "host": "models.dev",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T18:02:53.625Z"
+    },
+    {
+      "id": 7,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T18:02:54.122Z"
+    },
+    {
+      "id": 7,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T18:02:54.146Z"
+    },
+    {
+      "id": 8,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T18:02:54.228Z"
+    },
+    {
+      "id": 8,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T18:02:54.252Z"
+    },
+    {
+      "id": 9,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T18:02:54.829Z"
+    },
+    {
+      "id": 9,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T18:02:54.841Z"
+    },
+    {
+      "id": 10,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T18:02:54.934Z"
+    },
+    {
+      "id": 10,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T18:02:54.945Z"
+    }
+  ],
+  "completedAtUtc": "2026-09-19T18:02:58.9290364Z",
+  "summary": {
+    "fail": 0,
+    "warn": 0,
+    "pass": 9,
+    "verdict": "PASS"
+  }
+}

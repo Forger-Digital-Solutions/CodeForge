@@ -1,0 +1,1137 @@
+{
+  "schemaVersion": 1,
+  "label": "install-audit",
+  "startedAtUtc": "2026-09-19T17:14:02.3132774Z",
+  "machine": {
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "user": "Daddy_FDS",
+    "cores": 12,
+    "dpiPercent": 250
+  },
+  "installer": {
+    "path": "G:\\CodeForge\\apps\\desktop\\release\\CodeForge-Setup-0.4.0.exe",
+    "fileName": "CodeForge-Setup-0.4.0.exe",
+    "sizeBytes": 117280628,
+    "lastWriteUtc": "2026-09-19T17:08:51.3371916Z",
+    "sha256": "6A810522755450826FB8927033AB3CB7FB97252BD0AC8869E10FB6B1456C4925",
+    "architecture": "x86",
+    "productName": "CodeForge",
+    "productVersion": "0.4.0",
+    "fileVersion": "0.4.0",
+    "companyName": "CodeForge Team",
+    "fileDescription": "CodeForge Desktop - AI-powered coding agent for Windows",
+    "legalCopyright": "Copyright © 2026 CodeForge Team",
+    "signatureStatus": "NotSigned",
+    "signerSubject": null
+  },
+  "checks": {
+    "installerHash": {
+      "status": "PASS",
+      "detail": "Installer SHA-256 matches the expected release hash."
+    },
+    "installerArchitecture": {
+      "status": "PASS",
+      "detail": "NSIS stub is x86; it installs the x64 payload."
+    },
+    "installerSignature": {
+      "status": "WARN",
+      "detail": "Installer is not code-signed (status: NotSigned). Windows SmartScreen will warn on first run."
+    },
+    "installerIdentity": {
+      "status": "PASS",
+      "detail": "Installer identifies as CodeForge 0.4.0."
+    },
+    "installed": {
+      "status": "PASS",
+      "detail": "Installed at C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge (99 files, 395 MB)."
+    },
+    "installedArchitecture": {
+      "status": "PASS",
+      "detail": "Installed executable is x64."
+    },
+    "installedVersionMatchesInstaller": {
+      "status": "PASS",
+      "detail": "Installed executable version 0.4.0.0 matches installer 0.4.0."
+    },
+    "installedCompanyName": {
+      "status": "PASS",
+      "detail": "Executable CompanyName is 'CodeForge Team'."
+    },
+    "installedSignature": {
+      "status": "WARN",
+      "detail": "Installed executable is not code-signed (NotSigned)."
+    },
+    "installedFileHygiene": {
+      "status": "PASS",
+      "detail": "No source maps, .env files, PDBs, test artifacts, logs or databases in the program directory."
+    },
+    "asarUnpackedPresent": {
+      "status": "PASS",
+      "detail": "app.asar.unpacked (native modules) is present."
+    },
+    "releaseArchiveMatch": {
+      "status": "PASS",
+      "detail": "Installed app.asar matches the release archive.",
+      "sha256": "F5813DEAF1F19B6853505D27877CE9D23AA678D18B28786F6FAC34AB19100193"
+    },
+    "registryUninstall": {
+      "status": "PASS",
+      "detail": "Registered as 'CodeForge' with quiet uninstall '\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\Uninstall CodeForge.exe\" /currentuser /S'."
+    },
+    "registryVersion": {
+      "status": "PASS",
+      "detail": "Apps & Features version 0.4.0 matches the installed executable."
+    },
+    "registryPublisher": {
+      "status": "PASS",
+      "detail": "Publisher is 'CodeForge Team'."
+    },
+    "registryIcon": {
+      "status": "PASS",
+      "detail": "DisplayIcon points at an existing file."
+    },
+    "registryUninstallCommand": {
+      "status": "PASS",
+      "detail": "Uninstall command targets an existing uninstaller."
+    },
+    "registryPerMachine": {
+      "status": "PASS",
+      "detail": "No per-machine (HKLM) registration; install is per-user as intended."
+    },
+    "startMenuShortcut": {
+      "status": "PASS",
+      "detail": "Start Menu shortcut → C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe."
+    },
+    "desktopShortcut": {
+      "status": "PASS",
+      "detail": "Desktop shortcut → C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe."
+    },
+    "shortcutHygiene": {
+      "status": "PASS",
+      "detail": "Shortcuts point at the installed executable with no stale arguments."
+    },
+    "userDataSecrets": {
+      "status": "PASS",
+      "detail": "No plaintext credential values in settings.json (sealed keys: codeforge:cloud-access-token, codeforge:cloud-refresh-token."
+    },
+    "updaterCache": {
+      "status": "INFO",
+      "detail": "Installer cache exists at C:\\Users\\Daddy_FDS\\AppData\\Local\\codeforge-desktop-updater (112 MB)."
+    }
+  },
+  "installed": {
+    "installed": true,
+    "installDirectory": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge",
+    "fileCount": 99,
+    "totalBytes": 414226412.0,
+    "executable": {
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe",
+      "fileName": "CodeForge.exe",
+      "sizeBytes": 246415872,
+      "lastWriteUtc": "2026-09-19T17:08:46.0000000Z",
+      "sha256": "BDBC47418FEBB17BC3A820DE3EC4EAE6F6FEA82D3328B474EA329DBC0F132E0E",
+      "architecture": "x64",
+      "productName": "CodeForge",
+      "productVersion": "0.4.0.0",
+      "fileVersion": "0.4.0",
+      "companyName": "CodeForge Team",
+      "fileDescription": "CodeForge",
+      "legalCopyright": "Copyright © 2026 CodeForge Team",
+      "signatureStatus": "NotSigned",
+      "signerSubject": null
+    },
+    "asarSha256": "F5813DEAF1F19B6853505D27877CE9D23AA678D18B28786F6FAC34AB19100193",
+    "asarBytes": 22492724,
+    "unpackedDirectory": true,
+    "topLevel": [
+      "locales",
+      "resources",
+      "chrome_100_percent.pak",
+      "chrome_200_percent.pak",
+      "CodeForge.exe",
+      "d3dcompiler_47.dll",
+      "dxcompiler.dll",
+      "dxil.dll",
+      "ffmpeg.dll",
+      "icudtl.dat",
+      "LICENSE.electron.txt",
+      "LICENSES.chromium.html",
+      "resources.pak",
+      "snapshot_blob.bin",
+      "Uninstall CodeForge.exe",
+      "v8_context_snapshot.bin",
+      "vk_swiftshader_icd.json",
+      "vk_swiftshader.dll",
+      "vulkan-1.dll"
+    ],
+    "largestFiles": [
+      {
+        "path": "CodeForge.exe",
+        "sizeBytes": 246415872
+      },
+      {
+        "path": "dxcompiler.dll",
+        "sizeBytes": 25745408
+      },
+      {
+        "path": "resources\\app.asar",
+        "sizeBytes": 22492724
+      },
+      {
+        "path": "LICENSES.chromium.html",
+        "sizeBytes": 20472830
+      },
+      {
+        "path": "resources.pak",
+        "sizeBytes": 12435445
+      },
+      {
+        "path": "icudtl.dat",
+        "sizeBytes": 10876560
+      },
+      {
+        "path": "vk_swiftshader.dll",
+        "sizeBytes": 5520384
+      },
+      {
+        "path": "d3dcompiler_47.dll",
+        "sizeBytes": 4741488
+      },
+      {
+        "path": "ffmpeg.dll",
+        "sizeBytes": 3113472
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\better-sqlite3\\build\\Release\\better_sqlite3.node",
+        "sizeBytes": 1936896
+      },
+      {
+        "path": "locales\\ml.pak",
+        "sizeBytes": 1767850
+      },
+      {
+        "path": "locales\\ta.pak",
+        "sizeBytes": 1758067
+      }
+    ],
+    "suspiciousFiles": [],
+    "files": [
+      {
+        "path": "chrome_100_percent.pak",
+        "sizeBytes": 719654,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "chrome_200_percent.pak",
+        "sizeBytes": 1269017,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "CodeForge.exe",
+        "sizeBytes": 246415872,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "d3dcompiler_47.dll",
+        "sizeBytes": 4741488,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "dxcompiler.dll",
+        "sizeBytes": 25745408,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "dxil.dll",
+        "sizeBytes": 1509760,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "ffmpeg.dll",
+        "sizeBytes": 3113472,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "icudtl.dat",
+        "sizeBytes": 10876560,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "LICENSE.electron.txt",
+        "sizeBytes": 1096,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "LICENSES.chromium.html",
+        "sizeBytes": 20472830,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources.pak",
+        "sizeBytes": 12435445,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "snapshot_blob.bin",
+        "sizeBytes": 368768,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "Uninstall CodeForge.exe",
+        "sizeBytes": 285747,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "v8_context_snapshot.bin",
+        "sizeBytes": 742200,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "vk_swiftshader_icd.json",
+        "sizeBytes": 106,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "vk_swiftshader.dll",
+        "sizeBytes": 5520384,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "vulkan-1.dll",
+        "sizeBytes": 939008,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\af.pak",
+        "sizeBytes": 636155,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\am.pak",
+        "sizeBytes": 1029450,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\ar.pak",
+        "sizeBytes": 1130933,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\bg.pak",
+        "sizeBytes": 1178203,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\bn.pak",
+        "sizeBytes": 1513545,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\ca.pak",
+        "sizeBytes": 716908,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\cs.pak",
+        "sizeBytes": 743351,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\da.pak",
+        "sizeBytes": 666465,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\de.pak",
+        "sizeBytes": 717834,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\el.pak",
+        "sizeBytes": 1295538,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\en-GB.pak",
+        "sizeBytes": 580030,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\en-US.pak",
+        "sizeBytes": 586582,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\es-419.pak",
+        "sizeBytes": 707635,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\es.pak",
+        "sizeBytes": 703926,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\et.pak",
+        "sizeBytes": 642216,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\fa.pak",
+        "sizeBytes": 1063054,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\fi.pak",
+        "sizeBytes": 655113,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\fil.pak",
+        "sizeBytes": 741385,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\fr.pak",
+        "sizeBytes": 763453,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\gu.pak",
+        "sizeBytes": 1495625,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\he.pak",
+        "sizeBytes": 928748,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\hi.pak",
+        "sizeBytes": 1586592,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\hr.pak",
+        "sizeBytes": 715279,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\hu.pak",
+        "sizeBytes": 765640,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\id.pak",
+        "sizeBytes": 635080,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\it.pak",
+        "sizeBytes": 693990,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\ja.pak",
+        "sizeBytes": 842132,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\kn.pak",
+        "sizeBytes": 1720240,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\ko.pak",
+        "sizeBytes": 718709,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\lt.pak",
+        "sizeBytes": 777281,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\lv.pak",
+        "sizeBytes": 774751,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\ml.pak",
+        "sizeBytes": 1767850,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\mr.pak",
+        "sizeBytes": 1467313,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\ms.pak",
+        "sizeBytes": 668356,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\nb.pak",
+        "sizeBytes": 638121,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\nl.pak",
+        "sizeBytes": 664767,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\pl.pak",
+        "sizeBytes": 742064,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\pt-BR.pak",
+        "sizeBytes": 697044,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\pt-PT.pak",
+        "sizeBytes": 701056,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\ro.pak",
+        "sizeBytes": 728144,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\ru.pak",
+        "sizeBytes": 1200996,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\sk.pak",
+        "sizeBytes": 755475,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\sl.pak",
+        "sizeBytes": 722720,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\sr.pak",
+        "sizeBytes": 1112919,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\sv.pak",
+        "sizeBytes": 646537,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\sw.pak",
+        "sizeBytes": 685130,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\ta.pak",
+        "sizeBytes": 1758067,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\te.pak",
+        "sizeBytes": 1629379,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\th.pak",
+        "sizeBytes": 1368866,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\tr.pak",
+        "sizeBytes": 697368,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\uk.pak",
+        "sizeBytes": 1211565,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\ur.pak",
+        "sizeBytes": 1047994,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\vi.pak",
+        "sizeBytes": 830059,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\zh-CN.pak",
+        "sizeBytes": 592116,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "locales\\zh-TW.pak",
+        "sizeBytes": 583860,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar",
+        "sizeBytes": 22492724,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\elevate.exe",
+        "sizeBytes": 107520,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\better-sqlite3\\build\\Release\\better_sqlite3.node",
+        "sizeBytes": 1936896,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\LICENSE",
+        "sizeBytes": 3326,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\package.json",
+        "sizeBytes": 915,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\build\\Release\\conpty\\conpty.dll",
+        "sizeBytes": 109600,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\build\\Release\\conpty\\OpenConsole.exe",
+        "sizeBytes": 1148448,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\conpty_console_list_agent.js",
+        "sizeBytes": 721,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\eventEmitter2.js",
+        "sizeBytes": 1600,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\index.js",
+        "sizeBytes": 2008,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\interfaces.js",
+        "sizeBytes": 233,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\terminal.js",
+        "sizeBytes": 7454,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\types.js",
+        "sizeBytes": 228,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\unixTerminal.js",
+        "sizeBytes": 13372,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\utils.js",
+        "sizeBytes": 1548,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsConoutConnection.js",
+        "sizeBytes": 6119,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsPtyAgent.js",
+        "sizeBytes": 12388,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\windowsTerminal.js",
+        "sizeBytes": 7852,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\shared\\conout.js",
+        "sizeBytes": 348,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\lib\\worker\\conoutSocketWorker.js",
+        "sizeBytes": 848,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty_console_list.node",
+        "sizeBytes": 134656,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty.node",
+        "sizeBytes": 312320,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\pty.node",
+        "sizeBytes": 303104,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty-agent.exe",
+        "sizeBytes": 307712,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty.dll",
+        "sizeBytes": 256000,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty\\conpty.dll",
+        "sizeBytes": 109600,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      },
+      {
+        "path": "resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty\\OpenConsole.exe",
+        "sizeBytes": 1148448,
+        "lastWriteUtc": "2026-09-19T17:08:46.0000000Z"
+      }
+    ]
+  },
+  "registry": {
+    "uninstallKey": {
+      "key": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\5f9ca3ee-d929-5c0e-815d-8c970892966c",
+      "displayName": "CodeForge",
+      "displayVersion": "0.4.0",
+      "publisher": "CodeForge Team",
+      "displayIcon": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe,0",
+      "uninstallString": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\Uninstall CodeForge.exe\" /currentuser",
+      "quietUninstallString": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\Uninstall CodeForge.exe\" /currentuser /S",
+      "installLocation": null,
+      "estimatedSizeKb": 404239,
+      "noModify": 1,
+      "noRepair": 1,
+      "comments": "CodeForge Desktop - AI-powered coding agent for Windows",
+      "helpLink": null,
+      "urlInfoAbout": null
+    },
+    "installKey": {
+      "key": "HKCU\\Software\\5f9ca3ee-d929-5c0e-815d-8c970892966c",
+      "installLocation": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge",
+      "keepShortcuts": "true",
+      "shortcutName": "CodeForge"
+    },
+    "perMachineUninstallKeys": []
+  },
+  "shortcuts": [
+    {
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\CodeForge.lnk",
+      "target": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe",
+      "workingDirectory": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge",
+      "arguments": "",
+      "iconLocation": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe,0",
+      "targetExists": true
+    },
+    {
+      "path": "C:\\Users\\Daddy_FDS\\Desktop\\CodeForge.lnk",
+      "target": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe",
+      "workingDirectory": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge",
+      "arguments": "",
+      "iconLocation": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe,0",
+      "targetExists": true
+    }
+  ],
+  "userData": {
+    "profile": {
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop",
+      "exists": true,
+      "fileCount": 66,
+      "totalBytes": 7721428,
+      "topLevel": [
+        "blob_storage",
+        "Cache",
+        "Code Cache",
+        "DawnGraphiteCache",
+        "DawnWebGPUCache",
+        "GPUCache",
+        "Local Storage",
+        "logs",
+        "Network",
+        "Session Storage",
+        "Shared Dictionary",
+        "codeforge.db",
+        "declarative_performance_observer.db",
+        "declarative_performance_observer.db-journal",
+        "DevToolsActivePort",
+        "DIPS",
+        "forgegreen-cache.db",
+        "Local State",
+        "Preferences",
+        "settings.json"
+      ],
+      "files": [
+        {
+          "path": "codeforge.db",
+          "sizeBytes": 77824
+        },
+        {
+          "path": "declarative_performance_observer.db",
+          "sizeBytes": 32768
+        },
+        {
+          "path": "declarative_performance_observer.db-journal",
+          "sizeBytes": 0
+        },
+        {
+          "path": "DevToolsActivePort",
+          "sizeBytes": 59
+        },
+        {
+          "path": "DIPS",
+          "sizeBytes": 36864
+        },
+        {
+          "path": "forgegreen-cache.db",
+          "sizeBytes": 12288
+        },
+        {
+          "path": "Local State",
+          "sizeBytes": 490
+        },
+        {
+          "path": "Preferences",
+          "sizeBytes": 57
+        },
+        {
+          "path": "settings.json",
+          "sizeBytes": 2635
+        },
+        {
+          "path": "Cache\\Cache_Data\\data_0",
+          "sizeBytes": 45056
+        },
+        {
+          "path": "Cache\\Cache_Data\\data_1",
+          "sizeBytes": 270336
+        },
+        {
+          "path": "Cache\\Cache_Data\\data_2",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "Cache\\Cache_Data\\data_3",
+          "sizeBytes": 4202496
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000003",
+          "sizeBytes": 78727
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00002b",
+          "sizeBytes": 42157
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_00002c",
+          "sizeBytes": 272759
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000033",
+          "sizeBytes": 42189
+        },
+        {
+          "path": "Cache\\Cache_Data\\f_000034",
+          "sizeBytes": 275534
+        },
+        {
+          "path": "Cache\\Cache_Data\\index",
+          "sizeBytes": 524656
+        },
+        {
+          "path": "Cache\\No_Vary_Search\\journal.baj",
+          "sizeBytes": 4
+        },
+        {
+          "path": "Cache\\No_Vary_Search\\snapshot.baf",
+          "sizeBytes": 20
+        },
+        {
+          "path": "Code Cache\\electron-preload\\081B83B69E9C1F509FB17FF57F003F0C54D9A204C825C4CD5FB4CFA6A17565F4-046EE14B76106E2E39DCF4D74A8AEE393DEDA01000D21673491EB8D652BB29D2.cache",
+          "sizeBytes": 9052
+        },
+        {
+          "path": "Code Cache\\electron-preload\\EF09FCDFAC95DEF0725E65DF6B36580B6CEC53296FFF930814B5FA6180F99EB5-046EE14B76106E2E39DCF4D74A8AEE393DEDA01000D21673491EB8D652BB29D2.cache",
+          "sizeBytes": 9060
+        },
+        {
+          "path": "Code Cache\\js\\index",
+          "sizeBytes": 24
+        },
+        {
+          "path": "Code Cache\\js\\index-dir\\the-real-index",
+          "sizeBytes": 48
+        },
+        {
+          "path": "Code Cache\\wasm\\index",
+          "sizeBytes": 24
+        },
+        {
+          "path": "Code Cache\\wasm\\index-dir\\the-real-index",
+          "sizeBytes": 48
+        },
+        {
+          "path": "DawnGraphiteCache\\data_0",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "DawnGraphiteCache\\data_1",
+          "sizeBytes": 270336
+        },
+        {
+          "path": "DawnGraphiteCache\\data_2",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "DawnGraphiteCache\\data_3",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "DawnGraphiteCache\\index",
+          "sizeBytes": 262512
+        },
+        {
+          "path": "DawnWebGPUCache\\data_0",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "DawnWebGPUCache\\data_1",
+          "sizeBytes": 270336
+        },
+        {
+          "path": "DawnWebGPUCache\\data_2",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "DawnWebGPUCache\\data_3",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "DawnWebGPUCache\\index",
+          "sizeBytes": 262512
+        },
+        {
+          "path": "GPUCache\\data_0",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "GPUCache\\data_1",
+          "sizeBytes": 270336
+        },
+        {
+          "path": "GPUCache\\data_2",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "GPUCache\\data_3",
+          "sizeBytes": 8192
+        },
+        {
+          "path": "GPUCache\\index",
+          "sizeBytes": 262512
+        },
+        {
+          "path": "Local Storage\\leveldb\\000003.log",
+          "sizeBytes": 219
+        },
+        {
+          "path": "Local Storage\\leveldb\\CURRENT",
+          "sizeBytes": 16
+        },
+        {
+          "path": "Local Storage\\leveldb\\LOCK",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Local Storage\\leveldb\\LOG",
+          "sizeBytes": 316
+        },
+        {
+          "path": "Local Storage\\leveldb\\LOG.old",
+          "sizeBytes": 275
+        },
+        {
+          "path": "Local Storage\\leveldb\\MANIFEST-000001",
+          "sizeBytes": 41
+        },
+        {
+          "path": "logs\\codeforge-main.log",
+          "sizeBytes": 1368
+        },
+        {
+          "path": "Network\\Cookies",
+          "sizeBytes": 20480
+        },
+        {
+          "path": "Network\\Cookies-journal",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Network\\Network Persistent State",
+          "sizeBytes": 201
+        },
+        {
+          "path": "Network\\NetworkDataMigrated",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Network\\TransportSecurity",
+          "sizeBytes": 189
+        },
+        {
+          "path": "Network\\Trust Tokens",
+          "sizeBytes": 36864
+        },
+        {
+          "path": "Network\\Trust Tokens-journal",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Session Storage\\000003.log",
+          "sizeBytes": 68
+        },
+        {
+          "path": "Session Storage\\CURRENT",
+          "sizeBytes": 16
+        },
+        {
+          "path": "Session Storage\\LOCK",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Session Storage\\LOG",
+          "sizeBytes": 304
+        },
+        {
+          "path": "Session Storage\\LOG.old",
+          "sizeBytes": 263
+        },
+        {
+          "path": "Session Storage\\MANIFEST-000001",
+          "sizeBytes": 41
+        },
+        {
+          "path": "Shared Dictionary\\db",
+          "sizeBytes": 45056
+        },
+        {
+          "path": "Shared Dictionary\\db-journal",
+          "sizeBytes": 0
+        },
+        {
+          "path": "Shared Dictionary\\cache\\index",
+          "sizeBytes": 24
+        },
+        {
+          "path": "Shared Dictionary\\cache\\index-dir\\the-real-index",
+          "sizeBytes": 48
+        }
+      ]
+    },
+    "settingsKeys": [
+      "codeforge:env-credentials",
+      "codeforge:first-run-legal-ack",
+      "codeforge:cloud-access-token",
+      "codeforge:cloud-refresh-token",
+      "codeforge:cloud-user",
+      "codeforge:recent-projects",
+      "codeforge:app-settings",
+      "codeforge:window-state"
+    ],
+    "sealedCredentialKeys": [
+      "codeforge:cloud-access-token",
+      "codeforge:cloud-refresh-token"
+    ],
+    "plaintextSecretSuspects": [],
+    "hasCloudSession": true,
+    "updaterCache": {
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Local\\codeforge-desktop-updater",
+      "exists": true,
+      "fileCount": 1,
+      "totalBytes": 117280628,
+      "topLevel": [
+        "installer.exe"
+      ],
+      "files": [
+        {
+          "path": "installer.exe",
+          "sizeBytes": 117280628
+        }
+      ]
+    },
+    "localAppData": {
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Local\\CodeForge",
+      "exists": true,
+      "fileCount": 6,
+      "totalBytes": 382,
+      "topLevel": [
+        "worktrees"
+      ],
+      "files": [
+        {
+          "path": "worktrees\\cf-e2e-repo-3nqbXF\\wt-e0228c0b\\.git",
+          "sizeBytes": 92
+        },
+        {
+          "path": "worktrees\\cf-e2e-repo-3nqbXF\\wt-e0228c0b\\math.ts",
+          "sizeBytes": 62
+        },
+        {
+          "path": "worktrees\\cf-e2e-repo-3nqbXF\\wt-e0228c0b\\package.json",
+          "sizeBytes": 37
+        },
+        {
+          "path": "worktrees\\cf-e2e-repo-NNn00g\\wt-bef620dd\\.git",
+          "sizeBytes": 92
+        },
+        {
+          "path": "worktrees\\cf-e2e-repo-NNn00g\\wt-bef620dd\\math.ts",
+          "sizeBytes": 62
+        },
+        {
+          "path": "worktrees\\cf-e2e-repo-NNn00g\\wt-bef620dd\\package.json",
+          "sizeBytes": 37
+        }
+      ]
+    },
+    "legacyRoaming": {
+      "path": "C:\\Users\\Daddy_FDS\\AppData\\Roaming\\@codeforge",
+      "exists": false
+    }
+  },
+  "releaseArchiveMatch": {
+    "status": "PASS",
+    "detail": "Installed app.asar matches the release archive.",
+    "sha256": "F5813DEAF1F19B6853505D27877CE9D23AA678D18B28786F6FAC34AB19100193"
+  },
+  "completedAtUtc": "2026-09-19T17:14:08.0267797Z",
+  "summary": {
+    "fail": 0,
+    "warn": 2,
+    "pass": 20,
+    "verdict": "PASS"
+  }
+}

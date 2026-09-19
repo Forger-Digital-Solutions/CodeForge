@@ -1,0 +1,352 @@
+{
+  "schemaVersion": 1,
+  "label": "slow-e118c8e",
+  "mode": "slow",
+  "latencyMs": 2500,
+  "startedAtUtc": "2026-09-19T18:03:35.6307474Z",
+  "checks": {
+    "startsWhileCloudDead": {
+      "status": "PASS",
+      "detail": "App started with Cloud traffic slow; DevTools at 1832 ms."
+    },
+    "noEndlessSpinner": {
+      "status": "PASS",
+      "detail": "Bootstrap screen left within 3247 ms while the Cloud was slow."
+    },
+    "keepsSignedInIdentityOffline": {
+      "status": "PASS",
+      "detail": "A previously signed-in user is not thrown to the sign-in screen by an unreachable Cloud."
+    },
+    "offlineIsCommunicated": {
+      "status": "PASS",
+      "detail": "The UI names the Cloud outage: 'Cloud offline'."
+    },
+    "responsiveWhileOffline": {
+      "status": "PASS",
+      "detail": "Idle CPU 0.05% while the Cloud is slow (no retry storm)."
+    },
+    "recoversWithoutRestart": {
+      "status": "PASS",
+      "detail": "After the network healed, the same process re-established the Cloud account (Forger Digital Solutions, CodeForge Free) — no restart."
+    },
+    "catalogRecovers": {
+      "status": "PASS",
+      "detail": "Catalog refresh after recovery: 59 free models."
+    },
+    "headerReflectsRecovery": {
+      "status": "PASS",
+      "detail": "The header dropped the 'Cloud offline' state on its own after the network healed."
+    },
+    "cleanExitAfterFault": {
+      "status": "PASS",
+      "detail": "Process tree exited in 2129 ms after the fault run."
+    }
+  },
+  "timeline": [
+    {
+      "at": "2026-09-19T18:03:35.9232677Z",
+      "event": "launch"
+    },
+    {
+      "at": "2026-09-19T18:03:37.9106781Z",
+      "event": "devtools",
+      "ms": 1832
+    },
+    {
+      "at": "2026-09-19T18:03:41.1837507Z",
+      "event": "bootstrap-settled",
+      "settled": true,
+      "ms": 3247
+    },
+    {
+      "at": "2026-09-19T18:03:53.1599032Z",
+      "event": "network-restored"
+    }
+  ],
+  "proxyPort": 53339,
+  "bootstrapMs": 3247,
+  "settledText": "ΓåÉ bugfix-repo ΓÇó master Forger Digital Solutions Cloud offline Γùç ForgeAuto/Free ┬╖ Discovering free routesΓÇª ? CodeForge New task Γîò Search Ctrl K WORKSPACES bugfix-repo Switch Tasks Files Today The inventory test suite is failing. Find the failing test, fix the bug in src/i Blocked ┬╖ 6m ΓÜá The test suite fails. Find the root cause and fix it so that npm test passes. Do Failed ┬╖ 45m Γ£ò Settings Help & docs Γÿ░ Γîò ΓÇ║ 0/11 stages What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge ┬╖ bugfix-repo ┬╖ master SELECTED WORKSPACE Changes detected bugfix-repo Branch master Repository intelligence 5 files ┬╖ 22 sym",
+  "offlineScreenshot": "docs\\evidence\\r16-desktop-product\\10-failure-recovery\\slow-e118c8e\\slow-e118c8e-offline.png",
+  "offlineConsole": null,
+  "offlineAccountMenu": "ΓåÉ bugfix-repo ΓÇó master Forger Digital Solutions CodeForge Free Forger Digital Solutions @Forger-Digital-Solutions ForgerDigitalSolutions@outlook.com Profile & Account Settings Sign Out Γùê ForgeAuto/Free ┬╖ Verified Free ? CodeForge New task Γîò Search Ctrl K WORKSPACES bugfix-repo Switch Tasks Files Today The inventory test suite is failing. Find the failing test, fix the bug in src/i Blocked ┬╖ 6m ΓÜá The test suite fails. Find the root cause and fix it so that npm test passes. Do Failed ┬╖ 45m Γ£ò Settings Help & docs Γÿ░ Γîò ΓÇ║ 0/11 stages What's next, Forger Digital Solutions? Start with a repository-aware task, or ask CodeForge to inspect the codebase. CodeForge ┬╖ bugfix-repo ┬╖ master SELECTED WORKSPACE Changes detected bugfix-repo Branch master Repository intelligence 5 files ┬╖ 22 symbols OVERVIEW All 30d 7d 2 TASKS 5 MESSAGES 0 TOKENS (AGENT RUNS) 1 ACTIVE DAYS 1d STREAK deepseek/deepseek-v4-flash-0731:free MOST-USED MODEL FAVORITE MODELS + Add favorite Explain this repository Review the architecture Create an implementation plan Run the test suite Find TODOs in this workspace Review current changes RUN STOPPED Task ├ù The implementation did not finish every planned step ΓÇö The agent kept repeating actions without making progress, so CodeForge stopped the run (AGENT_NO_PROGRESS_DETECTED), so CodeForge did not mark this task complete. Review found no issues; verification passed. 1 file changed. Fix and continue Review failure Auto bugfix-repo master + Agent Chat Auto Review Ask More Full Auto Plan: Auto Plan: Review ForgeAuto/Free ┬╖ Automatic free routing Γû╛ Γåæ Enter to send ┬╖ Shift+Enter for newline ┬╖ Esc to stop ┬╖ / for commands ┬╖ @ for context",
+  "offlineResources": {
+    "sampleSeconds": 5.01,
+    "logicalCores": 12,
+    "totalCpuPercentOfMachine": 0.05,
+    "totalWorkingSetBytes": 568815616,
+    "totalPrivateBytes": 273354752,
+    "processes": [
+      {
+        "pid": 40780,
+        "kind": "main",
+        "cpuPercentOfMachine": 0.05,
+        "workingSetBytes": 350453760,
+        "privateBytes": 203796480,
+        "handles": 1163,
+        "threads": 55
+      },
+      {
+        "pid": 35944,
+        "kind": "utility",
+        "cpuPercentOfMachine": 0.0,
+        "workingSetBytes": 57974784,
+        "privateBytes": 13037568,
+        "handles": 372,
+        "threads": 25
+      },
+      {
+        "pid": 39452,
+        "kind": "renderer",
+        "cpuPercentOfMachine": 0.0,
+        "workingSetBytes": 160387072,
+        "privateBytes": 56520704,
+        "handles": 334,
+        "threads": 18
+      }
+    ]
+  },
+  "recovery": {
+    "refresh": {
+      "ok": true,
+      "freeModels": 59
+    },
+    "account": {
+      "offline": false,
+      "pending": false,
+      "plan": "CodeForge Free",
+      "name": "Forger Digital Solutions"
+    }
+  },
+  "recoveredText": "ΓåÉ bugfix-repo ΓÇó master Forger Digital Solutions CodeForge Free Forger Digital Solutions @Forger-Digital-Solutions ForgerDigitalSolutions@outlook.com Profile & Account Settings Sign Out Γùê ForgeAuto/Free ┬╖ Verified Free ? CodeForge New task Γîò Search Ctrl K WORKSPACES bugfix-repo Switch Tasks Files Today The inventory test suite is failing. Find the failing test, fix the bug in src/i Blocked",
+  "shutdown": {
+    "method": "WM_CLOSE",
+    "processTreeBefore": [
+      {
+        "pid": 40780,
+        "parentPid": 39260,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 434020352,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\cf-fault-profile-e118c8e\" --remote-debugging-port=9232"
+      },
+      {
+        "pid": 35944,
+        "parentPid": 40780,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 57974784,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --use-angle=d3d11-warp-webgl --use-gl=angle --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\cf-fault-profile-e118c8e\" --field-trial-handle=2316,i,1045150225074334048,12775416900782123635,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2320,i,10255978853377384033,16545394472605683724,4 --trace-process-track-uuid=3190708989122997041 --mojo-platform-channel-handle=2304 /prefetch:11"
+      },
+      {
+        "pid": 39452,
+        "parentPid": 40780,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 169017344,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=renderer --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\cf-fault-profile-e118c8e\" --app-path=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\resources\\app.asar\" --enable-sandbox --remote-debugging-port=9232 --disable-gpu-compositing --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=2.5 --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=4 --launch-time-ticks=68600222913 --field-trial-handle=2316,i,1045150225074334048,12775416900782123635,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2320,i,10255978853377384033,16545394472605683724,4 --trace-process-track-uuid=3190708990060038890 --mojo-platform-channel-handle=2936 /prefetch:1"
+      }
+    ],
+    "exitedWithinGraceMs": true,
+    "exitMs": 2129,
+    "rootExitCode": 0,
+    "survivorsForceKilled": []
+  },
+  "proxyEvents": [
+    {
+      "id": 1,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "slow",
+      "event": "connect",
+      "at": "2026-09-19T18:03:37.179Z"
+    },
+    {
+      "id": 2,
+      "host": "models.dev",
+      "port": 443,
+      "mode": "slow",
+      "event": "connect",
+      "at": "2026-09-19T18:03:38.091Z"
+    },
+    {
+      "id": 3,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "slow",
+      "event": "connect",
+      "at": "2026-09-19T18:03:38.104Z"
+    },
+    {
+      "id": 1,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "slow",
+      "event": "tunnel",
+      "at": "2026-09-19T18:03:39.722Z"
+    },
+    {
+      "id": 2,
+      "host": "models.dev",
+      "port": 443,
+      "mode": "slow",
+      "event": "tunnel",
+      "at": "2026-09-19T18:03:40.606Z"
+    },
+    {
+      "id": 3,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "slow",
+      "event": "tunnel",
+      "at": "2026-09-19T18:03:40.619Z"
+    },
+    {
+      "id": 4,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "slow",
+      "event": "connect",
+      "at": "2026-09-19T18:03:41.086Z"
+    },
+    {
+      "id": 4,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "slow",
+      "event": "tunnel",
+      "at": "2026-09-19T18:03:43.609Z"
+    },
+    {
+      "id": 5,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "slow",
+      "event": "connect",
+      "at": "2026-09-19T18:03:46.177Z"
+    },
+    {
+      "id": 6,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "slow",
+      "event": "connect",
+      "at": "2026-09-19T18:03:46.223Z"
+    },
+    {
+      "id": 5,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "slow",
+      "event": "tunnel",
+      "at": "2026-09-19T18:03:48.715Z"
+    },
+    {
+      "id": 6,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "slow",
+      "event": "tunnel",
+      "at": "2026-09-19T18:03:48.751Z"
+    },
+    {
+      "id": 7,
+      "host": "models.dev",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T18:03:53.323Z"
+    },
+    {
+      "id": 7,
+      "host": "models.dev",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T18:03:53.346Z"
+    },
+    {
+      "id": 8,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T18:03:53.689Z"
+    },
+    {
+      "id": 8,
+      "host": "codeforge-cloud-va.onrender.com",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T18:03:53.702Z"
+    },
+    {
+      "id": 9,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T18:03:53.76Z"
+    },
+    {
+      "id": 9,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T18:03:53.785Z"
+    },
+    {
+      "id": 10,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T18:03:54.559Z"
+    },
+    {
+      "id": 10,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T18:03:54.584Z"
+    },
+    {
+      "id": 11,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T18:03:54.932Z"
+    },
+    {
+      "id": 11,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T18:03:54.958Z"
+    },
+    {
+      "id": 12,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "connect",
+      "at": "2026-09-19T18:03:55.109Z"
+    },
+    {
+      "id": 12,
+      "host": "openrouter.ai",
+      "port": 443,
+      "mode": "forward",
+      "event": "tunnel",
+      "at": "2026-09-19T18:03:55.121Z"
+    }
+  ],
+  "completedAtUtc": "2026-09-19T18:03:58.3017357Z",
+  "summary": {
+    "fail": 0,
+    "warn": 0,
+    "pass": 9,
+    "verdict": "PASS"
+  }
+}
