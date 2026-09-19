@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { stripAnsi, stripCommandEcho } from "./ansi.js";
 import { commandShell, resolveExecutable } from "./shells.js";
+import { buildHostedCommandLine, needsConsoleHost } from "./console-host.js";
 import { loadPty, teardownPty, type PtyLike } from "./pty-loader.js";
 
 /**
@@ -96,12 +97,20 @@ export function executePrepared(prepared: PreparedSpec, spec: Omit<ExecSpec, "co
 const EXIT_SENTINEL_PREFIX = "__CFX_";
 const EXIT_SENTINEL_RE = /__CFX_[A-Za-z0-9]+_(\d+)\r?\n?/;
 
-async function executeViaConpty(spec: ExecSpec): Promise<ExecResult> {
+async function executeViaConpty(input: ExecSpec): Promise<ExecResult> {
   const ptyModule = loadPty();
-  if (!ptyModule) return executeViaPipe(spec);
+  if (!ptyModule) return executeViaPipe(input);
   const start = Date.now();
 
-  const env = spec.env ?? process.env;
+  const env = input.env ?? process.env;
+  // A GUI-subsystem image (the Electron runtime as Node) cannot be the pty root: it gets no
+  // console, so its console children open visible windows. Host it under cmd.exe instead so the
+  // pseudo console is inherited all the way down — see console-host.ts.
+  const hostedFile = !input.commandLine && input.file ? resolveExecutable(input.file, env) ?? input.file : null;
+  const hosted = Boolean(hostedFile && needsConsoleHost(hostedFile));
+  const spec: ExecSpec = hosted
+    ? { ...input, commandLine: buildHostedCommandLine(hostedFile!, input.args ?? []), file: undefined, args: undefined }
+    : input;
   const rawFile = spec.commandLine ? commandShell(env).file : spec.file!;
   // node-pty does not PATH-search; resolve bare names before spawning.
   const file = resolveExecutable(rawFile, env) ?? rawFile;
@@ -110,8 +119,12 @@ async function executeViaConpty(spec: ExecSpec): Promise<ExecResult> {
   // finishes — node-pty's ConPTY onExit lags 1.5–3.5s behind the actual process exit
   // and is only a fallback here.
   const sentinel = `${EXIT_SENTINEL_PREFIX}${randomUUID().replace(/-/g, "")}`;
+  // A hosted line starts with a quoted executable path; `/s` keeps cmd from applying its
+  // leading-quote stripping rule to it (the outer quotes are the only ones cmd removes).
   const args: string | string[] = spec.commandLine
-    ? `/d /v:on /c ${spec.commandLine} & echo ${sentinel}_!errorlevel!`
+    ? hosted
+      ? `/d /v:on /s /c "${spec.commandLine} & echo ${sentinel}_!errorlevel!"`
+      : `/d /v:on /c ${spec.commandLine} & echo ${sentinel}_!errorlevel!`
     : (spec.args ?? []);
 
   return new Promise<ExecResult>((resolve) => {

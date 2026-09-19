@@ -13,3 +13,4 @@ export {
   type PreparedSpec,
 } from "./executor.js";
 export { TerminalSession, type TerminalSessionOptions } from "./session.js";
+export { needsConsoleHost, isGuiSubsystemExecutable, readPeSubsystem, buildHostedCommandLine, quoteForCommandHost } from "./console-host.js";

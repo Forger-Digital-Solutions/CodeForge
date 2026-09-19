@@ -5,9 +5,11 @@
 
 // CSI sequences (colors, cursor movement, erase) + OSC (title changes) + a few single-char
 // controls. Intentionally conservative: anything not matched is preserved as text.
+/* eslint-disable no-control-regex -- escape sequences ARE control characters; matching them is the point */
 const CSI = /\x1b\[[0-9;?]*[ -/]*[@-~]/g;
 const OSC = /\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g;
 const SINGLE = /\x1b[@-Z\\-_]/g;
+/* eslint-enable no-control-regex */
 
 export function stripAnsi(text: string): string {
   return text
