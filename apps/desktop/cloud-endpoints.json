@@ -3,6 +3,7 @@
   "channel": "development",
   "endpoints": {
     "development": "http://127.0.0.1:3220",
-    "staging": "https://codeforge-cloud-staging.onrender.com"
+    "staging": "https://codeforge-cloud-staging.onrender.com",
+    "production": "https://codeforge-cloud-va.onrender.com"
   }
 }

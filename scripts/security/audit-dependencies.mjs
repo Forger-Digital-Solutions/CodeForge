@@ -34,6 +34,15 @@ try {
   process.exit(4);
 }
 
+// A gate that cannot see the advisory data must not report PASS. `npm audit --json` reports a
+// registry/network failure as a JSON `error` object (or exits non-zero without the
+// `metadata.vulnerabilities` block); either way there is no evidence about the dependency tree,
+// so the run is INCONCLUSIVE and fails closed. Previously an empty report produced an empty
+// vulnerability list and therefore a vacuous PASS (observed 2026-09-18 with exit code 1).
+const auditCounts = report.metadata?.vulnerabilities;
+const auditError = report.error ? { code: report.error.code ?? null, summary: String(report.error.summary ?? report.error.message ?? "").slice(0, 500) } : null;
+const auditInconclusive = auditError !== null || typeof auditCounts !== "object" || auditCounts === null;
+
 let allowlist = [];
 try {
   allowlist = JSON.parse(await fs.readFile(path.resolve(root, allowlistPath), "utf8")).entries ?? [];
@@ -80,15 +89,22 @@ const sbom = {
 const result = {
   generatedAt: new Date().toISOString(),
   npmAuditExitCode: audit.status,
-  summary: report.metadata?.vulnerabilities ?? {},
+  summary: auditCounts ?? {},
+  dependenciesAudited: report.metadata?.dependencies?.total ?? null,
+  auditError,
   blocking,
   accepted: vulnerabilities.filter((v) => v.accepted),
   nonBlocking: vulnerabilities.filter((v) => !(v.severity === "high" || v.severity === "critical")),
-  status: blocking.length === 0 ? "PASS" : "FAIL",
+  status: auditInconclusive ? "INCONCLUSIVE" : blocking.length === 0 ? "PASS" : "FAIL",
 };
 
 await fs.mkdir(path.dirname(path.resolve(root, jsonOut)), { recursive: true });
 await fs.writeFile(path.resolve(root, jsonOut), `${JSON.stringify(result, null, 2)}\n`, "utf8");
 await fs.writeFile(path.resolve(root, sbomOut), `${JSON.stringify(sbom, null, 2)}\n`, "utf8");
-console.log(JSON.stringify({ status: result.status, summary: result.summary, blocking: blocking.map((b) => `${b.name} (${b.severity})`), components: components.length, installScriptPackages: sbom.installScriptPackages, report: jsonOut, sbom: sbomOut }, null, 2));
-if (blocking.length > 0) process.exitCode = 2;
+console.log(JSON.stringify({ status: result.status, summary: result.summary, dependenciesAudited: result.dependenciesAudited, auditError, blocking: blocking.map((b) => `${b.name} (${b.severity})`), components: components.length, installScriptPackages: sbom.installScriptPackages, report: jsonOut, sbom: sbomOut }, null, 2));
+if (auditInconclusive) {
+  console.error(`npm audit produced no advisory data (exit code ${audit.status}${auditError ? `, ${auditError.code ?? "error"}: ${auditError.summary}` : ""}); the dependency gate is INCONCLUSIVE, not PASS.`);
+  process.exitCode = 4;
+} else if (blocking.length > 0) {
+  process.exitCode = 2;
+}
