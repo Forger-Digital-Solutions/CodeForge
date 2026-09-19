@@ -448,6 +448,15 @@ export * as OpenRouterOAuth from "./openrouter-oauth.js";
 export { redactSecrets } from "./redact.js";
 export { HostedProviderAdapter, type HostedProviderOptions } from "./hosted.js";
 export {
+  REQUIRED_CLOUD_API_MAJOR,
+  REQUIRED_CLOUD_FEATURES,
+  evaluateCloudCompatibility,
+  checkCloudCompatibility,
+  CloudCompatibilityError,
+  type CloudApiMetadata,
+  type CloudCompatibilityResult,
+} from "./cloud-compatibility.js";
+export {
   TEXT_TOOL_OPEN,
   TEXT_TOOL_CLOSE,
   buildTextToolContract,

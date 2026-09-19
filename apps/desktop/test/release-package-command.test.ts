@@ -18,6 +18,7 @@ describe("release packaging channel", () => {
     const pkg = JSON.parse(readFileSync(resolve(desktopDirectory, "package.json"), "utf8")) as { scripts: Record<string, string> };
     expect(pkg.scripts.dist).toBe("node scripts/package-release.mjs");
     expect(readFileSync(script, "utf8")).toContain("call npm.cmd");
+    expect(readFileSync(script, "utf8")).toContain("check-production-cloud.mjs");
   });
 
   it("defaults a release artifact to the approved production endpoint rather than development loopback", () => {

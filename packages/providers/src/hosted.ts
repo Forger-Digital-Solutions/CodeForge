@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { ChatRequest, ChatResponse, StreamEvent, ToolCall } from "./chat-types.js";
 import type { ProviderAdapter, ProviderModel, ProviderHealthResponse } from "./index.js";
-import { normalizeMessagesForTextTools, parseTextToolCalls } from "./hosted-text-tools.js";
+import { checkCloudCompatibility, CloudCompatibilityError, type CloudCompatibilityResult } from "./cloud-compatibility.js";
 
 export interface HostedProviderOptions {
   cloudApiUrl?: string;
@@ -11,14 +11,10 @@ export interface HostedProviderOptions {
 }
 
 /**
- * Cloud capability negotiation: a gateway that understands the native tools
- * extension advertises "HOSTED_TOOLS" in /v1/meta `features`. Anything older
- * (the deployed v0.2.0 line) answers without it, and the adapter transparently
- * drives the same chat endpoint with the text-level tool contract instead — so
- * Managed Free executes the CodeForge tool loop on the gateway that exists
- * TODAY and upgrades itself the day a newer gateway ships.
+ * Cloud capability negotiation is a release boundary. The desktop refuses a Cloud generation
+ * that cannot execute the native hosted tool loop, instead of silently degrading to an older
+ * text protocol and failing later in an agent run.
  */
-const HOSTED_TOOLS_FEATURE = "HOSTED_TOOLS";
 
 /** SSE frames emitted by /v1/hosted/inference (unknown fields are ignored). */
 interface HostedSseEvent {
@@ -39,7 +35,7 @@ export class HostedProviderAdapter implements ProviderAdapter {
   private readonly getAccessToken?: () => Promise<string | null> | string | null;
   private readonly onAuthExpired?: () => Promise<string | null>;
   private readonly fetchFn: typeof fetch;
-  private metaProbe?: Promise<boolean>;
+  private compatibilityProbe?: Promise<CloudCompatibilityResult>;
 
   constructor(options: HostedProviderOptions = {}) {
     this.cloudApiUrl = (options.cloudApiUrl ?? "http://127.0.0.1:3220").replace(/\/$/, "");
@@ -50,6 +46,10 @@ export class HostedProviderAdapter implements ProviderAdapter {
 
   async healthCheck(): Promise<ProviderHealthResponse> {
     try {
+      const compatibility = await this.getCloudCompatibility();
+      if (!compatibility.compatible) {
+        return { status: "offline", error: new CloudCompatibilityError(compatibility).message };
+      }
       const res = await this.fetchFn(`${this.cloudApiUrl}/health/ready`);
       if (!res.ok) {
         return { status: "offline", error: `HTTP ${res.status}` };
@@ -61,23 +61,20 @@ export class HostedProviderAdapter implements ProviderAdapter {
     }
   }
 
-  /** True when the gateway advertises native hosted tools. Never throws; unknown → false. */
-  private supportsNativeTools(): Promise<boolean> {
-    this.metaProbe ??= (async () => {
-      try {
-        const res = await this.fetchFn(`${this.cloudApiUrl}/v1/meta`);
-        if (!res.ok) return false;
-        const meta = (await res.json()) as { features?: unknown };
-        return Array.isArray(meta.features) && meta.features.includes(HOSTED_TOOLS_FEATURE);
-      } catch {
-        return false;
-      }
-    })();
-    return this.metaProbe;
+  async getCloudCompatibility(): Promise<CloudCompatibilityResult> {
+    this.compatibilityProbe ??= checkCloudCompatibility(this.cloudApiUrl, this.fetchFn);
+    return this.compatibilityProbe;
+  }
+
+  private async requireCompatibleCloud(): Promise<CloudCompatibilityResult> {
+    const compatibility = await this.getCloudCompatibility();
+    if (!compatibility.compatible) throw new CloudCompatibilityError(compatibility);
+    return compatibility;
   }
 
   async listModels(): Promise<ProviderModel[]> {
     try {
+      await this.requireCompatibleCloud();
       const res = await this.fetchFn(`${this.cloudApiUrl}/v1/hosted/models`);
       if (res.ok) {
         const models = (await res.json()) as Array<{
@@ -222,22 +219,19 @@ export class HostedProviderAdapter implements ProviderAdapter {
   }
 
   async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+    await this.requireCompatibleCloud();
     const needsToolTransport =
       (req.tools?.length ?? 0) > 0 ||
       req.messages.some((m) => m.role === "tool" || (Array.isArray(m.toolCalls) && m.toolCalls.length > 0));
-    const native = needsToolTransport && (await this.supportsNativeTools());
-    const textToolMode = needsToolTransport && !native;
 
     const { exactProviderId, modelId } = this.splitModel(req.model);
-    const messages = native
-      ? req.messages.map((m) => ({
-          role: m.role,
-          content: m.content,
-          ...(m.name ? { name: m.name } : {}),
-          ...(m.toolCallId ? { toolCallId: m.toolCallId } : {}),
-          ...(m.toolCalls ? { toolCalls: m.toolCalls } : {}),
-        }))
-      : normalizeMessagesForTextTools(req.messages, req.tools);
+    const messages = req.messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+      ...(m.name ? { name: m.name } : {}),
+      ...(m.toolCallId ? { toolCallId: m.toolCallId } : {}),
+      ...(m.toolCalls ? { toolCalls: m.toolCalls } : {}),
+    }));
 
     const body = JSON.stringify({
       requestId: randomUUID(),
@@ -245,18 +239,14 @@ export class HostedProviderAdapter implements ProviderAdapter {
       modelId,
       ...(exactProviderId ? { providerId: exactProviderId } : {}),
       taskType: "coding",
-      ...(native && req.tools?.length ? { tools: req.tools } : {}),
-      ...(native && req.maxTokens ? { maxTokens: req.maxTokens } : {}),
+      ...(needsToolTransport && req.tools?.length ? { tools: req.tools } : {}),
+      ...(needsToolTransport && req.maxTokens ? { maxTokens: req.maxTokens } : {}),
     });
 
     const res = await this.postInference(body, signal);
     const reader = res.body!.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
-    // Text-tool mode buffers the whole response: a <tool_call> payload must never leak into the
-    // text stream as if the model said it, so text is emitted only once the call spans are known.
-    let fullText = "";
-
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -276,11 +266,7 @@ export class HostedProviderAdapter implements ProviderAdapter {
         }
 
         if (event.type === "assistant.message.delta" && typeof event.delta === "string") {
-          if (textToolMode) {
-            fullText += event.delta;
-          } else {
-            yield { type: "text_delta", delta: event.delta };
-          }
+          yield { type: "text_delta", delta: event.delta };
         } else if (event.type === "assistant.tool_call.started" && event.toolCallId && event.toolName) {
           yield { type: "tool_call_started", toolCallId: event.toolCallId, toolName: event.toolName };
         } else if (event.type === "assistant.tool_call.delta" && event.toolCallId && typeof event.delta === "string") {
@@ -302,31 +288,10 @@ export class HostedProviderAdapter implements ProviderAdapter {
               },
             };
           }
-          if (!textToolMode) {
-            yield { type: "finish", finishReason: event.finishReason === "tool_calls" ? "tool_calls" : "stop" };
-          }
+          yield { type: "finish", finishReason: event.finishReason === "tool_calls" ? "tool_calls" : "stop" };
         } else if (event.type === "turn.failed") {
           throw new Error(event.error || "Turn failed on CodeForge Cloud");
         }
-      }
-    }
-
-    if (textToolMode) {
-      const parsed = parseTextToolCalls(fullText);
-      if (parsed.text.length > 0) {
-        yield { type: "text_delta", delta: parsed.text };
-      }
-      for (const [index, call] of parsed.toolCalls.entries()) {
-        const id = `text-call-${index + 1}`;
-        yield { type: "tool_call_started", toolCallId: id, toolName: call.name };
-        yield { type: "tool_call_completed", toolCallId: id, toolName: call.name, arguments: call.arguments };
-      }
-      if (parsed.toolCalls.length > 0) {
-        yield { type: "finish", finishReason: "tool_calls" };
-      } else if (parsed.truncated) {
-        yield { type: "finish", finishReason: "length" };
-      } else {
-        yield { type: "finish", finishReason: "stop" };
       }
     }
   }

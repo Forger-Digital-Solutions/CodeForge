@@ -13,7 +13,9 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const desktopDirectory = resolve(here, "..");
+const repositoryRoot = resolve(desktopDirectory, "..", "..");
 const manifestPath = resolve(desktopDirectory, "cloud-endpoints.json");
+const productionCloudGatePath = resolve(repositoryRoot, "scripts", "check-production-cloud.mjs");
 const channels = new Set(["staging", "production"]);
 
 function argumentValue(flag) {
@@ -92,6 +94,10 @@ function main() {
   if (dryRun) {
     console.log(JSON.stringify({ channel: stamped.channel, endpoint: stamped.endpoints[stamped.channel] }));
     return;
+  }
+
+  if (channel === "production") {
+    run(process.execPath, [productionCloudGatePath, "--url", stamped.endpoints.production, "--minimum-server-version", "0.4.0"]);
   }
 
   writeFileSync(manifestPath, `${JSON.stringify(stamped, null, 2)}\n`, "utf8");

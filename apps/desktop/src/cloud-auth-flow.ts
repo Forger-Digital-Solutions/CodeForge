@@ -2,6 +2,7 @@ import http from "node:http";
 import { createHash, randomBytes } from "node:crypto";
 import type { AddressInfo } from "node:net";
 import { shell } from "electron";
+import { checkCloudCompatibility } from "@codeforge/providers";
 
 /**
  * Desktop half of the server-brokered CodeForge Cloud OAuth flow.
@@ -44,6 +45,7 @@ export class CloudAuthError extends Error {
 
 export function describeCloudAuthFailure(error: unknown): string {
   if (error instanceof CloudAuthError) {
+    if (error.kind === "configuration") return error.message;
     if (error.kind === "cancelled") return "Sign-in was cancelled.";
     if (error.kind === "rejected") return "We couldn't complete GitHub sign-in. Please try again.";
     if (error.kind === "timeout") return "CodeForge sign-in timed out. Please try again.";
@@ -178,6 +180,14 @@ export function runCodeForgeCloudAuth(opts: CodeForgeCloudAuthOptions = {}): Pro
         try {
           const addr = server!.address() as AddressInfo;
           redirectUri = `http://127.0.0.1:${addr.port}/auth/callback`;
+
+          const compatibility = await checkCloudCompatibility(cloudApiUrl, fetchFn);
+          if (!compatibility.compatible) {
+            throw new CloudAuthError(
+              "configuration",
+              `CodeForge Cloud needs an update before this desktop release can connect. ${compatibility.message}`,
+            );
+          }
 
           const startRes = await fetchFn(`${cloudApiUrl}/v1/auth/start`, {
             method: "POST",
