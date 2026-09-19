@@ -67,6 +67,17 @@ Each package lives in `packages/<name>/` with:
 - `src/` — source
 - `test/` — unit tests (`*.test.ts`)
 
+## Testing Notes
+
+- Scripted/mock providers must set `isTestProvider: true`. Real-looking providers
+  (`isTestProvider: false`) are wrapped by the process-global `defaultCapacityGovernor`,
+  whose sliding token window is shared across every test in the file — enough scripted
+  calls exhaust it and later tests stall ~60s waiting for capacity, which reads as a
+  policy regression. Test providers bypass the governor and are permitted under
+  `NODE_ENV=test` or `CODEFORGE_ALLOW_TEST_PROVIDERS=1`.
+- Heavy git/worktree integration tests are wall-clock sensitive: prefer running suspect
+  files standalone before treating a timeout as a regression.
+
 ## Safety Hierarchy
 
 1. User's explicit current instruction
