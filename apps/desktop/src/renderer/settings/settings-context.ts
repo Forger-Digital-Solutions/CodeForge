@@ -56,6 +56,34 @@ export interface DesktopRuntimeStatus {
   discoveringProviders?: number;
 }
 
+/** A contributed extension setting — rendered as a typed control on the Extensions page. */
+export interface ExtensionSettingDef {
+  key: string;
+  type: "boolean" | "string" | "enum";
+  label: string;
+  description?: string;
+  default?: unknown;
+  options?: string[];
+}
+
+/** The renderer's view of an installed extension — mirrors the extension manager's snapshot. */
+export interface ExtensionView {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  enabled: boolean;
+  /** active = code loaded and activate() completed; error = last activation/command threw. */
+  status: "active" | "installed" | "disabled" | "error";
+  lastError?: string;
+  /** Declared permissions from the manifest — the *only* capabilities the extension has. */
+  permissions: string[];
+  /** True when loaded in-place from a developer folder (not copied into the managed store). */
+  devMode: boolean;
+  commands: Array<{ id: string; title: string }>;
+  settings: ExtensionSettingDef[];
+}
+
 export interface SettingsContextValue {
   settings: AppSettings;
   closeBehavior: CloseBehavior;
@@ -87,6 +115,8 @@ export interface SettingsContextValue {
   project: Project;
   recentProjects: Project[];
   openProjectPath: (path: string) => Promise<void>;
+  /** Remove one entry from the recent-projects list (files untouched). */
+  removeRecentProject: (path: string) => Promise<void>;
 
   repositoryIndex: RepositoryIndexStatus;
   setRepositoryIndexEnabled: (enabled: boolean) => Promise<void>;
@@ -94,6 +124,15 @@ export interface SettingsContextValue {
 
   runtimeStatus: DesktopRuntimeStatus | null;
   systemInfo: SystemInfoView | null;
+
+  extensions: ExtensionView[];
+  refreshExtensions: () => Promise<void>;
+  setExtensionEnabled: (extensionId: string, enabled: boolean) => Promise<boolean>;
+  uninstallExtension: (extensionId: string) => Promise<boolean>;
+  /** Opens a folder picker and registers the chosen folder as a developer extension. */
+  loadExtensionFolder: () => Promise<{ ok: boolean; error?: string } | null>;
+  getExtensionSetting: (extensionId: string, key: string) => Promise<unknown>;
+  setExtensionSetting: (extensionId: string, key: string, value: unknown) => Promise<boolean>;
 
   defaultExecutionMode: "agent" | "chat";
   setDefaultExecutionMode: (mode: "agent" | "chat") => Promise<void>;

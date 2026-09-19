@@ -103,6 +103,7 @@ export function ModelsRoutingSection(props: ModelsRoutingSectionProps = {}): Rea
 
       <SettingsGroup title="Default model">
         <SettingsRow
+          settingId="default-model"
           title={ctx.defaultModelId === "auto" ? "ForgeAuto/Free" : defaultModel?.displayName ?? registry?.models.find((m) => `canonical:${m.canonicalId}` === ctx.defaultModelId)?.displayName ?? ctx.defaultModelId}
           description={
             ctx.defaultModelId === "auto"
@@ -200,6 +201,7 @@ export function ModelsRoutingSection(props: ModelsRoutingSectionProps = {}): Rea
         ) : null}
         {registry && showDiagnostics ? <RouteDiagnostics models={registry.models} /> : null}
         <SettingsRow
+          settingId="catalog-refresh"
           title="Catalog check"
           description={
             lastChecked === null

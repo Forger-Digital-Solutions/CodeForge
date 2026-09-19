@@ -9,7 +9,7 @@ import { accessBadge, buildModelSections, buildCanonicalModelSections, canDriveA
 import type { CanonicalModelView } from "@codeforge/model-registry";
 import { classifyGitWorkspace, GIT_WORKSPACE_INFO_ARGS, type GitWorkspaceInfo } from "./git-workspace-info.js";
 import SettingsApp from "./settings/SettingsApp.js";
-import type { SettingsContextValue, CloudAccountView, SystemInfoView, DesktopRuntimeStatus, RepositoryIndexStatus } from "./settings/settings-context.js";
+import type { SettingsContextValue, CloudAccountView, SystemInfoView, DesktopRuntimeStatus, RepositoryIndexStatus, ExtensionView } from "./settings/settings-context.js";
 import { computeWorkNotifications, type RunningCounters } from "./settings/notifications-client.js";
 import { describeHeaderActivity, summarizeActiveWork } from "../close-lifecycle.js";
 import type { AppSettings, AppSettingsPatch, CloseBehavior, ExecutionMode, SettingsSnapshot } from "../app-settings.js";
@@ -65,6 +65,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   const [runtimeStatus, setRuntimeStatus] = useState<DesktopRuntimeStatus | null>(null);
   const [systemInfo, setSystemInfo] = useState<SystemInfoView | null>(null);
   const [recentProjects, setRecentProjects] = useState<Project[]>([]);
+  const [extensions, setExtensions] = useState<ExtensionView[]>([]);
   const [catalogLastCheckedAt, setCatalogLastCheckedAt] = useState<number | null>(null);
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const appliedDefaultModelRef = useRef(false);
@@ -571,6 +572,43 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       openProjectPath: async (projectPath: string) => {
         if (onOpenProjectPath) await onOpenProjectPath(projectPath);
       },
+      removeRecentProject: async (projectPath: string) => {
+        await window.electronAPI?.removeRecentProject?.(projectPath);
+        await loadRecentProjects();
+      },
+      extensions,
+      refreshExtensions: async () => {
+        const list = await window.electronAPI?.listExtensions?.().catch(() => null);
+        setExtensions(Array.isArray(list) ? (list as ExtensionView[]) : []);
+      },
+      setExtensionEnabled: async (extensionId, enabled) => {
+        const result = await window.electronAPI?.setExtensionEnabled?.(extensionId, enabled).catch(() => false);
+        await window.electronAPI?.listExtensions?.().then((list) => {
+          if (Array.isArray(list)) setExtensions(list as ExtensionView[]);
+        });
+        return result === true;
+      },
+      uninstallExtension: async (extensionId) => {
+        const result = await window.electronAPI?.uninstallExtension?.(extensionId).catch(() => false);
+        await window.electronAPI?.listExtensions?.().then((list) => {
+          if (Array.isArray(list)) setExtensions(list as ExtensionView[]);
+        });
+        return result === true;
+      },
+      loadExtensionFolder: async () => {
+        const result = (await window.electronAPI?.loadExtensionFolder?.().catch(() => null)) ?? null;
+        await window.electronAPI?.listExtensions?.().then((list) => {
+          if (Array.isArray(list)) setExtensions(list as ExtensionView[]);
+        });
+        return result;
+      },
+      getExtensionSetting: async (extensionId, key) => {
+        return window.electronAPI?.getExtensionSetting?.(extensionId, key).catch(() => undefined);
+      },
+      setExtensionSetting: async (extensionId, key, value) => {
+        const result = await window.electronAPI?.setExtensionSetting?.(extensionId, key, value).catch(() => false);
+        return result === true;
+      },
       repositoryIndex,
       setRepositoryIndexEnabled,
       rebuildRepositoryIndex,
@@ -597,7 +635,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     settingsSnapshot, updateSettings, resetPreferences, cloudAccount, isFixtureAccount, loadCloudAccount,
     refreshModelsAndHealth, onSignedOut, apiModels, modelSections, providerStatus, setDefaultModel,
     catalogLastCheckedAt, gitInfo, project, recentProjects, onOpenProjectPath, repositoryIndex,
-    runtimeStatus, systemInfo, settingsError, setDefaultExecutionMode, loadRecentProjects,
+    runtimeStatus, systemInfo, settingsError, setDefaultExecutionMode, loadRecentProjects, extensions,
   ]);
 
   const userIntentHoldPolicy = settingsSnapshot?.settings.general.defaultSteeringPolicy ?? "expensive_actions_only";
@@ -608,9 +646,13 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     <div className={`workspace-shell${settingsSnapshot?.settings.appearance.reducedMotion ? " cf-reduced-motion" : ""}`}>
       <header className="workspace-shell-header">
         <div className="header-left">
-          <button className="header-back" onClick={onClose} title="Back to projects">
-            ←
-          </button>
+          {/* While Settings is open it owns the back affordance — the header's back-to-projects
+              arrow would be a second, different-target "back" under the user's pointer. */}
+          {settingsSection === null ? (
+            <button className="header-back" onClick={onClose} title="Back to projects">
+              ←
+            </button>
+          ) : null}
           <div className="header-project">
             <span className="project-name">{project.name}</span>
             {gitInfo.isGitRepo && (

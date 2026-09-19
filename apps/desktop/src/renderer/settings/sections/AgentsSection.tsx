@@ -20,6 +20,7 @@ export function AgentsSection(): React.ReactElement {
 
       <SettingsGroup title="Default behavior">
         <SettingsRow
+          settingId="default-execution-mode"
           title="Default new task mode"
           description="Agent runs the full autonomous workflow with approval and verification gates. Chat runs a conversational runtime turn. Applies to new tasks."
           control={
@@ -35,6 +36,7 @@ export function AgentsSection(): React.ReactElement {
           }
         />
         <SettingsRow
+          settingId="steering-policy"
           title="Agent steering"
           description="Hold new expensive actions (model dispatch, tools, verifiers) while you type a message, so your steer is seen before the next action starts. Already-running commands continue unless you cancel them."
           control={

@@ -23,6 +23,7 @@ export function AppearanceSection(): React.ReactElement {
 
       <SettingsGroup title="Density & motion">
         <SettingsRow
+          settingId="interface-scale"
           title="Interface scale"
           description="Scales the workspace content area. Useful on high-DPI Windows displays."
           control={
@@ -39,6 +40,7 @@ export function AppearanceSection(): React.ReactElement {
           }
         />
         <SettingsRow
+          settingId="reduce-motion"
           title="Reduce motion"
           description="Minimizes non-essential animations and transitions across the app."
           control={

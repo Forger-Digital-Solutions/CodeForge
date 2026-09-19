@@ -18,13 +18,23 @@ export function VerificationSafetySection(): React.ReactElement {
         operate. These safeguards are part of the product's architecture and are always enforced.
       </p>
 
+      <SettingsGroup title="Routing protection">
+        <SettingsRow
+          title="ForgeZero zero-billing firewall"
+          description="Every model route passes ForgeZero's verified-$0 checks before execution. If free status cannot be verified, the route is never used — fail closed, no exceptions."
+          control={<StatusBadge kind="ok">Verified Free only</StatusBadge>}
+        />
+      </SettingsGroup>
+
       <SettingsGroup title="Verification">
         <SettingsRow
+          settingId="forgeverify"
           title="ForgeVerify"
           description="Before an agent run completes, CodeForge discovers the project's verifiers (test/typecheck/build scripts) and executes them with evidence bound to the exact repository state they verified."
           control={<StatusBadge kind="ok">Active</StatusBadge>}
         />
         <SettingsRow
+          settingId="completion-gate"
           title="Completion gate"
           description="A run only reaches completed when required verification passed on the current state and the review is clean. Otherwise it terminates as blocked — a failure state, never success."
           control={<StatusBadge kind="ok">Enforced</StatusBadge>}
@@ -38,6 +48,7 @@ export function VerificationSafetySection(): React.ReactElement {
 
       <SettingsGroup title="Workspace protection">
         <SettingsRow
+          settingId="workspace-boundary"
           title="Workspace boundaries"
           description="File operations resolve strictly inside the open workspace, including symlink checks. Paths outside the boundary are rejected."
           control={<StatusBadge kind="ok">Active</StatusBadge>}
@@ -56,6 +67,7 @@ export function VerificationSafetySection(): React.ReactElement {
 
       <SettingsGroup title="Secrets">
         <SettingsRow
+          settingId="secret-redaction"
           title="Secret redaction"
           description="Detected credentials are redacted from prompts, tool output, and logs. Provider-specific redaction applies to every model route, and ForgeZero never stores a plaintext secret."
           control={<StatusBadge kind="ok">Active</StatusBadge>}

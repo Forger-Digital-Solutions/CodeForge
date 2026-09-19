@@ -52,6 +52,7 @@ export function GitGithubSection(): React.ReactElement {
 
       <SettingsGroup title="Git identity (detected)">
         <SettingsRow
+          settingId="git-identity"
           title="Git user.name"
           description={gitIdentity?.name ? gitIdentity.name : "Not set in this repository's Git configuration."}
         />

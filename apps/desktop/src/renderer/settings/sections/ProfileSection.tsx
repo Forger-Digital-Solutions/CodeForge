@@ -86,6 +86,7 @@ export function ProfileSection(): React.ReactElement {
 
       <SettingsGroup title="GitHub">
         <SettingsRow
+          settingId="github-connection"
           title="Connection"
           description={login ? `Connected as @${login}` : "Connected via GitHub authentication."}
           control={<StatusBadge kind="ok">Connected</StatusBadge>}
@@ -143,6 +144,7 @@ export function ProfileSection(): React.ReactElement {
           control={<StatusBadge kind={eligibleFreeRoutes > 0 ? "ok" : "warn"}>{eligibleFreeRoutes > 0 ? `${eligibleFreeRoutes} available` : "No route"}</StatusBadge>}
         />
         <SettingsRow
+          settingId="sign-out"
           title="Sign out"
           description="Revokes this device's CodeForge session. Your provider credentials and local workspaces stay on this computer."
           control={
@@ -161,6 +163,7 @@ export function ProfileSection(): React.ReactElement {
       <SettingsGroup title="Danger zone" danger>
         {deleteStep === "idle" && (
           <SettingsRow
+            settingId="delete-account"
             title="Delete CodeForge account"
             description="Permanently delete your account, hosted sessions, and billing records from CodeForge Cloud. Local files are not affected. Your GitHub account is not deleted."
             control={<SettingsButton variant="danger" onClick={() => setDeleteStep("confirm")}>Delete account…</SettingsButton>}

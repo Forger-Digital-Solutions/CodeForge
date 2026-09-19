@@ -172,6 +172,11 @@
   padding: 22px 26px 40px;
 }
 
+/* Wide windows: keep rows readable instead of stretching controls to the far edge. */
+.settings-content > * {
+  max-width: 920px;
+}
+
 .settings-section-title {
   font-size: 17px;
   font-weight: 700;
@@ -225,6 +230,32 @@
   font-size: 13px;
   font-weight: 500;
   color: var(--cf-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Scope chip — which surface owns the setting (this app / account / workspace). */
+.settings-scope-chip {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--cf-text-muted);
+  border: 1px solid var(--cf-border-subtle);
+  border-radius: 999px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+
+/* Deep-link flash — a search result scrolls to its row and pulses once so the target is obvious. */
+@keyframes setting-flash-pulse {
+  0% { background: var(--cf-accent-muted); }
+  100% { background: transparent; }
+}
+
+.setting-flash {
+  animation: setting-flash-pulse 1.5s ease-out;
 }
 
 .settings-row-description {

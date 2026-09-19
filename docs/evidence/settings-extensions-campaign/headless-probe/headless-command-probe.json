@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-09-19T19:22:08.5607752Z",
+  "installDirectory": "G:\\CodeForge\\apps\\desktop\\release\\win-unpacked",
+  "appVersion": "0.4.0.0",
+  "cwd": "G:\\CodeForge\\apps\\desktop\\release\\smoke-workspace",
+  "packagesDirectory": "installed",
+  "npmScriptShell": "C:\\Program Files\\Git\\bin\\bash.exe",
+  "defaultTerminalDelegation": "{E12CFF52-A866-4C77-9A90-F570A7AA2C6B}",
+  "runs": [
+    {
+      "command": "npm test",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 1,
+      "runtimeKind": "electron-as-node",
+      "spawnError": null,
+      "outputTail": "npm error Missing script: \"test\"\nnpm error\nnpm error To see a list of scripts, run:\nnpm error   npm run\nnpm error A complete log of this run can be found in: C:\\Users\\Daddy_FDS\\AppData\\Local\\npm-cache\\_logs\\2026-09-19T19_22_00_099Z-debug-0.log\n",
+      "samples": 36,
+      "consoleWindowsSeen": [],
+      "pass": true
+    },
+    {
+      "command": "node -e \"console.log(1)\"",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "electron-as-node",
+      "spawnError": null,
+      "outputTail": "1\n",
+      "samples": 29,
+      "consoleWindowsSeen": [],
+      "pass": true
+    },
+    {
+      "command": "npm run --silent test",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 1,
+      "runtimeKind": "electron-as-node",
+      "spawnError": null,
+      "outputTail": "",
+      "samples": 34,
+      "consoleWindowsSeen": [],
+      "pass": true
+    },
+    {
+      "command": "cmd /c echo cmd-child",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "shell",
+      "spawnError": null,
+      "outputTail": "cmd-child\n",
+      "samples": 26,
+      "consoleWindowsSeen": [],
+      "pass": true
+    },
+    {
+      "command": "bash -c \"echo bash-child\"",
+      "mode": "prepared",
+      "probeExit": 0,
+      "backend": "conpty",
+      "exitCode": 0,
+      "runtimeKind": "shell",
+      "spawnError": null,
+      "outputTail": "bash-child\n",
+      "samples": 26,
+      "consoleWindowsSeen": [],
+      "pass": true
+    }
+  ],
+  "verdict": "PASS"
+}

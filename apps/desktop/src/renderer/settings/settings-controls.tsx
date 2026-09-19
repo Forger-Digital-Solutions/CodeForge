@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from "react";
+import { getSettingDef, SETTING_SCOPE_LABELS, type SettingDef } from "./settings-defs.js";
 
 /**
  * CodeForge-native Settings controls. One visual system: every dropdown is the keyboard-accessible
@@ -192,16 +193,27 @@ export function SettingsRow({
   description,
   control,
   status,
+  settingId,
 }: {
   title: string;
   description?: string;
   control?: React.ReactNode;
   status?: "ok" | "warn" | "error" | "info";
+  /**
+   * Stable id from the canonical settings registry (settings-defs.ts). Rows that carry a
+   * registered id get a deep-link anchor (`#setting-<id>`), a scope chip, and the deep-link
+   * flash highlight for free — and they become reachable from settings search.
+   */
+  settingId?: string;
 }): React.ReactElement {
+  const def = settingId ? getSettingDef(settingId) : undefined;
   return (
-    <div className="settings-row">
+    <div className="settings-row" id={settingId ? `setting-${settingId}` : undefined} data-setting-id={settingId}>
       <div className="settings-row-main">
-        <div className="settings-row-title">{title}</div>
+        <div className="settings-row-title">
+          {title}
+          {def ? <span className="settings-scope-chip" title={scopeChipTitle(def)}>{SETTING_SCOPE_LABELS[def.scope]}</span> : null}
+        </div>
         {description ? <div className="settings-row-description">{description}</div> : null}
       </div>
       <div className="settings-row-control">
@@ -209,6 +221,19 @@ export function SettingsRow({
       </div>
     </div>
   );
+}
+
+function scopeChipTitle(def: SettingDef): string {
+  const parts = [
+    def.scope === "application"
+      ? "Stored with this CodeForge installation"
+      : def.scope === "account"
+        ? "Belongs to your signed-in CodeForge account"
+        : "Applies to the open workspace",
+  ];
+  if (def.restartRequired) parts.push("Takes effect after restart");
+  if (def.sensitive) parts.push("Sensitive — never shown in plaintext");
+  return parts.join(". ");
 }
 
 export function StatusBadge({ kind, children }: { kind: "ok" | "warn" | "error" | "info"; children?: React.ReactNode }): React.ReactElement {

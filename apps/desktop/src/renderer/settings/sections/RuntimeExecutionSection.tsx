@@ -27,6 +27,7 @@ export function RuntimeExecutionSection(): React.ReactElement {
 
       <SettingsGroup title="Execution target">
         <SettingsRow
+          settingId="execution-target"
           title="Execution model"
           description="CodeForge executes on this computer against your local files. Model inference runs on the route your selected model defines: CodeForge's hosted free infrastructure, or directly against a provider you connected."
           control={<StatusBadge kind="ok">Local execution</StatusBadge>}
@@ -60,6 +61,7 @@ export function RuntimeExecutionSection(): React.ReactElement {
 
       <SettingsGroup title="Limits">
         <SettingsRow
+          settingId="command-timeout"
           title="Safe command timeout"
           description="Commands are terminated after 60 seconds; verification commands get up to 5 minutes each."
           control={<span className="settings-value">60s / 300s</span>}

@@ -72,12 +72,14 @@ describe("Profile & Account identity rendering", () => {
   });
 });
 
-describe("General page account summary", () => {
-  it("summarizes the signed-in account and ForgeZero state", () => {
+describe("General page", () => {
+  it("summarizes the signed-in account as a link into Profile & Account", () => {
     const markup = renderSection(<GeneralSection />, createSettingsContext());
     expect(markup).toContain("Edward Schmidt");
-    expect(markup).toContain("GitHub connected ✓");
-    expect(markup).toContain("Verified Free");
+    expect(markup).toContain("@edward-s");
+    expect(markup).toContain("CodeForge Free");
+    // The full account surface lives in Profile & Account — General links, not duplicates.
+    expect(markup).toContain("Open Profile &amp; Account");
   });
 
   it("exposes the startup and recovery preferences as toggles bound to real state", () => {
@@ -85,9 +87,14 @@ describe("General page account summary", () => {
       settings: { ...FIXTURE_SETTINGS, general: { ...FIXTURE_SETTINGS.general, continueInterruptedAgents: false, openLastWorkspaceOnStartup: false } },
     });
     const markup = renderSection(<GeneralSection />, context);
-    // role=switch reflects the canonical stored value.
-    expect(markup).toMatch(/role="switch"[^>]*checked=""/);
     expect(markup).toContain("Continue interrupted CodeForge agents");
     expect(markup).toContain("Open last workspace on startup");
+    // Both stored values are false here: no switch may claim checked.
+    expect(markup).toMatch(/role="switch"/);
+    expect(markup).not.toMatch(/role="switch"[^>]*checked/);
+    const onContext = createSettingsContext({
+      settings: { ...FIXTURE_SETTINGS, general: { ...FIXTURE_SETTINGS.general, continueInterruptedAgents: true, openLastWorkspaceOnStartup: true } },
+    });
+    expect(renderSection(<GeneralSection />, onContext)).toMatch(/role="switch"[^>]*checked/);
   });
 });

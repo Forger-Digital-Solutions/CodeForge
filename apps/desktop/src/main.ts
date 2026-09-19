@@ -36,6 +36,7 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
 }
 
 import { CodeForgeServer, type CodeForgeRuntimeStatus } from "@codeforge/server";
+import { ExtensionManager, type ExtensionRecord, type ExtensionStateStore, type SecretStore } from "@codeforge/plugins";
 import { ForgeZero, createGenericFreeRecord, hashUserAccountIdentity, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider, createProviderAdapterFromDefinition, HostedProviderAdapter, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent, type ProviderResponseObservation } from "@codeforge/providers";
 import { createPaidAutoService } from "@codeforge/paid-auto";
@@ -69,6 +70,7 @@ import {
   type CloudEndpointManifest,
 } from "./cloud-endpoint.js";
 import { parsePersistedWindowState, restoreWindowState, type PersistedWindowState } from "./window-state.js";
+import { readSettingsFile, writeSettingsAtomicFile } from "./settings-store.js";
 import {
   classifyRuntimeMetadata,
   readRuntimeMetadata,
@@ -103,6 +105,9 @@ let freeCloud: FreeCloudService | null = null;
 /** R1: trusted-process provider connection authority (secure storage + enabled env credentials). */
 let providerConnections: ProviderConnections | null = null;
 let tray: Tray | null = null;
+let extensionManager: ExtensionManager | null = null;
+/** The workspace the runtime currently serves — surfaced to workspace:read extensions. */
+let currentWorkspacePath: string | null = null;
 let trayStatusTimer: NodeJS.Timeout | null = null;
 let isQuitting = false;
 let closeRequestInFlight = false;
@@ -371,41 +376,14 @@ function getStorePath(): string {
   return path.join(app.getPath("userData"), SETTINGS_FILE);
 }
 
+// The store primitives live in settings-store.ts where corruption/race/kill-during-write
+// behavior is unit-tested directly; these wrappers bind them to the userData path.
 function readSettings(): Record<string, unknown> {
-  try {
-    const storePath = getStorePath();
-    if (!fs.existsSync(storePath)) return {};
-    const raw = fs.readFileSync(storePath, "utf-8");
-    if (!raw.trim()) return {};
-    const parsed = JSON.parse(raw);
-    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return {};
-    return parsed as Record<string, unknown>;
-  } catch {
-    return {};
-  }
+  return readSettingsFile(getStorePath());
 }
 
 function writeSettingsAtomic(settings: Record<string, unknown>): boolean {
-  const storePath = getStorePath();
-  const tmpPath = `${storePath}.tmp`;
-  const data = JSON.stringify(settings, null, 2);
-  try {
-    fs.writeFileSync(tmpPath, data, { mode: 0o600 });
-    fs.renameSync(tmpPath, storePath);
-    try {
-      fs.chmodSync(storePath, 0o600);
-    } catch {
-      // Windows ignores chmod; best-effort
-    }
-    return true;
-  } catch {
-    try {
-      fs.unlinkSync(tmpPath);
-    } catch {
-      // ignore
-    }
-    return false;
-  }
+  return writeSettingsAtomicFile(getStorePath(), settings);
 }
 
 /**
@@ -602,6 +580,104 @@ function getSettingsSnapshot(): SettingsSnapshot {
   return { settings: readAppSettings(), closeBehavior: getCloseBehavior(), fresh: appSettingsFreshAtStartup };
 }
 
+// ---- Extensions ---------------------------------------------------------------------------
+// The extension host runs untrusted-ish code inside a node:vm sandbox in THIS process: the
+// sandbox global exposes only the permission-checked `codeforge` API — no require/process/fs/
+// network. State persists in settings.json; per-extension secrets are sealed with safeStorage
+// under their own key, namespaced by extension id, and deleted on uninstall.
+
+const EXTENSIONS_STATE_KEY = "codeforge:extensions";
+const EXTENSION_SECRETS_KEY = "codeforge:extension-secrets";
+
+const extensionStateStore: ExtensionStateStore = {
+  load: () => {
+    const raw = readSettings()[EXTENSIONS_STATE_KEY];
+    return typeof raw === "object" && raw !== null ? (raw as Record<string, ExtensionRecord>) : {};
+  },
+  save: (records) => {
+    const settings = readSettings();
+    settings[EXTENSIONS_STATE_KEY] = records;
+    writeSettingsAtomic(settings);
+  },
+};
+
+const extensionSecretStore: SecretStore = {
+  get: async (extensionId, key) => {
+    const raw = readSettings()[EXTENSION_SECRETS_KEY];
+    const all = typeof raw === "object" && raw !== null ? (raw as Record<string, Record<string, string>>) : {};
+    const sealed = all[extensionId]?.[key];
+    return sealed ? decryptCredential(sealed) : undefined;
+  },
+  set: async (extensionId, key, value) => {
+    const settings = readSettings();
+    const raw = settings[EXTENSION_SECRETS_KEY];
+    const all = typeof raw === "object" && raw !== null ? (raw as Record<string, Record<string, string>>) : {};
+    all[extensionId] = { ...all[extensionId], [key]: encryptCredential(value) };
+    settings[EXTENSION_SECRETS_KEY] = all;
+    if (!writeSettingsAtomic(settings)) throw new Error("Could not persist extension secret. Check that the CodeForge data folder is writable.");
+  },
+  delete: async (extensionId, key) => {
+    const settings = readSettings();
+    const raw = settings[EXTENSION_SECRETS_KEY];
+    const all = typeof raw === "object" && raw !== null ? (raw as Record<string, Record<string, string>>) : {};
+    if (all[extensionId]) {
+      delete all[extensionId][key];
+      settings[EXTENSION_SECRETS_KEY] = all;
+      writeSettingsAtomic(settings);
+    }
+  },
+  deleteAll: async (extensionId) => {
+    const settings = readSettings();
+    const raw = settings[EXTENSION_SECRETS_KEY];
+    const all = typeof raw === "object" && raw !== null ? (raw as Record<string, Record<string, string>>) : {};
+    if (extensionId in all) {
+      delete all[extensionId];
+      settings[EXTENSION_SECRETS_KEY] = all;
+      writeSettingsAtomic(settings);
+    }
+  },
+};
+
+/**
+ * Start the extension host after the runtime is up — never block app boot on extension code.
+ * Every failure mode lands inside the manager as a per-extension error state.
+ */
+async function initExtensions(): Promise<void> {
+  try {
+    extensionManager = new ExtensionManager({
+      extensionsDir: path.join(app.getPath("userData"), "extensions"),
+      stateStore: extensionStateStore,
+      secretStore: extensionSecretStore,
+      appVersion: app.getVersion(),
+      delegates: {
+        appVersion: app.getVersion(),
+        showNotification: (extensionId, title, body) => {
+          const prefs = readAppSettings().notifications;
+          if (!prefs.enabled) return;
+          if (prefs.onlyWhenInBackground && mainWindow?.isFocused()) return;
+          if (!Notification.isSupported()) return;
+          const notification = new Notification({
+            title: `${title}`.slice(0, 120),
+            body: `${body}`.slice(0, 250),
+            silent: true,
+          });
+          notification.on("click", () => restoreMainWindow());
+          notification.show();
+          logDiagnostic("info", "extension_notification", { extensionId, title });
+        },
+        getWorkspaceInfo: () =>
+          currentWorkspacePath ? { name: path.basename(currentWorkspacePath), rootPath: currentWorkspacePath } : null,
+        log: (extensionId, level, message) => logDiagnostic(level, "extension_log", { extensionId, message }),
+      },
+    });
+    await extensionManager.start();
+    logDiagnostic("info", "extension_host_started", { installed: extensionManager.list().length });
+  } catch (error) {
+    logDiagnostic("error", "extension_host_start_failed", { error: error instanceof Error ? error.message : String(error) });
+    extensionManager = null;
+  }
+}
+
 function resetAppSettings(): SettingsSnapshot {
   const store = readSettings();
   delete store[APP_SETTINGS_KEY];
@@ -697,6 +773,10 @@ async function completeSafeQuit(): Promise<void> {
   }
   shutdownPromise = (async () => {
     console.log("[CodeForge] quit: stopping local runtime");
+    if (extensionManager) {
+      await extensionManager.stop().catch(() => {});
+      extensionManager = null;
+    }
     if (server) {
       await server.stop();
       server = null;
@@ -1124,6 +1204,7 @@ async function initializeServer(dbPath: string): Promise<void> {
       if (recent && fs.existsSync(recent.path)) {
         try {
           server.setWorkspace(recent.path);
+          currentWorkspacePath = recent.path;
         } catch {
           // ignore
         }
@@ -1131,6 +1212,9 @@ async function initializeServer(dbPath: string): Promise<void> {
     }
     smokeRecord("INIT_SERVER_STARTED");
     await applyStartupServerSettings();
+    // Extension host starts after the runtime: extensions must never block or crash app boot.
+    // Their own failures are contained per-extension inside the manager.
+    await initExtensions();
   } catch (err) {
     smokeRecord(`INIT_SERVER_ERROR: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}`);
     throw err;
@@ -1923,6 +2007,14 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   await captureSettings("08-settings-agents", "Agent steering");
   await clickSettingsNav("Verification & Safety");
   await captureSettings("09-settings-safety", "Completion gate");
+  await clickSettingsNav("Repository Intelligence");
+  await captureSettings("09a-settings-repo-intel", "structural index");
+  smokeRecord("settings_repo_intel_page=PASS");
+  // The seeded fixture must appear on the Extensions page — renderer → preload → IPC →
+  // manager → UI inside the packaged product.
+  await clickSettingsNav("Extensions");
+  await captureSettings("09b-settings-extensions", "Smoke Probe");
+  smokeRecord("settings_extensions_page=PASS");
   await clickSettingsNav("Provider Connections");
   await captureSettings("10-settings-providers", "OpenRouter");
   await clickSettingsNav("About");
@@ -1953,6 +2045,47 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   const backText = await evaluateRenderer<string>("document.body.innerText");
   if (backText.includes("Search settings")) throw new Error("settings walkthrough: Back did not return to the workspace");
   smokeRecord("settings_back_to_workspace=PASS");
+
+  // --- Settings control plane + extension host (packaged evidence) ---
+  // Round-trip a persisted leaf through the real bridge → IPC → settings.json, then verify
+  // the bytes on disk — not just the snapshot the IPC returned.
+  await evaluateRenderer<void>(`window.electronAPI.updateSettings({ settings: { appearance: { reducedMotion: true } } })`);
+  const settingsNow = await evaluateRenderer<{ settings?: { appearance?: { reducedMotion?: boolean } } }>(`window.electronAPI.getSettings()`);
+  if (settingsNow?.settings?.appearance?.reducedMotion !== true) throw new Error("Packaged settings update did not round-trip through the bridge");
+  if (readAppSettings().appearance.reducedMotion !== true) throw new Error("Packaged settings update never reached settings.json");
+  await evaluateRenderer<void>(`window.electronAPI.updateSettings({ settings: { appearance: { reducedMotion: false } } })`);
+  smokeRecord("packaged_settings_roundtrip=PASS");
+
+  const rejected = await evaluateRenderer<string>(`window.electronAPI.updateSettings({ settings: { appearance: { reducedMotion: "yes" } } }).then(() => "accepted", () => "rejected")`);
+  if (rejected !== "rejected") throw new Error("Packaged settings accepted an invalid patch");
+  smokeRecord("packaged_settings_invalid_rejected=PASS");
+
+  // Extension host: the seeded fixture must be discovered + activated; the corrupt manifest
+  // must be contained as an error state without taking the host down.
+  const extensions = await evaluateRenderer<Array<{ id: string; status: string; lastError?: string }>>(`window.electronAPI.listExtensions()`);
+  const smokeExt = extensions.find((e) => e.id === "acme.smoke");
+  if (!smokeExt) throw new Error(`Packaged extension host did not list the seeded fixture: ${JSON.stringify(extensions)}`);
+  if (smokeExt.status !== "active") throw new Error(`Seeded extension status was "${smokeExt.status}": ${smokeExt.lastError ?? "no error recorded"}`);
+  const brokenExt = extensions.find((e) => e.id === "acme.broken");
+  if (!brokenExt || brokenExt.status !== "error") throw new Error(`Corrupt extension was not contained as an error state: ${JSON.stringify(brokenExt)}`);
+  smokeRecord("packaged_extensions_loaded=PASS");
+
+  // Command execution proves the vm host runs extension code in the packaged build. The
+  // fixture asserts workspace:read sees the project opened AFTER activation — a stale
+  // activation-time snapshot fails this.
+  const command = await evaluateRenderer<{ ok: boolean; error?: string }>(`window.electronAPI.runExtensionCommand("acme.smoke", "acme.smoke.ping")`);
+  if (!command.ok) throw new Error(`Packaged extension command failed: ${command.error}`);
+  smokeRecord("packaged_extension_command=PASS");
+  smokeRecord("packaged_extension_workspace_read=PASS");
+
+  // Disable → reported disabled + commands refused; re-enable → active again.
+  if (!(await evaluateRenderer<boolean>(`window.electronAPI.setExtensionEnabled("acme.smoke", false)`))) throw new Error("setExtensionEnabled(false) returned false");
+  const disabledExt = (await evaluateRenderer<Array<{ id: string; status: string }>>(`window.electronAPI.listExtensions()`)).find((e) => e.id === "acme.smoke");
+  if (disabledExt?.status !== "disabled") throw new Error(`Extension did not report disabled: ${disabledExt?.status}`);
+  const deniedCommand = await evaluateRenderer<{ ok: boolean }>(`window.electronAPI.runExtensionCommand("acme.smoke", "acme.smoke.ping")`);
+  if (deniedCommand.ok) throw new Error("Disabled extension still ran commands");
+  if (!(await evaluateRenderer<boolean>(`window.electronAPI.setExtensionEnabled("acme.smoke", true)`))) throw new Error("setExtensionEnabled(true) returned false");
+  smokeRecord("packaged_extension_lifecycle=PASS");
 
   verifyCredentialPersistence(testSecret);
   smokeRecord("safe_storage_available=PASS");
@@ -2463,6 +2596,7 @@ ipcMain.handle("project:open", async (event, projectPath: string) => {
   };
   saveRecentProject(project);
   server?.setWorkspace(normalized);
+  currentWorkspacePath = normalized;
   return project;
 });
 
@@ -2481,6 +2615,7 @@ ipcMain.handle("project:create", async (event) => {
   saveRecentProject(project);
   try {
     server?.setWorkspace(selectedPath);
+    currentWorkspacePath = selectedPath;
   } catch {
     // Ignore workspace set failure if path doesn't exist
   }
@@ -2541,6 +2676,72 @@ ipcMain.handle("settings:reset", async (event): Promise<SettingsSnapshot> => {
   const defaults = parseAppSettings(undefined);
   await applyRuntimeSettings(defaults, previous);
   return resetAppSettings();
+});
+
+// ---- Extension IPC ------------------------------------------------------------------------
+// Every handler validates its payload and goes through the manager; a missing manager (host
+// failed to start) answers truthfully instead of throwing into the renderer.
+
+ipcMain.handle("extensions:list", (event) => {
+  assertMainWindowSender(event);
+  return extensionManager?.list() ?? [];
+});
+
+ipcMain.handle("extensions:setEnabled", async (event, payload: { extensionId?: unknown; enabled?: unknown }) => {
+  assertMainWindowSender(event);
+  if (typeof payload?.extensionId !== "string" || typeof payload.enabled !== "boolean") {
+    throw new Error("Invalid extension payload");
+  }
+  if (!extensionManager) return false;
+  return extensionManager.setEnabled(payload.extensionId, payload.enabled);
+});
+
+ipcMain.handle("extensions:uninstall", async (event, extensionId: unknown) => {
+  assertMainWindowSender(event);
+  if (typeof extensionId !== "string" || extensionId.length === 0) throw new Error("Invalid extension id");
+  if (!extensionManager) return false;
+  return extensionManager.uninstall(extensionId);
+});
+
+ipcMain.handle("extensions:loadDevFolder", async (event) => {
+  assertMainWindowSender(event);
+  if (!mainWindow || !extensionManager) return null;
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: "Choose a CodeForge extension folder",
+    properties: ["openDirectory"],
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return extensionManager.loadDeveloperExtension(result.filePaths[0]!);
+});
+
+ipcMain.handle("extensions:getSetting", (event, payload: { extensionId?: unknown; key?: unknown }) => {
+  assertMainWindowSender(event);
+  if (typeof payload?.extensionId !== "string" || typeof payload.key !== "string") {
+    throw new Error("Invalid extension settings payload");
+  }
+  return extensionManager?.getSetting(payload.extensionId, payload.key);
+});
+
+ipcMain.handle("extensions:setSetting", async (event, payload: { extensionId?: unknown; key?: unknown; value?: unknown }) => {
+  assertMainWindowSender(event);
+  if (typeof payload?.extensionId !== "string" || typeof payload.key !== "string") {
+    throw new Error("Invalid extension settings payload");
+  }
+  if (payload.value !== undefined && typeof payload.value !== "boolean" && typeof payload.value !== "string") {
+    throw new Error("Extension settings accept booleans and strings only");
+  }
+  if (!extensionManager) return false;
+  return extensionManager.setSetting(payload.extensionId, payload.key, payload.value);
+});
+
+ipcMain.handle("extensions:runCommand", async (event, payload: { extensionId?: unknown; commandId?: unknown; args?: unknown }) => {
+  assertMainWindowSender(event);
+  if (typeof payload?.extensionId !== "string" || typeof payload.commandId !== "string") {
+    throw new Error("Invalid extension command payload");
+  }
+  if (!extensionManager) return { ok: false, error: "Extension host is not running" };
+  const args = Array.isArray(payload.args) ? payload.args : [];
+  return extensionManager.runCommand(payload.extensionId, payload.commandId, args);
 });
 
 /**

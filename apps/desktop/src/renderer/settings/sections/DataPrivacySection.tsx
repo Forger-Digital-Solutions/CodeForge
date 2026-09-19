@@ -34,6 +34,7 @@ export function DataPrivacySection(): React.ReactElement {
 
       <SettingsGroup title="Code & content handling">
         <SettingsRow
+          settingId="privacy-routing"
           title="Provider routing"
           description="ForgeAuto only uses ForgeZero-verified $0 routes. The privacy mode below controls which free endpoints qualify: Strict excludes endpoints whose free tiers may train on or retain your prompts (for example Gemini's free tier)."
           control={
@@ -62,6 +63,7 @@ export function DataPrivacySection(): React.ReactElement {
           description="Tasks, turns, and verification evidence are stored locally in this computer's CodeForge data folder. CodeForge Cloud receives only what a Cloud feature you use needs: model requests routed through Hosted Free (relayed, not stored) and the commit bundle of a delivery you choose to publish (deleted after the push)."
         />
         <SettingsRow
+          settingId="clear-recent-projects"
           title="Clear recent projects"
           description="Removes the recent-projects list from this device. Your files and task history are not touched."
           control={<SettingsButton onClick={() => void ctx.clearRecentProjects()}>Clear list</SettingsButton>}
@@ -80,6 +82,7 @@ export function DataPrivacySection(): React.ReactElement {
           control={<SettingsButton onClick={() => void ctx.openDataFolder()}>Open data folder</SettingsButton>}
         />
         <SettingsRow
+          settingId="diagnostic-bundle"
           title="Support bundle"
           description="Writes a sanitized diagnostic bundle (app state, connection classes, and recent log output — never credentials or code) into the diagnostics folder for you to share with support."
           control={<ExportBundleButton />}

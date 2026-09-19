@@ -39,6 +39,11 @@ const requiredMarkers = {
     'packaged_renderer_lifecycle_chain=PASS',
     'packaged_zero_prompt_workflow=PASS',
     'packaged_failure_repair_pass=PASS', 'packaged_renderer_reload_count=5', 'packaged_renderer_reload=PASS', 'credential_plaintext_absent=PASS',
+    // Settings control plane + extension host: real bridge round-trip, strict rejection, fixture
+    // extension discovery/activation, permission-gated command, live workspace:read, lifecycle.
+    'packaged_settings_roundtrip=PASS', 'packaged_settings_invalid_rejected=PASS',
+    'packaged_extensions_loaded=PASS', 'packaged_extension_command=PASS', 'packaged_extension_workspace_read=PASS',
+    'packaged_extension_lifecycle=PASS', 'settings_repo_intel_page=PASS', 'settings_extensions_page=PASS',
     // Local control-plane trust boundary: bearer never reaches the renderer, main authenticates the
     // primary document, everything else (no/wrong bearer, forged origin, secondary renderer) fails closed.
     'control_plane_renderer_bearer_absent=PASS', 'control_plane_trusted_renderer=PASS', 'control_plane_missing_bearer_rejected=PASS',
@@ -69,6 +74,36 @@ if (mode === 'full') {
     writeFileSync(join(noiseRoot, `module-${String(index).padStart(4, '0')}.ts`), `${noiseLines}\nexport const distraction${index} = ${index};\n`);
   }
   try { rmSync(smokeOut, { force: true }); } catch {}
+
+  // Seed extension fixtures into the fresh userData profile before launch: one valid extension
+  // (must be discovered + activated by the packaged host) and one corrupt manifest (must be
+  // contained as a per-extension error state, never crash boot).
+  const smokeExtensionsDir = join(smokeProfile, 'extensions');
+  mkdirSync(join(smokeExtensionsDir, 'acme.smoke'), { recursive: true });
+  writeFileSync(join(smokeExtensionsDir, 'acme.smoke', 'codeforge-extension.json'), JSON.stringify({
+    id: 'acme.smoke',
+    name: 'Smoke Probe',
+    version: '1.0.0',
+    description: 'Packaged-smoke fixture proving the extension host runs inside the installed product.',
+    main: 'extension.js',
+    engines: { codeforge: '*' },
+    permissions: ['commands:register', 'workspace:read'],
+    contributes: { commands: [{ id: 'acme.smoke.ping', title: 'Ping' }] },
+  }, null, 2));
+  writeFileSync(join(smokeExtensionsDir, 'acme.smoke', 'extension.js'), [
+    'module.exports = {',
+    '  activate(codeforge) {',
+    '    codeforge.commands.register("acme.smoke.ping", () => {',
+    '      const name = codeforge.workspace.name;',
+    '      if (name !== "smoke-workspace") throw new Error("workspace:read saw " + name);',
+    '      return "pong";',
+    '    });',
+    '  },',
+    '};',
+    '',
+  ].join('\n'));
+  mkdirSync(join(smokeExtensionsDir, 'acme.broken'), { recursive: true });
+  writeFileSync(join(smokeExtensionsDir, 'acme.broken', 'codeforge-extension.json'), '{ not json');
 }
 
 const startingSize = existsSync(smokeOut) ? readFileSync(smokeOut).length : 0;

@@ -158,6 +158,28 @@ const api = {
   clearRecentProjects: () => {
     return ipcRenderer.invoke("project:clearRecent");
   },
+  // --- Extensions (managed host; manifests declare every capability) ---
+  listExtensions: () => {
+    return ipcRenderer.invoke("extensions:list");
+  },
+  setExtensionEnabled: (extensionId, enabled) => {
+    return ipcRenderer.invoke("extensions:setEnabled", { extensionId, enabled });
+  },
+  uninstallExtension: (extensionId) => {
+    return ipcRenderer.invoke("extensions:uninstall", extensionId);
+  },
+  loadExtensionFolder: () => {
+    return ipcRenderer.invoke("extensions:loadDevFolder");
+  },
+  getExtensionSetting: (extensionId, key) => {
+    return ipcRenderer.invoke("extensions:getSetting", { extensionId, key });
+  },
+  setExtensionSetting: (extensionId, key, value) => {
+    return ipcRenderer.invoke("extensions:setSetting", { extensionId, key, value });
+  },
+  runExtensionCommand: (extensionId, commandId, args) => {
+    return ipcRenderer.invoke("extensions:runCommand", { extensionId, commandId, args });
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);

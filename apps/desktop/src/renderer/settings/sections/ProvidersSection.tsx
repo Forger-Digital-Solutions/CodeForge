@@ -159,6 +159,7 @@ export function ProvidersSection(props: ProvidersSectionProps = {}): React.React
 
       <SettingsGroup title={`Detected environment credentials (${detected.length})`}>
         <SettingsRow
+          settingId="env-credential-policy"
           title="Use detected environment credentials"
           description="CodeForge looks only at environment variables that providers document (never files or history). Values never leave the trusted process; Settings shows names only."
           control={

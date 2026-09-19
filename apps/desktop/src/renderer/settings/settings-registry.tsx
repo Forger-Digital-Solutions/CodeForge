@@ -7,14 +7,17 @@ import { AgentsSection } from "./sections/AgentsSection.js";
 import { VerificationSafetySection } from "./sections/VerificationSafetySection.js";
 import { GemsSection } from "./sections/GemsSection.js";
 import { WorkspacesSection } from "./sections/WorkspacesSection.js";
+import { RepositoryIntelligenceSection } from "./sections/RepositoryIntelligenceSection.js";
 import { GitGithubSection } from "./sections/GitGithubSection.js";
 import { RuntimeExecutionSection } from "./sections/RuntimeExecutionSection.js";
 import { NotificationsSection } from "./sections/NotificationsSection.js";
 import { ApplicationBackgroundSection } from "./sections/ApplicationBackgroundSection.js";
 import { DataPrivacySection } from "./sections/DataPrivacySection.js";
 import { ProvidersSection } from "./sections/ProvidersSection.js";
+import { ExtensionsSection } from "./sections/ExtensionsSection.js";
 import { AdvancedSection } from "./sections/AdvancedSection.js";
 import { AboutSection } from "./sections/AboutSection.js";
+import { SETTING_DEFS, SETTING_SCOPE_LABELS, type SettingDef } from "./settings-defs.js";
 
 export interface SettingsSectionDef {
   id: string;
@@ -76,8 +79,8 @@ export const SETTINGS_SECTIONS: SettingsSectionDef[] = [
     label: "Verification & Safety",
     group: "CodeForge",
     component: VerificationSafetySection,
-    keywords: ["verification", "forgeverify", "completion gate", "safety", "workspace boundary", "secret", "redaction", "destructive", "confirmation", "evidence"],
-    description: "ForgeVerify, the completion gate, and always-on safety protections.",
+    keywords: ["verification", "forgeverify", "completion gate", "safety", "workspace boundary", "secret", "redaction", "destructive", "confirmation", "evidence", "forgezero", "zero billing"],
+    description: "ForgeVerify, ForgeZero, the completion gate, and always-on safety protections.",
   },
   {
     id: "gems",
@@ -92,8 +95,16 @@ export const SETTINGS_SECTIONS: SettingsSectionDef[] = [
     label: "Workspaces",
     group: "Workspace",
     component: WorkspacesSection,
-    keywords: ["workspace", "projects", "recent", "folder", "trust", "boundary", "repository intelligence", "index"],
-    description: "Workspace selection, recent projects, and Repository Intelligence.",
+    keywords: ["workspace", "projects", "recent", "folder", "trust", "boundary", "remove", "open project"],
+    description: "Workspace selection, recent projects, and project boundaries.",
+  },
+  {
+    id: "repository-intelligence",
+    label: "Repository Intelligence",
+    group: "Workspace",
+    component: RepositoryIntelligenceSection,
+    keywords: ["index", "indexing", "symbols", "structural", "code intelligence", "scan", "rebuild", "repository"],
+    description: "The local structural index CodeForge builds over the open workspace.",
   },
   {
     id: "git",
@@ -144,6 +155,14 @@ export const SETTINGS_SECTIONS: SettingsSectionDef[] = [
     description: "Free cloud connections, detected environment credentials, and BYOK providers.",
   },
   {
+    id: "extensions",
+    label: "Extensions",
+    group: "Integrations",
+    component: ExtensionsSection,
+    keywords: ["extensions", "plugins", "add-ons", "permissions", "developer", "install", "uninstall", "enable", "disable"],
+    description: "Installed extensions, their permissions, and the developer loading path.",
+  },
+  {
     id: "advanced",
     label: "Advanced",
     group: "Advanced",
@@ -176,43 +195,80 @@ function normalize(text: string): string[] {
 }
 
 export interface SettingsSearchResult {
+  /** Section to navigate to. */
   id: string;
   label: string;
   group: string;
   description: string;
+  /** When the match is an individual setting, its anchor id inside the section. */
+  settingId?: string;
+  /** True when the result is the section itself rather than a setting inside it. */
+  isSection: boolean;
 }
 
 /**
- * Search the settings index: section labels, descriptions, and keyword aliases all match.
- * "tray" finds close behavior, "github" finds the account surfaces, "model" finds routing.
+ * Search the settings index at the *setting* level: every registered control in SETTING_DEFS is
+ * searchable by title, aliases, and scope label, and section names/descriptions/keywords still
+ * match whole pages. A setting-level result deep-links straight to its row.
  */
 export function searchSettings(query: string): SettingsSearchResult[] {
   const terms = normalize(query);
   if (terms.length === 0) return [];
-  const results: Array<{ section: SettingsSectionDef; score: number }> = [];
-  for (const section of SETTINGS_SECTIONS) {
-    const haystackLabel = normalize(section.label);
-    const haystackKeywords = normalize(section.keywords.join(" "));
-    const haystackDescription = normalize(section.description);
+  const results: Array<{ result: SettingsSearchResult; score: number }> = [];
+
+  const matchScore = (haystacks: Array<{ words: string[]; weight: number }>): number => {
     let score = 0;
-    let matchedAll = true;
     for (const term of terms) {
-      if (haystackLabel.some((word) => word.startsWith(term))) score += 3;
-      else if (haystackKeywords.some((word) => word.includes(term))) score += 2;
-      else if (haystackDescription.some((word) => word.includes(term))) score += 1;
-      else {
-        matchedAll = false;
-        break;
+      let termScore = 0;
+      for (const { words, weight } of haystacks) {
+        if (words.some((word) => word.startsWith(term))) { termScore = Math.max(termScore, weight * 2); }
+        else if (words.some((word) => word.includes(term))) { termScore = Math.max(termScore, weight); }
       }
+      if (termScore === 0) return 0;
+      score += termScore;
     }
-    if (matchedAll && score > 0) results.push({ section, score });
+    return score;
+  };
+
+  for (const section of SETTINGS_SECTIONS) {
+    const sectionScore = matchScore([
+      { words: normalize(section.label), weight: 3 },
+      { words: normalize(section.keywords.join(" ")), weight: 2 },
+      { words: normalize(section.description), weight: 1 },
+    ]);
+    if (sectionScore > 0) {
+      results.push({
+        result: { id: section.id, label: section.label, group: section.group, description: section.description, isSection: true },
+        score: sectionScore,
+      });
+    }
   }
+
+  for (const def of SETTING_DEFS) {
+    const section = getSettingsSection(def.sectionId);
+    if (!section) continue;
+    const score = matchScore([
+      { words: normalize(def.title), weight: 3 },
+      { words: normalize(def.keywords.join(" ")), weight: 2 },
+      { words: normalize(SETTING_SCOPE_LABELS[def.scope]), weight: 1 },
+      { words: normalize(section.label), weight: 1 },
+    ]);
+    if (score > 0) {
+      results.push({
+        result: {
+          id: def.sectionId,
+          settingId: def.id,
+          label: def.title,
+          group: section.label,
+          description: SETTING_SCOPE_LABELS[def.scope],
+          isSection: false,
+        },
+        score,
+      });
+    }
+  }
+
   return results
     .sort((a, b) => b.score - a.score)
-    .map(({ section }) => ({
-      id: section.id,
-      label: section.label,
-      group: section.group,
-      description: section.description,
-    }));
+    .map(({ result }) => result);
 }

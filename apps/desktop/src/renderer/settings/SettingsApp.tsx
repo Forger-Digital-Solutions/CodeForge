@@ -21,9 +21,13 @@ export default function SettingsApp({ context, initialSection }: SettingsAppProp
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   const results = useMemo<SettingsSearchResult[]>(() => searchSettings(query), [query]);
+  const [flashSetting, setFlashSetting] = useState<string | null>(null);
 
-  const navigate = useCallback((sectionId: string) => {
-    if (getSettingsSection(sectionId)) setCurrentSection(sectionId);
+  const navigate = useCallback((sectionId: string, settingId?: string) => {
+    if (getSettingsSection(sectionId)) {
+      setCurrentSection(sectionId);
+      setFlashSetting(settingId ?? null);
+    }
   }, []);
 
   // Deep links (account menu → Profile, header buttons, palette) arrive as prop changes after
@@ -35,6 +39,23 @@ export default function SettingsApp({ context, initialSection }: SettingsAppProp
   useEffect(() => {
     contentRef.current?.scrollTo({ top: 0 });
   }, [currentSection]);
+
+  // Setting-level deep link: after the target section renders, scroll the specific row into view
+  // and flash it so the user can see exactly which control the search result referred to.
+  useEffect(() => {
+    if (!flashSetting) return;
+    const root = contentRef.current;
+    if (!root) return;
+    const row = root.querySelector<HTMLElement>(`#setting-${CSS.escape(flashSetting)}`);
+    if (!row) return;
+    row.scrollIntoView({ block: "center" });
+    row.classList.add("setting-flash");
+    const timer = window.setTimeout(() => row.classList.remove("setting-flash"), 1600);
+    return () => {
+      window.clearTimeout(timer);
+      row.classList.remove("setting-flash");
+    };
+  }, [flashSetting, currentSection]);
 
   // Keyboard convention: "/" (or Ctrl+F) jumps to settings search; Escape closes results.
   useEffect(() => {
@@ -92,18 +113,18 @@ export default function SettingsApp({ context, initialSection }: SettingsAppProp
                 ) : (
                   results.map((result) => (
                     <button
-                      key={result.id}
+                      key={result.settingId ? `${result.id}:${result.settingId}` : result.id}
                       type="button"
                       role="option"
-                      aria-selected={result.id === currentSection}
+                      aria-selected={result.id === currentSection && !result.settingId}
                       className="settings-search-result"
                       onClick={() => {
-                        navigate(result.id);
+                        navigate(result.id, result.settingId);
                         setQuery("");
                       }}
                     >
-                      {result.label}
-                      <span className="settings-search-result-hint">{result.group}</span>
+                      {result.isSection ? result.label : `${result.group} › ${result.label}`}
+                      <span className="settings-search-result-hint">{result.isSection ? result.group : result.description}</span>
                     </button>
                   ))
                 )}

@@ -50,11 +50,13 @@ export function AdvancedSection(): React.ReactElement {
 
       <SettingsGroup title="Maintenance">
         <SettingsRow
+          settingId="open-data-folder"
           title="Open data folder"
           description="settings.json, the local session database, and logs live in this folder."
           control={<SettingsButton onClick={() => void ctx.openDataFolder()}>Open</SettingsButton>}
         />
         <SettingsRow
+          settingId="reset-preferences"
           title="Reset application preferences"
           description="Resets Settings preferences (startup, agents, appearance, notifications, privacy routing, default model) to their defaults. Provider credentials, close behavior, and workspace history are kept."
           control={
