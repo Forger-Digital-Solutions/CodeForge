@@ -44,6 +44,14 @@ function CodeForgeMark(): React.ReactElement {
   );
 }
 
+function GitHubMark(): React.ReactElement {
+  return (
+    <svg className="github-mark" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+    </svg>
+  );
+}
+
 export default function AuthScreen({ onAuthenticated }: AuthScreenProps): React.ReactElement {
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,19 +104,23 @@ export default function AuthScreen({ onAuthenticated }: AuthScreenProps): React.
       <section className="auth-card" aria-labelledby="auth-title">
         <CodeForgeMark />
         <div className="auth-wordmark">CODEFORGE</div>
-        <h1 id="auth-title">Build software with AI.</h1>
+        <h1 id="auth-title">Your AI coding agent.</h1>
         <p className="auth-subtitle">
-          CodeForge is an AI coding agent for your Windows projects. It reads your code, makes changes, runs your
-          tests, and shows you exactly what it did — starting on the free CodeForge models, no API key required.
+          Build, fix, and understand software with an agent that works directly with your project.
+        </p>
+        <p className="auth-subtitle auth-subtitle-detail">
+          CodeForge can explore your codebase, edit files, run commands and tests, and show you exactly what it changed.
+        </p>
+        <p className="auth-free-note">
+          Start free with CodeForge-managed AI models. No API key required.
         </p>
         {error && <AuthErrorMessage message={error} />}
-        {!checkingAck && !acknowledged && (
+        {!checkingAck && (
           <label className="auth-first-run-ack">
             <input type="checkbox" checked={acknowledged} onChange={(e) => setAcknowledged(e.target.checked)} />
             <span>
-              I am 18 years of age or older, and I understand CodeForge reads/writes files and runs commands on this
-              computer using my operating-system permissions. Review approval settings before allowing autonomous
-              actions.
+              I’m 18 or older and understand that CodeForge can read and modify project files and run commands on
+              this computer according to my approval settings.
             </span>
           </label>
         )}
@@ -118,19 +130,29 @@ export default function AuthScreen({ onAuthenticated }: AuthScreenProps): React.
           onClick={() => void signIn()}
           disabled={signingIn || checkingAck || !acknowledged}
         >
-          <span className="github-glyph" aria-hidden="true">●</span>
+          <GitHubMark />
           {signingIn ? "Opening GitHub…" : "Continue with GitHub"}
         </button>
         <p className="auth-identity-note">
-          Signing in with GitHub creates your free CodeForge account; CodeForge only asks for your public profile.
-          You can connect your own AI providers later — you never need to for the free models.
+          GitHub sign-in creates your free CodeForge account. Connect repositories or your own AI providers later
+          if you want — neither is required to start using CodeForge Free.
         </p>
-        {(isConfiguredLink(PRIVACY_URL) || isConfiguredLink(TERMS_URL)) && (
-          <div className="auth-links">
-            {isConfiguredLink(PRIVACY_URL) && <button type="button" onClick={() => void window.electronAPI?.openExternal?.(PRIVACY_URL)}>Privacy</button>}
-            {isConfiguredLink(PRIVACY_URL) && isConfiguredLink(TERMS_URL) && <span aria-hidden="true">·</span>}
-            {isConfiguredLink(TERMS_URL) && <button type="button" onClick={() => void window.electronAPI?.openExternal?.(TERMS_URL)}>Terms</button>}
-          </div>
+        {(isConfiguredLink(TERMS_URL) || isConfiguredLink(PRIVACY_URL)) && (
+          <p className="auth-legal-note">
+            By continuing, you agree to the{" "}
+            {isConfiguredLink(TERMS_URL) ? (
+              <button type="button" className="auth-legal-link" onClick={() => void window.electronAPI?.openExternal?.(TERMS_URL)}>Terms of Service</button>
+            ) : (
+              "Terms of Service"
+            )}{" "}
+            and acknowledge the{" "}
+            {isConfiguredLink(PRIVACY_URL) ? (
+              <button type="button" className="auth-legal-link" onClick={() => void window.electronAPI?.openExternal?.(PRIVACY_URL)}>Privacy Policy</button>
+            ) : (
+              "Privacy Policy"
+            )}
+            .
+          </p>
         )}
       </section>
     </main>

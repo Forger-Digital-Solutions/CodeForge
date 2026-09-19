@@ -127,6 +127,8 @@ interface ProjectInfo {
   path: string;
   name: string;
   lastOpened: string;
+  /** False when the recorded folder no longer exists on disk (moved/deleted/unmounted drive). */
+  exists?: boolean;
 }
 
 const RECENT_PROJECTS_KEY = "codeforge:recent-projects";
@@ -2407,9 +2409,26 @@ ipcMain.handle("project:getRecent", async (event) => {
       path: path.resolve(process.env.CODEFORGE_SMOKE_WORKSPACE),
       name: path.basename(process.env.CODEFORGE_SMOKE_WORKSPACE),
       lastOpened: new Date().toISOString(),
+      exists: true,
     } satisfies ProjectInfo];
   }
-  return getRecentProjects();
+  // Existence is reported, not filtered: a missing folder may be a detached drive the user can
+  // reconnect, so the launcher dims it instead of silently forgetting it.
+  return getRecentProjects().map((p) => ({ ...p, exists: fs.existsSync(p.path) }));
+});
+
+ipcMain.handle("project:removeRecent", async (event, projectPath: string) => {
+  assertMainWindowSender(event);
+  if (typeof projectPath !== "string" || projectPath.length === 0 || projectPath.length > 1024) {
+    throw new Error("Invalid project path");
+  }
+  const normalized = path.resolve(path.normalize(projectPath));
+  const settings = readSettings();
+  const recent = Array.isArray(settings[RECENT_PROJECTS_KEY])
+    ? (settings[RECENT_PROJECTS_KEY] as ProjectInfo[])
+    : [];
+  settings[RECENT_PROJECTS_KEY] = recent.filter((p) => typeof p.path === "string" && p.path !== normalized);
+  if (!writeSettingsAtomic(settings)) throw new Error("Could not update recent projects. Check that the CodeForge data folder is writable.");
 });
 
 ipcMain.handle("project:clearRecent", async (event) => {

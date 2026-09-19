@@ -22,11 +22,32 @@ describe("desktop account header layout", () => {
     // R16: the sign-in screen answers a new user's questions in product language — no API key is
     // needed for the free models, and providers are an optional later step, never "configuration".
     const auth = renderer("AuthScreen.tsx");
-    expect(auth).toContain("no API key required");
-    expect(auth).toContain("You can connect your own AI providers later");
+    expect(auth).toContain("No API key required");
+    expect(auth).toContain("your own AI providers later");
     expect(auth).not.toContain("Provider configuration");
     expect(renderer("settings/sections/ProfileSection.tsx")).toContain("30-day period");
     expect(auth).not.toContain("500,000 monthly credits");
+  });
+
+  it("sign-in CTA renders the real GitHub mark, not a placeholder glyph", () => {
+    const auth = renderer("AuthScreen.tsx");
+    // The official Octocat silhouette path ships inline (viewBox 0 0 24 24); the old "●" bullet in
+    // a circle border read as a generic target icon.
+    expect(auth).toContain("GitHubMark");
+    expect(auth).toContain('viewBox="0 0 24 24"');
+    expect(auth).not.toContain("github-glyph");
+    expect(auth).toContain("Continue with GitHub");
+  });
+
+  it("first-run acknowledgement stays explicit about file and command access", () => {
+    const auth = renderer("AuthScreen.tsx");
+    expect(auth).toContain("18 or older");
+    expect(auth).toContain("read and modify project files");
+    expect(auth).toContain("run commands");
+    expect(auth).toContain("approval settings");
+    // No implication of unrestricted OS access.
+    expect(auth).not.toContain("full access");
+    expect(auth).not.toContain("any file on this computer");
   });
 
   it("never renders a legal link that has no published destination", () => {

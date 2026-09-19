@@ -5,6 +5,7 @@ interface WelcomeScreenProps {
   recentProjects: Project[];
   onOpenProject: (path?: string) => void;
   onCreateProject: () => void;
+  onRemoveRecent: (path: string) => void;
   loading: boolean;
   error: string | null;
 }
@@ -25,10 +26,37 @@ function PlusGlyph(): React.ReactElement {
   );
 }
 
+function CheckGlyph(): React.ReactElement {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M2 6.2 4.8 9 10 3.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/** Compact human delta for the launcher list — intentionally coarse (folders, not feeds). */
+export function formatLastOpened(iso: string, now: number = Date.now()): string {
+  const then = Date.parse(iso);
+  if (!Number.isFinite(then)) return "";
+  const minutes = Math.max(0, Math.floor((now - then) / 60000));
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "Yesterday";
+  if (days < 30) return `${days} days ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} month${months === 1 ? "" : "s"} ago`;
+  const years = Math.floor(months / 12);
+  return `${years} year${years === 1 ? "" : "s"} ago`;
+}
+
 export default function WelcomeScreen({
   recentProjects,
   onOpenProject,
   onCreateProject,
+  onRemoveRecent,
   loading,
   error,
 }: WelcomeScreenProps) {
@@ -37,7 +65,7 @@ export default function WelcomeScreen({
       <div className="welcome-container">
         <div className="welcome-header">
           <div className="welcome-logo">
-            <svg width="64" height="64" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CodeForge">
+            <svg width="80" height="80" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CodeForge">
               <defs>
                 <radialGradient id="ws-bg" cx="50%" cy="50%" r="68%"><stop offset="0%" stopColor="#1e1f24"/><stop offset="100%" stopColor="#0a0b0d"/></radialGradient>
                 <linearGradient id="ws-rim" x1="8%" y1="8%" x2="92%" y2="92%"><stop offset="0%" stopColor="#f1f2f4"/><stop offset="42%" stopColor="#a8adb5"/><stop offset="100%" stopColor="#7d828a"/></linearGradient>
@@ -65,10 +93,10 @@ export default function WelcomeScreen({
               <circle cx="77.8" cy="76.2" r="7.8" fill="url(#ws-sphere)" stroke="#c2c6cd" strokeWidth="0.5"/>
             </svg>
           </div>
-          <h1 className="welcome-title">CodeForge</h1>
-          <p className="welcome-subtitle">Your AI coding agent, ready to work.</p>
+          <h1 className="welcome-title">Welcome to CodeForge</h1>
+          <p className="welcome-subtitle">What are we building today?</p>
 
-          <p className="welcome-context-note">Open the folder that holds your code to start a task there.</p>
+          <p className="welcome-context-note">Open an existing project or create a new workspace to get started.</p>
         </div>
 
         {error && (
@@ -84,7 +112,7 @@ export default function WelcomeScreen({
             disabled={loading}
           >
             <FolderGlyph />
-            <span>Open a folder…</span>
+            <span>Open project folder</span>
           </button>
           <button
             className="welcome-btn secondary"
@@ -93,35 +121,62 @@ export default function WelcomeScreen({
             title="Pick a location and create a new, empty project folder"
           >
             <PlusGlyph />
-            <span>New empty project…</span>
+            <span>Create new project</span>
           </button>
         </div>
 
         {recentProjects.length > 0 && (
           <div className="welcome-recent">
-            <h3 className="welcome-recent-title">Recent Projects</h3>
+            <h3 className="welcome-recent-title">Recent projects</h3>
             <ul className="welcome-recent-list">
-              {recentProjects.slice(0, 5).map((project) => (
-                <li key={project.id}>
-                  <button
-                    className="welcome-recent-item"
-                    onClick={() => onOpenProject(project.path)}
-                    disabled={loading}
-                  >
-                    <span className="recent-icon" aria-hidden="true"><FolderGlyph /></span>
-                    <div className="recent-info">
-                      <span className="recent-name">{project.name}</span>
-                      <span className="recent-path">{project.path}</span>
+              {recentProjects.slice(0, 5).map((project) => {
+                const stale = project.exists === false;
+                const lastOpened = formatLastOpened(project.lastOpened);
+                return (
+                  <li key={project.id}>
+                    <div className={`welcome-recent-row${stale ? " stale" : ""}`}>
+                      <button
+                        className="welcome-recent-item"
+                        onClick={() => onOpenProject(project.path)}
+                        disabled={loading}
+                        title={stale ? "This folder no longer exists at this path" : project.path}
+                      >
+                        <span className="recent-icon" aria-hidden="true"><FolderGlyph /></span>
+                        <div className="recent-info">
+                          <span className="recent-name">
+                            {project.name}
+                            {stale && <span className="recent-stale-badge">folder not found</span>}
+                          </span>
+                          <span className="recent-path">
+                            {project.path}
+                            {lastOpened && <span className="recent-time">{stale ? "" : ` · ${lastOpened}`}</span>}
+                          </span>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        className="recent-remove"
+                        aria-label={`Remove ${project.name} from recent projects`}
+                        title={stale ? "Remove missing folder from the list" : "Remove from recent projects"}
+                        onClick={() => onRemoveRecent(project.path)}
+                        disabled={loading}
+                      >
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
+                          <path d="M1.5 1.5 9.5 9.5M9.5 1.5 1.5 9.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                        </svg>
+                      </button>
                     </div>
-                  </button>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
 
-        <div className="welcome-footer">
-          <p>Free CodeForge models included · No API key needed · Every change is verified before it is called done</p>
+        <div className="welcome-benefits">
+          <span className="welcome-benefit"><CheckGlyph />Free AI models included</span>
+          <span className="welcome-benefit"><CheckGlyph />No API key required</span>
+          <span className="welcome-benefit"><CheckGlyph />Changes verified before completion</span>
         </div>
       </div>
     </div>

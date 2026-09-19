@@ -1,0 +1,67 @@
+{
+  "screen": "welcome",
+  "results": [
+    {
+      "name": "welcome-renders",
+      "status": "PASS",
+      "detail": {
+        "title": "Welcome to CodeForge",
+        "sub": "What are we building today?"
+      }
+    },
+    {
+      "name": "welcome-copy",
+      "status": "PASS",
+      "detail": {
+        "chars": 500
+      }
+    },
+    {
+      "name": "recents-or-firstrun",
+      "status": "PASS",
+      "detail": {
+        "count": 3,
+        "names": [
+          "DeletedFolderFOLDER NOT FOUND",
+          "bugfix-repo",
+          "CodeForge-R5-Portable-Sample"
+        ],
+        "stale": 1,
+        "removes": 3,
+        "times": [
+          "",
+          " · 40 minutes ago",
+          " · 1 hour ago"
+        ]
+      }
+    },
+    {
+      "name": "welcome-responsive",
+      "status": "PASS",
+      "detail": {
+        "1920x1080": {
+          "h": false,
+          "w": 1920,
+          "cw": 1920
+        },
+        "1366x768": {
+          "h": false,
+          "w": 1366,
+          "cw": 1366
+        },
+        "760x800": {
+          "h": false,
+          "w": 760,
+          "cw": 760
+        }
+      }
+    },
+    {
+      "name": "no-console-errors",
+      "status": "PASS",
+      "detail": {
+        "errors": 0
+      }
+    }
+  ]
+}

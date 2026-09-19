@@ -12,6 +12,8 @@ export interface Project {
   path: string;
   name: string;
   lastOpened: string;
+  /** Absent on older records; false means the folder no longer exists on disk. */
+  exists?: boolean;
 }
 
 /**
@@ -162,6 +164,15 @@ export default function App() {
     }
   };
 
+  const handleRemoveRecentProject = async (projectPath: string) => {
+    try {
+      await window.electronAPI?.removeRecentProject?.(projectPath);
+      setRecentProjects((prev) => prev.filter((p) => p.path !== projectPath));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update recent projects");
+    }
+  };
+
   const handleCloseProject = () => {
     setCurrentProject(null);
     loadRecentProjects(false);
@@ -214,6 +225,7 @@ export default function App() {
         recentProjects={recentProjects}
         onOpenProject={handleOpenProject}
         onCreateProject={handleCreateProject}
+        onRemoveRecent={handleRemoveRecentProject}
         loading={loading}
         error={error}
       />

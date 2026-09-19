@@ -18,8 +18,11 @@ const api = {
   selectDirectory: (): Promise<string | null> => {
     return ipcRenderer.invoke("dialog:selectDirectory");
   },
-  getRecentProjects: (): Promise<Array<{ id: string; path: string; name: string; lastOpened: string }>> => {
+  getRecentProjects: (): Promise<Array<{ id: string; path: string; name: string; lastOpened: string; exists?: boolean }>> => {
     return ipcRenderer.invoke("project:getRecent");
+  },
+  removeRecentProject: (path: string): Promise<void> => {
+    return ipcRenderer.invoke("project:removeRecent", path);
   },
   openProject: (path: string): Promise<{ id: string; path: string; name: string; lastOpened: string }> => {
     return ipcRenderer.invoke("project:open", path);

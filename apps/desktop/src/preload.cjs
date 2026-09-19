@@ -20,6 +20,9 @@ const api = {
   getRecentProjects: () => {
     return ipcRenderer.invoke("project:getRecent");
   },
+  removeRecentProject: (path) => {
+    return ipcRenderer.invoke("project:removeRecent", path);
+  },
   openProject: (path) => {
     return ipcRenderer.invoke("project:open", path);
   },

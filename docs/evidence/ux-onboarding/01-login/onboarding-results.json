@@ -1,0 +1,76 @@
+{
+  "screen": "auth",
+  "results": [
+    {
+      "name": "auth-screen-renders",
+      "status": "PASS",
+      "detail": {
+        "title": "Your AI coding agent.",
+        "wordmark": "CODEFORGE",
+        "free": "Start free with CodeForge-managed AI models. No API key required."
+      }
+    },
+    {
+      "name": "new-copy",
+      "status": "PASS",
+      "detail": {
+        "chars": 641
+      }
+    },
+    {
+      "name": "github-mark-real",
+      "status": "PASS",
+      "detail": {
+        "hasMark": true,
+        "octocatPath": true,
+        "glyphGone": true,
+        "disabled": true
+      }
+    },
+    {
+      "name": "cta-gated-by-ack",
+      "status": "PASS",
+      "detail": {
+        "gated": true
+      }
+    },
+    {
+      "name": "auth-responsive",
+      "status": "PASS",
+      "detail": {
+        "1600x900": {
+          "h": false,
+          "w": 1600,
+          "cw": 1600
+        },
+        "1366x768": {
+          "h": false,
+          "w": 1366,
+          "cw": 1366
+        },
+        "820x720": {
+          "h": false,
+          "w": 820,
+          "cw": 820
+        }
+      }
+    },
+    {
+      "name": "auth-tab-order",
+      "status": "PASS",
+      "detail": [
+        "BUTTON:Continue with GitHub",
+        "INPUT:checkbox",
+        "BUTTON:Continue with GitHub",
+        "INPUT:checkbox"
+      ]
+    },
+    {
+      "name": "no-console-errors",
+      "status": "PASS",
+      "detail": {
+        "errors": 0
+      }
+    }
+  ]
+}
