@@ -72,6 +72,45 @@ describe("PostgresCloudDatabase — async schema init (boot-fix)", () => {
     new PostgresCloudDatabase({ pool });
     expect(() => emitPoolError(new Error("connection reset"))).not.toThrow();
   });
+
+  it("preserves the deployed v8 ledger entry and stages audit storage as v9", () => {
+    const billingIndexes = MIGRATIONS.find((migration) => migration.version === 8);
+    const securityAudit = MIGRATIONS.find((migration) => migration.version === 9);
+
+    expect(billingIndexes).toMatchObject({
+      name: "008_billing_identity_indexes",
+      checksum: "184aa7546716eb4175564b3c243903b26cf37bc737fee8245743d0b84dd2829c",
+    });
+    expect(securityAudit?.postgresUp).toContain("security_audit_events");
+    expect(securityAudit?.postgresUp).toContain("ALTER COLUMN github_code_verifier TYPE TEXT");
+  });
+
+  it("upgrades a database stamped with the deployed v8 checksum", async () => {
+    const queries: Array<{ sql: string; params?: unknown[] }> = [];
+    const billingIndexes = MIGRATIONS.find((migration) => migration.version === 8)!;
+    const securityAudit = MIGRATIONS.find((migration) => migration.version === 9)!;
+    const client = {
+      query: async (sql: string, params?: unknown[]) => {
+        queries.push({ sql, params });
+        if (sql.includes("SELECT checksum FROM cloud_schema_migrations") && params?.[0] === 8) {
+          return { rows: [{ checksum: billingIndexes.checksum }] };
+        }
+        return { rows: [] as unknown[] };
+      },
+      release: () => {},
+    };
+    const pool = {
+      connect: async () => client,
+      query: async () => ({ rows: [] as unknown[] }),
+      on: () => {},
+      end: async () => {},
+    } as unknown as import("pg").Pool;
+
+    const db = new PostgresCloudDatabase({ pool });
+    await expect(db.init()).resolves.toBeUndefined();
+    expect(queries.some(({ sql }) => sql === billingIndexes.postgresUp)).toBe(false);
+    expect(queries.some(({ sql }) => sql === securityAudit.postgresUp)).toBe(true);
+  });
 });
 
 // Real Postgres integration — runs ONLY when a disposable/staging DATABASE_URL is provided.

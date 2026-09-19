@@ -826,12 +826,25 @@ CREATE INDEX IF NOT EXISTS idx_browser_sessions_token_hash ON browser_sessions(s
 CREATE INDEX IF NOT EXISTS idx_browser_sessions_user_id ON browser_sessions(user_id);
 `;
 
-// Migration 008 (Security R1): a dedicated, append-only security audit trail. Rows carry an opaque
-// user id, an IP, a stable event type, an outcome, and small redacted details — never a
-// credential, token, or payload. Account deletion severs the user link (SECURITY_AUDIT retention
-// class) instead of deleting rows, so post-deletion abuse investigation remains possible without
-// keeping an identifiable account.
 const MIGRATION_8_SQLITE = `
+-- Stripe customer/subscription references are account-bound identities.
+-- Partial indexes preserve support for multiple free rows with NULL Stripe references.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_subscriptions_stripe_sub_unique
+  ON subscriptions(stripe_subscription_id) WHERE stripe_subscription_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_subscriptions_stripe_cust_unique
+  ON subscriptions(stripe_customer_id) WHERE stripe_customer_id IS NOT NULL;
+`;
+
+const MIGRATION_8_POSTGRES = `
+CREATE UNIQUE INDEX IF NOT EXISTS idx_subscriptions_stripe_sub_unique
+  ON subscriptions(stripe_subscription_id) WHERE stripe_subscription_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_subscriptions_stripe_cust_unique
+  ON subscriptions(stripe_customer_id) WHERE stripe_customer_id IS NOT NULL;
+`;
+
+// Migration 009 preserves migration 008's deployed checksum and adds security audit storage in
+// a new, immutable ledger entry. Account deletion severs the user link rather than the audit row.
+const MIGRATION_9_SQLITE = `
 CREATE TABLE IF NOT EXISTS security_audit_events (
   id TEXT PRIMARY KEY,
   occurred_at TEXT NOT NULL,
@@ -846,8 +859,7 @@ CREATE INDEX IF NOT EXISTS idx_security_audit_events_user_id ON security_audit_e
 CREATE INDEX IF NOT EXISTS idx_security_audit_events_type_time ON security_audit_events(event_type, occurred_at);
 `;
 
-const MIGRATION_8_POSTGRES = `
--- Sealed PKCE verifiers are envelope strings (~220 chars), longer than the original VARCHAR(128).
+const MIGRATION_9_POSTGRES = `
 ALTER TABLE browser_oauth_transactions ALTER COLUMN github_code_verifier TYPE TEXT;
 
 CREATE TABLE IF NOT EXISTS security_audit_events (
@@ -916,10 +928,17 @@ export const MIGRATIONS: MigrationDefinition[] = [
   },
   {
     version: 8,
-    name: "008_security_audit_events",
+    name: "008_billing_identity_indexes",
     sqliteUp: MIGRATION_8_SQLITE,
     postgresUp: MIGRATION_8_POSTGRES,
     checksum: computeChecksum(MIGRATION_8_SQLITE),
+  },
+  {
+    version: 9,
+    name: "009_security_audit_events_and_pkce_sealing",
+    sqliteUp: MIGRATION_9_SQLITE,
+    postgresUp: MIGRATION_9_POSTGRES,
+    checksum: computeChecksum(MIGRATION_9_SQLITE),
   },
 ];
 
