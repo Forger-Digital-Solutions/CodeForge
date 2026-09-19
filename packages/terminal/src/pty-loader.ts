@@ -61,3 +61,31 @@ export function conptySupported(platform: NodeJS.Platform = process.platform): b
 export function __setPtyModuleForTest(mod: PtyModule | null | undefined): void {
   cached = mod;
 }
+
+interface PtyAgentInternals {
+  _pty?: number;
+  _ptyNative?: { kill(pty: number, useConptyDll?: boolean): void };
+  _useConptyDll?: boolean;
+  _inSocket?: { destroy(): void };
+  _outSocket?: { destroy(): void };
+  _conoutSocketWorker?: { dispose(): void };
+}
+
+/**
+ * Release a finished/killed pty's agent handles WITHOUT going through p.kill(). On the
+ * non-dll ConPTY path kill() forks conpty_console_list_agent, which crashes with
+ * "AttachConsole failed" once the console is already gone; on the dll path kill() only
+ * disposes its conout reader worker when more data arrives, so a quiet exit leaks a
+ * worker_thread and pins the event loop. Do the equivalent teardown directly.
+ */
+export function teardownPty(p: PtyLike): void {
+  const agent = (p as unknown as { _agent?: PtyAgentInternals })._agent;
+  try { agent?._ptyNative?.kill(agent._pty ?? -1, agent._useConptyDll); } catch { /* best effort */ }
+  try { agent?._conoutSocketWorker?.dispose(); } catch { /* best effort */ }
+  try { agent?._outSocket?.destroy(); } catch { /* best effort */ }
+  try { agent?._inSocket?.destroy(); } catch { /* best effort */ }
+  // Fallback for shapes that don't expose internals.
+  if (!agent) {
+    try { p.kill(); } catch { /* already gone */ }
+  }
+}

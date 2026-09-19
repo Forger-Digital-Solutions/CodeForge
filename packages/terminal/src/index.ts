@@ -1,4 +1,4 @@
-export { loadPty, conptySupported, __setPtyModuleForTest, type PtyLike, type PtySpawnOptions } from "./pty-loader.js";
+export { loadPty, conptySupported, teardownPty, __setPtyModuleForTest, type PtyLike, type PtySpawnOptions } from "./pty-loader.js";
 export { stripAnsi, stripCommandEcho } from "./ansi.js";
 export { defaultShell, commandShell } from "./shells.js";
 export {

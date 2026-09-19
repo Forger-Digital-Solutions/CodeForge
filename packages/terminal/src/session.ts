@@ -1,4 +1,4 @@
-import { loadPty, type PtyLike } from "./pty-loader.js";
+import { loadPty, teardownPty, type PtyLike } from "./pty-loader.js";
 import { defaultShell, resolveExecutable } from "./shells.js";
 
 /**
@@ -53,8 +53,9 @@ export class TerminalSession {
     this.pty.onExit(({ exitCode, signal }) => {
       this.exited = true;
       this.exitCode = exitCode;
-      // Release the agent's named pipes so the event loop can drain.
-      try { this.pty.kill(); } catch { /* already gone */ }
+      // Defer teardown so trailing output flushes; the dll kill path only disposes its
+      // conout worker on new data, so a quiet exit would leak a worker_thread.
+      setTimeout(() => teardownPty(this.pty), 50);
       for (const listener of this.exitListeners) listener(exitCode, signal);
     });
   }

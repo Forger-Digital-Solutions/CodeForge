@@ -1,8 +1,9 @@
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { stripAnsi, stripCommandEcho } from "./ansi.js";
 import { commandShell, resolveExecutable } from "./shells.js";
-import { loadPty, type PtyLike } from "./pty-loader.js";
+import { loadPty, teardownPty, type PtyLike } from "./pty-loader.js";
 
 /**
  * Headless command execution with zero external console windows.
@@ -92,6 +93,9 @@ export function executePrepared(prepared: PreparedSpec, spec: Omit<ExecSpec, "co
 // ConPTY path (Windows, node-pty present)
 // ---------------------------------------------------------------------------
 
+const EXIT_SENTINEL_PREFIX = "__CFX_";
+const EXIT_SENTINEL_RE = /__CFX_[A-Za-z0-9]+_(\d+)\r?\n?/;
+
 async function executeViaConpty(spec: ExecSpec): Promise<ExecResult> {
   const ptyModule = loadPty();
   if (!ptyModule) return executeViaPipe(spec);
@@ -101,11 +105,13 @@ async function executeViaConpty(spec: ExecSpec): Promise<ExecResult> {
   const rawFile = spec.commandLine ? commandShell(env).file : spec.file!;
   // node-pty does not PATH-search; resolve bare names before spawning.
   const file = resolveExecutable(rawFile, env) ?? rawFile;
-  // A string args value is appended to the command line verbatim (node-pty's
-  // argsToCommandLine) — an args ARRAY would get per-arg quoting that mangles the
-  // embedded quotes in `cmd /c node -e "..."` style command lines.
+  // Per-invocation sentinel: `cmd /v:on` delayed expansion makes !errorlevel! evaluate
+  // at echo time, so the real exit code arrives IN THE OUTPUT STREAM when the command
+  // finishes — node-pty's ConPTY onExit lags 1.5–3.5s behind the actual process exit
+  // and is only a fallback here.
+  const sentinel = `${EXIT_SENTINEL_PREFIX}${randomUUID().replace(/-/g, "")}`;
   const args: string | string[] = spec.commandLine
-    ? `${commandShell(env).args.join(" ")} ${spec.commandLine}`
+    ? `/d /v:on /c ${spec.commandLine} & echo ${sentinel}_!errorlevel!`
     : (spec.args ?? []);
 
   return new Promise<ExecResult>((resolve) => {
@@ -113,6 +119,7 @@ async function executeViaConpty(spec: ExecSpec): Promise<ExecResult> {
     let settled = false;
     let timedOut = false;
     let cancelled = false;
+    let sentinelCode: number | null = null;
     let p: PtyLike;
     try {
       p = ptyModule.spawn(file, args, {
@@ -122,9 +129,6 @@ async function executeViaConpty(spec: ExecSpec): Promise<ExecResult> {
         cwd: spec.cwd,
         env: env as Record<string, string>,
         useConpty: true,
-        // The in-process ConPTY dll path avoids node-pty's external agent helper —
-        // no conpty_console_list_agent crashes and clean teardown on natural exit.
-        useConptyDll: true,
       });
     } catch (error) {
       resolve({
@@ -148,9 +152,11 @@ async function executeViaConpty(spec: ExecSpec): Promise<ExecResult> {
       abortListener?.();
       dataListener?.dispose();
       exitListener?.dispose();
-      // useConptyDll makes kill() a pure native teardown (socket destroy + TerminateProcess)
-      // — no agent fork, safe after natural exit, and required to release the pipe handles.
-      try { p.kill(); } catch { /* already gone */ }
+      // Defer teardown a beat so trailing output still in the conout pipe is delivered,
+      // then release the agent handles — node-pty's dll kill() only disposes its conout
+      // worker when further data arrives, so a quiet exit would leak a worker_thread and
+      // pin the event loop.
+      setTimeout(() => teardownPty(p), 50);
       const code = timedOut ? 124 : cancelled ? 130 : exitCode;
       const stripped = spec.commandLine
         ? stripCommandEcho(stripAnsi(output), spec.commandLine)
@@ -169,7 +175,8 @@ async function executeViaConpty(spec: ExecSpec): Promise<ExecResult> {
 
     const stop = (): void => {
       if (settled) return;
-      try { p.kill(); } catch { /* already gone */ }
+      // taskkill /T /F on the pty's root pid kills the whole tree; p.kill() would race
+      // it — its console-list agent crashes once the console is already destroyed.
       terminateProcessTreeByPid(p.pid);
       // ConPTY teardown is asynchronous; give the exit event a beat, then force-settle.
       setTimeout(() => finish(1), 500);
@@ -194,9 +201,23 @@ async function executeViaConpty(spec: ExecSpec): Promise<ExecResult> {
 
     const dataListener = p.onData((chunk) => {
       output += chunk;
-      spec.onOutput?.(chunk, "stdout");
+      if (!spec.commandLine || sentinelCode !== null) {
+        spec.onOutput?.(chunk, "stdout");
+        return;
+      }
+      // Sentinel carries the real exit code in-stream; strip it before it reaches callers.
+      const match = EXIT_SENTINEL_RE.exec(output);
+      if (match) {
+        sentinelCode = Number(match[1]);
+        output = output.replace(EXIT_SENTINEL_RE, "");
+        spec.onOutput?.(chunk, "stdout");
+        // Command is done — don't wait on node-pty's lagging exit detection.
+        setTimeout(() => finish(sentinelCode!), 10);
+      } else {
+        spec.onOutput?.(chunk, "stdout");
+      }
     });
-    const exitListener = p.onExit(({ exitCode }) => finish(exitCode));
+    const exitListener = p.onExit(({ exitCode }) => finish(sentinelCode ?? exitCode));
   });
 }
 
