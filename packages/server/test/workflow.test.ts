@@ -96,6 +96,8 @@ describe("Workflow Server Integration", () => {
   });
 
   it("workflow approval flow blocks until resolved", async () => {
+    // Plan: Review First is the mode under which a plan card is a decision at all.
+    await fetchJson(`http://localhost:${port}/api/sessions/sess-approve/authority`, { planMode: "review_first" });
     const runRes = await fetchJson(`http://localhost:${port}/api/workflow/run`, {
       sessionId: "sess-approve",
       message: "Implement multi file feature for provider routing across several modules",

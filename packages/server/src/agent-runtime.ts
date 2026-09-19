@@ -23,6 +23,12 @@ import { spawn } from "node:child_process";
 import { redactSecrets } from "@codeforge/secrets";
 import { prepareShellCommand, terminateProcessTree } from "@codeforge/workflow";
 import { classifyCommand } from "./command-classifier.js";
+import {
+  createTaskAuthority,
+  createLease,
+  type ActionDescriptor,
+  type TaskAuthority,
+} from "@codeforge/permissions";
 import { ApprovalService, type ApprovalRecord, type ApprovalGateResult } from "./approval-service.js";
 import { getSanitizedEnvForChild } from "./env-filter.js";
 import { searchWorkspace } from "./search-service.js";
@@ -360,6 +366,14 @@ export interface AgentRuntimeOptions {
   paidAuto?: PaidAutoService;
   /** Shared provider pacing. Supplying one explicitly also governs deterministic test adapters. */
   capacityGovernor?: ProviderCapacityGovernor;
+  /**
+   * Task-scoped authority lookup. When supplied, every tool action resolves
+   * through the shared TaskPermissionLease (modes + grant patterns) so plan
+   * approval, tool gating, and repair turns share one authority. Absent = a
+   * legacy-equivalent local authority (ask_more), preserving pre-lease behavior
+   * for direct-constructed runtimes.
+   */
+  authorityFor?: () => TaskAuthority;
 }
 
 function toWorkerActionType(toolName: string): DesktopWorkerActionType {
@@ -477,12 +491,9 @@ export class AgentRuntime {
   private readonly paidAuto?: PaidAutoService;
   private readonly capacityGovernor: ProviderCapacityGovernor;
   private readonly capacityGovernorIsExplicit: boolean;
-  /**
-   * "Allow for Session" grants, keyed by `${action}@${risk}` (e.g. `write@moderate`). Held in
-   * memory for this session's runtime only — a grant never outlives the process and is never
-   * consulted for high or critical risk, which always asks (Settings › Agents › Approval policy).
-   */
-  private readonly sessionGrants = new Set<string>();
+  private readonly authorityFor?: () => TaskAuthority;
+  /** Legacy-parity authority used when no shared lease is wired (direct-constructed runtimes). */
+  private fallbackAuthority?: TaskAuthority;
   private readonly hostedWorker?: HostedWorkerOptions;
   private readonly runtimeOwnerId = crypto.randomUUID();
   private parentContinuationId?: string;
@@ -513,6 +524,20 @@ export class AgentRuntime {
     this.capacityGovernor = options.capacityGovernor ?? defaultCapacityGovernor;
     this.capacityGovernorIsExplicit = options.capacityGovernor !== undefined;
     this.hostedWorker = options.hostedWorker;
+    this.authorityFor = options.authorityFor;
+  }
+
+  private authority(): TaskAuthority {
+    if (this.authorityFor) return this.authorityFor();
+    // ask_more + review_first reproduces the pre-lease behavior exactly: every
+    // mutating action and non-read-only command asked, nothing persisted.
+    this.fallbackAuthority ??= createTaskAuthority(createLease({
+      sessionId: this.sessionId,
+      workspaceRoot: this.workspacePath ?? "",
+      permissionMode: "ask_more",
+      planMode: "review_first",
+    }));
+    return this.fallbackAuthority;
   }
 
   /** Must be awaited once before first use — recreates durable intent at a process boundary. */
@@ -3184,13 +3209,17 @@ export class AgentRuntime {
     if (parsedTc === PARSE_FAILED) {
       return { kind: "failed", reason: "invalid_tool_arguments" };
     }
-    const approvalNeeded = this.requiresApproval(tc.name, parsedTc);
-    if (approvalNeeded.requires && !this.hasSessionGrant(approvalNeeded)) {
+    const actionDesc = this.describeAction(tc.name, parsedTc);
+    const resolution = this.authority().resolve(actionDesc);
+    if (resolution.decision === "deny") {
+      return { kind: "failed", reason: "policy_denied" };
+    }
+    if (resolution.decision === "ask") {
       const gateResult = await this.gateWithApproval(
         turnId,
         tc.name,
         tc.id,
-        approvalNeeded,
+        actionDesc,
         adapter,
         signal,
       );
@@ -4036,14 +4065,20 @@ export class AgentRuntime {
       }
     }
 
-    // Risk classification & approval gate (authoritative)
-    const approvalNeeded = this.requiresApproval(toolName, parsedArgs);
-    if (approvalNeeded.requires && !this.hasSessionGrant(approvalNeeded)) {
+    // Policy resolution (authoritative): workflow transitions are not permission
+    // boundaries — only trust-boundary crossings escalate to the user.
+    const actionDesc = this.describeAction(toolName, parsedArgs);
+    const resolution = this.authority().resolve(actionDesc);
+    if (resolution.decision === "deny") {
+      adapter.emitToolExecutionBlocked(turnId, toolCallId, toolName, "policy_denied");
+      return `[Denied by permission policy: ${resolution.classified.tierReasons.join("; ")}]`;
+    }
+    if (resolution.decision === "ask") {
       const gateResult = await this.gateWithApproval(
         turnId,
         toolName,
         toolCallId,
-        approvalNeeded,
+        actionDesc,
         adapter,
         signal,
       );
@@ -4173,23 +4208,19 @@ export class AgentRuntime {
     }
   }
 
-  private static sessionGrantKey(approval: { action: string; risk: "safe" | "moderate" | "high" | "critical" }): string | null {
-    // Destructive or privileged actions are never granted for a whole session.
-    if (approval.risk === "high" || approval.risk === "critical") return null;
-    return `${approval.action}@${approval.risk}`;
-  }
-
-  private hasSessionGrant(approval: { action: string; risk: "safe" | "moderate" | "high" | "critical" }): boolean {
-    const key = AgentRuntime.sessionGrantKey(approval);
-    return key !== null && this.sessionGrants.has(key);
-  }
-
-  private rememberSessionGrant(approval: { action: string; risk: "safe" | "moderate" | "high" | "critical" }): void {
-    const key = AgentRuntime.sessionGrantKey(approval);
-    if (key !== null) this.sessionGrants.add(key);
-  }
-
-  private requiresApproval(toolName: string, args: unknown): { requires: boolean; risk: "safe" | "moderate" | "high" | "critical"; reason: string; action: string } {
+  /**
+   * Build the deterministic action descriptor the policy engine resolves. The
+   * model never self-classifies — containment comes from validatePath, command
+   * risk from classifyCommand.
+   */
+  private describeAction(toolName: string, args: unknown): ActionDescriptor {
+    const argPath = (args as { path?: unknown })?.path;
+    const inside = (p: unknown): boolean =>
+      typeof p !== "string" || p.length === 0 ? true : this.validatePath(p).valid;
+    // Reads are only "outside" when a workspace boundary actually exists — with no
+    // configured workspace there is no envelope to leave, and a read must never park.
+    const insideForRead = (p: unknown): boolean =>
+      typeof p !== "string" || p.length === 0 ? true : this.workspacePath ? this.validatePath(p).valid : true;
     switch (toolName) {
       case "read_file":
       case "list_files":
@@ -4202,28 +4233,46 @@ export class AgentRuntime {
       case "repo_tests":
       case "repo_context":
       case "repo_index_status":
-        return { requires: false, risk: "safe", reason: "read-only", action: "read" };
+        return {
+          tool: toolName,
+          action: "read",
+          reason: typeof argPath === "string" && argPath.length > 0 ? `read ${argPath}` : "read-only",
+          ...(typeof argPath === "string" ? { targetPath: argPath } : {}),
+          insideWorkspace: insideForRead(argPath),
+          risk: "safe",
+        };
       case "write_file":
       case "edit_file": {
-        // Name the file: an approval the user cannot understand is not a real decision.
-        const target = (args as { path?: unknown })?.path;
-        const reason = typeof target === "string" && target.length > 0 ? `${toolName === "write_file" ? "write" : "edit"} ${target}` : "file modification";
-        return { requires: true, risk: "moderate", reason, action: "write" };
+        const reason = typeof argPath === "string" && argPath.length > 0 ? `${toolName === "write_file" ? "write" : "edit"} ${argPath}` : "file modification";
+        return {
+          tool: toolName,
+          action: "write",
+          reason,
+          ...(typeof argPath === "string" ? { targetPath: argPath } : {}),
+          insideWorkspace: inside(argPath),
+          risk: "moderate",
+        };
       }
       case "create_checkpoint":
-        return { requires: false, risk: "safe", reason: "checkpoint is safe", action: "checkpoint" };
+        return { tool: toolName, action: "checkpoint", reason: "checkpoint is safe", insideWorkspace: true, risk: "safe" };
       case "run_command": {
         const cmd = (args as { command?: string })?.command ?? "";
+        const cwd = (args as { cwd?: unknown })?.cwd;
         const cls = classifyCommand(cmd);
-        const requires = cls.requiresApproval;
-        const risk = cls.risk as "safe" | "moderate" | "high" | "critical";
-        // Show the command itself first; the classification explains the risk it was given.
         const why = cls.reasons.join("; ") || cls.category;
         const reason = cmd.trim().length > 0 ? `${cmd.trim().slice(0, 200)} — ${why}` : why;
-        return { requires, risk, reason, action: "exec" };
+        return {
+          tool: toolName,
+          action: "exec",
+          reason,
+          command: cmd,
+          insideWorkspace: inside(cwd),
+          risk: cls.risk,
+          category: cls.category,
+        };
       }
       default:
-        return { requires: true, risk: "moderate", reason: "unknown tool requires approval", action: toolName };
+        return { tool: toolName, action: toolName, reason: "unknown tool requires approval", insideWorkspace: true, risk: "moderate" };
     }
   }
 
@@ -4231,7 +4280,7 @@ export class AgentRuntime {
     turnId: string,
     toolName: string,
     toolCallId: string,
-    approvalNeeded: { risk: "safe" | "moderate" | "high" | "critical"; reason: string; action: string },
+    actionDesc: ActionDescriptor,
     adapter: WorkspaceEventAdapter,
     signal: AbortSignal,
   ): Promise<{ approved: boolean; state: string; reason?: string }> {
@@ -4248,9 +4297,9 @@ export class AgentRuntime {
     const { approvalId, promise } = this.approvalService.requestApproval({
       turnId,
       tool: toolName,
-      action: approvalNeeded.action,
-      description: `${toolName}: ${approvalNeeded.reason}`,
-      risk: approvalNeeded.risk,
+      action: actionDesc.action,
+      description: `${toolName}: ${actionDesc.reason}`,
+      risk: actionDesc.risk,
       scope: this.workspacePath,
       signal,
     });
@@ -4262,22 +4311,28 @@ export class AgentRuntime {
       sessionId: this.sessionId,
       turnId,
       tool: toolName,
-      action: approvalNeeded.action,
-      description: `${toolName}: ${approvalNeeded.reason}`,
-      risk: approvalNeeded.risk,
+      action: actionDesc.action,
+      description: `${toolName}: ${actionDesc.reason}`,
+      risk: actionDesc.risk,
       scope: this.workspacePath,
       createdAt: new Date().toISOString(),
     });
 
     // Emit approval requested for UI
-    await adapter.emitApprovalRequested(approvalId, toolName, approvalNeeded.action, `${toolName}: ${approvalNeeded.reason}`, approvalNeeded.risk, this.workspacePath);
+    await adapter.emitApprovalRequested(approvalId, toolName, actionDesc.action, `${toolName}: ${actionDesc.reason}`, actionDesc.risk, this.workspacePath);
 
     // Race the service promise vs legacy resolution via HTTP
     // The service promise resolves via ApprovalService.resolve(); legacy also needs bridging
     // We bridge by having resolveApproval call service.resolve which fulfills promise.
     // So just await service promise; but also need to handle signal cancellation already wired inside service.
     const result = await promise;
-    if (result.approved && result.decision === "allow_session") this.rememberSessionGrant(approvalNeeded);
+    if (result.approved && result.decision === "allow_session") {
+      // "Allow for task" mints the narrowest pattern grant on the lease — an
+      // install family, a directory, or the exact command — never a blanket
+      // pass for Tier 3/4 boundaries.
+      const grant = this.authority().grantPatternFor(actionDesc);
+      if (grant) this.authority().addGrant(grant);
+    }
     // The approval decision is authoritative, but the guarded action is a new execution
     // boundary. Yield once so a steer already accepted at the public HTTP boundary can become
     // durable before a synchronous tool continuation could terminalize the turn.

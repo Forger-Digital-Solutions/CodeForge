@@ -10,6 +10,8 @@ import {
   ArtifactTypeSchema,
   RiskLevelSchema,
   PermissionPolicySchema,
+  PermissionModeSchema,
+  PlanModeSchema,
   EvidenceReferenceKindSchema,
   ContextReferenceTypeSchema,
   SubagentRunWorkItemSchema,
@@ -27,7 +29,13 @@ export const SessionRecordSchema = z.object({
   currentAgentId: z.string().optional(),
   currentModelId: z.string().optional(),
   currentProviderId: z.string().optional(),
-  permissionMode: PermissionPolicySchema.optional(),
+  /**
+   * Task execution authority. Accepts the legacy allow|ask|deny vocabulary on
+   * read so pre-mode rows still parse; normalizePermissionMode maps them onto
+   * the current mode model.
+   */
+  permissionMode: z.union([PermissionPolicySchema, PermissionModeSchema]).optional(),
+  planMode: PlanModeSchema.optional(),
   displayMode: DisplayModeSchema.optional(),
   branch: z.string().optional(),
   workspacePath: z.string().optional(),

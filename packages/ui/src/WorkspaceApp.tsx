@@ -122,7 +122,7 @@ export default function WorkspaceApp({
   defaultExecutionMode,
   workspaceBrief,
 }: WorkspaceAppProps) {
-  const { state, setState, sendMessage, requestUserIntentHold, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession, startNewSession, hydrate } = useWorkspaceSSE(sseUrl ?? "/api/events");
+  const { state, setState, sendMessage, setAuthority, requestUserIntentHold, approve, answerQuestion, stopTurn, pauseTurn, resumeTurn, cancelWorkflow, dismissWorkflowError, selectSession, startNewSession, hydrate } = useWorkspaceSSE(sseUrl ?? "/api/events");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try { return window.localStorage.getItem("codeforge:sidebar-collapsed") === "true"; } catch { return false; }
@@ -459,10 +459,30 @@ export default function WorkspaceApp({
       : state.activePhase === "cancelled"
         ? "cancelled"
         : undefined;
+  // "Fix and continue" continues the same task: the server injects the previous
+  // run's failure context and the session lease carries the authority — it is
+  // never a fresh task asking for the same plan approval again.
   const repairFailure = () => {
-    handleSend("Review the failure, fix the underlying issue, and rerun the relevant verification.");
+    void sendMessage("Review the failure, fix the underlying issue, and rerun the relevant verification.", false, executionMode, { repair: true });
     dismissWorkflowError();
   };
+
+  // Problem-centric failure detail: what actually failed beats workflow jargon.
+  const failureDetail = React.useMemo(() => {
+    const inspection = [...state.workItems].reverse().find((item) => item.kind === "run_inspection");
+    if (!inspection || inspection.kind !== "run_inspection") return null;
+    const attempt = inspection.verificationAttempts.at(-1);
+    const failing = attempt?.verifiers.filter((v) => v.status === "failed" || v.status === "timed_out") ?? [];
+    const lines = failing.map((v) => v.failureSummary ?? `${v.command} — ${v.failed} failing`).filter(Boolean).slice(0, 3);
+    const blockers = inspection.completion?.blockers.map((b) => b.message).slice(0, 3) ?? [];
+    const repairs = inspection.repairs.length;
+    return {
+      status: inspection.status,
+      lines: [...lines, ...blockers],
+      repairs,
+      verification: attempt ? `${attempt.passed} passed · ${attempt.failed} failed` : undefined,
+    };
+  }, [state.workItems]);
 
   return (
     <div className="workspace">
@@ -553,7 +573,7 @@ export default function WorkspaceApp({
 
           {(state.activeTaskId || state.isRunning || state.workflowError || state.lastWorkflowResult || state.pendingApproval?.tool === "workflow" || state.workItems.some((item) => item.kind === "change_delivery" || item.kind === "cloud_publication")) && (
             <div style={{ padding: "8px 12px" }}>
-              <WorkflowProgress state={state} onCancel={() => cancelWorkflow()} onApprove={approve} onPublishDelivery={publishDelivery} onRetryPublication={retryPublication} onAuthorizeRepository={authorizeRepository} />
+              <WorkflowProgress state={state} onPublishDelivery={publishDelivery} onRetryPublication={retryPublication} onAuthorizeRepository={authorizeRepository} />
             </div>
           )}
 
@@ -594,15 +614,25 @@ export default function WorkspaceApp({
             <div className="task-failure-card" role="alert">
               <div className="task-failure-card-head">
                 <div>
-                  <div className="task-failure-kicker">Task needs attention</div>
-                  <div className="task-failure-title">CodeForge stopped before verification could finish.</div>
+                  <div className="task-failure-kicker">
+                    {failureDetail?.status === "failed" || failureDetail?.lines.length ? "Verification failed" : "Run stopped"}
+                  </div>
+                  <div className="task-failure-title">{state.session?.taskTitle ?? "Task"}</div>
                 </div>
                 <button type="button" className="workspace-error-dismiss" onClick={dismissWorkflowError} aria-label="Dismiss failure">×</button>
               </div>
-              <div className="task-failure-message">{humanizeError(state.workflowError)}</div>
+              {failureDetail && failureDetail.lines.length > 0 ? (
+                <div className="task-failure-message">
+                  {failureDetail.lines.map((line, i) => <div key={i}>{line}</div>)}
+                  {failureDetail.verification && <div className="task-failure-meta">{failureDetail.verification}</div>}
+                  {failureDetail.repairs > 0 && <div className="task-failure-meta">CodeForge attempted {failureDetail.repairs} {failureDetail.repairs === 1 ? "repair" : "repairs"}.</div>}
+                </div>
+              ) : (
+                <div className="task-failure-message">{humanizeError(state.workflowError)}</div>
+              )}
               <div className="task-failure-actions">
                 <button type="button" className="btn-sm primary" onClick={repairFailure}>Fix and continue</button>
-                <button type="button" className="btn-sm" onClick={() => setInspectorCollapsed(false)}>Review task details</button>
+                <button type="button" className="btn-sm" onClick={() => setInspectorCollapsed(false)}>Review failure</button>
               </div>
             </div>
           )}
@@ -651,6 +681,8 @@ export default function WorkspaceApp({
             }}
             executionMode={executionMode}
             onExecutionModeChange={handleExecutionModeChange}
+            authority={state.authority}
+            onAuthorityChange={(modes) => { void setAuthority(modes); }}
             searchContext={apiOrigin ? searchContext : undefined}
             executionState={state.executionState}
             onComposerActivity={(active) => {

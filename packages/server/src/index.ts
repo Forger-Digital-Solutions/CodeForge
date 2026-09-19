@@ -25,6 +25,13 @@ import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/providers";
 import { createPaidAutoService, PAID_AUTO_PROVIDER_ID, type PaidAutoService } from "@codeforge/paid-auto";
+import {
+  createTaskAuthority,
+  createLease,
+  normalizePermissionMode,
+  normalizePlanMode,
+  type TaskAuthority,
+} from "@codeforge/permissions";
 import { runDemoRuntime } from "./demo-runtime.js";
 import { AgentRuntime, createAgentRuntime, type HostedWorkerOptions } from "./agent-runtime.js";
 import { resolveWithinWorkspace } from "./path-security.js";
@@ -286,6 +293,8 @@ export class CodeForgeServer {
       getOrCreateRuntime: (sessionId: string, userId?: string, hostedWorker?: HostedWorkerOptions) => this.getOrCreateRuntime(sessionId, userId, hostedWorker),
       useRealRuntime: () => this.realRuntimeEnabled(),
       userIntentHold: this.userIntentHold,
+      authorityFor: (sessionId: string) => this.authorityFor(sessionId),
+      onPolicyReceipt: (receipt) => { void this.appendExecutionEvent(receipt.sessionId, "permission.decision", receipt as unknown as Record<string, unknown>).catch(() => {}); },
       ...(options.agentWorkingBudgetMs !== undefined ? { agentWorkingBudgetMs: options.agentWorkingBudgetMs } : {}),
     });
   }
@@ -518,12 +527,49 @@ export class CodeForgeServer {
     const now = new Date().toISOString();
     const existing = await this.persistence.getSession(sessionId);
     await this.persistence.upsertSession({
+      // Preserve mode/display/workspace fields — upsertSession writes every
+      // column, so omitting them here would null the user's authority contract
+      // on every message.
+      ...(existing ?? {}),
       id: sessionId,
-      title: userMessage.slice(0, 80),
+      title: existing?.title ?? userMessage.slice(0, 80),
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
       status: "running",
     });
+    this.hydrateAuthority(sessionId, existing);
+  }
+
+  /** Task-scoped authorities, keyed by session. Hydrated from the session
+   * record on send; defaults to Auto Review + Plan: Auto for new sessions. */
+  private readonly taskAuthorities = new Map<string, TaskAuthority>();
+
+  private hydrateAuthority(sessionId: string, session?: SessionRecord): TaskAuthority {
+    const existing = this.taskAuthorities.get(sessionId);
+    if (existing) {
+      if (session) {
+        existing.setModes({
+          permissionMode: normalizePermissionMode(session.permissionMode),
+          planMode: normalizePlanMode(session.planMode),
+        });
+      }
+      return existing;
+    }
+    const authority = createTaskAuthority(
+      createLease({
+        sessionId,
+        workspaceRoot: this.activeWorkspacePath ?? "",
+        permissionMode: session?.permissionMode,
+        planMode: session?.planMode,
+      }),
+      (receipt) => { void this.appendExecutionEvent(sessionId, "permission.decision", receipt as unknown as Record<string, unknown>).catch(() => {}); },
+    );
+    this.taskAuthorities.set(sessionId, authority);
+    return authority;
+  }
+
+  private authorityFor(sessionId: string): TaskAuthority {
+    return this.taskAuthorities.get(sessionId) ?? this.hydrateAuthority(sessionId);
   }
 
   private async appendDemoEvent(event: WorkspaceEvent): Promise<void> {
@@ -767,6 +813,11 @@ export class CodeForgeServer {
       return;
     }
 
+    if (url.pathname.startsWith("/api/sessions/") && url.pathname.endsWith("/authority") && req.method === "POST") {
+      this.handleSessionAuthority(req, res);
+      return;
+    }
+
     if (url.pathname.startsWith("/api/sessions/") && req.method === "GET") {
       const sessionId = url.pathname.replace("/api/sessions/", "");
       void (async () => {
@@ -797,8 +848,14 @@ export class CodeForgeServer {
           prompt: q.prompt,
           options: q.options,
         })) ?? [];
+        const lease = this.authorityFor(sessionId).getLease();
+        const authority = {
+          permissionMode: lease.permissionMode,
+          planMode: lease.planMode,
+          grants: lease.grants.map((g) => `${g.kind}:${g.value}`),
+        };
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-        res.end(JSON.stringify({ session, turns, workItems, events, pendingApprovals, pendingQuestions }));
+        res.end(JSON.stringify({ session, turns, workItems, events, pendingApprovals, pendingQuestions, authority }));
       })().catch(() => this.sendJson(res, 500, { error: "Failed to read session" }));
       return;
     }
@@ -959,7 +1016,7 @@ export class CodeForgeServer {
 
   private async appendExecutionEvent(
     sessionId: string,
-    type: "execution.requested" | "execution.start_failed",
+    type: "execution.requested" | "execution.start_failed" | "permission.decision",
     payload: Record<string, unknown>,
   ): Promise<void> {
     const event = {
@@ -1087,6 +1144,7 @@ export class CodeForgeServer {
               userId: typeof data.userId === "string" ? data.userId : undefined,
               verificationCommands: Array.isArray(data.verificationCommands) ? data.verificationCommands : undefined,
               forceHeuristic: data.forceHeuristic === true ? true : undefined,
+              repair: data.repair === true ? true : undefined,
             });
             res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
             res.end(JSON.stringify({ ok: true, turnId: wf.turnId, taskId: wf.taskId, executionMode, runtime: "workflow" }));
@@ -2083,6 +2141,7 @@ export class CodeForgeServer {
         freeCloud: this.freeCloud,
         paidAuto: this.paidAuto,
         hostedWorker,
+        authorityFor: () => this.authorityFor(sessionId),
       });
     }
     let runtime = this.runtimes.get(sessionId);
@@ -2101,6 +2160,7 @@ export class CodeForgeServer {
         afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
         freeCloud: this.freeCloud,
         paidAuto: this.paidAuto,
+        authorityFor: () => this.authorityFor(sessionId),
       });
       this.runtimes.set(sessionId, runtime);
     } else {
@@ -2108,6 +2168,66 @@ export class CodeForgeServer {
       runtime.setDemoMode(demoMode);
     }
     return runtime;
+  }
+
+  /**
+   * Task authority contract: permission mode + plan mode. Persisted on the
+   * session record and applied live to the shared TaskPermissionLease so the
+   * composer can retune authority mid-task without restarting it.
+   */
+  private handleSessionAuthority(req: http.IncomingMessage, res: http.ServerResponse): void {
+    const sessionId = new URL(req.url ?? "", "http://localhost").pathname
+      .replace("/api/sessions/", "")
+      .replace("/authority", "");
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const data = body ? (JSON.parse(body) as Record<string, unknown>) : {};
+        const VALID_MODES = new Set(["auto_review", "ask_more", "full_autonomy"]);
+        const VALID_PLANS = new Set(["auto", "review_first"]);
+        const permissionMode = typeof data.permissionMode === "string" && VALID_MODES.has(data.permissionMode)
+          ? normalizePermissionMode(data.permissionMode)
+          : undefined;
+        const planMode = typeof data.planMode === "string" && VALID_PLANS.has(data.planMode)
+          ? normalizePlanMode(data.planMode)
+          : undefined;
+        if ((data.permissionMode !== undefined && permissionMode === undefined)
+          || (data.planMode !== undefined && planMode === undefined)) {
+          this.sendJson(res, 400, { error: "INVALID_PERMISSION_MODE" });
+          return;
+        }
+        if (permissionMode === undefined && planMode === undefined) {
+          this.sendJson(res, 400, { error: "NOTHING_TO_UPDATE" });
+          return;
+        }
+        const session = await this.persistence.getSession(sessionId);
+        const now = new Date().toISOString();
+        await this.persistence.upsertSession({
+          ...(session ?? {}),
+          id: sessionId,
+          title: session?.title ?? "Session",
+          createdAt: session?.createdAt ?? now,
+          updatedAt: now,
+          status: session?.status ?? "idle",
+          ...(permissionMode ? { permissionMode } : {}),
+          ...(planMode ? { planMode } : {}),
+        });
+        const authority = this.authorityFor(sessionId);
+        authority.setModes({ ...(permissionMode ? { permissionMode } : {}), ...(planMode ? { planMode } : {}) });
+        const lease = authority.getLease();
+        this.sendJson(res, 200, {
+          ok: true,
+          authority: {
+            permissionMode: lease.permissionMode,
+            planMode: lease.planMode,
+            grants: lease.grants.map((g) => `${g.kind}:${g.value}`),
+          },
+        });
+      } catch {
+        this.sendJson(res, 400, { error: "INVALID_AUTHORITY_REQUEST" });
+      }
+    });
   }
 
   /**

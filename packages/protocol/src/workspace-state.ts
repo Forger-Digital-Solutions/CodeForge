@@ -82,6 +82,17 @@ export type RiskLevel = z.infer<typeof RiskLevelSchema>;
 export const PermissionPolicySchema = z.enum(["allow", "ask", "deny"]);
 export type PermissionPolicy = z.infer<typeof PermissionPolicySchema>;
 
+/**
+ * Task-level execution authority: which actions may proceed without asking.
+ * Distinct from PermissionPolicy (a single approval decision) and from
+ * PlanMode (whether the strategy itself is reviewed first).
+ */
+export const PermissionModeSchema = z.enum(["auto_review", "ask_more", "full_autonomy"]);
+export type PermissionMode = z.infer<typeof PermissionModeSchema>;
+
+export const PlanModeSchema = z.enum(["auto", "review_first"]);
+export type PlanMode = z.infer<typeof PlanModeSchema>;
+
 export const VerificationStepSchema = z.enum([
   "verify_cost",
   "verify_free_status",

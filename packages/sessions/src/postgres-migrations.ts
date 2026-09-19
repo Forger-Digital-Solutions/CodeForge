@@ -65,11 +65,23 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE INDEX IF NOT EXISTS idx_events_sessionId ON events("sessionId");
 `;
 
+// planMode arrived after the initial schema; a separate additive migration keeps
+// existing databases intact (the version-1 CREATE TABLE is immutable once applied).
+const MIGRATION_2_POSTGRES = `
+ALTER TABLE sessions ADD COLUMN IF NOT EXISTS "planMode" TEXT;
+`;
+
 export const SESSIONS_MIGRATIONS: SessionsMigrationDefinition[] = [
   {
     version: 1,
     name: "initial_schema",
     postgresUp: MIGRATION_1_POSTGRES,
     checksum: computeChecksum(MIGRATION_1_POSTGRES),
+  },
+  {
+    version: 2,
+    name: "session_plan_mode",
+    postgresUp: MIGRATION_2_POSTGRES,
+    checksum: computeChecksum(MIGRATION_2_POSTGRES),
   },
 ];

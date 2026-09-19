@@ -138,6 +138,9 @@ describe("SSE reconnect and renderer reconstruction E2E", () => {
   it("replays missed active and terminal events without duplicate effects", async () => {
     const first = await connectSse(port);
     clients.push(first);
+    // The reconnect contract under test needs a workflow that parks at the plan gate:
+    // Review First surfaces the approval this test waits on; Plan: Auto would not.
+    await jsonRequest(port, "/api/sessions/reconnect-session/authority", { planMode: "review_first" });
     const run = await jsonRequest(port, "/api/workflow/run", {
       sessionId: "reconnect-session",
       message: "Fix add function to return a + b",

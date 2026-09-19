@@ -68,6 +68,8 @@ describe("workflow agent working budget", () => {
     port = server.httpPort;
     server.setWorkspace(ws);
 
+    // This scenario drives the approval gates explicitly: plan review + per-write asks.
+    await fetchJson(`http://localhost:${port}/api/sessions/budget/authority`, { permissionMode: "ask_more", planMode: "review_first" });
     const started = await fetchJson(`http://localhost:${port}/api/send`, { sessionId: "budget", message: "Implement the feature", executionMode: "agent" });
     expect(started.status).toBe(200);
     const events = () => (server as any).eventStore.getBySession("budget") as Array<{ type: string; payload: any }>;

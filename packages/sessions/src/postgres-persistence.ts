@@ -44,6 +44,7 @@ interface SessionRow {
   currentModelId: string | null;
   currentProviderId: string | null;
   permissionMode: string | null;
+  planMode: string | null;
   displayMode: string | null;
   branch: string | null;
   workspacePath: string | null;
@@ -61,6 +62,7 @@ function parseSession(row: SessionRow): SessionRecord {
     ...(row.currentModelId && { currentModelId: row.currentModelId }),
     ...(row.currentProviderId && { currentProviderId: row.currentProviderId }),
     ...(row.permissionMode && { permissionMode: row.permissionMode as SessionRecord["permissionMode"] }),
+    ...(row.planMode && { planMode: row.planMode as SessionRecord["planMode"] }),
     ...(row.displayMode && { displayMode: row.displayMode as SessionRecord["displayMode"] }),
     ...(row.branch && { branch: row.branch }),
     ...(row.workspacePath && { workspacePath: row.workspacePath }),
@@ -106,18 +108,19 @@ class PostgresQueryOps implements SessionPersistenceTx {
   async upsertSession(session: SessionRecord): Promise<void> {
     const s = sanitizeForPersistence(session);
     await this.q.query(
-      `INSERT INTO sessions (id, title, "createdAt", "updatedAt", status, "currentAgentId", "currentModelId", "currentProviderId", "permissionMode", "displayMode", branch, "workspacePath", "taskTitle")
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+      `INSERT INTO sessions (id, title, "createdAt", "updatedAt", status, "currentAgentId", "currentModelId", "currentProviderId", "permissionMode", "planMode", "displayMode", branch, "workspacePath", "taskTitle")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
        ON CONFLICT (id) DO UPDATE SET
          title = excluded.title, "updatedAt" = excluded."updatedAt", status = excluded.status,
          "currentAgentId" = excluded."currentAgentId", "currentModelId" = excluded."currentModelId",
          "currentProviderId" = excluded."currentProviderId", "permissionMode" = excluded."permissionMode",
+         "planMode" = excluded."planMode",
          "displayMode" = excluded."displayMode", branch = excluded.branch,
          "workspacePath" = excluded."workspacePath", "taskTitle" = excluded."taskTitle"`,
       [
         s.id, s.title, s.createdAt, s.updatedAt, s.status,
         s.currentAgentId ?? null, s.currentModelId ?? null, s.currentProviderId ?? null,
-        s.permissionMode ?? null, s.displayMode ?? null, s.branch ?? null, s.workspacePath ?? null, s.taskTitle ?? null,
+        s.permissionMode ?? null, s.planMode ?? null, s.displayMode ?? null, s.branch ?? null, s.workspacePath ?? null, s.taskTitle ?? null,
       ],
     );
   }

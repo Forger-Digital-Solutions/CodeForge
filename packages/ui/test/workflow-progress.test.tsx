@@ -11,7 +11,7 @@ function makeState(overrides: Partial<WorkspaceState>): WorkspaceState {
 
 function markupFor(state: WorkspaceState, expanded = false): string {
   return renderToStaticMarkup(
-    React.createElement(WorkflowProgress, { state, onCancel: () => {}, onApprove: () => {}, expanded }),
+    React.createElement(WorkflowProgress, { state, expanded }),
   );
 }
 
@@ -49,8 +49,9 @@ describe("WorkflowProgress — compact workflow stages", () => {
       workflowProgress: 55,
     });
     const html = markupFor(state);
-    expect(html).toContain("Working · implementing");
-    expect(html).toContain("Cancel");
+    expect(html).toContain("Working · Implementing");
+    // Stop lives in the header; this strip must not duplicate the control.
+    expect(html).not.toContain("Cancel");
   });
 
   it("renders all stages when expanded", () => {

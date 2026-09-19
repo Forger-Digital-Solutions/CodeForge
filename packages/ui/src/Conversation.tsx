@@ -323,6 +323,11 @@ const TimelineItemView = ({ item, workspacePath }: { item: TimelineItem; workspa
       return <ToolActivity item={item} workspacePath={workspacePath} />;
     case "system":
       return <ActivityLine kind="plan" state="completed" verb="CodeForge" target={item.text} />;
+    case "phase": {
+      const kinds = { testing: "test", repairing: "execute", reviewing: "verify", outcome: "complete" } as const;
+      const verbs = { testing: "Verify", repairing: "Repair", reviewing: "Review", outcome: "CodeForge" } as const;
+      return <ActivityLine kind={kinds[item.phase]} state={item.phase === "outcome" && item.text !== "Done" ? "failed" : "completed"} verb={verbs[item.phase]} target={item.text} meta={item.detail} />;
+    }
     case "file":
       return (
         <ActivityLine

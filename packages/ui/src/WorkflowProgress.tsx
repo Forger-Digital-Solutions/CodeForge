@@ -3,8 +3,6 @@ import type { WorkspaceState } from "./workspace-sse.js";
 
 interface WorkflowProgressProps {
   state: WorkspaceState;
-  onCancel: () => void;
-  onApprove: (decision: "allow_once" | "allow_session" | "deny") => void;
   onPublishDelivery?: (deliveryId: string) => void;
   onRetryPublication?: (deliveryId: string) => void;
   onAuthorizeRepository?: (deliveryId: string) => void;
@@ -136,7 +134,7 @@ export function phaseIndex(phase: string): number {
   return -1;
 }
 
-export default function WorkflowProgress({ state, onCancel, onPublishDelivery, onRetryPublication, onAuthorizeRepository, expanded: controlledExpanded }: WorkflowProgressProps) {
+export default function WorkflowProgress({ state, onPublishDelivery, onRetryPublication, onAuthorizeRepository, expanded: controlledExpanded }: WorkflowProgressProps) {
   const [internalExpanded, setInternalExpanded] = useState(false);
   const expanded = controlledExpanded ?? internalExpanded;
   const { activePhase, isRunning, pendingApproval, activeTaskId, workflowError, lastWorkflowResult } = state;
@@ -277,6 +275,7 @@ export default function WorkflowProgress({ state, onCancel, onPublishDelivery, o
 
   const showApproval = pendingApproval && pendingApproval.tool === "workflow" && pendingApproval.action === "execute_plan";
 
+  const phaseLabel = idx >= 0 ? PHASES[idx]!.label : activePhase.replace(/_/g, " ");
   const statusText = startFailure
     ? "Agent could not start"
     : isTerminal
@@ -290,7 +289,7 @@ export default function WorkflowProgress({ state, onCancel, onPublishDelivery, o
           ? "Cancelled"
           : "Failed"
     : isRunning
-      ? `Working · ${activePhase}`
+      ? `Working · ${phaseLabel}`
       : `${completedCount}/${PHASES.length} stages`;
 
   return (
@@ -303,20 +302,8 @@ export default function WorkflowProgress({ state, onCancel, onPublishDelivery, o
       >
         <span className="activity-chevron" style={{ transform: expanded ? "rotate(90deg)" : "none" }}>›</span>
         <span>{statusText}</span>
-        {isRunning && !isTerminal && (
-          <span style={{ marginLeft: "auto" }}>
-            <button
-              type="button"
-              className="btn-sm danger"
-              onClick={(e) => {
-                e.stopPropagation();
-                onCancel();
-              }}
-            >
-              Cancel
-            </button>
-          </span>
-        )}
+        {/* Stop lives canonically in the task header — a second abort control here
+            made two different operations look interchangeable. */}
       </button>
 
       {expanded && (

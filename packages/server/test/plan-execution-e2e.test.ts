@@ -116,6 +116,8 @@ describe("autonomous plan execution — approve / reject / cancel", () => {
 
   it("approve: one approval per side effect, edit applied once, verification passes, evidence and checkpoint recorded", async () => {
     await startServer();
+    // Ask More + Review First: this test asserts the ask-everything contract.
+    await api(`${sessionUrl("approve-sess")}/authority`, { permissionMode: "ask_more", planMode: "review_first" });
     const run = await api(`http://localhost:${port}/api/workflow/run`, {
       sessionId: "approve-sess",
       message: "Fix the add function in src/calc.js so it correctly adds two numbers.",
@@ -206,6 +208,7 @@ describe("autonomous plan execution — approve / reject / cancel", () => {
 
   it("reject: the file is untouched and the workflow does not claim success", async () => {
     await startServer();
+    await api(`${sessionUrl("reject-sess")}/authority`, { permissionMode: "ask_more", planMode: "review_first" });
     const run = await api(`http://localhost:${port}/api/workflow/run`, {
       sessionId: "reject-sess",
       message: "Fix the add function in src/calc.js so it correctly adds two numbers.",
@@ -237,6 +240,7 @@ describe("autonomous plan execution — approve / reject / cancel", () => {
 
   it("cancel: a pending approval dies with its workflow and a late approve executes nothing", async () => {
     await startServer();
+    await api(`${sessionUrl("cancel-sess")}/authority`, { permissionMode: "ask_more", planMode: "review_first" });
     const run = await api(`http://localhost:${port}/api/workflow/run`, {
       sessionId: "cancel-sess",
       message: "Fix the add function in src/calc.js so it correctly adds two numbers.",

@@ -249,6 +249,8 @@ describe("CF-17 runtime recovery through the production server restart path", ()
     const runtimeFor = (sessionId: string) => (server as unknown as { runtimes: Map<string, { getTurn: (id: string) => { status: string } | undefined }> }).runtimes.get(sessionId)!;
 
     const runRace = async (sessionId: string, ordering: "steer_then_approval" | "concurrent") => {
+      // The guarded write must actually be a decision: Ask More makes writes ask.
+      await request(server!.httpPort, `/api/sessions/${sessionId}/authority`, { permissionMode: "ask_more" });
       const started = await request(server!.httpPort, "/api/send", { sessionId, message: `Start ${ordering}` });
       expect(started.status).toBe(200);
       const turnId = (started.body as { turnId: string }).turnId;

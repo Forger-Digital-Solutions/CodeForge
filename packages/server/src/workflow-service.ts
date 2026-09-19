@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createWorkspaceEventAdapter, type WorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { ApprovalService } from "./approval-service.js";
-import type { EventStore, ISessionPersistence } from "@codeforge/sessions";
+import type { EventStore, ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import {
   createWorkflowEngine,
   type WorkflowEngine,
@@ -17,6 +17,7 @@ import { loadForgeVerifyEvidence } from "./forge-verify-persistence.js";
 import type { AgentRuntime, HostedWorkerOptions } from "./agent-runtime.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import { redactSecrets } from "@codeforge/secrets";
+import type { PolicyReceipt, TaskAuthority } from "@codeforge/permissions";
 import { WorkspaceService, createWorkspaceService } from "./workspace-service.js";
 
 export interface WorkflowServiceOptions {
@@ -36,6 +37,10 @@ export interface WorkflowServiceOptions {
   userIntentHold?: UserIntentHoldController;
   /** Agent working budget per implementation/repair turn (ms). Tests use small values. */
   agentWorkingBudgetMs?: number;
+  /** Shared task authority — plan mode and lease grants live here. */
+  authorityFor?: (sessionId: string) => TaskAuthority;
+  /** Durable sink for policy decisions made without a user-facing card. */
+  onPolicyReceipt?: (receipt: PolicyReceipt) => void;
 }
 
 export interface WorkflowRunRequest {
@@ -48,6 +53,9 @@ export interface WorkflowRunRequest {
   hostedWorkflowId?: string;
   /** Force heuristic even if real runtime available (for deterministic tests) */
   forceHeuristic?: boolean;
+  /** Continue a stopped task: inject the previous run's failure context so the
+   * new run resumes with knowledge of what failed, inside the same lease. */
+  repair?: boolean;
 }
 
 const MAX_CONCURRENT_PER_SESSION = 1;
@@ -190,6 +198,11 @@ export class WorkflowService {
   private readonly isRealRuntimeEnabled: () => boolean;
   private readonly userIntentHold?: UserIntentHoldController;
   private readonly agentWorkingBudgetMs: number;
+  private readonly authorityFor?: (sessionId: string) => TaskAuthority;
+  private readonly onPolicyReceipt?: (receipt: PolicyReceipt) => void;
+  /** Plans already authorized this session, keyed `${planId}@${revision}` — a
+   * re-asked identical plan revision never prompts twice. */
+  private readonly approvedPlanKeys = new Map<string, Set<string>>();
 
   constructor(options: WorkflowServiceOptions) {
     this.eventStore = options.eventStore;
@@ -202,6 +215,8 @@ export class WorkflowService {
     this.isRealRuntimeEnabled = typeof realRuntime === "function" ? realRuntime : () => realRuntime;
     this.userIntentHold = options.userIntentHold;
     this.agentWorkingBudgetMs = options.agentWorkingBudgetMs ?? DEFAULT_AGENT_WORKING_BUDGET_MS;
+    this.authorityFor = options.authorityFor;
+    this.onPolicyReceipt = options.onPolicyReceipt;
   }
 
   /** Must be awaited once after construction — reclassifies persisted state before serving. */
@@ -413,6 +428,39 @@ export class WorkflowService {
     };
   }
 
+  /**
+   * A repair continuation is not a cold task: prepend what the previous run
+   * actually failed on so the new plan resumes informed. Bounded — the model
+   * sees the failure, not a forensic dump.
+   */
+  private async buildRepairContextMessage(sessionId: string, message: string): Promise<string> {
+    try {
+      const items = await this.persistence.getWorkItems(sessionId);
+      const inspections = items
+        .filter((item): item is Extract<WorkItem, { kind: "run_inspection" }> => item.kind === "run_inspection")
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      const last = inspections[0];
+      if (!last) return message;
+      const clip = (s: string | undefined, n: number): string =>
+        s && s.length > n ? `${s.slice(0, n)}…` : (s ?? "");
+      const failing = last.verificationAttempts.at(-1)?.verifiers
+        .filter((v) => v.status === "failed" || v.status === "timed_out")
+        .map((v) => clip(v.failureSummary ?? `${v.command} exited ${v.exitCode}`, 200))
+        .filter((s) => s.length > 0) ?? [];
+      const blockers = last.completion?.blockers.map((b) => clip(b.message, 200)) ?? [];
+      const parts = [
+        `Continuing the same task. The previous run ended ${last.status} during ${last.phase}.`,
+        last.completion?.rationale ? `Outcome: ${clip(last.completion.rationale, 300)}` : "",
+        failing.length > 0 ? `Failing verification: ${failing.join(" | ")}` : "",
+        blockers.length > 0 ? `Blockers: ${blockers.join(" | ")}` : "",
+        `Task: ${message}`,
+      ].filter((p) => p.length > 0);
+      return parts.join("\n");
+    } catch {
+      return message;
+    }
+  }
+
   async startWorkflow(request: WorkflowRunRequest): Promise<{ taskId: string; turnId: string }> {
     const sessionId = request.sessionId;
     await recoverInterruptedForgeVerifyAttempts(this.persistence, sessionId);
@@ -455,6 +503,10 @@ export class WorkflowService {
     if (request.message.length > 10000) {
       throw new Error("Message too long");
     }
+
+    const effectiveMessage = request.repair
+      ? await this.buildRepairContextMessage(sessionId, request.message)
+      : request.message;
 
     const taskId = crypto.randomUUID();
     const turnId = crypto.randomUUID();
@@ -565,6 +617,7 @@ export class WorkflowService {
       taskId,
       turnId,
       signal: controller.signal,
+      planGateMode: () => (this.authorityFor?.(sessionId)?.planMode === "auto" ? "auto" : "review"),
       verificationCommands: request.verificationCommands,
       verificationObserver,
       agentExecutor,
@@ -647,12 +700,12 @@ export class WorkflowService {
         }
       },
       askForApproval: async (plan: WorkflowPlan) => {
-        // Use authoritative ApprovalService — ensure secrets never leak into approval records.
-        // The prompt lists what the plan will actually do: a user cannot approve a plan they
-        // cannot see, and the card used to show only the plan id.
+        // Plan review is a strategy gate, not a permission boundary. The plan
+        // record persists either way; only Plan: Review First shows a card.
         const safePlanTitle = redactSecrets(plan.title);
         const safeDescription = redactSecrets(describePlanForApproval(plan, safePlanTitle));
         const risk = plan.steps.some((s: WorkflowPlan["steps"][number]) => s.risk === "critical") ? "critical" : plan.steps.some((s: WorkflowPlan["steps"][number]) => s.risk === "high") ? "high" : "moderate";
+        const planKey = `${plan.id}@${plan.revision ?? 1}`;
         // Keep the persisted plan in step with what is being approved (it was stored with no steps).
         try {
           await this.persistence.upsertWorkItem({
@@ -668,6 +721,35 @@ export class WorkflowService {
             updatedAt: new Date().toISOString(),
           } as unknown as import("@codeforge/sessions").WorkItem);
         } catch {}
+
+        const authority = this.authorityFor?.(sessionId);
+        const alreadyApproved = this.approvedPlanKeys.get(sessionId)?.has(planKey) ?? false;
+        if (alreadyApproved) {
+          // The identical plan revision was authorized before — never ask twice.
+          return "allow_once";
+        }
+        if (authority && authority.planMode !== "review_first") {
+          let approved = this.approvedPlanKeys.get(sessionId);
+          if (!approved) {
+            approved = new Set();
+            this.approvedPlanKeys.set(sessionId, approved);
+          }
+          approved.add(planKey);
+          this.onPolicyReceipt?.({
+            receiptId: crypto.randomUUID(),
+            sessionId,
+            tool: "workflow",
+            action: "execute_plan",
+            detail: safeDescription,
+            tier: 1,
+            decision: "allow",
+            permissionMode: authority.permissionMode,
+            source: "auto_review",
+            at: new Date().toISOString(),
+          });
+          return "allow_once";
+        }
+
         const { approvalId, promise } = this.approvalService.requestApproval({
           turnId,
           tool: "workflow",
@@ -695,6 +777,14 @@ export class WorkflowService {
         } catch {}
 
         const result = await promise;
+        if (result.approved) {
+          let approved = this.approvedPlanKeys.get(sessionId);
+          if (!approved) {
+            approved = new Set();
+            this.approvedPlanKeys.set(sessionId, approved);
+          }
+          approved.add(planKey);
+        }
         // Cleanup legacy persistence? Update work item decision
         try {
           const decision = result.approved ? "allow_once" as const : "deny" as const;
@@ -720,7 +810,7 @@ export class WorkflowService {
 
     // Track
     const task: WorkflowTask = engine.getTask();
-    const promise = engine.run(request.message).then(
+    const promise = engine.run(effectiveMessage).then(
       async (result: WorkflowResult) => {
         clearWorkflowTimeout();
         if (result.status === "suspended" && hostedWorkflow?.kind === "hosted_workflow" && result.plan && result.suspension) {

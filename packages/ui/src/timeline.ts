@@ -23,6 +23,7 @@ export type TimelineItem =
       fileDetail?: string;
     }
   | { kind: "system"; id: string; seq: number; turnId: string; text: string }
+  | { kind: "phase"; id: string; seq: number; phase: "testing" | "repairing" | "reviewing" | "outcome"; text: string; detail?: string }
   | { kind: "file"; id: string; seq: number; turnId?: string; path: string; action: "read" | "written"; detail?: string }
   | { kind: "command"; id: string; seq: number; turnId?: string; command: string; exitCode: number; output?: string };
 
@@ -58,14 +59,34 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
         const p = e.payload as { turnId: string; userMessage: string; origin?: "user" | "workflow"; label?: string };
         if (!seenUserTurns.has(p.turnId)) {
           seenUserTurns.add(p.turnId);
-          if (p.origin === "workflow") {
-            // An internal turn the workflow dispatched (builder/repair prompt). Its text is the
-            // workflow's instruction to the agent, not something the user wrote.
-            items.push({ kind: "system", id: `system-${p.turnId}`, seq: e.seq, turnId: p.turnId, text: p.label ?? "Agent turn started" });
-          } else {
+          // Workflow-dispatched turns (implement/repair) are internal mechanics —
+          // the phase strip and grouped activity carry that meaning; a transcript
+          // row per dispatch is event spam, not conversation.
+          if (p.origin !== "workflow") {
             items.push({ kind: "user", id: `user-${p.turnId}`, seq: e.seq, turnId: p.turnId, text: p.userMessage });
           }
         }
+        break;
+      }
+      case "workflow.verification_completed": {
+        const p = e.payload as { attempt: number; passed: number; failed: number; skipped: number };
+        const detail = `${p.passed} passed${p.failed > 0 ? ` · ${p.failed} failed` : ""}${p.skipped > 0 ? ` · ${p.skipped} skipped` : ""}`;
+        items.push({ kind: "phase", id: `verify-${e.seq}`, seq: e.seq, phase: "testing", text: `Verification · attempt ${p.attempt}`, detail });
+        break;
+      }
+      case "workflow.repair_attempted": {
+        const p = e.payload as { attempt: number; summary?: string };
+        items.push({ kind: "phase", id: `repair-${e.seq}`, seq: e.seq, phase: "repairing", text: `Repairing verification failure · attempt ${p.attempt}`, detail: p.summary });
+        break;
+      }
+      case "workflow.review_completed": {
+        const p = e.payload as { approved: boolean; findings?: unknown[]; diffCount?: number };
+        items.push({ kind: "phase", id: `review-${e.seq}`, seq: e.seq, phase: "reviewing", text: "Review", detail: `${p.approved ? "approved" : "findings"}${p.findings?.length ? ` · ${p.findings.length} findings` : ""}` });
+        break;
+      }
+      case "workflow.completion_decided": {
+        const p = e.payload as { outcome: string; rationale?: string };
+        items.push({ kind: "phase", id: `outcome-${e.seq}`, seq: e.seq, phase: "outcome", text: p.outcome === "completed" ? "Done" : p.outcome === "blocked" ? "Blocked" : "Failed", detail: p.rationale });
         break;
       }
       case "assistant.message.started": {

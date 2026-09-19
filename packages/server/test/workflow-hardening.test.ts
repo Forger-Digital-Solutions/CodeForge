@@ -94,6 +94,14 @@ describe("WorkflowService hardening — production autonomous execution", () => 
       await mkdir(join(distinctWs, "src"), { recursive: true });
       await writeFile(join(distinctWs, "src", "calc.ts"), "export function add(a:number,b:number){return a-b}");
 
+      // Slots must be HELD for the cap to engage: under the default Plan: Auto a workflow
+      // executes and terminates, releasing its slot before the overflow request. Review First
+      // parks each plan at the approval gate so all 20 slots stay occupied.
+      const authority = await fetchJson(`http://localhost:${port}/api/sessions/global-session-${index}/authority`, {
+        planMode: "review_first",
+      });
+      expect(authority.status).toBe(200);
+
       const response = await fetchJson(`http://localhost:${port}/api/workflow/run`, {
         sessionId: `global-session-${index}`,
         workspacePath: distinctWs,
@@ -136,10 +144,9 @@ describe("WorkflowService hardening — production autonomous execution", () => 
     for (const dir of extraWsDirs) {
       await rm(dir, { recursive: true, force: true }).catch(() => {});
     }
-    // Twenty real workflows (each with its own workspace, indexer and verification process) cost
-    // ~9 s alone and ~19 s beside the rest of the suite; the budget matches that real cost with
-    // headroom, like the other multi-workflow integration tests in this package.
-  }, 60_000);
+    // Twenty real workflow admissions (each with its own workspace, indexer and parked plan
+    // review) cost ~27 s alone; under full-suite load the same work needs roughly double.
+  }, 120_000);
 
   it("redacts secrets in persisted turn and evidence", async () => {
     const secret = "sk-proj-abcdef1234567890";

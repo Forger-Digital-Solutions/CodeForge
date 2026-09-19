@@ -1965,6 +1965,28 @@ body {
   outline-offset: 1px;
 }
 
+.authority-select {
+  border: 1px solid var(--cf-border);
+  border-radius: 4px;
+  padding: 2px 4px;
+  color: var(--cf-text-muted);
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  max-width: 92px;
+}
+
+.authority-select:focus-visible {
+  outline: 2px solid var(--cf-accent);
+  outline-offset: 1px;
+}
+
+.authority-select option {
+  background: var(--cf-bg-overlay);
+  color: var(--cf-text);
+}
+
 .composer-toolbar-right {
   display: flex;
   align-items: center;

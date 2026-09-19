@@ -63,6 +63,8 @@ export interface WorkspaceState {
   executionState: "running" | "user_intent_hold" | "steer_queued" | "reconciling_steer";
   holdReason: string | null;
   steerQueued: boolean;
+  /** Task authority contract reported by the server lease. */
+  authority: { permissionMode: string; planMode: string; grants: string[] } | null;
 }
 
 export const initialWorkspaceState: WorkspaceState = {
@@ -97,6 +99,7 @@ export const initialWorkspaceState: WorkspaceState = {
   executionState: "running",
   holdReason: null,
   steerQueued: false,
+  authority: null,
 };
 
 export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
@@ -129,6 +132,7 @@ export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
     executionState: "running",
     holdReason: null,
     steerQueued: false,
+    authority: null,
   };
 }
 
@@ -179,10 +183,16 @@ export function createSendRequest(
   turnId: string,
   executionMode: ExecutionMode,
   steer = false,
+  repair = false,
 ): SendRequest {
-  return steer
-    ? { sessionId, message, turnId, steer: true }
-    : { sessionId, message, turnId, executionMode };
+  if (steer) return { sessionId, message, turnId, steer: true };
+  return {
+    sessionId,
+    message,
+    turnId,
+    executionMode,
+    ...(repair ? { repair: true } : {}),
+  };
 }
 
 export function createUserIntentHoldRequest(
@@ -387,6 +397,7 @@ export function useWorkspaceSSE(url: string) {
             risk: string;
             scope?: string;
           }>;
+          authority?: { permissionMode?: string; planMode?: string; grants?: string[] };
         };
         setState((prev) => {
           // The server is authoritative about what is still awaiting a decision. Adopting its list
@@ -421,6 +432,13 @@ export function useWorkspaceSSE(url: string) {
             events,
             pendingApprovals,
             pendingApproval: pendingApprovals[0] ?? null,
+            authority: data.authority && typeof data.authority.permissionMode === "string"
+              ? {
+                  permissionMode: data.authority.permissionMode,
+                  planMode: typeof data.authority.planMode === "string" ? data.authority.planMode : "auto",
+                  grants: Array.isArray(data.authority.grants) ? data.authority.grants : [],
+                }
+              : prev.authority,
             ...(Array.isArray(data.workItems) && data.workItems.find((item) => item.kind === "user_intent_hold")
               ? (() => {
                   const hold = data.workItems!.find((item) => item.kind === "user_intent_hold");
@@ -739,7 +757,7 @@ export function useWorkspaceSSE(url: string) {
   }, [url, activeSessionId, clearReconnect, scheduleHydrate]);
 
   const sendMessage = useCallback(
-    async (message: string, steer = false, executionMode: ExecutionMode = DEFAULT_EXECUTION_MODE) => {
+    async (message: string, steer = false, executionMode: ExecutionMode = DEFAULT_EXECUTION_MODE, options?: { repair?: boolean }) => {
       const sessionId = resolveSendSessionId(state.session?.id);
       rememberActiveSession(sessionId);
       if (!state.session?.id) {
@@ -749,7 +767,7 @@ export function useWorkspaceSSE(url: string) {
       const turnId = crypto.randomUUID();
       const endpoint = resolveApiPath(url, "/api/send");
 
-      const request = createSendRequest(sessionId, message, turnId, executionMode, steer);
+      const request = createSendRequest(sessionId, message, turnId, executionMode, steer, options?.repair === true);
       const body = JSON.stringify(request);
 
       // Optimistically render the user's message so pressing Enter has an
@@ -1020,10 +1038,36 @@ export function useWorkspaceSSE(url: string) {
     }));
   }, []);
 
+  /** Persist a task-authority change and reflect it optimistically. */
+  const setAuthority = useCallback(
+    async (modes: { permissionMode?: string; planMode?: string }) => {
+      const sessionId = state.session?.id ?? "default";
+      setState((prev) => ({
+        ...prev,
+        authority: {
+          permissionMode: modes.permissionMode ?? prev.authority?.permissionMode ?? "auto_review",
+          planMode: modes.planMode ?? prev.authority?.planMode ?? "auto",
+          grants: prev.authority?.grants ?? [],
+        },
+      }));
+      try {
+        await fetch(resolveApiPath(url, `/api/sessions/${sessionId}/authority`), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(modes),
+        });
+      } catch {
+        // The server is authoritative; a failed write reconciles on next hydrate.
+      }
+    },
+    [state.session?.id, url],
+  );
+
   return {
     state,
     setState,
     sendMessage,
+    setAuthority,
     requestUserIntentHold,
     approve,
     answerQuestion,

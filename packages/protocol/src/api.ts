@@ -71,6 +71,9 @@ export const SendRequestSchema = z.object({
   userId: z.string().min(1).max(128).optional(),
   verificationCommands: z.array(z.string()).optional(),
   forceHeuristic: z.boolean().optional(),
+  /** Continue a stopped task inside the same session authority — injects the
+   * previous run's failure context instead of starting a cold new task. */
+  repair: z.boolean().optional(),
 });
 export type SendRequest = z.infer<typeof SendRequestSchema>;
 

@@ -187,14 +187,30 @@ describe("session isolation", () => {
 });
 
 describe("buildTimeline — workflow-dispatched turns are not the user's words", () => {
-  it("renders an internal builder turn as a system line, never as a 'You' message", () => {
+  it("suppresses internal builder turns entirely — the phase strip carries that meaning", () => {
     reset();
     const tl = buildTimeline([
       ev("turn.started", { turnId: "wf", userMessage: "Add coupon support" }),
       ev("turn.started", { turnId: "builder", userMessage: "You are CodeForge, an autonomous coding agent. Implement the following plan…", origin: "workflow", label: "Implementing the approved plan" }),
     ]);
-    expect(tl.map((i) => i.kind)).toEqual(["user", "system"]);
+    expect(tl.map((i) => i.kind)).toEqual(["user"]);
     expect((tl[0] as any).text).toBe("Add coupon support");
-    expect((tl[1] as any).text).toBe("Implementing the approved plan");
+  });
+
+  it("renders verification, repair, review, and completion events as compact phase rows", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("turn.started", { turnId: "wf", userMessage: "Add coupon support" }),
+      ev("workflow.verification_completed", { attempt: 1, passed: 10, failed: 2, skipped: 0 }),
+      ev("workflow.repair_attempted", { attempt: 1, summary: "fix the failing assertions" }),
+      ev("workflow.review_completed", { approved: true, findings: [], diffCount: 3 }),
+      ev("workflow.completion_decided", { outcome: "completed", rationale: "all verifiers passed" }),
+    ]);
+    const phases = tl.filter((i) => i.kind === "phase") as Array<Extract<typeof tl[number], { kind: "phase" }>>;
+    expect(phases.map((p) => p.phase)).toEqual(["testing", "repairing", "reviewing", "outcome"]);
+    expect(phases[0].text).toBe("Verification · attempt 1");
+    expect(phases[0].detail).toBe("10 passed · 2 failed");
+    expect(phases[1].detail).toBe("fix the failing assertions");
+    expect(phases[3].text).toBe("Done");
   });
 });

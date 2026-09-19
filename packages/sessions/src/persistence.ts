@@ -26,6 +26,7 @@ interface StoredSession {
   currentModelId: string | null;
   currentProviderId: string | null;
   permissionMode: string | null;
+  planMode: string | null;
   displayMode: string | null;
   branch: string | null;
   workspacePath: string | null;
@@ -73,6 +74,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   currentModelId TEXT,
   currentProviderId TEXT,
   permissionMode TEXT,
+  planMode TEXT,
   displayMode TEXT,
   branch TEXT,
   workspacePath TEXT,
@@ -125,6 +127,7 @@ function parseSession(row: StoredSession): SessionRecord {
     ...(row.currentModelId && { currentModelId: row.currentModelId }),
     ...(row.currentProviderId && { currentProviderId: row.currentProviderId }),
     ...(row.permissionMode && { permissionMode: row.permissionMode as SessionRecord["permissionMode"] }),
+    ...(row.planMode && { planMode: row.planMode as SessionRecord["planMode"] }),
     ...(row.displayMode && { displayMode: row.displayMode as SessionRecord["displayMode"] }),
     ...(row.branch && { branch: row.branch }),
     ...(row.workspacePath && { workspacePath: row.workspacePath }),
@@ -179,9 +182,17 @@ export class SqliteSessionPersistence implements ISessionPersistence {
       this.db.exec("PRAGMA journal_mode = WAL");
       this.db.exec(SCHEMA);
 
+      // planMode predates CREATE TABLE IF NOT EXISTS — databases created before the
+      // column existed need an explicit ALTER (the IF NOT EXISTS schema is a no-op
+      // for them). PRAGMA-guarded so fresh databases skip it.
+      const sessionColumns = this.db.prepare("PRAGMA table_info(sessions)").all() as Array<{ name?: string }>;
+      if (sessionColumns.length > 0 && !sessionColumns.some((col) => col.name === "planMode")) {
+        this.db.exec("ALTER TABLE sessions ADD COLUMN planMode TEXT");
+      }
+
       this.statement("upsertSession", `
-      INSERT INTO sessions (id, title, createdAt, updatedAt, status, currentAgentId, currentModelId, currentProviderId, permissionMode, displayMode, branch, workspacePath, taskTitle)
-      VALUES ($id, $title, $createdAt, $updatedAt, $status, $currentAgentId, $currentModelId, $currentProviderId, $permissionMode, $displayMode, $branch, $workspacePath, $taskTitle)
+      INSERT INTO sessions (id, title, createdAt, updatedAt, status, currentAgentId, currentModelId, currentProviderId, permissionMode, planMode, displayMode, branch, workspacePath, taskTitle)
+      VALUES ($id, $title, $createdAt, $updatedAt, $status, $currentAgentId, $currentModelId, $currentProviderId, $permissionMode, $planMode, $displayMode, $branch, $workspacePath, $taskTitle)
       ON CONFLICT(id) DO UPDATE SET
         title = excluded.title,
         updatedAt = excluded.updatedAt,
@@ -190,6 +201,7 @@ export class SqliteSessionPersistence implements ISessionPersistence {
         currentModelId = excluded.currentModelId,
         currentProviderId = excluded.currentProviderId,
         permissionMode = excluded.permissionMode,
+        planMode = excluded.planMode,
         displayMode = excluded.displayMode,
         branch = excluded.branch,
         workspacePath = excluded.workspacePath,
@@ -284,6 +296,7 @@ export class SqliteSessionPersistence implements ISessionPersistence {
       $currentModelId: safeSession.currentModelId ?? null,
       $currentProviderId: safeSession.currentProviderId ?? null,
       $permissionMode: safeSession.permissionMode ?? null,
+      $planMode: safeSession.planMode ?? null,
       $displayMode: safeSession.displayMode ?? null,
       $branch: safeSession.branch ?? null,
       $workspacePath: safeSession.workspacePath ?? null,

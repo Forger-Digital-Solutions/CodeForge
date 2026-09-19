@@ -57,6 +57,9 @@ interface ComposerProps {
   onModelPickerOpenChange?: (isOpen: boolean) => void;
   executionMode?: ExecutionMode;
   onExecutionModeChange?: (mode: ExecutionMode) => void;
+  /** Task authority contract — rendered as the composer-level mode controls. */
+  authority?: { permissionMode: string; planMode: string } | null;
+  onAuthorityChange?: (modes: { permissionMode?: string; planMode?: string }) => void;
   onComposerActivity?: (active: boolean) => void;
   executionState?: "running" | "user_intent_hold" | "steer_queued" | "reconciling_steer";
   /** Repository/runtime context chips shown as the first row inside the composer surface. */
@@ -96,6 +99,8 @@ export default function Composer({
   onModelPickerOpenChange,
   executionMode = "agent",
   onExecutionModeChange,
+  authority,
+  onAuthorityChange,
   onComposerActivity,
   executionState = "running",
   contextRow,
@@ -360,12 +365,12 @@ export default function Composer({
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
+      {/* Status strips inform only — Pause/Stop/Resume live canonically in the
+          task header so each visible control has exactly one meaning. */}
       {isPaused && (
         <div className="composer-status">
           <span className="composer-status-dot paused" />
           <span style={{ fontSize: 11, color: "var(--cf-warning)" }}>Paused</span>
-          <button type="button" className="btn-sm" onClick={onResume}>Resume</button>
-          <button type="button" className="btn-sm danger" onClick={onStop}>Stop</button>
         </div>
       )}
       {isRunning && !isPaused && executionState === "user_intent_hold" && (
@@ -378,8 +383,6 @@ export default function Composer({
         <div className="composer-status">
           <span className="composer-status-dot running" />
           <span style={{ fontSize: 11, color: "var(--cf-success)" }}>Agent working</span>
-          <button type="button" className="btn-sm" onClick={onPause}>Pause</button>
-          <button type="button" className="btn-sm danger" onClick={onStop}>Stop</button>
         </div>
       )}
 
@@ -545,6 +548,35 @@ export default function Composer({
                 Chat
               </button>
             </div>
+            {onAuthorityChange && (
+              <>
+                <select
+                  className="authority-select"
+                  aria-label="Permission mode"
+                  title={
+                    "Auto Review: routine workspace work runs automatically; boundary crossings ask.\n" +
+                    "Ask More Often: also asks before edits and project-modifying commands.\n" +
+                    "Full Autonomy: adds installs and unfamiliar scripts — never external or destructive actions."
+                  }
+                  value={authority?.permissionMode ?? "auto_review"}
+                  onChange={(e) => onAuthorityChange({ permissionMode: e.target.value })}
+                >
+                  <option value="auto_review">Auto Review</option>
+                  <option value="ask_more">Ask More</option>
+                  <option value="full_autonomy">Full Auto</option>
+                </select>
+                <select
+                  className="authority-select"
+                  aria-label="Plan mode"
+                  title="Plan: Auto executes the strategy inside task authority. Plan: Review First waits for your decision."
+                  value={authority?.planMode ?? "auto"}
+                  onChange={(e) => onAuthorityChange({ planMode: e.target.value })}
+                >
+                  <option value="auto">Plan: Auto</option>
+                  <option value="review_first">Plan: Review</option>
+                </select>
+              </>
+            )}
           </div>
           <div className="composer-toolbar-right">
             {models && models.length > 0 && (

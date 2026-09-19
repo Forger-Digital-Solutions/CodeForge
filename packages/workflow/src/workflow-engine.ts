@@ -95,6 +95,12 @@ export interface WorkflowEngineOptions {
   onPhaseChange?: (phase: WorkflowPhase, task: WorkflowTask) => void;
   onEvent?: (event: { type: string; phase: WorkflowPhase; payload: unknown }) => void;
   askForApproval?: (plan: WorkflowPlan) => Promise<"allow_once" | "allow_session" | "deny">;
+  /**
+   * Strategy gate for plans: "review" shows the approval phase/card (legacy);
+   * "auto" executes inside the task lease — askForApproval still runs so the
+   * service can persist the plan record and policy receipt. Absent = "review".
+   */
+  planGateMode?: () => "auto" | "review";
   implementer?: (
     step: PlanStep,
     context: ContextBundle,
@@ -140,6 +146,7 @@ export class WorkflowEngine {
   private readonly onPhaseChange?: WorkflowEngineOptions["onPhaseChange"];
   private readonly onEvent?: WorkflowEngineOptions["onEvent"];
   private readonly askForApproval?: WorkflowEngineOptions["askForApproval"];
+  private readonly planGateMode?: WorkflowEngineOptions["planGateMode"];
   private readonly implementer?: WorkflowEngineOptions["implementer"];
   private readonly agentExecutor?: WorkflowEngineOptions["agentExecutor"];
   private readonly beforeVerificationDispatch?: WorkflowEngineOptions["beforeVerificationDispatch"];
@@ -162,6 +169,7 @@ export class WorkflowEngine {
     this.onPhaseChange = options.onPhaseChange;
     this.onEvent = options.onEvent;
     this.askForApproval = options.askForApproval;
+    this.planGateMode = options.planGateMode;
     this.implementer = options.implementer;
     this.agentExecutor = options.agentExecutor;
     this.beforeVerificationDispatch = options.beforeVerificationDispatch;
@@ -295,12 +303,17 @@ export class WorkflowEngine {
         this.onEvent?.({ type: "workflow.plan_created", phase: this.phase, payload: { planId: plan.id, steps: plan.steps.length } });
       }
 
-      // 5. Ask for approval when appropriate
+      // 5. Ask for approval when appropriate. Plan review is a *strategy* gate,
+      // not a permission boundary — under Plan: Auto the plan executes inside
+      // the task lease without an approval phase or card.
       if (this.resumeState) {
         this.setPhase("implementing", "implementing");
       } else if (planRequiresApproval(plan)) {
-        this.setPhase("awaiting_approval", "user_input_required");
-        this.onEvent?.({ type: "workflow.approval_requested", phase: this.phase, payload: { planId: plan.id, requiresApproval: true } });
+        const gateMode = this.planGateMode?.() ?? "review";
+        if (gateMode === "review") {
+          this.setPhase("awaiting_approval", "user_input_required");
+          this.onEvent?.({ type: "workflow.approval_requested", phase: this.phase, payload: { planId: plan.id, requiresApproval: true } });
+        }
         if (this.askForApproval) {
           const decision = await this.askForApproval(plan);
           if (decision === "deny") {
