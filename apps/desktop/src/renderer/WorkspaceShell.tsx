@@ -179,6 +179,9 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   useEffect(() => {
     let active = true;
     const refreshIndex = async () => {
+      // The 127.0.0.1:0 placeholder must never be fetched — Chromium blocks it (ERR_UNSAFE_PORT)
+      // and the poll would spam the console until the runtime endpoint resolves.
+      if (!runtimeEndpoint) return;
       try {
         const response = await fetch(`${serverBaseUrl}/api/repository-index/status`);
         if (response.ok && active) setRepositoryIndex(await response.json() as RepositoryIndexStatus);
@@ -864,7 +867,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
           style={scaleZoom !== 1 ? ({ zoom: scaleZoom } as React.CSSProperties) : undefined}
         >
           <WorkspaceApp
-            sseUrl={`${serverBaseUrl}/api/events`}
+            sseUrl={runtimeEndpoint ? `${serverBaseUrl}/api/events` : ""}
             models={models}
             selectedModelId={selectedModelId}
             onSelectModel={handleSelectModel}

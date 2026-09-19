@@ -8,22 +8,31 @@
 ;     the per-user data folders CodeForge itself created and nothing else: project folders and git
 ;     worktrees are never touched.
 ;   * A silent uninstall (/S) keeps data unless `--delete-app-data` is passed (electron-builder's
-;     standard switch), so scripted removals stay predictable.
+;     standard switch), so scripted removals stay predictable. The built-in handler only removes
+;     $APPDATA\<package name>; this macro repeats the check so the updater cache and derived
+;     repository indexes go too — and so a missed flag in the generated section still leaves a
+;     working delete path.
 ;   * During an in-place upgrade the old uninstaller runs with `--updated`; it must never delete data.
 
+!macro CodeForgeRemoveUserData
+  SetShellVarContext current
+  RMDir /r "$APPDATA\codeforge-desktop"
+  RMDir /r "$LOCALAPPDATA\codeforge-desktop-updater"
+  ; Derived caches only; the sibling "worktrees" folder can hold the user's own checkouts.
+  RMDir /r "$LOCALAPPDATA\CodeForge\repository-indexes"
+  RMDir "$LOCALAPPDATA\CodeForge"
+!macroend
+
 !macro customUnInstall
-  ${ifNot} ${Silent}
-    ${ifNot} ${isUpdated}
+  ${ifNot} ${isUpdated}
+    ${if} ${isDeleteAppData}
+      !insertmacro CodeForgeRemoveUserData
+    ${elseIfNot} ${Silent}
       MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 \
         "Also remove your CodeForge data on this computer?$\r$\n$\r$\nThis deletes your settings, task history and the saved CodeForge sign-in for this Windows user.$\r$\nYour project folders are never touched.$\r$\n$\r$\nChoose No to keep them for a later reinstall." \
         IDYES removeCodeForgeData IDNO keepCodeForgeData
       removeCodeForgeData:
-        SetShellVarContext current
-        RMDir /r "$APPDATA\codeforge-desktop"
-        RMDir /r "$LOCALAPPDATA\codeforge-desktop-updater"
-        ; Derived caches only; the sibling "worktrees" folder can hold the user's own checkouts.
-        RMDir /r "$LOCALAPPDATA\CodeForge\repository-indexes"
-        RMDir "$LOCALAPPDATA\CodeForge"
+        !insertmacro CodeForgeRemoveUserData
       keepCodeForgeData:
     ${endIf}
   ${endIf}
