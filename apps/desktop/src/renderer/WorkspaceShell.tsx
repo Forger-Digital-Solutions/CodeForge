@@ -548,6 +548,10 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       openDataFolder: async () => {
         await window.electronAPI?.openDataFolder?.().catch(() => {});
       },
+      exportDiagnosticBundle: async () => {
+        const result = await window.electronAPI?.exportDiagnosticBundle?.().catch(() => null);
+        return result && result.ok ? result.path ?? null : null;
+      },
       clearRecentProjects: async () => {
         await window.electronAPI?.clearRecentProjects?.();
         await loadRecentProjects();

@@ -119,6 +119,10 @@ const api = {
   openDataFolder: (): Promise<{ ok: boolean; error?: string }> => {
     return ipcRenderer.invoke("app:openDataFolder");
   },
+  // RC-7: one-click sanitized diagnostic bundle for support (written under userData/diagnostics).
+  exportDiagnosticBundle: (): Promise<{ ok: boolean; path?: string; error?: string }> => {
+    return ipcRenderer.invoke("diagnostics:export");
+  },
   showNotification: (payload: { title: string; body: string }): Promise<{ ok: boolean; reason?: string }> => {
     return ipcRenderer.invoke("notifications:show", payload);
   },

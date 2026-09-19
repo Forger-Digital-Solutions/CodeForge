@@ -3,6 +3,25 @@ import { useSettings } from "../settings-context.js";
 import { CfSelect, SettingsGroup, SettingsRow, SettingsButton } from "../settings-controls.js";
 import type { PrivacyRoutingMode } from "../../../app-settings.js";
 
+function ExportBundleButton(): React.ReactElement {
+  const ctx = useSettings();
+  const [state, setState] = React.useState<"idle" | "working" | "done" | "failed">("idle");
+  return (
+    <SettingsButton
+      onClick={() => {
+        if (state === "done") {
+          void ctx.openDataFolder();
+          return;
+        }
+        setState("working");
+        void ctx.exportDiagnosticBundle().then((path) => setState(path ? "done" : "failed"));
+      }}
+    >
+      {state === "working" ? "Exporting…" : state === "done" ? "Exported — open folder" : state === "failed" ? "Export failed — retry" : "Export bundle"}
+    </SettingsButton>
+  );
+}
+
 export function DataPrivacySection(): React.ReactElement {
   const ctx = useSettings();
 
@@ -59,6 +78,11 @@ export function DataPrivacySection(): React.ReactElement {
           title="Diagnostics"
           description="Diagnostics are limited to local log output. Open the data folder to inspect what CodeForge stores on this machine."
           control={<SettingsButton onClick={() => void ctx.openDataFolder()}>Open data folder</SettingsButton>}
+        />
+        <SettingsRow
+          title="Support bundle"
+          description="Writes a sanitized diagnostic bundle (app state, connection classes, and recent log output — never credentials or code) into the diagnostics folder for you to share with support."
+          control={<ExportBundleButton />}
         />
       </SettingsGroup>
     </div>

@@ -54,6 +54,7 @@ import {
 } from "@codeforge/model-registry";
 import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
 import { describeCloudAuthFailure, CloudAuthError, runCodeForgeCloudAuth } from "./cloud-auth-flow.js";
+import { initDiagnostics, closeDiagnostics, logDiagnostic, writeDiagnosticBundle } from "./diagnostics.js";
 import {
   installSingleInstanceGuard,
   activateWindow,
@@ -701,6 +702,7 @@ async function completeSafeQuit(): Promise<void> {
     cleanupRuntimeMetadata();
     localServerPort = 0;
     console.log("[CodeForge] quit: local runtime stopped, quitting");
+    closeDiagnostics();
     app.quit();
     // Observed on Windows: with every window closed and the runtime stopped, the browser process
     // can idle indefinitely (a provider-catalog keep-alive socket was the only live handle) and
@@ -867,7 +869,7 @@ async function registerCloudAdapter(): Promise<void> {
   const cloudAdapter = existing instanceof HostedProviderAdapter ? existing : createCloudAdapter();
   if (!(existing instanceof HostedProviderAdapter)) providerCatalog.register(cloudAdapter);
   providerAuthState.set("codeforge-cloud", "ok");
-  freeCloud?.setConnection({ providerId: "codeforge-cloud", connected: true, credentialSource: "FDS_GATEWAY", authState: "ok", planAttested: true });
+  freeCloud?.setConnection({ providerId: "codeforge-cloud", connected: true, credentialSource: "FDS_GATEWAY", supplyClass: "PURE_MANAGED_FREE", authState: "ok", planAttested: true });
   await syncCloudFreeModelsIntoFirewall(cloudAdapter);
   scheduleQualification("codeforge-cloud");
 }
@@ -2012,6 +2014,9 @@ async function runPackagedSmoke(): Promise<void> {
 
 async function startPrimaryInstance(): Promise<void> {
   smokeRecord("WHEN_READY_START");
+  // Persistent sanitized diagnostics before anything can fail: RC-7 — an installed build must
+  // always leave a support-grade log under userData, never depend on OS-captured stdout.
+  initDiagnostics();
   // One-time freshness probe for the canonical settings store: a first launch with no stored
   // settings object lets the renderer seed defaults from its pre-canonical local values.
   appSettingsFreshAtStartup = !(APP_SETTINGS_KEY in readSettings());
@@ -2307,6 +2312,36 @@ ipcMain.handle("shell:execCommand", async (event, payload: { command?: unknown; 
 ipcMain.handle("app:runtime-status", async (event) => {
   assertMainWindowSender(event);
   return currentRuntimeStatus();
+});
+
+/**
+ * RC-7: one-click support export. Collects only sanitized, credential-free state — counters,
+ * connection classes, runtime status — plus the persistent log tail, and writes a single JSON
+ * bundle under userData/diagnostics for the user to share.
+ */
+ipcMain.handle("diagnostics:export", async (event) => {
+  assertMainWindowSender(event);
+  try {
+    const status = await currentRuntimeStatus().catch(() => undefined);
+    const stateSummary: Record<string, unknown> = {
+      runtimeStatus: status,
+      freeCloudSummary: freeCloud?.snapshot().summary,
+      connections: providerConnections?.listConnections().map((c) => ({
+        providerId: c.providerId,
+        connected: c.connected,
+        credentialSource: c.credentialSource,
+        supplyClass: c.supplyClass,
+        authState: c.authState,
+        freeRouteCount: c.freeRouteCount,
+        healthyRouteCount: c.healthyRouteCount,
+      })),
+      cloudSignedIn: Boolean(getStoredCloudTokens().accessToken),
+      packagedSmoke: PACKAGED_SMOKE,
+    };
+    return writeDiagnosticBundle(stateSummary);
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+  }
 });
 
 ipcMain.handle("dialog:selectDirectory", async (event) => {
@@ -2756,6 +2791,9 @@ ipcMain.handle("cloud:auth:start", async (event) => {
     const kind = error instanceof CloudAuthError ? error.kind : "network";
     const detail = error instanceof Error ? error.message : String(error);
     console.warn(`[CodeForge] cloud auth failed kind=${kind} endpointConfigured=${Boolean(CLOUD_API_URL)} detail=${detail}`);
+    // RC-7: the failure category is support-grade evidence — persist it structured, not just
+    // inside the collapsed user-facing string.
+    logDiagnostic("warn", "cloud_auth_failed", { kind, endpointConfigured: Boolean(CLOUD_API_URL), detail });
     return { ok: false, error: describeCloudAuthFailure(error) };
   }
 });

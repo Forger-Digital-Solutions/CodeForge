@@ -114,6 +114,9 @@ const api = {
   openDataFolder: () => {
     return ipcRenderer.invoke("app:openDataFolder");
   },
+  exportDiagnosticBundle: () => {
+    return ipcRenderer.invoke("diagnostics:export");
+  },
   showNotification: (payload) => {
     return ipcRenderer.invoke("notifications:show", payload);
   },

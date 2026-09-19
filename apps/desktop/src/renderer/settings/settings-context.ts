@@ -96,6 +96,8 @@ export interface SettingsContextValue {
 
   openExternal: (url: string) => void;
   openDataFolder: () => Promise<void>;
+  /** Writes a sanitized support bundle under userData/diagnostics and returns its path (RC-7). */
+  exportDiagnosticBundle: () => Promise<string | null>;
   clearRecentProjects: () => Promise<void>;
   closeSettings: () => void;
   /** Deep-link to another settings section (account card → Profile, etc.). */
