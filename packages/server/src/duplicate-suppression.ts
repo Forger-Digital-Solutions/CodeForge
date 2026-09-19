@@ -56,6 +56,26 @@ interface ReadProgressState {
 const MALFORMED_OR_EMPTY_OUTPUT = /(?:no matches?|not found|empty|malformed|invalid|parse|syntax error|cannot read|unable to|error)/i;
 const NO_PROGRESS_READ_LIMIT = 8;
 
+/**
+ * Only result-list tools can return an empty answer ("no matches", "not found"). Content-bearing
+ * reads return the thing itself — source that happens to contain the word "error" or "invalid" is
+ * evidence the agent asked for, not a failed probe. Applying the empty-signal heuristic to file
+ * contents is what made an ordinary verification re-read look like a stalled investigation.
+ */
+const RESULT_LIST_TOOLS = new Set([
+  "list_files",
+  "search_files",
+  "repo_search",
+  "repo_symbol",
+  "repo_references",
+  "repo_dependencies",
+  "repo_dependents",
+  "repo_tests",
+  "repo_impact",
+  "repo_callees",
+  "repo_callers",
+]);
+
 /** Exported for FG-9's own regression proof (packages/server/test/fg9-unsafe-mutating.test.ts)
  * that mutating tools can never reach a "suppress" decision — never redeclared/duplicated
  * elsewhere. */
@@ -186,7 +206,7 @@ export class DuplicateActionSupervisor {
     };
     progress.observations++;
     const repeated = progress.outputFingerprints.has(fingerprintKey);
-    if (!success || repeated || MALFORMED_OR_EMPTY_OUTPUT.test(output)) {
+    if (!success || repeated || (RESULT_LIST_TOOLS.has(identity.tool) && MALFORMED_OR_EMPTY_OUTPUT.test(output))) {
       progress.noProgressObservations++;
       this.metrics.noProgressReadSignals++;
     }

@@ -7,6 +7,7 @@ import { humanizeError } from "./error-copy.js";
 import {
   deriveRunLifecycle,
   describeReasonCode,
+  IDLE_LIFECYCLE,
   lastTerminalEventSeq,
   presentRun,
   type RunLifecycle,
@@ -85,6 +86,12 @@ export interface WorkspaceState {
    * Lifecycle projection cannot describe it, so it rides the failure banner directly.
    */
   actionFailure: string | null;
+  /**
+   * The followed session id has no server-side record (a stale remembered id, or a session that
+   * was deleted). Orphaned durable events for it must not render terminal chrome on what is
+   * effectively an empty workspace — while this is set, incoming events are dropped.
+   */
+  sessionMissing: boolean;
 }
 
 export const initialWorkspaceState: WorkspaceState = {
@@ -122,6 +129,7 @@ export const initialWorkspaceState: WorkspaceState = {
   authority: null,
   dismissedTerminalSeq: null,
   actionFailure: null,
+  sessionMissing: false,
 };
 
 export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
@@ -157,6 +165,7 @@ export function clearSessionScopedState(state: WorkspaceState): WorkspaceState {
     authority: null,
     dismissedTerminalSeq: null,
     actionFailure: null,
+    sessionMissing: false,
   };
 }
 
@@ -473,17 +482,65 @@ function mergeServerTurns(serverTurns: TurnRecord[], prevTurns: TurnRecord[]): T
  */
 export function mergeHydratedEvents(existing: WorkspaceEvent[], incoming: unknown[], sessionId: string): WorkspaceEvent[] {
   const bySequence = new Map<number, WorkspaceEvent>();
+  const unsequencedKeys = new Set<string>();
+  const unsequencedKey = (event: { type: string; timestamp: string; payload: unknown } & Record<string, unknown>): string =>
+    `${event.type}|${event.timestamp}|${JSON.stringify(event.payload)}|${event.workstreamId ?? ""}|${event.runId ?? ""}`;
   for (const event of existing) {
-    if (event.sessionId === sessionId) bySequence.set(event.seq, event);
+    if (event.sessionId !== sessionId) continue;
+    bySequence.set(event.seq, event);
+    if (!Number.isInteger(event.seq)) unsequencedKeys.add(unsequencedKey(event as never));
   }
+  let orphanOffset = 0;
+  let lastSeq = 0;
   for (const candidate of incoming) {
-    const parsed = WorkspaceEventSchema.safeParse(candidate);
-    if (parsed.success && parsed.data.sessionId === sessionId) bySequence.set(parsed.data.seq, parsed.data);
+    const parsed = coerceWorkspaceEvent(candidate);
+    if (!parsed || parsed.sessionId !== sessionId) continue;
+    if (Number.isSafeInteger(parsed.seq) && parsed.seq > 0) {
+      bySequence.set(parsed.seq, parsed);
+      lastSeq = Math.max(lastSeq, parsed.seq);
+    } else if (typeof parsed.seq === "number" && parsed.seq > 0) {
+      // Already-synthesized fractional seq from a previous merge — keep it stable or the same
+      // record re-keys and duplicates on every re-hydrate.
+      bySequence.set(parsed.seq, parsed);
+      unsequencedKeys.add(unsequencedKey(parsed as never));
+    } else {
+      // Legacy orchestration records were persisted without a seq — order them between their
+      // persisted neighbors instead of dropping them from replay. Identity is content-derived:
+      // a re-hydrate re-reads the same row, so seq must not be its only key.
+      const key = unsequencedKey(parsed as never);
+      if (unsequencedKeys.has(key)) continue;
+      unsequencedKeys.add(key);
+      const seq = lastSeq + ++orphanOffset / 1000;
+      bySequence.set(seq, { ...parsed, seq } as WorkspaceEvent);
+    }
   }
   return [...bySequence.values()].sort((left, right) => left.seq - right.seq);
 }
 
-function resolveApiPath(sseUrl: string, apiPath: string): string {
+/**
+ * The typed union covers interactive events; durable orchestration records (workstream.*,
+ * parallel.*, mission.*) predate it and carry the same envelope plus a `workstreamId`. Dropping
+ * them makes delegated work invisible on reload, so accept the structural envelope verbatim —
+ * these are read-only projections, and renderers treat every payload field as untrusted text.
+ */
+export function coerceWorkspaceEvent(candidate: unknown): WorkspaceEvent | undefined {
+  const parsed = WorkspaceEventSchema.safeParse(candidate);
+  if (parsed.success) return parsed.data;
+  const record = candidate as { type?: unknown; sessionId?: unknown; seq?: unknown; timestamp?: unknown; payload?: unknown } | null;
+  if (
+    record && typeof record === "object"
+    && typeof record.type === "string" && record.type.length > 0
+    && typeof record.sessionId === "string"
+    && (record.seq === undefined || (typeof record.seq === "number" && Number.isFinite(record.seq) && record.seq > 0))
+    && typeof record.timestamp === "string"
+    && record.payload !== null && typeof record.payload === "object"
+  ) {
+    return candidate as WorkspaceEvent;
+  }
+  return undefined;
+}
+
+export function resolveApiPath(sseUrl: string, apiPath: string): string {
   if (sseUrl.startsWith("http://") || sseUrl.startsWith("https://")) {
     return `${new URL(sseUrl).origin}${apiPath}`;
   }
@@ -536,7 +593,9 @@ export function useWorkspaceSSE(url: string) {
   // conversation and inspector render is fetched here so both actually populate.
   const hydrate = useCallback(
     async (sessionIdOverride?: string) => {
-      const sessionId = sessionIdOverride ?? state.session?.id ?? "default";
+      // Follow the session this view is subscribed to — a remembered id must hydrate its own
+      // snapshot, not "default", or the snapshot and the event stream describe different sessions.
+      const sessionId = sessionIdOverride ?? state.session?.id ?? activeSessionIdRef.current;
       try {
         const res = await fetch(resolveApiPath(url, `/api/sessions/${sessionId}`));
         if (!res.ok) return;
@@ -556,6 +615,12 @@ export function useWorkspaceSSE(url: string) {
           authority?: { permissionMode?: string; planMode?: string; grants?: string[] };
         };
         setState((prev) => {
+          // The followed id has no server-side record and is not a local draft awaiting its first
+          // send: any durable events it still carries are orphans of a session that is gone.
+          // Rendering them replays a dead run's terminal chrome onto an empty workspace.
+          if (data.session == null && prev.session?.id !== sessionId) {
+            return { ...clearSessionScopedState(prev), sessionMissing: true };
+          }
           // The server is authoritative about what is still awaiting a decision. Adopting its list
           // wholesale is what makes a reload survive an in-flight approval: a card the backend is
           // still waiting on reappears exactly once, and one it has already resolved does not come
@@ -586,6 +651,7 @@ export function useWorkspaceSSE(url: string) {
           return {
             ...prev,
             ...restored,
+            sessionMissing: false,
             session: data.session ?? prev.session,
             turns: Array.isArray(data.turns) ? mergeServerTurns(data.turns, prev.turns) : prev.turns,
             workItems: Array.isArray(data.workItems) ? data.workItems : prev.workItems,
@@ -681,13 +747,17 @@ export function useWorkspaceSSE(url: string) {
       es.onmessage = (event: MessageEvent) => {
         if (aborted) return;
         try {
-          const parsed = JSON.parse(event.data);
-          if (!isWorkspaceEvent(parsed)) return;
+          const parsed = coerceWorkspaceEvent(JSON.parse(event.data));
+          if (!parsed) return;
           // Session isolation + dedupe: ignore events for other sessions and any already seen.
-          if (!isEventForSession(parsed, activeSessionIdRef.current, lastSeqRef.current)) return;
+          // Live events carry the store's seq; an unsequenced record can only be a replayed
+          // orchestration envelope — accept it but never let it move the dedupe cursor.
+          if (!Number.isSafeInteger(parsed.seq) || !isEventForSession(parsed, activeSessionIdRef.current, lastSeqRef.current)) return;
 
           lastSeqRef.current = parsed.seq;
           setState((prev: WorkspaceState) => {
+            // Orphaned events of a session that no longer exists must not resurrect its run.
+            if (prev.sessionMissing) return prev;
             let next = applyExecutionLifecycleEvent({ ...prev, events: mergeEvent(prev.events, parsed) }, parsed);
             if (parsed.type === "turn.started") {
               next.isRunning = true;
@@ -947,6 +1017,8 @@ export function useWorkspaceSSE(url: string) {
         workflowError: null,
         workflowActionError: null,
         actionFailure: null,
+        // Sending on this id creates the session server-side — its events are legitimate again.
+        sessionMissing: false,
       }));
 
       try {
@@ -1202,6 +1274,7 @@ export function useWorkspaceSSE(url: string) {
       lastCheckpointId: null,
       dismissedTerminalSeq: null,
       actionFailure: null,
+      sessionMissing: false,
     }));
   }, []);
 
@@ -1237,13 +1310,15 @@ export function useWorkspaceSSE(url: string) {
   // `viewState`/`run`, never re-interpret raw event mutations themselves.
   const lifecycle = useMemo(
     () =>
-      deriveRunLifecycle(state.events, {
-        session: state.session,
-        turns: state.turns,
-        pendingApprovals: state.pendingApprovals.length,
-        pendingQuestion: Boolean(state.pendingQuestion),
-      }),
-    [state.events, state.session, state.turns, state.pendingApprovals, state.pendingQuestion],
+      state.sessionMissing
+        ? IDLE_LIFECYCLE
+        : deriveRunLifecycle(state.events, {
+            session: state.session,
+            turns: state.turns,
+            pendingApprovals: state.pendingApprovals.length,
+            pendingQuestion: Boolean(state.pendingQuestion),
+          }),
+    [state.events, state.session, state.sessionMissing, state.turns, state.pendingApprovals, state.pendingQuestion],
   );
   const run = useMemo(() => presentRun(lifecycle), [lifecycle]);
   const viewState = useMemo(() => projectRunPresentation(state, lifecycle, run), [state, lifecycle, run]);

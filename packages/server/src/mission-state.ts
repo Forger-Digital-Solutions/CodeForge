@@ -455,7 +455,7 @@ export class MissionStore {
   private readonly cache = new Map<string, AutonomousMission>();
   private writeChain: Promise<void> = Promise.resolve();
 
-  constructor(private readonly persistence?: ISessionPersistence, private readonly onEvent?: (event: MissionEvent) => void) {}
+  constructor(private readonly persistence?: ISessionPersistence, private readonly onEvent?: (event: MissionEvent) => MissionEvent | void) {}
 
   /** Must be awaited to observe missions persisted by a previous process. */
   async init(): Promise<void> {
@@ -523,8 +523,10 @@ export class MissionStore {
       ...(extra.milestoneId ? { milestoneId: extra.milestoneId } : {}), ...(extra.wave !== undefined ? { wave: extra.wave } : {}),
       timestamp: new Date().toISOString(), payload,
     };
-    this.persistence?.appendEvent(event).catch(() => {});
-    this.onEvent?.(event);
+    // The host's onEvent stamps the process-wide seq while broadcasting; persist the sequenced
+    // record so durable replay and the live stream describe the same ordering.
+    const sequenced = this.onEvent?.(event) ?? event;
+    this.persistence?.appendEvent(sequenced).catch(() => {});
   }
 }
 

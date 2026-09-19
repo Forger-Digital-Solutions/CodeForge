@@ -148,6 +148,56 @@ describe("buildTimeline — tool rows carry their target and own their file even
   });
 });
 
+describe("buildTimeline — command executions fold into their owning run_command call", () => {
+  const runCommand = (id: string, command: string) => [
+    ev("tool.call_started", { turnId: "t1", toolCallId: id, toolName: "run_command" }),
+    ev("tool.execution_started", { turnId: "t1", toolCallId: id, toolName: "run_command", argsJson: JSON.stringify({ command }) }),
+  ];
+
+  it("replaces the owning tool row instead of showing the same command twice", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("turn.started", { turnId: "t1", userMessage: "fix it" }),
+      ...runCommand("c1", "npm test"),
+      ev("command.executed", { commandId: "x1", command: "npm test", output: "4 passed", exitCode: 0 }),
+      ev("tool.execution_completed", { turnId: "t1", toolCallId: "c1", toolName: "run_command", result: "4 passed" }),
+    ]);
+    expect(tl.map((i) => i.kind)).toEqual(["user", "command"]);
+    expect((tl[1] as any)).toMatchObject({ command: "npm test", exitCode: 0, output: "4 passed" });
+  });
+
+  it("keeps a standalone command row when no run_command call owns it", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("turn.started", { turnId: "t1", userMessage: "go" }),
+      ev("command.executed", { commandId: "x1", command: "npm run build", output: "ok", exitCode: 0 }),
+    ]);
+    expect(tl.map((i) => i.kind)).toEqual(["user", "command"]);
+  });
+
+  it("does not steal the wrong call's row when a different command is in flight", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("turn.started", { turnId: "t1", userMessage: "go" }),
+      ...runCommand("c1", "npm test"),
+      ev("command.executed", { commandId: "x1", command: "npm run lint", output: "clean", exitCode: 0 }),
+    ]);
+    expect(tl.map((i) => i.kind)).toEqual(["user", "tool", "command"]);
+  });
+
+  it("shows subagent lifecycle so delegated work is visible in the conversation", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("turn.started", { turnId: "t1", userMessage: "audit the repo" }),
+      ev("subagent.started", { agentId: "a1", role: "Explorer", task: "Map the routes" }),
+      ev("subagent.completed", { agentId: "a1", result: "done" }),
+    ]);
+    const rows = tl.filter((i) => i.kind === "system") as any[];
+    expect(rows[0].text).toContain("Spawned subagent · Explorer — Map the routes");
+    expect(rows[1].text).toBe("Explorer finished");
+  });
+});
+
 describe("session isolation", () => {
   it("rejects events from other sessions and already-seen seqs", () => {
     expect(isEventForSession({ sessionId: "A", seq: 5 }, "A", 3)).toBe(true);
@@ -212,5 +262,24 @@ describe("buildTimeline — workflow-dispatched turns are not the user's words",
     expect(phases[0].detail).toBe("10 passed · 2 failed");
     expect(phases[1].detail).toBe("fix the failing assertions");
     expect(phases[3].text).toBe("Done");
+  });
+});
+
+describe("buildTimeline — parallel run workstream lifecycle", () => {
+  it("labels workstream dispatch, review, and blocked outcomes", () => {
+    reset();
+    const ws = (type: string, workstreamId: string, payload: unknown = {}) =>
+      ({ type, payload, workstreamId, seq: ++seq, sessionId: "s1", timestamp: new Date().toISOString() }) as unknown as WorkspaceEvent;
+    const tl = buildTimeline([
+      ev("parallel.plan.validated", { order: ["add-jsdoc"] }),
+      ws("workstream.dispatched", "add-jsdoc"),
+      ws("workstream.reviewing", "add-jsdoc", { revisionRound: 0 }),
+      ws("workstream.blocked", "add-jsdoc", { error: "Legacy verifier requires a shell" }),
+    ]);
+    const texts = tl.map((i) => i.text);
+    expect(texts).toContain("Parallel plan ready — 1 workstream");
+    expect(texts).toContain("Workstream add-jsdoc started in an isolated worktree");
+    expect(texts).toContain("Workstream add-jsdoc under review");
+    expect(texts.some((t) => t.includes("Workstream add-jsdoc blocked") && t.includes("Legacy verifier"))).toBe(true);
   });
 });

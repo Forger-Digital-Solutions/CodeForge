@@ -598,7 +598,7 @@ describe("Checkpoint integration", () => {
 
   it("destructive git operations are not exposed as tools", async () => {
     // getAvailableTools is private; test via search in runtime file that only checkpoint create is exposed, not reset/push
-    const toolsStr = fs.readFileSync(resolve("packages/server/src/agent-runtime.ts"), "utf-8");
+    const toolsStr = fs.readFileSync(new URL("../src/agent-runtime.ts", import.meta.url), "utf-8");
     expect(toolsStr).toContain("create_checkpoint");
     expect(toolsStr).not.toContain("git reset");
     expect(toolsStr).not.toContain("force push");

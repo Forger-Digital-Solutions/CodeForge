@@ -37,3 +37,6 @@ packages/vscode/.vscode-test/
 docs/evidence/**/profile-*/
 docs/evidence/**/*.stdout.log
 docs/evidence/**/*.stderr.log
+
+# R17 live-audit profile copies (sealed tokens, databases) never belong in the repo
+/.r17/

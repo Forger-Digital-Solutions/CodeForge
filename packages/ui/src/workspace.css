@@ -348,6 +348,7 @@ body {
 
 .nav-task-menu { color: var(--cf-text-muted); font-size: 14px; line-height: 1; opacity: 0; }
 .nav-task:hover .nav-task-menu, .nav-task.active .nav-task-menu { opacity: 1; }
+.nav-task-nested { padding-left: 30px; min-height: 34px; }
 .nav-session-group + .nav-session-group { margin-top: 4px; }
 .nav-group-label { padding: 5px 16px 3px; color: var(--cf-text-muted); font-size: 10px; font-weight: 600; }
 

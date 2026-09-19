@@ -36,9 +36,42 @@ describe("WorkflowProgress — compact workflow stages", () => {
       activePhase: "blocked",
     });
     const html = markupFor(state);
-    expect(html).toContain("Blocked · not verified");
+    // The header already carries "Blocked"; the strip says where the run stopped and that it
+    // never verified — restating the verdict under itself was noise.
+    expect(html).toContain("Stopped · not verified");
     expect(html).not.toContain("Working ·");
     expect(phaseIndex("blocked")).toBeGreaterThanOrEqual(0);
+  });
+
+  it("says which phase the run stopped in when events recorded one", () => {
+    const state = makeState({
+      isRunning: false,
+      activeTaskId: "task-blocked",
+      activePhase: "blocked",
+      events: [
+        { type: "task.state_changed", sessionId: "s", seq: 1, timestamp: "t", payload: { to: "implementing" } },
+        { type: "task.state_changed", sessionId: "s", seq: 2, timestamp: "t", payload: { to: "repairing" } },
+        { type: "task.state_changed", sessionId: "s", seq: 3, timestamp: "t", payload: { to: "blocked" } },
+      ] as WorkspaceState["events"],
+    });
+    const html = markupFor(state);
+    expect(html).toContain("Stopped during Repairing · not verified");
+    expect(html).not.toContain("Stopped during Completed");
+  });
+
+  it("drops the `not verified` suffix when verification evidence exists", () => {
+    const state = makeState({
+      isRunning: false,
+      activeTaskId: "task-blocked",
+      activePhase: "blocked",
+      events: [
+        { type: "task.state_changed", sessionId: "s", seq: 1, timestamp: "t", payload: { to: "summarizing" } },
+        { type: "workflow.verification_completed", sessionId: "s", seq: 2, timestamp: "t", payload: { passed: 8, failed: 0, skipped: 0 } },
+      ] as WorkspaceState["events"],
+    });
+    const html = markupFor(state);
+    expect(html).toContain("Stopped during Summarizing");
+    expect(html).not.toContain("not verified");
   });
 
   it("renders compact working status when active", () => {
@@ -123,7 +156,8 @@ describe("WorkflowProgress — compact workflow stages", () => {
       workflowError: "Workflow timed out after 10 minutes",
     });
     const html = markupFor(state);
-    expect(html).toContain("Failed safely");
+    // Same consolidation: the header verdict stands alone; the strip reports the stop point.
+    expect(html).toContain("Stopped · no paid route used");
   });
 
   it("renders an Agent start failure with its code and no phantom execution evidence", () => {

@@ -403,7 +403,9 @@ export function evaluateCompletion(input: CompletionGateInput): CompletionGateDe
     outcome,
     blockers,
     advisories,
-    rationale: blockers.map((b) => `${b.code}: ${b.message}`).join(" "),
+    // Rationale is user-facing prose; the blocker codes stay in the structured blockers array —
+    // surfaces that need them (logs, inspection detail) read them there, not by parsing this text.
+    rationale: blockers.map((b) => b.message).join(" "),
   };
 }
 

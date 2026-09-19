@@ -12,9 +12,11 @@ interface FileExplorerProps {
   rootPath: string;
   onFileSelect?: (path: string) => void;
   refreshKey?: number;
+  /** Server http origin; "" when the document itself is served by the API (web/dev). */
+  apiBase?: string;
 }
 
-export default function FileExplorer({ rootPath, onFileSelect, refreshKey }: FileExplorerProps) {
+export default function FileExplorer({ rootPath, onFileSelect, refreshKey, apiBase = "" }: FileExplorerProps) {
   const [tree, setTree] = useState<FileNode[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,18 +26,22 @@ export default function FileExplorer({ rootPath, onFileSelect, refreshKey }: Fil
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/workspace/tree?path=${encodeURIComponent(rootPath)}`);
+      // apiBase carries the server's http origin when the document itself is file:// (packaged
+      // desktop) — a bare relative /api fetch can never resolve there.
+      const response = await fetch(`${apiBase}/api/workspace/tree?path=${encodeURIComponent(rootPath)}`);
       if (!response.ok) {
-        throw new Error("Failed to load file tree");
+        throw new Error(`Couldn't load the file tree (server returned ${response.status})`);
       }
       const data = await response.json();
       setTree(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load files");
+      // "Failed to fetch" is the browser's network-layer TypeError — say what it means.
+      const msg = err instanceof Error ? err.message : "";
+      setError(/failed to fetch|networkerror/i.test(msg) ? "Can't reach the CodeForge server — it may still be starting" : msg || "Failed to load files");
     } finally {
       setLoading(false);
     }
-  }, [rootPath]);
+  }, [rootPath, apiBase]);
 
   useEffect(() => {
     fetchTree();

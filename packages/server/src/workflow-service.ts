@@ -524,15 +524,22 @@ export class WorkflowService {
         repoMap: RepoMap,
         intent: TaskIntent,
         sig?: AbortSignal,
-      ): Promise<{ success: boolean; output: string; turnId?: string; suspended?: boolean; failure?: { code: string; message: string; terminal?: boolean } }> => {
+      ): Promise<{ success: boolean; output: string; turnId?: string; suspended?: boolean; failure?: { code: string; message: string; terminal?: boolean }; filesChanged?: string[] }> => {
         const prompt = buildImplementPrompt(plan, context, repoMap, intent);
         adapter.emitAgentStarted(`agent-${plan.id.slice(0, 8)}`, "Builder", plan.id);
         const runtime = getRuntime(sessionId, userId, hostedWorker);
+        const seqBefore = this.eventStore.getLastSeq();
         const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Implementing the approved plan" });
         const result = await waitForTurn(runtime, turnId);
+        const filesChanged = [...new Set(
+          this.eventStore
+            .getAll({ sessionId, types: ["file.written", "file.change_applied"], afterSeq: seqBefore })
+            .map((event) => (event.payload as { path?: string }).path)
+            .filter((path): path is string => typeof path === "string" && path.length > 0),
+        )];
         if (result.status === "completed") {
           adapter.emitAgentCompleted(`agent-${plan.id.slice(0, 8)}`, plan.id);
-          return { success: true, output: `Turn ${turnId} completed`, turnId };
+          return { success: true, output: `Turn ${turnId} completed`, turnId, filesChanged };
         }
         if (result.status === "suspended") {
           return { success: false, suspended: true, output: `Turn ${turnId} is waiting for the desktop worker`, turnId };

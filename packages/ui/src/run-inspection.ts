@@ -37,7 +37,7 @@ export interface InspectionTool {
   id: string;
   name: string;
   agentId?: string;
-  status: "running" | "completed" | "failed" | "blocked";
+  status: "running" | "completed" | "failed" | "blocked" | "cancelled";
   startedAt?: string;
   completedAt?: string;
   durationMs?: number;
@@ -63,7 +63,7 @@ export interface InspectionApproval {
   action: string;
   description: string;
   risk: string;
-  status: "pending" | "approved" | "denied";
+  status: "pending" | "approved" | "denied" | "cancelled";
   requestedAt: string;
   resolvedAt?: string;
 }
@@ -205,6 +205,16 @@ function upsertTool(tools: Map<string, InspectionTool>, tool: InspectionTool): v
   tools.set(tool.id, { ...tools.get(tool.id), ...tool });
 }
 
+/**
+ * Task fields arrive carrying either real assignment prose or an internal correlation id
+ * ("plan-…", a bare uuid). Correlation ids are diagnostics — they stay available in Worker
+ * details — so the primary label only surfaces values that read like descriptions.
+ */
+function displayableAgentTask(task: unknown): string | undefined {
+  if (typeof task !== "string" || task.length === 0) return undefined;
+  return /^(plan-|task-|[0-9a-f]{8}-[0-9a-f]{4}-)/i.test(task) ? undefined : task;
+}
+
 function displayWorkerStatus(state: AgentWorkerLifecycleState): InspectionAgent["status"] {
   if (state === "blocked") return "blocked";
   if (state === "failed") return "failed";
@@ -294,9 +304,10 @@ export function projectRunInspection(events: WorkspaceEvent[], workItems: WorkIt
           state.completedAt = event.timestamp;
         }
         break;
-      case "agent.started":
-        upsertAgent(agents, { id: event.payload.agentId, role: event.payload.role, task: event.payload.taskId, status: "running", startedAt: event.timestamp });
+      case "agent.started": {
+        upsertAgent(agents, { id: event.payload.agentId, role: event.payload.role, task: displayableAgentTask(event.payload.taskId), status: "running", startedAt: event.timestamp });
         break;
+      }
       case "agent.completed":
         upsertAgent(agents, { id: event.payload.agentId, role: agents.get(event.payload.agentId)?.role ?? "Agent", status: "completed", completedAt: event.timestamp });
         break;
@@ -304,7 +315,7 @@ export function projectRunInspection(events: WorkspaceEvent[], workItems: WorkIt
         upsertAgent(agents, {
           id: event.payload.agentId,
           role: event.payload.role,
-          task: event.payload.task,
+          task: displayableAgentTask(event.payload.task),
           ...(event.payload.parentAgentId ? { parentId: event.payload.parentAgentId } : {}),
           status: "running",
           startedAt: event.timestamp,
@@ -320,7 +331,7 @@ export function projectRunInspection(events: WorkspaceEvent[], workItems: WorkIt
         upsertAgent(agents, {
           id: event.payload.agentId,
           role: event.payload.role,
-          task: event.payload.task,
+          task: displayableAgentTask(event.payload.task),
           ...(event.payload.parentAgentId ? { parentId: event.payload.parentAgentId } : {}),
           status: displayWorkerStatus(event.payload.state),
           ...(event.payload.model ? { model: event.payload.model } : {}),
@@ -453,6 +464,25 @@ export function projectRunInspection(events: WorkspaceEvent[], workItems: WorkIt
     }
   }
 
+  // Parallel-run workers (planner/coder/reviewer) emit agent.* events without a runId — the run
+  // correlation lives in payload.taskId ("parallel-…[:workstream[:review]]"). Scope them into this
+  // session's tree under their planner, keyed by taskId so repeated parallel runs cannot collide.
+  for (const event of events) {
+    if (event.runId || (event.type !== "agent.started" && event.type !== "agent.completed")) continue;
+    const taskId = event.payload.taskId;
+    if (typeof taskId !== "string" || !taskId.startsWith("parallel-")) continue;
+    const rootTaskId = taskId.split(":")[0] ?? taskId;
+    const parentId = taskId === rootTaskId ? undefined : `planner@${rootTaskId}`;
+    const id = `${event.payload.agentId}@${taskId}`;
+    const rawRole = (event.payload as { role?: unknown }).role;
+    const role = typeof rawRole === "string" && rawRole.length > 0 ? rawRole.replace(/^\w/, (c: string) => c.toUpperCase()) : undefined;
+    if (event.type === "agent.started") {
+      upsertAgent(agents, { id, role: role ?? "Subagent", parentId, status: "running", startedAt: event.timestamp });
+    } else {
+      upsertAgent(agents, { id, role: agents.get(id)?.role ?? "Subagent", parentId: agents.get(id)?.parentId ?? parentId, status: "completed", completedAt: event.timestamp });
+    }
+  }
+
   const snapshot = latestInspectionRecord(workItems, runId);
   if (snapshot) Object.assign(state, fromSnapshot(snapshot));
   for (const item of workItems) {
@@ -461,7 +491,7 @@ export function projectRunInspection(events: WorkspaceEvent[], workItems: WorkIt
       id: item.id,
       role: item.role,
       parentId: item.parentRunId,
-      task: item.task,
+      task: displayableAgentTask(item.task),
       status: displayWorkerStatus(item.status),
       ...(item.startedAt ? { startedAt: item.startedAt } : {}),
       ...(item.completedAt ? { completedAt: item.completedAt } : {}),
@@ -473,12 +503,19 @@ export function projectRunInspection(events: WorkspaceEvent[], workItems: WorkIt
       artifacts: item.artifacts,
     });
   }
-  state.agents = [...agents.values()];
-  state.tools = [...tools.values()];
+  // A terminal run cannot still have running workers or tools — anything left "running" was torn
+  // down without a terminal event of its own (process stopped, run blocked, restart). Claiming it
+  // is still working is the stalest possible story; cancelled is the honest word.
+  const runSettled = state.status === "completed" || state.status === "blocked" || state.status === "failed" || state.status === "cancelled";
+  state.agents = [...agents.values()].map((agent) =>
+    runSettled && agent.status === "running" ? { ...agent, status: "cancelled" } : agent);
+  state.tools = [...tools.values()].map((tool) =>
+    runSettled && tool.status === "running" ? { ...tool, status: "cancelled" } : tool);
+  state.approvals = [...approvals.values()].map((approval) =>
+    runSettled && approval.status === "pending" ? { ...approval, status: "cancelled" } : approval);
   state.changes = snapshot ? state.changes : [...changes.values()];
   state.verification = snapshot ? state.verification : [...verification.values()].sort((left, right) => left.attempt - right.attempt);
   state.repairs = snapshot ? state.repairs : [...repairs.values()].sort((left, right) => left.attempt - right.attempt);
-  state.approvals = [...approvals.values()];
   return state;
 }
 

@@ -57,6 +57,18 @@ describe("tool activity", () => {
       expect(summarizeToolResult({ status: "completed", result: "   " })).toBe("no output");
     });
 
+    it("translates internal block codes into user-facing language", () => {
+      expect(summarizeToolResult({ status: "blocked", error: "approval_rejected" })).toBe("You denied this action — the agent continued without it");
+      expect(summarizeToolResult({ status: "blocked", error: "forgegreen_duplicate_suppressed" })).toContain("already answered");
+      expect(summarizeToolResult({ status: "failed", error: "AGENT_NO_PROGRESS_DETECTED" })).toBe("Stopped — no forward progress was detected");
+      // Unknown codes still get humanized by shape, not left raw.
+      expect(summarizeToolResult({ status: "blocked", error: "some_new_code" })).toBe("Some new code");
+    });
+
+    it("leaves real error prose untouched", () => {
+      expect(summarizeToolResult({ status: "failed", error: "ENOENT: no such file" })).toBe("ENOENT: no such file");
+    });
+
     it("surfaces the error for failed and blocked calls", () => {
       expect(summarizeToolResult({ status: "failed", error: "ENOENT: no such file" })).toBe("ENOENT: no such file");
       expect(summarizeToolResult({ status: "blocked", error: "outside workspace" })).toBe("outside workspace");

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dedupeSessionSummaries, displaySessionTitle, formatRelativeSessionTime, humanizeSessionStatus, overlayActiveSessionStatus } from "../src/Navigation.js";
+import { clusterSessionsByTitle, dedupeSessionSummaries, displaySessionTitle, formatRelativeSessionTime, humanizeSessionStatus, overlayActiveSessionStatus } from "../src/Navigation.js";
 
 describe("formatRelativeSessionTime", () => {
   const now = Date.UTC(2026, 8, 9, 18, 0, 0);
@@ -47,5 +47,26 @@ describe("task-history identity", () => {
   it("does not render an internal CodeForge bootstrap prompt as a task title", () => {
     expect(displaySessionTitle({ id: "task-1", title: "You are CodeForge, an autonomous coding agent..." })).toBe("CodeForge task");
     expect(displaySessionTitle({ id: "task-2", taskTitle: "Repair the pricing test" })).toBe("Repair the pricing test");
+  });
+
+  it("clusters retried tasks under one row instead of a wall of identical titles", () => {
+    const clusters = clusterSessionsByTitle([
+      { id: "task-1", title: "Fix the inventory test", status: "blocked" },
+      { id: "task-2", title: "Fix the inventory test", status: "completed" },
+      { id: "task-3", title: "Other task", status: "idle" },
+    ]);
+    expect(clusters).toHaveLength(2);
+    const group = clusters.find((c) => c.length === 2)!;
+    expect(group.map((s) => s.id).sort()).toEqual(["task-1", "task-2"]);
+    expect(clusters.find((c) => c.length === 1)![0]!.id).toBe("task-3");
+  });
+
+  it("clusters case-insensitively — a retry with different casing is still the same task", () => {
+    const clusters = clusterSessionsByTitle([
+      { id: "task-1", title: "Fix the bug", status: "failed" },
+      { id: "task-2", title: "fix the bug", status: "completed" },
+    ]);
+    expect(clusters).toHaveLength(1);
+    expect(clusters[0]).toHaveLength(2);
   });
 });

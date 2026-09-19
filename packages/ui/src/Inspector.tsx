@@ -3,6 +3,8 @@ import type { WorkspaceEvent } from "@codeforge/protocol";
 import type { SessionRecord, WorkItem, TurnRecord } from "@codeforge/sessions";
 import FileExplorer from "./FileExplorer.js";
 import RunInspection from "./RunInspection.js";
+import { projectSessionChanges, projectSessionCommands, projectSessionVerification } from "./session-activity.js";
+import { displayAgentId, displayModelId } from "./error-copy.js";
 
 function isWorkItemKind<K extends WorkItem["kind"]>(
   item: WorkItem,
@@ -24,6 +26,8 @@ interface InspectorProps {
   workspacePath?: string;
   activeTaskId?: string | null;
   startFailure?: { code: string; message: string };
+  /** Server http origin for FileExplorer — "" when the page itself is served by the API. */
+  apiBase?: string;
 }
 
 // "commands" (not "terminal") — this panel shows executed-command history, not an interactive
@@ -38,23 +42,23 @@ const TAB_LABELS: Record<string, string> = {
   overview: "Overview",
 };
 
-export default function Inspector({ activeTab, onTabSelect, session, workItems, events = [], isRunning, statusLabel, workspacePath, activeTaskId, startFailure }: InspectorProps) {
+export default function Inspector({ activeTab, onTabSelect, session, workItems, events = [], isRunning, statusLabel, workspacePath, activeTaskId, startFailure, apiBase = "" }: InspectorProps) {
   const safeTab = TABS.includes(activeTab) ? activeTab : "changes";
 
   const renderTabContent = () => {
     switch (safeTab) {
       case "changes":
-        return renderChanges(workItems);
+        return renderChanges(workItems, events);
       case "run":
         return <RunInspection events={events} workItems={workItems} preferredRunId={activeTaskId} startFailure={startFailure} />;
       case "commands":
-        return renderCommands(workItems);
+        return renderCommands(workItems, events, !isRunning);
       case "files":
-        return renderFiles(workspacePath);
+        return renderFiles(workspacePath, apiBase);
       case "evidence":
         return renderEvidence(workItems);
       case "overview":
-        return renderOverview(session, workItems, isRunning, statusLabel);
+        return renderOverview(session, workItems, events, isRunning, statusLabel);
       default:
         return null;
     }
@@ -80,11 +84,9 @@ export default function Inspector({ activeTab, onTabSelect, session, workItems, 
   );
 }
 
-function renderOverview(session: SessionRecord | null, workItems: WorkItem[], isRunning: boolean, statusLabel?: string) {
-  const changes = workItems.filter((w) => isWorkItemKind(w, "file_change"));
-  const tests = workItems.filter((w) => isWorkItemKind(w, "test_run"));
-  const totalPassed = tests.reduce((sum, t) => sum + t.passed, 0);
-  const totalFailed = tests.reduce((sum, t) => sum + t.failed, 0);
+function renderOverview(session: SessionRecord | null, workItems: WorkItem[], events: WorkspaceEvent[], isRunning: boolean, statusLabel?: string) {
+  const changes = projectSessionChanges(events, workItems);
+  const verification = projectSessionVerification(events, workItems);
 
   if (!session) {
     return <div className="panel-empty">No active session.</div>;
@@ -105,11 +107,11 @@ function renderOverview(session: SessionRecord | null, workItems: WorkItem[], is
         </div>
         <div className="overview-row">
           <span className="overview-row-label">Agent</span>
-          <span className="overview-row-value">{session.currentAgentId || "—"}</span>
+          <span className="overview-row-value" title={session.currentAgentId}>{displayAgentId(session.currentAgentId)}</span>
         </div>
         <div className="overview-row">
           <span className="overview-row-label">Model</span>
-          <span className="overview-row-value">{session.currentModelId || "—"}</span>
+          <span className="overview-row-value" title={session.currentModelId}>{displayModelId(session.currentModelId)}</span>
         </div>
         {session.branch && (
           <div className="overview-row">
@@ -124,9 +126,13 @@ function renderOverview(session: SessionRecord | null, workItems: WorkItem[], is
         <div className="overview-row">
           <span className="overview-row-label">Tests</span>
           <span className="overview-row-value">
-            {totalPassed > 0 && <span style={{ color: "var(--cf-success)" }}>{totalPassed} passed</span>}
-            {totalFailed > 0 && <span style={{ color: "var(--cf-danger)", marginLeft: totalPassed > 0 ? 8 : 0 }}>{totalFailed} failed</span>}
-            {totalPassed === 0 && totalFailed === 0 && "—"}
+            {verification ? (
+              <>
+                {verification.passed > 0 && <span style={{ color: "var(--cf-success)" }}>{verification.passed} passed</span>}
+                {verification.failed > 0 && <span style={{ color: "var(--cf-danger)", marginLeft: verification.passed > 0 ? 8 : 0 }}>{verification.failed} failed</span>}
+                {verification.passed === 0 && verification.failed === 0 && (verification.skipped > 0 ? `${verification.skipped} skipped` : "—")}
+              </>
+            ) : "—"}
           </span>
         </div>
       </div>
@@ -134,8 +140,8 @@ function renderOverview(session: SessionRecord | null, workItems: WorkItem[], is
   );
 }
 
-function renderChanges(workItems: WorkItem[]) {
-  const changes = workItems.filter((w) => isWorkItemKind(w, "file_change"));
+function renderChanges(workItems: WorkItem[], events: WorkspaceEvent[]) {
+  const changes = projectSessionChanges(events, workItems);
   if (changes.length === 0) {
     return <div className="panel-empty">No changes yet.</div>;
   }
@@ -161,8 +167,8 @@ function renderChanges(workItems: WorkItem[]) {
   );
 }
 
-function renderCommands(workItems: WorkItem[]) {
-  const commands = workItems.filter((w) => isWorkItemKind(w, "command"));
+function renderCommands(workItems: WorkItem[], events: WorkspaceEvent[], sessionTerminal: boolean) {
+  const commands = projectSessionCommands(events, workItems, sessionTerminal);
   if (commands.length === 0) {
     return <div className="panel-empty">No commands run yet.</div>;
   }
@@ -171,11 +177,12 @@ function renderCommands(workItems: WorkItem[]) {
       {commands.map((c) => (
         <div key={c.id} className="terminal-entry">
           <div className="terminal-cmd">
-            <span className={`terminal-cmd-icon ${c.status === "running" ? "running" : c.status === "failed" ? "error" : "success"}`}>
-              {c.status === "running" ? "●" : c.status === "failed" ? "✕" : "✓"}
+            <span className={`terminal-cmd-icon ${c.status === "running" ? "running" : c.status === "failed" ? "error" : c.status === "interrupted" ? "error" : "success"}`}>
+              {c.status === "running" ? "●" : c.status === "failed" ? "✕" : c.status === "interrupted" ? "◌" : "✓"}
             </span>
-            <span>{c.command}</span>
-            {c.durationMs && <span style={{ marginLeft: "auto", color: "var(--cf-text-muted)" }}>{c.durationMs}ms</span>}
+            <span>{c.command || "(command not recorded)"}</span>
+            {c.status === "interrupted" && <span style={{ marginLeft: "auto", color: "var(--cf-text-muted)" }}>did not finish</span>}
+            {c.status !== "interrupted" && c.durationMs !== undefined && <span style={{ marginLeft: "auto", color: "var(--cf-text-muted)" }}>{c.durationMs}ms</span>}
           </div>
           {c.output && (
             <div className="command-block">
@@ -234,9 +241,9 @@ function renderEvidence(workItems: WorkItem[]) {
   );
 }
 
-function renderFiles(workspacePath?: string | null) {
+function renderFiles(workspacePath: string | null | undefined, apiBase: string) {
   if (!workspacePath) {
     return <div className="panel-empty">No workspace path set. Open a project to view files.</div>;
   }
-  return <FileExplorer rootPath={workspacePath} />;
+  return <FileExplorer rootPath={workspacePath} apiBase={apiBase} />;
 }

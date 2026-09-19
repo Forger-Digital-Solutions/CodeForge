@@ -100,7 +100,8 @@ describe("workflow agent working budget", () => {
     const builderTurn = agentTurns.find((turnId) => runtime().getTurn(turnId));
     expect(builderTurn).toBeDefined();
     await waitFor(() => runtime().getTurn(builderTurn!)?.status === "cancelled", 5_000);
-    expect(decision.rationale).toContain("plan_steps_unfinished");
+    // The blocker code is machine-readable in `blockers`; `rationale` is user-facing prose.
+    expect(decision.blockers.map((b: { code: string }) => b.code)).toContain("plan_steps_unfinished");
 
     // No writes land after the decision: whatever the model still wanted to do is over.
     const callsAtDecision = modelCalls;

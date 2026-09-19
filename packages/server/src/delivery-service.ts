@@ -28,7 +28,7 @@ export interface DeliveryServiceOptions {
   getAgentRuntime?: (sessionId: string) => AgentRuntime;
   /** Deterministic test seam only; production supplies getAgentRuntime. */
   reviewer?: (delivery: ChangeDelivery) => Promise<DeliveryReviewerResult>;
-  onEvent?: (event: DeliveryEvent) => void | Promise<void>;
+  onEvent?: (event: DeliveryEvent) => void | DeliveryEvent | Promise<void | DeliveryEvent>;
 }
 export interface CreateDeliveryInput { missionId: string; deliveryId?: string; commitPlan?: CommitPlan }
 

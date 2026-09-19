@@ -178,7 +178,7 @@ export function validCommitTitle(title: string): boolean {
 }
 
 export class DeliveryStore {
-  constructor(private readonly persistence?: ISessionPersistence, private readonly onEvent?: (event: DeliveryEvent) => void | Promise<void>) {}
+  constructor(private readonly persistence?: ISessionPersistence, private readonly onEvent?: (event: DeliveryEvent) => void | DeliveryEvent | Promise<void | DeliveryEvent>) {}
 
   async save(delivery: ChangeDelivery): Promise<void> {
     await this.persistence?.upsertWorkItem({
@@ -218,7 +218,9 @@ export class DeliveryStore {
 
   async emit(delivery: ChangeDelivery, type: string, payload: Record<string, unknown> = {}): Promise<void> {
     const event: DeliveryEvent = { type, sessionId: delivery.sessionId, deliveryId: delivery.id, timestamp: new Date().toISOString(), payload };
-    await this.persistence?.appendEvent(event);
-    await this.onEvent?.(event);
+    // The host's onEvent stamps the process-wide seq while broadcasting; persist the sequenced
+    // record so durable replay and the live stream describe the same ordering.
+    const sequenced = (await this.onEvent?.(event)) ?? event;
+    await this.persistence?.appendEvent(sequenced);
   }
 }

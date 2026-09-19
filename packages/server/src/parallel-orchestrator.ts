@@ -33,7 +33,7 @@ export interface ParallelRunOptions {
 }
 export interface ParallelResumeOptions { signal?: AbortSignal; verificationCommands?: string[]; privateAgentContext?: PrivateAgentContext; }
 export interface ParallelRunResult { runId: string; status: "completed" | "blocked" | "failed" | "cancelled"; plan?: EngineeringPlan; workstreams: WorkstreamResult[]; synthesis?: ParallelSynthesisState; verification: VerificationResult[]; completion?: CompletionGateDecision; usage: ParallelRunUsage; error?: string; }
-export interface ParallelOrchestratorOptions { workspaceService: WorkspaceService; agentRuntime: AgentRuntime; integrationService?: IntegrationService; persistence?: ISessionPersistence; onEvent?: (event: ParallelEvent) => void; }
+export interface ParallelOrchestratorOptions { workspaceService: WorkspaceService; agentRuntime: AgentRuntime; integrationService?: IntegrationService; persistence?: ISessionPersistence; onEvent?: (event: ParallelEvent) => ParallelEvent | void; }
 
 const TERMINAL_STATUSES = ["completed", "blocked", "cancelled", "failed"];
 

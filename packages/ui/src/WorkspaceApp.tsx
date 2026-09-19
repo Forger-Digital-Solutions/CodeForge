@@ -717,6 +717,7 @@ export default function WorkspaceApp({
             workspacePath={state.session?.workspacePath}
             activeTaskId={state.activeTaskId}
             startFailure={startFailure}
+            apiBase={apiOrigin}
           />
         )}
       </div>

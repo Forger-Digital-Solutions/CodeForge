@@ -105,4 +105,17 @@ describe("FG-1C duplicate / no-progress suppression", () => {
     expect(legitimate.metrics.noProgressReadSignals).toBe(0);
     expect(legitimate.classify(identity("read_file", { path: "src/module-20.ts" })).action).toBe("execute");
   });
+
+  it("does not read file contents as a stalled-investigation signal (R16 verify re-read false positive)", () => {
+    // Reading source that happens to contain "error", "invalid", or "cannot read" is evidence the
+    // agent asked for — the malformed/empty heuristic only applies to result-list tools.
+    const supervisor = createDuplicateActionSupervisor();
+    for (let index = 0; index < 8; index++) {
+      const read = identity("read_file", { path: `src/inventory-${index}.ts` });
+      supervisor.classify(read);
+      supervisor.recordReadResult(read, `function check${index}(q, t) {\n  if (q < t) return 'error: invalid threshold';\n  // cannot read below\n}`, true, `exec-${index}`);
+    }
+    expect(supervisor.metrics.noProgressReadSignals).toBe(0);
+    expect(supervisor.classify(identity("read_file", { path: "src/inventory-8.ts" })).action).toBe("execute");
+  });
 });

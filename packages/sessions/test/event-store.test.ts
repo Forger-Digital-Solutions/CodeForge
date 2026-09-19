@@ -208,4 +208,21 @@ describe("EventStore.hydrate with a restarted sequence (R16)", () => {
     expect(store.getAll().map((e) => e.seq)).toEqual([1, 2, 3]);
     expect(store.getLastSeq()).toBe(3);
   });
+
+  it("keeps orchestration records persisted without a seq and orders them by timestamp", () => {
+    const store = new EventStore();
+    const noSeq = (type: string, ts: string) =>
+      ({ type, timestamp: ts, sessionId: "session-1", payload: {} }) as unknown as WorkspaceEvent;
+    store.hydrate([
+      makeEvent({ seq: 1, type: "turn.started", timestamp: "2026-09-19T22:00:00.000Z" }),
+      noSeq("workstream.dispatched", "2026-09-19T22:00:01.000Z"),
+      noSeq("workstream.blocked", "2026-09-19T22:00:05.000Z"),
+      makeEvent({ seq: 2, type: "turn.completed", timestamp: "2026-09-19T22:00:10.000Z" }),
+    ]);
+    const all = store.getAll();
+    expect(all).toHaveLength(4);
+    expect(all.map((e) => e.type)).toEqual(["turn.started", "workstream.dispatched", "workstream.blocked", "turn.completed"]);
+    expect(all.every((e) => Number.isSafeInteger(e.seq) && e.seq > 0)).toBe(true);
+    expect(store.getLastSeq()).toBe(4);
+  });
 });

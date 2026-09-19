@@ -412,13 +412,17 @@ export class ModelExecutionAdapter {
         case "finish":
           finishReason = event.finishReason;
           break;
-        case "error":
+        case "error": {
+          // Provider layers already prefix their message with "[CODE]"; re-prefixing produces
+          // "[PROVIDER_UNAVAILABLE] [PROVIDER_UNAVAILABLE] …" in every surface that shows it.
+          const detail = event.message.replace(/^(\s*\[[A-Z][A-Z0-9_.:-]*\]\s*)+/, "");
           throw new ProviderError(
-            `[${event.code}] ${event.message}`,
+            `[${event.code}] ${detail}`,
             event.code,
             event.retryable,
             { status: event.status, retryAfter: event.retryAfter },
           );
+        }
       }
     }
 

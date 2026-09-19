@@ -22,6 +22,12 @@ export default defineConfig({
       "/api": {
         target: "http://localhost:3210",
         changeOrigin: true,
+        // `forge serve` requires the per-process loopback bearer; a browser page cannot set
+        // headers on an EventSource, so the dev proxy attaches it. The token comes from the
+        // environment — it is never committed or embedded in the bundle.
+        ...(process.env.CODEFORGE_LOCAL_CONTROL_TOKEN
+          ? { headers: { "X-CodeForge-Control-Token": process.env.CODEFORGE_LOCAL_CONTROL_TOKEN } }
+          : {}),
       },
     },
   },

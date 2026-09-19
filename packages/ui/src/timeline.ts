@@ -1,5 +1,5 @@
 import type { WorkspaceEvent } from "@codeforge/protocol";
-import { describeTurnStop, humanizeError } from "./error-copy.js";
+import { describeTurnStop, humanizeBlockReason, humanizeError } from "./error-copy.js";
 
 /**
  * A single rendered item in the conversation timeline, reconstructed from the event stream.
@@ -42,6 +42,7 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
   const seenUserTurns = new Set<string>();
   // Track the last open assistant message per turn for delta fallback (no messageId case).
   const lastOpenMsgByTurn = new Map<string, string>();
+  const subagentRoles = new Map<string, string>();
   // A workflow's own outcome row supersedes the raw turn terminal event that follows it, and the
   // internal implement/repair turns a workflow dispatches report through that outcome, not per turn.
   let outcomeShown = false;
@@ -224,11 +225,100 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
       }
       case "command.executed": {
         const p = e.payload as { commandId: string; command: string; output: string; exitCode: number };
+        // The run_command tool call this execution belongs to already has a row; showing the same
+        // command again as a second row reads as two commands. The command card is the richer
+        // presentation, so the tool row is replaced in place — its seq keeps the slot in order.
+        const owner = runningToolForCommand(toolByCall, p.command);
+        if (owner) {
+          const commandItem: Extract<TimelineItem, { kind: "command" }> = {
+            kind: "command",
+            id: `cmd-${p.commandId}`,
+            seq: owner.seq,
+            turnId: owner.turnId,
+            command: p.command,
+            exitCode: p.exitCode,
+            output: p.output,
+          };
+          items.splice(items.indexOf(owner), 1, commandItem);
+          toolByCall.delete(owner.toolCallId);
+          break;
+        }
         items.push({ kind: "command", id: `cmd-${p.commandId}`, seq: e.seq, command: p.command, exitCode: p.exitCode, output: p.output });
         break;
       }
-      default:
+      // Subagents do real work inside a run — the RUN inspector has the full tree, but the
+      // conversation should at least say one was spawned and how it ended.
+      case "subagent.started": {
+        const p = e.payload as { agentId: string; role: string; task: string };
+        subagentRoles.set(p.agentId, p.role);
+        items.push({ kind: "system", id: `subagent-${p.agentId}`, seq: e.seq, turnId: p.agentId, text: `Spawned subagent · ${p.role} — ${p.task}` });
         break;
+      }
+      case "subagent.completed": {
+        const p = e.payload as { agentId: string; result?: string };
+        const role = subagentRoles.get(p.agentId) ?? "subagent";
+        items.push({ kind: "system", id: `subagent-done-${p.agentId}`, seq: e.seq, turnId: p.agentId, text: `${role} finished` });
+        break;
+      }
+      case "subagent.failed": {
+        const p = e.payload as { agentId: string; error: string };
+        const role = subagentRoles.get(p.agentId) ?? "subagent";
+        items.push({ kind: "system", id: `subagent-failed-${p.agentId}`, seq: e.seq, turnId: p.agentId, text: `${role} failed — ${humanizeBlockReason(p.error) ?? humanizeError(p.error)}` });
+        break;
+      }
+      default: {
+        // Parallel-run orchestration emits durable workstream.*/synthesis.*/parallel.* records
+        // outside the typed union — surface the lifecycle so delegated work is not invisible.
+        const type = e.type as string;
+        const workstreamId = (e as unknown as { workstreamId?: string }).workstreamId;
+        const payload = e.payload as Record<string, unknown>;
+        const system = (text: string, detail?: string) =>
+          items.push({ kind: "system", id: `${type}-${workstreamId ?? "run"}-${e.seq}`, seq: e.seq, turnId: workstreamId ?? "parallel", text: detail ? `${text} — ${detail}` : text });
+        switch (type) {
+          case "parallel.plan.validated": {
+            const order = Array.isArray(payload.order) ? payload.order.length : undefined;
+            system(`Parallel plan ready${order ? ` — ${order} workstream${order === 1 ? "" : "s"}` : ""}`);
+            break;
+          }
+          case "workstream.dispatched":
+            system(`Workstream ${workstreamId} started in an isolated worktree`);
+            break;
+          case "workstream.reviewing":
+            system(`Workstream ${workstreamId} under review`);
+            break;
+          case "workstream.revising":
+            system(`Workstream ${workstreamId} revising after review feedback`);
+            break;
+          case "workstream.replanned":
+            system(`Workstream ${workstreamId} replanned with your steering`);
+            break;
+          case "workstream.completed":
+            system(`Workstream ${workstreamId} completed`);
+            break;
+          case "workstream.blocked":
+            system(`Workstream ${workstreamId} blocked`, humanizeError(String(payload.error ?? "could not finish")));
+            break;
+          case "workstream.cancelled":
+            system(`Workstream ${workstreamId} cancelled`);
+            break;
+          case "synthesis.blocked":
+          case "synthesis.conflict":
+            system("Synthesis could not merge the workstreams", humanizeError(String(payload.reason ?? payload.code ?? "")));
+            break;
+          case "promotion.blocked":
+            system("Integration blocked", humanizeError(String(payload.code ?? "")));
+            break;
+          case "parallel.run.failed":
+            system("Parallel run failed", humanizeError(String(payload.error ?? "")));
+            break;
+          case "parallel.run.cancelled":
+            system("Parallel run cancelled");
+            break;
+          default:
+            break;
+        }
+        break;
+      }
     }
   }
 
@@ -262,6 +352,39 @@ function runningToolForPath(
 
 function normalizePath(p: string): string {
   return p.replace(/\\/g, "/").replace(/^\.\//, "").toLowerCase();
+}
+
+/**
+ * The still-running `run_command` call that produced a `command.executed` event. Matched on the
+ * exact command string from the call's args; two in-flight run_command calls with identical
+ * commands cannot be told apart, so the match requires an unambiguous owner.
+ */
+function runningToolForCommand(
+  toolByCall: Map<string, Extract<TimelineItem, { kind: "tool" }>>,
+  command: string,
+): Extract<TimelineItem, { kind: "tool" }> | undefined {
+  let match: Extract<TimelineItem, { kind: "tool" }> | undefined;
+  let unowned: Extract<TimelineItem, { kind: "tool" }> | undefined;
+  let unownedCount = 0;
+  for (const item of toolByCall.values()) {
+    if (item.status !== "running" || item.toolName !== "run_command") continue;
+    let args: { command?: unknown } | undefined;
+    try {
+      args = item.argsJson ? (JSON.parse(item.argsJson) as { command?: unknown }) : undefined;
+    } catch {
+      continue;
+    }
+    if (typeof args?.command === "string") {
+      if (args.command !== command) continue;
+      if (match) return undefined; // ambiguous: identical commands in flight — keep both rows
+      match = item;
+    } else {
+      unowned = item;
+      unownedCount++;
+    }
+  }
+  // A single in-flight run_command that never reported its args still owns the execution.
+  return match ?? (unownedCount === 1 ? unowned : undefined);
 }
 
 /** True when at least one assistant message with visible text exists in the timeline. */

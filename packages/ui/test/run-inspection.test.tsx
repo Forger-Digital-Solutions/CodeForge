@@ -28,6 +28,34 @@ describe("run inspection projection", () => {
     expect(html).not.toContain("verification:passed");
   });
 
+  it("reconciles still-running workers and tools to cancelled once the run is terminal", () => {
+    // A run that ends while a subagent/tool never emitted its own terminal event must not keep
+    // claiming that worker is still going — it was torn down with the run.
+    const events: WorkspaceEvent[] = [
+      event("task.created", 1, { taskId: "run-a", title: "Do work", mode: "autonomous" }),
+      event("task.started", 2, { taskId: "run-a" }),
+      event("subagent.started", 3, { agentId: "worker-1", role: "Explorer", parentAgentId: "root", task: "Map it" }),
+      event("tool.call_started", 4, { turnId: "t", toolCallId: "tool-9", toolName: "run_command" }),
+      event("approval.requested", 5, { approvalId: "approval-1", tool: "run_command", action: "exec", description: "npm test", risk: "moderate" }),
+      event("task.completed", 6, { taskId: "run-a" }),
+    ];
+    const result = projectRunInspection(events, [], "run-a");
+    expect(result.status).toBe("completed");
+    expect(result.agents.find((a) => a.id === "worker-1")?.status).toBe("cancelled");
+    expect(result.tools.find((t) => t.id === "tool-9")?.status).toBe("cancelled");
+    expect(result.approvals.find((a) => a.id === "approval-1")?.status).toBe("cancelled");
+  });
+
+  it("keeps workers running while the run is still live", () => {
+    const events: WorkspaceEvent[] = [
+      event("task.created", 1, { taskId: "run-a", title: "Do work", mode: "autonomous" }),
+      event("task.started", 2, { taskId: "run-a" }),
+      event("subagent.started", 3, { agentId: "worker-1", role: "Explorer", parentAgentId: "root", task: "Map it" }),
+    ];
+    const result = projectRunInspection(events, [], "run-a");
+    expect(result.agents.find((a) => a.id === "worker-1")?.status).toBe("running");
+  });
+
   it("renders a concurrent hierarchy without duplicating replayed events", () => {
     const events: WorkspaceEvent[] = [
       event("task.created", 1, { taskId: "run-a", title: "Implement transparency", mode: "autonomous" }),
@@ -62,6 +90,52 @@ describe("run inspection projection", () => {
     expect(html).toContain("Reviewer");
     expect(html).toContain("Cost");
     expect(html).toContain("Unavailable");
+  });
+
+  it("hides correlation-id taskIds instead of rendering them as the agent's task", () => {
+    const events: WorkspaceEvent[] = [
+      event("task.created", 1, { taskId: "run-a", title: "Do work", mode: "autonomous" }),
+      event("task.started", 2, { taskId: "run-a" }),
+      event("agent.started", 3, { agentId: "agent-9d9d6d96", role: "Lead Agent", taskId: "9d9d6d96-5a99-493e-8a28-92fccfe457d4" }),
+      event("subagent.started", 4, { agentId: "builder-1", role: "Builder", parentAgentId: "agent-9d9d6d96", task: "plan-2852b727-7e3415" }),
+      event("subagent.started", 5, { agentId: "explorer-1", role: "Explorer", parentAgentId: "agent-9d9d6d96", task: "Map the repository" }),
+    ];
+    const result = projectRunInspection(events, [], "run-a");
+    expect(result.agents.find((a) => a.id === "agent-9d9d6d96")?.task).toBeUndefined();
+    expect(result.agents.find((a) => a.id === "explorer-1")?.task).toBe("Map the repository");
+
+    const html = renderToStaticMarkup(React.createElement(RunInspection, { events, workItems: [], preferredRunId: "run-a" }));
+    expect(html).not.toContain("9d9d6d96-5a99-493e-8a28-92fccfe457d4");
+    expect(html).toContain("Map the repository");
+  });
+
+  it("shows parallel-run workers (planner/coder/reviewer) under their planner", () => {
+    const parallelEvent = (type: WorkspaceEvent["type"], seq: number, payload: unknown): WorkspaceEvent =>
+      ({ type, seq, sessionId: "session-a", timestamp, payload }) as unknown as WorkspaceEvent;
+    const events: WorkspaceEvent[] = [
+      event("task.created", 1, { taskId: "run-a", title: "Do work", mode: "autonomous" }, "run-a"),
+      event("task.started", 2, { taskId: "run-a" }, "run-a"),
+      parallelEvent("agent.started", 3, { agentId: "planner", role: "planner", taskId: "parallel-aaaa1111" }),
+      parallelEvent("agent.completed", 4, { agentId: "planner", taskId: "parallel-aaaa1111" }),
+      parallelEvent("agent.started", 5, { agentId: "coder", role: "coder", taskId: "parallel-aaaa1111:add-jsdoc" }),
+      parallelEvent("agent.completed", 6, { agentId: "coder", taskId: "parallel-aaaa1111:add-jsdoc" }),
+      parallelEvent("agent.started", 7, { agentId: "reviewer", role: "reviewer", taskId: "parallel-aaaa1111:add-jsdoc:review" }),
+    ];
+    const result = projectRunInspection(events, [], "run-a");
+    const ids = result.agents.map((agent) => agent.id);
+    expect(ids).toContain("planner@parallel-aaaa1111");
+    expect(ids).toContain("coder@parallel-aaaa1111:add-jsdoc");
+    expect(ids).toContain("reviewer@parallel-aaaa1111:add-jsdoc:review");
+    const coder = result.agents.find((agent) => agent.id === "coder@parallel-aaaa1111:add-jsdoc");
+    expect(coder?.parentId).toBe("planner@parallel-aaaa1111");
+    expect(coder?.status).toBe("completed");
+    expect(coder?.task).toBeUndefined();
+
+    const html = renderToStaticMarkup(React.createElement(RunInspection, { events, workItems: [], preferredRunId: "run-a" }));
+    expect(html).toContain("Coder");
+    expect(html).toContain("Reviewer");
+    // The task label never carries the raw correlation id; it survives only inside Worker details.
+    expect(html).not.toMatch(/run-inspection-secondary[^<]*>parallel-aaaa1111/);
   });
 
   it("renders durable R1 worker details from lifecycle events and work items", () => {

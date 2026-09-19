@@ -72,6 +72,16 @@ function resolveWithinWorkspace(workspacePath: string, requested: string): { val
 
 const MAX_REPAIR_ATTEMPTS = 3;
 
+/** Plan targets and observed write paths disagree on separators, case, and leading ./ — compare on shape. */
+function normalizeStepPath(p: string, workspacePath?: string): string {
+  let normalized = p.replace(/\\/g, "/").toLowerCase();
+  if (workspacePath) {
+    const root = workspacePath.replace(/\\/g, "/").toLowerCase().replace(/\/+$/, "");
+    if (normalized.startsWith(`${root}/`)) normalized = normalized.slice(root.length + 1);
+  }
+  return normalized.replace(/^\.?\//, "");
+}
+
 export interface WorkflowEngineOptions {
   workspacePath: string;
   sessionId: string;
@@ -146,6 +156,12 @@ export interface AgentExecutionResult {
    * present a run the routing layer already stopped as if it were still being worked.
    */
   failure?: { code: string; message: string; terminal?: boolean };
+  /**
+   * Paths the turn actually wrote, when the executor observes real write events. An edit step is
+   * only "completed" when its target was genuinely written — otherwise it is "skipped", so a
+   * command-only or answer-only run never claims phantom edits to the completion gate.
+   */
+  filesChanged?: string[];
 }
 
 export class WorkflowEngine {
@@ -386,7 +402,9 @@ export class WorkflowEngine {
       // 7. Run Verification
       this.setPhase("verifying", "testing");
       this.ensureNotAborted();
-      const changedPaths = [...new Set(plan.steps.filter((step) => step.kind === "edit" || step.kind === "write").map((step) => step.targetPath).filter((target): target is string => Boolean(target)))];
+      // Only steps the implement phase actually completed produce a diff — a skipped edit step
+      // wrote nothing, so it must not scope verification or count as claimed work downstream.
+      const changedPaths = [...new Set(plan.steps.filter((step) => (step.kind === "edit" || step.kind === "write") && step.status === "completed").map((step) => step.targetPath).filter((target): target is string => Boolean(target)))];
       const verificationRecommendation: VerificationRecommendation = this.forgeGreen.recommendVerification({
         changedPaths,
         candidateTests: repoMap.files.map((file) => file.relativePath).filter((file) => /(?:^|[\\/])(?:test|tests|spec|__tests__)(?:[\\/]|\.|$)/i.test(file)),
@@ -650,11 +668,18 @@ export class WorkflowEngine {
         if (!result.success && result.failure?.terminal) this.terminalStop = { code: result.failure.code, message: result.failure.message };
         let currentPlan = plan;
         if (result.success) {
+          // A claimed edit is only real when the turn wrote its target. Executors that report
+          // filesChanged give us that evidence; for the rest, keep the legacy blanket-complete.
+          const written = result.filesChanged === undefined
+            ? undefined
+            : new Set(result.filesChanged.map((p) => normalizeStepPath(p, this.workspacePath)));
           currentPlan = {
             ...currentPlan,
             steps: currentPlan.steps.map((s) => {
               if (s.kind === "edit" || s.kind === "write") {
-                return { ...s, status: "completed" as const };
+                if (written === undefined) return { ...s, status: "completed" as const };
+                const target = s.targetPath ? normalizeStepPath(s.targetPath, this.workspacePath) : undefined;
+                return { ...s, status: target && written.has(target) ? "completed" as const : "skipped" as const };
               }
               if (s.status === "queued" && (s.kind === "read" || s.kind === "inspect")) {
                 return { ...s, status: "completed" as const };

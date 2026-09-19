@@ -65,7 +65,7 @@ export interface ParallelEvent {
 }
 
 export class ParallelRunStore {
-  constructor(private readonly persistence?: ISessionPersistence, private readonly onEvent?: (event: ParallelEvent) => void) {}
+  constructor(private readonly persistence?: ISessionPersistence, private readonly onEvent?: (event: ParallelEvent) => ParallelEvent | void) {}
 
   async save(run: DurableParallelRun): Promise<void> {
     if (!this.persistence) return;
@@ -113,7 +113,9 @@ export class ParallelRunStore {
 
   async emit(run: DurableParallelRun, type: string, payload: Record<string, unknown> = {}, workstreamId?: string): Promise<void> {
     const event: ParallelEvent = { type, sessionId: run.sessionId, runId: run.id, ...(workstreamId ? { workstreamId } : {}), timestamp: new Date().toISOString(), payload };
-    await this.persistence?.appendEvent(event);
-    this.onEvent?.(event);
+    // The host's onEvent stamps the process-wide seq while broadcasting; persist the sequenced
+    // record so durable replay and the live stream describe the same ordering.
+    const sequenced = this.onEvent?.(event) ?? event;
+    await this.persistence?.appendEvent(sequenced);
   }
 }

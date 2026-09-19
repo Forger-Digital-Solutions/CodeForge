@@ -3,6 +3,7 @@ import type { WorkspaceEvent } from "@codeforge/protocol";
 import type { WorkItem } from "@codeforge/sessions";
 import DiffViewer from "./DiffViewer.js";
 import { projectRunInspection, selectInspectableRunId, type InspectionAgent } from "./run-inspection.js";
+import { displayModelId, humanizeBlockReason } from "./error-copy.js";
 
 export interface RunInspectionProps {
   events: WorkspaceEvent[];
@@ -30,14 +31,14 @@ function renderAgentTree(agents: InspectionAgent[]): React.ReactNode {
           <li key={agent.id}>
             <span className="run-inspection-status" data-status={agent.status}>{statusLabel(agent.status)}</span>
             <span className="run-inspection-agent-role">{agent.role}</span>
-            <span className="run-inspection-agent-id">{agent.id}</span>
             {agent.task ? <div className="run-inspection-secondary">{agent.task}</div> : null}
-            {agent.failure ? <div className="run-inspection-error">{agent.failure}</div> : null}
+            {agent.failure ? <div className="run-inspection-error">{humanizeBlockReason(agent.failure) ?? agent.failure}</div> : null}
             {agent.result ? <div className="run-inspection-secondary">{agent.result}</div> : null}
             {agent.model || agent.telemetry || agent.artifacts?.length || agent.capsule ? (
               <details className="run-inspection-agent-details">
                 <summary>Worker details</summary>
-                {agent.model ? <div className="run-inspection-secondary">Model: {agent.model.providerId} / {agent.model.modelId}</div> : null}
+                <div className="run-inspection-secondary">Id: {agent.id}</div>
+                {agent.model ? <div className="run-inspection-secondary">Model: {displayModelId(agent.model.modelId)} · {agent.model.providerId}</div> : null}
                 {agent.telemetry ? <div className="run-inspection-secondary">Usage: {agent.telemetry.inputTokens + agent.telemetry.outputTokens} tokens · {agent.telemetry.toolCalls} tools · {agent.telemetry.wallTimeMs}ms</div> : null}
                 {agent.capsule ? <details>
                   <summary>Task Capsule</summary>
@@ -99,7 +100,7 @@ export default function RunInspection({ events, workItems, preferredRunId, start
           <dt>Phase</dt><dd>{inspection.phase ? statusLabel(inspection.phase) : "Starting"}</dd>
           <dt>Started</dt><dd>{inspection.startedAt ?? "Unavailable"}</dd>
           <dt>Workspace</dt><dd>{inspection.workspace ? `${inspection.workspace.kind} · ${inspection.workspace.id}` : "Unavailable"}</dd>
-          <dt>Model</dt><dd>{inspection.provider ? `${inspection.provider.providerId} / ${inspection.provider.modelId}` : "Unavailable"}</dd>
+          <dt>Model</dt><dd title={inspection.provider ? `${inspection.provider.providerId}/${inspection.provider.modelId}` : undefined}>{inspection.provider ? `${displayModelId(inspection.provider.modelId)} · ${inspection.provider.providerId}` : "Unavailable"}</dd>
           <dt>Usage</dt><dd>{inspection.usage ? `${inspection.usage.totalTokens} tokens` : "Unavailable"}</dd>
           <dt>Cost</dt><dd>Unavailable</dd>
           <dt>Latency</dt><dd>Unavailable</dd>
@@ -120,9 +121,8 @@ export default function RunInspection({ events, workItems, preferredRunId, start
           {inspection.tools.map((tool) => <li key={tool.id}>
             <span className="run-inspection-status" data-status={tool.status}>{statusLabel(tool.status)}</span>
             <span>{tool.name}</span>
-            {tool.agentId ? <span className="run-inspection-secondary"> · {tool.agentId}</span> : null}
             {tool.durationMs !== undefined ? <span className="run-inspection-secondary"> · {tool.durationMs}ms</span> : null}
-            {tool.failure ? <div className="run-inspection-error">{tool.failure}</div> : null}
+            {tool.failure ? <div className="run-inspection-error">{humanizeBlockReason(tool.failure) ?? tool.failure}</div> : null}
           </li>)}
         </ul> : <div className="panel-empty">No tools executed.</div>}
       </details>

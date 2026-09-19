@@ -1,3 +1,5 @@
+import { humanizeBlockReason } from "./error-copy.js";
+
 /**
  * Readable descriptions of tool activity.
  *
@@ -50,8 +52,9 @@ export function summarizeToolResult(input: {
 }): string | undefined {
   const { status, result, error } = input;
   if (status === "running") return undefined;
-  if (status === "blocked") return error ? firstLine(error) : "blocked";
-  if (status === "failed") return error ? firstLine(error) : "failed";
+  // Internal block codes are identifiers, not prose — translate them before showing anything.
+  if (status === "blocked") return humanizeBlockReason(error) ?? (error ? firstLine(error) : "blocked");
+  if (status === "failed") return humanizeBlockReason(error) ?? (error ? firstLine(error) : "failed");
   if (!result) return undefined;
 
   const trimmed = result.trim();

@@ -59,6 +59,20 @@ export function humanizeSessionStatus(status?: string): string {
   return presentSessionSummary({ status }).label;
 }
 
+/**
+ * Retried tasks are distinct sessions but identical titles — a wall of same-titled rows reads as a
+ * rendering bug. Cluster them under one expandable row; the runs inside stay individually visible
+ * and selectable, ordered newest first.
+ */
+export function clusterSessionsByTitle<T extends NavSessionSummary>(sessions: T[]): T[][] {
+  const byTitle = new Map<string, T[]>();
+  for (const session of sessions) {
+    const key = displaySessionTitle(session).toLocaleLowerCase();
+    byTitle.set(key, [...(byTitle.get(key) ?? []), session]);
+  }
+  return [...byTitle.values()];
+}
+
 export type SessionGroupLabel = "Today" | "Yesterday" | "Previous 7 Days" | "Older";
 
 export function groupSessionByAge(value: string | undefined, now = Date.now()): SessionGroupLabel {
@@ -158,7 +172,9 @@ export default function Navigation({
 }: NavigationProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const searchRef = useRef<HTMLInputElement>(null);
+  const groupOrder: SessionGroupLabel[] = ["Today", "Yesterday", "Previous 7 Days", "Older"];
   const groupedSessions = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
     const groups: Record<SessionGroupLabel, NavSessionSummary[]> = {
@@ -172,12 +188,20 @@ export default function Navigation({
     return groups;
   }, [query, sessions, activeSessionId, activeSessionStatus, activeSessionOutcome]);
 
+  const clusterByTitle = useMemo(() => {
+    const clusters: Record<SessionGroupLabel, NavSessionSummary[][]> = {
+      Today: [], Yesterday: [], "Previous 7 Days": [], Older: [],
+    };
+    for (const group of groupOrder) {
+      clusters[group] = clusterSessionsByTitle(groupedSessions[group]);
+    }
+    return clusters;
+  }, [groupedSessions]);
+
   useEffect(() => {
     if (searchOpen) searchRef.current?.focus();
     else setQuery("");
   }, [searchOpen]);
-
-  const groupOrder: SessionGroupLabel[] = ["Today", "Yesterday", "Previous 7 Days", "Older"];
 
   return (
     <nav className="workspace-nav">
@@ -261,28 +285,63 @@ export default function Navigation({
                 groupOrder.map((group) => groupedSessions[group].length > 0 ? (
                   <div className="nav-session-group" key={group}>
                     <div className="nav-group-label">{group}</div>
-                    {groupedSessions[group].map((session) => {
-                      const label = displaySessionTitle(session);
-                      const isActive = session.id === activeSessionId;
-                      const summary = presentSessionSummary({ status: session.status, outcome: session.outcome });
-                      const relativeTime = formatRelativeSessionTime(session.updatedAt);
+                    {clusterByTitle[group].map((cluster) => {
+                      const renderRow = (session: NavSessionSummary, nested = false) => {
+                        const label = displaySessionTitle(session);
+                        const isActive = session.id === activeSessionId;
+                        const summary = presentSessionSummary({ status: session.status, outcome: session.outcome });
+                        const relativeTime = formatRelativeSessionTime(session.updatedAt);
+                        return (
+                          <button
+                            type="button"
+                            key={session.id}
+                            className={`nav-item nav-task ${nested ? "nav-task-nested" : ""} ${isActive ? "active" : ""} status-${session.status ?? "idle"} tone-${summary.tone}`}
+                            onClick={() => onSelectSession(session.id)}
+                            title={label}
+                            aria-current={isActive ? "page" : undefined}
+                            aria-label={`${label} — ${summary.label}${relativeTime ? `, ${relativeTime}` : ""}`}
+                          >
+                            <span className={`nav-task-dot ${summary.tone === "active" ? "running" : ""}`} />
+                            <span className="nav-task-copy">
+                              <span className="nav-label">{label}</span>
+                              <span className="nav-task-meta">{summary.label}{relativeTime ? ` · ${relativeTime}` : ""}</span>
+                            </span>
+                            <span className={`nav-task-status-icon tone-${summary.tone}`} title={summary.label} aria-hidden="true">{TONE_TO_ICON[summary.tone]}</span>
+                          </button>
+                        );
+                      };
+
+                      if (cluster.length === 1) return renderRow(cluster[0]!);
+
+                      const latest = cluster[0]!;
+                      const label = displaySessionTitle(latest);
+                      const summary = presentSessionSummary({ status: latest.status, outcome: latest.outcome });
+                      const groupKey = `${group}:${label.toLocaleLowerCase()}`;
+                      const isOpen = expandedGroups.has(groupKey) || cluster.some((session) => session.id === activeSessionId);
                       return (
-                        <button
-                          type="button"
-                          key={session.id}
-                          className={`nav-item nav-task ${isActive ? "active" : ""} status-${session.status ?? "idle"} tone-${summary.tone}`}
-                          onClick={() => onSelectSession(session.id)}
-                          title={label}
-                          aria-current={isActive ? "page" : undefined}
-                          aria-label={`${label} — ${summary.label}${relativeTime ? `, ${relativeTime}` : ""}`}
-                        >
-                          <span className={`nav-task-dot ${summary.tone === "active" ? "running" : ""}`} />
-                          <span className="nav-task-copy">
-                            <span className="nav-label">{label}</span>
-                            <span className="nav-task-meta">{summary.label}{relativeTime ? ` · ${relativeTime}` : ""}</span>
-                          </span>
-                          <span className={`nav-task-status-icon tone-${summary.tone}`} title={summary.label} aria-hidden="true">{TONE_TO_ICON[summary.tone]}</span>
-                        </button>
+                        <div key={groupKey} className="nav-task-cluster">
+                          <button
+                            type="button"
+                            className={`nav-item nav-task nav-task-cluster-head tone-${summary.tone}`}
+                            onClick={() => setExpandedGroups((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(groupKey)) next.delete(groupKey);
+                              else next.add(groupKey);
+                              return next;
+                            })}
+                            title={`${label} — ${cluster.length} runs`}
+                            aria-expanded={isOpen}
+                            aria-label={`${label} — ${cluster.length} runs`}
+                          >
+                            <span className={`nav-task-dot ${summary.tone === "active" ? "running" : ""}`} />
+                            <span className="nav-task-copy">
+                              <span className="nav-label">{label}</span>
+                              <span className="nav-task-meta">{summary.label} · {cluster.length} runs</span>
+                            </span>
+                            <span className="activity-caret" aria-hidden="true">{isOpen ? "▾" : "▸"}</span>
+                          </button>
+                          {isOpen && cluster.map((session) => renderRow(session, true))}
+                        </div>
                       );
                     })}
                   </div>

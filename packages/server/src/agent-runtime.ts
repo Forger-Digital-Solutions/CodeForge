@@ -33,7 +33,7 @@ import {
 import { ApprovalService, type ApprovalRecord, type ApprovalGateResult } from "./approval-service.js";
 import { getSanitizedEnvForChild } from "./env-filter.js";
 import { searchWorkspace } from "./search-service.js";
-import { replaceExact, sha256 } from "./edit-service.js";
+import { computeDiff, replaceExact, sha256 } from "./edit-service.js";
 import { createRepositoryIntelligence, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
 import {
   buildContextPack,
@@ -271,6 +271,17 @@ function truncateOutput(text: string, maxBytes: number, label: string): string {
 function boundedListOutput(entries: string[], maxEntries: number): string {
   if (entries.length <= maxEntries) return entries.join("\n");
   return `${entries.slice(0, maxEntries).join("\n")}\n[TRUNCATED: ${entries.length} entries total, showing first ${maxEntries}]`;
+}
+
+/** +/- counts from a unified diff body — the `+++`/`---` file headers are not changes. */
+function countDiffLines(diff: string): { additions: number; deletions: number } {
+  let additions = 0;
+  let deletions = 0;
+  for (const line of diff.split("\n")) {
+    if (line.startsWith("+") && !line.startsWith("+++")) additions++;
+    else if (line.startsWith("-") && !line.startsWith("---")) deletions++;
+  }
+  return { additions, deletions };
 }
 
 export type TurnStatus =
@@ -1438,11 +1449,11 @@ export class AgentRuntime {
                 continue;
               }
               const error = ERROR_CODES.AGENT_INVALID_STRUCTURED_OUTPUT;
-              adapter.emitTurnFailed(req.runId, `${error}: ${validation.error}`);
+              adapter.emitTurnFailed(req.runId, validation.error, describeRunFailure(new Error(error)));
               forgeGreenR0RunStatus = "blocked";
               return {
                 status: "blocked",
-                summary: `${error}: ${validation.error}`,
+                summary: validation.error,
                 findings,
                 evidence,
                 toolExecutions,
@@ -1847,7 +1858,7 @@ export class AgentRuntime {
       forgeGreenR0RunStatus = status;
       stopReason = isCancelled ? "cancelled" : "error";
 
-      adapter.emitTurnFailed(req.runId, errorMsg);
+      adapter.emitTurnFailed(req.runId, errorMsg, isCancelled ? undefined : describeRunFailure(err));
 
       return {
         status,
@@ -3852,12 +3863,12 @@ export class AgentRuntime {
         type: "function",
         function: {
           name: "run_command",
-          description: "Execute a shell command",
+          description: "Execute a shell command. Commands run with the workspace root as the working directory — pass cwd only to run inside a subdirectory, and do not prefix commands with 'cd <workspace> &&'.",
           parameters: {
             type: "object",
             properties: {
-              command: { type: "string", description: "The command to run" },
-              cwd: { type: "string", description: "Working directory" },
+              command: { type: "string", description: "The command to run (already executes in the workspace root)" },
+              cwd: { type: "string", description: "Working directory; defaults to the workspace root" },
             },
             required: ["command"],
           },
@@ -4532,6 +4543,15 @@ export class AgentRuntime {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
+      // The durable change record needs the pre-write state before the atomic swap.
+      const existed = fs.existsSync(resolvedPath);
+      let oldContent: string | undefined;
+      if (existed) {
+        try {
+          const raw = fs.readFileSync(resolvedPath, "utf-8");
+          if (!raw.includes("\0")) oldContent = raw;
+        } catch {}
+      }
       // Atomic write
       const tmpName = `.cf-tmp-${crypto.randomUUID()}-${path.basename(resolvedPath)}`;
       const tmpPath = path.join(dir, tmpName);
@@ -4542,6 +4562,13 @@ export class AgentRuntime {
         try { fs.unlinkSync(tmpPath); } catch {}
       }
       adapter.emitFileWritten(crypto.randomUUID(), filePath, content.length);
+      // `file.written` is the one-line signal the timeline folds into its tool row; the Inspector's
+      // change record needs the richer proposed/applied pair with the actual diff.
+      const changeId = crypto.randomUUID();
+      const diff = computeDiff(filePath, oldContent ?? "", content);
+      const { additions, deletions } = countDiffLines(diff);
+      adapter.emitFileChangeProposed(changeId, filePath, existed ? "modified" : "created", additions, deletions, undefined, diff);
+      adapter.emitFileChangeApplied(changeId, filePath);
       return `Successfully wrote ${content.length} characters to ${filePath}`;
     } catch (error) {
       return `Error writing file: ${error instanceof Error ? error.message : String(error)}`;
@@ -4632,6 +4659,11 @@ export class AgentRuntime {
       return `Error executing command: ${redactSecrets(error instanceof Error ? error.message : String(error))}`;
     }
 
+    // One commandId across the lifecycle: command.started makes the running command visible in
+    // the Inspector's Commands tab; command.executed lands the result on the same row.
+    const commandId = crypto.randomUUID();
+    adapter.emitCommandStarted(commandId, command, workDir.resolvedPath);
+
     // ConPTY-backed execution keeps console-subsystem grandchildren invisible on Windows.
     const result = await executePrepared(prepared, {
       cwd: workDir.resolvedPath,
@@ -4643,7 +4675,7 @@ export class AgentRuntime {
       return "[Command aborted]";
     }
     if (result.timedOut) {
-      adapter.emitCommandExecuted(crypto.randomUUID(), command, "[Command timed out after 60000 ms]", 124);
+      adapter.emitCommandExecuted(commandId, command, "[Command timed out after 60000 ms]", 124);
       return "Exit code: 124\n[Command timed out after 60000 ms]";
     }
     if (result.spawnError) {
@@ -4655,7 +4687,7 @@ export class AgentRuntime {
     const truncated = Buffer.byteLength(sanitized, "utf-8") > MAX_COMMAND_OUTPUT_BYTES
       ? truncateOutput(sanitized, MAX_COMMAND_OUTPUT_BYTES, "command")
       : sanitized;
-    adapter.emitCommandExecuted(crypto.randomUUID(), command, truncated, result.exitCode);
+    adapter.emitCommandExecuted(commandId, command, truncated, result.exitCode);
     return `Exit code: ${result.exitCode}\n${truncated}`;
   }
 
@@ -4711,6 +4743,11 @@ export class AgentRuntime {
       return `Error: ${redactSecrets(result.error ?? "edit failed")}\n[beforeHash:${result.beforeHash}]`;
     }
     adapter.emitFileWritten(crypto.randomUUID(), filePath, result.bytesWritten ?? 0);
+    // Same durable change record as write_file: proposed+applied carry the diff the Inspector reads.
+    const changeId = crypto.randomUUID();
+    const { additions, deletions } = countDiffLines(result.diff ?? "");
+    adapter.emitFileChangeProposed(changeId, filePath, "modified", additions, deletions, undefined, result.diff);
+    adapter.emitFileChangeApplied(changeId, filePath);
     const diff = result.diff ? `\nDiff:\n${result.diff}` : "";
     return `Edited ${filePath} (before ${result.beforeHash.slice(0, 12)} -> after ${result.afterHash?.slice(0, 12)})${diff}`;
   }

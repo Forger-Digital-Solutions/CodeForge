@@ -106,6 +106,21 @@ const DISPATCH_LABELS: Record<string, string | undefined> = {
   revalidation_required: "needs revalidation",
 };
 
+const TERMINAL_PHASE_WORDS = new Set(["complete", "completed", "blocked", "failed", "failed_safely", "cancelled"]);
+
+/** The last real phase a run was in before its terminal transition — where it actually stopped. */
+function lastActivePhaseLabel(events: WorkspaceState["events"]): string | undefined {
+  for (let i = events.length - 1; i >= 0; i--) {
+    const e = events[i]!;
+    if (e.type !== "task.state_changed") continue;
+    const to = (e.payload as { to?: string }).to;
+    if (!to || TERMINAL_PHASE_WORDS.has(to)) continue;
+    const idx = phaseIndex(to);
+    return idx >= 0 ? PHASES[idx]!.label : to.replace(/_/g, " ");
+  }
+  return undefined;
+}
+
 export function phaseIndex(phase: string): number {
   const direct = PHASES.findIndex((p) => p.key === phase);
   if (direct !== -1) return direct;
@@ -270,6 +285,9 @@ export default function WorkflowProgress({ state, onPublishDelivery, onRetryPubl
   const idx = phaseIndex(activePhase);
   const completedCount = idx >= 0 ? Math.min(idx + 1, PHASES.length) : 0;
   const isTerminal = activePhase === "complete" || activePhase === "completed" || activePhase === "blocked" || activePhase === "failed_safely" || activePhase === "cancelled" || activePhase === "failed";
+  // Terminal statuses map to "complete" in the stepper (the bar fills), so where the run actually
+  // stopped has to come from the last real phase the events recorded.
+  const stoppedAtLabel = isTerminal ? lastActivePhaseLabel(state.events) : undefined;
   const startFailureEvent = [...state.events].reverse().find((event) => event.type === "execution.start_failed");
   const startFailure = startFailureEvent?.type === "execution.start_failed" ? startFailureEvent.payload : undefined;
 
@@ -281,13 +299,17 @@ export default function WorkflowProgress({ state, onPublishDelivery, onRetryPubl
     : isTerminal
     ? activePhase === "complete" || activePhase === "completed"
       ? `Completed · ${completedCount}/${PHASES.length} stages`
+      // The header already carries the verdict; this strip reports WHERE the run stopped,
+      // not that it stopped — restating "Blocked" under a "Blocked" header is noise. The
+      // "not verified" suffix only holds when no verification event ever ran; a run blocked
+      // AFTER verification passed is stopped for a different, already-named reason.
       : activePhase === "blocked"
-      ? "Blocked · not verified"
+      ? `Stopped${stoppedAtLabel ? ` during ${stoppedAtLabel}` : ""}${state.events.some((event) => event.type === "workflow.verification_completed") ? "" : " · not verified"}`
       : activePhase === "failed_safely"
-        ? "Failed safely"
+        ? `Stopped${stoppedAtLabel ? ` during ${stoppedAtLabel}` : ""} · no paid route used`
         : activePhase === "cancelled"
           ? "Cancelled"
-          : "Failed"
+          : `Stopped${stoppedAtLabel ? ` during ${stoppedAtLabel}` : ""}`
     : isPaused
       ? `Paused · ${phaseLabel}`
       : isRunning

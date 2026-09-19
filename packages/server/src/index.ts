@@ -273,7 +273,7 @@ export class CodeForgeServer {
         const stored = await this.persistence.getWorkItem(missionId);
         return stored?.kind === "mission" && stored.sessionId ? (await this.getMissionSupervisor(stored.sessionId)).getMission(missionId) : undefined;
       },
-      onEvent: (event) => { this.eventStore.append({ ...event, seq: 0 } as unknown as WorkspaceEvent); },
+      onEvent: (event) => this.appendOrchestrationEvent(event),
     });
     // CF-11B: the desktop publication path is Cloud-authoritative. When no Cloud API is
     // configured the bridge reports that authorization is required; it never falls back to a
@@ -466,7 +466,12 @@ export class CodeForgeServer {
     const sessions = await this.persistence.listSessions();
     const persistedEvents = (await Promise.all(sessions.map((session) => this.persistence.getEvents(session.id))))
       .flat()
-      .filter(isWorkspaceEvent);
+      .filter((event): event is WorkspaceEvent => {
+        // Orchestration records (workstream.*, parallel.*, mission.*) predate the typed union —
+        // keep their envelope so replay and the SSE cursor still see the full history.
+        const record = event as { type?: unknown; sessionId?: unknown; timestamp?: unknown; payload?: unknown };
+        return Boolean(record && typeof record.type === "string" && typeof record.sessionId === "string" && typeof record.timestamp === "string" && record.payload !== null && typeof record.payload === "object");
+      });
     this.eventStore.hydrate(persistedEvents);
     await this.userIntentHold.init();
     await this.workflowService.init();
@@ -848,9 +853,11 @@ export class CodeForgeServer {
     if (url.pathname.startsWith("/api/sessions/") && url.pathname.endsWith("/events") && req.method === "GET") {
       const sessionId = url.pathname.replace("/api/sessions/", "").replace("/events", "");
       void (async () => {
-        const events = await this.persistence.getEvents(sessionId);
+        // The event store is the sequenced view — raw persistence can hold pre-seq orchestration
+        // rows that hydrate already ordered; serving it directly would replay them unsequenced.
+        const events = this.eventStore.getBySession(sessionId);
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-        res.end(JSON.stringify(events));
+        res.end(JSON.stringify(events.length > 0 ? events : await this.persistence.getEvents(sessionId)));
       })().catch(() => this.sendJson(res, 500, { error: "Failed to read events" }));
       return;
     }
@@ -866,7 +873,10 @@ export class CodeForgeServer {
         const session = await this.persistence.getSession(sessionId);
         const turns = await this.persistence.getTurns(sessionId);
         const workItems = await this.persistence.getWorkItems(sessionId);
-        const events = await this.persistence.getEvents(sessionId);
+        // The event store is the sequenced view — raw persistence can hold pre-seq orchestration
+        // rows that hydrate already ordered; serving it directly would replay them unsequenced.
+        const storedEvents = this.eventStore.getBySession(sessionId);
+        const events = storedEvents.length > 0 ? storedEvents : await this.persistence.getEvents(sessionId);
         const runtime = this.runtimes.get(sessionId);
         const runtimeApprovals = runtime?.getAllPendingApprovals().map((a) => ({
           approvalId: a.approvalId,
@@ -1054,6 +1064,17 @@ export class CodeForgeServer {
     }
 
     this.serveStatic(req, res, url.pathname);
+  }
+
+  /**
+   * Orchestration stores (parallel runs, missions) emit envelope-shaped records outside the
+   * typed workspace-event union. Stamp the process-wide sequence before broadcasting so the
+   * caller can persist the same sequenced record — replay and live stream then agree.
+   */
+  private appendOrchestrationEvent<T extends { sessionId: string; timestamp: string }>(event: T): T & { seq: number } {
+    const sequenced = { ...event, seq: this.eventStore.getLastSeq() + 1 };
+    this.eventStore.append(sequenced as unknown as WorkspaceEvent);
+    return sequenced;
   }
 
   private async appendExecutionEvent(
@@ -1849,9 +1870,7 @@ export class CodeForgeServer {
       agentRuntime: this.getOrCreateRuntime(sessionId),
       persistence: this.persistence,
       parallelOrchestrator: this.getParallelOrchestrator(sessionId),
-      onEvent: (event) => {
-        this.eventStore.append({ ...event, seq: 0 } as unknown as WorkspaceEvent);
-      },
+      onEvent: (event) => this.appendOrchestrationEvent(event),
     });
     this.missionSupervisors.set(sessionId, supervisor);
     await supervisor.init();
@@ -2036,9 +2055,7 @@ export class CodeForgeServer {
       workspaceService: this.workspaceService,
       agentRuntime: this.getOrCreateRuntime(sessionId),
       persistence: this.persistence,
-      onEvent: (event) => {
-        this.eventStore.append({ ...event, seq: 0 } as unknown as WorkspaceEvent);
-      },
+      onEvent: (event) => this.appendOrchestrationEvent(event),
     });
     this.parallelOrchestrators.set(sessionId, orchestrator);
     return orchestrator;

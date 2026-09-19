@@ -37,8 +37,8 @@ export interface MissionSupervisorOptions {
   integrationService?: IntegrationService;
   parallelOrchestrator?: ParallelAutonomousRunOrchestrator;
   checkpointServiceFactory?: (workspaceRoot: string) => CheckpointService;
-  onEvent?: (event: MissionEvent) => void;
-  onParallelEvent?: (event: ParallelEvent) => void;
+  onEvent?: (event: MissionEvent) => MissionEvent | void;
+  onParallelEvent?: (event: ParallelEvent) => ParallelEvent | void;
 }
 
 export interface StartMissionInput {
