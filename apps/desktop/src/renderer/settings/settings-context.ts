@@ -57,8 +57,10 @@ export interface DesktopRuntimeStatus {
 export interface SettingsContextValue {
   settings: AppSettings;
   closeBehavior: CloseBehavior;
-  update: (payload: { settings?: AppSettingsPatch; closeBehavior?: CloseBehavior }) => Promise<void>;
-  resetPreferences: () => Promise<void>;
+  /** Set when a persisted or runtime-backed setting could not be applied. */
+  settingsError: string | null;
+  update: (payload: { settings?: AppSettingsPatch; closeBehavior?: CloseBehavior }) => Promise<boolean>;
+  resetPreferences: () => Promise<boolean>;
 
   account: CloudAccountView | null;
   /** True when the account comes from the packaged-smoke fixture rather than a real sign-in. */
@@ -92,7 +94,7 @@ export interface SettingsContextValue {
   systemInfo: SystemInfoView | null;
 
   defaultExecutionMode: "agent" | "chat";
-  setDefaultExecutionMode: (mode: "agent" | "chat") => void;
+  setDefaultExecutionMode: (mode: "agent" | "chat") => Promise<void>;
 
   openExternal: (url: string) => void;
   openDataFolder: () => Promise<void>;

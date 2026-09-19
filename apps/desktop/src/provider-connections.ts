@@ -64,7 +64,8 @@ export interface EnvCredentialSettings {
 
 export interface ProviderConnectionsHost {
   readSettings(): Record<string, unknown>;
-  writeSettings(settings: Record<string, unknown>): void;
+  /** `false` means the trusted settings store rejected the write; legacy test hosts may return void. */
+  writeSettings(settings: Record<string, unknown>): boolean | void;
   /** Encrypted secret store keyed by providerId or `${providerId}:${fieldId}` (plaintext in/out). */
   secrets: {
     get(key: string): string | undefined;
@@ -174,7 +175,13 @@ export class ProviderConnections {
   private saveEnvSettings(next: EnvCredentialSettings): void {
     const settings = this.host.readSettings();
     settings[ENV_CREDENTIALS_KEY] = next;
-    this.host.writeSettings(settings);
+    this.persistSettings(settings, "environment credential preferences");
+  }
+
+  private persistSettings(settings: Record<string, unknown>, subject: string): void {
+    if (this.host.writeSettings(settings) === false) {
+      throw new Error(`Could not save ${subject}. Check that the CodeForge data folder is writable.`);
+    }
   }
 
   /**
@@ -312,7 +319,7 @@ export class ProviderConnections {
     if (source) map[providerId] = source;
     else delete map[providerId];
     settings[CREDENTIAL_SOURCES_KEY] = map;
-    this.host.writeSettings(settings);
+    this.persistSettings(settings, "provider connection state");
   }
 
   credentialSourceOf(providerId: string): CredentialSource {
@@ -381,7 +388,7 @@ export class ProviderConnections {
     const settings = this.host.readSettings();
     if (!accepted) {
       delete settings[GEMINI_FREE_ACCEPTANCE_KEY];
-      this.host.writeSettings(settings);
+      this.persistSettings(settings, "Gemini Free policy acknowledgement");
       await this.reconcile("google");
       return;
     }
@@ -391,7 +398,7 @@ export class ProviderConnections {
     const regionDecision = evaluateGeminiFreePolicy({ accountId, region: context.region, acceptance: null, now: this.now() });
     if (regionDecision.reasonCode !== "GEMINI_FREE_POLICY_NOT_ACCEPTED") throw new Error(`Gemini free routing is blocked: ${regionDecision.reasonCode}`);
     settings[GEMINI_FREE_ACCEPTANCE_KEY] = buildGeminiFreeAcceptance({ accountId, region: context.region, now: this.now() });
-    this.host.writeSettings(settings);
+    this.persistSettings(settings, "Gemini Free policy acknowledgement");
     await this.reconcile("google");
   }
 
@@ -413,7 +420,7 @@ export class ProviderConnections {
     if (attested) map[providerId] = { freePlan: true, attestedAt: this.now().toISOString() };
     else delete map[providerId];
     settings[PLAN_ATTESTATIONS_KEY] = map;
-    this.host.writeSettings(settings);
+    this.persistSettings(settings, "the provider plan attestation");
     await this.reconcile(providerId);
   }
 
@@ -434,7 +441,7 @@ export class ProviderConnections {
     if (modelIds) map[providerId] = modelIds.filter((m) => typeof m === "string" && m.length <= 200).slice(0, 500);
     else delete map[providerId];
     settings[ENABLED_MODELS_KEY] = map;
-    this.host.writeSettings(settings);
+    this.persistSettings(settings, "enabled provider models");
     this.host.notifyChanged?.();
   }
 

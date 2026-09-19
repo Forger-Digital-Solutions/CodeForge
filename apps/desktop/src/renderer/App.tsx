@@ -46,8 +46,16 @@ export default function App() {
         if (window.electronAPI?.getSettings) {
           const snapshot = await window.electronAPI.getSettings() as SettingsSnapshot;
           if (snapshot.fresh) {
-            const patch = migrateLegacyAppSettings(window.localStorage.getItem("codeforge:user-intent-hold-policy"));
-            if (patch) await window.electronAPI.updateSettings?.({ settings: patch });
+            const patch = migrateLegacyAppSettings(
+              window.localStorage.getItem("codeforge:user-intent-hold-policy"),
+              window.localStorage.getItem("codeforge:execution-mode"),
+            );
+            if (patch) {
+              await window.electronAPI.updateSettings?.({ settings: patch });
+              // The canonical store is now the single authority. The legacy renderer key carried
+              // no secret, but retaining it would make a future migration ambiguous.
+              window.localStorage.removeItem("codeforge:execution-mode");
+            }
           }
           startupSettings = snapshot.settings;
         }

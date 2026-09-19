@@ -130,6 +130,7 @@ export default function SettingsApp({ context, initialSection }: SettingsAppProp
           </div>
         </nav>
         <div className="settings-content" ref={contentRef} key={section.id}>
+          {context.settingsError ? <div className="settings-note" role="alert">{context.settingsError}</div> : null}
           <SectionComponent />
         </div>
       </div>

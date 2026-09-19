@@ -72,7 +72,14 @@ Set `CODEFORGE_SMOKE_EXECUTABLE` to run the same full assertions against an inst
 
 ## Artifacts
 
-`npm run dist --workspace=codeforge-desktop` produces:
+`npm run dist --workspace=codeforge-desktop` produces a **production-channel** artifact. It
+temporarily stamps the approved production Cloud origin into the packaging manifest, audits the
+embedded `app.asar` manifest, and restores the committed development manifest before returning.
+Use `npm run dist --workspace=codeforge-desktop -- --channel staging --url https://approved-staging-origin`
+only for an explicitly approved staging artifact. The distribution wrapper rejects development and
+loopback release authorities.
+
+The production command produces:
 
 - `apps/desktop/release/CodeForge-Setup-0.4.0.exe`
 - `apps/desktop/release/CodeForge-Portable.exe`

@@ -216,8 +216,7 @@ credential.
 ## 8. Build the staging desktop
 
 ```bash
-npm run build:channel --workspace=codeforge-desktop -- --channel staging --url "$CODEFORGE_PUBLIC_URL"
-npm run dist --workspace=codeforge-desktop
+npm run dist --workspace=codeforge-desktop -- --channel staging --url "$CODEFORGE_PUBLIC_URL"
 ```
 
 The Cloud endpoint is stamped into the build manifest, not read from the environment at runtime: a

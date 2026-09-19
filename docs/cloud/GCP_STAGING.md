@@ -140,8 +140,7 @@ database, secrets, Cloud Run service, and provider credentials. The production h
 Build an explicit staging desktop only after the endpoint exists:
 
 ```powershell
-npm run build:channel --workspace=codeforge-desktop -- --channel staging --url https://STAGING_CLOUD_RUN_OR_CUSTOM_ORIGIN
-npm run dist --workspace=codeforge-desktop
+npm run dist --workspace=codeforge-desktop -- --channel staging --url https://STAGING_CLOUD_RUN_OR_CUSTOM_ORIGIN
 ```
 
 ## Health, rollback, and certification

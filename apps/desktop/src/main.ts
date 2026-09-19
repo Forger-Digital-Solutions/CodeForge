@@ -370,7 +370,7 @@ function readSettings(): Record<string, unknown> {
   }
 }
 
-function writeSettingsAtomic(settings: Record<string, unknown>): void {
+function writeSettingsAtomic(settings: Record<string, unknown>): boolean {
   const storePath = getStorePath();
   const tmpPath = `${storePath}.tmp`;
   const data = JSON.stringify(settings, null, 2);
@@ -382,12 +382,14 @@ function writeSettingsAtomic(settings: Record<string, unknown>): void {
     } catch {
       // Windows ignores chmod; best-effort
     }
+    return true;
   } catch {
     try {
       fs.unlinkSync(tmpPath);
     } catch {
       // ignore
     }
+    return false;
   }
 }
 
@@ -470,7 +472,7 @@ function saveRecentProject(project: ProjectInfo): void {
     : [];
   const filtered = recent.filter((p) => typeof p.path === "string" && p.path !== project.path);
   settings[RECENT_PROJECTS_KEY] = [project, ...filtered].slice(0, 10);
-  writeSettingsAtomic(settings);
+  if (!writeSettingsAtomic(settings)) throw new Error("Could not save the recent workspace. Check that the CodeForge data folder is writable.");
 }
 
 /** Explicit secure-storage credentials only (safeStorage-encrypted). Environment credentials are
@@ -518,7 +520,7 @@ function setProviderCredential(providerId: string, apiKey: string): void {
     configurable: true,
   });
   settings[PROVIDER_CREDENTIALS_KEY] = credentials;
-  writeSettingsAtomic(settings);
+  if (!writeSettingsAtomic(settings)) throw new Error("Could not save the provider credential. Check that the CodeForge data folder is writable.");
 }
 
 function deleteProviderCredential(providerId: string): void {
@@ -530,7 +532,7 @@ function deleteProviderCredential(providerId: string): void {
   const storageKey = providerId === "ollama-cloud" ? `ollama-cloud:user:${hashUserAccountIdentity(userConnectedFreeScopeId())}` : providerId;
   delete credentials[storageKey];
   settings[PROVIDER_CREDENTIALS_KEY] = credentials;
-  writeSettingsAtomic(settings);
+  if (!writeSettingsAtomic(settings)) throw new Error("Could not remove the provider credential. Check that the CodeForge data folder is writable.");
 }
 
 function getOnboardingCompleted(): boolean {
@@ -563,7 +565,7 @@ function getCloseBehavior(): CloseBehavior {
 function setCloseBehavior(value: CloseBehavior): void {
   const settings = readSettings();
   settings[CLOSE_BEHAVIOR_KEY] = value;
-  writeSettingsAtomic(settings);
+  if (!writeSettingsAtomic(settings)) throw new Error("Could not persist close behavior. Check that the CodeForge data folder is writable.");
 }
 
 // Canonical Settings surface (see app-settings.ts). `fresh` reports whether the canonical store
@@ -578,32 +580,17 @@ function readAppSettings(): AppSettings {
 function writeAppSettings(settings: AppSettings): void {
   const store = readSettings();
   store[APP_SETTINGS_KEY] = settings;
-  writeSettingsAtomic(store);
+  if (!writeSettingsAtomic(store)) throw new Error("Could not persist settings. Check that the CodeForge data folder is writable.");
 }
 
 function getSettingsSnapshot(): SettingsSnapshot {
   return { settings: readAppSettings(), closeBehavior: getCloseBehavior(), fresh: appSettingsFreshAtStartup };
 }
 
-function updateSettings(payload: { settings?: unknown; closeBehavior?: unknown }): SettingsSnapshot {
-  if (payload.settings !== undefined) {
-    const patch = parseAppSettingsPatch(payload.settings);
-    writeAppSettings(applySettingsPatch(readAppSettings(), patch));
-    // After a successful write the store is no longer "fresh" — it is an authoritative preference.
-    appSettingsFreshAtStartup = false;
-  }
-  if (payload.closeBehavior !== undefined) {
-    const behavior = CloseBehaviorSchema.safeParse(payload.closeBehavior);
-    if (!behavior.success) throw new Error("Invalid close behavior");
-    setCloseBehavior(behavior.data);
-  }
-  return getSettingsSnapshot();
-}
-
 function resetAppSettings(): SettingsSnapshot {
   const store = readSettings();
   delete store[APP_SETTINGS_KEY];
-  writeSettingsAtomic(store);
+  if (!writeSettingsAtomic(store)) throw new Error("Could not reset settings. Check that the CodeForge data folder is writable.");
   appSettingsFreshAtStartup = true;
   return getSettingsSnapshot();
 }
@@ -749,7 +736,7 @@ function setOnboardingCompleted(completed: boolean): void {
   if (typeof completed !== "boolean") throw new Error("Invalid onboarding value");
   const settings = readSettings();
   settings[ONBOARDING_COMPLETED_KEY] = completed;
-  writeSettingsAtomic(settings);
+  if (!writeSettingsAtomic(settings)) throw new Error("Could not save onboarding status. Check that the CodeForge data folder is writable.");
 }
 
 /** Takes no parameters from the caller — the only valid call is "the user just checked the
@@ -759,7 +746,7 @@ function setFirstRunLegalAck(): FirstRunLegalAck {
   const ack: FirstRunLegalAck = { ageConfirmed: true, hostExecutionAcknowledged: true, acknowledgedAt: new Date().toISOString() };
   const settings = readSettings();
   settings[FIRST_RUN_LEGAL_ACK_KEY] = ack;
-  writeSettingsAtomic(settings);
+  if (!writeSettingsAtomic(settings)) throw new Error("Could not save the first-run acknowledgement. Check that the CodeForge data folder is writable.");
   return ack;
 }
 
@@ -780,7 +767,7 @@ function saveCloudTokens(accessToken: string, refreshToken: string, user: any): 
   settings[CLOUD_ACCESS_TOKEN_KEY] = encryptCredential(accessToken);
   settings[CLOUD_REFRESH_TOKEN_KEY] = encryptCredential(refreshToken);
   settings[CLOUD_USER_KEY] = user;
-  writeSettingsAtomic(settings);
+  if (!writeSettingsAtomic(settings)) throw new Error("Could not save the secure cloud session. Check that the CodeForge data folder is writable.");
 }
 
 function clearCloudTokens(): void {
@@ -788,7 +775,7 @@ function clearCloudTokens(): void {
   delete settings[CLOUD_ACCESS_TOKEN_KEY];
   delete settings[CLOUD_REFRESH_TOKEN_KEY];
   delete settings[CLOUD_USER_KEY];
-  writeSettingsAtomic(settings);
+  if (!writeSettingsAtomic(settings)) throw new Error("Could not clear the secure cloud session. Check that the CodeForge data folder is writable.");
 }
 
 function userConnectedFreeScopeId(): string {
@@ -1160,22 +1147,28 @@ function controlPlaneFetch(pathname: string, init?: RequestInit): Promise<Respon
  * not cost a repository-index round trip (it made every settings write take ~800 ms).
  */
 async function applyRuntimeSettings(settings: AppSettings, previous?: AppSettings): Promise<void> {
-  const calls: Promise<Response>[] = [];
+  const calls: Array<{ name: string; request: Promise<Response> }> = [];
   if (!previous || previous.privacy.routingMode !== settings.privacy.routingMode) {
-    calls.push(controlPlaneFetch("/api/privacy-mode", {
+    calls.push({ name: "privacy routing", request: controlPlaneFetch("/api/privacy-mode", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mode: settings.privacy.routingMode }),
-    }));
+    }) });
   }
   if (!previous || previous.workspace.repositoryIndexEnabled !== settings.workspace.repositoryIndexEnabled) {
-    calls.push(controlPlaneFetch("/api/repository-index/settings", {
+    calls.push({ name: "Repository Intelligence", request: controlPlaneFetch("/api/repository-index/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ enabled: settings.workspace.repositoryIndexEnabled }),
-    }));
+    }) });
   }
-  await Promise.allSettled(calls);
+  const results = await Promise.allSettled(calls.map(({ request }) => request));
+  const failed = results.findIndex((result) => result.status === "rejected" || (result.status === "fulfilled" && !result.value.ok));
+  if (failed !== -1) {
+    const result = results[failed]!;
+    const detail = result.status === "fulfilled" ? `HTTP ${result.value.status}` : "the runtime could not be reached";
+    throw new Error(`Could not apply ${calls[failed]!.name}: ${detail}.`);
+  }
 }
 
 /**
@@ -2381,7 +2374,7 @@ ipcMain.handle("project:clearRecent", async (event) => {
   assertMainWindowSender(event);
   const settings = readSettings();
   delete settings[RECENT_PROJECTS_KEY];
-  writeSettingsAtomic(settings);
+  if (!writeSettingsAtomic(settings)) throw new Error("Could not clear recent projects. Check that the CodeForge data folder is writable.");
 });
 
 ipcMain.handle("project:open", async (event, projectPath: string) => {
@@ -2466,16 +2459,27 @@ ipcMain.handle("settings:set", async (event, payload: { settings?: unknown; clos
   assertMainWindowSender(event);
   if (payload === null || typeof payload !== "object") throw new Error("Invalid settings payload");
   const previous = readAppSettings();
-  const snapshot = updateSettings(payload);
-  if (payload.settings !== undefined) await applyRuntimeSettings(snapshot.settings, previous);
-  return snapshot;
+  if (payload.settings !== undefined) {
+    const patch = parseAppSettingsPatch(payload.settings);
+    const next = applySettingsPatch(previous, patch);
+    await applyRuntimeSettings(next, previous);
+    writeAppSettings(next);
+    appSettingsFreshAtStartup = false;
+  }
+  if (payload.closeBehavior !== undefined) {
+    const behavior = CloseBehaviorSchema.safeParse(payload.closeBehavior);
+    if (!behavior.success) throw new Error("Invalid close behavior");
+    setCloseBehavior(behavior.data);
+  }
+  return getSettingsSnapshot();
 });
 
 ipcMain.handle("settings:reset", async (event): Promise<SettingsSnapshot> => {
   assertMainWindowSender(event);
-  const snapshot = resetAppSettings();
-  await applyRuntimeSettings(snapshot.settings);
-  return snapshot;
+  const previous = readAppSettings();
+  const defaults = parseAppSettings(undefined);
+  await applyRuntimeSettings(defaults, previous);
+  return resetAppSettings();
 });
 
 ipcMain.handle("app:getSystemInfo", (event) => {

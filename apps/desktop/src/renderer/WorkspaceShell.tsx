@@ -17,7 +17,6 @@ import { markRendererLifecycle, markWorkspaceInteractiveWhenReady } from "./life
 
 const FALLBACK_SERVER_BASE_URL = "http://127.0.0.1:0";
 const HELP_URL = "https://github.com/Forger-Digital-Solutions/CodeForge#readme";
-const EXECUTION_MODE_KEY = "codeforge:execution-mode";
 const DEFAULT_MODEL_ZOOM: Record<AppSettings["appearance"]["chatTextScale"], number> = {
   small: 0.9,
   medium: 1,
@@ -63,10 +62,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   const [systemInfo, setSystemInfo] = useState<SystemInfoView | null>(null);
   const [recentProjects, setRecentProjects] = useState<Project[]>([]);
   const [catalogLastCheckedAt, setCatalogLastCheckedAt] = useState<number | null>(null);
-  const [defaultExecutionMode, setDefaultExecutionModeState] = useState<ExecutionMode>(() => {
-    const value = window.localStorage.getItem(EXECUTION_MODE_KEY);
-    return value === "chat" ? "chat" : "agent";
-  });
+  const [settingsError, setSettingsError] = useState<string | null>(null);
   const appliedDefaultModelRef = useRef(false);
   const notificationPrefsRef = useRef<AppSettings["notifications"] | null>(null);
   const previousCountersRef = useRef<RunningCounters | null>(null);
@@ -190,16 +186,9 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
   }, [project.path, repositoryIndex.state, runtimeEndpoint]);
 
   const setRepositoryIndexEnabled = async (enabled: boolean) => {
-    if (!runtimeEndpoint) return;
-    const response = await fetch(`${serverBaseUrl}/api/repository-index/settings`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ enabled }),
-    });
-    if (response.ok) {
+    const applied = await updateSettings({ settings: { workspace: { repositoryIndexEnabled: enabled } } });
+    if (applied) {
       setRepositoryIndex((current) => ({ ...current, enabled, state: enabled ? "INDEXING" : "NOT_INDEXED" }));
-      const snapshot = await window.electronAPI?.updateSettings?.({ settings: { workspace: { repositoryIndexEnabled: enabled } } });
-      if (snapshot) setSettingsSnapshot(snapshot as SettingsSnapshot);
     }
   };
 
@@ -451,18 +440,36 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     cloudAccount && !cloudAccount.user?.primaryIdentity && !cloudAccount.user?.id,
   );
 
-  const updateSettings = useCallback(async (payload: { settings?: AppSettingsPatch; closeBehavior?: CloseBehavior }) => {
-    if (!window.electronAPI?.updateSettings) return;
-    const snapshot = await window.electronAPI.updateSettings(payload) as SettingsSnapshot;
-    setSettingsSnapshot(snapshot);
+  const updateSettings = useCallback(async (payload: { settings?: AppSettingsPatch; closeBehavior?: CloseBehavior }): Promise<boolean> => {
+    if (!window.electronAPI?.updateSettings) {
+      setSettingsError("Settings are unavailable because the trusted desktop bridge is not ready.");
+      return false;
+    }
+    try {
+      const snapshot = await window.electronAPI.updateSettings(payload) as SettingsSnapshot;
+      setSettingsSnapshot(snapshot);
+      setSettingsError(null);
+      return true;
+    } catch (error) {
+      setSettingsError(`Setting was not applied: ${error instanceof Error ? error.message : "the trusted runtime rejected the change"}`);
+      return false;
+    }
   }, []);
 
-  const resetPreferences = useCallback(async () => {
-    if (!window.electronAPI?.resetSettings) return;
-    const snapshot = await window.electronAPI.resetSettings() as SettingsSnapshot;
-    setSettingsSnapshot(snapshot);
-    setDefaultExecutionModeState("agent");
-    try { window.localStorage.removeItem(EXECUTION_MODE_KEY); } catch {}
+  const resetPreferences = useCallback(async (): Promise<boolean> => {
+    if (!window.electronAPI?.resetSettings) {
+      setSettingsError("Settings are unavailable because the trusted desktop bridge is not ready.");
+      return false;
+    }
+    try {
+      const snapshot = await window.electronAPI.resetSettings() as SettingsSnapshot;
+      setSettingsSnapshot(snapshot);
+      setSettingsError(null);
+      return true;
+    } catch (error) {
+      setSettingsError(`Preferences were not reset: ${error instanceof Error ? error.message : "the trusted runtime rejected the reset"}`);
+      return false;
+    }
   }, []);
 
   const setDefaultModel = useCallback(async (modelId: string) => {
@@ -472,13 +479,9 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     await updateSettings({ settings: { models: { defaultModelId: modelId } } });
   }, [modelProviders, apiModels, postModelSelection, updateSettings]);
 
-  const setDefaultExecutionMode = useCallback((mode: ExecutionMode) => {
-    setDefaultExecutionModeState(mode);
-    // The composer reads this key as its persisted default (established store for this setting).
-    try {
-      window.localStorage.setItem(EXECUTION_MODE_KEY, mode);
-    } catch {}
-  }, []);
+  const setDefaultExecutionMode = useCallback(async (mode: ExecutionMode) => {
+    await updateSettings({ settings: { agents: { defaultExecutionMode: mode } } });
+  }, [updateSettings]);
 
   const settingsContext = useMemo((): SettingsContextValue => {
     const settings = settingsSnapshot?.settings;
@@ -486,6 +489,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       settings: settings ?? {
         schemaVersion: 1,
         general: { openLastWorkspaceOnStartup: true, continueInterruptedAgents: true, defaultSteeringPolicy: "expensive_actions_only" },
+        agents: { defaultExecutionMode: "agent" },
         appearance: { chatTextScale: "medium", reducedMotion: false },
         models: { defaultModelId: "auto" },
         notifications: { enabled: true, onApprovalNeeded: true, onAgentCompleted: true, onlyWhenInBackground: true },
@@ -493,6 +497,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
         workspace: { repositoryIndexEnabled: true },
       },
       closeBehavior: settingsSnapshot?.closeBehavior ?? "ask",
+      settingsError,
       update: updateSettings,
       resetPreferences,
       account: cloudAccount,
@@ -542,7 +547,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       rebuildRepositoryIndex,
       runtimeStatus,
       systemInfo,
-      defaultExecutionMode,
+      defaultExecutionMode: settings?.agents.defaultExecutionMode ?? "agent",
       setDefaultExecutionMode,
       openExternal: openExternalLink,
       openDataFolder: async () => {
@@ -563,7 +568,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     settingsSnapshot, updateSettings, resetPreferences, cloudAccount, isFixtureAccount, loadCloudAccount,
     refreshModelsAndHealth, onSignedOut, apiModels, modelSections, providerStatus, setDefaultModel,
     catalogLastCheckedAt, gitInfo, project, recentProjects, onOpenProjectPath, repositoryIndex,
-    runtimeStatus, systemInfo, defaultExecutionMode, setDefaultExecutionMode, loadRecentProjects,
+    runtimeStatus, systemInfo, settingsError, setDefaultExecutionMode, loadRecentProjects,
   ]);
 
   const userIntentHoldPolicy = settingsSnapshot?.settings.general.defaultSteeringPolicy ?? "expensive_actions_only";
@@ -859,7 +864,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
             onOpenSettingsSection={(sectionId) => setSettingsSection(sectionId)}
             onOpenHelp={() => openExternalLink(HELP_URL)}
             userIntentHoldPolicy={userIntentHoldPolicy}
-            defaultExecutionMode={defaultExecutionMode}
+            defaultExecutionMode={settingsSnapshot?.settings.agents.defaultExecutionMode ?? "agent"}
             workspaceBrief={{
               repositoryName: project.name,
               branch: gitInfo.branch,

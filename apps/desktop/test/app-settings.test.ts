@@ -14,6 +14,7 @@ describe("canonical app settings schema", () => {
     expect(settings.general.openLastWorkspaceOnStartup).toBe(true);
     expect(settings.general.continueInterruptedAgents).toBe(true);
     expect(settings.general.defaultSteeringPolicy).toBe("expensive_actions_only");
+    expect(settings.agents.defaultExecutionMode).toBe("agent");
     expect(settings.appearance.chatTextScale).toBe("medium");
     expect(settings.appearance.reducedMotion).toBe(false);
     expect(settings.models.defaultModelId).toBe("auto");
@@ -52,11 +53,13 @@ describe("canonical app settings schema", () => {
     const current = parseAppSettings({});
     const patch = parseAppSettingsPatch({
       general: { continueInterruptedAgents: false },
+      agents: { defaultExecutionMode: "chat" },
       notifications: { onAgentCompleted: false },
       workspace: { repositoryIndexEnabled: false },
     });
     const next = applySettingsPatch(current, patch);
     expect(next.general.continueInterruptedAgents).toBe(false);
+    expect(next.agents.defaultExecutionMode).toBe("chat");
     expect(next.notifications.onAgentCompleted).toBe(false);
     expect(next.general.openLastWorkspaceOnStartup).toBe(true);
     expect(next.notifications.onApprovalNeeded).toBe(true);
@@ -74,6 +77,14 @@ describe("canonical app settings schema", () => {
     });
     expect(migrateLegacyAppSettings("garbage")).toBeNull();
     expect(migrateLegacyAppSettings(undefined)).toBeNull();
+  });
+
+  it("migrates the renderer-only task mode once into the canonical store", () => {
+    expect(migrateLegacyAppSettings(undefined, "chat")).toEqual({ agents: { defaultExecutionMode: "chat" } });
+    expect(migrateLegacyAppSettings("off", "agent")).toEqual({
+      general: { defaultSteeringPolicy: "off" },
+      agents: { defaultExecutionMode: "agent" },
+    });
   });
 
   it("keeps close behavior out of the canonical object — it owns its own key", () => {

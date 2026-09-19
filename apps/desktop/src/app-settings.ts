@@ -24,6 +24,7 @@ export const CloseBehaviorSchema = z.enum(["ask", "tray", "quit-safe"]);
 export type CloseBehavior = z.infer<typeof CloseBehaviorSchema>;
 
 const SteeringPolicySchema = z.enum(["expensive_actions_only", "off"]);
+const ExecutionModeSchema = z.enum(["agent", "chat"]);
 const ChatTextScaleSchema = z.enum(["small", "medium", "large"]);
 const PrivacyRoutingModeSchema = z.enum(["STRICT", "STANDARD", "MAXIMUM_FREE"]);
 
@@ -40,6 +41,11 @@ const GeneralSettingsSchema = z.object({
    * "expensive_actions_only" (both behaved identically in the runtime; exposing two identical
    * options would be a dead control). */
   defaultSteeringPolicy: SteeringPolicySchema.default("expensive_actions_only"),
+});
+
+const AgentSettingsSchema = z.object({
+  /** The starting composer mode for a new task. */
+  defaultExecutionMode: ExecutionModeSchema.default("agent"),
 });
 
 const AppearanceSettingsSchema = z.object({
@@ -82,6 +88,7 @@ const WorkspaceSettingsSchema = z.object({
 export const AppSettingsSchema = z.object({
   schemaVersion: z.literal(APP_SETTINGS_SCHEMA_VERSION).default(APP_SETTINGS_SCHEMA_VERSION),
   general: GeneralSettingsSchema.default({}),
+  agents: AgentSettingsSchema.default({}),
   appearance: AppearanceSettingsSchema.default({}),
   models: ModelsSettingsSchema.default({}),
   notifications: NotificationsSettingsSchema.default({}),
@@ -105,6 +112,7 @@ export interface SettingsSnapshot {
 
 export const AppSettingsPatchSchema = z.object({
   general: GeneralSettingsSchema.partial().optional(),
+  agents: AgentSettingsSchema.partial().optional(),
   appearance: AppearanceSettingsSchema.partial().optional(),
   models: ModelsSettingsSchema.partial().optional(),
   notifications: NotificationsSettingsSchema.partial().optional(),
@@ -133,12 +141,14 @@ export function parseAppSettings(raw: unknown): AppSettings {
     return result.success ? result.data : undefined;
   };
   const general = salvage(AppSettingsSchema.shape.general, source.general);
+  const agents = salvage(AppSettingsSchema.shape.agents, source.agents);
   const appearance = salvage(AppSettingsSchema.shape.appearance, source.appearance);
   const models = salvage(AppSettingsSchema.shape.models, source.models);
   const notifications = salvage(AppSettingsSchema.shape.notifications, source.notifications);
   const privacy = salvage(AppSettingsSchema.shape.privacy, source.privacy);
   const workspace = salvage(AppSettingsSchema.shape.workspace, source.workspace);
   if (general) salvaged.general = general;
+  if (agents) salvaged.agents = agents;
   if (appearance) salvaged.appearance = appearance;
   if (models) salvaged.models = models;
   if (notifications) salvaged.notifications = notifications;
@@ -160,6 +170,7 @@ export function applySettingsPatch(current: AppSettings, patch: AppSettingsPatch
   return {
     schemaVersion: APP_SETTINGS_SCHEMA_VERSION,
     general: { ...current.general, ...patch.general },
+    agents: { ...current.agents, ...patch.agents },
     appearance: { ...current.appearance, ...patch.appearance },
     models: { ...current.models, ...patch.models },
     notifications: { ...current.notifications, ...patch.notifications },
@@ -173,15 +184,17 @@ export function applySettingsPatch(current: AppSettings, patch: AppSettingsPatch
  * meaningful on the first run with the store absent — the caller decides that (settings:get
  * reports `fresh`). Legacy "always" steering maps to "expensive_actions_only": the runtime treated
  * the two identically, and a two-value setting states that truthfully instead of offering a dead
- * duplicate. (The default execution mode keeps its established renderer-side store and is not
- * migrated here.)
+ * duplicate. The legacy renderer-only execution-mode value is migrated at the same point so
+ * Reset Preferences and settings recovery have one authoritative store.
  */
-export function migrateLegacyAppSettings(steeringPolicy: unknown): AppSettingsPatch | null {
+export function migrateLegacyAppSettings(steeringPolicy: unknown, executionMode?: unknown): AppSettingsPatch | null {
   const steering = z.enum(["expensive_actions_only", "always", "off"]).safeParse(steeringPolicy);
-  if (!steering.success) return null;
+  const execution = ExecutionModeSchema.safeParse(executionMode);
+  if (!steering.success && !execution.success) return null;
   return {
-    general: {
-      defaultSteeringPolicy: steering.data === "off" ? "off" : "expensive_actions_only",
-    },
+    ...(steering.success
+      ? { general: { defaultSteeringPolicy: steering.data === "off" ? "off" : "expensive_actions_only" } }
+      : {}),
+    ...(execution.success ? { agents: { defaultExecutionMode: execution.data } } : {}),
   };
 }
