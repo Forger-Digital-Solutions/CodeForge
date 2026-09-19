@@ -107,7 +107,7 @@ $profileDirectory = Join-Path $EvidenceDirectory "smoke-user-data-$runId"
 $screenshotPath = Join-Path $EvidenceDirectory "r15r-native-first-frame-$runId.png"
 $stdoutPath = Join-Path $EvidenceDirectory "r15r-native-$runId.stdout.log"
 $stderrPath = Join-Path $EvidenceDirectory "r15r-native-$runId.stderr.log"
-$reportPath = Join-Path $EvidenceDirectory "r15r-native-smoke.json"
+$reportPath = Join-Path $EvidenceDirectory "r15r-native-smoke-$runId.json"
 $startedAt = [DateTime]::UtcNow.ToString("o")
 $result = [ordered]@{
     schemaVersion = 1
@@ -153,7 +153,8 @@ try {
     $argumentList = "--user-data-dir=`"$profileDirectory`" --remote-debugging-port=$RemoteDebugPort"
     # The host may itself use Electron-as-Node. Remove that inherited mode for the real desktop
     # child so Chromium receives the profile and DevTools flags normally.
-    $applicationProcess = Start-Process -FilePath $exePath -ArgumentList $argumentList -PassThru -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -Environment @{ ELECTRON_RUN_AS_NODE = $null }
+    [Environment]::SetEnvironmentVariable("ELECTRON_RUN_AS_NODE", $null, "Process")
+    $applicationProcess = Start-Process -FilePath $exePath -ArgumentList $argumentList -PassThru -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
     $cdpVersion = Wait-ForCdp -Port $RemoteDebugPort -TimeoutSeconds $LaunchTimeoutSeconds
     if (-not $cdpVersion) {
         $state = if ($applicationProcess.HasExited) { "The application process exited with code $($applicationProcess.ExitCode) before it exposed DevTools." } else { "The application process did not expose a renderer DevTools target." }

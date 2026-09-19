@@ -1,0 +1,37 @@
+﻿{
+    "schemaVersion":  1,
+    "startedAtUtc":  "2026-09-19T09:24:28.0280616Z",
+    "installer":  {
+                      "status":  "PASS",
+                      "detail":  "Installer SHA-256 matches the supplied release hash."
+                  },
+    "installedApplication":  {
+                                 "status":  "PASS",
+                                 "detail":  "Ordinary installed CodeForge executable was selected."
+                             },
+    "architecture":  {
+                         "status":  "PASS",
+                         "detail":  "Installed executable is x64."
+                     },
+    "cloudTarget":  {
+                        "status":  "PASS",
+                        "detail":  "Public production HTTPS origin accepted for the native run."
+                    },
+    "freshProfile":  {
+                         "status":  "PASS",
+                         "detail":  "A new isolated Electron user-data directory was created for this run."
+                     },
+    "rendererFirstFrame":  {
+                               "status":  "PASS",
+                               "detail":  "Renderer DevTools responded and a first-frame screenshot was captured.",
+                               "rendererState":  "{\"readyState\":\"complete\",\"title\":\"CodeForge\",\"hasRoot\":true}",
+                               "screenshot":  "G:\\CodeForge\\docs\\evidence\\r15r-native-closure\\04-native-harness\\r15r-native-first-frame-f154c51986214c58979c4beeeb5372ce.png"
+                           },
+    "githubOAuth":  {
+                        "status":  "NOT_RUN",
+                        "detail":  "Requires a human to complete GitHub authorization after the visible first-frame check."
+                    },
+    "certification":  "BLOCKED",
+    "completedAtUtc":  "2026-09-19T09:24:30.0761370Z",
+    "profileDirectory":  "G:\\CodeForge\\docs\\evidence\\r15r-native-closure\\04-native-harness\\smoke-user-data-f154c51986214c58979c4beeeb5372ce"
+}
