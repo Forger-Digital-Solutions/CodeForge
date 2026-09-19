@@ -1,4 +1,4 @@
-import type { FreeModelRecord, ForgeZero, PrivacyClass, AccessClass } from "@codeforge/forge-zero";
+import type { FreeModelRecord, ForgeZero, PrivacyClass, AccessClass, SupplyClass } from "@codeforge/forge-zero";
 import type { ModelIdentity, ProviderIdentity } from "@codeforge/core";
 import { verifyModelEligibility, FREE_ACCESS_CLASSES } from "@codeforge/forge-zero";
 import type { ModelQualificationReceipt } from "@codeforge/eight-bit";
@@ -37,6 +37,12 @@ export interface ProviderConnectionState {
   /** Adapter registered with a usable credential. */
   connected: boolean;
   credentialSource: CredentialSource;
+  /**
+   * Economic source of this connection's capacity. A dev-machine environment key is
+   * OWNER_DEV_FREE supply even when the provider's product class is free — connection
+   * state must not present it as managed product capacity.
+   */
+  supplyClass?: SupplyClass;
   /** When `credentialSource === "ENVIRONMENT"`: the variable name (never the value). */
   environmentVariable?: string;
   authState: "ok" | "auth_required" | "rate_limited" | "unknown";
@@ -142,6 +148,8 @@ export interface ProviderRouteView {
   displayName: string;
   accessClass?: AccessClass;
   freeAccessClass: FreeAccessClass;
+  /** Economic source of this route's capacity (RC-5): managed product supply, the user's own account, dev-owner keys, trial credit, or paid. */
+  supplyClass?: SupplyClass;
   authClass: AuthClass;
   credentialSource: CredentialSource;
   connected: boolean;
@@ -215,14 +223,26 @@ export interface FreeCandidate {
 
 export interface FreeCloudSummary {
   canonicalModels: number;
+  /** Catalog records verified free — verification evidence, NOT a runnable guarantee. */
   verifiedFreeModels: number;
   verifiedFreeRoutes: number;
+  /** Routes that survived the full admission pipeline — the honest "healthy" count. */
   healthyFreeRoutes: number;
   connectedProviders: number;
   coolingDown: number;
   primaryCodingModels: number;
   paidRoutesExcluded: number;
   sameModelMultiProviderModels: number;
+  /** Models runnable right now on free supply (readiness FREE_AVAILABLE). */
+  runnableFreeModels: number;
+  /** Capability verdict only: QUALIFIED for PRIMARY_CODING_AGENT, runnable or not (RC-6). */
+  qualifiedPrimaryCodingModels: number;
+  /** Qualified AND runnable — the honest "Recommended" count a user can act on. */
+  recommendedModels: number;
+  /** Free routes by economic supply source (RC-5). */
+  managedFreeRoutes: number;
+  userOwnedFreeRoutes: number;
+  ownerDevFreeRoutes: number;
 }
 
 export interface FreeCloudSnapshot {
@@ -522,6 +542,7 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
       displayName: identity.displayName,
       accessClass: seed.accessClass,
       freeAccessClass: def?.freeAccess.class ?? "LEGAL_REVIEW_REQUIRED",
+      supplyClass: supplyClassFor(def, conn),
       authClass: bestAuthClass(def, conn),
       credentialSource: conn?.credentialSource ?? "NONE",
       connected: conn?.connected === true,
@@ -559,6 +580,34 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
 }
 
 /**
+ * The economic source of a route's capacity (RC-5). More precise than "connected" or
+ * `freeAccess.class`: an OpenRouter key sitting in a dev's environment is OWNER_DEV_FREE supply
+ * even though the provider product legitimately offers $0 routes, and the hosted first-party
+ * gateway is PURE_MANAGED_FREE regardless of what credential shape its session uses.
+ */
+export function supplyClassFor(
+  def: ProviderDefinition | undefined,
+  conn: Pick<ProviderConnectionState, "credentialSource" | "connected"> | undefined,
+): SupplyClass | undefined {
+  if (def?.userConnectedFree) return def.userConnectedFree.supplyClass;
+  if (conn?.credentialSource === "FDS_GATEWAY" || def?.apiStyle === "hosted" || def?.kind === "fds-gateway") {
+    return "PURE_MANAGED_FREE";
+  }
+  if (conn?.credentialSource === "ENVIRONMENT") return "OWNER_DEV_FREE";
+  if (conn?.connected && conn.credentialSource !== "NONE") return "USER_CONNECTED_FREE";
+  switch (def?.freeAccess.class) {
+    case "PAID_API": return "PAID";
+    case "PROMOTIONAL_CREDIT": return "PROMOTIONAL_FREE";
+    case "FREE_DEV_ENDPOINT": return "OWNER_DEV_FREE";
+    case "FREE_PRODUCT_ONLY": return "PURE_MANAGED_FREE";
+    case "UNAVAILABLE":
+    case "LEGAL_REVIEW_REQUIRED":
+    case undefined: return undefined;
+    default: return "USER_CONNECTED_FREE";
+  }
+}
+
+/**
  * A route counts as free only when BOTH the provider's access class is zero-cash AND the route's
  * own ForgeZero access class is free (a paid model on a free-capable gateway is still paid).
  */
@@ -570,11 +619,16 @@ function isFreeRoute(r: ProviderRouteView): boolean {
 
 /**
  * User-facing category derived ONLY from CodeForge qualification evidence (R1 §166): no numeric
- * marketing scores, and no verdict at all before 8-Bit has tested the model.
+ * marketing scores, and no verdict at all before 8-Bit has tested the model. RC-6: qualification
+ * is a capability verdict, not a runnable verdict — "Recommended" additionally requires the model
+ * to be runnable right now, or a user sees "Recommended" on a model that cannot execute.
  */
 function categoryFor(view: Omit<CanonicalModelView, "category" | "freeBadge">): ModelCategory {
   if (view.readiness === "PAID_BYOK") return "Paid";
-  if (view.qualificationState === "QUALIFIED" && view.roles.includes("PRIMARY_CODING_AGENT")) return "Recommended";
+  const runnable = view.readiness === "FREE_AVAILABLE";
+  if (view.qualificationState === "QUALIFIED" && view.roles.includes("PRIMARY_CODING_AGENT")) {
+    return runnable ? "Recommended" : "Strong";
+  }
   if (view.qualificationState === "QUALIFIED") return "Strong";
   if (view.qualificationState === "PROBATION") return (view.contextWindow ?? 0) < 64_000 ? "Fast" : "Strong";
   if (view.qualificationState === "NOT_QUALIFIED" || view.qualificationState === "HARD_FAILURE") return "Experimental";
@@ -742,6 +796,7 @@ function compareModels(a: CanonicalModelView, b: CanonicalModelView): number {
 
 function summarize(models: CanonicalModelView[], routes: ProviderRouteView[], connections: ProviderConnectionState[]): FreeCloudSummary {
   const freeRoutes = routes.filter(isFreeRoute);
+  const qualifiedPrimary = (m: CanonicalModelView) => m.qualificationState === "QUALIFIED" && m.roles.includes("PRIMARY_CODING_AGENT");
   return {
     canonicalModels: models.length,
     verifiedFreeModels: models.filter((m) => m.routes.some((r) => isFreeRoute(r) && r.verifiedFree)).length,
@@ -752,6 +807,12 @@ function summarize(models: CanonicalModelView[], routes: ProviderRouteView[], co
     primaryCodingModels: models.filter((m) => m.forgeAutoEligible && m.roles.includes("PRIMARY_CODING_AGENT")).length,
     paidRoutesExcluded: routes.filter((r) => !isFreeRoute(r)).length,
     sameModelMultiProviderModels: models.filter((m) => new Set(m.routes.filter(isFreeRoute).map((r) => r.providerId)).size > 1).length,
+    runnableFreeModels: models.filter((m) => m.readiness === "FREE_AVAILABLE").length,
+    qualifiedPrimaryCodingModels: models.filter(qualifiedPrimary).length,
+    recommendedModels: models.filter((m) => qualifiedPrimary(m) && m.readiness === "FREE_AVAILABLE").length,
+    managedFreeRoutes: freeRoutes.filter((r) => r.supplyClass === "PURE_MANAGED_FREE").length,
+    userOwnedFreeRoutes: freeRoutes.filter((r) => r.supplyClass === "USER_CONNECTED_FREE" || r.supplyClass === "DISTRIBUTED_USER_FREE").length,
+    ownerDevFreeRoutes: freeRoutes.filter((r) => r.supplyClass === "OWNER_DEV_FREE").length,
   };
 }
 

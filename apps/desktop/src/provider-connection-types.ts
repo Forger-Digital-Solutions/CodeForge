@@ -1,3 +1,4 @@
+import type { SupplyClass } from "@codeforge/forge-zero";
 import type {
   AuthClass,
   CredentialSource,
@@ -52,6 +53,8 @@ export interface ProviderConnectionView {
   docsUrl?: string;
   connected: boolean;
   credentialSource: CredentialSource;
+  /** Economic source of this connection's capacity (RC-5): managed product supply vs the user's own account vs dev-owner keys. */
+  supplyClass?: SupplyClass;
   environmentVariable?: string;
   authState: ProviderConnectionState["authState"];
   planAttested: boolean;

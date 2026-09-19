@@ -252,26 +252,28 @@ export interface ForgeZeroTrustStatus {
  * fails closed to a truthful "not verified" state rather than defaulting to green.
  */
 export function resolveForgeZeroTrust(selectedModelId: string | null, selected: ApiModel | undefined, autoAvailable = false, discovering = false): ForgeZeroTrustStatus {
+  // RC-6: the badge is user-facing — it carries the product name (ForgeAuto/Free), not the
+  // internal engine name (ForgeZero) a first-run user cannot know.
   if (selectedModelId === "auto") {
-    if (autoAvailable) return { verifiedFree: true, label: "ForgeZero · Verified Free", detail: "ForgeAuto/Free · Automatic free routing" };
+    if (autoAvailable) return { verifiedFree: true, label: "ForgeAuto/Free · Verified Free", detail: "ForgeAuto/Free · Automatic free routing" };
     // While a connected provider's catalog is still being verified, "no route" is not yet a fact.
-    if (discovering) return { verifiedFree: false, label: "ForgeZero · Discovering free routes…", detail: "Verifying connected providers' live catalogs" };
-    return { verifiedFree: false, label: "ForgeZero · No Free Route", detail: "ForgeAuto/Free has no eligible provider right now" };
+    if (discovering) return { verifiedFree: false, label: "ForgeAuto/Free · Discovering free routes…", detail: "Verifying connected providers' live catalogs" };
+    return { verifiedFree: false, label: "ForgeAuto/Free · No Free Route", detail: "ForgeAuto/Free has no eligible provider right now" };
   }
   if (!selected) {
-    return { verifiedFree: false, label: "ForgeZero · Unverified", detail: "No model selection recognized" };
+    return { verifiedFree: false, label: "ForgeAuto/Free · Unverified", detail: "No model selection recognized" };
   }
   if (selected.tier === "gems_paid") {
-    return { verifiedFree: false, label: "ForgeZero · Paid (GEMS)", detail: `${selected.displayName} is a first-party paid model` };
+    return { verifiedFree: false, label: "ForgeAuto/Free · Paid (GEMS)", detail: `${selected.displayName} is a first-party paid model` };
   }
   if (selected.tier === "paid-auto") {
-    return { verifiedFree: false, label: "ForgeZero · Paid Auto", detail: `${selected.displayName} is commercial; Paid Auto state: ${selected.paidAutoState ?? "unknown"}` };
+    return { verifiedFree: false, label: "ForgeAuto/Free · Paid Auto", detail: `${selected.displayName} is commercial; Paid Auto state: ${selected.paidAutoState ?? "unknown"}` };
   }
   const verified = selected.eligible === true && selected.freeStatus === "verified_free" && selected.costProfile?.isFree === true;
   if (verified) {
-    return { verifiedFree: true, label: "ForgeZero · Verified Free", detail: `${selected.displayName} · verified $0` };
+    return { verifiedFree: true, label: "ForgeAuto/Free · Verified Free", detail: `${selected.displayName} · verified $0` };
   }
-  return { verifiedFree: false, label: "ForgeZero · Billing May Apply", detail: `${selected.displayName} is not a verified-free route` };
+  return { verifiedFree: false, label: "ForgeAuto/Free · Billing May Apply", detail: `${selected.displayName} is not a verified-free route` };
 }
 
 export interface RuntimeLabel {
@@ -394,10 +396,10 @@ export function buildCanonicalModelSections(snapshot: FreeCloudView, apiModels: 
 
 /** Trust badge for a canonical selection: verified free only when a free route is executable now. */
 export function resolveCanonicalTrust(model: CanonicalModelView | undefined): ForgeZeroTrustStatus {
-  if (!model) return { verifiedFree: false, label: "ForgeZero · Unverified", detail: "No model selection recognized" };
+  if (!model) return { verifiedFree: false, label: "ForgeAuto/Free · Unverified", detail: "No model selection recognized" };
   if (model.readiness === "FREE_AVAILABLE") {
-    return { verifiedFree: true, label: "ForgeZero · Verified Free", detail: `${model.displayName} · ${model.healthyFreeRouteCount || model.routes.filter((r) => r.executable).length} verified $0 route(s)` };
+    return { verifiedFree: true, label: "ForgeAuto/Free · Verified Free", detail: `${model.displayName} · ${model.healthyFreeRouteCount || model.routes.filter((r) => r.executable).length} verified $0 route(s)` };
   }
-  if (model.readiness === "PAID_BYOK") return { verifiedFree: false, label: "ForgeZero · Billing May Apply", detail: `${model.displayName} runs on your own paid provider credential` };
-  return { verifiedFree: false, label: "ForgeZero · No Free Route", detail: `${model.displayName} has no executable free route right now` };
+  if (model.readiness === "PAID_BYOK") return { verifiedFree: false, label: "ForgeAuto/Free · Billing May Apply", detail: `${model.displayName} runs on your own paid provider credential` };
+  return { verifiedFree: false, label: "ForgeAuto/Free · No Free Route", detail: `${model.displayName} has no executable free route right now` };
 }

@@ -17,6 +17,7 @@ import {
   buildFreeCloudSnapshot,
   evaluateAdmission,
   parseRouteQuota,
+  supplyClassFor,
   FreeCloudService,
   NormalizedModelRegistry,
   type ProviderConnectionState,
@@ -373,6 +374,49 @@ describe("free cloud snapshot", () => {
     expect(route.executable).toBe(false);
     expect(route.forgeAutoEligible).toBe(false);
     expect(snap.models[0]!.readiness).toBe("FREE_TEMPORARILY_UNAVAILABLE");
+    // RC-6: capability-qualified is not runnable — a quota-exhausted QUALIFIED+PRIMARY model
+    // must never present as "Recommended" (the DeepSeek smoke defect).
+    expect(snap.models[0]!.category).toBe("Strong");
+    expect(snap.summary.qualifiedPrimaryCodingModels).toBe(1);
+    expect(snap.summary.recommendedModels).toBe(0);
+    expect(snap.summary.runnableFreeModels).toBe(0);
+  });
+
+  it("labels each route with the economic supply class of its capacity (RC-5)", () => {
+    const { fw, qualification } = build();
+    const snap = buildFreeCloudSnapshot({
+      firewall: fw,
+      connections: [
+        connected("groq", { planAttested: true }),
+        // The smoke defect: a provider key living in a developer's environment is
+        // OWNER_DEV_FREE supply, not product managed-free capacity.
+        connected("openrouter", { credentialSource: "ENVIRONMENT", environmentVariable: "OPENROUTER_API_KEY" }),
+      ],
+      qualification,
+      now: () => NOW,
+    });
+    const gptOss = snap.models.find((m) => m.canonicalId === "openai/gpt-oss-120b")!;
+    const supplyByProvider = new Map(gptOss.routes.map((r) => [r.providerId, r.supplyClass]));
+    expect(supplyByProvider.get("groq")).toBe("USER_CONNECTED_FREE");
+    expect(supplyByProvider.get("openrouter")).toBe("OWNER_DEV_FREE");
+
+    // The hosted first-party gateway is managed product supply regardless of credential shape.
+    expect(supplyClassFor(PROVIDER_DEFINITIONS["codeforge-cloud"], undefined)).toBe("PURE_MANAGED_FREE");
+    expect(supplyClassFor(PROVIDER_DEFINITIONS["codeforge-cloud"], { credentialSource: "FDS_GATEWAY", connected: true })).toBe("PURE_MANAGED_FREE");
+    // Paid and unverifiable providers never masquerade as free supply.
+    expect(supplyClassFor(PROVIDER_DEFINITIONS.openai, connected("openai"))).toBe("USER_CONNECTED_FREE");
+    expect(supplyClassFor(PROVIDER_DEFINITIONS.openai, undefined)).toBe("PAID");
+    expect(supplyClassFor(undefined, undefined)).toBeUndefined();
+
+    const summary = snap.summary;
+    expect(summary.userOwnedFreeRoutes).toBeGreaterThanOrEqual(1);
+    expect(summary.ownerDevFreeRoutes).toBeGreaterThanOrEqual(1);
+    expect(summary.managedFreeRoutes).toBe(0);
+    // Runnable is a strict subset of qualified in this snapshot: all three free models run
+    // (groq + env-connected openrouter routes), but only the QUALIFIED+PRIMARY one recommends.
+    expect(summary.recommendedModels).toBeLessThanOrEqual(summary.qualifiedPrimaryCodingModels);
+    expect(summary.runnableFreeModels).toBe(3);
+    expect(summary.recommendedModels).toBe(1);
   });
 
   it("does not report an unaccepted Gemini route as executable", () => {
