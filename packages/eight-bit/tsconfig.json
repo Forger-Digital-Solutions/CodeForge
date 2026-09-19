@@ -15,6 +15,7 @@
     { "path": "../sessions" },
     { "path": "../forge-green" },
     { "path": "../context" },
-    { "path": "../providers" }
+    { "path": "../providers" },
+    { "path": "../intelligence" }
   ]
 }
