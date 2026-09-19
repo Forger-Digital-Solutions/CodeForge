@@ -37,6 +37,7 @@ const requiredMarkers = {
     'PACKAGED_STARTUP=PASS', 'FORGEGREEN_RUNTIME=PASS', 'EIGHT_BIT_RUNTIME=PASS', 'CLOUD_DB_PACKAGED_RUNTIME=PASS', 'PACKAGED_FULL_SMOKE_OK',
     // Renderer startup chain stamped by the renderer itself (renderer/lifecycle.ts).
     'packaged_renderer_lifecycle_chain=PASS',
+    'packaged_zero_prompt_workflow=PASS',
     'packaged_failure_repair_pass=PASS', 'packaged_renderer_reload_count=5', 'packaged_renderer_reload=PASS', 'credential_plaintext_absent=PASS',
     // Local control-plane trust boundary: bearer never reaches the renderer, main authenticates the
     // primary document, everything else (no/wrong bearer, forged origin, secondary renderer) fails closed.

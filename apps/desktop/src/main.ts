@@ -1538,12 +1538,14 @@ async function waitForCondition(check: () => Promise<boolean>, timeoutMs = 10_00
   throw new Error(`Timed out waiting for packaged smoke ${label}`);
 }
 
-async function waitForTask(taskId: string, sessionId: string, resolveApprovals: boolean): Promise<{ phase: string; status: string; error?: string }> {
+async function waitForTask(taskId: string, sessionId: string, resolveApprovals: boolean): Promise<{ phase: string; status: string; error?: string; approvalsResolved: number }> {
   const deadline = Date.now() + 30_000;
+  let approvalsResolved = 0;
   while (Date.now() < deadline) {
     if (resolveApprovals) {
       const snapshot = await apiJson(`/api/sessions/${sessionId}`);
       for (const approval of snapshot.body?.pendingApprovals ?? []) {
+        approvalsResolved += 1;
         smokeRecord(`RESOLVING_APPROVAL_${approval.approvalId}`);
         await apiJson(`/api/approvals/${approval.approvalId}/resolve`, {
           method: "POST",
@@ -1556,7 +1558,7 @@ async function waitForTask(taskId: string, sessionId: string, resolveApprovals: 
     const task = workflow.body?.task as { phase: string; status: string; error?: string; summary?: string };
     if (task && ["completed", "failed", "cancelled", "blocked"].includes(task.phase)) {
       smokeRecord(`TASK_TERMINAL_PHASE_${task.phase}_SUMMARY_${task.summary ?? ""}_ERROR_${task.error ?? ""}`);
-      return task;
+      return { ...task, approvalsResolved };
     }
     await delay(100);
   }
@@ -1820,6 +1822,11 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   const session = await apiJson("/api/sessions/default");
   const repairingSeen = JSON.stringify(session.body.events).includes("repairing");
   if (!repairingSeen) throw new Error("Packaged workflow did not traverse bounded repair");
+  // Default authority (auto_review + Plan: Auto): a routine fix-and-verify run must never
+  // surface an approval. waitForTask still resolves stragglers defensively, so a non-zero
+  // count here means the trust-boundary policy regressed.
+  if (terminal.approvalsResolved !== 0) throw new Error(`Packaged routine workflow surfaced ${terminal.approvalsResolved} approval(s)`);
+  smokeRecord("packaged_zero_prompt_workflow=PASS");
   smokeRecord("packaged_workflow=PASS");
   smokeRecord("packaged_failure_repair_pass=PASS");
   await capturePackagedSmokeScreenshot("03-workflow-completed");
@@ -1925,6 +1932,14 @@ async function runPackagedInterruptionSmoke(): Promise<void> {
     const restored = await evaluateRenderer<string>("document.body.innerText");
     return restored.toLowerCase().includes("completed");
   });
+  // The interruption is meant to catch the run parked at the plan-approval gate; under the
+  // default Plan: Auto authority there is no park, so this session opts into review_first.
+  const authority = await apiJson("/api/sessions/packaged-interrupt/authority", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ planMode: "review_first" }),
+  });
+  if (authority.status !== 200) throw new Error(`Interrupt session authority update returned ${authority.status}`);
   const workflow = await rendererWorkflowRequest({
     sessionId: "packaged-interrupt",
     message: "Implement multi file feature for restart interruption",
