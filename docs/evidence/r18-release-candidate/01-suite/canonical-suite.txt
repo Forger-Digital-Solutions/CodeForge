@@ -1,0 +1,30 @@
+ [32m✓[39m packages/ui/test/user-intent-hold.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/workflow/test/failure-analyzer.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/context/test/fg3-budget.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/tools/test/role-boundary.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+[90mstdout[2m | packages/eight-bit/test/policy-metadata.test.ts[2m > [22m[2m8-Bit provider policy metadata[2m > [22m[2mreports policy metadata without treating it as acceptance
+[22m[39m[qualification] Qualifying google/gemini-2.5-flash for roles: 
+
+ [32m✓[39m packages/eight-bit/test/policy-metadata.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/gems/test/auto-framework.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/cloud-docker-build-order.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m apps/desktop/test/cloud-catalog-sync.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m apps/desktop/test/renderer-csp.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/server/test/tool-args-parse.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m apps/desktop/test/cloud-account-offline.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [2m[90m↓[39m[22m tests/migration-namespace-collision.test.ts [2m([22m[2m7 tests[22m[2m | [22m[33m7 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m tests/fg1-postgres-ledger.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m packages/server/test/cf17-pg-restart-e2e.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m packages/eight-bit/test/postgres.test.ts [2m([22m[2m2 tests[22m[2m | [22m[33m2 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m tests/cloud-postgres-adversarial.test.ts [2m([22m[2m14 tests[22m[2m | [22m[33m14 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m packages/server/test/fg7-postgres-persistence.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m packages/server/test/hosted-workflow-postgres-r4.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+
+[2m Test Files [22m [1m[32m383 passed[39m[22m[2m | [22m[33m7 skipped[39m[90m (390)[39m
+[2m      Tests [22m [1m[32m2974 passed[39m[22m[2m | [22m[33m36 skipped[39m[90m (3010)[39m
+[2m   Start at [22m 21:23:36
+[2m   Duration [22m 362.21s[2m (tests 91%, import 8%, transform 1%)[22m
+
+[2m    Isolate [22m [33m390 workers spawned[39m[2m · ~225ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~14.40s faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+

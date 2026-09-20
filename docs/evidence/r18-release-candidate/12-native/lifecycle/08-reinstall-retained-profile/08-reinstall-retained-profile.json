@@ -1,0 +1,288 @@
+{
+  "schemaVersion": 1,
+  "label": "08-reinstall-retained-profile",
+  "startedAtUtc": "2026-09-20T01:58:59.3974077Z",
+  "profileDirectory": "C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop",
+  "freshProfile": false,
+  "checks": {
+    "rendererDevTools": {
+      "status": "PASS",
+      "detail": "DevTools target available 4605 ms after process start."
+    },
+    "firstFrame": {
+      "status": "PASS",
+      "detail": "Renderer first frame at +443 ms from document start (DevTools at +4605 ms from process start)."
+    },
+    "consoleErrors": {
+      "status": "PASS",
+      "detail": "No renderer console errors or exceptions during the observation window."
+    },
+    "unnamedControls": {
+      "status": "PASS",
+      "detail": "Every visible control has an accessible name."
+    },
+    "layoutOverflow": {
+      "status": "PASS",
+      "detail": "No horizontal overflow; no controls outside the viewport."
+    },
+    "mainWindowVisible": {
+      "status": "PASS",
+      "detail": "A visible top-level 'CodeForge' window exists (1400x816 at 68,24)."
+    },
+    "idleCpu": {
+      "status": "PASS",
+      "detail": "Idle CPU 0% of the machine over 5 s (12 cores); RSS 588 MB across 3 processes."
+    },
+    "gracefulExit": {
+      "status": "PASS",
+      "detail": "Whole process tree exited 2251 ms after WM_CLOSE (root exit code 0)."
+    },
+    "strayProcesses": {
+      "status": "PASS",
+      "detail": "No CodeForge processes remain after close."
+    },
+    "runtimeMetadataCleared": {
+      "status": "PASS",
+      "detail": "runtime.json was removed on clean exit."
+    },
+    "noConsoleWindows": {
+      "status": "PASS",
+      "detail": "No console/terminal window appeared during the run (519 samples)."
+    }
+  },
+  "executable": {
+    "path": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe",
+    "fileName": "CodeForge.exe",
+    "sizeBytes": 246415872,
+    "lastWriteUtc": "2026-09-20T01:49:10.0000000Z",
+    "sha256": "82B72B3E83E7617DF3B5F5FEB89C010CE00817662E2913DB4F46E52BBD27DFBC",
+    "architecture": "x64",
+    "productName": "CodeForge",
+    "productVersion": "0.4.0.0",
+    "fileVersion": "0.4.0",
+    "companyName": "CodeForge Team",
+    "fileDescription": "CodeForge",
+    "legalCopyright": "Copyright © 2026 CodeForge Team",
+    "signatureStatus": "NotSigned",
+    "signerSubject": null
+  },
+  "pid": 23796,
+  "cdpReadyMs": 4605,
+  "lifecycle": {
+    "timeOrigin": 1789869545868.3,
+    "marks": {
+      "bootstrap": 1789869546225,
+      "root-mounted": 1789869546310,
+      "first-frame": 1789869546311
+    },
+    "relativeMs": {
+      "bootstrap": 357,
+      "root-mounted": 442,
+      "first-frame": 443
+    },
+    "navigation": {
+      "domContentLoaded": 366,
+      "loadEvent": 366
+    },
+    "readyState": "complete",
+    "title": "CodeForge",
+    "url": "file:///C:/Users/Daddy_FDS/AppData/Local/Programs/CodeForge/resources/app.asar/apps/desktop/dist/renderer/index.html"
+  },
+  "bodyText": "CODEFORGE\nYour AI coding agent.\n\nBuild, fix, and understand software with an agent that works directly with your project.\n\nCodeForge can explore your codebase, edit files, run commands and tests, and show you exactly what it changed.\n\nStart free with CodeForge-managed AI models. No API key required.\n\nIΓÇÖm 18 or older and understand that CodeForge can read and modify project files and run commands on this computer according to my approval settings.\nContinue with GitHub\n\nGitHub sign-in creates your free CodeForge account. Connect repositories or your own AI providers later if you want ΓÇö neither is required to start using CodeForge Free.",
+  "screenshot": "G:\\CodeForge\\docs\\evidence\\r18-release-candidate\\12-native\\lifecycle\\08-reinstall-retained-profile\\08-reinstall-retained-profile.png",
+  "console": null,
+  "accessibility": {
+    "controls": 2,
+    "unnamedControls": [],
+    "unnamedCount": 0,
+    "smallTargets": [],
+    "smallTargetCount": 0,
+    "imagesWithoutAlt": 0,
+    "landmarks": [
+      "MAIN"
+    ],
+    "lang": "en",
+    "title": "CodeForge"
+  },
+  "overflow": {
+    "viewport": [
+      1388,
+      781
+    ],
+    "scroll": [
+      1388,
+      781
+    ],
+    "horizontalOverflow": false,
+    "verticalOverflow": false,
+    "offscreenControls": [],
+    "offscreenCount": 0
+  },
+  "metrics": {
+    "Timestamp": 97143.186419,
+    "AudioHandlers": 0,
+    "AudioWorkletProcessors": 0,
+    "Documents": 2,
+    "Frames": 1,
+    "JSEventListeners": 147,
+    "LayoutObjects": 54,
+    "MediaKeySessions": 0,
+    "MediaKeys": 0,
+    "Nodes": 79,
+    "Resources": 4,
+    "ContextLifecycleStateObservers": 2,
+    "V8PerContextDatas": 2,
+    "WorkerGlobalScopes": 0,
+    "UACSSResources": 0,
+    "RTCPeerConnections": 0,
+    "ResourceFetchers": 2,
+    "AdSubframes": 0,
+    "DetachedScriptStates": 0,
+    "ArrayBufferContents": 0,
+    "LayoutCount": 0,
+    "RecalcStyleCount": 0,
+    "LayoutDuration": 0,
+    "RecalcStyleDuration": 0,
+    "DevToolsCommandDuration": 6.3E-05,
+    "ScriptDuration": 0,
+    "V8CompileDuration": 0,
+    "TaskDuration": 7E-05,
+    "TaskOtherDuration": 7E-06,
+    "ThreadTime": 0.000223,
+    "ProcessTime": 0.509524,
+    "JSHeapUsedSize": 4153696,
+    "JSHeapTotalSize": 7340032,
+    "FirstMeaningfulPaint": 97131.552406,
+    "DomContentLoaded": 97130.804936,
+    "NavigationStart": 97130.439245
+  },
+  "processTree": [
+    {
+      "pid": 23796,
+      "parentPid": 38596,
+      "name": "CodeForge.exe",
+      "workingSetBytes": 389541888,
+      "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --remote-debugging-port=9231"
+    },
+    {
+      "pid": 29260,
+      "parentPid": 23796,
+      "name": "CodeForge.exe",
+      "workingSetBytes": 90390528,
+      "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --use-angle=d3d11-warp-webgl --use-gl=angle --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop\" --field-trial-handle=2456,i,9286709367182538686,10576902777294403666,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2460,i,13014722780707371895,14352607216984370762,4 --trace-process-track-uuid=3190708989122997041 --mojo-platform-channel-handle=2452 /prefetch:11"
+    },
+    {
+      "pid": 24952,
+      "parentPid": 23796,
+      "name": "CodeForge.exe",
+      "workingSetBytes": 135057408,
+      "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=renderer --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop\" --app-path=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\resources\\app.asar\" --enable-sandbox --remote-debugging-port=9231 --disable-gpu-compositing --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=2.5 --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=4 --launch-time-ticks=97128097032 --field-trial-handle=2456,i,9286709367182538686,10576902777294403666,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2460,i,13014722780707371895,14352607216984370762,4 --trace-process-track-uuid=3190708990060038890 --mojo-platform-channel-handle=2948 /prefetch:1"
+    }
+  ],
+  "windows": [
+    {
+      "handle": 58656972,
+      "pid": 23796,
+      "className": "Chrome_WidgetWin_1",
+      "title": "CodeForge",
+      "visible": true,
+      "left": 68,
+      "top": 24,
+      "width": 1400,
+      "height": 816
+    }
+  ],
+  "idleResources": {
+    "sampleSeconds": 5.0,
+    "logicalCores": 12,
+    "totalCpuPercentOfMachine": 0.0,
+    "totalWorkingSetBytes": 616587264,
+    "totalPrivateBytes": 303599616,
+    "processes": [
+      {
+        "pid": 23796,
+        "kind": "main",
+        "cpuPercentOfMachine": 0.0,
+        "workingSetBytes": 389554176,
+        "privateBytes": 251916288,
+        "handles": 1177,
+        "threads": 54
+      },
+      {
+        "pid": 29260,
+        "kind": "utility",
+        "cpuPercentOfMachine": 0.0,
+        "workingSetBytes": 90390528,
+        "privateBytes": 12500992,
+        "handles": 331,
+        "threads": 23
+      },
+      {
+        "pid": 24952,
+        "kind": "renderer",
+        "cpuPercentOfMachine": 0.0,
+        "workingSetBytes": 136642560,
+        "privateBytes": 39182336,
+        "handles": 289,
+        "threads": 14
+      }
+    ]
+  },
+  "shutdown": {
+    "method": "WM_CLOSE",
+    "processTreeBefore": [
+      {
+        "pid": 23796,
+        "parentPid": 38596,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 389554176,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --remote-debugging-port=9231"
+      },
+      {
+        "pid": 29260,
+        "parentPid": 23796,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 90390528,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --use-angle=d3d11-warp-webgl --use-gl=angle --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop\" --field-trial-handle=2456,i,9286709367182538686,10576902777294403666,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2460,i,13014722780707371895,14352607216984370762,4 --trace-process-track-uuid=3190708989122997041 --mojo-platform-channel-handle=2452 /prefetch:11"
+      },
+      {
+        "pid": 24952,
+        "parentPid": 23796,
+        "name": "CodeForge.exe",
+        "workingSetBytes": 136642560,
+        "commandLine": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\CodeForge.exe\" --type=renderer --user-data-dir=\"C:\\Users\\Daddy_FDS\\AppData\\Roaming\\codeforge-desktop\" --app-path=\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge\\resources\\app.asar\" --enable-sandbox --remote-debugging-port=9231 --disable-gpu-compositing --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=2.5 --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=4 --launch-time-ticks=97128097032 --field-trial-handle=2456,i,9286709367182538686,10576902777294403666,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=2460,i,13014722780707371895,14352607216984370762,4 --trace-process-track-uuid=3190708990060038890 --mojo-platform-channel-handle=2948 /prefetch:1"
+      }
+    ],
+    "exitedWithinGraceMs": true,
+    "exitMs": 2251,
+    "rootExitCode": 0,
+    "survivorsForceKilled": []
+  },
+  "consoleWindows": {
+    "samples": 519,
+    "consoleWindowsSeen": []
+  },
+  "tempDiff": {
+    "added": [],
+    "removed": []
+  },
+  "stdoutTail": [
+    "",
+    "[CodeForge] cloud endpoint channel=development cloud=http://127.0.0.1:3220 overridden=false (no override set)",
+    "CodeForge server running at http://localhost:51916",
+    "[CodeForge] quit: stopping local runtime",
+    "[CodeForge] quit: local runtime stopped, quitting"
+  ],
+  "stderrTail": [
+    "",
+    "DevTools listening on ws://127.0.0.1:9231/devtools/browser/27d535e2-394e-4378-a4bf-c70176c98b65",
+    "[CodeForge] quit: process still alive 2000ms after app.quit(); exiting"
+  ],
+  "completedAtUtc": "2026-09-20T01:59:34.0005363Z",
+  "summary": {
+    "fail": 0,
+    "warn": 0,
+    "pass": 11,
+    "verdict": "PASS"
+  }
+}
