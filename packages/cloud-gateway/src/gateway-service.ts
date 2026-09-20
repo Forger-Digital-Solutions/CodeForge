@@ -81,6 +81,14 @@ export class GatewayService {
   }
 
   /**
+   * Whether the live adapter for this route transmits a caller-supplied dispatch identity as a
+   * provider dedupe key. When false the runtime must treat post-dispatch recovery as ambiguous.
+   */
+  supportsDispatchIdentity(providerId: string): boolean {
+    return this.firewallManager.providerCatalog.get(providerId)?.supportsDispatchIdentity === true;
+  }
+
+  /**
    * Admission-time authority: kill switches, spend ceiling, entitlement, ForgeZero model
    * selection, provider policy, and cost ceiling. Pure — throws on denial, emits no events, so
    * it is safe to run inside a durable enqueue path before any stream exists.
@@ -253,6 +261,7 @@ export class GatewayService {
     resolution: HostedRouteResolution,
     onEvent: (event: HostedStreamEvent) => void,
     signal?: AbortSignal,
+    dispatchId?: string,
   ): Promise<HostedInferenceOutcome> {
     const messageId = randomUUID();
     const turnId = request.turnId ?? randomUUID();
@@ -313,6 +322,7 @@ export class GatewayService {
             messages: request.messages,
             ...(request.tools?.length ? { tools: request.tools } : {}),
             maxTokens: Math.min(request.maxTokens ?? 2000, MAX_HOSTED_OUTPUT_TOKENS),
+            ...(dispatchId ? { dispatchId } : {}),
           },
           combinedSignal,
         )) {

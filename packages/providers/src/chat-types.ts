@@ -55,6 +55,11 @@ export const ChatRequestSchema = z.object({
    * simply ignore the field — no adapter may invent fallback behavior it cannot actually
    * perform. Absent/empty means "no provider-native fallback for this request". */
   fallbackModels: z.array(z.string()).optional(),
+  /** Stable provider-visible dedupe key for this dispatch attempt, set by the hosted runtime only
+   * when the adapter declares `supportsDispatchIdentity`. Adapters that declare support MUST
+   * transmit it as the provider's idempotency key so a retried dispatch dedupes server-side;
+   * adapters that do not must ignore it — it is never a credential or prompt payload. */
+  dispatchId: z.string().optional(),
 });
 export type ChatRequest = z.infer<typeof ChatRequestSchema>;
 

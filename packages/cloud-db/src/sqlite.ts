@@ -1,5 +1,6 @@
 import { createRequire } from "node:module";
 import { randomUUID } from "node:crypto";
+import { EventEmitter } from "node:events";
 import { MIGRATIONS, DEFAULT_PLANS } from "./migrations.js";
 import type { ICloudDatabase } from "./interface.js";
 import type {
@@ -41,6 +42,11 @@ import type {
   HostedCapacityLeaseRecord,
   HostedAdmissionReceiptRecord,
   HostedAdmissionMetrics,
+  HostedExecutionStatus,
+  HostedFanOutLimits,
+  HostedExecutionEvent,
+  HostedExecutionEventSubscription,
+  HostedExecutionTreeStats,
 } from "./types.js";
 
 const require_ = createRequire(import.meta.url);
@@ -178,6 +184,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
   }
 
   async close(): Promise<void> {
+    this.hostedEventEmitter.removeAllListeners();
     try {
       this.db.close();
     } catch {}
@@ -1262,6 +1269,8 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       terminalAt: row.terminal_at ? String(row.terminal_at) : null,
       parentExecutionId: row.parent_execution_id ? String(row.parent_execution_id) : null,
       rootExecutionId: row.root_execution_id ? String(row.root_execution_id) : null,
+      depth: Number(row.depth ?? 0),
+      providerDispatchId: row.provider_dispatch_id != null ? String(row.provider_dispatch_id) : null,
       createdAt: String(row.created_at),
       updatedAt: String(row.updated_at),
     };
@@ -1289,7 +1298,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     });
   }
 
-  async enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string; requestPayload?: string; parentExecutionId?: string; rootExecutionId?: string }): Promise<{ execution: HostedExecutionRecord; created: boolean }> {
+  async enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string; requestPayload?: string; parentExecutionId?: string; rootExecutionId?: string; fanOutLimits?: HostedFanOutLimits }): Promise<{ execution: HostedExecutionRecord; created: boolean }> {
     return this.txSync(() => {
       const existing = this.db.prepare(`SELECT * FROM hosted_executions WHERE idempotency_key = @idempotencyKey`).get({ idempotencyKey: params.idempotencyKey }) as Record<string, unknown> | undefined;
       if (existing) {
@@ -1298,15 +1307,39 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
         return { execution: this.mapHostedExecutionRow(existing), created: false };
       }
       let rootExecutionId = params.rootExecutionId ?? null;
+      let depth = 0;
       if (params.parentExecutionId) {
-        const parent = this.db.prepare(`SELECT user_id, status, root_execution_id FROM hosted_executions WHERE id = @id`).get({ id: params.parentExecutionId }) as Record<string, unknown> | undefined;
+        const parent = this.db.prepare(`SELECT user_id, status, root_execution_id, depth FROM hosted_executions WHERE id = @id`).get({ id: params.parentExecutionId }) as Record<string, unknown> | undefined;
         if (!parent) throw new Error("Parent hosted execution not found");
         if (String(parent.user_id) !== params.userId) throw new Error("Parent hosted execution belongs to another user account");
         if (["completed", "failed", "cancelled"].includes(String(parent.status))) throw new Error("Parent hosted execution is already terminal");
-        rootExecutionId = rootExecutionId ?? (parent.root_execution_id ? String(parent.root_execution_id) : params.parentExecutionId);
+        const authoritativeRoot = parent.root_execution_id ? String(parent.root_execution_id) : params.parentExecutionId;
+        if (rootExecutionId !== null && rootExecutionId !== authoritativeRoot) throw new Error("rootExecutionId does not match the parent's authoritative root");
+        rootExecutionId = authoritativeRoot;
+        depth = Number(parent.depth ?? 0) + 1;
+        // Budget authority: the synchronous body makes the whole check-then-insert atomic — the
+        // same semantics the Postgres path gets from the parent/root row locks.
+        const limits = params.fanOutLimits;
+        if (limits) {
+          if (limits.maxDepth !== undefined && depth > limits.maxDepth) {
+            throw new Error(`Hosted execution fan-out budget exceeded: depth ${depth} exceeds limit ${limits.maxDepth}`);
+          }
+          if (limits.maxChildrenPerParent !== undefined) {
+            const siblings = this.db.prepare(`SELECT COUNT(*) AS count FROM hosted_executions WHERE parent_execution_id = @parentId`).get({ parentId: params.parentExecutionId }) as { count: number };
+            if (Number(siblings.count) >= limits.maxChildrenPerParent) {
+              throw new Error(`Hosted execution fan-out budget exceeded: parent already has ${limits.maxChildrenPerParent} children`);
+            }
+          }
+          if (limits.maxDescendantsPerRoot !== undefined && rootExecutionId) {
+            const descendants = this.db.prepare(`SELECT COUNT(*) AS count FROM hosted_executions WHERE root_execution_id = @rootId`).get({ rootId: rootExecutionId }) as { count: number };
+            if (Number(descendants.count) >= limits.maxDescendantsPerRoot) {
+              throw new Error(`Hosted execution fan-out budget exceeded: root already has ${limits.maxDescendantsPerRoot} descendants`);
+            }
+          }
+        }
       }
       const now = new Date().toISOString();
-      this.db.prepare(`INSERT INTO hosted_executions (id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, cancellation_requested, request_payload, parent_execution_id, root_execution_id, created_at, updated_at) VALUES (@id, @idempotencyKey, @userId, @taskId, @providerId, @modelId, 'queued', @priority, 0, @eligibleAt, 0, @requestPayload, @parentExecutionId, @rootExecutionId, @now, @now)`).run({ id: params.id, idempotencyKey: params.idempotencyKey, userId: params.userId, taskId: params.taskId, providerId: params.providerId, modelId: params.modelId, priority: params.priority ?? 0, eligibleAt: params.eligibleAt ?? now, requestPayload: params.requestPayload ?? null, parentExecutionId: params.parentExecutionId ?? null, rootExecutionId, now });
+      this.db.prepare(`INSERT INTO hosted_executions (id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, cancellation_requested, request_payload, parent_execution_id, root_execution_id, depth, created_at, updated_at) VALUES (@id, @idempotencyKey, @userId, @taskId, @providerId, @modelId, 'queued', @priority, 0, @eligibleAt, 0, @requestPayload, @parentExecutionId, @rootExecutionId, @depth, @now, @now)`).run({ id: params.id, idempotencyKey: params.idempotencyKey, userId: params.userId, taskId: params.taskId, providerId: params.providerId, modelId: params.modelId, priority: params.priority ?? 0, eligibleAt: params.eligibleAt ?? now, requestPayload: params.requestPayload ?? null, parentExecutionId: params.parentExecutionId ?? null, rootExecutionId, depth, now });
       this.insertHostedAdmissionReceipt({ executionId: params.id, userId: params.userId, eventType: "QUEUE_ENQUEUED", createdAt: now });
       const row = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @id`).get({ id: params.id }) as Record<string, unknown>;
       return { execution: this.mapHostedExecutionRow(row), created: true };
@@ -1379,14 +1412,15 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     });
   }
 
-  async markHostedExecutionDispatching(params: { executionId: string; workerId: string; leaseToken: string }): Promise<HostedExecutionRecord> {
+  async markHostedExecutionDispatching(params: { executionId: string; workerId: string; leaseToken: string; providerDispatchId?: string }): Promise<HostedExecutionRecord> {
     return this.txSync(() => {
       const row = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @executionId`).get({ executionId: params.executionId }) as Record<string, unknown> | undefined;
       if (!row || String(row.lease_owner) !== params.workerId || String(row.lease_token) !== params.leaseToken || String(row.status) !== "claimed") throw new Error("Execution is not claimed by this worker lease");
       const now = new Date().toISOString();
-      this.db.prepare(`UPDATE hosted_executions SET status = 'dispatching', dispatched_at = @now, updated_at = @now WHERE id = @executionId`).run({ executionId: params.executionId, now });
+      const providerDispatchId = params.providerDispatchId ?? (row.provider_dispatch_id != null ? String(row.provider_dispatch_id) : null);
+      this.db.prepare(`UPDATE hosted_executions SET status = 'dispatching', dispatched_at = @now, provider_dispatch_id = @providerDispatchId, updated_at = @now WHERE id = @executionId`).run({ executionId: params.executionId, now, providerDispatchId });
       this.insertHostedAdmissionReceipt({ executionId: params.executionId, userId: String(row.user_id), eventType: "DISPATCH_STARTED", workerId: params.workerId, createdAt: now });
-      return this.mapHostedExecutionRow({ ...row, status: "dispatching", dispatched_at: now, updated_at: now });
+      return this.mapHostedExecutionRow({ ...row, status: "dispatching", dispatched_at: now, provider_dispatch_id: providerDispatchId, updated_at: now });
     });
   }
 
@@ -1435,7 +1469,12 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
         if (childRow && String(childRow.user_id) === params.userId && cancelOne(String(child.id), true)) cancelledChildIds.push(String(child.id));
       }
       const updated = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @executionId`).get({ executionId: params.executionId }) as Record<string, unknown>;
-      return { execution: this.mapHostedExecutionRow(updated), dispatchMayHaveStarted, transitioned: true, cancelledChildIds };
+      const result = { execution: this.mapHostedExecutionRow(updated), dispatchMayHaveStarted, transitioned: true, cancelledChildIds };
+      // In-process wake-up (the SQLite parity of Postgres LISTEN/NOTIFY): an embedded database has
+      // exactly one owning process, so emitting after commit reaches every local subscriber. The
+      // durable terminal-state check remains the fallback for anything missed.
+      queueMicrotask(() => this.emitHostedEvent({ kind: "execution.cancelled", executionIds: [params.executionId, ...cancelledChildIds] }));
+      return result;
     });
   }
 
@@ -1451,12 +1490,25 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     });
   }
 
-  async resolveHostedRecoveryPending(params: { executionId: string; workerId: string; reason?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
+  async resolveHostedRecoveryPending(params: { executionId: string; workerId: string; reason?: string; resolution?: "failed" | "requeue" }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
     return this.txSync(() => {
       const row = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @id`).get({ id: params.executionId }) as Record<string, unknown> | undefined;
       if (!row) throw new Error("Hosted execution not found");
       if (String(row.status) !== "recovery_pending") return { execution: this.mapHostedExecutionRow(row), transitioned: false };
       const now = new Date().toISOString();
+      const resolution = params.resolution ?? "failed";
+      if (resolution === "requeue") {
+        // safe_retry only: the caller established the provider deduplicates the persisted dispatch
+        // identity — without one the outcome is ambiguous and must resolve failed instead.
+        if (row.provider_dispatch_id == null) {
+          throw new Error("Cannot requeue a recovery_pending execution with no provider dispatch identity — the outcome is ambiguous, resolve failed instead");
+        }
+        this.db.prepare(`UPDATE hosted_executions SET status = 'queued', lease_owner = NULL, lease_expires_at = NULL, lease_token = NULL, updated_at = @now WHERE id = @id`).run({ id: params.executionId, now });
+        this.db.prepare(`UPDATE hosted_capacity_leases SET state = 'expired', released_at = @now, release_reason = 'recovery_resolved' WHERE execution_id = @id AND state = 'active'`).run({ id: params.executionId, now });
+        this.insertHostedAdmissionReceipt({ executionId: params.executionId, userId: String(row.user_id), eventType: "RECOVERY_RESOLVED", workerId: params.workerId, createdAt: now, details: { resolution: "requeue", providerDispatchId: String(row.provider_dispatch_id) } });
+        const requeued = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @id`).get({ id: params.executionId }) as Record<string, unknown>;
+        return { execution: this.mapHostedExecutionRow(requeued), transitioned: true };
+      }
       // Fail closed: a post-dispatch worker loss leaves the provider outcome unknowable, so the
       // execution terminalizes as failed with an honest reason — never silently requeued into a
       // potential duplicate provider call.
@@ -1480,6 +1532,65 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       }
       return { recovered: rows.length, executionIds: rows.map((row) => String(row.id)) };
     });
+  }
+
+  async listHostedTerminalExecutionIds(executionIds: string[]): Promise<string[]> {
+    if (executionIds.length === 0) return [];
+    const rows = this.db.prepare(`SELECT id FROM hosted_executions WHERE status IN ('completed','failed','cancelled') AND id IN (SELECT value FROM json_each(@ids))`).all({ ids: JSON.stringify(executionIds) }) as Record<string, unknown>[];
+    return rows.map((row) => String(row.id));
+  }
+
+  async listHostedExecutionsByStatus(status: HostedExecutionStatus, limit = 200): Promise<HostedExecutionRecord[]> {
+    // Metadata projection — payloads excluded; a live row is resolved by id when needed.
+    const rows = this.db.prepare(`SELECT id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, lease_owner, lease_expires_at, lease_token, cancellation_requested, dispatched_at, terminal_at, parent_execution_id, root_execution_id, depth, provider_dispatch_id, created_at, updated_at FROM hosted_executions WHERE status = @status ORDER BY updated_at ASC LIMIT @limit`).all({ status, limit }) as Record<string, unknown>[];
+    return rows.map((row) => this.mapHostedExecutionRow(row));
+  }
+
+  async getHostedExecutionTreeStats(rootExecutionId: string, userId: string): Promise<HostedExecutionTreeStats | undefined> {
+    const owns = this.db.prepare(`SELECT 1 FROM hosted_executions WHERE id = @id AND user_id = @userId`).get({ id: rootExecutionId, userId });
+    if (!owns) return undefined;
+    const rows = this.db.prepare(`SELECT status, COUNT(*) AS count, COALESCE(SUM(attempt),0) AS attempts, COALESCE(MAX(depth),0) AS max_depth FROM hosted_executions WHERE id = @root OR root_execution_id = @root GROUP BY status`).all({ root: rootExecutionId }) as Record<string, unknown>[];
+    const byStatus: Partial<Record<HostedExecutionStatus, number>> = {};
+    let totalExecutions = 0;
+    let activeDescendants = 0;
+    let providerDispatchAttempts = 0;
+    let maxDepth = 0;
+    for (const row of rows) {
+      const status = String(row.status) as HostedExecutionStatus;
+      const count = Number(row.count);
+      byStatus[status] = count;
+      totalExecutions += count;
+      providerDispatchAttempts += Number(row.attempts);
+      maxDepth = Math.max(maxDepth, Number(row.max_depth));
+      if (!["completed", "failed", "cancelled"].includes(status)) activeDescendants += count;
+    }
+    // activeDescendants means "live descendants": subtract the root's own row when it is live.
+    const root = this.db.prepare(`SELECT status FROM hosted_executions WHERE id = @id`).get({ id: rootExecutionId }) as Record<string, unknown> | undefined;
+    if (root && !["completed", "failed", "cancelled"].includes(String(root.status))) activeDescendants -= 1;
+    return { rootExecutionId, totalExecutions, byStatus, activeDescendants, providerDispatchAttempts, maxDepth };
+  }
+
+  private readonly hostedEventEmitter = new EventEmitter();
+
+  private emitHostedEvent(event: HostedExecutionEvent): void {
+    this.hostedEventEmitter.emit("hosted-execution-event", event);
+  }
+
+  /**
+   * In-process parity of the Postgres LISTEN/NOTIFY channel: an embedded database has exactly one
+   * owning process, which is also where cancellations commit — so a same-process emitter delivers
+   * the same wake-up semantics. The durable terminal-state check remains the correctness path.
+   */
+  async subscribeHostedExecutionEvents(handler: (event: HostedExecutionEvent) => void): Promise<HostedExecutionEventSubscription> {
+    this.hostedEventEmitter.on("hosted-execution-event", handler);
+    let closed = false;
+    return {
+      close: async () => {
+        if (closed) return;
+        closed = true;
+        this.hostedEventEmitter.off("hosted-execution-event", handler);
+      },
+    };
   }
 
   async listHostedAdmissionReceipts(executionId: string, userId: string): Promise<HostedAdmissionReceiptRecord[]> {

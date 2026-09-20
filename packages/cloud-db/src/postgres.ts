@@ -41,11 +41,26 @@ import type {
   HostedCapacityLeaseRecord,
   HostedAdmissionReceiptRecord,
   HostedAdmissionMetrics,
+  HostedExecutionStatus,
+  HostedFanOutLimits,
+  HostedExecutionEvent,
+  HostedExecutionEventSubscription,
+  HostedExecutionTreeStats,
 } from "./types.js";
 
 const { Pool } = pg;
 const MIGRATION_LOCK_NAMESPACE = 1_807_468_221;
 const MIGRATION_LOCK_KEY = 1_247_271_903;
+
+/**
+ * Cross-process hosted execution signal channel. Carries correlation identifiers only — never
+ * prompts, payloads, credentials, or provider output. Receivers treat every message as a hint and
+ * re-verify against the durable row before acting.
+ */
+export const HOSTED_EXECUTION_EVENT_CHANNEL = "hosted_execution_events";
+/** pg_notify payloads are hard-limited to 8000 bytes; below that we stay well under it. */
+const HOSTED_NOTIFY_PAYLOAD_LIMIT = 7_000;
+const HOSTED_EVENT_MAX_IDS = 64;
 
 // Namespaced migration-history table for this package. Earlier builds of both
 // @codeforge/cloud-db and @codeforge/sessions tracked migrations in an identically named
@@ -63,17 +78,45 @@ export interface PostgresCloudDatabaseOptions {
   pool?: pg.Pool;
 }
 
+/**
+ * Validates a NOTIFY payload before it may act as a wake-up hint. Only the documented event shape
+ * is honored; anything malformed degrades to a resync hint so workers re-verify durable state
+ * rather than trusting (or dropping) an unknown message.
+ */
+function parseHostedEventPayload(payload: string | undefined): HostedExecutionEvent {
+  try {
+    const parsed = JSON.parse(payload ?? "") as { kind?: unknown; executionIds?: unknown };
+    if (parsed && parsed.kind === "execution.cancelled") {
+      if (parsed.executionIds === "*") return { kind: "execution.cancelled", executionIds: "*" };
+      if (Array.isArray(parsed.executionIds) && parsed.executionIds.every((id): id is string => typeof id === "string" && id.length > 0 && id.length <= 255)) {
+        return { kind: "execution.cancelled", executionIds: parsed.executionIds.slice(0, HOSTED_EVENT_MAX_IDS) };
+      }
+    }
+  } catch {
+    // fall through to resync
+  }
+  return { kind: "resync", executionIds: "*" };
+}
+
 export class PostgresCloudDatabase implements ICloudDatabase {
   private readonly pool: pg.Pool;
   private readonly isCustomPool: boolean;
+  private readonly connectionString?: string;
+  private readonly ssl?: boolean;
   private initialized = false;
   private initPromise?: Promise<void>;
+  private hostedEventHandlers?: Set<(event: HostedExecutionEvent) => void>;
+  private hostedEventClient?: pg.Client | pg.PoolClient;
+  private hostedEventReconnect?: NodeJS.Timeout;
+  private hostedEventClosed = true;
 
   constructor(options: PostgresCloudDatabaseOptions = {}) {
     const connectionString = options.connectionString || process.env.DATABASE_URL;
     if (!connectionString && !options.pool) {
       throw new Error("PostgresCloudDatabase requires a valid connectionString or DATABASE_URL");
     }
+    this.connectionString = connectionString;
+    this.ssl = options.ssl;
     if (options.pool) {
       this.pool = options.pool;
       this.isCustomPool = true;
@@ -199,6 +242,8 @@ export class PostgresCloudDatabase implements ICloudDatabase {
   }
 
   async close(): Promise<void> {
+    await this.closeHostedEventClient();
+    this.hostedEventHandlers?.clear();
     if (!this.isCustomPool) {
       await this.pool.end();
     }
@@ -1397,7 +1442,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
 
   private mapHostedExecutionRow(row: Record<string, unknown>): HostedExecutionRecord {
     const iso = (value: unknown) => value instanceof Date ? value.toISOString() : String(value);
-    return { id: String(row.id), idempotencyKey: String(row.idempotency_key), userId: String(row.user_id), taskId: String(row.task_id), providerId: String(row.provider_id), modelId: String(row.model_id), status: row.status as HostedExecutionRecord["status"], priority: Number(row.priority), attempt: Number(row.attempt), eligibleAt: iso(row.eligible_at), leaseOwner: row.lease_owner ? String(row.lease_owner) : null, leaseExpiresAt: row.lease_expires_at ? iso(row.lease_expires_at) : null, leaseToken: row.lease_token ? String(row.lease_token) : null, cancellationRequested: Boolean(row.cancellation_requested), requestPayload: row.request_payload != null ? String(row.request_payload) : null, resultPayload: row.result_payload != null ? String(row.result_payload) : null, resultError: row.result_error != null ? String(row.result_error) : null, dispatchedAt: row.dispatched_at ? iso(row.dispatched_at) : null, terminalAt: row.terminal_at ? iso(row.terminal_at) : null, parentExecutionId: row.parent_execution_id ? String(row.parent_execution_id) : null, rootExecutionId: row.root_execution_id ? String(row.root_execution_id) : null, createdAt: iso(row.created_at), updatedAt: iso(row.updated_at) };
+    return { id: String(row.id), idempotencyKey: String(row.idempotency_key), userId: String(row.user_id), taskId: String(row.task_id), providerId: String(row.provider_id), modelId: String(row.model_id), status: row.status as HostedExecutionRecord["status"], priority: Number(row.priority), attempt: Number(row.attempt), eligibleAt: iso(row.eligible_at), leaseOwner: row.lease_owner ? String(row.lease_owner) : null, leaseExpiresAt: row.lease_expires_at ? iso(row.lease_expires_at) : null, leaseToken: row.lease_token ? String(row.lease_token) : null, cancellationRequested: Boolean(row.cancellation_requested), requestPayload: row.request_payload != null ? String(row.request_payload) : null, resultPayload: row.result_payload != null ? String(row.result_payload) : null, resultError: row.result_error != null ? String(row.result_error) : null, dispatchedAt: row.dispatched_at ? iso(row.dispatched_at) : null, terminalAt: row.terminal_at ? iso(row.terminal_at) : null, parentExecutionId: row.parent_execution_id ? String(row.parent_execution_id) : null, rootExecutionId: row.root_execution_id ? String(row.root_execution_id) : null, depth: Number(row.depth ?? 0), providerDispatchId: row.provider_dispatch_id != null ? String(row.provider_dispatch_id) : null, createdAt: iso(row.created_at), updatedAt: iso(row.updated_at) };
   }
 
   private mapHostedCapacityLeaseRow(row: Record<string, unknown>): HostedCapacityLeaseRecord {
@@ -1405,18 +1450,63 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     return { id: String(row.id), executionId: String(row.execution_id), userId: String(row.user_id), providerId: String(row.provider_id), modelId: String(row.model_id), workerId: String(row.worker_id), state: row.state as HostedCapacityLeaseRecord["state"], leaseExpiresAt: iso(row.lease_expires_at), createdAt: iso(row.created_at), releasedAt: row.released_at ? iso(row.released_at) : null, releaseReason: row.release_reason ? String(row.release_reason) : null };
   }
 
-  async enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string; requestPayload?: string; parentExecutionId?: string; rootExecutionId?: string }): Promise<{ execution: HostedExecutionRecord; created: boolean }> {
+  async enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string; requestPayload?: string; parentExecutionId?: string; rootExecutionId?: string; fanOutLimits?: HostedFanOutLimits }): Promise<{ execution: HostedExecutionRecord; created: boolean }> {
     return this.withTx(async (client) => {
       const now = new Date().toISOString();
+      // Idempotency check first: a replayed enqueue must return the existing row before any
+      // fan-out budget evaluation — the existing row already consumed its budget slot.
+      const prior = await client.query(`SELECT * FROM hosted_executions WHERE idempotency_key = $1 FOR UPDATE`, [params.idempotencyKey]);
+      if (prior.rows.length > 0) {
+        if (String(prior.rows[0].user_id) !== params.userId) throw new Error("Idempotency key is already associated with another user account");
+        await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, created_at) VALUES ($1,$2,$3,'DUPLICATE_SUPPRESSED',$4)`, [randomUUID(), prior.rows[0].id, params.userId, now]);
+        return { execution: this.mapHostedExecutionRow(prior.rows[0]), created: false };
+      }
       let rootExecutionId = params.rootExecutionId ?? null;
+      let depth = 0;
       if (params.parentExecutionId) {
-        const parent = await client.query(`SELECT user_id, status, root_execution_id FROM hosted_executions WHERE id = $1 FOR UPDATE`, [params.parentExecutionId]);
+        if (!rootExecutionId) {
+          // Unlocked hint only: the authoritative parent/root validation happens below under
+          // both row locks. A caller that knows the root should pass it — this path exists for
+          // compatibility with callers that link a bare parentExecutionId.
+          const hint = await client.query(`SELECT root_execution_id FROM hosted_executions WHERE id = $1`, [params.parentExecutionId]);
+          rootExecutionId = hint.rows[0]?.root_execution_id ? String(hint.rows[0].root_execution_id) : params.parentExecutionId;
+        }
+        // Lock order is ancestors-first everywhere — cancellation cascades root → descendants —
+        // so the root row lock is taken before the parent lock here. Reversed order would
+        // deadlock against a concurrent cascade, and could admit a child whose parent was
+        // cancelled while the enqueue was in flight (late child revival).
+        const root = await client.query(`SELECT id FROM hosted_executions WHERE id = $1 FOR UPDATE`, [rootExecutionId]);
+        if (root.rows.length === 0) throw new Error("Root hosted execution not found");
+        const parent = await client.query(`SELECT user_id, status, root_execution_id, depth FROM hosted_executions WHERE id = $1 FOR UPDATE`, [params.parentExecutionId]);
         if (parent.rows.length === 0) throw new Error("Parent hosted execution not found");
         if (String(parent.rows[0].user_id) !== params.userId) throw new Error("Parent hosted execution belongs to another user account");
         if (["completed", "failed", "cancelled"].includes(String(parent.rows[0].status))) throw new Error("Parent hosted execution is already terminal");
-        rootExecutionId = rootExecutionId ?? (parent.rows[0].root_execution_id ? String(parent.rows[0].root_execution_id) : params.parentExecutionId);
+        const authoritativeRoot = parent.rows[0].root_execution_id ? String(parent.rows[0].root_execution_id) : params.parentExecutionId;
+        if (authoritativeRoot !== rootExecutionId) throw new Error("rootExecutionId does not match the parent's authoritative root");
+        depth = Number(parent.rows[0].depth ?? 0) + 1;
+        const limits = params.fanOutLimits;
+        if (limits && (limits.maxChildrenPerParent !== undefined || limits.maxDescendantsPerRoot !== undefined || limits.maxDepth !== undefined)) {
+          // Budget authority: both ancestor locks are held above, so concurrent child enqueues
+          // under different parents of the same tree serialize on the root row — the descendant
+          // count cannot be raced past the budget.
+          if (limits.maxDepth !== undefined && depth > limits.maxDepth) {
+            throw new Error(`Hosted execution fan-out budget exceeded: depth ${depth} exceeds limit ${limits.maxDepth}`);
+          }
+          if (limits.maxChildrenPerParent !== undefined) {
+            const siblings = await client.query(`SELECT COUNT(*)::int AS count FROM hosted_executions WHERE parent_execution_id = $1`, [params.parentExecutionId]);
+            if (Number(siblings.rows[0]?.count ?? 0) >= limits.maxChildrenPerParent) {
+              throw new Error(`Hosted execution fan-out budget exceeded: parent already has ${limits.maxChildrenPerParent} children`);
+            }
+          }
+          if (limits.maxDescendantsPerRoot !== undefined && rootExecutionId) {
+            const descendants = await client.query(`SELECT COUNT(*)::int AS count FROM hosted_executions WHERE root_execution_id = $1`, [rootExecutionId]);
+            if (Number(descendants.rows[0]?.count ?? 0) >= limits.maxDescendantsPerRoot) {
+              throw new Error(`Hosted execution fan-out budget exceeded: root already has ${limits.maxDescendantsPerRoot} descendants`);
+            }
+          }
+        }
       }
-      const inserted = await client.query(`INSERT INTO hosted_executions (id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, cancellation_requested, request_payload, parent_execution_id, root_execution_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,'queued',$7,0,$8,FALSE,$9,$10,$11,$12,$12) ON CONFLICT (idempotency_key) DO NOTHING RETURNING *`, [params.id, params.idempotencyKey, params.userId, params.taskId, params.providerId, params.modelId, params.priority ?? 0, params.eligibleAt ?? now, params.requestPayload ?? null, params.parentExecutionId ?? null, rootExecutionId, now]);
+      const inserted = await client.query(`INSERT INTO hosted_executions (id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, cancellation_requested, request_payload, parent_execution_id, root_execution_id, depth, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,'queued',$7,0,$8,FALSE,$9,$10,$11,$12,$13,$13) ON CONFLICT (idempotency_key) DO NOTHING RETURNING *`, [params.id, params.idempotencyKey, params.userId, params.taskId, params.providerId, params.modelId, params.priority ?? 0, params.eligibleAt ?? now, params.requestPayload ?? null, params.parentExecutionId ?? null, rootExecutionId, depth, now]);
       if (inserted.rows.length > 0) {
         await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, created_at) VALUES ($1,$2,$3,'QUEUE_ENQUEUED',$4)`, [randomUUID(), params.id, params.userId, now]);
         return { execution: this.mapHostedExecutionRow(inserted.rows[0]), created: true };
@@ -1462,13 +1552,33 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     if (!Number.isSafeInteger(params.maxUserConcurrent) || params.maxUserConcurrent < 1) throw new Error("maxUserConcurrent must be a positive safe integer");
     return this.withTx(async (client) => {
       const now = params.now ?? new Date();
+      // Provider-scoped probes must not use `provider_id = ANY(...)`: ScalarArrayOp ordering is not
+      // index-servable, so each per-user probe would scan that user's whole queued set and sort it.
+      // Decomposing into per-provider equality probes lets the (user_id, provider_id, priority,
+      // created_at) partial index serve each head in O(1).
       const candidate = await client.query(`
-        WITH user_heads AS (
-          SELECT DISTINCT ON (user_id) id
-          FROM hosted_executions
-          WHERE status = 'queued' AND eligible_at <= $1
-            AND ($3::text[] IS NULL OR provider_id = ANY($3))
-          ORDER BY user_id, priority DESC, created_at ASC
+        WITH RECURSIVE queued_users AS (
+          (SELECT user_id FROM hosted_executions WHERE status = 'queued' ORDER BY user_id LIMIT 1)
+          UNION ALL
+          (SELECT n.user_id FROM queued_users qu CROSS JOIN LATERAL (
+            SELECT user_id FROM hosted_executions
+            WHERE status = 'queued' AND user_id > qu.user_id
+            ORDER BY user_id LIMIT 1) n)
+        ),
+        user_heads AS (
+          SELECT h.id FROM queued_users qu CROSS JOIN LATERAL (
+            ${params.providerIds == null
+              ? `SELECT e2.id, e2.priority, e2.created_at FROM hosted_executions e2
+                 WHERE e2.status = 'queued' AND e2.user_id = qu.user_id AND e2.eligible_at <= $1
+                 ORDER BY e2.priority DESC, e2.created_at ASC, e2.id ASC LIMIT 1`
+              : `SELECT e2.id, e2.priority, e2.created_at FROM unnest($3::text[]) p(pid) CROSS JOIN LATERAL (
+                   SELECT e3.id, e3.priority, e3.created_at FROM hosted_executions e3
+                   WHERE e3.status = 'queued' AND e3.user_id = qu.user_id AND e3.provider_id = p.pid
+                     AND e3.eligible_at <= $1
+                   ORDER BY e3.priority DESC, e3.created_at ASC, e3.id ASC LIMIT 1
+                 ) e2
+                 ORDER BY e2.priority DESC, e2.created_at ASC, e2.id ASC LIMIT 1`}
+          ) h
         )
         SELECT e.* FROM user_heads head
         JOIN hosted_executions e ON e.id = head.id
@@ -1477,7 +1587,10 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         WHERE (SELECT COUNT(*) FROM hosted_capacity_leases ul WHERE ul.user_id = e.user_id AND ul.state = 'active' AND ul.lease_expires_at > $1) < $2
           AND (SELECT COUNT(*) FROM hosted_capacity_leases rl WHERE rl.provider_id = e.provider_id AND rl.model_id = e.model_id AND rl.state = 'active' AND rl.lease_expires_at > $1) < pc.max_concurrent
         ORDER BY CASE WHEN uas.last_admitted_at IS NULL THEN 0 ELSE 1 END, uas.last_admitted_at ASC NULLS FIRST, e.priority DESC, e.created_at ASC
-        FOR UPDATE OF e SKIP LOCKED LIMIT 1`, [now, params.maxUserConcurrent, params.providerIds ?? null]);
+        FOR UPDATE OF e SKIP LOCKED LIMIT 1`,
+        params.providerIds == null
+          ? [now, params.maxUserConcurrent]
+          : [now, params.maxUserConcurrent, params.providerIds]);
       if (candidate.rows.length === 0) return undefined;
       const row = candidate.rows[0];
       await client.query(`SELECT pg_advisory_xact_lock(hashtextextended($1 || '::' || $2, 0))`, [row.provider_id, row.model_id]);
@@ -1493,16 +1606,16 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       const leaseExpiresAt = new Date(now.getTime() + params.leaseMs);
       const updated = await client.query(`UPDATE hosted_executions SET status='claimed', lease_owner=$1, lease_expires_at=$2, lease_token=$3, attempt=attempt+1, updated_at=$4 WHERE id=$5 AND status='queued' RETURNING *`, [params.workerId, leaseExpiresAt, leaseId, now, row.id]);
       if (updated.rows.length === 0) return undefined;
-      const lease = await client.query(`INSERT INTO hosted_capacity_leases (id, execution_id, user_id, provider_id, model_id, worker_id, state, lease_expires_at, created_at) VALUES ($1,$2,$3,$4,$5,$6,'active',$7,$8) RETURNING *`, [leaseId, row.id, row.user_id, row.provider_id, row.model_id, params.workerId, leaseExpiresAt, now]);
+      const lease = await client.query(`INSERT INTO hosted_capacity_leases (id, execution_id, user_id, provider_id, model_id, worker_id, state, lease_expires_at, created_at) VALUES ($1,$2,$3,$4,$5,$6,'active',$7,NOW()) RETURNING *`, [leaseId, row.id, row.user_id, row.provider_id, row.model_id, params.workerId, leaseExpiresAt]);
       await client.query(`INSERT INTO hosted_user_admission_state (user_id, last_admitted_at, updated_at) VALUES ($1,$2,$2) ON CONFLICT (user_id) DO UPDATE SET last_admitted_at=EXCLUDED.last_admitted_at, updated_at=EXCLUDED.updated_at`, [row.user_id, now]);
       await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, worker_id, details, created_at) VALUES ($1,$2,$3,'CAPACITY_RESERVED',$4,$5,$6)`, [randomUUID(), row.id, row.user_id, params.workerId, JSON.stringify({ leaseExpiresAt: leaseExpiresAt.toISOString() }), now]);
       return { execution: this.mapHostedExecutionRow(updated.rows[0]), lease: this.mapHostedCapacityLeaseRow(lease.rows[0]) };
     });
   }
 
-  async markHostedExecutionDispatching(params: { executionId: string; workerId: string; leaseToken: string }): Promise<HostedExecutionRecord> {
+  async markHostedExecutionDispatching(params: { executionId: string; workerId: string; leaseToken: string; providerDispatchId?: string }): Promise<HostedExecutionRecord> {
     return this.withTx(async (client) => {
-      const updated = await client.query(`UPDATE hosted_executions SET status='dispatching', dispatched_at=NOW(), updated_at=NOW() WHERE id=$1 AND lease_owner=$2 AND lease_token=$3 AND status='claimed' RETURNING *`, [params.executionId, params.workerId, params.leaseToken]);
+      const updated = await client.query(`UPDATE hosted_executions SET status='dispatching', dispatched_at=NOW(), provider_dispatch_id=COALESCE($4, provider_dispatch_id), updated_at=NOW() WHERE id=$1 AND lease_owner=$2 AND lease_token=$3 AND status='claimed' RETURNING *`, [params.executionId, params.workerId, params.leaseToken, params.providerDispatchId ?? null]);
       if (updated.rows.length === 0) throw new Error("Execution is not claimed by this worker lease");
       await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, worker_id, created_at) VALUES ($1,$2,$3,'DISPATCH_STARTED',$4,NOW())`, [randomUUID(), params.executionId, updated.rows[0].user_id, params.workerId]);
       return this.mapHostedExecutionRow(updated.rows[0]);
@@ -1550,6 +1663,23 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, details, created_at) VALUES ($1,$2,$3,'CANCELLED',$4,NOW())`, [randomUUID(), child.id, params.userId, JSON.stringify({ cancelledAsChild: true })]);
         cancelledChildIds.push(String(child.id));
       }
+      // Wake-up signal for remote workers owning any cancelled row (parent or descendant). The
+      // payload carries correlation identifiers only — a receiving worker verifies the durable
+      // row before aborting, and a missed notification is recovered by the durable terminal-state
+      // poll. pg_notify inside the transaction fires exactly once, at commit.
+      const cancelledIds = [params.executionId, ...cancelledChildIds];
+      // An id list longer than the receive cap would be silently truncated by the parser —
+      // degrade to "*" instead so receivers resync every active execution rather than act on a
+      // partial list. The byte limit is the second guard for genuinely huge payloads.
+      let notifyPayload = JSON.stringify(
+        cancelledIds.length > HOSTED_EVENT_MAX_IDS
+          ? { kind: "execution.cancelled", executionIds: "*" }
+          : { kind: "execution.cancelled", executionIds: cancelledIds },
+      );
+      if (notifyPayload.length > HOSTED_NOTIFY_PAYLOAD_LIMIT) {
+        notifyPayload = JSON.stringify({ kind: "execution.cancelled", executionIds: "*" });
+      }
+      await client.query(`SELECT pg_notify($1, $2)`, [HOSTED_EXECUTION_EVENT_CHANNEL, notifyPayload]);
       return { execution: this.mapHostedExecutionRow(updated.rows[0]), dispatchMayHaveStarted, transitioned: true, cancelledChildIds };
     });
   }
@@ -1565,12 +1695,25 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     });
   }
 
-  async resolveHostedRecoveryPending(params: { executionId: string; workerId: string; reason?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
+  async resolveHostedRecoveryPending(params: { executionId: string; workerId: string; reason?: string; resolution?: "failed" | "requeue" }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
     return this.withTx(async (client) => {
       const locked = await client.query(`SELECT * FROM hosted_executions WHERE id=$1 FOR UPDATE`, [params.executionId]);
       if (locked.rows.length === 0) throw new Error("Hosted execution not found");
       const current = locked.rows[0];
       if (String(current.status) !== "recovery_pending") return { execution: this.mapHostedExecutionRow(current), transitioned: false };
+      const resolution = params.resolution ?? "failed";
+      if (resolution === "requeue") {
+        // safe_retry only: the caller established the provider deduplicates the persisted dispatch
+        // identity, so a redispatch cannot double-execute. The row rejoins the queue with the same
+        // provider_dispatch_id; a fresh claim redispatches under a new fencing token.
+        if (!current.provider_dispatch_id) {
+          throw new Error("Cannot requeue a recovery_pending execution with no provider dispatch identity — the outcome is ambiguous, resolve failed instead");
+        }
+        const updated = await client.query(`UPDATE hosted_executions SET status='queued', lease_owner=NULL, lease_expires_at=NULL, lease_token=NULL, updated_at=NOW() WHERE id=$1 RETURNING *`, [params.executionId]);
+        await client.query(`UPDATE hosted_capacity_leases SET state='expired', released_at=NOW(), release_reason='recovery_resolved' WHERE execution_id=$1 AND state='active'`, [params.executionId]);
+        await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, worker_id, details, created_at) VALUES ($1,$2,$3,'RECOVERY_RESOLVED',$4,$5,NOW())`, [randomUUID(), params.executionId, current.user_id, params.workerId, JSON.stringify({ resolution: "requeue", providerDispatchId: current.provider_dispatch_id })]);
+        return { execution: this.mapHostedExecutionRow(updated.rows[0]), transitioned: true };
+      }
       // Fail closed: post-dispatch worker loss makes the provider outcome unknowable, so the
       // execution terminalizes as failed rather than being retried into a duplicate provider call.
       const updated = await client.query(`UPDATE hosted_executions SET status='failed', result_error=$1, lease_owner=NULL, lease_expires_at=NULL, lease_token=NULL, terminal_at=NOW(), updated_at=NOW() WHERE id=$2 RETURNING *`, [params.reason ?? "dispatch outcome ambiguous after worker loss", params.executionId]);
@@ -1593,6 +1736,174 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       }
       return { recovered: executionIds.length, executionIds };
     });
+  }
+
+  async listHostedTerminalExecutionIds(executionIds: string[]): Promise<string[]> {
+    if (executionIds.length === 0) return [];
+    const res = await this.pool.query(`SELECT id FROM hosted_executions WHERE id = ANY($1) AND status IN ('completed','failed','cancelled')`, [executionIds]);
+    return res.rows.map((row) => String(row.id));
+  }
+
+  async listHostedExecutionsByStatus(status: HostedExecutionStatus, limit = 200): Promise<HostedExecutionRecord[]> {
+    // Metadata projection — payloads excluded; the worker resolves a live row by id when needed.
+    const res = await this.pool.query(`SELECT id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, lease_owner, lease_expires_at, lease_token, cancellation_requested, dispatched_at, terminal_at, parent_execution_id, root_execution_id, depth, provider_dispatch_id, created_at, updated_at FROM hosted_executions WHERE status = $1 ORDER BY updated_at ASC LIMIT $2`, [status, limit]);
+    return res.rows.map((row) => this.mapHostedExecutionRow(row));
+  }
+
+  async getHostedExecutionTreeStats(rootExecutionId: string, userId: string): Promise<HostedExecutionTreeStats | undefined> {
+    const owns = await this.pool.query(`SELECT 1 FROM hosted_executions WHERE id = $1 AND user_id = $2`, [rootExecutionId, userId]);
+    if (owns.rows.length === 0) return undefined;
+    const res = await this.pool.query(
+      `SELECT status, COUNT(*)::int AS count, COALESCE(SUM(attempt),0)::int AS attempts, COALESCE(MAX(depth),0)::int AS max_depth
+       FROM hosted_executions WHERE id = $1 OR root_execution_id = $1 GROUP BY status`,
+      [rootExecutionId],
+    );
+    const byStatus: Partial<Record<HostedExecutionStatus, number>> = {};
+    let totalExecutions = 0;
+    let activeDescendants = 0;
+    let providerDispatchAttempts = 0;
+    let maxDepth = 0;
+    for (const row of res.rows) {
+      const status = String(row.status) as HostedExecutionStatus;
+      const count = Number(row.count);
+      byStatus[status] = count;
+      totalExecutions += count;
+      providerDispatchAttempts += Number(row.attempts);
+      maxDepth = Math.max(maxDepth, Number(row.max_depth));
+      if (!["completed", "failed", "cancelled"].includes(status)) activeDescendants += count;
+    }
+    // The root itself is always counted in totals; activeDescendants counts live non-root rows —
+    // subtract the root's own live row so the number means "live descendants" exactly.
+    if (byStatus.queued || byStatus.claimed || byStatus.dispatching || byStatus.recovery_pending) {
+      const root = await this.pool.query(`SELECT status FROM hosted_executions WHERE id = $1`, [rootExecutionId]);
+      if (root.rows.length > 0 && !["completed", "failed", "cancelled"].includes(String(root.rows[0].status))) activeDescendants -= 1;
+    }
+    return { rootExecutionId, totalExecutions, byStatus, activeDescendants, providerDispatchAttempts, maxDepth };
+  }
+
+  /**
+   * LISTEN/NOTIFY wake-up channel on a dedicated connection (never the shared pool — a LISTEN
+   * client is occupied for its whole lifetime). Reconnects with bounded backoff; every reconnect
+   * emits a resync so workers re-verify durable state after a possible notification gap.
+   */
+  async subscribeHostedExecutionEvents(handler: (event: HostedExecutionEvent) => void): Promise<HostedExecutionEventSubscription> {
+    this.hostedEventHandlers ??= new Set();
+    this.hostedEventHandlers.add(handler);
+    this.hostedEventClosed = false;
+    if (!this.hostedEventClient) {
+      try {
+        await this.openHostedEventClient();
+      } catch (error) {
+        // A first-connect failure leaves no listener behind — the caller keeps its durable
+        // polling fallback and a later subscribe retries cleanly.
+        this.hostedEventClient = undefined;
+        throw error;
+      }
+    }
+    let closed = false;
+    return {
+      close: async () => {
+        if (closed) return;
+        closed = true;
+        this.hostedEventHandlers?.delete(handler);
+        if (this.hostedEventHandlers?.size === 0) await this.closeHostedEventClient();
+      },
+    };
+  }
+
+  private hostedEventOpening?: Promise<void>;
+
+  private openHostedEventClient(): Promise<void> {
+    // Single-flight: concurrent opens (initial subscribe racing a reconnect timer) share one
+    // connection attempt so two LISTEN clients can never coexist untracked.
+    this.hostedEventOpening ??= this.doOpenHostedEventClient().finally(() => {
+      this.hostedEventOpening = undefined;
+    });
+    return this.hostedEventOpening;
+  }
+
+  private async doOpenHostedEventClient(): Promise<void> {
+    if (this.hostedEventClosed || this.hostedEventClient) return;
+    let client: pg.Client | pg.PoolClient | undefined;
+    try {
+      client = this.isCustomPool
+        ? await this.pool.connect()
+        : new pg.Client({ connectionString: this.connectionString, ssl: this.ssl === undefined ? undefined : this.ssl ? { rejectUnauthorized: true } : false });
+      const onDead = () => {
+        if (this.hostedEventClient !== client) return;
+        this.hostedEventClient = undefined;
+        if (!this.isCustomPool) void (client as pg.Client).end().catch(() => undefined);
+        else try { (client as pg.PoolClient).release(new Error("hosted event listener dropped")); } catch { /* already released */ }
+        if (this.hostedEventClosed) return;
+        // A dead listener means notifications may have been lost — wake every handler so workers
+        // re-verify durable state, then reconnect with bounded backoff.
+        this.emitHostedEvent({ kind: "resync", executionIds: "*" });
+        this.scheduleHostedEventReconnect(1_000);
+      };
+      client.on("notification", (msg) => this.emitHostedEvent(parseHostedEventPayload(msg.payload)));
+      client.on("error", onDead);
+      client.on("end", onDead);
+      if (!this.isCustomPool) await (client as pg.Client).connect();
+      await client.query(`LISTEN ${HOSTED_EXECUTION_EVENT_CHANNEL}`);
+      if (this.hostedEventClosed) throw new Error("hosted event listener closed during connect");
+      this.hostedEventClient = client;
+    } catch (error) {
+      if (client) {
+        try {
+          if (this.isCustomPool) (client as pg.PoolClient).release(error instanceof Error ? error : new Error(String(error)));
+          else await (client as pg.Client).end();
+        } catch { /* best effort */ }
+      }
+      if (!this.hostedEventClosed) this.scheduleHostedEventReconnect(1_000);
+      throw error;
+    }
+  }
+
+  private scheduleHostedEventReconnect(delayMs: number): void {
+    if (this.hostedEventClosed || this.hostedEventReconnect) return;
+    this.hostedEventReconnect = setTimeout(() => {
+      this.hostedEventReconnect = undefined;
+      void this.openHostedEventClient().catch(() => undefined);
+    }, delayMs);
+    this.hostedEventReconnect.unref();
+  }
+
+  private emitHostedEvent(event: HostedExecutionEvent): void {
+    for (const handler of this.hostedEventHandlers ?? []) {
+      try {
+        handler(event);
+      } catch {
+        // A broken consumer must never kill the shared listener.
+      }
+    }
+  }
+
+  private async closeHostedEventClient(): Promise<void> {
+    this.hostedEventClosed = true;
+    if (this.hostedEventReconnect) clearTimeout(this.hostedEventReconnect);
+    this.hostedEventReconnect = undefined;
+    const client = this.hostedEventClient;
+    this.hostedEventClient = undefined;
+    if (!client) return;
+    try {
+      await client.query(`UNLISTEN ${HOSTED_EXECUTION_EVENT_CHANNEL}`).catch(() => undefined);
+      if (this.isCustomPool) (client as pg.PoolClient).release();
+      else await (client as pg.Client).end();
+    } catch {
+      try { (client as pg.PoolClient).release(new Error("listener close failed")); } catch { /* best effort */ }
+    }
+  }
+
+  /** @internal Test hook: force-drops the LISTEN connection to exercise reconnect/resync paths. */
+  async _dropHostedEventListenerForTest(): Promise<void> {
+    const client = this.hostedEventClient;
+    if (!client) return;
+    // The 'end'/'error' listener (onDead) performs the resync emit + reconnect — the hook only
+    // severs the connection so the real failure path runs end to end.
+    try {
+      if (this.isCustomPool) (client as pg.PoolClient).release(new Error("test-induced listener drop"));
+      else await (client as pg.Client).end();
+    } catch { /* drop is best effort */ }
   }
 
   async listHostedAdmissionReceipts(executionId: string, userId: string): Promise<HostedAdmissionReceiptRecord[]> {

@@ -44,6 +44,13 @@ export interface ProviderAdapter {
   healthCheck(): Promise<ProviderHealthResponse>;
   /** Optional local admission gate for providers with account-level spend ceilings. */
   canRoute?(modelId: string): boolean;
+  /**
+   * Declares that the adapter transmits `ChatRequest.dispatchId` to the provider as its
+   * idempotency/dedupe key, so a retried dispatch of the same hosted execution cannot produce a
+   * duplicate provider-side completion. Absent/false → the hosted runtime treats post-dispatch
+   * recovery as ambiguous and fails closed instead of silently retrying.
+   */
+  readonly supportsDispatchIdentity?: boolean;
   /** FG-1A: optional so existing adapters stay valid. Absent is equivalent to unsupported. */
   getPromptCacheCapability?(modelId: string): PromptCacheCapability;
 }

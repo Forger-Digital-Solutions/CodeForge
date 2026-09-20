@@ -188,6 +188,8 @@ export type HostedRequestRecord = z.infer<typeof HostedRequestRecordSchema>;
 export const HostedExecutionStatusSchema = z.enum(["queued", "claimed", "dispatching", "completed", "failed", "cancelled", "recovery_pending"]);
 export type HostedExecutionStatus = z.infer<typeof HostedExecutionStatusSchema>;
 
+export const HOSTED_TERMINAL_STATUSES: readonly HostedExecutionStatus[] = ["completed", "failed", "cancelled"];
+
 export const HostedExecutionRecordSchema = z.object({
   id: z.string(),
   idempotencyKey: z.string(),
@@ -219,10 +221,71 @@ export const HostedExecutionRecordSchema = z.object({
   /** Subagent fan-out: parent link (same user, enforced at enqueue) and stable root for cascade. */
   parentExecutionId: z.string().nullable().optional(),
   rootExecutionId: z.string().nullable().optional(),
+  /** Tree depth: root executions are 0, children are parent.depth + 1. Enforced at enqueue. */
+  depth: z.number().int().nonnegative().default(0),
+  /**
+   * Provider-side dispatch identity when the route's adapter declares idempotent dispatch
+   * semantics (the value sent with the provider request so a retried dispatch dedupes). Null for
+   * providers without dispatch identity — never populated with credentials or request bodies.
+   */
+  providerDispatchId: z.string().nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
 export type HostedExecutionRecord = z.infer<typeof HostedExecutionRecordSchema>;
+
+/**
+ * Server-side fan-out budget for durable subagent trees. Enforced inside the enqueue transaction
+ * under the parent/root row locks so concurrent child creation on different workers cannot exceed
+ * it (no check-then-insert race). Limits are policy, never client-supplied.
+ */
+export interface HostedFanOutLimits {
+  /** Maximum durable children ever attached to one parent (any status). */
+  maxChildrenPerParent?: number;
+  /** Maximum total non-root executions in one root's tree (any status). */
+  maxDescendantsPerRoot?: number;
+  /** Maximum tree depth: a child may not be attached at parent.depth + 1 above this. */
+  maxDepth?: number;
+}
+
+/** Aggregate orchestration metadata for one root execution tree — counts, not payloads. */
+export interface HostedExecutionTreeStats {
+  rootExecutionId: string;
+  totalExecutions: number;
+  byStatus: Partial<Record<HostedExecutionStatus, number>>;
+  /** Descendants still holding live queue/dispatch state (non-terminal). */
+  activeDescendants: number;
+  /** Sum of claim attempts across the tree — the count of provider dispatch attempts. */
+  providerDispatchAttempts: number;
+  maxDepth: number;
+}
+
+/**
+ * Cross-process hosted execution event. Payload is correlation identifiers only — a worker that
+ * receives one MUST verify the durable row before acting; the notification is a wake-up, never
+ * authority. "resync" with executionIds "*" means "lost notifications possible — re-check every
+ * active execution against the durable state".
+ */
+export interface HostedExecutionEvent {
+  kind: "execution.cancelled" | "resync";
+  executionIds: string[] | "*";
+}
+
+export interface HostedExecutionEventSubscription {
+  close(): Promise<void>;
+}
+
+/**
+ * Dispatch outcome classes for post-dispatch ambiguity (worker dies after the provider request
+ * may have been accepted). What a recovery worker may safely do is decided by the route's real
+ * provider semantics, not by optimism:
+ *  - safe_retry:     provider dedupes a retried dispatch identity — requeue is safe.
+ *  - safe_reconcile: provider exposes a status/result lookup for a dispatched request.
+ *  - ambiguous:      the request may have been accepted but the outcome is unknowable — fail
+ *                    closed as 'failed' with an honest reason; never blindly retried.
+ *  - not_dispatched: failure occurred before provider acceptance — plain retry is safe.
+ */
+export type HostedDispatchOutcomeClass = "safe_retry" | "safe_reconcile" | "ambiguous" | "not_dispatched";
 
 export const HostedCapacityLeaseRecordSchema = z.object({
   id: z.string().uuid(),

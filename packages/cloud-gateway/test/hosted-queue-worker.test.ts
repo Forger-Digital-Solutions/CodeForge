@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { SQLiteCloudDatabase } from "@codeforge/cloud-db";
 import { HostedAdmissionAuthority } from "../src/hosted-admission.js";
@@ -74,5 +74,86 @@ describe("HostedQueueWorker", () => {
     expect(errors).toHaveLength(1);
     expect((await db.getHostedExecution(queued.execution.id, userId))?.status).toBe("failed");
     expect((await db.getHostedAdmissionMetrics()).activeReservations).toBe(0);
+  });
+
+  it("aborts an in-flight execution after observeCancellations verifies durable terminal state", async () => {
+    const queued = await enqueue("observed-cancel");
+    let started!: () => void;
+    const didStart = new Promise<void>((resolve) => { started = resolve; });
+    let abortedReason: unknown;
+    const worker = new HostedQueueWorker({
+      authority,
+      execute: async (_execution, signal) => {
+        started();
+        await new Promise<void>((resolve) => signal.addEventListener("abort", () => { abortedReason = signal.reason; resolve(); }, { once: true }));
+        return { status: "failed" };
+      },
+    });
+    const running = worker.runOnce();
+    await didStart;
+    // A remote cancellation commits on a different authority — no local cancelLocal, no event.
+    await authority.cancel(queued.execution.id, userId);
+    await worker.observeCancellations([queued.execution.id]);
+    await running;
+    expect(abortedReason).toBeDefined();
+    expect((await db.getHostedExecution(queued.execution.id, userId))?.status).toBe("cancelled");
+    // The cancelled row's capacity was released by the cancel transaction, not by the worker.
+    expect((await db.getHostedAdmissionMetrics()).activeReservations).toBe(0);
+  });
+
+  it("delivers cross-process cancellation through the event subscription path", async () => {
+    const queued = await enqueue("event-cancel");
+    let started!: () => void;
+    const didStart = new Promise<void>((resolve) => { started = resolve; });
+    const worker = new HostedQueueWorker({
+      authority,
+      execute: async (_execution, signal) => {
+        started();
+        await new Promise<void>((resolve) => signal.addEventListener("abort", () => resolve(), { once: true }));
+        return { status: "failed" };
+      },
+    });
+    const sub = await db.subscribeHostedExecutionEvents((event) => {
+      void worker.observeCancellations(event.executionIds === "*" ? "*" : event.executionIds);
+    });
+    try {
+      const running = worker.runOnce();
+      await didStart;
+      // The sqlite emitter fires the wake-up after the durable commit — same shape the
+      // Postgres LISTEN/NOTIFY channel delivers across processes.
+      await authority.cancel(queued.execution.id, userId);
+      await running;
+      expect((await db.getHostedExecution(queued.execution.id, userId))?.status).toBe("cancelled");
+    } finally {
+      await sub.close();
+    }
+  });
+
+  it("recovers a missed notification through the bounded durable poll", async () => {
+    const queued = await enqueue("poll-cancel");
+    let started!: () => void;
+    const didStart = new Promise<void>((resolve) => { started = resolve; });
+    const worker = new HostedQueueWorker({
+      authority,
+      cancelObserveMs: 25,
+      execute: async (_execution, signal) => {
+        started();
+        await new Promise<void>((resolve) => signal.addEventListener("abort", () => resolve(), { once: true }));
+        return { status: "failed" };
+      },
+    });
+    // No subscription at all: the only delivery path is the worker's own poll.
+    const running = worker.run();
+    try {
+      await didStart;
+      await authority.cancel(queued.execution.id, userId);
+      await vi.waitFor(() => {
+        expect(worker.activeCount()).toBe(0);
+      }, { timeout: 5_000, interval: 10 });
+      expect((await db.getHostedExecution(queued.execution.id, userId))?.status).toBe("cancelled");
+    } finally {
+      worker.stop();
+      await running;
+    }
   });
 });

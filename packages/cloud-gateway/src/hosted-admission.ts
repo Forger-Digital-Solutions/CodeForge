@@ -1,4 +1,4 @@
-import type { HostedAdmissionMetrics, HostedCapacityLeaseRecord, HostedExecutionRecord, ICloudDatabase } from "@codeforge/cloud-db";
+import type { HostedAdmissionMetrics, HostedCapacityLeaseRecord, HostedExecutionRecord, HostedExecutionTreeStats, HostedFanOutLimits, ICloudDatabase } from "@codeforge/cloud-db";
 
 export type HostedCapacityStateCode = "FREE_CAPACITY_QUEUED" | "FREE_CAPACITY_EXHAUSTED" | "USER_CONCURRENCY_LIMIT" | "TASK_CANCELLED" | "DISPATCH_READY" | "RECOVERY_PENDING";
 
@@ -51,7 +51,7 @@ export class HostedAdmissionAuthority {
     return this.workerId;
   }
 
-  async enqueue(params: { executionId: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string; requestPayload?: string; parentExecutionId?: string; rootExecutionId?: string }): Promise<HostedAdmissionResult> {
+  async enqueue(params: { executionId: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string; requestPayload?: string; parentExecutionId?: string; rootExecutionId?: string; fanOutLimits?: HostedFanOutLimits }): Promise<HostedAdmissionResult> {
     assertBoundedIdentifier(params.executionId, "executionId");
     assertBoundedIdentifier(params.idempotencyKey, "idempotencyKey");
     assertBoundedIdentifier(params.taskId, "taskId");
@@ -60,7 +60,7 @@ export class HostedAdmissionAuthority {
     assertBoundedPayload(params.requestPayload, "requestPayload");
     if (params.parentExecutionId) assertBoundedIdentifier(params.parentExecutionId, "parentExecutionId");
     if (params.rootExecutionId) assertBoundedIdentifier(params.rootExecutionId, "rootExecutionId");
-    const { execution, created } = await this.db.enqueueHostedExecution({ id: params.executionId, idempotencyKey: params.idempotencyKey, userId: params.userId, taskId: params.taskId, providerId: params.providerId, modelId: params.modelId, priority: params.priority, eligibleAt: params.eligibleAt, requestPayload: params.requestPayload, parentExecutionId: params.parentExecutionId, rootExecutionId: params.rootExecutionId });
+    const { execution, created } = await this.db.enqueueHostedExecution({ id: params.executionId, idempotencyKey: params.idempotencyKey, userId: params.userId, taskId: params.taskId, providerId: params.providerId, modelId: params.modelId, priority: params.priority, eligibleAt: params.eligibleAt, requestPayload: params.requestPayload, parentExecutionId: params.parentExecutionId, rootExecutionId: params.rootExecutionId, fanOutLimits: params.fanOutLimits });
     return { code: execution.status === "cancelled" ? "TASK_CANCELLED" : "FREE_CAPACITY_QUEUED", execution, created };
   }
 
@@ -81,8 +81,21 @@ export class HostedAdmissionAuthority {
     return this.db.listHostedExecutionChildren(executionId, userId);
   }
 
-  async beginDispatch(executionId: string, leaseToken: string): Promise<HostedExecutionRecord> {
-    return this.db.markHostedExecutionDispatching({ executionId, workerId: this.workerId, leaseToken });
+  async beginDispatch(executionId: string, leaseToken: string, providerDispatchId?: string): Promise<HostedExecutionRecord> {
+    return this.db.markHostedExecutionDispatching({ executionId, workerId: this.workerId, leaseToken, providerDispatchId });
+  }
+
+  /** Batched terminal check for the cancellation observer — one query for the whole active set. */
+  async listTerminalExecutionIds(executionIds: string[]): Promise<string[]> {
+    return this.db.listHostedTerminalExecutionIds(executionIds);
+  }
+
+  async listExecutionsByStatus(status: "recovery_pending", limit?: number): Promise<HostedExecutionRecord[]> {
+    return this.db.listHostedExecutionsByStatus(status, limit);
+  }
+
+  async treeStats(rootExecutionId: string, userId: string): Promise<HostedExecutionTreeStats | undefined> {
+    return this.db.getHostedExecutionTreeStats(rootExecutionId, userId);
   }
 
   async heartbeat(executionId: string, leaseToken: string, now?: Date): Promise<HostedCapacityLeaseRecord> {
@@ -99,8 +112,8 @@ export class HostedAdmissionAuthority {
     return { code: "TASK_CANCELLED", execution: result.execution, dispatchMayHaveStarted: result.dispatchMayHaveStarted, transitioned: result.transitioned, cancelledChildIds: result.cancelledChildIds };
   }
 
-  async resolveRecoveryPending(executionId: string, reason?: string): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
-    return this.db.resolveHostedRecoveryPending({ executionId, workerId: this.workerId, reason });
+  async resolveRecoveryPending(executionId: string, reason?: string, resolution?: "failed" | "requeue"): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
+    return this.db.resolveHostedRecoveryPending({ executionId, workerId: this.workerId, reason, resolution });
   }
 
   async reconcile(now?: Date): Promise<{ recovered: number; executionIds: string[] }> {

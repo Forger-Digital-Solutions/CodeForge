@@ -36,6 +36,11 @@ import type {
   HostedCapacityLeaseRecord,
   HostedAdmissionReceiptRecord,
   HostedAdmissionMetrics,
+  HostedExecutionStatus,
+  HostedFanOutLimits,
+  HostedExecutionEvent,
+  HostedExecutionEventSubscription,
+  HostedExecutionTreeStats,
 } from "./types.js";
 
 /**
@@ -168,9 +173,11 @@ export interface ICloudDatabase {
    * idempotencyKey). `requestPayload` is the normalized, bounded JSON request body the worker will
    * later execute without re-trusting the client; `parentExecutionId` links a subagent child to its
    * parent (must exist, belong to the same user, and be non-terminal). Reusing an idempotency key
-   * owned by a different user throws rather than colliding.
+   * owned by a different user throws rather than colliding. `fanOutLimits` is the server-side
+   * budget enforced under the parent/root row locks so concurrent child creation on different
+   * workers cannot exceed it — a limit breach throws instead of inserting.
    */
-  enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string; requestPayload?: string; parentExecutionId?: string; rootExecutionId?: string }): Promise<{ execution: HostedExecutionRecord; created: boolean }>;
+  enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string; requestPayload?: string; parentExecutionId?: string; rootExecutionId?: string; fanOutLimits?: HostedFanOutLimits }): Promise<{ execution: HostedExecutionRecord; created: boolean }>;
   /** Owner-scoped read — returns undefined for foreign or unknown ids so existence is not leaked. */
   getHostedExecution(id: string, userId: string): Promise<HostedExecutionRecord | undefined>;
   /** Owner-scoped children of one execution (subagent fan-out inspection). */
@@ -193,7 +200,7 @@ export interface ICloudDatabase {
    * claimed → dispatching, fenced by the lease token minted at claim. A stale worker whose lease was
    * reclaimed cannot move the execution — the throw is the fencing signal, not a retryable error.
    */
-  markHostedExecutionDispatching(params: { executionId: string; workerId: string; leaseToken: string }): Promise<HostedExecutionRecord>;
+  markHostedExecutionDispatching(params: { executionId: string; workerId: string; leaseToken: string; providerDispatchId?: string }): Promise<HostedExecutionRecord>;
   /**
    * Exactly-once terminalization. A second call for an already-terminal execution returns
    * `transitioned: false` (idempotent replay). For a non-terminal execution the caller must hold the
@@ -210,11 +217,32 @@ export interface ICloudDatabase {
   renewHostedExecutionLease(params: { executionId: string; workerId: string; leaseToken: string; leaseMs: number; now?: Date }): Promise<HostedCapacityLeaseRecord>;
   recoverExpiredHostedLeases(now?: Date): Promise<{ recovered: number; executionIds: string[] }>;
   /**
-   * Fail-closed resolution of `recovery_pending` (ambiguous post-dispatch) work. Default and only
-   * direction is 'failed': the provider outcome is unknowable, so the execution terminalizes as a
-   * failure with an honest reason rather than being blindly retried into a duplicate provider call.
+   * Resolution of `recovery_pending` (ambiguous post-dispatch) work. The default resolution is
+   * 'failed': the provider outcome is unknowable, so the execution terminalizes as a failure with
+   * an honest reason rather than being blindly retried into a duplicate provider call. 'requeue'
+   * is permitted ONLY when the caller has established the route's provider deduplicates a retried
+   * dispatch identity (safe_retry outcome class) — it returns the row to 'queued' keeping the same
+   * dispatch identity so a redispatch cannot double-execute.
    */
-  resolveHostedRecoveryPending(params: { executionId: string; workerId: string; reason?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }>;
+  resolveHostedRecoveryPending(params: { executionId: string; workerId: string; reason?: string; resolution?: "failed" | "requeue" }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }>;
+  /**
+   * Batched terminal-state check for the cross-process cancellation observer: returns the subset
+   * of `executionIds` that reached a terminal status. One query for the worker's whole active set —
+   * this is the durable fallback that makes a lost notification harmless.
+   */
+  listHostedTerminalExecutionIds(executionIds: string[]): Promise<string[]>;
+  /** Internal worker read: live rows in one status (e.g. recovery_pending sweep). Not user-scoped. */
+  listHostedExecutionsByStatus(status: HostedExecutionStatus, limit?: number): Promise<HostedExecutionRecord[]>;
+  /** Owner-scoped aggregate orchestration metadata for a root execution tree — counts, not payloads. */
+  getHostedExecutionTreeStats(rootExecutionId: string, userId: string): Promise<HostedExecutionTreeStats | undefined>;
+  /**
+   * Cross-process hosted execution event channel. On PostgreSQL this is LISTEN/NOTIFY — a
+   * notification is ONLY a wake-up hint carrying correlation identifiers; consumers must verify
+   * the durable row before acting. On SQLite the channel is in-process (an embedded database has
+   * exactly one owning process, which is also where the cancellation path runs). Missed
+   * notifications are always recovered by the durable batched terminal-state check.
+   */
+  subscribeHostedExecutionEvents(handler: (event: HostedExecutionEvent) => void): Promise<HostedExecutionEventSubscription>;
   listHostedAdmissionReceipts(executionId: string, userId: string): Promise<HostedAdmissionReceiptRecord[]>;
   getHostedAdmissionMetrics(): Promise<HostedAdmissionMetrics>;
 

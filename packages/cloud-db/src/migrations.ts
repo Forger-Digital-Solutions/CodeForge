@@ -1053,6 +1053,57 @@ CREATE INDEX IF NOT EXISTS idx_hosted_executions_root ON hosted_executions(root_
 CREATE INDEX IF NOT EXISTS idx_hosted_executions_recovery_pending ON hosted_executions(status, updated_at) WHERE status = 'recovery_pending';
 `;
 
+// 013: distributed-runtime columns. depth records the tree depth computed at enqueue under the
+// parent lock (roots are 0), which makes max-depth fan-out budgets enforceable without a recursive
+// walk per insert. provider_dispatch_id stores the idempotency identity sent to the provider when
+// the route's adapter declares idempotent dispatch semantics — the evidence a post-dispatch
+// recovery worker needs to decide between safe requeue and ambiguous failure.
+const MIGRATION_13_SQLITE = `
+ALTER TABLE hosted_executions ADD COLUMN depth INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE hosted_executions ADD COLUMN provider_dispatch_id TEXT;
+`;
+
+const MIGRATION_13_POSTGRES = `
+ALTER TABLE hosted_executions ADD COLUMN depth INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE hosted_executions ADD COLUMN provider_dispatch_id VARCHAR(255);
+`;
+
+// 014: fair-claim head selection index. The claim query scans queued rows for ONE provider and
+// picks each user's head by (user_id, priority DESC, created_at) via DISTINCT ON. The migration-11
+// index leads with user_id, so a provider-scoped scan still seq-scanned and sorted the whole
+// queued set (temp-spill at ~50k rows in the R20 benchmark). Leading with provider_id lets the
+// index deliver rows already in DISTINCT ON order for the scanned route — the sort disappears.
+const MIGRATION_14_SQLITE = `
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_queued_route_user_head
+  ON hosted_executions(provider_id, user_id, priority DESC, created_at)
+  WHERE status = 'queued';
+`;
+
+const MIGRATION_14_POSTGRES = `
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_queued_route_user_head
+  ON hosted_executions(provider_id, user_id, priority DESC, created_at)
+  WHERE status = 'queued';
+`;
+
+// 015: the claim query moved from DISTINCT ON over the provider's whole queued set to a
+// recursive per-user skip-scan plus a per-user head probe. The probe's access shape is
+// (user_id = ?, provider_id = ?, ORDER BY priority DESC, created_at) — the migration-014
+// route-leading index cannot satisfy that ordering and, worse, won the planner's cost
+// comparison while scanning ~167 entries per probe. Replace it with the user+route shape.
+const MIGRATION_15_SQLITE = `
+DROP INDEX IF EXISTS idx_hosted_executions_queued_route_user_head;
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_queued_user_route_head
+  ON hosted_executions(user_id, provider_id, priority DESC, created_at)
+  WHERE status = 'queued';
+`;
+
+const MIGRATION_15_POSTGRES = `
+DROP INDEX IF EXISTS idx_hosted_executions_queued_route_user_head;
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_queued_user_route_head
+  ON hosted_executions(user_id, provider_id, priority DESC, created_at)
+  WHERE status = 'queued';
+`;
+
 export const MIGRATIONS: MigrationDefinition[] = [
   {
     version: 1,
@@ -1137,6 +1188,27 @@ export const MIGRATIONS: MigrationDefinition[] = [
     sqliteUp: MIGRATION_12_SQLITE,
     postgresUp: MIGRATION_12_POSTGRES,
     checksum: computeChecksum(MIGRATION_12_SQLITE),
+  },
+  {
+    version: 13,
+    name: "013_hosted_execution_depth_and_dispatch_identity",
+    sqliteUp: MIGRATION_13_SQLITE,
+    postgresUp: MIGRATION_13_POSTGRES,
+    checksum: computeChecksum(MIGRATION_13_SQLITE),
+  },
+  {
+    version: 14,
+    name: "014_hosted_executions_queued_route_user_head",
+    sqliteUp: MIGRATION_14_SQLITE,
+    postgresUp: MIGRATION_14_POSTGRES,
+    checksum: computeChecksum(MIGRATION_14_SQLITE),
+  },
+  {
+    version: 15,
+    name: "015_hosted_executions_queued_user_route_head",
+    sqliteUp: MIGRATION_15_SQLITE,
+    postgresUp: MIGRATION_15_POSTGRES,
+    checksum: computeChecksum(MIGRATION_15_SQLITE),
   },
 ];
 

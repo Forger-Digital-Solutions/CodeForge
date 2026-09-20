@@ -118,4 +118,135 @@ suite("durable hosted admission — real PostgreSQL", () => {
     expect(resolved.execution.status).toBe("failed");
     expect((await db.resolveHostedRecoveryPending({ executionId: claim!.execution.id, workerId: "pg-recovery" })).transitioned).toBe(false);
   }, 30_000);
+
+  it("delivers a cross-connection cancellation event carrying only correlation ids", async () => {
+    const listener = databases[0]!;
+    const canceller = await connection();
+    const events: { kind: string; executionIds: string[] | "*" }[] = [];
+    // The channel is shared: foreign tenants' cancellations arrive too, so the wait targets
+    // this test's own execution id — receivers ignore ids they do not own.
+    let targetId: string | undefined;
+    const seen = new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("no event within 10s")), 10_000);
+      void listener.subscribeHostedExecutionEvents((event) => {
+        events.push(event);
+        if (event.kind === "execution.cancelled" && (event.executionIds === "*" || (targetId != null && event.executionIds.includes(targetId)))) { clearTimeout(timer); resolve(); }
+      });
+    });
+    const parent = await canceller.enqueueHostedExecution({ id: `pg-evt-parent-${suffix}`, idempotencyKey: `pg-evt-parent-key-${suffix}`, userId: users[0]!, taskId: "evt-parent", ...route });
+    const child = await canceller.enqueueHostedExecution({ id: `pg-evt-child-${suffix}`, idempotencyKey: `pg-evt-child-key-${suffix}`, userId: users[0]!, taskId: "evt-child", ...route, parentExecutionId: parent.execution.id });
+    targetId = parent.execution.id;
+    // Give LISTEN a moment to attach on the server side, then cancel on a different connection.
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await canceller.cancelHostedExecution({ executionId: parent.execution.id, userId: users[0]! });
+    await seen;
+    const delivered = events.find((event) => event.kind === "execution.cancelled" && (event.executionIds === "*" || event.executionIds.includes(parent.execution.id)))!;
+    expect(delivered.executionIds === "*" || delivered.executionIds.includes(parent.execution.id)).toBe(true);
+    // The durable row is already terminal by the time the hint arrives — receivers verify, not trust.
+    expect((await listener.getHostedExecution(child.execution.id, users[0]!))?.status).toBe("cancelled");
+  }, 30_000);
+
+  it("emits a resync on listener death, reconnects, and keeps delivering", async () => {
+    const listener = databases[0]!;
+    const canceller = await connection();
+    const events: string[] = [];
+    const resyncSeen = new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("no resync within 10s")), 10_000);
+      void listener.subscribeHostedExecutionEvents((event) => {
+        events.push(event.kind);
+        if (event.kind === "resync") { clearTimeout(timer); resolve(); }
+      });
+    });
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await listener._dropHostedEventListenerForTest();
+    await resyncSeen;
+
+    // After reconnect the channel must deliver a fresh cancellation again. Only this test's
+    // victim counts — foreign tenant events on the shared channel must not satisfy the wait.
+    let victimId: string | undefined;
+    const cancelledSeen = new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("no cancel event after reconnect within 15s")), 15_000);
+      void listener.subscribeHostedExecutionEvents((event) => {
+        if (event.kind === "execution.cancelled" && (event.executionIds === "*" || (victimId != null && event.executionIds.includes(victimId)))) { clearTimeout(timer); resolve(); }
+      });
+    });
+    await new Promise((resolve) => setTimeout(resolve, 2_500));
+    const victim = await canceller.enqueueHostedExecution({ id: `pg-reconnect-${suffix}`, idempotencyKey: `pg-reconnect-key-${suffix}`, userId: users[0]!, taskId: "reconnect", ...route });
+    victimId = victim.execution.id;
+    await canceller.cancelHostedExecution({ executionId: victim.execution.id, userId: users[0]! });
+    await cancelledSeen;
+    expect(events).toContain("resync");
+  }, 40_000);
+
+  it("serializes concurrent child enqueues across connections inside the root budget", async () => {
+    const writer = databases[0]!;
+    const parent = await writer.enqueueHostedExecution({ id: `pg-race-parent-${suffix}`, idempotencyKey: `pg-race-parent-key-${suffix}`, userId: users[0]!, taskId: "race-parent", ...route });
+    const limits = { maxChildrenPerParent: 5, maxDescendantsPerRoot: 8, maxDepth: 1 };
+    const racers = await Promise.all(Array.from({ length: 3 }, () => connection()));
+    const results = await Promise.allSettled(Array.from({ length: 15 }, (_, index) =>
+      racers[index % racers.length]!.enqueueHostedExecution({ id: `pg-race-${suffix}-${index}`, idempotencyKey: `pg-race-key-${suffix}-${index}`, userId: users[0]!, taskId: `race-${index}`, ...route, parentExecutionId: parent.execution.id, rootExecutionId: parent.execution.id, fanOutLimits: limits })));
+    const created = results.filter((r) => r.status === "fulfilled");
+    expect(created).toHaveLength(5);
+    for (const failure of results.filter((r) => r.status === "rejected")) {
+      expect(String((failure as PromiseRejectedResult).reason)).toMatch(/fan-out budget/);
+    }
+    const children = await writer.listHostedExecutionChildren(parent.execution.id, users[0]!);
+    expect(children).toHaveLength(5);
+    const stats = await writer.getHostedExecutionTreeStats(parent.execution.id, users[0]!);
+    expect(stats!.totalExecutions).toBe(6);
+    expect(stats!.byStatus.queued).toBe(6);
+    expect(stats!.activeDescendants).toBe(5);
+  }, 30_000);
+
+  it("gates recovery_pending requeue on a persisted provider dispatch identity", async () => {
+    const db = databases[0]!;
+    await db.enqueueHostedExecution({ id: `pg-req-${suffix}`, idempotencyKey: `pg-req-key-${suffix}`, userId: users[0]!, taskId: "req", ...route });
+    const start = new Date(Date.now() + 1_000);
+    const claim = await db.claimNextHostedExecution({ workerId: "pg-req-worker", leaseMs: 10, maxUserConcurrent: 1, providerIds: [route.providerId], now: start });
+    await db.markHostedExecutionDispatching({ executionId: claim!.execution.id, workerId: "pg-req-worker", leaseToken: claim!.lease.id });
+    await db.recoverExpiredHostedLeases(new Date(start.getTime() + 11));
+    // No dispatch identity persisted → ambiguous → requeue must be refused.
+    await expect(db.resolveHostedRecoveryPending({ executionId: claim!.execution.id, workerId: "pg-recovery", resolution: "requeue" })).rejects.toThrow(/dispatch identity/);
+    const failed = await db.resolveHostedRecoveryPending({ executionId: claim!.execution.id, workerId: "pg-recovery" });
+    expect(failed.execution.status).toBe("failed");
+
+    // With an identity the requeue is safe_retry: row returns to queued keeping the identity.
+    await db.enqueueHostedExecution({ id: `pg-req2-${suffix}`, idempotencyKey: `pg-req2-key-${suffix}`, userId: users[0]!, taskId: "req2", ...route });
+    const claim2 = await db.claimNextHostedExecution({ workerId: "pg-req2-worker", leaseMs: 10, maxUserConcurrent: 1, providerIds: [route.providerId], now: start });
+    await db.markHostedExecutionDispatching({ executionId: claim2!.execution.id, workerId: "pg-req2-worker", leaseToken: claim2!.lease.id, providerDispatchId: claim2!.execution.id });
+    await db.recoverExpiredHostedLeases(new Date(start.getTime() + 11));
+    const requeued = await db.resolveHostedRecoveryPending({ executionId: claim2!.execution.id, workerId: "pg-recovery", resolution: "requeue" });
+    expect(requeued.transitioned).toBe(true);
+    expect(requeued.execution.status).toBe("queued");
+    expect(requeued.execution.providerDispatchId).toBe(claim2!.execution.id);
+    const reclaim = await db.claimNextHostedExecution({ workerId: "pg-req3-worker", leaseMs: 60_000, maxUserConcurrent: 1, providerIds: [route.providerId] });
+    expect(reclaim?.execution.id).toBe(claim2!.execution.id);
+  }, 30_000);
+
+  it("degrades an oversized cancellation fan-out notification to a resync marker", async () => {
+    const listener = databases[0]!;
+    const writer = databases[0]!;
+    const events: { kind: string; executionIds: string[] | "*" }[] = [];
+    // Wait for the degraded marker itself — foreign per-id cancellations share the channel
+    // and must not satisfy the wait before this cascade's own "*" arrives.
+    const seen = new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("no resync marker within 10s")), 10_000);
+      void listener.subscribeHostedExecutionEvents((event) => {
+        events.push(event);
+        if (event.kind === "execution.cancelled" && event.executionIds === "*") { clearTimeout(timer); resolve(); }
+      });
+    });
+    const parent = await writer.enqueueHostedExecution({ id: `pg-big-parent-${suffix}`, idempotencyKey: `pg-big-parent-key-${suffix}`, userId: users[0]!, taskId: "big-parent", ...route });
+    for (let index = 0; index < 70; index++) {
+      await writer.enqueueHostedExecution({ id: `pg-big-${suffix}-${index}`, idempotencyKey: `pg-big-key-${suffix}-${index}`, userId: users[0]!, taskId: `big-${index}`, ...route, parentExecutionId: parent.execution.id });
+    }
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const cancelled = await writer.cancelHostedExecution({ executionId: parent.execution.id, userId: users[0]! });
+    expect(cancelled.cancelledChildIds).toHaveLength(70);
+    await seen;
+    const delivered = events.find((event) => event.kind === "execution.cancelled" && event.executionIds === "*")!;
+    // 71 ids exceed the bounded payload — the notification degrades to "*" so receivers resync
+    // instead of acting on a truncated id list.
+    expect(delivered.executionIds).toBe("*");
+  }, 30_000);
 });

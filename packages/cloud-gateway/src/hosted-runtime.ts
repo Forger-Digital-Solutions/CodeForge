@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { HostedExecutionRecord, ICloudDatabase } from "@codeforge/cloud-db";
+import type { HostedExecutionEventSubscription, HostedExecutionRecord, HostedExecutionTreeStats, HostedFanOutLimits, ICloudDatabase } from "@codeforge/cloud-db";
 import { REGION_UNKNOWN, type RegionResolution } from "@codeforge/legal-policy";
 import { HostedAdmissionAuthority, MAX_HOSTED_PAYLOAD_CHARS } from "./hosted-admission.js";
 import { HostedQueueWorker } from "./hosted-queue-worker.js";
@@ -33,6 +33,18 @@ export interface HostedRuntimeOptions {
   maxUserConcurrent?: number;
   reconcileMs?: number;
   /**
+   * Durable cancellation poll cadence for the worker's active set (default 2s). Event-channel
+   * delivery is the fast path; this is the bounded fallback that makes a missed notification
+   * recoverable instead of silent.
+   */
+  cancelObserveMs?: number;
+  /**
+   * Durable fan-out policy for subagent trees, enforced inside the enqueue transaction under
+   * parent/root row locks — never client-supplied. Defaults: 8 children per parent, 64
+   * descendants per root, depth 4.
+   */
+  fanOutLimits?: HostedFanOutLimits;
+  /**
    * Concurrency ceiling applied when a resolved route has no capacity row yet. Conservative
    * default: free-tier provider routes rate-limit hard, so unmeasured routes start at 1 — an
    * operator raises the durable ceiling explicitly after measuring real headroom.
@@ -53,6 +65,8 @@ export class HostedRuntime {
   private readonly defaultRouteCapacity: number;
   private readonly worker: HostedQueueWorker;
   private readonly reconcileMs: number;
+  private readonly fanOutLimits: Required<HostedFanOutLimits>;
+  private eventSubscription?: HostedExecutionEventSubscription;
   private reconcileTimer?: NodeJS.Timeout;
   private runLoop?: Promise<void>;
   private running = false;
@@ -72,10 +86,20 @@ export class HostedRuntime {
       claimableProviderIds: () => this.gateway.claimableProviderIds(),
     });
     this.reconcileMs = options.reconcileMs ?? 30_000;
+    this.fanOutLimits = {
+      maxChildrenPerParent: options.fanOutLimits?.maxChildrenPerParent ?? 8,
+      maxDescendantsPerRoot: options.fanOutLimits?.maxDescendantsPerRoot ?? 64,
+      maxDepth: options.fanOutLimits?.maxDepth ?? 4,
+    };
     this.worker = new HostedQueueWorker({
       authority: this.authority,
       heartbeatMs: options.heartbeatMs,
       idleWaitMs: options.idleWaitMs,
+      cancelObserveMs: options.cancelObserveMs,
+      // The dispatch identity is the execution's own id — stable across retries, so a provider
+      // that dedupes on it can never double-execute a requeued dispatch. Only minted for routes
+      // whose adapter actually transmits it; every other route stays null → ambiguous recovery.
+      resolveDispatchIdentity: (execution) => this.gateway.supportsDispatchIdentity(execution.providerId) ? execution.id : undefined,
       onError: options.onError,
       execute: (execution, signal) => this.executePersisted(execution, signal),
     });
@@ -119,6 +143,7 @@ export class HostedRuntime {
       requestPayload: JSON.stringify(payload),
       parentExecutionId,
       rootExecutionId: parent.rootExecutionId ?? parent.id,
+      fanOutLimits: this.fanOutLimits,
     });
     return { execution, created: created ?? false };
   }
@@ -150,6 +175,11 @@ export class HostedRuntime {
     return this.authority.listChildren(executionId, userId);
   }
 
+  /** Owner-scoped aggregate view of one execution tree — counts and statuses only, no payloads. */
+  async treeStats(rootExecutionId: string, userId: string): Promise<HostedExecutionTreeStats | undefined> {
+    return this.authority.treeStats(rootExecutionId, userId);
+  }
+
   /** Reclaims expired leases: pre-dispatch claims requeue safely, post-dispatch losses quarantine. */
   async reconcile(now?: Date): Promise<{ recovered: number; executionIds: string[] }> {
     return this.authority.reconcile(now);
@@ -158,6 +188,17 @@ export class HostedRuntime {
   start(): void {
     if (this.running) return;
     this.running = true;
+    // Cross-process wake-up: a cancellation committed on a different API instance emits a
+    // correlation-only event. The handler never trusts the payload — observeCancellations
+    // re-reads the durable rows and only aborts executions confirmed terminal. A failed
+    // subscription (or a dropped listener, which emits a resync event) degrades to the
+    // worker's bounded durable poll — a lost signal is recoverable, never silent.
+    this.db.subscribeHostedExecutionEvents((event) => {
+      void this.worker.observeCancellations(event.executionIds === "*" ? "*" : event.executionIds);
+    }).then((sub) => {
+      if (this.running) this.eventSubscription = sub;
+      else void sub.close().catch(() => undefined);
+    }).catch(() => undefined);
     void this.authority.reconcile().catch(() => undefined);
     this.reconcileTimer = setInterval(() => void this.authority.reconcile().catch(() => undefined), this.reconcileMs);
     this.reconcileTimer.unref();
@@ -167,6 +208,8 @@ export class HostedRuntime {
   async stop(): Promise<void> {
     this.running = false;
     if (this.reconcileTimer) clearInterval(this.reconcileTimer);
+    if (this.eventSubscription) await this.eventSubscription.close().catch(() => undefined);
+    this.eventSubscription = undefined;
     this.worker.stop(new Error("Hosted runtime shutting down"));
     await this.runLoop;
   }
@@ -194,7 +237,7 @@ export class HostedRuntime {
       // Re-run the fail-closed eligibility gate at dispatch time: the model may have left the
       // verified-free pool, or the operator may have thrown a kill switch, since enqueue.
       this.gateway.assertRouteEligible(route, request, region);
-      const outcome = await this.gateway.runResolvedHostedInference(execution.userId, request, route, (event) => events.push(event), signal);
+      const outcome = await this.gateway.runResolvedHostedInference(execution.userId, request, route, (event) => events.push(event), signal, execution.providerDispatchId ?? undefined);
       events.push({ type: "turn.completed", turnId: request.turnId ?? request.requestId });
       return terminalize("completed", undefined, outcome);
     } catch (error) {
