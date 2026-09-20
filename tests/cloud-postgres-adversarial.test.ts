@@ -500,7 +500,8 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("Postgres Runtime — Deep Adv
         data: {
           object: {
             client_reference_id: user.id,
-            customer: "cus_pg_e2e",
+            // Unique per run: the DB is reused across suite runs and stripe_customer_id is unique.
+            customer: `cus_pg_e2e_${randomUUID()}`,
             subscription: pgE2eSubscriptionId,
             mode: "subscription",
             // Real Stripe checkout objects always carry payment_status; the grant path requires "paid".

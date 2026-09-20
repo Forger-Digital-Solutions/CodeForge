@@ -4,7 +4,7 @@ import { EntitlementService } from "@codeforge/cloud-entitlements";
 import { UsageEngine } from "@codeforge/cloud-usage";
 import { REGION_UNKNOWN, type RegionResolution } from "@codeforge/legal-policy";
 import { CloudFirewallManager } from "./cloud-firewall.js";
-import type { HostedInferenceRequest, HostedStreamEvent } from "./types.js";
+import type { HostedFinishReason, HostedInferenceRequest, HostedStreamEvent } from "./types.js";
 
 export interface GatewayServiceConfig {
   firewallManager: CloudFirewallManager;
@@ -12,6 +12,24 @@ export interface GatewayServiceConfig {
   usageEngine: UsageEngine;
   db?: ICloudDatabase;
   inferenceTimeoutMs?: number;
+}
+
+export interface HostedRouteResolution {
+  providerId: string;
+  modelId: string;
+  planId: string;
+  maxConcurrent: number;
+  estimatedCredits: number;
+  accessClass?: string;
+}
+
+export interface HostedInferenceOutcome {
+  messageId: string;
+  fullText: string;
+  finishReason: HostedFinishReason;
+  usage: { inputTokens: number; outputTokens: number };
+  creditsConsumed: number;
+  balanceAfter: number;
 }
 
 const MAX_HOSTED_OUTPUT_TOKENS = 8000;
@@ -54,44 +72,36 @@ export class GatewayService {
     }
   }
 
-  async executeHostedInference(
+  /**
+   * Provider ids with a live adapter in this process — the capability scope a queue worker uses
+   * so it only claims executions it can actually dispatch.
+   */
+  claimableProviderIds(): string[] {
+    return this.firewallManager.providerCatalog.all().map((adapter) => adapter.providerId);
+  }
+
+  /**
+   * Admission-time authority: kill switches, spend ceiling, entitlement, ForgeZero model
+   * selection, provider policy, and cost ceiling. Pure — throws on denial, emits no events, so
+   * it is safe to run inside a durable enqueue path before any stream exists.
+   */
+  async resolveHostedRoute(
     userId: string,
     request: HostedInferenceRequest,
-    onEvent: (event: HostedStreamEvent) => void,
-    signal?: AbortSignal,
-    // Sourced by the HTTP layer from trusted infrastructure only; defaults to REGION_UNKNOWN,
-    // which is the safe/fail-closed value for any policy record that restricts by region.
     region: RegionResolution = REGION_UNKNOWN,
-  ): Promise<{ messageId: string; fullText: string; creditsConsumed: number; balanceAfter: number }> {
-    const turnId = request.turnId ?? randomUUID();
-    const messageId = randomUUID();
-    let hasEmittedTerminalEvent = false;
-
-    const emitTerminalEvent = (event: HostedStreamEvent) => {
-      if (!hasEmittedTerminalEvent) {
-        hasEmittedTerminalEvent = true;
-        onEvent(event);
-      }
-    };
-
-    // 1. Check Global & Operator Kill Switches
+  ): Promise<HostedRouteResolution> {
     const killSwitches = this.firewallManager.getKillSwitches();
     if (!killSwitches.hostedInferenceEnabled) {
-      const err = "Hosted inference is currently disabled by operator policy";
-      emitTerminalEvent({ type: "turn.failed", turnId, error: err });
-      throw new Error(err);
+      throw new Error("Hosted inference is currently disabled by operator policy");
     }
 
     if (this.db) {
       const dailySpend = await this.db.getDailyProviderSpendUsd();
       if (dailySpend >= killSwitches.globalDailySpendLimitUsd) {
-        const err = `Global daily provider spend limit of $${killSwitches.globalDailySpendLimitUsd.toFixed(2)} reached (current: $${dailySpend.toFixed(2)})`;
-        emitTerminalEvent({ type: "turn.failed", turnId, error: err });
-        throw new Error(err);
+        throw new Error(`Global daily provider spend limit of $${killSwitches.globalDailySpendLimitUsd.toFixed(2)} reached (current: $${dailySpend.toFixed(2)})`);
       }
     }
 
-    // 2. Entitlement & Multi-Instance DB-Authoritative Concurrency Check
     const activeDbCount = this.db ? await this.db.getActiveReservationCount(userId) : 0;
     const activeLocalCount = this.activeUserLeases.get(userId)?.size ?? 0;
     const activeCount = Math.max(activeDbCount, activeLocalCount);
@@ -102,121 +112,157 @@ export class GatewayService {
       activeConcurrency: activeCount,
     });
     if (!permission.allowed) {
-      const errorMsg = permission.reason ?? "Hosted execution not permitted";
-      emitTerminalEvent({ type: "turn.failed", turnId, error: errorMsg });
-      throw new Error(errorMsg);
+      throw new Error(permission.reason ?? "Hosted execution not permitted");
     }
 
-    // Check Free kill switch
     if (permission.planId === "free" && !killSwitches.hostedFreeEnabled) {
-      const err = "CodeForge Hosted Free tier is currently disabled by operator policy";
-      emitTerminalEvent({ type: "turn.failed", turnId, error: err });
-      throw new Error(err);
+      throw new Error("CodeForge Hosted Free tier is currently disabled by operator policy");
     }
+
+    const estimatedCredits = 5_000;
+    const maxConcurrent = permission.planId === "pro" ? 4 : 1;
+
+    // Server-side ForgeZero model selection
+    let selectedProviderId = request.providerId;
+    let selectedModelId = request.modelId;
+
+    // Apply the account's privacy routing mode (STRICT / STANDARD / MAXIMUM_FREE) so the setting
+    // genuinely constrains which endpoints are eligible — not a decorative control.
+    const settings = this.db ? await this.db.getAccountSettings(userId) : undefined;
+    const privacyMode = settings?.privacyMode;
+    const privacyEligible = () =>
+      privacyMode ? this.firewallManager.firewall.eligibleModels({ privacyMode }) : this.firewallManager.firewall.eligibleModels();
+
+    if (!selectedModelId || selectedModelId === "auto" || selectedModelId === "codeforge-auto") {
+      const decision = this.firewallManager.router.route({
+        taskType: request.taskType || "coding",
+        estimatedContextTokens: request.estimatedContextTokens || 4000,
+        requiredCapabilities: ["text", "coding"],
+        privacyMode,
+      });
+      if (!decision) {
+        throw new Error("No verified free model is currently available in the CodeForge Cloud pool");
+      }
+      // Prefer the top-ranked candidate, but fall back through the router's own ranked
+      // alternatives when the top pick is provider-policy-ineligible (e.g. Gemini unpaid in an
+      // EEA region) — this preserves task continuity instead of failing auto-routing outright
+      // (R1 remediation spec §82). The gate re-runs authoritatively below regardless of which
+      // candidate is chosen here, so a wrong guess here is never a compliance risk, only a UX one.
+      const rankedCandidates = [decision.model, ...decision.alternatives];
+      const policyEligible = rankedCandidates.find(
+        (m) => this.firewallManager.checkProviderPolicy({ providerId: m.providerId, serviceTier: m.costProfile.isFree ? "FREE" : "PAID" }, region).decision !== "DENY",
+      );
+      if (!policyEligible) {
+        throw new Error("No provider-policy-eligible free model is currently available for your region");
+      }
+      selectedProviderId = policyEligible.providerId;
+      selectedModelId = policyEligible.modelId;
+    } else if (!selectedProviderId) {
+      // Exact model requested WITHOUT a providerId (desktop sends the bare modelId). Resolve it
+      // against the privacy-filtered eligible pool — never silently substitute a different model.
+      const matches = privacyEligible().filter((m) => m.modelId === selectedModelId);
+      if (matches.length === 0) {
+        throw new Error(`Requested hosted model '${selectedModelId}' is not currently available`);
+      }
+      selectedProviderId = matches[0]!.providerId;
+    } else if (selectedProviderId) {
+      // Exact provider+model: enforce the account's privacy mode in addition to base eligibility.
+      if (privacyMode && selectedProviderId !== "gems") {
+        const allowed = privacyEligible().some((m) => m.providerId === selectedProviderId && m.modelId === selectedModelId);
+        if (!allowed) {
+          throw new Error(`Model ${selectedProviderId}::${selectedModelId} is not permitted under your ${privacyMode} privacy mode`);
+        }
+      }
+      // GEMS check: GEMS models are offline until real inference backend
+      if (selectedProviderId === "gems") {
+        throw new Error("GEMS models are currently unavailable (offline)");
+      }
+    }
+
+    if (!selectedProviderId || !selectedModelId) {
+      throw new Error("Could not resolve an eligible model for hosted request");
+    }
+
+    const resolution: HostedRouteResolution = {
+      providerId: selectedProviderId,
+      modelId: selectedModelId,
+      planId: permission.planId,
+      maxConcurrent,
+      estimatedCredits,
+    };
+    this.assertRouteEligible(resolution, request, region);
+    return { ...resolution, accessClass: this.firewallManager.firewall.getModel(selectedProviderId, selectedModelId)?.accessClass };
+  }
+
+  /**
+   * Execution-time revalidation for a route resolved earlier (e.g. a queued durable execution
+   * dispatched by a worker after the original HTTP request ended). Re-runs the fail-closed
+   * checks whose underlying state may have changed since enqueue: kill switches, ForgeZero
+   * verification, provider policy, and the per-request cost ceiling.
+   */
+  assertRouteEligible(
+    resolution: Pick<HostedRouteResolution, "providerId" | "modelId">,
+    request: Pick<HostedInferenceRequest, "estimatedContextTokens">,
+    region: RegionResolution = REGION_UNKNOWN,
+  ): void {
+    const killSwitches = this.firewallManager.getKillSwitches();
+    if (!killSwitches.hostedInferenceEnabled) {
+      throw new Error("Hosted inference is currently disabled by operator policy");
+    }
+
+    // Verify the final selection even after Auto routing or bare-model resolution.
+    const verifiedModel = this.firewallManager.firewall.getModel(resolution.providerId, resolution.modelId);
+    if (!verifiedModel) {
+      throw new Error(`Model ${resolution.providerId}::${resolution.modelId} is not present in the ForgeZero catalog`);
+    }
+
+    // Product/provider-policy eligibility (R1 remediation spec §8) runs before ForgeZero's
+    // financial verification: it is a DIFFERENT authority (contractual/regional restriction, not
+    // cost) and must be able to reject a route ForgeZero would otherwise consider $0-eligible.
+    const policyDecision = this.firewallManager.checkProviderPolicy(
+      { providerId: resolution.providerId, serviceTier: verifiedModel.costProfile.isFree ? "FREE" : "PAID" },
+      region,
+    );
+    if (policyDecision.decision === "DENY") {
+      throw new Error(`Model ${resolution.providerId}::${resolution.modelId} is not available under current provider policy (${policyDecision.reasonCode})`);
+    }
+
+    const verification = this.firewallManager.firewall.verify(resolution.providerId, resolution.modelId);
+    if (!verification.ok) {
+      throw new Error(`Model ${resolution.providerId}::${resolution.modelId} is not eligible for hosted inference: ${verification.error.message}`);
+    }
+
+    // Check the ceiling for allowance-based free capacity that exposes nominal paid rates.
+    if (!verifiedModel.costProfile.isFree) {
+      const estimatedTokens = (request.estimatedContextTokens || 4000) + 2000;
+      const estCost = (estimatedTokens / 1_000_000) * (verifiedModel.costProfile.inputCostPerMillion || 1.0);
+      if (estCost > killSwitches.maxRequestCostUsd) {
+        throw new Error(`Estimated request cost of $${estCost.toFixed(2)} exceeds maximum per-request limit of $${killSwitches.maxRequestCostUsd.toFixed(2)}`);
+      }
+    }
+  }
+
+  /**
+   * The worker-side execution phase: budget reservation, provider streaming, and usage commit
+   * for a route that was already admitted. Emits non-terminal stream events only; the caller
+   * owns terminalization (SSE event or durable terminal write).
+   */
+  async runResolvedHostedInference(
+    userId: string,
+    request: HostedInferenceRequest,
+    resolution: HostedRouteResolution,
+    onEvent: (event: HostedStreamEvent) => void,
+    signal?: AbortSignal,
+  ): Promise<HostedInferenceOutcome> {
+    const messageId = randomUUID();
+    const turnId = request.turnId ?? randomUUID();
+    const { providerId: selectedProviderId, modelId: selectedModelId, estimatedCredits, maxConcurrent } = resolution;
 
     // Acquire execution lease (process-local optimization guard)
-    const maxConcurrent = permission.planId === "pro" ? 4 : 1;
     this.acquireLease(userId, request.requestId, maxConcurrent);
-
     let reservationCreated = false;
-    const estimatedCredits = 5_000;
 
     try {
-      // 3. Server-side ForgeZero Model Selection
-      let selectedProviderId = request.providerId;
-      let selectedModelId = request.modelId;
-
-      // Apply the account's privacy routing mode (STRICT / STANDARD / MAXIMUM_FREE) so the setting
-      // genuinely constrains which endpoints are eligible — not a decorative control.
-      const settings = this.db ? await this.db.getAccountSettings(userId) : undefined;
-      const privacyMode = settings?.privacyMode;
-      const privacyEligible = () =>
-        privacyMode ? this.firewallManager.firewall.eligibleModels({ privacyMode }) : this.firewallManager.firewall.eligibleModels();
-
-      if (!selectedModelId || selectedModelId === "auto" || selectedModelId === "codeforge-auto") {
-        const decision = this.firewallManager.router.route({
-          taskType: request.taskType || "coding",
-          estimatedContextTokens: request.estimatedContextTokens || 4000,
-          requiredCapabilities: ["text", "coding"],
-          privacyMode,
-        });
-        if (!decision) {
-          throw new Error("No verified free model is currently available in the CodeForge Cloud pool");
-        }
-        // Prefer the top-ranked candidate, but fall back through the router's own ranked
-        // alternatives when the top pick is provider-policy-ineligible (e.g. Gemini unpaid in an
-        // EEA region) — this preserves task continuity instead of failing auto-routing outright
-        // (R1 remediation spec §82). The gate re-runs authoritatively below regardless of which
-        // candidate is chosen here, so a wrong guess here is never a compliance risk, only a UX one.
-        const rankedCandidates = [decision.model, ...decision.alternatives];
-        const policyEligible = rankedCandidates.find(
-          (m) => this.firewallManager.checkProviderPolicy({ providerId: m.providerId, serviceTier: m.costProfile.isFree ? "FREE" : "PAID" }, region).decision !== "DENY",
-        );
-        if (!policyEligible) {
-          throw new Error("No provider-policy-eligible free model is currently available for your region");
-        }
-        selectedProviderId = policyEligible.providerId;
-        selectedModelId = policyEligible.modelId;
-      } else if (!selectedProviderId) {
-        // Exact model requested WITHOUT a providerId (desktop sends the bare modelId). Resolve it
-        // against the privacy-filtered eligible pool — never silently substitute a different model.
-        const matches = privacyEligible().filter((m) => m.modelId === selectedModelId);
-        if (matches.length === 0) {
-          throw new Error(`Requested hosted model '${selectedModelId}' is not currently available`);
-        }
-        selectedProviderId = matches[0]!.providerId;
-      } else if (selectedProviderId) {
-        // Exact provider+model: enforce the account's privacy mode in addition to base eligibility.
-        if (privacyMode && selectedProviderId !== "gems") {
-          const allowed = privacyEligible().some((m) => m.providerId === selectedProviderId && m.modelId === selectedModelId);
-          if (!allowed) {
-            throw new Error(`Model ${selectedProviderId}::${selectedModelId} is not permitted under your ${privacyMode} privacy mode`);
-          }
-        }
-        // GEMS check: GEMS models are offline until real inference backend
-        if (selectedProviderId === "gems") {
-          throw new Error("GEMS models are currently unavailable (offline)");
-        }
-      }
-
-      if (!selectedProviderId || !selectedModelId) {
-        throw new Error("Could not resolve an eligible model for hosted request");
-      }
-
-      // Verify the final selection even after Auto routing or bare-model resolution.
-      const verifiedModel = this.firewallManager.firewall.getModel(selectedProviderId, selectedModelId);
-      if (!verifiedModel) {
-        throw new Error(`Model ${selectedProviderId}::${selectedModelId} is not present in the ForgeZero catalog`);
-      }
-
-      // Product/provider-policy eligibility (R1 remediation spec §8) runs before ForgeZero's
-      // financial verification: it is a DIFFERENT authority (contractual/regional restriction, not
-      // cost) and must be able to reject a route ForgeZero would otherwise consider $0-eligible.
-      const policyDecision = this.firewallManager.checkProviderPolicy(
-        { providerId: selectedProviderId, serviceTier: verifiedModel.costProfile.isFree ? "FREE" : "PAID" },
-        region,
-      );
-      if (policyDecision.decision === "DENY") {
-        const err = `Model ${selectedProviderId}::${selectedModelId} is not available under current provider policy (${policyDecision.reasonCode})`;
-        emitTerminalEvent({ type: "turn.failed", turnId, error: err });
-        throw new Error(err);
-      }
-
-      const verification = this.firewallManager.firewall.verify(selectedProviderId, selectedModelId);
-      if (!verification.ok) {
-        throw new Error(`Model ${selectedProviderId}::${selectedModelId} is not eligible for hosted inference: ${verification.error.message}`);
-      }
-
-      // Check the ceiling for allowance-based free capacity that exposes nominal paid rates.
-      if (verifiedModel && !verifiedModel.costProfile.isFree) {
-        const estimatedTokens = (request.estimatedContextTokens || 4000) + 2000;
-        const estCost = (estimatedTokens / 1_000_000) * (verifiedModel.costProfile.inputCostPerMillion || 1.0);
-        if (estCost > killSwitches.maxRequestCostUsd) {
-          throw new Error(`Estimated request cost of $${estCost.toFixed(2)} exceeds maximum per-request limit of $${killSwitches.maxRequestCostUsd.toFixed(2)}`);
-        }
-      }
-
-      // 4. Two-phase budget reservation & atomic DB concurrency admission in ledger
       const reservation = await this.usageEngine.reserveBudget({
         userId,
         estimatedCredits,
@@ -225,7 +271,6 @@ export class GatewayService {
         modelId: selectedModelId,
         maxConcurrentTasks: maxConcurrent,
       });
-
       reservationCreated = true;
 
       const startTime = Date.now();
@@ -319,15 +364,15 @@ export class GatewayService {
         outputTokens = Math.max(1, Math.ceil(fullText.length / 4));
       }
 
+      const finishReason: HostedFinishReason = sawToolCall ? "tool_calls" : upstreamTruncated ? "length" : "stop";
       onEvent({
         type: "assistant.message.completed",
         messageId,
         fullText,
-        finishReason: sawToolCall ? "tool_calls" : upstreamTruncated ? "length" : "stop",
+        finishReason,
         usage: { inputTokens, outputTokens },
       });
 
-      // 5. Commit actual usage in ledger & reconcile difference
       const commit = await this.usageEngine.commitUsage({
         userId,
         requestId: request.requestId,
@@ -340,7 +385,7 @@ export class GatewayService {
         inputTokens,
         outputTokens,
         latencyMs: Date.now() - startTime,
-        accessClass: verifiedModel.accessClass,
+        accessClass: resolution.accessClass,
         providerCostUsd: 0,
       });
 
@@ -350,17 +395,17 @@ export class GatewayService {
         balanceAfter: commit.balanceAfter,
       });
 
-      emitTerminalEvent({ type: "turn.completed", turnId });
-
       return {
         messageId,
         fullText,
+        finishReason,
+        usage: { inputTokens, outputTokens },
         creditsConsumed: commit.actualCredits,
         balanceAfter: commit.balanceAfter,
       };
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
       if (reservationCreated) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
         try {
           await this.usageEngine.releaseReservation({
             userId,
@@ -370,10 +415,45 @@ export class GatewayService {
           });
         } catch {}
       }
-      emitTerminalEvent({ type: "turn.failed", turnId, error: errorMsg });
       throw err;
     } finally {
       this.releaseLease(userId, request.requestId);
+    }
+  }
+
+  /**
+   * Legacy synchronous streaming path: resolves and executes in one call. The durable hosted
+   * runtime uses resolveHostedRoute at enqueue and runResolvedHostedInference inside the queue
+   * worker instead; this wrapper remains for direct (non-durable) callers.
+   */
+  async executeHostedInference(
+    userId: string,
+    request: HostedInferenceRequest,
+    onEvent: (event: HostedStreamEvent) => void,
+    signal?: AbortSignal,
+    // Sourced by the HTTP layer from trusted infrastructure only; defaults to REGION_UNKNOWN,
+    // which is the safe/fail-closed value for any policy record that restricts by region.
+    region: RegionResolution = REGION_UNKNOWN,
+  ): Promise<{ messageId: string; fullText: string; creditsConsumed: number; balanceAfter: number }> {
+    const turnId = request.turnId ?? randomUUID();
+    let hasEmittedTerminalEvent = false;
+
+    const emitTerminalEvent = (event: HostedStreamEvent) => {
+      if (!hasEmittedTerminalEvent) {
+        hasEmittedTerminalEvent = true;
+        onEvent(event);
+      }
+    };
+
+    try {
+      const resolution = await this.resolveHostedRoute(userId, request, region);
+      const outcome = await this.runResolvedHostedInference(userId, request, resolution, onEvent, signal);
+      emitTerminalEvent({ type: "turn.completed", turnId });
+      return outcome;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      emitTerminalEvent({ type: "turn.failed", turnId, error: errorMsg });
+      throw err;
     }
   }
 }

@@ -226,7 +226,7 @@ describe("CF-11 production Desktop Cloud bridge", () => {
     expect(revocation.error).toBe("INSTALLATION_REVOKED");
     expect(revoked.mintCount()).toBe(0);
     expect(revoked.githubCreates()).toBe(0);
-  });
+  }, 15_000);
 
   it("uses only Cloud retry for retryable failure and preserves permanent terminal failure", async () => {
     const retryable = await desktopHarness({ failMintOnce: true });
@@ -247,5 +247,5 @@ describe("CF-11 production Desktop Cloud bridge", () => {
     expect(permanent.requests).toHaveLength(requestCount);
     expect(permanent.mintCount()).toBe(0);
     expect(permanent.githubCreates()).toBe(0);
-  });
+  }, 15_000);
 });

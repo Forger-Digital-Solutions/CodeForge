@@ -1253,7 +1253,15 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       eligibleAt: String(row.eligible_at),
       leaseOwner: row.lease_owner ? String(row.lease_owner) : null,
       leaseExpiresAt: row.lease_expires_at ? String(row.lease_expires_at) : null,
+      leaseToken: row.lease_token ? String(row.lease_token) : null,
       cancellationRequested: Boolean(row.cancellation_requested),
+      requestPayload: row.request_payload != null ? String(row.request_payload) : null,
+      resultPayload: row.result_payload != null ? String(row.result_payload) : null,
+      resultError: row.result_error != null ? String(row.result_error) : null,
+      dispatchedAt: row.dispatched_at ? String(row.dispatched_at) : null,
+      terminalAt: row.terminal_at ? String(row.terminal_at) : null,
+      parentExecutionId: row.parent_execution_id ? String(row.parent_execution_id) : null,
+      rootExecutionId: row.root_execution_id ? String(row.root_execution_id) : null,
       createdAt: String(row.created_at),
       updatedAt: String(row.updated_at),
     };
@@ -1281,7 +1289,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     });
   }
 
-  async enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string }): Promise<{ execution: HostedExecutionRecord; created: boolean }> {
+  async enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string; requestPayload?: string; parentExecutionId?: string; rootExecutionId?: string }): Promise<{ execution: HostedExecutionRecord; created: boolean }> {
     return this.txSync(() => {
       const existing = this.db.prepare(`SELECT * FROM hosted_executions WHERE idempotency_key = @idempotencyKey`).get({ idempotencyKey: params.idempotencyKey }) as Record<string, unknown> | undefined;
       if (existing) {
@@ -1289,8 +1297,16 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
         this.insertHostedAdmissionReceipt({ executionId: String(existing.id), userId: params.userId, eventType: "DUPLICATE_SUPPRESSED" });
         return { execution: this.mapHostedExecutionRow(existing), created: false };
       }
+      let rootExecutionId = params.rootExecutionId ?? null;
+      if (params.parentExecutionId) {
+        const parent = this.db.prepare(`SELECT user_id, status, root_execution_id FROM hosted_executions WHERE id = @id`).get({ id: params.parentExecutionId }) as Record<string, unknown> | undefined;
+        if (!parent) throw new Error("Parent hosted execution not found");
+        if (String(parent.user_id) !== params.userId) throw new Error("Parent hosted execution belongs to another user account");
+        if (["completed", "failed", "cancelled"].includes(String(parent.status))) throw new Error("Parent hosted execution is already terminal");
+        rootExecutionId = rootExecutionId ?? (parent.root_execution_id ? String(parent.root_execution_id) : params.parentExecutionId);
+      }
       const now = new Date().toISOString();
-      this.db.prepare(`INSERT INTO hosted_executions (id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, cancellation_requested, created_at, updated_at) VALUES (@id, @idempotencyKey, @userId, @taskId, @providerId, @modelId, 'queued', @priority, 0, @eligibleAt, 0, @now, @now)`).run({ ...params, priority: params.priority ?? 0, eligibleAt: params.eligibleAt ?? now, now });
+      this.db.prepare(`INSERT INTO hosted_executions (id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, cancellation_requested, request_payload, parent_execution_id, root_execution_id, created_at, updated_at) VALUES (@id, @idempotencyKey, @userId, @taskId, @providerId, @modelId, 'queued', @priority, 0, @eligibleAt, 0, @requestPayload, @parentExecutionId, @rootExecutionId, @now, @now)`).run({ id: params.id, idempotencyKey: params.idempotencyKey, userId: params.userId, taskId: params.taskId, providerId: params.providerId, modelId: params.modelId, priority: params.priority ?? 0, eligibleAt: params.eligibleAt ?? now, requestPayload: params.requestPayload ?? null, parentExecutionId: params.parentExecutionId ?? null, rootExecutionId, now });
       this.insertHostedAdmissionReceipt({ executionId: params.id, userId: params.userId, eventType: "QUEUE_ENQUEUED", createdAt: now });
       const row = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @id`).get({ id: params.id }) as Record<string, unknown>;
       return { execution: this.mapHostedExecutionRow(row), created: true };
@@ -1302,8 +1318,16 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return row ? this.mapHostedExecutionRow(row) : undefined;
   }
 
+  async listHostedExecutionChildren(executionId: string, userId: string): Promise<HostedExecutionRecord[]> {
+    const owns = this.db.prepare(`SELECT 1 FROM hosted_executions WHERE id = @executionId AND user_id = @userId`).get({ executionId, userId });
+    if (!owns) throw new Error("Hosted execution not found for user");
+    return (this.db.prepare(`SELECT * FROM hosted_executions WHERE parent_execution_id = @executionId AND user_id = @userId ORDER BY created_at ASC`).all({ executionId, userId }) as Record<string, unknown>[]).map((row) => this.mapHostedExecutionRow(row));
+  }
+
   async listHostedExecutions(userId: string, limit = 100): Promise<HostedExecutionRecord[]> {
-    return (this.db.prepare(`SELECT * FROM hosted_executions WHERE user_id = @userId ORDER BY created_at DESC LIMIT @limit`).all({ userId, limit }) as Record<string, unknown>[]).map((row) => this.mapHostedExecutionRow(row));
+    // Payload columns are deliberately excluded: a list is a metadata projection, and carrying up
+    // to `limit` request/result bodies through every poll would make status listing a DoS vector.
+    return (this.db.prepare(`SELECT id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, lease_owner, lease_expires_at, lease_token, cancellation_requested, dispatched_at, terminal_at, parent_execution_id, root_execution_id, created_at, updated_at FROM hosted_executions WHERE user_id = @userId ORDER BY created_at DESC LIMIT @limit`).all({ userId, limit }) as Record<string, unknown>[]).map((row) => this.mapHostedExecutionRow(row));
   }
 
   async setHostedProviderCapacity(params: { providerId: string; modelId: string; maxConcurrent: number }): Promise<void> {
@@ -1311,27 +1335,40 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     this.db.prepare(`INSERT INTO hosted_provider_capacity (provider_id, model_id, max_concurrent, updated_at) VALUES (@providerId, @modelId, @maxConcurrent, @now) ON CONFLICT(provider_id, model_id) DO UPDATE SET max_concurrent = excluded.max_concurrent, updated_at = excluded.updated_at`).run({ ...params, now: new Date().toISOString() });
   }
 
-  async claimNextHostedExecution(params: { workerId: string; leaseMs: number; maxUserConcurrent: number; now?: Date }): Promise<{ execution: HostedExecutionRecord; lease: HostedCapacityLeaseRecord } | undefined> {
+  async ensureHostedProviderCapacity(params: { providerId: string; modelId: string; maxConcurrent: number }): Promise<void> {
+    return this.txSync(() => {
+      this.db.prepare(`INSERT INTO hosted_provider_capacity (provider_id, model_id, max_concurrent, updated_at) VALUES (@providerId, @modelId, @maxConcurrent, @now) ON CONFLICT(provider_id, model_id) DO NOTHING`).run({ ...params, now: new Date().toISOString() });
+    });
+  }
+
+  async claimNextHostedExecution(params: { workerId: string; leaseMs: number; maxUserConcurrent: number; providerIds?: string[]; now?: Date }): Promise<{ execution: HostedExecutionRecord; lease: HostedCapacityLeaseRecord } | undefined> {
     if (!Number.isSafeInteger(params.leaseMs) || params.leaseMs < 1) throw new Error("leaseMs must be a positive safe integer");
     if (!Number.isSafeInteger(params.maxUserConcurrent) || params.maxUserConcurrent < 1) throw new Error("maxUserConcurrent must be a positive safe integer");
     return this.txSync(() => {
       const now = params.now ?? new Date();
       const nowIso = now.toISOString();
+      // Capability scope: the filter applies to both the candidate and the per-user "earlier" head
+      // check, so a queued row for a provider this worker cannot run never hides the user's
+      // claimable work behind it.
+      const scope = params.providerIds === undefined ? "" : " AND e.provider_id IN (SELECT value FROM json_each(@providerIds))";
+      const earlierScope = params.providerIds === undefined ? "" : " AND earlier.provider_id IN (SELECT value FROM json_each(@providerIds))";
+      const bind: Record<string, unknown> = { now: nowIso, maxUserConcurrent: params.maxUserConcurrent };
+      if (params.providerIds !== undefined) bind.providerIds = JSON.stringify(params.providerIds);
       const row = this.db.prepare(`
         SELECT e.* FROM hosted_executions e
         LEFT JOIN hosted_user_admission_state uas ON uas.user_id = e.user_id
         JOIN hosted_provider_capacity pc ON pc.provider_id = e.provider_id AND pc.model_id = e.model_id
-        WHERE e.status = 'queued' AND e.eligible_at <= @now
-          AND NOT EXISTS (SELECT 1 FROM hosted_executions earlier WHERE earlier.user_id = e.user_id AND earlier.status = 'queued' AND (earlier.priority > e.priority OR (earlier.priority = e.priority AND earlier.created_at < e.created_at)))
+        WHERE e.status = 'queued' AND e.eligible_at <= @now${scope}
+          AND NOT EXISTS (SELECT 1 FROM hosted_executions earlier WHERE earlier.user_id = e.user_id AND earlier.status = 'queued'${earlierScope} AND (earlier.priority > e.priority OR (earlier.priority = e.priority AND earlier.created_at < e.created_at)))
           AND (SELECT COUNT(*) FROM hosted_capacity_leases ul WHERE ul.user_id = e.user_id AND ul.state = 'active' AND ul.lease_expires_at > @now) < @maxUserConcurrent
           AND (SELECT COUNT(*) FROM hosted_capacity_leases rl WHERE rl.provider_id = e.provider_id AND rl.model_id = e.model_id AND rl.state = 'active' AND rl.lease_expires_at > @now) < pc.max_concurrent
         ORDER BY CASE WHEN uas.last_admitted_at IS NULL THEN 0 ELSE 1 END, uas.last_admitted_at ASC, e.priority DESC, e.created_at ASC
         LIMIT 1
-      `).get({ now: nowIso, maxUserConcurrent: params.maxUserConcurrent }) as Record<string, unknown> | undefined;
+      `).get(bind) as Record<string, unknown> | undefined;
       if (!row) return undefined;
       const leaseId = randomUUID();
       const leaseExpiresAt = new Date(now.getTime() + params.leaseMs).toISOString();
-      const updated = this.db.prepare(`UPDATE hosted_executions SET status = 'claimed', lease_owner = @workerId, lease_expires_at = @leaseExpiresAt, attempt = attempt + 1, updated_at = @now WHERE id = @id AND status = 'queued'`).run({ id: String(row.id), workerId: params.workerId, leaseExpiresAt, now: nowIso });
+      const updated = this.db.prepare(`UPDATE hosted_executions SET status = 'claimed', lease_owner = @workerId, lease_expires_at = @leaseExpiresAt, lease_token = @leaseToken, attempt = attempt + 1, updated_at = @now WHERE id = @id AND status = 'queued'`).run({ id: String(row.id), workerId: params.workerId, leaseExpiresAt, leaseToken: leaseId, now: nowIso });
       if (Number(updated.changes) !== 1) return undefined;
       this.db.prepare(`INSERT INTO hosted_capacity_leases (id, execution_id, user_id, provider_id, model_id, worker_id, state, lease_expires_at, created_at) VALUES (@id, @executionId, @userId, @providerId, @modelId, @workerId, 'active', @leaseExpiresAt, @now)`).run({ id: leaseId, executionId: String(row.id), userId: String(row.user_id), providerId: String(row.provider_id), modelId: String(row.model_id), workerId: params.workerId, leaseExpiresAt, now: nowIso });
       this.db.prepare(`INSERT INTO hosted_user_admission_state (user_id, last_admitted_at, updated_at) VALUES (@userId, @now, @now) ON CONFLICT(user_id) DO UPDATE SET last_admitted_at = excluded.last_admitted_at, updated_at = excluded.updated_at`).run({ userId: String(row.user_id), now: nowIso });
@@ -1342,24 +1379,29 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     });
   }
 
-  async markHostedExecutionDispatching(params: { executionId: string; workerId: string }): Promise<HostedExecutionRecord> {
+  async markHostedExecutionDispatching(params: { executionId: string; workerId: string; leaseToken: string }): Promise<HostedExecutionRecord> {
     return this.txSync(() => {
       const row = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @executionId`).get({ executionId: params.executionId }) as Record<string, unknown> | undefined;
-      if (!row || String(row.lease_owner) !== params.workerId || String(row.status) !== "claimed") throw new Error("Execution is not claimed by this worker");
+      if (!row || String(row.lease_owner) !== params.workerId || String(row.lease_token) !== params.leaseToken || String(row.status) !== "claimed") throw new Error("Execution is not claimed by this worker lease");
       const now = new Date().toISOString();
-      this.db.prepare(`UPDATE hosted_executions SET status = 'dispatching', updated_at = @now WHERE id = @executionId`).run({ executionId: params.executionId, now });
+      this.db.prepare(`UPDATE hosted_executions SET status = 'dispatching', dispatched_at = @now, updated_at = @now WHERE id = @executionId`).run({ executionId: params.executionId, now });
       this.insertHostedAdmissionReceipt({ executionId: params.executionId, userId: String(row.user_id), eventType: "DISPATCH_STARTED", workerId: params.workerId, createdAt: now });
-      return this.mapHostedExecutionRow({ ...row, status: "dispatching", updated_at: now });
+      return this.mapHostedExecutionRow({ ...row, status: "dispatching", dispatched_at: now, updated_at: now });
     });
   }
 
-  async completeHostedExecution(params: { executionId: string; userId: string; status: "completed" | "failed"; releaseReason?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
+  async completeHostedExecution(params: { executionId: string; userId: string; workerId: string; leaseToken: string; status: "completed" | "failed"; releaseReason?: string; resultPayload?: string; resultError?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
     return this.txSync(() => {
       const row = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @executionId AND user_id = @userId`).get({ executionId: params.executionId, userId: params.userId }) as Record<string, unknown> | undefined;
       if (!row) throw new Error("Hosted execution not found for user");
       if (["completed", "failed", "cancelled"].includes(String(row.status))) return { execution: this.mapHostedExecutionRow(row), transitioned: false };
+      // Fencing: only the worker holding the token minted by the winning claim may terminalize a
+      // live execution. A stale worker whose lease expired and was reclaimed is rejected here.
+      if (String(row.lease_owner) !== params.workerId || String(row.lease_token) !== params.leaseToken) {
+        throw new Error("Hosted execution lease fencing token does not match this worker");
+      }
       const now = new Date().toISOString();
-      this.db.prepare(`UPDATE hosted_executions SET status = @status, lease_owner = NULL, lease_expires_at = NULL, updated_at = @now WHERE id = @executionId AND user_id = @userId`).run({ executionId: params.executionId, userId: params.userId, status: params.status, now });
+      this.db.prepare(`UPDATE hosted_executions SET status = @status, lease_owner = NULL, lease_expires_at = NULL, lease_token = NULL, result_payload = @resultPayload, result_error = @resultError, terminal_at = @now, updated_at = @now WHERE id = @executionId AND user_id = @userId`).run({ executionId: params.executionId, userId: params.userId, status: params.status, resultPayload: params.resultPayload ?? null, resultError: params.resultError ?? null, now });
       this.db.prepare(`UPDATE hosted_capacity_leases SET state = 'released', released_at = @now, release_reason = @reason WHERE execution_id = @executionId AND state = 'active'`).run({ executionId: params.executionId, now, reason: params.releaseReason ?? params.status });
       this.insertHostedAdmissionReceipt({ executionId: params.executionId, userId: params.userId, eventType: "CAPACITY_RELEASED", createdAt: now, details: { status: params.status } });
       const updated = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @executionId`).get({ executionId: params.executionId }) as Record<string, unknown>;
@@ -1367,31 +1409,62 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     });
   }
 
-  async cancelHostedExecution(params: { executionId: string; userId: string }): Promise<{ execution: HostedExecutionRecord; dispatchMayHaveStarted: boolean; transitioned: boolean }> {
+  async cancelHostedExecution(params: { executionId: string; userId: string }): Promise<{ execution: HostedExecutionRecord; dispatchMayHaveStarted: boolean; transitioned: boolean; cancelledChildIds: string[] }> {
     return this.txSync(() => {
       const row = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @executionId AND user_id = @userId`).get({ executionId: params.executionId, userId: params.userId }) as Record<string, unknown> | undefined;
       if (!row) throw new Error("Hosted execution not found for user");
-      if (["completed", "failed", "cancelled"].includes(String(row.status))) return { execution: this.mapHostedExecutionRow(row), dispatchMayHaveStarted: String(row.status) !== "queued", transitioned: false };
+      if (["completed", "failed", "cancelled"].includes(String(row.status))) return { execution: this.mapHostedExecutionRow(row), dispatchMayHaveStarted: String(row.status) !== "queued", transitioned: false, cancelledChildIds: [] };
       const dispatchMayHaveStarted = String(row.status) === "dispatching" || String(row.status) === "recovery_pending";
       const now = new Date().toISOString();
+      const cancelOne = (executionId: string, isChild: boolean) => {
+        const target = this.db.prepare(`SELECT status FROM hosted_executions WHERE id = @id`).get({ id: executionId }) as Record<string, unknown> | undefined;
+        if (!target || ["completed", "failed", "cancelled"].includes(String(target.status))) return false;
+        this.db.prepare(`UPDATE hosted_executions SET status = 'cancelled', cancellation_requested = 1, lease_owner = NULL, lease_expires_at = NULL, lease_token = NULL, terminal_at = @now, updated_at = @now WHERE id = @id`).run({ id: executionId, now });
+        this.db.prepare(`UPDATE hosted_capacity_leases SET state = 'released', released_at = @now, release_reason = 'cancelled' WHERE execution_id = @id AND state = 'active'`).run({ id: executionId, now });
+        this.insertHostedAdmissionReceipt({ executionId, userId: params.userId, eventType: "CANCELLED", createdAt: now, details: { cancelledAsChild: isChild } });
+        return true;
+      };
       this.insertHostedAdmissionReceipt({ executionId: params.executionId, userId: params.userId, eventType: "CANCEL_REQUESTED", createdAt: now, details: { dispatchMayHaveStarted } });
-      this.db.prepare(`UPDATE hosted_executions SET status = 'cancelled', cancellation_requested = 1, lease_owner = NULL, lease_expires_at = NULL, updated_at = @now WHERE id = @executionId AND user_id = @userId`).run({ executionId: params.executionId, userId: params.userId, now });
-      this.db.prepare(`UPDATE hosted_capacity_leases SET state = 'released', released_at = @now, release_reason = 'cancelled' WHERE execution_id = @executionId AND state = 'active'`).run({ executionId: params.executionId, now });
-      this.insertHostedAdmissionReceipt({ executionId: params.executionId, userId: params.userId, eventType: "CANCELLED", createdAt: now, details: { dispatchMayHaveStarted } });
+      cancelOne(params.executionId, false);
+      // Cascade to every non-terminal descendant — a cancelled parent must never leave orphaned
+      // subagent children queued or running against provider capacity.
+      const descendants = this.db.prepare(`WITH RECURSIVE tree(id) AS (SELECT id FROM hosted_executions WHERE parent_execution_id = @root UNION ALL SELECT e.id FROM hosted_executions e JOIN tree t ON e.parent_execution_id = t.id) SELECT id FROM tree`).all({ root: params.executionId }) as Record<string, unknown>[];
+      const cancelledChildIds: string[] = [];
+      for (const child of descendants) {
+        const childRow = this.db.prepare(`SELECT user_id FROM hosted_executions WHERE id = @id`).get({ id: String(child.id) }) as Record<string, unknown> | undefined;
+        if (childRow && String(childRow.user_id) === params.userId && cancelOne(String(child.id), true)) cancelledChildIds.push(String(child.id));
+      }
       const updated = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @executionId`).get({ executionId: params.executionId }) as Record<string, unknown>;
-      return { execution: this.mapHostedExecutionRow(updated), dispatchMayHaveStarted, transitioned: true };
+      return { execution: this.mapHostedExecutionRow(updated), dispatchMayHaveStarted, transitioned: true, cancelledChildIds };
     });
   }
 
-  async renewHostedExecutionLease(params: { executionId: string; workerId: string; leaseMs: number; now?: Date }): Promise<HostedCapacityLeaseRecord> {
+  async renewHostedExecutionLease(params: { executionId: string; workerId: string; leaseToken: string; leaseMs: number; now?: Date }): Promise<HostedCapacityLeaseRecord> {
     return this.txSync(() => {
       const now = params.now ?? new Date();
       const leaseExpiresAt = new Date(now.getTime() + params.leaseMs).toISOString();
-      const result = this.db.prepare(`UPDATE hosted_capacity_leases SET lease_expires_at = @leaseExpiresAt WHERE execution_id = @executionId AND worker_id = @workerId AND state = 'active'`).run({ executionId: params.executionId, workerId: params.workerId, leaseExpiresAt });
+      const result = this.db.prepare(`UPDATE hosted_capacity_leases SET lease_expires_at = @leaseExpiresAt WHERE id = @leaseToken AND execution_id = @executionId AND worker_id = @workerId AND state = 'active'`).run({ leaseToken: params.leaseToken, executionId: params.executionId, workerId: params.workerId, leaseExpiresAt });
       if (Number(result.changes) !== 1) throw new Error("Active hosted execution lease not found for worker");
-      this.db.prepare(`UPDATE hosted_executions SET lease_expires_at = @leaseExpiresAt, updated_at = @now WHERE id = @executionId AND lease_owner = @workerId AND status IN ('claimed', 'dispatching')`).run({ executionId: params.executionId, workerId: params.workerId, leaseExpiresAt, now: now.toISOString() });
-      const row = this.db.prepare(`SELECT * FROM hosted_capacity_leases WHERE execution_id = @executionId AND worker_id = @workerId AND state = 'active'`).get({ executionId: params.executionId, workerId: params.workerId }) as Record<string, unknown>;
+      this.db.prepare(`UPDATE hosted_executions SET lease_expires_at = @leaseExpiresAt, updated_at = @now WHERE id = @executionId AND lease_owner = @workerId AND lease_token = @leaseToken AND status IN ('claimed', 'dispatching')`).run({ executionId: params.executionId, workerId: params.workerId, leaseToken: params.leaseToken, leaseExpiresAt, now: now.toISOString() });
+      const row = this.db.prepare(`SELECT * FROM hosted_capacity_leases WHERE id = @leaseToken`).get({ leaseToken: params.leaseToken }) as Record<string, unknown>;
       return this.mapHostedCapacityLeaseRow(row);
+    });
+  }
+
+  async resolveHostedRecoveryPending(params: { executionId: string; workerId: string; reason?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
+    return this.txSync(() => {
+      const row = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @id`).get({ id: params.executionId }) as Record<string, unknown> | undefined;
+      if (!row) throw new Error("Hosted execution not found");
+      if (String(row.status) !== "recovery_pending") return { execution: this.mapHostedExecutionRow(row), transitioned: false };
+      const now = new Date().toISOString();
+      // Fail closed: a post-dispatch worker loss leaves the provider outcome unknowable, so the
+      // execution terminalizes as failed with an honest reason — never silently requeued into a
+      // potential duplicate provider call.
+      this.db.prepare(`UPDATE hosted_executions SET status = 'failed', result_error = @reason, lease_owner = NULL, lease_expires_at = NULL, lease_token = NULL, terminal_at = @now, updated_at = @now WHERE id = @id`).run({ id: params.executionId, reason: params.reason ?? "dispatch outcome ambiguous after worker loss", now });
+      this.db.prepare(`UPDATE hosted_capacity_leases SET state = 'expired', released_at = @now, release_reason = 'recovery_resolved' WHERE execution_id = @id AND state = 'active'`).run({ id: params.executionId, now });
+      this.insertHostedAdmissionReceipt({ executionId: params.executionId, userId: String(row.user_id), eventType: "RECOVERY_RESOLVED", workerId: params.workerId, createdAt: now, details: { resolution: "failed" } });
+      const updated = this.db.prepare(`SELECT * FROM hosted_executions WHERE id = @id`).get({ id: params.executionId }) as Record<string, unknown>;
+      return { execution: this.mapHostedExecutionRow(updated), transitioned: true };
     });
   }
 
@@ -1401,7 +1474,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       const rows = this.db.prepare(`SELECT e.id, e.user_id, e.status FROM hosted_executions e JOIN hosted_capacity_leases l ON l.execution_id = e.id WHERE l.state = 'active' AND l.lease_expires_at <= @now AND e.status IN ('claimed', 'dispatching')`).all({ now: nowIso }) as Record<string, unknown>[];
       for (const row of rows) {
         const nextStatus = String(row.status) === "claimed" ? "queued" : "recovery_pending";
-        this.db.prepare(`UPDATE hosted_executions SET status = @nextStatus, lease_owner = NULL, lease_expires_at = NULL, updated_at = @now WHERE id = @id`).run({ id: String(row.id), nextStatus, now: nowIso });
+        this.db.prepare(`UPDATE hosted_executions SET status = @nextStatus, lease_owner = NULL, lease_expires_at = NULL, lease_token = NULL, updated_at = @now WHERE id = @id`).run({ id: String(row.id), nextStatus, now: nowIso });
         this.db.prepare(`UPDATE hosted_capacity_leases SET state = 'expired', released_at = @now, release_reason = 'lease_expired' WHERE execution_id = @id AND state = 'active'`).run({ id: String(row.id), now: nowIso });
         this.insertHostedAdmissionReceipt({ executionId: String(row.id), userId: String(row.user_id), eventType: "LEASE_EXPIRED", createdAt: nowIso, details: { nextStatus } });
       }

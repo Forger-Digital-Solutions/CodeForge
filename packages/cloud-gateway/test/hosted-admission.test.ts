@@ -49,7 +49,7 @@ describe("HostedAdmissionAuthority", () => {
     await workers[0]!.enqueue({ executionId: "execution-ambiguous", idempotencyKey: "key-ambiguous", userId: users[0]!, taskId: "task-ambiguous", ...route });
     const start = new Date();
     const claim = await workers[0]!.claim(start);
-    await workers[0]!.beginDispatch(claim!.execution.id);
+    await workers[0]!.beginDispatch(claim!.execution.id, claim!.lease!.id);
     expect((await workers[1]!.reconcile(new Date(start.getTime() + 101))).recovered).toBe(1);
     expect((await db.getHostedExecution(claim!.execution.id, users[0]!))?.status).toBe("recovery_pending");
     expect(await workers[2]!.claim(new Date(start.getTime() + 102))).toBeUndefined();

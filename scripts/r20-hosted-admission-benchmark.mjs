@@ -22,7 +22,7 @@ for (const size of [10, 100, 1_000, 10_000]) {
     const claim = await db.claimNextHostedExecution({ workerId: `worker-${index}`, leaseMs: 60_000, maxUserConcurrent: size });
     selectionLatencies.push(performance.now() - started);
     if (!claim) throw new Error(`Admission stopped at ${index}/${size}`);
-    await db.completeHostedExecution({ executionId: claim.execution.id, userId: claim.execution.userId, status: "completed" });
+    await db.completeHostedExecution({ executionId: claim.execution.id, userId: claim.execution.userId, workerId: `worker-${index}`, leaseToken: claim.lease.id, status: "completed" });
   }
   const claimMs = performance.now() - claimStart;
   selectionLatencies.sort((a, b) => a - b);

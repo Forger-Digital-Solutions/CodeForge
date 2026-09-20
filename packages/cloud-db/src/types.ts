@@ -201,7 +201,24 @@ export const HostedExecutionRecordSchema = z.object({
   eligibleAt: z.string(),
   leaseOwner: z.string().nullable().optional(),
   leaseExpiresAt: z.string().nullable().optional(),
+  /**
+   * Fencing token: the id of the hosted_capacity_leases row minted by the winning claim. Only the
+   * worker holding this exact token may dispatch, heartbeat, or terminalize the execution — a
+   * worker that wakes after its lease expired (and a newer lease exists) is rejected rather than
+   * allowed to overwrite the new owner's state.
+   */
+  leaseToken: z.string().nullable().optional(),
   cancellationRequested: z.boolean(),
+  /** Normalized, bounded JSON of the validated inference request (server-derived region included). */
+  requestPayload: z.string().nullable().optional(),
+  /** Bounded JSON terminal result written by the completing worker; replayable by the owner. */
+  resultPayload: z.string().nullable().optional(),
+  resultError: z.string().nullable().optional(),
+  dispatchedAt: z.string().nullable().optional(),
+  terminalAt: z.string().nullable().optional(),
+  /** Subagent fan-out: parent link (same user, enforced at enqueue) and stable root for cascade. */
+  parentExecutionId: z.string().nullable().optional(),
+  rootExecutionId: z.string().nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -226,7 +243,7 @@ export interface HostedAdmissionReceiptRecord {
   id: string;
   executionId: string;
   userId: string;
-  eventType: "QUEUE_ENQUEUED" | "CAPACITY_RESERVED" | "DISPATCH_STARTED" | "CAPACITY_RELEASED" | "LEASE_EXPIRED" | "CANCEL_REQUESTED" | "CANCELLED" | "RETRY_SCHEDULED" | "FAILOVER" | "ACCOUNTING_COMMITTED" | "DUPLICATE_SUPPRESSED";
+  eventType: "QUEUE_ENQUEUED" | "CAPACITY_RESERVED" | "DISPATCH_STARTED" | "CAPACITY_RELEASED" | "LEASE_EXPIRED" | "CANCEL_REQUESTED" | "CANCELLED" | "RETRY_SCHEDULED" | "FAILOVER" | "ACCOUNTING_COMMITTED" | "DUPLICATE_SUPPRESSED" | "RECOVERY_RESOLVED";
   workerId?: string;
   details?: Record<string, string | number | boolean | null>;
   createdAt: string;

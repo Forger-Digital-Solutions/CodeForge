@@ -163,16 +163,58 @@ export interface ICloudDatabase {
   updateHostedRequest(id: string, status: HostedRequestRecord["status"], actualCredits?: number): Promise<void>;
 
   // Durable Hosted Admission
-  enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string }): Promise<{ execution: HostedExecutionRecord; created: boolean }>;
+  /**
+   * Atomically insert one durable execution (or return the existing row for a repeated
+   * idempotencyKey). `requestPayload` is the normalized, bounded JSON request body the worker will
+   * later execute without re-trusting the client; `parentExecutionId` links a subagent child to its
+   * parent (must exist, belong to the same user, and be non-terminal). Reusing an idempotency key
+   * owned by a different user throws rather than colliding.
+   */
+  enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string; requestPayload?: string; parentExecutionId?: string; rootExecutionId?: string }): Promise<{ execution: HostedExecutionRecord; created: boolean }>;
+  /** Owner-scoped read — returns undefined for foreign or unknown ids so existence is not leaked. */
   getHostedExecution(id: string, userId: string): Promise<HostedExecutionRecord | undefined>;
+  /** Owner-scoped children of one execution (subagent fan-out inspection). */
+  listHostedExecutionChildren(executionId: string, userId: string): Promise<HostedExecutionRecord[]>;
   listHostedExecutions(userId: string, limit?: number): Promise<HostedExecutionRecord[]>;
   setHostedProviderCapacity(params: { providerId: string; modelId: string; maxConcurrent: number }): Promise<void>;
-  claimNextHostedExecution(params: { workerId: string; leaseMs: number; maxUserConcurrent: number; now?: Date }): Promise<{ execution: HostedExecutionRecord; lease: HostedCapacityLeaseRecord } | undefined>;
-  markHostedExecutionDispatching(params: { executionId: string; workerId: string }): Promise<HostedExecutionRecord>;
-  completeHostedExecution(params: { executionId: string; userId: string; status: "completed" | "failed"; releaseReason?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }>;
-  cancelHostedExecution(params: { executionId: string; userId: string }): Promise<{ execution: HostedExecutionRecord; dispatchMayHaveStarted: boolean; transitioned: boolean }>;
-  renewHostedExecutionLease(params: { executionId: string; workerId: string; leaseMs: number; now?: Date }): Promise<HostedCapacityLeaseRecord>;
+  /**
+   * Insert a capacity ceiling only when the route has none — never overwrites an operator-tuned
+   * value. Admission calls this so a newly verified free route is claimable without manual
+   * seeding; an existing row is authoritative and untouched.
+   */
+  ensureHostedProviderCapacity(params: { providerId: string; modelId: string; maxConcurrent: number }): Promise<void>;
+  /**
+   * Atomically claim the next fair queued execution. `providerIds` is the capability scope: when
+   * provided, only executions whose provider is in the set are candidates — a worker must never
+   * claim (and thereby terminalize) work it cannot execute. An empty set claims nothing.
+   */
+  claimNextHostedExecution(params: { workerId: string; leaseMs: number; maxUserConcurrent: number; providerIds?: string[]; now?: Date }): Promise<{ execution: HostedExecutionRecord; lease: HostedCapacityLeaseRecord } | undefined>;
+  /**
+   * claimed → dispatching, fenced by the lease token minted at claim. A stale worker whose lease was
+   * reclaimed cannot move the execution — the throw is the fencing signal, not a retryable error.
+   */
+  markHostedExecutionDispatching(params: { executionId: string; workerId: string; leaseToken: string }): Promise<HostedExecutionRecord>;
+  /**
+   * Exactly-once terminalization. A second call for an already-terminal execution returns
+   * `transitioned: false` (idempotent replay). For a non-terminal execution the caller must hold the
+   * current fencing token — a stale worker is rejected and cannot overwrite a newer owner's claim,
+   * cancel a cancelled execution, or double-release capacity.
+   */
+  completeHostedExecution(params: { executionId: string; userId: string; workerId: string; leaseToken: string; status: "completed" | "failed"; releaseReason?: string; resultPayload?: string; resultError?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }>;
+  /**
+   * Owner-scoped cancellation. Cascades to every non-terminal descendant execution (subagent
+   * children/grandchildren) of the same user so a cancelled parent can never leave orphaned queued
+   * or running children consuming capacity.
+   */
+  cancelHostedExecution(params: { executionId: string; userId: string }): Promise<{ execution: HostedExecutionRecord; dispatchMayHaveStarted: boolean; transitioned: boolean; cancelledChildIds: string[] }>;
+  renewHostedExecutionLease(params: { executionId: string; workerId: string; leaseToken: string; leaseMs: number; now?: Date }): Promise<HostedCapacityLeaseRecord>;
   recoverExpiredHostedLeases(now?: Date): Promise<{ recovered: number; executionIds: string[] }>;
+  /**
+   * Fail-closed resolution of `recovery_pending` (ambiguous post-dispatch) work. Default and only
+   * direction is 'failed': the provider outcome is unknowable, so the execution terminalizes as a
+   * failure with an honest reason rather than being blindly retried into a duplicate provider call.
+   */
+  resolveHostedRecoveryPending(params: { executionId: string; workerId: string; reason?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }>;
   listHostedAdmissionReceipts(executionId: string, userId: string): Promise<HostedAdmissionReceiptRecord[]>;
   getHostedAdmissionMetrics(): Promise<HostedAdmissionMetrics>;
 

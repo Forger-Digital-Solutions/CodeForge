@@ -1020,6 +1020,39 @@ CREATE INDEX IF NOT EXISTS idx_hosted_executions_queued_user_head
   WHERE status = 'queued';
 `;
 
+// 012: persisted request/result authority + parent/child subagent links + lease fencing token.
+// request_payload carries the normalized validated inference request so a restarted worker can
+// reconstruct the operation without trusting the client again; result_payload carries the bounded
+// terminal result the owner later replays. lease_token is the fencing token (the active
+// hosted_capacity_leases.id) that makes a stale worker unable to mutate a reclaimed execution.
+const MIGRATION_12_SQLITE = `
+ALTER TABLE hosted_executions ADD COLUMN request_payload TEXT;
+ALTER TABLE hosted_executions ADD COLUMN result_payload TEXT;
+ALTER TABLE hosted_executions ADD COLUMN result_error TEXT;
+ALTER TABLE hosted_executions ADD COLUMN dispatched_at TEXT;
+ALTER TABLE hosted_executions ADD COLUMN terminal_at TEXT;
+ALTER TABLE hosted_executions ADD COLUMN parent_execution_id TEXT REFERENCES hosted_executions(id) ON DELETE CASCADE;
+ALTER TABLE hosted_executions ADD COLUMN root_execution_id TEXT;
+ALTER TABLE hosted_executions ADD COLUMN lease_token TEXT;
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_parent ON hosted_executions(parent_execution_id) WHERE parent_execution_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_root ON hosted_executions(root_execution_id) WHERE root_execution_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_recovery_pending ON hosted_executions(status, updated_at) WHERE status = 'recovery_pending';
+`;
+
+const MIGRATION_12_POSTGRES = `
+ALTER TABLE hosted_executions ADD COLUMN request_payload TEXT;
+ALTER TABLE hosted_executions ADD COLUMN result_payload TEXT;
+ALTER TABLE hosted_executions ADD COLUMN result_error TEXT;
+ALTER TABLE hosted_executions ADD COLUMN dispatched_at TIMESTAMPTZ;
+ALTER TABLE hosted_executions ADD COLUMN terminal_at TIMESTAMPTZ;
+ALTER TABLE hosted_executions ADD COLUMN parent_execution_id VARCHAR(255) REFERENCES hosted_executions(id) ON DELETE CASCADE;
+ALTER TABLE hosted_executions ADD COLUMN root_execution_id VARCHAR(255);
+ALTER TABLE hosted_executions ADD COLUMN lease_token VARCHAR(64);
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_parent ON hosted_executions(parent_execution_id) WHERE parent_execution_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_root ON hosted_executions(root_execution_id) WHERE root_execution_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_recovery_pending ON hosted_executions(status, updated_at) WHERE status = 'recovery_pending';
+`;
+
 export const MIGRATIONS: MigrationDefinition[] = [
   {
     version: 1,
@@ -1097,6 +1130,13 @@ export const MIGRATIONS: MigrationDefinition[] = [
     sqliteUp: MIGRATION_11_SQLITE,
     postgresUp: MIGRATION_11_POSTGRES,
     checksum: computeChecksum(MIGRATION_11_SQLITE),
+  },
+  {
+    version: 12,
+    name: "012_hosted_execution_payloads_and_fencing",
+    sqliteUp: MIGRATION_12_SQLITE,
+    postgresUp: MIGRATION_12_POSTGRES,
+    checksum: computeChecksum(MIGRATION_12_SQLITE),
   },
 ];
 

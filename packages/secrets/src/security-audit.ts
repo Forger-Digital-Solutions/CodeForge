@@ -27,6 +27,8 @@ export type SecurityAuditEventType =
   | "billing.webhook.rejected"
   | "billing.subscription.changed"
   | "tenant.access.denied"
+  | "hosted.execution.enqueued"
+  | "hosted.execution.cancelled"
   | "ratelimit.exceeded"
   | "crypto.decrypt.failed"
   | "crypto.key.rotation"

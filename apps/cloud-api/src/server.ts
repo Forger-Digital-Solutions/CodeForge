@@ -8,7 +8,8 @@ import { AuthService, GitHubAppAuthorizationService, GitHubAuthorizationError, t
 import { EntitlementService } from "@codeforge/cloud-entitlements";
 import { UsageEngine } from "@codeforge/cloud-usage";
 import { StripeBillingService, type StripeConfig } from "@codeforge/cloud-billing";
-import { CloudFirewallManager, GatewayService, type HostedInferenceRequest, type HostedStreamEvent, type CloudProviderRegistry, type CloudKillSwitchConfig } from "@codeforge/cloud-gateway";
+import { CloudFirewallManager, GatewayService, HostedRuntime, type HostedInferenceRequest, type CloudProviderRegistry, type CloudKillSwitchConfig } from "@codeforge/cloud-gateway";
+import type { HostedExecutionRecord } from "@codeforge/cloud-db";
 import { REGION_UNKNOWN, classifyRegionEvidence, type RegionResolution } from "@codeforge/legal-policy";
 import { deleteAccount } from "./account-deletion.js";
 import { DesktopWorkerActionResultSchema } from "@codeforge/protocol";
@@ -161,6 +162,33 @@ const HostedWorkflowCreateSchema = z.object({
 
 const WorkerIdSchema = z.string().min(1).max(128);
 
+/** Public wire shape: lease tokens and request/result payloads are worker-internal or fetched via the result route, never exposed on status reads. */
+function publicHostedExecution(execution: HostedExecutionRecord, created?: boolean): Record<string, unknown> {
+  return {
+    executionId: execution.id,
+    status: execution.status,
+    providerId: execution.providerId,
+    modelId: execution.modelId,
+    attempt: execution.attempt,
+    cancellationRequested: execution.cancellationRequested,
+    parentExecutionId: execution.parentExecutionId,
+    rootExecutionId: execution.rootExecutionId,
+    createdAt: execution.createdAt,
+    updatedAt: execution.updatedAt,
+    dispatchedAt: execution.dispatchedAt,
+    terminalAt: execution.terminalAt,
+    resultError: execution.resultError,
+    ...(created !== undefined ? { created } : {}),
+  };
+}
+
+function hostedAdmissionErrorStatus(error: unknown): number {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/not permitted|insufficient|credits|concurrent task limit/i.test(message)) return 402;
+  if (/disabled|spend limit|no verified free model|not currently available|not available under current provider policy|not permitted under your|could not resolve/i.test(message)) return 503;
+  return 500;
+}
+
 export interface CodeForgeCloudServerConfig {
   port?: number;
   host?: string;
@@ -226,6 +254,18 @@ export interface CodeForgeCloudServerConfig {
   securityAuditSinks?: SecurityAuditSink[];
   /** RFC 9116 security contact. When unset, /.well-known/security.txt is not served. */
   securityContact?: string;
+  /**
+   * Durable hosted execution worker tuning. The runtime is always composed — hosted inference is
+   * admitted exclusively through the durable queue — but tests can tighten its timers.
+   */
+  hostedRuntime?: {
+    leaseMs?: number;
+    heartbeatMs?: number;
+    idleWaitMs?: number;
+    reconcileMs?: number;
+    maxUserConcurrent?: number;
+    defaultRouteCapacity?: number;
+  };
   logLevel?: "debug" | "info" | "warn" | "error" | "silent";
 }
 
@@ -242,6 +282,7 @@ export class CodeForgeCloudServer {
   public readonly gitHubAppAuth?: GitHubAppAuthorizationService;
   public readonly publicationService?: PublicationService;
   public readonly hostedWorkflowAuthority: HostedWorkflowAuthority;
+  public readonly hostedRuntime: HostedRuntime;
   private readonly sessionPersistence: ISessionPersistence;
   private readonly ownsSessionPersistence: boolean;
   private readonly discoverOnStart: boolean;
@@ -250,6 +291,11 @@ export class CodeForgeCloudServer {
   private readonly maxRequestsPerMinute: number;
   private readonly trustProxy: boolean;
   private readonly trustedRegionHeaderName?: string;
+  private readonly requestTimeoutMs?: number;
+  // Tracked so stop() can terminate abandoned long-lived SSE streams — an open poll loop would
+  // otherwise keep server.close() (and the queue worker behind it) alive past the client's life.
+  private readonly sockets = new Set<import("node:net").Socket>();
+  private stopped = false;
   private actualPort = 0;
   private host: string;
   private readonly hstsEnabled: boolean;
@@ -305,6 +351,7 @@ export class CodeForgeCloudServer {
     this.maxRequestsPerMinute = config.maxRequestsPerMinute ?? 120;
     this.trustProxy = config.trustProxy ?? false;
     this.trustedRegionHeaderName = config.trustedRegionHeaderName;
+    this.requestTimeoutMs = config.requestTimeoutMs;
     this.securityContact = config.securityContact;
     this.logger = createRedactingLogger({ name: "cloud-api", level: config.logLevel ?? (isProduction ? "info" : "debug") });
 
@@ -386,6 +433,20 @@ export class CodeForgeCloudServer {
       inferenceTimeoutMs: config.requestTimeoutMs,
     });
 
+    // Durable hosted execution: every /v1/hosted/inference request is persisted and admitted
+    // through this authority; only the queue worker may dispatch a provider call.
+    this.hostedRuntime = new HostedRuntime({
+      db: this.db,
+      gateway: this.gateway,
+      leaseMs: config.hostedRuntime?.leaseMs,
+      heartbeatMs: config.hostedRuntime?.heartbeatMs,
+      idleWaitMs: config.hostedRuntime?.idleWaitMs,
+      reconcileMs: config.hostedRuntime?.reconcileMs,
+      maxUserConcurrent: config.hostedRuntime?.maxUserConcurrent,
+      defaultRouteCapacity: config.hostedRuntime?.defaultRouteCapacity,
+      onError: (error) => this.logger.warn("hosted queue worker error", { error: error instanceof Error ? error.message : String(error) }),
+    });
+
     // CF-11B: publication is available only when a Cloud-side GitHub App is configured. The App
     // private key never leaves this process, and no route below can mint a credential without it.
     if (config.gitHubAppConfig) {
@@ -403,6 +464,10 @@ export class CodeForgeCloudServer {
     }
 
     this.server = http.createServer((req, res) => this.handleRequest(req, res));
+    this.server.on("connection", (socket) => {
+      this.sockets.add(socket);
+      socket.on("close", () => this.sockets.delete(socket));
+    });
   }
 
   get httpPort(): number {
@@ -449,6 +514,10 @@ export class CodeForgeCloudServer {
       }
     }
 
+    // Durable hosted queue worker: starts only after schema init, crash recovery, and provider
+    // discovery so the first claim pass observes a consistent ledger and a populated catalog.
+    this.hostedRuntime.start();
+
     return new Promise<number>((resolve, reject) => {
       this.server.listen(port, bindHost, () => {
         const addr = this.server.address() as AddressInfo;
@@ -481,10 +550,19 @@ export class CodeForgeCloudServer {
   }
 
   async stop(): Promise<void> {
+    if (this.stopped) return;
+    this.stopped = true;
     if (this.retentionTimer) clearInterval(this.retentionTimer);
+    // Terminate every open socket before close(): an abandoned durable SSE stream polls until the
+    // request deadline, which would otherwise hold close() — and the queue worker behind it —
+    // open past the caller's lifetime.
+    this.server.closeIdleConnections();
+    for (const socket of this.sockets) socket.destroy();
     return new Promise<void>((resolve, reject) => {
       this.server.close(() => {
-        const closeOperations: Promise<unknown>[] = [Promise.resolve(this.db.close())];
+        // Stop the queue worker (aborts local in-flight dispatch) BEFORE closing the durable
+        // store so a terminalizing write never races a closed pool.
+        const closeOperations: Promise<unknown>[] = [this.hostedRuntime.stop().then(() => this.db.close())];
         if (this.ownsSessionPersistence) closeOperations.push(this.sessionPersistence.close());
         void Promise.all(closeOperations).then(() => resolve(), reject);
       });
@@ -1128,10 +1206,45 @@ export class CodeForgeCloudServer {
       }
 
 
-      // 6. Hosted Inference Endpoint (Authenticated & Streaming SSE)
+      // 6. Durable Hosted Execution Endpoints (Authenticated)
+      //
+      // POST /v1/hosted/inference persists the request and admits it through the certified
+      // capacity/fairness authority — it never calls a provider inline. The queue worker owns
+      // dispatch. requestId is the idempotency key: a retried submit after a lost response
+      // returns the same execution. Two wire modes:
+      //   - Accept: application/json → async handle (202/200 { executionId, status, created });
+      //     the owner polls status/result and may cancel via the executions routes below.
+      //   - default (SSE) → the handler durably enqueues, waits for the worker's terminal state,
+      //     then replays the persisted event stream. Client disconnect cancels the execution,
+      //     matching the legacy inline-stream contract.
       if (url.pathname === "/v1/hosted/inference" && method === "POST") {
         const userId = await this.authenticateRequest(req);
         const body = await this.readJson(req, HostedInferenceSchema);
+        const wantsJson = (req.headers.accept ?? "").includes("application/json") && !(req.headers.accept ?? "").includes("text/event-stream");
+
+        let admission: { execution: HostedExecutionRecord; created: boolean };
+        try {
+          admission = await this.hostedRuntime.enqueue(userId, body as HostedInferenceRequest, this.resolveRegionEvidence(req));
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Hosted execution admission failed";
+          this.audit({ type: "hosted.execution.enqueued", outcome: "denied", userId, ipAddress: clientIp, details: { reason: message } });
+          if (wantsJson) {
+            this.sendJson(res, hostedAdmissionErrorStatus(error), { error: message }, corsOrigin);
+          } else {
+            res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache, no-transform", Connection: "keep-alive", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Accel-Buffering": "no", ...this.corsHeaders(corsOrigin) });
+            res.write(`data: ${JSON.stringify({ type: "turn.failed", turnId: body.turnId ?? body.requestId, error: message })}\n\n`);
+            res.end();
+          }
+          return;
+        }
+
+        const { execution, created } = admission;
+        this.audit({ type: "hosted.execution.enqueued", outcome: "success", userId, ipAddress: clientIp, details: { executionId: execution.id, created } });
+
+        if (wantsJson) {
+          this.sendJson(res, created ? 202 : 200, publicHostedExecution(execution, created), corsOrigin);
+          return;
+        }
 
         res.writeHead(200, {
           "Content-Type": "text/event-stream",
@@ -1143,44 +1256,125 @@ export class CodeForgeCloudServer {
           ...this.corsHeaders(corsOrigin),
         });
         res.flushHeaders();
+        res.write(`data: ${JSON.stringify({ type: "execution.enqueued", executionId: execution.id, status: execution.status })}\n\n`);
 
-        const abortController = new AbortController();
         // A client that goes away mid-stream must stop the upstream inference, or the Cloud keeps
-        // paying a provider to generate tokens nobody will ever read.
-        //
-        // The signal has to come from the RESPONSE, not the request: by this point the request body
-        // has been fully consumed, so `req` is already complete and its 'close' does not track the
-        // client at all. `res` emits 'close' when the connection is terminated — including
-        // prematurely — and `writableEnded` distinguishes "we finished" from "they left".
-        const abortOnDisconnect = () => {
-          if (!res.writableEnded) {
-            abortController.abort(new Error("Client disconnected"));
-          }
+        // paying a provider to generate tokens nobody will ever read. The signal has to come from
+        // the RESPONSE, not the request: by this point the request body has been fully consumed,
+        // so `req` is already complete and its 'close' does not track the client at all.
+        let clientGone = false;
+        const onDisconnect = () => {
+          if (!res.writableEnded) clientGone = true;
         };
-        res.on("close", abortOnDisconnect);
-        req.on("aborted", abortOnDisconnect);
+        res.on("close", onDisconnect);
+        req.on("aborted", onDisconnect);
 
-        try {
-          await this.gateway.executeHostedInference(
-            userId,
-            body as HostedInferenceRequest,
-            (event: HostedStreamEvent) => {
-              if (!res.writableEnded) {
-                res.write(`data: ${JSON.stringify(event)}\n\n`);
-              }
-            },
-            abortController.signal,
-            this.resolveRegionEvidence(req),
-          );
-          if (!res.writableEnded) {
-            res.end();
-          }
-        } catch {
-          // Terminal error event is handled inside GatewayService
-          if (!res.writableEnded) {
-            res.end();
-          }
+        const deadline = Date.now() + (this.requestTimeoutMs ?? 120_000);
+        while (!clientGone && Date.now() < deadline) {
+          const current = await this.hostedRuntime.status(execution.id, userId).catch(() => undefined);
+          if (!current || current.status === "completed" || current.status === "failed" || current.status === "cancelled") break;
+          await new Promise<void>((resolve) => setTimeout(resolve, 150));
         }
+
+        if (clientGone) {
+          await this.hostedRuntime.cancel(execution.id, userId).catch(() => undefined);
+          if (!res.writableEnded) res.end();
+          return;
+        }
+
+        const found = await this.hostedRuntime.result(execution.id, userId).catch(() => undefined);
+        const replay = found?.result?.events ?? [];
+        for (const event of replay) {
+          if (!res.writableEnded) res.write(`data: ${JSON.stringify(event)}\n\n`);
+        }
+        if (!res.writableEnded) {
+          if (!found || !["completed", "failed", "cancelled"].includes(found.execution.status)) {
+            res.write(`data: ${JSON.stringify({ type: "turn.failed", turnId: body.turnId ?? body.requestId, error: "Hosted execution timed out before reaching a terminal state" })}\n\n`);
+          } else if (replay.length === 0) {
+            res.write(`data: ${JSON.stringify({ type: "turn.failed", turnId: body.turnId ?? body.requestId, error: found.execution.resultError ?? `Hosted execution ${found.execution.status}` })}\n\n`);
+          }
+          res.end();
+        }
+        return;
+      }
+
+      if (url.pathname === "/v1/hosted/executions" && method === "GET") {
+        const userId = await this.authenticateRequest(req);
+        const executions = await this.hostedRuntime.authority.list(userId);
+        this.sendJson(res, 200, executions.map((execution) => publicHostedExecution(execution)), corsOrigin);
+        return;
+      }
+
+      const executionResultRoute = url.pathname.match(/^\/v1\/hosted\/executions\/([^/]+)\/result$/);
+      if (executionResultRoute && method === "GET") {
+        const userId = await this.authenticateRequest(req);
+        const found = await this.hostedRuntime.result(executionResultRoute[1]!, userId);
+        if (!found) {
+          this.sendJson(res, 404, { error: "Hosted execution not found" }, corsOrigin);
+          return;
+        }
+        const { execution, result } = found;
+        if (execution.status === "queued" || execution.status === "claimed" || execution.status === "dispatching" || execution.status === "recovery_pending") {
+          this.sendJson(res, 409, { executionId: execution.id, status: execution.status }, corsOrigin);
+          return;
+        }
+        this.sendJson(res, 200, { executionId: execution.id, status: execution.status, result: result ?? null, error: execution.resultError }, corsOrigin);
+        return;
+      }
+
+      const executionCancelRoute = url.pathname.match(/^\/v1\/hosted\/executions\/([^/]+)\/cancel$/);
+      if (executionCancelRoute && method === "POST") {
+        const userId = await this.authenticateRequest(req);
+        try {
+          const cancelled = await this.hostedRuntime.cancel(executionCancelRoute[1]!, userId);
+          this.audit({ type: "hosted.execution.cancelled", outcome: "success", userId, ipAddress: clientIp, details: { executionId: executionCancelRoute[1]!, transitioned: cancelled.transitioned } });
+          this.sendJson(res, 200, { ...publicHostedExecution(cancelled.execution), dispatchMayHaveStarted: cancelled.dispatchMayHaveStarted, transitioned: cancelled.transitioned, cancelledChildIds: cancelled.cancelledChildIds }, corsOrigin);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          this.sendJson(res, /not found/i.test(message) ? 404 : 500, { error: /not found/i.test(message) ? "Hosted execution not found" : "Cancellation failed" }, corsOrigin);
+        }
+        return;
+      }
+
+      // Subagent fan-out: a child execution is durably linked to its parent at enqueue time —
+      // the DB enforces same-owner and a live (non-terminal) parent, and parent cancellation
+      // cascades to every non-terminal descendant in one transaction.
+      const executionChildrenRoute = url.pathname.match(/^\/v1\/hosted\/executions\/([^/]+)\/children$/);
+      if (executionChildrenRoute && method === "POST") {
+        const userId = await this.authenticateRequest(req);
+        const body = await this.readJson(req, HostedInferenceSchema);
+        try {
+          const { execution, created } = await this.hostedRuntime.enqueueChild(userId, executionChildrenRoute[1]!, body as HostedInferenceRequest, this.resolveRegionEvidence(req));
+          this.audit({ type: "hosted.execution.enqueued", outcome: "success", userId, ipAddress: clientIp, details: { executionId: execution.id, parentExecutionId: executionChildrenRoute[1]!, created } });
+          this.sendJson(res, created ? 202 : 200, publicHostedExecution(execution, created), corsOrigin);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Hosted child execution admission failed";
+          this.audit({ type: "hosted.execution.enqueued", outcome: "denied", userId, ipAddress: clientIp, details: { parentExecutionId: executionChildrenRoute[1]!, reason: message } });
+          this.sendJson(res, /not found/i.test(message) ? 404 : /terminal/i.test(message) ? 409 : hostedAdmissionErrorStatus(error), { error: message }, corsOrigin);
+        }
+        return;
+      }
+
+      if (executionChildrenRoute && method === "GET") {
+        const userId = await this.authenticateRequest(req);
+        try {
+          const children = await this.hostedRuntime.listChildren(executionChildrenRoute[1]!, userId);
+          this.sendJson(res, 200, children.map((execution) => publicHostedExecution(execution)), corsOrigin);
+        } catch (error) {
+          this.sendJson(res, /not found/i.test(error instanceof Error ? error.message : "") ? 404 : 500, { error: "Hosted execution not found" }, corsOrigin);
+        }
+        return;
+      }
+
+      const executionStatusRoute = url.pathname.match(/^\/v1\/hosted\/executions\/([^/]+)$/);
+      if (executionStatusRoute && method === "GET") {
+        const userId = await this.authenticateRequest(req);
+        const execution = await this.hostedRuntime.status(executionStatusRoute[1]!, userId);
+        if (!execution) {
+          this.sendJson(res, 404, { error: "Hosted execution not found" }, corsOrigin);
+          return;
+        }
+        this.sendJson(res, 200, publicHostedExecution(execution), corsOrigin);
         return;
       }
 

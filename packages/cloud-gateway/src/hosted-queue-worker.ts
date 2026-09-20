@@ -4,6 +4,8 @@ import { HostedAdmissionAuthority } from "./hosted-admission.js";
 export interface HostedQueueExecutionResult {
   status: "completed" | "failed";
   releaseReason?: string;
+  resultPayload?: string;
+  resultError?: string;
 }
 
 export interface HostedQueueWorkerOptions {
@@ -36,22 +38,26 @@ export class HostedQueueWorker {
     const claim = await this.authority.claim();
     if (!claim) return "idle";
     const execution = claim.execution;
+    const leaseToken = claim.lease?.id ?? execution.leaseToken;
+    if (!leaseToken) throw new Error("Claimed hosted execution is missing its fencing token");
     const controller = new AbortController();
     this.active.set(execution.id, controller);
     let heartbeat: NodeJS.Timeout | undefined;
     try {
-      await this.authority.beginDispatch(execution.id);
+      await this.authority.beginDispatch(execution.id, leaseToken);
       heartbeat = setInterval(() => {
-        void this.authority.heartbeat(execution.id).catch((error) => {
+        void this.authority.heartbeat(execution.id, leaseToken).catch((error) => {
           controller.abort(error instanceof Error ? error : new Error(String(error)));
         });
       }, this.heartbeatMs);
       const result = await this.execute(execution, controller.signal);
-      if (!controller.signal.aborted) await this.authority.complete(execution.id, execution.userId, result.status, result.releaseReason);
+      if (!controller.signal.aborted) {
+        await this.authority.complete({ executionId: execution.id, userId: execution.userId, leaseToken, status: result.status, releaseReason: result.releaseReason, resultPayload: result.resultPayload, resultError: result.resultError });
+      }
     } catch (error) {
       if (!controller.signal.aborted) {
         try {
-          await this.authority.complete(execution.id, execution.userId, "failed", error instanceof Error ? error.message : String(error));
+          await this.authority.complete({ executionId: execution.id, userId: execution.userId, leaseToken, status: "failed", resultError: error instanceof Error ? error.message : String(error) });
         } catch (completionError) {
           this.onError?.(completionError, execution);
         }

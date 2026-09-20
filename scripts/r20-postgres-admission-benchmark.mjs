@@ -33,6 +33,7 @@ for (const queueSize of [10, 100, 1_000, 10_000]) {
         SELECT DISTINCT ON (user_id) id
         FROM hosted_executions
         WHERE status = 'queued' AND eligible_at <= NOW()
+          AND provider_id = ANY(ARRAY['${route.providerId}']::text[])
         ORDER BY user_id, priority DESC, created_at ASC
       )
       SELECT e.* FROM user_heads head
@@ -49,10 +50,10 @@ for (const queueSize of [10, 100, 1_000, 10_000]) {
   const claimCount = Math.min(queueSize, 100);
   for (let index = 0; index < claimCount; index++) {
     const started = performance.now();
-    const claim = await db.claimNextHostedExecution({ workerId: `benchmark-worker-${index}`, leaseMs: 60_000, maxUserConcurrent: 1 });
+    const claim = await db.claimNextHostedExecution({ workerId: `benchmark-worker-${index}`, leaseMs: 60_000, maxUserConcurrent: 1, providerIds: [route.providerId] });
     latencies.push(performance.now() - started);
     if (!claim) throw new Error(`claim missing at ${index}/${claimCount}`);
-    await db.completeHostedExecution({ executionId: claim.execution.id, userId: claim.execution.userId, status: "completed" });
+    await db.completeHostedExecution({ executionId: claim.execution.id, userId: claim.execution.userId, workerId: `benchmark-worker-${index}`, leaseToken: claim.lease.id, status: "completed" });
   }
   const completed = new Set((await Promise.all(users.map((userId) => db.listHostedExecutions(userId, queueSize)))).flat().filter((execution) => execution.status === "completed").map((execution) => execution.id));
   for (const item of ids) if (!completed.has(item.id)) await db.cancelHostedExecution({ executionId: item.id, userId: item.userId });

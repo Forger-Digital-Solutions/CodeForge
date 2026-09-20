@@ -1397,7 +1397,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
 
   private mapHostedExecutionRow(row: Record<string, unknown>): HostedExecutionRecord {
     const iso = (value: unknown) => value instanceof Date ? value.toISOString() : String(value);
-    return { id: String(row.id), idempotencyKey: String(row.idempotency_key), userId: String(row.user_id), taskId: String(row.task_id), providerId: String(row.provider_id), modelId: String(row.model_id), status: row.status as HostedExecutionRecord["status"], priority: Number(row.priority), attempt: Number(row.attempt), eligibleAt: iso(row.eligible_at), leaseOwner: row.lease_owner ? String(row.lease_owner) : null, leaseExpiresAt: row.lease_expires_at ? iso(row.lease_expires_at) : null, cancellationRequested: Boolean(row.cancellation_requested), createdAt: iso(row.created_at), updatedAt: iso(row.updated_at) };
+    return { id: String(row.id), idempotencyKey: String(row.idempotency_key), userId: String(row.user_id), taskId: String(row.task_id), providerId: String(row.provider_id), modelId: String(row.model_id), status: row.status as HostedExecutionRecord["status"], priority: Number(row.priority), attempt: Number(row.attempt), eligibleAt: iso(row.eligible_at), leaseOwner: row.lease_owner ? String(row.lease_owner) : null, leaseExpiresAt: row.lease_expires_at ? iso(row.lease_expires_at) : null, leaseToken: row.lease_token ? String(row.lease_token) : null, cancellationRequested: Boolean(row.cancellation_requested), requestPayload: row.request_payload != null ? String(row.request_payload) : null, resultPayload: row.result_payload != null ? String(row.result_payload) : null, resultError: row.result_error != null ? String(row.result_error) : null, dispatchedAt: row.dispatched_at ? iso(row.dispatched_at) : null, terminalAt: row.terminal_at ? iso(row.terminal_at) : null, parentExecutionId: row.parent_execution_id ? String(row.parent_execution_id) : null, rootExecutionId: row.root_execution_id ? String(row.root_execution_id) : null, createdAt: iso(row.created_at), updatedAt: iso(row.updated_at) };
   }
 
   private mapHostedCapacityLeaseRow(row: Record<string, unknown>): HostedCapacityLeaseRecord {
@@ -1405,10 +1405,18 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     return { id: String(row.id), executionId: String(row.execution_id), userId: String(row.user_id), providerId: String(row.provider_id), modelId: String(row.model_id), workerId: String(row.worker_id), state: row.state as HostedCapacityLeaseRecord["state"], leaseExpiresAt: iso(row.lease_expires_at), createdAt: iso(row.created_at), releasedAt: row.released_at ? iso(row.released_at) : null, releaseReason: row.release_reason ? String(row.release_reason) : null };
   }
 
-  async enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string }): Promise<{ execution: HostedExecutionRecord; created: boolean }> {
+  async enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string; requestPayload?: string; parentExecutionId?: string; rootExecutionId?: string }): Promise<{ execution: HostedExecutionRecord; created: boolean }> {
     return this.withTx(async (client) => {
       const now = new Date().toISOString();
-      const inserted = await client.query(`INSERT INTO hosted_executions (id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, cancellation_requested, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,'queued',$7,0,$8,FALSE,$9,$9) ON CONFLICT (idempotency_key) DO NOTHING RETURNING *`, [params.id, params.idempotencyKey, params.userId, params.taskId, params.providerId, params.modelId, params.priority ?? 0, params.eligibleAt ?? now, now]);
+      let rootExecutionId = params.rootExecutionId ?? null;
+      if (params.parentExecutionId) {
+        const parent = await client.query(`SELECT user_id, status, root_execution_id FROM hosted_executions WHERE id = $1 FOR UPDATE`, [params.parentExecutionId]);
+        if (parent.rows.length === 0) throw new Error("Parent hosted execution not found");
+        if (String(parent.rows[0].user_id) !== params.userId) throw new Error("Parent hosted execution belongs to another user account");
+        if (["completed", "failed", "cancelled"].includes(String(parent.rows[0].status))) throw new Error("Parent hosted execution is already terminal");
+        rootExecutionId = rootExecutionId ?? (parent.rows[0].root_execution_id ? String(parent.rows[0].root_execution_id) : params.parentExecutionId);
+      }
+      const inserted = await client.query(`INSERT INTO hosted_executions (id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, cancellation_requested, request_payload, parent_execution_id, root_execution_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,'queued',$7,0,$8,FALSE,$9,$10,$11,$12,$12) ON CONFLICT (idempotency_key) DO NOTHING RETURNING *`, [params.id, params.idempotencyKey, params.userId, params.taskId, params.providerId, params.modelId, params.priority ?? 0, params.eligibleAt ?? now, params.requestPayload ?? null, params.parentExecutionId ?? null, rootExecutionId, now]);
       if (inserted.rows.length > 0) {
         await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, created_at) VALUES ($1,$2,$3,'QUEUE_ENQUEUED',$4)`, [randomUUID(), params.id, params.userId, now]);
         return { execution: this.mapHostedExecutionRow(inserted.rows[0]), created: true };
@@ -1426,8 +1434,17 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     return res.rows[0] ? this.mapHostedExecutionRow(res.rows[0]) : undefined;
   }
 
+  async listHostedExecutionChildren(executionId: string, userId: string): Promise<HostedExecutionRecord[]> {
+    const owns = await this.pool.query(`SELECT 1 FROM hosted_executions WHERE id = $1 AND user_id = $2`, [executionId, userId]);
+    if (owns.rows.length === 0) throw new Error("Hosted execution not found for user");
+    const res = await this.pool.query(`SELECT * FROM hosted_executions WHERE parent_execution_id = $1 AND user_id = $2 ORDER BY created_at ASC`, [executionId, userId]);
+    return res.rows.map((row) => this.mapHostedExecutionRow(row));
+  }
+
   async listHostedExecutions(userId: string, limit = 100): Promise<HostedExecutionRecord[]> {
-    const res = await this.pool.query(`SELECT * FROM hosted_executions WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2`, [userId, limit]);
+    // Metadata projection only: request/result payload columns are deliberately excluded so a
+    // status list never turns into a bulk payload read.
+    const res = await this.pool.query(`SELECT id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, lease_owner, lease_expires_at, lease_token, cancellation_requested, dispatched_at, terminal_at, parent_execution_id, root_execution_id, created_at, updated_at FROM hosted_executions WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2`, [userId, limit]);
     return res.rows.map((row) => this.mapHostedExecutionRow(row));
   }
 
@@ -1436,7 +1453,11 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     await this.pool.query(`INSERT INTO hosted_provider_capacity (provider_id, model_id, max_concurrent, updated_at) VALUES ($1,$2,$3,NOW()) ON CONFLICT (provider_id, model_id) DO UPDATE SET max_concurrent = EXCLUDED.max_concurrent, updated_at = EXCLUDED.updated_at`, [params.providerId, params.modelId, params.maxConcurrent]);
   }
 
-  async claimNextHostedExecution(params: { workerId: string; leaseMs: number; maxUserConcurrent: number; now?: Date }): Promise<{ execution: HostedExecutionRecord; lease: HostedCapacityLeaseRecord } | undefined> {
+  async ensureHostedProviderCapacity(params: { providerId: string; modelId: string; maxConcurrent: number }): Promise<void> {
+    await this.pool.query(`INSERT INTO hosted_provider_capacity (provider_id, model_id, max_concurrent, updated_at) VALUES ($1,$2,$3,NOW()) ON CONFLICT (provider_id, model_id) DO NOTHING`, [params.providerId, params.modelId, params.maxConcurrent]);
+  }
+
+  async claimNextHostedExecution(params: { workerId: string; leaseMs: number; maxUserConcurrent: number; providerIds?: string[]; now?: Date }): Promise<{ execution: HostedExecutionRecord; lease: HostedCapacityLeaseRecord } | undefined> {
     if (!Number.isSafeInteger(params.leaseMs) || params.leaseMs < 1) throw new Error("leaseMs must be a positive safe integer");
     if (!Number.isSafeInteger(params.maxUserConcurrent) || params.maxUserConcurrent < 1) throw new Error("maxUserConcurrent must be a positive safe integer");
     return this.withTx(async (client) => {
@@ -1446,6 +1467,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
           SELECT DISTINCT ON (user_id) id
           FROM hosted_executions
           WHERE status = 'queued' AND eligible_at <= $1
+            AND ($3::text[] IS NULL OR provider_id = ANY($3))
           ORDER BY user_id, priority DESC, created_at ASC
         )
         SELECT e.* FROM user_heads head
@@ -1455,7 +1477,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         WHERE (SELECT COUNT(*) FROM hosted_capacity_leases ul WHERE ul.user_id = e.user_id AND ul.state = 'active' AND ul.lease_expires_at > $1) < $2
           AND (SELECT COUNT(*) FROM hosted_capacity_leases rl WHERE rl.provider_id = e.provider_id AND rl.model_id = e.model_id AND rl.state = 'active' AND rl.lease_expires_at > $1) < pc.max_concurrent
         ORDER BY CASE WHEN uas.last_admitted_at IS NULL THEN 0 ELSE 1 END, uas.last_admitted_at ASC NULLS FIRST, e.priority DESC, e.created_at ASC
-        FOR UPDATE OF e SKIP LOCKED LIMIT 1`, [now, params.maxUserConcurrent]);
+        FOR UPDATE OF e SKIP LOCKED LIMIT 1`, [now, params.maxUserConcurrent, params.providerIds ?? null]);
       if (candidate.rows.length === 0) return undefined;
       const row = candidate.rows[0];
       await client.query(`SELECT pg_advisory_xact_lock(hashtextextended($1 || '::' || $2, 0))`, [row.provider_id, row.model_id]);
@@ -1469,7 +1491,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       if (Number(userActive.rows[0]?.count ?? 0) >= params.maxUserConcurrent) return undefined;
       const leaseId = randomUUID();
       const leaseExpiresAt = new Date(now.getTime() + params.leaseMs);
-      const updated = await client.query(`UPDATE hosted_executions SET status='claimed', lease_owner=$1, lease_expires_at=$2, attempt=attempt+1, updated_at=$3 WHERE id=$4 AND status='queued' RETURNING *`, [params.workerId, leaseExpiresAt, now, row.id]);
+      const updated = await client.query(`UPDATE hosted_executions SET status='claimed', lease_owner=$1, lease_expires_at=$2, lease_token=$3, attempt=attempt+1, updated_at=$4 WHERE id=$5 AND status='queued' RETURNING *`, [params.workerId, leaseExpiresAt, leaseId, now, row.id]);
       if (updated.rows.length === 0) return undefined;
       const lease = await client.query(`INSERT INTO hosted_capacity_leases (id, execution_id, user_id, provider_id, model_id, worker_id, state, lease_expires_at, created_at) VALUES ($1,$2,$3,$4,$5,$6,'active',$7,$8) RETURNING *`, [leaseId, row.id, row.user_id, row.provider_id, row.model_id, params.workerId, leaseExpiresAt, now]);
       await client.query(`INSERT INTO hosted_user_admission_state (user_id, last_admitted_at, updated_at) VALUES ($1,$2,$2) ON CONFLICT (user_id) DO UPDATE SET last_admitted_at=EXCLUDED.last_admitted_at, updated_at=EXCLUDED.updated_at`, [row.user_id, now]);
@@ -1478,50 +1500,83 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     });
   }
 
-  async markHostedExecutionDispatching(params: { executionId: string; workerId: string }): Promise<HostedExecutionRecord> {
+  async markHostedExecutionDispatching(params: { executionId: string; workerId: string; leaseToken: string }): Promise<HostedExecutionRecord> {
     return this.withTx(async (client) => {
-      const updated = await client.query(`UPDATE hosted_executions SET status='dispatching', updated_at=NOW() WHERE id=$1 AND lease_owner=$2 AND status='claimed' RETURNING *`, [params.executionId, params.workerId]);
-      if (updated.rows.length === 0) throw new Error("Execution is not claimed by this worker");
+      const updated = await client.query(`UPDATE hosted_executions SET status='dispatching', dispatched_at=NOW(), updated_at=NOW() WHERE id=$1 AND lease_owner=$2 AND lease_token=$3 AND status='claimed' RETURNING *`, [params.executionId, params.workerId, params.leaseToken]);
+      if (updated.rows.length === 0) throw new Error("Execution is not claimed by this worker lease");
       await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, worker_id, created_at) VALUES ($1,$2,$3,'DISPATCH_STARTED',$4,NOW())`, [randomUUID(), params.executionId, updated.rows[0].user_id, params.workerId]);
       return this.mapHostedExecutionRow(updated.rows[0]);
     });
   }
 
-  async completeHostedExecution(params: { executionId: string; userId: string; status: "completed" | "failed"; releaseReason?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
+  async completeHostedExecution(params: { executionId: string; userId: string; workerId: string; leaseToken: string; status: "completed" | "failed"; releaseReason?: string; resultPayload?: string; resultError?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
     return this.withTx(async (client) => {
       const locked = await client.query(`SELECT * FROM hosted_executions WHERE id=$1 AND user_id=$2 FOR UPDATE`, [params.executionId, params.userId]);
       if (locked.rows.length === 0) throw new Error("Hosted execution not found for user");
       if (["completed", "failed", "cancelled"].includes(String(locked.rows[0].status))) return { execution: this.mapHostedExecutionRow(locked.rows[0]), transitioned: false };
-      const updated = await client.query(`UPDATE hosted_executions SET status=$1, lease_owner=NULL, lease_expires_at=NULL, updated_at=NOW() WHERE id=$2 RETURNING *`, [params.status, params.executionId]);
+      // Fencing: only the worker holding the token minted by the winning claim may terminalize a
+      // live execution. A stale worker whose lease expired and was reclaimed is rejected here.
+      if (String(locked.rows[0].lease_owner) !== params.workerId || String(locked.rows[0].lease_token) !== params.leaseToken) {
+        throw new Error("Hosted execution lease fencing token does not match this worker");
+      }
+      const updated = await client.query(`UPDATE hosted_executions SET status=$1, lease_owner=NULL, lease_expires_at=NULL, lease_token=NULL, result_payload=$2, result_error=$3, terminal_at=NOW(), updated_at=NOW() WHERE id=$4 RETURNING *`, [params.status, params.resultPayload ?? null, params.resultError ?? null, params.executionId]);
       await client.query(`UPDATE hosted_capacity_leases SET state='released', released_at=NOW(), release_reason=$1 WHERE execution_id=$2 AND state='active'`, [params.releaseReason ?? params.status, params.executionId]);
       await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, details, created_at) VALUES ($1,$2,$3,'CAPACITY_RELEASED',$4,NOW())`, [randomUUID(), params.executionId, params.userId, JSON.stringify({ status: params.status })]);
       return { execution: this.mapHostedExecutionRow(updated.rows[0]), transitioned: true };
     });
   }
 
-  async cancelHostedExecution(params: { executionId: string; userId: string }): Promise<{ execution: HostedExecutionRecord; dispatchMayHaveStarted: boolean; transitioned: boolean }> {
+  async cancelHostedExecution(params: { executionId: string; userId: string }): Promise<{ execution: HostedExecutionRecord; dispatchMayHaveStarted: boolean; transitioned: boolean; cancelledChildIds: string[] }> {
     return this.withTx(async (client) => {
       const locked = await client.query(`SELECT * FROM hosted_executions WHERE id=$1 AND user_id=$2 FOR UPDATE`, [params.executionId, params.userId]);
       if (locked.rows.length === 0) throw new Error("Hosted execution not found for user");
       const current = locked.rows[0];
-      if (["completed", "failed", "cancelled"].includes(String(current.status))) return { execution: this.mapHostedExecutionRow(current), dispatchMayHaveStarted: String(current.status) !== "queued", transitioned: false };
+      if (["completed", "failed", "cancelled"].includes(String(current.status))) return { execution: this.mapHostedExecutionRow(current), dispatchMayHaveStarted: String(current.status) !== "queued", transitioned: false, cancelledChildIds: [] };
       const dispatchMayHaveStarted = current.status === "dispatching" || current.status === "recovery_pending";
       await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, details, created_at) VALUES ($1,$2,$3,'CANCEL_REQUESTED',$4,NOW())`, [randomUUID(), params.executionId, params.userId, JSON.stringify({ dispatchMayHaveStarted })]);
-      const updated = await client.query(`UPDATE hosted_executions SET status='cancelled', cancellation_requested=TRUE, lease_owner=NULL, lease_expires_at=NULL, updated_at=NOW() WHERE id=$1 RETURNING *`, [params.executionId]);
+      const updated = await client.query(`UPDATE hosted_executions SET status='cancelled', cancellation_requested=TRUE, lease_owner=NULL, lease_expires_at=NULL, lease_token=NULL, terminal_at=NOW(), updated_at=NOW() WHERE id=$1 RETURNING *`, [params.executionId]);
       await client.query(`UPDATE hosted_capacity_leases SET state='released', released_at=NOW(), release_reason='cancelled' WHERE execution_id=$1 AND state='active'`, [params.executionId]);
       await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, details, created_at) VALUES ($1,$2,$3,'CANCELLED',$4,NOW())`, [randomUUID(), params.executionId, params.userId, JSON.stringify({ dispatchMayHaveStarted })]);
-      return { execution: this.mapHostedExecutionRow(updated.rows[0]), dispatchMayHaveStarted, transitioned: true };
+      // Cascade to every non-terminal descendant of the same user — a cancelled parent must never
+      // leave orphaned subagent children queued or running against provider capacity.
+      const descendants = await client.query(`WITH RECURSIVE tree(id) AS (SELECT id FROM hosted_executions WHERE parent_execution_id=$1 UNION ALL SELECT e.id FROM hosted_executions e JOIN tree t ON e.parent_execution_id=t.id) SELECT id FROM tree`, [params.executionId]);
+      const cancelledChildIds: string[] = [];
+      for (const child of descendants.rows) {
+        const childLocked = await client.query(`SELECT user_id, status FROM hosted_executions WHERE id=$1 FOR UPDATE`, [child.id]);
+        if (childLocked.rows.length === 0 || String(childLocked.rows[0].user_id) !== params.userId) continue;
+        if (["completed", "failed", "cancelled"].includes(String(childLocked.rows[0].status))) continue;
+        await client.query(`UPDATE hosted_executions SET status='cancelled', cancellation_requested=TRUE, lease_owner=NULL, lease_expires_at=NULL, lease_token=NULL, terminal_at=NOW(), updated_at=NOW() WHERE id=$1`, [child.id]);
+        await client.query(`UPDATE hosted_capacity_leases SET state='released', released_at=NOW(), release_reason='cancelled' WHERE execution_id=$1 AND state='active'`, [child.id]);
+        await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, details, created_at) VALUES ($1,$2,$3,'CANCELLED',$4,NOW())`, [randomUUID(), child.id, params.userId, JSON.stringify({ cancelledAsChild: true })]);
+        cancelledChildIds.push(String(child.id));
+      }
+      return { execution: this.mapHostedExecutionRow(updated.rows[0]), dispatchMayHaveStarted, transitioned: true, cancelledChildIds };
     });
   }
 
-  async renewHostedExecutionLease(params: { executionId: string; workerId: string; leaseMs: number; now?: Date }): Promise<HostedCapacityLeaseRecord> {
+  async renewHostedExecutionLease(params: { executionId: string; workerId: string; leaseToken: string; leaseMs: number; now?: Date }): Promise<HostedCapacityLeaseRecord> {
     return this.withTx(async (client) => {
       const now = params.now ?? new Date();
       const leaseExpiresAt = new Date(now.getTime() + params.leaseMs);
-      const lease = await client.query(`UPDATE hosted_capacity_leases SET lease_expires_at=$1 WHERE execution_id=$2 AND worker_id=$3 AND state='active' RETURNING *`, [leaseExpiresAt, params.executionId, params.workerId]);
+      const lease = await client.query(`UPDATE hosted_capacity_leases SET lease_expires_at=$1 WHERE id=$2 AND execution_id=$3 AND worker_id=$4 AND state='active' RETURNING *`, [leaseExpiresAt, params.leaseToken, params.executionId, params.workerId]);
       if (lease.rows.length === 0) throw new Error("Active hosted execution lease not found for worker");
-      await client.query(`UPDATE hosted_executions SET lease_expires_at=$1, updated_at=$2 WHERE id=$3 AND lease_owner=$4 AND status IN ('claimed','dispatching')`, [leaseExpiresAt, now, params.executionId, params.workerId]);
+      await client.query(`UPDATE hosted_executions SET lease_expires_at=$1, updated_at=$2 WHERE id=$3 AND lease_owner=$4 AND lease_token=$5 AND status IN ('claimed','dispatching')`, [leaseExpiresAt, now, params.executionId, params.workerId, params.leaseToken]);
       return this.mapHostedCapacityLeaseRow(lease.rows[0]);
+    });
+  }
+
+  async resolveHostedRecoveryPending(params: { executionId: string; workerId: string; reason?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
+    return this.withTx(async (client) => {
+      const locked = await client.query(`SELECT * FROM hosted_executions WHERE id=$1 FOR UPDATE`, [params.executionId]);
+      if (locked.rows.length === 0) throw new Error("Hosted execution not found");
+      const current = locked.rows[0];
+      if (String(current.status) !== "recovery_pending") return { execution: this.mapHostedExecutionRow(current), transitioned: false };
+      // Fail closed: post-dispatch worker loss makes the provider outcome unknowable, so the
+      // execution terminalizes as failed rather than being retried into a duplicate provider call.
+      const updated = await client.query(`UPDATE hosted_executions SET status='failed', result_error=$1, lease_owner=NULL, lease_expires_at=NULL, lease_token=NULL, terminal_at=NOW(), updated_at=NOW() WHERE id=$2 RETURNING *`, [params.reason ?? "dispatch outcome ambiguous after worker loss", params.executionId]);
+      await client.query(`UPDATE hosted_capacity_leases SET state='expired', released_at=NOW(), release_reason='recovery_resolved' WHERE execution_id=$1 AND state='active'`, [params.executionId]);
+      await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, worker_id, details, created_at) VALUES ($1,$2,$3,'RECOVERY_RESOLVED',$4,$5,NOW())`, [randomUUID(), params.executionId, current.user_id, params.workerId, JSON.stringify({ resolution: "failed" })]);
+      return { execution: this.mapHostedExecutionRow(updated.rows[0]), transitioned: true };
     });
   }
 
@@ -1531,7 +1586,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       const executionIds: string[] = [];
       for (const row of expired.rows) {
         const nextStatus = row.status === "claimed" ? "queued" : "recovery_pending";
-        await client.query(`UPDATE hosted_executions SET status=$1, lease_owner=NULL, lease_expires_at=NULL, updated_at=$2 WHERE id=$3`, [nextStatus, now, row.id]);
+        await client.query(`UPDATE hosted_executions SET status=$1, lease_owner=NULL, lease_expires_at=NULL, lease_token=NULL, updated_at=$2 WHERE id=$3`, [nextStatus, now, row.id]);
         await client.query(`UPDATE hosted_capacity_leases SET state='expired', released_at=$1, release_reason='lease_expired' WHERE execution_id=$2 AND state='active'`, [now, row.id]);
         await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, details, created_at) VALUES ($1,$2,$3,'LEASE_EXPIRED',$4,$5)`, [randomUUID(), row.id, row.user_id, JSON.stringify({ nextStatus }), now]);
         executionIds.push(String(row.id));
