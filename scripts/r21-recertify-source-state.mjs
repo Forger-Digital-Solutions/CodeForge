@@ -44,6 +44,19 @@ const PHASES = {
     regressionEvidence:
       "server/forge-green/forgegreen-campaign/agent suites green apart from the two provenance canaries; new suites r21-forgegreen-ab (15), r21-agent-budget-honesty (6), r21-orchestrator-reviewer-exhaustion (2), r21-task-complexity (28).",
   },
+  m10: {
+    surface: "r21-adaptive-topology-reviewdiff-v1",
+    label: "R21 adaptive topology wiring and deterministic review fallback repair",
+    constant: "R21_ADAPTIVE_TOPOLOGY_REVIEWDIFF_SOURCE_STATE",
+    reason:
+      "R21 M10 wired the previously dead resolveAdaptiveTopology contract into the autonomous orchestrator: every run now records a topology decision receipt (policy, complexity tier, plan, repository file count) and spawns explorer/planner/reviewer phases per plan, with the certified fixed R1 team reachable via explicit topology or CODEFORGE_TOPOLOGY_POLICY=fixed_r1. Model-free deterministic diff review (reviewDiff) now runs on every topology including no-reviewer plans. Finishing the wiring exposed a real reviewDiff defect: its no-snapshot git fallback collapsed git diff into one DiffEntry named after statusFiles[0], losing per-file identity; untracked files were invisible twice (git diff omits them and the ?? porcelain status never matched a '?' check); staged and committed-in-worktree changes were out of scope. Fixed: per-file diff entries, untracked files reviewed via bounded disk reads, review scope extended to a base revision, and a sinceMs snapshot-instant guard so pre-existing untracked dotfiles are not falsely attributed to the agent (persisted through suspension/resume). No completion path changed: findings feed the same bounded revision loop and ForgeVerify/evaluateCompletion remain the only route to completed. ForgeGreen detectors, cost policy, and graduation registry are untouched.",
+    changes: [
+      { file: "packages/server/src/autonomous-orchestrator.ts", change: "adaptive topology decision + receipt persisted on the run; explorer/planner/reviewer phases driven by the plan; deterministic reviewDiff now called with base: baseRevision so committed-in-worktree changes are reviewed on every topology.", addedToMaterialFiles: false },
+      { file: "packages/server/src/workflow-service.ts", change: "snapshotTakenAtMs persisted in the suspension record and restored on resume so the reviewDiff untracked-file attribution guard survives workflow suspension.", addedToMaterialFiles: false },
+    ],
+    regressionEvidence:
+      "r21-task-complexity 28/28, r21-adaptive-topology-wiring 8/8, r21-diff-review-git-fallback 7/7, agent-orchestrator-integration 7/7 (30s timeout on four full-pipeline tests per R4 convention), workflow package green incl. existing diff-review suites, server package green; canonical root suite run per vitest.config.mts Windows worker bound.",
+  },
 };
 
 const phaseKey = process.argv[2];

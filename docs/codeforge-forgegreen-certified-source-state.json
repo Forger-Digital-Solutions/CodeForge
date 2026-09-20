@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "aeebe2a1ae6cbf6781c5d87fd248174a2961b8f65d41ad9ee323d253e77cee16",
-  "surfaceVersion": "r21-forgegreen-ab-corrected-v1",
+  "sourceStateId": "9bfaf694df303081c520a3313fdc0fdc6a90bd421893f16bc48dafff23ce3109",
+  "surfaceVersion": "r21-adaptive-topology-reviewdiff-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -57,10 +57,10 @@
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/src/agent-runtime.ts": "5fde5ccfb6d3d7f3edec2349f015906f70722bb8",
-    "packages/server/src/autonomous-orchestrator.ts": "614b94ca7120ce1a2e1b9b56eeb9d2045ed4cf8f",
+    "packages/server/src/autonomous-orchestrator.ts": "8e7dc8a6942a8a973233d9af62424323b05f9bc3",
     "packages/server/src/duplicate-suppression.ts": "187ebb71125e65f05b48210c77aa35647ca8bf64",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "dd128b10041305e58aa49f88a0dacfb3a2aabb4d",
+    "packages/server/src/workflow-service.ts": "fd28b8bccec7c03226f100d4c9e284ef129ddff7",
     "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "e67a8c5033b1f39d4b5c5f919fdcecc16d8ac6dc",
@@ -943,19 +943,41 @@
       "regressionEvidence": "server/forge-green/forgegreen-campaign/agent suites green apart from the two provenance canaries; new suites r21-forgegreen-ab (15), r21-agent-budget-honesty (6), r21-orchestrator-reviewer-exhaustion (2), r21-task-complexity (28).",
       "recertifiedAt": "2026-09-20",
       "sourceStateConstant": "R21_FORGEGREEN_AB_CORRECTED_SOURCE_STATE"
+    },
+    {
+      "label": "R21 adaptive topology wiring and deterministic review fallback repair",
+      "reason": "R21 M10 wired the previously dead resolveAdaptiveTopology contract into the autonomous orchestrator: every run now records a topology decision receipt (policy, complexity tier, plan, repository file count) and spawns explorer/planner/reviewer phases per plan, with the certified fixed R1 team reachable via explicit topology or CODEFORGE_TOPOLOGY_POLICY=fixed_r1. Model-free deterministic diff review (reviewDiff) now runs on every topology including no-reviewer plans. Finishing the wiring exposed a real reviewDiff defect: its no-snapshot git fallback collapsed git diff into one DiffEntry named after statusFiles[0], losing per-file identity; untracked files were invisible twice (git diff omits them and the ?? porcelain status never matched a '?' check); staged and committed-in-worktree changes were out of scope. Fixed: per-file diff entries, untracked files reviewed via bounded disk reads, review scope extended to a base revision, and a sinceMs snapshot-instant guard so pre-existing untracked dotfiles are not falsely attributed to the agent (persisted through suspension/resume). No completion path changed: findings feed the same bounded revision loop and ForgeVerify/evaluateCompletion remain the only route to completed. ForgeGreen detectors, cost policy, and graduation registry are untouched.",
+      "priorSourceStateId": "aeebe2a1ae6cbf6781c5d87fd248174a2961b8f65d41ad9ee323d253e77cee16",
+      "priorSurfaceVersion": "r21-forgegreen-ab-corrected-v1",
+      "resultingSourceStateId": "9bfaf694df303081c520a3313fdc0fdc6a90bd421893f16bc48dafff23ce3109",
+      "resultingSurfaceVersion": "r21-adaptive-topology-reviewdiff-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "adaptive topology decision + receipt persisted on the run; explorer/planner/reviewer phases driven by the plan; deterministic reviewDiff now called with base: baseRevision so committed-in-worktree changes are reviewed on every topology.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "snapshotTakenAtMs persisted in the suspension record and restored on resume so the reviewDiff untracked-file attribution guard survives workflow suspension.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "r21-task-complexity 28/28, r21-adaptive-topology-wiring 8/8, r21-diff-review-git-fallback 7/7, agent-orchestrator-integration 7/7 (30s timeout on four full-pipeline tests per R4 convention), workflow package green incl. existing diff-review suites, server package green; canonical root suite run per vitest.config.mts Windows worker bound.",
+      "recertifiedAt": "2026-09-20",
+      "sourceStateConstant": "R21_ADAPTIVE_TOPOLOGY_REVIEWDIFF_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 recertifications listed above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
   "recertifiedAt": "2026-09-20",
   "recertification": {
-    "phase": "R21 ForgeGreen A/B accounting correction and agent budget honesty",
-    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed M3 surface so the fg11/fg12e provenance canaries certify the current tree.",
+    "phase": "R21 adaptive topology wiring and deterministic review fallback repair",
+    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed M10 surface so the fg11/fg12e provenance canaries certify the current tree.",
     "changedFiles": [
-      "packages/forge-green/src/optimization-candidate-a.ts",
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/src/autonomous-orchestrator.ts"
+      "packages/server/src/autonomous-orchestrator.ts",
+      "packages/server/src/workflow-service.ts"
     ],
-    "priorSourceStateId": "f9ac543301b6cc5ac6b59c43f3117e849e66fb3b9bfa2a1dc10ddc5d2050b9d0",
+    "priorSourceStateId": "aeebe2a1ae6cbf6781c5d87fd248174a2961b8f65d41ad9ee323d253e77cee16",
     "guarded": true
   }
 }

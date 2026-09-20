@@ -1008,6 +1008,7 @@ export class WorkflowService {
               verificationCommands: request.verificationCommands ?? [],
               plan: result.plan,
               beforeSnapshots: engine.exportBeforeSnapshots(),
+              snapshotTakenAtMs: engine.exportSnapshotTakenAtMs(),
             },
             updatedAt,
           });
@@ -1299,6 +1300,7 @@ export class WorkflowService {
     const workspacePath = execution?.workspacePath;
     const plan = execution?.plan;
     const rawSnapshots = execution?.beforeSnapshots;
+    const snapshotTakenAtMs = execution?.snapshotTakenAtMs;
     const rawCommands = execution?.verificationCommands;
     if (
       typeof continuationId !== "string"
@@ -1405,6 +1407,7 @@ export class WorkflowService {
       resumeState: {
         plan: plan as WorkflowPlan,
         beforeSnapshots: rawSnapshots as Array<[string, BeforeSnapshot]>,
+        ...(typeof snapshotTakenAtMs === "number" ? { snapshotTakenAtMs } : {}),
       },
     });
     const lease = this.workspaceService.acquireLease(validated.resolved, taskId, "write");

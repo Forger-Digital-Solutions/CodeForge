@@ -102,6 +102,8 @@ export interface WorkflowEngineOptions {
   resumeState?: {
     plan: WorkflowPlan;
     beforeSnapshots: Array<[string, BeforeSnapshot]>;
+    /** Snapshot instant from the original run; older records may not carry it. */
+    snapshotTakenAtMs?: number;
   };
   onPhaseChange?: (phase: WorkflowPhase, task: WorkflowTask) => void;
   onEvent?: (event: { type: string; phase: WorkflowPhase; payload: unknown }) => void;
@@ -188,6 +190,8 @@ export class WorkflowEngine {
   private task: WorkflowTask;
   private phase: WorkflowPhase = "received";
   private beforeSnapshots: Map<string, BeforeSnapshot> = new Map();
+  /** Instant the before-snapshot walk started; untracked files untouched since then are pre-existing. */
+  private snapshotTakenAtMs = 0;
   /** CF-17: steers accepted at the public boundary, consumed at the post-verification safe boundary. */
   private readonly pendingSteers: Array<{ message: string; steerId?: string }> = [];
 
@@ -207,7 +211,10 @@ export class WorkflowEngine {
     this.agentExecutor = options.agentExecutor;
     this.beforeVerificationDispatch = options.beforeVerificationDispatch;
     this.resumeState = options.resumeState;
-    if (options.resumeState) this.beforeSnapshots = new Map(options.resumeState.beforeSnapshots);
+    if (options.resumeState) {
+      this.beforeSnapshots = new Map(options.resumeState.beforeSnapshots);
+      this.snapshotTakenAtMs = options.resumeState.snapshotTakenAtMs ?? 0;
+    }
     this.forgeGreen = options.forgeGreen ?? createForgeGreenAdvisor();
     const now = new Date().toISOString();
     this.task = {
@@ -231,6 +238,10 @@ export class WorkflowEngine {
 
   exportBeforeSnapshots(): Array<[string, BeforeSnapshot]> {
     return Array.from(this.beforeSnapshots.entries());
+  }
+
+  exportSnapshotTakenAtMs(): number {
+    return this.snapshotTakenAtMs;
   }
 
   /**
@@ -482,7 +493,7 @@ export class WorkflowEngine {
       // 10b. Review Diff
       this.setPhase("reviewing", "reviewing");
       this.ensureNotAborted();
-      const review = await reviewDiff(this.workspacePath, { beforeSnapshots: this.beforeSnapshots, signal: this.signal });
+      const review = await reviewDiff(this.workspacePath, { beforeSnapshots: this.beforeSnapshots, sinceMs: this.snapshotTakenAtMs || undefined, signal: this.signal });
       const diffSummary = formatDiffSummary(review.diffs);
 
       this.onEvent?.({
@@ -614,6 +625,7 @@ export class WorkflowEngine {
 
   private snapshotBefore(): void {
     this.beforeSnapshots.clear();
+    this.snapshotTakenAtMs = Date.now();
     try {
       const walk = (dir: string): void => {
         let entries: fs.Dirent[];
@@ -936,7 +948,7 @@ export class WorkflowEngine {
     const stop = this.terminalStop!;
     let review: ReviewDecision | undefined;
     try {
-      review = await reviewDiff(this.workspacePath, { beforeSnapshots: this.beforeSnapshots, signal: this.signal });
+      review = await reviewDiff(this.workspacePath, { beforeSnapshots: this.beforeSnapshots, sinceMs: this.snapshotTakenAtMs || undefined, signal: this.signal });
     } catch {
       review = undefined;
     }

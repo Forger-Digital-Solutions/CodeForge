@@ -44,6 +44,10 @@ import {
 } from "@codeforge/workflow";
 import { createForgeVerifyPersistenceObserver } from "./forge-verify-persistence.js";
 import { redactSecrets } from "@codeforge/secrets";
+import { reviewDiff, type ReviewFinding } from "@codeforge/workflow";
+import type { AdaptiveTopology, AdaptiveTopologyPlan } from "@codeforge/protocol";
+import { resolveAdaptiveTopology } from "./adaptive-topology.js";
+import { classifyTaskComplexity, type TaskComplexityDecision, type TaskComplexityTier } from "./task-complexity.js";
 
 const execFile = promisify(execFileCallback);
 
@@ -126,6 +130,22 @@ export interface AutonomousRunResult {
   };
   evidence: AgentEvidenceRef[];
   counters: AutonomousRunCounters;
+  /** R21: the topology this run actually executed and why (receipt). */
+  topology?: TopologyDecisionRecord;
+}
+
+/**
+ * R21 topology receipt. Recorded on the durable run so the choice of team is inspectable and
+ * reproducible: the deterministic complexity classification, the resolved plan, and which policy
+ * made the call (an explicit request, the fixed R1 baseline via CODEFORGE_TOPOLOGY_POLICY, or the
+ * adaptive smallest-useful default).
+ */
+export interface TopologyDecisionRecord {
+  policy: "adaptive" | "explicit" | "fixed_r1_env";
+  complexity: TaskComplexityDecision;
+  plan: AdaptiveTopologyPlan;
+  repositoryFileCount: number;
+  decidedAt: string;
 }
 
 export interface AutonomousRun {
@@ -143,6 +163,7 @@ export interface AutonomousRun {
   reviewRounds: number;
   taskGraph: TaskGraph;
   counters: AutonomousRunCounters;
+  topology?: TopologyDecisionRecord;
   startedAt?: string;
   completedAt?: string;
   result?: AutonomousRunResult;
@@ -164,6 +185,12 @@ export interface OrchestratorRunOptions {
   r1PhaseTimeoutMs?: { explorer?: number; planner?: number };
   /** Custom coder executor function for testing or specialized model execution */
   coderExecutor?: (worktreePath: string, goal: string, reviewFeedback?: string) => Promise<{ success: boolean; filesChanged: string[]; output?: string }>;
+  /** R21: explicit topology request; wins over the adaptive classifier. */
+  topology?: AdaptiveTopology;
+  /** R21: explicit complexity hint for the classifier (e.g. from the UI). */
+  complexityHint?: TaskComplexityTier;
+  /** R21: visual assets present — routes through the vision topology. */
+  hasImages?: boolean;
 }
 
 export interface OrchestratorOptions {
@@ -401,6 +428,24 @@ export class AutonomousRunOrchestrator {
     const { stdout: headShaOut } = await this.git(targetWs.rootPath, ["rev-parse", "HEAD"]).catch(() => ({ stdout: "0000000000000000000000000000000000000000" }));
     const baseRevision = headShaOut.trim();
 
+    // R21 topology decision: the smallest useful team, decided deterministically before any agent
+    // is spawned and recorded on the run. ForgeVerify is required by every plan.
+    const repositoryFileCount = (await this.git(targetWs.rootPath, ["ls-files"]).catch(() => ({ stdout: "" }))).stdout.split(/\r?\n/).filter(Boolean).length;
+    const complexity = classifyTaskComplexity({ goal, ...(options.complexityHint ? { hint: options.complexityHint } : {}), repositoryFileCount });
+    const fixedR1ByEnv = !options.topology && process.env.CODEFORGE_TOPOLOGY_POLICY === "fixed_r1";
+    const topologyPlan = resolveAdaptiveTopology({
+      goal,
+      ...(options.hasImages ? { hasImages: true } : {}),
+      ...(options.topology ? { requestedTopology: options.topology } : fixedR1ByEnv ? { requestedTopology: "fixed_r1" as const } : { complexityHint: complexity.tier }),
+    });
+    const topology: TopologyDecisionRecord = {
+      policy: options.topology ? "explicit" : fixedR1ByEnv ? "fixed_r1_env" : "adaptive",
+      complexity,
+      plan: topologyPlan,
+      repositoryFileCount,
+      decidedAt: new Date().toISOString(),
+    };
+
     const counters: AutonomousRunCounters = {
       childrenSpawned: 0,
       reviewRounds: 0,
@@ -426,6 +471,7 @@ export class AutonomousRunOrchestrator {
       baseRevision,
       reviewRounds: 0,
       taskGraph: initialTaskGraph,
+      topology,
       counters,
       startedAt: new Date().toISOString(),
     };
@@ -465,12 +511,16 @@ export class AutonomousRunOrchestrator {
       // PHASE 1: REPOSITORY EXPLORATION (Read-Only)
       // ==========================================
       this.transitionRun(run, "exploring", adapter);
-      const explorerTasks = this.subagentsR1Enabled
-        ? [
-          `Explore repository structure and relevant files for goal: ${goal}`,
-          `Inspect tests, runtime boundaries, and safety constraints relevant to goal: ${goal}`,
-        ]
-        : [`Explore repository for goal: ${goal}`];
+      // The topology plan decides how many explorers run (0 for tiny, 1 for normal/vision, 2 for
+      // complex/fixed_r1); the R1 flag only shapes their prompts and time budgets.
+      const explorerTasks = topologyPlan.explorers === 0
+        ? []
+        : topologyPlan.explorers >= 2
+          ? [
+            `Explore repository structure and relevant files for goal: ${goal}`,
+            `Inspect tests, runtime boundaries, and safety constraints relevant to goal: ${goal}`,
+          ]
+          : [`Explore repository for goal: ${goal}`];
       counters.childrenSpawned += explorerTasks.length;
       const explorerResults = await Promise.all(explorerTasks.map((task) => this.subagentManager.spawnChildAgent({
         parentRunId: runId,
@@ -494,7 +544,8 @@ export class AutonomousRunOrchestrator {
       // ==========================================
       this.transitionRun(run, "planning", adapter);
       const runAgentRuntime = this.subagentsR1Enabled ? this.runtimeForSession(sessionId) : this.agentRuntime;
-      if (runAgentRuntime) {
+      // Without a planner in the topology the coder works from the goal-derived task graph.
+      if (runAgentRuntime && topologyPlan.hasPlanner) {
         counters.childrenSpawned++;
         const explorerEvidence = explorerResults.flatMap((result) => result.evidence ?? []);
         const explorerFindings = explorerResults.flatMap((result) => result.findings ?? []);
@@ -585,6 +636,7 @@ export class AutonomousRunOrchestrator {
       // ==========================================
       let reviewPassed = false;
       let reviewFindings: AgentFinding[] = [];
+      let lastDeterministicReview: Awaited<ReturnType<typeof reviewDiff>> | undefined;
 
       while (!reviewPassed) {
         if (controller.signal.aborted) throw new Error("Run cancelled during execution/revision");
@@ -656,6 +708,23 @@ export class AutonomousRunOrchestrator {
 
         // Transition to Reviewing
         this.transitionRun(run, "reviewing", adapter);
+
+        // R21: the deterministic diff review (sensitive files, verification-config edits) runs on
+        // every topology, model-free, before any independent reviewer. Its blocking findings enter
+        // the same bounded revision loop as reviewer findings.
+        lastDeterministicReview = await reviewDiff(worktreeWs.rootPath, { base: baseRevision, signal: controller.signal }).catch(() => undefined);
+        const deterministicFindings: AgentFinding[] = (lastDeterministicReview?.findings ?? []).map((finding, index) => ({
+          id: `det-${finding.code}-${index}`,
+          severity: finding.severity,
+          category: finding.code,
+          message: finding.message,
+          evidence: finding.path,
+        }));
+
+        if (!topologyPlan.hasReviewer) {
+          reviewFindings = deterministicFindings;
+          allFindings.push(...reviewFindings);
+        } else {
         counters.childrenSpawned++;
 
         // Inspect diff in worktree
@@ -678,7 +747,7 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
           workspaceBranch: worktreeWs.branch,
         });
 
-        reviewFindings = reviewResult.findings || [];
+        reviewFindings = [...deterministicFindings, ...(reviewResult.findings || [])];
         allFindings.push(...reviewFindings);
         if (reviewResult.evidence) allEvidence.push(...reviewResult.evidence);
 
@@ -713,6 +782,7 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
           run.result = blockedResult;
           this.persistRun(run);
           return blockedResult;
+        }
         }
 
         const hasBlocking = reviewFindings.some((f) => f.severity === "blocking");
@@ -849,7 +919,7 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
       const completionReview: ReviewDecision = {
         approved: reviewPassed,
         issues: reviewFindings.map((finding) => finding.message),
-        findings: [],
+        findings: (lastDeterministicReview?.findings ?? []) as ReviewFinding[],
         diffs: completionChangedFiles.map((filePath) => ({
           path: filePath,
           changeType: "modified" as const,
@@ -949,6 +1019,7 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
         integration: { status: "integrated", branch: worktreeWs.branch, worktreeId: worktreeWs.id },
         evidence: allEvidence,
         counters,
+        topology,
       };
       run.result = completedResult;
       this.persistRun(run);

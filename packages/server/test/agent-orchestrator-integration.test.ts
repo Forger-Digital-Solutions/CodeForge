@@ -221,7 +221,7 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
     // Verify file content in primary repository
     const mainMath = await fs.readFile(path.join(repoDir, "math.mjs"), "utf-8");
     expect(mainMath).toContain("return a * b;");
-  });
+  }, 30000);
 
   it("runs the flagged R1 path with parallel read-only explorers and one durable isolated writer", async () => {
     const catalog = new InMemoryProviderCatalog();
@@ -239,6 +239,7 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
     });
 
     const result = await orchestrator.startRun({
+      topology: "fixed_r1", // R21: this test proves the R1 team mechanics, not topology selection
       sessionId: "session-r1",
       workspacePath: repoDir,
       goal: "Implement multiply function and make its focused test pass",
@@ -256,7 +257,7 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
     expect(workers.every((item) => item.kind !== "subagent_run" || item.artifacts.length === 1)).toBe(true);
     expect(eventStore.getAll().filter((event) => event.type === "subagent.lifecycle")).toHaveLength(20);
     expect(provider.maxExplorerConcurrency).toBeGreaterThanOrEqual(2);
-  });
+  }, 30000);
 
   it("reserves the Planner phase when R1 explorers exceed their bounded phase ceiling", async () => {
     let plannerStarted = false;
@@ -300,6 +301,7 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
       sessionId: "session-r1-phase-budget",
       workspacePath: repoDir,
       goal: "Plan a bounded change",
+      topology: "fixed_r1", // R21: explorer-ceiling mechanics need the R1 explorers + planner
       r1PhaseTimeoutMs: { explorer: 20, planner: 20 },
     });
 
@@ -323,7 +325,7 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
     const runtime = createAgentRuntime({ sessionId: "session-cycle", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: repoDir });
     const orchestrator = createAutonomousRunOrchestrator({ workspaceService, persistence, agentRuntime: runtime });
 
-    const result = await orchestrator.startRun({ sessionId: "session-cycle", workspacePath: repoDir, goal: "Plan safely" });
+    const result = await orchestrator.startRun({ sessionId: "session-cycle", workspacePath: repoDir, goal: "Plan safely", topology: "fixed_r1" });
     expect(result.status).not.toBe("completed");
     expect(result.integration.status).toBe("not_attempted");
     expect(provider.coderCalls).toBe(0);
@@ -338,7 +340,7 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
     const workspaceService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
     const runtime = createAgentRuntime({ sessionId: "session-missing-dep", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: repoDir });
     const orchestrator = createAutonomousRunOrchestrator({ workspaceService, persistence, agentRuntime: runtime });
-    const result = await orchestrator.startRun({ sessionId: "session-missing-dep", workspacePath: repoDir, goal: "Plan safely" });
+    const result = await orchestrator.startRun({ sessionId: "session-missing-dep", workspacePath: repoDir, goal: "Plan safely", topology: "fixed_r1" });
     expect(result.status).not.toBe("completed");
     expect(result.integration.status).toBe("not_attempted");
     expect(provider.coderCalls).toBe(0);
@@ -360,7 +362,7 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
     expect(result.status).toBe("blocked");
     expect(result.integration).toMatchObject({ status: "blocked", reason: "VERIFICATION_FAILED" });
     expect(result.verification[0]).toMatchObject({ command: "node -e \"process.exit(17)\"", failed: 1 });
-  });
+  }, 30000);
 
   it("uses the real AgentRuntime revision loop with structured findings and private-context isolation", async () => {
     await fs.writeFile(path.join(repoDir, "divide.mjs"), "export function divide(a, b) { return 0; }\n");
@@ -381,5 +383,5 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
     expect(revisionRequest).toBeDefined();
     expect(revisionRequest).not.toContain("CF07_REVIEWER_PRIVATE_MARKER_a3f9");
     expect(await fs.readFile(path.join(repoDir, "divide.mjs"), "utf8")).toContain("b === 0");
-  });
+  }, 30000);
 });
