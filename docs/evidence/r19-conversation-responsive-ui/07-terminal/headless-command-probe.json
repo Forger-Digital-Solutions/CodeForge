@@ -1,0 +1,87 @@
+﻿{
+    "generatedAt":  "2026-09-20T03:15:12.6088694Z",
+    "installDirectory":  "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\CodeForge",
+    "appVersion":  "0.4.0.0",
+    "cwd":  "C:\\Users\\Daddy_FDS\\Documents\\r16-fixtures\\bugfix-repo",
+    "packagesDirectory":  "installed",
+    "npmScriptShell":  "C:\\Program Files\\Git\\bin\\bash.exe",
+    "defaultTerminalDelegation":  "{E12CFF52-A866-4C77-9A90-F570A7AA2C6B}",
+    "runs":  [
+                 {
+                     "command":  "npm test",
+                     "mode":  "prepared",
+                     "probeExit":  0,
+                     "backend":  "conpty",
+                     "exitCode":  0,
+                     "runtimeKind":  "electron-as-node",
+                     "spawnError":  null,
+                     "outputTail":  "s stock (1.7371ms)\nâœ” rejects removing more than available (1.9134ms)\nâœ” computes total value (2.3171ms)\nâœ” low stock includes items AT the threshold (1.0293ms)\nâœ” finds the most expensive item (0.2521ms)\nâœ” counts distinct items (0.1482ms)\nâœ” returns 0 for empty inventory (0.1328ms)\nâœ” says hello (0.1626ms)\nâ„¹ tests 8\nâ„¹ suites 0\nâ„¹ pass 8\nâ„¹ fail 0\nâ„¹ cancelled 0\nâ„¹ skipped 0\nâ„¹ todo 0\nâ„¹ duration_ms 133.8631\n",
+                     "samples":  48,
+                     "consoleWindowsSeen":  [
+
+                                            ],
+                     "pass":  true
+                 },
+                 {
+                     "command":  "node -e \"console.log(1)\"",
+                     "mode":  "prepared",
+                     "probeExit":  0,
+                     "backend":  "conpty",
+                     "exitCode":  0,
+                     "runtimeKind":  "electron-as-node",
+                     "spawnError":  null,
+                     "outputTail":  "1\n",
+                     "samples":  30,
+                     "consoleWindowsSeen":  [
+
+                                            ],
+                     "pass":  true
+                 },
+                 {
+                     "command":  "npm run --silent test",
+                     "mode":  "prepared",
+                     "probeExit":  0,
+                     "backend":  "conpty",
+                     "exitCode":  0,
+                     "runtimeKind":  "electron-as-node",
+                     "spawnError":  null,
+                     "outputTail":  "oves stock (1.198ms)\nâœ” rejects removing more than available (0.8679ms)\nâœ” computes total value (2.1346ms)\nâœ” low stock includes items AT the threshold (1.2766ms)\nâœ” finds the most expensive item (0.4214ms)\nâœ” counts distinct items (0.2254ms)\nâœ” returns 0 for empty inventory (0.2173ms)\nâœ” says hello (0.225ms)\nâ„¹ tests 8\nâ„¹ suites 0\nâ„¹ pass 8\nâ„¹ fail 0\nâ„¹ cancelled 0\nâ„¹ skipped 0\nâ„¹ todo 0\nâ„¹ duration_ms 160.128\n",
+                     "samples":  47,
+                     "consoleWindowsSeen":  [
+
+                                            ],
+                     "pass":  true
+                 },
+                 {
+                     "command":  "cmd /c echo cmd-child",
+                     "mode":  "prepared",
+                     "probeExit":  0,
+                     "backend":  "conpty",
+                     "exitCode":  0,
+                     "runtimeKind":  "shell",
+                     "spawnError":  null,
+                     "outputTail":  "cmd-child\n",
+                     "samples":  30,
+                     "consoleWindowsSeen":  [
+
+                                            ],
+                     "pass":  true
+                 },
+                 {
+                     "command":  "bash -c \"echo bash-child\"",
+                     "mode":  "prepared",
+                     "probeExit":  0,
+                     "backend":  "conpty",
+                     "exitCode":  0,
+                     "runtimeKind":  "shell",
+                     "spawnError":  null,
+                     "outputTail":  "bash-child\n",
+                     "samples":  29,
+                     "consoleWindowsSeen":  [
+
+                                            ],
+                     "pass":  true
+                 }
+             ],
+    "verdict":  "PASS"
+}
