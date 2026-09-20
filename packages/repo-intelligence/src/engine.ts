@@ -71,6 +71,9 @@ const DEFAULT_LIMIT = 50;
 const MAX_QUERY_LIMIT = 200;
 const BINARY_EXTENSIONS = new Set([".7z", ".avi", ".bmp", ".class", ".dll", ".doc", ".docx", ".eot", ".exe", ".gif", ".gz", ".ico", ".jar", ".jpeg", ".jpg", ".mov", ".mp3", ".mp4", ".o", ".obj", ".otf", ".pdf", ".png", ".so", ".tar", ".ttf", ".wav", ".webm", ".woff", ".woff2", ".xls", ".xlsx", ".zip"]);
 const GENERATED_SEGMENTS = new Set([".git", ".next", ".turbo", ".venv", "__pycache__", "build", "coverage", "dist", "node_modules", "target", "vendor"]);
+/** Filename-level generated artifacts a directory segment cannot catch: `client.generated.ts`,
+ * `api.gen.go`, `bundle.min.js`, `Foo.designer.cs`, `schema.auto.ts`. */
+const GENERATED_FILE_PATTERN = /[._-](?:generated|gen|auto|designer|min)\./i;
 const SENSITIVE_NAMES = /(?:^|\/)(?:\.env(?:\..*)?|credentials(?:\..*)?|id_(?:rsa|dsa|ecdsa|ed25519)|.*\.(?:pem|p12|pfx|key))$/i;
 
 type Row = Record<string, unknown>;
@@ -495,7 +498,8 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
         const forced = requeueSet.has(relativePath);
         if (!headChanged && !forced && previous && previous.size === stat.size && previous.mtimeMs === stat.mtimeMs) { unchanged++; processed++; continue; }
         const extension = path.extname(relativePath).toLowerCase();
-        const generated = normalizeRelative(relativePath).split("/").some((segment) => GENERATED_SEGMENTS.has(segment));
+        const segments = normalizeRelative(relativePath).split("/");
+        const generated = segments.some((segment) => GENERATED_SEGMENTS.has(segment)) || GENERATED_FILE_PATTERN.test(segments[segments.length - 1]!);
         const sensitive = SENSITIVE_NAMES.test(relativePath);
         const tooLarge = stat.size > this.options.maxFileBytes;
         const prefix = Buffer.alloc(Math.min(stat.size, 8192));
@@ -801,7 +805,9 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
 
   async findDependents(filePath: string, options: QueryOptions = {}): Promise<QueryPage<RepositoryEdge>> {
     const rows = this.db!.prepare("SELECT * FROM edges WHERE target_path=$path ORDER BY kind,source_path").all({ $path: normalizeRelative(filePath) }) as Row[];
-    return page(rows.map(rowEdge), options);
+    // A dependent reachable through two edge kinds (imports + test_for) is one dependent, once.
+    const deduped = [...new Map(rows.map((row) => [String(row.source_path), row])).values()];
+    return page(deduped.map(rowEdge), options);
   }
 
   async findRelatedTests(filePath: string, options: QueryOptions = {}): Promise<QueryPage<RepositoryMatch>> {
@@ -844,7 +850,21 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       for (const related of (await this.findRelatedTests(match.path, { limit: 10 })).items) add({ ...related, score: Math.min(90, related.score), reasons: [...related.reasons, "related_to_relevant_implementation"] });
     }
     const asksForTests = /\b(?:test|tests|testing|coverage|specs?)\b/i.test(task);
-    const ranked = [...scores.values()].map((match) => {
+    // Generated/vendor output carries the same symbol and content tokens as real source and was
+    // outranking it (a minified bundle or a *.generated.ts twin of the real definition). Generated
+    // files stay indexed — a task that names one explicitly (task_explicit_path) or asks about
+    // build artifacts keeps them — but they never fill the delivered context window otherwise.
+    const asksForGenerated = /\b(?:generated|vendor|vendored|bundle|bundled|dist\b|build output|minified)\b/i.test(task);
+    const generatedPaths = new Set<string>();
+    if (!asksForGenerated) {
+      const stmt = this.db!.prepare("SELECT generated FROM files WHERE path=$path");
+      for (const match of scores.values()) {
+        if (match.reasons.includes("task_explicit_path")) continue;
+        const row = stmt.get({ $path: match.path }) as Row | undefined;
+        if (row && Number(row.generated) === 1) generatedPaths.add(match.path);
+      }
+    }
+    const ranked = [...scores.values()].filter((match) => !generatedPaths.has(match.path)).map((match) => {
       const testLike = /(?:^|\/)(?:test|tests|__tests__)\/|\.(?:test|spec)\./i.test(match.path);
       return testLike && !asksForTests ? { ...match, score: match.score - 35, reasons: [...match.reasons, "test_deprioritized_for_implementation_query"] } : match;
     }).sort((a, b) => b.score - a.score || a.path.localeCompare(b.path));

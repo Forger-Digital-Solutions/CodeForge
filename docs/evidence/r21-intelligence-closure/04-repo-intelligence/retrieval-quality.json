@@ -1,0 +1,54 @@
+{
+  "recorded": "2026-09-20",
+  "suite": "packages/repo-intelligence/test/r21-retrieval-quality.test.ts",
+  "corpus": {
+    "kind": "seeded layered repository",
+    "sourceFiles": "src/{api,db,services,services/auth,services/billing,ui,utils,filler,gen} + tests/ + dist/ + node_modules/",
+    "scale": "~300 files incl. 220 filler, 10 controllers, 10 repositories, 12 services, 10 pages, 14 tests",
+    "generatedFiles": ["dist/app.bundle.js", "node_modules/leftover/index.js", "src/gen/client.generated.ts"],
+    "labeledQueries": 6,
+    "phrasings": ["symbol needle", "explicit path mention", "symptom/session-expiry", "symptom/checkout-total", "cross-layer feature", "class-name needle"]
+  },
+  "before": {
+    "commitState": "engine without generated-file query filtering, without filename-pattern generated detection, without findDependents dedup",
+    "recallAt15": 1.0,
+    "meanReciprocalRank": 0.5290404040404041,
+    "fullCoverageAt15": 1.0,
+    "contaminatedCases": 1,
+    "needleSymbolTop5": [
+      "dist/app.bundle.js",
+      "node_modules/leftover/index.js",
+      "src/gen/client.generated.ts",
+      "src/utils/pagination.ts",
+      "src/services/billing/discount.ts"
+    ],
+    "needleSymbolFirstExpectedRank": 4,
+    "symptomSessionExpiryFirstRank": 11,
+    "findDependentsDuplicates": ["tests/billing-service.test.ts"]
+  },
+  "after": {
+    "commitState": "GENERATED_FILE_PATTERN filename detection + generated/vendor exclusion in findRelevantContext (explicit mention and generated-artifact queries exempt) + findDependents path dedup",
+    "recallAt15": 1.0,
+    "meanReciprocalRank": 0.7651515151515151,
+    "fullCoverageAt15": 1.0,
+    "contaminatedCases": 0,
+    "perCase": [
+      { "case": "needle-symbol", "firstExpectedRank": 1, "top3": ["src/utils/pagination.ts", "src/services/billing/discount.ts", "src/services/auth/session.ts"], "contaminated": [] },
+      { "case": "needle-mentioned-path", "firstExpectedRank": 1, "top3": ["src/utils/pagination.ts", "src/filler/f008.ts", "src/filler/f018.ts"], "contaminated": [] },
+      { "case": "symptom-session-expiry", "firstExpectedRank": 11, "top3": ["src/api/users-controller.ts", "src/db/users-repository.ts", "src/services/users-service.ts"], "contaminated": [] },
+      { "case": "symptom-checkout-total", "firstExpectedRank": 1, "top3": ["src/services/billing/discount.ts", "src/utils/pagination.ts", "src/db/orders-repository.ts"], "contaminated": [] },
+      { "case": "cross-layer-orders", "firstExpectedRank": 2, "top3": ["src/api/orders-controller.ts", "src/db/orders-repository.ts", "src/services/orders-service.ts"], "contaminated": [] },
+      { "case": "needle-class-name", "firstExpectedRank": 1, "top3": ["src/services/auth/session.ts", "src/api/admin-controller.ts", "src/api/audit-controller.ts"], "contaminated": [] }
+    ],
+    "findDependentsForBillingService": ["src/api/billing-controller.ts", "tests/billing-service.test.ts"],
+    "freshness": {
+      "renamedSymbolRetrievesTarget": true,
+      "staleSymbolAbsentFromRenamedFile": true,
+      "staleSymbolSurvivesInGeneratedFixture": "expected — generated output was not regenerated; recorded as contamination case, not source-index staleness"
+    }
+  },
+  "regression": {
+    "repoIntelligencePackage": "6 files / 44 tests green incl. CF-14 1M-line benchmark, FG-2 certification (22), FG-2 efficiency (2), engine.test",
+    "spendUsd": 0
+  }
+}
