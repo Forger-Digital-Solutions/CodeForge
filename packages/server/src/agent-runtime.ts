@@ -369,6 +369,12 @@ export interface AgentRuntimeOptions {
   userIntentHold?: UserIntentHoldController;
   /** FG-1D: persistent canonical analysis cache. Optional; absent = always recompute. */
   forgeGreenCacheStore?: ForgeGreenCacheStore;
+  /**
+   * R21 benchmark control seam. Both mechanisms are certified ACTIVE_SAFE and default ON; a
+   * controlled A/B needs a genuine OFF arm to attribute savings. Never exposed to users or
+   * settings — only the ForgeGreen A/B harness passes it.
+   */
+  efficiencyControls?: { duplicateSuppression?: boolean; toolOutputCompression?: boolean };
   /** Test-only synchronization point at the real post-approval execution boundary. */
   afterApprovalResolvedBoundary?: () => Promise<void>;
   /** 8-Bit routing/failover/health/reliability core. Optional so existing callers/tests stay
@@ -504,6 +510,7 @@ export class AgentRuntime {
   private readonly recoveryRequiredTurns = new Set<string>();
   private readonly recoveryOriginalStatusByTurn = new Map<string, Exclude<TurnStatus, "idle" | "completed" | "failed" | "cancelled">>();
   private readonly forgeGreenCacheStore?: ForgeGreenCacheStore;
+  private readonly efficiencyControls: { duplicateSuppression: boolean; toolOutputCompression: boolean };
   private readonly eightBit: EightBitRuntime;
   private readonly freeCloud?: FreeCloudRoutingHooks;
   private readonly paidAuto?: PaidAutoService;
@@ -528,6 +535,7 @@ export class AgentRuntime {
     this.forgeGreen = options.forgeGreen ?? createForgeGreenAdvisor({ enabled: process.env.CODEFORGE_FORGREEN !== "0" });
     this.userIntentHold = options.userIntentHold;
     this.forgeGreenCacheStore = options.forgeGreenCacheStore;
+    this.efficiencyControls = { duplicateSuppression: options.efficiencyControls?.duplicateSuppression ?? true, toolOutputCompression: options.efficiencyControls?.toolOutputCompression ?? true };
     this.afterApprovalResolvedBoundary = options.afterApprovalResolvedBoundary;
     this.demoMode = options.demoMode ?? false;
     this.repositoryIntelligenceFactory = options.repositoryIntelligenceFactory ?? (() => createRepositoryIntelligence({
@@ -830,6 +838,10 @@ export class AgentRuntime {
     let journalActiveRoute: AgentModelSelection | undefined;
     let finalSummary = "";
     let stopReason: AgentStopReason = "completed" as AgentStopReason;
+    // R21: "completed" is only earned by the model finishing its answer. A loop that ends because
+    // the model-turn budget ran out while the model was still calling tools must never be
+    // reported as success — the initial value above is a placeholder, not a verdict.
+    let completedExplicitly = false;
     const resumeJournal = req.resumeJournal?.journal;
     const journalEnabled = req.roleRouting === true || resumeJournal !== undefined;
     const journalId = `agent-run-journal-${req.runId}`;
@@ -1468,6 +1480,7 @@ export class AgentRuntime {
           }
           await persistModelTurn("agent_result_completed");
           stopReason = "completed";
+          completedExplicitly = true;
           break;
         }
 
@@ -1608,7 +1621,7 @@ export class AgentRuntime {
             canonicalArguments: supervisorArgs === PARSE_FAILED ? tc.arguments : supervisorArgs,
             workstreamScope: req.workstreamScope,
           };
-          const duplicateDecision = duplicateSupervisor.classify(duplicateIdentity);
+          const duplicateDecision = this.efficiencyControls.duplicateSuppression ? duplicateSupervisor.classify(duplicateIdentity) : { action: "execute" as const };
           if (duplicateDecision.action === "escalate") {
             ledger.recordNoProgressInterruption(duplicateDecision.reason);
             // When the escalating history also matches the certified CF-07 text-loop shapes
@@ -1712,7 +1725,7 @@ export class AgentRuntime {
 
           // FG-1B: bound the model-context representation of large outputs. The authoritative
           // post-redaction output stays on the record (and in the event stream) untouched.
-          const compression = compressToolOutput(toolExec.output, { artifactRef: executionId });
+          const compression = this.efficiencyControls.toolOutputCompression ? compressToolOutput(toolExec.output, { artifactRef: executionId }) : { applied: false as const };
           if (compression.applied) {
             toolExec.modelContextOutput = compression.representation;
             toolExec.compression = {
@@ -1798,9 +1811,16 @@ export class AgentRuntime {
         }
       }
 
-      if (turnCount >= budget.maxModelTurns && stopReason !== "completed") {
+      if (turnCount >= budget.maxModelTurns && (stopReason !== "completed" || !completedExplicitly)) {
+        // Exhausting the model-turn budget is never success (the work was not finished, only
+        // stopped). Before R21 the placeholder "completed" leaked through here and an agent that
+        // ran out of turns mid-investigation was reported completed with a canned summary.
         stopReason = "budget_exhausted";
       }
+      const exhaustedModelTurns = stopReason === "budget_exhausted" && !completedExplicitly && turnCount >= budget.maxModelTurns;
+      // R21: the receipt is rebuilt after the last turn's tool processing so suppressions and
+      // compressions from the final turn are counted (the per-response snapshot above ran first).
+      contextMetrics.efficiencyReceipt = createRunReceipt();
 
       // 3. Extract role-specific data. Review authority is only accepted from a validated schema.
       if (expectedStructuredOutput === "reviewer" && structuredData) {
@@ -1826,9 +1846,13 @@ export class AgentRuntime {
         : "blocked";
       forgeGreenR0RunStatus = status;
       const hadModelFinalResponse = finalSummary.trim().length > 0;
-      const completedResponse = hadModelFinalResponse
-        ? finalSummary
-        : "Completed the requested work and verification.";
+      const completedResponse = status === "completed"
+        ? (hadModelFinalResponse ? finalSummary : "Completed the requested work and verification.")
+        : exhaustedModelTurns
+          ? `[${ERROR_CODES.AGENT_MODEL_TURN_LIMIT}] The ${req.role} agent used all ${budget.maxModelTurns} model turns without finishing; the work is unfinished, not complete.`
+          : stopReason === "budget_exhausted"
+            ? `[${ERROR_CODES.AGENT_TOOL_LIMIT}] The ${req.role} agent reached its tool-call budget without finishing; the work is unfinished, not complete.`
+            : (hadModelFinalResponse ? finalSummary : `Agent ${req.role} stopped (${stopReason}) without finishing.`);
 
       const result: AgentRuntimeResult = {
         status,
@@ -1841,6 +1865,7 @@ export class AgentRuntime {
         filesChanged: Array.from(changedFiles),
         structuredData,
         contextMetrics,
+        ...(status !== "completed" && stopReason === "budget_exhausted" ? { error: exhaustedModelTurns ? ERROR_CODES.AGENT_MODEL_TURN_LIMIT : ERROR_CODES.AGENT_TOOL_LIMIT } : {}),
       };
 
       if (status === "completed") {
@@ -4158,7 +4183,7 @@ export class AgentRuntime {
     // mutating execution advance the supervisor's state version, so post-steer and post-write
     // reruns are always treated as legitimate new work.
     if (duplicateSupervisor && duplicateSupervisor.isReadOnly(toolName)) {
-      const decision = duplicateSupervisor.classify({ tool: toolName, canonicalArguments: parsedArgs });
+      const decision = this.efficiencyControls.duplicateSuppression ? duplicateSupervisor.classify({ tool: toolName, canonicalArguments: parsedArgs }) : { action: "execute" as const };
       if (decision.action === "escalate") {
         adapter.emitToolExecutionBlocked(turnId, toolCallId, toolName, ERROR_CODES.AGENT_NO_PROGRESS_DETECTED);
         throw new Error(`[${ERROR_CODES.AGENT_NO_PROGRESS_DETECTED}] ${decision.reason}`);
@@ -4291,7 +4316,7 @@ export class AgentRuntime {
       adapter.emitToolExecutionCompleted(turnId, toolCallId, toolName, boundedResult);
       // FG-1B: the emitted event carries the authoritative post-redaction result; the model
       // history receives the bounded deterministic representation when compression applied.
-      const compression = compressToolOutput(boundedResult, { artifactRef: `tool-${toolCallId}` });
+      const compression = this.efficiencyControls.toolOutputCompression ? compressToolOutput(boundedResult, { artifactRef: `tool-${toolCallId}` }) : { applied: false as const };
       return compression.applied ? compression.representation : boundedResult;
     } catch (error) {
       const raw = error instanceof Error ? error.message : String(error);

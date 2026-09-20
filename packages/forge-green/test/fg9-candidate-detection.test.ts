@@ -29,7 +29,9 @@ describe("FG-9 candidate detection (§30 items 1-4)", () => {
     expect(result!.decision.status).toBe("APPLIED");
     expect(result!.decision.mode).toBe("ACTIVE_SAFE");
     expect(result!.decision.expectedEffect.avoidedToolExecutions).toBe(1);
-    expect(result!.receipt.resourceDelta.bytesAvoided).toBe(500);
+    // R21: replayed bytes are not avoided context (see fg9-active-safe for the rationale).
+    expect(result!.receipt.resourceDelta.bytesAvoided).toBeUndefined();
+    expect(result!.decision.expectedEffect.avoidedBytes).toBeUndefined();
   });
 
   it("[3] optional prefetch candidate: non-required + already-available pages are proposed for suppression", () => {

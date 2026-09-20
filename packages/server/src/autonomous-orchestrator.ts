@@ -686,8 +686,14 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
         // budget expired) never passes the review: the absence of findings from a reviewer that
         // died is not approval. Fail closed into a blocked run, same as persistent blocking
         // findings below.
-        if (reviewResult.status === "cancelled" || reviewResult.status === "failed") {
-          const reason = reviewResult.status === "cancelled" ? "REVIEWER_CANCELLED" : "REVIEWER_FAILED";
+        // R21: a reviewer that ran out of turns (blocked without a structured verdict) delivered no
+        // review either; the absence of findings from an exhausted reviewer is not approval.
+        // A verdict is either a structured reviewer result or at least one finding; an exhausted
+        // reviewer produces neither (the runtime attaches reviewer findings only from a validated
+        // structured result).
+        const reviewerDeliveredVerdict = Boolean((reviewResult.structuredData as { verdict?: string } | undefined)?.verdict) || (reviewResult.findings?.length ?? 0) > 0;
+        if (reviewResult.status === "cancelled" || reviewResult.status === "failed" || (reviewResult.status === "blocked" && !reviewerDeliveredVerdict)) {
+          const reason = reviewResult.status === "cancelled" ? "REVIEWER_CANCELLED" : reviewResult.status === "blocked" ? "REVIEWER_BUDGET_EXHAUSTED" : "REVIEWER_FAILED";
           const summary = `Independent review did not complete (${reason}): ${reviewResult.summary}`;
           this.transitionRun(run, "blocked", adapter);
           run.error = reason;

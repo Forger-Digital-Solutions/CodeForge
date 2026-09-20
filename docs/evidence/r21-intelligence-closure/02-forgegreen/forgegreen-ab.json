@@ -1,0 +1,582 @@
+{
+  "schemaVersion": 1,
+  "campaign": "R21 ForgeGreen controlled A/B (mechanism-level, deterministic scripted model)",
+  "recordedAt": "2026-09-20T19:37:17.251Z",
+  "design": {
+    "control": "ForgeGreen OFF: advisor disabled, FG-1C duplicate suppression off, FG-1B tool-output compression off",
+    "experiment": "ForgeGreen ON: production defaults",
+    "model": "deterministic scripted provider issuing a fixed realistic tool trace per task",
+    "repetitionsPerArm": 3,
+    "order": "alternating OFF/ON/ON/OFF/OFF/ON",
+    "correctness": "equal by construction (same script); asserted on status, summary, files changed and resulting workspace hash",
+    "limitation": "a scripted model cannot change its decisions in response to ForgeGreen, so provider-call and turn-count effects of a live model are not measured here"
+  },
+  "totals": {
+    "tasks": 13,
+    "offPhysicalToolExecutions": 103,
+    "onPhysicalToolExecutions": 81,
+    "offModelVisibleContextBytes": 9519197,
+    "onModelVisibleContextBytes": 7809179,
+    "toolDispatchesAvoided": 22,
+    "modelVisibleBytesAvoided": 1710018,
+    "providerCallsAvoided": 0,
+    "tasksWithWallTimeImprovement": 10
+  },
+  "tasks": [
+    {
+      "task": "tiny-bug-fix",
+      "category": "tiny",
+      "designedDuplicates": 0,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 4,
+        "physicalToolExecutions": 3,
+        "modelVisibleContextBytes": 153080,
+        "finalRequestBytes": 38270,
+        "wallMsMedian": 695,
+        "wallMsMin": 689,
+        "wallMsMax": 762
+      },
+      "on": {
+        "providerCalls": 4,
+        "physicalToolExecutions": 3,
+        "duplicateActionsSuppressed": 0,
+        "toolOutputBytesAvoided": 0,
+        "modelVisibleContextBytes": 153432,
+        "finalRequestBytes": 38358,
+        "wallMsMedian": 702,
+        "wallMsMin": 690,
+        "wallMsMax": 741
+      },
+      "delta": {
+        "toolDispatchesAvoided": 0,
+        "modelVisibleBytesAvoided": -352,
+        "modelVisibleBytesAvoidedPct": -0.2,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": -7
+      }
+    },
+    {
+      "task": "unknown-regression",
+      "category": "bug",
+      "designedDuplicates": 2,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 10,
+        "physicalToolExecutions": 9,
+        "modelVisibleContextBytes": 877920,
+        "finalRequestBytes": 87792,
+        "wallMsMedian": 773,
+        "wallMsMin": 747,
+        "wallMsMax": 775
+      },
+      "on": {
+        "providerCalls": 10,
+        "physicalToolExecutions": 7,
+        "duplicateActionsSuppressed": 2,
+        "toolOutputBytesAvoided": 0,
+        "modelVisibleContextBytes": 884130,
+        "finalRequestBytes": 88413,
+        "wallMsMedian": 751,
+        "wallMsMin": 749,
+        "wallMsMax": 785
+      },
+      "delta": {
+        "toolDispatchesAvoided": 2,
+        "modelVisibleBytesAvoided": -6210,
+        "modelVisibleBytesAvoidedPct": -0.7,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": 22
+      }
+    },
+    {
+      "task": "medium-feature",
+      "category": "feature",
+      "designedDuplicates": 2,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 10,
+        "physicalToolExecutions": 9,
+        "modelVisibleContextBytes": 756830,
+        "finalRequestBytes": 75683,
+        "wallMsMedian": 763,
+        "wallMsMin": 746,
+        "wallMsMax": 771
+      },
+      "on": {
+        "providerCalls": 10,
+        "physicalToolExecutions": 7,
+        "duplicateActionsSuppressed": 2,
+        "toolOutputBytesAvoided": 0,
+        "modelVisibleContextBytes": 762590,
+        "finalRequestBytes": 76259,
+        "wallMsMedian": 770,
+        "wallMsMin": 757,
+        "wallMsMax": 773
+      },
+      "delta": {
+        "toolDispatchesAvoided": 2,
+        "modelVisibleBytesAvoided": -5760,
+        "modelVisibleBytesAvoidedPct": -0.8,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": -7
+      }
+    },
+    {
+      "task": "large-feature",
+      "category": "feature",
+      "designedDuplicates": 3,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 14,
+        "physicalToolExecutions": 13,
+        "modelVisibleContextBytes": 1600606,
+        "finalRequestBytes": 114329,
+        "wallMsMedian": 849,
+        "wallMsMin": 820,
+        "wallMsMax": 856
+      },
+      "on": {
+        "providerCalls": 14,
+        "physicalToolExecutions": 10,
+        "duplicateActionsSuppressed": 3,
+        "toolOutputBytesAvoided": 0,
+        "modelVisibleContextBytes": 1613024,
+        "finalRequestBytes": 115216,
+        "wallMsMedian": 834,
+        "wallMsMin": 828,
+        "wallMsMax": 858
+      },
+      "delta": {
+        "toolDispatchesAvoided": 3,
+        "modelVisibleBytesAvoided": -12418,
+        "modelVisibleBytesAvoidedPct": -0.8,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": 15
+      }
+    },
+    {
+      "task": "typescript-refactor",
+      "category": "refactor",
+      "designedDuplicates": 2,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 11,
+        "physicalToolExecutions": 10,
+        "modelVisibleContextBytes": 916124,
+        "finalRequestBytes": 83284,
+        "wallMsMedian": 811,
+        "wallMsMin": 789,
+        "wallMsMax": 815
+      },
+      "on": {
+        "providerCalls": 11,
+        "physicalToolExecutions": 8,
+        "duplicateActionsSuppressed": 2,
+        "toolOutputBytesAvoided": 0,
+        "modelVisibleContextBytes": 923439,
+        "finalRequestBytes": 83949,
+        "wallMsMedian": 801,
+        "wallMsMin": 782,
+        "wallMsMax": 806
+      },
+      "delta": {
+        "toolDispatchesAvoided": 2,
+        "modelVisibleBytesAvoided": -7315,
+        "modelVisibleBytesAvoidedPct": -0.8,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": 10
+      }
+    },
+    {
+      "task": "python-refactor",
+      "category": "refactor",
+      "designedDuplicates": 2,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 9,
+        "physicalToolExecutions": 8,
+        "modelVisibleContextBytes": 395280,
+        "finalRequestBytes": 43920,
+        "wallMsMedian": 712,
+        "wallMsMin": 710,
+        "wallMsMax": 715
+      },
+      "on": {
+        "providerCalls": 9,
+        "physicalToolExecutions": 6,
+        "duplicateActionsSuppressed": 2,
+        "toolOutputBytesAvoided": 23361,
+        "modelVisibleContextBytes": 189009,
+        "finalRequestBytes": 21001,
+        "wallMsMedian": 706,
+        "wallMsMin": 694,
+        "wallMsMax": 709
+      },
+      "delta": {
+        "toolDispatchesAvoided": 2,
+        "modelVisibleBytesAvoided": 206271,
+        "modelVisibleBytesAvoidedPct": 52.2,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": 6
+      }
+    },
+    {
+      "task": "large-monorepo-search",
+      "category": "investigation",
+      "designedDuplicates": 3,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 10,
+        "physicalToolExecutions": 9,
+        "modelVisibleContextBytes": 1191980,
+        "finalRequestBytes": 119198,
+        "wallMsMedian": 703,
+        "wallMsMin": 691,
+        "wallMsMax": 725
+      },
+      "on": {
+        "providerCalls": 10,
+        "physicalToolExecutions": 6,
+        "duplicateActionsSuppressed": 3,
+        "toolOutputBytesAvoided": 63317,
+        "modelVisibleContextBytes": 568240,
+        "finalRequestBytes": 56824,
+        "wallMsMedian": 700,
+        "wallMsMin": 677,
+        "wallMsMax": 704
+      },
+      "delta": {
+        "toolDispatchesAvoided": 3,
+        "modelVisibleBytesAvoided": 623740,
+        "modelVisibleBytesAvoidedPct": 52.3,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": 3
+      }
+    },
+    {
+      "task": "dependency-upgrade",
+      "category": "dependency",
+      "designedDuplicates": 1,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 7,
+        "physicalToolExecutions": 6,
+        "modelVisibleContextBytes": 555933,
+        "finalRequestBytes": 79419,
+        "wallMsMedian": 752,
+        "wallMsMin": 744,
+        "wallMsMax": 773
+      },
+      "on": {
+        "providerCalls": 7,
+        "physicalToolExecutions": 5,
+        "duplicateActionsSuppressed": 1,
+        "toolOutputBytesAvoided": 60669,
+        "modelVisibleContextBytes": 132797,
+        "finalRequestBytes": 18971,
+        "wallMsMedian": 757,
+        "wallMsMin": 745,
+        "wallMsMax": 783
+      },
+      "delta": {
+        "toolDispatchesAvoided": 1,
+        "modelVisibleBytesAvoided": 423136,
+        "modelVisibleBytesAvoidedPct": 76.1,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": -5
+      }
+    },
+    {
+      "task": "failing-ci-investigation",
+      "category": "investigation",
+      "designedDuplicates": 2,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 8,
+        "physicalToolExecutions": 7,
+        "modelVisibleContextBytes": 1369416,
+        "finalRequestBytes": 171177,
+        "wallMsMedian": 615,
+        "wallMsMin": 603,
+        "wallMsMax": 635
+      },
+      "on": {
+        "providerCalls": 8,
+        "physicalToolExecutions": 5,
+        "duplicateActionsSuppressed": 2,
+        "toolOutputBytesAvoided": 63317,
+        "modelVisibleContextBytes": 867128,
+        "finalRequestBytes": 108391,
+        "wallMsMedian": 606,
+        "wallMsMin": 604,
+        "wallMsMax": 619
+      },
+      "delta": {
+        "toolDispatchesAvoided": 2,
+        "modelVisibleBytesAvoided": 502288,
+        "modelVisibleBytesAvoidedPct": 36.7,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": 9
+      }
+    },
+    {
+      "task": "test-repair",
+      "category": "tests",
+      "designedDuplicates": 1,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 6,
+        "physicalToolExecutions": 5,
+        "modelVisibleContextBytes": 157110,
+        "finalRequestBytes": 26185,
+        "wallMsMedian": 721,
+        "wallMsMin": 713,
+        "wallMsMax": 768
+      },
+      "on": {
+        "providerCalls": 6,
+        "physicalToolExecutions": 4,
+        "duplicateActionsSuppressed": 1,
+        "toolOutputBytesAvoided": 0,
+        "modelVisibleContextBytes": 158700,
+        "finalRequestBytes": 26450,
+        "wallMsMedian": 695,
+        "wallMsMin": 682,
+        "wallMsMax": 711
+      },
+      "delta": {
+        "toolDispatchesAvoided": 1,
+        "modelVisibleBytesAvoided": -1590,
+        "modelVisibleBytesAvoidedPct": -1,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": 26
+      }
+    },
+    {
+      "task": "frontend-backend",
+      "category": "fullstack",
+      "designedDuplicates": 1,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 8,
+        "physicalToolExecutions": 7,
+        "modelVisibleContextBytes": 333896,
+        "finalRequestBytes": 41737,
+        "wallMsMedian": 737,
+        "wallMsMin": 723,
+        "wallMsMax": 740
+      },
+      "on": {
+        "providerCalls": 8,
+        "physicalToolExecutions": 6,
+        "duplicateActionsSuppressed": 1,
+        "toolOutputBytesAvoided": 0,
+        "modelVisibleContextBytes": 336376,
+        "finalRequestBytes": 42047,
+        "wallMsMedian": 732,
+        "wallMsMin": 732,
+        "wallMsMax": 753
+      },
+      "delta": {
+        "toolDispatchesAvoided": 1,
+        "modelVisibleBytesAvoided": -2480,
+        "modelVisibleBytesAvoidedPct": -0.7,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": 5
+      }
+    },
+    {
+      "task": "database-api-change",
+      "category": "database",
+      "designedDuplicates": 1,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 8,
+        "physicalToolExecutions": 7,
+        "modelVisibleContextBytes": 311376,
+        "finalRequestBytes": 38922,
+        "wallMsMedian": 732,
+        "wallMsMin": 717,
+        "wallMsMax": 741
+      },
+      "on": {
+        "providerCalls": 8,
+        "physicalToolExecutions": 6,
+        "duplicateActionsSuppressed": 1,
+        "toolOutputBytesAvoided": 0,
+        "modelVisibleContextBytes": 313848,
+        "finalRequestBytes": 39231,
+        "wallMsMedian": 710,
+        "wallMsMin": 707,
+        "wallMsMax": 718
+      },
+      "delta": {
+        "toolDispatchesAvoided": 1,
+        "modelVisibleBytesAvoided": -2472,
+        "modelVisibleBytesAvoidedPct": -0.8,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": 22
+      }
+    },
+    {
+      "task": "multi-file-implementation",
+      "category": "feature",
+      "designedDuplicates": 2,
+      "repetitionsPerArm": 3,
+      "correctness": {
+        "equalStatus": true,
+        "equalSummary": true,
+        "equalWorkspaceHash": true,
+        "status": "completed"
+      },
+      "off": {
+        "providerCalls": 11,
+        "physicalToolExecutions": 10,
+        "modelVisibleContextBytes": 899646,
+        "finalRequestBytes": 81786,
+        "wallMsMedian": 793,
+        "wallMsMin": 788,
+        "wallMsMax": 810
+      },
+      "on": {
+        "providerCalls": 11,
+        "physicalToolExecutions": 8,
+        "duplicateActionsSuppressed": 2,
+        "toolOutputBytesAvoided": 0,
+        "modelVisibleContextBytes": 906466,
+        "finalRequestBytes": 82406,
+        "wallMsMedian": 788,
+        "wallMsMin": 778,
+        "wallMsMax": 805
+      },
+      "delta": {
+        "toolDispatchesAvoided": 2,
+        "modelVisibleBytesAvoided": -6820,
+        "modelVisibleBytesAvoidedPct": -0.8,
+        "providerCallsAvoided": 0,
+        "wallMsDeltaMedian": 6
+      }
+    },
+    {
+      "task": "subagent-heavy-research",
+      "siblings": [
+        "explorer-a",
+        "explorer-b",
+        "coder",
+        "reviewer"
+      ],
+      "off": {
+        "physicalToolExecutions": 16,
+        "modelVisibleContextBytes": 896695
+      },
+      "on": {
+        "physicalToolExecutions": 14,
+        "modelVisibleContextBytes": 901352,
+        "withinRunDuplicatesSuppressed": 2
+      },
+      "crossSibling": {
+        "filesReadByMultipleSiblings": [
+          {
+            "file": "src/core.ts",
+            "readers": [
+              "explorer-a",
+              "explorer-b",
+              "coder",
+              "reviewer"
+            ]
+          },
+          {
+            "file": "src/api.ts",
+            "readers": [
+              "explorer-a",
+              "explorer-b",
+              "coder",
+              "reviewer"
+            ]
+          }
+        ],
+        "rereadBytesAcrossSiblings": 80370,
+        "explorerOverlapBytes": 26790,
+        "suppressedAcrossSiblingsByForgeGreen": 0,
+        "classification": {
+          "explorerOverlap": "waste candidate (identical read-only evidence gathered twice)",
+          "coderReread": "intentional (the coder needs the content in its own context to edit)",
+          "reviewerReread": "independent verification (a reviewer must not inherit the coder's view)"
+        }
+      }
+    }
+  ]
+}

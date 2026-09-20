@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "f9ac543301b6cc5ac6b59c43f3117e849e66fb3b9bfa2a1dc10ddc5d2050b9d0",
-  "surfaceVersion": "r21-forgeverify-recertified-v1",
+  "sourceStateId": "aeebe2a1ae6cbf6781c5d87fd248174a2961b8f65d41ad9ee323d253e77cee16",
+  "surfaceVersion": "r21-forgegreen-ab-corrected-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -47,7 +47,7 @@
     "packages/benchmark/src/protected-acceptance.ts": "0c1538833083910b74c98e8261e02b212753721e",
     "packages/context/src/index.ts": "c22eef865b066f9fb176f8cceac9f616aec6c727",
     "packages/context/src/planner.ts": "5cab4794355d06008e044ddd80ac1b560ec0f793",
-    "packages/forge-green/src/optimization-candidate-a.ts": "9588953b177b1a4864b76a7e8171f8998664b716",
+    "packages/forge-green/src/optimization-candidate-a.ts": "dd12afcef93c68b9f81e1e5d26b0f87cb3690ad4",
     "packages/forge-green/src/optimization-candidates-shadow.ts": "a3d1f7b3a5a28d46eb127ce83770d1c292053507",
     "packages/forge-green/src/optimization-decision.ts": "940ab41951d0cae123e82decb8f9d4b0c2e40e05",
     "packages/forge-green/src/optimization-policy.ts": "53dee55244eb1dc5d5ae03a4a30d96ecad0362aa",
@@ -56,8 +56,8 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "2b0a06fc25c92dc63dcb381028cbbc7035224864",
-    "packages/server/src/autonomous-orchestrator.ts": "e197511261122da636e7f6401d8d587ef7274271",
+    "packages/server/src/agent-runtime.ts": "5fde5ccfb6d3d7f3edec2349f015906f70722bb8",
+    "packages/server/src/autonomous-orchestrator.ts": "614b94ca7120ce1a2e1b9b56eeb9d2045ed4cf8f",
     "packages/server/src/duplicate-suppression.ts": "187ebb71125e65f05b48210c77aa35647ca8bf64",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "dd128b10041305e58aa49f88a0dacfb3a2aabb4d",
@@ -915,23 +915,47 @@
       "regressionEvidence": "R21 ForgeVerify recertification: workflow/sessions/terminal/server/forge-green/forgegreen-campaign suites 171 files green after the two FG-12F fixture updates (the only other failures were these two provenance canaries); new R21 suites: integrity 7/7, malicious corpus 24/24 (25 recorded cases incl. real `node --test`), stale-evidence matrix 11/11, gate binding 11/11, autonomous binding 5/5, storage immutability 3/3 (SQLite + real PostgreSQL); chaos sweeps 22 cases each on SQLite and real PostgreSQL with 0 false completions; evidence under docs/evidence/r21-intelligence-closure/01-forgeverify.",
       "recertifiedAt": "2026-09-20",
       "sourceStateConstant": "R21_FORGEVERIFY_RECERTIFIED_SOURCE_STATE"
+    },
+    {
+      "label": "R21 ForgeGreen A/B accounting correction and agent budget honesty",
+      "reason": "The R21 controlled ForgeGreen A/B (docs/evidence/r21-intelligence-closure/02-forgegreen) measured model-visible bytes ON >= OFF on every task where only FG-1C duplicate suppression fired: the runtime replays the full prior output to the model, so Candidate A's receipt claim of bytesAvoided (and the Phase-4 statement that replayed bytes were 'not retransmitted') was false. buildDuplicateToolReuseDecision now reports bytesAvoided undefined and records REPLAYED_TO_MODEL_BYTES transparently; the two FG-9 tests encoding the old claim were corrected. The same harness exposed a P1 in the agent runtime: stopReason was initialised to 'completed', so an agent that exhausted its model-turn budget while still calling tools was reported completed with a canned summary; the autonomous orchestrator then read an exhausted reviewer's silence as approval. Fixed fail-closed (AGENT_MODEL_TURN_LIMIT / REVIEWER_BUDGET_EXHAUSTED); the efficiency receipt is rebuilt after the last turn. A benchmark-only efficiencyControls seam was added to the runtime so the A/B has a genuine OFF arm; it defaults ON and is never user-exposed. ForgeGreen detectors, cost policy, graduation registry and every ForgeVerify seam are unchanged.",
+      "priorSourceStateId": "f9ac543301b6cc5ac6b59c43f3117e849e66fb3b9bfa2a1dc10ddc5d2050b9d0",
+      "priorSurfaceVersion": "r21-forgeverify-recertified-v1",
+      "resultingSourceStateId": "aeebe2a1ae6cbf6781c5d87fd248174a2961b8f65d41ad9ee323d253e77cee16",
+      "resultingSurfaceVersion": "r21-forgegreen-ab-corrected-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "budget-exhaustion honesty (completedExplicitly), receipt rebuilt post-loop, efficiencyControls benchmark seam gating FG-1C/FG-1B only when explicitly disabled.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "an exhausted reviewer (blocked, no verdict and no findings) fails closed with REVIEWER_BUDGET_EXHAUSTED instead of passing review by silence.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/forge-green/src/optimization-candidate-a.ts",
+          "change": "Candidate A no longer claims bytesAvoided for replayed outputs; replayed size recorded as a reason code.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "server/forge-green/forgegreen-campaign/agent suites green apart from the two provenance canaries; new suites r21-forgegreen-ab (15), r21-agent-budget-honesty (6), r21-orchestrator-reviewer-exhaustion (2), r21-task-complexity (28).",
+      "recertifiedAt": "2026-09-20",
+      "sourceStateConstant": "R21_FORGEGREEN_AB_CORRECTED_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 ForgeVerify recertification above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 recertifications listed above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
   "recertifiedAt": "2026-09-20",
   "recertification": {
-    "phase": "R21 ForgeVerify recertification reconciliation",
-    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R21 ForgeVerify hardening so the fg11/fg12e provenance canaries certify the current tree.",
+    "phase": "R21 ForgeGreen A/B accounting correction and agent budget honesty",
+    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed M3 surface so the fg11/fg12e provenance canaries certify the current tree.",
     "changedFiles": [
-      "packages/server/src/autonomous-orchestrator.ts",
-      "packages/server/src/workflow-service.ts",
-      "packages/sessions/src/persistence.ts",
-      "packages/workflow/src/forge-verify.ts",
-      "packages/workflow/src/types.ts",
-      "packages/workflow/src/verification-evidence-reuse.ts",
-      "packages/workflow/src/verification-service.ts"
+      "packages/forge-green/src/optimization-candidate-a.ts",
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/autonomous-orchestrator.ts"
     ],
-    "priorSourceStateId": "6a6b09898bf3fc4ea18e5b186f62ce2511d34de42d28a54631c88b8777a69a4f",
+    "priorSourceStateId": "f9ac543301b6cc5ac6b59c43f3117e849e66fb3b9bfa2a1dc10ddc5d2050b9d0",
     "guarded": true
   }
 }

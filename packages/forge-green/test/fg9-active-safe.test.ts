@@ -45,7 +45,10 @@ describe("FG-9 active-safe: Candidate A (duplicate read-only tool reuse) (§30 i
       ],
     })!;
     expect(result.receipt.resourceDelta.toolExecutionsAvoided).toBe(2);
-    expect(result.receipt.resourceDelta.bytesAvoided).toBe(1500);
+    // R21: the replay retransmits the prior output to the model, so no context bytes are avoided;
+    // the replayed size is recorded transparently instead (measured in the R21 ForgeGreen A/B).
+    expect(result.receipt.resourceDelta.bytesAvoided).toBeUndefined();
+    expect(result.decision.safetyGuards.reasonCodes).toContain("REPLAYED_TO_MODEL_BYTES=1500");
     expect(result.decision.sourceEvidenceIds).toEqual(["h1:e1", "h2:e2"]);
   });
 

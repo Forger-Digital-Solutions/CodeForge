@@ -17,7 +17,16 @@ export interface DuplicateToolSuppressionEvent {
   /** `DuplicateDecision.priorExecutionId` when the "suppress" branch fired — an id reference,
    * never the replayed content itself. */
   priorExecutionId: string;
-  /** Byte length of the replayed prior output, when known — a SIZE, never the content. */
+  /**
+   * Byte length of the replayed prior output, when known — a SIZE, never the content.
+   *
+   * R21 correction: these bytes are NOT avoided model context. FG-1C replays the prior
+   * authoritative result to the model (with a provenance prefix), so the model receives them
+   * again; what is avoided is the tool dispatch (the disk read / search) that would have produced
+   * them. The controlled A/B (docs/evidence/r21-intelligence-closure/02-forgegreen) measured
+   * model-visible bytes ON >= OFF for every task with suppressions. The field keeps its name for
+   * event compatibility but is accounted below as `replayedBytes`, never as `bytesAvoided`.
+   */
   avoidedBytes: number | undefined;
 }
 
@@ -36,8 +45,8 @@ export function buildDuplicateToolReuseDecision(params: {
 }): BuildDuplicateToolReuseResult | undefined {
   if (params.events.length === 0) return undefined;
 
-  const avoidedBytesValues = params.events.map((e) => e.avoidedBytes).filter((v): v is number => typeof v === "number");
-  const avoidedBytes = avoidedBytesValues.length === params.events.length ? avoidedBytesValues.reduce((a, b) => a + b, 0) : undefined;
+  const replayedBytesValues = params.events.map((e) => e.avoidedBytes).filter((v): v is number => typeof v === "number");
+  const replayedBytes = replayedBytesValues.length === params.events.length ? replayedBytesValues.reduce((a, b) => a + b, 0) : undefined;
 
   const decision = createOptimizationDecision({
     runId: params.runId,
@@ -49,7 +58,8 @@ export function buildDuplicateToolReuseDecision(params: {
     expectedEffect: {
       avoidedRequests: undefined,
       avoidedTokens: undefined,
-      avoidedBytes,
+      // The replay retransmits the prior output to the model: no context bytes are avoided.
+      avoidedBytes: undefined,
       avoidedToolExecutions: params.events.length,
       avoidedVerificationReruns: undefined,
       timeReductionMs: undefined,
@@ -61,7 +71,7 @@ export function buildDuplicateToolReuseDecision(params: {
       invariant:
         "The workspace state version must not have advanced (no mutating action executed, no steer consumed) between the original call and the suppressed duplicate; FG-1C enforces this identity binding, not FG-9.",
       verificationProof: undefined,
-      reasonCodes: ["FG1C_STATE_VERSION_BOUND_IDENTITY_MATCH"],
+      reasonCodes: ["FG1C_STATE_VERSION_BOUND_IDENTITY_MATCH", ...(replayedBytes === undefined ? [] : [`REPLAYED_TO_MODEL_BYTES=${replayedBytes}`])],
     },
   });
   const finalizedDecision = finalizeOptimizationDecision(decision);
@@ -74,7 +84,7 @@ export function buildDuplicateToolReuseDecision(params: {
       basis: "simulated",
       requestsAvoided: undefined,
       tokensAvoided: undefined,
-      bytesAvoided: avoidedBytes,
+      bytesAvoided: undefined,
       toolExecutionsAvoided: params.events.length,
       verificationRerunsAvoided: undefined,
       wallClockMsDelta: undefined,
