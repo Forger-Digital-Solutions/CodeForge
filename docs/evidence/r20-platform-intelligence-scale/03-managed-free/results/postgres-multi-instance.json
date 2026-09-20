@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "local_real_postgresql_multi_subprocess",
+  "phaseA": {
+    "workers": 4,
+    "executions": 12,
+    "users": 4,
+    "routeCapacity": 4,
+    "claimsObserved": 12,
+    "peakActiveLeases": 4,
+    "occupancySource": "hosted_capacity_leases.created_at..released_at interval sweep",
+    "allCompleted": true,
+    "claimOnce": true,
+    "fairFirstWindow": true,
+    "firstClaimUsers": [
+      "90d0b389-ed28-49ab-9b76-c836dcb1b71c",
+      "05707a9a-e928-4730-af2a-e072813f8512",
+      "fe52f2b3-03b8-43e2-8e1b-b8c84ea66c04",
+      "ed42210d-388f-4f81-91c7-228e531ceace"
+    ],
+    "perUserClaims": {
+      "90d0b389-ed28-49ab-9b76-c836dcb1b71c": 3,
+      "05707a9a-e928-4730-af2a-e072813f8512": 3,
+      "fe52f2b3-03b8-43e2-8e1b-b8c84ea66c04": 3,
+      "ed42210d-388f-4f81-91c7-228e531ceace": 3
+    },
+    "noStarvation": true,
+    "capacityBound": true,
+    "idempotentEnqueue": true,
+    "pass": true
+  },
+  "phaseB": {
+    "executionId": "mi-death-281ed8c5-60c5-4f40-b760-11fd111877d0",
+    "leaseMs": 1500,
+    "recoveredPending": true,
+    "deathResolved": true,
+    "pass": true
+  },
+  "pass": true,
+  "timestamp": "2026-09-20T17:43:27.773Z"
+}

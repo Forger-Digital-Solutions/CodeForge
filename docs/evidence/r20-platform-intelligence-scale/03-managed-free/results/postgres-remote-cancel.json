@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "local_real_postgresql_two_processes",
+  "mechanism": "postgresql LISTEN/NOTIFY wake-up + bounded durable terminal-state poll fallback",
+  "scenarios": [
+    {
+      "mode": "listen",
+      "transitioned": true,
+      "aborted": true,
+      "cancelCommitToAbortMs": 3,
+      "cancelSentToAbortMs": 18,
+      "durableStatus": "cancelled",
+      "pass": true
+    },
+    {
+      "mode": "poll",
+      "transitioned": true,
+      "aborted": true,
+      "cancelCommitToAbortMs": 388,
+      "cancelSentToAbortMs": 395,
+      "durableStatus": "cancelled",
+      "pass": true
+    },
+    {
+      "mode": "cascade",
+      "transitioned": true,
+      "aborted": true,
+      "cancelCommitToAbortMs": 2,
+      "cancelSentToAbortMs": 12,
+      "durableStatus": "cancelled",
+      "pass": true,
+      "cancelledParent": "remote-parent-6ff2400e-7df4-449f-8aa8-5beb70cc8228",
+      "parentStatus": "cancelled"
+    }
+  ],
+  "pass": true,
+  "timestamp": "2026-09-20T17:51:09.243Z"
+}
