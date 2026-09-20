@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "local_real_postgresql",
+  "processes": 20,
+  "queued": 100,
+  "providerCapacity": 4,
+  "routeClaims": 4,
+  "distinctExecutions": 4,
+  "workerIds": [
+    "process-worker-0",
+    "process-worker-1",
+    "process-worker-2",
+    "process-worker-3"
+  ],
+  "pass": true,
+  "timestamp": "2026-09-20T04:31:19.766Z"
+}
