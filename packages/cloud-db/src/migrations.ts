@@ -1008,6 +1008,18 @@ CREATE TABLE IF NOT EXISTS hosted_admission_receipts (
 CREATE INDEX IF NOT EXISTS idx_hosted_admission_receipts_execution ON hosted_admission_receipts(execution_id, created_at);
 `;
 
+const MIGRATION_11_SQLITE = `
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_queued_user_head
+  ON hosted_executions(user_id, priority DESC, created_at)
+  WHERE status = 'queued';
+`;
+
+const MIGRATION_11_POSTGRES = `
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_queued_user_head
+  ON hosted_executions(user_id, priority DESC, created_at)
+  WHERE status = 'queued';
+`;
+
 export const MIGRATIONS: MigrationDefinition[] = [
   {
     version: 1,
@@ -1078,6 +1090,13 @@ export const MIGRATIONS: MigrationDefinition[] = [
     sqliteUp: MIGRATION_10_SQLITE,
     postgresUp: MIGRATION_10_POSTGRES,
     checksum: computeChecksum(MIGRATION_10_SQLITE),
+  },
+  {
+    version: 11,
+    name: "011_hosted_fair_queue_head_index",
+    sqliteUp: MIGRATION_11_SQLITE,
+    postgresUp: MIGRATION_11_POSTGRES,
+    checksum: computeChecksum(MIGRATION_11_SQLITE),
   },
 ];
 

@@ -128,13 +128,20 @@ async function waitForApprovalEvent(events: EventStore, sessionId: string, actio
 }
 
 async function settleWithin<T>(promise: Promise<T>, persistence: ISessionPersistence, sessionId: string): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_resolve, reject) => setTimeout(() => {
-      void Promise.all([persistence.getTurns(sessionId), persistence.getWorkItems(sessionId)])
-        .then(([turns, items]) => reject(new Error(`workflow did not settle: ${JSON.stringify({ turns, items })}`)));
-    }, 5_000)),
-  ]);
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_resolve, reject) => {
+        timer = setTimeout(() => {
+          void Promise.all([persistence.getTurns(sessionId), persistence.getWorkItems(sessionId)])
+            .then(([turns, items]) => reject(new Error(`workflow did not settle: ${JSON.stringify({ turns, items })}`)));
+        }, 5_000);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 async function waitForRuntime(graph: Graph): Promise<ReturnType<typeof createAgentRuntime>> {

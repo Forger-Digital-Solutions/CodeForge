@@ -30,6 +30,12 @@ describe("HostedAdmissionAuthority", () => {
     expect(await workers[0]!.claim()).toBeUndefined();
   });
 
+  it("rejects unbounded or control-character queue identifiers", async () => {
+    await expect(workers[0]!.enqueue({ executionId: "execution-invalid", idempotencyKey: "x".repeat(256), userId: users[0]!, taskId: "task", ...route })).rejects.toThrow(/idempotencyKey/);
+    await expect(workers[0]!.enqueue({ executionId: "execution-invalid", idempotencyKey: "key", userId: users[0]!, taskId: "task\nforged", ...route })).rejects.toThrow(/taskId/);
+    expect((await workers[0]!.metrics()).queueDepth).toBe(0);
+  });
+
   it("supports idempotent replay after a lost enqueue response", async () => {
     const params = { executionId: "execution-replay", idempotencyKey: "key-replay", userId: users[0]!, taskId: "task-replay", ...route };
     const original = await workers[0]!.enqueue(params);

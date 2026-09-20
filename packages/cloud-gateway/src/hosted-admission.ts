@@ -16,6 +16,10 @@ export interface HostedAdmissionResult {
   lease?: HostedCapacityLeaseRecord;
 }
 
+function assertBoundedIdentifier(value: string, name: string, maxLength = 255): void {
+  if (value.length < 1 || value.length > maxLength || /[\u0000-\u001f]/.test(value)) throw new Error(`${name} must be 1-${maxLength} printable characters`);
+}
+
 export class HostedAdmissionAuthority {
   private readonly db: ICloudDatabase;
   private readonly workerId: string;
@@ -30,6 +34,11 @@ export class HostedAdmissionAuthority {
   }
 
   async enqueue(params: { executionId: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string }): Promise<HostedAdmissionResult> {
+    assertBoundedIdentifier(params.executionId, "executionId");
+    assertBoundedIdentifier(params.idempotencyKey, "idempotencyKey");
+    assertBoundedIdentifier(params.taskId, "taskId");
+    assertBoundedIdentifier(params.providerId, "providerId", 128);
+    assertBoundedIdentifier(params.modelId, "modelId");
     const { execution, created } = await this.db.enqueueHostedExecution({ id: params.executionId, idempotencyKey: params.idempotencyKey, userId: params.userId, taskId: params.taskId, providerId: params.providerId, modelId: params.modelId, priority: params.priority, eligibleAt: params.eligibleAt });
     return { code: execution.status === "cancelled" ? "TASK_CANCELLED" : "FREE_CAPACITY_QUEUED", execution, created };
   }

@@ -1442,17 +1442,31 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     return this.withTx(async (client) => {
       const now = params.now ?? new Date();
       const candidate = await client.query(`
-        SELECT e.* FROM hosted_executions e
+        WITH user_heads AS (
+          SELECT DISTINCT ON (user_id) id
+          FROM hosted_executions
+          WHERE status = 'queued' AND eligible_at <= $1
+          ORDER BY user_id, priority DESC, created_at ASC
+        )
+        SELECT e.* FROM user_heads head
+        JOIN hosted_executions e ON e.id = head.id
         LEFT JOIN hosted_user_admission_state uas ON uas.user_id = e.user_id
         JOIN hosted_provider_capacity pc ON pc.provider_id = e.provider_id AND pc.model_id = e.model_id
-        WHERE e.status = 'queued' AND e.eligible_at <= $1
-          AND NOT EXISTS (SELECT 1 FROM hosted_executions earlier WHERE earlier.user_id = e.user_id AND earlier.status = 'queued' AND (earlier.priority > e.priority OR (earlier.priority = e.priority AND earlier.created_at < e.created_at)))
-          AND (SELECT COUNT(*) FROM hosted_capacity_leases ul WHERE ul.user_id = e.user_id AND ul.state = 'active' AND ul.lease_expires_at > $1) < $2
+        WHERE (SELECT COUNT(*) FROM hosted_capacity_leases ul WHERE ul.user_id = e.user_id AND ul.state = 'active' AND ul.lease_expires_at > $1) < $2
           AND (SELECT COUNT(*) FROM hosted_capacity_leases rl WHERE rl.provider_id = e.provider_id AND rl.model_id = e.model_id AND rl.state = 'active' AND rl.lease_expires_at > $1) < pc.max_concurrent
         ORDER BY CASE WHEN uas.last_admitted_at IS NULL THEN 0 ELSE 1 END, uas.last_admitted_at ASC NULLS FIRST, e.priority DESC, e.created_at ASC
-        FOR UPDATE OF e, pc SKIP LOCKED LIMIT 1`, [now, params.maxUserConcurrent]);
+        FOR UPDATE OF e SKIP LOCKED LIMIT 1`, [now, params.maxUserConcurrent]);
       if (candidate.rows.length === 0) return undefined;
       const row = candidate.rows[0];
+      await client.query(`SELECT pg_advisory_xact_lock(hashtextextended($1 || '::' || $2, 0))`, [row.provider_id, row.model_id]);
+      const capacity = await client.query(`SELECT max_concurrent FROM hosted_provider_capacity WHERE provider_id=$1 AND model_id=$2 FOR UPDATE`, [row.provider_id, row.model_id]);
+      if (capacity.rows.length === 0) return undefined;
+      await client.query(`INSERT INTO hosted_user_admission_state (user_id, updated_at) VALUES ($1,$2) ON CONFLICT (user_id) DO NOTHING`, [row.user_id, now]);
+      await client.query(`SELECT user_id FROM hosted_user_admission_state WHERE user_id=$1 FOR UPDATE`, [row.user_id]);
+      const routeActive = await client.query(`SELECT COUNT(*)::int AS count FROM hosted_capacity_leases WHERE provider_id=$1 AND model_id=$2 AND state='active' AND lease_expires_at > $3`, [row.provider_id, row.model_id, now]);
+      if (Number(routeActive.rows[0]?.count ?? 0) >= Number(capacity.rows[0].max_concurrent)) return undefined;
+      const userActive = await client.query(`SELECT COUNT(*)::int AS count FROM hosted_capacity_leases WHERE user_id=$1 AND state='active' AND lease_expires_at > $2`, [row.user_id, now]);
+      if (Number(userActive.rows[0]?.count ?? 0) >= params.maxUserConcurrent) return undefined;
       const leaseId = randomUUID();
       const leaseExpiresAt = new Date(now.getTime() + params.leaseMs);
       const updated = await client.query(`UPDATE hosted_executions SET status='claimed', lease_owner=$1, lease_expires_at=$2, attempt=attempt+1, updated_at=$3 WHERE id=$4 AND status='queued' RETURNING *`, [params.workerId, leaseExpiresAt, now, row.id]);

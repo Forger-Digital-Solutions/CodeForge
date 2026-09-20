@@ -140,7 +140,7 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("Migration namespace collision
       await conn.connect();
       try {
         const sessionsRows = await conn.query(`SELECT version FROM sessions_schema_migrations`);
-        expect(sessionsRows.rows).toHaveLength(1); // one migration defined today — no duplicates
+        expect(sessionsRows.rows).toHaveLength(SESSIONS_MIGRATIONS.length);
         const cloudRows = await conn.query(`SELECT COUNT(*)::int AS n FROM cloud_schema_migrations`);
         expect(cloudRows.rows[0].n).toBeGreaterThan(0);
       } finally {
