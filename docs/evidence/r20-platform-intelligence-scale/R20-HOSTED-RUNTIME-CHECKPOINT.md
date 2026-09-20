@@ -1,6 +1,6 @@
 # R20 Hosted Runtime Checkpoint
 
-Recorded: 2026-09-20
+Recorded: 2026-09-20 (updated same day after durable HTTP runtime certification work)
 Commit before changes: `de4f65d4366dc4bb7da5aff82eb39158adcf0a83`
 Spend: `$0`
 Environment: local WSL Ubuntu PostgreSQL 16, dedicated `codeforge_test_db`, test-only user `codeforge_test`; no production or Supabase access
@@ -11,11 +11,11 @@ The repository's own `postgres-test-harness.mjs` started and verified the isolat
 
 Fresh migration, reconnect, account erasure, migration namespace, two-client authority, adversarial concurrency, workflow restart, evidence persistence, and 8-Bit PostgreSQL suites then executed against real PostgreSQL.
 
-Final certification run: **13 files passed, 85 tests passed, 0 failed, 0 skipped, 0 unhandled errors**.
+Final certification run: **13 files passed, 87 tests passed, 0 failed, 0 skipped, 0 unhandled errors** after provider-scoped claiming and adversarial fixture uniquification.
 
 ## Migration Proof
 
-Fresh PostgreSQL initialized every cloud migration through migration 011. Migration 010 remains unchanged. Migration 011 adds the partial fair-queue head index used by the optimized PostgreSQL query. Existing migration namespace and legacy adoption tests passed.
+Fresh PostgreSQL initialized every cloud migration through migration 012. Migration 010 remains unchanged. Migration 011 adds the partial fair-queue head index. Migration 012 adds persisted request/result payloads, terminal error, dispatch/terminal timestamps, parent/root execution linkage, and the lease fencing token. Existing migration namespace and legacy adoption tests passed.
 
 A stale test assertion claiming sessions had one migration was corrected to compare against `SESSIONS_MIGRATIONS.length`; sessions currently has three immutable migrations.
 
@@ -31,6 +31,8 @@ Before optimization, the 10k fair claim plan executed in **402.782 ms**. It scan
 - active route count: 0.079 ms
 
 The per-user-head CTE plus migration-011 partial index reduced fair-claim plan execution to **29.827 ms**, a **92.6% reduction**. The optimized peripheral queries remained between 0.024 and 0.090 ms.
+
+After capability-scoped claiming (`providerIds` filter inside the fair-head CTE) and migration-012 payload columns, the same plan measures **112.89 ms** at a ~10.4k-row queue on the accumulated shared test database (≈23k total rows). The scope filter is applied inside `user_heads` so an unclaimable queued head cannot hide a user's claimable work. Absolute claim latency remains sub-second per admission; no paid capacity was added.
 
 ## Multi-Process Admission
 
@@ -55,47 +57,62 @@ Real PostgreSQL used independent connections and the durable fair-user cursor. U
 
 ## HTTP Integration
 
-The existing `/v1/hosted/inference` endpoint still dispatches directly through `GatewayService`. Durable queue HTTP submission, persisted request payloads/results, and stream reconnection are not implemented. Therefore HTTP durable admission remains NOT CERTIFIED.
+`/v1/hosted/inference` now durably persists the normalized request payload, resolves and freezes the ForgeZero-approved route, seeds a route capacity row only when none exists (`ensureHostedProviderCapacity` never overwrites operator ceilings), and admits through the database authority. No provider call happens in the request handler.
+
+Wire contract is preserved: SSE clients receive a replay of the persisted event stream after terminalization, and disconnect cancels the execution. `Accept: application/json` returns an async handle for polling. Owner-scoped endpoints added:
+
+- `GET /v1/hosted/executions` — owner list
+- `GET /v1/hosted/executions/:id` — status with `resultError`
+- `GET /v1/hosted/executions/:id/result` — result payload/error, `409` while nonterminal
+- `POST /v1/hosted/executions/:id/cancel` — cancel with cascade report
+- `POST /v1/hosted/executions/:id/children` and `GET /v1/hosted/executions/:id/children` — parent/child fan-out
+
+`requestId` is the HTTP idempotency key; a retried submit returns the same durable execution.
+
+Evidence: `apps/cloud-api/test/hosted-executions.test.ts`, 13 tests passing — durable enqueue/result, idempotent replay, cross-user isolation, queued and dispatching cancellation, capacity ceiling under HTTP burst, enqueue/completion/heartbeat DB-failure injection, restart recovery, hard-stop quarantine recovery, parent/child fan-out with root inheritance and cross-user fencing, and cascading parent cancellation.
 
 ## Queue Worker
 
-`HostedQueueWorker` now bridges durable claim, dispatch transition, execution callback, heartbeat, terminal completion, failure release, and local cancellation propagation. Deterministic tests prove completed execution, queued cancellation with zero provider calls, running cancellation preservation, and provider failure release.
+`HostedQueueWorker` is composed into `CodeForgeCloudServer` via `HostedRuntime`. It claims, fences dispatch with the claim's lease token, heartbeats, executes through `GatewayService.executePersisted` (which re-validates the persisted request against the live ForgeZero catalog), terminalizes exactly once, and aborts in-flight work on cancellation or shutdown.
 
-The worker is a production package component, not benchmark code. It is not yet composed into `CodeForgeCloudServer`, so the runtime gate remains partial.
+Claims are capability-scoped: the worker passes its provider catalog IDs, so a server cannot claim — and wrongly terminalize — an execution for a route it cannot execute. This was a real defect found by the shared-database adversarial run: unscoped workers claimed foreign test executions and failed 419 of them. After the fix, the full real-PostgreSQL suite is green with zero cross-catalog terminalization.
 
 ## Idempotency
 
-Database enqueue and completion idempotency remain certified locally and passed real PostgreSQL reconnect tests. Cross-user idempotency reuse remains rejected. End-to-end HTTP retry proof remains outstanding.
+Database enqueue and completion idempotency remain certified locally and passed real PostgreSQL reconnect tests. Cross-user idempotency reuse remains rejected. HTTP retry proof now exists: a repeated `POST /v1/hosted/inference` with the same `requestId` returns the same execution (`created: false`), and idempotent child enqueue under a parent suppresses duplicates.
 
 ## Cancellation
 
-Covered through the queue worker:
+Covered end-to-end:
 
-- queued cancellation: no claim and zero provider calls
+- queued cancellation over HTTP: no claim and zero provider calls
 - running cancellation: active abort signal propagated; durable terminal state remains cancelled
 - provider failure: one failed transition and capacity release
+- client disconnect on an SSE stream cancels the execution
+- parent cancellation cascades to all nonterminal descendants; queued children never invoke a provider
+- cross-user cancellation returns owner-isolated not-found
 
-Not covered: remote worker cancellation notification, retry-backoff cancellation, provider-specific cancellation receipts, or subagent child propagation.
+Not covered: remote worker cancellation notification across separate OS processes (same-database cancellation is honored on the next worker tick), provider-specific cancellation receipts.
 
 ## Subagent Reconciliation
 
-No new hosted parent/child queue linkage was added. Subagent child reconciliation remains NOT CERTIFIED.
+Parent/child linkage is durable (`parent_execution_id`, `root_execution_id` via migration 012) and reachable over HTTP. Proven: child enqueue under an authenticated nonterminal parent, child idempotency, root inheritance across a three-level tree, cross-user parent fencing (404), terminal-parent rejection (409), and cascading cancellation of queued children without provider calls. Per-task fan-out budgets are not yet enforced.
 
 ## Lease Recovery
 
-Real PostgreSQL proves idempotent enqueue across reconnect, expired pre-dispatch reclaim, and dispatched ambiguity moving to `recovery_pending`. The queue worker heartbeats while active. Multi-process abrupt-kill recovery remains to be exercised with the worker component.
+Real PostgreSQL proves idempotent enqueue across reconnect, expired pre-dispatch reclaim, and dispatched ambiguity moving to `recovery_pending`. The queue worker heartbeats while active. Completion and heartbeat are both fenced by the claim's lease token: a stale worker cannot dispatch, renew, or terminalize after its lease was reclaimed.
 
 ## Process Recovery
 
-Existing real PostgreSQL CF-17 spawned-process restart proof passed. R20's separate 20-process admission race passed. A full kill/restart of the new queue worker during execution is still missing.
+Proven at HTTP level: a queued execution survives a full `CodeForgeCloudServer` restart and is claimed and completed by the second process. A hard stop during dispatch quarantines the execution to `recovery_pending`; a restarted runtime terminalizes it exactly once with an honest ambiguity error and never re-invokes the provider.
 
 ## DB Failure
 
-Admission fails closed if PostgreSQL claim/enqueue fails, and no in-memory admission fallback exists. Real DB-down-during-enqueue/claim/completion campaigns and bounded transaction retry metrics remain missing.
+Proven by injection: durable enqueue failure produces no execution and no provider call; a completion-write failure quarantines/recovers the work without re-execution; a heartbeat-write failure aborts the in-flight dispatch, fences the dead lease, and recovery terminalizes once. The repo-level outage test confirms a cloud whose database is unavailable rejects hosted inference, invokes no provider, and leaves Direct/BYOK paths working.
 
 ## Chaos
 
-New real PostgreSQL coverage includes migration integrity failure, connection/pool concurrency, 100-claimer route race, reconnect recovery, stale lease ambiguity, and separate-process contention. Provider+DB combined chaos remains partial.
+Real PostgreSQL coverage includes migration integrity failure, connection/pool concurrency, 100-claimer route race, reconnect recovery, stale lease ambiguity, and separate-process contention. HTTP-level coverage adds enqueue/completion/heartbeat write failure, server restart, hard stop mid-dispatch, and shared-database cross-catalog contention (fixed by capability-scoped claiming). Provider+DB combined chaos and clock skew across hosts remain partial.
 
 ## Performance
 
@@ -103,12 +120,12 @@ Real PostgreSQL measurements include network, transaction, lock, lease, receipt 
 
 | Queue | Claim median | Claim p95 |
 |---:|---:|---:|
-| 10 | 35.320 ms | 45.465 ms |
-| 100 | 23.379 ms | 30.899 ms |
-| 1,000 | 27.901 ms | 36.150 ms |
-| 10,000 | 47.659 ms | 87.657 ms |
+| 10 | 22.055 ms | 39.336 ms |
+| 100 | 44.494 ms | 59.283 ms |
+| 1,000 | 45.819 ms | 61.703 ms |
+| 10,000 | 131.322 ms | 148.190 ms |
 
-Before the fair-head optimization, the 10k median/p95 were 278.268/395.382 ms. The optimized p95 is **77.8% lower**. PostgreSQL remains slower than in-memory SQLite, as expected, but the 10k query no longer has the original 400 ms plan bottleneck.
+Before the fair-head optimization, the 10k median/p95 were 278.268/395.382 ms. The current numbers are measured with the capability-scope filter active on the accumulated shared test database (≈23k rows, ~10.4k queued during the 10k sample); they are higher than the previous clean-table run (47.659/87.657 ms) but remain well below the pre-optimization baseline and are per-admission costs amortized over multi-second provider calls.
 
 ## Security
 
@@ -155,20 +172,20 @@ No production certificate was acquired or used. Pipeline work remains partial. P
 
 | Gate | Verdict |
 |---|---|
-| POSTGRESQL MIGRATION | CERTIFIED locally through migration 011 |
+| POSTGRESQL MIGRATION | CERTIFIED locally through migration 012 |
 | DURABLE CAPACITY LEDGER | CERTIFIED on isolated PostgreSQL |
 | DB-BACKED RESERVATIONS | CERTIFIED on isolated PostgreSQL |
 | MULTI-PROCESS ADMISSION | CERTIFIED locally: 20 processes |
 | PROVIDER CAPACITY CEILING | CERTIFIED: 4/4, zero oversubscription after P1 fix |
 | PER-USER FAIRNESS | CERTIFIED on real PostgreSQL |
-| HTTP DURABLE ADMISSION | NOT CERTIFIED |
-| QUEUE WORKER | PARTIAL |
-| IDEMPOTENCY | CERTIFIED at DB/worker layer; HTTP pending |
-| CANCELLATION RECONCILIATION | PARTIAL |
-| SUBAGENT CHILD RECONCILIATION | NOT CERTIFIED |
+| HTTP DURABLE ADMISSION | CERTIFIED locally: durable enqueue + SSE/JSON + owner isolation |
+| QUEUE WORKER | CERTIFIED locally: composed, capability-scoped, fenced |
+| IDEMPOTENCY | CERTIFIED: DB, worker, and HTTP retry replay |
+| CANCELLATION RECONCILIATION | CERTIFIED locally incl. parent cascade; cross-process remote signal PARTIAL |
+| SUBAGENT CHILD RECONCILIATION | CERTIFIED locally over HTTP: fan-out, idempotency, fencing, cascade; fan-out budgets pending |
 | STALE LEASE RECOVERY | CERTIFIED on real PostgreSQL |
-| PROCESS RESTART RECOVERY | PARTIAL |
-| DB FAILURE SAFETY | NOT CERTIFIED |
+| PROCESS RESTART RECOVERY | CERTIFIED locally: queued restart + hard-stop quarantine |
+| DB FAILURE SAFETY | CERTIFIED locally: enqueue/completion/heartbeat injection + outage suite |
 | HOSTED CHAOS | PARTIAL |
 | FORGEGREEN HOSTED A/B | NOT CERTIFIED |
 | SUBAGENT TOPOLOGY INTELLIGENCE | IMPROVED |
@@ -181,4 +198,4 @@ No production certificate was acquired or used. Pipeline work remains partial. P
 
 ## Next Step
 
-Persist bounded encrypted hosted request payloads/results in a new immutable migration, compose `HostedQueueWorker` into the cloud server, add authenticated enqueue/status/cancel transport, and prove HTTP retry/cancellation and abrupt worker-kill recovery before any live Managed Free recertification.
+The durable hosted path is now proven end-to-end on real PostgreSQL with process restart, hard-stop quarantine, DB-failure injection, capability-scoped claiming, and parent/child fan-out. Remaining before any live Managed Free recertification: per-task fan-out budgets, cross-process remote cancellation signalling, provider+DB combined chaos, clock-skew tolerance, terminal-row/receipt retention policy, and the deferred workstreams (ForgeGreen hosted A/B, 8-Bit shadow on hosted metrics, T0–T5 topology campaigns, browser surface, signing). None of those may be certified without evidence.

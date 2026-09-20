@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "b8f7a8bf5bf0d28587cd624cf6ff2a68ab0ee131fe38831e05a13a385d5851b1",
-  "surfaceVersion": "r18-release-candidate-v1",
+  "sourceStateId": "6a6b09898bf3fc4ea18e5b186f62ce2511d34de42d28a54631c88b8777a69a4f",
+  "surfaceVersion": "r20-durable-hosted-runtime-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -43,7 +43,7 @@
     "packages/agent/src/index.ts": "20ce287bd79a2d7aa353cd47b39dc06455c14dca",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
-    "packages/benchmark/src/index.ts": "62262a8392a06438d2a4775cc9d49b566d094219",
+    "packages/benchmark/src/index.ts": "615c02c9d77491a17e8b6a80a82cb619efd6be02",
     "packages/benchmark/src/protected-acceptance.ts": "0c1538833083910b74c98e8261e02b212753721e",
     "packages/context/src/index.ts": "c22eef865b066f9fb176f8cceac9f616aec6c727",
     "packages/context/src/planner.ts": "5cab4794355d06008e044ddd80ac1b560ec0f793",
@@ -849,26 +849,35 @@
       "regressionEvidence": "R18 campaign: canonical Vitest suite rerun at the reviewed tree (2970 pass, expected skips); R16 packaged smoke (full/interrupt/recover, zero FAIL) re-confirmed; R17 packaged artifact byte-verified via internal dependency audit; live installed-product validation of blocked/completed/stopped runs, approval cancellation, multi-run grouping, and terminal reconciliation documented under docs/evidence/r18-release-candidate/.",
       "recertifiedAt": "2026-09-19",
       "sourceStateConstant": "R18_RELEASE_CANDIDATE_SOURCE_STATE"
+    },
+    {
+      "label": "R20 durable hosted-runtime source-state reconciliation",
+      "reason": "The certified surface last froze at r18-release-candidate-v1. Since then one reviewed, committed campaign touched a material file: bec79a8 (R20 — durable fair admission for hosted capacity) added two barrel exports (r20-scale.js, r20-experiments.js) to packages/benchmark/src/index.ts. The drifted file was diffed against its certified blob: the change is export-surface only and touches no ForgeGreen detector, verification-reuse, or completion-authority seam — ForgeZero still gates all routing and evaluateCompletion remains the only path to 'completed'. No material file was added or removed; the frozen set is re-issued over the reviewed content rather than ignoring the drift.",
+      "priorSourceStateId": "b8f7a8bf5bf0d28587cd624cf6ff2a68ab0ee131fe38831e05a13a385d5851b1",
+      "priorSurfaceVersion": "r18-release-candidate-v1",
+      "resultingSourceStateId": "6a6b09898bf3fc4ea18e5b186f62ce2511d34de42d28a54631c88b8777a69a4f",
+      "resultingSurfaceVersion": "r20-durable-hosted-runtime-v1",
+      "changes": [
+        {
+          "file": "packages/benchmark/src/index.ts",
+          "change": "R20 benchmark barrel exports for the durable-admission scale/experiment harnesses; no ForgeGreen material seam modified.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "R20 durable hosted-runtime campaign: canonical Vitest suite rerun at the reviewed tree (3034 pass, expected environment skips); real PostgreSQL suite 13 files / 87 tests green; durable hosted-execution HTTP suite 13 tests green incl. restart, hard-stop, failure-injection, and parent/child cascade coverage.",
+      "recertifiedAt": "2026-09-20",
+      "sourceStateConstant": "R20_DURABLE_HOSTED_RUNTIME_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above and the R18 release-candidate reconciliation above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-19",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above and the R20 durable hosted-runtime reconciliation above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
+  "recertifiedAt": "2026-09-20",
   "recertification": {
-    "phase": "R18 release-candidate reconciliation",
-    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R16/R17 committed surface so the fg11/fg12e provenance canaries certify the current tree.",
+    "phase": "R20 durable hosted-runtime reconciliation",
+    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R20 committed surface so the fg11/fg12e provenance canaries certify the current tree.",
     "changedFiles": [
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/src/duplicate-suppression.ts",
-      "packages/server/src/workflow-service.ts",
-      "packages/sessions/src/persistence.ts",
-      "packages/sessions/src/postgres-persistence.ts",
-      "packages/sessions/src/session-state.ts",
-      "packages/tools/src/index.ts",
-      "packages/workflow/src/forge-verify.ts",
-      "packages/workflow/src/types.ts",
-      "packages/workflow/src/verification-service.ts"
+      "packages/benchmark/src/index.ts"
     ],
-    "priorSourceStateId": "1c191745996ed715b56fe76440b84eed3017a4da6b407a4eeed98a659bbf9bf6",
+    "priorSourceStateId": "b8f7a8bf5bf0d28587cd624cf6ff2a68ab0ee131fe38831e05a13a385d5851b1",
     "guarded": true
   }
 }

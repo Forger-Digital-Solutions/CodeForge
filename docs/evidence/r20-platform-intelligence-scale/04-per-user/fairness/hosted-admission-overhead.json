@@ -2,55 +2,55 @@
   "schemaVersion": 1,
   "environment": "local SQLite in-memory",
   "evidenceClass": "locally_emulated",
-  "timestamp": "2026-09-20T03:51:42.361Z",
-  "commit": "8bce13c87c888fefa2f52ecf3c2117afced45c63",
+  "timestamp": "2026-09-20T06:24:22.292Z",
+  "commit": "b5b385dba862ae265786a721a94a4e2bb3683a5b",
   "samples": [
     {
       "queueSize": 10,
-      "enqueueMs": 2.9365999999999985,
-      "claimMs": 10.75,
-      "throughputClaimsPerSecond": 930.232558139535,
+      "enqueueMs": 12.680700000000002,
+      "claimMs": 40.088300000000004,
+      "throughputClaimsPerSecond": 249.44934058066812,
       "selectionLatencyMs": {
-        "median": 0.5069000000000017,
-        "p90": 0.9835999999999956,
-        "p95": 1.0837000000000074,
-        "max": 1.0837000000000074
+        "median": 2.440899999999999,
+        "p90": 3.9184000000000196,
+        "p95": 4.9221,
+        "max": 4.9221
       }
     },
     {
       "queueSize": 100,
-      "enqueueMs": 27.059100000000015,
-      "claimMs": 101.083,
-      "throughputClaimsPerSecond": 989.2860322705104,
+      "enqueueMs": 81.64240000000001,
+      "claimMs": 282.50430000000006,
+      "throughputClaimsPerSecond": 353.9769129177856,
       "selectionLatencyMs": {
-        "median": 0.5510000000000161,
-        "p90": 0.7669999999999959,
-        "p95": 0.947100000000006,
-        "max": 1.9979999999999905
+        "median": 1.7252999999999474,
+        "p90": 2.9062999999999874,
+        "p95": 3.591699999999946,
+        "max": 10.841099999999983
       }
     },
     {
       "queueSize": 1000,
-      "enqueueMs": 202.149,
-      "claimMs": 1688.7178000000001,
-      "throughputClaimsPerSecond": 592.1652510561563,
+      "enqueueMs": 1203.9164999999998,
+      "claimMs": 7012.5502,
+      "throughputClaimsPerSecond": 142.6014747102987,
       "selectionLatencyMs": {
-        "median": 1.2207999999998265,
-        "p90": 2.0323000000000775,
-        "p95": 2.3800999999999704,
-        "max": 9.326399999999921
+        "median": 4.80869999999959,
+        "p90": 8.564400000000205,
+        "p95": 11.10189999999966,
+        "max": 44.509399999999914
       }
     },
     {
       "queueSize": 10000,
-      "enqueueMs": 2251.7538000000004,
-      "claimMs": 82927.2917,
-      "throughputClaimsPerSecond": 120.58756285176018,
+      "enqueueMs": 10699.908200000002,
+      "claimMs": 278821.1433,
+      "throughputClaimsPerSecond": 35.86528583035187,
       "selectionLatencyMs": {
-        "median": 7.880900000003749,
-        "p90": 13.007499999999709,
-        "p95": 14.866300000001502,
-        "max": 34.808100000002014
+        "median": 24.57050000000163,
+        "p90": 49.00539999996545,
+        "p95": 55.641099999997095,
+        "max": 119.56599999999162
       }
     }
   ]
