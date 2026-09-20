@@ -251,7 +251,8 @@ describe("stale selection safety", () => {
         onSelect: () => {},
       }),
     );
-    expect(markup).toContain("ForgeAuto/Free · Automatic free routing");
+    expect(markup).toContain("ForgeAuto/Free");
+    expect(markup).toContain('title="Automatic verified-free routing"');
   });
 });
 

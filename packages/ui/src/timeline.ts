@@ -1,5 +1,6 @@
 import type { WorkspaceEvent } from "@codeforge/protocol";
 import { describeTurnStop, humanizeBlockReason, humanizeError } from "./error-copy.js";
+import { describeReasonCode } from "./run-lifecycle.js";
 
 /**
  * A single rendered item in the conversation timeline, reconstructed from the event stream.
@@ -94,7 +95,7 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
       }
       case "workflow.completion_decided": {
         const p = e.payload as { outcome: string; rationale?: string };
-        items.push({ kind: "phase", id: `outcome-${e.seq}`, seq: e.seq, phase: "outcome", text: p.outcome === "completed" ? "Done" : p.outcome === "blocked" ? "Blocked" : "Failed", detail: p.rationale });
+        items.push({ kind: "phase", id: `outcome-${e.seq}`, seq: e.seq, phase: "outcome", text: p.outcome === "completed" ? "Done" : p.outcome === "blocked" ? "Blocked" : "Failed", detail: humanizeOutcomeRationale(p.outcome, p.rationale) });
         outcomeShown = true;
         break;
       }
@@ -327,6 +328,19 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
 
 const READ_TOOLS = new Set(["read_file"]);
 const WRITE_TOOLS = new Set(["write_file", "edit_file"]);
+
+/**
+ * Gate rationales arrive as `code: detail` ("plan_steps_unfinished: 6 plan step(s)…"). The row
+ * shows the human reason with the detail kept; an unrecognized rationale passes through verbatim.
+ */
+function humanizeOutcomeRationale(outcome: string, rationale: string | undefined): string | undefined {
+  if (!rationale) return undefined;
+  const match = /^([a-z][a-z0-9_]*):\s*(.+)$/s.exec(rationale.trim());
+  if (!match) return rationale;
+  const state = outcome === "blocked" ? "BLOCKED" : outcome === "completed" ? "COMPLETED" : "FAILED";
+  const human = describeReasonCode(match[1], state);
+  return human ? `${human} — ${match[2]}` : rationale;
+}
 
 /** The still-running tool call that is acting on `path` — the owner of a file event. */
 function runningToolForPath(

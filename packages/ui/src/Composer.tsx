@@ -71,8 +71,6 @@ interface ComposerProps {
   onAuthorityChange?: (modes: { permissionMode?: string; planMode?: string }) => void;
   onComposerActivity?: (active: boolean) => void;
   executionState?: "running" | "user_intent_hold" | "steer_queued" | "reconciling_steer";
-  /** Repository/runtime context chips shown as the first row inside the composer surface. */
-  contextRow?: React.ReactNode;
   /**
    * Resolves an "@" query to repository matches (files and symbols). Wired by the host to
    * Repository Intelligence; absent, the picker says so instead of pretending to search.
@@ -114,7 +112,6 @@ export default function Composer({
   onAuthorityChange,
   onComposerActivity,
   executionState = "running",
-  contextRow,
   searchContext,
 }: ComposerProps) {
   const [input, setInput] = useState("");
@@ -482,7 +479,6 @@ export default function Composer({
         help lives under the box so the control row stays readable at narrow widths.
       */}
       <div className={`composer-box ${isRunning ? "steering" : ""}`}>
-        {contextRow && <div className="composer-context-row">{contextRow}</div>}
         <textarea
           ref={textareaRef}
           className={`composer-input ${isRunning ? "steering" : ""}`}

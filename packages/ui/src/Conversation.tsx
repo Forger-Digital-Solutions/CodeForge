@@ -55,15 +55,34 @@ interface ConversationProps {
   workspaceBrief?: WorkspaceBriefData;
 }
 
+type ToolTimelineItem = Extract<TimelineItem, { kind: "tool" }>;
+type AssistantTimelineItem = Extract<TimelineItem, { kind: "assistant" }>;
+
 type DisplayTimelineItem = TimelineItem | {
   kind: "tool_group";
   id: string;
   seq: number;
   activityKind: ActivityKind;
-  items: Array<Extract<TimelineItem, { kind: "tool" }>>;
+  /** Ordered children: the grouped tool calls plus any narration they bridged. */
+  items: Array<ToolTimelineItem | AssistantTimelineItem>;
 };
 
-/** Collapse only adjacent, completed, same-kind tool calls. Failures and live calls stay explicit. */
+/** Short step-narration between same-kind calls belongs inside the group, not as a peer row. */
+const GROUP_BRIDGE_MAX_CHARS = 160;
+
+function isBridgingMessage(item: TimelineItem | undefined, turnId: string): item is AssistantTimelineItem {
+  if (item?.kind !== "assistant" || item.streaming || item.turnId !== turnId) return false;
+  const text = item.text.trim();
+  // A question is a real turn in the conversation; a one-line "now checking X" is not.
+  return text.length > 0 && text.length <= GROUP_BRIDGE_MAX_CHARS && !text.endsWith("?");
+}
+
+/**
+ * Collapse adjacent completed same-kind tool calls into one expandable row. A short narration
+ * message sandwiched between calls of the same kind folds into the group too — the story reads
+ * "Explored · 4 files" instead of read / remark / read / remark. Failed, blocked and running
+ * calls stay explicit: a summary must never hide something that needs attention.
+ */
 export function groupConsecutiveToolActivity(items: TimelineItem[]): DisplayTimelineItem[] {
   const grouped: DisplayTimelineItem[] = [];
   for (let index = 0; index < items.length;) {
@@ -74,17 +93,32 @@ export function groupConsecutiveToolActivity(items: TimelineItem[]): DisplayTime
       continue;
     }
     const activityKind = resolveActivityKind(item.toolName);
-    const consecutive = [item];
+    const members: Array<ToolTimelineItem | AssistantTimelineItem> = [item];
+    let toolCount = 1;
     let cursor = index + 1;
     while (cursor < items.length) {
       const candidate = items[cursor]!;
-      if (candidate.kind !== "tool" || candidate.status !== "completed" || resolveActivityKind(candidate.toolName) !== activityKind) break;
-      consecutive.push(candidate);
-      cursor++;
+      if (candidate.kind === "tool" && candidate.status === "completed" && resolveActivityKind(candidate.toolName) === activityKind) {
+        members.push(candidate);
+        toolCount++;
+        cursor++;
+        continue;
+      }
+      // Bridge a brief narrating message only when the same work resumes right after it.
+      const next = items[cursor + 1];
+      if (isBridgingMessage(candidate, item.turnId)
+        && next?.kind === "tool" && next.status === "completed"
+        && resolveActivityKind(next.toolName) === activityKind) {
+        members.push(candidate, next);
+        toolCount++;
+        cursor += 2;
+        continue;
+      }
+      break;
     }
-    grouped.push(consecutive.length < 2
+    grouped.push(toolCount < 2
       ? item
-      : { kind: "tool_group", id: `tool-group-${item.id}`, seq: item.seq, activityKind, items: consecutive });
+      : { kind: "tool_group", id: `tool-group-${item.id}`, seq: item.seq, activityKind, items: members });
     index = cursor;
   }
   return grouped;
@@ -199,7 +233,7 @@ const ActivityLine = ({ kind, state = "static", filePath, verb, target, context,
   const targetParts = splitActivityTarget(target);
   const content = (
     <>
-      <ActivityIcon kind={kind} state={state} filePath={filePath} />
+      <ActivityIcon kind={kind} state={state} filePath={filePath} size={16} />
       <span className="activity-verb">{verb}</span>
       {targetParts.primary && <span className="activity-target">{targetParts.primary}</span>}
       {(context || targetParts.context) && <span className="activity-context">{context ?? targetParts.context}</span>}
@@ -226,27 +260,36 @@ const ActivityLine = ({ kind, state = "static", filePath, verb, target, context,
  * user needs to follow the agent's work. Running calls animate; finished calls carry their result
  * inline and expand to the full output only on request, so a long transcript stays scannable.
  */
-const ToolActivity = ({ item, workspacePath }: { item: Extract<TimelineItem, { kind: "tool" }>; workspacePath?: string }) => {
+const ToolActivity = ({ item, workspacePath, taskTerminal }: { item: ToolTimelineItem; workspacePath?: string; taskTerminal?: boolean }) => {
   const [expanded, setExpanded] = useState(false);
-  const running = item.status === "running";
-  const bad = item.status === "failed" || item.status === "blocked";
-  const activityState: ActivityState = item.status === "completed" ? "completed" : item.status === "blocked" ? "blocked" : bad ? "failed" : "active";
+  // Duplicate suppression is a healthy no-op, not an error — muted copy, neutral icon.
+  const suppressed = item.status === "blocked" && (item.error ?? "").startsWith("forgegreen_duplicate");
+  // A call still marked running after the run ended can never finish — say so instead of
+  // leaving "Working" frozen beside a terminal outcome.
+  const stalled = item.status === "running" && taskTerminal;
+  const running = item.status === "running" && !stalled;
+  const failed = item.status === "failed";
+  const blocked = item.status === "blocked" && !suppressed;
+  const activityState: ActivityState = suppressed || stalled ? "static" : failed ? "failed" : blocked ? "blocked" : running ? "active" : "completed";
   const activityKind = resolveActivityKind(item.toolName);
 
   const target = describeToolTarget(item.toolName, item.argsJson, workspacePath);
   // A file operation's own report ("28 lines", "written") beats a line count of the tool's raw
   // output, which includes framing the user never asked about.
-  const summary = item.fileDetail ?? summarizeToolResult(item);
+  const summary = suppressed ? "Skipped — duplicate of an unchanged read"
+    : stalled ? "Cancelled — the run ended first"
+    : item.fileDetail ?? summarizeToolResult(item);
   const detail = item.error ?? item.result;
   const expandable = hasToolDetail(item);
+  const metaClass = failed ? "activity-meta-error" : blocked ? "activity-meta-warning" : suppressed || stalled ? "activity-meta-muted" : undefined;
 
   return (
     <ActivityLine
-      kind={bad ? "error" : activityKind}
+      kind={failed ? "error" : activityKind}
       state={activityState}
       verb={activityLabel(activityKind)}
       target={target}
-      meta={<>{summary && <span className={bad ? "activity-meta-error" : undefined}>{summary}</span>}{running && <span>Working</span>}</>}
+      meta={<>{summary && <span className={metaClass}>{summary}</span>}{running && <span>Working</span>}</>}
       expandable={expandable}
       expanded={expanded}
       onToggle={() => setExpanded((v) => !v)}
@@ -256,21 +299,50 @@ const ToolActivity = ({ item, workspacePath }: { item: Extract<TimelineItem, { k
   );
 };
 
-const ToolGroupActivity = ({ item, workspacePath }: { item: Extract<DisplayTimelineItem, { kind: "tool_group" }>; workspacePath?: string }) => {
+/** Group header verbs read as what the agent did, not the tool primitive it used. */
+const GROUP_VERBS: Partial<Record<ActivityKind, string>> = {
+  read: "Explored",
+  search: "Searched",
+  edit: "Edited",
+  create: "Created",
+  fetch: "Fetched",
+  test: "Tested",
+  verify: "Verified",
+  plan: "Planned",
+  execute: "Ran",
+  git: "Git",
+};
+
+const GROUP_NOUNS: Partial<Record<ActivityKind, [string, string]>> = {
+  read: ["file", "files"],
+  search: ["search", "searches"],
+  edit: ["file", "files"],
+  create: ["file", "files"],
+  fetch: ["request", "requests"],
+};
+
+const ToolGroupActivity = ({ item, workspacePath, taskTerminal }: { item: Extract<DisplayTimelineItem, { kind: "tool_group" }>; workspacePath?: string; taskTerminal?: boolean }) => {
   const [expanded, setExpanded] = useState(false);
-  const label = activityLabel(item.activityKind);
+  const toolCount = item.items.filter((child) => child.kind === "tool").length;
+  const [singular, plural] = GROUP_NOUNS[item.activityKind] ?? ["operation", "operations"];
   return (
     <ActivityLine
       kind={item.activityKind}
       state="completed"
-      verb={label}
-      target={`${item.items.length} ${item.activityKind === "read" ? "files" : "operations"}`}
+      verb={GROUP_VERBS[item.activityKind] ?? activityLabel(item.activityKind)}
+      target={`${toolCount} ${toolCount === 1 ? singular : plural}`}
       meta="Completed"
       expandable
       expanded={expanded}
       onToggle={() => setExpanded((value) => !value)}
     >
-      {expanded && <div className="activity-group-detail">{item.items.map((tool) => <ToolActivity key={tool.id} item={tool} workspacePath={workspacePath} />)}</div>}
+      {expanded && (
+        <div className="activity-group-detail">
+          {item.items.map((child) => child.kind === "tool"
+            ? <ToolActivity key={child.id} item={child} workspacePath={workspacePath} taskTerminal={taskTerminal} />
+            : <div key={child.id} className="activity-group-note">{child.text}</div>)}
+        </div>
+      )}
     </ActivityLine>
   );
 };
@@ -281,7 +353,7 @@ const CommandActivity = ({ item }: { item: Extract<TimelineItem, { kind: "comman
   return (
     <div className={`command-activity ${passed ? "passed" : "failed"}`}>
       <button type="button" className="command-activity-head" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}>
-        <ActivityIcon kind={passed ? "execute" : "error"} state={passed ? "completed" : "failed"} />
+        <ActivityIcon kind={passed ? "execute" : "error"} state={passed ? "completed" : "failed"} size={16} />
         <span className="command-activity-copy">
           <span className="command-activity-label">Run command</span>
           <code className="command-activity-command">{item.command}</code>
@@ -323,14 +395,14 @@ const UserMessage = ({ text }: { text: string }) => {
 };
 
 /** Renders one reconstructed timeline item: user prompt, assistant prose, or tool activity. */
-const TimelineItemView = ({ item, workspacePath }: { item: TimelineItem; workspacePath?: string }) => {
+const TimelineItemView = ({ item, workspacePath, taskTerminal, showSpeaker }: { item: TimelineItem; workspacePath?: string; taskTerminal?: boolean; showSpeaker?: boolean }) => {
   switch (item.kind) {
     case "user":
       return <UserMessage text={item.text} />;
     case "assistant":
       return (
         <div className="assistant-message">
-          <div className="assistant-message-label">CodeForge</div>
+          {showSpeaker !== false && <div className="assistant-message-label">CodeForge</div>}
           <div className="assistant-message-body">
             <AssistantProse text={item.text} />
             {item.streaming && <span className="assistant-cursor" aria-hidden="true">▍</span>}
@@ -338,14 +410,23 @@ const TimelineItemView = ({ item, workspacePath }: { item: TimelineItem; workspa
         </div>
       );
     case "tool":
-      return <ToolActivity item={item} workspacePath={workspacePath} />;
+      return <ToolActivity item={item} workspacePath={workspacePath} taskTerminal={taskTerminal} />;
     case "system":
       return <ActivityLine kind="plan" state="completed" verb="CodeForge" target={item.text} />;
     case "phase": {
       const kinds = { testing: "test", repairing: "execute", reviewing: "verify", outcome: "complete" } as const;
-      const verbs = { testing: "Verify", repairing: "Repair", reviewing: "Review", outcome: "CodeForge" } as const;
+      const verbs = { testing: "Verify", repairing: "Repair", reviewing: "Review" } as const;
       const outcomeState = item.phase !== "outcome" || item.text === "Done" ? "completed" : item.text === "Stopped" ? "blocked" : "failed";
-      return <ActivityLine kind={kinds[item.phase]} state={outcomeState} verb={verbs[item.phase]} target={item.text} meta={item.detail} />;
+      if (item.phase === "outcome") {
+        // The outcome word is the row's subject: "Blocked — no forward progress", not
+        // "CodeForge Blocked". The rationale rides along as attached metadata.
+        return <ActivityLine kind="complete" state={outcomeState} verb={item.text} meta={item.detail} />;
+      }
+      const verb = verbs[item.phase];
+      // Event copy already leads with the verb ("Verification · attempt 1", "Review") —
+      // strip that stem so the row reads "Verify · attempt 1" instead of "Verify Verification…".
+      const target = item.text.replace(/^(Verification|Repairing|Review)\b/, "").replace(/^[·\s:—-]+/, "") || undefined;
+      return <ActivityLine kind={kinds[item.phase]} state={outcomeState} verb={verb} target={target} meta={item.detail} />;
     }
     case "file":
       return (
@@ -776,10 +857,18 @@ export default function Conversation({
           </div>
         ) : useTimeline ? (
           <>
-            {displayTimeline.map((item) => (
+            {displayTimeline.map((item, index) => (
               item.kind === "tool_group"
-                ? <ToolGroupActivity key={item.id} item={item} workspacePath={workspacePath} />
-                : <TimelineItemView key={item.id} item={item} workspacePath={workspacePath} />
+                ? <ToolGroupActivity key={item.id} item={item} workspacePath={workspacePath} taskTerminal={!isRunning && turns.length > 0} />
+                : <TimelineItemView
+                    key={item.id}
+                    item={item}
+                    workspacePath={workspacePath}
+                    taskTerminal={!isRunning && turns.length > 0}
+                    // The speaker label earns its space once per run of prose — a "CodeForge"
+                    // caption on every message between tool rows is chrome, not information.
+                    showSpeaker={item.kind !== "assistant" || displayTimeline[index - 1]?.kind !== "assistant"}
+                  />
             ))}
             {relevantItems
               .filter((w) => w.kind === "approval" || w.kind === "question")

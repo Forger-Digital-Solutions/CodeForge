@@ -44,6 +44,19 @@ const TAB_LABELS: Record<string, string> = {
 
 export default function Inspector({ activeTab, onTabSelect, session, workItems, events = [], isRunning, statusLabel, workspacePath, activeTaskId, startFailure, apiBase = "" }: InspectorProps) {
   const safeTab = TABS.includes(activeTab) ? activeTab : "changes";
+  const tabsRef = React.useRef<HTMLDivElement>(null);
+  const [tabFade, setTabFade] = React.useState({ left: false, right: false });
+  React.useEffect(() => {
+    const el = tabsRef.current;
+    if (!el) return;
+    const measure = () =>
+      setTabFade({ left: el.scrollLeft > 1, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 1 });
+    measure();
+    el.addEventListener("scroll", measure, { passive: true });
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => { el.removeEventListener("scroll", measure); observer.disconnect(); };
+  }, []);
 
   const renderTabContent = () => {
     switch (safeTab) {
@@ -66,7 +79,7 @@ export default function Inspector({ activeTab, onTabSelect, session, workItems, 
 
   return (
     <aside className="workspace-inspector">
-      <div className="inspector-tabs">
+      <div className={`inspector-tabs${tabFade.left ? " can-scroll-left" : ""}${tabFade.right ? " can-scroll-right" : ""}`} ref={tabsRef}>
         {TABS.map((tab) => (
           <button
             key={tab}

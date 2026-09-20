@@ -171,13 +171,13 @@ export function ModelSelector({
   };
 
   const selectedModel = models.find((m) => m.id === selectedId);
-  const triggerLabel = selectedModel
+  // The trigger is a compact chip — the routing explanation lives in the tooltip and the picker.
+  const triggerLabel = selectedModel ? selectedModel.displayName : "ForgeAuto/Free";
+  const triggerTitle = selectedModel
     ? selectedModel.id === "auto"
-      ? selectedModel.description
-        ? `${selectedModel.displayName} · ${selectedModel.description}`
-        : "ForgeAuto/Free · Automatic free routing"
-      : selectedModel.displayName
-    : "ForgeAuto/Free · Automatic free routing";
+      ? selectedModel.description ?? "Automatic verified-free routing"
+      : selectedModel.description ?? selectedModel.displayName
+    : "Automatic verified-free routing";
 
   const sections: ModelSection[] = modelSections?.length
     ? modelSections
@@ -232,6 +232,7 @@ export function ModelSelector({
         aria-haspopup="listbox"
         aria-label="Select model"
         aria-selected={Boolean(selectedModel)}
+        title={triggerTitle}
       >
         <span>{triggerLabel}</span>
         <span style={{ fontSize: 8 }}>▾</span>

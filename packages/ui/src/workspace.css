@@ -838,11 +838,6 @@ body {
   padding: 0 4px 6px;
 }
 
-/* Inside the composer surface the context chips form its first row. */
-.composer-context-row .context-bar {
-  padding: 8px 10px 0;
-}
-
 .context-chip {
   padding: 3px 8px;
   background: var(--cf-bg-raised);
@@ -1022,15 +1017,15 @@ body {
    ──────────────────────────────────────────── */
 
 .activity-block {
-  margin: 2px 0;
+  margin: 1px 0;
 }
 
 .activity-header {
   display: flex;
   align-items: baseline;
   gap: 7px;
-  min-height: 24px;
-  padding: 2px 0;
+  min-height: 22px;
+  padding: 1px 0;
   cursor: default;
   font-size: 12px;
   color: var(--cf-text-secondary);
@@ -1083,11 +1078,16 @@ body {
 .activity-icon-success,
 .activity-icon-state-completed { color: var(--cf-success); }
 .activity-icon-error,
-.activity-icon-state-failed,
-.activity-icon-state-blocked { color: var(--cf-danger); }
+.activity-icon-state-failed { color: var(--cf-danger); }
+.activity-icon-state-blocked { color: var(--cf-warning); }
 .activity-icon-state-active { color: var(--cf-accent); }
 .activity-icon-state-pending,
 .activity-icon-state-static { color: var(--cf-text-muted); }
+
+/* Routine completed/static steps recede; live and attention states keep full weight so the
+   feed reads as a calm list instead of a wall of equally loud stamps. */
+.activity-icon-state-static,
+.activity-icon-state-completed { opacity: 0.62; }
 
 /* Semantic accents keep the feed scannable without turning it into a rainbow UI. */
 .activity-icon-search { color: #e5b454; }
@@ -1123,6 +1123,8 @@ body {
   white-space: nowrap;
 }
 
+/* Metadata belongs to the action it describes — it rides next to the target with a separator,
+   never pushed to the far edge of the row by a monitor-wide flex spacer. */
 .activity-meta {
   font-size: 11px;
   color: var(--cf-text-muted);
@@ -1132,7 +1134,13 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-left: auto;
+}
+
+.activity-header .activity-meta::before {
+  content: "·";
+  margin-right: 6px;
+  color: var(--cf-text-muted);
+  opacity: 0.7;
 }
 
 .activity-meta.error {
@@ -1140,6 +1148,8 @@ body {
 }
 
 .activity-meta-error { color: var(--cf-danger); }
+.activity-meta-warning { color: var(--cf-warning); }
+.activity-meta-muted { color: var(--cf-text-muted); }
 
 .activity-elapsed {
   color: #c084fc;
@@ -1180,6 +1190,24 @@ body {
   font-size: 9px;
   color: var(--cf-text-muted);
   flex-shrink: 0;
+  margin-left: 2px;
+}
+
+/* Expanded group contents sit under the header as one contained unit — the left rail says
+   "these rows were the group" without a second chrome layer. */
+.activity-group-detail {
+  margin: 2px 0 4px 8px;
+  padding-left: 10px;
+  border-left: 1px solid var(--cf-border-subtle);
+}
+
+/* Narration bridged into a group stays visible on expand as evidence, styled as a note rather
+   than a peer message. */
+.activity-group-note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cf-text-muted);
+  padding: 3px 0;
 }
 
 /* 8-Bit routing status: same compact language as an activity row — icon, then the real content
@@ -2292,7 +2320,7 @@ body {
    ──────────────────────────────────────────── */
 
 .workspace-inspector {
-  width: 300px;
+  width: 340px;
   background: var(--cf-bg-raised);
   border-left: 1px solid var(--cf-border);
   display: flex;
@@ -2313,14 +2341,30 @@ body {
   overflow-x: auto;
   overflow-y: hidden;
   flex-shrink: 0;
-  scrollbar-width: thin;
+  /* Scrollability is real, but a bare scrollbar under the tab strip is not — the strip scrolls
+     invisibly and the right-edge fade (added only when content overflows) is the affordance. */
+  scrollbar-width: none;
+}
+
+.inspector-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.inspector-tabs.can-scroll-left {
+  mask-image: linear-gradient(90deg, transparent, #000 28px);
+}
+.inspector-tabs.can-scroll-right {
+  mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+}
+.inspector-tabs.can-scroll-left.can-scroll-right {
+  mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 28px), transparent);
 }
 
 .inspector-tab {
   flex: 0 0 auto;
   text-align: center;
-  padding: 8px 10px;
-  font-size: 11px;
+  padding: 8px 8px;
+  font-size: 10.5px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   color: var(--cf-text-muted);
@@ -3488,7 +3532,7 @@ body {
     width: 200px;
   }
   .workspace-inspector {
-    width: 260px;
+    width: 280px;
   }
 }
 
@@ -3665,6 +3709,11 @@ body {
 .workspace-error-dismiss:hover { color: var(--cf-text); }
 
 .task-failure-card { flex-shrink: 0; margin: 0 16px 8px; padding: 12px 14px; background: var(--cf-bg-raised); border: 1px solid rgba(239, 77, 77, .45); border-left: 3px solid var(--cf-danger); border-radius: var(--cf-radius-md); }
+/* Blocked is a warning, not a crash; a user stop is neutral. Red stays reserved for failure. */
+.task-failure-card.tone-blocked { border-color: color-mix(in srgb, var(--cf-warning) 45%, transparent); border-left-color: var(--cf-warning); }
+.task-failure-card.tone-blocked .task-failure-kicker { color: var(--cf-warning); }
+.task-failure-card.tone-stopped { border-color: var(--cf-border); border-left-color: var(--cf-text-muted); }
+.task-failure-card.tone-stopped .task-failure-kicker { color: var(--cf-text-secondary); }
 .task-failure-card-head { display: flex; justify-content: space-between; gap: 12px; }
 .task-failure-kicker { color: var(--cf-danger); font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .task-failure-title { margin-top: 3px; color: var(--cf-text); font-size: 13px; font-weight: 600; }

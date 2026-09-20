@@ -15,7 +15,6 @@ import { type ModelSelectorItem, type ModelSection } from "./ModelSelector.js";
 import { ForgeWorkingIndicator } from "./activity-icons.js";
 
 import { loadModelFavorites } from "./model-favorites.js";
-import { ContextBar } from "./ContextBar.js";
 import type { ActivityOverviewData, ActivityPeriod } from "./ActivityOverview.js";
 import type { WorkspaceBriefData } from "./Conversation.js";
 import "./workspace.css";
@@ -106,11 +105,6 @@ export default function WorkspaceApp({
   projectBranch,
   userDisplayName,
   workspacePath,
-  isGitRepo,
-  isDetached,
-  isWorktree,
-  runtimeLabel,
-  runtimeDetail,
   resolveModelDisplayName,
   onOpenProjects,
   onOpenSettings,
@@ -623,7 +617,7 @@ export default function WorkspaceApp({
           )}
 
           {state.workflowError && (
-            <div className="task-failure-card" role="alert">
+            <div className={`task-failure-card ${failureDetail?.status === "blocked" ? "tone-blocked" : failureDetail?.status === "cancelled" ? "tone-stopped" : "tone-failed"}`} role="alert">
               <div className="task-failure-card-head">
                 <div>
                   <div className="task-failure-kicker">
@@ -643,25 +637,13 @@ export default function WorkspaceApp({
                 <div className="task-failure-message">{state.workflowError}</div>
               )}
               <div className="task-failure-actions">
-                <button type="button" className="btn-sm primary" onClick={repairFailure}>Fix and continue</button>
-                <button type="button" className="btn-sm" onClick={() => setInspectorCollapsed(false)}>Review failure</button>
+                <button type="button" className="btn-sm primary" onClick={repairFailure}>{failureDetail?.status === "cancelled" ? "Resume task" : "Fix and continue"}</button>
+                <button type="button" className="btn-sm" onClick={() => setInspectorCollapsed(false)}>View details</button>
               </div>
             </div>
           )}
 
           <Composer
-            contextRow={(runtimeLabel || projectName || isGitRepo) ? (
-              <ContextBar
-                runtimeLabel={runtimeLabel ?? "Local"}
-                runtimeDetail={runtimeDetail}
-                workspaceName={projectName}
-                workspacePath={workspacePath}
-                isGitRepo={isGitRepo}
-                branch={projectBranch ?? state.session?.branch ?? null}
-                isDetached={isDetached}
-                isWorktree={isWorktree}
-              />
-            ) : undefined}
             placeholder={placeholder}
             onSend={handleSend}
             onSteer={handleSteer}

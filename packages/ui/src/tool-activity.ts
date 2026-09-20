@@ -21,7 +21,11 @@ export function describeToolTarget(toolName: string, argsJson?: string, workspac
   const preferred = ["path", "file_path", "filePath", "file", "command", "cmd", "pattern", "query", "search", "url", "name", "directory", "dir"];
   for (const key of preferred) {
     const v = args[key];
-    if (typeof v === "string" && v.trim().length > 0) return shorten(relativeToWorkspace(v.trim(), workspacePath));
+    if (typeof v === "string" && v.trim().length > 0) {
+      const target = relativeToWorkspace(v.trim(), workspacePath);
+      // A read of "." is the workspace root listing — spell it out instead of showing a bare dot.
+      return target === "." ? "workspace root" : shorten(target);
+    }
   }
   const first = Object.values(args).find((v) => typeof v === "string" && v.trim().length > 0);
   return typeof first === "string" ? shorten(relativeToWorkspace(first.trim(), workspacePath)) : undefined;
