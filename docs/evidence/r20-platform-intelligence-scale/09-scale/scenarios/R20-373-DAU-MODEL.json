@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "simulated",
+  "timestamp": "2026-09-20T03:31:56.112Z",
+  "commit": "8bce13c87c888fefa2f52ecf3c2117afced45c63",
+  "scenarios": {
+    "low": {
+      "assumptions": {
+        "dau": 373,
+        "peakHourActivePercent": 0.08,
+        "tasksPerUserDay": 1,
+        "turnsPerTask": 3,
+        "averageTaskMinutes": 6,
+        "subagentPercent": 0.05,
+        "browserPercent": 0.03,
+        "averageTokensPerTurn": 1500,
+        "burstFactor": 1.2
+      },
+      "peakActiveUsers": 30,
+      "peakConcurrentTasks": 4,
+      "dailyTasks": 373,
+      "dailyTurns": 1119,
+      "dailyTokens": 1678500,
+      "peakRequestMultiplier": 1.18
+    },
+    "expected": {
+      "assumptions": {
+        "dau": 373,
+        "peakHourActivePercent": 0.15,
+        "tasksPerUserDay": 2,
+        "turnsPerTask": 4,
+        "averageTaskMinutes": 10,
+        "subagentPercent": 0.1,
+        "browserPercent": 0.05,
+        "averageTokensPerTurn": 2000,
+        "burstFactor": 1.5
+      },
+      "peakActiveUsers": 56,
+      "peakConcurrentTasks": 14,
+      "dailyTasks": 746,
+      "dailyTurns": 2984,
+      "dailyTokens": 5968000,
+      "peakRequestMultiplier": 1.35
+    },
+    "high": {
+      "assumptions": {
+        "dau": 373,
+        "peakHourActivePercent": 0.25,
+        "tasksPerUserDay": 3,
+        "turnsPerTask": 5,
+        "averageTaskMinutes": 15,
+        "subagentPercent": 0.2,
+        "browserPercent": 0.1,
+        "averageTokensPerTurn": 3000,
+        "burstFactor": 1.75
+      },
+      "peakActiveUsers": 94,
+      "peakConcurrentTasks": 42,
+      "dailyTasks": 1119,
+      "dailyTurns": 5595,
+      "dailyTokens": 16785000,
+      "peakRequestMultiplier": 1.7000000000000002
+    },
+    "stress": {
+      "assumptions": {
+        "dau": 373,
+        "peakHourActivePercent": 0.4,
+        "tasksPerUserDay": 5,
+        "turnsPerTask": 6,
+        "averageTaskMinutes": 20,
+        "subagentPercent": 0.3,
+        "browserPercent": 0.15,
+        "averageTokensPerTurn": 4000,
+        "burstFactor": 2
+      },
+      "peakActiveUsers": 150,
+      "peakConcurrentTasks": 100,
+      "dailyTasks": 1865,
+      "dailyTurns": 11190,
+      "dailyTokens": 44760000,
+      "peakRequestMultiplier": 2.05
+    }
+  }
+}

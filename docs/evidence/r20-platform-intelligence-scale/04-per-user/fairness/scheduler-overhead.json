@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "locally_emulated",
+  "timestamp": "2026-09-20T03:35:21.624Z",
+  "commit": "8bce13c87c888fefa2f52ecf3c2117afced45c63",
+  "samples": [
+    {
+      "queuedTasks": 10,
+      "selected": 10,
+      "enqueueMs": 0.09559999999999036,
+      "selectionMs": 0.12899999999999068,
+      "averageSelectionMicros": 12.899999999999068
+    },
+    {
+      "queuedTasks": 100,
+      "selected": 100,
+      "enqueueMs": 0.12810000000000343,
+      "selectionMs": 0.08220000000000027,
+      "averageSelectionMicros": 0.8220000000000027
+    },
+    {
+      "queuedTasks": 1000,
+      "selected": 1000,
+      "enqueueMs": 1.2908000000000044,
+      "selectionMs": 0.6792000000000087,
+      "averageSelectionMicros": 0.6792000000000087
+    },
+    {
+      "queuedTasks": 10000,
+      "selected": 10000,
+      "enqueueMs": 6.7059,
+      "selectionMs": 8.337999999999994,
+      "averageSelectionMicros": 0.8337999999999994
+    }
+  ]
+}

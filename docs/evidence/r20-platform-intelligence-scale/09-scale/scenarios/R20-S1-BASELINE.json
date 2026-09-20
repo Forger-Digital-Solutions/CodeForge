@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "runId": "r20-R20-S1-BASELINE-ee0374e30ced",
+  "timestamp": "2026-09-20T03:31:56.112Z",
+  "commit": "8bce13c87c888fefa2f52ecf3c2117afced45c63",
+  "evidenceClass": "simulated",
+  "scenario": "R20-S1-BASELINE",
+  "users": 1,
+  "concurrency": 1,
+  "taskMix": [
+    {
+      "taskType": "explain",
+      "topology": "T0",
+      "weight": 5
+    },
+    {
+      "taskType": "bug_fix",
+      "topology": "T0",
+      "weight": 4
+    },
+    {
+      "taskType": "feature",
+      "topology": "T1",
+      "weight": 2
+    },
+    {
+      "taskType": "subagent",
+      "topology": "T4",
+      "weight": 1
+    }
+  ],
+  "providers": [
+    "synthetic-a",
+    "synthetic-b"
+  ],
+  "routes": [
+    "free-a",
+    "free-b"
+  ],
+  "durationMs": 345,
+  "requests": 2,
+  "successes": 2,
+  "failures": 0,
+  "retries": 0,
+  "rateLimits": 0,
+  "timeouts": 0,
+  "malformedResponses": 0,
+  "connectionResets": 0,
+  "queueDepthMax": 1,
+  "queueWaitMs": {
+    "p50": 0,
+    "p95": 147,
+    "max": 147
+  },
+  "responseLatencyMs": {
+    "p50": 172,
+    "p95": 172,
+    "max": 172
+  },
+  "routeFailovers": 0,
+  "routeExhaustions": 0,
+  "tasks": {
+    "attempted": 2,
+    "completed": 2,
+    "blocked": 0,
+    "failed": 0,
+    "cancelled": 0
+  },
+  "tokensProcessed": 2200,
+  "userMetrics": [
+    {
+      "userId": "user-0001",
+      "attemptedTasks": 2,
+      "completedTasks": 2,
+      "blockedTasks": 0,
+      "failedTasks": 0,
+      "cancelledTasks": 0,
+      "averageWaitMs": 73.5,
+      "maxWaitMs": 147
+    }
+  ],
+  "providerMetrics": [
+    {
+      "providerId": "synthetic-a",
+      "routeId": "free-a",
+      "attempts": 2,
+      "successes": 2,
+      "failures": 0,
+      "rateLimits": 0,
+      "timeouts": 0,
+      "tokens": 2200,
+      "busyMs": 344,
+      "cooldowns": 0,
+      "utilization": 0.2492753623188406
+    },
+    {
+      "providerId": "synthetic-b",
+      "routeId": "free-b",
+      "attempts": 0,
+      "successes": 0,
+      "failures": 0,
+      "rateLimits": 0,
+      "timeouts": 0,
+      "tokens": 0,
+      "busyMs": 0,
+      "cooldowns": 0,
+      "utilization": 0
+    }
+  ],
+  "fairness": {
+    "jainIndex": 1,
+    "starvationEvents": 0,
+    "normalUserP95WaitMs": 0
+  },
+  "scheduler": {
+    "admissionDecisions": 347,
+    "averageDecisionMicros": 1.3017291066282393,
+    "maxDecisionMicros": 146.3
+  },
+  "result": "PASS",
+  "events": [
+    {
+      "atMs": 0,
+      "state": "queued",
+      "userId": "user-0001",
+      "sessionId": "session-user-0001",
+      "taskId": "task-user-0001-1",
+      "executionId": "task-user-0001-1-exec-1"
+    },
+    {
+      "atMs": 25,
+      "state": "queued",
+      "userId": "user-0001",
+      "sessionId": "session-user-0001",
+      "taskId": "task-user-0001-2",
+      "executionId": "task-user-0001-2-exec-1"
+    },
+    {
+      "atMs": 0,
+      "state": "reserving_route",
+      "userId": "user-0001",
+      "sessionId": "session-user-0001",
+      "taskId": "task-user-0001-1",
+      "executionId": "task-user-0001-1-exec-1",
+      "providerId": "synthetic-a",
+      "routeId": "free-a"
+    },
+    {
+      "atMs": 0,
+      "state": "dispatching",
+      "userId": "user-0001",
+      "sessionId": "session-user-0001",
+      "taskId": "task-user-0001-1",
+      "executionId": "task-user-0001-1-exec-1",
+      "providerId": "synthetic-a",
+      "routeId": "free-a",
+      "waitMs": 0
+    },
+    {
+      "atMs": 172,
+      "state": "completed",
+      "userId": "user-0001",
+      "sessionId": "session-user-0001",
+      "taskId": "task-user-0001-1",
+      "executionId": "task-user-0001-1-exec-1",
+      "providerId": "synthetic-a",
+      "routeId": "free-a"
+    },
+    {
+      "atMs": 172,
+      "state": "reserving_route",
+      "userId": "user-0001",
+      "sessionId": "session-user-0001",
+      "taskId": "task-user-0001-2",
+      "executionId": "task-user-0001-2-exec-1",
+      "providerId": "synthetic-a",
+      "routeId": "free-a"
+    },
+    {
+      "atMs": 172,
+      "state": "dispatching",
+      "userId": "user-0001",
+      "sessionId": "session-user-0001",
+      "taskId": "task-user-0001-2",
+      "executionId": "task-user-0001-2-exec-1",
+      "providerId": "synthetic-a",
+      "routeId": "free-a",
+      "waitMs": 147
+    },
+    {
+      "atMs": 344,
+      "state": "completed",
+      "userId": "user-0001",
+      "sessionId": "session-user-0001",
+      "taskId": "task-user-0001-2",
+      "executionId": "task-user-0001-2-exec-1",
+      "providerId": "synthetic-a",
+      "routeId": "free-a"
+    }
+  ]
+}

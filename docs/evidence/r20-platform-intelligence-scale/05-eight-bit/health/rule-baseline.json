@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "simulated",
+  "timestamp": "2026-09-20T03:52:50.485Z",
+  "commit": "8bce13c87c888fefa2f52ecf3c2117afced45c63",
+  "cases": [
+    {
+      "id": "healthy",
+      "expected": "HEALTHY",
+      "input": {},
+      "actual": "HEALTHY",
+      "pass": true
+    },
+    {
+      "id": "degraded",
+      "expected": "DEGRADED",
+      "input": {
+        "successes": 16,
+        "failures": 4
+      },
+      "actual": "DEGRADED",
+      "pass": true
+    },
+    {
+      "id": "rate_limited",
+      "expected": "UNAVAILABLE",
+      "input": {
+        "successes": 10,
+        "failures": 10,
+        "rateLimits": 9
+      },
+      "actual": "UNAVAILABLE",
+      "pass": true
+    },
+    {
+      "id": "offline",
+      "expected": "UNAVAILABLE",
+      "input": {
+        "successes": 0,
+        "failures": 20
+      },
+      "actual": "UNAVAILABLE",
+      "pass": true
+    },
+    {
+      "id": "healthy_but_full",
+      "expected": "HEALTHY",
+      "input": {
+        "capacityUtilization": 1,
+        "availableCapacity": 0
+      },
+      "actual": "HEALTHY",
+      "pass": true
+    },
+    {
+      "id": "cost_unknown",
+      "expected": "QUARANTINED",
+      "input": {
+        "costCertainty": "unknown"
+      },
+      "actual": "QUARANTINED",
+      "pass": true
+    },
+    {
+      "id": "policy_unknown",
+      "expected": "QUARANTINED",
+      "input": {
+        "policyCertainty": "unknown"
+      },
+      "actual": "QUARANTINED",
+      "pass": true
+    },
+    {
+      "id": "quality_bad",
+      "expected": "QUARANTINED",
+      "input": {
+        "qualityScore": 0.4
+      },
+      "actual": "QUARANTINED",
+      "pass": true
+    }
+  ],
+  "metrics": {
+    "accuracy": 1,
+    "demotionPrecision": 1,
+    "demotionRecall": 1,
+    "unsafeAcceptanceRate": 0
+  },
+  "trainingDecision": "DO_NOT_TRAIN_RULE_BASELINE_PERFECT_ON_CURRENT_LABELED_SET"
+}

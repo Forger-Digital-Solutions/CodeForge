@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "environment": "local SQLite in-memory",
+  "evidenceClass": "locally_emulated",
+  "timestamp": "2026-09-20T03:51:42.361Z",
+  "commit": "8bce13c87c888fefa2f52ecf3c2117afced45c63",
+  "samples": [
+    {
+      "queueSize": 10,
+      "enqueueMs": 2.9365999999999985,
+      "claimMs": 10.75,
+      "throughputClaimsPerSecond": 930.232558139535,
+      "selectionLatencyMs": {
+        "median": 0.5069000000000017,
+        "p90": 0.9835999999999956,
+        "p95": 1.0837000000000074,
+        "max": 1.0837000000000074
+      }
+    },
+    {
+      "queueSize": 100,
+      "enqueueMs": 27.059100000000015,
+      "claimMs": 101.083,
+      "throughputClaimsPerSecond": 989.2860322705104,
+      "selectionLatencyMs": {
+        "median": 0.5510000000000161,
+        "p90": 0.7669999999999959,
+        "p95": 0.947100000000006,
+        "max": 1.9979999999999905
+      }
+    },
+    {
+      "queueSize": 1000,
+      "enqueueMs": 202.149,
+      "claimMs": 1688.7178000000001,
+      "throughputClaimsPerSecond": 592.1652510561563,
+      "selectionLatencyMs": {
+        "median": 1.2207999999998265,
+        "p90": 2.0323000000000775,
+        "p95": 2.3800999999999704,
+        "max": 9.326399999999921
+      }
+    },
+    {
+      "queueSize": 10000,
+      "enqueueMs": 2251.7538000000004,
+      "claimMs": 82927.2917,
+      "throughputClaimsPerSecond": 120.58756285176018,
+      "selectionLatencyMs": {
+        "median": 7.880900000003749,
+        "p90": 13.007499999999709,
+        "p95": 14.866300000001502,
+        "max": 34.808100000002014
+      }
+    }
+  ]
+}
