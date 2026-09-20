@@ -27,6 +27,7 @@ import { classifyCommand } from "./command-classifier.js";
 import {
   createTaskAuthority,
   createLease,
+  isExternallyVisibleCommand,
   type ActionDescriptor,
   type TaskAuthority,
 } from "@codeforge/permissions";
@@ -1669,6 +1670,43 @@ export class AgentRuntime {
               toolCallId: tc.id,
             });
             continue;
+          }
+
+          // Autonomous runs have no one to ask, so the command classifier is the gate on this
+          // path: critical commands (destructive/privileged/credential) that the interactive
+          // path would escalate are denied outright, and the declared network:false lease makes
+          // network-bound or externally visible commands a denial rather than a dead flag.
+          if (tc.name === "run_command") {
+            const commandText = supervisorArgs === PARSE_FAILED ? "" : String((supervisorArgs as { command?: unknown }).command ?? "");
+            const commandClass = classifyCommand(commandText);
+            const externallyVisible = isExternallyVisibleCommand(commandText);
+            const denied = commandClass.risk === "critical"
+              || (req.permissions.network === false && (commandClass.category === "network-sensitive" || externallyVisible));
+            if (denied) {
+              const why = commandClass.risk === "critical"
+                ? `critical command (${commandClass.category}) has no approval channel on an autonomous run`
+                : `lease grants network:false — external/network command denied (${externallyVisible ? "externally visible" : commandClass.category})`;
+              const denyRecord: ToolExecutionRecord = {
+                toolExecutionId: `denied-${executionId}`,
+                toolName: tc.name,
+                arguments: supervisorArgs === PARSE_FAILED ? {} : (supervisorArgs as Record<string, unknown>),
+                success: false,
+                output: `Error: [${ERROR_CODES.TOOL_PERMISSION_DENIED}] ${why}`,
+                error: ERROR_CODES.TOOL_PERMISSION_DENIED,
+                durationMs: 0,
+                readOnly: false,
+                truncated: false,
+              };
+              toolExecutions.push(denyRecord);
+              ledger.recordNoProgressInterruption(`run_command denied: ${why}`);
+              adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.TOOL_PERMISSION_DENIED);
+              messages.push({ role: "tool", content: denyRecord.output, toolCallId: tc.id });
+              toolCallCount++;
+              totalUsage.toolCount++;
+              commandCallCount++;
+              await writeRunJournal("active");
+              continue;
+            }
           }
 
           adapter.emitToolCallStarted(req.runId, tc.id, tc.name, req.agentId);

@@ -94,6 +94,14 @@ const EXTERNAL_GIT = /\bgit\s+(push|publish)\b|\bgh\s+(pr|issue|release)\s+(crea
 const PUBLISH_DEPLOY = /\b(npm|yarn|pnpm|bun)\s+publish\b|\b(wrangler|vercel|netlify|firebase|flyctl?)\s+(deploy|publish)\b|\bdocker\s+push\b|\bkubectl\s+(apply|delete)\b/i;
 const EXTERNAL_MESSAGE = /\bgh\s+pr\s+comment\b|\bslack\b.*\bsend\b/i;
 
+/** Commands that cross the shared-external boundary (publish, push, external messages).
+ * The authority engine escalates them to Tier 3 on interactive paths; autonomous callers
+ * with no approval channel use the same predicate to fail closed. */
+export function isExternallyVisibleCommand(command: string): boolean {
+  const cmd = normalizeCommand(command);
+  return EXTERNAL_GIT.test(cmd) || PUBLISH_DEPLOY.test(cmd) || EXTERNAL_MESSAGE.test(cmd);
+}
+
 function normalizeCommand(command: string): string {
   return command.trim().replace(/\s+/g, " ");
 }

@@ -69,6 +69,19 @@ const PHASES = {
     regressionEvidence:
       "context package 55/55; mission-state/security/steering/recovery/api + subagents + delivery-service + delivery-certification 61/61; mission-acceptance 4/4 incl. new assertion that a post-drift replanner request carries stale-flagged memory (previously no taskPlan reached it at all).",
   },
+  m6: {
+    surface: "r21-autonomous-command-gate-v1",
+    label: "R21 autonomous run_command classification and network-lease enforcement",
+    constant: "R21_AUTONOMOUS_COMMAND_GATE_SOURCE_STATE",
+    reason:
+      "The M6 tool/permissions audit found the autonomous dispatch path ungoverned: executeAgentRun's tool loop called toolBroker.executeTool with flag checks (executeCommand, role read-only) but no command classification and no TaskAuthority tier resolution — and the network permission declared on every subagent lease was enforced nowhere. A mission coder with executeCommand:true, network:false could run git push, npm publish, curl|sh, ssh, printenv, or rm -rf with zero escalation. The interactive path already resolves classifyCommand + TaskAuthority (tier 3 always asks); the autonomous path has no approval channel, so the same classes now fail closed there: critical-risk commands (destructive/privileged/credential) are denied unconditionally, and network-sensitive or externally visible commands are denied when the lease grants network:false. Denials mint no durable execution record and consume the command budget so a retrying model cannot spin. ForgeGreen detectors, cost policy, graduation registry, and every ForgeVerify seam are unchanged.",
+    changes: [
+      { file: "packages/server/src/agent-runtime.ts", change: "executeAgentRun tool loop classifies run_command before dispatch: critical-risk denied outright, network-sensitive/externally visible denied under network:false; denial emits blocked event, tool record, and consumes budget.", addedToMaterialFiles: false },
+      { file: "packages/permissions/src/index.ts", change: "exports isExternallyVisibleCommand so the autonomous path shares the same external-boundary predicate as the tier engine.", addedToMaterialFiles: false },
+    ],
+    regressionEvidence:
+      "new suite r21-autonomous-command-gate 11/11 (external/network denied under network:false, critical denied under network:true, ordinary commands still run, no durable record on denial); agent-security/runtime/tool-loop/recovery + approval-session-grants + approval-lifecycle + fg9 + fg1-suppression + eight-bit-failover + turn-boundary 62/62.",
+  },
 };
 
 const phaseKey = process.argv[2];

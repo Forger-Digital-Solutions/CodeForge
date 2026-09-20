@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "35d6392a63f798ff8e6be77cead5e99e0f8502e2355c088ec966563380fd47c6",
-  "surfaceVersion": "r21-memory-taskstate-delivery-v1",
+  "sourceStateId": "bf25d6aa7a81cc8bd8dce6b9eeaaf3a40ea0a90e9fc38658e790c63105f7a1a5",
+  "surfaceVersion": "r21-autonomous-command-gate-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -56,7 +56,7 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "5fde5ccfb6d3d7f3edec2349f015906f70722bb8",
+    "packages/server/src/agent-runtime.ts": "613c24d49ac5cdb244902d0b719e2ff3c0065e63",
     "packages/server/src/autonomous-orchestrator.ts": "8e7dc8a6942a8a973233d9af62424323b05f9bc3",
     "packages/server/src/duplicate-suppression.ts": "187ebb71125e65f05b48210c77aa35647ca8bf64",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
@@ -984,17 +984,40 @@
       "regressionEvidence": "context package 55/55; mission-state/security/steering/recovery/api + subagents + delivery-service + delivery-certification 61/61; mission-acceptance 4/4 incl. new assertion that a post-drift replanner request carries stale-flagged memory (previously no taskPlan reached it at all).",
       "recertifiedAt": "2026-09-20",
       "sourceStateConstant": "R21_MEMORY_TASKSTATE_SOURCE_STATE"
+    },
+    {
+      "label": "R21 autonomous run_command classification and network-lease enforcement",
+      "reason": "The M6 tool/permissions audit found the autonomous dispatch path ungoverned: executeAgentRun's tool loop called toolBroker.executeTool with flag checks (executeCommand, role read-only) but no command classification and no TaskAuthority tier resolution — and the network permission declared on every subagent lease was enforced nowhere. A mission coder with executeCommand:true, network:false could run git push, npm publish, curl|sh, ssh, printenv, or rm -rf with zero escalation. The interactive path already resolves classifyCommand + TaskAuthority (tier 3 always asks); the autonomous path has no approval channel, so the same classes now fail closed there: critical-risk commands (destructive/privileged/credential) are denied unconditionally, and network-sensitive or externally visible commands are denied when the lease grants network:false. Denials mint no durable execution record and consume the command budget so a retrying model cannot spin. ForgeGreen detectors, cost policy, graduation registry, and every ForgeVerify seam are unchanged.",
+      "priorSourceStateId": "35d6392a63f798ff8e6be77cead5e99e0f8502e2355c088ec966563380fd47c6",
+      "priorSurfaceVersion": "r21-memory-taskstate-delivery-v1",
+      "resultingSourceStateId": "bf25d6aa7a81cc8bd8dce6b9eeaaf3a40ea0a90e9fc38658e790c63105f7a1a5",
+      "resultingSurfaceVersion": "r21-autonomous-command-gate-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "executeAgentRun tool loop classifies run_command before dispatch: critical-risk denied outright, network-sensitive/externally visible denied under network:false; denial emits blocked event, tool record, and consumes budget.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/permissions/src/index.ts",
+          "change": "exports isExternallyVisibleCommand so the autonomous path shares the same external-boundary predicate as the tier engine.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "new suite r21-autonomous-command-gate 11/11 (external/network denied under network:false, critical denied under network:true, ordinary commands still run, no durable record on denial); agent-security/runtime/tool-loop/recovery + approval-session-grants + approval-lifecycle + fg9 + fg1-suppression + eight-bit-failover + turn-boundary 62/62.",
+      "recertifiedAt": "2026-09-20",
+      "sourceStateConstant": "R21_AUTONOMOUS_COMMAND_GATE_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 recertifications listed above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
   "recertifiedAt": "2026-09-20",
   "recertification": {
-    "phase": "R21 memory/task-state delivery and drift staleness",
-    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed M5 surface so the fg11/fg12e provenance canaries certify the current tree.",
+    "phase": "R21 autonomous run_command classification and network-lease enforcement",
+    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed M6 surface so the fg11/fg12e provenance canaries certify the current tree.",
     "changedFiles": [
-      "packages/context/src/index.ts"
+      "packages/server/src/agent-runtime.ts"
     ],
-    "priorSourceStateId": "9bfaf694df303081c520a3313fdc0fdc6a90bd421893f16bc48dafff23ce3109",
+    "priorSourceStateId": "35d6392a63f798ff8e6be77cead5e99e0f8502e2355c088ec966563380fd47c6",
     "guarded": true
   }
 }
