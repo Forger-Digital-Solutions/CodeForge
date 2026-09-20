@@ -5,7 +5,7 @@ import type { WorkspaceEvent } from "@codeforge/protocol";
 import type { WorkItem } from "@codeforge/sessions";
 import RunInspection from "../src/RunInspection.js";
 import { parseDiff } from "../src/DiffViewer.js";
-import { dedupeRunEvents, projectRunInspection, selectInspectableRunId } from "../src/run-inspection.js";
+import { dedupeRunEvents, failureBannerLabel, projectRunInspection, selectInspectableRunId } from "../src/run-inspection.js";
 
 const timestamp = "2026-09-04T12:00:00.000Z";
 
@@ -138,6 +138,37 @@ describe("run inspection projection", () => {
     expect(html).not.toMatch(/run-inspection-secondary[^<]*>parallel-aaaa1111/);
   });
 
+  it("groups parallel-run agents under their own labeled run header", () => {
+    const parallelEvent = (type: WorkspaceEvent["type"], seq: number, payload: unknown): WorkspaceEvent =>
+      ({ type, seq, sessionId: "session-a", timestamp, payload }) as unknown as WorkspaceEvent;
+    const parallelRun: Extract<WorkItem, { kind: "parallel_run" }> = {
+      kind: "parallel_run", id: "parallel-aaaa1111", sessionId: "session-a", workspaceId: "workspace-a",
+      goal: "Add JSDoc comments to inventory helpers", status: "completed", baseRevision: "abc123",
+      createdAt: timestamp, updatedAt: timestamp,
+    };
+    const events: WorkspaceEvent[] = [
+      event("task.created", 1, { taskId: "run-a", title: "Do work", mode: "autonomous" }, "run-a"),
+      event("task.started", 2, { taskId: "run-a" }, "run-a"),
+      event("agent.started", 3, { agentId: "lead", role: "Lead Agent", taskId: "run-a" }, "run-a"),
+      parallelEvent("agent.started", 4, { agentId: "planner", role: "planner", taskId: "parallel-aaaa1111" }),
+      parallelEvent("agent.started", 5, { agentId: "coder", role: "coder", taskId: "parallel-aaaa1111:add-jsdoc" }),
+      parallelEvent("agent.completed", 6, { agentId: "coder", taskId: "parallel-aaaa1111:add-jsdoc" }),
+      parallelEvent("agent.completed", 7, { agentId: "planner", taskId: "parallel-aaaa1111" }),
+    ];
+    const result = projectRunInspection(events, [parallelRun], "run-a");
+    expect(result.parallelRuns).toEqual([
+      expect.objectContaining({ id: "parallel-aaaa1111", goal: "Add JSDoc comments to inventory helpers", status: "completed" }),
+    ]);
+    expect(result.agents.filter((a) => a.runGroup === "parallel-aaaa1111")).toHaveLength(2);
+    expect(result.agents.find((a) => a.id === "lead")?.runGroup).toBeUndefined();
+
+    const html = renderToStaticMarkup(React.createElement(RunInspection, { events, workItems: [parallelRun], preferredRunId: "run-a" }));
+    expect(html).toContain("Parallel run 1");
+    expect(html).toContain("Add JSDoc comments to inventory helpers");
+    // The grouped header appears once; the ordinary-run agent stays outside it.
+    expect(html.indexOf("Lead Agent")).toBeLessThan(html.indexOf("Parallel run 1"));
+  });
+
   it("renders durable R1 worker details from lifecycle events and work items", () => {
     const worker: Extract<WorkItem, { kind: "subagent_run" }> = {
       kind: "subagent_run",
@@ -267,5 +298,16 @@ describe("run inspection projection", () => {
     const parsed = parseDiff(diff, "large.ts");
     expect(parsed.truncated).toBe(true);
     expect(parsed.lines.length).toBeLessThanOrEqual(2_000);
+  });
+
+  it("names the failure card after what actually ended the run", () => {
+    // A blocked run whose verification passed must not headline "Verification failed" —
+    // the gate refused completion, the verifiers did not fail.
+    expect(failureBannerLabel("blocked", false)).toBe("Run blocked");
+    expect(failureBannerLabel("blocked", true)).toBe("Verification failed");
+    expect(failureBannerLabel("failed", false)).toBe("Run failed");
+    expect(failureBannerLabel("failed", true)).toBe("Verification failed");
+    expect(failureBannerLabel("cancelled", false)).toBe("Run stopped");
+    expect(failureBannerLabel(undefined, false)).toBe("Run stopped");
   });
 });

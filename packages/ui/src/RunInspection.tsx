@@ -16,49 +16,77 @@ function statusLabel(status: string): string {
   return status.replace(/_/g, " ");
 }
 
-function renderAgentTree(agents: InspectionAgent[]): React.ReactNode {
-  const byParent = new Map<string | undefined, InspectionAgent[]>();
-  for (const agent of agents) {
-    const parent = agents.some((candidate) => candidate.id === agent.parentId) ? agent.parentId : undefined;
-    byParent.set(parent, [...(byParent.get(parent) ?? []), agent]);
-  }
-  const renderNodes = (parentId: string | undefined): React.ReactNode => {
-    const nodes = byParent.get(parentId) ?? [];
-    if (nodes.length === 0) return null;
-    return (
-      <ul className="run-inspection-tree">
-        {nodes.map((agent) => (
-          <li key={agent.id}>
-            <span className="run-inspection-status" data-status={agent.status}>{statusLabel(agent.status)}</span>
-            <span className="run-inspection-agent-role">{agent.role}</span>
-            {agent.task ? <div className="run-inspection-secondary">{agent.task}</div> : null}
-            {agent.failure ? <div className="run-inspection-error">{humanizeBlockReason(agent.failure) ?? agent.failure}</div> : null}
-            {agent.result ? <div className="run-inspection-secondary">{agent.result}</div> : null}
-            {agent.model || agent.telemetry || agent.artifacts?.length || agent.capsule ? (
-              <details className="run-inspection-agent-details">
-                <summary>Worker details</summary>
-                <div className="run-inspection-secondary">Id: {agent.id}</div>
-                {agent.model ? <div className="run-inspection-secondary">Model: {displayModelId(agent.model.modelId)} · {agent.model.providerId}</div> : null}
-                {agent.telemetry ? <div className="run-inspection-secondary">Usage: {agent.telemetry.inputTokens + agent.telemetry.outputTokens} tokens · {agent.telemetry.toolCalls} tools · {agent.telemetry.wallTimeMs}ms</div> : null}
-                {agent.capsule ? <details>
-                  <summary>Task Capsule</summary>
-                  <div className="run-inspection-secondary">{agent.capsule.assignment}: {agent.capsule.goal}</div>
-                  <div className="run-inspection-secondary">Required output: {agent.capsule.requiredOutput.join(", ")}</div>
-                  <div className="run-inspection-secondary">Constraints: {agent.capsule.constraints.join(" · ")}</div>
-                </details> : null}
-                {agent.artifacts?.length ? <div>
-                  <div className="run-inspection-secondary">Evidence artifacts</div>
-                  <ul className="run-inspection-list">{agent.artifacts.map((artifact) => <li key={artifact.ref}><code>{artifact.ref}</code> · {artifact.digest.slice(0, 12)}</li>)}</ul>
-                </div> : null}
-              </details>
-            ) : null}
-            {renderNodes(agent.id)}
-          </li>
-        ))}
-      </ul>
-    );
+function renderAgentTree(agents: InspectionAgent[], parallelRuns?: Array<{ id: string; goal?: string; status?: string }>): React.ReactNode {
+  const renderTree = (members: InspectionAgent[]): React.ReactNode => {
+    const byParent = new Map<string | undefined, InspectionAgent[]>();
+    for (const agent of members) {
+      const parent = members.some((candidate) => candidate.id === agent.parentId) ? agent.parentId : undefined;
+      byParent.set(parent, [...(byParent.get(parent) ?? []), agent]);
+    }
+    const renderNodes = (parentId: string | undefined): React.ReactNode => {
+      const nodes = byParent.get(parentId) ?? [];
+      if (nodes.length === 0) return null;
+      return (
+        <ul className="run-inspection-tree">
+          {nodes.map((agent) => (
+            <li key={agent.id}>
+              <span className="run-inspection-status" data-status={agent.status}>{statusLabel(agent.status)}</span>
+              <span className="run-inspection-agent-role">{agent.role}</span>
+              {agent.task ? <div className="run-inspection-secondary">{agent.task}</div> : null}
+              {agent.failure ? <div className="run-inspection-error">{humanizeBlockReason(agent.failure) ?? agent.failure}</div> : null}
+              {agent.result ? <div className="run-inspection-secondary">{agent.result}</div> : null}
+              {agent.model || agent.telemetry || agent.artifacts?.length || agent.capsule ? (
+                <details className="run-inspection-agent-details">
+                  <summary>Worker details</summary>
+                  <div className="run-inspection-secondary">Id: {agent.id}</div>
+                  {agent.model ? <div className="run-inspection-secondary">Model: {displayModelId(agent.model.modelId)} · {agent.model.providerId}</div> : null}
+                  {agent.telemetry ? <div className="run-inspection-secondary">Usage: {agent.telemetry.inputTokens + agent.telemetry.outputTokens} tokens · {agent.telemetry.toolCalls} tools · {agent.telemetry.wallTimeMs}ms</div> : null}
+                  {agent.capsule ? <details>
+                    <summary>Task Capsule</summary>
+                    <div className="run-inspection-secondary">{agent.capsule.assignment}: {agent.capsule.goal}</div>
+                    <div className="run-inspection-secondary">Required output: {agent.capsule.requiredOutput.join(", ")}</div>
+                    <div className="run-inspection-secondary">Constraints: {agent.capsule.constraints.join(" · ")}</div>
+                  </details> : null}
+                  {agent.artifacts?.length ? <div>
+                    <div className="run-inspection-secondary">Evidence artifacts</div>
+                    <ul className="run-inspection-list">{agent.artifacts.map((artifact) => <li key={artifact.ref}><code>{artifact.ref}</code> · {artifact.digest.slice(0, 12)}</li>)}</ul>
+                  </div> : null}
+                </details>
+              ) : null}
+              {renderNodes(agent.id)}
+            </li>
+          ))}
+        </ul>
+      );
+    };
+    return renderNodes(undefined);
   };
-  return renderNodes(undefined);
+
+  const ungrouped = agents.filter((agent) => !agent.runGroup);
+  const groups = new Map<string, InspectionAgent[]>();
+  for (const agent of agents) {
+    if (!agent.runGroup) continue;
+    groups.set(agent.runGroup, [...(groups.get(agent.runGroup) ?? []), agent]);
+  }
+  if (groups.size === 0) return renderTree(ungrouped);
+  const meta = new Map((parallelRuns ?? []).map((run) => [run.id, run]));
+  return (
+    <>
+      {renderTree(ungrouped)}
+      {[...groups.entries()].map(([groupId, members], index) => {
+        const run = meta.get(groupId);
+        return (
+          <div key={groupId} className="run-inspection-run-group">
+            <div className="run-inspection-run-group-label">
+              Parallel run {index + 1}{run?.status ? ` · ${statusLabel(run.status)}` : ""}
+              {run?.goal ? <div className="run-inspection-secondary">{run.goal}</div> : null}
+            </div>
+            {renderTree(members)}
+          </div>
+        );
+      })}
+    </>
+  );
 }
 
 function StartFailure({ failure }: { failure: { code: string; message: string } }) {
@@ -112,7 +140,7 @@ export default function RunInspection({ events, workItems, preferredRunId, start
 
       <details open>
         <summary>Agents ({inspection.agents.length})</summary>
-        {inspection.agents.length ? renderAgentTree(inspection.agents) : <div className="panel-empty">No child agents were spawned.</div>}
+        {inspection.agents.length ? renderAgentTree(inspection.agents, inspection.parallelRuns) : <div className="panel-empty">No child agents were spawned.</div>}
       </details>
 
       <details>

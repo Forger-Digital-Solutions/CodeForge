@@ -2310,15 +2310,16 @@ body {
 .inspector-tabs {
   display: flex;
   border-bottom: 1px solid var(--cf-border);
-  overflow-x: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   flex-shrink: 0;
+  scrollbar-width: thin;
 }
 
 .inspector-tab {
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 0 0 auto;
   text-align: center;
-  padding: 8px 4px;
+  padding: 8px 10px;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -2326,8 +2327,6 @@ body {
   cursor: pointer;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   transition: color 0.1s;
   background: none;
   border-top: none;
@@ -3802,6 +3801,9 @@ body {
 .run-inspection-certified { color: var(--cf-success); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
 .run-inspection-list, .run-inspection-tree { display: grid; gap: 5px; margin: 8px 0 0; padding-left: 16px; }
 .run-inspection-tree .run-inspection-tree { border-left: 1px solid var(--cf-border); margin-top: 4px; }
+.run-inspection-run-group { border-left: 1px solid var(--cf-border); padding-left: 8px; margin-top: 8px; }
+.run-inspection-run-group-label { color: var(--cf-text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.02em; }
+.run-inspection-run-group-label .run-inspection-secondary { text-transform: none; letter-spacing: normal; margin-left: 0; }
 .run-inspection-agent-role { color: var(--cf-text); margin-left: 5px; }
 .run-inspection-agent-id, .run-inspection-secondary { color: var(--cf-text-muted); margin-left: 4px; overflow-wrap: anywhere; }
 .run-inspection-error { color: var(--cf-danger); margin-top: 3px; overflow-wrap: anywhere; }

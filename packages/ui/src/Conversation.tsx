@@ -556,7 +556,9 @@ const WorkItemRenderer = ({ item, displayMode, taskTerminal = false }: { item: W
         ? a.decision === "deny"
           ? { label: "Denied", kind: "error" as const, state: "failed" as const }
           : { label: a.decision === "allow_session" ? "Allowed for session" : "Allowed", kind: "complete" as const, state: "completed" as const }
-        : { label: "Awaiting your decision", kind: "approval" as const, state: "pending" as const };
+        : taskTerminal
+          ? { label: "Cancelled — the run ended before a decision", kind: "approval" as const, state: "blocked" as const }
+          : { label: "Awaiting your decision", kind: "approval" as const, state: "pending" as const };
       const workflowApproval = a.tool === "workflow" && a.action === "execute_plan";
       const target = workflowApproval ? "Implementation plan" : a.action.replace(/_/g, " ");
       const resolvedSummary = workflowApproval
@@ -782,7 +784,7 @@ export default function Conversation({
             {relevantItems
               .filter((w) => w.kind === "approval" || w.kind === "question")
               .map((item) => (
-                <WorkItemRenderer key={item.id} item={item} displayMode={displayMode} />
+                <WorkItemRenderer key={item.id} item={item} displayMode={displayMode} taskTerminal={!isRunning && turns.length > 0} />
               ))}
           </>
         ) : (

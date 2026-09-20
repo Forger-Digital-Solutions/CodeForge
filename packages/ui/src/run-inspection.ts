@@ -21,6 +21,10 @@ export interface InspectionAgent {
   id: string;
   role: string;
   parentId?: string;
+  /** Set when this agent belongs to a nested orchestration run (e.g. a parallel engineering
+   * run) rather than the inspected run itself — the Run tab groups such agents under their
+   * own run header so repeated "Planner/Coder/Reviewer" sets stay attributable. */
+  runGroup?: string;
   task?: string;
   status: "running" | "completed" | "failed" | "cancelled" | "blocked";
   startedAt?: string;
@@ -134,6 +138,8 @@ export interface RunInspectionState {
   forgeVerify?: InspectionForgeVerify;
   repairs: InspectionRepair[];
   approvals: InspectionApproval[];
+  /** Nested orchestration runs whose agents appear in this inspection, keyed for grouping. */
+  parallelRuns?: Array<{ id: string; goal?: string; status?: string }>;
   review?: InspectionReview;
   completion?: InspectionCompletion;
   provider?: { providerId: string; modelId: string };
@@ -477,9 +483,9 @@ export function projectRunInspection(events: WorkspaceEvent[], workItems: WorkIt
     const rawRole = (event.payload as { role?: unknown }).role;
     const role = typeof rawRole === "string" && rawRole.length > 0 ? rawRole.replace(/^\w/, (c: string) => c.toUpperCase()) : undefined;
     if (event.type === "agent.started") {
-      upsertAgent(agents, { id, role: role ?? "Subagent", parentId, status: "running", startedAt: event.timestamp });
+      upsertAgent(agents, { id, role: role ?? "Subagent", parentId, runGroup: rootTaskId, status: "running", startedAt: event.timestamp });
     } else {
-      upsertAgent(agents, { id, role: agents.get(id)?.role ?? "Subagent", parentId: agents.get(id)?.parentId ?? parentId, status: "completed", completedAt: event.timestamp });
+      upsertAgent(agents, { id, role: agents.get(id)?.role ?? "Subagent", parentId: agents.get(id)?.parentId ?? parentId, runGroup: rootTaskId, status: "completed", completedAt: event.timestamp });
     }
   }
 
@@ -503,6 +509,14 @@ export function projectRunInspection(events: WorkspaceEvent[], workItems: WorkIt
       artifacts: item.artifacts,
     });
   }
+  const parallelRunMeta = new Map<string, { goal?: string; status?: string }>();
+  for (const item of workItems) {
+    if (item.kind === "parallel_run") parallelRunMeta.set(item.id, { goal: item.goal, status: item.status });
+  }
+  const parallelRunIds = new Set([...agents.values()].map((agent) => agent.runGroup).filter((id): id is string => Boolean(id)));
+  if (parallelRunIds.size > 0) {
+    state.parallelRuns = [...parallelRunIds].map((id) => ({ id, ...parallelRunMeta.get(id) }));
+  }
   // A terminal run cannot still have running workers or tools — anything left "running" was torn
   // down without a terminal event of its own (process stopped, run blocked, restart). Claiming it
   // is still working is the stalest possible story; cancelled is the honest word.
@@ -517,6 +531,17 @@ export function projectRunInspection(events: WorkspaceEvent[], workItems: WorkIt
   state.verification = snapshot ? state.verification : [...verification.values()].sort((left, right) => left.attempt - right.attempt);
   state.repairs = snapshot ? state.repairs : [...repairs.values()].sort((left, right) => left.attempt - right.attempt);
   return state;
+}
+
+/**
+ * The failure-card headline must name what actually ended the run: a blocked run whose
+ * verification passed is not a verification failure, and "failed" covers runtime collapse.
+ */
+export function failureBannerLabel(status: RunInspectionState["status"] | undefined, verifierFailed: boolean): string {
+  if (verifierFailed) return "Verification failed";
+  if (status === "blocked") return "Run blocked";
+  if (status === "failed") return "Run failed";
+  return "Run stopped";
 }
 
 /** Select the newest run that has explicit run-scoped evidence; Chat has no fallback. */

@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "1c191745996ed715b56fe76440b84eed3017a4da6b407a4eeed98a659bbf9bf6",
-  "surfaceVersion": "r15-release-hardening-v1",
+  "sourceStateId": "b8f7a8bf5bf0d28587cd624cf6ff2a68ab0ee131fe38831e05a13a385d5851b1",
+  "surfaceVersion": "r18-release-candidate-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -56,21 +56,21 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "7889b4701404c50da6bb532856a9f8b377b7d6c4",
+    "packages/server/src/agent-runtime.ts": "2b0a06fc25c92dc63dcb381028cbbc7035224864",
     "packages/server/src/autonomous-orchestrator.ts": "548e235188b864168ce7e67c45463a55d7713546",
-    "packages/server/src/duplicate-suppression.ts": "f6108024990ce604cc589f1be9a7bf1e1eb43e0a",
+    "packages/server/src/duplicate-suppression.ts": "187ebb71125e65f05b48210c77aa35647ca8bf64",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "5390826f640ae06fb46c6f48a550175cd7cb5897",
-    "packages/sessions/src/persistence.ts": "ada09ba4e0d8577e843e1c9716bb096a0f997ab4",
-    "packages/sessions/src/postgres-persistence.ts": "f47a6a0e3cd9e3064c17b00b4e6516082f738068",
-    "packages/sessions/src/session-state.ts": "a43cf0a2933f4e9f9306c6406bcbae8ec9c9f937",
-    "packages/tools/src/index.ts": "f3f223254782d387c1fa8ce91f399224746d979d",
-    "packages/workflow/src/forge-verify.ts": "71b245de6205f05284aea4d250967963789d3adb",
+    "packages/server/src/workflow-service.ts": "d884a8c38168cc345c80861970deab2ef8a6864a",
+    "packages/sessions/src/persistence.ts": "5044b4d4cef8dc2089620a2959bf03c51a7202f8",
+    "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
+    "packages/sessions/src/session-state.ts": "e67a8c5033b1f39d4b5c5f919fdcecc16d8ac6dc",
+    "packages/tools/src/index.ts": "d006dfdc090bf8b1d1c7fd694ea17597002011ad",
+    "packages/workflow/src/forge-verify.ts": "87d7d7134795a52321833936c0e7a7ead9dac61c",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
-    "packages/workflow/src/types.ts": "e0336c4d38940c17c2306fc8624b600eeff60f39",
+    "packages/workflow/src/types.ts": "667d00d3b9aaa2f583c6c0782bd793d55e2241d2",
     "packages/workflow/src/verification-evidence-reuse.ts": "c68f351d77896e0ee86513d4bbc148c36b922b6d",
     "packages/workflow/src/verification-reuse-cost-gate.ts": "3c3bc502921ef79a9496d762167f366e5589fd02",
-    "packages/workflow/src/verification-service.ts": "d7e3cfddc414e7803232dcf5e32cf37eaf7f34a2"
+    "packages/workflow/src/verification-service.ts": "59703b4279ca14b024b782d084a4d18edde948b4"
   },
   "candidateA": {
     "kind": "DUPLICATE_READ_ONLY_TOOL_REUSE",
@@ -786,17 +786,89 @@
       "regressionEvidence": "Typecheck, lint, workspace build, focused routing/ForgeGreen/ForgeVerify tests, full Vitest, packaged desktop smoke, and security gates are rerun for the 0.4.0 candidate.",
       "recertifiedAt": "2026-09-18",
       "sourceStateConstant": "CODEFORGE_R15_RELEASE_HARDENING_SOURCE_STATE"
+    },
+    {
+      "label": "R18 release-candidate source-state reconciliation",
+      "reason": "The certified surface last froze at r15-release-hardening-v1. Since then three reviewed, committed campaigns touched material files: 71be319 (R16 — agent command execution routed through headless ConPTY), e49e6b8 (R16 — canonical run lifecycle + owner-aware failure attribution), and 4372290 (R17 — workspace/task UX truthfulness, activity projection, honest completion, parallel visibility). Every drifted file was diffed against its certified blob during R18; the protected seams are unchanged in authority — ForgeZero still gates all routing, evaluateCompletion in packages/workflow/src/completion-gate.ts remains the only path to 'completed', ForgeVerify validity still resolves through the single exported isEvidenceCurrentlyValid, and verification reuse remains cost-gated and fail-closed. No material file was added or removed; the frozen set is re-issued over the reviewed content rather than ignoring the drift.",
+      "priorSourceStateId": "1c191745996ed715b56fe76440b84eed3017a4da6b407a4eeed98a659bbf9bf6",
+      "priorSurfaceVersion": "r15-release-hardening-v1",
+      "resultingSourceStateId": "b8f7a8bf5bf0d28587cd624cf6ff2a68ab0ee131fe38831e05a13a385d5851b1",
+      "resultingSurfaceVersion": "r18-release-candidate-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "R16 headless-ConPTY command routing plus canonical run lifecycle; R17 activity/event projection for truthful file and command visibility. ForgeZero routing authority unchanged.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/duplicate-suppression.ts",
+          "change": "R17 duplicate task-row/tool suppression keyed on stable identities.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "R16 canonical lifecycle + owner-aware failure attribution; R17 completion summaries that distinguish verified success from blocked plan state. evaluateCompletion remains the only completion authority.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/sessions/src/persistence.ts",
+          "change": "R16 lifecycle/persistence records for canonical run state and attribution.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/sessions/src/postgres-persistence.ts",
+          "change": "R16 parity changes for the hosted persistence surface.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/sessions/src/session-state.ts",
+          "change": "R16 canonical lifecycle state records consumed by the R17 truthful projection.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/tools/src/index.ts",
+          "change": "R16 headless ConPTY execution path so agent commands never spawn visible consoles.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/forge-verify.ts",
+          "change": "R16 observer surface for headless verification execution; the single exported validity authority is unchanged.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/types.ts",
+          "change": "R16 lifecycle/verification record types extended for owner attribution.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/verification-service.ts",
+          "change": "R16 headless verification execution path; plan construction, authoritative revalidation, and cost-gated reuse seams unchanged.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "R18 campaign: canonical Vitest suite rerun at the reviewed tree (2970 pass, expected skips); R16 packaged smoke (full/interrupt/recover, zero FAIL) re-confirmed; R17 packaged artifact byte-verified via internal dependency audit; live installed-product validation of blocked/completed/stopped runs, approval cancellation, multi-run grouping, and terminal reconciliation documented under docs/evidence/r18-release-candidate/.",
+      "recertifiedAt": "2026-09-19",
+      "sourceStateConstant": "R18_RELEASE_CANDIDATE_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the Codex full-system R1 runtime-hardening recertification above, and the Free Cloud R3 provider and terminal-state reconciliation above, and the Free Cloud R5 no-route fail-closed recertification above, and the Free Cloud R5 recertification(s) above, and the CodeForge SubAgents R1 Phase 0A/1A recertification above, and the CodeForge SubAgents R1 Phase 2 recertification above, and the CodeForge Managed-Free R2 recertification above, and the R6 product-hardening recertification above, and the R11 durable final-response recertification above, and the R11 PostgreSQL hosted-workflow recertification above, and the R11.4 definitive-POST recertification above, and the R13 intelligence and recovery recertification above, and the R14 Free Cloud capacity reconciliation above.",
-  "recertifiedAt": "2026-09-18",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above and the R18 release-candidate reconciliation above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
+  "recertifiedAt": "2026-09-19",
   "recertification": {
-    "phase": "R15 release hardening",
-    "reason": "Reconcile the intentional 0.4.0 router package metadata drift before final regression.",
+    "phase": "R18 release-candidate reconciliation",
+    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R16/R17 committed surface so the fg11/fg12e provenance canaries certify the current tree.",
     "changedFiles": [
-      "packages/router/package.json"
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/duplicate-suppression.ts",
+      "packages/server/src/workflow-service.ts",
+      "packages/sessions/src/persistence.ts",
+      "packages/sessions/src/postgres-persistence.ts",
+      "packages/sessions/src/session-state.ts",
+      "packages/tools/src/index.ts",
+      "packages/workflow/src/forge-verify.ts",
+      "packages/workflow/src/types.ts",
+      "packages/workflow/src/verification-service.ts"
     ],
-    "priorSourceStateId": "e88bea3a25581ba7d55c491cfeafbfb576615bd577c54154704d91439640ce73",
+    "priorSourceStateId": "1c191745996ed715b56fe76440b84eed3017a4da6b407a4eeed98a659bbf9bf6",
     "guarded": true
   }
 }

@@ -20,6 +20,7 @@ import type { ActivityOverviewData, ActivityPeriod } from "./ActivityOverview.js
 import type { WorkspaceBriefData } from "./Conversation.js";
 import "./workspace.css";
 import { humanizeError } from "./error-copy.js";
+import { failureBannerLabel } from "./run-inspection.js";
 export { humanizeError } from "./error-copy.js";
 
 export interface SessionSummary {
@@ -474,12 +475,13 @@ export default function WorkspaceApp({
     if (!inspection || inspection.kind !== "run_inspection") return null;
     const attempt = inspection.verificationAttempts.at(-1);
     const failing = attempt?.verifiers.filter((v) => v.status === "failed" || v.status === "timed_out") ?? [];
-    const lines = failing.map((v) => v.failureSummary ?? `${v.command} — ${v.failed} failing`).filter(Boolean).slice(0, 3);
+    const verifierLines = failing.map((v) => v.failureSummary ?? `${v.command} — ${v.failed} failing`).filter(Boolean).slice(0, 3);
     const blockers = inspection.completion?.blockers.map((b) => b.message).slice(0, 3) ?? [];
     const repairs = inspection.repairs.length;
     return {
       status: inspection.status,
-      lines: [...lines, ...blockers],
+      verifierFailed: verifierLines.length > 0,
+      lines: [...verifierLines, ...blockers],
       repairs,
       verification: attempt ? `${attempt.passed} passed · ${attempt.failed} failed` : undefined,
     };
@@ -625,7 +627,7 @@ export default function WorkspaceApp({
               <div className="task-failure-card-head">
                 <div>
                   <div className="task-failure-kicker">
-                    {failureDetail?.status === "failed" || failureDetail?.lines.length ? "Verification failed" : "Run stopped"}
+                    {failureBannerLabel(failureDetail?.status, failureDetail?.verifierFailed ?? false)}
                   </div>
                   <div className="task-failure-title">{state.session?.taskTitle ?? "Task"}</div>
                 </div>

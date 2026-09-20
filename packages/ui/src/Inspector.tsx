@@ -74,6 +74,7 @@ export default function Inspector({ activeTab, onTabSelect, session, workItems, 
             onClick={() => onTabSelect(tab)}
             role="tab"
             aria-selected={safeTab === tab}
+            ref={safeTab === tab ? (el) => el?.scrollIntoView({ block: "nearest", inline: "nearest" }) : undefined}
           >
             {TAB_LABELS[tab] ?? tab}
           </button>
