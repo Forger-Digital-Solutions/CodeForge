@@ -25,6 +25,9 @@ async function seedFullAccountGraph(db: ICloudDatabase, tag: string) {
   await db.recordUsageEvent({ requestId: `req-${tag}`, userId: user.id, providerId: "groq", modelId: "test-model", inputTokens: 10, outputTokens: 10, cachedTokens: 0, providerCostUsd: 0, creditsConsumed: 100, latencyMs: 50, status: "completed" });
   await db.createReservation({ requestId: `resv-${tag}`, userId: user.id, providerId: "groq", modelId: "test-model", reservedCredits: 50 });
   await db.createHostedRequest({ id: `hosted-${tag}`, userId: user.id, providerId: "groq", modelId: "test-model", estimatedCredits: 50 });
+  await db.setHostedProviderCapacity({ providerId: "groq", modelId: "test-model", maxConcurrent: 10 });
+  await db.enqueueHostedExecution({ id: `execution-${tag}`, idempotencyKey: `admission-${tag}`, userId: user.id, taskId: `task-${tag}`, providerId: "groq", modelId: "test-model" });
+  await db.claimNextHostedExecution({ workerId: `worker-${tag}`, leaseMs: 60_000, maxUserConcurrent: 1 });
   await db.upsertAccountSettings({ userId: user.id, privacyMode: "STANDARD" });
   await db.createDesktopAuthCode({ codeHash: `code-hash-${tag}`, userId: user.id, codeChallenge: "x".repeat(43), redirectUri: "http://127.0.0.1:9999/cb" });
   await db.createBrowserSession({ userId: user.id, sessionTokenHash: `browser-hash-${tag}` });
@@ -74,6 +77,10 @@ const DELETION_GRAPH_TABLES = [
   "usage_periods",
   "reservations",
   "hosted_requests",
+  "hosted_admission_receipts",
+  "hosted_capacity_leases",
+  "hosted_user_admission_state",
+  "hosted_executions",
   "account_settings",
   "desktop_auth_codes",
   "browser_sessions",
@@ -132,7 +139,7 @@ describe("CloudDatabase — account deletion (SQLite, R1 spec §54)", () => {
     expect(result.userId).toBe(target.id);
     expect(result.abuseEventsAnonymized).toBe(1);
     for (const summary of result.tables) {
-      expect(summary.rowsDeleted, summary.table).toBe(1);
+      expect(summary.rowsDeleted, summary.table).toBe(summary.table === "hosted_admission_receipts" ? 2 : 1);
     }
 
     expect(await db.getUserById(target.id)).toBeUndefined();

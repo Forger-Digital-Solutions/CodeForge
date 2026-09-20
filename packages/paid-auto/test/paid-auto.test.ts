@@ -60,6 +60,12 @@ describe("Paid Auto R1", () => {
       ["deepseek", "deepseek-flash", "deepseek/deepseek-v4.1-flash"],
     ]);
     expect(PAID_AUTO_MODELS.flatMap((model) => [model.direct.providerModelId, model.fallback.providerModelId])).not.toContain("openrouter/auto");
+    for (const pricing of PAID_AUTO_MODELS.flatMap((model) => [model.direct.pricing, model.fallback.pricing])) {
+      expect(pricing.unit).toBe("USD_PER_MILLION_TOKENS");
+      expect(pricing.effectiveDate).toBeTruthy();
+      expect(pricing.lastVerified).toBeTruthy();
+      expect(pricing.source).toMatch(/^https:\/\//);
+    }
 
     const openRouter = new PaidAutoOpenRouterAdapter(fakeAdapter("openrouter", async function* () {}));
     expect(openRouter.canRoute("gpt-5.6-luna")).toBe(true);

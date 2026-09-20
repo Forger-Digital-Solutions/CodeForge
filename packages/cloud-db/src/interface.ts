@@ -32,6 +32,10 @@ import type {
   CloudVerificationEvidenceRecord,
   AccountDeletionResult,
   SecurityAuditEventRecord,
+  HostedExecutionRecord,
+  HostedCapacityLeaseRecord,
+  HostedAdmissionReceiptRecord,
+  HostedAdmissionMetrics,
 } from "./types.js";
 
 /**
@@ -157,6 +161,20 @@ export interface ICloudDatabase {
   createHostedRequest(req: { id: string; userId: string; providerId: string; modelId: string; estimatedCredits: number }): Promise<HostedRequestRecord>;
   getHostedRequest(id: string): Promise<HostedRequestRecord | undefined>;
   updateHostedRequest(id: string, status: HostedRequestRecord["status"], actualCredits?: number): Promise<void>;
+
+  // Durable Hosted Admission
+  enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string }): Promise<{ execution: HostedExecutionRecord; created: boolean }>;
+  getHostedExecution(id: string, userId: string): Promise<HostedExecutionRecord | undefined>;
+  listHostedExecutions(userId: string, limit?: number): Promise<HostedExecutionRecord[]>;
+  setHostedProviderCapacity(params: { providerId: string; modelId: string; maxConcurrent: number }): Promise<void>;
+  claimNextHostedExecution(params: { workerId: string; leaseMs: number; maxUserConcurrent: number; now?: Date }): Promise<{ execution: HostedExecutionRecord; lease: HostedCapacityLeaseRecord } | undefined>;
+  markHostedExecutionDispatching(params: { executionId: string; workerId: string }): Promise<HostedExecutionRecord>;
+  completeHostedExecution(params: { executionId: string; userId: string; status: "completed" | "failed"; releaseReason?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }>;
+  cancelHostedExecution(params: { executionId: string; userId: string }): Promise<{ execution: HostedExecutionRecord; dispatchMayHaveStarted: boolean; transitioned: boolean }>;
+  renewHostedExecutionLease(params: { executionId: string; workerId: string; leaseMs: number; now?: Date }): Promise<HostedCapacityLeaseRecord>;
+  recoverExpiredHostedLeases(now?: Date): Promise<{ recovered: number; executionIds: string[] }>;
+  listHostedAdmissionReceipts(executionId: string, userId: string): Promise<HostedAdmissionReceiptRecord[]>;
+  getHostedAdmissionMetrics(): Promise<HostedAdmissionMetrics>;
 
   // Usage Periods
   getOrCreateCurrentUsagePeriod(userId: string, allowanceAmount?: number, now?: Date): Promise<{ period: UsagePeriodRecord; grantedNewAllowance: boolean }>;

@@ -185,6 +185,63 @@ export const HostedRequestRecordSchema = z.object({
 });
 export type HostedRequestRecord = z.infer<typeof HostedRequestRecordSchema>;
 
+export const HostedExecutionStatusSchema = z.enum(["queued", "claimed", "dispatching", "completed", "failed", "cancelled", "recovery_pending"]);
+export type HostedExecutionStatus = z.infer<typeof HostedExecutionStatusSchema>;
+
+export const HostedExecutionRecordSchema = z.object({
+  id: z.string(),
+  idempotencyKey: z.string(),
+  userId: z.string().uuid(),
+  taskId: z.string(),
+  providerId: z.string(),
+  modelId: z.string(),
+  status: HostedExecutionStatusSchema,
+  priority: z.number().int(),
+  attempt: z.number().int().nonnegative(),
+  eligibleAt: z.string(),
+  leaseOwner: z.string().nullable().optional(),
+  leaseExpiresAt: z.string().nullable().optional(),
+  cancellationRequested: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type HostedExecutionRecord = z.infer<typeof HostedExecutionRecordSchema>;
+
+export const HostedCapacityLeaseRecordSchema = z.object({
+  id: z.string().uuid(),
+  executionId: z.string(),
+  userId: z.string().uuid(),
+  providerId: z.string(),
+  modelId: z.string(),
+  workerId: z.string(),
+  state: z.enum(["active", "released", "expired"]),
+  leaseExpiresAt: z.string(),
+  createdAt: z.string(),
+  releasedAt: z.string().nullable().optional(),
+  releaseReason: z.string().nullable().optional(),
+});
+export type HostedCapacityLeaseRecord = z.infer<typeof HostedCapacityLeaseRecordSchema>;
+
+export interface HostedAdmissionReceiptRecord {
+  id: string;
+  executionId: string;
+  userId: string;
+  eventType: "QUEUE_ENQUEUED" | "CAPACITY_RESERVED" | "DISPATCH_STARTED" | "CAPACITY_RELEASED" | "LEASE_EXPIRED" | "CANCEL_REQUESTED" | "CANCELLED" | "RETRY_SCHEDULED" | "FAILOVER" | "ACCOUNTING_COMMITTED" | "DUPLICATE_SUPPRESSED";
+  workerId?: string;
+  details?: Record<string, string | number | boolean | null>;
+  createdAt: string;
+}
+
+export interface HostedAdmissionMetrics {
+  queueDepth: number;
+  queuedUsers: number;
+  activeUsers: number;
+  activeReservations: number;
+  reservationExpirations: number;
+  duplicateRequestSuppressions: number;
+  cancellations: number;
+}
+
 export const BillingWebhookEventRecordSchema = z.object({
   id: z.string().uuid(),
   stripeEventId: z.string(),

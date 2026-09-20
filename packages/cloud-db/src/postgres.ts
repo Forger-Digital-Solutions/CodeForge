@@ -37,6 +37,10 @@ import type {
   AccountDeletionResult,
   SecurityAuditEventRecord,
   AccountDeletionTableSummary,
+  HostedExecutionRecord,
+  HostedCapacityLeaseRecord,
+  HostedAdmissionReceiptRecord,
+  HostedAdmissionMetrics,
 } from "./types.js";
 
 const { Pool } = pg;
@@ -1391,6 +1395,157 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     }
   }
 
+  private mapHostedExecutionRow(row: Record<string, unknown>): HostedExecutionRecord {
+    const iso = (value: unknown) => value instanceof Date ? value.toISOString() : String(value);
+    return { id: String(row.id), idempotencyKey: String(row.idempotency_key), userId: String(row.user_id), taskId: String(row.task_id), providerId: String(row.provider_id), modelId: String(row.model_id), status: row.status as HostedExecutionRecord["status"], priority: Number(row.priority), attempt: Number(row.attempt), eligibleAt: iso(row.eligible_at), leaseOwner: row.lease_owner ? String(row.lease_owner) : null, leaseExpiresAt: row.lease_expires_at ? iso(row.lease_expires_at) : null, cancellationRequested: Boolean(row.cancellation_requested), createdAt: iso(row.created_at), updatedAt: iso(row.updated_at) };
+  }
+
+  private mapHostedCapacityLeaseRow(row: Record<string, unknown>): HostedCapacityLeaseRecord {
+    const iso = (value: unknown) => value instanceof Date ? value.toISOString() : String(value);
+    return { id: String(row.id), executionId: String(row.execution_id), userId: String(row.user_id), providerId: String(row.provider_id), modelId: String(row.model_id), workerId: String(row.worker_id), state: row.state as HostedCapacityLeaseRecord["state"], leaseExpiresAt: iso(row.lease_expires_at), createdAt: iso(row.created_at), releasedAt: row.released_at ? iso(row.released_at) : null, releaseReason: row.release_reason ? String(row.release_reason) : null };
+  }
+
+  async enqueueHostedExecution(params: { id: string; idempotencyKey: string; userId: string; taskId: string; providerId: string; modelId: string; priority?: number; eligibleAt?: string }): Promise<{ execution: HostedExecutionRecord; created: boolean }> {
+    return this.withTx(async (client) => {
+      const now = new Date().toISOString();
+      const inserted = await client.query(`INSERT INTO hosted_executions (id, idempotency_key, user_id, task_id, provider_id, model_id, status, priority, attempt, eligible_at, cancellation_requested, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,'queued',$7,0,$8,FALSE,$9,$9) ON CONFLICT (idempotency_key) DO NOTHING RETURNING *`, [params.id, params.idempotencyKey, params.userId, params.taskId, params.providerId, params.modelId, params.priority ?? 0, params.eligibleAt ?? now, now]);
+      if (inserted.rows.length > 0) {
+        await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, created_at) VALUES ($1,$2,$3,'QUEUE_ENQUEUED',$4)`, [randomUUID(), params.id, params.userId, now]);
+        return { execution: this.mapHostedExecutionRow(inserted.rows[0]), created: true };
+      }
+      const existing = await client.query(`SELECT * FROM hosted_executions WHERE idempotency_key = $1 FOR UPDATE`, [params.idempotencyKey]);
+      if (existing.rows.length === 0) throw new Error("Idempotent enqueue lost its authoritative row");
+      if (String(existing.rows[0].user_id) !== params.userId) throw new Error("Idempotency key is already associated with another user account");
+      await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, created_at) VALUES ($1,$2,$3,'DUPLICATE_SUPPRESSED',$4)`, [randomUUID(), existing.rows[0].id, params.userId, now]);
+      return { execution: this.mapHostedExecutionRow(existing.rows[0]), created: false };
+    });
+  }
+
+  async getHostedExecution(id: string, userId: string): Promise<HostedExecutionRecord | undefined> {
+    const res = await this.pool.query(`SELECT * FROM hosted_executions WHERE id = $1 AND user_id = $2`, [id, userId]);
+    return res.rows[0] ? this.mapHostedExecutionRow(res.rows[0]) : undefined;
+  }
+
+  async listHostedExecutions(userId: string, limit = 100): Promise<HostedExecutionRecord[]> {
+    const res = await this.pool.query(`SELECT * FROM hosted_executions WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2`, [userId, limit]);
+    return res.rows.map((row) => this.mapHostedExecutionRow(row));
+  }
+
+  async setHostedProviderCapacity(params: { providerId: string; modelId: string; maxConcurrent: number }): Promise<void> {
+    if (!Number.isSafeInteger(params.maxConcurrent) || params.maxConcurrent < 0) throw new Error("maxConcurrent must be a non-negative safe integer");
+    await this.pool.query(`INSERT INTO hosted_provider_capacity (provider_id, model_id, max_concurrent, updated_at) VALUES ($1,$2,$3,NOW()) ON CONFLICT (provider_id, model_id) DO UPDATE SET max_concurrent = EXCLUDED.max_concurrent, updated_at = EXCLUDED.updated_at`, [params.providerId, params.modelId, params.maxConcurrent]);
+  }
+
+  async claimNextHostedExecution(params: { workerId: string; leaseMs: number; maxUserConcurrent: number; now?: Date }): Promise<{ execution: HostedExecutionRecord; lease: HostedCapacityLeaseRecord } | undefined> {
+    if (!Number.isSafeInteger(params.leaseMs) || params.leaseMs < 1) throw new Error("leaseMs must be a positive safe integer");
+    if (!Number.isSafeInteger(params.maxUserConcurrent) || params.maxUserConcurrent < 1) throw new Error("maxUserConcurrent must be a positive safe integer");
+    return this.withTx(async (client) => {
+      const now = params.now ?? new Date();
+      const candidate = await client.query(`
+        SELECT e.* FROM hosted_executions e
+        LEFT JOIN hosted_user_admission_state uas ON uas.user_id = e.user_id
+        JOIN hosted_provider_capacity pc ON pc.provider_id = e.provider_id AND pc.model_id = e.model_id
+        WHERE e.status = 'queued' AND e.eligible_at <= $1
+          AND NOT EXISTS (SELECT 1 FROM hosted_executions earlier WHERE earlier.user_id = e.user_id AND earlier.status = 'queued' AND (earlier.priority > e.priority OR (earlier.priority = e.priority AND earlier.created_at < e.created_at)))
+          AND (SELECT COUNT(*) FROM hosted_capacity_leases ul WHERE ul.user_id = e.user_id AND ul.state = 'active' AND ul.lease_expires_at > $1) < $2
+          AND (SELECT COUNT(*) FROM hosted_capacity_leases rl WHERE rl.provider_id = e.provider_id AND rl.model_id = e.model_id AND rl.state = 'active' AND rl.lease_expires_at > $1) < pc.max_concurrent
+        ORDER BY CASE WHEN uas.last_admitted_at IS NULL THEN 0 ELSE 1 END, uas.last_admitted_at ASC NULLS FIRST, e.priority DESC, e.created_at ASC
+        FOR UPDATE OF e, pc SKIP LOCKED LIMIT 1`, [now, params.maxUserConcurrent]);
+      if (candidate.rows.length === 0) return undefined;
+      const row = candidate.rows[0];
+      const leaseId = randomUUID();
+      const leaseExpiresAt = new Date(now.getTime() + params.leaseMs);
+      const updated = await client.query(`UPDATE hosted_executions SET status='claimed', lease_owner=$1, lease_expires_at=$2, attempt=attempt+1, updated_at=$3 WHERE id=$4 AND status='queued' RETURNING *`, [params.workerId, leaseExpiresAt, now, row.id]);
+      if (updated.rows.length === 0) return undefined;
+      const lease = await client.query(`INSERT INTO hosted_capacity_leases (id, execution_id, user_id, provider_id, model_id, worker_id, state, lease_expires_at, created_at) VALUES ($1,$2,$3,$4,$5,$6,'active',$7,$8) RETURNING *`, [leaseId, row.id, row.user_id, row.provider_id, row.model_id, params.workerId, leaseExpiresAt, now]);
+      await client.query(`INSERT INTO hosted_user_admission_state (user_id, last_admitted_at, updated_at) VALUES ($1,$2,$2) ON CONFLICT (user_id) DO UPDATE SET last_admitted_at=EXCLUDED.last_admitted_at, updated_at=EXCLUDED.updated_at`, [row.user_id, now]);
+      await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, worker_id, details, created_at) VALUES ($1,$2,$3,'CAPACITY_RESERVED',$4,$5,$6)`, [randomUUID(), row.id, row.user_id, params.workerId, JSON.stringify({ leaseExpiresAt: leaseExpiresAt.toISOString() }), now]);
+      return { execution: this.mapHostedExecutionRow(updated.rows[0]), lease: this.mapHostedCapacityLeaseRow(lease.rows[0]) };
+    });
+  }
+
+  async markHostedExecutionDispatching(params: { executionId: string; workerId: string }): Promise<HostedExecutionRecord> {
+    return this.withTx(async (client) => {
+      const updated = await client.query(`UPDATE hosted_executions SET status='dispatching', updated_at=NOW() WHERE id=$1 AND lease_owner=$2 AND status='claimed' RETURNING *`, [params.executionId, params.workerId]);
+      if (updated.rows.length === 0) throw new Error("Execution is not claimed by this worker");
+      await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, worker_id, created_at) VALUES ($1,$2,$3,'DISPATCH_STARTED',$4,NOW())`, [randomUUID(), params.executionId, updated.rows[0].user_id, params.workerId]);
+      return this.mapHostedExecutionRow(updated.rows[0]);
+    });
+  }
+
+  async completeHostedExecution(params: { executionId: string; userId: string; status: "completed" | "failed"; releaseReason?: string }): Promise<{ execution: HostedExecutionRecord; transitioned: boolean }> {
+    return this.withTx(async (client) => {
+      const locked = await client.query(`SELECT * FROM hosted_executions WHERE id=$1 AND user_id=$2 FOR UPDATE`, [params.executionId, params.userId]);
+      if (locked.rows.length === 0) throw new Error("Hosted execution not found for user");
+      if (["completed", "failed", "cancelled"].includes(String(locked.rows[0].status))) return { execution: this.mapHostedExecutionRow(locked.rows[0]), transitioned: false };
+      const updated = await client.query(`UPDATE hosted_executions SET status=$1, lease_owner=NULL, lease_expires_at=NULL, updated_at=NOW() WHERE id=$2 RETURNING *`, [params.status, params.executionId]);
+      await client.query(`UPDATE hosted_capacity_leases SET state='released', released_at=NOW(), release_reason=$1 WHERE execution_id=$2 AND state='active'`, [params.releaseReason ?? params.status, params.executionId]);
+      await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, details, created_at) VALUES ($1,$2,$3,'CAPACITY_RELEASED',$4,NOW())`, [randomUUID(), params.executionId, params.userId, JSON.stringify({ status: params.status })]);
+      return { execution: this.mapHostedExecutionRow(updated.rows[0]), transitioned: true };
+    });
+  }
+
+  async cancelHostedExecution(params: { executionId: string; userId: string }): Promise<{ execution: HostedExecutionRecord; dispatchMayHaveStarted: boolean; transitioned: boolean }> {
+    return this.withTx(async (client) => {
+      const locked = await client.query(`SELECT * FROM hosted_executions WHERE id=$1 AND user_id=$2 FOR UPDATE`, [params.executionId, params.userId]);
+      if (locked.rows.length === 0) throw new Error("Hosted execution not found for user");
+      const current = locked.rows[0];
+      if (["completed", "failed", "cancelled"].includes(String(current.status))) return { execution: this.mapHostedExecutionRow(current), dispatchMayHaveStarted: String(current.status) !== "queued", transitioned: false };
+      const dispatchMayHaveStarted = current.status === "dispatching" || current.status === "recovery_pending";
+      await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, details, created_at) VALUES ($1,$2,$3,'CANCEL_REQUESTED',$4,NOW())`, [randomUUID(), params.executionId, params.userId, JSON.stringify({ dispatchMayHaveStarted })]);
+      const updated = await client.query(`UPDATE hosted_executions SET status='cancelled', cancellation_requested=TRUE, lease_owner=NULL, lease_expires_at=NULL, updated_at=NOW() WHERE id=$1 RETURNING *`, [params.executionId]);
+      await client.query(`UPDATE hosted_capacity_leases SET state='released', released_at=NOW(), release_reason='cancelled' WHERE execution_id=$1 AND state='active'`, [params.executionId]);
+      await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, details, created_at) VALUES ($1,$2,$3,'CANCELLED',$4,NOW())`, [randomUUID(), params.executionId, params.userId, JSON.stringify({ dispatchMayHaveStarted })]);
+      return { execution: this.mapHostedExecutionRow(updated.rows[0]), dispatchMayHaveStarted, transitioned: true };
+    });
+  }
+
+  async renewHostedExecutionLease(params: { executionId: string; workerId: string; leaseMs: number; now?: Date }): Promise<HostedCapacityLeaseRecord> {
+    return this.withTx(async (client) => {
+      const now = params.now ?? new Date();
+      const leaseExpiresAt = new Date(now.getTime() + params.leaseMs);
+      const lease = await client.query(`UPDATE hosted_capacity_leases SET lease_expires_at=$1 WHERE execution_id=$2 AND worker_id=$3 AND state='active' RETURNING *`, [leaseExpiresAt, params.executionId, params.workerId]);
+      if (lease.rows.length === 0) throw new Error("Active hosted execution lease not found for worker");
+      await client.query(`UPDATE hosted_executions SET lease_expires_at=$1, updated_at=$2 WHERE id=$3 AND lease_owner=$4 AND status IN ('claimed','dispatching')`, [leaseExpiresAt, now, params.executionId, params.workerId]);
+      return this.mapHostedCapacityLeaseRow(lease.rows[0]);
+    });
+  }
+
+  async recoverExpiredHostedLeases(now = new Date()): Promise<{ recovered: number; executionIds: string[] }> {
+    return this.withTx(async (client) => {
+      const expired = await client.query(`SELECT e.* FROM hosted_executions e JOIN hosted_capacity_leases l ON l.execution_id=e.id WHERE l.state='active' AND l.lease_expires_at <= $1 AND e.status IN ('claimed','dispatching') FOR UPDATE OF e, l SKIP LOCKED`, [now]);
+      const executionIds: string[] = [];
+      for (const row of expired.rows) {
+        const nextStatus = row.status === "claimed" ? "queued" : "recovery_pending";
+        await client.query(`UPDATE hosted_executions SET status=$1, lease_owner=NULL, lease_expires_at=NULL, updated_at=$2 WHERE id=$3`, [nextStatus, now, row.id]);
+        await client.query(`UPDATE hosted_capacity_leases SET state='expired', released_at=$1, release_reason='lease_expired' WHERE execution_id=$2 AND state='active'`, [now, row.id]);
+        await client.query(`INSERT INTO hosted_admission_receipts (id, execution_id, user_id, event_type, details, created_at) VALUES ($1,$2,$3,'LEASE_EXPIRED',$4,$5)`, [randomUUID(), row.id, row.user_id, JSON.stringify({ nextStatus }), now]);
+        executionIds.push(String(row.id));
+      }
+      return { recovered: executionIds.length, executionIds };
+    });
+  }
+
+  async listHostedAdmissionReceipts(executionId: string, userId: string): Promise<HostedAdmissionReceiptRecord[]> {
+    const owns = await this.pool.query(`SELECT 1 FROM hosted_executions WHERE id=$1 AND user_id=$2`, [executionId, userId]);
+    if (owns.rows.length === 0) throw new Error("Hosted execution not found for user");
+    const res = await this.pool.query(`SELECT * FROM hosted_admission_receipts WHERE execution_id=$1 AND user_id=$2 ORDER BY created_at ASC`, [executionId, userId]);
+    return res.rows.map((row) => ({ id: String(row.id), executionId: String(row.execution_id), userId: String(row.user_id), eventType: row.event_type as HostedAdmissionReceiptRecord["eventType"], workerId: row.worker_id ? String(row.worker_id) : undefined, details: row.details ? JSON.parse(String(row.details)) : undefined, createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at) }));
+  }
+
+  async getHostedAdmissionMetrics(): Promise<HostedAdmissionMetrics> {
+    const res = await this.pool.query(`SELECT
+      (SELECT COUNT(*) FROM hosted_executions WHERE status='queued') AS queue_depth,
+      (SELECT COUNT(DISTINCT user_id) FROM hosted_executions WHERE status='queued') AS queued_users,
+      (SELECT COUNT(DISTINCT user_id) FROM hosted_capacity_leases WHERE state='active') AS active_users,
+      (SELECT COUNT(*) FROM hosted_capacity_leases WHERE state='active') AS active_reservations,
+      (SELECT COUNT(*) FROM hosted_capacity_leases WHERE state='expired') AS reservation_expirations,
+      (SELECT COUNT(*) FROM hosted_admission_receipts WHERE event_type='DUPLICATE_SUPPRESSED') AS duplicate_request_suppressions,
+      (SELECT COUNT(*) FROM hosted_executions WHERE status='cancelled') AS cancellations`);
+    const row = res.rows[0];
+    return { queueDepth: Number(row.queue_depth), queuedUsers: Number(row.queued_users), activeUsers: Number(row.active_users), activeReservations: Number(row.active_reservations), reservationExpirations: Number(row.reservation_expirations), duplicateRequestSuppressions: Number(row.duplicate_request_suppressions), cancellations: Number(row.cancellations) };
+  }
+
   // --- Usage Periods ---
 
   async getOrCreateCurrentUsagePeriod(
@@ -1891,6 +2046,10 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       await del("usage_periods", `DELETE FROM usage_periods WHERE user_id = $1`);
       await del("reservations", `DELETE FROM reservations WHERE user_id = $1`);
       await del("hosted_requests", `DELETE FROM hosted_requests WHERE user_id = $1`);
+      await del("hosted_admission_receipts", `DELETE FROM hosted_admission_receipts WHERE user_id = $1`);
+      await del("hosted_capacity_leases", `DELETE FROM hosted_capacity_leases WHERE user_id = $1`);
+      await del("hosted_user_admission_state", `DELETE FROM hosted_user_admission_state WHERE user_id = $1`);
+      await del("hosted_executions", `DELETE FROM hosted_executions WHERE user_id = $1`);
       await del("account_settings", `DELETE FROM account_settings WHERE user_id = $1`);
       await del("users", `DELETE FROM users WHERE id = $1`);
 

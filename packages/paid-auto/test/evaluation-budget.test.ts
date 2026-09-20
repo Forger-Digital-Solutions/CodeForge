@@ -38,7 +38,7 @@ const price: PriceCard = {
 };
 
 const request: Omit<ChatRequest, "model"> = { messages: [{ role: "user", content: "implement a tiny safe fix" }], maxTokens: 100 };
-const route = { routeId: "gpt-5.6-luna:openrouter", canonicalModelId: "gpt-5.6-luna", kind: "openrouter", providerId: "openrouter", providerModelId: "openai/gpt-5.6-luna", priority: 2, source: "test", pricing: { inputCostPerMillion: null, outputCostPerMillion: null, currency: "USD", status: "UNKNOWN", source: "test" } } as const;
+const route = { routeId: "gpt-5.6-luna:openrouter", canonicalModelId: "gpt-5.6-luna", kind: "openrouter", providerId: "openrouter", providerModelId: "openai/gpt-5.6-luna", priority: 2, source: "test", pricing: { inputCostPerMillion: null, outputCostPerMillion: null, currency: "USD", unit: "USD_PER_MILLION_TOKENS", status: "UNKNOWN", effectiveDate: "2026-09-16", lastVerified: "2026-09-16T00:00:00.000Z", source: "test" } } as const;
 
 function adapter(resultModel = "openai/gpt-5.6-luna"): ProviderAdapter {
   return {

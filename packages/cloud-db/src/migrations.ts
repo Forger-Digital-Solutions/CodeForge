@@ -876,6 +876,138 @@ CREATE INDEX IF NOT EXISTS idx_security_audit_events_user_id ON security_audit_e
 CREATE INDEX IF NOT EXISTS idx_security_audit_events_type_time ON security_audit_events(event_type, occurred_at);
 `;
 
+const MIGRATION_10_SQLITE = `
+CREATE TABLE IF NOT EXISTS hosted_executions (
+  id TEXT PRIMARY KEY,
+  idempotency_key TEXT NOT NULL UNIQUE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  task_id TEXT NOT NULL,
+  provider_id TEXT NOT NULL,
+  model_id TEXT NOT NULL,
+  status TEXT NOT NULL,
+  priority INTEGER NOT NULL DEFAULT 0,
+  attempt INTEGER NOT NULL DEFAULT 0,
+  eligible_at TEXT NOT NULL,
+  lease_owner TEXT,
+  lease_expires_at TEXT,
+  cancellation_requested INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_fair_queue ON hosted_executions(status, eligible_at, user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_user_status ON hosted_executions(user_id, status, created_at);
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_user_fair_head ON hosted_executions(user_id, status, priority DESC, created_at);
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_lease_expiry ON hosted_executions(status, lease_expires_at);
+
+CREATE TABLE IF NOT EXISTS hosted_user_admission_state (
+  user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  last_admitted_at TEXT,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS hosted_provider_capacity (
+  provider_id TEXT NOT NULL,
+  model_id TEXT NOT NULL,
+  max_concurrent INTEGER NOT NULL,
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY(provider_id, model_id)
+);
+
+CREATE TABLE IF NOT EXISTS hosted_capacity_leases (
+  id TEXT PRIMARY KEY,
+  execution_id TEXT NOT NULL REFERENCES hosted_executions(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  provider_id TEXT NOT NULL,
+  model_id TEXT NOT NULL,
+  worker_id TEXT NOT NULL,
+  state TEXT NOT NULL,
+  lease_expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  released_at TEXT,
+  release_reason TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_hosted_capacity_active_execution ON hosted_capacity_leases(execution_id) WHERE state = 'active';
+CREATE INDEX IF NOT EXISTS idx_hosted_capacity_route_state ON hosted_capacity_leases(provider_id, model_id, state, lease_expires_at);
+CREATE INDEX IF NOT EXISTS idx_hosted_capacity_user_state ON hosted_capacity_leases(user_id, state, lease_expires_at);
+
+CREATE TABLE IF NOT EXISTS hosted_admission_receipts (
+  id TEXT PRIMARY KEY,
+  execution_id TEXT NOT NULL REFERENCES hosted_executions(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  event_type TEXT NOT NULL,
+  worker_id TEXT,
+  details TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_hosted_admission_receipts_execution ON hosted_admission_receipts(execution_id, created_at);
+`;
+
+const MIGRATION_10_POSTGRES = `
+CREATE TABLE IF NOT EXISTS hosted_executions (
+  id VARCHAR(255) PRIMARY KEY,
+  idempotency_key VARCHAR(255) NOT NULL UNIQUE,
+  user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  task_id VARCHAR(255) NOT NULL,
+  provider_id VARCHAR(128) NOT NULL,
+  model_id VARCHAR(255) NOT NULL,
+  status VARCHAR(32) NOT NULL,
+  priority INTEGER NOT NULL DEFAULT 0,
+  attempt INTEGER NOT NULL DEFAULT 0,
+  eligible_at TIMESTAMPTZ NOT NULL,
+  lease_owner VARCHAR(255),
+  lease_expires_at TIMESTAMPTZ,
+  cancellation_requested BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_fair_queue ON hosted_executions(status, eligible_at, user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_user_status ON hosted_executions(user_id, status, created_at);
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_user_fair_head ON hosted_executions(user_id, status, priority DESC, created_at);
+CREATE INDEX IF NOT EXISTS idx_hosted_executions_lease_expiry ON hosted_executions(status, lease_expires_at);
+
+CREATE TABLE IF NOT EXISTS hosted_user_admission_state (
+  user_id VARCHAR(64) PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  last_admitted_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS hosted_provider_capacity (
+  provider_id VARCHAR(128) NOT NULL,
+  model_id VARCHAR(255) NOT NULL,
+  max_concurrent INTEGER NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL,
+  PRIMARY KEY(provider_id, model_id)
+);
+
+CREATE TABLE IF NOT EXISTS hosted_capacity_leases (
+  id VARCHAR(64) PRIMARY KEY,
+  execution_id VARCHAR(255) NOT NULL REFERENCES hosted_executions(id) ON DELETE CASCADE,
+  user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  provider_id VARCHAR(128) NOT NULL,
+  model_id VARCHAR(255) NOT NULL,
+  worker_id VARCHAR(255) NOT NULL,
+  state VARCHAR(32) NOT NULL,
+  lease_expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL,
+  released_at TIMESTAMPTZ,
+  release_reason TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_hosted_capacity_active_execution ON hosted_capacity_leases(execution_id) WHERE state = 'active';
+CREATE INDEX IF NOT EXISTS idx_hosted_capacity_route_state ON hosted_capacity_leases(provider_id, model_id, state, lease_expires_at);
+CREATE INDEX IF NOT EXISTS idx_hosted_capacity_user_state ON hosted_capacity_leases(user_id, state, lease_expires_at);
+
+CREATE TABLE IF NOT EXISTS hosted_admission_receipts (
+  id VARCHAR(64) PRIMARY KEY,
+  execution_id VARCHAR(255) NOT NULL REFERENCES hosted_executions(id) ON DELETE CASCADE,
+  user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  event_type VARCHAR(64) NOT NULL,
+  worker_id VARCHAR(255),
+  details TEXT,
+  created_at TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_hosted_admission_receipts_execution ON hosted_admission_receipts(execution_id, created_at);
+`;
+
 export const MIGRATIONS: MigrationDefinition[] = [
   {
     version: 1,
@@ -939,6 +1071,13 @@ export const MIGRATIONS: MigrationDefinition[] = [
     sqliteUp: MIGRATION_9_SQLITE,
     postgresUp: MIGRATION_9_POSTGRES,
     checksum: computeChecksum(MIGRATION_9_SQLITE),
+  },
+  {
+    version: 10,
+    name: "010_durable_hosted_admission",
+    sqliteUp: MIGRATION_10_SQLITE,
+    postgresUp: MIGRATION_10_POSTGRES,
+    checksum: computeChecksum(MIGRATION_10_SQLITE),
   },
 ];
 

@@ -37,6 +37,7 @@
     "r4:scale": "node scripts/r4-scale-sim.mjs",
     "r8:benchmark": "node scripts/r8-codeforge-bench.mjs",
     "r9:benchmark": "node scripts/r9-codeforge-bench.mjs",
+    "r20:scale": "npm run build --workspace=@codeforge/benchmark && node scripts/r20-scale-campaign.mjs",
     "security:gate": "node scripts/security/secret-scan.mjs --self-test --scan && node scripts/security/audit-dependencies.mjs && node scripts/security/public-claims-scan.mjs && node scripts/security/validate-doc-links.mjs",
     "security:secret-scan": "node scripts/security/secret-scan.mjs --self-test --scan",
     "security:audit": "node scripts/security/audit-dependencies.mjs",
