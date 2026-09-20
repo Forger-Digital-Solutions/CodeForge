@@ -156,6 +156,15 @@ describe("CF-09 acceptance, assumptions, and the final gate", () => {
     expect(drift.payload.overlappingPaths).toEqual(["src/one.mjs"]);
     // It caused a replan rather than blind continuation, and promotion still failed closed.
     expect(mission.planVersions.find((version) => version.version === 2)?.reason).toMatchObject({ type: "repository_divergence" });
+    // Memory captured before the drift is labelled stale on the durable record and reaches the
+    // replanner flagged — a post-drift replan cannot treat pre-drift claims as current-tree facts.
+    const staleSummary = mission.memory.milestoneSummaries.find((entry) => entry.milestoneId === "s-one");
+    expect(staleSummary?.contextRevision).not.toBe(userRevision);
+    expect(staleSummary?.stale).toBe(true);
+    const replanRequest = harness.provider.requestsFor((entry) => entry.role === "replanner").at(-1);
+    // taskPlan reaches the model inside the assembled prompt at an escaping depth that varies
+    // with assembly; strip escapes so the assertion binds the flag, not the transport format.
+    expect(replanRequest?.payload.replace(/\\+/g, "")).toContain('"stale":true');
     expect(result.status).toBe("blocked");
     expect(mission.error).toContain(MISSION_ERRORS.MISSION_REPOSITORY_DRIFT);
     // The user's own commit is untouched and remains the target HEAD.

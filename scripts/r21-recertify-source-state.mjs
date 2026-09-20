@@ -57,6 +57,18 @@ const PHASES = {
     regressionEvidence:
       "r21-task-complexity 28/28, r21-adaptive-topology-wiring 8/8, r21-diff-review-git-fallback 7/7, agent-orchestrator-integration 7/7 (30s timeout on four full-pipeline tests per R4 convention), workflow package green incl. existing diff-review suites, server package green; canonical root suite run per vitest.config.mts Windows worker bound.",
   },
+  m5: {
+    surface: "r21-memory-taskstate-delivery-v1",
+    label: "R21 memory/task-state delivery and drift staleness",
+    constant: "R21_MEMORY_TASKSTATE_SOURCE_STATE",
+    reason:
+      "The M5 memory audit found that taskPlan — the structured state the mission supervisor builds for the mission-planner, replanner, assumption evaluator, final reviewer, and delivery reviewer (intent, current plan, completed evidence, assumptions, memory, trigger) — was silently discarded by the context assembler: only the coder role's switch branch rendered options.taskPlan, so every planning/review agent received a blind prompt while its system prompt claimed to see plan and trigger. The assembler now emits the taskPlan as a labelled untrusted 'Structured Task State' section for every non-coder role that receives one. The same audit found memory staleness was marked only on mission resume, never on in-mission repository drift: milestone summaries captured against a pre-drift base reached the divergence replanner unlabelled. classifyTargetDrift drift now marks memory stale against drift.actual before any replan serializes it. No gate or authority semantics changed; the memory remains advisory context and replan validity is still enforced by validateMilestoneRoadmap and the completion gate.",
+    changes: [
+      { file: "packages/context/src/index.ts", change: "assemble() emits options.taskPlan as a 'Structured Task State' untrusted section for non-coder roles; previously taskPlan rendered only inside the coder branch and was dropped for mission-planner/replanner/reviewer/other roles.", addedToMaterialFiles: false },
+    ],
+    regressionEvidence:
+      "context package 55/55; mission-state/security/steering/recovery/api + subagents + delivery-service + delivery-certification 61/61; mission-acceptance 4/4 incl. new assertion that a post-drift replanner request carries stale-flagged memory (previously no taskPlan reached it at all).",
+  },
 };
 
 const phaseKey = process.argv[2];

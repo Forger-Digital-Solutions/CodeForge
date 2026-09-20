@@ -550,6 +550,10 @@ export class MissionSupervisor {
 
       const drift = await this.classifyTargetDrift(mission);
       if (drift.classification === "PROMOTION_CONFLICT") return await this.terminate(mission, "blocked", MISSION_ERRORS.MISSION_REPOSITORY_DRIFT, startedAt, drift.actual);
+      // Milestone summaries were captured against the pre-drift base; label them stale so the
+      // replanner (and any later prompt) cannot mistake them for current-tree claims. Resume
+      // performs the same marking against the recovered head.
+      if (drift.classification !== "NO_DRIFT") mission.memory = markMemoryStaleness(mission.memory, drift.actual);
       if (drift.classification === "REPLAN_REQUIRED" && !mission.driftHandledRevisions.includes(drift.actual)) {
         // Replan once per distinct target revision; a second identical drift is decided by the
         // final promotion gate rather than by an unbounded replan cycle.

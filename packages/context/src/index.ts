@@ -305,6 +305,17 @@ export class ContextAssembler {
       }
     }
 
+    // Roles outside the switch (mission-planner, replanner, and caller-supplied roles) still
+    // receive their structured task state — the supervisor passes intent, plan, evidence,
+    // memory, and the replan trigger here, and dropping it left those agents blind. Fields
+    // inside can carry model-authored text, so it is labelled untrusted like every other
+    // assembled section.
+    if (options.taskPlan && roleKey !== "coder") {
+      const taskState = `Structured Task State:\n${formatUntrustedData(options.taskPlan, "task state")}`;
+      contextSections.push(taskState);
+      estimatedTokensUsed += estimateTokens(taskState);
+    }
+
     const unboundedContextPrompt = contextSections.join("\n\n");
     const contextPrompt = fitToTokens(
       unboundedContextPrompt,
