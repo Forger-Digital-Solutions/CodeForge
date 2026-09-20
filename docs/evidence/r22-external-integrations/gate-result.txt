@@ -1,0 +1,28 @@
+R22 canonical gate — root vitest.config.mts (authoritative configuration)
+Run: 2026-09-20, ~388s, branch forger-digital-solutions-forgegreen-certified
+
+  Test Files  414 passed | 8 skipped (422)
+  Tests       3266 passed | 47 skipped (3313)
+  Duration    388.26s
+
+Zero failures. Skips are the documented PostgreSQL-gated suites (env unavailable).
+
+Delta vs R21 close (406 files / 3188 tests):
+  +8 test files: packages/browser/test/{policy,runtime,tools,verify}.test.ts,
+    packages/mcp/test/{client,registry}.test.ts,
+    packages/cloud-auth/test/github-webhook.test.ts,
+    packages/server/test/external-tools-wiring.test.ts
+  +78 tests covering: real browser runtime (Edge via playwright-core), SSRF/redirect
+    policy, ForgeVerify browser CLI, MCP stdio lifecycle + adversarial fixtures,
+    GitHub webhook signature/dedup/restart safety, external-tool authority wiring,
+    plugin command bridge, ForgeGreen external-read dedup.
+
+Source-state canaries (fg11 + fg12e): green after milestone recertification —
+docs/codeforge-forgegreen-certified-source-state.json re-frozen at
+829fcc5d1dee9d4538464f8b5a07d7ec10bcb274151ac6bb6fdf2583084efbe1 covering exactly the
+three intentionally-changed material files (agent-runtime.ts, duplicate-suppression.ts,
+tools/index.ts). No other material file drifted.
+
+Prior gate run (pre-plugin-bridge, pre-recertification): 412 passed / 2 failed —
+the two failures were the source-state canaries correctly tripping on the intentional
+R22 source drift; resolved by recertification above.
