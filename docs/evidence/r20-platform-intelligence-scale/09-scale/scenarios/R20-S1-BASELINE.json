@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "runId": "r20-R20-S1-BASELINE-ee0374e30ced",
-  "timestamp": "2026-09-20T03:31:56.112Z",
-  "commit": "8bce13c87c888fefa2f52ecf3c2117afced45c63",
+  "runId": "r20-R20-S1-BASELINE-e8a89d9dca07",
+  "timestamp": "2026-09-20T03:56:40.342Z",
+  "commit": "8e6cf2cef46e2f85b534bc455d6b2eda893de1cc",
   "evidenceClass": "simulated",
   "scenario": "R20-S1-BASELINE",
   "users": 1,
@@ -114,88 +114,14 @@
   },
   "scheduler": {
     "admissionDecisions": 347,
-    "averageDecisionMicros": 1.3017291066282393,
-    "maxDecisionMicros": 146.3
+    "averageDecisionMicros": 0.7195965417867458,
+    "maxDecisionMicros": 92.9
   },
   "result": "PASS",
-  "events": [
-    {
-      "atMs": 0,
-      "state": "queued",
-      "userId": "user-0001",
-      "sessionId": "session-user-0001",
-      "taskId": "task-user-0001-1",
-      "executionId": "task-user-0001-1-exec-1"
-    },
-    {
-      "atMs": 25,
-      "state": "queued",
-      "userId": "user-0001",
-      "sessionId": "session-user-0001",
-      "taskId": "task-user-0001-2",
-      "executionId": "task-user-0001-2-exec-1"
-    },
-    {
-      "atMs": 0,
-      "state": "reserving_route",
-      "userId": "user-0001",
-      "sessionId": "session-user-0001",
-      "taskId": "task-user-0001-1",
-      "executionId": "task-user-0001-1-exec-1",
-      "providerId": "synthetic-a",
-      "routeId": "free-a"
-    },
-    {
-      "atMs": 0,
-      "state": "dispatching",
-      "userId": "user-0001",
-      "sessionId": "session-user-0001",
-      "taskId": "task-user-0001-1",
-      "executionId": "task-user-0001-1-exec-1",
-      "providerId": "synthetic-a",
-      "routeId": "free-a",
-      "waitMs": 0
-    },
-    {
-      "atMs": 172,
-      "state": "completed",
-      "userId": "user-0001",
-      "sessionId": "session-user-0001",
-      "taskId": "task-user-0001-1",
-      "executionId": "task-user-0001-1-exec-1",
-      "providerId": "synthetic-a",
-      "routeId": "free-a"
-    },
-    {
-      "atMs": 172,
-      "state": "reserving_route",
-      "userId": "user-0001",
-      "sessionId": "session-user-0001",
-      "taskId": "task-user-0001-2",
-      "executionId": "task-user-0001-2-exec-1",
-      "providerId": "synthetic-a",
-      "routeId": "free-a"
-    },
-    {
-      "atMs": 172,
-      "state": "dispatching",
-      "userId": "user-0001",
-      "sessionId": "session-user-0001",
-      "taskId": "task-user-0001-2",
-      "executionId": "task-user-0001-2-exec-1",
-      "providerId": "synthetic-a",
-      "routeId": "free-a",
-      "waitMs": 147
-    },
-    {
-      "atMs": 344,
-      "state": "completed",
-      "userId": "user-0001",
-      "sessionId": "session-user-0001",
-      "taskId": "task-user-0001-2",
-      "executionId": "task-user-0001-2-exec-1",
-      "providerId": "synthetic-a",
-      "routeId": "free-a"
-    }
-  ]
+  "eventSummary": {
+    "queued": 2,
+    "reserving_route": 2,
+    "dispatching": 2,
+    "completed": 2
+  }
 }

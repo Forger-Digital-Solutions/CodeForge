@@ -32,7 +32,11 @@ const scenarios = [
 
 const harness = new R20ScaleHarness();
 const results = scenarios.map((scenario) => harness.run(scenario));
-for (const result of results) fs.writeFileSync(path.join(outputDir, `${result.scenario}.json`), `${JSON.stringify(result, null, 2)}\n`);
+for (const result of results) {
+  const { events, ...summary } = result;
+  const eventSummary = Object.fromEntries([...new Set(events.map((event) => event.state))].map((state) => [state, events.filter((event) => event.state === state).length]));
+  fs.writeFileSync(path.join(outputDir, `${result.scenario}.json`), `${JSON.stringify({ ...summary, eventSummary }, null, 2)}\n`);
+}
 const dau = {
   low: modelR20Dau({ dau: 373, peakHourActivePercent: 0.08, tasksPerUserDay: 1, turnsPerTask: 3, averageTaskMinutes: 6, subagentPercent: 0.05, browserPercent: 0.03, averageTokensPerTurn: 1_500, burstFactor: 1.2 }),
   expected: modelR20Dau({ dau: 373, peakHourActivePercent: 0.15, tasksPerUserDay: 2, turnsPerTask: 4, averageTaskMinutes: 10, subagentPercent: 0.1, browserPercent: 0.05, averageTokensPerTurn: 2_000, burstFactor: 1.5 }),

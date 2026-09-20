@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "evidenceClass": "simulated",
-  "timestamp": "2026-09-20T03:31:56.112Z",
-  "commit": "8bce13c87c888fefa2f52ecf3c2117afced45c63",
+  "timestamp": "2026-09-20T03:56:40.342Z",
+  "commit": "8e6cf2cef46e2f85b534bc455d6b2eda893de1cc",
   "scenarios": {
     "low": {
       "assumptions": {
