@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import { afterEach, describe, expect, it } from "vitest";
 import { adviseCostGatedReuse, reconcileCostGateReceipt } from "../src/verification-reuse-cost-gate.js";
 import {
+  computeVerificationEvidenceHash,
   createVerificationPlan,
   createVerifierRegistry,
   executeVerificationPlan,
@@ -60,21 +61,35 @@ async function produceRealEvidence(dir: string, definitions: VerifierDefinition[
   return [...result.evidence];
 }
 
+/**
+ * R21: evidence integrity is hashed over every field, including `elapsedMs`. A test that simulates
+ * duration history must therefore re-mint the record through the same hash function ForgeVerify
+ * uses — exactly what a genuinely recorded slow run would carry — instead of editing a field in
+ * place, which is now (correctly) rejected as tampering.
+ */
+function withElapsedMs(evidence: VerificationEvidence, elapsedMs: number | undefined): GenericVerificationEvidence {
+  const { evidenceHash: _stale, ...rest } = evidence;
+  const restamped = { ...rest, elapsedMs: elapsedMs as number };
+  return { ...restamped, evidenceHash: computeVerificationEvidenceHash(restamped) } as unknown as GenericVerificationEvidence;
+}
+
 describe("FG-12F adviseCostGatedReuse — validity before cost, unknown cost fails closed (spec §6/§13)", () => {
-  it("valid evidence with no trusted duration history stays fresh (unknown_cost)", async () => {
+  it("evidence with a malformed duration is rejected as evidence, never reaching the cost gate (R21 integrity)", async () => {
     const dir = fixture();
     const definitions = [syntaxVerifier("fg12f.advisor.unknown", "a.js")];
     const evidence = (await produceRealEvidence(dir, definitions))[0]!;
     const { plan } = planFor(dir, definitions);
-    const advice = adviseCostGatedReuse({ plan, priorEvidence: [{ ...evidence, elapsedMs: undefined } as unknown as GenericVerificationEvidence] });
+    // A record whose measured duration is not a number is not a well-formed ForgeVerify record.
+    // Under R21 evidence integrity it is removed from consideration entirely: the outcome is a
+    // fresh run (no_prior_evidence), and "unknown cost" is never inferred from a broken record.
+    const advice = adviseCostGatedReuse({ plan, priorEvidence: [withElapsedMs(evidence, undefined)] });
     expect(advice.reusableEvidence).toEqual([]);
     const entry = advice.receipt.entries[0]!;
-    expect(entry.validityResult).toBe("valid");
-    expect(entry.costRejectionReason).toBe("unknown_cost");
-    expect(entry.costHistorySource).toBe("unavailable");
-    expect(entry.outcome).toBe("rejected_by_cost");
-    expect(advice.receipt.counts.rejectedByCost).toBe(1);
-    expect(advice.receipt.decision?.status).toBe("REJECTED");
+    expect(entry.validityResult).toBe("no_prior_evidence");
+    expect(entry.costEligible).toBe(false);
+    expect(entry.outcome).toBe("fresh_executed");
+    expect(advice.receipt.counts.freshlyExecuted).toBe(1);
+    expect(advice.receipt.decision?.status).toBe("SKIPPED_INSUFFICIENT_EVIDENCE");
   });
 
   it("cost is never consulted for invalid evidence — validity is decided first (spec §13/§14)", async () => {
@@ -84,7 +99,7 @@ describe("FG-12F adviseCostGatedReuse — validity before cost, unknown cost fai
     fs.writeFileSync(path.join(dir, "a.js"), "function ok() { return 42; }\nmodule.exports = { ok };\n");
     const { plan } = planFor(dir, definitions);
     // Even an absurdly expensive history cannot rescue evidence ForgeVerify holds invalid.
-    const advice = adviseCostGatedReuse({ plan, priorEvidence: [{ ...evidence, elapsedMs: 60_000 } as unknown as GenericVerificationEvidence] });
+    const advice = adviseCostGatedReuse({ plan, priorEvidence: [withElapsedMs(evidence, 60_000)] });
     expect(advice.reusableEvidence).toEqual([]);
     const entry = advice.receipt.entries[0]!;
     expect(entry.validityResult).toBe("invalid");
@@ -110,7 +125,7 @@ describe("FG-12F adviseCostGatedReuse — threshold boundary through the advisor
     const definitions = [syntaxVerifier(id, "a.js")];
     const evidence = (await produceRealEvidence(dir, definitions))[0]!;
     const { plan } = planFor(dir, definitions);
-    return adviseCostGatedReuse({ plan, priorEvidence: [{ ...evidence, elapsedMs } as unknown as GenericVerificationEvidence] });
+    return adviseCostGatedReuse({ plan, priorEvidence: [withElapsedMs(evidence, elapsedMs)] });
   }
 
   it("249 ms stays fresh; exactly 250 ms is eligible; 251 ms is eligible", async () => {
@@ -150,8 +165,8 @@ describe("FG-12F partial reuse — per-verifier evaluation, never whole-plan (sp
     const advice = adviseCostGatedReuse({
       plan,
       priorEvidence: [
-        { ...cheap, elapsedMs: 80 } as unknown as GenericVerificationEvidence,
-        { ...expensive, elapsedMs: 2_500 } as unknown as GenericVerificationEvidence,
+        withElapsedMs(cheap, 80),
+        withElapsedMs(expensive, 2_500),
       ],
     });
     expect(advice.reusableEvidence.map((item) => item.verifierId)).toEqual(["fg12f.partial.expensive"]);
@@ -173,7 +188,7 @@ describe("FG-12F policy states and failure fallback (spec §10/§27)", () => {
     const evidence = (await produceRealEvidence(dir, definitions))[0]!;
     const { plan } = planFor(dir, definitions);
     process.env.CODEFORGE_FORGEGREEN_OPTIMIZATION = "SHADOW";
-    const advice = adviseCostGatedReuse({ plan, priorEvidence: [{ ...evidence, elapsedMs: 900 } as unknown as GenericVerificationEvidence] });
+    const advice = adviseCostGatedReuse({ plan, priorEvidence: [withElapsedMs(evidence, 900)] });
     expect(advice.receipt.executionState).toBe("SHADOW_OBSERVING");
     expect(advice.reusableEvidence).toEqual([]);
     expect(advice.receipt.entries[0]!.costEligible).toBe(true);
@@ -187,7 +202,7 @@ describe("FG-12F policy states and failure fallback (spec §10/§27)", () => {
     const evidence = (await produceRealEvidence(dir, definitions))[0]!;
     const { plan } = planFor(dir, definitions);
     process.env.CODEFORGE_FORGEGREEN_OPTIMIZATION = "OFF";
-    const advice = adviseCostGatedReuse({ plan, priorEvidence: [{ ...evidence, elapsedMs: 900 } as unknown as GenericVerificationEvidence] });
+    const advice = adviseCostGatedReuse({ plan, priorEvidence: [withElapsedMs(evidence, 900)] });
     expect(advice.receipt.executionState).toBe("DISABLED_OFF");
     expect(advice.reusableEvidence).toEqual([]);
     expect(advice.receipt.decision).toBeUndefined();
@@ -198,7 +213,7 @@ describe("FG-12F policy states and failure fallback (spec §10/§27)", () => {
     const definitions = [syntaxVerifier("fg12f.fallback.throwing", "a.js")];
     const evidence = (await produceRealEvidence(dir, definitions))[0]!;
     const { plan } = planFor(dir, definitions);
-    const hostileEvidence = { ...evidence, elapsedMs: 900 };
+    const hostileEvidence = withElapsedMs(evidence, 900) as unknown as Record<string, unknown>;
     Object.defineProperty(hostileEvidence, "verifierId", { get() { throw new Error("synthetic advisor failure"); } });
     const advice = adviseCostGatedReuse({ plan, priorEvidence: [hostileEvidence as unknown as GenericVerificationEvidence] });
     expect(advice.reusableEvidence).toEqual([]);
@@ -213,7 +228,7 @@ describe("FG-12F reconcileCostGateReceipt — actual reuse truth comes only from
     const definitions = [syntaxVerifier("fg12f.reconcile.accepted", "a.js")];
     const evidence = (await produceRealEvidence(dir, definitions))[0]!;
     const { plan } = planFor(dir, definitions);
-    const advice = adviseCostGatedReuse({ plan, priorEvidence: [{ ...evidence, elapsedMs: 1_200 } as unknown as GenericVerificationEvidence] });
+    const advice = adviseCostGatedReuse({ plan, priorEvidence: [withElapsedMs(evidence, 1_200)] });
     const receipt = reconcileCostGateReceipt(
       advice.receipt,
       new Map([["fg12f.reconcile.accepted", { reusedEvidenceId: evidence.evidenceId, status: "passed", durationMs: 0 }]]),
@@ -231,7 +246,7 @@ describe("FG-12F reconcileCostGateReceipt — actual reuse truth comes only from
     const definitions = [syntaxVerifier("fg12f.reconcile.declined", "a.js")];
     const evidence = (await produceRealEvidence(dir, definitions))[0]!;
     const { plan } = planFor(dir, definitions);
-    const advice = adviseCostGatedReuse({ plan, priorEvidence: [{ ...evidence, elapsedMs: 1_200 } as unknown as GenericVerificationEvidence] });
+    const advice = adviseCostGatedReuse({ plan, priorEvidence: [withElapsedMs(evidence, 1_200)] });
     const receipt = reconcileCostGateReceipt(
       advice.receipt,
       new Map([["fg12f.reconcile.declined", { status: "passed", durationMs: 950 }]]),

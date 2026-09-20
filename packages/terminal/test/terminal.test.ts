@@ -15,6 +15,13 @@ describe("stripAnsi", () => {
     expect(stripAnsi("\x1b]0;my title\x07real")).toBe("real");
   });
 
+  it("renders ConPTY cursor-forward sequences back as the whitespace they replaced", () => {
+    // ConPTY emits `CSI n C` for tabs and space runs; column-aligned runner output must survive.
+    expect(stripAnsi("ok\x1b[3Cexample.com/a\x1b[1C0.012s")).toBe("ok   example.com/a 0.012s");
+    expect(stripAnsi("?\x1b[C[no test files]")).toBe("? [no test files]");
+    expect(stripAnsi("a\x1b[0Cb")).toBe("a b");
+  });
+
   it("preserves plain text untouched", () => {
     expect(stripAnsi("plain output 123")).toBe("plain output 123");
   });

@@ -27,6 +27,7 @@ export type CompletionBlockerCode =
   | "budget_exhausted"
   | "plan_steps_unfinished"
   | "verification_not_current"
+  | "verification_no_test_signal"
   | "approval_pending"
   | "question_pending";
 
@@ -83,6 +84,13 @@ export interface CompletionGateInput {
   verifiedExecutionRevision?: number;
   /** Current workspace identity used to independently reject a stale sufficient decision. */
   currentVerificationInputStateHash?: string;
+  /**
+   * R21: the workspace input-state hash the verification evidence was produced against. When
+   * omitted it is derived from the ForgeVerify report itself (plan → summary → legacy result).
+   * Verification of state S can never authorize completion of state S′: if this differs from
+   * `currentVerificationInputStateHash` the gate blocks with `verification_not_current`.
+   */
+  verifiedVerificationInputStateHash?: string;
   /** Independent lifecycle authorities remain blocking even after verification is sufficient. */
   approvalPending?: boolean;
   questionPending?: boolean;
@@ -117,12 +125,44 @@ function collectVerificationBlockers(
 ): CompletionBlocker[] {
   const report = verification as unknown as import("./types.js").VerificationReport;
   if (report.forgeVerify) {
-    return report.verifiers.filter((verifier) => !verifier.required && verifier.status !== "passed").map((verifier) => ({
+    const verifiers = Array.isArray(report.verifiers) ? report.verifiers : [];
+    const blockers: CompletionBlocker[] = verifiers.filter((verifier) => !verifier.required && verifier.status !== "passed").map((verifier) => ({
       code: "verification_failed" as const,
       severity: "advisory" as const,
       message: `Advisory verifier '${verifier.id}' (${verifier.kind}) failed: ${verifier.command} (exit ${verifier.exitCode}).`,
       evidence: truncate(verifier.output),
     }));
+    // R21: a required verifier whose runner reported that no test executed proved nothing. Exit
+    // 0 from an empty collection is "unverified", and unverified is never success.
+    for (const verifier of verifiers.filter((candidate) => candidate.required && candidate.noTestsDiscovered)) {
+      blockers.push({
+        code: "verification_not_run",
+        severity: policy.requireVerification ? "blocking" : "advisory",
+        message: `Required verifier '${verifier.id}' (${verifier.kind}) exited 0 but discovered no tests to run: ${verifier.command}. Nothing was verified.`,
+        evidence: truncate(verifier.output),
+      });
+    }
+    // R21: exit 0 contradicted by the runner's own failure count — a wrapper hid the child's exit
+    // status. The runner's summary is the evidence; the wrapper's exit code is not.
+    for (const verifier of verifiers.filter((candidate) => candidate.required && candidate.contradictoryOutput)) {
+      blockers.push({
+        code: "verification_failed",
+        severity: "blocking",
+        message: `Required verifier '${verifier.id}' (${verifier.kind}) exited 0 but its test-runner summary reported ${verifier.failed} failure(s): ${verifier.command}. The wrapper's exit status hid a failing run.`,
+        evidence: truncate(verifier.failures.map((failure) => failure.message).join("\n") || verifier.output),
+      });
+    }
+    // A required test verifier whose output carried no recognisable test signal is surfaced —
+    // the process passed, but nothing in its output shows that a test runner actually ran.
+    for (const verifier of verifiers.filter((candidate) => candidate.required && candidate.kind === "test" && candidate.status === "passed" && !candidate.noTestsDiscovered && candidate.testSignal === "none")) {
+      blockers.push({
+        code: "verification_no_test_signal",
+        severity: "advisory",
+        message: `Required verifier '${verifier.id}' passed (exit 0) but its output carried no recognisable test-runner signal: ${verifier.command}.`,
+        evidence: truncate(verifier.output),
+      });
+    }
+    return blockers;
   }
   if (report.verifiers && Array.isArray(report.verifiers)) {
     const blockers: CompletionBlocker[] = [];
@@ -186,15 +226,46 @@ function collectVerificationBlockers(
     return [blocker];
   }
 
+  // R21: legacy aggregated results carry the same contradiction/"ran nothing" facts as the report.
+  if (verification.contradictoryOutput) {
+    return [{
+      code: "verification_failed",
+      severity: "blocking",
+      message: `Verification exited 0 but its test-runner summary reported ${verification.failed} failure(s) (${verification.command || "verification"}). The wrapper's exit status hid a failing run.`,
+      evidence: truncate(verification.output),
+    }];
+  }
+  if (verification.noTestsDiscovered) {
+    return [{
+      code: "verification_not_run",
+      severity: policy.requireVerification ? "blocking" : "advisory",
+      message: `Verification exited 0 but the test runner discovered no tests to run (${verification.command || "verification"}). Nothing was verified.`,
+      evidence: truncate(verification.output),
+    }];
+  }
+
   return [];
 }
 
 function collectForgeVerifyBlockers(summary: VerificationSummary | undefined, verification: VerificationResult): CompletionBlocker[] {
-  if (!summary) return [];
+  const report = verification as import("./types.js").VerificationReport;
+  if (!summary) {
+    // R21: a report that claims ForgeVerify evidence but carries no summary is malformed. The
+    // structured branch of `collectVerificationBlockers` defers required-verifier judgement to
+    // the summary, so a missing summary must fail closed here rather than silently pass.
+    if (report.forgeVerify) {
+      return [{
+        code: "verification_not_run",
+        severity: "blocking",
+        message: "ForgeVerify report carries no verification summary; required verifier outcomes cannot be established.",
+        evidence: `plan=${report.forgeVerify.plan?.planId ?? "unknown"}`,
+      }];
+    }
+    return [];
+  }
   if (summary.verificationComplete) return [];
   const reason = summary.reasons[0] ?? "missing";
-  const code: CompletionBlockerCode = reason === "failed" ? "verification_failed" : "verification_not_run";
-  const report = verification as import("./types.js").VerificationReport;
+  const code: CompletionBlockerCode = reason === "failed" ? "verification_failed" : reason === "stale" || reason === "definition_changed" ? "verification_not_current" : "verification_not_run";
   const failed = report.verifiers?.find((verifier) => verifier.required && verifier.status !== "passed");
   return [{
     code,
@@ -380,6 +451,28 @@ export function evaluateCompletion(input: CompletionGateInput): CompletionGateDe
       code: "verification_not_current",
       severity: "blocking",
       message: `Verification covers execution revision ${input.verifiedExecutionRevision}, but the authoritative plan revision is ${input.currentExecutionRevision}. The revision change requires fresh verification before completion.`,
+    });
+  }
+
+  // R21 workspace-state binding: ForgeVerify evidence is an authority only for the exact
+  // workspace state it was produced against. The gate compares that state with the state it
+  // observes now, independently of any ForgeGreen policy decision, so an edit made after the
+  // last verification — in this process or any other — can never ride on old evidence.
+  const verifiedInputStateHash =
+    input.verifiedVerificationInputStateHash ??
+    report.forgeVerify?.plan?.inputStateHash ??
+    (input.verificationSummary ?? report.forgeVerify?.summary)?.inputStateHash ??
+    report.inputStateHash;
+  if (
+    input.currentVerificationInputStateHash !== undefined &&
+    verifiedInputStateHash !== undefined &&
+    input.currentVerificationInputStateHash !== verifiedInputStateHash
+  ) {
+    candidates.push({
+      code: "verification_not_current",
+      severity: "blocking",
+      message: "The workspace changed after the last verification. Verification evidence for the previous workspace state cannot authorize completion of the current one; reverify.",
+      evidence: `verified=${verifiedInputStateHash.slice(0, 16)}…; current=${input.currentVerificationInputStateHash.slice(0, 16)}…`,
     });
   }
 

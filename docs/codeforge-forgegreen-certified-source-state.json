@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "6a6b09898bf3fc4ea18e5b186f62ce2511d34de42d28a54631c88b8777a69a4f",
-  "surfaceVersion": "r20-durable-hosted-runtime-v1",
+  "sourceStateId": "f9ac543301b6cc5ac6b59c43f3117e849e66fb3b9bfa2a1dc10ddc5d2050b9d0",
+  "surfaceVersion": "r21-forgeverify-recertified-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -57,20 +57,20 @@
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/src/agent-runtime.ts": "2b0a06fc25c92dc63dcb381028cbbc7035224864",
-    "packages/server/src/autonomous-orchestrator.ts": "548e235188b864168ce7e67c45463a55d7713546",
+    "packages/server/src/autonomous-orchestrator.ts": "e197511261122da636e7f6401d8d587ef7274271",
     "packages/server/src/duplicate-suppression.ts": "187ebb71125e65f05b48210c77aa35647ca8bf64",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "d884a8c38168cc345c80861970deab2ef8a6864a",
-    "packages/sessions/src/persistence.ts": "5044b4d4cef8dc2089620a2959bf03c51a7202f8",
+    "packages/server/src/workflow-service.ts": "dd128b10041305e58aa49f88a0dacfb3a2aabb4d",
+    "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "e67a8c5033b1f39d4b5c5f919fdcecc16d8ac6dc",
     "packages/tools/src/index.ts": "d006dfdc090bf8b1d1c7fd694ea17597002011ad",
-    "packages/workflow/src/forge-verify.ts": "87d7d7134795a52321833936c0e7a7ead9dac61c",
+    "packages/workflow/src/forge-verify.ts": "d134438dfde57de85c756cdd8aaab192f1d801e8",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
-    "packages/workflow/src/types.ts": "667d00d3b9aaa2f583c6c0782bd793d55e2241d2",
-    "packages/workflow/src/verification-evidence-reuse.ts": "c68f351d77896e0ee86513d4bbc148c36b922b6d",
+    "packages/workflow/src/types.ts": "3c36a8c6f297bb986abe21abcf05691f8cd8dd54",
+    "packages/workflow/src/verification-evidence-reuse.ts": "04048bdf9d932c307c45e7d8b44438f757ea8466",
     "packages/workflow/src/verification-reuse-cost-gate.ts": "3c3bc502921ef79a9496d762167f366e5589fd02",
-    "packages/workflow/src/verification-service.ts": "59703b4279ca14b024b782d084a4d18edde948b4"
+    "packages/workflow/src/verification-service.ts": "9fe62538955e4646e43fba467d1ee9b449a58074"
   },
   "candidateA": {
     "kind": "DUPLICATE_READ_ONLY_TOOL_REUSE",
@@ -867,17 +867,71 @@
       "regressionEvidence": "R20 durable hosted-runtime campaign: canonical Vitest suite rerun at the reviewed tree (3034 pass, expected environment skips); real PostgreSQL suite 13 files / 87 tests green; durable hosted-execution HTTP suite 13 tests green incl. restart, hard-stop, failure-injection, and parent/child cascade coverage.",
       "recertifiedAt": "2026-09-20",
       "sourceStateConstant": "R20_DURABLE_HOSTED_RUNTIME_SOURCE_STATE"
+    },
+    {
+      "label": "R21 ForgeVerify recertification source-state reconciliation",
+      "reason": "R21 hardened the completion authority after an adversarial audit found four gaps: (1) durable evidence reuse trusted a record's evidenceHash by presence only, so a tampered/corrupted 'passed' record could be reused under ACTIVE_SAFE; (2) the completion gate bound ForgeVerify evidence to the live workspace state only through the FG-5 policy path, and the mission/parallel authorities received legacy results with no state identity at all; (3) a required test verifier that exited 0 while its runner reported no tests (real `node --test` on an empty tree) or reported failures behind a wrapper that swallowed the exit code was counted as a pass; (4) staged-but-restored changes were invisible to the input-state hash. Every change is fail-closed and additive: integrity is now verified (hash recomputed) at the reuse boundary, in the canonical validity rule, and in advisor narrowing; the gate rebinds evidence to the state observed at decision time on every authority path; empty collections and contradictory output are classified (blocked/failed, never passed); the index is part of the evidence identity; terminal ForgeVerify rows are immutable at the storage layer (SQLite trigger + sessions PG migration 4). ForgeGreen's own detectors, cost policy, and graduation registry are untouched; Candidate D's advisor now receives strictly fewer (only integrity-verified) candidates, which is the intended direction. Two FG-12F tests that fabricated duration history by editing elapsedMs in place were updated to re-mint records through ForgeVerify's own hash, so they exercise the same behaviour without relying on the closed weakness.",
+      "priorSourceStateId": "6a6b09898bf3fc4ea18e5b186f62ce2511d34de42d28a54631c88b8777a69a4f",
+      "priorSurfaceVersion": "r20-durable-hosted-runtime-v1",
+      "resultingSourceStateId": "f9ac543301b6cc5ac6b59c43f3117e849e66fb3b9bfa2a1dc10ddc5d2050b9d0",
+      "resultingSurfaceVersion": "r21-forgeverify-recertified-v1",
+      "changes": [
+        {
+          "file": "packages/workflow/src/forge-verify.ts",
+          "change": "evidence integrity (computeVerificationEvidenceHash/verifyVerificationEvidenceIntegrity), integrity required by isEvidenceCurrentlyValid and the executeVerificationPlan reuse boundary, summary carries inputStateHash and integrity rejections, index (staged) included in the input-state hash, secrets-aligned redaction before hashing.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/verification-service.ts",
+          "change": "no-tests-discovered and contradictory-output classification, test-signal recognition, npm preamble stripped before parsing, report carries inputStateHash; requiredPassed/overallStatus reflect the new classes.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/verification-evidence-reuse.ts",
+          "change": "narrowToStrictEvidence requires integrity.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/types.ts",
+          "change": "VerifierRunResult/VerificationResult identity + classification fields; ReviewFinding gains verification_config_modified.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "recoverInterruptedForgeVerifyAttempts exported (returns recovered ids) so the R21 chaos harness runs production restart recovery in a fresh process; no behavioural change.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "completion gate receives currentVerificationInputStateHash computed at decision time.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/sessions/src/persistence.ts",
+          "change": "SQLite BEFORE UPDATE trigger making terminal ForgeVerify rows immutable at the storage layer.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "R21 ForgeVerify recertification: workflow/sessions/terminal/server/forge-green/forgegreen-campaign suites 171 files green after the two FG-12F fixture updates (the only other failures were these two provenance canaries); new R21 suites: integrity 7/7, malicious corpus 24/24 (25 recorded cases incl. real `node --test`), stale-evidence matrix 11/11, gate binding 11/11, autonomous binding 5/5, storage immutability 3/3 (SQLite + real PostgreSQL); chaos sweeps 22 cases each on SQLite and real PostgreSQL with 0 false completions; evidence under docs/evidence/r21-intelligence-closure/01-forgeverify.",
+      "recertifiedAt": "2026-09-20",
+      "sourceStateConstant": "R21_FORGEVERIFY_RECERTIFIED_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications above and the R20 durable hosted-runtime reconciliation above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 ForgeVerify recertification above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
   "recertifiedAt": "2026-09-20",
   "recertification": {
-    "phase": "R20 durable hosted-runtime reconciliation",
-    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R20 committed surface so the fg11/fg12e provenance canaries certify the current tree.",
+    "phase": "R21 ForgeVerify recertification reconciliation",
+    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R21 ForgeVerify hardening so the fg11/fg12e provenance canaries certify the current tree.",
     "changedFiles": [
-      "packages/benchmark/src/index.ts"
+      "packages/server/src/autonomous-orchestrator.ts",
+      "packages/server/src/workflow-service.ts",
+      "packages/sessions/src/persistence.ts",
+      "packages/workflow/src/forge-verify.ts",
+      "packages/workflow/src/types.ts",
+      "packages/workflow/src/verification-evidence-reuse.ts",
+      "packages/workflow/src/verification-service.ts"
     ],
-    "priorSourceStateId": "b8f7a8bf5bf0d28587cd624cf6ff2a68ab0ee131fe38831e05a13a385d5851b1",
+    "priorSourceStateId": "6a6b09898bf3fc4ea18e5b186f62ce2511d34de42d28a54631c88b8777a69a4f",
     "guarded": true
   }
 }

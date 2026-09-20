@@ -1,4 +1,5 @@
 import {
+  createVerificationInputStateHash,
   evaluateCompletion,
   type CompletionGateDecision,
   type FailureAnalysis,
@@ -15,10 +16,23 @@ export interface AutonomousCompletionEvidence {
   diff: string;
   verification: VerificationResult[];
   reviewPassed: boolean;
+  /**
+   * R21: the workspace the verification ran in. When present, the gate recomputes the workspace
+   * input-state hash at decision time and rebinds every verification result to it, so evidence
+   * produced before a later edit — by any process — can never authorize completion.
+   */
+  workspacePath?: string;
 }
 
 export function evaluateAutonomousCompletion(evidence: AutonomousCompletionEvidence): CompletionGateDecision {
   const now = new Date().toISOString();
+  const noTestsDiscovered = evidence.verification.some((result) => result.noTestsDiscovered);
+  const contradictoryOutput = evidence.verification.some((result) => result.contradictoryOutput);
+  // Every legacy result must have been produced against one workspace state; disagreeing hashes
+  // mean the results are not one verification of one state, and the gate must not certify them.
+  const verifiedHashes = [...new Set(evidence.verification.map((result) => result.inputStateHash).filter((hash): hash is string => typeof hash === "string" && hash.length > 0))];
+  const verifiedInputStateHash = verifiedHashes.length === 1 ? verifiedHashes[0] : verifiedHashes.length > 1 ? "inconsistent-verification-state" : undefined;
+  const currentInputStateHash = evidence.workspacePath && verifiedInputStateHash !== undefined ? createVerificationInputStateHash(evidence.workspacePath) : undefined;
   const verification: VerificationResult = evidence.verification.length > 0
     ? {
       passed: evidence.verification.reduce((sum, result) => sum + result.passed, 0),
@@ -31,6 +45,9 @@ export function evaluateAutonomousCompletion(evidence: AutonomousCompletionEvide
       failures: evidence.verification.flatMap((result) => result.failures),
       ...(evidence.verification.some((result) => result.timedOut) ? { timedOut: true } : {}),
       ...(evidence.verification.some((result) => result.cancelled) ? { cancelled: true } : {}),
+      ...(noTestsDiscovered ? { noTestsDiscovered: true } : {}),
+      ...(contradictoryOutput ? { contradictoryOutput: true } : {}),
+      ...(verifiedInputStateHash !== undefined ? { inputStateHash: verifiedInputStateHash } : {}),
     }
     : {
       passed: 0,
@@ -78,5 +95,12 @@ export function evaluateAutonomousCompletion(evidence: AutonomousCompletionEvide
     })),
     summary: evidence.changedFiles.length > 0 ? `${evidence.changedFiles.length} file(s) changed` : "No effective change",
   };
-  return evaluateCompletion({ plan, verification, analysis, review });
+  return evaluateCompletion({
+    plan,
+    verification,
+    analysis,
+    review,
+    ...(verifiedInputStateHash !== undefined ? { verifiedVerificationInputStateHash: verifiedInputStateHash } : {}),
+    ...(currentInputStateHash !== undefined ? { currentVerificationInputStateHash: currentInputStateHash } : {}),
+  });
 }

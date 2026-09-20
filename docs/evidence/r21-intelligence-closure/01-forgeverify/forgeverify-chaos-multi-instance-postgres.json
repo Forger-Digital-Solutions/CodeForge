@@ -1,0 +1,1294 @@
+{
+  "schemaVersion": 1,
+  "campaign": "R21 ForgeVerify crash-chaos + multi-instance (PostgreSQL)",
+  "recordedAt": "2026-09-20T18:56:31.168Z",
+  "backend": "postgresql",
+  "processes": "worker A (verify + persist) → SIGKILL at marker → gate C (fresh process: production restart recovery, durable reload, completion authority)",
+  "cases": 22,
+  "killedCases": 18,
+  "falseCompletions": 0,
+  "legitimateCompletions": 4,
+  "gateProcessFailures": 0,
+  "results": [
+    {
+      "verifier": "failing",
+      "killPoint": "before_verification_starts",
+      "killAt": "WORKER_READY",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "WORKER_READY",
+          "atMs": 734
+        },
+        "markers": [
+          "WORKER_READY"
+        ],
+        "result": null,
+        "durationMs": 754
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 0,
+        "attemptsPersisted": 0,
+        "attemptStatuses": [],
+        "evidencePersisted": 0,
+        "evidenceStatuses": [],
+        "integrityFailures": 0,
+        "summaryComplete": null,
+        "summaryReasons": null,
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "blocked",
+        "legacyBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "reuse": null,
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "failing",
+      "killPoint": "after_process_spawn",
+      "killAt": "ATTEMPT_STARTED",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "ATTEMPT_STARTED",
+          "atMs": 980
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED"
+        ],
+        "result": null,
+        "durationMs": 996
+      },
+      "gate": {
+        "interruptedAttempts": 1,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "interrupted"
+        ],
+        "evidencePersisted": 0,
+        "evidenceStatuses": [],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "missing"
+        ],
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "blocked",
+        "legacyBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": false
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "failing",
+      "killPoint": "during_tests",
+      "killAt": "ATTEMPT_STARTED+600ms",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "ATTEMPT_STARTED+600ms",
+          "atMs": 1601
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED"
+        ],
+        "result": null,
+        "durationMs": 1623
+      },
+      "gate": {
+        "interruptedAttempts": 1,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "interrupted"
+        ],
+        "evidencePersisted": 0,
+        "evidenceStatuses": [],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "missing"
+        ],
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "blocked",
+        "legacyBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": false
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "failing",
+      "killPoint": "after_tests_exit",
+      "killAt": "TESTS_EXITED",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "TESTS_EXITED",
+          "atMs": 3794
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED"
+        ],
+        "result": null,
+        "durationMs": 3816
+      },
+      "gate": {
+        "interruptedAttempts": 1,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "interrupted"
+        ],
+        "evidencePersisted": 0,
+        "evidenceStatuses": [],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "missing"
+        ],
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "blocked",
+        "legacyBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": false
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "failing",
+      "killPoint": "before_receipt_persistence",
+      "killAt": "TESTS_EXITED",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "TESTS_EXITED",
+          "atMs": 3642
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED"
+        ],
+        "result": null,
+        "durationMs": 3662
+      },
+      "gate": {
+        "interruptedAttempts": 1,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "interrupted"
+        ],
+        "evidencePersisted": 0,
+        "evidenceStatuses": [],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "missing"
+        ],
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "blocked",
+        "legacyBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": false
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "failing",
+      "killPoint": "after_receipt_persistence",
+      "killAt": "EVIDENCE_PERSISTED",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "EVIDENCE_PERSISTED",
+          "atMs": 3631
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED",
+          "ATTEMPT_TERMINAL",
+          "EVIDENCE_PERSISTED"
+        ],
+        "result": null,
+        "durationMs": 3650
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "failed"
+        ],
+        "evidencePersisted": 1,
+        "evidenceStatuses": [
+          "failed"
+        ],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "failed"
+        ],
+        "structuredOutcome": "failed",
+        "structuredBlockers": [
+          "verification_failed",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "failed",
+        "legacyBlockers": [
+          "verification_failed"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": false
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "failing",
+      "killPoint": "after_receipt_persistence",
+      "killAt": "EVIDENCE_PERSISTED",
+      "mutatedAfterVerification": true,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "EVIDENCE_PERSISTED",
+          "atMs": 3647
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED",
+          "ATTEMPT_TERMINAL",
+          "EVIDENCE_PERSISTED"
+        ],
+        "result": null,
+        "durationMs": 3663
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "failed"
+        ],
+        "evidencePersisted": 1,
+        "evidenceStatuses": [
+          "failed"
+        ],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "stale"
+        ],
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_current",
+          "plan_steps_unfinished",
+          "verification_not_current"
+        ],
+        "legacyOutcome": "failed",
+        "legacyBlockers": [
+          "verification_failed",
+          "verification_not_current"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": false
+        },
+        "mutatedAfterVerification": true
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "failing",
+      "killPoint": "before_completion_gate",
+      "killAt": "GATE_START",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "GATE_START",
+          "atMs": 3932
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED",
+          "ATTEMPT_TERMINAL",
+          "EVIDENCE_PERSISTED",
+          "SUMMARY_READY",
+          "GATE_START"
+        ],
+        "result": null,
+        "durationMs": 3947
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "failed"
+        ],
+        "evidencePersisted": 1,
+        "evidenceStatuses": [
+          "failed"
+        ],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "failed"
+        ],
+        "structuredOutcome": "failed",
+        "structuredBlockers": [
+          "verification_failed",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "failed",
+        "legacyBlockers": [
+          "verification_failed"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": false
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "failing",
+      "killPoint": "during_completion_gate",
+      "killAt": "GATE_START+5ms",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "GATE_START+5ms",
+          "atMs": 3855
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED",
+          "ATTEMPT_TERMINAL",
+          "EVIDENCE_PERSISTED",
+          "SUMMARY_READY",
+          "GATE_START"
+        ],
+        "result": null,
+        "durationMs": 3873
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "failed"
+        ],
+        "evidencePersisted": 1,
+        "evidenceStatuses": [
+          "failed"
+        ],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "failed"
+        ],
+        "structuredOutcome": "failed",
+        "structuredBlockers": [
+          "verification_failed",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "failed",
+        "legacyBlockers": [
+          "verification_failed"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": false
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "failing",
+      "killPoint": "no_kill_control",
+      "killAt": null,
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": 0,
+        "signal": null,
+        "killed": false,
+        "killedAt": null,
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED",
+          "ATTEMPT_TERMINAL",
+          "EVIDENCE_PERSISTED",
+          "SUMMARY_READY",
+          "GATE_START",
+          "GATE_DONE"
+        ],
+        "result": {
+          "requiredPassed": false,
+          "outcome": "failed",
+          "blockers": [
+            "verification_failed",
+            "plan_steps_unfinished"
+          ]
+        },
+        "durationMs": 4078
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "failed"
+        ],
+        "evidencePersisted": 1,
+        "evidenceStatuses": [
+          "failed"
+        ],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "failed"
+        ],
+        "structuredOutcome": "failed",
+        "structuredBlockers": [
+          "verification_failed",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "failed",
+        "legacyBlockers": [
+          "verification_failed"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": false
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "failing",
+      "killPoint": "no_kill_control",
+      "killAt": null,
+      "mutatedAfterVerification": true,
+      "worker": {
+        "exit": 0,
+        "signal": null,
+        "killed": false,
+        "killedAt": null,
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED",
+          "ATTEMPT_TERMINAL",
+          "EVIDENCE_PERSISTED",
+          "SUMMARY_READY",
+          "GATE_START",
+          "GATE_DONE"
+        ],
+        "result": {
+          "requiredPassed": false,
+          "outcome": "failed",
+          "blockers": [
+            "verification_failed",
+            "plan_steps_unfinished"
+          ]
+        },
+        "durationMs": 4102
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "failed"
+        ],
+        "evidencePersisted": 1,
+        "evidenceStatuses": [
+          "failed"
+        ],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "stale"
+        ],
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_current",
+          "plan_steps_unfinished",
+          "verification_not_current"
+        ],
+        "legacyOutcome": "failed",
+        "legacyBlockers": [
+          "verification_failed",
+          "verification_not_current"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": false
+        },
+        "mutatedAfterVerification": true
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "passing",
+      "killPoint": "before_verification_starts",
+      "killAt": "WORKER_READY",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "WORKER_READY",
+          "atMs": 691
+        },
+        "markers": [
+          "WORKER_READY"
+        ],
+        "result": null,
+        "durationMs": 715
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 0,
+        "attemptsPersisted": 0,
+        "attemptStatuses": [],
+        "evidencePersisted": 0,
+        "evidenceStatuses": [],
+        "integrityFailures": 0,
+        "summaryComplete": null,
+        "summaryReasons": null,
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "blocked",
+        "legacyBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "reuse": null,
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "passing",
+      "killPoint": "after_process_spawn",
+      "killAt": "ATTEMPT_STARTED",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "ATTEMPT_STARTED",
+          "atMs": 952
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED"
+        ],
+        "result": null,
+        "durationMs": 967
+      },
+      "gate": {
+        "interruptedAttempts": 1,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "interrupted"
+        ],
+        "evidencePersisted": 0,
+        "evidenceStatuses": [],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "missing"
+        ],
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "blocked",
+        "legacyBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": true
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "passing",
+      "killPoint": "during_tests",
+      "killAt": "ATTEMPT_STARTED+600ms",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "ATTEMPT_STARTED+600ms",
+          "atMs": 1606
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED"
+        ],
+        "result": null,
+        "durationMs": 1624
+      },
+      "gate": {
+        "interruptedAttempts": 1,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "interrupted"
+        ],
+        "evidencePersisted": 0,
+        "evidenceStatuses": [],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "missing"
+        ],
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "blocked",
+        "legacyBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": true
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "passing",
+      "killPoint": "after_tests_exit",
+      "killAt": "TESTS_EXITED",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "TESTS_EXITED",
+          "atMs": 3732
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED"
+        ],
+        "result": null,
+        "durationMs": 3773
+      },
+      "gate": {
+        "interruptedAttempts": 1,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "interrupted"
+        ],
+        "evidencePersisted": 0,
+        "evidenceStatuses": [],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "missing"
+        ],
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "blocked",
+        "legacyBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": true
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "passing",
+      "killPoint": "before_receipt_persistence",
+      "killAt": "TESTS_EXITED",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "TESTS_EXITED",
+          "atMs": 3678
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED"
+        ],
+        "result": null,
+        "durationMs": 3700
+      },
+      "gate": {
+        "interruptedAttempts": 1,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "interrupted"
+        ],
+        "evidencePersisted": 0,
+        "evidenceStatuses": [],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "missing"
+        ],
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "legacyOutcome": "blocked",
+        "legacyBlockers": [
+          "verification_not_run",
+          "plan_steps_unfinished"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": true
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "passing",
+      "killPoint": "after_receipt_persistence",
+      "killAt": "EVIDENCE_PERSISTED",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "EVIDENCE_PERSISTED",
+          "atMs": 3747
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED",
+          "ATTEMPT_TERMINAL",
+          "EVIDENCE_PERSISTED"
+        ],
+        "result": null,
+        "durationMs": 3766
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "passed"
+        ],
+        "evidencePersisted": 1,
+        "evidenceStatuses": [
+          "passed"
+        ],
+        "integrityFailures": 0,
+        "summaryComplete": true,
+        "summaryReasons": [],
+        "structuredOutcome": "completed",
+        "structuredBlockers": [],
+        "legacyOutcome": "completed",
+        "legacyBlockers": [],
+        "reuse": {
+          "reusedEvidenceIds": [
+            "43dd3592-46c8-4dd6-8aa1-910d353c9204"
+          ],
+          "freshExecutions": 0,
+          "verificationComplete": true
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": true,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "passing",
+      "killPoint": "after_receipt_persistence",
+      "killAt": "EVIDENCE_PERSISTED",
+      "mutatedAfterVerification": true,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "EVIDENCE_PERSISTED",
+          "atMs": 3702
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED",
+          "ATTEMPT_TERMINAL",
+          "EVIDENCE_PERSISTED"
+        ],
+        "result": null,
+        "durationMs": 3720
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "passed"
+        ],
+        "evidencePersisted": 1,
+        "evidenceStatuses": [
+          "passed"
+        ],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "stale"
+        ],
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_current",
+          "plan_steps_unfinished",
+          "verification_not_current"
+        ],
+        "legacyOutcome": "blocked",
+        "legacyBlockers": [
+          "verification_not_current"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": false
+        },
+        "mutatedAfterVerification": true
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "passing",
+      "killPoint": "before_completion_gate",
+      "killAt": "GATE_START",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "GATE_START",
+          "atMs": 4002
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED",
+          "ATTEMPT_TERMINAL",
+          "EVIDENCE_PERSISTED",
+          "SUMMARY_READY",
+          "GATE_START"
+        ],
+        "result": null,
+        "durationMs": 4019
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "passed"
+        ],
+        "evidencePersisted": 1,
+        "evidenceStatuses": [
+          "passed"
+        ],
+        "integrityFailures": 0,
+        "summaryComplete": true,
+        "summaryReasons": [],
+        "structuredOutcome": "completed",
+        "structuredBlockers": [],
+        "legacyOutcome": "completed",
+        "legacyBlockers": [],
+        "reuse": {
+          "reusedEvidenceIds": [
+            "0882d5c8-b0b7-48ad-bb75-c46d435fe3e9"
+          ],
+          "freshExecutions": 0,
+          "verificationComplete": true
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": true,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "passing",
+      "killPoint": "during_completion_gate",
+      "killAt": "GATE_START+5ms",
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": null,
+        "signal": "SIGKILL",
+        "killed": true,
+        "killedAt": {
+          "marker": "GATE_START+5ms",
+          "atMs": 3986
+        },
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED",
+          "ATTEMPT_TERMINAL",
+          "EVIDENCE_PERSISTED",
+          "SUMMARY_READY",
+          "GATE_START"
+        ],
+        "result": null,
+        "durationMs": 4006
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "passed"
+        ],
+        "evidencePersisted": 1,
+        "evidenceStatuses": [
+          "passed"
+        ],
+        "integrityFailures": 0,
+        "summaryComplete": true,
+        "summaryReasons": [],
+        "structuredOutcome": "completed",
+        "structuredBlockers": [],
+        "legacyOutcome": "completed",
+        "legacyBlockers": [],
+        "reuse": {
+          "reusedEvidenceIds": [
+            "01709e1d-ffe6-431f-82da-e83f0af3d37f"
+          ],
+          "freshExecutions": 0,
+          "verificationComplete": true
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": true,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "passing",
+      "killPoint": "no_kill_control",
+      "killAt": null,
+      "mutatedAfterVerification": false,
+      "worker": {
+        "exit": 0,
+        "signal": null,
+        "killed": false,
+        "killedAt": null,
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED",
+          "ATTEMPT_TERMINAL",
+          "EVIDENCE_PERSISTED",
+          "SUMMARY_READY",
+          "GATE_START",
+          "GATE_DONE"
+        ],
+        "result": {
+          "requiredPassed": true,
+          "outcome": "completed",
+          "blockers": []
+        },
+        "durationMs": 4275
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "passed"
+        ],
+        "evidencePersisted": 1,
+        "evidenceStatuses": [
+          "passed"
+        ],
+        "integrityFailures": 0,
+        "summaryComplete": true,
+        "summaryReasons": [],
+        "structuredOutcome": "completed",
+        "structuredBlockers": [],
+        "legacyOutcome": "completed",
+        "legacyBlockers": [],
+        "reuse": {
+          "reusedEvidenceIds": [
+            "886c5826-edc4-4821-8e6c-4bfc9a049251"
+          ],
+          "freshExecutions": 0,
+          "verificationComplete": true
+        },
+        "mutatedAfterVerification": false
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": true,
+      "falseCompletion": false
+    },
+    {
+      "verifier": "passing",
+      "killPoint": "no_kill_control",
+      "killAt": null,
+      "mutatedAfterVerification": true,
+      "worker": {
+        "exit": 0,
+        "signal": null,
+        "killed": false,
+        "killedAt": null,
+        "markers": [
+          "WORKER_READY",
+          "PLAN_CREATED",
+          "ATTEMPT_STARTED",
+          "TESTS_EXITED",
+          "ATTEMPT_TERMINAL",
+          "EVIDENCE_PERSISTED",
+          "SUMMARY_READY",
+          "GATE_START",
+          "GATE_DONE"
+        ],
+        "result": {
+          "requiredPassed": true,
+          "outcome": "completed",
+          "blockers": []
+        },
+        "durationMs": 4238
+      },
+      "gate": {
+        "interruptedAttempts": 0,
+        "plansPersisted": 1,
+        "attemptsPersisted": 1,
+        "attemptStatuses": [
+          "passed"
+        ],
+        "evidencePersisted": 1,
+        "evidenceStatuses": [
+          "passed"
+        ],
+        "integrityFailures": 0,
+        "summaryComplete": false,
+        "summaryReasons": [
+          "stale"
+        ],
+        "structuredOutcome": "blocked",
+        "structuredBlockers": [
+          "verification_not_current",
+          "plan_steps_unfinished",
+          "verification_not_current"
+        ],
+        "legacyOutcome": "blocked",
+        "legacyBlockers": [
+          "verification_not_current"
+        ],
+        "reuse": {
+          "reusedEvidenceIds": [],
+          "freshExecutions": 1,
+          "verificationComplete": false
+        },
+        "mutatedAfterVerification": true
+      },
+      "gateProcessExit": 0,
+      "legitimateCompletion": false,
+      "falseCompletion": false
+    }
+  ]
+}

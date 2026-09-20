@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { prepareShellCommand } from "./child-process.js";
 import { execute } from "@codeforge/terminal";
+import { redactSecrets } from "@codeforge/secrets";
 import type { Verifier } from "./types.js";
 
 export type Brand<Value, Name extends string> = Value & { readonly __brand: Name };
@@ -125,12 +126,21 @@ export interface VerificationSummary {
   satisfiedEvidenceIds: readonly VerificationEvidenceId[];
   missingRequiredVerifiers: readonly VerifierId[];
   reasons: readonly VerificationSummaryReason[];
+  /**
+   * R21: the workspace input-state hash this summary was evaluated against. A summary is only
+   * an authority for that exact state; the completion gate rebinds it against the state it
+   * observes at decision time, so a summary computed before a later edit can never certify
+   * the edited work.
+   */
+  inputStateHash?: VerificationInputStateHash;
+  /** R21: evidence records that were present but failed the integrity check (tampered/corrupt). */
+  integrityRejectedEvidenceIds?: readonly VerificationEvidenceId[];
   policyDecision?: import("@codeforge/forge-green").VerificationPolicyDecision;
   policyReceipt?: import("@codeforge/forge-green").VerificationPolicyReceipt;
   resolutionReceipt?: import("@codeforge/forge-green").EvidenceResolutionReceipt;
 }
 
-export type VerificationSummaryReason = "missing" | "failed" | "cancelled" | "timed_out" | "infra_error" | "interrupted" | "stale" | "definition_changed";
+export type VerificationSummaryReason = "missing" | "failed" | "cancelled" | "timed_out" | "infra_error" | "interrupted" | "stale" | "definition_changed" | "integrity_failed";
 
 export interface VerificationReceipt {
   planId: VerificationPlanId;
@@ -184,11 +194,68 @@ function definitionDigest(definition: VerifierDefinition): string {
 }
 
 function redact(value: string): string {
-  return value
+  // The session persistence layer applies the shared secret redactor to every record it stores.
+  // Applying the same redactor here, before the excerpt is hashed into `evidenceHash`, keeps the
+  // persisted record byte-identical to the hashed one, so a durable record can still prove its
+  // own integrity when it is loaded back for reuse (R21 evidence integrity).
+  return redactSecrets(value
     .replace(/sk-(?:proj-)?[A-Za-z0-9_-]{10,}/g, "[REDACTED]")
     .replace(/gh[pousr]_[A-Za-z0-9_]{20,}/g, "[REDACTED]")
     .replace(/github_pat_[A-Za-z0-9_]{20,}/g, "[REDACTED]")
-    .replace(/AKIA[0-9A-Z]{16}/g, "[REDACTED]");
+    .replace(/AKIA[0-9A-Z]{16}/g, "[REDACTED]"));
+}
+
+/**
+ * The exact field set and order `evidenceHash` is computed over. Creation and verification share
+ * this one function so the two can never drift apart. `undefined` values are dropped by
+ * JSON.stringify on both sides, which is what makes a persistence round-trip (which also drops
+ * them) verifiable.
+ */
+function evidenceHashBase(record: Omit<VerificationEvidence, "evidenceHash">): Record<string, unknown> {
+  return {
+    evidenceId: record.evidenceId,
+    attemptId: record.attemptId,
+    planId: record.planId,
+    verifierId: record.verifierId,
+    verifierVersion: record.verifierVersion,
+    definitionDigest: record.definitionDigest,
+    runId: record.runId,
+    workspacePath: record.workspacePath,
+    inputStateHash: record.inputStateHash,
+    status: record.status,
+    exitCode: record.exitCode,
+    elapsedMs: record.elapsedMs,
+    commandDigest: record.commandDigest,
+    outputDigest: record.outputDigest,
+    outputExcerpt: record.outputExcerpt,
+    outputTruncated: record.outputTruncated,
+    outputBytes: record.outputBytes,
+    createdAt: record.createdAt,
+  };
+}
+
+export function computeVerificationEvidenceHash(record: Omit<VerificationEvidence, "evidenceHash">): string {
+  return digest(evidenceHashBase(record));
+}
+
+/**
+ * R21 evidence integrity: a stored evidence record is trusted only if its content still hashes to
+ * the `evidenceHash` ForgeVerify stamped at creation. A record whose `status`, state hash,
+ * workspace, verifier identity, exit code, or output was altered after the fact — by corruption,
+ * a persistence bug, or a forger — fails this check and can never satisfy an obligation. The
+ * check is a pure function of the record, so every consumer (summary, reuse boundary, ForgeGreen
+ * advisors) applies exactly the same rule.
+ */
+export function verifyVerificationEvidenceIntegrity(record: unknown): record is VerificationEvidence {
+  if (!record || typeof record !== "object") return false;
+  const candidate = record as Record<string, unknown>;
+  if (typeof candidate.evidenceHash !== "string" || candidate.evidenceHash.length !== 64) return false;
+  for (const field of ["evidenceId", "attemptId", "planId", "verifierId", "verifierVersion", "definitionDigest", "runId", "workspacePath", "inputStateHash", "status", "commandDigest", "outputDigest", "outputExcerpt", "createdAt"] as const) {
+    if (typeof candidate[field] !== "string") return false;
+  }
+  if (typeof candidate.elapsedMs !== "number" || typeof candidate.outputTruncated !== "boolean" || typeof candidate.outputBytes !== "number") return false;
+  if (candidate.exitCode !== undefined && typeof candidate.exitCode !== "number") return false;
+  return computeVerificationEvidenceHash(candidate as unknown as Omit<VerificationEvidence, "evidenceHash">) === candidate.evidenceHash;
 }
 
 function verifierEnvironment(): NodeJS.ProcessEnv {
@@ -283,13 +350,23 @@ function untrackedHash(workspacePath: string): string {
   }));
 }
 
-/** Binds evidence to HEAD, dirty tracked changes, untracked contents, and the canonical workspace path. */
+/**
+ * Binds evidence to HEAD, dirty tracked changes (worktree vs HEAD), the index (staged vs HEAD),
+ * untracked contents, and the canonical workspace path.
+ *
+ * The index is part of the identity because it is what a commit delivers: a broken change that
+ * is staged while the worktree copy is restored leaves `git diff HEAD` empty, yet `git commit`
+ * would ship it. Verification of the worktree must not certify a different index (R21).
+ */
 export function createVerificationInputStateHash(workspacePath: string): VerificationInputStateHash {
   const resolved = path.resolve(workspacePath);
   const head = gitValue(resolved, ["rev-parse", "HEAD"]) ?? "no-git";
   const tracked = gitValue(resolved, ["diff", "--binary", "HEAD"]) ?? "no-git";
+  // `--cached` without a revision diffs the index against HEAD (or the empty tree before the first
+  // commit), so a freshly initialised repository is covered too.
+  const staged = gitValue(resolved, ["diff", "--binary", "--cached"]) ?? "no-git";
   const untracked = untrackedHash(resolved);
-  return digest({ workspacePath: resolved, head, tracked, untracked, ...(head === "no-git" ? { directory: directoryHash(resolved) } : {}) }) as VerificationInputStateHash;
+  return digest({ workspacePath: resolved, head, tracked, ...(staged !== "" ? { staged } : {}), untracked, ...(head === "no-git" ? { directory: directoryHash(resolved) } : {}) }) as VerificationInputStateHash;
 }
 
 export function createVerificationPlan(registry: VerifierRegistry, policy: VerificationPolicy, input: VerificationPolicyInput): VerificationPlan {
@@ -318,8 +395,8 @@ export class VerificationEvidenceStore {
     if (existing) return existing;
     const attempt = this.attempts.get(attemptId);
     if (!attempt || attempt.status !== "running") throw new Error("Only a running attempt can receive terminal evidence.");
-    const base = { evidenceId: randomUUID() as VerificationEvidenceId, attemptId, planId: attempt.planId, verifierId: attempt.verifierId, verifierVersion: attempt.verifierVersion, definitionDigest: params.planned.definitionDigest, runId: attempt.runId, workspacePath: params.plan.workspacePath, inputStateHash: params.plan.inputStateHash, status: params.status, exitCode: params.exitCode, elapsedMs: params.elapsedMs, commandDigest: params.commandDigest, outputDigest: params.outputDigest, outputExcerpt: params.outputExcerpt, outputTruncated: params.outputTruncated, outputBytes: params.outputBytes, createdAt: new Date().toISOString() };
-    const record = Object.freeze({ ...base, evidenceHash: digest(base) });
+    const base = evidenceHashBase({ evidenceId: randomUUID() as VerificationEvidenceId, attemptId, planId: attempt.planId, verifierId: attempt.verifierId, verifierVersion: attempt.verifierVersion, definitionDigest: params.planned.definitionDigest, runId: attempt.runId, workspacePath: params.plan.workspacePath, inputStateHash: params.plan.inputStateHash, status: params.status, exitCode: params.exitCode, elapsedMs: params.elapsedMs, commandDigest: params.commandDigest, outputDigest: params.outputDigest, outputExcerpt: params.outputExcerpt, outputTruncated: params.outputTruncated, outputBytes: params.outputBytes, createdAt: new Date().toISOString() }) as Omit<VerificationEvidence, "evidenceHash">;
+    const record = Object.freeze({ ...base, evidenceHash: computeVerificationEvidenceHash(base) });
     this.attempts.set(attemptId, Object.freeze({ ...attempt, status: params.status, exitCode: params.exitCode, elapsedMs: params.elapsedMs, finishedAt: record.createdAt, ...(params.status === "timed_out" ? { terminationReason: "timeout" as const } : params.status === "cancelled" ? { terminationReason: "cancelled" as const } : params.status === "infra_error" ? { terminationReason: "spawn_error" as const } : {}) }));
     this.evidence.set(attemptId, record);
     return record;
@@ -388,14 +465,19 @@ export async function executeVerificationPlan(
     const definition = registry.get(planned.verifierId);
     if (!definition || definition.version !== planned.verifierVersion || definitionDigest(definition) !== planned.definitionDigest) continue;
 
+    // Authoritative reuse boundary. Every field is required to match exactly — a record that is
+    // missing identity fields, or whose content no longer hashes to its own `evidenceHash`, is
+    // never reused (R21: forged, corrupted, or partially persisted evidence fails closed here
+    // even if an advisor proposed it).
     const reusable = options.existingEvidence?.find((ev) => {
+      if (!verifyVerificationEvidenceIntegrity(ev)) return false;
       if (ev.verifierId !== planned.verifierId) return false;
-      if (ev.verifierVersion && ev.verifierVersion !== planned.verifierVersion) return false;
-      if (ev.definitionDigest && ev.definitionDigest !== planned.definitionDigest) return false;
+      if (ev.verifierVersion !== planned.verifierVersion) return false;
+      if (ev.definitionDigest !== planned.definitionDigest) return false;
       if (definitionDigest(definition) !== planned.definitionDigest) return false;
       if (ev.status !== "passed" || (ev.exitCode !== undefined && ev.exitCode !== 0)) return false;
-      if (ev.workspacePath && path.resolve(ev.workspacePath) !== path.resolve(plan.workspacePath)) return false;
-      if (ev.inputStateHash && ev.inputStateHash !== plan.inputStateHash) return false;
+      if (ev.workspacePath !== plan.workspacePath) return false;
+      if (ev.inputStateHash !== plan.inputStateHash) return false;
       return true;
     });
 
@@ -433,7 +515,9 @@ export function isEvidenceCurrentlyValid(
     evidence.status === "passed" &&
     evidence.inputStateHash === current.inputStateHash &&
     evidence.definitionDigest === current.definitionDigest &&
-    evidence.workspacePath === current.workspacePath
+    evidence.workspacePath === current.workspacePath &&
+    // R21: content must still hash to the stamped evidenceHash — no altered record is valid.
+    verifyVerificationEvidenceIntegrity(evidence)
   );
 }
 
@@ -441,12 +525,15 @@ export function summarizeVerification(plan: VerificationPlan, registry: Verifier
   const required = plan.verifiers.filter((planned) => planned.requirement === "required");
   const satisfiedEvidenceIds: VerificationEvidenceId[] = [];
   const missingRequiredVerifiers: VerifierId[] = [];
+  const integrityRejectedEvidenceIds: VerificationEvidenceId[] = [];
   const reasons: VerificationSummaryReason[] = [];
   let staleCount = 0;
   let failedCount = 0;
   for (const planned of required) {
     const currentDefinition = registry.get(planned.verifierId);
     const candidates = evidence.filter((item) => item.verifierId === planned.verifierId && item.verifierVersion === planned.verifierVersion);
+    const tampered: VerificationEvidence[] = candidates.filter((item: VerificationEvidence) => !verifyVerificationEvidenceIntegrity(item));
+    for (const item of tampered) if (typeof item?.evidenceId === "string") integrityRejectedEvidenceIds.push(item.evidenceId);
     const definitionChanged = !currentDefinition || definitionDigest(currentDefinition) !== planned.definitionDigest || candidates.some((item) => item.definitionDigest !== planned.definitionDigest);
     const stale = currentStateHash !== plan.inputStateHash || candidates.some((item) => item.inputStateHash !== currentStateHash || item.workspacePath !== plan.workspacePath);
     const passed = candidates.find((item) => isEvidenceCurrentlyValid(item, { workspacePath: plan.workspacePath, inputStateHash: currentStateHash, definitionDigest: planned.definitionDigest }));
@@ -455,13 +542,14 @@ export function summarizeVerification(plan: VerificationPlan, registry: Verifier
     if (definitionChanged) { staleCount += 1; reasons.push("definition_changed"); }
     else if (stale) { staleCount += 1; reasons.push("stale"); }
     else if (candidates.length === 0) reasons.push("missing");
+    else if (tampered.length > 0 && tampered.length === candidates.length) reasons.push("integrity_failed");
     else {
       const latest = candidates.at(-1)!;
       if (latest.status === "failed") failedCount += 1;
       reasons.push(latest.status === "passed" ? "missing" : latest.status);
     }
   }
-  return Object.freeze({ planId: plan.planId, requiredCount: required.length, satisfiedCount: satisfiedEvidenceIds.length, failedCount, missingCount: missingRequiredVerifiers.length, staleCount, verificationComplete: required.length > 0 && missingRequiredVerifiers.length === 0, satisfiedEvidenceIds: Object.freeze(satisfiedEvidenceIds), missingRequiredVerifiers: Object.freeze(missingRequiredVerifiers), reasons: Object.freeze(reasons) });
+  return Object.freeze({ planId: plan.planId, requiredCount: required.length, satisfiedCount: satisfiedEvidenceIds.length, failedCount, missingCount: missingRequiredVerifiers.length, staleCount, verificationComplete: required.length > 0 && missingRequiredVerifiers.length === 0, satisfiedEvidenceIds: Object.freeze(satisfiedEvidenceIds), missingRequiredVerifiers: Object.freeze(missingRequiredVerifiers), reasons: Object.freeze(reasons), inputStateHash: currentStateHash, ...(integrityRejectedEvidenceIds.length > 0 ? { integrityRejectedEvidenceIds: Object.freeze(integrityRejectedEvidenceIds) } : {}) });
 }
 
 export function verificationReceipt(plan: VerificationPlan, evidence: VerificationEvidence, requirement: VerifierRequirement): VerificationReceipt {

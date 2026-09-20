@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "campaign": "R21 ForgeVerify recertification — primary safety metrics",
+  "recordedAt": "2026-09-20T19:07:34.429Z",
+  "primary": {
+    "falsePositiveCompletions": {
+      "corpus": 0,
+      "staleMatrix": 0,
+      "chaos": 0,
+      "total": 0
+    },
+    "falseBlocking": {
+      "genuineRunnerSummariesSampled": 8,
+      "genuineRunnerSummariesBlocked": 0,
+      "staleMatrixUnchangedWorkspaceCompleted": true,
+      "chaosLegitimateCompletions": [
+        {
+          "backend": "sqlite",
+          "legitimateCompletions": 4
+        },
+        {
+          "backend": "postgresql",
+          "legitimateCompletions": 4
+        }
+      ]
+    }
+  },
+  "classification": {
+    "corpusCases": 25,
+    "caughtAsRequired": 19,
+    "documentedBoundaries": [
+      {
+        "case": "forged-receipt-exit0",
+        "boundary": "declared command exits 0 with no runner signal; surfaced as advisory verification_no_test_signal; review flags package.json script edits"
+      },
+      {
+        "case": "shell-wrapper-hides-silent-failure",
+        "boundary": "exit 0 and no runner signal: indistinguishable from a silent custom runner at this layer; surfaced as advisory; package.json script edits are a blocking review finding"
+      },
+      {
+        "case": "malformed-output-exit0",
+        "boundary": "no runner signal, exit 0"
+      },
+      {
+        "case": "stale-test-artifact",
+        "boundary": "the declared command is the authority on what verification means; a command that replays cached counts is indistinguishable from a run at this layer; mitigations: package.json/runner-config edits are blocking review findings, and the artifact file itself is part of the input-state hash so a changed artifact invalidates evidence"
+      },
+      {
+        "case": "path-substitution",
+        "boundary": "evidence identity covers workspace content (HEAD, tracked diff, untracked files); content outside the workspace and gitignored content (node_modules) is outside the identity; dependency state is represented by the tracked lockfile"
+      },
+      {
+        "case": "ignored-content",
+        "boundary": "gitignored generated content is by definition not part of the delivered work; verification re-runs regenerate it from tracked sources, which are covered"
+      }
+    ],
+    "noTestsDiscoveredDetected": [
+      "empty-collection-real-node-test",
+      "empty-collection-vitest",
+      "empty-collection-jest",
+      "empty-collection-pytest",
+      "empty-collection-pytest-collect",
+      "empty-collection-unittest",
+      "empty-collection-mocha",
+      "empty-collection-cargo",
+      "empty-collection-go"
+    ],
+    "contradictoryOutputDetected": [
+      "shell-wrapper-hides-failure"
+    ],
+    "timedOut": [
+      "timeout"
+    ],
+    "infraOrKilled": [
+      {
+        "case": "missing-executable",
+        "status": "failed",
+        "exitCode": 127
+      },
+      {
+        "case": "killed-process",
+        "status": "failed",
+        "exitCode": 1
+      }
+    ]
+  },
+  "staleEvidence": {
+    "scenarios": 15,
+    "detections": 11,
+    "byScenario": {
+      "baseline_unchanged": "completed",
+      "same_branch_dirty_tree": "blocked",
+      "untracked_file_added": "blocked",
+      "commit_after_pass": "blocked",
+      "amend_after_pass": "blocked",
+      "partial_staging_index_and_worktree": "blocked",
+      "partial_staging_index_only": "blocked",
+      "restored_file_before_restore": "blocked",
+      "restored_file_after_restore": "completed",
+      "alternate_worktree_same_commit": "blocked",
+      "subagent_child_pass_vs_parent": "blocked",
+      "subagent_child_pass_after_child_commit": "blocked",
+      "reverify_before": "blocked"
+    }
+  },
+  "integrity": {
+    "cases": 7,
+    "singleFieldMutationsCovered": 18,
+    "allMutationsRejected": true,
+    "malformedVariantsRejected": 12,
+    "remintedForgeryBoundary": {
+      "recordedAt": "2026-09-20T19:04:44.052Z",
+      "case": "reminted_forgery_boundary",
+      "internallyConsistent": true,
+      "acceptedBySummaryWhenWorkspaceUnchanged": true,
+      "mitigation": "storage-layer immutability trigger (sessions migration 4 / SQLite trigger) + unkeyed hash; keyed signature is a recorded follow-up"
+    }
+  },
+  "gateBinding": {
+    "cases": 4,
+    "outcomes": [
+      {
+        "case": "plan_identity_mismatch",
+        "outcome": "blocked"
+      },
+      {
+        "case": "forgeverify_without_summary",
+        "outcome": "blocked"
+      },
+      {
+        "case": "no_tests_discovered",
+        "outcome": "blocked"
+      },
+      {
+        "case": "contradictory_output",
+        "outcome": "failed"
+      }
+    ]
+  },
+  "chaos": [
+    {
+      "backend": "sqlite",
+      "cases": 22,
+      "killed": 18,
+      "falseCompletions": 0,
+      "legitimateCompletions": 4,
+      "gateProcessFailures": 0,
+      "killPoints": [
+        "before_verification_starts",
+        "after_process_spawn",
+        "during_tests",
+        "after_tests_exit",
+        "before_receipt_persistence",
+        "after_receipt_persistence",
+        "before_completion_gate",
+        "during_completion_gate",
+        "no_kill_control"
+      ]
+    },
+    {
+      "backend": "postgresql",
+      "cases": 22,
+      "killed": 18,
+      "falseCompletions": 0,
+      "legitimateCompletions": 4,
+      "gateProcessFailures": 0,
+      "killPoints": [
+        "before_verification_starts",
+        "after_process_spawn",
+        "during_tests",
+        "after_tests_exit",
+        "before_receipt_persistence",
+        "after_receipt_persistence",
+        "before_completion_gate",
+        "during_completion_gate",
+        "no_kill_control"
+      ]
+    }
+  ],
+  "verificationLatency": {
+    "workerWallMsMedianUnkilled": 4190,
+    "note": "worker wall time includes a deliberate 1.5 s sleep inside the verifier fixture; see FG-12E for the ~140 ms input-state-hash cost measured separately"
+  }
+}

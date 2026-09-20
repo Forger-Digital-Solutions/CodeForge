@@ -3,6 +3,7 @@ import {
   createVerificationPlan,
   createVerifierRegistry,
   isEvidenceCurrentlyValid,
+  verifyVerificationEvidenceIntegrity,
   type VerificationEvidence,
   type VerificationPlan,
   type VerificationPolicy,
@@ -59,6 +60,10 @@ export function narrowToStrictEvidence(generic: GenericVerificationEvidence): Ve
   if (record.status !== "passed" && record.status !== "failed" && record.status !== "cancelled" && record.status !== "timed_out" && record.status !== "infra_error" && record.status !== "interrupted") {
     return undefined;
   }
+  // R21: a well-formed record whose content no longer hashes to its own `evidenceHash` is a
+  // forged or corrupted receipt. It is removed from consideration entirely — shape alone never
+  // earns trust.
+  if (!verifyVerificationEvidenceIntegrity(record)) return undefined;
   return generic as unknown as VerificationEvidence;
 }
 

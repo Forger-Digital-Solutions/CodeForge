@@ -158,6 +158,11 @@ export class ParallelAutonomousRunOrchestrator {
       failures: verifier.failures,
       ...(verifier.timedOut ? { timedOut: true } : {}),
       ...(verifier.cancelled ? { cancelled: true } : {}),
+      ...(verifier.testSignal ? { testSignal: verifier.testSignal } : {}),
+      ...(verifier.noTestsDiscovered ? { noTestsDiscovered: true } : {}),
+      ...(verifier.contradictoryOutput ? { contradictoryOutput: true } : {}),
+      // R21: carry ForgeVerify identity so the final gate can rebind to the live workspace state.
+      ...(verifier.inputStateHash ? { inputStateHash: verifier.inputStateHash } : {}),
     }));
   }
 
@@ -273,6 +278,7 @@ export class ParallelAutonomousRunOrchestrator {
       diff: completionDiff,
       verification: globalVerification,
       reviewPassed: true,
+      workspacePath: synthesisPath,
     });
     await this.emit(run, "parallel.completion.decided", { outcome: completion.outcome, rationale: completion.rationale, blockers: completion.blockers });
     if (completion.outcome !== "completed") {

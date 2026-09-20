@@ -110,6 +110,21 @@ export interface VerifierRunResult {
   notConfigured?: boolean;
   /** FG-7: evidence ID that was reused for this verifier (when restart reuse occurs). */
   reusedEvidenceId?: string;
+  /** R21: how test results were recognised in the output (`counts` / `marker` / `none`). */
+  testSignal?: "counts" | "marker" | "none";
+  /**
+   * R21: the process exited 0 but the runner reported that no test executed. The obligation is
+   * unmet; consumers must treat this as unproven, never as a pass.
+   */
+  noTestsDiscovered?: boolean;
+  /**
+   * R21: the process exited 0 but the runner's own numeric summary reported failures — a wrapper
+   * swallowed the child's exit status. Treated as a failure; the runner's summary wins.
+   */
+  contradictoryOutput?: boolean;
+  /** R21: ForgeVerify identity of the evidence behind this result, for gate-time rebinding. */
+  inputStateHash?: string;
+  evidenceId?: string;
 }
 
 export interface VerificationResult {
@@ -130,6 +145,18 @@ export interface VerificationResult {
    * this as a pass.
    */
   notConfigured?: boolean;
+  /** R21: how test results were recognised in the output (`counts` / `marker` / `none`). */
+  testSignal?: "counts" | "marker" | "none";
+  /** R21: exit 0 but the runner reported that no test executed — unproven, never a pass. */
+  noTestsDiscovered?: boolean;
+  /** R21: exit 0 but the runner's summary reported failures — treated as a failure. */
+  contradictoryOutput?: boolean;
+  /**
+   * R21: the workspace input-state hash the verification evidence was produced against. Legacy
+   * per-verifier results carry it so the completion gate can rebind them to the state it
+   * observes at decision time.
+   */
+  inputStateHash?: string;
 }
 
 export interface VerificationReport extends VerificationResult {
@@ -180,7 +207,7 @@ export interface DiffEntry {
 export type ReviewFindingSeverity = "blocking" | "advisory";
 
 export interface ReviewFinding {
-  code: "sensitive_file" | "oversized_diff";
+  code: "sensitive_file" | "oversized_diff" | "verification_config_modified";
   severity: ReviewFindingSeverity;
   path: string;
   message: string;

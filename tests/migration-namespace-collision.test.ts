@@ -159,6 +159,10 @@ describe.skipIf(!TEST_PG?.startsWith("postgres"))("Migration namespace collision
       await conn.query(`CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, name VARCHAR(255) NOT NULL, checksum VARCHAR(64) NOT NULL, applied_at VARCHAR(64) NOT NULL)`);
       await conn.query(`CREATE TABLE sessions (id TEXT PRIMARY KEY, title TEXT NOT NULL, "createdAt" TEXT NOT NULL, "updatedAt" TEXT NOT NULL, status TEXT NOT NULL, "currentAgentId" TEXT, "currentModelId" TEXT, "currentProviderId" TEXT, "permissionMode" TEXT, "displayMode" TEXT, branch TEXT, "workspacePath" TEXT, "taskTitle" TEXT)`);
       await conn.query(`INSERT INTO sessions (id, title, "createdAt", "updatedAt", status) VALUES ('legacy-session', 'pre-existing', now()::text, now()::text, 'completed')`);
+      // A database that recorded sessions migration 1 also has migration 1's other tables; later
+      // additive migrations (e.g. R21 migration 4's ForgeVerify immutability trigger on work_items)
+      // legitimately assume they exist. The fixture reproduces that shape rather than a partial one.
+      await conn.query(`CREATE TABLE work_items (id TEXT PRIMARY KEY, "sessionId" TEXT, kind TEXT NOT NULL, data JSONB NOT NULL)`);
       // Use the REAL checksum sessions' own migration 1 computes (not a placeholder) — the
       // adoption path renames the table in place rather than re-running migration content, so the
       // post-adoption checksum-verification step compares against this row exactly as written.

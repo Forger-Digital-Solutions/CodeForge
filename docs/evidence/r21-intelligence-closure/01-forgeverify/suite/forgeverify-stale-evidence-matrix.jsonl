@@ -1,0 +1,15 @@
+{"recordedAt":"2026-09-20T19:03:24.444Z","scenario":"baseline_unchanged","outcome":"completed","falseCompletion":false}
+{"recordedAt":"2026-09-20T19:03:27.031Z","scenario":"same_branch_dirty_tree","outcome":"blocked","blockers":["verification_not_current"],"falseCompletion":false}
+{"recordedAt":"2026-09-20T19:03:29.858Z","scenario":"untracked_file_added","outcome":"blocked","blockers":["verification_not_current"],"falseCompletion":false}
+{"recordedAt":"2026-09-20T19:03:32.585Z","scenario":"commit_after_pass","outcome":"blocked","blockers":["verification_not_current"],"falseCompletion":false}
+{"recordedAt":"2026-09-20T19:03:35.185Z","scenario":"amend_after_pass","outcome":"blocked","blockers":["verification_not_current"],"falseCompletion":false}
+{"recordedAt":"2026-09-20T19:03:37.628Z","scenario":"partial_staging_index_and_worktree","outcome":"blocked","blockers":["verification_not_current"],"falseCompletion":false}
+{"recordedAt":"2026-09-20T19:03:38.191Z","scenario":"partial_staging_index_only","outcome":"blocked","blockers":["verification_not_current"],"falseCompletion":false,"note":"index differs from HEAD although the worktree file was restored"}
+{"recordedAt":"2026-09-20T19:03:40.758Z","scenario":"restored_file_before_restore","outcome":"blocked","blockers":["verification_not_current"],"falseCompletion":false}
+{"recordedAt":"2026-09-20T19:03:40.995Z","scenario":"restored_file_after_restore","outcome":"completed","note":"identical content ⇒ identical input-state hash ⇒ evidence valid; this is correct, not a leak"}
+{"recordedAt":"2026-09-20T19:03:43.520Z","scenario":"alternate_worktree_same_commit","outcome":"blocked","blockers":["verification_not_current"],"falseCompletion":false,"note":"workspacePath is part of the evidence identity"}
+{"recordedAt":"2026-09-20T19:03:46.607Z","scenario":"subagent_child_pass_vs_parent","outcome":"blocked","blockers":["verification_not_current"],"falseCompletion":false}
+{"recordedAt":"2026-09-20T19:03:47.042Z","scenario":"subagent_child_pass_after_child_commit","outcome":"blocked","blockers":["verification_not_current"],"falseCompletion":false}
+{"recordedAt":"2026-09-20T19:03:49.589Z","scenario":"summary_reevaluation","stale":true,"staleCount":1}
+{"recordedAt":"2026-09-20T19:03:52.096Z","scenario":"reverify_before","outcome":"blocked","blockers":["verification_not_current"],"falseCompletion":false}
+{"recordedAt":"2026-09-20T19:03:56.189Z","scenario":"reverify_cycle","verdicts":["blocked","failed","completed"]}

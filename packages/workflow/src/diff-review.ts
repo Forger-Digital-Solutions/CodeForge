@@ -47,6 +47,43 @@ function isBinary(content: Buffer): boolean {
   return content.includes(0);
 }
 
+const VERIFICATION_SCRIPT_KEYS = ["test", "typecheck", "tsc", "check", "build", "lint", "pretest", "posttest"] as const;
+const VERIFICATION_CONFIG_FILES = /(^|[\\/])(vitest\.config\.[cm]?[jt]s|vitest\.workspace\.[cm]?[jt]s|jest\.config\.[cm]?[jt]s|jest\.config\.json|\.mocharc(\.[a-z]+)?|pytest\.ini|tox\.ini|setup\.cfg|conftest\.py|playwright\.config\.[cm]?[jt]s|karma\.conf\.[cm]?js|\.nycrc(\.[a-z]+)?)$/i;
+
+/**
+ * R21: the verification commands ForgeVerify runs are discovered from the repository's own
+ * manifest (`package.json` scripts) and shaped by the test runner's configuration. A change that
+ * edits those definitions can make verification trivially green (`"test": "echo ok"`,
+ * `passWithNoTests: true`, an emptied `testMatch`) without touching a single test. Such a change
+ * is not necessarily wrong, but it is never silent: it is a blocking review finding that a human
+ * (or an explicit policy) must accept before the run can complete on the strength of a
+ * verification it also rewrote.
+ */
+function verificationConfigFinding(entry: DiffEntry): ReviewFinding | undefined {
+  const base = path.basename(entry.path).toLowerCase();
+  if (base === "package.json") {
+    const touched = VERIFICATION_SCRIPT_KEYS.filter((key) => new RegExp(`^[+-]\\s*"${key}"\\s*:`, "m").test(entry.diff));
+    if (touched.length === 0 && !(entry.changeType === "deleted")) return undefined;
+    return {
+      code: "verification_config_modified",
+      severity: "blocking",
+      path: entry.path,
+      message: entry.changeType === "deleted"
+        ? `Verification manifest deleted: ${entry.path}`
+        : `Verification script(s) ${touched.map((key) => `"${key}"`).join(", ")} changed in ${entry.path}; verification ran under a definition this change rewrote.`,
+    };
+  }
+  if (VERIFICATION_CONFIG_FILES.test(entry.path)) {
+    return {
+      code: "verification_config_modified",
+      severity: "blocking",
+      path: entry.path,
+      message: `Test-runner configuration ${entry.changeType}: ${entry.path}; verification ran under a configuration this change rewrote.`,
+    };
+  }
+  return undefined;
+}
+
 function asSnapshot(content: string | BeforeSnapshot): BeforeSnapshot {
   if (typeof content !== "string") return content;
   return { kind: "text", content, size: Buffer.byteLength(content, "utf-8"), hash: sha256(content) };
@@ -211,6 +248,11 @@ export async function reviewDiff(
       const message = `Sensitive file modified: ${d.path}`;
       issues.push(message);
       findings.push({ code: "sensitive_file", severity: "blocking", path: d.path, message });
+    }
+    const verificationConfig = verificationConfigFinding(d);
+    if (verificationConfig) {
+      issues.push(verificationConfig.message);
+      findings.push(verificationConfig);
     }
   }
 

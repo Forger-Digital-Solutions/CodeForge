@@ -32,6 +32,7 @@ import {
 import type { ISessionPersistence } from "@codeforge/sessions";
 import type { WorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import {
+  createVerificationInputStateHash,
   evaluateCompletion,
   runVerification,
   verificationPassed as forgeVerificationPassed,
@@ -859,6 +860,8 @@ ${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
         verification: completionVerification,
         analysis: completionAnalysis,
         review: completionReview,
+        // R21: rebind ForgeVerify evidence to the worktree state observed at decision time.
+        currentVerificationInputStateHash: createVerificationInputStateHash(verificationCwd),
       });
       await adapter?.emitWorkflowCompletionDecided(runId, completion.outcome, completion.rationale, completion.blockers);
       if (completion.outcome !== "completed") {

@@ -92,13 +92,22 @@ function describePlanForApproval(plan: WorkflowPlan, safeTitle: string): string 
 }
 
 /** A persisted running process has no trustworthy terminal result after a service restart. */
-async function recoverInterruptedForgeVerifyAttempts(persistence: ISessionPersistence, sessionId: string): Promise<void> {
+/**
+ * Restart recovery for ForgeVerify: any attempt still `running` when the process died is
+ * terminalized as `interrupted` (its evidence was never written, so nothing can satisfy it).
+ * Exported so the R21 chaos harness exercises the production recovery path in a fresh process.
+ * Returns the ids of the attempts it terminalized.
+ */
+export async function recoverInterruptedForgeVerifyAttempts(persistence: ISessionPersistence, sessionId: string): Promise<string[]> {
   const now = new Date().toISOString();
+  const recovered: string[] = [];
   for (const item of await persistence.getWorkItems(sessionId)) {
     if (item.kind !== "verification" || item.recordType !== "attempt" || item.status !== "running") continue;
     const payload = { ...item.payload, status: "interrupted", finishedAt: now, terminationReason: "restart" };
     await persistence.upsertWorkItem({ ...item, status: "interrupted", payload, updatedAt: now });
+    recovered.push(item.id);
   }
+  return recovered;
 }
 
 function validateWorkspacePath(workspacePath: string): { valid: boolean; resolved?: string; error?: string } {

@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { createSessionPersistence, type ISessionPersistence, type WorkItem } from "@codeforge/sessions";
 import type { GenericVerificationEvidence } from "@codeforge/forge-green";
 import { createForgeVerifyPersistenceObserver, loadForgeVerifyEvidence } from "../src/forge-verify-persistence.js";
-import { runVerification, type VerificationReport } from "@codeforge/workflow";
+import { runVerification, type VerificationReport, computeVerificationEvidenceHash } from "@codeforge/workflow";
 
 /**
  * FG-12F production-composition corpus (spec §20–§28): every case runs the REAL production seam —
@@ -108,7 +108,12 @@ async function craftEvidenceSession(
   const target = await makePersistence(tag);
   const now = new Date().toISOString();
   for (const [index, base] of bases.entries()) {
-    const payload = base.elapsedMs === undefined ? base.evidence : { ...base.evidence, elapsedMs: base.elapsedMs };
+    // R21: evidence integrity hashes every field including elapsedMs, so a crafted duration sample
+    // must be re-minted through ForgeVerify's own hash — exactly what a genuinely slow run would
+    // carry — rather than edited in place (which is now correctly rejected as tampering).
+    const { evidenceHash: _stale, ...rest } = base.evidence as Record<string, unknown> & { evidenceHash?: string };
+    const remintedBase = base.elapsedMs === undefined ? rest : { ...rest, elapsedMs: base.elapsedMs };
+    const payload = { ...remintedBase, evidenceHash: computeVerificationEvidenceHash(remintedBase as never) };
     await target.persistence.insertImmutableWorkItem({
       kind: "verification",
       id: `crafted-${tag}-${index}`,

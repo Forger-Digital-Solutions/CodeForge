@@ -1,0 +1,4 @@
+{"recordedAt":"2026-09-20T19:07:34.255Z","case":"plan_identity_mismatch","outcome":"blocked"}
+{"recordedAt":"2026-09-20T19:07:34.259Z","case":"forgeverify_without_summary","outcome":"blocked"}
+{"recordedAt":"2026-09-20T19:07:34.261Z","case":"no_tests_discovered","structured":"blocked","legacy":"blocked"}
+{"recordedAt":"2026-09-20T19:07:34.262Z","case":"contradictory_output","structured":"failed","legacy":"failed"}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "campaign": "R21 intelligence & reliability closure (R20+)",
+  "recordedAt": "2026-09-20T18:20:00.000Z",
+  "branch": "forger-digital-solutions-forgegreen-certified",
+  "startingHead": "62daabe37424212e03ae671b47bed426af3d95b7",
+  "workingTreeAtTakeover": "clean",
+  "expectedInheritedCommitsPresent": ["7227f5e", "62daabe"],
+  "build": { "command": "npm run build", "exitCode": 0, "result": "all workspaces compiled" },
+  "unit": {
+    "command": "npx vitest run",
+    "files": { "passed": 392, "skipped": 8, "total": 400 },
+    "tests": { "passed": 3046, "failed": 0, "skipped": 46, "total": 3092 },
+    "unhandledErrors": 0,
+    "durationSeconds": 365.01,
+    "skipReason": "8 PostgreSQL-gated files skip without CODEFORGE_TEST_POSTGRES_URL by design; run separately below"
+  },
+  "postgres": {
+    "environment": "local WSL Ubuntu PostgreSQL 16, codeforge_test_db, test-only user; no production access",
+    "harness": "node scripts/postgres-test-harness.mjs -- node node_modules/vitest/vitest.mjs run <files>",
+    "runs": [
+      { "files": ["packages/cloud-db/test/hosted-admission-postgres.test.ts", "packages/cloud-db/test/postgres.test.ts", "packages/eight-bit/test/postgres.test.ts", "packages/server/test/cf17-pg-restart-e2e.test.ts"], "filesPassed": 4, "testsPassed": 21, "failed": 0 },
+      { "files": ["tests/two-client-authority.test.ts", "tests/cloud-postgres-adversarial.test.ts", "tests/fg1-postgres-ledger.test.ts", "tests/migration-namespace-collision.test.ts", "packages/cloud-db/test/publication-lease.test.ts", "packages/cloud-db/test/parity.test.ts", "packages/cloud-db/test/account-deletion.test.ts", "packages/server/test/hosted-workflow-postgres-r4.test.ts", "packages/server/test/fg7-postgres-persistence.test.ts"], "filesPassed": 9, "testsPassed": 71, "failed": 0 }
+    ],
+    "totals": { "files": 13, "tests": 92, "failed": 0 },
+    "note": "A first attempt without the harness keeper failed with ECONNREFUSED because the WSL instance shut down after the ad-hoc service start; the harness keeper is required, not optional."
+  },
+  "environmentFacts": {
+    "gpu": "Quadro T2000, 4096 MiB VRAM (nvidia-smi) — bounds any local GEMS training",
+    "paidCredentialsPresentInEnv": ["OPENAI_API_KEY", "ANTHROPIC_BASE_URL"],
+    "freeTierCredentialsPresentInEnv": ["GROQ_API_KEY", "CLOUDFLARE_API_KEY", "OPENROUTER_API_KEY"],
+    "policy": "no live paid call is made by this campaign; the regression suite uses deterministic doubles; paid keys are never read by campaign scripts"
+  },
+  "spend": "$0.00"
+}

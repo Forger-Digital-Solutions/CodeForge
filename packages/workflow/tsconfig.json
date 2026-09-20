@@ -11,6 +11,7 @@
     { "path": "../core" },
     { "path": "../protocol" },
     { "path": "../sessions" },
+    { "path": "../secrets" },
     { "path": "../repo-intelligence" },
     { "path": "../terminal" }
   ]

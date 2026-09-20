@@ -56,10 +56,39 @@ function redact(text: string): string {
     .replace(/OPENCODE_API_KEY\s*[:=]\s*['"]?[^'"\s]+/gi, "OPENCODE_API_KEY=[REDACTED]");
 }
 
-function parseTestOutput(output: string): { passed: number; failed: number; skipped: number; failures: Array<{ test: string; message: string }> } {
+/**
+ * How the parser recognised test results in a verifier's output. `counts` means a runner's
+ * numeric summary was found; `marker` means only a textual PASS/FAIL marker was found; `none`
+ * means the output carried no recognisable test signal at all (an `echo ok` script, a custom
+ * runner, or a wrapper that swallowed the runner's output).
+ */
+export type VerifierTestSignal = "counts" | "marker" | "none";
+
+/**
+ * Runner phrases that mean "I ran, and I found nothing to run". These are the honest,
+ * runner-authored statements that no test executed; when they appear with exit 0 (e.g.
+ * `--passWithNoTests`, `go test` on a package with no test files, an empty pytest collection
+ * that a wrapper turned green) the verifier proved nothing about the change.
+ */
+const NO_TESTS_DISCOVERED_MARKERS: readonly RegExp[] = [
+  /\bno test files? found\b/i, // vitest
+  /\bno tests? found\b/i, // jest
+  /\bno tests? ran\b/i, // pytest
+  /\bcollected 0 items\b/i, // pytest
+  /\bran 0 tests?\b/i, // unittest
+  /\b0 passing\b/i, // mocha
+  /\brunning 0 tests\b/i, // cargo (single section)
+  /\btests\s+0\b/i, // node --test summary (`ℹ tests 0` / `# tests 0`)
+];
+
+function parseTestOutput(rawOutput: string): { passed: number; failed: number; skipped: number; failures: Array<{ test: string; message: string }>; signal: VerifierTestSignal; noTestsDiscovered: boolean } {
+  // npm prefixes a script run with its own echo (`> pkg@1.0.0 test`, `> node fail.cjs`). Those
+  // lines describe the command, not its result — a script *named* fail.cjs is not a failure.
+  const output = rawOutput.replace(/^(?:\s*\n)*(?:> [^\n]*\n?)+/, "");
   let passed = 0;
   let failed = 0;
   let skipped = 0;
+  let signal: VerifierTestSignal = "none";
   const failures: Array<{ test: string; message: string }> = [];
 
   // Vitest / Jest patterns
@@ -69,6 +98,7 @@ function parseTestOutput(output: string): { passed: number; failed: number; skip
   if (passMatch) passed = parseInt(passMatch[1] ?? "0", 10);
   if (failMatch) failed = parseInt(failMatch[1] ?? "0", 10);
   if (skipMatch) skipped = parseInt(skipMatch[1] ?? "0", 10);
+  if (passMatch || failMatch || skipMatch) signal = "counts";
 
   // Node's built-in test runner reports counters as `pass N`, `fail N`, and `skipped N`.
   const nodePassMatch = output.match(/\bpass\s+(\d+)\b/i);
@@ -77,13 +107,31 @@ function parseTestOutput(output: string): { passed: number; failed: number; skip
   if (!passMatch && nodePassMatch) passed = parseInt(nodePassMatch[1] ?? "0", 10);
   if (!failMatch && nodeFailMatch) failed = parseInt(nodeFailMatch[1] ?? "0", 10);
   if (!skipMatch && nodeSkipMatch) skipped = parseInt(nodeSkipMatch[1] ?? "0", 10);
+  if (nodePassMatch || nodeFailMatch || nodeSkipMatch) signal = "counts";
 
-  // Fallback: look for FAIL / PASS per test file
-  if (passed === 0 && failed === 0) {
-    const failLines = output.split("\n").filter((l) => /FAIL|Error|failed/i.test(l));
-    if (failLines.length > 0 && /fail/i.test(output)) failed = 1;
-    else if (/pass/i.test(output) && !/fail/i.test(output)) passed = 1;
+  // Go's runner prints `ok <pkg>` per package and `[no test files]` for packages without tests.
+  const goOkPackages = (output.match(/^ok\s+\S+/gm) ?? []).length;
+  const goNoTestPackages = (output.match(/\[no test files\]/g) ?? []).length;
+
+  // Fallback: look for FAIL / PASS markers a runner prints per file or per suite. A marker is a
+  // runner-shaped token on its own (`PASS src/x.test.ts`, `✓ passed`, `ok`), never the substring
+  // "pass" inside arbitrary text — a JSON blob containing "status":"passed", or the word
+  // "password", is not a test signal.
+  if (passed === 0 && failed === 0 && signal === "none") {
+    const failMarker = /(^|\s)FAIL(\s|$)|(^|[\s✗×])fail(?:ed|ing)?(\s|$|[.!:])|^\s*(?:\w*Error|AssertionError):/m;
+    if (failMarker.test(output)) { failed = 1; signal = "marker"; }
+    else if (/(^|\s)PASS(\s|$)|(^|[\s✓√])pass(?:ed|ing)?(\s|$|[.!])/m.test(output)) { passed = 1; signal = "marker"; }
+    else if (goOkPackages > 0) { passed = goOkPackages; signal = "marker"; }
   }
+
+  const explicitNoTests = NO_TESTS_DISCOVERED_MARKERS.some((marker) => marker.test(output)) || (goNoTestPackages > 0 && goOkPackages === 0);
+  const noTestsDiscovered = failed === 0 && (
+    // The runner itself said nothing ran. A synthesized textual PASS marker (`0 passing` contains
+    // "pass") never outranks that statement; only a real numeric pass count does.
+    (explicitNoTests && !(signal === "counts" && passed > 0)) ||
+    // A numeric summary that adds up to nothing (e.g. cargo's `0 passed; 0 failed`) ran no test.
+    (signal === "counts" && passed === 0 && skipped === 0)
+  );
 
   // Extract failure messages
   const lines = output.split("\n");
@@ -96,7 +144,7 @@ function parseTestOutput(output: string): { passed: number; failed: number; skip
     }
   }
 
-  return { passed, failed, skipped, failures };
+  return { passed, failed, skipped, failures, signal, noTestsDiscovered };
 }
 
 function redactedNext(text: string): string {
@@ -165,6 +213,7 @@ export async function runCommand(options: RunOptions): Promise<VerificationResul
   if (exitCode === 0 && failed === 0 && passed === 0) {
     passed = 1;
   }
+  const noTestsDiscovered = exitCode === 0 && !stopReason && !result.spawnError && parsed.noTestsDiscovered;
   return {
     passed,
     failed,
@@ -180,6 +229,8 @@ export async function runCommand(options: RunOptions): Promise<VerificationResul
         : parsed.failures,
     timedOut: stopReason === "timeout",
     cancelled: stopReason === "aborted",
+    testSignal: parsed.signal,
+    ...(noTestsDiscovered ? { noTestsDiscovered: true } : {}),
   };
 }
 
@@ -514,7 +565,13 @@ export async function runVerification(
     const evidence = execution.evidence.find((item) => item.verifierId === planned.verifierId);
     const parsed = parseTestOutput(evidence?.outputExcerpt ?? "");
     const status = evidence?.status ?? "infra_error";
-    const passed = status === "passed" ? Math.max(parsed.passed, 1) : parsed.passed;
+    // R21: a test-kind verifier whose runner reported that nothing ran proves nothing, even at
+    // exit 0. Its process passed; its obligation did not. The count is not synthesized to 1.
+    const noTestsDiscovered = status === "passed" && verifier.kind === "test" && parsed.noTestsDiscovered;
+    // R21: exit 0 while the runner's own numeric summary reports failures is a contradiction — the
+    // signature of a wrapper that swallowed the child's exit status. The runner's word wins.
+    const contradictoryOutput = status === "passed" && parsed.signal === "counts" && parsed.failed > 0;
+    const passed = status === "passed" ? (noTestsDiscovered ? 0 : Math.max(parsed.passed, 1)) : parsed.passed;
     const failed = status === "passed" ? parsed.failed : Math.max(parsed.failed, 1);
     // FG-7: check if this verifier reused existing evidence
     const reusedEvidence = existingEvidence?.find((ev) => ev.verifierId === planned.verifierId && ev.evidenceId === evidence?.evidenceId);
@@ -535,6 +592,10 @@ export async function runVerification(
       timedOut: status === "timed_out",
       cancelled: status === "cancelled",
       reusedEvidenceId,
+      testSignal: parsed.signal,
+      ...(noTestsDiscovered ? { noTestsDiscovered: true } : {}),
+      ...(contradictoryOutput ? { contradictoryOutput: true } : {}),
+      ...(evidence ? { inputStateHash: evidence.inputStateHash, evidenceId: evidence.evidenceId } : {}),
     } satisfies import("./types.js").VerifierRunResult;
   });
   const totalPassed = runResults.reduce((total, result) => total + result.passed, 0);
@@ -543,10 +604,14 @@ export async function runVerification(
   const totalDurationMs = runResults.reduce((total, result) => total + result.durationMs, 0);
   const allOutputs = runResults.map((result) => `=== [${result.id.toUpperCase()}] ${result.command} ===\n${result.output}`);
   const allFailures = runResults.flatMap((result) => result.failures);
-  const requiredPassed = execution.summary.verificationComplete;
-  const hasFailures = runResults.some((result) => result.status !== "passed");
+  // R21: a required test verifier that discovered no tests leaves the obligation unmet. That is
+  // "blocked" (unproven), never "failed" (nothing broke) and never "passed" (nothing was shown).
+  const requiredNoTests = runResults.filter((result) => result.required && result.noTestsDiscovered);
+  const requiredContradictory = runResults.filter((result) => result.required && result.contradictoryOutput);
+  const requiredPassed = execution.summary.verificationComplete && requiredNoTests.length === 0 && requiredContradictory.length === 0;
+  const hasFailures = runResults.some((result) => result.status !== "passed") || requiredContradictory.length > 0;
   const advisories = runResults.filter((result) => !result.required && result.status !== "passed");
-  const overallStatus = !requiredPassed ? "failed" : "passed";
+  const overallStatus = !execution.summary.verificationComplete || requiredContradictory.length > 0 ? "failed" : requiredNoTests.length > 0 ? "blocked" : "passed";
 
   // Evaluate FG-5 sufficiency if obligations exist
   let policyDecision: VerificationPolicyDecision | undefined;
@@ -591,7 +656,7 @@ export async function runVerification(
     await options.observer?.policyReceiptCreated?.(policyDecision.receipt);
   }
 
-  const summary = `ForgeVerify: ${runResults.filter((r) => r.status === "passed").length}/${runResults.length} verifiers passed (${requiredPassed ? "all required passed" : "required verifier failed"}).`;
+  const summary = `ForgeVerify: ${runResults.filter((r) => r.status === "passed").length}/${runResults.length} verifiers passed (${requiredPassed ? "all required passed" : requiredNoTests.length > 0 && execution.summary.verificationComplete ? `required verifier discovered no tests: ${requiredNoTests.map((r) => r.id).join(", ")}` : "required verifier failed"}).`;
 
   // FG-7: Evaluate verification coverage receipt
   const kindMap: Record<string, import("@codeforge/forge-green").VerificationEvidenceKind> = {
@@ -709,6 +774,9 @@ export async function runVerification(
     exitCode: requiredPassed ? 0 : 1,
     command: availableVerifiers.map((v) => v.command).join(" && "),
     failures: allFailures,
+    inputStateHash: plan.inputStateHash,
+    ...(requiredNoTests.length > 0 ? { noTestsDiscovered: true } : {}),
+    ...(requiredContradictory.length > 0 ? { contradictoryOutput: true } : {}),
     forgeVerify: { plan, ...execution, summary: policySummary, resolutionReceipt: resolutionResult?.receipt },
     policyDecision,
     policyReceipt: policyDecision?.receipt,

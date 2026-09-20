@@ -1,0 +1,7 @@
+{"recordedAt":"2026-09-20T19:04:26.748Z","case":"genuine_round_trip","verified":true}
+{"recordedAt":"2026-09-20T19:04:30.655Z","case":"status_flip_forgery","rejectedAt":["integrity","validity","summary","narrowing","advisor","reuse_boundary","completion_gate"],"falseCompletion":false}
+{"recordedAt":"2026-09-20T19:04:34.726Z","case":"state_hash_rewrite","reused":false,"falseCompletion":false}
+{"recordedAt":"2026-09-20T19:04:36.851Z","case":"single_field_mutations","fieldsCovered":18,"allRejected":true}
+{"recordedAt":"2026-09-20T19:04:39.130Z","case":"malformed_records","variants":12,"allRejected":true}
+{"recordedAt":"2026-09-20T19:04:41.234Z","case":"redaction_alignment","secretsInExcerpt":false,"verifiesAfterRoundTrip":true}
+{"recordedAt":"2026-09-20T19:04:44.052Z","case":"reminted_forgery_boundary","internallyConsistent":true,"acceptedBySummaryWhenWorkspaceUnchanged":true,"mitigation":"storage-layer immutability trigger (sessions migration 4 / SQLite trigger) + unkeyed hash; keyed signature is a recorded follow-up"}

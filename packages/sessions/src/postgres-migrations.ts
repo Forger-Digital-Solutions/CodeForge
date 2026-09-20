@@ -76,6 +76,25 @@ const MIGRATION_3_POSTGRES = `
 ALTER TABLE sessions ADD COLUMN IF NOT EXISTS outcome TEXT;
 `;
 
+// R21: terminal ForgeVerify records are append-only at the storage layer. A BEFORE UPDATE
+// trigger refuses any content change to a plan/evidence/receipt row, so neither the generic
+// upsert nor any future code path can rewrite verification evidence after the fact. Attempt
+// records (running -> terminal) remain mutable. Idempotent re-writes of identical content pass.
+const MIGRATION_4_POSTGRES = `
+CREATE OR REPLACE FUNCTION work_items_forgeverify_immutable() RETURNS trigger AS $$
+BEGIN
+  IF OLD.kind = 'verification'
+     AND (OLD.data->>'recordType') IN ('plan', 'evidence', 'policy_receipt', 'resolution_receipt', 'coverage_receipt', 'cost_gate_receipt')
+     AND NEW.data IS DISTINCT FROM OLD.data THEN
+    RAISE EXCEPTION 'FORGEVERIFY_RECORD_IMMUTABLE' USING ERRCODE = 'restrict_violation';
+  END IF;
+  RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS trg_work_items_forgeverify_immutable ON work_items;
+CREATE TRIGGER trg_work_items_forgeverify_immutable BEFORE UPDATE ON work_items FOR EACH ROW EXECUTE FUNCTION work_items_forgeverify_immutable();
+`;
+
 export const SESSIONS_MIGRATIONS: SessionsMigrationDefinition[] = [
   {
     version: 1,
@@ -94,5 +113,11 @@ export const SESSIONS_MIGRATIONS: SessionsMigrationDefinition[] = [
     name: "session_run_outcome",
     postgresUp: MIGRATION_3_POSTGRES,
     checksum: computeChecksum(MIGRATION_3_POSTGRES),
+  },
+  {
+    version: 4,
+    name: "forgeverify_records_immutable",
+    postgresUp: MIGRATION_4_POSTGRES,
+    checksum: computeChecksum(MIGRATION_4_POSTGRES),
   },
 ];

@@ -108,6 +108,18 @@ CREATE TABLE IF NOT EXISTS work_items (
 
 CREATE INDEX IF NOT EXISTS idx_work_items_sessionId ON work_items(sessionId);
 
+-- R21: terminal ForgeVerify records (plans, evidence, receipts) are append-only at the storage
+-- layer, not merely at the API layer. No statement — including the generic upsert — may change
+-- their content once written. Attempt records stay mutable (running -> terminal).
+CREATE TRIGGER IF NOT EXISTS trg_work_items_forgeverify_immutable
+BEFORE UPDATE ON work_items
+WHEN OLD.kind = 'verification'
+  AND json_extract(OLD.data, '$.recordType') IN ('plan', 'evidence', 'policy_receipt', 'resolution_receipt', 'coverage_receipt', 'cost_gate_receipt')
+  AND NEW.data <> OLD.data
+BEGIN
+  SELECT RAISE(ABORT, 'FORGEVERIFY_RECORD_IMMUTABLE');
+END;
+
 CREATE TABLE IF NOT EXISTS events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   sessionId TEXT NOT NULL,
