@@ -6,4 +6,5 @@ export * from "./jwt.js";
 export * from "./github-oauth.js";
 export * from "./github-app.js";
 export * from "./github-app-authorization.js";
+export * from "./github-webhook.js";
 export * from "./auth-service.js";

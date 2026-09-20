@@ -49,6 +49,7 @@ async function main() {
       ? {
           gitHubAppConfig: { appId: config.gitHub.app.appId, privateKeyPem: config.gitHub.app.privateKeyPem },
           ...(config.gitHub.app.installationUrl ? { gitHubAppInstallationUrl: config.gitHub.app.installationUrl } : {}),
+          ...(config.gitHub.app.webhookSecret ? { gitHubAppWebhookSecret: config.gitHub.app.webhookSecret } : {}),
         }
       : {}),
     publicUrl: config.publicUrl,

@@ -35,6 +35,8 @@
     "@codeforge/terminal": "*",
     "zod": "^3.24.0",
     "@codeforge/model-registry": "*",
-    "@codeforge/paid-auto": "*"
+    "@codeforge/paid-auto": "*",
+    "@codeforge/browser": "*",
+    "@codeforge/mcp": "*"
   }
 }

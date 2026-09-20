@@ -308,7 +308,7 @@ export class ExtensionManager {
     return true;
   }
 
-  async runCommand(extensionId: string, commandId: string, args: unknown[] = []): Promise<{ ok: boolean; error?: string }> {
+  async runCommand(extensionId: string, commandId: string, args: unknown[] = []): Promise<{ ok: boolean; error?: string; result?: string }> {
     const ext = this.loaded.get(extensionId);
     if (!ext || !ext.record.enabled) return { ok: false, error: "Extension is not enabled" };
     return this.host.runCommand(ext, commandId, args);

@@ -10,7 +10,6 @@
   "references": [
     { "path": "../agent" },
     { "path": "../core" },
-    { "path": "../protocol" },
     { "path": "../secrets" },
     { "path": "../tools" }
   ]

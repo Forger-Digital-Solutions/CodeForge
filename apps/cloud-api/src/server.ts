@@ -4,7 +4,7 @@ import { URL } from "node:url";
 import { isIP, type AddressInfo } from "node:net";
 import { z } from "zod";
 import { createCloudDatabase, type ICloudDatabase } from "@codeforge/cloud-db";
-import { AuthService, GitHubAppAuthorizationService, GitHubAuthorizationError, type GitHubAppConfiguration } from "@codeforge/cloud-auth";
+import { AuthService, GitHubAppAuthorizationService, GitHubAuthorizationError, GitHubWebhookError, GitHubWebhookService, type GitHubAppConfiguration } from "@codeforge/cloud-auth";
 import { EntitlementService } from "@codeforge/cloud-entitlements";
 import { UsageEngine } from "@codeforge/cloud-usage";
 import { StripeBillingService, type StripeConfig } from "@codeforge/cloud-billing";
@@ -241,6 +241,11 @@ export interface CodeForgeCloudServerConfig {
   gitHubAppConfig?: GitHubAppConfiguration;
   /** GitHub App installation/setup URL used to start repository authorization. */
   gitHubAppInstallationUrl?: string;
+  /**
+   * X-Hub-Signature-256 shared secret for POST /v1/github-app/webhook. When absent the webhook
+   * route returns 503 — unsigned deliveries are never processed.
+   */
+  gitHubAppWebhookSecret?: string;
   /** Filesystem root for bounded publication artifact staging. */
   publicationArtifactDir?: string;
   /** Shared durable runtime state. When omitted, the server creates and owns one. */
@@ -280,6 +285,7 @@ export class CodeForgeCloudServer {
   public readonly gateway: GatewayService;
   public readonly providerRegistry?: CloudProviderRegistry;
   public readonly gitHubAppAuth?: GitHubAppAuthorizationService;
+  private readonly gitHubWebhook?: GitHubWebhookService;
   public readonly publicationService?: PublicationService;
   public readonly hostedWorkflowAuthority: HostedWorkflowAuthority;
   public readonly hostedRuntime: HostedRuntime;
@@ -455,6 +461,13 @@ export class CodeForgeCloudServer {
         appConfig: config.gitHubAppConfig,
         ...(config.gitHubAppInstallationUrl ? { installationUrl: config.gitHubAppInstallationUrl } : {}),
       });
+      if (config.gitHubAppWebhookSecret) {
+        this.gitHubWebhook = new GitHubWebhookService({
+          db: this.db,
+          webhookSecret: config.gitHubAppWebhookSecret,
+          authorization: this.gitHubAppAuth,
+        });
+      }
       this.publicationService = new PublicationService({
         db: this.db,
         authorization: this.gitHubAppAuth,
@@ -1469,6 +1482,38 @@ export class CodeForgeCloudServer {
         const userId = await this.authenticateRequest(req);
         const installations = await service.listUserInstallations(userId);
         this.sendJson(res, 200, installations.map((item) => ({ id: item.id, installationId: item.installationId, accountLogin: item.accountLogin, accountType: item.accountType, status: item.status, repositorySelection: item.repositorySelection })), corsOrigin);
+        return;
+      }
+
+      // 7b. R22: GitHub App webhook — UNAUTHENTICATED by design (GitHub is the caller); the
+      //     HMAC-SHA256 signature over the raw body is the authentication, and the delivery
+      //     GUID claim is the dedup boundary. Never gated by user auth, never trusts payload
+      //     content beyond the fields needed for access invalidation.
+      if (url.pathname === "/v1/github-app/webhook" && method === "POST") {
+        if (!this.gitHubWebhook) {
+          this.sendJson(res, 503, { error: "GitHub App webhooks are not configured for this deployment" }, corsOrigin);
+          return;
+        }
+        const rawBody = await this.readRawBody(req);
+        try {
+          const result = await this.gitHubWebhook.handleDelivery({
+            signatureHeader: req.headers["x-hub-signature-256"] as string | undefined,
+            deliveryId: req.headers["x-github-delivery"] as string | undefined,
+            event: req.headers["x-github-event"] as string | undefined,
+            rawBody,
+          });
+          this.audit({
+            type: `github.webhook.${result.action === "duplicate_skipped" ? "duplicate" : result.action === "ignored" ? "ignored" : "processed"}`,
+            outcome: "info",
+            ipAddress: clientIp,
+            details: { event: result.event, action: result.action },
+          });
+          this.sendJson(res, 200, result, corsOrigin);
+        } catch (error) {
+          const code = error instanceof GitHubWebhookError ? error.code : "unknown";
+          this.audit({ type: "github.webhook.rejected", outcome: "denied", ipAddress: clientIp, details: { code } });
+          this.sendJson(res, code === "GITHUB_WEBHOOK_PAYLOAD_TOO_LARGE" ? 413 : 400, { error: "Webhook rejected", code }, corsOrigin);
+        }
         return;
       }
 

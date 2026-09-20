@@ -74,6 +74,7 @@ import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, type
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
+import { BROWSER_READ_ONLY_TOOLS, BROWSER_STATE_CHANGING_TOOLS } from "./external-tools.js";
 import {
   ERROR_CODES,
   DEFAULT_EXECUTION_BUDGETS,
@@ -91,7 +92,7 @@ import {
   validateStructuredAgentResult,
   formatUntrustedData,
 } from "@codeforge/agent";
-import { createToolBroker, type ToolExecutionRecord } from "@codeforge/tools";
+import { createToolBroker, type ToolDefinition as RegistryToolDefinition, type ToolExecutionRecord } from "@codeforge/tools";
 import { createModelExecutionAdapter, normalizeProviderError, type ModelExecutionResponse } from "./model-execution-adapter.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import type { PaidAutoService } from "@codeforge/paid-auto";
@@ -399,6 +400,17 @@ export interface AgentRuntimeOptions {
    * for direct-constructed runtimes.
    */
   authorityFor?: () => TaskAuthority;
+  /**
+   * R22: governed external tool surface (browser / MCP / future providers). Definitions are
+   * registered into the run's ToolRegistry; `execute` is tried after repo_* tools and before the
+   * request-scoped customToolExecutor. `effectOf` reports a bridged tool's effect class so
+   * describeAction can map it onto the permission tier system — servers never self-classify.
+   */
+  externalTools?: {
+    definitions?: RegistryToolDefinition[];
+    execute?: (name: string, args: Record<string, unknown>) => Promise<string | undefined>;
+    effectOf?: (toolName: string) => "network_read" | "external" | undefined;
+  };
 }
 
 function toWorkerActionType(toolName: string): DesktopWorkerActionType {
@@ -518,6 +530,7 @@ export class AgentRuntime {
   private readonly capacityGovernor: ProviderCapacityGovernor;
   private readonly capacityGovernorIsExplicit: boolean;
   private readonly authorityFor?: () => TaskAuthority;
+  private readonly externalTools?: AgentRuntimeOptions["externalTools"];
   /** Legacy-parity authority used when no shared lease is wired (direct-constructed runtimes). */
   private fallbackAuthority?: TaskAuthority;
   private readonly hostedWorker?: HostedWorkerOptions;
@@ -552,6 +565,25 @@ export class AgentRuntime {
     this.capacityGovernorIsExplicit = options.capacityGovernor !== undefined;
     this.hostedWorker = options.hostedWorker;
     this.authorityFor = options.authorityFor;
+    this.externalTools = options.externalTools;
+  }
+
+  /**
+   * Duplicate supervisor with the R22 external-tool classifier wired in: browser interactions
+   * and MCP external effects bump the state version (a replayed inspect must never masquerade
+   * as post-interaction evidence); browser reads and MCP network_read tools become
+   * suppressible so ForgeGreen replays identical external reads instead of re-executing them.
+   */
+  private newDuplicateSupervisor(workstreamScope?: string): DuplicateActionSupervisor {
+    return createDuplicateActionSupervisor({
+      ...(workstreamScope !== undefined ? { workstreamScope } : {}),
+      externalClassifier: {
+        isReadOnly: (name) =>
+          BROWSER_READ_ONLY_TOOLS.has(name) || this.externalTools?.effectOf?.(name) === "network_read",
+        isStateChanging: (name) =>
+          BROWSER_STATE_CHANGING_TOOLS.has(name) || this.externalTools?.effectOf?.(name) === "external",
+      },
+    });
   }
 
   private authority(): TaskAuthority {
@@ -791,11 +823,19 @@ export class AgentRuntime {
      * the optimization decision/receipt framework. Hashes/ids/sizes only — never raw content. */
     const forgeGreenDuplicateSuppressionEvents: DuplicateToolSuppressionEvent[] = [];
     const toolBroker = createToolBroker();
+    for (const def of this.externalTools?.definitions ?? []) {
+      // External tool namespaces are prefixed (browser_/mcp__) so they can never shadow a
+      // built-in; register() is still last-write-wins, so guard the core surface explicitly.
+      if (!def.name.startsWith("browser_") && !def.name.startsWith("mcp__") && !def.name.startsWith("plugin__")) {
+        throw new Error(`External tool "${def.name}" lacks a governed namespace prefix`);
+      }
+      toolBroker.getRegistry().register(def);
+    }
     const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen);
     const contextAssembler = createContextAssembler(resolvedMaxContextTokens, this.forgeGreen);
     const contextPageStore = this.forgeGreenCacheStore ? createContextPageStore(this.forgeGreenCacheStore) : undefined;
     const adapter = req.adapter ?? this.createAdapter();
-    const duplicateSupervisor = createDuplicateActionSupervisor({ workstreamScope: req.workstreamScope });
+    const duplicateSupervisor = this.newDuplicateSupervisor(req.workstreamScope);
     const ledger = createForgeGreenLedgerCollector({
       runId: req.runId,
       operation: "agent_run",
@@ -1253,7 +1293,9 @@ export class AgentRuntime {
           for (const tc of pendingCalls) {
             const toolDef = toolBroker.getRegistry().get(tc.name);
             const isReadOnly = toolDef?.readOnly ?? false;
-            const executionClass: ToolExecutionClass = tc.name === "run_command" ? "command" : isReadOnly ? "read_only" : "write";
+            const executionClass: ToolExecutionClass = tc.name === "run_command"
+              ? "command"
+              : toolDef?.executionClass === "network" ? "network" : isReadOnly ? "read_only" : "write";
 
             const completedRecord = runToolRecords.find(
               (r) => r.toolName === tc.name && (r.state === "observation_recorded" || r.state === "completed"),
@@ -1331,6 +1373,8 @@ export class AgentRuntime {
                     if (name.startsWith("repo_")) {
                       return this.executeRepositoryTool(name, args, req.signal ?? new AbortController().signal, req.workspacePath, intelligence, { ledger, cacheStats: canonicalCacheStats });
                     }
+                    const external = await this.externalTools?.execute?.(name, args);
+                    if (external !== undefined) return external;
                     return req.customToolExecutor?.(name, args);
                   },
                 },
@@ -1521,6 +1565,7 @@ export class AgentRuntime {
           const toolDefForDurability = toolBroker.getRegistry().get(tc.name);
           const executionClass: ToolExecutionClass = tc.name === "run_command"
             ? "command"
+            : toolDefForDurability?.executionClass === "network" ? "network"
             : toolDefForDurability?.readOnly ? "read_only"
             : "write";
           if (resumeJournal) {
@@ -1709,6 +1754,38 @@ export class AgentRuntime {
             }
           }
 
+          // External-commit tools (form submissions, MCP "external" effects) are Tier 3 trust
+          // crossings with no approval channel on an autonomous run — deny them outright the
+          // same way externally-visible run_command invocations are denied above. The
+          // interactive path reaches them through the approval gate instead.
+          const parsedTcArgs = supervisorArgs === PARSE_FAILED ? {} : (supervisorArgs as Record<string, unknown>);
+          const externalCommit =
+            tc.name === "browser_submit"
+            || (tc.name === "browser_type" && parsedTcArgs.submit === true)
+            || this.externalTools?.effectOf?.(tc.name) === "external";
+          if (externalCommit) {
+            const why = `${tc.name} can commit remote state and autonomous runs have no approval channel`;
+            const denyRecord: ToolExecutionRecord = {
+              toolExecutionId: `denied-${executionId}`,
+              toolName: tc.name,
+              arguments: parsedTcArgs,
+              success: false,
+              output: `Error: [${ERROR_CODES.TOOL_PERMISSION_DENIED}] ${why}`,
+              error: ERROR_CODES.TOOL_PERMISSION_DENIED,
+              durationMs: 0,
+              readOnly: false,
+              truncated: false,
+            };
+            toolExecutions.push(denyRecord);
+            ledger.recordNoProgressInterruption(`${tc.name} denied: ${why}`);
+            adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.TOOL_PERMISSION_DENIED);
+            messages.push({ role: "tool", content: denyRecord.output, toolCallId: tc.id });
+            toolCallCount++;
+            totalUsage.toolCount++;
+            await writeRunJournal("active");
+            continue;
+          }
+
           adapter.emitToolCallStarted(req.runId, tc.id, tc.name, req.agentId);
           adapter.emitToolExecutionStarted(req.runId, tc.id, tc.name, tc.arguments);
 
@@ -1749,6 +1826,8 @@ export class AgentRuntime {
                 if (name.startsWith("repo_")) {
                   return this.executeRepositoryTool(name, args, req.signal ?? new AbortController().signal, req.workspacePath, intelligence, { ledger, cacheStats: canonicalCacheStats });
                 }
+                const external = await this.externalTools?.execute?.(name, args);
+                if (external !== undefined) return external;
                 return req.customToolExecutor?.(name, args);
               },
             },
@@ -2696,7 +2775,7 @@ export class AgentRuntime {
     }
 
     adapter.emitAgentStarted(agentId, "Lead Agent", turnId);
-    const duplicateSupervisor = createDuplicateActionSupervisor();
+    const duplicateSupervisor = this.newDuplicateSupervisor();
 
     try {
       const model = this.resolveTurnModel();
@@ -3606,7 +3685,7 @@ export class AgentRuntime {
       maxTokens: 4096,
     };
 
-    const duplicateSupervisor = createDuplicateActionSupervisor();
+    const duplicateSupervisor = this.newDuplicateSupervisor();
     const outcome = await this.runAgentLoop(
       turnId,
       agentId,
@@ -4438,8 +4517,40 @@ export class AgentRuntime {
           category: cls.category,
         };
       }
-      default:
+      default: {
+        if (toolName.startsWith("browser_")) {
+          const url = (args as { url?: unknown })?.url;
+          const target = typeof url === "string" ? url : undefined;
+          if (toolName === "browser_submit" || (toolName === "browser_type" && (args as { submit?: unknown })?.submit === true)) {
+            // A submitted form can commit remote state — same class as git push / PR create.
+            return { tool: toolName, action: "external", reason: `submit form${target ? ` to ${target}` : " in page"}`, insideWorkspace: false, risk: "high" };
+          }
+          if (toolName === "browser_click" || toolName === "browser_type" || toolName === "browser_select" || toolName === "browser_close_tab") {
+            // In-page interaction: remote state is normally unchanged, so this stays a
+            // grantable Tier 2; navigations/downloads it triggers are separately gated.
+            return { tool: toolName, action: "interact", reason: `interact with page${target ? ` (${target})` : ""}`, insideWorkspace: true, risk: "moderate" };
+          }
+          if (toolName === "browser_launch" || toolName === "browser_close") {
+            return { tool: toolName, action: toolName, reason: toolName === "browser_launch" ? "launch governed browser process" : "close browser session", insideWorkspace: true, risk: "moderate" };
+          }
+          return { tool: toolName, action: "read", reason: `read browser state${target ? ` at ${target}` : ""}`, insideWorkspace: false, risk: "safe" };
+        }
+        if (toolName.startsWith("mcp__")) {
+          // The MCP registry is the sole classifier — a server never self-declares its tier.
+          // Unknown effect fails closed to "external" (Tier 3, always asks).
+          const effect = this.externalTools?.effectOf?.(toolName);
+          if (effect === "network_read") {
+            return { tool: toolName, action: "read", reason: "read via MCP server", insideWorkspace: false, risk: "safe" };
+          }
+          return { tool: toolName, action: "external", reason: "external side effect via MCP server", insideWorkspace: false, risk: "high" };
+        }
+        if (toolName.startsWith("plugin__")) {
+          // Extension commands run sandboxed (no fs/net/process) but can write settings and
+          // raise notifications — a grantable Tier 2 trust crossing, never silently allowed.
+          return { tool: toolName, action: "plugin", reason: "run extension command", insideWorkspace: true, risk: "moderate" };
+        }
         return { tool: toolName, action: toolName, reason: "unknown tool requires approval", insideWorkspace: true, risk: "moderate" };
+      }
     }
   }
 

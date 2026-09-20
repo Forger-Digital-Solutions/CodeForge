@@ -1189,6 +1189,15 @@ async function initializeServer(dbPath: string): Promise<void> {
       useRealRuntime: true,
       controlPlaneToken,
       freeCloud: freeCloud ?? undefined,
+      // R22: bridge contributed extension commands into the agent tool surface. The delegate
+      // reads the live manager so initExtensions() ordering never strands the bridge.
+      pluginCommandHost: {
+        list: () => extensionManager?.list() ?? [],
+        runCommand: (extensionId, commandId, args) =>
+          extensionManager
+            ? extensionManager.runCommand(extensionId, commandId, args)
+            : Promise.resolve({ ok: false, error: "extension host unavailable" }),
+      },
       paidAuto: createPaidAutoService({
         credentialStore: desktopCredentialStore ?? undefined,
         paidExecutionEnabled: process.env.CODEFORGE_PAID_EXECUTION_ENABLED === "true",

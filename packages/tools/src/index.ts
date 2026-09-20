@@ -15,7 +15,7 @@ export interface ToolDefinition {
   };
   requiredPermission: keyof AgentPermissions;
   readOnly: boolean;
-  executionClass: "read" | "write" | "command" | "repo" | "checkpoint";
+  executionClass: "read" | "write" | "command" | "repo" | "checkpoint" | "network";
 }
 
 export interface ToolExecutionContext {

@@ -1980,6 +1980,28 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return { claimed: Number(result.changes) > 0 };
   }
 
+  async claimGitHubWebhookDelivery(params: { deliveryId: string; event: string; action?: string; installationId?: number }): Promise<{ claimed: boolean }> {
+    const now = new Date().toISOString();
+    const result = this.db.prepare(`
+      INSERT INTO github_webhook_deliveries (id, delivery_id, event, action, installation_id, status, received_at, created_at)
+      VALUES (@id, @deliveryId, @event, @action, @installationId, 'claimed', @now, @now)
+      ON CONFLICT(delivery_id) DO NOTHING
+    `).run({
+      id: randomUUID(),
+      deliveryId: params.deliveryId,
+      event: params.event,
+      action: params.action ?? null,
+      installationId: params.installationId ?? null,
+      now,
+    });
+    return { claimed: Number(result.changes) > 0 };
+  }
+
+  async completeGitHubWebhookDelivery(deliveryId: string, status: "processed" | "failed" | "ignored"): Promise<void> {
+    this.db.prepare(`UPDATE github_webhook_deliveries SET status = @status, processed_at = @now WHERE delivery_id = @deliveryId`)
+      .run({ deliveryId, status, now: new Date().toISOString() });
+  }
+
   async recordWebhookEvent(params: {
     stripeEventId: string;
     eventType: string;

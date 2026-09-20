@@ -1104,6 +1104,40 @@ CREATE INDEX IF NOT EXISTS idx_hosted_executions_queued_user_route_head
   WHERE status = 'queued';
 `;
 
+// 016: R22 — GitHub App webhook dedup ledger. delivery_id is the X-GitHub-Delivery GUID; the
+// UNIQUE claim is the atomic dedup boundary so a retried (or replayed) delivery can never
+// apply an installation/repo state mutation twice. Payload bodies are never stored — webhook
+// payloads can embed repository content, and the ledger is a receipt, not a mirror.
+const MIGRATION_16_SQLITE = `
+CREATE TABLE IF NOT EXISTS github_webhook_deliveries (
+  id TEXT PRIMARY KEY,
+  delivery_id TEXT NOT NULL UNIQUE,
+  event TEXT NOT NULL,
+  action TEXT,
+  installation_id INTEGER,
+  status TEXT NOT NULL CHECK(status IN ('claimed', 'processed', 'failed', 'ignored')) DEFAULT 'claimed',
+  received_at TEXT NOT NULL,
+  processed_at TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_github_webhook_deliveries_installation ON github_webhook_deliveries(installation_id);
+`;
+
+const MIGRATION_16_POSTGRES = `
+CREATE TABLE IF NOT EXISTS github_webhook_deliveries (
+  id VARCHAR(64) PRIMARY KEY,
+  delivery_id VARCHAR(255) NOT NULL UNIQUE,
+  event VARCHAR(128) NOT NULL,
+  action VARCHAR(64),
+  installation_id BIGINT,
+  status VARCHAR(16) NOT NULL CHECK(status IN ('claimed', 'processed', 'failed', 'ignored')) DEFAULT 'claimed',
+  received_at TIMESTAMPTZ NOT NULL,
+  processed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_github_webhook_deliveries_installation ON github_webhook_deliveries(installation_id);
+`;
+
 export const MIGRATIONS: MigrationDefinition[] = [
   {
     version: 1,
@@ -1209,6 +1243,13 @@ export const MIGRATIONS: MigrationDefinition[] = [
     sqliteUp: MIGRATION_15_SQLITE,
     postgresUp: MIGRATION_15_POSTGRES,
     checksum: computeChecksum(MIGRATION_15_SQLITE),
+  },
+  {
+    version: 16,
+    name: "016_github_webhook_deliveries",
+    sqliteUp: MIGRATION_16_SQLITE,
+    postgresUp: MIGRATION_16_POSTGRES,
+    checksum: computeChecksum(MIGRATION_16_SQLITE),
   },
 ];
 

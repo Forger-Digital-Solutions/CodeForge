@@ -1,12 +1,3 @@
-export interface McpTool {
-  name: string;
-  description: string;
-  inputSchema: unknown;
-}
-
-export class McpClient {
-  constructor(_serverCommand: string) {}
-  async listTools(): Promise<McpTool[]> {
-    return [];
-  }
-}
+export * from "./types.js";
+export * from "./client.js";
+export * from "./registry.js";

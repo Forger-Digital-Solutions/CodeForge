@@ -48,6 +48,7 @@ import { CloudPublicationClient, CloudPublicationError } from "./cloud-publicati
 import { createWorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { createRepositoryIntelligence, REPOSITORY_INDEX_VERSION, REPOSITORY_PARSER_VERSION, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
 import { UserIntentHoldController } from "./user-intent-hold.js";
+import { createExternalToolSurface, loadExternalToolConfig, type ExternalToolConfig, type ExternalToolSurface, type PluginToolHost } from "./external-tools.js";
 import { buildActivityOverview, type ActivityOverview, type ActivityPeriod } from "./activity-overview.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -152,6 +153,19 @@ export interface ServerOptions {
   openRouterFallbackEnabled?: boolean;
   /** R1 additive instrumentation path; disabled unless explicitly enabled. */
   subagentsR1Enabled?: boolean;
+  /**
+   * R22: governed external tool surface (browser + MCP). When omitted, configuration is read
+   * from `~/.codeforge/external-tools.json` (or CODEFORGE_EXTERNAL_TOOLS_CONFIG); an absent file
+   * leaves the tool surface identical to R21. CODEFORGE_EXTERNAL_TOOLS=0 hard-disables it.
+   */
+  externalTools?: ExternalToolConfig;
+  /** Overrides the on-disk external-tools config path (tests). */
+  externalToolsConfigPath?: string;
+  /**
+   * R22: injected extension host (the desktop's ExtensionManager). Contributed commands of
+   * active extensions become plugin__ tools unless externalTools.plugins.exposeCommands is false.
+   */
+  pluginCommandHost?: PluginToolHost;
 }
 
 /** Minimal desktop-facing shutdown facts. Counts only; task payloads and secrets stay in the runtime. */
@@ -215,6 +229,10 @@ export class CodeForgeServer {
   private readonly providerHealthCache = new Map<string, { at: number; value: unknown }>();
   private readonly providerHealthInFlight = new Map<string, Promise<unknown>>();
   private forgeGreenCacheStore?: ForgeGreenCacheStore;
+  private externalToolSurface?: ExternalToolSurface;
+  private readonly externalToolsConfig?: ExternalToolConfig;
+  private readonly externalToolsConfigPath?: string;
+  private readonly pluginCommandHost?: PluginToolHost;
   /**
    * Raw session/turn/work-item data backing the activity overview, cached briefly. The renderer
    * polls this endpoint on the same cadence as its other status polls; without this cache every
@@ -230,6 +248,9 @@ export class CodeForgeServer {
     this.webDist = options.webDist ?? path.join(__dirname, "..", "web", "dist");
     this.configuredDbPath = options.dbPath;
     this.controlPlaneToken = options.controlPlaneToken;
+    this.externalToolsConfig = options.externalTools;
+    this.externalToolsConfigPath = options.externalToolsConfigPath;
+    this.pluginCommandHost = options.pluginCommandHost;
     this.persistence = createSessionPersistence({
       ...(options.dbPath ? { dbPath: options.dbPath } : {}),
       ...(options.databaseUrl ? { databaseUrl: options.databaseUrl } : {}),
@@ -463,6 +484,11 @@ export class CodeForgeServer {
       ? path.join(path.dirname(path.resolve(this.configuredDbPath)), "forgegreen-cache.db")
       : path.join(os.homedir(), ".codeforge", "forgegreen-cache.db");
     this.forgeGreenCacheStore = await createForgeGreenCacheStore(cachePath).catch(() => undefined);
+    // R22: governed external tool surface. init() enumerates MCP servers before any runtime is
+    // created below so bridged tool definitions exist before the first run registers them.
+    const externalConfig = this.externalToolsConfig ?? loadExternalToolConfig(this.externalToolsConfigPath);
+    this.externalToolSurface = createExternalToolSurface(externalConfig, { pluginHost: this.pluginCommandHost });
+    await this.externalToolSurface.init();
     const sessions = await this.persistence.listSessions();
     const persistedEvents = (await Promise.all(sessions.map((session) => this.persistence.getEvents(session.id))))
       .flat()
@@ -532,6 +558,8 @@ export class CodeForgeServer {
     this.clients.clear();
     await this.workflowService.shutdown();
     await Promise.all(Array.from(this.runtimes.values()).map((runtime) => runtime.shutdown()));
+    await this.externalToolSurface?.close().catch(() => undefined);
+    this.externalToolSurface = undefined;
     const repoIntel = this.repositoryIntelligence;
     this.repositoryIntelligence = null;
     // Cancel an in-flight index so shutdown never waits on a long parse.
@@ -2214,6 +2242,7 @@ export class CodeForgeServer {
         paidAuto: this.paidAuto,
         hostedWorker,
         authorityFor: () => this.authorityFor(sessionId),
+        externalTools: this.externalToolSurface,
       });
     }
     let runtime = this.runtimes.get(sessionId);
@@ -2233,6 +2262,7 @@ export class CodeForgeServer {
         freeCloud: this.freeCloud,
         paidAuto: this.paidAuto,
         authorityFor: () => this.authorityFor(sessionId),
+        externalTools: this.externalToolSurface,
       });
       this.runtimes.set(sessionId, runtime);
     } else {
@@ -2823,6 +2853,7 @@ export * from "./task-capsule.js";
 export * from "./publication-artifact.js";
 export * from "./cloud-publication-client.js";
 export * from "./cloud-publication-bridge.js";
+export * from "./external-tools.js";
 export function createServer(options?: ServerOptions): CodeForgeServer {
   return new CodeForgeServer(options);
 }

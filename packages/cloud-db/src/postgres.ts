@@ -2231,6 +2231,25 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     return { claimed: res.rows.length > 0 };
   }
 
+  async claimGitHubWebhookDelivery(params: { deliveryId: string; event: string; action?: string; installationId?: number }): Promise<{ claimed: boolean }> {
+    const now = new Date().toISOString();
+    const res = await this.pool.query(
+      `INSERT INTO github_webhook_deliveries (id, delivery_id, event, action, installation_id, status, received_at, created_at)
+       VALUES ($1, $2, $3, $4, $5, 'claimed', $6, $6)
+       ON CONFLICT (delivery_id) DO NOTHING
+       RETURNING id`,
+      [randomUUID(), params.deliveryId, params.event, params.action ?? null, params.installationId ?? null, now],
+    );
+    return { claimed: res.rows.length > 0 };
+  }
+
+  async completeGitHubWebhookDelivery(deliveryId: string, status: "processed" | "failed" | "ignored"): Promise<void> {
+    await this.pool.query(
+      `UPDATE github_webhook_deliveries SET status = $1, processed_at = $2 WHERE delivery_id = $3`,
+      [status, new Date().toISOString(), deliveryId],
+    );
+  }
+
   async recordWebhookEvent(params: {
     stripeEventId: string;
     eventType: string;

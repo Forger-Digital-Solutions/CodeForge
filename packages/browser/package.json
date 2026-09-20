@@ -1,0 +1,28 @@
+{
+  "name": "@codeforge/browser",
+  "version": "0.4.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --force",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@codeforge/agent": "*",
+    "@codeforge/core": "*",
+    "@codeforge/secrets": "*",
+    "@codeforge/tools": "*",
+    "playwright-core": "1.63.0",
+    "zod": "^3.24.0"
+  }
+}

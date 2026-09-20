@@ -45,6 +45,8 @@ export interface CloudRuntimeConfig {
       appId: string;
       privateKeyPem: string;
       installationUrl?: string;
+      /** X-Hub-Signature-256 shared secret for the App's webhook endpoint. */
+      webhookSecret?: string;
     };
   };
 
@@ -116,6 +118,7 @@ const EnvSchema = z.object({
   GITHUB_APP_ID: z.string().optional(),
   GITHUB_APP_PRIVATE_KEY: z.string().optional(),
   GITHUB_APP_INSTALLATION_URL: z.string().optional(),
+  GITHUB_APP_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PRO_PRICE_ID: z.string().optional(),
@@ -264,7 +267,12 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
     throw new CloudConfigError("GitHub App publication configuration is invalid.");
   }
   const gitHubApp = appId && privateKeyPem
-    ? { appId, privateKeyPem, ...(e.GITHUB_APP_INSTALLATION_URL ? { installationUrl: e.GITHUB_APP_INSTALLATION_URL } : {}) }
+    ? {
+        appId,
+        privateKeyPem,
+        ...(e.GITHUB_APP_INSTALLATION_URL ? { installationUrl: e.GITHUB_APP_INSTALLATION_URL } : {}),
+        ...(e.GITHUB_APP_WEBHOOK_SECRET ? { webhookSecret: e.GITHUB_APP_WEBHOOK_SECRET } : {}),
+      }
     : undefined;
   const gitHub = { clientId: e.GITHUB_CLIENT_ID, clientSecret: e.GITHUB_CLIENT_SECRET, ...(gitHubApp ? { app: gitHubApp } : {}) };
   if (isProdLike && (!gitHub.clientId || !gitHub.clientSecret)) {

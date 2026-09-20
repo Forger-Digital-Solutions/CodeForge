@@ -97,6 +97,16 @@ export const READ_ONLY_SUPPRESSIBLE = new Set([
 
 export const MUTATING_TOOLS = new Set(["write_file", "edit_file", "run_command"]);
 
+/**
+ * R22: external-tool classification hooks. Reads are only suppressible when the surface reports
+ * them read-only; interactions must bump the state version so a replayed browser_inspect can
+ * never masquerade as post-click evidence.
+ */
+export interface ExternalToolClassifier {
+  isReadOnly?: (tool: string) => boolean;
+  isStateChanging?: (tool: string) => boolean;
+}
+
 export class DuplicateActionSupervisor {
   private stateVersion = 1;
   private readonly records = new Map<string, DuplicateRecord>();
@@ -104,7 +114,7 @@ export class DuplicateActionSupervisor {
   readonly metrics: DuplicateSuppressionMetrics = { duplicateActionsSuppressed: 0, noProgressEscalations: 0, noProgressReadSignals: 0 };
 
   constructor(
-    private readonly options: { maxTrackedIdentities?: number; workstreamScope?: string; policyVersion?: string } = {},
+    private readonly options: { maxTrackedIdentities?: number; workstreamScope?: string; policyVersion?: string; externalClassifier?: ExternalToolClassifier } = {},
   ) {}
 
   /** A mutating action (write/edit/command) changed workspace-relevant state. */
@@ -127,11 +137,11 @@ export class DuplicateActionSupervisor {
   }
 
   isReadOnly(tool: string): boolean {
-    return READ_ONLY_SUPPRESSIBLE.has(tool);
+    return READ_ONLY_SUPPRESSIBLE.has(tool) || this.options.externalClassifier?.isReadOnly?.(tool) === true;
   }
 
   isMutating(tool: string): boolean {
-    return MUTATING_TOOLS.has(tool);
+    return MUTATING_TOOLS.has(tool) || this.options.externalClassifier?.isStateChanging?.(tool) === true;
   }
 
   /**
@@ -139,7 +149,7 @@ export class DuplicateActionSupervisor {
    * Mutating actions are always executed and only update the state version after completion.
    */
   classify(identity: DuplicateActionIdentity): DuplicateDecision {
-    if (!READ_ONLY_SUPPRESSIBLE.has(identity.tool)) {
+    if (!this.isReadOnly(identity.tool)) {
       return { action: "execute" };
     }
     const progress = this.readProgress.get(this.stateVersion);
@@ -240,7 +250,7 @@ export class DuplicateActionSupervisor {
 }
 
 export function createDuplicateActionSupervisor(
-  options?: { maxTrackedIdentities?: number; workstreamScope?: string; policyVersion?: string },
+  options?: { maxTrackedIdentities?: number; workstreamScope?: string; policyVersion?: string; externalClassifier?: ExternalToolClassifier },
 ): DuplicateActionSupervisor {
   return new DuplicateActionSupervisor(options);
 }

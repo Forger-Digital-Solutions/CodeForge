@@ -1,5 +1,5 @@
 {
-  "sourceStateId": "bf25d6aa7a81cc8bd8dce6b9eeaaf3a40ea0a90e9fc38658e790c63105f7a1a5",
+  "sourceStateId": "829fcc5d1dee9d4538464f8b5a07d7ec10bcb274151ac6bb6fdf2583084efbe1",
   "surfaceVersion": "r21-autonomous-command-gate-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
@@ -56,15 +56,15 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "613c24d49ac5cdb244902d0b719e2ff3c0065e63",
+    "packages/server/src/agent-runtime.ts": "b2c44a81c63fec4b06e3450648ccbb1ec0fa0e5a",
     "packages/server/src/autonomous-orchestrator.ts": "8e7dc8a6942a8a973233d9af62424323b05f9bc3",
-    "packages/server/src/duplicate-suppression.ts": "187ebb71125e65f05b48210c77aa35647ca8bf64",
+    "packages/server/src/duplicate-suppression.ts": "fd47f593e297f7910e379961da73e798957cbbf9",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "fd28b8bccec7c03226f100d4c9e284ef129ddff7",
     "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "e67a8c5033b1f39d4b5c5f919fdcecc16d8ac6dc",
-    "packages/tools/src/index.ts": "d006dfdc090bf8b1d1c7fd694ea17597002011ad",
+    "packages/tools/src/index.ts": "ec150612541c218997aa05789c51eb9065e1babc",
     "packages/workflow/src/forge-verify.ts": "d134438dfde57de85c756cdd8aaab192f1d801e8",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
     "packages/workflow/src/types.ts": "3c36a8c6f297bb986abe21abcf05691f8cd8dd54",
@@ -1010,7 +1010,7 @@
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 recertifications listed above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-20",
+  "recertifiedAt": "2026-09-20T22:56:31.177Z",
   "recertification": {
     "phase": "R21 autonomous run_command classification and network-lease enforcement",
     "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed M6 surface so the fg11/fg12e provenance canaries certify the current tree.",
@@ -1019,5 +1019,6 @@
     ],
     "priorSourceStateId": "35d6392a63f798ff8e6be77cead5e99e0f8502e2355c088ec966563380fd47c6",
     "guarded": true
-  }
+  },
+  "recertificationReason": "R22 external integrations: agent-runtime externalTools surface, duplicate-suppression external classifier, tools registry (intentional milestone changes; canonical gate green)"
 }

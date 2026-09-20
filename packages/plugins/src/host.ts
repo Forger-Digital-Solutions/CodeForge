@@ -151,12 +151,15 @@ export class ExtensionHost {
    * timeouts are converted into a structured failure, and a crash marks the extension "error"
    * without touching other extensions or the core.
    */
-  async runCommand(extension: HostedExtension, commandId: string, args: unknown[] = []): Promise<{ ok: boolean; error?: string }> {
+  async runCommand(extension: HostedExtension, commandId: string, args: unknown[] = []): Promise<{ ok: boolean; error?: string; result?: string }> {
     const handler = extension.commands.get(commandId);
     if (!handler) return { ok: false, error: `Command "${commandId}" is not registered by "${extension.manifest.id}"` };
     try {
-      await withTimeout(Promise.resolve(handler(...args)), COMMAND_TIMEOUT_MS, `command "${commandId}"`);
-      return { ok: true };
+      const value = await withTimeout(Promise.resolve(handler(...args)), COMMAND_TIMEOUT_MS, `command "${commandId}"`);
+      // The result crosses the sandbox boundary into agent tool output — bound it here so a
+      // hostile or buggy handler cannot return an unbounded payload into model context.
+      const serialized = value === undefined ? undefined : safeDescribe(value).slice(0, 16_000);
+      return { ok: true, ...(serialized !== undefined ? { result: serialized } : {}) };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       extension.status = "error";

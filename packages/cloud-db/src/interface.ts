@@ -290,6 +290,15 @@ export interface ICloudDatabase {
    */
   claimWebhookEvent(params: { stripeEventId: string; eventType: string }): Promise<{ claimed: boolean }>;
 
+  /**
+   * R22: atomically claim a GitHub webhook delivery (X-GitHub-Delivery GUID). Exactly one
+   * caller wins per delivery id; every replay — GitHub retry or attacker resend — returns
+   * `claimed: false` and must not re-apply state mutations.
+   */
+  claimGitHubWebhookDelivery(params: { deliveryId: string; event: string; action?: string; installationId?: number }): Promise<{ claimed: boolean }>;
+  /** Terminal status for a claimed delivery. */
+  completeGitHubWebhookDelivery(deliveryId: string, status: "processed" | "failed" | "ignored"): Promise<void>;
+
   // Settings
   getAccountSettings(userId: string): Promise<AccountSettingsRecord>;
   upsertAccountSettings(settings: Partial<AccountSettingsRecord> & { userId: string }): Promise<AccountSettingsRecord>;
