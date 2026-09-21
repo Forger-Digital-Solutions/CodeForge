@@ -69,7 +69,7 @@ export function classifyFailure(error: unknown): FailureReason {
   // names, missing required parameters) is the model's fault, never the route's health. Evaluated
   // before every outage/transport rule: the runtime prefixes thrown stream errors with
   // "Provider error: <code> - …", which the outage fallback below would otherwise match.
-  if (code === "INVALID_TOOL_OUTPUT" || /invalid.*tool.*(call|output)|malformed.*tool|tool_use_failed|tool call validation failed|not in request\.tools|did not match schema/.test(msg)) return "INVALID_TOOL_OUTPUT";
+  if (code === "INVALID_TOOL_OUTPUT" || /invalid.*tool.*(call|output)|malformed.*tool|tool_use_failed|output_parse_failed|tool call validation failed|not in request\.tools|did not match schema|output that could not be parsed|failed to parse tool call/.test(msg)) return "INVALID_TOOL_OUTPUT";
   if (code === "STREAM_INTERRUPTED" || code === "PROVIDER_STREAM_INTERRUPTED" || /ended before the provider sent|stream disconnect/.test(msg)) return "PROVIDER_OUTAGE";
   if (code === "STREAM_FAILED") return "TRANSIENT_NETWORK";
   if (/\b429\b|rate.?limit/.test(msg)) return "RATE_LIMITED";

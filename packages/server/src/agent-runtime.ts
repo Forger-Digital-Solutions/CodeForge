@@ -494,6 +494,157 @@ export function parseToolArgs(argsJson: string): unknown {
   }
 }
 
+/**
+ * The exact tool schemas the production agent loop sends with every model call. Exported so
+ * production-shaped probes (R23 route gating) exercise the same request shape as a real run.
+ */
+export function agentToolDefinitions(): ToolDefinition[] {
+  return [
+    {
+      type: "function",
+      function: {
+        name: "read_file",
+        description: "Read the contents of a file. Returns content hash for edit protection.",
+        parameters: {
+          type: "object",
+          properties: {
+            path: { type: "string", description: "The path to the file" },
+          },
+          required: ["path"],
+        },
+      },
+    },
+    {
+      type: "function",
+      function: {
+        name: "write_file",
+        description: "Write content to a file (legacy whole-file). Prefer edit_file for safe patches.",
+        parameters: {
+          type: "object",
+          properties: {
+            path: { type: "string", description: "The path to the file" },
+            content: { type: "string", description: "The content to write" },
+          },
+          required: ["path", "content"],
+        },
+      },
+    },
+    {
+      type: "function",
+      function: {
+        name: "list_files",
+        description: "List files in a directory",
+        parameters: {
+          type: "object",
+          properties: {
+            path: { type: "string", description: "The directory path" },
+            recursive: { type: "boolean", description: "Whether to list recursively" },
+          },
+          required: ["path"],
+        },
+      },
+    },
+    {
+      type: "function",
+      function: {
+        name: "run_command",
+        description: "Execute a shell command. Commands run with the workspace root as the working directory — pass cwd only to run inside a subdirectory, and do not prefix commands with 'cd <workspace> &&'.",
+        parameters: {
+          type: "object",
+          properties: {
+            command: { type: "string", description: "The command to run (already executes in the workspace root)" },
+            cwd: { type: "string", description: "Working directory; defaults to the workspace root" },
+          },
+          required: ["command"],
+        },
+      },
+    },
+    {
+      type: "function",
+      function: {
+        name: "search_files",
+        description: "Search workspace for text/regex. Returns structured matches with file, line, preview.",
+        parameters: {
+          type: "object",
+          properties: {
+            query: { type: "string", description: "Search query or regex" },
+            regex: { type: "boolean", description: "Treat query as regex" },
+            caseSensitive: { type: "boolean", description: "Case sensitive" },
+            maxMatches: { type: "number", description: "Max matches to return" },
+          },
+          required: ["query"],
+        },
+      },
+    },
+    ...repositoryToolDefinitions(),
+    {
+      type: "function",
+      function: {
+        name: "edit_file",
+        description: "Safe exact replacement edit with hash protection. Fails if oldText not found exactly or hash stale.",
+        parameters: {
+          type: "object",
+          properties: {
+            path: { type: "string", description: "File path" },
+            oldText: { type: "string", description: "Exact text to replace" },
+            newText: { type: "string", description: "Replacement text" },
+            expectedOccurrences: { type: "number", description: "Expected occurrence count (default 1)" },
+            expectedHash: { type: "string", description: "SHA-256 hash from prior read for stale-edit protection" },
+          },
+          required: ["path", "oldText", "newText"],
+        },
+      },
+    },
+    {
+      type: "function",
+      function: {
+        name: "create_checkpoint",
+        description: "Create a git checkpoint for recovery before significant edits.",
+        parameters: {
+          type: "object",
+          properties: {
+            label: { type: "string", description: "Checkpoint label" },
+          },
+          required: ["label"],
+        },
+      },
+    },
+  ];
+}
+
+export function repositoryToolDefinitions(): ToolDefinition[] {
+  const queryParameters = {
+    type: "object" as const,
+    properties: {
+      query: { type: "string", description: "Identifier, symbol, path, or task query" },
+      limit: { type: "number", description: "Maximum results, capped at 200" },
+    },
+    required: ["query"],
+  };
+  const pathParameters = {
+    type: "object" as const,
+    properties: {
+      path: { type: "string", description: "Workspace-relative indexed path" },
+      limit: { type: "number", description: "Maximum results, capped at 200" },
+    },
+    required: ["path"],
+  };
+  return [
+    { type: "function", function: { name: "repo_search", description: "Rank relevant repository files using symbols, paths, lexical matches, Git state, and related tests.", parameters: queryParameters } },
+    { type: "function", function: { name: "repo_symbol", description: "Search structurally indexed symbols and definitions.", parameters: queryParameters } },
+    { type: "function", function: { name: "repo_references", description: "Find high-confidence definitions and explicitly classified approximate references.", parameters: queryParameters } },
+    { type: "function", function: { name: "repo_dependencies", description: "Find imports and package dependencies of a file.", parameters: pathParameters } },
+    { type: "function", function: { name: "repo_dependents", description: "Find indexed files that depend on a file.", parameters: pathParameters } },
+    { type: "function", function: { name: "repo_tests", description: "Find tests related to an implementation file with confidence reasons.", parameters: pathParameters } },
+    { type: "function", function: { name: "repo_impact", description: "Advisory blast-radius and impact candidate analysis for changed paths (does not grant execution or verification authority).", parameters: { type: "object", properties: { paths: { type: "array", items: { type: "string" }, description: "Workspace-relative paths of modified files" }, path: { type: "string", description: "Single modified file path" }, maxDepth: { type: "number", description: "Graph traversal depth, default 3, max 10" }, limit: { type: "number", description: "Maximum candidates, capped at 200" } } } } },
+    { type: "function", function: { name: "repo_callees", description: "Static call candidates inside one indexed file, with provenance and preserved ambiguity.", parameters: pathParameters } },
+    { type: "function", function: { name: "repo_callers", description: "Candidate callers of a symbol by name or id, with provenance and preserved ambiguity.", parameters: queryParameters } },
+    { type: "function", function: { name: "repo_file_summary", description: "Get structured summary of an indexed file (symbols, exports, imports, language, size).", parameters: pathParameters } },
+    { type: "function", function: { name: "repo_context", description: "Build a fresh, deduplicated, provenance-rich context pack within a hard model context budget.", parameters: { type: "object", properties: { query: { type: "string" }, contextWindow: { type: "number", description: "Model context window; 16000 to 1000000" }, limit: { type: "number" } }, required: ["query"] } } },
+    { type: "function", function: { name: "repo_index_status", description: "Return local repository index health, counts, schema, and cache size.", parameters: { type: "object", properties: {} } } },
+  ];
+}
+
 export class AgentRuntime {
   private readonly sessionId: string;
   private readonly eventStore: EventStore;
@@ -3960,150 +4111,11 @@ export class AgentRuntime {
   }
 
   private getAvailableTools(): ToolDefinition[] {
-    return [
-      {
-        type: "function",
-        function: {
-          name: "read_file",
-          description: "Read the contents of a file. Returns content hash for edit protection.",
-          parameters: {
-            type: "object",
-            properties: {
-              path: { type: "string", description: "The path to the file" },
-            },
-            required: ["path"],
-          },
-        },
-      },
-      {
-        type: "function",
-        function: {
-          name: "write_file",
-          description: "Write content to a file (legacy whole-file). Prefer edit_file for safe patches.",
-          parameters: {
-            type: "object",
-            properties: {
-              path: { type: "string", description: "The path to the file" },
-              content: { type: "string", description: "The content to write" },
-            },
-            required: ["path", "content"],
-          },
-        },
-      },
-      {
-        type: "function",
-        function: {
-          name: "list_files",
-          description: "List files in a directory",
-          parameters: {
-            type: "object",
-            properties: {
-              path: { type: "string", description: "The directory path" },
-              recursive: { type: "boolean", description: "Whether to list recursively" },
-            },
-            required: ["path"],
-          },
-        },
-      },
-      {
-        type: "function",
-        function: {
-          name: "run_command",
-          description: "Execute a shell command. Commands run with the workspace root as the working directory — pass cwd only to run inside a subdirectory, and do not prefix commands with 'cd <workspace> &&'.",
-          parameters: {
-            type: "object",
-            properties: {
-              command: { type: "string", description: "The command to run (already executes in the workspace root)" },
-              cwd: { type: "string", description: "Working directory; defaults to the workspace root" },
-            },
-            required: ["command"],
-          },
-        },
-      },
-      {
-        type: "function",
-        function: {
-          name: "search_files",
-          description: "Search workspace for text/regex. Returns structured matches with file, line, preview.",
-          parameters: {
-            type: "object",
-            properties: {
-              query: { type: "string", description: "Search query or regex" },
-              regex: { type: "boolean", description: "Treat query as regex" },
-              caseSensitive: { type: "boolean", description: "Case sensitive" },
-              maxMatches: { type: "number", description: "Max matches to return" },
-            },
-            required: ["query"],
-          },
-        },
-      },
-      ...this.getRepositoryTools(),
-      {
-        type: "function",
-        function: {
-          name: "edit_file",
-          description: "Safe exact replacement edit with hash protection. Fails if oldText not found exactly or hash stale.",
-          parameters: {
-            type: "object",
-            properties: {
-              path: { type: "string", description: "File path" },
-              oldText: { type: "string", description: "Exact text to replace" },
-              newText: { type: "string", description: "Replacement text" },
-              expectedOccurrences: { type: "number", description: "Expected occurrence count (default 1)" },
-              expectedHash: { type: "string", description: "SHA-256 hash from prior read for stale-edit protection" },
-            },
-            required: ["path", "oldText", "newText"],
-          },
-        },
-      },
-      {
-        type: "function",
-        function: {
-          name: "create_checkpoint",
-          description: "Create a git checkpoint for recovery before significant edits.",
-          parameters: {
-            type: "object",
-            properties: {
-              label: { type: "string", description: "Checkpoint label" },
-            },
-            required: ["label"],
-          },
-        },
-      },
-    ];
+    return agentToolDefinitions();
   }
 
   private getRepositoryTools(): ToolDefinition[] {
-    const queryParameters = {
-      type: "object" as const,
-      properties: {
-        query: { type: "string", description: "Identifier, symbol, path, or task query" },
-        limit: { type: "number", description: "Maximum results, capped at 200" },
-      },
-      required: ["query"],
-    };
-    const pathParameters = {
-      type: "object" as const,
-      properties: {
-        path: { type: "string", description: "Workspace-relative indexed path" },
-        limit: { type: "number", description: "Maximum results, capped at 200" },
-      },
-      required: ["path"],
-    };
-    return [
-      { type: "function", function: { name: "repo_search", description: "Rank relevant repository files using symbols, paths, lexical matches, Git state, and related tests.", parameters: queryParameters } },
-      { type: "function", function: { name: "repo_symbol", description: "Search structurally indexed symbols and definitions.", parameters: queryParameters } },
-      { type: "function", function: { name: "repo_references", description: "Find high-confidence definitions and explicitly classified approximate references.", parameters: queryParameters } },
-      { type: "function", function: { name: "repo_dependencies", description: "Find imports and package dependencies of a file.", parameters: pathParameters } },
-      { type: "function", function: { name: "repo_dependents", description: "Find indexed files that depend on a file.", parameters: pathParameters } },
-      { type: "function", function: { name: "repo_tests", description: "Find tests related to an implementation file with confidence reasons.", parameters: pathParameters } },
-      { type: "function", function: { name: "repo_impact", description: "Advisory blast-radius and impact candidate analysis for changed paths (does not grant execution or verification authority).", parameters: { type: "object", properties: { paths: { type: "array", items: { type: "string" }, description: "Workspace-relative paths of modified files" }, path: { type: "string", description: "Single modified file path" }, maxDepth: { type: "number", description: "Graph traversal depth, default 3, max 10" }, limit: { type: "number", description: "Maximum candidates, capped at 200" } } } } },
-      { type: "function", function: { name: "repo_callees", description: "Static call candidates inside one indexed file, with provenance and preserved ambiguity.", parameters: pathParameters } },
-      { type: "function", function: { name: "repo_callers", description: "Candidate callers of a symbol by name or id, with provenance and preserved ambiguity.", parameters: queryParameters } },
-      { type: "function", function: { name: "repo_file_summary", description: "Get structured summary of an indexed file (symbols, exports, imports, language, size).", parameters: pathParameters } },
-      { type: "function", function: { name: "repo_context", description: "Build a fresh, deduplicated, provenance-rich context pack within a hard model context budget.", parameters: { type: "object", properties: { query: { type: "string" }, contextWindow: { type: "number", description: "Model context window; 16000 to 1000000" }, limit: { type: "number" } }, required: ["query"] } } },
-      { type: "function", function: { name: "repo_index_status", description: "Return local repository index health, counts, schema, and cache size.", parameters: { type: "object", properties: {} } } },
-    ];
+    return repositoryToolDefinitions();
   }
 
   private async executeRepositoryTool(

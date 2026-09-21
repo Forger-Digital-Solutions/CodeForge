@@ -6,7 +6,8 @@
  *   node scripts/r23-efficiency-bench.mjs snapshot-pricing [--market-ref <provider/model>]
  *   node scripts/r23-efficiency-bench.mjs dry-run   [--mode orchestrated|single] [--tasks a,b] [--arms control,optimized]
  *   node scripts/r23-efficiency-bench.mjs prescreen [--models a:free,b:free] [--task qual-js-return-sign] [--cap 6]
- *   node scripts/r23-efficiency-bench.mjs qualify   [--models a:free,b:free] [--tasks qual-...]   (defaults to the pre-screen's advancing list)
+ *   node scripts/r23-efficiency-bench.mjs probe-gate --models <id> [--provider groq] [--n 2] [--spacing-ms 8000]
+ *   node scripts/r23-efficiency-bench.mjs qualify   [--models a:free,b:free] [--tasks qual-...]   (defaults to the pre-screen's advancing list; refuses a route whose latest probe gate is closed unless --force-gate)
  *   node scripts/r23-efficiency-bench.mjs pilot     --model <id> [--tasks a,b] [--reps 1] [--mode orchestrated|single]
  *   node scripts/r23-efficiency-bench.mjs main      --model <id> [--tasks a,b] [--reps 1]
  *   node scripts/r23-efficiency-bench.mjs variance  --model <id> --tasks a,b --reps 3
@@ -25,6 +26,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ForgeZero, createGenericFreeRecord } from "@codeforge/forge-zero";
 import { createGroqAdapter, createOpenRouterAdapter } from "@codeforge/providers";
+import { agentToolDefinitions } from "@codeforge/server";
 import {
   CONTROL_ARM,
   OPTIMIZED_ARM,
@@ -334,6 +336,90 @@ function capacityGate(allowanceData, observedCallsPerRun, providerId, observedRu
   const bucketLevel = allowanceData.dailyTokenBucketLevel ?? Math.max(0, GROQ_FREE_DAILY_TOKENS - (allowanceData.dailyTokensUsed ?? 0));
   const dailyTokensOk = bucketLevel >= tokensNeeded + GROQ_FREE_DAILY_TOKENS * 0.15;
   return { needed, tokensNeeded, ok: ok && dailyTokensOk, dailyTokensOk, dailyTokenBucketLevel: bucketLevel };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Probe gate (§34 adaptive gating): production-shaped probes decide whether a round may start.
+// Bare probes proved non-predictive (5/5 clean at 04:19Z, harness collapse minutes later; 2/5
+// bare vs 0/2 production-shaped at 10:32Z) — the gate sends the real request shape: the agent
+// system prompt, the exact production tool schemas, a tool-result turn, streaming, maxTokens 4096.
+// ---------------------------------------------------------------------------------------------
+const PROBE_GATE_PATH = path.join(EVIDENCE, "supply", "probe-gates.jsonl");
+const PROBE_GATE_FRESH_MS = 30 * 60_000;
+
+function probeGateAdapter(providerId) {
+  if (providerId === "groq") return createGroqAdapter({ apiKey: process.env.GROQ_API_KEY, timeoutMs: 60_000 });
+  if (providerId === "openrouter") return createOpenRouterAdapter({ timeoutMs: 60_000 });
+  throw new Error(`probe-gate: no adapter for provider ${providerId}`);
+}
+
+function productionShapedRequest(modelId) {
+  const fixture = Array.from({ length: 60 }, (_, i) => `export function helper${i}(a, b) {\n  // computes something for case ${i}\n  return (a * ${i}) + b - ${i % 7};\n}\n`).join("\n");
+  return {
+    model: modelId,
+    system: "You are CodeForge, an autonomous software engineering agent.\n\nYou help users with coding tasks by reading files, writing code, and executing commands.\n\nMake the smallest complete change, run verification appropriate to the risk, and stop using tools once the requirements and checks pass. Do not repeat successful reads, edits, or commands without new evidence.\n\nWork methodically and keep explanations concise and evidence-based.",
+    messages: [
+      { role: "user", content: "Task: `computeTotal` in src/cart.js returns the wrong sign for refunds. Fix it and run `npm test`. Only touch src/cart.js." },
+      { role: "assistant", content: "", toolCalls: [{ id: "call_1", type: "function", function: { name: "read_file", arguments: JSON.stringify({ path: "src/cart.js" }) } }] },
+      { role: "tool", content: fixture, toolCallId: "call_1" },
+      { role: "user", content: "Continue. Decide the next single tool call." },
+    ],
+    tools: agentToolDefinitions(),
+    maxTokens: 4096,
+  };
+}
+
+/** Sends N production-shaped streaming probes through the real adapter; records and returns the gate. */
+async function runProbeGate(providerId, modelId, n = 2, spacingMs = 8000) {
+  const adapter = probeGateAdapter(providerId);
+  const request = productionShapedRequest(modelId);
+  const probes = [];
+  for (let i = 0; i < n; i += 1) {
+    if (i > 0) await new Promise((resolve) => setTimeout(resolve, spacingMs));
+    const startedAt = Date.now();
+    const probe = { startedAt: new Date(startedAt).toISOString(), served: false, toolCalls: 0, usage: null, failure: null, latencyMs: 0 };
+    try {
+      for await (const event of adapter.streamChat(request)) {
+        if (event.type === "tool_call_completed") probe.toolCalls += 1;
+        else if (event.type === "usage") probe.usage = { inputTokens: event.usage.inputTokens, outputTokens: event.usage.outputTokens, totalTokens: event.usage.totalTokens };
+        else if (event.type === "error") { probe.failure = { code: event.code, status: event.status ?? null, message: String(event.message).slice(0, 300) }; break; }
+        else if (event.type === "finish") probe.served = probe.failure === null;
+      }
+    } catch (error) {
+      probe.failure = { code: error?.code ?? "THROWN", status: error?.status ?? null, message: String(error?.message ?? error).slice(0, 300) };
+    }
+    probe.latencyMs = Date.now() - startedAt;
+    probes.push(probe);
+    log(`probe ${i + 1}/${n} ${providerId}::${modelId}: ${probe.served ? `served (${probe.toolCalls} tool call(s), ${probe.latencyMs} ms)` : `FAILED ${probe.failure?.code ?? "?"}${probe.failure?.status ? ` http=${probe.failure.status}` : ""}: ${probe.failure?.message ?? ""}`}`);
+  }
+  const served = probes.filter((probe) => probe.served).length;
+  const gate = { recordedAt: new Date().toISOString(), providerId, modelId, n, served, verdict: served === n ? "open" : "closed", probes, protocolRule: "§34 adaptive probe gating — production-shaped, not bare" };
+  fs.mkdirSync(path.dirname(PROBE_GATE_PATH), { recursive: true });
+  fs.appendFileSync(PROBE_GATE_PATH, `${JSON.stringify(gate)}\n`);
+  log(`probe gate ${providerId}::${modelId}: ${gate.verdict.toUpperCase()} (${served}/${n} served) → ${path.relative(ROOT, PROBE_GATE_PATH)}`);
+  return gate;
+}
+
+/** Latest gate for the route within the freshness window, or undefined. */
+function latestProbeGate(providerId, modelId) {
+  if (!fs.existsSync(PROBE_GATE_PATH)) return undefined;
+  const lines = fs.readFileSync(PROBE_GATE_PATH, "utf8").split(/\r?\n/).filter(Boolean);
+  for (let i = lines.length - 1; i >= 0; i -= 1) {
+    try {
+      const gate = JSON.parse(lines[i]);
+      if (gate.providerId !== providerId || gate.modelId !== modelId) continue;
+      if (Date.now() - Date.parse(gate.recordedAt) > PROBE_GATE_FRESH_MS) return undefined;
+      return gate;
+    } catch { /* skip unreadable line */ }
+  }
+  return undefined;
+}
+
+async function modeProbeGate() {
+  const providerId = flags.provider ?? "openrouter";
+  const models = list(flags.models);
+  if (!models || models.length === 0) throw new Error("probe-gate requires --models <id>[,<id>]");
+  for (const modelId of models) await runProbeGate(providerId, modelId, Number(flags.n ?? 2), Number(flags["spacing-ms"] ?? 8000));
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -698,6 +784,17 @@ async function modeQualify() {
   const results = [];
   for (const modelId of models) {
     log(`=== qualification: ${providerId}::${modelId} ===`);
+    // §34: never start a full round into a saturated upstream. Use a fresh open gate, otherwise
+    // probe now; a closed gate refuses the round unless --force-gate (the bypass is recorded).
+    const gate = latestProbeGate(providerId, modelId) ?? await runProbeGate(providerId, modelId, Number(flags.n ?? 2), Number(flags["spacing-ms"] ?? 8000));
+    if (gate.verdict !== "open") {
+      if (!flags["force-gate"]) {
+        log(`probe gate CLOSED for ${providerId}::${modelId} (${gate.served}/${gate.n} production-shaped probes served at ${gate.recordedAt}) — round not started; pass --force-gate to override (recorded)`);
+        results.push({ modelId, providerId, eligible: false, reason: `probe gate closed (${gate.served}/${gate.n} served at ${gate.recordedAt}): ${gate.probes.map((probe) => probe.failure?.message).filter(Boolean)[0] ?? "no served probe"}` });
+        continue;
+      }
+      log(`probe gate CLOSED but --force-gate given — proceeding (recorded in the campaign summary)`);
+    }
     let setup;
     try {
       setup = await liveSetup(modelId, providerId);
@@ -707,13 +804,13 @@ async function modeQualify() {
     }
     const chosen = selectTasks(setup.tasks, list(flags.tasks), { qualification: true });
     const result = await runPairs({ phase: "qualification", tasks: chosen, arms: ["optimized"], repetitions: 1, modeFlag: flags.mode === "single" ? "single_agent_run" : "orchestrated", model: setup.model, createProvider: setup.createProvider, freeRecord: setup.pin.freeRecord, routeListedUnitPrice: { inputPerMillionUsd: 0, outputPerMillionUsd: 0 }, pricing: setup.snapshot, identity: setup.identity, live: true, providerId });
-    writeCampaignSummary("qualification", result, { model: modelId, providerId, pin: setup.pin.entry, allowanceAtStart: setup.allowance, identity: setup.identity });
+    writeCampaignSummary("qualification", result, { model: modelId, providerId, pin: setup.pin.entry, allowanceAtStart: setup.allowance, probeGate: { recordedAt: gate.recordedAt, verdict: gate.verdict, served: gate.served, n: gate.n, forced: gate.verdict !== "open" }, identity: setup.identity });
     const runs = result.summary;
     const records = runs.map((run) => JSON.parse(fs.readFileSync(path.join(rawDir("qualification"), `${run.runId}.json`), "utf8")));
     const hangsOrUpstream = records.filter((record) => record.inference.calls.some((call) => call.outcome === "error" && (call.rateLimited || (call.httpStatus ?? 0) >= 500 || /hang|timeout/i.test(call.errorCode ?? "")))).length;
     // §2.2(c): a run with any tool call the provider rejected as malformed (INVALID_TOOL_OUTPUT —
     // Groq server-side validation, R23 round 3) is a malformed-tool-call run, retried or not.
-    const malformedToolCalls = records.filter((record) => record.outcome.stopReason.toLowerCase().includes("invalid") || record.notes.some((note) => /malformed/i.test(note)) || record.inference.calls.some((call) => call.outcome === "error" && call.errorCode === "INVALID_TOOL_OUTPUT")).length;
+    const malformedToolCalls = records.filter((record) => record.outcome.stopReason.toLowerCase().includes("invalid") || record.notes.some((note) => /malformed/i.test(note)) || record.inference.calls.some((call) => call.outcome === "error" && (call.errorCode === "INVALID_TOOL_OUTPUT" || /tool_use_failed|output_parse_failed|tool call validation failed|could not be parsed|failed to parse tool call/i.test(call.errorMessage ?? "")))).length;
     results.push({
       modelId,
       providerId,
@@ -784,6 +881,7 @@ const modes = {
   "snapshot-pricing": modeSnapshotPricing,
   "dry-run": modeDryRun,
   prescreen: modePrescreen,
+  "probe-gate": modeProbeGate,
   qualify: modeQualify,
   pilot: () => modeLivePairs("pilot"),
   main: () => modeLivePairs("main"),

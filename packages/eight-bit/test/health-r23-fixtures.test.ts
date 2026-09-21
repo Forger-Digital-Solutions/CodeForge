@@ -42,6 +42,8 @@ describe("classifyFailure — R23 live campaign fixtures (2026-09-21)", () => {
     expect(classifyFailure(runtimeShaped)).toBe("INVALID_TOOL_OUTPUT");
     expect(classifyFailure(new Error("Provider error: PROVIDER_ERROR - groq stream error (tool_use_failed) after HTTP 200: Tool call validation failed: parameters for tool run_command did not match schema: errors: [missing properties: 'command']"))).toBe("INVALID_TOOL_OUTPUT");
     expect(FAILURE_POLICY.INVALID_TOOL_OUTPUT).toBe("bounded_retry");
+    // Round 4 (gpt-oss-20b): Groq output_parse_failed — "The model generated output that could not be parsed".
+    expect(classifyFailure(new Error("Provider error: PROVIDER_ERROR - groq stream error (output_parse_failed) after HTTP 200: Parsing failed. The model generated output that could not be parsed. Please adjust your prompt."))).toBe("INVALID_TOOL_OUTPUT");
     // The prefix alone must not turn a real outage classification off.
     expect(classifyFailure(new Error("Provider error: 502 - Provider returned error"))).toBe("PROVIDER_OUTAGE");
   });

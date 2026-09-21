@@ -141,6 +141,16 @@ describe("OpenAICompatibleAdapter in-band stream errors", () => {
     expect(error.message).toContain("not in request.tools");
   });
 
+  it("maps Groq output_parse_failed (unparseable model output) to INVALID_TOOL_OUTPUT as well", async () => {
+    const fetchFn = (async () => sseResponse([
+      `data: {"error":{"message":"Parsing failed. The model generated output that could not be parsed. Please adjust your prompt. See failed_generation for more details.","type":"output_parse_failed","code":"output_parse_failed"}}`,
+    ])) as unknown as typeof fetch;
+    const events = await collect(adapter(fetchFn).streamChat(req));
+    const error = events.at(-1) as Extract<StreamEvent, { type: "error" }>;
+    expect(error.code).toBe("INVALID_TOOL_OUTPUT");
+    expect(error.retryable).toBe(true);
+  });
+
   it("applies to the factory-built Groq adapter", async () => {
     const fetchFn = (async () => sseResponse(['data: {"error":{"message":"Internal Server Error","type":"internal_server_error"}}'])) as unknown as typeof fetch;
     const events = await collect(createGroqAdapter({ apiKey: "g", fetchFn }).streamChat(req));
