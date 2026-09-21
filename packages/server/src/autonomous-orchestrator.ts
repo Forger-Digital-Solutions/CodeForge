@@ -46,6 +46,7 @@ import { createForgeVerifyPersistenceObserver } from "./forge-verify-persistence
 import { redactSecrets } from "@codeforge/secrets";
 import { reviewDiff, type ReviewFinding } from "@codeforge/workflow";
 import type { AdaptiveTopology, AdaptiveTopologyPlan } from "@codeforge/protocol";
+import type { ProviderTopologyCapacity } from "@codeforge/forge-green";
 import { resolveAdaptiveTopology } from "./adaptive-topology.js";
 import { classifyTaskComplexity, type TaskComplexityDecision, type TaskComplexityTier } from "./task-complexity.js";
 
@@ -144,6 +145,8 @@ export interface TopologyDecisionRecord {
   policy: "adaptive" | "explicit" | "fixed_r1_env";
   complexity: TaskComplexityDecision;
   plan: AdaptiveTopologyPlan;
+  /** R24: the live capacity snapshot ForgeGreen advised against, when one was observed. */
+  providerCapacity?: ProviderTopologyCapacity;
   repositoryFileCount: number;
   decidedAt: string;
 }
@@ -203,6 +206,12 @@ export interface OrchestratorOptions {
   getAgentRuntime?: (sessionId: string) => AgentRuntime;
   /** Enables the additive R1 capsule, durable worker, and artifact instrumentation path. */
   subagentsR1Enabled?: boolean;
+  /**
+   * R24: live provider-capacity view for ForgeGreen topology advice. The host builds it over
+   * the Free Cloud projections + route-health authority + the fabric's reservation snapshot;
+   * absent, adaptive topology plans fall back to PROVIDER_CAPACITY_UNOBSERVED (no reduction).
+   */
+  providerTopologyCapacity?: () => ProviderTopologyCapacity | undefined;
 }
 
 export class AutonomousRunOrchestrator {
@@ -213,6 +222,7 @@ export class AutonomousRunOrchestrator {
   private readonly checkpointServiceFactory: (repoRoot: string) => CheckpointService;
   private readonly agentRuntime?: AgentRuntime;
   private readonly getAgentRuntime?: (sessionId: string) => AgentRuntime;
+  private readonly providerTopologyCapacity?: () => ProviderTopologyCapacity | undefined;
   private readonly subagentsR1Enabled: boolean;
   private readonly runs: Map<string, AutonomousRun> = new Map();
   private readonly abortControllers: Map<string, AbortController> = new Map();
@@ -222,6 +232,7 @@ export class AutonomousRunOrchestrator {
     this.persistence = options.persistence;
     this.agentRuntime = options.agentRuntime;
     this.getAgentRuntime = options.getAgentRuntime;
+    this.providerTopologyCapacity = options.providerTopologyCapacity;
     this.subagentsR1Enabled = options.subagentsR1Enabled ?? false;
     this.subagentManager = options.subagentManager ?? createSubagentManager({
       persistence: options.persistence,
@@ -433,15 +444,21 @@ export class AutonomousRunOrchestrator {
     const repositoryFileCount = (await this.git(targetWs.rootPath, ["ls-files"]).catch(() => ({ stdout: "" }))).stdout.split(/\r?\n/).filter(Boolean).length;
     const complexity = classifyTaskComplexity({ goal, ...(options.complexityHint ? { hint: options.complexityHint } : {}), repositoryFileCount });
     const fixedR1ByEnv = !options.topology && process.env.CODEFORGE_TOPOLOGY_POLICY === "fixed_r1";
+    // R24: ForgeGreen capacity advice only shapes the adaptive path — an explicit topology
+    // request and the operator-pinned fixed_r1 baseline keep their authority over capacity.
+    const adaptivePath = !options.topology && !fixedR1ByEnv;
+    const providerCapacity = adaptivePath ? this.providerTopologyCapacity?.() : undefined;
     const topologyPlan = resolveAdaptiveTopology({
       goal,
       ...(options.hasImages ? { hasImages: true } : {}),
       ...(options.topology ? { requestedTopology: options.topology } : fixedR1ByEnv ? { requestedTopology: "fixed_r1" as const } : { complexityHint: complexity.tier }),
+      ...(providerCapacity ? { providerCapacity } : {}),
     });
     const topology: TopologyDecisionRecord = {
       policy: options.topology ? "explicit" : fixedR1ByEnv ? "fixed_r1_env" : "adaptive",
       complexity,
       plan: topologyPlan,
+      ...(providerCapacity ? { providerCapacity } : {}),
       repositoryFileCount,
       decidedAt: new Date().toISOString(),
     };

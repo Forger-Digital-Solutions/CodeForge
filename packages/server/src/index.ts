@@ -23,6 +23,7 @@ import {
 import type { FreeModelRecord } from "@codeforge/forge-zero";
 import type { FreeCloudService } from "@codeforge/model-registry";
 import { SqliteQualificationPersistence, EightBitRouteHealthLedger, createEightBitRouteHealthAuthority, FreeFabric, type EightBitRouteHealthAuthority, type FabricContextProvider } from "@codeforge/eight-bit";
+import type { ProviderTopologyCapacity } from "@codeforge/forge-green";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/providers";
@@ -37,6 +38,7 @@ import {
 import { runDemoRuntime } from "./demo-runtime.js";
 import { AgentRuntime, createAgentRuntime, type HostedWorkerOptions } from "./agent-runtime.js";
 import { resolveWithinWorkspace } from "./path-security.js";
+import { buildProviderTopologyCapacity } from "./provider-topology-capacity.js";
 import { createWorkflowService, type WorkflowService } from "./workflow-service.js";
 import { WorkspaceService, createWorkspaceService } from "./workspace-service.js";
 import { AutonomousRunOrchestrator, createAutonomousRunOrchestrator, type AutonomousRun } from "./autonomous-orchestrator.js";
@@ -377,6 +379,7 @@ export class CodeForgeServer {
       persistence: this.persistence,
       ...(this.subagentsR1Enabled ? { getAgentRuntime: (sessionId: string) => this.getOrCreateRuntime(sessionId) } : {}),
       subagentsR1Enabled: this.subagentsR1Enabled,
+      providerTopologyCapacity: () => this.providerTopologyCapacity(),
     });
     this.workflowService = createWorkflowService({
       eventStore: this.eventStore,
@@ -2337,6 +2340,16 @@ export class CodeForgeServer {
       runtime.setDemoMode(demoMode);
     }
     return runtime;
+  }
+
+  /** R24: the live provider-capacity view ForgeGreen topology advice consumes. */
+  private providerTopologyCapacity(): ProviderTopologyCapacity | undefined {
+    return buildProviderTopologyCapacity({
+      freeCloud: this.freeCloud,
+      routeHealth: this.routeHealth,
+      freeFabric: this.freeFabric,
+      localUserId: this.localUserId,
+    });
   }
 
   /**

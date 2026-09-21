@@ -66,8 +66,8 @@ describe("R21 adaptive topology wiring in the autonomous orchestrator", () => {
     } as unknown as SubagentManager;
   }
 
-  async function run(goal: string, extra: Record<string, unknown> = {}, coder?: (worktreePath: string, goal: string, feedback?: string) => Promise<{ success: boolean; filesChanged: string[] }>): Promise<AutonomousRunResult> {
-    const orchestrator = createAutonomousRunOrchestrator({ workspaceService: createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir }), persistence, subagentManager: countingManager() });
+  async function run(goal: string, extra: Record<string, unknown> = {}, coder?: (worktreePath: string, goal: string, feedback?: string) => Promise<{ success: boolean; filesChanged: string[] }>, orchestratorOptions: Record<string, unknown> = {}): Promise<AutonomousRunResult> {
+    const orchestrator = createAutonomousRunOrchestrator({ workspaceService: createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir }), persistence, subagentManager: countingManager(), ...orchestratorOptions });
     return orchestrator.startRun({
       sessionId: `sess-${Math.random().toString(16).slice(2)}`,
       workspacePath: targetRepo,
@@ -149,6 +149,35 @@ describe("R21 adaptive topology wiring in the autonomous orchestrator", () => {
     expect(round).toBe(2);
     expect(result.counters.reviewRounds).toBe(1);
     expect(result.status).toBe("completed");
+  });
+
+  it("R24: ForgeGreen capacity advice reduces an adaptive parallel plan under constrained capacity and records it", async () => {
+    const result = await run(
+      "Migrate the database from SQLite to PostgreSQL across the api and the frontend",
+      {},
+      undefined,
+      { providerTopologyCapacity: () => ({ distinctHealthyProviders: 1, minimumRouteConcurrency: 1, saturatedRoutes: 0 }) },
+    );
+    expect(result.status).toBe("completed");
+    expect(result.topology?.policy).toBe("adaptive");
+    // Planned 2 explorers; capacity proved only one concurrent stream — serialized, not spawned.
+    expect(result.topology?.plan.topology).toBe("normal");
+    expect(result.topology?.plan.reason).toContain("CAPACITY_CONCURRENCY_LIMIT");
+    expect(result.topology?.providerCapacity).toEqual({ distinctHealthyProviders: 1, minimumRouteConcurrency: 1, saturatedRoutes: 0 });
+    expect(spawned.filter((id) => id === "explorer")).toHaveLength(1);
+  });
+
+  it("R24: capacity advice cannot override an explicit topology request", async () => {
+    const result = await run(
+      "Migrate the database from SQLite to PostgreSQL across the api and the frontend",
+      { topology: "complex" },
+      undefined,
+      { providerTopologyCapacity: () => ({ distinctHealthyProviders: 1, minimumRouteConcurrency: 1 }) },
+    );
+    expect(result.topology?.policy).toBe("explicit");
+    expect(result.topology?.plan.topology).toBe("complex");
+    expect(result.topology?.providerCapacity).toBeUndefined();
+    expect(spawned.filter((id) => id === "explorer")).toHaveLength(2);
   });
 
   it("deterministic review blocks a run that keeps rewriting its own verification script", async () => {
