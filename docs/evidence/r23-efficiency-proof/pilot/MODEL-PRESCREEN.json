@@ -1,6 +1,6 @@
 {
-  "recordedAt": "2026-09-21T01:39:06.845Z",
-  "protocolRule": "§2.2 pre-screen (v1.0.2): one single-agent qualification task; passers ranked by wall time; outcome-blind cap",
+  "recordedAt": "2026-09-21T01:48:44.377Z",
+  "protocolRule": "§2.2 pre-screen (v1.0.2): one single-agent qualification task; passers ranked by wall time; outcome-blind cap; infrastructure_void candidates may be re-screened (§6.3), all attempts preserved",
   "task": "qual-js-return-sign",
   "cap": 6,
   "candidates": [
@@ -12,7 +12,19 @@
       "modelCalls": 2,
       "totalTokens": null,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-0e3ecbe7",
-      "reason": "provider_failure (malformed/tool-call error)"
+      "reason": "provider_failure (malformed/tool-call error)",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "provider_failure",
+          "wallClockMs": 8787,
+          "modelCalls": 2,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-0e3ecbe7",
+          "reason": "provider_failure (malformed/tool-call error)"
+        }
+      ]
     },
     {
       "modelId": "nex-agi/nex-n2.5-mini:free",
@@ -22,7 +34,19 @@
       "modelCalls": 5,
       "totalTokens": null,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-dd70cb9d",
-      "reason": "provider_failure (malformed/tool-call error)"
+      "reason": "provider_failure (malformed/tool-call error)",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "provider_failure",
+          "wallClockMs": 8211,
+          "modelCalls": 5,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-dd70cb9d",
+          "reason": "provider_failure (malformed/tool-call error)"
+        }
+      ]
     },
     {
       "modelId": "nex-agi/nex-n2.5-pro:free",
@@ -32,7 +56,19 @@
       "modelCalls": 4,
       "totalTokens": null,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-449a748a",
-      "reason": "provider_failure (malformed/tool-call error)"
+      "reason": "provider_failure (malformed/tool-call error)",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "provider_failure",
+          "wallClockMs": 13611,
+          "modelCalls": 4,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-449a748a",
+          "reason": "provider_failure (malformed/tool-call error)"
+        }
+      ]
     },
     {
       "modelId": "inclusionai/ling-3.0-flash-sante:free",
@@ -42,7 +78,19 @@
       "modelCalls": 3,
       "totalTokens": 9112,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-d626635d",
-      "reason": "verification_failed"
+      "reason": "verification_failed",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "verification_failed",
+          "wallClockMs": 5886,
+          "modelCalls": 3,
+          "totalTokens": 9112,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-d626635d",
+          "reason": "verification_failed"
+        }
+      ]
     },
     {
       "modelId": "inclusionai/ling-3.0-flash-fin:free",
@@ -52,17 +100,51 @@
       "modelCalls": 2,
       "totalTokens": null,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-2f243a58",
-      "reason": "provider_failure (malformed/tool-call error)"
+      "reason": "provider_failure (malformed/tool-call error)",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "provider_failure",
+          "wallClockMs": 11751,
+          "modelCalls": 2,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-2f243a58",
+          "reason": "provider_failure (malformed/tool-call error)"
+        }
+      ]
     },
     {
       "modelId": "qwen/qwen3.8-27b:free",
       "passed": false,
       "classification": "infrastructure_void",
-      "wallClockMs": 3926,
+      "wallClockMs": 2708,
       "modelCalls": 1,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-6646a7a6",
-      "reason": "infrastructure_void"
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8ff7c293",
+      "reason": "infrastructure_void",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 3926,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-6646a7a6",
+          "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T01:48:44.377Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2708,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8ff7c293",
+          "reason": "infrastructure_void"
+        }
+      ]
     },
     {
       "modelId": "dots-studio/dots-3-note-preview:free",
@@ -72,7 +154,19 @@
       "modelCalls": 4,
       "totalTokens": null,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-809e5e47",
-      "reason": "provider_failure (malformed/tool-call error)"
+      "reason": "provider_failure (malformed/tool-call error)",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "provider_failure",
+          "wallClockMs": 15974,
+          "modelCalls": 4,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-809e5e47",
+          "reason": "provider_failure (malformed/tool-call error)"
+        }
+      ]
     },
     {
       "modelId": "liquid/lfm-2.5-2.6b:free",
@@ -82,17 +176,51 @@
       "modelCalls": 6,
       "totalTokens": 16555,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8148c4d6",
-      "reason": "verification_failed"
+      "reason": "verification_failed",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "verification_failed",
+          "wallClockMs": 15624,
+          "modelCalls": 6,
+          "totalTokens": 16555,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8148c4d6",
+          "reason": "verification_failed"
+        }
+      ]
     },
     {
       "modelId": "nvidia/nemotron-3.5-lightning:free",
       "passed": false,
-      "classification": "infrastructure_void",
-      "wallClockMs": 122843,
-      "modelCalls": 1,
-      "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-6349eba5",
-      "reason": "infrastructure_void"
+      "classification": "verification_failed",
+      "wallClockMs": 130621,
+      "modelCalls": 4,
+      "totalTokens": 13340,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-5c7f7e61",
+      "reason": "verification_failed",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 122843,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-6349eba5",
+          "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T01:48:44.377Z",
+          "passed": false,
+          "classification": "verification_failed",
+          "wallClockMs": 130621,
+          "modelCalls": 4,
+          "totalTokens": 13340,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-5c7f7e61",
+          "reason": "verification_failed"
+        }
+      ]
     },
     {
       "modelId": "thinkingmachines/inkling-small:free",
@@ -102,7 +230,19 @@
       "modelCalls": 1,
       "totalTokens": null,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-64257e45",
-      "reason": "infrastructure_void (malformed/tool-call error)"
+      "reason": "infrastructure_void (malformed/tool-call error)",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2267,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-64257e45",
+          "reason": "infrastructure_void (malformed/tool-call error)"
+        }
+      ]
     },
     {
       "modelId": "poolside/laguna-s-2.1:free",
@@ -112,7 +252,19 @@
       "modelCalls": 2,
       "totalTokens": null,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-30227a7d",
-      "reason": "provider_failure"
+      "reason": "provider_failure",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "provider_failure",
+          "wallClockMs": 8665,
+          "modelCalls": 2,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-30227a7d",
+          "reason": "provider_failure"
+        }
+      ]
     },
     {
       "modelId": "thinkingmachines/inkling:free",
@@ -122,17 +274,51 @@
       "modelCalls": 1,
       "totalTokens": null,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-db3b7f33",
-      "reason": "infrastructure_void (malformed/tool-call error)"
+      "reason": "infrastructure_void (malformed/tool-call error)",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2381,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-db3b7f33",
+          "reason": "infrastructure_void (malformed/tool-call error)"
+        }
+      ]
     },
     {
       "modelId": "poolside/laguna-xs-2.1:free",
       "passed": false,
       "classification": "infrastructure_void",
-      "wallClockMs": 2495,
+      "wallClockMs": 2517,
       "modelCalls": 1,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-779b1138",
-      "reason": "infrastructure_void"
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-b813b537",
+      "reason": "infrastructure_void",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2495,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-779b1138",
+          "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T01:48:44.377Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2517,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-b813b537",
+          "reason": "infrastructure_void"
+        }
+      ]
     },
     {
       "modelId": "cohere/north-mini-code:free",
@@ -142,7 +328,19 @@
       "modelCalls": 25,
       "totalTokens": 96251,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-85f02fbf",
-      "reason": "budget_exhausted"
+      "reason": "budget_exhausted",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "budget_exhausted",
+          "wallClockMs": 130854,
+          "modelCalls": 25,
+          "totalTokens": 96251,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-85f02fbf",
+          "reason": "budget_exhausted"
+        }
+      ]
     },
     {
       "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
@@ -152,37 +350,115 @@
       "modelCalls": 3,
       "totalTokens": 9746,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-9f346aa7",
-      "reason": "verification_failed"
+      "reason": "verification_failed",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "verification_failed",
+          "wallClockMs": 46461,
+          "modelCalls": 3,
+          "totalTokens": 9746,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-9f346aa7",
+          "reason": "verification_failed"
+        }
+      ]
     },
     {
       "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-      "passed": false,
-      "classification": "infrastructure_void",
-      "wallClockMs": 2849,
-      "modelCalls": 1,
-      "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-76959b51",
-      "reason": "infrastructure_void"
+      "passed": true,
+      "classification": "verified_complete",
+      "wallClockMs": 72832,
+      "modelCalls": 5,
+      "totalTokens": 19091,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8c23e8a4",
+      "reason": "verified_complete",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2849,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-76959b51",
+          "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T01:48:44.377Z",
+          "passed": true,
+          "classification": "verified_complete",
+          "wallClockMs": 72832,
+          "modelCalls": 5,
+          "totalTokens": 19091,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8c23e8a4",
+          "reason": "verified_complete"
+        }
+      ]
     },
     {
       "modelId": "google/gemma-4-26b-a4b-it:free",
       "passed": false,
       "classification": "infrastructure_void",
-      "wallClockMs": 2437,
+      "wallClockMs": 2461,
       "modelCalls": 1,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-0c32420b",
-      "reason": "infrastructure_void"
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8caeea51",
+      "reason": "infrastructure_void",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2437,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-0c32420b",
+          "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T01:48:44.377Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2461,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8caeea51",
+          "reason": "infrastructure_void"
+        }
+      ]
     },
     {
       "modelId": "google/gemma-4-31b-it:free",
       "passed": false,
       "classification": "infrastructure_void",
-      "wallClockMs": 2614,
+      "wallClockMs": 2413,
       "modelCalls": 1,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-ddedcc22",
-      "reason": "infrastructure_void"
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-b2a45337",
+      "reason": "infrastructure_void",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2614,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-ddedcc22",
+          "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T01:48:44.377Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2413,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-b2a45337",
+          "reason": "infrastructure_void"
+        }
+      ]
     },
     {
       "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
@@ -192,8 +468,22 @@
       "modelCalls": 5,
       "totalTokens": 17675,
       "runId": "r23-qualification-qual-js-return-sign-optimized-r1-952fabe4",
-      "reason": "verification_failed"
+      "reason": "verification_failed",
+      "attempts": [
+        {
+          "recordedAt": "2026-09-21T01:39:06.845Z",
+          "passed": false,
+          "classification": "verification_failed",
+          "wallClockMs": 26883,
+          "modelCalls": 5,
+          "totalTokens": 17675,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-952fabe4",
+          "reason": "verification_failed"
+        }
+      ]
     }
   ],
-  "advancing": []
+  "advancing": [
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+  ]
 }

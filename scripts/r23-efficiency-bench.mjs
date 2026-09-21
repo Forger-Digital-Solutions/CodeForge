@@ -46,7 +46,7 @@ const MANIFEST_PATH = path.join(ROOT, "benchmarks", "r23", "manifest.json");
 const EVIDENCE = path.join(ROOT, "docs", "evidence", "r23-efficiency-proof");
 const PROTOCOL_PATH = path.join(ROOT, "docs", "benchmarks", "codeforge-efficiency-protocol-r23.md");
 const PROTOCOL_DIGEST_PATH = path.join(EVIDENCE, "protocol", "PROTOCOL-DIGEST.txt");
-const PROTOCOL_VERSION = "1.0.2";
+const PROTOCOL_VERSION = "1.0.3";
 
 // ---------------------------------------------------------------------------------------------
 // CLI
@@ -105,7 +105,9 @@ async function loadFrozenCorpus() {
 }
 
 function treeState() {
-  const porcelain = git(["status", "--porcelain"]).split(/\r?\n/).filter(Boolean);
+  // Do NOT route this through git() — its .trim() strips the leading status column of the first
+  // porcelain line (" M path" → "M path"), which would misalign the slice(3) path parse.
+  const porcelain = execFileSync("git", ["status", "--porcelain"], { cwd: ROOT, encoding: "utf8", windowsHide: true }).split(/\r?\n/).filter(Boolean);
   // Regenerated corpus files are ignored (see .gitignore); anything else dirties the tree.
   const dirtyFiles = porcelain.map((line) => line.slice(3).trim());
   return { commit: git(["rev-parse", "HEAD"]), dirty: dirtyFiles.length > 0, dirtyFiles };
@@ -461,9 +463,21 @@ async function modePrescreen() {
   const candidates = list(flags.models) ?? catalog
     .filter((model) => model.pricing?.prompt === "0" && model.pricing?.completion === "0" && (model.supported_parameters ?? []).includes("tools") && model.id !== "openrouter/free")
     .map((model) => model.id);
-  const taskId = flags.task ?? "qual-js-return-sign";
+  const file = path.join(EVIDENCE, "pilot", "MODEL-PRESCREEN.json");
+  const prior = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : undefined;
+  const taskId = flags.task ?? prior?.task ?? "qual-js-return-sign";
+  const cap = Number(flags.cap ?? prior?.cap ?? 6);
   const results = [];
+  const skipped = [];
   for (const modelId of candidates) {
+    const prev = (prior?.candidates ?? []).find((c) => c.modelId === modelId);
+    if (prev && prev.classification && prev.classification !== "infrastructure_void") {
+      // §6.3: a provider-side failure before the first tool call is not a capability signal and
+      // may be re-screened; every other outcome is a real result and must not be re-attempted.
+      log(`=== pre-screen: ${modelId} — skipping (prior ${prev.classification} is a capability/reliability result, not infrastructure)`);
+      skipped.push({ modelId, priorClassification: prev.classification });
+      continue;
+    }
     log(`=== pre-screen: ${modelId} ===`);
     let setup;
     try {
@@ -486,15 +500,30 @@ async function modePrescreen() {
     results.push({ modelId, passed, classification: run?.classification ?? "no_run", wallClockMs: run?.wallClockMs ?? null, modelCalls: run?.modelCalls ?? null, totalTokens: run?.totalTokens ?? null, runId: run?.runId ?? null, reason: passed ? "verified_complete" : run ? `${run.classification}${malformed ? " (malformed/tool-call error)" : ""}` : "no run" });
     log(`  → ${passed ? "PASS" : "FAIL"} ${run?.classification ?? "no_run"} calls=${run?.modelCalls ?? "—"} wall=${run ? Math.round(run.wallClockMs / 1000) : "—"}s`);
   }
-  const passers = results.filter((r) => r.passed).sort((a, b) => a.wallClockMs - b.wallClockMs);
-  const cap = Number(flags.cap ?? 6);
+  // Merge into any prior file: candidates keep a complete attempts[] history; nothing is
+  // overwritten — a re-screened candidate's new attempt is appended and its headline fields move
+  // to the latest attempt.
+  const byId = new Map();
+  for (const c of prior?.candidates ?? []) byId.set(c.modelId, { ...c, attempts: [...(c.attempts ?? [{ recordedAt: prior.recordedAt, passed: c.passed, classification: c.classification, wallClockMs: c.wallClockMs, modelCalls: c.modelCalls, totalTokens: c.totalTokens, runId: c.runId, reason: c.reason }])] });
+  const attemptAt = new Date().toISOString();
+  for (const r of results) {
+    const attempt = { recordedAt: attemptAt, passed: r.passed, classification: r.classification ?? "ineligible", wallClockMs: r.wallClockMs ?? null, modelCalls: r.modelCalls ?? null, totalTokens: r.totalTokens ?? null, runId: r.runId ?? null, reason: r.reason };
+    const prev = byId.get(r.modelId);
+    if (prev) {
+      prev.attempts.push(attempt);
+      Object.assign(prev, { passed: r.passed, classification: attempt.classification, wallClockMs: attempt.wallClockMs, modelCalls: attempt.modelCalls, totalTokens: attempt.totalTokens, runId: attempt.runId, reason: attempt.reason });
+    } else {
+      byId.set(r.modelId, { modelId: r.modelId, ...attempt, attempts: [attempt] });
+    }
+  }
+  const all = [...byId.values()];
+  const passers = all.filter((r) => r.passed).sort((a, b) => a.wallClockMs - b.wallClockMs);
   const advancing = passers.slice(0, cap).map((r) => r.modelId);
-  const dir = path.join(EVIDENCE, "pilot");
+  const dir = path.dirname(file);
   fs.mkdirSync(dir, { recursive: true });
-  const file = path.join(dir, "MODEL-PRESCREEN.json");
-  fs.writeFileSync(file, `${JSON.stringify({ recordedAt: new Date().toISOString(), protocolRule: "§2.2 pre-screen (v1.0.2): one single-agent qualification task; passers ranked by wall time; outcome-blind cap", task: taskId, cap, candidates: results, advancing }, null, 2)}
+  fs.writeFileSync(file, `${JSON.stringify({ recordedAt: new Date().toISOString(), protocolRule: "§2.2 pre-screen (v1.0.3): one single-agent qualification task; passers ranked by wall time; outcome-blind cap; infrastructure_void candidates may be re-screened (§6.3), all attempts preserved", task: taskId, cap, candidates: all, ...(skipped.length > 0 ? { skippedReScreen: skipped } : {}), advancing }, null, 2)}
 `);
-  log(`pre-screen written → ${path.relative(ROOT, file)}; ${passers.length}/${results.length} passed; advancing: ${advancing.join(", ") || "(none)"}`);
+  log(`pre-screen written → ${path.relative(ROOT, file)}; ${passers.length}/${all.length} passed; advancing: ${advancing.join(", ") || "(none)"}`);
 }
 
 async function modeQualify() {
@@ -525,6 +554,7 @@ async function modeQualify() {
       modelId,
       eligible: true,
       tasks: runs.length,
+      tasksExpected: chosen.length,
       verified: runs.filter((run) => run.classification === "verified_complete").length,
       falseComplete: runs.filter((run) => run.classification === "false_complete").length,
       hangsOrUpstreamFailures: hangsOrUpstream,
@@ -536,9 +566,14 @@ async function modeQualify() {
       stopped: result.stopped ?? null,
     });
   }
-  // Protocol §2.2 scoring: reliability + capability only (efficiency fields are recorded but not scored).
+  // Protocol §2.2 scoring: reliability + capability only (efficiency fields are recorded but not
+  // scored). A winner must clear the qualification bar — every selected task verified_complete,
+  // zero hangs/upstream 429|5xx, zero malformed tool-call runs. The best-scoring candidate that
+  // fails the bar is the `leader`, not a winner; pilot/main refuse to run on an unqualified model.
+  const qualified = (r) => r.eligible === true && r.verified === r.tasksExpected && r.hangsOrUpstreamFailures === 0 && r.malformedToolCallRuns === 0;
   const ranked = results.filter((r) => r.eligible).sort((a, b) => (b.verified - a.verified) || (a.hangsOrUpstreamFailures - b.hangsOrUpstreamFailures) || (a.malformedToolCallRuns - b.malformedToolCallRuns) || (a.medianWallMs - b.medianWallMs));
-  const selection = { recordedAt: new Date().toISOString(), protocolRule: "§2.2 — reliability and capability only; tokens are not a scoring input", candidates: results, winner: ranked[0]?.modelId ?? null, ranking: ranked.map((r) => r.modelId) };
+  const winner = ranked.find(qualified)?.modelId ?? null;
+  const selection = { recordedAt: new Date().toISOString(), protocolRule: "§2.2 — reliability and capability only; tokens are not a scoring input; winner requires all tasks verified, zero upstream failures, zero malformed runs", candidates: results.map((r) => ({ ...r, qualified: r.eligible ? qualified(r) : false })), winner, leader: ranked[0]?.modelId ?? null, ranking: ranked.map((r) => r.modelId) };
   const dir = path.join(EVIDENCE, "pilot");
   fs.mkdirSync(dir, { recursive: true });
   const file = path.join(dir, "MODEL-SELECTION.json");

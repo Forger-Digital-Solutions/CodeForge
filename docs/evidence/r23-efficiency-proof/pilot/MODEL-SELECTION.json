@@ -1,0 +1,55 @@
+{
+  "recordedAt": "2026-09-21T02:01:50.486Z",
+  "protocolRule": "§2.2 — reliability and capability only; tokens are not a scoring input; winner requires all tasks verified, zero upstream failures, zero malformed runs",
+  "candidates": [
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "eligible": true,
+      "tasks": 3,
+      "tasksExpected": 3,
+      "verified": 1,
+      "falseComplete": 0,
+      "hangsOrUpstreamFailures": 3,
+      "malformedToolCallRuns": 0,
+      "medianWallMs": 68165,
+      "medianCalls": 8,
+      "runIds": [
+        "r23-qualification-qual-js-missing-export-optimized-r1-7f14d10c",
+        "r23-qualification-qual-js-off-by-one-optimized-r1-46ae24ae",
+        "r23-qualification-qual-js-return-sign-optimized-r1-8a688fc4"
+      ],
+      "stopped": null,
+      "qualified": false
+    }
+  ],
+  "winner": null,
+  "leader": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+  "ranking": [
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+  ],
+  "previousRounds": [
+    {
+      "recordedAt": "2026-09-21T01:51:24.737Z",
+      "winner": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "candidates": [
+        {
+          "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "eligible": true,
+          "tasks": 3,
+          "verified": 0,
+          "falseComplete": 0,
+          "hangsOrUpstreamFailures": 3,
+          "malformedToolCallRuns": 0,
+          "medianWallMs": 52443,
+          "medianCalls": 9,
+          "runIds": [
+            "r23-qualification-qual-js-missing-export-optimized-r1-6b63ea74",
+            "r23-qualification-qual-js-off-by-one-optimized-r1-5544b27c",
+            "r23-qualification-qual-js-return-sign-optimized-r1-adc03c32"
+          ],
+          "stopped": null
+        }
+      ]
+    }
+  ]
+}

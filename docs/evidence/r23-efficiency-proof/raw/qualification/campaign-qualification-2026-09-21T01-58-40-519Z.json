@@ -1,0 +1,100 @@
+{
+  "campaignId": "qualification-2026-09-21T01-58-40-519Z",
+  "phase": "qualification",
+  "recordedAt": "2026-09-21T02:01:50.483Z",
+  "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+  "pin": {
+    "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+    "name": "NVIDIA: Nemotron 3 Nano Omni (free)",
+    "contextLength": 256000,
+    "pricing": {
+      "prompt": "0",
+      "completion": "0"
+    },
+    "supportedParameters": [
+      "include_reasoning",
+      "max_tokens",
+      "reasoning",
+      "seed",
+      "temperature",
+      "tool_choice",
+      "tools",
+      "top_p"
+    ],
+    "checkedAt": "2026-09-21T01:58:40.423Z"
+  },
+  "allowanceAtStart": {
+    "limit": 1000,
+    "used": 87,
+    "remaining": 913,
+    "usage": 0,
+    "usageDaily": 0,
+    "checkedAt": "2026-09-21T01:58:40.517Z"
+  },
+  "identity": {
+    "protocolVersion": "1.0.3",
+    "protocolDigest": "0f9263db999dd0b7c0d2c9d461d80cb0c50f64a300d559474463038aec057531",
+    "codeforgeCommit": "4299036e235579fde8b5f9867a5e50950adf168c",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "docs/benchmarks/codeforge-efficiency-protocol-r23.md",
+      "docs/evidence/r23-efficiency-proof/pilot/MODEL-PRESCREEN.json",
+      "docs/evidence/r23-efficiency-proof/protocol/PROTOCOL-DIGEST.txt",
+      "docs/evidence/r23-efficiency-proof/raw/exclusions.jsonl",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/runs.jsonl",
+      "scripts/r23-efficiency-bench.mjs",
+      "docs/evidence/r23-efficiency-proof/pilot/MODEL-SELECTION.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/campaign-qualification-2026-09-21T01-49-13-593Z.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-missing-export-optimized-r1-6b63ea74.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-off-by-one-optimized-r1-5544b27c.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-5c7f7e61.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-8c23e8a4.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-8caeea51.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-8ff7c293.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-adc03c32.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-b2a45337.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-b813b537.json"
+    ],
+    "environmentFingerprint": "dbe43a1164db924c0aac7b3128b5eeff37b8a80b737f289e5aa4a29bd22aec8b",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "stopped": null,
+  "runs": [
+    {
+      "taskId": "qual-js-missing-export",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 9,
+      "totalTokens": null,
+      "wallClockMs": 68165,
+      "runId": "r23-qualification-qual-js-missing-export-optimized-r1-7f14d10c"
+    },
+    {
+      "taskId": "qual-js-off-by-one",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 6,
+      "totalTokens": null,
+      "wallClockMs": 19066,
+      "runId": "r23-qualification-qual-js-off-by-one-optimized-r1-46ae24ae"
+    },
+    {
+      "taskId": "qual-js-return-sign",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 8,
+      "totalTokens": null,
+      "wallClockMs": 102157,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8a688fc4"
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Protocol id | `codeforge-efficiency-protocol-r23` |
-| Protocol version | **1.0.2** (frozen; any change after the first live pilot run requires a new minor version and a re-run of affected results) |
+| Protocol version | **1.0.3** (frozen; any change after the first live pilot run requires a new minor version and a re-run of affected results) |
 | Frozen at commit | `ae2aa87487e7bd4ca2c4fde47bfc3b978fa50e41` (R22 closure) — the protocol is committed *before* any paired result exists |
 | Date frozen | 2026-09-20 |
 | Authors | R23 engineering team (one founder + AI agents) |
@@ -309,7 +309,7 @@ Enforced mechanically where possible: arm-configuration tripwire test; per-task 
 The pilot's purpose is to prove the measuring equipment. The main benchmark starts only when every item below is true and recorded in `pilot/R23-PILOT-REPORT.md`:
 
 - per-call ledger totals equal the run totals for every pilot run (Σ calls == run record);
-- provider-reported prompt+completion tokens are present (`usage_source: PROVIDER_REPORTED`) on ≥ 98% of calls, and the live account's daily request counter advanced by exactly the number of calls the ledger recorded (receipt reconciliation);
+- provider-reported prompt+completion tokens are present (`usage_source: PROVIDER_REPORTED`) on ≥ 98% of calls, and the live account's daily request counter advanced by exactly the number of ledger calls carrying provider-reported usage — the free-request counter counts *served* requests; upstream errors do not consume it (semantics verified against live counter data on 2026-09-21: 87 served ledger calls = `used: 87`) (receipt reconciliation);
 - cached-token fields are populated when the provider reports them and `UNKNOWN` otherwise (never zero-by-default);
 - every run carries task_id, pair_id, arm, protocol_digest, environment_fingerprint, model, starting_tree_hash, ending_tree_hash;
 - the verifier verdict and the completion-authority verdict are both present on every terminal run;
@@ -333,4 +333,5 @@ Raw records first (`raw/*.jsonl`), then generated summaries (`summaries/*.json|.
 |---|---|---|
 | 1.0.0 | 2026-09-20 | Frozen before the first pilot run. |
 | 1.0.2 | 2026-09-21 | Before any live run: §2.2 adds the outcome-blind pre-screen and the six-candidate cap for the qualification round (daily-allowance budget). |
+| 1.0.3 | 2026-09-21 | Before any pilot run: §16's receipt-reconciliation item is corrected to match the counter's measured semantics — `free_model_daily_requests.used` advances only on served requests, so it must equal the count of ledger calls with `usage_source: PROVIDER_REPORTED`, not raw attempts (raw attempts include upstream 4xx/5xx that are never served). Verified on live data: 87 served calls = `used: 87`. |
 | 1.0.1 | 2026-09-21 | Before any live run, after the scripted dry run of all 15 tasks: (a) §5 defines the completion authority for read-only investigation tasks (the v1.0.0 wording only covered change-making tasks and made every investigation run a false completion by construction); (b) §6.4 records that `dry_run` is a phase. Two product findings from the dry run are recorded, not worked around: ForgeVerify's autonomous path admits only `node`/`npm`/`npx` verifiers (Python tasks fail identically in both arms), and the deterministic diff review blocks verification-config edits (the build-config task fails identically in both arms). Both stay in the corpus as measured. (c) §3.1 corrects the arm table: mission memory and FG-12F evidence reuse are inert on the autonomous run path (FG-12F has no production caller — finding F-3); the exercised switches are the ForgeGreen advisor, FG-1C, FG-1B, the FG-1D/FG-3D cache, the FG-3 context planner, and topology. |

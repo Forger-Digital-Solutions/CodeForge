@@ -1,9 +1,10 @@
 protocol: docs/benchmarks/codeforge-efficiency-protocol-r23.md
-version: 1.0.2
-sha256: f522cc7ce5355cf72b4ac09c052d5328db45bb3764b79c40270c13ea5faccb1f
-frozen_at_commit: ae2aa87487e7bd4ca2c4fde47bfc3b978fa50e41 (v1.0.0, 2026-09-20); amended to v1.0.1 and v1.0.2 on 2026-09-21 before any live run (see change log)
+version: 1.0.3
+sha256: 0f9263db999dd0b7c0d2c9d461d80cb0c50f64a300d559474463038aec057531
+frozen_at_commit: ae2aa87487e7bd4ca2c4fde47bfc3b978fa50e41 (v1.0.0, 2026-09-20); amended to v1.0.1, v1.0.2 and v1.0.3 on 2026-09-21 before any paired pilot run (see change log)
 note: every R23 run record carries this digest as protocol_digest; a mismatch invalidates the record.
 history:
   1.0.0  7f5e4b5bcbfe6de82b3139b93617430a77f2128369b155d70ec22d2786d237c9
   1.0.1  e7c14c93f1c9aa29959ce93ea8d34e4f83139a7989c40087466000d97b627e1c
   1.0.2  f522cc7ce5355cf72b4ac09c052d5328db45bb3764b79c40270c13ea5faccb1f
+  1.0.3  0f9263db999dd0b7c0d2c9d461d80cb0c50f64a300d559474463038aec057531

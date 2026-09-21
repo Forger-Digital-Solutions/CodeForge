@@ -1,0 +1,93 @@
+{
+  "campaignId": "qualification-2026-09-21T01-49-13-593Z",
+  "phase": "qualification",
+  "recordedAt": "2026-09-21T01:51:24.733Z",
+  "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+  "pin": {
+    "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+    "name": "NVIDIA: Nemotron 3 Nano Omni (free)",
+    "contextLength": 256000,
+    "pricing": {
+      "prompt": "0",
+      "completion": "0"
+    },
+    "supportedParameters": [
+      "include_reasoning",
+      "max_tokens",
+      "reasoning",
+      "seed",
+      "temperature",
+      "tool_choice",
+      "tools",
+      "top_p"
+    ],
+    "checkedAt": "2026-09-21T01:49:13.538Z"
+  },
+  "allowanceAtStart": {
+    "limit": 1000,
+    "used": 68,
+    "remaining": 932,
+    "usage": 0,
+    "usageDaily": 0,
+    "checkedAt": "2026-09-21T01:49:13.592Z"
+  },
+  "identity": {
+    "protocolVersion": "1.0.2",
+    "protocolDigest": "f522cc7ce5355cf72b4ac09c052d5328db45bb3764b79c40270c13ea5faccb1f",
+    "codeforgeCommit": "4299036e235579fde8b5f9867a5e50950adf168c",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "ocs/evidence/r23-efficiency-proof/pilot/MODEL-PRESCREEN.json",
+      "docs/evidence/r23-efficiency-proof/raw/exclusions.jsonl",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/runs.jsonl",
+      "scripts/r23-efficiency-bench.mjs",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-5c7f7e61.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-8c23e8a4.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-8caeea51.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-8ff7c293.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-b2a45337.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-b813b537.json"
+    ],
+    "environmentFingerprint": "f13118b29f3e7742edc1d3a38c79ed004cafecf3caecde0a4ece629f23d12f4b",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "stopped": null,
+  "runs": [
+    {
+      "taskId": "qual-js-missing-export",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 9,
+      "totalTokens": null,
+      "wallClockMs": 52443,
+      "runId": "r23-qualification-qual-js-missing-export-optimized-r1-6b63ea74"
+    },
+    {
+      "taskId": "qual-js-off-by-one",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 9,
+      "totalTokens": null,
+      "wallClockMs": 54785,
+      "runId": "r23-qualification-qual-js-off-by-one-optimized-r1-5544b27c"
+    },
+    {
+      "taskId": "qual-js-return-sign",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 9,
+      "totalTokens": null,
+      "wallClockMs": 23453,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-adc03c32"
+    }
+  ]
+}
