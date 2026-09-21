@@ -8,8 +8,8 @@ Base: `ae2aa87` (R22 closure) — verified clean at M0.
 
 | | |
 |---|---|
-| HEAD | `5e86da1` R23 v1.0.5: §16 coverage denominator aligned to served calls |
-| Pending commit | nemotron rounds 7–8 campaign/run records + `MODEL-SELECTION.json` merge (winner: null) + this checkpoint |
+| HEAD | `e418c66` R23 checkpoint: CF Workers AI blocked on plan attestation; route sweep complete (tree clean, verified by `git status` at recovery 2026-09-21 05:03Z). Prior narrative disagreed with itself (`b248cba` vs `e418c66`): `b248cba` is the parent of `e418c66`; both are on the branch. Commits after `5e86da1`: `eec5434` (nemotron rounds 7–8 + selection merge), `6e6ccb7` (catalog refresh 04:45Z + retry residue), `b248cba` (subagent-failure correction), `e418c66` (CF attestation block). |
+| Pending commit | none at recovery — everything listed above is committed |
 | Canary status | Canonical suite green at recovery: 421 files / 3315 tests / 0 failures / 471 s. Latest targeted re-runs: forge-zero 19 pass / eight-bit 176 pass + 2 skip (incl. stream-interrupt taxonomy tests) / providers 184 pass / model-registry 85 pass — 0 failures. |
 
 ## Completed phases
