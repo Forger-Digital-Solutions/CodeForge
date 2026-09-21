@@ -1,0 +1,62 @@
+{
+  "$ref": "#/definitions/R23TaskManifest",
+  "definitions": {
+    "R23TaskManifest": {
+      "type": "object",
+      "properties": {
+        "manifestVersion": {
+          "type": "string",
+          "const": "r23-task-manifest-1"
+        },
+        "frozenAt": {
+          "type": "string"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "taskId": {
+                "type": "string"
+              },
+              "class": {
+                "type": "string",
+                "enum": [
+                  "small_fix",
+                  "bug_fix",
+                  "feature",
+                  "refactor",
+                  "build_config_dependency",
+                  "investigation",
+                  "large_context"
+                ]
+              },
+              "digest": {
+                "type": "string",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "batch": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "taskId",
+              "class",
+              "digest",
+              "batch"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "manifestVersion",
+        "frozenAt",
+        "tasks"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -1,0 +1,972 @@
+{
+  "$ref": "#/definitions/R23RunRecord",
+  "definitions": {
+    "R23RunRecord": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "r23-run-record-1"
+        },
+        "identity": {
+          "type": "object",
+          "properties": {
+            "benchmarkVersion": {
+              "type": "string",
+              "const": "CodeForge-EfficiencyBench-R23"
+            },
+            "protocolId": {
+              "type": "string",
+              "const": "codeforge-efficiency-protocol-r23"
+            },
+            "protocolVersion": {
+              "type": "string"
+            },
+            "protocolDigest": {
+              "type": "string",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "harnessVersion": {
+              "type": "string"
+            },
+            "campaignId": {
+              "type": "string"
+            },
+            "phase": {
+              "type": "string",
+              "enum": [
+                "qualification",
+                "pilot",
+                "main",
+                "variance",
+                "ablation",
+                "replication",
+                "public_benchmark",
+                "chaos",
+                "fixture"
+              ]
+            },
+            "runId": {
+              "type": "string"
+            },
+            "pairId": {
+              "type": "string"
+            },
+            "taskId": {
+              "type": "string"
+            },
+            "taskClass": {
+              "type": "string"
+            },
+            "taskLanguage": {
+              "type": "string"
+            },
+            "repoSizeClass": {
+              "type": "string",
+              "enum": [
+                "small",
+                "medium",
+                "large"
+              ]
+            },
+            "arm": {
+              "type": "string",
+              "enum": [
+                "control",
+                "optimized"
+              ]
+            },
+            "armConfigurationDigest": {
+              "type": "string"
+            },
+            "pairOrder": {
+              "type": "string",
+              "enum": [
+                "control-first",
+                "optimized-first"
+              ]
+            },
+            "repetition": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "codeforgeCommit": {
+              "type": "string"
+            },
+            "codeforgeTreeDirty": {
+              "type": "boolean"
+            },
+            "dirtyFiles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "startingTreeHash": {
+              "type": "string"
+            },
+            "endingTreeHash": {
+              "type": "string"
+            },
+            "taskDigest": {
+              "type": "string"
+            },
+            "modelId": {
+              "type": "string"
+            },
+            "providerId": {
+              "type": "string"
+            },
+            "routeClass": {
+              "type": "string"
+            },
+            "forgeGreenEnabled": {
+              "type": "boolean"
+            },
+            "subagentsEnabled": {
+              "type": "boolean"
+            },
+            "topology": {
+              "type": "string"
+            },
+            "environmentFingerprint": {
+              "type": "string"
+            },
+            "startedAt": {
+              "type": "string"
+            },
+            "endedAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "benchmarkVersion",
+            "protocolId",
+            "protocolVersion",
+            "protocolDigest",
+            "harnessVersion",
+            "campaignId",
+            "phase",
+            "runId",
+            "pairId",
+            "taskId",
+            "taskClass",
+            "taskLanguage",
+            "repoSizeClass",
+            "arm",
+            "armConfigurationDigest",
+            "pairOrder",
+            "repetition",
+            "codeforgeCommit",
+            "codeforgeTreeDirty",
+            "startingTreeHash",
+            "endingTreeHash",
+            "taskDigest",
+            "modelId",
+            "providerId",
+            "routeClass",
+            "forgeGreenEnabled",
+            "subagentsEnabled",
+            "topology",
+            "environmentFingerprint",
+            "startedAt",
+            "endedAt"
+          ],
+          "additionalProperties": false
+        },
+        "outcome": {
+          "type": "object",
+          "properties": {
+            "runtimeStatus": {
+              "type": "string",
+              "enum": [
+                "completed",
+                "blocked",
+                "cancelled",
+                "failed"
+              ]
+            },
+            "stopReason": {
+              "type": "string"
+            },
+            "claimedComplete": {
+              "type": "boolean"
+            },
+            "verifierRan": {
+              "type": "boolean"
+            },
+            "verifierPassed": {
+              "type": "boolean"
+            },
+            "verifierExitCode": {
+              "type": "integer"
+            },
+            "verifierDurationMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "completionAuthority": {
+              "type": "string",
+              "enum": [
+                "PASS",
+                "FAIL",
+                "BLOCKED",
+                "NOT_RUN"
+              ]
+            },
+            "completionBlockers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "forbiddenActionObserved": {
+              "type": "boolean"
+            },
+            "verifiedComplete": {
+              "type": "boolean"
+            },
+            "falseComplete": {
+              "type": "boolean"
+            },
+            "classification": {
+              "type": "string",
+              "enum": [
+                "verified_complete",
+                "false_complete",
+                "verification_failed",
+                "budget_exhausted",
+                "provider_failure",
+                "tool_failure",
+                "security_blocked",
+                "timeout",
+                "harness_error",
+                "infrastructure_void"
+              ]
+            },
+            "completionReason": {
+              "type": "string"
+            },
+            "testsPassed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "testsFailed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "filesChanged": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "linesAdded": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "linesRemoved": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "runtimeError": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "runtimeStatus",
+            "stopReason",
+            "claimedComplete",
+            "verifierRan",
+            "completionAuthority",
+            "completionBlockers",
+            "forbiddenActionObserved",
+            "verifiedComplete",
+            "falseComplete",
+            "classification",
+            "completionReason",
+            "filesChanged",
+            "linesAdded",
+            "linesRemoved"
+          ],
+          "additionalProperties": false
+        },
+        "inference": {
+          "type": "object",
+          "properties": {
+            "totalInputTokens": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "number"
+                },
+                "source": {
+                  "type": "string",
+                  "enum": [
+                    "OBSERVED",
+                    "DERIVED",
+                    "ESTIMATED",
+                    "UNKNOWN"
+                  ]
+                },
+                "origin": {
+                  "type": "string",
+                  "enum": [
+                    "PROVIDER",
+                    "RUNTIME",
+                    "HARNESS",
+                    "VERIFIER",
+                    "SNAPSHOT"
+                  ]
+                },
+                "note": {
+                  "type": "string",
+                  "maxLength": 240
+                }
+              },
+              "required": [
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "totalOutputTokens": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "totalTokens": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "cachedInputTokens": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "uncachedInputTokens": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "reasoningTokens": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "modelCalls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "callsWithProviderUsage": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "failedModelCalls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "retriedModelCalls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rateLimitedCalls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "providerFailovers": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "modelFailovers": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "duplicateRequestsSuppressed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "calls": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "callIndex": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "providerId": {
+                    "type": "string"
+                  },
+                  "requestedModelId": {
+                    "type": "string"
+                  },
+                  "servedModelId": {
+                    "type": "string"
+                  },
+                  "startedAt": {
+                    "type": "string"
+                  },
+                  "endedAt": {
+                    "type": "string"
+                  },
+                  "latencyMs": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "timeToFirstEventMs": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "requestBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "responseBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "messageCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "messageCountByRole": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "toolDefinitionCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "usageSource": {
+                    "type": "string",
+                    "enum": [
+                      "PROVIDER_REPORTED",
+                      "UNKNOWN"
+                    ]
+                  },
+                  "promptTokens": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "completionTokens": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "totalTokens": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "cachedPromptTokens": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "cacheWriteTokens": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "reasoningTokens": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "providerReportedCostUsd": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "finishReason": {
+                    "type": "string",
+                    "enum": [
+                      "stop",
+                      "tool_calls",
+                      "length",
+                      "content_filter",
+                      "error"
+                    ]
+                  },
+                  "toolCallsEmitted": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "error",
+                      "aborted"
+                    ]
+                  },
+                  "errorCode": {
+                    "type": "string"
+                  },
+                  "httpStatus": {
+                    "type": "integer"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  },
+                  "rateLimited": {
+                    "type": "boolean"
+                  },
+                  "retryAfterMs": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "conversationDigest": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "callIndex",
+                  "providerId",
+                  "requestedModelId",
+                  "startedAt",
+                  "endedAt",
+                  "latencyMs",
+                  "requestBytes",
+                  "responseBytes",
+                  "messageCount",
+                  "messageCountByRole",
+                  "toolDefinitionCount",
+                  "usageSource",
+                  "toolCallsEmitted",
+                  "outcome",
+                  "rateLimited",
+                  "conversationDigest"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "totalInputTokens",
+            "totalOutputTokens",
+            "totalTokens",
+            "cachedInputTokens",
+            "uncachedInputTokens",
+            "reasoningTokens",
+            "modelCalls",
+            "callsWithProviderUsage",
+            "failedModelCalls",
+            "retriedModelCalls",
+            "rateLimitedCalls",
+            "providerFailovers",
+            "modelFailovers",
+            "duplicateRequestsSuppressed",
+            "calls"
+          ],
+          "additionalProperties": false
+        },
+        "context": {
+          "type": "object",
+          "properties": {
+            "transmittedContextBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "finalConversationBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "providerStatelessnessRepeatBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "avoidableDuplicateBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "avoidableDuplicateTokens": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "avoidableDuplicateEvents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "duplicate_tool_result",
+                      "bootstrap_then_reread"
+                    ]
+                  },
+                  "tool": {
+                    "type": "string"
+                  },
+                  "argumentsDigest": {
+                    "type": "string"
+                  },
+                  "bytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "firstCallIndex": {
+                    "type": "integer"
+                  },
+                  "repeatCallIndex": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "tool",
+                  "argumentsDigest",
+                  "bytes",
+                  "firstCallIndex",
+                  "repeatCallIndex"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "finalComposition": {
+              "type": "object",
+              "properties": {
+                "systemBytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "userTaskBytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "assistantBytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "toolResultBytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "toolResultBytesByTool": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "otherBytes": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "systemBytes",
+                "userTaskBytes",
+                "assistantBytes",
+                "toolResultBytes",
+                "toolResultBytesByTool",
+                "otherBytes"
+              ],
+              "additionalProperties": false
+            },
+            "bootstrapContextBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "bootstrapSelectedFiles": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "bootstrapCandidateFiles": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "contextPagesReused": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "contextPagesPulled": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "canonicalCacheHits": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "canonicalCacheMisses": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "toolOutputBytesAvoidedByCompression": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "providerCacheHitCalls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "promptTokensPerByte": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "transmittedContextBytes",
+            "finalConversationBytes",
+            "providerStatelessnessRepeatBytes",
+            "avoidableDuplicateBytes",
+            "avoidableDuplicateTokens",
+            "avoidableDuplicateEvents",
+            "finalComposition",
+            "bootstrapContextBytes",
+            "bootstrapSelectedFiles",
+            "bootstrapCandidateFiles",
+            "canonicalCacheHits",
+            "canonicalCacheMisses",
+            "toolOutputBytesAvoidedByCompression",
+            "providerCacheHitCalls"
+          ],
+          "additionalProperties": false
+        },
+        "activity": {
+          "type": "object",
+          "properties": {
+            "role": {
+              "type": "string"
+            },
+            "toolCallsRequested": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "toolCallsExecuted": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "toolCallsFailed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "duplicateActionsSuppressed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "byTool": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "requested": {
+                    "type": "integer"
+                  },
+                  "executed": {
+                    "type": "integer"
+                  },
+                  "suppressed": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "requested",
+                  "executed",
+                  "suppressed"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "fileReads": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "fileWrites": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "searches": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "listings": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "shellCalls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "browserCalls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "mcpCalls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "pluginCalls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "subagentCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "subagentModelCalls": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "role",
+            "toolCallsRequested",
+            "toolCallsExecuted",
+            "toolCallsFailed",
+            "duplicateActionsSuppressed",
+            "byTool",
+            "fileReads",
+            "fileWrites",
+            "searches",
+            "listings",
+            "shellCalls",
+            "browserCalls",
+            "mcpCalls",
+            "pluginCalls",
+            "subagentCount",
+            "subagentModelCalls"
+          ],
+          "additionalProperties": false
+        },
+        "time": {
+          "type": "object",
+          "properties": {
+            "wallClockMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "activeAgentMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "modelWaitMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "toolMs": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "verificationMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "rateLimitWaitMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "forgeGreenOverheadMs": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            }
+          },
+          "required": [
+            "wallClockMs",
+            "activeAgentMs",
+            "modelWaitMs",
+            "toolMs",
+            "verificationMs",
+            "rateLimitWaitMs",
+            "forgeGreenOverheadMs"
+          ],
+          "additionalProperties": false
+        },
+        "economics": {
+          "type": "object",
+          "properties": {
+            "pricingSnapshotId": {
+              "type": "string"
+            },
+            "actualCostUsd": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "equivalentPublicApiCostUsd": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "equivalentPublicApiPriceRef": {
+              "type": "string"
+            },
+            "equivalentMarketCostUsd": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "equivalentMarketPriceRef": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "pricingSnapshotId",
+            "actualCostUsd",
+            "equivalentPublicApiCostUsd",
+            "equivalentPublicApiPriceRef",
+            "equivalentMarketCostUsd",
+            "equivalentMarketPriceRef"
+          ],
+          "additionalProperties": false
+        },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "cpuUserMs": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "cpuSystemMs": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "peakRssBytes": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "providerResponseBytes": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "providerRequestBytes": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "gpuPowerDrawWattsIdleSample": {
+              "$ref": "#/definitions/R23RunRecord/properties/inference/properties/totalInputTokens"
+            },
+            "sampler": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "cpuUserMs",
+            "cpuSystemMs",
+            "peakRssBytes",
+            "providerResponseBytes",
+            "providerRequestBytes",
+            "gpuPowerDrawWattsIdleSample",
+            "sampler"
+          ],
+          "additionalProperties": false
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "forgeGreenR0TelemetryId": {
+              "type": "string"
+            },
+            "efficiencyReasonCodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "efficiencyReasonCodes"
+          ],
+          "additionalProperties": false
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "identity",
+        "outcome",
+        "inference",
+        "context",
+        "activity",
+        "time",
+        "economics",
+        "resources",
+        "telemetry",
+        "notes"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

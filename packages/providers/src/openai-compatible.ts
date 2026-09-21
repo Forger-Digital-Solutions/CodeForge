@@ -431,11 +431,17 @@ interface OaiUsage {
   completion_tokens?: number;
   total_tokens?: number;
   prompt_tokens_details?: { cached_tokens?: number };
+  /** R23: reasoning-token detail reported by reasoning models on OpenAI-compatible routes. */
+  completion_tokens_details?: { reasoning_tokens?: number };
 }
 
-function cachedFieldsFromOaiUsage(usage: OaiUsage): { cachedInputTokens?: number } {
+function cachedFieldsFromOaiUsage(usage: OaiUsage): { cachedInputTokens?: number; reasoningTokens?: number } {
   const cached = usage.prompt_tokens_details?.cached_tokens;
-  return typeof cached === "number" && cached >= 0 ? { cachedInputTokens: cached } : {};
+  const reasoning = usage.completion_tokens_details?.reasoning_tokens;
+  return {
+    ...(typeof cached === "number" && cached >= 0 ? { cachedInputTokens: cached } : {}),
+    ...(typeof reasoning === "number" && Number.isFinite(reasoning) && reasoning >= 0 ? { reasoningTokens: Math.floor(reasoning) } : {}),
+  };
 }
 
 async function safeText(res: Response): Promise<string> {

@@ -403,6 +403,7 @@ export class ModelExecutionAdapter {
             outputTokens: event.usage.outputTokens,
             cachedTokens: event.usage.cachedInputTokens,
             cacheWriteTokens: event.usage.cacheWriteTokens,
+            ...(typeof event.usage.reasoningTokens === "number" ? { reasoningTokens: event.usage.reasoningTokens } : {}),
             provider: providerId,
             model: modelId,
             requestCount: 1,

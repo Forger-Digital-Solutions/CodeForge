@@ -1,0 +1,156 @@
+{
+  "$ref": "#/definitions/R23ModelCallRecord",
+  "definitions": {
+    "R23ModelCallRecord": {
+      "type": "object",
+      "properties": {
+        "callIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "providerId": {
+          "type": "string"
+        },
+        "requestedModelId": {
+          "type": "string"
+        },
+        "servedModelId": {
+          "type": "string"
+        },
+        "startedAt": {
+          "type": "string"
+        },
+        "endedAt": {
+          "type": "string"
+        },
+        "latencyMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "timeToFirstEventMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "requestBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "responseBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "messageCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "messageCountByRole": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "toolDefinitionCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "usageSource": {
+          "type": "string",
+          "enum": [
+            "PROVIDER_REPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "promptTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completionTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cachedPromptTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cacheWriteTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reasoningTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "providerReportedCostUsd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "finishReason": {
+          "type": "string",
+          "enum": [
+            "stop",
+            "tool_calls",
+            "length",
+            "content_filter",
+            "error"
+          ]
+        },
+        "toolCallsEmitted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "error",
+            "aborted"
+          ]
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "httpStatus": {
+          "type": "integer"
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "rateLimited": {
+          "type": "boolean"
+        },
+        "retryAfterMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "conversationDigest": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "callIndex",
+        "providerId",
+        "requestedModelId",
+        "startedAt",
+        "endedAt",
+        "latencyMs",
+        "requestBytes",
+        "responseBytes",
+        "messageCount",
+        "messageCountByRole",
+        "toolDefinitionCount",
+        "usageSource",
+        "toolCallsEmitted",
+        "outcome",
+        "rateLimited",
+        "conversationDigest"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

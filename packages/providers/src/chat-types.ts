@@ -72,6 +72,12 @@ export const UsageSchema = z.object({
   cachedInputTokens: z.number().int().nonnegative().optional(),
   /** Provider-reported tokens written to its prompt cache (e.g. Anthropic cache_creation_input_tokens). */
   cacheWriteTokens: z.number().int().nonnegative().optional(),
+  /** R23: provider-reported reasoning/thinking tokens (`completion_tokens_details.reasoning_tokens`).
+   * Absent = the provider did not report them; never estimated. */
+  reasoningTokens: z.number().int().nonnegative().optional(),
+  /** R23: provider-reported charge for this call in USD (OpenRouter `usage.cost` with usage
+   * accounting enabled). Absent = not reported. $0 on `:free` routes is a real reported value. */
+  costUsd: z.number().nonnegative().optional(),
 });
 export type Usage = z.infer<typeof UsageSchema>;
 

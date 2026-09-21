@@ -332,6 +332,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
                   inputTokens: parsed.usage.prompt_tokens ?? 0,
                   outputTokens: parsed.usage.completion_tokens ?? 0,
                   totalTokens: parsed.usage.total_tokens,
+                  ...usageDetailFields(parsed.usage),
                 },
               };
             }
@@ -443,6 +444,10 @@ export class OpenRouterAdapter implements ProviderAdapter {
       })),
       temperature: req.temperature,
       max_tokens: req.maxTokens,
+      // R23 measurement: ask OpenRouter for usage accounting so the final usage object carries
+      // `cost`, `prompt_tokens_details.cached_tokens` and `completion_tokens_details.reasoning_tokens`.
+      // Purely additive telemetry — it changes nothing about routing, pricing or the answer.
+      usage: { include: true },
     };
   }
 
@@ -478,6 +483,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
             inputTokens: res.usage.prompt_tokens,
             outputTokens: res.usage.completion_tokens,
             totalTokens: res.usage.total_tokens,
+            ...usageDetailFields(res.usage),
           }
         : undefined,
     };
@@ -622,6 +628,34 @@ interface OpenRouterChatRequest {
   temperature?: number;
   max_tokens?: number;
   stream?: boolean;
+  /** OpenRouter usage accounting opt-in (adds `cost` and token detail objects to `usage`). */
+  usage?: { include: boolean };
+}
+
+/** Usage detail fields OpenRouter reports when usage accounting is enabled. */
+interface OpenRouterUsageDetails {
+  cost?: number;
+  prompt_tokens_details?: { cached_tokens?: number };
+  completion_tokens_details?: { reasoning_tokens?: number };
+}
+
+/**
+ * Optional usage details → stream contract fields. Each field is present only when the provider
+ * reported a finite non-negative number; nothing here is ever estimated (R23 protocol §8.1).
+ */
+function usageDetailFields(usage: OpenRouterUsageDetails): {
+  cachedInputTokens?: number;
+  reasoningTokens?: number;
+  costUsd?: number;
+} {
+  const nonneg = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value) && value >= 0;
+  const cached = usage.prompt_tokens_details?.cached_tokens;
+  const reasoning = usage.completion_tokens_details?.reasoning_tokens;
+  return {
+    ...(nonneg(cached) ? { cachedInputTokens: Math.floor(cached) } : {}),
+    ...(nonneg(reasoning) ? { reasoningTokens: Math.floor(reasoning) } : {}),
+    ...(nonneg(usage.cost) ? { costUsd: usage.cost } : {}),
+  };
 }
 
 interface OpenRouterChatResponse {
@@ -636,7 +670,7 @@ interface OpenRouterChatResponse {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
-  };
+  } & OpenRouterUsageDetails;
 }
 
 interface OpenRouterStreamChunk {
@@ -659,7 +693,7 @@ interface OpenRouterStreamChunk {
     prompt_tokens?: number;
     completion_tokens?: number;
     total_tokens?: number;
-  };
+  } & OpenRouterUsageDetails;
 }
 
 export function createOpenRouterAdapter(options?: OpenRouterOptions): OpenRouterAdapter {
