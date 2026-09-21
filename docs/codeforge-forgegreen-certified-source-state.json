@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "2149b1fdcf69cbe7de6b9b159c8c941059588edb3dea036086939629c031df07",
-  "surfaceVersion": "r23-pinned-route-recovery-v1",
+  "sourceStateId": "102e49e06ecc3a3b538555d57ff07da376202577b8913dc7951ea4fb5656c909",
+  "surfaceVersion": "r23-prompt-tool-contract-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -40,7 +40,7 @@
     "packages/workflow/src/verification-service.ts"
   ],
   "materialFileHashes": {
-    "packages/agent/src/index.ts": "20ce287bd79a2d7aa353cd47b39dc06455c14dca",
+    "packages/agent/src/index.ts": "a56cfdd75637b7e1eed62965ab57262263c1a261",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
     "packages/benchmark/src/index.ts": "615c02c9d77491a17e8b6a80a82cb619efd6be02",
@@ -1025,9 +1025,27 @@
       "regressionEvidence": "Canonical vitest suite on 2026-09-21 (commit 3424a67): 426 files / 3 365 tests passed, 47 skipped, and exactly these two source-state guards failing on the pre-recertification fingerprint; providers (203), eight-bit, forgegreen-campaign R23 goldens and the server failover/security suites pass; security gate PASS (secret scan, dependency audit 0 high/critical, public claims, doc links).",
       "recertifiedAt": "2026-09-21",
       "sourceStateConstant": "CODEFORGE_R23_PINNED_ROUTE_RECOVERY_SOURCE_STATE"
+    },
+    {
+      "label": "R23 prompt/tool-contract coherence (coder run_command instruction)",
+      "reason": "The R23 free-supply campaign found that the coder role prompt instructed run_command under leases that withhold it, teaching the model to emit calls that cannot succeed (provider-side tool_use_failed rejections or runtime authority-boundary stops). The prompt now conditions the instruction on the tool being advertised. ForgeGreen optimization candidates, the verification-evidence-reuse advisor, the FG-12F cost gate and ForgeVerify validity authority are unchanged; prior campaign evidence remains historically accurate for its recorded source state. This entry records the reviewed drift rather than rewriting it.",
+      "priorSourceStateId": "2149b1fdcf69cbe7de6b9b159c8c941059588edb3dea036086939629c031df07",
+      "priorSurfaceVersion": "r23-pinned-route-recovery-v1",
+      "resultingSourceStateId": "102e49e06ecc3a3b538555d57ff07da376202577b8913dc7951ea4fb5656c909",
+      "resultingSurfaceVersion": "r23-prompt-tool-contract-v1",
+      "changes": [
+        {
+          "file": "packages/agent/src/index.ts",
+          "change": "One reviewed change on the role-prompt surface, none in ForgeGreen policy or ForgeVerify authority: the coder systemPromptTemplate's rule 4 instructed `run_command` unconditionally even though a run lease may withhold executeCommand (in which case the tool is filtered out of request.tools). A model following its own prompt then emitted a call the provider rejected as malformed (tool_use_failed) or the runtime denied at the authority boundary — CodeForge-induced failures, not model failures, observed terminating four OR prescreen candidates after correct fixes. Rule 4 now reads: 'If run_command is among the tools advertised to you, run targeted tests with it to verify your work before concluding; if it is not advertised to you, do not call it — state the verification you would run.' A prompt↔registry contract test (packages/tools/test/prompt-tool-contract.test.ts) pins every tool-shaped name in role prompts to the registry and forbids unconditional instruction of permission-gated tools. Completion gate, ForgeVerify dispatch, verification-evidence reuse, ForgeGreen ledger persistence and the FG-12F cost gate are untouched.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "packages/tools/test/prompt-tool-contract.test.ts (new, 4 tests: every tool-shaped name in role prompts is registered; coder prompt never unconditionally instructs a permission-gated tool; read-only roles name no mutating tools; denied permission really excludes the gated tool) — green. packages/tools/test/role-boundary.test.ts and the structured-output security suite unchanged and green; security boundary (no unauthorized tool execution) untouched — the change is prompt text only.",
+      "recertifiedAt": "2026-09-21",
+      "sourceStateConstant": "CODEFORGE_R23_PROMPT_TOOL_CONTRACT_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 recertifications listed above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the R23 pinned-route recovery and governor injection above.",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 recertifications listed above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the R23 pinned-route recovery and governor injection above, and the R23 prompt/tool-contract coherence fix above.",
   "recertifiedAt": "2026-09-20T22:56:31.177Z",
   "recertification": {
     "phase": "R21 autonomous run_command classification and network-lease enforcement",
