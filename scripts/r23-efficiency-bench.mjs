@@ -110,8 +110,10 @@ function treeState() {
   // Do NOT route this through git() — its .trim() strips the leading status column of the first
   // porcelain line (" M path" → "M path"), which would misalign the slice(3) path parse.
   const porcelain = execFileSync("git", ["status", "--porcelain"], { cwd: ROOT, encoding: "utf8", windowsHide: true }).split(/\r?\n/).filter(Boolean);
-  // Regenerated corpus files are ignored (see .gitignore); anything else dirties the tree.
-  const dirtyFiles = porcelain.map((line) => line.slice(3).trim());
+  // Regenerated corpus files are ignored (see .gitignore); anything else dirties the tree —
+  // except the probe-gate ledger, which the harness itself appends to just before this check
+  // (it is evidence output, never executed code; runs.jsonl is written after identity is taken).
+  const dirtyFiles = porcelain.map((line) => line.slice(3).trim()).filter((file) => !file.replaceAll("\\", "/").endsWith("docs/evidence/r23-efficiency-proof/supply/probe-gates.jsonl"));
   return { commit: git(["rev-parse", "HEAD"]), dirty: dirtyFiles.length > 0, dirtyFiles };
 }
 

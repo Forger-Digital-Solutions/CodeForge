@@ -1,35 +1,20 @@
 {
-  "recordedAt": "2026-09-21T11:28:34.483Z",
+  "recordedAt": "2026-09-21T11:31:57.336Z",
   "protocolVersion": "1.0.6",
   "protocolRule": "§2.2 — reliability and capability only; tokens are not a scoring input; winner requires all tasks verified, zero upstream failures, zero malformed runs",
   "candidates": [
     {
       "modelId": "openai/gpt-oss-20b",
       "providerId": "groq",
-      "eligible": true,
-      "tasks": 3,
-      "tasksExpected": 3,
-      "verified": 3,
-      "falseComplete": 0,
-      "hangsOrUpstreamFailures": 0,
-      "malformedToolCallRuns": 2,
-      "medianWallMs": 423226,
-      "medianCalls": 11,
-      "runIds": [
-        "r23-qualification-qual-js-missing-export-optimized-r1-96d0dd54",
-        "r23-qualification-qual-js-off-by-one-optimized-r1-e96d06d8",
-        "r23-qualification-qual-js-return-sign-optimized-r1-5adb11f4"
-      ],
-      "stopped": null,
+      "eligible": false,
+      "reason": "CodeForge tree is dirty (1 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/supply/probe-gates.jsonl",
       "qualified": false
     }
   ],
   "winner": null,
   "winnerProvider": null,
-  "leader": "openai/gpt-oss-20b",
-  "ranking": [
-    "openai/gpt-oss-20b"
-  ],
+  "leader": null,
+  "ranking": [],
   "previousRounds": [
     {
       "recordedAt": "2026-09-21T01:51:24.737Z",
@@ -350,6 +335,32 @@
             "r23-qualification-qual-js-missing-export-optimized-r1-f6ade2e1"
           ],
           "stopped": "allowance",
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-09-21T11:28:34.483Z",
+      "winner": null,
+      "candidates": [
+        {
+          "modelId": "openai/gpt-oss-20b",
+          "providerId": "groq",
+          "eligible": true,
+          "tasks": 3,
+          "tasksExpected": 3,
+          "verified": 3,
+          "falseComplete": 0,
+          "hangsOrUpstreamFailures": 0,
+          "malformedToolCallRuns": 2,
+          "medianWallMs": 423226,
+          "medianCalls": 11,
+          "runIds": [
+            "r23-qualification-qual-js-missing-export-optimized-r1-96d0dd54",
+            "r23-qualification-qual-js-off-by-one-optimized-r1-e96d06d8",
+            "r23-qualification-qual-js-return-sign-optimized-r1-5adb11f4"
+          ],
+          "stopped": null,
           "qualified": false
         }
       ]
