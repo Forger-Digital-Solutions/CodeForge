@@ -145,6 +145,34 @@ function classify(input: {
  * Run one task in one arm and produce its run record. The workspace, index cache, ForgeGreen
  * cache and session database are all fresh per run; nothing is shared between arms or runs.
  */
+/**
+ * Wraps the process-wide capacity governor so every proactive pacing wait (`acquire`) is measured
+ * instead of being counted as agent work. Methods are bound to the PROXY (receiver), never the raw
+ * target: the runtime paces through `governor.wrapAdapter(provider)`, and a GovernedProviderAdapter
+ * built with `this === target` calls the raw `acquire` — which is exactly how the R23 Groq rounds
+ * recorded `pacingWaitMs: 0` with 60 s gaps between calls.
+ */
+export function instrumentGovernor(target: ProviderCapacityGovernor, now: () => number): { governor: ProviderCapacityGovernor; pacingWaitMs: () => number } {
+  let pacingWaitMs = 0;
+  const governor: ProviderCapacityGovernor = new Proxy(target, {
+    get(inner, property, receiver) {
+      if (property === "acquire") {
+        return async (...args: Parameters<ProviderCapacityGovernor["acquire"]>) => {
+          const waitStarted = now();
+          try {
+            return await inner.acquire(...args);
+          } finally {
+            pacingWaitMs += Math.max(0, now() - waitStarted);
+          }
+        };
+      }
+      const value = Reflect.get(inner, property, receiver);
+      return typeof value === "function" ? value.bind(receiver) : value;
+    },
+  });
+  return { governor, pacingWaitMs: () => pacingWaitMs };
+}
+
 export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput> {
   const now = options.now ?? (() => Date.now());
   const startedAtMs = now();
@@ -173,25 +201,11 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
   firewall.register(options.freeRecord ?? createGenericFreeRecord({ providerId: options.model.providerId, modelId: options.model.modelId }));
 
   const material = await materializeArm(options.arm, runDir);
-  // The process-wide capacity governor is production behaviour (shared pacing across runs); wrap
-  // `acquire` so proactive pacing waits are measured instead of being counted as agent work.
-  let pacingWaitMs = 0;
-  const governor = new Proxy(defaultCapacityGovernor, {
-    get(target, property, receiver) {
-      if (property === "acquire") {
-        return async (...args: Parameters<ProviderCapacityGovernor["acquire"]>) => {
-          const waitStarted = now();
-          try {
-            return await target.acquire(...args);
-          } finally {
-            pacingWaitMs += Math.max(0, now() - waitStarted);
-          }
-        };
-      }
-      const value = Reflect.get(target, property, receiver);
-      return typeof value === "function" ? value.bind(target) : value;
-    },
-  });
+  // The process-wide capacity governor is production behaviour (shared pacing across runs);
+  // `instrumentGovernor` measures its pacing waits so they are never counted as agent work.
+  const instrumented = instrumentGovernor(defaultCapacityGovernor, now);
+  const governor = instrumented.governor;
+  const pacingWaitMs = () => instrumented.pacingWaitMs();
   const persistence: ISessionPersistence = createSessionPersistence({ dbPath: path.join(runDir, "sessions.db") });
   const eventStore = new EventStore();
   const sessionId = `r23-session-${runId}`;
@@ -211,13 +225,27 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
   });
   runtime.setModelSelection({ providerId: options.model.providerId, modelId: options.model.modelId, lock: "route" });
 
+  // §6.3: the per-run cap is 20 minutes of ACTIVE time — provider pacing waits (governor) are
+  // recorded as pacing_wait_ms and excluded from the cap, so a slow-window provider is judged on
+  // the work it does, not on how long its own rate limits make the agent sit idle. A hard
+  // wall-clock ceiling (3× the cap) still bounds every run.
   const capMs = options.wallClockCapMs ?? 20 * 60_000;
+  const hardCeilingMs = capMs * 3;
   const controller = new AbortController();
-  const capTimer = setTimeout(() => controller.abort(new Error("R23_WALL_CLOCK_CAP")), capMs);
+  let timedOut = false;
+  let timedOutReason: "R23_WALL_CLOCK_CAP" | "R23_WALL_CLOCK_HARD_CEILING" = "R23_WALL_CLOCK_CAP";
+  const capTimer = setInterval(() => {
+    if (controller.signal.aborted) return;
+    const elapsed = now() - startedAtMs;
+    const active = elapsed - pacingWaitMs();
+    if (active >= capMs || elapsed >= hardCeilingMs) {
+      timedOut = true;
+      timedOutReason = active >= capMs ? "R23_WALL_CLOCK_CAP" : "R23_WALL_CLOCK_HARD_CEILING";
+      controller.abort(new Error(timedOutReason));
+    }
+  }, 1_000);
   capTimer.unref?.();
   options.signal?.addEventListener("abort", () => controller.abort(options.signal?.reason), { once: true });
-  let timedOut = false;
-  controller.signal.addEventListener("abort", () => { if (now() - startedAtMs >= capMs) timedOut = true; }, { once: true });
 
   let agentResult: AgentRuntimeResult | undefined;
   let orchestratorResult: AutonomousRunResult | undefined;
@@ -341,10 +369,10 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
     runtimeStatus = controller.signal.aborted ? "cancelled" : "failed";
     const message = error instanceof Error ? error.message : String(error);
     runtimeError = message.slice(0, 500);
-    stopReason = controller.signal.aborted ? (timedOut ? "R23_WALL_CLOCK_CAP" : "cancelled") : "runtime_threw";
+    stopReason = controller.signal.aborted ? (timedOut ? timedOutReason : "cancelled") : "runtime_threw";
     if (!controller.signal.aborted && !/PROVIDER_|RATE_LIMIT|429|5\d\d|ECONN|ETIMEDOUT|timed out/i.test(message)) harnessError = `runtime threw outside the provider path: ${runtimeError}`;
   } finally {
-    clearTimeout(capTimer);
+    clearInterval(capTimer);
   }
   const agentEndedMs = now();
 
@@ -527,9 +555,9 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
     },
     time: {
       wallClockMs,
-      activeAgentMs: Math.max(0, agentEndedMs - agentStartedMs - rateWait - pacingWaitMs - verificationMs),
+      activeAgentMs: Math.max(0, agentEndedMs - agentStartedMs - rateWait - pacingWaitMs() - verificationMs),
       modelWaitMs: modelWaitMs(calls),
-      pacingWaitMs,
+      pacingWaitMs: pacingWaitMs(),
       toolMs: toolExecutions.length > 0 ? measured(toolExecutions.reduce((sum, execution) => sum + (execution.durationMs ?? 0), 0), "RUNTIME", "Σ tool execution durations") : unknownMetric("no tool execution records available in this mode"),
       verificationMs,
       rateLimitWaitMs: rateWait,

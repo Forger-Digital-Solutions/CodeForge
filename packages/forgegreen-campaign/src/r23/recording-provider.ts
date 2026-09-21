@@ -8,6 +8,7 @@ import type {
   PromptCacheCapability,
   StreamEvent,
 } from "@codeforge/providers";
+import { redactSecrets } from "@codeforge/providers";
 import type { ModelCallRecord } from "./run-record.js";
 
 /**
@@ -204,7 +205,7 @@ export class RecordingProviderAdapter implements ProviderAdapter {
           ...(finishReason ? { finishReason } : {}),
           toolCallsEmitted: toolArgs.size,
           outcome: signal?.aborted ? "aborted" : inBandError ? "error" : "ok",
-          ...(inBandError ? { errorCode: inBandError.code, ...(inBandError.retryable !== undefined ? { retryable: inBandError.retryable } : {}), ...(inBandError.status !== undefined ? { httpStatus: inBandError.status } : {}) } : {}),
+          ...(inBandError ? { errorCode: inBandError.code, errorMessage: safeErrorMessage(inBandError.message), ...(inBandError.retryable !== undefined ? { retryable: inBandError.retryable } : {}), ...(inBandError.status !== undefined ? { httpStatus: inBandError.status } : {}) } : {}),
           rateLimited,
           ...(rateLimited && inBandError?.retryAfter !== undefined ? { retryAfterMs: Math.max(0, inBandError.retryAfter - endedAtMs) } : {}),
         };
@@ -285,6 +286,7 @@ export class RecordingProviderAdapter implements ProviderAdapter {
       toolCallsEmitted: request.emittedToolCalls.length,
       outcome: aborted ? "aborted" : "error",
       errorCode: code,
+      errorMessage: safeErrorMessage(message),
       ...(status !== undefined ? { httpStatus: status } : {}),
       ...(typeof err?.retryable === "boolean" ? { retryable: err.retryable } : {}),
       rateLimited,
@@ -316,6 +318,11 @@ function usageFields(usage: { inputTokens: number; outputTokens: number; totalTo
     ...(usage.reasoningTokens !== undefined ? { reasoningTokens: usage.reasoningTokens } : {}),
     ...(usage.costUsd !== undefined ? { providerReportedCostUsd: usage.costUsd } : {}),
   };
+}
+
+/** Failure text is evidence (§13/§26) — kept, but never a credential and never unbounded. */
+function safeErrorMessage(message: string | undefined): string {
+  return redactSecrets(message ?? "").replace(/\s+/g, " ").slice(0, 400);
 }
 
 function normalizeFinish(reason: string | undefined): ModelCallRecord["finishReason"] {

@@ -46,7 +46,7 @@ const MANIFEST_PATH = path.join(ROOT, "benchmarks", "r23", "manifest.json");
 const EVIDENCE = path.join(ROOT, "docs", "evidence", "r23-efficiency-proof");
 const PROTOCOL_PATH = path.join(ROOT, "docs", "benchmarks", "codeforge-efficiency-protocol-r23.md");
 const PROTOCOL_DIGEST_PATH = path.join(EVIDENCE, "protocol", "PROTOCOL-DIGEST.txt");
-const PROTOCOL_VERSION = "1.0.5";
+const PROTOCOL_VERSION = "1.0.6";
 
 // ---------------------------------------------------------------------------------------------
 // CLI
@@ -207,10 +207,9 @@ function quotaFromHeaders(observation) {
   };
 }
 
-/** Cumulative served tokens on the groq route across today's run records (ledger-derived, honest). */
-function dailyTokensUsed(providerId) {
-  const today = new Date().toISOString().slice(0, 10);
-  let total = 0;
+/** Served calls (end time + provider-reported total tokens) on a route across the ledger, newest last. */
+function servedCallsOnRoute(providerId) {
+  const calls = [];
   for (const phase of ["qualification", "pilot", "main", "variance"]) {
     const dir = rawDir(phase);
     if (!fs.existsSync(dir)) continue;
@@ -219,12 +218,41 @@ function dailyTokensUsed(providerId) {
       try {
         const record = JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"));
         if (record.identity?.providerId !== providerId) continue;
-        if (!String(record.identity?.startedAt ?? record.recordedAt ?? "").startsWith(today)) continue;
-        for (const call of record.inference?.calls ?? []) total += call.totalTokens ?? 0;
+        for (const call of record.inference?.calls ?? []) {
+          if (!(call.totalTokens > 0)) continue;
+          const endedAt = Date.parse(call.endedAt ?? call.startedAt ?? "");
+          if (Number.isFinite(endedAt)) calls.push({ endedAt, tokens: call.totalTokens });
+        }
       } catch { /* unreadable record — skip, gate stays conservative via headers */ }
     }
   }
-  return total;
+  return calls.sort((a, b) => a.endedAt - b.endedAt);
+}
+
+/** Cumulative served tokens on the route across today's (UTC) run records — the calendar-day model. */
+function dailyTokensUsed(providerId) {
+  const today = new Date().toISOString().slice(0, 10);
+  return servedCallsOnRoute(providerId).filter((c) => new Date(c.endedAt).toISOString().startsWith(today)).reduce((sum, c) => sum + c.tokens, 0);
+}
+
+/**
+ * §6.3 (v1.0.6): Groq's daily allowances are continuously refilling buckets (its request-window
+ * headers reset in exactly used ÷ (limit/24h)), so the daily token cap is modelled as a token
+ * bucket of capacity GROQ_FREE_DAILY_TOKENS refilling at cap/24h, replayed over the ledger's
+ * served calls. Returns the modelled level now, in tokens. Conservative by construction: harness
+ * probes and pin probes (tens of tokens) are not in the ledger and are covered by the 15% margin.
+ */
+function modelledDailyTokenBucket(providerId, cap) {
+  const rate = cap / 86_400_000; // tokens per ms
+  let level = cap;
+  let last;
+  for (const call of servedCallsOnRoute(providerId)) {
+    if (last !== undefined) level = Math.min(cap, level + rate * Math.max(0, call.endedAt - last));
+    level -= call.tokens;
+    last = call.endedAt;
+  }
+  if (last !== undefined) level = Math.min(cap, level + rate * Math.max(0, Date.now() - last));
+  return Math.max(0, Math.round(level));
 }
 
 async function pinGroqModel(modelId) {
@@ -269,7 +297,7 @@ async function pinGroqModel(modelId) {
 
 async function groqAllowance() {
   if (lastGroqQuota && Date.now() - Date.parse(lastGroqQuota.observedAt) < 120_000) {
-    return { limit: lastGroqQuota.requests.limit, used: lastGroqQuota.requests.limit !== undefined && lastGroqQuota.requests.remaining !== undefined ? lastGroqQuota.requests.limit - lastGroqQuota.requests.remaining : undefined, remaining: lastGroqQuota.requests.remaining, remainingTokens: lastGroqQuota.tokens.remaining, dailyTokensUsed: dailyTokensUsed("groq"), source: "x-ratelimit headers (live adapter observation)", checkedAt: new Date().toISOString() };
+    return { limit: lastGroqQuota.requests.limit, used: lastGroqQuota.requests.limit !== undefined && lastGroqQuota.requests.remaining !== undefined ? lastGroqQuota.requests.limit - lastGroqQuota.requests.remaining : undefined, remaining: lastGroqQuota.requests.remaining, remainingTokens: lastGroqQuota.tokens.remaining, dailyTokensUsed: dailyTokensUsed("groq"), dailyTokenBucketLevel: modelledDailyTokenBucket("groq", GROQ_FREE_DAILY_TOKENS), dailyTokenBucketModel: "token bucket cap=200000 refill=cap/24h replayed over ledger (§6.3 v1.0.6)", source: "x-ratelimit headers (live adapter observation)", checkedAt: new Date().toISOString() };
   }
   const key = process.env.GROQ_API_KEY;
   if (!key) throw new Error("GROQ_API_KEY is not set");
@@ -277,7 +305,7 @@ async function groqAllowance() {
   lastGroqQuota = quotaFromHeaders({ providerId: "groq", status: probe.status, headers: [...probe.headers.entries()], observedAt: Date.now() });
   if (!probe.ok) throw new Error(`groq allowance probe → HTTP ${probe.status}`);
   await probe.json();
-  return { limit: lastGroqQuota.requests.limit, used: lastGroqQuota.requests.limit !== undefined && lastGroqQuota.requests.remaining !== undefined ? lastGroqQuota.requests.limit - lastGroqQuota.requests.remaining : undefined, remaining: lastGroqQuota.requests.remaining, remainingTokens: lastGroqQuota.tokens.remaining, dailyTokensUsed: dailyTokensUsed("groq"), source: "x-ratelimit headers (probe)", checkedAt: new Date().toISOString() };
+  return { limit: lastGroqQuota.requests.limit, used: lastGroqQuota.requests.limit !== undefined && lastGroqQuota.requests.remaining !== undefined ? lastGroqQuota.requests.limit - lastGroqQuota.requests.remaining : undefined, remaining: lastGroqQuota.requests.remaining, remainingTokens: lastGroqQuota.tokens.remaining, dailyTokensUsed: dailyTokensUsed("groq"), dailyTokenBucketLevel: modelledDailyTokenBucket("groq", GROQ_FREE_DAILY_TOKENS), dailyTokenBucketModel: "token bucket cap=200000 refill=cap/24h replayed over ledger (§6.3 v1.0.6)", source: "x-ratelimit headers (probe)", checkedAt: new Date().toISOString() };
 }
 
 function allowance(providerId) {
@@ -290,14 +318,16 @@ function capacityGate(allowanceData, observedCallsPerRun, providerId, observedRu
   const needed = Math.ceil(1.15 * Math.max(40, p90));
   const ok = typeof allowanceData.remaining === "number" ? allowanceData.remaining >= needed : true;
   if (providerId !== "groq") return { needed, ok };
-  // §6.3 v1.0.4: the documented daily token cap gates alongside the request window (same 15%
-  // margin), estimated from observed per-run token totals. Minute-scale windows are governor
-  // pacing, not allowance exhaustion.
+  // §6.3 v1.0.6: the documented daily token cap gates alongside the request window under the
+  // provider's measured replenishment mechanics — Groq's buckets refill continuously, so the gate
+  // compares the modelled bucket level (ledger replay) with the tokens a run needs plus a 15%
+  // margin of the cap. Minute-scale windows are governor pacing, not allowance exhaustion.
   const sortedTokens = [...observedRunTokens].sort((a, b) => a - b);
   const p90Tokens = sortedTokens.length > 0 ? sortedTokens[Math.min(sortedTokens.length - 1, Math.floor(0.9 * sortedTokens.length))] : 0;
   const tokensNeeded = Math.ceil(1.15 * Math.max(60_000, p90Tokens));
-  const dailyTokensOk = (allowanceData.dailyTokensUsed ?? 0) + tokensNeeded <= GROQ_FREE_DAILY_TOKENS * 0.85;
-  return { needed, tokensNeeded, ok: ok && dailyTokensOk, dailyTokensOk };
+  const bucketLevel = allowanceData.dailyTokenBucketLevel ?? Math.max(0, GROQ_FREE_DAILY_TOKENS - (allowanceData.dailyTokensUsed ?? 0));
+  const dailyTokensOk = bucketLevel >= tokensNeeded + GROQ_FREE_DAILY_TOKENS * 0.15;
+  return { needed, tokensNeeded, ok: ok && dailyTokensOk, dailyTokensOk, dailyTokenBucketLevel: bucketLevel };
 }
 
 // ---------------------------------------------------------------------------------------------

@@ -176,6 +176,29 @@ describe("R23 recording provider — failure fixtures", () => {
     expect(call!.timeToFirstEventMs).toBeUndefined();
   });
 
+  it("keeps the provider failure text as evidence on both paths — redacted and bounded (§13)", async () => {
+    const secret = "sk-or-v1-0123456789abcdef0123456789abcdef";
+    const adapter = new RecordingProviderAdapter(new ScriptedAdapter([
+      async function* () {
+        yield { type: "error", code: "RATE_LIMITED", message: `groq stream error (rate_limit_exceeded) after HTTP 200: Rate limit reached on tokens per minute (TPM): Limit 8000, Used 7900, Requested 3300 for key ${secret}`, retryable: true, status: 429 };
+      },
+      // eslint-disable-next-line require-yield
+      async function* () {
+        throw new ProviderError(`groq stream ended before the provider sent [DONE] (HTTP 200, 0 byte(s), 0 frame(s), no terminal finish_reason) ${"x".repeat(1000)}`, "STREAM_INTERRUPTED", true, { status: 200 });
+      },
+    ]));
+    await drain(adapter, request());
+    await expect(drain(adapter, request())).rejects.toThrow("STREAM_INTERRUPTED".length > 0 ? /stream ended before/ : "");
+    const [inBand, thrown] = adapter.calls;
+    expect(inBand!.errorMessage).toContain("tokens per minute (TPM)");
+    expect(inBand!.errorMessage).not.toContain(secret);
+    expect(inBand!.rateLimited).toBe(true);
+    expect(thrown!.errorCode).toBe("STREAM_INTERRUPTED");
+    expect(thrown!.httpStatus).toBe(200);
+    expect(thrown!.errorMessage).toContain("0 frame(s)");
+    expect(thrown!.errorMessage!.length).toBeLessThanOrEqual(400);
+  });
+
   it("retry fixture: N failures then success yield exactly N error records and one ok record", async () => {
     const failing: Script = async function* () {
       yield { type: "error", code: "PROVIDER_ERROR", message: "upstream 503", retryable: true, status: 503 };

@@ -99,6 +99,8 @@ export const ModelCallRecordSchema = z.object({
   toolCallsEmitted: z.number().int().nonnegative(),
   outcome: z.enum(["ok", "error", "aborted"]),
   errorCode: z.string().optional(),
+  /** Provider/transport failure text — secret-redacted, truncated (§13 taxonomy evidence). */
+  errorMessage: z.string().max(400).optional(),
   httpStatus: z.number().int().optional(),
   retryable: z.boolean().optional(),
   rateLimited: z.boolean(),
