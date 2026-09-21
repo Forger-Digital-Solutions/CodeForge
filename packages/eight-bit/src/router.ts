@@ -1,4 +1,5 @@
 import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
+import type { FabricRouteDecision } from "./free-fabric.js";
 import { ForgeRouter, type RoutingRequest } from "@codeforge/router";
 import { EightBitEligibilityPolicy, type EligibilityContext, type EightBitPolicyMode } from "./eligibility.js";
 import type { EightBitHealthTracker } from "./health.js";
@@ -26,6 +27,9 @@ const PROMOTION_MARGIN = 10;
 export interface SelectRouteOptions {
   scope: BindingScope;
   policyMode: EightBitPolicyMode;
+  /** R24: the requesting user's fairness identity — forwarded into Free Fabric admission
+   *  when a fabric governs this selection. Never a credential or account id. */
+  userId?: string;
   estimatedContextTokens?: number;
   requiredCapabilities?: string[];
   taskType?: string;
@@ -46,8 +50,26 @@ export interface SelectRouteOptions {
 }
 
 export type SelectRouteResult =
-  | { outcome: "selected"; model: FreeModelRecord; sticky: boolean; score: number; reasons: string[]; health?: RouteHealthAssessment }
-  | { outcome: "no_eligible_route"; reasonCodes: string[]; healthExcluded?: Array<{ providerId: string; modelId: string; state: string; reasonCodes: string[] }> };
+  | {
+    outcome: "selected";
+    model: FreeModelRecord;
+    sticky: boolean;
+    score: number;
+    reasons: string[];
+    health?: RouteHealthAssessment;
+    /** R24: the Free Fabric verdict behind this selection — admission receipt for telemetry. */
+    fabric?: FabricRouteDecision;
+  }
+  | {
+    outcome: "no_eligible_route";
+    reasonCodes: string[];
+    healthExcluded?: Array<{ providerId: string; modelId: string; state: string; reasonCodes: string[] }>;
+    /** R24: set when the fabric's verdict was QUEUED_FOR_CAPACITY — eligible supply exists
+     *  but every route is admission-blocked right now; `nextAvailableAt` is the earliest
+     *  provider-stated reset when known. */
+    queued?: { nextAvailableAt?: string };
+    fabric?: FabricRouteDecision;
+  };
 
 /**
  * Role-aware adaptive router. Layers on top of the certified `ForgeRouter` (still the ranking

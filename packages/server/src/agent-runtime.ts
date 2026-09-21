@@ -70,7 +70,7 @@ import {
   type NormalizedIdentity,
 } from "@codeforge/forge-green";
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
-import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority } from "@codeforge/eight-bit";
+import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider } from "@codeforge/eight-bit";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
@@ -396,6 +396,20 @@ export interface AgentRuntimeOptions {
    * alternate routes, and route outcomes feed the shared (cross-session) health/quota view.
    */
   freeCloud?: FreeCloudRoutingHooks;
+  /**
+   * R24 Mission C: the Free Fabric admission authority. When attached (the host builds one
+   * over the live Free Cloud projections), ForgeAuto and role-routed selection decide through
+   * `fabric.decide()` — an ADMITTED verdict carries a real capacity reservation, and
+   * QUEUED/DENIED fail closed instead of ranking an unadmitted route. Explicit model/route
+   * pins keep their legacy privilege and never consult it.
+   */
+  freeFabric?: FreeFabric;
+  /**
+   * Maps an admission to the requesting user's fabric context (fairness identity + owned
+   * capacity identities). The host supplies it from stamped connection state; absent, only
+   * the request's own userId reaches the fabric.
+   */
+  fabricContext?: FabricContextProvider;
   paidAuto?: PaidAutoService;
   /** Shared provider pacing. Supplying one explicitly also governs deterministic test adapters. */
   capacityGovernor?: ProviderCapacityGovernor;
@@ -722,7 +736,13 @@ export class AgentRuntime {
       maxFileBytes: MAX_FILE_READ_BYTES,
     }));
     this.approvalService = new ApprovalService({ defaultTimeoutMs: DEFAULT_APPROVAL_TIMEOUT_MS });
-    this.eightBit = options.eightBit ?? createEightBitRuntime({ firewall: this.firewall, persistence: this.persistence, routeHealth: options.routeHealth });
+    this.eightBit = options.eightBit ?? createEightBitRuntime({
+      firewall: this.firewall,
+      persistence: this.persistence,
+      routeHealth: options.routeHealth,
+      freeFabric: options.freeFabric,
+      fabricContext: options.fabricContext,
+    });
     this.freeCloud = options.freeCloud;
     this.paidAuto = options.paidAuto;
     this.capacityGovernor = options.capacityGovernor ?? defaultCapacityGovernor;
@@ -1296,6 +1316,7 @@ export class AgentRuntime {
           { sessionId: this.sessionId, role, workstreamId: req.workstreamScope },
           {
             policyMode: "adaptive",
+            userId: req.userId ?? this.userId,
             estimatedContextTokens: budget.maxContextTokens,
             requiredCapabilities: req.role === "coder" ? ["coding", "toolCalling"] : req.role === "explorer" ? ["toolCalling"] : [],
             taskType: req.role,
@@ -1394,6 +1415,8 @@ export class AgentRuntime {
               workstreamId: req.workstreamScope,
               runId: req.runId,
               agentId: req.agentId,
+              userId: req.userId ?? this.userId,
+              fabricRequestId: req.runId,
               current: { providerId: failing.providerId, modelId: failing.modelId },
               isExactPin: pinned,
               pinMode: pinned ? "route" : "auto",
@@ -2241,6 +2264,10 @@ export class AgentRuntime {
       ).catch((err: unknown) => {
         console.error("[agent-runtime] FG-8 sustainability measurement failed outside its own recovery path", err);
       });
+      // R24 Mission C: a run's fabric reservation settles when the run settles — completed,
+      // failed, or cancelled. Failover rotations already replaced the hold in place; this
+      // release frees whatever route the run last admitted.
+      this.eightBit.releaseFabricAdmission(req.runId);
       await intelligence?.closeWorkspace().catch(() => undefined);
     }
   }
@@ -2532,6 +2559,10 @@ export class AgentRuntime {
       })
       .finally(() => {
         if (this.activeExecutions.get(turnId) === execution) this.activeExecutions.delete(turnId);
+        // R24 Mission C: the turn's fabric admission ends with the turn — success, failure,
+        // and cancellation all settle the reservation so the freed capacity is immediately
+        // visible to other sessions' decide() calls.
+        this.eightBit.releaseFabricAdmission(`forgeauto:${turnId}`);
       });
     this.activeExecutions.set(turnId, execution);
   }
@@ -2967,7 +2998,7 @@ export class AgentRuntime {
     const duplicateSupervisor = this.newDuplicateSupervisor();
 
     try {
-      const model = this.resolveTurnModel();
+      const model = this.resolveTurnModel(turnId);
       // No admitted, healthy route is a failed turn, never a finished one: the loop below cannot
       // run without a model, and letting the turn fall through to "completed" reported a task
       // that did nothing as a success (observed in R5 after a provider-wide capacity cooldown).
@@ -3196,7 +3227,29 @@ export class AgentRuntime {
     }
   }
 
-  private selectModel(): FreeModelRecord | null {
+  private selectModel(turnId?: string): FreeModelRecord | null {
+    // R24 Mission C: when a Free Fabric governs this runtime it is the admission authority for
+    // ForgeAuto — an ADMITTED verdict holds a real capacity reservation for this turn, and a
+    // QUEUED_FOR_CAPACITY/DENIED verdict means no route may execute. Nothing here may return a
+    // route the fabric did not admit, and a missing/unexecutable pick is released immediately.
+    if (this.eightBit.hasFreeFabric) {
+      const requestId = `forgeauto:${turnId ?? this.sessionId}`;
+      const decision = this.eightBit.admitThroughFabric({
+        requestId,
+        sessionId: this.sessionId,
+        role: "CODER",
+        userId: this.userId,
+        taskKind: "interactive_turn",
+        demand: { requests: 1, inputTokens: 16_000 },
+      });
+      const selected = decision?.outcome === "ADMITTED" ? decision.selected : undefined;
+      const record = selected ? this.firewall.getModel(selected.providerId, selected.modelId) : undefined;
+      if (record && this.providerCatalog.get(record.providerId) && record.capabilities.toolCalling) {
+        return record;
+      }
+      this.eightBit.releaseFabricAdmission(requestId);
+      return null;
+    }
     // Auto uses the SAME deterministic ForgeRouter ranking as the "Top Verified Free" list, so
     // Auto and the UI agree, and Auto prefers capable coding models over tiny/generic free ones.
     const router = new ForgeRouter({ firewall: this.firewall });
@@ -3269,7 +3322,7 @@ export class AgentRuntime {
     return null;
   }
 
-  private resolveTurnModel(): FreeModelRecord | null {
+  private resolveTurnModel(turnId?: string): FreeModelRecord | null {
     if (this.modelSelection) {
       const { providerId, modelId } = this.modelSelection;
       if (providerId === "paid-auto") {
@@ -3308,7 +3361,7 @@ export class AgentRuntime {
         );
       }
     }
-    return this.selectModel();
+    return this.selectModel(turnId);
   }
 
   /** Persists 8-Bit routing state for this turn's chosen route — restart-recovery and
@@ -4030,6 +4083,10 @@ export class AgentRuntime {
       role,
       runId: agentId,
       agentId,
+      userId: this.userId,
+      // R24: the interactive turn's fabric admission lives under `forgeauto:<turnId>` — the
+      // failover re-decide must replace that hold, not book a second reservation.
+      fabricRequestId: `forgeauto:${turnId}`,
       current: { providerId: state.providerId, modelId: state.modelId },
       isExactPin,
       pinMode,

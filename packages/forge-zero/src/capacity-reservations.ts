@@ -54,7 +54,10 @@ export class CapacityReservationLedger {
     if (request.requests < 1 || request.inputTokens < 0 || request.outputTokens < 0 || (request.credits ?? 0) < 0 || (request.providerUnits ?? 0) < 0 || request.routeIds.length === 0) {
       return { admitted: false, reservationId: request.reservationId, reason: "INVALID_REQUEST" };
     }
-    const activeForUser = [...this.reservations.values()].filter((item) => item.request.userId === request.userId).length;
+    // A repeated reserve() with the same reservationId replaces its own hold: its prior
+    // reservation must not count against the caller's own concurrency cap or the pool budget
+    // (a failover re-decide would otherwise deny a rotation the request already paid for).
+    const activeForUser = [...this.reservations.values()].filter((item) => item.request.userId === request.userId && item.request.reservationId !== request.reservationId).length;
     if (activeForUser >= this.maxActiveReservationsPerUser) {
       return { admitted: false, reservationId: request.reservationId, reason: "USER_CONCURRENCY_LIMIT" };
     }
@@ -70,6 +73,7 @@ export class CapacityReservationLedger {
       // Two model routes backed by one provider account must contend for the same reservation
       // budget. Distributed pools are deliberately isolated by their natural end user.
       const active = [...this.reservations.values()].filter((item) => {
+        if (item.request.reservationId === request.reservationId) return false;
         const reservedRoute = this.routes.get(item.routeId);
         if (!reservedRoute || reservedRoute.capacityPoolId !== route.capacityPoolId) return false;
         return route.capacityPoolScope === "SHARED_OWNER_POOL" || item.request.userId === request.userId;

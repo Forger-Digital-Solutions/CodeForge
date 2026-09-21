@@ -753,4 +753,56 @@ describe("FreeCloudService — Free Fabric capacity projection", () => {
     // Pool ids are distinct physical accounts — two providers never share a bucket.
     expect(new Set(pools.map((p) => p.poolId)).size).toBe(pools.length);
   });
+
+  it("scopes per-user routes and pools to the stamped connection owner and to no one else", () => {
+    const { svc } = service();
+    // Re-stamp connections as owned by alice — the desktop host stamps ownerUserId on every
+    // connection state it publishes (provider-connections.ts).
+    svc.setConnection(connected("groq", { planAttested: true, ownerUserId: "alice" }));
+    svc.setConnection(connected("openrouter", { credentialSource: "OAUTH", ownerUserId: "alice" }));
+
+    const aliceRoutes = svc.routesForUser("alice");
+    expect(aliceRoutes.length).toBeGreaterThanOrEqual(2);
+    expect(aliceRoutes.every((r) => r.capacityPoolScope === "PER_USER_POOL")).toBe(true);
+    const alicePools = svc.poolsForUser("alice");
+    expect(alicePools.length).toBe(2);
+    expect(alicePools.every((p) => p.scope === "PER_USER_POOL")).toBe(true);
+
+    // Bob sees none of Alice's supply — per-user capacity is never aggregated or leaked.
+    expect(svc.routesForUser("bob")).toEqual([]);
+    expect(svc.poolsForUser("bob")).toEqual([]);
+
+    // The identities a request may claim come from stamped connection state alone — the
+    // localconn sentinel when no account hash was recorded.
+    const identities = svc.capacityIdentitiesFor("alice").sort();
+    expect(identities).toEqual(["localconn:groq", "localconn:openrouter"]);
+    expect(svc.capacityIdentitiesFor("bob")).toEqual([]);
+  });
+
+  it("uses the stamped account capacityIdentity when the connection carries one", () => {
+    const { svc } = service();
+    svc.setConnection(connected("groq", {
+      planAttested: true,
+      ownerUserId: "alice",
+      userConnectedFree: {
+        featureFlag: "test",
+        supplyClass: "USER_CONNECTED_FREE",
+        status: "CONNECTED",
+        capacityScope: "USER_ACCOUNT",
+        capacityPoolId: "groq:user:acct-42",
+        capacityIdentity: "acct-42",
+        freeOnly: true,
+        concurrencyLimit: 1,
+        starterModelCount: 1,
+        capacityConfidence: "HIGH",
+        termsStatus: "USER_CONNECTED_FREE_ALLOWED",
+      },
+    }));
+
+    expect(svc.capacityIdentitiesFor("alice")).toEqual(["acct-42"]);
+    const routes = svc.routesForUser("alice");
+    expect(routes.some((r) => r.providerId === "groq" && r.capacityIdentity === "acct-42" && r.capacityPoolId === "groq:user:acct-42")).toBe(true);
+    expect(svc.poolsForUser("alice").some((p) => p.capacityIdentity === "acct-42")).toBe(true);
+    expect(svc.routesForUser("mallory").every((r) => r.providerId !== "groq")).toBe(true);
+  });
 });

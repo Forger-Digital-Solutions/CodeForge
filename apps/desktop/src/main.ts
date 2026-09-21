@@ -1189,6 +1189,10 @@ async function initializeServer(dbPath: string): Promise<void> {
       useRealRuntime: true,
       controlPlaneToken,
       freeCloud: freeCloud ?? undefined,
+      // R24 Mission C: the embedded server is a single-user host — requests that carry no
+      // explicit userId admit through the Free Fabric as this local user, which is also the
+      // stamped owner of its per-user provider pools.
+      localUserId: userConnectedFreeScopeId(),
       // R22: bridge contributed extension commands into the agent tool surface. The delegate
       // reads the live manager so initExtensions() ordering never strands the bridge.
       pluginCommandHost: {

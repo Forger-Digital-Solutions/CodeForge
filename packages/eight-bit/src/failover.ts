@@ -47,6 +47,22 @@ export interface FailoverRequest {
   capacityScoreAdjustment?: SelectRouteOptions["capacityScoreAdjustment"];
   /** Called before a bounded same-route wait so the caller can tell the user what is happening. */
   onWait?: (info: { waitMs: number; reason: FailureReason }) => void;
+  /** R24: the requesting user's fairness identity for fabric re-admission. */
+  userId?: string;
+  /**
+   * R24 Mission C: the admission requestId this failover replaces. When the caller's initial
+   * admission used a different stable id than `runId` (e.g. an interactive turn's
+   * `forgeauto:<turnId>`), it is carried here so the fabric re-decide replaces — never
+   * double-books — the original hold.
+   */
+  fabricRequestId?: string;
+  /**
+   * R24 Mission C: when a Free Fabric governs admission, an `auto`-mode rotation is decided
+   * by the fabric — it releases/replaces the failed route's reservation atomically and only
+   * returns routes the fabric actually admitted. Returning undefined falls back to the
+   * bounded same-route path, which still holds the original reservation.
+   */
+  fabricReplacement?: (exclude: RouteKey) => { route: RouteKey; reasonCodes: string[] } | undefined;
 }
 
 export type FailoverOutcome =
@@ -169,6 +185,23 @@ export class EightBitFailoverCoordinator {
       const receipt = this.buildReceipt(req, "ROTATE", [reason, "SAME_MODEL_ALTERNATE_ROUTE"], replacement);
       await this.store.recordReceipt(receipt);
       return { action: "rotate", reason, replacement, receipt };
+    }
+
+    // R24 Mission C: fabric-governed rotation. The fabric's admission verdict replaces the
+    // ranking selectReplacement — its re-decide already applied the failure's health evidence
+    // (recorded before this call) and holds the replacement's reservation.
+    if (req.fabricReplacement) {
+      const replacement = req.fabricReplacement(req.current);
+      if (replacement === undefined) {
+        const retry = await this.retrySameAfterCapacityBlip(req, reason, health.consecutiveFailures, health.cooldownUntil);
+        if (retry) return retry;
+        const receipt = this.buildReceipt(req, "NO_ELIGIBLE_ROUTE", [reason, "FABRIC_NO_ADMISSIBLE_ROUTE"]);
+        await this.store.recordReceipt(receipt);
+        return { action: "no_replacement", reason, receipt };
+      }
+      const receipt = this.buildReceipt(req, "ROTATE", [reason, "FABRIC_ADMITTED_REPLACEMENT", ...replacement.reasonCodes], replacement.route);
+      await this.store.recordReceipt(receipt);
+      return { action: "rotate", reason, replacement: replacement.route, receipt };
     }
 
     const result = this.router.selectReplacement(options, req.current, alternates);

@@ -1,4 +1,4 @@
-import type { ForgeZero } from "@codeforge/forge-zero";
+import type { ForgeZero, RouteDataContext } from "@codeforge/forge-zero";
 import type { ISessionPersistence } from "@codeforge/sessions";
 import { EightBitHealthTracker } from "./health.js";
 import { EightBitReliabilityTracker, type ToolCallOutcome } from "./reliability.js";
@@ -13,6 +13,30 @@ import type { CapacityForecast, CapacityForecastInput, CapacityPreflight, Capaci
 import { EightBitRouteHealthAuthority, DEFAULT_ROUTE_HEALTH_POLICY, type NormalizedObservation, type RouteHealthPolicy } from "./route-health-authority.js";
 import { EightBitRouteHealthLedger } from "./route-health-ledger.js";
 import { classifyFailure } from "./health.js";
+import type { FabricRequest, FabricRouteDecision, FreeFabric } from "./free-fabric.js";
+
+/** R24: what a host knows about the requesting user for one fabric admission. Derived from
+ * real provider-connection/account records by the host — never fabricated here. */
+export interface FabricAdmissionContext {
+  /** Fairness identity for this request (session user, hosted user, or "anonymous"). */
+  userId: string;
+  /** Non-secret capacity identities this user owns (one per connected account). */
+  userIdentities?: readonly string[];
+  isNewUser?: boolean;
+  dataContext?: RouteDataContext;
+  /** How long the reservation lease runs before expiry. */
+  leaseMs?: number;
+}
+
+/** Maps an admission to the requesting user's fabric context. The host (server/desktop)
+ * supplies it; absent, admissions fall back to the request's own userId with no owned
+ * identities — per-user pools simply stay unreachable, never misattributed. */
+export type FabricContextProvider = (req: {
+  sessionId: string;
+  role: EightBitRole;
+  requestId: string;
+  userId?: string;
+}) => FabricAdmissionContext;
 
 export interface EightBitRuntimeOptions {
   firewall: ForgeZero;
@@ -28,7 +52,33 @@ export interface EightBitRuntimeOptions {
   routeHealthPolicy?: Partial<RouteHealthPolicy>;
   /** Persist normalized observations (learning data) in addition to snapshots. Default true. */
   persistRouteObservations?: boolean;
+  /**
+   * R24 Mission C: the Free Fabric — admission authority for automatic free routing. When
+   * attached, `selectInitialRoute` and auto-mode failover decide through `fabric.decide()`
+   * instead of bare ranking: a decision holds a real reservation, refuses another user's
+   * pool, and answers QUEUED_FOR_CAPACITY / DENIED_NO_SUPPLY instead of a paid suggestion.
+   * Explicit model/route pins never consult it.
+   */
+  freeFabric?: FreeFabric;
+  fabricContext?: FabricContextProvider;
 }
+
+/**
+ * EightBitRole → the fabric's route-role vocabulary (the registry's ModelRole names, which
+ * capacity routes carry in `roleSuitability`). Unmapped roles cannot exist — EightBitRole is
+ * a closed enum, so every runtime role lands on a defined ModelRole.
+ */
+export const FABRIC_MODEL_ROLE: Readonly<Record<EightBitRole, string>> = {
+  CODER: "PRIMARY_CODING_AGENT",
+  REASONER: "FAST_REASONER",
+  PLANNER: "PLANNER",
+  REVIEWER: "REVIEWER",
+  FAST_WORKER: "FAST_REASONER",
+  LONG_CONTEXT: "PRIMARY_CODING_AGENT",
+  VISION: "VISION",
+  TOOL_AGENT: "SUBAGENT",
+  ANALYST: "SEARCH_ASSIST",
+};
 
 /**
  * Top-level facade wiring 8-Bit's collaborators together (registry/eligibility awareness via
@@ -47,6 +97,10 @@ export class EightBitRuntime {
   /** R24 Mission A: the temporal, evidence-driven route-health authority ForgeAuto consumes. */
   readonly routeHealth: EightBitRouteHealthAuthority;
   readonly routeHealthLedger: EightBitRouteHealthLedger;
+  /** R24 Mission C: the Free Fabric admission authority (absent in tests/legacy hosts). */
+  readonly freeFabric?: FreeFabric;
+  /** Holds this runtime created, keyed by admission requestId → reservationId. */
+  private readonly fabricHolds = new Map<string, string>();
 
   constructor(private readonly options: EightBitRuntimeOptions) {
     this.health = new EightBitHealthTracker(options.firewall, options.now);
@@ -61,6 +115,56 @@ export class EightBitRuntime {
     this.failover = new EightBitFailoverCoordinator(this.health, this.router, this.store);
     this.handoff = new EightBitHandoffBuilder(options.persistence);
     this.capacity = new EightBitCapacityIntelligence();
+    this.freeFabric = options.freeFabric;
+  }
+
+  get hasFreeFabric(): boolean {
+    return this.freeFabric !== undefined;
+  }
+
+  /**
+   * Ask the Free Fabric whether this request may spend free capacity now, and on which route.
+   * Returns undefined when no fabric is attached — callers keep their pre-fabric path. On
+   * ADMITTED the fabric's reservation is tracked so `releaseFabricAdmission` can settle it;
+   * a repeated call with the same requestId replaces the hold, never double-spends.
+   */
+  admitThroughFabric(req: {
+    requestId: string;
+    sessionId: string;
+    role: EightBitRole;
+    userId?: string;
+    taskKind?: string;
+    demand?: FabricRequest["demand"];
+    isNewUser?: boolean;
+    leaseMs?: number;
+  }): FabricRouteDecision | undefined {
+    const fabric = this.options.freeFabric;
+    if (!fabric) return undefined;
+    const ctx = this.options.fabricContext?.({ sessionId: req.sessionId, role: req.role, requestId: req.requestId, userId: req.userId });
+    const decision = fabric.decide({
+      requestId: req.requestId,
+      userId: ctx?.userId ?? req.userId ?? "anonymous",
+      ...(ctx?.userIdentities ? { userIdentities: ctx.userIdentities } : {}),
+      role: FABRIC_MODEL_ROLE[req.role],
+      ...(req.taskKind ? { taskKind: req.taskKind } : {}),
+      ...(req.demand ? { demand: req.demand } : {}),
+      isNewUser: req.isNewUser ?? ctx?.isNewUser ?? false,
+      ...(req.leaseMs ?? ctx?.leaseMs ? { leaseMs: req.leaseMs ?? ctx?.leaseMs } : {}),
+      ...(ctx?.dataContext ? { dataContext: ctx.dataContext } : {}),
+    });
+    if (decision.outcome === "ADMITTED" && decision.selected?.reservationId) {
+      this.fabricHolds.set(req.requestId, decision.selected.reservationId);
+    }
+    return decision;
+  }
+
+  /** Settle a fabric admission early (run/turn finished or failed before the lease expired).
+   *  Idempotent: unknown/already-released ids return false. */
+  releaseFabricAdmission(requestId: string): boolean {
+    const reservationId = this.fabricHolds.get(requestId);
+    this.fabricHolds.delete(requestId);
+    if (!reservationId) return false;
+    return this.options.freeFabric?.release(reservationId) ?? false;
   }
 
   forecastCapacity(input: CapacityForecastInput): CapacityForecast {
@@ -134,6 +238,12 @@ export class EightBitRuntime {
     options: Omit<SelectRouteOptions, "scope">,
     context: { runId?: string; agentId?: string },
   ): Promise<SelectRouteResult> {
+    // R24 Mission C: when a Free Fabric governs automatic free routing it is the admission
+    // authority — its verdict (ADMITTED/QUEUED/DENIED + reservation) determines whether this
+    // request may spend free capacity, not a bare ranking. Explicit pins bypass entirely.
+    if (this.options.freeFabric && options.policyMode === "adaptive") {
+      return this.selectInitialRouteViaFabric(scope, options, context);
+    }
     const result = this.router.selectRoute({ ...options, scope });
     if (result.outcome === "selected") {
       await this.persistBinding(scope, { providerId: result.model.providerId, modelId: result.model.modelId }, options.policyMode, false);
@@ -153,11 +263,116 @@ export class EightBitRuntime {
     return result;
   }
 
+  /** The fabric-governed selection path. The fabric's verdict is authoritative: ADMITTED
+   *  yields the executable model behind its reserved route; QUEUED_FOR_CAPACITY and
+   *  DENIED_NO_SUPPLY are surfaced honestly — never substituted, never a paid route. */
+  private async selectInitialRouteViaFabric(
+    scope: BindingScope,
+    options: Omit<SelectRouteOptions, "scope">,
+    context: { runId?: string; agentId?: string },
+  ): Promise<SelectRouteResult> {
+    const requestId = context.runId ?? `${scope.sessionId}:${scope.role}:${scope.workstreamId ?? "-"}`;
+    const decision = this.admitThroughFabric({
+      requestId,
+      sessionId: scope.sessionId,
+      role: scope.role,
+      userId: options.userId,
+      taskKind: options.taskType,
+      // The reservation holds near-term per-call demand, not the run's whole context budget —
+      // provider quota headers post-call are the real accounting, and a failover re-decides.
+      demand: { requests: 1, inputTokens: Math.min(options.estimatedContextTokens ?? 16_000, 16_000) },
+    });
+    if (!decision) return this.router.selectRoute({ ...options, scope });
+
+    const reasonCodes = decision.explanation.reasonCodes;
+    if (decision.outcome !== "ADMITTED" || !decision.selected) {
+      const queued = decision.outcome === "QUEUED_FOR_CAPACITY";
+      await this.store.recordReceipt(
+        this.receipt(scope, context, "NO_ELIGIBLE_ROUTE", options.policyMode, undefined, undefined,
+          [`FABRIC_${decision.outcome}`, ...reasonCodes]),
+      );
+      return {
+        outcome: "no_eligible_route",
+        reasonCodes: [`FABRIC_${decision.outcome}`, ...reasonCodes],
+        ...(queued ? { queued: { ...(decision.nextAvailableAt ? { nextAvailableAt: decision.nextAvailableAt } : {}) } } : {}),
+        fabric: decision,
+      };
+    }
+
+    const selected = decision.selected;
+    const model = this.options.firewall.getModel(selected.providerId, selected.modelId);
+    // The fabric's route universe is projected from the same registry, so this is a
+    // consistency guard, not a policy check: an admitted route with no executable model or
+    // no provider adapter is released and fails closed rather than producing a phantom run.
+    if (!model || !options.hasAdapter(selected.providerId)) {
+      this.releaseFabricAdmission(requestId);
+      await this.store.recordReceipt(
+        this.receipt(scope, context, "NO_ELIGIBLE_ROUTE", options.policyMode, undefined, undefined,
+          ["FABRIC_ROUTE_NOT_EXECUTABLE", ...reasonCodes]),
+      );
+      return { outcome: "no_eligible_route", reasonCodes: ["FABRIC_ROUTE_NOT_EXECUTABLE", ...reasonCodes], fabric: decision };
+    }
+
+    await this.persistBinding(scope, { providerId: selected.providerId, modelId: selected.modelId }, options.policyMode, false);
+    // Keep the router's in-memory binding aligned with the durable row — hydrate() and
+    // currentBinding() must see the same route the fabric admitted.
+    this.router.hydrateBinding(scope, { providerId: selected.providerId, modelId: selected.modelId });
+    await this.store.recordReceipt(
+      this.receipt(scope, context, "INITIAL_SELECTION", options.policyMode, undefined,
+        { providerId: selected.providerId, modelId: selected.modelId },
+        ["FABRIC_ADMITTED", `SUPPLY_${selected.supplyClass}`, `OWNER_${selected.quotaOwner}`, ...reasonCodes]),
+    );
+    const assessment = this.routeHealth.assess(selected.providerId, selected.modelId, { role: scope.role });
+    return {
+      outcome: "selected",
+      model,
+      sticky: false,
+      score: (model.agentScore ?? model.codingScore ?? 0) + assessment.scoreAdjustment,
+      reasons: ["FABRIC_ADMITTED", `SUPPLY_${selected.supplyClass}`, ...reasonCodes],
+      health: assessment,
+      fabric: decision,
+    };
+  }
+
   async handleTurnFailure(req: FailoverRequest & { policyMode: EightBitPolicyMode }): Promise<FailoverOutcome> {
     // R24: every turn failure is health evidence, whatever the failover decides.
     const retryAfter = (req.error as { retryAfter?: unknown })?.retryAfter;
     this.recordFailure(req.current.providerId, req.current.modelId, req.error, { role: req.role, correlationId: req.runId ?? req.turnId, retryAfterMs: typeof retryAfter === "number" ? Math.max(0, retryAfter > 1e12 ? retryAfter - this.now() : retryAfter * 1000) : undefined });
-    const outcome = await this.failover.handleFailure(req);
+    // R24 Mission C: auto-mode rotation re-decides through the Free Fabric — the failed
+    // route's hold is replaced atomically by the next admissible route's reservation (same
+    // requestId), so a failover can never execute unadmitted or double-spend the pool.
+    const requestId = req.fabricRequestId ?? req.runId ?? req.turnId;
+    const reqWithFabric: typeof req = this.options.freeFabric && (req.pinMode ?? (req.isExactPin ? "route" : "auto")) === "auto"
+      ? {
+        ...req,
+        fabricReplacement: (exclude) => {
+          const decision = this.admitThroughFabric({
+            requestId,
+            sessionId: req.sessionId,
+            role: req.role,
+            userId: req.userId,
+            taskKind: "failover",
+            demand: { requests: 1, inputTokens: Math.min(req.estimatedContextTokens ?? 16_000, 16_000) },
+          });
+          if (decision?.outcome !== "ADMITTED" || !decision.selected) return undefined;
+          const sel = decision.selected;
+          if (!req.hasAdapter(sel.providerId)) {
+            // An admitted route with no backend can never execute — release the fresh hold
+            // and let the coordinator's bounded same-route path decide honestly.
+            this.releaseFabricAdmission(requestId);
+            return undefined;
+          }
+          if (sel.providerId === exclude.providerId && sel.modelId === exclude.modelId) {
+            // The failed route re-won admission (demoted but not excluded, and nothing
+            // better is admissible). Keep its hold — the bounded same-route retry below
+            // executes under exactly this reservation.
+            return undefined;
+          }
+          return { route: { providerId: sel.providerId, modelId: sel.modelId }, reasonCodes: decision.explanation.reasonCodes };
+        },
+      }
+      : req;
+    const outcome = await this.failover.handleFailure(reqWithFabric);
     // Persist the FAILED route's health regardless of outcome — this is what a restart needs
     // to keep excluding it, independent of whatever the binding row ends up pointing at.
     await this.store.saveRouteHealth(req.sessionId, req.current.providerId, req.current.modelId, this.health.getHealth(req.current.providerId, req.current.modelId));

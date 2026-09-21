@@ -57,6 +57,13 @@ export interface ProviderConnectionState {
   lastCatalogRefreshAt?: string;
   /** For not-connected providers: the lowest-friction way CodeForge can connect it right now. */
   connectOffer?: { authClass: AuthClass; label: string; environmentVariable?: string; planAttestation?: boolean };
+  /**
+   * R24 Mission C: the local user who owns this connection's per-user supply, stamped by the
+   * trusted connection host (desktop profile id or signed-in account id — never a credential).
+   * The Free Fabric uses it to attribute `PER_USER_POOL` capacity: a request may only spend a
+   * user-owned pool when its own fairness identity matches this owner.
+   */
+  ownerUserId?: string;
   /** Sanitized metadata for a user-owned Free Cloud connection; never a credential. */
   userConnectedFree?: {
     featureFlag: string;

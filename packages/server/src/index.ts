@@ -18,10 +18,11 @@ import {
   createDevelopmentEntitlementProvider,
   createGenericFreeRecord,
   PAID_CATALOG,
+  CapacityReservationLedger,
 } from "@codeforge/forge-zero";
 import type { FreeModelRecord } from "@codeforge/forge-zero";
 import type { FreeCloudService } from "@codeforge/model-registry";
-import { SqliteQualificationPersistence, EightBitRouteHealthLedger, createEightBitRouteHealthAuthority, type EightBitRouteHealthAuthority } from "@codeforge/eight-bit";
+import { SqliteQualificationPersistence, EightBitRouteHealthLedger, createEightBitRouteHealthAuthority, FreeFabric, type EightBitRouteHealthAuthority, type FabricContextProvider } from "@codeforge/eight-bit";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/providers";
@@ -154,6 +155,14 @@ export interface ServerOptions {
    * the session database. Read via {@link CodeForgeServer.routeHealth}.
    */
   routeHealth?: EightBitRouteHealthAuthority;
+  /**
+   * R24 Mission C: the host's local fairness identity (desktop profile id or signed-in user).
+   * Requests that carry no explicit `userId` admit through the Free Fabric under this identity
+   * — on a single-user desktop that is exactly the stamped owner of its per-user pools. On a
+   * multi-user `forge serve` it stays unset and unattributed requests can only reach managed
+   * supply; they can never spend another user's pool.
+   */
+  localUserId?: string;
   /** Paid Auto is a separate commercial route family and is disabled unless explicitly enabled. */
   paidAuto?: PaidAutoService;
   paidExecutionEnabled?: boolean;
@@ -214,6 +223,11 @@ export class CodeForgeServer {
   private readonly freeCloud?: FreeCloudService;
   /** R24: the process-wide measured route-health authority every AgentRuntime shares. */
   readonly routeHealth: EightBitRouteHealthAuthority;
+  /** R24 Mission C: one process-wide Free Fabric — its reservation ledger is shared by every
+   *  session runtime, so shared-pool fairness is enforced across sessions, not per session. */
+  private readonly freeFabric?: FreeFabric;
+  private readonly fabricContext?: FabricContextProvider;
+  private readonly localUserId?: string;
   private readonly routeHealthLedger: EightBitRouteHealthLedger;
   private readonly paidAuto: PaidAutoService;
   private readonly subagentsR1Enabled: boolean;
@@ -283,6 +297,32 @@ export class CodeForgeServer {
     this.routeHealth = options.routeHealth ?? createEightBitRouteHealthAuthority();
     this.routeHealthLedger = new EightBitRouteHealthLedger(this.persistence);
     this.routeHealthLedger.attach(this.routeHealth);
+    this.localUserId = options.localUserId;
+    // R24 Mission C: the Free Fabric — the admission authority every automatic free routing
+    // decision passes through. Route/pool tables are live projections of the Free Cloud
+    // registry (re-read inside each decide()), the temporal route-health authority supplies
+    // measured demotions/exclusions, and ONE process-wide reservation ledger enforces
+    // shared-pool fairness across all session runtimes. Without a Free Cloud Service there is
+    // no verifiable free supply to admit against, so no fabric is built and routing keeps its
+    // pre-fabric path.
+    if (this.freeCloud) {
+      const freeCloud = this.freeCloud;
+      this.freeFabric = new FreeFabric({
+        managedRoutes: () => freeCloud.capacityRoutes().filter((route) => route.capacityPoolScope !== "PER_USER_POOL"),
+        managedPools: () => freeCloud.capacityPools().filter((pool) => pool.scope !== "PER_USER_POOL"),
+        userSources: [{ routesForUser: (userId) => freeCloud.routesForUser(userId), poolsForUser: (userId) => freeCloud.poolsForUser(userId) }],
+        health: this.routeHealth,
+        // Per-user cap is a fairness backstop, not a precision limiter: it must leave room for
+        // a legitimately parallel orchestrated run (planner + explorers + coder + reviewer)
+        // alongside an interactive turn, while still bounding one user's hold on shared pools.
+        // Real contention is enforced per-pool by the physical concurrency/quota windows.
+        reservations: new CapacityReservationLedger({ routes: [], pools: [], maxActiveReservationsPerUser: 8 }),
+      });
+      this.fabricContext = ({ userId }) => {
+        const uid = userId ?? this.localUserId ?? "anonymous";
+        return { userId: uid, userIdentities: freeCloud.capacityIdentitiesFor(uid) };
+      };
+    }
     this.paidAuto = options.paidAuto ?? createPaidAutoService({
       paidExecutionEnabled: options.paidExecutionEnabled ?? process.env.CODEFORGE_PAID_EXECUTION_ENABLED === "true",
       openRouterFallbackEnabled: options.openRouterFallbackEnabled ?? process.env.CODEFORGE_OPENROUTER_FALLBACK_ENABLED === "true",
@@ -2260,6 +2300,8 @@ export class CodeForgeServer {
         forgeGreenCacheStore: this.forgeGreenCacheStore,
         afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
         freeCloud: this.freeCloud,
+        freeFabric: this.freeFabric,
+        fabricContext: this.fabricContext,
         paidAuto: this.paidAuto,
         hostedWorker,
         routeHealth: this.routeHealth,
@@ -2282,6 +2324,8 @@ export class CodeForgeServer {
         forgeGreenCacheStore: this.forgeGreenCacheStore,
         afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
         freeCloud: this.freeCloud,
+        freeFabric: this.freeFabric,
+        fabricContext: this.fabricContext,
         paidAuto: this.paidAuto,
         routeHealth: this.routeHealth,
         authorityFor: () => this.authorityFor(sessionId),

@@ -691,6 +691,10 @@ export class ProviderConnections {
       freePolicyState: geminiPolicy?.decision,
       freePolicyReason: geminiPolicy?.reasonCode,
       connectOffer: connected ? undefined : this.connectOfferFor(def),
+      // R24 Mission C: stamp the owning local user on every connection so the Free Fabric can
+      // attribute per-user pools — a per-user route is spendable only by requests carrying
+      // this same fairness identity. Never a credential.
+      ownerUserId: this.host.userId,
       ...(def.userConnectedFree ? {
         userConnectedFree: {
           featureFlag: def.userConnectedFree.featureFlag,

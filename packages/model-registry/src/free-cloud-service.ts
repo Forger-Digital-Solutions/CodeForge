@@ -610,6 +610,41 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     return [...pools.values()];
   }
 
+  /**
+   * R24 Mission C: the per-user supply projection the Free Fabric's `userSources` consume.
+   * A request may only see a `PER_USER_POOL` route/pool when the stamped `ownerUserId` of the
+   * connection behind it matches the requesting user — user-owned capacity is never aggregated
+   * into managed supply, and one user's pool is invisible to another's decision.
+   */
+  routesForUser(userId: string): CapacityRoute[] {
+    return this.capacityRoutes().filter(
+      (route) => route.capacityPoolScope === "PER_USER_POOL" && this.connections.get(route.providerId)?.ownerUserId === userId,
+    );
+  }
+
+  poolsForUser(userId: string): ProviderCapacityPool[] {
+    return this.capacityPools().filter(
+      (pool) => pool.scope === "PER_USER_POOL" && this.connections.get(pool.providerId)?.ownerUserId === userId,
+    );
+  }
+
+  /**
+   * The non-secret capacity identities this user owns, computed from the same stamped
+   * connection state {@link capacityRoutes} projects — including the `localconn:` sentinel a
+   * per-user connection gets when the host recorded no account hash. Ownership is decided by
+   * `ownerUserId`, so a user can never name an identity it does not hold.
+   */
+  capacityIdentitiesFor(userId: string): string[] {
+    const identities: string[] = [];
+    for (const conn of this.connections.values()) {
+      if (conn.ownerUserId !== userId) continue;
+      const supplyClass = supplyClassFor(this.definitions[conn.providerId], conn);
+      if (supplyClass !== "USER_CONNECTED_FREE" && supplyClass !== "DISTRIBUTED_USER_FREE") continue;
+      identities.push(conn.userConnectedFree?.capacityIdentity ?? `localconn:${conn.providerId}`);
+    }
+    return identities;
+  }
+
   // --- change notification -------------------------------------------------------------------
 
   subscribe(listener: () => void): () => void {
