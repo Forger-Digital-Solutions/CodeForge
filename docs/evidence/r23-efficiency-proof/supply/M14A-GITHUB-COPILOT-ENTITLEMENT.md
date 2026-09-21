@@ -70,3 +70,13 @@ Either way it is not a drop-in OpenAI-compatible route — adapter work is requi
    `account.getQuota` → `OllamaFreeUsageObservation`-style per-user capacity observation),
    entitlement discovery, and exhaustion failover tests.
 3. `githubCopilotUserEntitlement` flag stays off until both are done.
+
+## Adjacent GitHub surface — GitHub Models (2026-09-21 addendum)
+
+`GITHUB_MODELS_TOKEN` exists in the environment; a live catalog probe to
+`models.github.ai/catalog/models` returned **HTTP 410 —
+`github_models_retirement_brownout`: "GitHub Models is temporarily unavailable as part of a
+scheduled retirement brownout."** GitHub's model-catalog API is being retired. Consequence:
+the Copilot SDK path above is now *the* durable GitHub entitlement surface; GitHub Models must
+not be added as a supply source. Recorded for the M14 inventory's traceability — no code change
+(CodeForge never had a GitHub Models provider).

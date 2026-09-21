@@ -56,6 +56,11 @@ export function classifyFailure(error: unknown): FailureReason {
   if (status === 402 || code === "PAYMENT_REQUIRED" || /\b402\b|payment required|insufficient (credits|balance)|upgrade (your|to a) (plan|paid)|requires (a )?paid plan|workers paid/.test(msg)) return "PAID_PLAN_REQUIRED";
   if (/free tier (is )?not available|not on the free (tier|plan)|free plan (has )?ended/.test(msg)) return "FREE_TIER_NOT_AVAILABLE";
   if (/\b401\b|invalid api key|unauthor|auth ?error|missing_api_key/.test(msg)) return "AUTH_FAILURE";
+  // A stream the provider terminated before [DONE] is an upstream failure, not an unknown one —
+  // without this the dominant free-tier failure mode lands in UNKNOWN and loses cooldown/rotation
+  // semantics. Transport-level stream failures (socket errors, local network) stay TRANSIENT_NETWORK.
+  if (code === "STREAM_INTERRUPTED" || code === "PROVIDER_STREAM_INTERRUPTED" || /ended before the provider sent|stream disconnect/.test(msg)) return "PROVIDER_OUTAGE";
+  if (code === "STREAM_FAILED") return "TRANSIENT_NETWORK";
   if (/\b429\b|rate.?limit/.test(msg)) return "RATE_LIMITED";
   if (/quota|insufficient_quota|credits? exhausted|neurons/.test(msg)) return "QUOTA_EXHAUSTED";
   if (/content_filter|blocked by (the )?(provider|policy)|harmful content|safety (system|filter|policy)/.test(msg)) return "SAFETY_REJECTION";

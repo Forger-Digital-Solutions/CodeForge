@@ -1,0 +1,90 @@
+{
+  "campaignId": "qualification-2026-09-21T04-01-31-939Z",
+  "phase": "qualification",
+  "recordedAt": "2026-09-21T04:12:47.585Z",
+  "model": "openai/gpt-oss-120b",
+  "providerId": "groq",
+  "pin": {
+    "id": "openai/gpt-oss-120b",
+    "name": "openai/gpt-oss-120b",
+    "contextLength": 131072,
+    "ownedBy": "OpenAI",
+    "checkedAt": "2026-09-21T04:01:31.922Z",
+    "pricingVerification": "provider-free-tier-policy + ForgeZero FREE_ALLOWANCE admission + live rate-limit headers (§2.1b)",
+    "quotaAtPin": {
+      "providerId": "groq",
+      "status": 200,
+      "requests": {
+        "limit": 1000,
+        "remaining": 939,
+        "reset": "1h27m50.4s"
+      },
+      "tokens": {
+        "limit": 8000,
+        "remaining": 7853,
+        "reset": "1.102s"
+      },
+      "observedAt": "2026-09-21T04:01:31.920Z"
+    },
+    "toolProbe": {
+      "toolCallsEmitted": 1,
+      "usage": {
+        "queue_time": 0.346130216,
+        "prompt_tokens": 139,
+        "prompt_time": 0.029989228,
+        "completion_tokens": 53,
+        "completion_time": 0.112460937,
+        "total_tokens": 192,
+        "total_time": 0.142450165,
+        "completion_tokens_details": {
+          "reasoning_tokens": 27
+        }
+      }
+    }
+  },
+  "allowanceAtStart": {
+    "limit": 1000,
+    "used": 61,
+    "remaining": 939,
+    "remainingTokens": 7853,
+    "dailyTokensUsed": 98086,
+    "source": "x-ratelimit headers (live adapter observation)",
+    "checkedAt": "2026-09-21T04:01:31.937Z"
+  },
+  "identity": {
+    "protocolVersion": "1.0.4",
+    "protocolDigest": "03023faceb378620b9607569567f39468c898050ed3d4ea2bf8258701b90d8e7",
+    "codeforgeCommit": "1f5de1614dc3a2a4f01e19dd405b3e63beb99275",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "docs/evidence/r23-efficiency-proof/pilot/MODEL-SELECTION.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/runs.jsonl",
+      "docs/evidence/r23-efficiency-proof/supply/M14A-GITHUB-COPILOT-ENTITLEMENT.md",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/campaign-qualification-2026-09-21T04-00-03-853Z.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-missing-export-optimized-r1-cf1dc316.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-off-by-one-optimized-r1-4075cf69.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-cacc545c.json"
+    ],
+    "environmentFingerprint": "ca3012b499381864a5f9d0cac037d4bba4385563fa5e409050d9d8420aaa7429",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "stopped": "allowance",
+  "runs": [
+    {
+      "taskId": "qual-js-missing-export",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 18,
+      "totalTokens": null,
+      "wallClockMs": 675168,
+      "runId": "r23-qualification-qual-js-missing-export-optimized-r1-63e2272a"
+    }
+  ]
+}

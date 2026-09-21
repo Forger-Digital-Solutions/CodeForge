@@ -1,6 +1,6 @@
 # R23 Efficiency Proof — Continuation Checkpoint
 
-Updated: 2026-09-21 ~24:00 local / ~04:00 UTC (protocol v1.0.4 + substitute-route path landed; two more qualification rounds done; still no winner)
+Updated: 2026-09-21 ~00:15 local / ~04:15 UTC (protocol v1.0.4 + substitute-route path landed; nemotron rounds 5–6 + groq rounds 1–2 + laguna/gemma re-screen done; still no winner)
 Branch: `forger-digital-solutions-forgegreen-certified`
 Base: `ae2aa87` (R22 closure) — verified clean at M0.
 
@@ -8,8 +8,8 @@ Base: `ae2aa87` (R22 closure) — verified clean at M0.
 
 | | |
 |---|---|
-| HEAD | `3436a79` R23 checkpoint (M14–M14E + §16 note + catalog re-screen evidence) |
-| Pending commit | this session's work: protocol v1.0.4, `--provider groq` bench path, `OpenAICompatibleAdapter` credential-store default, pricing-snapshot substitute equivalents, new qualification evidence |
+| HEAD | `1f5de16` R23 v1.0.4: substitute-route clause + Groq qualification path |
+| Pending commit | eight-bit `classifyFailure` stream-interrupt taxonomy fix (+test), M14A GitHub-Models-retirement addendum, latest qual/prescreen evidence |
 | Canary status | Canonical suite green at recovery: 421 files / 3315 tests / 0 failures / 471 s. Targeted re-runs after M14: forge-zero 172 pass / eight-bit 172 pass / model-registry 85 pass — 0 failures. |
 
 ## Completed phases
@@ -31,17 +31,18 @@ Base: `ae2aa87` (R22 closure) — verified clean at M0.
 
 ## Live capacity facts (measured 2026-09-21 UTC)
 
-- OpenRouter `free_model_daily_requests`: limit 1000/day. Counter at last read: **used 130 / remaining 870** (03:49Z). Counter lags served calls ~1–2 min — reconcile after settlement only.
-- Groq free tier (owner-dev key): `x-ratelimit` observed — requests window ~1000, tokens 8K/min window (governor paces at 7500 TPM/28 RPM/2 concurrent); documented daily cap ~200K tokens. **Used today ≈ 76K/200K** (one qual round ~72K + probes).
+- OpenRouter `free_model_daily_requests`: limit 1000/day. Counter at last read: **~812 remaining** (04:14Z). Counter lags served calls ~1–2 min — reconcile after settlement only.
+- Groq free tier (owner-dev key): `x-ratelimit` observed — requests window ~1000, tokens 8K/min window (governor paces at 7500 TPM/28 RPM/2 concurrent); documented daily cap ~200K tokens. **Used today ≈ 134.7K/200K** — the token-aware capacity gate correctly halted the second round mid-way (15% margin enforced); next attempts need the daily reset.
 - Deposit never consumed: exact-pin, $0/$0 or ForgeZero free-class admission re-checked per run; any `actual_cost > 0` halts.
 - **OR `:free` upstream saturated at US peak** (429/502 storms, thinkingmachines permanent 403s); post-00:00-UTC window noticeably healthier (nemotron 2/3 this round).
 - Cerebras: **402 payment required** (promo credit exhausted) — excluded. Mistral: **429, 0 req/min** on this account — excluded tonight. Gemini: 403 non-functional.
 
 ## Current benchmark status
 
-- **OR prescreen:** 19 candidates → 1 passer (nemotron). Permanent-failure classes excluded per §6.3.
-- **OR qualification:** nemotron cumulative **4/15 verified across 5 rounds** (rounds: 1/3, 0/3, 1/3, 0/3, 2/3). Latest round 03:49Z: `verified_complete` ×2 (80,792 + 56,032 tokens, full usage), one early-502 provider_failure. `MODEL-SELECTION.json` → **winner: null**, leader nemotron.
-- **Groq qualification (v1.0.4 substitute route):** `groq::openai/gpt-oss-120b` round 03:07Z — **0/3 verified, all `provider_failure` on `STREAM_INTERRUPTED`**: ~13% mid-stream drop rate (7/52 calls); **verifier passed on 2/3 runs before the terminal drop** (capability demonstrated, reliability failed). 100% usage coverage on served calls (20/22, 13/16, 12/14 PROVIDER_REPORTED). Non-stream/small-prompt probes: 0/12 drops — drops correlate with real harness-size streams under evening load.
+- **OR prescreen:** 19 candidates → 1 passer (nemotron). Re-screen 04:13Z: **laguna-xs graduated to `provider_failure`** (4 served calls, full usage, verifier passed — then 429 on call 5; permanently excluded under §6.3); gemma-26b/31b hit their **4th instant-429 void** (Google free pool starved at call 0 in every window today).
+- **OR qualification:** nemotron cumulative **4/18 verified across 6 rounds** (1/3, 0/3, 1/3, 0/3, 2/3, 0/3). Volatile upstream: round 5 at 03:49Z verified 2/3 (80,792 + 56,032 tokens); round 6 at 04:00Z went 0/3 on 502s minutes after clean probes — bare-probe health does NOT predict harness-request health (18-tool, ~10KB requests). `MODEL-SELECTION.json` → **winner: null**, leader nemotron.
+- **Groq qualification (v1.0.4 substitute route):** `groq::openai/gpt-oss-120b` — **0/4 verified across 2 rounds**, all `provider_failure` on `STREAM_INTERRUPTED` (~13% mid-stream drop, 7/52 calls in round 1). **Verifier passed on 3/4 runs before the terminal drop** — capability proven, free-tier transport reliability failed. 100% usage coverage on all served calls. Round 2 halted by the daily-token gate after 1 run (conservation working).
+- **Other managed routes probed tonight:** Cerebras 402 (credits exhausted) + `llama-3.3-70b` 404 (not in account catalog); Mistral 429 (0 req/min); Gemini 403; **GitHub Models 410 — scheduled retirement brownout** (service being shut down; recorded in M14A addendum — Copilot SDK is now the only GitHub entitlement surface).
 - **No pilot run yet** — pilot/main refuse without a winner.
 
 ## Harness notes (fixed this session)
@@ -50,6 +51,7 @@ Base: `ae2aa87` (R22 closure) — verified clean at M0.
 - `capacityGate` generalized: request-window gate for all providers + daily-token-cap gate (ledger-derived cumulative spend vs documented cap, 15% margin) for token-windowed providers.
 - `MODEL-SELECTION.json` now carries `providerId` per candidate + `winnerProvider`; live-pair modes enforce provider+model jointly.
 - Pin-time evidence for substitute routes is *stronger* than catalog claims: live `tool_choice=required` probe + ForgeZero admission + captured quota headers, all stored in the pin record.
+- `classifyFailure` (eight-bit): upstream stream termination (`STREAM_INTERRUPTED` / "ended before the provider sent") now classifies `PROVIDER_OUTAGE`, transport `STREAM_FAILED` → `TRANSIENT_NETWORK` — previously both fell to `UNKNOWN`, erasing the dominant free-tier failure mode from health evidence. +1 test.
 
 ## Known blockers / owner actions
 
@@ -62,11 +64,11 @@ Base: `ae2aa87` (R22 closure) — verified clean at M0.
 
 ## Next exact action
 
-1. Commit this session (protocol v1.0.4 + groq path + credential-store fix + new evidence).
-2. `node scripts/r23-efficiency-bench.mjs qualify --models nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free --allow-dirty` at the next upstream-healthy window (probe first: bare 200 + usage before spending a round).
-3. `node scripts/r23-efficiency-bench.mjs qualify --provider groq --models openai/gpt-oss-120b --allow-dirty` off-peak — drops were ~13% at 03:00–03:45 UTC; if the rate falls, 3/3 is plausible (capability already proven).
+1. Commit this session (taxonomy fix + M14A addendum + rounds 5–6 + groq round 2 + re-screen evidence).
+2. Wait for deep off-peak (~09:00–12:00 UTC): re-probe nemotron (bare 200 + usage); if clean, `node scripts/r23-efficiency-bench.mjs qualify --models nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free --allow-dirty`.
+3. Groq daily tokens reset ~00:00 UTC; off-peak retry `qualify --provider groq --models openai/gpt-oss-120b --allow-dirty` — drops were ~13% in the 03:00–04:15 UTC window; capability is proven (verifier 3/4 runs), the retry tests whether transport settles.
 4. On a real winner: `pilot --model <winner> [--provider groq]` → `pilot/R23-PILOT-REPORT.md` vs §16 gate → `R23_INSTRUMENTATION_CERTIFIED` or `NOT_READY`.
-5. Note: nemotron's 502s structurally cap §16 usage coverage (failed calls carry no usage); Groq reports usage on 100% of served calls — if a Groq route ever qualifies, instrumentation coverage likely clears 98%.
+5. §16 note: nemotron's 502s structurally cap provider-usage coverage (failed calls carry no usage); Groq reports usage on 100% of served calls — a qualifying Groq route would likely clear 98%.
 
 ## Evidence paths
 

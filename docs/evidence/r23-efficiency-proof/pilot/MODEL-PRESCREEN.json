@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-09-21T02:43:32.352Z",
+  "recordedAt": "2026-09-21T04:14:08.257Z",
   "protocolRule": "§2.2 pre-screen (v1.0.3): one single-agent qualification task; passers ranked by wall time; outcome-blind cap; infrastructure_void candidates may be re-screened (§6.3), all attempts preserved",
   "task": "qual-js-return-sign",
   "cap": 6,
@@ -301,12 +301,12 @@
     {
       "modelId": "poolside/laguna-xs-2.1:free",
       "passed": false,
-      "classification": "infrastructure_void",
-      "wallClockMs": 2688,
-      "modelCalls": 1,
+      "classification": "provider_failure",
+      "wallClockMs": 11726,
+      "modelCalls": 5,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-d1f1703b",
-      "reason": "infrastructure_void",
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-d4a8aa2d",
+      "reason": "provider_failure",
       "attempts": [
         {
           "recordedAt": "2026-09-21T01:39:06.845Z",
@@ -347,6 +347,16 @@
           "totalTokens": null,
           "runId": "r23-qualification-qual-js-return-sign-optimized-r1-d1f1703b",
           "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T04:14:08.257Z",
+          "passed": false,
+          "classification": "provider_failure",
+          "wallClockMs": 11726,
+          "modelCalls": 5,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-d4a8aa2d",
+          "reason": "provider_failure"
         }
       ]
     },
@@ -430,10 +440,10 @@
       "modelId": "google/gemma-4-26b-a4b-it:free",
       "passed": false,
       "classification": "infrastructure_void",
-      "wallClockMs": 2559,
+      "wallClockMs": 7730,
       "modelCalls": 1,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-7032716a",
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-15fdc159",
       "reason": "infrastructure_void",
       "attempts": [
         {
@@ -465,6 +475,16 @@
           "totalTokens": null,
           "runId": "r23-qualification-qual-js-return-sign-optimized-r1-7032716a",
           "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T04:14:08.257Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 7730,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-15fdc159",
+          "reason": "infrastructure_void"
         }
       ]
     },
@@ -472,10 +492,10 @@
       "modelId": "google/gemma-4-31b-it:free",
       "passed": false,
       "classification": "infrastructure_void",
-      "wallClockMs": 2531,
+      "wallClockMs": 7941,
       "modelCalls": 1,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-1cb48a49",
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-6dbf4de2",
       "reason": "infrastructure_void",
       "attempts": [
         {
@@ -506,6 +526,16 @@
           "modelCalls": 1,
           "totalTokens": null,
           "runId": "r23-qualification-qual-js-return-sign-optimized-r1-1cb48a49",
+          "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T04:14:08.257Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 7941,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-6dbf4de2",
           "reason": "infrastructure_void"
         }
       ]

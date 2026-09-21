@@ -16,6 +16,16 @@ describe("classifyFailure", () => {
     expect(classifyFailure(new Error("ECONNRESET"))).toBe("TRANSIENT_NETWORK");
     expect(classifyFailure(new Error("something entirely unexpected"))).toBe("UNKNOWN");
   });
+
+  it("[PASS] stream interruptions classify as provider/transport failures, not UNKNOWN", () => {
+    // Live evidence (2026-09-21): Groq free tier cut ~13% of agentic SSE streams mid-flight —
+    // "stream ended before the provider sent [DONE]" previously fell through to UNKNOWN.
+    const upstreamCut = Object.assign(new Error("groq stream ended before the provider sent [DONE]"), { code: "STREAM_INTERRUPTED" });
+    expect(classifyFailure(upstreamCut)).toBe("PROVIDER_OUTAGE");
+    expect(classifyFailure(new Error("groq stream ended before the provider sent [DONE]"))).toBe("PROVIDER_OUTAGE");
+    const transportFail = Object.assign(new Error("groq stream failed: fetch failed"), { code: "STREAM_FAILED" });
+    expect(classifyFailure(transportFail)).toBe("TRANSIENT_NETWORK");
+  });
 });
 
 describe("EightBitHealthTracker — live feedback loop", () => {
