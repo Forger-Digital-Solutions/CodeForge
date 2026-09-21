@@ -21,9 +21,13 @@ const sbomOut = args.includes("--sbom") ? args[args.indexOf("--sbom") + 1] : "do
 const allowlistPath = "scripts/security/dependency-audit-allowlist.json";
 
 const auditArgs = ["audit", "--json", "--no-fund"];
+// Under `npm run`, the parent npm exports the project .npmrc `allow-scripts` value as
+// npm_config_allow_scripts; npm 11 rejects that flag for a project-scoped command with
+// EALLOWSCRIPTS and the gate went INCONCLUSIVE. The child audit must not inherit it.
+const auditEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toLowerCase() !== "npm_config_allow_scripts"));
 const audit = process.platform === "win32"
-  ? spawnSync("cmd.exe", ["/d", "/s", "/c", "npm", ...auditArgs], { cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, windowsHide: true })
-  : spawnSync("npm", auditArgs, { cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  ? spawnSync("cmd.exe", ["/d", "/s", "/c", "npm", ...auditArgs], { cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, windowsHide: true, env: auditEnv })
+  : spawnSync("npm", auditArgs, { cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, env: auditEnv });
 const rawOut = `${audit.stdout ?? ""}`;
 const start = rawOut.indexOf("{");
 let report;
