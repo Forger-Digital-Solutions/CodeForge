@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-09-21T11:37:55.380Z",
+  "recordedAt": "2026-09-21T14:41:12.681Z",
   "protocolVersion": "1.0.6",
   "protocolRule": "§2.2 — reliability and capability only; tokens are not a scoring input; winner requires all tasks verified, zero upstream failures, zero malformed runs",
   "candidates": [
@@ -9,14 +9,14 @@
       "eligible": true,
       "tasks": 1,
       "tasksExpected": 3,
-      "verified": 0,
+      "verified": 1,
       "falseComplete": 0,
-      "hangsOrUpstreamFailures": 1,
-      "malformedToolCallRuns": 0,
-      "medianWallMs": 291590,
-      "medianCalls": 21,
+      "hangsOrUpstreamFailures": 0,
+      "malformedToolCallRuns": 1,
+      "medianWallMs": 381602,
+      "medianCalls": 23,
       "runIds": [
-        "r23-qualification-qual-js-missing-export-optimized-r1-18907f6e"
+        "r23-qualification-qual-js-missing-export-optimized-r1-72f4e7ba"
       ],
       "stopped": "allowance",
       "qualified": false
@@ -387,6 +387,30 @@
           "providerId": "groq",
           "eligible": false,
           "reason": "CodeForge tree is dirty (1 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/supply/probe-gates.jsonl",
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-09-21T11:37:55.380Z",
+      "winner": null,
+      "candidates": [
+        {
+          "modelId": "openai/gpt-oss-20b",
+          "providerId": "groq",
+          "eligible": true,
+          "tasks": 1,
+          "tasksExpected": 3,
+          "verified": 0,
+          "falseComplete": 0,
+          "hangsOrUpstreamFailures": 1,
+          "malformedToolCallRuns": 0,
+          "medianWallMs": 291590,
+          "medianCalls": 21,
+          "runIds": [
+            "r23-qualification-qual-js-missing-export-optimized-r1-18907f6e"
+          ],
+          "stopped": "allowance",
           "qualified": false
         }
       ]

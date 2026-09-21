@@ -1,0 +1,17 @@
+{
+  "recordedAt": "2026-09-21T14:41:24Z",
+  "purpose": "R23 continuation re-verification of Cloudflare Workers AI monetary-safety eligibility (checkpoint F6)",
+  "token": "CLOUDFLARE_API_KEY env (verify: active)",
+  "checks": [
+    { "endpoint": "GET /user/tokens/verify", "status": 200, "result": "active" },
+    { "endpoint": "GET /accounts/{id}", "status": 403, "code": 9109, "meaning": "cannot read account plan" },
+    { "endpoint": "GET /accounts/{id}/subscriptions", "status": 403, "code": 10000, "meaning": "cannot read billing/subscriptions" },
+    { "endpoint": "GET /accounts/{id}/ai/finetunes", "status": 200, "result": "[]" },
+    { "endpoint": "GET /accounts/{id}/ai/models/search", "status": 200, "result": "65 models readable" },
+    { "endpoint": "POST /graphql aiInferenceAdaptiveGroups.sum.totalNeurons", "status": 200, "result": "not authorized for that account", "meaning": "neuron usage not readable" }
+  ],
+  "verdict": "FAIL_CLOSED_UNCHANGED",
+  "ownerActionRequired": "Attest Workers Free / no paid AI overage, or issue read-only token with Account Settings:Read + Account Analytics:Read (+ Billing:Read)",
+  "shortlistIfUnlocked": ["@cf/openai/gpt-oss-120b", "@cf/openai/gpt-oss-20b", "@cf/qwen/qwen2.5-coder-32b-instruct", "@cf/nvidia/nemotron-3-120b-a12b", "@cf/qwen/qwq-32b", "@cf/qwen/qwen3-30b-a3b-fp8", "@cf/meta/llama-4-scout-17b-16e-instruct", "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b"],
+  "inferenceSent": false
+}
