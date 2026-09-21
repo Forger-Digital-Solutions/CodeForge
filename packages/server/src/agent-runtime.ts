@@ -982,7 +982,12 @@ export class AgentRuntime {
       }
       toolBroker.getRegistry().register(def);
     }
-    const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen);
+    // An explicitly injected capacity governor must govern this path too: without it, the
+    // execution adapter paced on the module singleton and the injected instance — the R23
+    // harness's instrumented proxy, or any per-runtime configuration — was silently bypassed
+    // (every Groq run record showed pacingWaitMs 0 with 60 s gaps between calls). When no
+    // governor was injected the adapter keeps its own default and test providers stay unpaced.
+    const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen, this.capacityGovernorIsExplicit ? this.capacityGovernor : undefined);
     const contextAssembler = createContextAssembler(resolvedMaxContextTokens, this.forgeGreen);
     const contextPageStore = this.forgeGreenCacheStore ? createContextPageStore(this.forgeGreenCacheStore) : undefined;
     const adapter = req.adapter ?? this.createAdapter();
