@@ -11,7 +11,7 @@ import { z } from "zod";
  * harness noticing.
  */
 
-export const TaskClassSchema = z.enum(["small_fix", "bug_fix", "feature", "refactor", "build_config_dependency", "investigation", "large_context"]);
+export const TaskClassSchema = z.enum(["small_fix", "bug_fix", "feature", "refactor", "build_config_dependency", "investigation", "large_context", "tiny", "ambiguous", "review_heavy", "test_fix"]);
 export type TaskClass = z.infer<typeof TaskClassSchema>;
 
 export const TaskRecordSchema = z.object({
@@ -21,7 +21,9 @@ export const TaskRecordSchema = z.object({
   repoSizeClass: z.enum(["small", "medium", "large"]),
   /** Goal text shown to the agent, verbatim. Must not mention ForgeGreen/efficiency/tokens. */
   goal: z.string().min(10),
-  role: z.enum(["coder", "explorer"]).default("coder"),
+  role: z.enum(["coder", "explorer", "reviewer", "planner"]).default("coder"),
+  /** Read-only roles may pin the structured contract the run must deliver (R25 review tasks). */
+  structuredOutput: z.enum(["explorer", "reviewer"]).optional(),
   permissions: z.object({
     read: z.boolean().default(true),
     search: z.boolean().default(true),
@@ -67,7 +69,7 @@ export interface LoadedTask {
 }
 
 export const TaskManifestSchema = z.object({
-  manifestVersion: z.literal("r23-task-manifest-1"),
+  manifestVersion: z.union([z.literal("r23-task-manifest-1"), z.literal("r25-task-manifest-1")]),
   frozenAt: z.string(),
   tasks: z.array(z.object({ taskId: z.string(), class: TaskClassSchema, digest: z.string().length(64), batch: z.string() })),
 });
@@ -99,10 +101,10 @@ export async function loadTaskCorpus(root: string): Promise<LoadedTask[]> {
   return tasks;
 }
 
-export async function freezeManifest(root: string, batch = "batch-1", now: () => Date = () => new Date()): Promise<TaskManifest> {
+export async function freezeManifest(root: string, batch = "batch-1", now: () => Date = () => new Date(), manifestVersion: TaskManifest["manifestVersion"] = "r23-task-manifest-1"): Promise<TaskManifest> {
   const tasks = await loadTaskCorpus(root);
   return {
-    manifestVersion: "r23-task-manifest-1",
+    manifestVersion,
     frozenAt: now().toISOString(),
     tasks: tasks.map((task) => ({ taskId: task.record.taskId, class: task.record.class, digest: task.digest, batch })),
   };

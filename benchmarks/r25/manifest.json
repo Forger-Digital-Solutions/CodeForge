@@ -1,0 +1,66 @@
+{
+  "manifestVersion": "r25-task-manifest-1",
+  "frozenAt": "2026-09-21T23:00:00.000Z",
+  "tasks": [
+    {
+      "taskId": "r25-ambiguous-js-checkout-discount",
+      "class": "ambiguous",
+      "digest": "42d531478f36962b85b2bbd3592e374d8228fb10b41892e2bebcd87852edd85c",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "r25-ambiguous-ts-session-clock",
+      "class": "ambiguous",
+      "digest": "a18ac0a59688054328c7727767bb517ab178860240209985fd51de9f252aab4f",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "r25-investigate-js-retry-budget",
+      "class": "investigation",
+      "digest": "7f4d6b8c6d9bb908332b4e37beaa893e79ac098e0e13b3720c60d8a25703db21",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "r25-review-js-retry-storm",
+      "class": "review_heavy",
+      "digest": "1842e570f310e384a625c18b8560a04d2e960ad202bc60bcacfbbf8a3338a040",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "r25-review-js-test-weakened",
+      "class": "review_heavy",
+      "digest": "f7742c56197d5fd0b0c5d0676a1b3e1898a6140af68aeecac72a67ed922fbcff",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "r25-review-ts-config-swallow",
+      "class": "review_heavy",
+      "digest": "8e8823b1ff5a94277c02fbaa07c6bf8675e0e64df1dbed7dfad8b329099ce46a",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "r25-testfix-js-stale-expected",
+      "class": "test_fix",
+      "digest": "1bc7b163eb90ac1c3459a4ea5929d48ba783df692abb0994b893fa915ef885b3",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "r25-testfix-ts-unawaited",
+      "class": "test_fix",
+      "digest": "d4bb64f8857c82ac9a43763aafe998d540c41b6bbf7c53a3777c5f536e865f25",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "r25-tiny-js-adult-check",
+      "class": "tiny",
+      "digest": "4070312b98edd340384c8359e3af342d79be061ec853051f23ea6e35708ffd7d",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "r25-tiny-ts-status-label",
+      "class": "tiny",
+      "digest": "48417edc287296aafa95c880ca4f56a605a2b39d22a1fc1cdfa784d636cd0161",
+      "batch": "batch-1"
+    }
+  ]
+}

@@ -43,3 +43,5 @@ docs/evidence/**/*.stderr.log
 
 # R23 benchmark corpus is regenerated deterministically from benchmarks/r23/generate-tasks.mjs and pinned by benchmarks/r23/manifest.json
 benchmarks/r23/tasks/
+# R25 corpus delta — same deterministic-generate + frozen-manifest scheme
+benchmarks/r25/tasks/

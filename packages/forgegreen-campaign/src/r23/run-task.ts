@@ -286,10 +286,12 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
         modelSelection: { providerId: options.model.providerId, modelId: options.model.modelId },
         signal: controller.signal,
         adapter,
-        // Investigation tasks run the production explorer contract: the report must be a valid
-        // structured explorer result (summary + findings + evidence), exactly as an explorer child
-        // in the orchestrator must deliver it.
-        ...(options.task.record.role === "explorer" ? { structuredOutput: "explorer" as const } : {}),
+        // Read-only roles run their production structured contract: explorer tasks must deliver a
+        // valid explorer result (summary + findings + evidence), reviewer tasks a validated
+        // {verdict, findings, summary} — exactly as the orchestrator requires of those children.
+        ...(options.task.record.structuredOutput !== undefined
+          ? { structuredOutput: options.task.record.structuredOutput }
+          : options.task.record.role === "explorer" ? { structuredOutput: "explorer" as const } : {}),
         ...(options.task.record.maxModelTurns ? { executionBudget: { maxModelTurns: options.task.record.maxModelTurns, maxToolCalls: 50, maxWriteToolCalls: 30, maxCommandExecutions: 20, maxContextTokens: 64_000, maxOutputTokens: 4_096 } } : {}),
       });
       runtimeStatus = agentResult.status;
@@ -306,21 +308,24 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
         canonicalCacheMisses: receipt?.canonicalCacheMisses ?? 0,
       };
       bootstrap = { contextBytes: agentResult.contextMetrics?.contextBytes ?? 0, selectedFiles: agentResult.contextMetrics?.selectedFileCount ?? 0, candidateFiles: agentResult.contextMetrics?.candidateFileCount ?? 0 };
-      if (options.task.record.role === "explorer") {
-        // Read-only investigation (protocol §5, v1.0.1): there is no change to verify, so the
-        // completion authority is the production explorer contract itself — the run must end
-        // `completed` with a validated structured explorer result. The hidden verifier (tree
-        // intact) and the answer key remain the correctness check.
-        const delivered = agentResult.status === "completed" && agentResult.structuredData !== undefined;
+      if (options.task.record.role === "explorer" || options.task.record.role === "reviewer") {
+        // Read-only roles (protocol §5, v1.0.1; R25 review tasks): there is no change to verify,
+        // so the completion authority is the production structured contract itself — the run must
+        // end `completed` with a validated result. A reviewer verdict additionally requires the
+        // contract's `verdict` field (a completed run without one delivered nothing). The hidden
+        // verifier (tree intact) and the answer key remain the correctness check.
+        const structured = agentResult.structuredData as { verdict?: unknown } | undefined;
+        const delivered = agentResult.status === "completed" && agentResult.structuredData !== undefined
+          && (options.task.record.role !== "reviewer" || (structured?.verdict === "pass" || structured?.verdict === "revision_required"));
         completion = {
           outcome: delivered ? "completed" : agentResult.status === "blocked" ? "blocked" : "failed",
           // "plan_steps_unfinished" is the closest production blocker code: the inspect step did not
           // finish with a deliverable report.
-          blockers: delivered ? [] : [{ code: "plan_steps_unfinished", severity: "blocking", message: "explorer run did not deliver a validated structured result" }],
+          blockers: delivered ? [] : [{ code: "plan_steps_unfinished", severity: "blocking", message: `${options.task.record.role} run did not deliver a validated structured result` }],
           advisories: [],
-          rationale: "investigation task: authority = validated explorer structured result",
+          rationale: `${options.task.record.role} task: authority = validated structured result`,
         } satisfies CompletionGateDecision;
-        notes.push("investigation task: completion authority is the validated explorer structured result (no ForgeVerify obligation for a read-only report)");
+        notes.push(`${options.task.record.role} task: completion authority is the validated structured result (no ForgeVerify obligation for a read-only report)`);
       } else {
       // Completion authority through the same production gate: ForgeVerify on the task's visible
       // verification commands (fresh in both arms in this mode) + deterministic diff review.
