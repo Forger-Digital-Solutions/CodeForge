@@ -1,5 +1,6 @@
 import { spawnSync, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 const WINDOWS_PATH_LIMIT = 8_000;
@@ -15,7 +16,7 @@ export interface PreparedShellCommand {
   command: string;
   args: string[];
   env: NodeJS.ProcessEnv;
-  runtimeKind: "node" | "electron-as-node" | "shell";
+  runtimeKind: "node" | "electron-as-node" | "python" | "shell";
   shell: boolean;
 }
 
@@ -85,6 +86,37 @@ function resolveNpmCli(
       return false;
     }
   });
+}
+
+/**
+ * R23: Python toolchains are the second-most common verification runtime after Node. Without this,
+ * every `python …`/`pytest …` verifier "requires a shell", cannot enter ForgeVerify, and an
+ * autonomous run on a Python repository fails outright. The interpreter is resolved to an absolute
+ * path the same way npm is (PATH entries, PATHEXT on Windows) and spawned WITHOUT a shell, so the
+ * shell-injection posture is unchanged: arguments are parsed by `parseDirectArguments` and any
+ * shell metacharacter still falls back to the shell-required path (which the trusted verifier
+ * adapter refuses).
+ */
+const PYTHON_RUNTIME_RE = /^(\s*)(python3?(?:\.exe)?|py(?:\.exe)?|pytest(?:\.exe)?)(?=\s|$)/i;
+
+function resolveExecutableOnPath(executable: string, env: NodeJS.ProcessEnv, platform: NodeJS.Platform): string | undefined {
+  const hasExtension = /\.[a-z0-9]+$/i.test(executable);
+  const extensions = platform === "win32"
+    ? hasExtension ? [""] : (env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM").split(";").filter(Boolean)
+    : [""];
+  for (const entry of readPath(env).split(path.delimiter)) {
+    if (!entry) continue;
+    const directory = entry.replace(/^"|"$/g, "");
+    for (const extension of extensions) {
+      const candidate = path.join(directory, `${executable}${extension}`);
+      try {
+        if (fs.statSync(candidate).isFile()) return candidate;
+      } catch {
+        // not here
+      }
+    }
+  }
+  return undefined;
 }
 
 function parseDirectArguments(input: string, platform: NodeJS.Platform): string[] | undefined {
@@ -165,7 +197,28 @@ export function prepareShellCommand(
   }
 
   const match = command.match(/^(\s*)(node(?:\.exe)?|npm(?:\.cmd|\.exe)?|npx(?:\.cmd|\.exe)?)(?=\s|$)/i);
-  if (!match) return { command, args: [], env: childEnv, runtimeKind: "shell", shell: true };
+  if (!match) {
+    const python = command.match(PYTHON_RUNTIME_RE);
+    if (python) {
+      const executable = (python[2] ?? "").trim();
+      const pythonArgs = parseDirectArguments(command.slice(python[0].length), platform);
+      const resolved = resolveExecutableOnPath(executable, childEnv, platform);
+      if (pythonArgs && resolved) {
+        // A verifier must never mutate the workspace it verifies (ForgeVerify's input-state hash
+        // would rightly mark the evidence stale). Python's compiler byproducts are redirected out
+        // of the tree through interpreter OPTIONS — ForgeVerify executes `{executable, args}` under
+        // its own allow-listed environment, so env variables would not reach the child:
+        // `-X pycache_prefix` is honoured by imports AND by `py_compile`/`compileall`, `-B` stops
+        // import-time bytecode writes, and pytest's on-disk cache plugin is disabled.
+        const interpreter = executable.toLowerCase().replace(/\.exe$/, "");
+        const byproductGuard = interpreter === "pytest"
+          ? ["-p", "no:cacheprovider"]
+          : ["-B", "-X", `pycache_prefix=${path.join(os.tmpdir(), "codeforge-pycache")}`];
+        return { command: resolved, args: [...byproductGuard, ...pythonArgs], env: childEnv, runtimeKind: "python", shell: false };
+      }
+    }
+    return { command, args: [], env: childEnv, runtimeKind: "shell", shell: true };
+  }
 
   const prefix = match[1] ?? "";
   const token = (match[2] ?? "").toLowerCase();

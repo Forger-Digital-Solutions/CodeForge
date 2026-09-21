@@ -1,0 +1,101 @@
+{
+  "campaignId": "dry_run-2026-09-21T00-54-27-872Z",
+  "phase": "dry_run",
+  "recordedAt": "2026-09-21T00:55:12.289Z",
+  "model": "scripted-free",
+  "identity": {
+    "protocolVersion": "1.0.1",
+    "protocolDigest": "e7c14c93f1c9aa29959ce93ea8d34e4f83139a7989c40087466000d97b627e1c",
+    "codeforgeCommit": "79694813abb123edd4b3794d1c31fccd9c01e951",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "gitignore",
+      "docs/benchmarks/codeforge-efficiency-protocol-r23.md",
+      "docs/evidence/r23-efficiency-proof/protocol/PROTOCOL-DIGEST.txt",
+      "packages/forgegreen-campaign/src/r23/run-record.ts",
+      "packages/forgegreen-campaign/src/r23/run-task.ts",
+      "packages/forgegreen-campaign/src/r23/tasks.ts",
+      "packages/workflow/src/child-process.ts",
+      "benchmarks/",
+      "docs/checkpoints/",
+      "docs/evidence/r23-efficiency-proof/cost/",
+      "docs/evidence/r23-efficiency-proof/pilot/",
+      "docs/evidence/r23-efficiency-proof/protocol/task-manifest.json",
+      "docs/evidence/r23-efficiency-proof/raw/",
+      "packages/workflow/test/r23-python-verifier-runtime.test.ts",
+      "scripts/r23-efficiency-bench.mjs"
+    ],
+    "environmentFingerprint": "dbe6692da16cba28861bf1d949d7ac348af25c470e0d6e951571545d19cdadeb",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "mode": "orchestrated",
+  "stopped": null,
+  "runs": [
+    {
+      "taskId": "js-build-config-test-script",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verification_failed",
+      "modelCalls": 12,
+      "totalTokens": 35040,
+      "wallClockMs": 7859,
+      "runId": "r23-dry_run-js-build-config-test-script-optimized-r1-f9a5df14"
+    },
+    {
+      "taskId": "js-build-config-test-script",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verification_failed",
+      "modelCalls": 6,
+      "totalTokens": 17520,
+      "wallClockMs": 3768,
+      "runId": "r23-dry_run-js-build-config-test-script-control-r1-725e8c97"
+    },
+    {
+      "taskId": "py-bug-fix-config-merge",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 5596,
+      "runId": "r23-dry_run-py-bug-fix-config-merge-control-r1-60d970e1"
+    },
+    {
+      "taskId": "py-bug-fix-config-merge",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 8,
+      "totalTokens": 20640,
+      "wallClockMs": 7308,
+      "runId": "r23-dry_run-py-bug-fix-config-merge-optimized-r1-9b1fb886"
+    },
+    {
+      "taskId": "py-small-fix-median",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 8,
+      "totalTokens": 20640,
+      "wallClockMs": 7372,
+      "runId": "r23-dry_run-py-small-fix-median-optimized-r1-98cf7d0e"
+    },
+    {
+      "taskId": "py-small-fix-median",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 5535,
+      "runId": "r23-dry_run-py-small-fix-median-control-r1-87914d61"
+    }
+  ]
+}

@@ -37,6 +37,8 @@ export interface RecordedMessage {
 export interface RecordedRequest {
   callIndex: number;
   model: string;
+  /** Agent role inferred from the system prompt's `You are CodeForge <Role>` opener (else "unknown"). */
+  role: string;
   messages: RecordedMessage[];
   toolNames: string[];
   systemBytes: number;
@@ -239,6 +241,7 @@ export class RecordingProviderAdapter implements ProviderAdapter {
     const request: RecordedRequest = {
       callIndex: this.index++,
       model: req.model,
+      role: inferRole(req.system ?? messages.find((message) => message.role === "system")?.content ?? ""),
       messages,
       toolNames,
       systemBytes: req.system ? byteLength(req.system) : messages.find((m) => m.role === "system")?.bytes ?? 0,
@@ -293,6 +296,14 @@ export class RecordingProviderAdapter implements ProviderAdapter {
     this.calls.push(record);
     if (this.onCall) await this.onCall(record, request);
   }
+}
+
+export function inferRole(systemPrompt: string): string {
+  const match = systemPrompt.match(/You are CodeForge ([A-Za-z-]+(?: [A-Za-z-]+)?)/);
+  if (!match) return "unknown";
+  const name = match[1]!.toLowerCase();
+  if (name.startsWith("mission planner")) return "mission-planner";
+  return name.split(" ")[0]!;
 }
 
 function usageFields(usage: { inputTokens: number; outputTokens: number; totalTokens?: number; cachedInputTokens?: number; cacheWriteTokens?: number; reasoningTokens?: number; costUsd?: number }): Partial<ModelCallRecord> {

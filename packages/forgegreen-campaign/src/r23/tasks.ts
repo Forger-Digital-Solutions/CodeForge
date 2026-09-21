@@ -129,8 +129,11 @@ export async function hashTree(dir: string): Promise<string> {
     const children = (await fs.readdir(directory, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name));
     for (const child of children) {
       const full = path.join(directory, child.name);
+      // `.git` is a directory in the target repository but a FILE inside a git worktree; neither is
+      // part of the task tree.
+      if (child.name === ".git") continue;
       if (child.isDirectory()) {
-        if (child.name === "node_modules" || child.name === ".git") continue;
+        if (child.name === "node_modules") continue;
         await visit(full);
       } else {
         const content = await fs.readFile(full);
@@ -153,8 +156,9 @@ export async function snapshotTree(dir: string): Promise<Map<string, string>> {
   const visit = async (directory: string): Promise<void> => {
     for (const child of await fs.readdir(directory, { withFileTypes: true })) {
       const full = path.join(directory, child.name);
+      if (child.name === ".git") continue;
       if (child.isDirectory()) {
-        if (child.name === "node_modules" || child.name === ".git") continue;
+        if (child.name === "node_modules") continue;
         await visit(full);
       } else {
         files.set(path.relative(dir, full).replace(/\\/g, "/"), await fs.readFile(full, "utf8"));

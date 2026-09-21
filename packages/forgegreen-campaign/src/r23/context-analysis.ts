@@ -18,6 +18,8 @@ export type AvoidableDuplicateEvent = RunRecord["context"]["avoidableDuplicateEv
 export interface ToolCallTrace {
   /** Call index on which the model emitted the tool call. */
   callIndex: number;
+  /** Role of the agent that issued the call (from the recorded request). */
+  role?: string;
   toolCallId: string;
   toolName: string;
   /** Canonical arguments (as the runtime parsed them), when known; else the raw hash. */
@@ -108,6 +110,8 @@ export function inferToolName(content: string): string | undefined {
 }
 
 export interface ContextAnalysis {
+  avoidableDuplicateBytesWithinRole: number;
+  avoidableDuplicateBytesCrossRole: number;
   transmittedContextBytes: number;
   finalConversationBytes: number;
   providerStatelessnessRepeatBytes: number;
@@ -146,7 +150,7 @@ export function analyzeContext(
 
   const events: AvoidableDuplicateEvent[] = [];
   // Condition (1): identical read-tool result with identical arguments, no mutation in between.
-  const seen = new Map<string, { callIndex: number; stateVersion: number; resultHash: string }>();
+  const seen = new Map<string, { callIndex: number; stateVersion: number; resultHash: string; role?: string }>();
   let stateVersion = 0;
   const ordered = [...trace].sort((a, b) => a.callIndex - b.callIndex);
   for (const call of ordered) {
@@ -160,10 +164,13 @@ export function analyzeContext(
     const key = `${call.toolName.toLowerCase()}\0${call.argumentsDigest}`;
     const prior = seen.get(key);
     if (prior && prior.stateVersion === stateVersion && prior.resultHash === call.resultHash) {
-      events.push({ kind: "duplicate_tool_result", tool: call.toolName, argumentsDigest: call.argumentsDigest, bytes: call.resultBytes ?? 0, firstCallIndex: prior.callIndex, repeatCallIndex: call.callIndex });
+      events.push({ kind: "duplicate_tool_result", tool: call.toolName, argumentsDigest: call.argumentsDigest, bytes: call.resultBytes ?? 0, firstCallIndex: prior.callIndex, repeatCallIndex: call.callIndex, ...(prior.role ? { firstRole: prior.role } : {}), ...(call.role ? { repeatRole: call.role } : {}), crossRole: prior.role !== undefined && call.role !== undefined && prior.role !== call.role });
+      // Attribute the next repeat to the most recent delivery of the same content, so an agent
+      // re-reading its own read is within-role, not a second cross-role hit.
+      seen.set(key, { callIndex: call.callIndex, stateVersion, resultHash: call.resultHash, ...(call.role ? { role: call.role } : {}) });
       continue;
     }
-    seen.set(key, { callIndex: call.callIndex, stateVersion, resultHash: call.resultHash });
+    seen.set(key, { callIndex: call.callIndex, stateVersion, resultHash: call.resultHash, ...(call.role ? { role: call.role } : {}) });
   }
   // Condition (2): bootstrap-injected file content re-read verbatim before any write to the path.
   if (options.bootstrapFileContents) {
@@ -174,7 +181,7 @@ export function analyzeContext(
       if (written.has(call.path)) continue;
       const bootstrap = options.bootstrapFileContents.get(call.path);
       if (bootstrap !== undefined && sha256(bootstrap.trimEnd()) === call.resultHash) {
-        events.push({ kind: "bootstrap_then_reread", tool: call.toolName, argumentsDigest: call.argumentsDigest, bytes: call.resultBytes ?? Buffer.byteLength(bootstrap, "utf8"), firstCallIndex: -1, repeatCallIndex: call.callIndex });
+        events.push({ kind: "bootstrap_then_reread", tool: call.toolName, argumentsDigest: call.argumentsDigest, bytes: call.resultBytes ?? Buffer.byteLength(bootstrap, "utf8"), firstCallIndex: -1, repeatCallIndex: call.callIndex, ...(call.role ? { repeatRole: call.role } : {}), crossRole: false });
       }
     }
   }
@@ -184,6 +191,8 @@ export function analyzeContext(
     ? unknownMetric("provider prompt-token/byte ratio unavailable")
     : derived(Math.round(avoidableBytes * ratio), "HARNESS", "bytes × run prompt-token/byte ratio");
   return {
+    avoidableDuplicateBytesWithinRole: events.filter((event) => !event.crossRole).reduce((sum, event) => sum + event.bytes, 0),
+    avoidableDuplicateBytesCrossRole: events.filter((event) => event.crossRole).reduce((sum, event) => sum + event.bytes, 0),
     transmittedContextBytes: transmitted,
     finalConversationBytes: finalBytes,
     providerStatelessnessRepeatBytes: Math.max(0, transmitted - finalBytes),
@@ -224,6 +233,7 @@ export function traceFromRequests(requests: readonly RecordedRequest[]): ToolCal
       const canonical = canonicalArguments(emitted.arguments);
       trace.push({
         callIndex: request.callIndex,
+        role: request.role,
         toolCallId: emitted.id,
         toolName: emitted.name,
         argumentsDigest: sha256(canonical.json),

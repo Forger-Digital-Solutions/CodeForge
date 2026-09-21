@@ -18,8 +18,8 @@ function emitted(id: string, name: string, args: string) {
   return { id, name, argumentsHash: sha256(args), argumentsBytes: Buffer.byteLength(args), arguments: args };
 }
 
-function request(callIndex: number, messages: RecordedRequest["messages"], emittedToolCalls: RecordedRequest["emittedToolCalls"] = []): RecordedRequest {
-  return { callIndex, model: "m", messages, toolNames: ["read_file", "write_file"], systemBytes: messages[0]?.role === "system" ? messages[0].bytes : 0, requestBytes: messages.reduce((sum, m) => sum + m.bytes, 0), emittedToolCalls };
+function request(callIndex: number, messages: RecordedRequest["messages"], emittedToolCalls: RecordedRequest["emittedToolCalls"] = [], role = "coder"): RecordedRequest {
+  return { callIndex, model: "m", role, messages, toolNames: ["read_file", "write_file"], systemBytes: messages[0]?.role === "system" ? messages[0].bytes : 0, requestBytes: messages.reduce((sum, m) => sum + m.bytes, 0), emittedToolCalls };
 }
 
 const FILE_A = "export const a = 1;\n".repeat(50);
@@ -72,6 +72,24 @@ describe("R23 duplicate-context classifier (protocol §10)", () => {
     const c1 = request(1, [...c0.messages, message("assistant", ""), message("tool", FILE_A, { toolName: "read_file", toolCallId: "t1" })], []);
     const analysis = analyzeContext([c0, c1], traceFromRequests([c0, c1]), { bootstrapFileContents: new Map([["src/a.ts", FILE_A]]) });
     expect(analysis.avoidableDuplicateEvents).toEqual([expect.objectContaining({ kind: "bootstrap_then_reread", tool: "read_file", repeatCallIndex: 0 })]);
+  });
+
+  it("splits duplicates into within-role and cross-role (explorer read → coder re-read)", () => {
+    const system = message("system", "sys");
+    const task = message("user", "Goal");
+    const c0 = request(0, [system, task], [emitted("t1", "read_file", "{\"path\":\"src/a.ts\"}")], "explorer");
+    const c1 = request(1, [...c0.messages, message("assistant", ""), message("tool", FILE_A, { toolName: "read_file", toolCallId: "t1" })], [], "explorer");
+    const c2 = request(2, [system, message("user", "Implement")], [emitted("t2", "read_file", "{\"path\":\"src/a.ts\"}")], "coder");
+    const c3 = request(3, [...c2.messages, message("assistant", ""), message("tool", FILE_A, { toolName: "read_file", toolCallId: "t2" })], [emitted("t3", "read_file", "{\"path\":\"src/a.ts\"}")], "coder");
+    const c4 = request(4, [...c3.messages, message("assistant", ""), message("tool", FILE_A, { toolName: "read_file", toolCallId: "t3" })], [], "coder");
+    const requests = [c0, c1, c2, c3, c4];
+    const analysis = analyzeContext(requests, traceFromRequests(requests));
+    expect(analysis.avoidableDuplicateEvents).toHaveLength(2);
+    expect(analysis.avoidableDuplicateEvents[0]).toMatchObject({ firstRole: "explorer", repeatRole: "coder", crossRole: true });
+    // The coder's second read repeats its OWN most recent read → within-role.
+    expect(analysis.avoidableDuplicateEvents[1]).toMatchObject({ firstRole: "coder", repeatRole: "coder", crossRole: false });
+    expect(analysis.avoidableDuplicateBytesCrossRole).toBe(Buffer.byteLength(FILE_A.trimEnd()));
+    expect(analysis.avoidableDuplicateBytesWithinRole).toBe(Buffer.byteLength(FILE_A.trimEnd()));
   });
 
   it("composes the final conversation by category and attributes tool results by tool", () => {

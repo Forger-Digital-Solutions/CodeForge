@@ -129,7 +129,7 @@ export const RunRecordSchema = z.object({
     protocolDigest: z.string().length(64),
     harnessVersion: z.string(),
     campaignId: z.string(),
-    phase: z.enum(["qualification", "pilot", "main", "variance", "ablation", "replication", "public_benchmark", "chaos", "fixture"]),
+    phase: z.enum(["dry_run", "qualification", "pilot", "main", "variance", "ablation", "replication", "public_benchmark", "chaos", "fixture"]),
     runId: z.string(),
     pairId: z.string(),
     taskId: z.string(),
@@ -205,7 +205,10 @@ export const RunRecordSchema = z.object({
     /** Exact-hash duplicate tool results / bootstrap-then-reread bytes (protocol §10). */
     avoidableDuplicateBytes: z.number().int().nonnegative(),
     avoidableDuplicateTokens: MeasuredNumberSchema,
-    avoidableDuplicateEvents: z.array(z.object({ kind: z.enum(["duplicate_tool_result", "bootstrap_then_reread"]), tool: z.string(), argumentsDigest: z.string(), bytes: z.number().int().nonnegative(), firstCallIndex: z.number().int(), repeatCallIndex: z.number().int() })),
+    avoidableDuplicateEvents: z.array(z.object({ kind: z.enum(["duplicate_tool_result", "bootstrap_then_reread"]), tool: z.string(), argumentsDigest: z.string(), bytes: z.number().int().nonnegative(), firstCallIndex: z.number().int(), repeatCallIndex: z.number().int(), firstRole: z.string().optional(), repeatRole: z.string().optional(), crossRole: z.boolean().optional() })),
+    /** §10 duplicates split by whether the repeat came from a different agent role (topology handoff cost) or the same role. */
+    avoidableDuplicateBytesWithinRole: z.number().int().nonnegative().optional(),
+    avoidableDuplicateBytesCrossRole: z.number().int().nonnegative().optional(),
     /** Composition of the final conversation (bytes by category). */
     finalComposition: ContextCompositionSchema,
     bootstrapContextBytes: z.number().int().nonnegative(),
@@ -247,6 +250,8 @@ export const RunRecordSchema = z.object({
     toolMs: MeasuredNumberSchema,
     verificationMs: z.number().nonnegative(),
     rateLimitWaitMs: z.number().nonnegative(),
+    /** Time spent in the shared provider capacity governor's proactive pacing (RPM/TPM/concurrency) before calls were sent. */
+    pacingWaitMs: z.number().nonnegative().optional(),
     forgeGreenOverheadMs: MeasuredNumberSchema,
   }),
   economics: z.object({

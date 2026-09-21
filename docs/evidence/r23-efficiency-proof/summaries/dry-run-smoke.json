@@ -1,0 +1,307 @@
+{
+  "generatedAt": "2026-09-21T00:58:53.520Z",
+  "phases": [
+    "dry_run"
+  ],
+  "campaignFilter": null,
+  "protocolDigests": [
+    "e7c14c93f1c9aa29959ce93ea8d34e4f83139a7989c40087466000d97b627e1c"
+  ],
+  "models": [
+    "scripted::scripted-free"
+  ],
+  "codeforgeCommits": [
+    "79694813abb123edd4b3794d1c31fccd9c01e951"
+  ],
+  "records": {
+    "total": 6,
+    "included": 6,
+    "excluded": 0,
+    "invalid": 0,
+    "unpaired": 0
+  },
+  "exclusions": [],
+  "invalid": [],
+  "unpairedRunIds": [],
+  "comparison": {
+    "pairs": 3,
+    "pairsWithKnownTokens": 3,
+    "control": {
+      "totals": {
+        "runs": 3,
+        "verified": 2,
+        "claimed": 2,
+        "falseComplete": 0,
+        "verificationFailed": 1,
+        "severeFailures": 0,
+        "budgetExhausted": 0,
+        "providerFailures": 0,
+        "runsWithKnownTokens": 3,
+        "totalTokens": 32920,
+        "inputTokens": 32100,
+        "outputTokens": 820,
+        "modelCalls": 12,
+        "failedCalls": 0,
+        "retriedCalls": 0,
+        "rateLimitedCalls": 0,
+        "toolCalls": 7,
+        "avoidableDuplicateBytes": 0,
+        "transmittedContextBytes": 129059,
+        "wallClockMs": 14899,
+        "activeAgentMs": 9385,
+        "modelWaitMs": 3,
+        "rateLimitWaitMs": 0,
+        "actualCostUsd": 0,
+        "equivalentMarketCostUsd": 0.07239999999999999,
+        "cpuMs": 1374
+      },
+      "headline": {
+        "verifiedTasksPer1MTokens": 60.753341433778864,
+        "tokensPerVerifiedTask": 16460,
+        "verifiedSuccessRate": 0.6666666666666666,
+        "falseCompletionRate": 0,
+        "verifiedTasksPer100Calls": 16.666666666666668,
+        "wallMsPerVerifiedTask": 7449.5
+      }
+    },
+    "optimized": {
+      "totals": {
+        "runs": 3,
+        "verified": 2,
+        "claimed": 2,
+        "falseComplete": 0,
+        "verificationFailed": 1,
+        "severeFailures": 0,
+        "budgetExhausted": 0,
+        "providerFailures": 0,
+        "runsWithKnownTokens": 3,
+        "totalTokens": 76320,
+        "inputTokens": 74400,
+        "outputTokens": 1920,
+        "modelCalls": 28,
+        "failedCalls": 0,
+        "retriedCalls": 0,
+        "rateLimitedCalls": 0,
+        "toolCalls": 16,
+        "avoidableDuplicateBytes": 903,
+        "transmittedContextBytes": 303763,
+        "wallClockMs": 22539,
+        "activeAgentMs": 16935,
+        "modelWaitMs": 7,
+        "rateLimitWaitMs": 0,
+        "actualCostUsd": 0,
+        "equivalentMarketCostUsd": 0.16799999999999998,
+        "cpuMs": 2952
+      },
+      "headline": {
+        "verifiedTasksPer1MTokens": 26.20545073375262,
+        "tokensPerVerifiedTask": 38160,
+        "verifiedSuccessRate": 0.6666666666666666,
+        "falseCompletionRate": 0,
+        "verifiedTasksPer100Calls": 7.142857142857142,
+        "wallMsPerVerifiedTask": 11269.5
+      }
+    },
+    "differences": {
+      "totalTokens": {
+        "n": 3,
+        "mean": 14466.666666666666,
+        "median": 12940,
+        "p25": 12940,
+        "p75": 15230,
+        "min": 12940,
+        "max": 17520,
+        "stdDev": 2644.264232888486
+      },
+      "totalTokensPct": {
+        "n": 3,
+        "mean": 145.36796536796535,
+        "median": 168.05194805194805,
+        "p25": 134.02597402597402,
+        "p75": 168.05194805194805,
+        "min": 100,
+        "max": 168.05194805194805,
+        "stdDev": 39.28981052667063
+      },
+      "modelCalls": {
+        "n": 3,
+        "mean": 5.333333333333333,
+        "median": 5,
+        "p25": 5,
+        "p75": 5.5,
+        "min": 5,
+        "max": 6,
+        "stdDev": 0.5773502691896258
+      },
+      "wallClockMs": {
+        "n": 3,
+        "mean": 2546.6666666666665,
+        "median": 1837,
+        "p25": 1774.5,
+        "p75": 2964,
+        "min": 1712,
+        "max": 4091,
+        "stdDev": 1338.8914568901146
+      },
+      "avoidableDuplicateBytes": {
+        "n": 3,
+        "mean": 301,
+        "median": 309,
+        "p25": 259.5,
+        "p75": 346.5,
+        "min": 210,
+        "max": 384,
+        "stdDev": 87.27542609463445
+      },
+      "verified": {
+        "both": 2,
+        "onlyControl": 0,
+        "onlyOptimized": 0,
+        "neither": 1
+      }
+    },
+    "intervals": {
+      "meanTokenDifference": {
+        "estimate": 14466.666666666666,
+        "lower": 12940,
+        "upper": 17520,
+        "resamples": 10000,
+        "seed": 20260921,
+        "level": 0.95
+      },
+      "tokenRatioOfTotals": {
+        "estimate": 2.3183475091130012,
+        "lower": 2,
+        "upper": 2.6805194805194805,
+        "resamples": 10000,
+        "seed": 20260921,
+        "level": 0.95
+      },
+      "verifiedRateDifference": {
+        "estimate": 0,
+        "lower": 0,
+        "upper": 0,
+        "resamples": 10000,
+        "seed": 20260921,
+        "level": 0.95
+      },
+      "verifiedPer1MTokensRatio": {
+        "estimate": 0.4313417190775681,
+        "lower": 0.37306201550387597,
+        "upper": 0.4711199294532628,
+        "resamples": 10000,
+        "seed": 20260921,
+        "level": 0.95
+      }
+    },
+    "wilcoxonTokens": {
+      "n": 3,
+      "wPlus": 6,
+      "wMinus": 0
+    },
+    "byClass": {
+      "build_config_dependency": {
+        "pairs": 1,
+        "controlVerified": 0,
+        "optimizedVerified": 0,
+        "meanTokenDifference": 17520
+      },
+      "bug_fix": {
+        "pairs": 1,
+        "controlVerified": 1,
+        "optimizedVerified": 1,
+        "meanTokenDifference": 12940
+      },
+      "small_fix": {
+        "pairs": 1,
+        "controlVerified": 1,
+        "optimizedVerified": 1,
+        "meanTokenDifference": 12940
+      }
+    },
+    "verdictInputs": {
+      "nonInferiority": {
+        "rateDifference": 0,
+        "lowerBound": 0,
+        "passes": true
+      },
+      "falseCompletionGuard": {
+        "control": 0,
+        "optimized": 0,
+        "passes": true
+      },
+      "tokenSaving": {
+        "intervalExcludesZero": true,
+        "direction": "optimized_more"
+      }
+    }
+  },
+  "perPair": [
+    {
+      "taskId": "js-build-config-test-script",
+      "taskClass": "build_config_dependency",
+      "repetition": 1,
+      "control": {
+        "runId": "r23-dry_run-js-build-config-test-script-control-r1-725e8c97",
+        "classification": "verification_failed",
+        "tokens": 17520,
+        "calls": 6,
+        "wallMs": 3768,
+        "topology": "orchestrated:tiny"
+      },
+      "optimized": {
+        "runId": "r23-dry_run-js-build-config-test-script-optimized-r1-f9a5df14",
+        "classification": "verification_failed",
+        "tokens": 35040,
+        "calls": 12,
+        "wallMs": 7859,
+        "topology": "orchestrated:adaptive"
+      },
+      "tokenDifference": 17520
+    },
+    {
+      "taskId": "py-bug-fix-config-merge",
+      "taskClass": "bug_fix",
+      "repetition": 1,
+      "control": {
+        "runId": "r23-dry_run-py-bug-fix-config-merge-control-r1-60d970e1",
+        "classification": "verified_complete",
+        "tokens": 7700,
+        "calls": 3,
+        "wallMs": 5596,
+        "topology": "orchestrated:tiny"
+      },
+      "optimized": {
+        "runId": "r23-dry_run-py-bug-fix-config-merge-optimized-r1-9b1fb886",
+        "classification": "verified_complete",
+        "tokens": 20640,
+        "calls": 8,
+        "wallMs": 7308,
+        "topology": "orchestrated:normal"
+      },
+      "tokenDifference": 12940
+    },
+    {
+      "taskId": "py-small-fix-median",
+      "taskClass": "small_fix",
+      "repetition": 1,
+      "control": {
+        "runId": "r23-dry_run-py-small-fix-median-control-r1-87914d61",
+        "classification": "verified_complete",
+        "tokens": 7700,
+        "calls": 3,
+        "wallMs": 5535,
+        "topology": "orchestrated:tiny"
+      },
+      "optimized": {
+        "runId": "r23-dry_run-py-small-fix-median-optimized-r1-98cf7d0e",
+        "classification": "verified_complete",
+        "tokens": 20640,
+        "calls": 8,
+        "wallMs": 7372,
+        "topology": "orchestrated:normal"
+      },
+      "tokenDifference": 12940
+    }
+  ]
+}

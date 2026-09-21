@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Protocol id | `codeforge-efficiency-protocol-r23` |
-| Protocol version | **1.0.0** (frozen; any change after the first pilot run requires a new minor version and a re-run of affected results) |
+| Protocol version | **1.0.2** (frozen; any change after the first live pilot run requires a new minor version and a re-run of affected results) |
 | Frozen at commit | `ae2aa87487e7bd4ca2c4fde47bfc3b978fa50e41` (R22 closure) — the protocol is committed *before* any paired result exists |
 | Date frozen | 2026-09-20 |
 | Authors | R23 engineering team (one founder + AI agents) |
@@ -53,8 +53,8 @@ Every run record carries an `environment_fingerprint` = sha256 of {os, cpu model
 
 The single benchmark model is chosen by a **qualification round that never sees paired OFF/ON data**:
 
-1. Candidates: the tool-capable `:free` models in the live catalog on the qualification day.
-2. Each candidate runs the same 3 short single-agent qualification tasks (from the pilot corpus, tagged `qualification`) in the **optimized (production-default) configuration only**.
+1. Candidates: the tool-capable `:free` models in the live catalog on the qualification day. Because a full round for every candidate would consume most of a day's allowance, candidates first pass a **pre-screen**: one qualification task (`qual-js-return-sign`) in single-agent mode with the optimized runtime switches. Candidates whose pre-screen run does not end `verified_complete`, or that hang, error, or emit malformed tool calls, are excluded with the reason recorded; of the passers, the **six with the lowest pre-screen wall time** proceed (an outcome-blind, capacity-driven cap — efficiency numbers are still not scoring inputs).
+2. Each remaining candidate runs the same 3 short qualification tasks (from the pilot corpus, tagged `qualification`) through the **orchestrated execution path in the optimized (production-default) configuration only**.
 3. Scoring is reliability and capability only: (a) zero hangs (>120 s without a stream event) and zero upstream 429/5xx in the qualification round, (b) completed all 3 tasks with the deterministic verifier passing, (c) tool-call format validity (no malformed tool calls), (d) lowest median wall time as the tie-break.
 4. The winner is written to `docs/evidence/r23-efficiency-proof/pilot/MODEL-SELECTION.json` with all candidates' scores. It is then **fixed for the entire campaign** (pilot, main, ablations). Both arms always use the same model id, provider, and per-call parameters. If the provider retires the model mid-campaign, all incomplete pairs are voided (§7) and the campaign restarts on a new model with a new protocol minor version.
 
@@ -86,9 +86,11 @@ CodeForge's real `AgentRuntime` with every efficiency mechanism that has an off-
 | FG-1B tool-output compression | `efficiencyControls.toolOutputCompression` | off | on |
 | FG-3 progressive Context Pages (kernel + narrow slice, cross-run page reuse) | `repositoryIntelligenceFactory` **absent** → assembler `safe_fallback` (Goal + role prompt + plan; **no pre-selected file content**; the model explores with tools) | off | on |
 | Repository intelligence retrieval (relevant-file candidates, symbol graph) | same factory | off | on |
-| Mission memory delivery (bounded structured memory into planner/replanner/reviewer prompts) | orchestrator option (harness passes an empty memory) | off | on |
-| FG-12F cost-gated ForgeVerify evidence reuse | `runVerification` (fresh) vs `runVerificationWithControlledReuse` | off | on |
-| Adaptive topology (deterministic complexity → tiny/normal/complex plan) | orchestrator: fixed single-coder topology vs adaptive | off (single agent) | on |
+| Adaptive topology (deterministic complexity → tiny/normal/complex plan) | orchestrator: explicit `tiny` (coder → ForgeVerify) vs adaptive classifier | off (single agent) | on |
+| Mission memory delivery (bounded structured memory into planner/replanner/reviewer prompts) | **inert in this campaign** — mission memory exists only in the long-horizon mission supervisor, which the autonomous run path (`AutonomousRunOrchestrator.startRun`) does not use | — | — |
+| FG-12F cost-gated ForgeVerify evidence reuse | **inert in this campaign** — `runVerificationWithControlledReuse` has no production caller (finding F-3, v1.0.1); the orchestrator always runs ForgeVerify fresh | — | — |
+
+The last two rows remain in the arm configuration record (`memoryDelivery`, `verificationReuse`) for provenance, but the harness cannot make them differ between arms on the execution path being measured; every run record notes them as inert. Any later ablation that wires them must say so explicitly.
 
 **Identical in both arms:** model, provider, per-call parameters, tool set, permission leases (`network:false`, `executeCommand` as the task requires), security gates, completion authority (`evaluateCompletion`), the deterministic task verifier, wall-clock and turn budgets, the harness, the machine.
 
@@ -161,6 +163,8 @@ Definitions used in every report:
 | `false_complete` | claimed_complete ∧ ¬verified_complete (the dangerous case) |
 | `verification_failed` | ran to a terminal state, verifier or authority failed |
 | `blocked` / `failed` / `aborted` | runtime terminal states other than completed; classified in §7 |
+
+**Read-only investigation tasks** (`role: explorer`) produce a report, not a change, so ForgeVerify has nothing to verify. For them criterion 3 is the production explorer contract: the run must end `completed` with a **validated structured explorer result** (summary + findings + evidence, the same contract an explorer child must satisfy inside the orchestrator); criterion 2 is the hidden tree-intact verifier plus the answer key applied to the structured `summary`. They run through the single-agent execution path in both arms (topology is inapplicable); every other switch applies.
 
 Partial completion is **never** counted as verified. Verification criteria are frozen in the task record and cannot change after a run.
 
@@ -328,3 +332,5 @@ Raw records first (`raw/*.jsonl`), then generated summaries (`summaries/*.json|.
 | Version | Date | Change |
 |---|---|---|
 | 1.0.0 | 2026-09-20 | Frozen before the first pilot run. |
+| 1.0.2 | 2026-09-21 | Before any live run: §2.2 adds the outcome-blind pre-screen and the six-candidate cap for the qualification round (daily-allowance budget). |
+| 1.0.1 | 2026-09-21 | Before any live run, after the scripted dry run of all 15 tasks: (a) §5 defines the completion authority for read-only investigation tasks (the v1.0.0 wording only covered change-making tasks and made every investigation run a false completion by construction); (b) §6.4 records that `dry_run` is a phase. Two product findings from the dry run are recorded, not worked around: ForgeVerify's autonomous path admits only `node`/`npm`/`npx` verifiers (Python tasks fail identically in both arms), and the deterministic diff review blocks verification-config edits (the build-config task fails identically in both arms). Both stay in the corpus as measured. (c) §3.1 corrects the arm table: mission memory and FG-12F evidence reuse are inert on the autonomous run path (FG-12F has no production caller — finding F-3); the exercised switches are the ForgeGreen advisor, FG-1C, FG-1B, the FG-1D/FG-3D cache, the FG-3 context planner, and topology. |

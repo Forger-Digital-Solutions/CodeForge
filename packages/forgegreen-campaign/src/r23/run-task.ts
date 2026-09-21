@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { ForgeZero, createGenericFreeRecord, type FreeModelRecord } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog, type ProviderAdapter } from "@codeforge/providers";
+import { InMemoryProviderCatalog, defaultCapacityGovernor, type ProviderAdapter, type ProviderCapacityGovernor } from "@codeforge/providers";
 import { EventStore, createSessionPersistence, type ISessionPersistence } from "@codeforge/sessions";
 import {
   createAgentRuntime,
@@ -157,7 +157,9 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
   await copyTree(options.task.fixtureDir, workspaceDir);
   const startingTreeHash = await hashTree(workspaceDir);
   const beforeSnapshot = await snapshotTree(workspaceDir);
-  const notes: string[] = [];
+  const notes: string[] = [
+    "inert switches on this execution path: memoryDelivery (mission memory is not used by the autonomous run path) and verificationReuse (FG-12F has no production caller) — recorded for provenance, identical in both arms",
+  ];
 
   if (options.executionMode === "orchestrated") await initGitRepo(workspaceDir);
 
@@ -171,6 +173,25 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
   firewall.register(options.freeRecord ?? createGenericFreeRecord({ providerId: options.model.providerId, modelId: options.model.modelId }));
 
   const material = await materializeArm(options.arm, runDir);
+  // The process-wide capacity governor is production behaviour (shared pacing across runs); wrap
+  // `acquire` so proactive pacing waits are measured instead of being counted as agent work.
+  let pacingWaitMs = 0;
+  const governor = new Proxy(defaultCapacityGovernor, {
+    get(target, property, receiver) {
+      if (property === "acquire") {
+        return async (...args: Parameters<ProviderCapacityGovernor["acquire"]>) => {
+          const waitStarted = now();
+          try {
+            return await target.acquire(...args);
+          } finally {
+            pacingWaitMs += Math.max(0, now() - waitStarted);
+          }
+        };
+      }
+      const value = Reflect.get(target, property, receiver);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
   const persistence: ISessionPersistence = createSessionPersistence({ dbPath: path.join(runDir, "sessions.db") });
   const eventStore = new EventStore();
   const sessionId = `r23-session-${runId}`;
@@ -185,6 +206,7 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
     efficiencyControls: material.efficiencyControls,
     repositoryIntelligenceFactory: material.repositoryIntelligenceFactory,
     ...(material.forgeGreenCacheStore ? { forgeGreenCacheStore: material.forgeGreenCacheStore } : {}),
+    capacityGovernor: governor,
     ...options.runtimeOptionsOverride,
   });
   runtime.setModelSelection({ providerId: options.model.providerId, modelId: options.model.modelId, lock: "route" });
@@ -229,11 +251,15 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
         modelSelection: { providerId: options.model.providerId, modelId: options.model.modelId },
         signal: controller.signal,
         adapter,
+        // Investigation tasks run the production explorer contract: the report must be a valid
+        // structured explorer result (summary + findings + evidence), exactly as an explorer child
+        // in the orchestrator must deliver it.
+        ...(options.task.record.role === "explorer" ? { structuredOutput: "explorer" as const } : {}),
         ...(options.task.record.maxModelTurns ? { executionBudget: { maxModelTurns: options.task.record.maxModelTurns, maxToolCalls: 50, maxWriteToolCalls: 30, maxCommandExecutions: 20, maxContextTokens: 64_000, maxOutputTokens: 4_096 } } : {}),
       });
       runtimeStatus = agentResult.status;
       stopReason = String(agentResult.stopReason);
-      summary = agentResult.summary;
+      summary = agentResult.status === "completed" && agentResult.structuredData && "summary" in agentResult.structuredData ? String((agentResult.structuredData as { summary: string }).summary) : agentResult.summary;
       runtimeError = agentResult.error;
       filesChangedReported = agentResult.filesChanged;
       const receipt = agentResult.contextMetrics?.efficiencyReceipt;
@@ -245,6 +271,22 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
         canonicalCacheMisses: receipt?.canonicalCacheMisses ?? 0,
       };
       bootstrap = { contextBytes: agentResult.contextMetrics?.contextBytes ?? 0, selectedFiles: agentResult.contextMetrics?.selectedFileCount ?? 0, candidateFiles: agentResult.contextMetrics?.candidateFileCount ?? 0 };
+      if (options.task.record.role === "explorer") {
+        // Read-only investigation (protocol §5, v1.0.1): there is no change to verify, so the
+        // completion authority is the production explorer contract itself — the run must end
+        // `completed` with a validated structured explorer result. The hidden verifier (tree
+        // intact) and the answer key remain the correctness check.
+        const delivered = agentResult.status === "completed" && agentResult.structuredData !== undefined;
+        completion = {
+          outcome: delivered ? "completed" : agentResult.status === "blocked" ? "blocked" : "failed",
+          // "plan_steps_unfinished" is the closest production blocker code: the inspect step did not
+          // finish with a deliverable report.
+          blockers: delivered ? [] : [{ code: "plan_steps_unfinished", severity: "blocking", message: "explorer run did not deliver a validated structured result" }],
+          advisories: [],
+          rationale: "investigation task: authority = validated explorer structured result",
+        } satisfies CompletionGateDecision;
+        notes.push("investigation task: completion authority is the validated explorer structured result (no ForgeVerify obligation for a read-only report)");
+      } else {
       // Completion authority through the same production gate: ForgeVerify on the task's visible
       // verification commands (fresh in both arms in this mode) + deterministic diff review.
       const verifyStarted = now();
@@ -263,6 +305,7 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
           review: review ?? { approved: true, issues: [], findings: [], diffs: [], summary: "diff review unavailable" },
           budgetExhausted: agentResult.status === "blocked" && /TURN_LIMIT|BUDGET|TOOL_LIMIT/i.test(String(agentResult.stopReason)),
         });
+      }
       }
     } else {
       const workspaceService = createWorkspaceService({ persistence, worktreeParentDir: path.join(runDir, "worktrees") });
@@ -285,6 +328,10 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
       topology = orchestratorResult.topology?.plan.topology ?? topology;
       subagentCount = orchestratorResult.counters.childrenSpawned;
       verificationMs = orchestratorResult.verification.reduce((sum, result) => sum + result.durationMs, 0);
+      const reviewCodes = [...new Set(orchestratorResult.review.findings.map((finding) => `${finding.severity}:${finding.category}`))];
+      if (reviewCodes.length > 0) notes.push(`review findings: ${reviewCodes.join(", ")}`);
+      if (/requires a shell and cannot enter ForgeVerify/i.test(orchestratorResult.summary)) notes.push("verification_capability_gap: ForgeVerify's autonomous path admits only node/npm/npx verifiers; this task's visible verification command could not run (product finding, identical in both arms)");
+      if (orchestratorResult.integration.reason === "REVIEW_REVISION_LIMIT") notes.push("deterministic_review_blocked: the run exhausted review revisions on blocking deterministic findings (see review findings note)");
       if (orchestratorResult.integration.status !== "integrated" && orchestratorResult.integration.worktreeId) {
         const worktree = workspaceService.getWorkspace(orchestratorResult.integration.worktreeId);
         if (worktree) endingTreeDir = worktree.rootPath;
@@ -448,6 +495,8 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
       avoidableDuplicateBytes: context.avoidableDuplicateBytes,
       avoidableDuplicateTokens: context.avoidableDuplicateTokens,
       avoidableDuplicateEvents: context.avoidableDuplicateEvents,
+      avoidableDuplicateBytesWithinRole: context.avoidableDuplicateBytesWithinRole,
+      avoidableDuplicateBytesCrossRole: context.avoidableDuplicateBytesCrossRole,
       finalComposition: context.finalComposition,
       bootstrapContextBytes: bootstrap.contextBytes,
       bootstrapSelectedFiles: bootstrap.selectedFiles,
@@ -478,8 +527,9 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
     },
     time: {
       wallClockMs,
-      activeAgentMs: Math.max(0, agentEndedMs - agentStartedMs - rateWait - verificationMs),
+      activeAgentMs: Math.max(0, agentEndedMs - agentStartedMs - rateWait - pacingWaitMs - verificationMs),
       modelWaitMs: modelWaitMs(calls),
+      pacingWaitMs,
       toolMs: toolExecutions.length > 0 ? measured(toolExecutions.reduce((sum, execution) => sum + (execution.durationMs ?? 0), 0), "RUNTIME", "Σ tool execution durations") : unknownMetric("no tool execution records available in this mode"),
       verificationMs,
       rateLimitWaitMs: rateWait,

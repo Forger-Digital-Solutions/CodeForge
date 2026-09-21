@@ -1,0 +1,490 @@
+{
+  "schemaVersion": "r23-run-record-1",
+  "identity": {
+    "benchmarkVersion": "CodeForge-EfficiencyBench-R23",
+    "protocolId": "codeforge-efficiency-protocol-r23",
+    "protocolVersion": "1.0.1",
+    "protocolDigest": "e7c14c93f1c9aa29959ce93ea8d34e4f83139a7989c40087466000d97b627e1c",
+    "harnessVersion": "r23-harness-1.0.0",
+    "campaignId": "dry_run-2026-09-21T00-54-27-872Z",
+    "phase": "dry_run",
+    "runId": "r23-dry_run-py-small-fix-median-optimized-r1-98cf7d0e",
+    "pairId": "dry_run-2026-09-21T00-54-27-872Z-py-small-fix-median-r1",
+    "taskId": "py-small-fix-median",
+    "taskClass": "small_fix",
+    "taskLanguage": "python",
+    "repoSizeClass": "small",
+    "arm": "optimized",
+    "armConfigurationDigest": "f36a2e6a722cbfa84f91c0ab6d18a01176550d730772f21b6f97cdd7d3a61804",
+    "pairOrder": "optimized-first",
+    "repetition": 1,
+    "codeforgeCommit": "79694813abb123edd4b3794d1c31fccd9c01e951",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "gitignore",
+      "docs/benchmarks/codeforge-efficiency-protocol-r23.md",
+      "docs/evidence/r23-efficiency-proof/protocol/PROTOCOL-DIGEST.txt",
+      "packages/forgegreen-campaign/src/r23/run-record.ts",
+      "packages/forgegreen-campaign/src/r23/run-task.ts",
+      "packages/forgegreen-campaign/src/r23/tasks.ts",
+      "packages/workflow/src/child-process.ts",
+      "benchmarks/",
+      "docs/checkpoints/",
+      "docs/evidence/r23-efficiency-proof/cost/",
+      "docs/evidence/r23-efficiency-proof/pilot/",
+      "docs/evidence/r23-efficiency-proof/protocol/task-manifest.json",
+      "docs/evidence/r23-efficiency-proof/raw/",
+      "packages/workflow/test/r23-python-verifier-runtime.test.ts",
+      "scripts/r23-efficiency-bench.mjs"
+    ],
+    "startingTreeHash": "9921c87b0b94b81d3c10e11a71a67e676c49338329bf3050b0869deccd3adcf3",
+    "endingTreeHash": "f0f704f0d3e30fe56239b7ca0ece46b63286e509bf6f513191607d2f2b152cc7",
+    "taskDigest": "db3ea1891506465713d5a196b9a87ff171f8ee8fb94bd1301f9599cd56050c17",
+    "modelId": "scripted-free",
+    "providerId": "scripted",
+    "routeClass": "fixture",
+    "forgeGreenEnabled": true,
+    "subagentsEnabled": true,
+    "topology": "orchestrated:normal",
+    "environmentFingerprint": "dbe6692da16cba28861bf1d949d7ac348af25c470e0d6e951571545d19cdadeb",
+    "startedAt": "2026-09-21T00:54:56.868Z",
+    "endedAt": "2026-09-21T00:55:05.480Z"
+  },
+  "outcome": {
+    "runtimeStatus": "completed",
+    "stopReason": "completed",
+    "claimedComplete": true,
+    "verifierRan": true,
+    "verifierPassed": true,
+    "verifierExitCode": 0,
+    "verifierDurationMs": 140,
+    "completionAuthority": "PASS",
+    "completionBlockers": [],
+    "forbiddenActionObserved": false,
+    "verifiedComplete": true,
+    "falseComplete": false,
+    "classification": "verified_complete",
+    "completionReason": "claimed complete; hidden verifier passed; completion authority PASS",
+    "testsPassed": 5,
+    "testsFailed": 0,
+    "filesChanged": [
+      "stats/core.py"
+    ],
+    "linesAdded": 4,
+    "linesRemoved": 1
+  },
+  "inference": {
+    "totalInputTokens": {
+      "value": 20100,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "totalOutputTokens": {
+      "value": 540,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "totalTokens": {
+      "value": 20640,
+      "source": "DERIVED",
+      "origin": "PROVIDER",
+      "note": "input + output"
+    },
+    "cachedInputTokens": {
+      "source": "UNKNOWN",
+      "note": "cached tokens not reported on every call"
+    },
+    "uncachedInputTokens": {
+      "source": "UNKNOWN",
+      "note": "cached unknown"
+    },
+    "reasoningTokens": {
+      "source": "UNKNOWN",
+      "note": "reasoning tokens not reported on every call"
+    },
+    "modelCalls": 8,
+    "callsWithProviderUsage": 8,
+    "failedModelCalls": 0,
+    "retriedModelCalls": 0,
+    "rateLimitedCalls": 0,
+    "providerFailovers": 0,
+    "modelFailovers": 0,
+    "duplicateRequestsSuppressed": 0,
+    "calls": [
+      {
+        "callIndex": 0,
+        "providerId": "scripted",
+        "requestedModelId": "scripted-free",
+        "startedAt": "2026-09-21T00:54:58.255Z",
+        "endedAt": "2026-09-21T00:54:58.256Z",
+        "latencyMs": 1,
+        "timeToFirstEventMs": 1,
+        "requestBytes": 8178,
+        "responseBytes": 30,
+        "messageCount": 2,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2400,
+        "completionTokens": 60,
+        "totalTokens": 2460,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "f3ac5c9c8deb4d81c847d15cad205274204bafdf503d4e33175b0d67766b0c38"
+      },
+      {
+        "callIndex": 1,
+        "providerId": "scripted",
+        "requestedModelId": "scripted-free",
+        "startedAt": "2026-09-21T00:54:58.278Z",
+        "endedAt": "2026-09-21T00:54:58.279Z",
+        "latencyMs": 1,
+        "timeToFirstEventMs": 1,
+        "requestBytes": 8415,
+        "responseBytes": 24,
+        "messageCount": 4,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 1,
+          "tool": 1
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2400,
+        "completionTokens": 60,
+        "totalTokens": 2460,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "4b24b116cb42ed86706c697f5c3433e6b8e9e6e1d3bf2e48e275f6f30c2163d4"
+      },
+      {
+        "callIndex": 2,
+        "providerId": "scripted",
+        "requestedModelId": "scripted-free",
+        "startedAt": "2026-09-21T00:54:58.303Z",
+        "endedAt": "2026-09-21T00:54:58.303Z",
+        "latencyMs": 0,
+        "timeToFirstEventMs": 0,
+        "requestBytes": 9028,
+        "responseBytes": 138,
+        "messageCount": 6,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 2,
+          "tool": 2
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2700,
+        "completionTokens": 80,
+        "totalTokens": 2780,
+        "providerReportedCostUsd": 0,
+        "finishReason": "stop",
+        "toolCallsEmitted": 0,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "5ead73f3e64450b489439049321b4b36cf8de315a83bce302ac9a4d83821a029"
+      },
+      {
+        "callIndex": 3,
+        "providerId": "scripted",
+        "requestedModelId": "scripted-free",
+        "startedAt": "2026-09-21T00:55:00.436Z",
+        "endedAt": "2026-09-21T00:55:00.436Z",
+        "latencyMs": 0,
+        "timeToFirstEventMs": 0,
+        "requestBytes": 11000,
+        "responseBytes": 24,
+        "messageCount": 2,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1
+        },
+        "toolDefinitionCount": 19,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2400,
+        "completionTokens": 60,
+        "totalTokens": 2460,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "3f6527dbfb0470110caec38af9e5b99e7337a1cc726be396c7f51c810735f191"
+      },
+      {
+        "callIndex": 4,
+        "providerId": "scripted",
+        "requestedModelId": "scripted-free",
+        "startedAt": "2026-09-21T00:55:00.462Z",
+        "endedAt": "2026-09-21T00:55:00.462Z",
+        "latencyMs": 0,
+        "timeToFirstEventMs": 0,
+        "requestBytes": 11613,
+        "responseBytes": 228,
+        "messageCount": 4,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 1,
+          "tool": 1
+        },
+        "toolDefinitionCount": 19,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2400,
+        "completionTokens": 60,
+        "totalTokens": 2460,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "96a77892b2d593f2fa7ac7f3dd83cc8cd6c934eaf57d5d0d3103206474763505"
+      },
+      {
+        "callIndex": 5,
+        "providerId": "scripted",
+        "requestedModelId": "scripted-free",
+        "startedAt": "2026-09-21T00:55:00.487Z",
+        "endedAt": "2026-09-21T00:55:00.487Z",
+        "latencyMs": 0,
+        "timeToFirstEventMs": 0,
+        "requestBytes": 12090,
+        "responseBytes": 73,
+        "messageCount": 6,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 2,
+          "tool": 2
+        },
+        "toolDefinitionCount": 19,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2700,
+        "completionTokens": 80,
+        "totalTokens": 2780,
+        "providerReportedCostUsd": 0,
+        "finishReason": "stop",
+        "toolCallsEmitted": 0,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "79e7b74ce25e310ff4a9356a556e958321d116def5ad0c72f856760574f8d89c"
+      },
+      {
+        "callIndex": 6,
+        "providerId": "scripted",
+        "requestedModelId": "scripted-free",
+        "startedAt": "2026-09-21T00:55:01.149Z",
+        "endedAt": "2026-09-21T00:55:01.149Z",
+        "latencyMs": 0,
+        "timeToFirstEventMs": 0,
+        "requestBytes": 9989,
+        "responseBytes": 24,
+        "messageCount": 3,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2400,
+        "completionTokens": 60,
+        "totalTokens": 2460,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "f1a6ee144502ed82ef8c7d698f2e5de3987f8edbe9d99b5fa8a5a5df3dd084ac"
+      },
+      {
+        "callIndex": 7,
+        "providerId": "scripted",
+        "requestedModelId": "scripted-free",
+        "startedAt": "2026-09-21T00:55:01.173Z",
+        "endedAt": "2026-09-21T00:55:01.174Z",
+        "latencyMs": 1,
+        "timeToFirstEventMs": 1,
+        "requestBytes": 10702,
+        "responseBytes": 84,
+        "messageCount": 5,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2,
+          "assistant": 1,
+          "tool": 1
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2700,
+        "completionTokens": 80,
+        "totalTokens": 2780,
+        "providerReportedCostUsd": 0,
+        "finishReason": "stop",
+        "toolCallsEmitted": 0,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "d99fda2883df1fde9e5449d0357716f763304ccfd36027ab26eb7b9c0c80ff51"
+      }
+    ]
+  },
+  "context": {
+    "transmittedContextBytes": 81015,
+    "finalConversationBytes": 4933,
+    "providerStatelessnessRepeatBytes": 76082,
+    "avoidableDuplicateBytes": 384,
+    "avoidableDuplicateTokens": {
+      "value": 95,
+      "source": "DERIVED",
+      "origin": "HARNESS",
+      "note": "bytes × run prompt-token/byte ratio"
+    },
+    "avoidableDuplicateEvents": [
+      {
+        "kind": "duplicate_tool_result",
+        "tool": "read_file",
+        "argumentsDigest": "fdd817ab0a7486a8f255cef0a3ef1e18652bd84ed7828994e6d9e63ff9584771",
+        "bytes": 384,
+        "firstCallIndex": 1,
+        "repeatCallIndex": 3
+      }
+    ],
+    "finalComposition": {
+      "systemBytes": 2032,
+      "userTaskBytes": 2420,
+      "assistantBytes": 0,
+      "toolResultBytes": 481,
+      "toolResultBytesByTool": {
+        "read_file": 481
+      },
+      "otherBytes": 0
+    },
+    "bootstrapContextBytes": 0,
+    "bootstrapSelectedFiles": 0,
+    "bootstrapCandidateFiles": 0,
+    "canonicalCacheHits": 0,
+    "canonicalCacheMisses": 0,
+    "toolOutputBytesAvoidedByCompression": 0,
+    "providerCacheHitCalls": 0,
+    "promptTokensPerByte": 0.248102203295686
+  },
+  "activity": {
+    "role": "coder",
+    "toolCallsRequested": 5,
+    "toolCallsExecuted": 0,
+    "toolCallsFailed": 0,
+    "duplicateActionsSuppressed": 0,
+    "byTool": {
+      "list_files": {
+        "requested": 1,
+        "executed": 0,
+        "suppressed": 0
+      },
+      "read_file": {
+        "requested": 3,
+        "executed": 0,
+        "suppressed": 0
+      },
+      "edit_file": {
+        "requested": 1,
+        "executed": 0,
+        "suppressed": 0
+      }
+    },
+    "fileReads": 3,
+    "fileWrites": 1,
+    "searches": 0,
+    "listings": 1,
+    "shellCalls": 0,
+    "browserCalls": 0,
+    "mcpCalls": 0,
+    "pluginCalls": 0,
+    "subagentCount": 2,
+    "subagentModelCalls": 0
+  },
+  "time": {
+    "wallClockMs": 7372,
+    "activeAgentMs": 5317,
+    "modelWaitMs": 3,
+    "toolMs": {
+      "source": "UNKNOWN",
+      "note": "no tool execution records available in this mode"
+    },
+    "verificationMs": 1318,
+    "rateLimitWaitMs": 0,
+    "forgeGreenOverheadMs": {
+      "source": "UNKNOWN",
+      "note": "not joined in this record"
+    }
+  },
+  "economics": {
+    "pricingSnapshotId": "openrouter-2026-09-21",
+    "actualCostUsd": {
+      "value": 0,
+      "source": "OBSERVED",
+      "origin": "PROVIDER",
+      "note": "Σ provider-reported per-call cost"
+    },
+    "equivalentPublicApiCostUsd": {
+      "source": "UNKNOWN",
+      "note": "no public-API equivalent declared for scripted::scripted-free"
+    },
+    "equivalentPublicApiPriceRef": "",
+    "equivalentMarketCostUsd": {
+      "value": 0.0456,
+      "source": "DERIVED",
+      "origin": "SNAPSHOT",
+      "note": "tokens × openrouter::anthropic/claude-sonnet-5"
+    },
+    "equivalentMarketPriceRef": "openrouter::anthropic/claude-sonnet-5"
+  },
+  "resources": {
+    "cpuUserMs": {
+      "value": 187,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "cpuSystemMs": {
+      "value": 625,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "peakRssBytes": {
+      "value": 195239936,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerResponseBytes": {
+      "value": 625,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerRequestBytes": {
+      "value": 81015,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "gpuPowerDrawWattsIdleSample": {
+      "value": 11.85,
+      "source": "OBSERVED",
+      "origin": "HARNESS",
+      "note": "single nvidia-smi sample; local GPU is idle — not inference"
+    },
+    "sampler": "node-process-cpu-rss-1 (harness process only; tool child processes excluded)"
+  },
+  "telemetry": {
+    "efficiencyReasonCodes": []
+  },
+  "notes": []
+}

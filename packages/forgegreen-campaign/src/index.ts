@@ -29,3 +29,4 @@ export * from "./r23/local-resources.js";
 export * from "./r23/arms.js";
 export * from "./r23/tasks.js";
 export * from "./r23/run-task.js";
+export * from "./r23/report.js";

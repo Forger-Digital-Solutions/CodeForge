@@ -1,0 +1,234 @@
+{
+  "validatedAt": "2026-09-21T00:10:01.056Z",
+  "tasks": [
+    {
+      "taskId": "js-bug-fix-cart-total",
+      "class": "bug_fix",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "beforeCounts": {
+        "passed": 3,
+        "failed": 3
+      },
+      "afterCounts": {
+        "passed": 6,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "js-build-config-test-script",
+      "class": "build_config_dependency",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "beforeCounts": {
+        "passed": 2,
+        "failed": 2
+      },
+      "afterCounts": {
+        "passed": 4,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "js-feature-rate-limiter",
+      "class": "feature",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "afterCounts": {
+        "passed": 14,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "js-investigation-webhook-retries",
+      "class": "investigation",
+      "fixtureFailsAsShipped": "n/a (read-only; tree-intact verifier passes)",
+      "referencePasses": true,
+      "answerKeySatisfied": true,
+      "beforeCounts": {
+        "passed": 1,
+        "failed": 0
+      },
+      "afterCounts": {
+        "passed": 1,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "js-small-fix-clamp",
+      "class": "small_fix",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "beforeCounts": {
+        "passed": 1,
+        "failed": 6
+      },
+      "afterCounts": {
+        "passed": 7,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "py-bug-fix-config-merge",
+      "class": "bug_fix",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "beforeCounts": {
+        "passed": 5,
+        "failed": 2
+      },
+      "afterCounts": {
+        "passed": 7,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "py-small-fix-median",
+      "class": "small_fix",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "beforeCounts": {
+        "passed": 3,
+        "failed": 2
+      },
+      "afterCounts": {
+        "passed": 5,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "qual-js-missing-export",
+      "class": "small_fix",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "afterCounts": {
+        "passed": 2,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "qual-js-off-by-one",
+      "class": "small_fix",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "beforeCounts": {
+        "passed": 2,
+        "failed": 1
+      },
+      "afterCounts": {
+        "passed": 3,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "qual-js-return-sign",
+      "class": "small_fix",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "beforeCounts": {
+        "passed": 1,
+        "failed": 2
+      },
+      "afterCounts": {
+        "passed": 3,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "ts-bug-fix-queue-order",
+      "class": "bug_fix",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "beforeCounts": {
+        "passed": 1,
+        "failed": 3
+      },
+      "afterCounts": {
+        "passed": 4,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "ts-feature-cli-stats",
+      "class": "feature",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "beforeCounts": {
+        "passed": 3,
+        "failed": 6
+      },
+      "afterCounts": {
+        "passed": 9,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "ts-large-context-rename-config-key",
+      "class": "large_context",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "beforeCounts": {
+        "passed": 2,
+        "failed": 7
+      },
+      "afterCounts": {
+        "passed": 9,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "ts-refactor-extract-validator",
+      "class": "refactor",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "afterCounts": {
+        "passed": 12,
+        "failed": 0
+      },
+      "ok": true
+    },
+    {
+      "taskId": "ts-small-fix-slugify",
+      "class": "small_fix",
+      "fixtureFailsAsShipped": true,
+      "referencePasses": true,
+      "answerKeySatisfied": "n/a",
+      "beforeCounts": {
+        "passed": 0,
+        "failed": 5
+      },
+      "afterCounts": {
+        "passed": 5,
+        "failed": 0
+      },
+      "ok": true
+    }
+  ],
+  "failures": 0
+}

@@ -1,0 +1,96 @@
+{
+  "manifestVersion": "r23-task-manifest-1",
+  "frozenAt": "2026-09-21T00:14:02.720Z",
+  "tasks": [
+    {
+      "taskId": "js-bug-fix-cart-total",
+      "class": "bug_fix",
+      "digest": "337052f08645b6e17db659db0e3fea678db3eba7db16edda4b10988cab87018b",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "js-build-config-test-script",
+      "class": "build_config_dependency",
+      "digest": "70ce3985af72067cfb122418d84bb96585bf835fe0d6fec0f9bae0da213046ad",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "js-feature-rate-limiter",
+      "class": "feature",
+      "digest": "91c2f1beb75722364638eb960f76dc7dad8e2b9df5727d69601e5ca6bea4b538",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "js-investigation-webhook-retries",
+      "class": "investigation",
+      "digest": "2258e7e834ccdd42cc872515206d550d2a831ced6a6eeb81781dfe7b20cfea28",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "js-small-fix-clamp",
+      "class": "small_fix",
+      "digest": "086d3526d9fd0818068fcf2c160a321c6142527ee1955d5d818e0a82534f2d86",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "py-bug-fix-config-merge",
+      "class": "bug_fix",
+      "digest": "1add7d21d6b56b8827fc4980ef9110fec6bba2a64590fc5f24aa92a7546d1891",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "py-small-fix-median",
+      "class": "small_fix",
+      "digest": "db3ea1891506465713d5a196b9a87ff171f8ee8fb94bd1301f9599cd56050c17",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "qual-js-missing-export",
+      "class": "small_fix",
+      "digest": "4c8a759571412bcb93a664815f0f85ab9ce07cae588f370724dcd63eaa72c3fb",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "qual-js-off-by-one",
+      "class": "small_fix",
+      "digest": "1257ad7152ff930461155ecd2db1de7ece5e8d96fe0e04ee552c98cd20a8f64d",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "qual-js-return-sign",
+      "class": "small_fix",
+      "digest": "354344f94ade5840faec41bf4c7cb11b630d8aac39f6377be20a0f4554c0b91f",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "ts-bug-fix-queue-order",
+      "class": "bug_fix",
+      "digest": "32b49c63f1fb094e966b2588214d296c5d560b1548c2d969437ea3a63d05b6f7",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "ts-feature-cli-stats",
+      "class": "feature",
+      "digest": "ec44f87274a607cc2a729089aacffc0df1d65853a8ff7142a52326c89fad1eed",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "ts-large-context-rename-config-key",
+      "class": "large_context",
+      "digest": "2e4d9abfd7c2b96bd5629aaf00c773b92b45b742b87d759af366b170de795415",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "ts-refactor-extract-validator",
+      "class": "refactor",
+      "digest": "fc4415ca44638488fcb97da1854fa2890d301e5c71f2451f759dac24a397ee3b",
+      "batch": "batch-1"
+    },
+    {
+      "taskId": "ts-small-fix-slugify",
+      "class": "small_fix",
+      "digest": "6ef5eaed1ef974492c62eea2284258088606c1cc56b3ce3605592c0cdd602185",
+      "batch": "batch-1"
+    }
+  ]
+}
