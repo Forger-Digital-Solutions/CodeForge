@@ -1205,6 +1205,10 @@ async function initializeServer(dbPath: string): Promise<void> {
       }),
     });
     smokeRecord("INIT_SERVER_INSTANCE_CREATED");
+    // R24: one host-scoped route-health authority. The server owns it (one per process, shared
+    // by every session runtime); the Free Cloud registry forwards its provider-response quota
+    // facts into the same authority so routing, admission and the ledger never disagree.
+    freeCloud?.setRouteHealth(server.routeHealth);
     await server.start();
     localServerPort = server.httpPort;
     recordRuntimeMetadata();

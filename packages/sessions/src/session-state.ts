@@ -743,6 +743,32 @@ export const WorkItemSchema = z.discriminatedUnion("kind", [
     updatedAt: z.string().datetime(),
   }),
   z.object({
+    /** R24 8-Bit: one normalized, append-only route-health observation (probe gate, served call,
+     * classified failure, rate-limit headers, daily allowance, tool outcome, catalog/entitlement
+     * fact, governor pressure). Host-scoped (`sessionId` optional) so every session on a host
+     * shares one evidence stream; never a prompt, never a credential. Observational only. */
+    kind: z.literal("eight_bit_route_observation"),
+    id: z.string(),
+    sessionId: z.string().optional(),
+    providerId: z.string(),
+    modelId: z.string(),
+    observation: z.record(z.unknown()),
+    createdAt: z.string().datetime(),
+  }),
+  z.object({
+    /** R24 8-Bit: the route-health authority's durable per-route snapshot (temporal conditions
+     * with expiry, rolling window stats, quota facts). Host-scoped and upserted per route so a
+     * restart — or another session — inherits a saturation that has not yet expired and a
+     * retirement that never does. Routing input only; never approval/verification authority. */
+    kind: z.literal("eight_bit_route_health_authority"),
+    id: z.string(),
+    sessionId: z.string().optional(),
+    providerId: z.string(),
+    modelId: z.string(),
+    snapshot: z.record(z.unknown()),
+    updatedAt: z.string().datetime(),
+  }),
+  z.object({
     /** 8-Bit: mutable current routing state for one (session, role, workstream) scope —
      * sticky binding, live health/reliability snapshot, cooldown, manual overrides. Read at
      * process start to restore routing continuity across restarts (never authority for

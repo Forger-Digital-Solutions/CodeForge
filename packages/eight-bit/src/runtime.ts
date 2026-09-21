@@ -10,11 +10,24 @@ import type { DecisionReceipt, EightBitRole, RouteKey } from "./types.js";
 import type { EightBitPolicyMode } from "./eligibility.js";
 import { EightBitCapacityIntelligence } from "./capacity-intelligence.js";
 import type { CapacityForecast, CapacityForecastInput, CapacityPreflight, CapacityPreflightInput } from "@codeforge/forge-zero";
+import { EightBitRouteHealthAuthority, DEFAULT_ROUTE_HEALTH_POLICY, type NormalizedObservation, type RouteHealthPolicy } from "./route-health-authority.js";
+import { EightBitRouteHealthLedger } from "./route-health-ledger.js";
+import { classifyFailure } from "./health.js";
 
 export interface EightBitRuntimeOptions {
   firewall: ForgeZero;
   persistence: ISessionPersistence;
   now?: () => number;
+  /**
+   * R24: a host-shared route-health authority. When several runtimes (sessions) run in one
+   * process they should share ONE instance so a saturation seen by session A re-ranks routing
+   * for session B immediately; absent, the runtime creates its own and hydrates it from the
+   * durable ledger.
+   */
+  routeHealth?: EightBitRouteHealthAuthority;
+  routeHealthPolicy?: Partial<RouteHealthPolicy>;
+  /** Persist normalized observations (learning data) in addition to snapshots. Default true. */
+  persistRouteObservations?: boolean;
 }
 
 /**
@@ -31,11 +44,19 @@ export class EightBitRuntime {
   readonly failover: EightBitFailoverCoordinator;
   readonly handoff: EightBitHandoffBuilder;
   readonly capacity: EightBitCapacityIntelligence;
+  /** R24 Mission A: the temporal, evidence-driven route-health authority ForgeAuto consumes. */
+  readonly routeHealth: EightBitRouteHealthAuthority;
+  readonly routeHealthLedger: EightBitRouteHealthLedger;
 
   constructor(private readonly options: EightBitRuntimeOptions) {
     this.health = new EightBitHealthTracker(options.firewall, options.now);
     this.reliability = new EightBitReliabilityTracker();
-    this.router = new EightBitRouter(options.firewall, this.health, this.reliability);
+    this.routeHealth = options.routeHealth ?? new EightBitRouteHealthAuthority({ ...DEFAULT_ROUTE_HEALTH_POLICY, ...options.routeHealthPolicy }, options.now);
+    this.routeHealthLedger = new EightBitRouteHealthLedger(options.persistence, { persistObservations: options.persistRouteObservations ?? true });
+    // A shared authority is attached to the ledger by whoever owns it; a runtime-private one is
+    // attached here so every observation this runtime feeds becomes durable, host-visible truth.
+    if (!options.routeHealth) this.routeHealthLedger.attach(this.routeHealth);
+    this.router = new EightBitRouter(options.firewall, this.health, this.reliability, undefined, this.routeHealth);
     this.store = new EightBitDecisionStore(options.persistence);
     this.failover = new EightBitFailoverCoordinator(this.health, this.router, this.store);
     this.handoff = new EightBitHandoffBuilder(options.persistence);
@@ -54,6 +75,15 @@ export class EightBitRuntime {
    * ForgeZero/health state, so a process restart does not forget an active rotation or
    * cooldown. Idempotent; safe to call once per AgentRuntime construction. */
   async hydrate(sessionId: string): Promise<void> {
+    // R24: the host-scoped route-health authority hydrates first — it is what excludes a retired
+    // or quota-exhausted route for EVERY session, not just the one that observed it.
+    if (!this.options.routeHealth) {
+      try {
+        await this.routeHealthLedger.hydrate(this.routeHealth);
+      } catch {
+        // A missing/unreadable ledger degrades to "no prior evidence" (UNKNOWN), never to a crash.
+      }
+    }
     // Route health is restored FIRST and from its own dedicated per-route records — a route
     // that failed and was rotated away from must stay excluded even though the current
     // binding row (below) now names its replacement, not the route that actually failed.
@@ -68,12 +98,35 @@ export class EightBitRuntime {
     }
   }
 
-  recordToolCallOutcome(providerId: string, modelId: string, outcome: ToolCallOutcome): void {
+  recordToolCallOutcome(providerId: string, modelId: string, outcome: ToolCallOutcome, context: { role?: EightBitRole; correlationId?: string } = {}): void {
     this.reliability.record(providerId, modelId, outcome);
+    this.observe({ kind: "tool_outcome", providerId, modelId, observedAt: new Date(this.now()).toISOString(), source: "runtime", outcome, role: context.role, correlationId: context.correlationId });
   }
 
-  recordSuccess(providerId: string, modelId: string): void {
+  recordSuccess(providerId: string, modelId: string, context: { latencyMs?: number; role?: EightBitRole; inputTokens?: number; outputTokens?: number; correlationId?: string; requestShape?: "bare" | "production" } = {}): void {
     this.health.recordSuccess(providerId, modelId);
+    this.observe({ kind: "call_success", providerId, modelId, observedAt: new Date(this.now()).toISOString(), source: "runtime", latencyMs: context.latencyMs ?? 0, role: context.role, inputTokens: context.inputTokens, outputTokens: context.outputTokens, correlationId: context.correlationId, requestShape: context.requestShape ?? "production" });
+  }
+
+  /** Feed a classified model-turn failure to the authority (the failover path calls this itself). */
+  recordFailure(providerId: string, modelId: string, error: unknown, context: { role?: EightBitRole; correlationId?: string; retryAfterMs?: number } = {}): void {
+    const reason = classifyFailure(error);
+    const status = typeof (error as { status?: unknown })?.status === "number" ? (error as { status: number }).status : undefined;
+    const message = error instanceof Error ? error.message : String(error ?? "");
+    this.observe({ kind: "call_failure", providerId, modelId, observedAt: new Date(this.now()).toISOString(), source: "runtime", reason, status, retryAfterMs: context.retryAfterMs, message: message.slice(0, 300), role: context.role, correlationId: context.correlationId, requestShape: "production" });
+  }
+
+  /** Generic sink for every producer (probe gates, headers, allowances, catalog, entitlement, governor). */
+  observe(observation: NormalizedObservation): void {
+    try {
+      this.routeHealth.observe(observation);
+    } catch {
+      // The authority is routing input; a malformed observation must never break a model turn.
+    }
+  }
+
+  private now(): number {
+    return this.options.now?.() ?? Date.now();
   }
 
   async selectInitialRoute(
@@ -101,6 +154,9 @@ export class EightBitRuntime {
   }
 
   async handleTurnFailure(req: FailoverRequest & { policyMode: EightBitPolicyMode }): Promise<FailoverOutcome> {
+    // R24: every turn failure is health evidence, whatever the failover decides.
+    const retryAfter = (req.error as { retryAfter?: unknown })?.retryAfter;
+    this.recordFailure(req.current.providerId, req.current.modelId, req.error, { role: req.role, correlationId: req.runId ?? req.turnId, retryAfterMs: typeof retryAfter === "number" ? Math.max(0, retryAfter > 1e12 ? retryAfter - this.now() : retryAfter * 1000) : undefined });
     const outcome = await this.failover.handleFailure(req);
     // Persist the FAILED route's health regardless of outcome — this is what a restart needs
     // to keep excluding it, independent of whatever the binding row ends up pointing at.

@@ -21,7 +21,7 @@ import {
 } from "@codeforge/forge-zero";
 import type { FreeModelRecord } from "@codeforge/forge-zero";
 import type { FreeCloudService } from "@codeforge/model-registry";
-import { SqliteQualificationPersistence } from "@codeforge/eight-bit";
+import { SqliteQualificationPersistence, EightBitRouteHealthLedger, createEightBitRouteHealthAuthority, type EightBitRouteHealthAuthority } from "@codeforge/eight-bit";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/providers";
@@ -147,6 +147,13 @@ export interface ServerOptions {
    * qualification receipts persist in this server's session database.
    */
   freeCloud?: FreeCloudService;
+  /**
+   * R24: the host-shared temporal route-health authority. When supplied (e.g. the desktop host
+   * shares one with the Free Cloud registry), this server uses it instead of creating its own;
+   * either way ONE instance serves every session runtime in the process and is persisted through
+   * the session database. Read via {@link CodeForgeServer.routeHealth}.
+   */
+  routeHealth?: EightBitRouteHealthAuthority;
   /** Paid Auto is a separate commercial route family and is disabled unless explicitly enabled. */
   paidAuto?: PaidAutoService;
   paidExecutionEnabled?: boolean;
@@ -205,6 +212,9 @@ export class CodeForgeServer {
   private firewall: ForgeZero;
   private providerCatalog: ProviderCatalog;
   private readonly freeCloud?: FreeCloudService;
+  /** R24: the process-wide measured route-health authority every AgentRuntime shares. */
+  readonly routeHealth: EightBitRouteHealthAuthority;
+  private readonly routeHealthLedger: EightBitRouteHealthLedger;
   private readonly paidAuto: PaidAutoService;
   private readonly subagentsR1Enabled: boolean;
   private runtimes: Map<string, AgentRuntime> = new Map();
@@ -266,6 +276,13 @@ export class CodeForgeServer {
     });
     this.providerCatalog = options.providerCatalog ?? new InMemoryProviderCatalog();
     this.freeCloud = options.freeCloud;
+    // R24 Mission A: one temporal health authority per host. Every session runtime feeds and
+    // reads the same measured state (a saturation seen by turn A re-ranks turn B), and the
+    // ledger makes it durable — writes are serialized and failure-isolated, never blocking a
+    // model turn on persistence.
+    this.routeHealth = options.routeHealth ?? createEightBitRouteHealthAuthority();
+    this.routeHealthLedger = new EightBitRouteHealthLedger(this.persistence);
+    this.routeHealthLedger.attach(this.routeHealth);
     this.paidAuto = options.paidAuto ?? createPaidAutoService({
       paidExecutionEnabled: options.paidExecutionEnabled ?? process.env.CODEFORGE_PAID_EXECUTION_ENABLED === "true",
       openRouterFallbackEnabled: options.openRouterFallbackEnabled ?? process.env.CODEFORGE_OPENROUTER_FALLBACK_ENABLED === "true",
@@ -477,6 +494,10 @@ export class CodeForgeServer {
    */
   async init(): Promise<void> {
     await this.persistence.init();
+    // R24: restore durable route health before any recovered turn can re-route — a saturation
+    // still inside its TTL stays excluded, a retirement stays excluded forever, and expired
+    // transient conditions hydrate as already-gone.
+    await this.routeHealthLedger.hydrate(this.routeHealth).catch(() => 0);
     await this.workspaceService.init();
     // FG-1D: persistent canonical analysis cache, stored beside the application session
     // database (never inside a user repository). Unavailable store = cache disabled = recompute.
@@ -2241,6 +2262,7 @@ export class CodeForgeServer {
         freeCloud: this.freeCloud,
         paidAuto: this.paidAuto,
         hostedWorker,
+        routeHealth: this.routeHealth,
         authorityFor: () => this.authorityFor(sessionId),
         externalTools: this.externalToolSurface,
       });
@@ -2261,6 +2283,7 @@ export class CodeForgeServer {
         afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
         freeCloud: this.freeCloud,
         paidAuto: this.paidAuto,
+        routeHealth: this.routeHealth,
         authorityFor: () => this.authorityFor(sessionId),
         externalTools: this.externalToolSurface,
       });

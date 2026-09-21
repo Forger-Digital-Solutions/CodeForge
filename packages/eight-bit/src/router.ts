@@ -5,6 +5,7 @@ import type { EightBitHealthTracker } from "./health.js";
 import type { EightBitReliabilityTracker } from "./reliability.js";
 import { routeKeyOf, type EightBitRole, type RouteKey } from "./types.js";
 import type { EightBitShadowObserver } from "./shadow.js";
+import type { EightBitRouteHealthAuthority, RouteHealthAssessment } from "./route-health-authority.js";
 
 /** Sticky binding scope: a session may bind different routes per role/workstream. */
 export interface BindingScope {
@@ -45,8 +46,8 @@ export interface SelectRouteOptions {
 }
 
 export type SelectRouteResult =
-  | { outcome: "selected"; model: FreeModelRecord; sticky: boolean; score: number; reasons: string[] }
-  | { outcome: "no_eligible_route"; reasonCodes: string[] };
+  | { outcome: "selected"; model: FreeModelRecord; sticky: boolean; score: number; reasons: string[]; health?: RouteHealthAssessment }
+  | { outcome: "no_eligible_route"; reasonCodes: string[]; healthExcluded?: Array<{ providerId: string; modelId: string; state: string; reasonCodes: string[] }> };
 
 /**
  * Role-aware adaptive router. Layers on top of the certified `ForgeRouter` (still the ranking
@@ -63,7 +64,12 @@ export class EightBitRouter {
     private readonly health: EightBitHealthTracker,
     private readonly reliability: EightBitReliabilityTracker,
     private readonly shadowObserver?: EightBitShadowObserver,
+    /** R24: the temporal route-health authority. Absent = legacy cooldown-only behaviour. */
+    private readonly routeHealth?: EightBitRouteHealthAuthority,
   ) {}
+
+  /** Routes the health authority hard-excluded during the most recent selection (diagnostics). */
+  private lastHealthExclusions: Array<{ providerId: string; modelId: string; state: string; reasonCodes: string[] }> = [];
 
   /** Restore a persisted sticky binding (e.g. after restart) without re-ranking. Caller is
    * responsible for verifying it is still eligible before relying on it for a new turn. */
@@ -88,6 +94,7 @@ export class EightBitRouter {
     effectiveScore: number;
     reasons: string[];
     capacityReasons: string[];
+    health?: RouteHealthAssessment;
   }> {
     const req: RoutingRequest = {
       taskType: options.taskType ?? (options.capabilityGuidance?.minimumRole ?? scope.role).toLowerCase(),
@@ -100,7 +107,13 @@ export class EightBitRouter {
       .filter((ranked) => eligible.some((model) => model.providerId === ranked.model.providerId && model.modelId === ranked.model.modelId))
       .map((ranked) => {
         const capacity = options.capacityScoreAdjustment?.(ranked.model.providerId, ranked.model.modelId) ?? { scoreAdjustment: 0, reasonCodes: [] };
-        return { ...ranked, effectiveScore: ranked.score + capacity.scoreAdjustment, capacityReasons: capacity.reasonCodes };
+        // R24 Mission A: measured, temporal health re-ranks admitted routes. A SATURATED route no
+        // longer wins on capability alone; a TOOL_UNRELIABLE route is penalised for tool roles and
+        // only mildly for read-mostly roles. The adjustment never creates eligibility.
+        const assessment = this.routeHealth?.assess(ranked.model.providerId, ranked.model.modelId, { role: options.capabilityGuidance?.minimumRole ?? scope.role });
+        const healthAdjustment = assessment?.scoreAdjustment ?? 0;
+        const healthReasons = assessment ? [`HEALTH_${assessment.state}`, ...assessment.reasonCodes.map((code) => `HEALTH:${code}`)] : [];
+        return { ...ranked, effectiveScore: ranked.score + capacity.scoreAdjustment + healthAdjustment, capacityReasons: [...capacity.reasonCodes, ...healthReasons], health: assessment };
       })
       // Match ForgeRouter.rank()'s documented tiebreak contract (score desc, then modelId asc)
       // so capacity advice can only reorder distinct scores, never relitigate an existing tie;
@@ -110,10 +123,18 @@ export class EightBitRouter {
 
   private eligibleForRole(scope: BindingScope, options: SelectRouteOptions): FreeModelRecord[] {
     const eligibilityRole = options.capabilityGuidance?.minimumRole ?? scope.role;
+    this.lastHealthExclusions = [];
     return this.firewall.eligibleModels().filter((model) => {
       if (!options.hasAdapter(model.providerId)) return false;
       if (this.health.isInCooldown(model.providerId, model.modelId)) return false;
       if (options.routeFilter && !options.routeFilter(model.providerId, model.modelId)) return false;
+      // R24 Mission A: hard health exclusions (retired, access-restricted, billing-unverifiable,
+      // auth/connection required, quarantined, daily quota exhausted, inside a 429 window).
+      const assessment = this.routeHealth?.assess(model.providerId, model.modelId, { role: eligibilityRole });
+      if (assessment?.hardExclude) {
+        this.lastHealthExclusions.push({ providerId: model.providerId, modelId: model.modelId, state: assessment.state, reasonCodes: assessment.reasonCodes });
+        return false;
+      }
       const ctx: EligibilityContext = {
         role: eligibilityRole,
         policyMode: options.policyMode,
@@ -128,21 +149,25 @@ export class EightBitRouter {
     const scope = options.scope;
     const eligible = this.eligibleForRole(scope, options);
     if (eligible.length === 0) {
-      return { outcome: "no_eligible_route", reasonCodes: ["NO_ELIGIBLE_FREE_MODEL"] };
+      return { outcome: "no_eligible_route", reasonCodes: ["NO_ELIGIBLE_FREE_MODEL", ...(this.lastHealthExclusions.length > 0 ? ["HEALTH_EXCLUDED_ALL_CANDIDATES"] : [])], healthExcluded: [...this.lastHealthExclusions] };
     }
 
     const ranked = this.rankEligible(scope, options, eligible);
 
     if (ranked.length === 0) {
-      return { outcome: "no_eligible_route", reasonCodes: ["NO_ELIGIBLE_FREE_MODEL"] };
+      return { outcome: "no_eligible_route", reasonCodes: ["NO_ELIGIBLE_FREE_MODEL"], healthExcluded: [...this.lastHealthExclusions] };
     }
 
     const best = ranked[0]!;
     const incumbentKey = this.bindings.get(scopeKey(scope));
     if (incumbentKey) {
       const incumbentRanked = ranked.find((r) => r.model.providerId === incumbentKey.providerId && r.model.modelId === incumbentKey.modelId);
-      if (incumbentRanked && incumbentRanked.effectiveScore + PROMOTION_MARGIN >= best.effectiveScore) {
-        const result = { outcome: "selected" as const, model: incumbentRanked.model, sticky: true, score: incumbentRanked.effectiveScore, reasons: this.guidanceReasons(options, [...incumbentRanked.reasons, ...incumbentRanked.capacityReasons]) };
+      // A sticky incumbent keeps its binding on noise-level deltas only while its measured health
+      // is not worse than DEGRADED: a SATURATED / TEMPORARY_CAPACITY incumbent yields to a
+      // healthier route immediately (§10) instead of hiding behind the promotion margin.
+      const incumbentHealthy = incumbentRanked?.health === undefined || incumbentRanked.health.state === "HEALTHY" || incumbentRanked.health.state === "UNKNOWN" || incumbentRanked.health.state === "DEGRADED";
+      if (incumbentRanked && incumbentHealthy && incumbentRanked.effectiveScore + PROMOTION_MARGIN >= best.effectiveScore) {
+        const result = { outcome: "selected" as const, model: incumbentRanked.model, sticky: true, score: incumbentRanked.effectiveScore, reasons: this.guidanceReasons(options, [...incumbentRanked.reasons, ...incumbentRanked.capacityReasons]), health: incumbentRanked.health };
         this.observeShadow(options, result.model.providerId, result.model.modelId, result.score);
         return result;
       }
@@ -151,7 +176,7 @@ export class EightBitRouter {
     }
 
     this.bindings.set(scopeKey(scope), { providerId: best.model.providerId, modelId: best.model.modelId });
-    const result = { outcome: "selected" as const, model: best.model, sticky: false, score: best.effectiveScore, reasons: this.guidanceReasons(options, [...best.reasons, ...best.capacityReasons]) };
+    const result = { outcome: "selected" as const, model: best.model, sticky: false, score: best.effectiveScore, reasons: this.guidanceReasons(options, [...best.reasons, ...best.capacityReasons]), health: best.health };
     this.observeShadow(options, result.model.providerId, result.model.modelId, result.score);
     return result;
   }
@@ -188,7 +213,7 @@ export class EightBitRouter {
       (m) => !(m.providerId === exclude.providerId && m.modelId === exclude.modelId),
     );
     if (eligible.length === 0) {
-      return { outcome: "no_eligible_route", reasonCodes: ["NO_ELIGIBLE_FREE_MODEL"] };
+      return { outcome: "no_eligible_route", reasonCodes: ["NO_ELIGIBLE_FREE_MODEL"], healthExcluded: [...this.lastHealthExclusions] };
     }
     // R1 §76: same-canonical-model alternates first — a provider swap keeps model behaviour
     // stable mid-task, so an eligible preferred route wins over any cross-model candidate.
@@ -205,9 +230,9 @@ export class EightBitRouter {
     }
     const ranked = this.rankEligible(scope, options, eligible);
     const best = ranked[0];
-    if (!best) return { outcome: "no_eligible_route", reasonCodes: ["NO_ELIGIBLE_FREE_MODEL"] };
+    if (!best) return { outcome: "no_eligible_route", reasonCodes: ["NO_ELIGIBLE_FREE_MODEL"], healthExcluded: [...this.lastHealthExclusions] };
     this.bindings.set(scopeKey(scope), { providerId: best.model.providerId, modelId: best.model.modelId });
-    const result = { outcome: "selected" as const, model: best.model, sticky: false, score: best.effectiveScore, reasons: this.guidanceReasons(options, [...best.reasons, ...best.capacityReasons]) };
+    const result = { outcome: "selected" as const, model: best.model, sticky: false, score: best.effectiveScore, reasons: this.guidanceReasons(options, [...best.reasons, ...best.capacityReasons]), health: best.health };
     this.observeShadow(options, result.model.providerId, result.model.modelId, result.score);
     return result;
   }
@@ -222,6 +247,7 @@ export function createEightBitRouter(
   health: EightBitHealthTracker,
   reliability: EightBitReliabilityTracker,
   shadowObserver?: EightBitShadowObserver,
+  routeHealth?: EightBitRouteHealthAuthority,
 ): EightBitRouter {
-  return new EightBitRouter(firewall, health, reliability, shadowObserver);
+  return new EightBitRouter(firewall, health, reliability, shadowObserver, routeHealth);
 }

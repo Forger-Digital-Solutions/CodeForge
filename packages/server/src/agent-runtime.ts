@@ -70,7 +70,7 @@ import {
   type NormalizedIdentity,
 } from "@codeforge/forge-green";
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
-import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt } from "@codeforge/eight-bit";
+import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority } from "@codeforge/eight-bit";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
@@ -382,6 +382,13 @@ export interface AgentRuntimeOptions {
   /** 8-Bit routing/failover/health/reliability core. Optional so existing callers/tests stay
    * valid; defaults to a real instance backed by the same firewall + persistence. */
   eightBit?: EightBitRuntime;
+  /**
+   * R24: the host-shared temporal route-health authority. When the host supplies one, every
+   * session runtime in the process reads and writes the same measured health — a saturation or
+   * retirement observed by one turn re-ranks routing for all of them. Absent = the runtime's
+   * own EightBitRuntime creates (and hydrates) a private one.
+   */
+  routeHealth?: EightBitRouteHealthAuthority;
   hostedWorker?: HostedWorkerOptions;
   /**
    * R1: 8-Bit Free Cloud Registry routing hooks. When present, ForgeAuto only routes to
@@ -715,7 +722,7 @@ export class AgentRuntime {
       maxFileBytes: MAX_FILE_READ_BYTES,
     }));
     this.approvalService = new ApprovalService({ defaultTimeoutMs: DEFAULT_APPROVAL_TIMEOUT_MS });
-    this.eightBit = options.eightBit ?? createEightBitRuntime({ firewall: this.firewall, persistence: this.persistence });
+    this.eightBit = options.eightBit ?? createEightBitRuntime({ firewall: this.firewall, persistence: this.persistence, routeHealth: options.routeHealth });
     this.freeCloud = options.freeCloud;
     this.paidAuto = options.paidAuto;
     this.capacityGovernor = options.capacityGovernor ?? defaultCapacityGovernor;
@@ -1323,6 +1330,7 @@ export class AgentRuntime {
             stablePromptBytes: messages[0]?.role === "system" ? Buffer.byteLength(messages[0].content, "utf8") : undefined,
           });
           try {
+            const modelCallStartedAt = Date.now();
             const response = await modelAdapter.execute({
               modelSelection: activeSelection,
               messages,
@@ -1346,7 +1354,14 @@ export class AgentRuntime {
               stablePromptCacheHit: response.optimization?.promptPrefixCacheHit,
             });
             if (activeSelection) {
-              this.eightBit.recordSuccess(activeSelection.providerId, activeSelection.modelId);
+              this.eightBit.recordSuccess(activeSelection.providerId, activeSelection.modelId, {
+                latencyMs: Date.now() - modelCallStartedAt,
+                role: eightBitRoleForAgentRole(req.role),
+                inputTokens: response.usage.inputTokens,
+                outputTokens: response.usage.outputTokens,
+                correlationId: req.runId,
+              });
+              this.observeGovernorPressure(activeSelection.providerId, activeSelection.modelId, req.runId);
               this.freeCloud?.recordRouteSuccess(activeSelection.providerId, activeSelection.modelId);
             }
             return response;
@@ -1399,6 +1414,7 @@ export class AgentRuntime {
                 failing,
               ),
             });
+            this.observeGovernorPressure(failing.providerId, failing.modelId, req.runId);
             if (outcome.action !== "retry_same" && outcome.action !== "surface") {
               const retryAfter = (err as { retryAfter?: unknown }).retryAfter;
               const retryAfterMs = typeof retryAfter === "number" ? Math.max(0, retryAfter - Date.now()) : undefined;
@@ -3199,17 +3215,23 @@ export class AgentRuntime {
     // CodeForge-qualified → healthy). A catalog entry alone is never enough (§10-§12).
     const admitted = (providerId: string, modelId: string): boolean =>
       !this.freeCloud || this.freeCloud.isForgeAutoEligible(providerId, modelId);
-    const best = ranked.find(
-      (r) => this.providerCatalog.get(r.model.providerId) && !this.eightBit.health.isInCooldown(r.model.providerId, r.model.modelId) && admitted(r.model.providerId, r.model.modelId),
-    );
-    if (best) return best.model;
-    // Fallback: any eligible tool-capable model with a registered provider, same cooldown
-    // exclusion. Never a route without native tool calling — the agent loop cannot drive it, so
-    // "no route" is the honest answer rather than a doomed turn.
+    // R24: the measured health authority can only remove or re-rank already-admitted candidates
+    // — a retired/quota-exhausted/quarantined route is dropped here, and a saturated one loses
+    // to a healthy route even when its capability score is higher.
+    const scored = ranked
+      .map((r, index) => ({ r, index, assessment: this.eightBit.routeHealth.assess(r.model.providerId, r.model.modelId, { role: "CODER" }) }))
+      .filter((entry) => !entry.assessment.hardExclude)
+      .map((entry) => ({ model: entry.r.model, effectiveScore: entry.r.score + entry.assessment.scoreAdjustment, index: entry.index }))
+      .filter((entry) => this.providerCatalog.get(entry.model.providerId) && !this.eightBit.health.isInCooldown(entry.model.providerId, entry.model.modelId) && admitted(entry.model.providerId, entry.model.modelId))
+      .sort((a, b) => b.effectiveScore - a.effectiveScore || a.index - b.index);
+    if (scored[0]) return scored[0].model;
+    // Fallback: any eligible tool-capable model with a registered provider, same cooldown and
+    // hard-health exclusions. Never a route without native tool calling — the agent loop cannot
+    // drive it, so "no route" is the honest answer rather than a doomed turn.
     const eligible = this.firewall.eligibleModels();
     return (
       eligible.find(
-        (m) => m.capabilities.toolCalling && this.providerCatalog.get(m.providerId) && !this.eightBit.health.isInCooldown(m.providerId, m.modelId) && admitted(m.providerId, m.modelId),
+        (m) => m.capabilities.toolCalling && this.providerCatalog.get(m.providerId) && !this.eightBit.health.isInCooldown(m.providerId, m.modelId) && !this.eightBit.routeHealth.assess(m.providerId, m.modelId, { role: "CODER" }).hardExclude && admitted(m.providerId, m.modelId),
       ) ?? null
     );
   }
@@ -3238,6 +3260,7 @@ export class AgentRuntime {
     for (const route of ordered) {
       if (!this.providerCatalog.get(route.providerId)) continue;
       if (this.eightBit.health.isInCooldown(route.providerId, route.modelId)) continue;
+      if (this.eightBit.routeHealth.assess(route.providerId, route.modelId, { role: "CODER" }).hardExclude) continue;
       const rec = this.firewall.getModel(route.providerId, route.modelId);
       if (!rec || !rec.capabilities.toolCalling) continue;
       if (!this.firewall.verify(route.providerId, route.modelId).ok) continue;
@@ -3424,6 +3447,7 @@ export class AgentRuntime {
     const messageId = crypto.randomUUID();
     let assistantMessageStarted = false;
 
+    const modelCallStartedAt = Date.now();
     try {
       const stream = typeof (provider as any).streamChatWithContext === "function"
         ? (provider as any).streamChatWithContext(
@@ -3478,7 +3502,7 @@ export class AgentRuntime {
               const parsedTc = parseToolArgs(currentToolCall.arguments);
               if (parsedTc !== PARSE_FAILED) currentToolCall.arguments = JSON.stringify(parsedTc);
               if (turnState?.providerId && turnState?.modelId) {
-                this.eightBit.recordToolCallOutcome(turnState.providerId, turnState.modelId, parsedTc === PARSE_FAILED ? "malformed" : "valid");
+                this.eightBit.recordToolCallOutcome(turnState.providerId, turnState.modelId, parsedTc === PARSE_FAILED ? "malformed" : "valid", { role: "CODER", correlationId: turnId });
               }
               toolCalls.push(currentToolCall);
               adapter.emitToolCallCompleted(turnId, event.toolCallId, event.toolName, currentToolCall.arguments, agentId);
@@ -3494,8 +3518,14 @@ export class AgentRuntime {
           case "finish":
             break;
 
-          case "error":
-            throw new Error(`Provider error: ${event.code} - ${event.message}`);
+          case "error": {
+            // Keep the structured fields on the thrown error: 8-Bit's failure classification
+            // (status → MODEL_RETIRED at 410, RATE_LIMITED + retry horizon at 429) and the
+            // failover cooldown both read them — a bare message loses the provider's own timing.
+            const streamError = new Error(`Provider error: ${event.code} - ${event.message}`);
+            Object.assign(streamError, { code: event.code, status: event.status, retryAfter: event.retryAfter });
+            throw streamError;
+          }
         }
       }
     } catch (error) {
@@ -3513,11 +3543,20 @@ export class AgentRuntime {
       throw error;
     }
 
-    // A completed model call is live evidence the route is healthy (shared 8-Bit view).
+    // A completed model call is live evidence the route is healthy (shared 8-Bit view): the
+    // temporal authority gets the measured latency, the role the call served, the token cost
+    // the provider reported, and the turn correlation — not just an untyped "it worked".
     {
       const okState = this.activeTurns.get(turnId);
       if (okState?.providerId && okState.modelId) {
-        this.eightBit.recordSuccess(okState.providerId, okState.modelId);
+        this.eightBit.recordSuccess(okState.providerId, okState.modelId, {
+          latencyMs: Date.now() - modelCallStartedAt,
+          role: "CODER",
+          inputTokens: _usage?.inputTokens,
+          outputTokens: _usage?.outputTokens,
+          correlationId: turnId,
+        });
+        this.observeGovernorPressure(okState.providerId, okState.modelId, turnId);
         this.freeCloud?.recordRouteSuccess(okState.providerId, okState.modelId);
       }
     }
@@ -3582,6 +3621,28 @@ export class AgentRuntime {
       await this.userIntentHold?.waitForDispatch(this.sessionId, "other");
       return { kind: "completed" };
     }
+  }
+
+  /**
+   * R24 §18: feed the route health authority the governor's post-call pressure reading — the
+   * cooldown the next request on this provider would wait out, in-flight depth, and the last
+   * header-observed token bucket. The governor still owns admission/pacing; this is a read-only
+   * projection so 8-Bit can rank around a provider under pressure instead of discovering the
+   * next 429 by sending it.
+   */
+  private observeGovernorPressure(providerId: string, modelId: string, correlationId?: string): void {
+    const report = this.capacityGovernor.getCapacityReport(providerId);
+    this.eightBit.observe({
+      kind: "governor_pressure",
+      providerId,
+      modelId,
+      observedAt: new Date().toISOString(),
+      source: "governor",
+      pacingWaitMs: report.cooldownRemainingMs,
+      inFlight: report.activeConcurrent,
+      bucketRemainingTokens: report.observedQuota?.remainingTokens,
+      correlationId,
+    });
   }
 
   private capacityGovernedProvider(provider: ProviderAdapter, turnId: string): ProviderAdapter {
@@ -3992,8 +4053,12 @@ export class AgentRuntime {
     });
 
     // A provider-rejected tool call is a model-quality fact for 8-Bit's reliability ledger (the same
-    // ledger the locally-detected malformed-argument path feeds), not a route-health event.
-    if (outcome.reason === "INVALID_TOOL_OUTPUT") this.eightBit.recordToolCallOutcome(state.providerId, state.modelId, "malformed");
+    // ledger the locally-detected malformed-argument path feeds). It is NOT re-fed to the route
+    // health authority here: `handleTurnFailure` above already recorded the same rejection as a
+    // call_failure(INVALID_TOOL_OUTPUT), which pushed the role-scoped malformed sample — a second
+    // tool_outcome would double-count one event (R24 §16 observation provenance).
+    if (outcome.reason === "INVALID_TOOL_OUTPUT") this.eightBit.reliability.record(state.providerId, state.modelId, "malformed");
+    this.observeGovernorPressure(state.providerId, state.modelId, turnId);
 
     // Shared (cross-session) 8-Bit health: the registry and Settings see the same cooldown the
     // turn just observed, so a rate-limited route is not re-picked by the next session either.

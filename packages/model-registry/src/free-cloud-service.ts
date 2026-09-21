@@ -2,6 +2,8 @@ import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
 import type { ProviderAdapter, ProviderCatalog, ProviderResponseObservation } from "@codeforge/providers";
 import {
   runCompactQualification,
+  rateLimitObservationFromHeaders,
+  type EightBitRouteHealthAuthority,
   type ModelQualificationReceipt,
   type QualificationPersistence,
   InMemoryQualificationPersistence,
@@ -53,6 +55,12 @@ export interface FreeCloudServiceOptions {
   qualificationDailyBudgetPerProvider?: number;
   /** Minimum interval between qualification cycles for the same provider. Default 20 minutes. */
   qualificationCycleIntervalMs?: number;
+  /**
+   * R24: the host-shared route-health authority. When wired (or via {@link setRouteHealth}),
+   * every provider response observation also lands there as a normalized `rate_limit_headers`
+   * fact — one header stream feeds the quota tracker, the governor, and the authority, once.
+   */
+  routeHealth?: EightBitRouteHealthAuthority;
 }
 
 /** Family prior for qualification ordering — strong coding/agent families are tested first. */
@@ -110,6 +118,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private readonly qualificationSpend = new Map<string, { day: string; requests: number; lastCycleAt: number }>();
   private qualifying = false;
   private listeners = new Set<() => void>();
+  private routeHealth?: EightBitRouteHealthAuthority;
 
   constructor(options: FreeCloudServiceOptions) {
     this.firewall = options.firewall;
@@ -123,6 +132,13 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     this.failureCooldownMs = options.failureCooldownMs ?? 30_000;
     this.qualificationDailyBudget = options.qualificationDailyBudgetPerProvider ?? 12;
     this.qualificationCycleIntervalMs = options.qualificationCycleIntervalMs ?? 20 * 60_000;
+    this.routeHealth = options.routeHealth;
+  }
+
+  /** Attach (or replace) the shared route-health authority after construction — the desktop
+   * host creates the service before the server that owns the authority. */
+  setRouteHealth(authority: EightBitRouteHealthAuthority | undefined): void {
+    this.routeHealth = authority;
   }
 
   // --- definitions ---------------------------------------------------------------------------
@@ -347,6 +363,20 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   readonly onProviderResponse = (obs: ProviderResponseObservation): void => {
     const quota = parseRouteQuota(obs.headers, this.now);
     this.quota.record(obs.providerId, obs.modelId, quota);
+    // R24: the same header stream is the authority's quota evidence. One observation enters
+    // once — no re-parsed copy (§16-17 provenance). Provider-scoped responses (no modelId) have
+    // no route to attribute to; the authority keys conditions per route.
+    if (this.routeHealth && obs.modelId) {
+      const observation = rateLimitObservationFromHeaders({
+        providerId: obs.providerId,
+        modelId: obs.modelId,
+        status: obs.status,
+        headers: obs.headers,
+        observedAt: obs.observedAt,
+        source: "registry",
+      });
+      if (observation) this.routeHealth.observe(observation);
+    }
     if (obs.status === 429 && obs.modelId) {
       // Providers commonly omit Retry-After but expose an absolute X-RateLimit-Reset value.
       // The reset is equally authoritative; discarding it caused R12 to retry an OpenRouter
