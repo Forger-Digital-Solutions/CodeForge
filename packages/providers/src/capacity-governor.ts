@@ -1,4 +1,4 @@
-import { ProviderError, type ProviderAdapter, type PromptCacheCapability } from "./index.js";
+import { ProviderError, type ProviderAdapter, type PromptCacheCapability, type ProviderResponseObservation } from "./index.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
 
 /**
@@ -6,6 +6,8 @@ import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
  * These are authoritative evidence from the live provider.
  */
 export interface ObservedQuota {
+  /** Provider-declared token limit for the window (`x-ratelimit-limit-tokens`). */
+  limitTokens?: number;
   remainingTokens?: number;
   resetTokensMs?: number;
   remainingRequests?: number;
@@ -60,8 +62,29 @@ export const DEFAULT_FALLBACK_LIMITS: Readonly<Record<string, ProviderCapacityLi
 export interface Reservation {
   readonly providerId: string;
   readonly estimatedTokens: number;
-  release(actualTokens?: number): void;
+  /**
+   * @param actualTokens provider-reported input+output tokens (falls back to the estimate)
+   * @param actualInputTokens provider-reported prompt tokens — teaches the governor this
+   *   provider's tokenizer ratio versus the byte-based prompt estimate
+   */
+  release(actualTokens?: number, actualInputTokens?: number): void;
 }
+
+export interface AcquireOptions {
+  /**
+   * Byte-based estimate of the PROMPT alone (system + messages + tool schemas), without any
+   * completion reservation. Providers with a continuously refilling per-minute token bucket
+   * admit a request when its prompt fits the bucket (Groq, measured 2026-09-21: a 2 566-token
+   * prompt with `max_tokens 4096` was accepted at 5 170 remaining), so this is what the
+   * header-driven admission compares against.
+   */
+  promptTokens?: number;
+}
+
+/** Freshness window for a header-derived token bucket; older observations fall back to the sliding window. */
+const TOKEN_BUCKET_FRESH_MS = 90_000;
+/** Minimum safety margin over the byte-based prompt estimate (tokenizers differ from chars/4). */
+const PROMPT_ESTIMATE_MIN_MARGIN = 1.15;
 
 interface ProviderState {
   tokenHistory: Array<{ timestamp: number; tokens: number }>;
@@ -72,6 +95,12 @@ interface ProviderState {
   waitingQueue: number;
   observedQuota?: ObservedQuota;
   customLimits?: Partial<ProviderCapacityLimit>;
+  /**
+   * Learned ratio of provider-reported prompt tokens to the byte-based prompt estimate (EMA).
+   * Groq's gpt-oss tokenizer runs ~1.0× chars/4 on agent requests; Qwen's ran 1.8× on the same
+   * request — the margin must come from evidence, not a constant.
+   */
+  tokenizerRatio?: number;
 }
 
 export interface ProviderCapacityGovernorOptions {
@@ -202,9 +231,11 @@ export class ProviderCapacityGovernor {
     providerId: string,
     estimatedTokens = 1500,
     signal?: AbortSignal,
+    options: AcquireOptions = {},
   ): Promise<Reservation> {
     const state = this.getState(providerId);
     let enqueued = false;
+    const promptEstimate = options.promptTokens;
 
     try {
       for (;;) {
@@ -224,7 +255,13 @@ export class ProviderCapacityGovernor {
         // 2. Concurrency, RPM, TPM checks
         const isConcurrencyFull = state.activeConcurrent >= limits.maxConcurrent;
         const isRpmFull = currentRequests >= limits.maxRequestsPerMinute;
-        const isTpmFull = currentTokens + estimatedTokens > limits.maxTokensPerMinute && state.tokenHistory.length > 0;
+        const windowTpmFull = currentTokens + estimatedTokens > limits.maxTokensPerMinute && state.tokenHistory.length > 0;
+        // Evidence-driven token bucket: when the provider's own headers describe a refilling
+        // per-minute bucket and the observation is fresh, admission follows the provider's rule
+        // (prompt fits the projected bucket) instead of the conservative sliding window, and a
+        // wait is the exact refill time rather than a full minute.
+        const bucket = promptEstimate !== undefined ? this.tokenBucketDecision(state, promptEstimate, now) : undefined;
+        const isTpmFull = bucket ? !bucket.admit : windowTpmFull;
 
         if (isCooldown || isConcurrencyFull || isRpmFull || isTpmFull) {
           if (!enqueued) {
@@ -258,6 +295,10 @@ export class ProviderCapacityGovernor {
           }
 
           if (isTpmFull) {
+            if (bucket) {
+              await this.sleep(bucket.waitMs, signal);
+              continue;
+            }
             const oldestToken = state.tokenHistory[0]!;
             const waitMs = Math.max(50, oldestToken.timestamp + 60_000 - now);
             await this.sleep(waitMs, signal);
@@ -280,7 +321,7 @@ export class ProviderCapacityGovernor {
         return {
           providerId,
           estimatedTokens,
-          release: (actualTokens?: number) => {
+          release: (actualTokens?: number, actualInputTokens?: number) => {
             if (released) return;
             released = true;
             state.activeConcurrent = Math.max(0, state.activeConcurrent - 1);
@@ -291,6 +332,10 @@ export class ProviderCapacityGovernor {
               timestamp: this.now(),
               tokens: finalTokens,
             });
+            if (promptEstimate !== undefined && promptEstimate > 0 && typeof actualInputTokens === "number" && actualInputTokens > 0) {
+              const observed = actualInputTokens / promptEstimate;
+              state.tokenizerRatio = state.tokenizerRatio === undefined ? observed : state.tokenizerRatio * 0.7 + observed * 0.3;
+            }
           },
         };
       }
@@ -300,6 +345,41 @@ export class ProviderCapacityGovernor {
       }
     }
   }
+
+  /**
+   * Header-derived admission for providers with a refilling per-minute token bucket. Returns
+   * undefined when no fresh bucket observation exists (caller falls back to the sliding window).
+   */
+  private tokenBucketDecision(state: ProviderState, promptEstimate: number, now: number): { admit: boolean; waitMs: number; projectedRemaining: number; need: number } | undefined {
+    const quota = state.observedQuota;
+    if (!quota || quota.limitTokens === undefined || quota.remainingTokens === undefined || quota.resetTokensMs === undefined) return undefined;
+    if (now - quota.observedAt > TOKEN_BUCKET_FRESH_MS) return undefined;
+    const limit = quota.limitTokens;
+    const consumed = Math.max(0, limit - quota.remainingTokens);
+    // Refill rate from the provider's own reset horizon; a full bucket (nothing to refill) or a
+    // degenerate horizon falls back to the nominal limit-per-minute rate.
+    const refillPerMs = consumed > 0 && quota.resetTokensMs > 0 ? consumed / quota.resetTokensMs : limit / 60_000;
+    const projectedRemaining = Math.min(limit, quota.remainingTokens + refillPerMs * Math.max(0, now - quota.observedAt)) - state.inFlightTokens;
+    const margin = Math.max(PROMPT_ESTIMATE_MIN_MARGIN, (state.tokenizerRatio ?? 1) * 1.1);
+    const need = Math.ceil(promptEstimate * margin);
+    if (need > limit) {
+      // The prompt can never fit this bucket; let the request through so the provider's own
+      // rejection (a definitive 4xx with its reason) is what the caller sees, not a silent hang.
+      return { admit: true, waitMs: 0, projectedRemaining, need };
+    }
+    if (projectedRemaining >= need) return { admit: true, waitMs: 0, projectedRemaining, need };
+    const waitMs = Math.min(60_000, Math.max(50, Math.ceil((need - projectedRemaining) / refillPerMs)));
+    return { admit: false, waitMs, projectedRemaining, need };
+  }
+
+  /**
+   * Feed an adapter's response observation (status + rate-limit headers) into the governor. This
+   * is what makes pacing evidence-driven in production: factory-built adapters compose their
+   * caller's observer with this method, so every Groq/Cloudflare/… response updates the bucket.
+   */
+  readonly observeResponse = (observation: ProviderResponseObservation): void => {
+    this.recordResponse(observation.providerId, observation.status, observation.headers);
+  };
 
   /**
    * Record authoritative response observation from provider headers.
@@ -321,11 +401,18 @@ export class ProviderCapacityGovernor {
       }
     }
 
+    let limitTokens: number | undefined;
     let remainingTokens: number | undefined;
     let resetTokensMs: number | undefined;
     let remainingRequests: number | undefined;
     let resetRequestsMs: number | undefined;
     let retryAfterMs: number | undefined;
+
+    const limitTokensHeader = headerMap.get("x-ratelimit-limit-tokens");
+    if (limitTokensHeader) {
+      const parsed = parseInt(limitTokensHeader, 10);
+      if (!Number.isNaN(parsed) && parsed > 0) limitTokens = parsed;
+    }
 
     const remTokensHeader = headerMap.get("x-ratelimit-remaining-tokens");
     if (remTokensHeader) {
@@ -367,6 +454,7 @@ export class ProviderCapacityGovernor {
     }
 
     state.observedQuota = {
+      limitTokens,
       remainingTokens,
       resetTokensMs,
       remainingRequests,
@@ -459,11 +547,11 @@ export class GovernedProviderAdapter implements ProviderAdapter {
 
   async chat(req: ChatRequest): Promise<ChatResponse> {
     const estimatedTokens = estimatePromptTokens(req);
-    const reservation = await this.governor.acquire(this.providerId, estimatedTokens);
+    const reservation = await this.governor.acquire(this.providerId, estimatedTokens, undefined, { promptTokens: estimatePromptOnlyTokens(req) });
     try {
       const res = await this.inner.chat(req);
       const actualTokens = (res.usage?.inputTokens ?? 0) + (res.usage?.outputTokens ?? 0);
-      reservation.release(actualTokens > 0 ? actualTokens : estimatedTokens);
+      reservation.release(actualTokens > 0 ? actualTokens : estimatedTokens, res.usage?.inputTokens);
       return res;
     } catch (err: unknown) {
       reservation.release(estimatedTokens);
@@ -481,7 +569,7 @@ export class GovernedProviderAdapter implements ProviderAdapter {
     const estimatedTokens = estimatePromptTokens(req);
     let reservation: Reservation | undefined;
     try {
-      reservation = await this.governor.acquire(this.providerId, estimatedTokens, signal);
+      reservation = await this.governor.acquire(this.providerId, estimatedTokens, signal, { promptTokens: estimatePromptOnlyTokens(req) });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       yield {
@@ -494,20 +582,23 @@ export class GovernedProviderAdapter implements ProviderAdapter {
     }
 
     let totalTokens = estimatedTokens;
+    let inputTokens: number | undefined;
     try {
       for await (const event of this.inner.streamChat(req, signal)) {
         if (event.type === "usage" && event.usage) {
           totalTokens = (event.usage.inputTokens ?? 0) + (event.usage.outputTokens ?? 0);
+          inputTokens = event.usage.inputTokens;
         } else if ((event as any).usage) {
           const u = (event as any).usage;
           totalTokens = (u.inputTokens ?? 0) + (u.outputTokens ?? 0);
+          inputTokens = u.inputTokens;
         } else if (event.type === "error" && event.status === 429) {
           this.governor.recordRateLimit(this.providerId, event.retryAfter);
         }
         yield event;
       }
     } finally {
-      reservation.release(totalTokens > 0 ? totalTokens : estimatedTokens);
+      reservation.release(totalTokens > 0 ? totalTokens : estimatedTokens, inputTokens);
     }
   }
 }
@@ -518,6 +609,21 @@ export function estimatePromptTokens(req: ChatRequest): number {
     if (typeof m.content === "string") chars += m.content.length;
   }
   return Math.max(500, Math.ceil(chars / 4) + (req.maxTokens ?? 1000));
+}
+
+/**
+ * Byte-based estimate of the prompt alone: system prompt, every message (content, tool-call
+ * arguments, tool-result payloads) and the serialized tool schemas — the parts a provider
+ * actually tokenizes as input. No completion reservation; see {@link AcquireOptions.promptTokens}.
+ */
+export function estimatePromptOnlyTokens(req: ChatRequest): number {
+  let chars = req.system?.length ?? 0;
+  for (const m of req.messages) {
+    if (typeof m.content === "string") chars += m.content.length;
+    for (const call of m.toolCalls ?? []) chars += (call.function?.name?.length ?? 0) + (call.function?.arguments?.length ?? 0) + 16;
+  }
+  if (req.tools && req.tools.length > 0) chars += JSON.stringify(req.tools).length;
+  return Math.max(64, Math.ceil(chars / 4));
 }
 
 function parseResetTimeToMs(raw: string): number {

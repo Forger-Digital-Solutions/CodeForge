@@ -9,6 +9,7 @@ import {
   ProviderError,
   defaultCapacityGovernor,
   estimatePromptTokens,
+  estimatePromptOnlyTokens,
 } from "@codeforge/providers";
 import type { ForgeZero } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
@@ -230,7 +231,7 @@ export class ModelExecutionAdapter {
 
     if (pacingGovernor && !(provider as any).isGoverned) {
       const estimatedTokens = estimatePromptTokens(chatRequest);
-      reservation = await pacingGovernor.acquire(providerId, estimatedTokens, req.signal);
+      reservation = await pacingGovernor.acquire(providerId, estimatedTokens, req.signal, { promptTokens: estimatePromptOnlyTokens(chatRequest) });
     }
 
     try {

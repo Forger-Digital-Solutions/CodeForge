@@ -478,6 +478,8 @@ export {
   DEFAULT_FALLBACK_LIMITS,
   defaultCapacityGovernor,
   estimatePromptTokens,
+  estimatePromptOnlyTokens,
+  type AcquireOptions,
   type ObservedQuota,
   type ProviderCapacityLimit,
   type Reservation,

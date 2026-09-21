@@ -1,5 +1,6 @@
 import type { CredentialStore, ProviderModel, ProviderResponseObserver } from "./index.js";
 import { OpenAICompatibleAdapter, type OpenAICompatibleConfig } from "./openai-compatible.js";
+import { defaultCapacityGovernor } from "./capacity-governor.js";
 import { AnthropicAdapter } from "./anthropic.js";
 import { createOpenRouterAdapter } from "./openrouter.js";
 import { createOpencodeAdapter } from "./opencode.js";
@@ -162,10 +163,26 @@ function common(opts: ProviderFactoryOptions): Pick<OpenAICompatibleConfig, "cre
     apiKey: opts.apiKey,
     timeoutMs: opts.timeoutMs,
     fetchFn: opts.fetchFn,
-    onResponse: opts.onResponse,
+    // Every factory-built adapter feeds its rate-limit headers to the shared capacity governor,
+    // so pacing follows the provider's own bucket (evidence) instead of a fixed sliding window;
+    // the caller's observer (8-Bit route quota, the R23 bench) still receives every observation.
+    onResponse: composeObservers(defaultCapacityGovernor.observeResponse, opts.onResponse),
     cloudflareNeuronGuard: opts.cloudflareNeuronGuard,
     geminiFreePolicyGate: opts.geminiFreePolicyGate,
     geminiServiceTier: opts.geminiServiceTier,
+  };
+}
+
+function composeObservers(...observers: Array<ProviderResponseObserver | undefined>): ProviderResponseObserver {
+  const active = observers.filter((observer): observer is ProviderResponseObserver => typeof observer === "function");
+  return (observation) => {
+    for (const observer of active) {
+      try {
+        observer(observation);
+      } catch {
+        // Observation is advisory; never let one listener starve another or break a request.
+      }
+    }
   };
 }
 
