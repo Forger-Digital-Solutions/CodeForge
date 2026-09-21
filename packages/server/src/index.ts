@@ -8,7 +8,6 @@ import {
   MISSING_EXECUTION_MODE_FALLBACK,
   SendRequestSchema,
   composeMessageWithAttachments,
-  isWorkspaceEvent,
   type ExecutionMode,
   type WorkspaceEvent,
 } from "@codeforge/protocol";

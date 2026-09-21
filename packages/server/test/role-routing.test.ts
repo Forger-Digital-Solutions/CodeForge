@@ -102,7 +102,7 @@ describe("R1 role-aware SubAgent routing", () => {
   });
 
   it("maps agent task roles onto 8-Bit role contracts", () => {
-    expect(eightBitRoleForAgentRole("explorer")).toBe("TOOL_AGENT");
+    expect(eightBitRoleForAgentRole("explorer")).toBe("EXPLORER");
     expect(eightBitRoleForAgentRole("planner")).toBe("PLANNER");
     expect(eightBitRoleForAgentRole("coder")).toBe("CODER");
     expect(eightBitRoleForAgentRole("reviewer")).toBe("REVIEWER");

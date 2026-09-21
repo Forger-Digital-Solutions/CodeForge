@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CapacityReservationLedger, type CapacityRoute, type CapacityWindow, type ProviderCapacityPool } from "@codeforge/forge-zero";
-import { createFreeFabric, type FreeFabric } from "../src/free-fabric.js";
+import { createFreeFabric } from "../src/free-fabric.js";
 import { DEFAULT_ROUTE_HEALTH_POLICY, EightBitRouteHealthAuthority } from "../src/route-health-authority.js";
 
 const NOW = Date.parse("2026-09-21T00:00:00.000Z");

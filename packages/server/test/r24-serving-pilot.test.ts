@@ -194,7 +194,7 @@ describe("R24 serving pilot — a day of traffic across managed, sponsored and u
   };
 
   const provider = (id: string, script: StreamScript): PilotProvider => {
-    const p = new PilotProvider(id, `${id}-model`, script, () => ({ ...(fabric.reservationSnapshot()?.byRoute ?? {}) }));
+    const p = new PilotProvider(id, `${id}-model`, script, () => ({ ...fabric.reservationSnapshot()?.byRoute }));
     providers.set(id, p);
     catalog.register(p);
     return p;
@@ -304,7 +304,7 @@ describe("R24 serving pilot — a day of traffic across managed, sponsored and u
     // domain (sponsored), not on alice's entitlement — conservation under failover, not
     // just under saturation.
     let managedCalls = 0;
-    const managedProvider = provider("managed-strong", () => {
+    provider("managed-strong", () => {
       managedCalls++;
       return managedCalls === 1
         ? okEvents()

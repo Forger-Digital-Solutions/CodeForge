@@ -1,10 +1,8 @@
 import { describe, it, expect } from "vitest";
 import type { ChatRequest, StreamEvent } from "@codeforge/providers";
 import { createGenericFreeRecord } from "@codeforge/forge-zero";
-import { runCompactQualification } from "../src/qualification/compact.js";
 import { runRoleQualification, runRoleAwareQualification, ROLE_QUALIFICATION_SUITE_VERSION } from "../src/qualification/role-suite.js";
 import { EXPLORER_REPO, ROLE_PROTOCOLS } from "../src/qualification/role-protocols.js";
-import type { ModelQualificationReceipt } from "../src/qualification/types.js";
 
 /**
  * R24 Phase 10 — role protocol tests. Every adapter is a deterministic script driven by the

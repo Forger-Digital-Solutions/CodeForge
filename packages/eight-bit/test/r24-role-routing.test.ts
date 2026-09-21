@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest";
 import { CapacityReservationLedger, type CapacityRoute, type CapacityWindow, type ProviderCapacityPool } from "@codeforge/forge-zero";
 import { createFreeFabric, type FreeFabric } from "../src/free-fabric.js";
 import { DEFAULT_ROUTE_HEALTH_POLICY, EightBitRouteHealthAuthority } from "../src/route-health-authority.js";
-import type { ModelQualificationReceipt } from "../src/qualification/types.js";
-import { ROLE_QUALIFICATION_SUITE_VERSION } from "../src/qualification/role-protocols.js";
 
 /**
  * R24 Phase 10F — role-aware routing proof. The fabric must choose role-appropriate routes
@@ -53,21 +51,6 @@ function route(id: string, roles: string[], overrides: Partial<CapacityRoute> = 
 
 function poolFor(r: CapacityRoute, overrides: Partial<ProviderCapacityPool> = {}): ProviderCapacityPool {
   return { poolId: r.capacityPoolId, providerId: r.providerId, scope: r.capacityPoolScope, supplyClass: r.supplyClass, windows: r.windows, observedAt: OBSERVED_AT, authoritative: true, ...overrides };
-}
-
-function roleReceipt(providerId: string, modelId: string, roles: Record<string, "QUALIFIED" | "PROBATION" | "NOT_QUALIFIED" | "HARD_FAILURE">): ModelQualificationReceipt {
-  const roleResults = Object.fromEntries(Object.entries(roles).map(([role, status]) => [role, {
-    role, status, testCases: [], hardFailures: status === "HARD_FAILURE" ? ["x"] : [],
-    overallScore: status === "QUALIFIED" ? 0.95 : status === "PROBATION" ? 0.55 : 0.1,
-    startedAt: OBSERVED_AT, completedAt: OBSERVED_AT,
-  }]));
-  return {
-    suiteVersion: ROLE_QUALIFICATION_SUITE_VERSION,
-    providerId, modelId, modelDisplayName: modelId, accessClass: "MANAGED", freeStatus: "verified_free",
-    roleResults, startedAt: OBSERVED_AT, completedAt: OBSERVED_AT, totalLatencyMs: 1000,
-    qualificationState: Object.values(roles).includes("QUALIFIED") ? "QUALIFIED" : "NOT_QUALIFIED",
-    hardFailureRoles: [],
-  };
 }
 
 function fabricWith(routes: CapacityRoute[], health: EightBitRouteHealthAuthority, now: () => number): { fabric: FreeFabric; reservations: CapacityReservationLedger } {

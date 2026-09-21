@@ -300,7 +300,7 @@ export class EightBitRuntime {
       return {
         outcome: "no_eligible_route",
         reasonCodes: [`FABRIC_${decision.outcome}`, ...reasonCodes],
-        ...(queued ? { queued: { ...(decision.nextAvailableAt ? { nextAvailableAt: decision.nextAvailableAt } : {}) } } : {}),
+        ...(queued ? { queued: decision.nextAvailableAt ? { nextAvailableAt: decision.nextAvailableAt } : {} } : {}),
         fabric: decision,
       };
     }

@@ -278,7 +278,6 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
   const requiredRolesPresent = caze.requiredRoles.every((r) => roles.includes(r));
   const byId = new Map(tasks.map((t) => [String(t.id), t]));
   const depsOf = (t: PlannerGraphTask): string[] => Array.isArray(t.dependencies) ? (t.dependencies as unknown[]).map(String) : [];
-  const roleOfId = (id: string): string | undefined => { const t = byId.get(id); return t ? String(t.assignedRole).toLowerCase() : undefined; };
   const reaches = (from: PlannerGraphTask, targetRole: string, seen = new Set<string>()): boolean => {
     for (const dep of depsOf(from)) {
       if (seen.has(dep)) continue;
