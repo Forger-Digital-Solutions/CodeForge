@@ -1,0 +1,76 @@
+{
+  "campaignId": "dry_run-2026-09-21T22-50-28-604Z",
+  "phase": "dry_run",
+  "recordedAt": "2026-09-21T22:50:34.302Z",
+  "model": "scripted-free",
+  "identity": {
+    "protocolVersion": "r25-live-1.0.0",
+    "protocolDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+    "corpusManifestDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+    "codeforgeCommit": "de12447d7e4f95bfb5e536bcd34a8b8108058ada",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "benchmarks/r25/reference-solutions.mjs",
+      "packages/workflow/src/diff-review.ts",
+      "packages/workflow/src/types.ts",
+      ".playwright-mcp/",
+      "packages/workflow/src/semantic-diff-review.ts",
+      "packages/workflow/test/r25-semantic-diff-review.test.ts",
+      "scripts/r25-live-bench.mjs",
+      "scripts/r25-live-preflight.mjs",
+      "scripts/r25-live-qualification.mjs"
+    ],
+    "environmentFingerprint": "40e714b51014694ec3775e7f51aeed4544b03579209d183e5c0f2874a09dd4d4",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "mode": "single_agent_run",
+  "stopped": null,
+  "runs": [
+    {
+      "taskId": "r25-review-js-retry-storm",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verification_failed",
+      "modelCalls": 3,
+      "totalTokens": 6220,
+      "wallClockMs": 728,
+      "runId": "r23-dry_run-r25-review-js-retry-storm-optimized-r1-9bb3310a"
+    },
+    {
+      "taskId": "r25-review-js-retry-storm",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verification_failed",
+      "modelCalls": 3,
+      "totalTokens": 6220,
+      "wallClockMs": 263,
+      "runId": "r23-dry_run-r25-review-js-retry-storm-control-r1-c68d49c7"
+    },
+    {
+      "taskId": "r25-tiny-js-adult-check",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 1967,
+      "runId": "r23-dry_run-r25-tiny-js-adult-check-control-r1-a21c9349"
+    },
+    {
+      "taskId": "r25-tiny-js-adult-check",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 2333,
+      "runId": "r23-dry_run-r25-tiny-js-adult-check-optimized-r1-beda0bf2"
+    }
+  ]
+}

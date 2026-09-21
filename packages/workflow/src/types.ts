@@ -207,7 +207,17 @@ export interface DiffEntry {
 export type ReviewFindingSeverity = "blocking" | "advisory";
 
 export interface ReviewFinding {
-  code: "sensitive_file" | "oversized_diff" | "verification_config_modified";
+  code:
+    | "sensitive_file"
+    | "oversized_diff"
+    | "verification_config_modified"
+    | "test_assertion_weakened"
+    | "error_swallow_added"
+    | "environment_special_case"
+    | "dead_branch_added"
+    | "test_input_special_case"
+    | "unreferenced_new_symbol"
+    | "non_functional_change";
   severity: ReviewFindingSeverity;
   path: string;
   message: string;

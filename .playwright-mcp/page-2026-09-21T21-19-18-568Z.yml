@@ -1,0 +1,9 @@
+- generic [active] [ref=f21e1]:
+  - banner [ref=f21e2]:
+    - link [ref=f21e4] [cursor=pointer]:
+      - /url: https://www.fcc.gov/
+      - img "Federal Communications Commission" [ref=f21e5]
+  - generic [ref=f21e6]:
+    - heading "FCC Website Error" [level=1] [ref=f21e7]
+    - paragraph [ref=f21e8]: An unexpected error occurred with your request. Please check back later.
+    - paragraph [ref=f21e9]: "Reference ID: 0.932b2117.1790025558.342a5b5"

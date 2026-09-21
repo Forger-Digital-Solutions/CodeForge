@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "campaign": "R25 Mission A — live free-provider role qualification",
+  "generatedAt": "2026-09-21T22:31:34.547Z",
+  "zeroSpendBasis": "openrouter :free $0 unit price (live catalog); groq owner free-plan + observed rate-limit headers",
+  "openrouterUsageBefore": {
+    "status": 200,
+    "usage": 0,
+    "limit": null,
+    "limitRemaining": null,
+    "isFreeTier": false
+  },
+  "routes": [
+    {
+      "providerId": "openrouter",
+      "modelId": "qwen/qwen3.8-27b:free",
+      "startedAt": "2026-09-21T22:31:34.749Z",
+      "observations": [
+        {
+          "status": 429,
+          "model": "qwen/qwen3.8-27b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790029894855
+        }
+      ],
+      "receipt": {
+        "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+        "qualificationState": "NOT_QUALIFIED",
+        "hardFailureRoles": [],
+        "totalLatencyMs": 107,
+        "metadata": {
+          "compact": true,
+          "requests": 1,
+          "transient": true,
+          "quotaExhausted": false
+        },
+        "roleResults": {
+          "CODER": {
+            "status": "NOT_QUALIFIED",
+            "overallScore": 0,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "compact.tool_call",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 107,
+                "retries": 0,
+                "error": "OpenRouter error (429): {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"qwen/qwen3.8-27b:free is temporarily rate-limited upstream. Please retry shortly, or add your own ke"
+              },
+              {
+                "caseId": "compact.edit",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              }
+            ]
+          },
+          "TOOL_AGENT": {
+            "status": "NOT_QUALIFIED",
+            "overallScore": 0,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "compact.tool_call",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 107,
+                "retries": 0,
+                "error": "OpenRouter error (429): {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"qwen/qwen3.8-27b:free is temporarily rate-limited upstream. Please retry shortly, or add your own ke"
+              },
+              {
+                "caseId": "compact.edit",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              },
+              {
+                "caseId": "compact.structured",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              }
+            ]
+          },
+          "ANALYST": {
+            "status": "NOT_QUALIFIED",
+            "overallScore": 0,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "compact.structured",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              }
+            ]
+          }
+        }
+      },
+      "wallMs": 108
+    }
+  ],
+  "openrouterUsageAfter": {
+    "status": 200,
+    "usage": 0,
+    "limit": null,
+    "limitRemaining": null,
+    "isFreeTier": false
+  }
+}

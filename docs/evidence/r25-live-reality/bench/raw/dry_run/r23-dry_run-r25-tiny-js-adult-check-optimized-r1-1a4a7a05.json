@@ -1,0 +1,341 @@
+{
+  "schemaVersion": "r23-run-record-1",
+  "identity": {
+    "benchmarkVersion": "CodeForge-EfficiencyBench-R23",
+    "protocolId": "codeforge-efficiency-protocol-r23",
+    "protocolVersion": "r25-live-1.0.0",
+    "protocolDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+    "harnessVersion": "r23-harness-1.0.0",
+    "campaignId": "dry_run-2026-09-21T22-55-29-677Z",
+    "phase": "dry_run",
+    "runId": "r23-dry_run-r25-tiny-js-adult-check-optimized-r1-1a4a7a05",
+    "pairId": "dry_run-2026-09-21T22-55-29-677Z-r25-tiny-js-adult-check-r1",
+    "taskId": "r25-tiny-js-adult-check",
+    "taskClass": "tiny",
+    "taskLanguage": "javascript",
+    "repoSizeClass": "small",
+    "arm": "optimized",
+    "armConfigurationDigest": "f36a2e6a722cbfa84f91c0ab6d18a01176550d730772f21b6f97cdd7d3a61804",
+    "pairOrder": "optimized-first",
+    "repetition": 1,
+    "codeforgeCommit": "de12447d7e4f95bfb5e536bcd34a8b8108058ada",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "benchmarks/r25/reference-solutions.mjs",
+      "packages/forgegreen-campaign/src/r23/run-task.ts",
+      "packages/workflow/src/diff-review.ts",
+      "packages/workflow/src/types.ts",
+      ".playwright-mcp/",
+      "packages/workflow/src/semantic-diff-review.ts",
+      "packages/workflow/test/r25-semantic-diff-review.test.ts",
+      "scripts/r25-live-bench.mjs",
+      "scripts/r25-live-preflight.mjs",
+      "scripts/r25-live-qualification.mjs"
+    ],
+    "startingTreeHash": "7556058c6c69c5fe1b7bfa3e1671524e0af4d11e91cb60533dc24613b1fbeab0",
+    "endingTreeHash": "143b6f3daad358ad12ef7679592a07cf3e9b75af4ddf6b1bc85f3d3500c5d0ec",
+    "taskDigest": "4070312b98edd340384c8359e3af342d79be061ec853051f23ea6e35708ffd7d",
+    "modelId": "scripted-free",
+    "providerId": "scripted",
+    "routeClass": "fixture",
+    "forgeGreenEnabled": true,
+    "subagentsEnabled": true,
+    "topology": "single_agent_run:adaptive",
+    "environmentFingerprint": "40e714b51014694ec3775e7f51aeed4544b03579209d183e5c0f2874a09dd4d4",
+    "startedAt": "2026-09-21T22:56:43.220Z",
+    "endedAt": "2026-09-21T22:56:45.673Z"
+  },
+  "outcome": {
+    "runtimeStatus": "completed",
+    "stopReason": "completed",
+    "claimedComplete": true,
+    "verifierRan": true,
+    "verifierPassed": true,
+    "verifierExitCode": 0,
+    "verifierDurationMs": 95,
+    "completionAuthority": "PASS",
+    "completionBlockers": [],
+    "forbiddenActionObserved": false,
+    "verifiedComplete": true,
+    "falseComplete": false,
+    "classification": "verified_complete",
+    "completionReason": "claimed complete; hidden verifier passed; completion authority PASS",
+    "testsPassed": 5,
+    "testsFailed": 0,
+    "filesChanged": [
+      "src/user.js"
+    ],
+    "linesAdded": 1,
+    "linesRemoved": 1
+  },
+  "inference": {
+    "totalInputTokens": {
+      "value": 7500,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "totalOutputTokens": {
+      "value": 200,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "totalTokens": {
+      "value": 7700,
+      "source": "DERIVED",
+      "origin": "PROVIDER",
+      "note": "input + output"
+    },
+    "cachedInputTokens": {
+      "source": "UNKNOWN",
+      "note": "cached tokens not reported on every call"
+    },
+    "uncachedInputTokens": {
+      "source": "UNKNOWN",
+      "note": "cached unknown"
+    },
+    "reasoningTokens": {
+      "source": "UNKNOWN",
+      "note": "reasoning tokens not reported on every call"
+    },
+    "modelCalls": 3,
+    "callsWithProviderUsage": 3,
+    "failedModelCalls": 0,
+    "retriedModelCalls": 0,
+    "rateLimitedCalls": 0,
+    "providerFailovers": 0,
+    "modelFailovers": 0,
+    "duplicateRequestsSuppressed": 0,
+    "calls": [
+      {
+        "callIndex": 0,
+        "providerId": "scripted",
+        "requestedModelId": "scripted-free",
+        "startedAt": "2026-09-21T22:56:43.810Z",
+        "endedAt": "2026-09-21T22:56:43.810Z",
+        "latencyMs": 0,
+        "timeToFirstEventMs": 0,
+        "requestBytes": 10200,
+        "responseBytes": 22,
+        "messageCount": 2,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2400,
+        "completionTokens": 60,
+        "totalTokens": 2460,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "016c55073acda67c6c51d8e89486fa8608d26192a73d458c53bd9cb1b41b11ca"
+      },
+      {
+        "callIndex": 1,
+        "providerId": "scripted",
+        "requestedModelId": "scripted-free",
+        "startedAt": "2026-09-21T22:56:43.839Z",
+        "endedAt": "2026-09-21T22:56:43.839Z",
+        "latencyMs": 0,
+        "timeToFirstEventMs": 0,
+        "requestBytes": 10616,
+        "responseBytes": 81,
+        "messageCount": 4,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 1,
+          "tool": 1
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2400,
+        "completionTokens": 60,
+        "totalTokens": 2460,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "4d4eb2b681a69f2d3400b692352556b9f30e15ad6678b2f0b1eaa2e22d598f91"
+      },
+      {
+        "callIndex": 2,
+        "providerId": "scripted",
+        "requestedModelId": "scripted-free",
+        "startedAt": "2026-09-21T22:56:43.868Z",
+        "endedAt": "2026-09-21T22:56:43.868Z",
+        "latencyMs": 0,
+        "timeToFirstEventMs": 0,
+        "requestBytes": 10939,
+        "responseBytes": 75,
+        "messageCount": 6,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 2,
+          "tool": 2
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2700,
+        "completionTokens": 80,
+        "totalTokens": 2780,
+        "providerReportedCostUsd": 0,
+        "finishReason": "stop",
+        "toolCallsEmitted": 0,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "0b7ece025fda0b44a7642bb187f341cab4e6a933c1f38a2e0a59aea03b957fdd"
+      }
+    ]
+  },
+  "context": {
+    "transmittedContextBytes": 31755,
+    "finalConversationBytes": 3702,
+    "providerStatelessnessRepeatBytes": 28053,
+    "avoidableDuplicateBytes": 0,
+    "avoidableDuplicateTokens": {
+      "value": 0,
+      "source": "DERIVED",
+      "origin": "HARNESS",
+      "note": "bytes × run prompt-token/byte ratio"
+    },
+    "avoidableDuplicateEvents": [],
+    "avoidableDuplicateBytesWithinRole": 0,
+    "avoidableDuplicateBytesCrossRole": 0,
+    "finalComposition": {
+      "systemBytes": 1865,
+      "userTaskBytes": 1577,
+      "assistantBytes": 0,
+      "toolResultBytes": 260,
+      "toolResultBytesByTool": {
+        "read_file": 206,
+        "edit_file": 54
+      },
+      "otherBytes": 0
+    },
+    "bootstrapContextBytes": 3443,
+    "bootstrapSelectedFiles": 3,
+    "bootstrapCandidateFiles": 4,
+    "canonicalCacheHits": 0,
+    "canonicalCacheMisses": 0,
+    "toolOutputBytesAvoidedByCompression": 0,
+    "providerCacheHitCalls": 0,
+    "promptTokensPerByte": 0.23618327822390175
+  },
+  "activity": {
+    "role": "coder",
+    "toolCallsRequested": 2,
+    "toolCallsExecuted": 2,
+    "toolCallsFailed": 0,
+    "duplicateActionsSuppressed": 0,
+    "byTool": {
+      "read_file": {
+        "requested": 1,
+        "executed": 1,
+        "suppressed": 0
+      },
+      "edit_file": {
+        "requested": 1,
+        "executed": 1,
+        "suppressed": 0
+      }
+    },
+    "fileReads": 1,
+    "fileWrites": 1,
+    "searches": 0,
+    "listings": 0,
+    "shellCalls": 0,
+    "browserCalls": 0,
+    "mcpCalls": 0,
+    "pluginCalls": 0,
+    "subagentCount": 0,
+    "subagentModelCalls": 0
+  },
+  "time": {
+    "wallClockMs": 2365,
+    "activeAgentMs": 784,
+    "modelWaitMs": 0,
+    "toolMs": {
+      "value": 11,
+      "source": "OBSERVED",
+      "origin": "RUNTIME"
+    },
+    "verificationMs": 1430,
+    "rateLimitWaitMs": 0,
+    "pacingWaitMs": 1,
+    "forgeGreenOverheadMs": {
+      "value": 0.09230000001844019,
+      "source": "OBSERVED",
+      "origin": "RUNTIME"
+    }
+  },
+  "economics": {
+    "pricingSnapshotId": "r25-fixture",
+    "actualCostUsd": {
+      "value": 0,
+      "source": "OBSERVED",
+      "origin": "PROVIDER",
+      "note": "Σ provider-reported per-call cost"
+    },
+    "equivalentPublicApiCostUsd": {
+      "source": "UNKNOWN",
+      "note": "no public-API equivalent declared for scripted::scripted-free"
+    },
+    "equivalentPublicApiPriceRef": "",
+    "equivalentMarketCostUsd": {
+      "value": 0.0255,
+      "source": "DERIVED",
+      "origin": "SNAPSHOT",
+      "note": "tokens × fixture::reference"
+    },
+    "equivalentMarketPriceRef": "fixture::reference"
+  },
+  "resources": {
+    "cpuUserMs": {
+      "value": 47,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "cpuSystemMs": {
+      "value": 141,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "peakRssBytes": {
+      "value": 205660160,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerResponseBytes": {
+      "value": 178,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerRequestBytes": {
+      "value": 31755,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "gpuPowerDrawWattsIdleSample": {
+      "value": 3.68,
+      "source": "OBSERVED",
+      "origin": "HARNESS",
+      "note": "single nvidia-smi sample; local GPU is idle — not inference"
+    },
+    "sampler": "node-process-cpu-rss-1 (harness process only; tool child processes excluded)"
+  },
+  "telemetry": {
+    "forgeGreenR0TelemetryId": "fg-r0-36962d42ab0b50daccf47ca24642ddaf",
+    "efficiencyReasonCodes": [
+      "stable_prefix_reused"
+    ]
+  },
+  "notes": [
+    "inert switches on this execution path: memoryDelivery (mission memory is not used by the autonomous run path) and verificationReuse (FG-12F has no production caller) — recorded for provenance, identical in both arms"
+  ]
+}

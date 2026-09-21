@@ -3,6 +3,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 import type { DiffEntry, ReviewDecision, ReviewFinding } from "./types.js";
+import { semanticDiffFindings } from "./semantic-diff-review.js";
 
 /** A bounded pre-run snapshot. Binary content is identified and hashed but never retained as text. */
 export type BeforeSnapshot =
@@ -420,6 +421,11 @@ export async function reviewDiff(
       issues.push(verificationConfig.message);
       findings.push(verificationConfig);
     }
+  }
+
+  for (const finding of semanticDiffFindings(workspacePath, diffs)) {
+    issues.push(finding.message);
+    findings.push(finding);
   }
 
   const approved = issues.length === 0;

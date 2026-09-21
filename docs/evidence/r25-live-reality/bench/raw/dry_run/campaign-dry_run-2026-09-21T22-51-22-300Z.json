@@ -1,0 +1,96 @@
+{
+  "campaignId": "dry_run-2026-09-21T22-51-22-300Z",
+  "phase": "dry_run",
+  "recordedAt": "2026-09-21T22:51:33.202Z",
+  "model": "scripted-free",
+  "identity": {
+    "protocolVersion": "r25-live-1.0.0",
+    "protocolDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+    "corpusManifestDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+    "codeforgeCommit": "de12447d7e4f95bfb5e536bcd34a8b8108058ada",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "benchmarks/r25/reference-solutions.mjs",
+      "packages/workflow/src/diff-review.ts",
+      "packages/workflow/src/types.ts",
+      ".playwright-mcp/",
+      "packages/workflow/src/semantic-diff-review.ts",
+      "packages/workflow/test/r25-semantic-diff-review.test.ts",
+      "scripts/r25-live-bench.mjs",
+      "scripts/r25-live-preflight.mjs",
+      "scripts/r25-live-qualification.mjs"
+    ],
+    "environmentFingerprint": "40e714b51014694ec3775e7f51aeed4544b03579209d183e5c0f2874a09dd4d4",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "mode": "single_agent_run",
+  "stopped": null,
+  "runs": [
+    {
+      "taskId": "r25-ambiguous-ts-session-clock",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 2549,
+      "runId": "r23-dry_run-r25-ambiguous-ts-session-clock-optimized-r1-69b3fefe"
+    },
+    {
+      "taskId": "r25-ambiguous-ts-session-clock",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 1893,
+      "runId": "r23-dry_run-r25-ambiguous-ts-session-clock-control-r1-9a927ab4"
+    },
+    {
+      "taskId": "r25-review-js-retry-storm",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verification_failed",
+      "modelCalls": 2,
+      "totalTokens": 4040,
+      "wallClockMs": 223,
+      "runId": "r23-dry_run-r25-review-js-retry-storm-control-r1-d6b99dbb"
+    },
+    {
+      "taskId": "r25-review-js-retry-storm",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verification_failed",
+      "modelCalls": 2,
+      "totalTokens": 4040,
+      "wallClockMs": 614,
+      "runId": "r23-dry_run-r25-review-js-retry-storm-optimized-r1-3cf0cdb3"
+    },
+    {
+      "taskId": "r25-testfix-js-stale-expected",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 2,
+      "totalTokens": 4640,
+      "wallClockMs": 2672,
+      "runId": "r23-dry_run-r25-testfix-js-stale-expected-optimized-r1-0c61b499"
+    },
+    {
+      "taskId": "r25-testfix-js-stale-expected",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 2,
+      "totalTokens": 4640,
+      "wallClockMs": 2177,
+      "runId": "r23-dry_run-r25-testfix-js-stale-expected-control-r1-011f441f"
+    }
+  ]
+}

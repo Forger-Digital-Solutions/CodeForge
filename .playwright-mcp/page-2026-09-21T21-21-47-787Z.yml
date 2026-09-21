@@ -1,0 +1,709 @@
+- generic [active] [ref=f49e1]:
+  - link "Skip to main content" [ref=f49e2] [cursor=pointer]:
+    - /url: "#main"
+  - navigation "Primary" [ref=f49e3]:
+    - generic [ref=f49e4]:
+      - generic [ref=f49e5]:
+        - link "FCC ID" [ref=f49e6] [cursor=pointer]:
+          - /url: /
+        - link "News" [ref=f49e7] [cursor=pointer]:
+          - /url: /news
+        - link "Statistics" [ref=f49e8] [cursor=pointer]:
+          - /url: /status
+      - search "Site search" [ref=f49e9]:
+        - generic [ref=f49e10]: FCC ID
+        - searchbox "FCC ID" [ref=f49e11]
+        - button "Search" [ref=f49e12] [cursor=pointer]
+  - main [ref=f49e13]:
+    - list [ref=f49e14]:
+      - listitem [ref=f49e15]:
+        - link "FCC ID" [ref=f49e16] [cursor=pointer]:
+          - /url: /
+        - generic [aria-hidden] [ref=f49e17]: "1"
+      - listitem [ref=f49e18]:
+        - text: /
+        - link "YHL" [ref=f49e19] [cursor=pointer]:
+          - /url: /YHL
+        - generic [aria-hidden] [ref=f49e20]: "2"
+      - listitem [ref=f49e21]:
+        - text: /
+        - link "YHLBLUM100" [ref=f49e22] [cursor=pointer]:
+          - /url: /YHLBLUM100
+        - generic [aria-hidden] [ref=f49e23]: "3"
+      - listitem [ref=f49e24]:
+        - text: /Internal Photos_1
+        - generic [aria-hidden] [ref=f49e25]: "4"
+    - generic [ref=f49e26]:
+      - heading "BLUM100 Hotspot Teardown Internal Photos - FCC ID YHLBLUM100" [level=1] [ref=f49e27]
+      - paragraph [ref=f49e28]: FCC ID YHLBLUM100
+      - paragraph [ref=f49e29]: Internal Photos_1
+      - paragraph [ref=f49e30]: Hotspot
+      - paragraph [ref=f49e31]:
+        - text: by
+        - link "BLU Products, Inc." [ref=f49e32] [cursor=pointer]:
+          - /url: /YHL
+    - paragraph [ref=f49e34]: Loading document preview...
+    - generic [ref=f49e35]:
+      - heading "Document Details" [level=2] [ref=f49e37]
+      - table [ref=f49e39]:
+        - rowgroup [ref=f49e40]:
+          - row [ref=f49e41]:
+            - rowheader "FCC ID" [ref=f49e42]
+            - cell [ref=f49e43]:
+              - link "YHLBLUM100" [ref=f49e44] [cursor=pointer]:
+                - /url: /YHLBLUM100
+          - row [ref=f49e45]:
+            - rowheader "Document ID" [ref=f49e46]
+            - cell "8517403" [ref=f49e47]
+          - row [ref=f49e48]:
+            - rowheader "Document Type" [ref=f49e49]
+            - cell "Internal Photos" [ref=f49e50]
+          - row [ref=f49e51]:
+            - rowheader "Description" [ref=f49e52]
+            - cell "Internal Photos_1" [ref=f49e53]
+          - row [ref=f49e54]:
+            - rowheader "Applicant" [ref=f49e55]
+            - cell "BLU Products, Inc." [ref=f49e56]
+          - row [ref=f49e57]:
+            - rowheader "Equipment Class" [ref=f49e58]
+            - cell "Hotspot" [ref=f49e59]
+          - row [ref=f49e60]:
+            - rowheader "Product Code" [ref=f49e61]
+            - cell "BLUM100" [ref=f49e62]
+          - row [ref=f49e63]:
+            - rowheader "Application ID" [ref=f49e64]
+            - cell "ameDCOIuSTURCehsko6L8w==" [ref=f49e65]
+          - row [ref=f49e66]:
+            - rowheader "Application Purpose" [ref=f49e67]
+            - cell "Original Equipment" [ref=f49e68]
+          - row [ref=f49e69]:
+            - rowheader "Application Date" [ref=f49e70]
+            - cell "2025-07-28" [ref=f49e71]
+          - row [ref=f49e72]:
+            - rowheader "Frequency Range" [ref=f49e73]
+            - cell "1712.5-1777.5 MHz" [ref=f49e74]
+          - row [ref=f49e75]:
+            - rowheader "FRN" [ref=f49e76]
+            - cell "0019890946" [ref=f49e77]
+          - row [ref=f49e78]:
+            - rowheader "Test Firm" [ref=f49e79]
+            - cell "Shanghai Tejet Communications Technology Co., Ltd." [ref=f49e80]
+          - row [ref=f49e81]:
+            - rowheader "Certified By" [ref=f49e82]
+            - cell "Xuewen Wu" [ref=f49e83]
+          - row [ref=f49e84]:
+            - rowheader "Short-Term Confidentiality" [ref=f49e85]
+            - cell "No" [ref=f49e86]
+          - row [ref=f49e87]:
+            - rowheader "Long-Term Confidentiality" [ref=f49e88]
+            - cell "No" [ref=f49e89]
+          - row [ref=f49e90]:
+            - rowheader "Short-Term Confidentiality Date" [ref=f49e91]
+            - cell "01/25/2026" [ref=f49e92]
+          - row [ref=f49e93]:
+            - rowheader "Grant Deferral" [ref=f49e94]
+            - cell "No" [ref=f49e95]
+          - row [ref=f49e96]:
+            - rowheader "Modular Equipment" [ref=f49e97]
+            - cell "Does not apply" [ref=f49e98]
+          - row [ref=f49e99]:
+            - rowheader "Composite Device" [ref=f49e100]
+            - cell "Yes" [ref=f49e101]
+          - row [ref=f49e102]:
+            - rowheader "Composite Part" [ref=f49e103]
+            - cell "No" [ref=f49e104]
+          - row [ref=f49e105]:
+            - rowheader "Submitted" [ref=f49e106]
+            - cell "2025-07-28" [ref=f49e107]
+          - row [ref=f49e108]:
+            - rowheader "Available" [ref=f49e109]
+            - cell "2026-01-25" [ref=f49e110]
+          - row [ref=f49e111]:
+            - rowheader "Pages" [ref=f49e112]
+            - cell "5" [ref=f49e113]
+          - row [ref=f49e114]:
+            - rowheader "File Type" [ref=f49e115]
+            - cell "Adobe Acrobat PDF" [ref=f49e116]
+          - row [ref=f49e117]:
+            - rowheader "File Size" [ref=f49e118]
+            - cell "2133630" [ref=f49e119]
+          - row [ref=f49e120]:
+            - rowheader "File SHA-256" [ref=f49e121]
+            - cell "30a4f66bd2ba37a0b8f9a818a8eedb9a7a6480f7b23a4b247cb0a5cd6810b64b" [ref=f49e122]
+          - row [ref=f49e123]:
+            - rowheader "FCC.gov Sources" [ref=f49e124]
+            - cell [ref=f49e125]:
+              - link "FCC.gov 8517403" [ref=f49e126] [cursor=pointer]:
+                - /url: https://fccid.io/ViewExhibitReport.cfm?id=8517403
+              - text: ","
+              - link "FCC.gov 8517243" [ref=f49e127] [cursor=pointer]:
+                - /url: https://fccid.io/ViewExhibitReport.cfm?id=8517243
+              - text: ","
+              - link "FCC.gov 8517132" [ref=f49e128] [cursor=pointer]:
+                - /url: https://fccid.io/ViewExhibitReport.cfm?id=8517132
+              - text: ","
+              - link "FCC.gov 8517058" [ref=f49e129] [cursor=pointer]:
+                - /url: https://fccid.io/ViewExhibitReport.cfm?id=8517058
+    - generic [ref=f49e130]:
+      - heading "Related FCC Exhibits" [level=2] [ref=f49e132]
+      - table [ref=f49e134]:
+        - rowgroup [ref=f49e135]:
+          - row [ref=f49e136]:
+            - columnheader "Document" [ref=f49e137]
+            - columnheader "Type" [ref=f49e138]
+            - columnheader "Available" [ref=f49e139]
+            - columnheader "File" [ref=f49e140]
+        - rowgroup [ref=f49e141]:
+          - row [ref=f49e142]:
+            - cell [ref=f49e143]:
+              - link "User Manual" [ref=f49e144] [cursor=pointer]:
+                - /url: /YHLBLUM100/User-Manual/User-Manual-8517408
+            - cell "Users Manual" [ref=f49e145]
+            - cell "2026-01-25" [ref=f49e146]
+            - cell "PDF 2.5 MB" [ref=f49e147]
+          - row [ref=f49e148]:
+            - cell [ref=f49e149]:
+              - strong [ref=f49e150]: Internal Photos_1
+            - cell "Internal Photos" [ref=f49e151]
+            - cell "2026-01-25" [ref=f49e152]
+            - cell "PDF 2 MB" [ref=f49e153]
+          - row [ref=f49e154]:
+            - cell [ref=f49e155]:
+              - link "Internal Photos_2" [ref=f49e156] [cursor=pointer]:
+                - /url: /YHLBLUM100/Internal-Photos/Internal-Photos-2-8517404
+            - cell "Internal Photos" [ref=f49e157]
+            - cell "2026-01-25" [ref=f49e158]
+            - cell "PDF 3 MB" [ref=f49e159]
+          - row [ref=f49e160]:
+            - cell [ref=f49e161]:
+              - link "BL-SH2550525-AW ANNEX C EUT EXTERNAL PHOTOS-min" [ref=f49e162] [cursor=pointer]:
+                - /url: /YHLBLUM100/External-Photos/BL-SH2550525-AW-ANNEX-C-EUT-EXTERNAL-PHOTOS-min-8517431
+            - cell "External Photos" [ref=f49e163]
+            - cell "2026-01-25" [ref=f49e164]
+            - cell "PDF 1 MB" [ref=f49e165]
+          - row [ref=f49e166]:
+            - cell [ref=f49e167]:
+              - link "External Photos_1" [ref=f49e168] [cursor=pointer]:
+                - /url: /YHLBLUM100/External-Photos/External-Photos-1-8517405
+            - cell "External Photos" [ref=f49e169]
+            - cell "2026-01-25" [ref=f49e170]
+            - cell "PDF 4.5 MB" [ref=f49e171]
+          - row [ref=f49e172]:
+            - cell [ref=f49e173]:
+              - link "External Photos_2" [ref=f49e174] [cursor=pointer]:
+                - /url: /YHLBLUM100/External-Photos/External-Photos-2-8517406
+            - cell "External Photos" [ref=f49e175]
+            - cell "2026-01-25" [ref=f49e176]
+            - cell "PDF 4.3 MB" [ref=f49e177]
+          - row [ref=f49e178]:
+            - cell [ref=f49e179]:
+              - link "External Photos_3" [ref=f49e180] [cursor=pointer]:
+                - /url: /YHLBLUM100/External-Photos/External-Photos-3-8517407
+            - cell "External Photos" [ref=f49e181]
+            - cell "2026-01-25" [ref=f49e182]
+            - cell "PDF 4.3 MB" [ref=f49e183]
+          - row [ref=f49e184]:
+            - cell [ref=f49e185]:
+              - link "Label Location" [ref=f49e186] [cursor=pointer]:
+                - /url: /YHLBLUM100/Label/Label-Location-8517498
+            - cell "ID Label/Location Info" [ref=f49e187]
+            - cell "2025-07-28" [ref=f49e188]
+            - cell "PDF 155.6 KB" [ref=f49e189]
+          - row [ref=f49e190]:
+            - cell [ref=f49e191]:
+              - link "BL-SH2550525-AS SAR test setup photo" [ref=f49e192] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Setup-Photos/BL-SH2550525-AS-SAR-test-setup-photo-8517409
+            - cell "Test Setup Photos" [ref=f49e193]
+            - cell "2026-01-25" [ref=f49e194]
+            - cell "PDF 750.5 KB" [ref=f49e195]
+          - row [ref=f49e196]:
+            - cell [ref=f49e197]:
+              - link "Test Setup Photos" [ref=f49e198] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Setup-Photos/Test-Setup-Photos-8517402
+            - cell "Test Setup Photos" [ref=f49e199]
+            - cell "2026-01-25" [ref=f49e200]
+            - cell "PDF 1.7 MB" [ref=f49e201]
+          - row [ref=f49e202]:
+            - cell [ref=f49e203]:
+              - link "Test Setup Photos" [ref=f49e204] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Setup-Photos/Test-Setup-Photos-8517131
+            - cell "Test Setup Photos" [ref=f49e205]
+            - cell "2026-01-25" [ref=f49e206]
+            - cell "PDF 964.6 KB" [ref=f49e207]
+          - row [ref=f49e208]:
+            - cell [ref=f49e209]:
+              - link "2.4G WIFI Test Report_1" [ref=f49e210] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/2-4G-WIFI-Test-Report-1-8517077
+            - cell "Test Report" [ref=f49e211]
+            - cell "2025-07-28" [ref=f49e212]
+            - cell "PDF 4.8 MB" [ref=f49e213]
+          - row [ref=f49e214]:
+            - cell [ref=f49e215]:
+              - link "2.4G WIFI Test Report_2" [ref=f49e216] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/2-4G-WIFI-Test-Report-2-8517078
+            - cell "Test Report" [ref=f49e217]
+            - cell "2025-07-28" [ref=f49e218]
+            - cell "PDF 3.7 MB" [ref=f49e219]
+          - row [ref=f49e220]:
+            - cell [ref=f49e221]:
+              - link "5G WLAN Test Report" [ref=f49e222] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/5G-WLAN-Test-Report-8517155
+            - cell "Test Report" [ref=f49e223]
+            - cell "2025-07-28" [ref=f49e224]
+            - cell "PDF 2.8 MB" [ref=f49e225]
+          - row [ref=f49e226]:
+            - cell [ref=f49e227]:
+              - link "Antenna Specification" [ref=f49e228] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/Antenna-Specification-8517490
+            - cell "Test Report" [ref=f49e229]
+            - cell "2025-07-28" [ref=f49e230]
+            - cell "PDF 1.8 MB" [ref=f49e231]
+          - row [ref=f49e232]:
+            - cell [ref=f49e233]:
+              - link "BL-SH2550525-501 Data Part 1 - 1" [ref=f49e234] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-1-1-8517432
+            - cell "Test Report" [ref=f49e235]
+            - cell "2025-07-28" [ref=f49e236]
+            - cell "PDF 5 MB" [ref=f49e237]
+          - row [ref=f49e238]:
+            - cell [ref=f49e239]:
+              - link "BL-SH2550525-501 Data Part 1 - 2" [ref=f49e240] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-1-2-8517433
+            - cell "Test Report" [ref=f49e241]
+            - cell "2025-07-28" [ref=f49e242]
+            - cell "PDF 5.3 MB" [ref=f49e243]
+          - row [ref=f49e244]:
+            - cell [ref=f49e245]:
+              - link "BL-SH2550525-501 Data Part 1 - 3" [ref=f49e246] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-1-3-8517434
+            - cell "Test Report" [ref=f49e247]
+            - cell "2025-07-28" [ref=f49e248]
+            - cell "PDF 5.3 MB" [ref=f49e249]
+          - row [ref=f49e250]:
+            - cell [ref=f49e251]:
+              - link "BL-SH2550525-501 Data Part 1 - 4" [ref=f49e252] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-1-4-8517435
+            - cell "Test Report" [ref=f49e253]
+            - cell "2025-07-28" [ref=f49e254]
+            - cell "PDF 5.1 MB" [ref=f49e255]
+          - row [ref=f49e256]:
+            - cell [ref=f49e257]:
+              - link "BL-SH2550525-501 Data Part 1 - 5" [ref=f49e258] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-1-5-8517436
+            - cell "Test Report" [ref=f49e259]
+            - cell "2025-07-28" [ref=f49e260]
+            - cell "PDF 5.1 MB" [ref=f49e261]
+          - row [ref=f49e262]:
+            - cell [ref=f49e263]:
+              - link "BL-SH2550525-501 Data Part 1 - 6" [ref=f49e264] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-1-6-8517437
+            - cell "Test Report" [ref=f49e265]
+            - cell "2025-07-28" [ref=f49e266]
+            - cell "PDF 5.3 MB" [ref=f49e267]
+          - row [ref=f49e268]:
+            - cell [ref=f49e269]:
+              - link "BL-SH2550525-501 Data Part 1 - 7" [ref=f49e270] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-1-7-8517438
+            - cell "Test Report" [ref=f49e271]
+            - cell "2025-07-28" [ref=f49e272]
+            - cell "PDF 5.1 MB" [ref=f49e273]
+          - row [ref=f49e274]:
+            - cell [ref=f49e275]:
+              - link "BL-SH2550525-501 Data Part 1 - 8" [ref=f49e276] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-1-8-8517439
+            - cell "Test Report" [ref=f49e277]
+            - cell "2025-07-28" [ref=f49e278]
+            - cell "PDF 3.4 MB" [ref=f49e279]
+          - row [ref=f49e280]:
+            - cell [ref=f49e281]:
+              - link "BL-SH2550525-501 Data Part 1 - 9" [ref=f49e282] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-1-9-8517440
+            - cell "Test Report" [ref=f49e283]
+            - cell "2025-07-28" [ref=f49e284]
+            - cell "PDF 3.7 MB" [ref=f49e285]
+          - row [ref=f49e286]:
+            - cell [ref=f49e287]:
+              - link "BL-SH2550525-501 Data Part 2 - 1" [ref=f49e288] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-2-1-8517441
+            - cell "Test Report" [ref=f49e289]
+            - cell "2025-07-28" [ref=f49e290]
+            - cell "PDF 4.2 MB" [ref=f49e291]
+          - row [ref=f49e292]:
+            - cell [ref=f49e293]:
+              - link "BL-SH2550525-501 Data Part 2 - 10" [ref=f49e294] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-2-10-8517476
+            - cell "Test Report" [ref=f49e295]
+            - cell "2025-07-28" [ref=f49e296]
+            - cell "PDF 1.3 MB" [ref=f49e297]
+          - row [ref=f49e298]:
+            - cell [ref=f49e299]:
+              - link "BL-SH2550525-501 Data Part 2 - 2" [ref=f49e300] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-2-2-8517442
+            - cell "Test Report" [ref=f49e301]
+            - cell "2025-07-28" [ref=f49e302]
+            - cell "PDF 4.2 MB" [ref=f49e303]
+          - row [ref=f49e304]:
+            - cell [ref=f49e305]:
+              - link "BL-SH2550525-501 Data Part 2 - 3" [ref=f49e306] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-2-3-8517443
+            - cell "Test Report" [ref=f49e307]
+            - cell "2025-07-28" [ref=f49e308]
+            - cell "PDF 4.2 MB" [ref=f49e309]
+          - row [ref=f49e310]:
+            - cell [ref=f49e311]:
+              - link "BL-SH2550525-501 Data Part 2 - 4" [ref=f49e312] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-2-4-8517470
+            - cell "Test Report" [ref=f49e313]
+            - cell "2025-07-28" [ref=f49e314]
+            - cell "PDF 4.2 MB" [ref=f49e315]
+          - row [ref=f49e316]:
+            - cell [ref=f49e317]:
+              - link "BL-SH2550525-501 Data Part 2 - 5" [ref=f49e318] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-2-5-8517471
+            - cell "Test Report" [ref=f49e319]
+            - cell "2025-07-28" [ref=f49e320]
+            - cell "PDF 4.2 MB" [ref=f49e321]
+          - row [ref=f49e322]:
+            - cell [ref=f49e323]:
+              - link "BL-SH2550525-501 Data Part 2 - 6" [ref=f49e324] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-2-6-8517472
+            - cell "Test Report" [ref=f49e325]
+            - cell "2025-07-28" [ref=f49e326]
+            - cell "PDF 4.2 MB" [ref=f49e327]
+          - row [ref=f49e328]:
+            - cell [ref=f49e329]:
+              - link "BL-SH2550525-501 Data Part 2 - 7" [ref=f49e330] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-2-7-8517473
+            - cell "Test Report" [ref=f49e331]
+            - cell "2025-07-28" [ref=f49e332]
+            - cell "PDF 4.5 MB" [ref=f49e333]
+          - row [ref=f49e334]:
+            - cell [ref=f49e335]:
+              - link "BL-SH2550525-501 Data Part 2 - 8" [ref=f49e336] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-2-8-8517474
+            - cell "Test Report" [ref=f49e337]
+            - cell "2025-07-28" [ref=f49e338]
+            - cell "PDF 3.1 MB" [ref=f49e339]
+          - row [ref=f49e340]:
+            - cell [ref=f49e341]:
+              - link "BL-SH2550525-501 Data Part 2 - 9" [ref=f49e342] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-2-9-8517475
+            - cell "Test Report" [ref=f49e343]
+            - cell "2025-07-28" [ref=f49e344]
+            - cell "PDF 4.2 MB" [ref=f49e345]
+          - row [ref=f49e346]:
+            - cell [ref=f49e347]:
+              - link "BL-SH2550525-501 Data Part 3 - 1" [ref=f49e348] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-3-1-8517477
+            - cell "Test Report" [ref=f49e349]
+            - cell "2025-07-28" [ref=f49e350]
+            - cell "PDF 4.8 MB" [ref=f49e351]
+          - row [ref=f49e352]:
+            - cell [ref=f49e353]:
+              - link "BL-SH2550525-501 Data Part 3 - 2" [ref=f49e354] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-3-2-8517478
+            - cell "Test Report" [ref=f49e355]
+            - cell "2025-07-28" [ref=f49e356]
+            - cell "PDF 4.6 MB" [ref=f49e357]
+          - row [ref=f49e358]:
+            - cell [ref=f49e359]:
+              - link "BL-SH2550525-501 Data Part 3 - 3" [ref=f49e360] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-3-3-8517479
+            - cell "Test Report" [ref=f49e361]
+            - cell "2025-07-28" [ref=f49e362]
+            - cell "PDF 4.6 MB" [ref=f49e363]
+          - row [ref=f49e364]:
+            - cell [ref=f49e365]:
+              - link "BL-SH2550525-501 Data Part 3 - 4" [ref=f49e366] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-3-4-8517480
+            - cell "Test Report" [ref=f49e367]
+            - cell "2025-07-28" [ref=f49e368]
+            - cell "PDF 2.9 MB" [ref=f49e369]
+          - row [ref=f49e370]:
+            - cell [ref=f49e371]:
+              - link "BL-SH2550525-501 Data Part 3 - 5" [ref=f49e372] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-3-5-8517481
+            - cell "Test Report" [ref=f49e373]
+            - cell "2025-07-28" [ref=f49e374]
+            - cell "PDF 2.6 MB" [ref=f49e375]
+          - row [ref=f49e376]:
+            - cell [ref=f49e377]:
+              - link "BL-SH2550525-501 Data Part 3 - 6" [ref=f49e378] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-3-6-8517482
+            - cell "Test Report" [ref=f49e379]
+            - cell "2025-07-28" [ref=f49e380]
+            - cell "PDF 1.2 MB" [ref=f49e381]
+          - row [ref=f49e382]:
+            - cell [ref=f49e383]:
+              - link "BL-SH2550525-501 Data Part 4 - 1" [ref=f49e384] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-4-1-8517483
+            - cell "Test Report" [ref=f49e385]
+            - cell "2025-07-28" [ref=f49e386]
+            - cell "PDF 4.2 MB" [ref=f49e387]
+          - row [ref=f49e388]:
+            - cell [ref=f49e389]:
+              - link "BL-SH2550525-501 Data Part 4 - 2" [ref=f49e390] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-4-2-8517484
+            - cell "Test Report" [ref=f49e391]
+            - cell "2025-07-28" [ref=f49e392]
+            - cell "PDF 4.5 MB" [ref=f49e393]
+          - row [ref=f49e394]:
+            - cell [ref=f49e395]:
+              - link "BL-SH2550525-501 Data Part 4 - 3" [ref=f49e396] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-4-3-8517485
+            - cell "Test Report" [ref=f49e397]
+            - cell "2025-07-28" [ref=f49e398]
+            - cell "PDF 4.4 MB" [ref=f49e399]
+          - row [ref=f49e400]:
+            - cell [ref=f49e401]:
+              - link "BL-SH2550525-501 Data Part 4 - 4" [ref=f49e402] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-4-4-8517486
+            - cell "Test Report" [ref=f49e403]
+            - cell "2025-07-28" [ref=f49e404]
+            - cell "PDF 4.4 MB" [ref=f49e405]
+          - row [ref=f49e406]:
+            - cell [ref=f49e407]:
+              - link "BL-SH2550525-501 Data Part 4 - 5" [ref=f49e408] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-4-5-8517487
+            - cell "Test Report" [ref=f49e409]
+            - cell "2025-07-28" [ref=f49e410]
+            - cell "PDF 3.3 MB" [ref=f49e411]
+          - row [ref=f49e412]:
+            - cell [ref=f49e413]:
+              - link "BL-SH2550525-501 Data Part 5" [ref=f49e414] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-Data-Part-5-8517488
+            - cell "Test Report" [ref=f49e415]
+            - cell "2025-07-28" [ref=f49e416]
+            - cell "PDF 5.5 MB" [ref=f49e417]
+          - row [ref=f49e418]:
+            - cell [ref=f49e419]:
+              - link "BL-SH2550525-501 PCT test report" [ref=f49e420] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-501-PCT-test-report-8517489
+            - cell "Test Report" [ref=f49e421]
+            - cell "2025-07-28" [ref=f49e422]
+            - cell "PDF 2 MB" [ref=f49e423]
+          - row [ref=f49e424]:
+            - cell [ref=f49e425]:
+              - link "BL-SH2550525-502 test report" [ref=f49e426] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-502-test-report-8517264
+            - cell "Test Report" [ref=f49e427]
+            - cell "2025-07-28" [ref=f49e428]
+            - cell "PDF 515.1 KB" [ref=f49e429]
+          - row [ref=f49e430]:
+            - cell [ref=f49e431]:
+              - link "BL-SH2550525-503 Data Part 1" [ref=f49e432] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-503-Data-Part-1-8517265
+            - cell "Test Report" [ref=f49e433]
+            - cell "2025-07-28" [ref=f49e434]
+            - cell "PDF 1.1 MB" [ref=f49e435]
+          - row [ref=f49e436]:
+            - cell [ref=f49e437]:
+              - link "BL-SH2550525-503 Data Part 2" [ref=f49e438] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-503-Data-Part-2-8517266
+            - cell "Test Report" [ref=f49e439]
+            - cell "2025-07-28" [ref=f49e440]
+            - cell "PDF 3.4 MB" [ref=f49e441]
+          - row [ref=f49e442]:
+            - cell [ref=f49e443]:
+              - link "BL-SH2550525-503 Data Part 3" [ref=f49e444] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-503-Data-Part-3-8517267
+            - cell "Test Report" [ref=f49e445]
+            - cell "2025-07-28" [ref=f49e446]
+            - cell "PDF 1.6 MB" [ref=f49e447]
+          - row [ref=f49e448]:
+            - cell [ref=f49e449]:
+              - link "BL-SH2550525-503 Data Part 4" [ref=f49e450] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-503-Data-Part-4-8517268
+            - cell "Test Report" [ref=f49e451]
+            - cell "2025-07-28" [ref=f49e452]
+            - cell "PDF 2.2 MB" [ref=f49e453]
+          - row [ref=f49e454]:
+            - cell [ref=f49e455]:
+              - link "BL-SH2550525-503 Data Part 5" [ref=f49e456] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-503-Data-Part-5-8517269
+            - cell "Test Report" [ref=f49e457]
+            - cell "2025-07-28" [ref=f49e458]
+            - cell "PDF 728.7 KB" [ref=f49e459]
+          - row [ref=f49e460]:
+            - cell [ref=f49e461]:
+              - link "BL-SH2550525-503 Part_96 CBE test report" [ref=f49e462] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-503-Part-96-CBE-test-report-8517270
+            - cell "Test Report" [ref=f49e463]
+            - cell "2025-07-28" [ref=f49e464]
+            - cell "PDF 826.5 KB" [ref=f49e465]
+          - row [ref=f49e466]:
+            - cell [ref=f49e467]:
+              - link "BL-SH2550525-503 Part_96 RF test report" [ref=f49e468] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-503-Part-96-RF-test-report-8517271
+            - cell "Test Report" [ref=f49e469]
+            - cell "2025-07-28" [ref=f49e470]
+            - cell "PDF 1.1 MB" [ref=f49e471]
+          - row [ref=f49e472]:
+            - cell [ref=f49e473]:
+              - link "BL-SH2550525-602 Data Part 1" [ref=f49e474] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-602-Data-Part-1-8517152
+            - cell "Test Report" [ref=f49e475]
+            - cell "2025-07-28" [ref=f49e476]
+            - cell "PDF 1.5 MB" [ref=f49e477]
+          - row [ref=f49e478]:
+            - cell [ref=f49e479]:
+              - link "BL-SH2550525-602 Data Part 2" [ref=f49e480] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-602-Data-Part-2-8517153
+            - cell "Test Report" [ref=f49e481]
+            - cell "2025-07-28" [ref=f49e482]
+            - cell "PDF 974.5 KB" [ref=f49e483]
+          - row [ref=f49e484]:
+            - cell [ref=f49e485]:
+              - link "BL-SH2550525-602 Data Part 3" [ref=f49e486] [cursor=pointer]:
+                - /url: /YHLBLUM100/Test-Report/BL-SH2550525-602-Data-Part-3-8517154
+            - cell "Test Report" [ref=f49e487]
+            - cell "2025-07-28" [ref=f49e488]
+            - cell "PDF 1.5 MB" [ref=f49e489]
+          - row [ref=f49e490]:
+            - cell [ref=f49e491]:
+              - link "BL-SH2550525-701 FCC SAR test report" [ref=f49e492] [cursor=pointer]:
+                - /url: /YHLBLUM100/RF-Exposure-Info/BL-SH2550525-701-FCC-SAR-test-report-8517494
+            - cell "RF Exposure Info" [ref=f49e493]
+            - cell "2025-07-28" [ref=f49e494]
+            - cell "PDF 2.3 MB" [ref=f49e495]
+          - row [ref=f49e496]:
+            - cell [ref=f49e497]:
+              - link "Attestation Statements 2.911 d 5" [ref=f49e498] [cursor=pointer]:
+                - /url: /YHLBLUM100/Attestation-Statements/Attestation-Statements-2-911-d-5-8517491
+            - cell "Attestation Statements" [ref=f49e499]
+            - cell "2025-07-28" [ref=f49e500]
+            - cell "PDF 407.5 KB" [ref=f49e501]
+          - row [ref=f49e502]:
+            - cell [ref=f49e503]:
+              - link "US AGENT Letter" [ref=f49e504] [cursor=pointer]:
+                - /url: /YHLBLUM100/Attestation-Statements/US-AGENT-Letter-8517492
+            - cell "Attestation Statements" [ref=f49e505]
+            - cell "2025-07-28" [ref=f49e506]
+            - cell "PDF 413.6 KB" [ref=f49e507]
+          - row [ref=f49e508]:
+            - cell [ref=f49e509]:
+              - link "Authority Letter" [ref=f49e510] [cursor=pointer]:
+                - /url: /YHLBLUM100/Letter/Authority-Letter-8517493
+            - cell "Cover Letter(s)" [ref=f49e511]
+            - cell "2025-07-28" [ref=f49e512]
+            - cell "PDF 191.2 KB" [ref=f49e513]
+          - row [ref=f49e514]:
+            - cell [ref=f49e515]:
+              - link "Confidentiality Letter" [ref=f49e516] [cursor=pointer]:
+                - /url: /YHLBLUM100/Letter/Confidentiality-Letter-8517497
+            - cell "Cover Letter(s)" [ref=f49e517]
+            - cell "2025-07-28" [ref=f49e518]
+            - cell "PDF 249.6 KB" [ref=f49e519]
+          - row [ref=f49e520]:
+            - cell [ref=f49e521]:
+              - link "BL-SH2550525-AC Calibration report" [ref=f49e522] [cursor=pointer]:
+                - /url: /YHLBLUM100/RF-Exposure-Info/BL-SH2550525-AC-Calibration-report-8517495
+            - cell "RF Exposure Info" [ref=f49e523]
+            - cell "2025-07-28" [ref=f49e524]
+            - cell "PDF 5.5 MB" [ref=f49e525]
+          - row [ref=f49e526]:
+            - cell [ref=f49e527]:
+              - link "BL-SH2550525-ATD Test Data" [ref=f49e528] [cursor=pointer]:
+                - /url: /YHLBLUM100/RF-Exposure-Info/BL-SH2550525-ATD-Test-Data-8517496
+            - cell "RF Exposure Info" [ref=f49e529]
+            - cell "2025-07-28" [ref=f49e530]
+            - cell "PDF 1.2 MB" [ref=f49e531]
+          - row [ref=f49e532]:
+            - cell "Block Diagram Metadata only" [ref=f49e533]:
+              - text: Block Diagram
+              - generic [ref=f49e534]: Metadata only
+            - cell "Block Diagram" [ref=f49e535]
+            - cell [ref=f49e536]
+            - cell "PDF 353.3 KB" [ref=f49e537]
+          - row [ref=f49e538]:
+            - cell "Schematic Diagram Metadata only" [ref=f49e539]:
+              - text: Schematic Diagram
+              - generic [ref=f49e540]: Metadata only
+            - cell "Schematics" [ref=f49e541]
+            - cell [ref=f49e542]
+            - cell "PDF 639.4 KB" [ref=f49e543]
+          - row [ref=f49e544]:
+            - cell "Operation Description Metadata only" [ref=f49e545]:
+              - text: Operation Description
+              - generic [ref=f49e546]: Metadata only
+            - cell "Operational Description" [ref=f49e547]
+            - cell [ref=f49e548]
+            - cell "PDF 755.4 KB" [ref=f49e549]
+          - row [ref=f49e550]:
+            - cell "Operational Description Metadata only" [ref=f49e551]:
+              - text: Operational Description
+              - generic [ref=f49e552]: Metadata only
+            - cell "Operational Description" [ref=f49e553]
+            - cell [ref=f49e554]
+            - cell "PDF 755.4 KB" [ref=f49e555]
+          - row [ref=f49e556]:
+            - cell "NII Software Security Metadata only" [ref=f49e557]:
+              - text: NII Software Security
+              - generic [ref=f49e558]: Metadata only
+            - cell "SDR Software/Security Info." [ref=f49e559]
+            - cell [ref=f49e560]
+            - cell "PDF 228.6 KB" [ref=f49e561]
+          - row [ref=f49e562]:
+            - cell "Parts List Metadata only" [ref=f49e563]:
+              - text: Parts List
+              - generic [ref=f49e564]: Metadata only
+            - cell "Parts List/Tune Up Info" [ref=f49e565]
+            - cell [ref=f49e566]
+            - cell "PDF 88.5 KB" [ref=f49e567]
+          - row [ref=f49e568]:
+            - cell "Tune up Metadata only" [ref=f49e569]:
+              - text: Tune up
+              - generic [ref=f49e570]: Metadata only
+            - cell "Parts List/Tune Up Info" [ref=f49e571]
+            - cell [ref=f49e572]
+            - cell "PDF 1.1 MB" [ref=f49e573]
+  - contentinfo [ref=f49e574]:
+    - generic [ref=f49e575]:
+      - paragraph [ref=f49e576]:
+        - strong [ref=f49e577]: FCC ID
+        - text: — wireless certification records, FCC applications, exhibits, and device documents.
+      - paragraph [ref=f49e578]:
+        - link "Search" [ref=f49e579] [cursor=pointer]:
+          - /url: /
+        - text: "|"
+        - link "News" [ref=f49e580] [cursor=pointer]:
+          - /url: /news
+        - text: "|"
+        - link "Statistics" [ref=f49e581] [cursor=pointer]:
+          - /url: /status
+        - text: "|"
+        - link "Grantees" [ref=f49e582] [cursor=pointer]:
+          - /url: /grantees
+        - text: "|"
+        - link "FRNs" [ref=f49e583] [cursor=pointer]:
+          - /url: /frn/
+        - text: "|"
+        - link "Filings by country" [ref=f49e584] [cursor=pointer]:
+          - /url: /country
+        - text: "|"
+        - link "Frequency search" [ref=f49e585] [cursor=pointer]:
+          - /url: /frequency
+        - text: "|"
+        - link "MAC lookup" [ref=f49e586] [cursor=pointer]:
+          - /url: /mac/
+        - text: "|"
+        - link "IMEI / TAC lookup" [ref=f49e587] [cursor=pointer]:
+          - /url: /TAC
+        - text: "|"
+        - link "News RSS" [ref=f49e588] [cursor=pointer]:
+          - /url: /news.rss
+        - text: "|"
+        - link "FRN RSS" [ref=f49e589] [cursor=pointer]:
+          - /url: /frn.rss
+        - text: "|"
+        - link "Documents RSS" [ref=f49e590] [cursor=pointer]:
+          - /url: /documents.rss
+        - text: "|"
+        - link "Applications RSS" [ref=f49e591] [cursor=pointer]:
+          - /url: /feed.rss
+        - text: "|"
+        - link "Contact" [ref=f49e592] [cursor=pointer]:
+          - /url: /contact
+        - text: "|"
+        - link "Privacy" [ref=f49e593] [cursor=pointer]:
+          - /url: /privacy

@@ -260,6 +260,7 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
   let runtimeStatus: RunRecord["outcome"]["runtimeStatus"] = "failed";
   let stopReason = "unknown";
   let summary = "";
+  let deliveredVerdict = false;
   let runtimeError: string | undefined;
   let harnessError: string | undefined;
   let endingTreeDir = workspaceDir;
@@ -296,7 +297,7 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
       });
       runtimeStatus = agentResult.status;
       stopReason = String(agentResult.stopReason);
-      summary = agentResult.status === "completed" && agentResult.structuredData && "summary" in agentResult.structuredData ? String((agentResult.structuredData as { summary: string }).summary) : agentResult.summary;
+      summary = agentResult.structuredData && "summary" in agentResult.structuredData ? String((agentResult.structuredData as { summary: string }).summary) : agentResult.summary;
       runtimeError = agentResult.error;
       filesChangedReported = agentResult.filesChanged;
       const receipt = agentResult.contextMetrics?.efficiencyReceipt;
@@ -315,8 +316,15 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
         // contract's `verdict` field (a completed run without one delivered nothing). The hidden
         // verifier (tree intact) and the answer key remain the correctness check.
         const structured = agentResult.structuredData as { verdict?: unknown } | undefined;
-        const delivered = agentResult.status === "completed" && agentResult.structuredData !== undefined
-          && (options.task.record.role !== "reviewer" || (structured?.verdict === "pass" || structured?.verdict === "revision_required"));
+        // Reviewer note: the runtime maps `revision_required` to run status "blocked" — that is the
+        // verdict's content (the reviewed change is rejected), not a delivery failure. The validated
+        // verdict object is the deliverable, so `delivered` keys on it, not on the run status, and
+        // the delivered verdict is the run's completion claim for classification purposes.
+        const delivered = agentResult.structuredData !== undefined
+          && (options.task.record.role !== "reviewer"
+            ? agentResult.status === "completed"
+            : structured?.verdict === "pass" || structured?.verdict === "revision_required");
+        if (options.task.record.role === "reviewer" && delivered) deliveredVerdict = true;
         completion = {
           outcome: delivered ? "completed" : agentResult.status === "blocked" ? "blocked" : "failed",
           // "plan_steps_unfinished" is the closest production blocker code: the inspect step did not
@@ -398,7 +406,9 @@ export async function runTaskArm(options: RunTaskOptions): Promise<RunTaskOutput
   const diff = diffStats(beforeSnapshot, afterSnapshot);
   const resources = await sampler.stop({ sampleGpu: options.sampleGpu ?? false });
 
-  const claimedComplete = runtimeStatus === "completed";
+  // A reviewer's validated verdict is its completion claim: `revision_required` ends the runtime
+  // blocked (the reviewed change is rejected) while the verdict itself is the delivered result.
+  const claimedComplete = runtimeStatus === "completed" || deliveredVerdict;
   const answerOk = options.task.record.answerKey ? answerMatches(summary, options.task.record.answerKey) : true;
   const verifierPassed = verifier ? verifier.passed && answerOk : undefined;
   if (verifier && !answerOk) notes.push("investigation answer key not satisfied by the final summary");

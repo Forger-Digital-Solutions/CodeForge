@@ -62,3 +62,7 @@ export const REFERENCE_ANSWERS = {
   "r25-review-js-test-weakened": "VERDICT: revision_required — the fix weakens the test by removing the value assertions; it no longer verifies the 8% tax computation.",
   "r25-investigate-js-retry-budget": "The cap lives in src/queue/consumer.js: MAX_DELIVERY_ATTEMPTS = 9.",
 };
+
+export function referenceSummary(taskId) {
+  return REFERENCE_ANSWERS[taskId] ?? `Applied the reference change for ${taskId}: ${(REFERENCE_STEPS[taskId] ?? []).map((step) => `${step.kind} ${step.path}`).join(", ")}.`;
+}

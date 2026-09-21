@@ -1,0 +1,237 @@
+{
+  "campaignId": "dry_run-2026-09-21T22-55-29-677Z",
+  "phase": "dry_run",
+  "recordedAt": "2026-09-21T22:57:32.247Z",
+  "model": "scripted-free",
+  "identity": {
+    "protocolVersion": "r25-live-1.0.0",
+    "protocolDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+    "corpusManifestDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+    "codeforgeCommit": "de12447d7e4f95bfb5e536bcd34a8b8108058ada",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "benchmarks/r25/reference-solutions.mjs",
+      "packages/forgegreen-campaign/src/r23/run-task.ts",
+      "packages/workflow/src/diff-review.ts",
+      "packages/workflow/src/types.ts",
+      ".playwright-mcp/",
+      "packages/workflow/src/semantic-diff-review.ts",
+      "packages/workflow/test/r25-semantic-diff-review.test.ts",
+      "scripts/r25-live-bench.mjs",
+      "scripts/r25-live-preflight.mjs",
+      "scripts/r25-live-qualification.mjs"
+    ],
+    "environmentFingerprint": "40e714b51014694ec3775e7f51aeed4544b03579209d183e5c0f2874a09dd4d4",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "mode": "single_agent_run",
+  "stopped": null,
+  "runs": [
+    {
+      "taskId": "r25-ambiguous-js-checkout-discount",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 2478,
+      "runId": "r23-dry_run-r25-ambiguous-js-checkout-discount-optimized-r1-e310404c"
+    },
+    {
+      "taskId": "r25-ambiguous-js-checkout-discount",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 1823,
+      "runId": "r23-dry_run-r25-ambiguous-js-checkout-discount-control-r1-b9762973"
+    },
+    {
+      "taskId": "r25-ambiguous-ts-session-clock",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 1883,
+      "runId": "r23-dry_run-r25-ambiguous-ts-session-clock-control-r1-33083df9"
+    },
+    {
+      "taskId": "r25-ambiguous-ts-session-clock",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 2500,
+      "runId": "r23-dry_run-r25-ambiguous-ts-session-clock-optimized-r1-3769c27b"
+    },
+    {
+      "taskId": "r25-investigate-js-retry-budget",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 5900,
+      "wallClockMs": 763,
+      "runId": "r23-dry_run-r25-investigate-js-retry-budget-optimized-r1-57624618"
+    },
+    {
+      "taskId": "r25-investigate-js-retry-budget",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 5900,
+      "wallClockMs": 306,
+      "runId": "r23-dry_run-r25-investigate-js-retry-budget-control-r1-cf2f2152"
+    },
+    {
+      "taskId": "r25-review-js-retry-storm",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 2,
+      "totalTokens": 4040,
+      "wallClockMs": 234,
+      "runId": "r23-dry_run-r25-review-js-retry-storm-control-r1-bf124bc9"
+    },
+    {
+      "taskId": "r25-review-js-retry-storm",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 2,
+      "totalTokens": 4040,
+      "wallClockMs": 611,
+      "runId": "r23-dry_run-r25-review-js-retry-storm-optimized-r1-32c4e699"
+    },
+    {
+      "taskId": "r25-review-js-test-weakened",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 2,
+      "totalTokens": 4040,
+      "wallClockMs": 612,
+      "runId": "r23-dry_run-r25-review-js-test-weakened-optimized-r1-571c92ca"
+    },
+    {
+      "taskId": "r25-review-js-test-weakened",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 2,
+      "totalTokens": 4040,
+      "wallClockMs": 48505,
+      "runId": "r23-dry_run-r25-review-js-test-weakened-control-r1-cf38ba0d"
+    },
+    {
+      "taskId": "r25-review-ts-config-swallow",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 2,
+      "totalTokens": 4040,
+      "wallClockMs": 224,
+      "runId": "r23-dry_run-r25-review-ts-config-swallow-control-r1-ea42a7f9"
+    },
+    {
+      "taskId": "r25-review-ts-config-swallow",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 2,
+      "totalTokens": 4040,
+      "wallClockMs": 1555,
+      "runId": "r23-dry_run-r25-review-ts-config-swallow-optimized-r1-2594224d"
+    },
+    {
+      "taskId": "r25-testfix-js-stale-expected",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 2,
+      "totalTokens": 4640,
+      "wallClockMs": 2688,
+      "runId": "r23-dry_run-r25-testfix-js-stale-expected-optimized-r1-1b087b56"
+    },
+    {
+      "taskId": "r25-testfix-js-stale-expected",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 2,
+      "totalTokens": 4640,
+      "wallClockMs": 2159,
+      "runId": "r23-dry_run-r25-testfix-js-stale-expected-control-r1-2c1cd824"
+    },
+    {
+      "taskId": "r25-testfix-ts-unawaited",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 2,
+      "totalTokens": 4640,
+      "wallClockMs": 2347,
+      "runId": "r23-dry_run-r25-testfix-ts-unawaited-control-r1-b2f08b64"
+    },
+    {
+      "taskId": "r25-testfix-ts-unawaited",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 2,
+      "totalTokens": 4640,
+      "wallClockMs": 2923,
+      "runId": "r23-dry_run-r25-testfix-ts-unawaited-optimized-r1-92f67aff"
+    },
+    {
+      "taskId": "r25-tiny-js-adult-check",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 2365,
+      "runId": "r23-dry_run-r25-tiny-js-adult-check-optimized-r1-1a4a7a05"
+    },
+    {
+      "taskId": "r25-tiny-js-adult-check",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 1807,
+      "runId": "r23-dry_run-r25-tiny-js-adult-check-control-r1-1aa2c8be"
+    },
+    {
+      "taskId": "r25-tiny-ts-status-label",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 1823,
+      "runId": "r23-dry_run-r25-tiny-ts-status-label-control-r1-36eb6285"
+    },
+    {
+      "taskId": "r25-tiny-ts-status-label",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 3,
+      "totalTokens": 7700,
+      "wallClockMs": 42619,
+      "runId": "r23-dry_run-r25-tiny-ts-status-label-optimized-r1-6f30985f"
+    }
+  ]
+}
