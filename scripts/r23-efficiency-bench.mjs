@@ -23,8 +23,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createGenericFreeRecord } from "@codeforge/forge-zero";
-import { createOpenRouterAdapter } from "@codeforge/providers";
+import { ForgeZero, createGenericFreeRecord } from "@codeforge/forge-zero";
+import { createGroqAdapter, createOpenRouterAdapter } from "@codeforge/providers";
 import {
   CONTROL_ARM,
   OPTIMIZED_ARM,
@@ -46,7 +46,7 @@ const MANIFEST_PATH = path.join(ROOT, "benchmarks", "r23", "manifest.json");
 const EVIDENCE = path.join(ROOT, "docs", "evidence", "r23-efficiency-proof");
 const PROTOCOL_PATH = path.join(ROOT, "docs", "benchmarks", "codeforge-efficiency-protocol-r23.md");
 const PROTOCOL_DIGEST_PATH = path.join(EVIDENCE, "protocol", "PROTOCOL-DIGEST.txt");
-const PROTOCOL_VERSION = "1.0.3";
+const PROTOCOL_VERSION = "1.0.4";
 
 // ---------------------------------------------------------------------------------------------
 // CLI
@@ -186,11 +186,118 @@ async function dailyAllowance() {
   return { limit: free.limit, used: free.used, remaining: free.remaining, usage: data.usage, usageDaily: data.usage_daily, checkedAt: new Date().toISOString() };
 }
 
-function capacityGate(allowance, observedCallsPerRun) {
+// ---------------------------------------------------------------------------------------------
+// Substitute routes (protocol §2.1, v1.0.4): provider-native pinning + capacity signals
+// ---------------------------------------------------------------------------------------------
+const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
+/** Registry-documented Groq free-plan caps (provider-definitions.ts → freeAccess.quota). */
+const GROQ_FREE_DAILY_TOKENS = 200_000;
+let lastGroqQuota; // { requests: {...}, tokens: {...}, observedAt } — filled by the adapter's onResponse
+
+function quotaFromHeaders(observation) {
+  const headers = new Map(observation.headers.map(([k, v]) => [k.toLowerCase(), v]));
+  const num = (key) => (headers.has(key) ? Number(headers.get(key)) : undefined);
+  return {
+    providerId: observation.providerId,
+    status: observation.status,
+    requests: { limit: num("x-ratelimit-limit-requests"), remaining: num("x-ratelimit-remaining-requests"), reset: headers.get("x-ratelimit-reset-requests") },
+    tokens: { limit: num("x-ratelimit-limit-tokens"), remaining: num("x-ratelimit-remaining-tokens"), reset: headers.get("x-ratelimit-reset-tokens") },
+    retryAfter: headers.get("retry-after"),
+    observedAt: new Date(observation.observedAt).toISOString(),
+  };
+}
+
+/** Cumulative served tokens on the groq route across today's run records (ledger-derived, honest). */
+function dailyTokensUsed(providerId) {
+  const today = new Date().toISOString().slice(0, 10);
+  let total = 0;
+  for (const phase of ["qualification", "pilot", "main", "variance"]) {
+    const dir = rawDir(phase);
+    if (!fs.existsSync(dir)) continue;
+    for (const file of fs.readdirSync(dir)) {
+      if (!file.endsWith(".json") || file.startsWith("campaign-")) continue;
+      try {
+        const record = JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"));
+        if (record.identity?.providerId !== providerId) continue;
+        if (!String(record.identity?.startedAt ?? record.recordedAt ?? "").startsWith(today)) continue;
+        for (const call of record.inference?.calls ?? []) total += call.totalTokens ?? 0;
+      } catch { /* unreadable record — skip, gate stays conservative via headers */ }
+    }
+  }
+  return total;
+}
+
+async function pinGroqModel(modelId) {
+  const key = process.env.GROQ_API_KEY;
+  if (!key) throw new Error("GROQ_API_KEY is not set");
+  const catalogRes = await fetch(`${GROQ_BASE_URL}/models`, { headers: { Authorization: `Bearer ${key}` } });
+  if (!catalogRes.ok) throw new Error(`groq /models → HTTP ${catalogRes.status}`);
+  const catalog = (await catalogRes.json()).data ?? [];
+  const entry = catalog.find((model) => model.id === modelId);
+  if (!entry) throw new Error(`model ${modelId} is not in the live Groq catalog`);
+  // §2.1(3): tool support is verified by a live probe, not advertised metadata.
+  const probe = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: modelId,
+      messages: [{ role: "user", content: "Call the echo tool with text \"pin\". Do not answer in prose." }],
+      tools: [{ type: "function", function: { name: "echo", description: "Echoes the given text.", parameters: { type: "object", properties: { text: { type: "string" } }, required: ["text"], additionalProperties: false } } }],
+      tool_choice: "required",
+      max_tokens: 64,
+    }),
+  });
+  lastGroqQuota = quotaFromHeaders({ providerId: "groq", modelId, status: probe.status, headers: [...probe.headers.entries()], observedAt: Date.now() });
+  if (!probe.ok) throw new Error(`groq tool probe → HTTP ${probe.status} for ${modelId}`);
+  const probeBody = await probe.json();
+  const toolCalls = probeBody.choices?.[0]?.message?.tool_calls ?? [];
+  if (toolCalls.length === 0) throw new Error(`model ${modelId} did not emit a tool call under tool_choice=required`);
+  if (!probeBody.usage || typeof probeBody.usage.total_tokens !== "number") throw new Error(`model ${modelId} returned no usage payload — §2.1(4) fails`);
+  // §2.1(1): ForgeZero admission under a verified free-access class is the eligibility authority.
+  const firewall = new ForgeZero();
+  const freeRecord = createGenericFreeRecord({ providerId: "groq", modelId, displayName: entry.id, contextWindow: entry.context_window, accessClass: "FREE_ALLOWANCE" });
+  firewall.register(freeRecord);
+  if (!firewall.eligibleModels().some((model) => model.providerId === "groq" && model.modelId === modelId)) {
+    throw new Error(`ForgeZero refuses groq::${modelId} — the substitute route fails §2.1(1)`);
+  }
+  return {
+    entry: { id: entry.id, name: entry.id, contextLength: entry.context_window, ownedBy: entry.owned_by, checkedAt: new Date().toISOString(), pricingVerification: "provider-free-tier-policy + ForgeZero FREE_ALLOWANCE admission + live rate-limit headers (§2.1b)", quotaAtPin: lastGroqQuota, toolProbe: { toolCallsEmitted: toolCalls.length, usage: probeBody.usage } },
+    paidTwin: { id: `openrouter::${modelId}`, note: "equivalent-cost reference: same model's paid listing on the reference marketplace" },
+    freeRecord,
+  };
+}
+
+async function groqAllowance() {
+  if (lastGroqQuota && Date.now() - Date.parse(lastGroqQuota.observedAt) < 120_000) {
+    return { limit: lastGroqQuota.requests.limit, used: lastGroqQuota.requests.limit !== undefined && lastGroqQuota.requests.remaining !== undefined ? lastGroqQuota.requests.limit - lastGroqQuota.requests.remaining : undefined, remaining: lastGroqQuota.requests.remaining, remainingTokens: lastGroqQuota.tokens.remaining, dailyTokensUsed: dailyTokensUsed("groq"), source: "x-ratelimit headers (live adapter observation)", checkedAt: new Date().toISOString() };
+  }
+  const key = process.env.GROQ_API_KEY;
+  if (!key) throw new Error("GROQ_API_KEY is not set");
+  const probe = await fetch(`${GROQ_BASE_URL}/chat/completions`, { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: flags.model ?? "openai/gpt-oss-120b", messages: [{ role: "user", content: "ok" }], max_tokens: 1 }) });
+  lastGroqQuota = quotaFromHeaders({ providerId: "groq", status: probe.status, headers: [...probe.headers.entries()], observedAt: Date.now() });
+  if (!probe.ok) throw new Error(`groq allowance probe → HTTP ${probe.status}`);
+  await probe.json();
+  return { limit: lastGroqQuota.requests.limit, used: lastGroqQuota.requests.limit !== undefined && lastGroqQuota.requests.remaining !== undefined ? lastGroqQuota.requests.limit - lastGroqQuota.requests.remaining : undefined, remaining: lastGroqQuota.requests.remaining, remainingTokens: lastGroqQuota.tokens.remaining, dailyTokensUsed: dailyTokensUsed("groq"), source: "x-ratelimit headers (probe)", checkedAt: new Date().toISOString() };
+}
+
+function allowance(providerId) {
+  return providerId === "groq" ? groqAllowance() : dailyAllowance();
+}
+
+function capacityGate(allowanceData, observedCallsPerRun, providerId, observedRunTokens = []) {
   const sorted = [...observedCallsPerRun].sort((a, b) => a - b);
   const p90 = sorted.length > 0 ? sorted[Math.min(sorted.length - 1, Math.floor(0.9 * sorted.length))] : 0;
   const needed = Math.ceil(1.15 * Math.max(40, p90));
-  return { needed, ok: typeof allowance.remaining === "number" ? allowance.remaining >= needed : true };
+  const ok = typeof allowanceData.remaining === "number" ? allowanceData.remaining >= needed : true;
+  if (providerId !== "groq") return { needed, ok };
+  // §6.3 v1.0.4: the documented daily token cap gates alongside the request window (same 15%
+  // margin), estimated from observed per-run token totals. Minute-scale windows are governor
+  // pacing, not allowance exhaustion.
+  const sortedTokens = [...observedRunTokens].sort((a, b) => a - b);
+  const p90Tokens = sortedTokens.length > 0 ? sortedTokens[Math.min(sortedTokens.length - 1, Math.floor(0.9 * sortedTokens.length))] : 0;
+  const tokensNeeded = Math.ceil(1.15 * Math.max(60_000, p90Tokens));
+  const dailyTokensOk = (allowanceData.dailyTokensUsed ?? 0) + tokensNeeded <= GROQ_FREE_DAILY_TOKENS * 0.85;
+  return { needed, tokensNeeded, ok: ok && dailyTokensOk, dailyTokensOk };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -271,12 +378,13 @@ function orderFor(taskIndex, repetition) {
   return controlFirst ? "control-first" : "optimized-first";
 }
 
-async function runPairs({ phase, tasks, arms, repetitions, modeFlag, model, createProvider, freeRecord, routeListedUnitPrice, pricing, identity, live }) {
+async function runPairs({ phase, tasks, arms, repetitions, modeFlag, model, createProvider, freeRecord, routeListedUnitPrice, pricing, identity, live, providerId = "openrouter" }) {
   assertArmsDifferOnlyInSwitches();
   const scratchRoot = path.join(os.tmpdir(), "codeforge-r23", phase);
   fs.mkdirSync(scratchRoot, { recursive: true });
   const campaignId = `${phase}-${new Date().toISOString().replace(/[:.]/g, "-")}`;
   const observedCalls = [];
+  const observedRunTokens = [];
   const summary = [];
   for (let taskIndex = 0; taskIndex < tasks.length; taskIndex += 1) {
     const task = tasks[taskIndex];
@@ -289,11 +397,11 @@ async function runPairs({ phase, tasks, arms, repetitions, modeFlag, model, crea
       for (const armId of sequence) {
         if (!arms.includes(armId)) continue;
         if (live) {
-          const allowance = await dailyAllowance();
-          const gate = capacityGate(allowance, observedCalls);
-          log(`allowance remaining=${allowance.remaining}/${allowance.limit} (needed ≥ ${gate.needed} for the next run)`);
+          const allowanceData = await allowance(providerId);
+          const gate = capacityGate(allowanceData, observedCalls, providerId, observedRunTokens);
+          log(`allowance remaining=${allowanceData.remaining}/${allowanceData.limit} (needed ≥ ${gate.needed} for the next run)${providerId === "groq" ? `; daily tokens used=${allowanceData.dailyTokensUsed}/${GROQ_FREE_DAILY_TOKENS}` : ""}`);
           if (!gate.ok) {
-            logExclusion({ reason: "daily allowance below the §6.3 margin — pair voided, re-run whole next day", taskId: task.record.taskId, pairId, runId: null, protocolRule: "§6.3 daily allowance", allowance });
+            logExclusion({ reason: "daily allowance below the §6.3 margin — pair voided, re-run whole next day", taskId: task.record.taskId, pairId, runId: null, protocolRule: "§6.3 daily allowance", allowance: allowanceData });
             for (const done of pairRecords) logExclusion({ reason: "sibling arm voided with the pair (§6.3)", taskId: task.record.taskId, pairId, runId: done.identity.runId, protocolRule: "§6.3 daily allowance" });
             log("stopping: allowance exhausted for today");
             return { campaignId, summary, stopped: "allowance" };
@@ -328,6 +436,7 @@ async function runPairs({ phase, tasks, arms, repetitions, modeFlag, model, crea
         writeRecord(phase, record);
         pairRecords.push(record);
         observedCalls.push(record.inference.modelCalls);
+        if (typeof record.inference.totalTokens.value === "number") observedRunTokens.push(record.inference.totalTokens.value);
         const tokens = record.inference.totalTokens.value;
         log(`✔ ${record.outcome.classification} · calls=${record.inference.modelCalls} tokens=${tokens ?? "UNKNOWN"} wall=${Math.round(record.time.wallClockMs / 1000)}s verifier=${record.outcome.verifierPassed} authority=${record.outcome.completionAuthority} (${Math.round((Date.now() - startedAt) / 1000)}s)`);
         summary.push({ taskId: task.record.taskId, arm: armId, repetition, classification: record.outcome.classification, modelCalls: record.inference.modelCalls, totalTokens: tokens ?? null, wallClockMs: record.time.wallClockMs, runId: record.identity.runId });
@@ -389,6 +498,15 @@ async function modeSnapshotPricing() {
   const market = marketPreference.map((id) => catalog.find((model) => model.id === id)).find(Boolean);
   if (!market) throw new Error(`no market reference model found among ${marketPreference.join(", ")}`);
   prices[`openrouter::${market.id}`] = price(market, "https://openrouter.ai/api/v1/models (live catalog)");
+  // §2.1 substitute routes (v1.0.4): a free route on another provider is priced at the same
+  // model's paid listing on the reference marketplace. Only exact model-id matches qualify.
+  for (const sub of ["groq::openai/gpt-oss-120b", "groq::openai/gpt-oss-20b", "groq::qwen/qwen3.8-27b"]) {
+    const orId = sub.split("::")[1];
+    const listing = catalog.find((model) => model.id === orId && model.pricing?.prompt !== "0" && model.pricing?.completion !== "0");
+    if (!listing) continue;
+    prices[`openrouter::${listing.id}`] = price(listing, "https://openrouter.ai/api/v1/models (live catalog)");
+    equivalents[sub] = { priceRef: `openrouter::${listing.id}`, rationale: "same model weights served by the substitute provider; priced at the reference marketplace's paid listing (§2.1 v1.0.4)" };
+  }
   const snapshot = parsePricingSnapshot({
     snapshotId: `openrouter-${day}`,
     frozenAt: now,
@@ -433,16 +551,23 @@ async function modeDryRun() {
   writeCampaignSummary("dry_run", result, { model: "scripted-free", identity, mode: modeFlag });
 }
 
-async function liveSetup(modelId) {
+async function liveSetup(modelId, providerId = "openrouter") {
   const digest = protocolDigest();
   const { tasks, manifestDigest } = await loadFrozenCorpus();
   const identity = identityBase(digest);
   const { snapshot, path: pricingPath } = loadPricing();
+  if (providerId === "groq") {
+    const pin = await pinGroqModel(modelId);
+    const allowanceData = await groqAllowance();
+    log(`pinned groq::${modelId}: ForgeZero FREE_ALLOWANCE admission + live tool probe, ctx ${pin.entry.contextLength}; equivalent ref ${pin.paidTwin.id}; quota remaining req=${allowanceData.remaining} tokens=${allowanceData.remainingTokens} (window); daily tokens used=${allowanceData.dailyTokensUsed}/${GROQ_FREE_DAILY_TOKENS}; pricing ${path.relative(ROOT, pricingPath)}`);
+    const adapter = createGroqAdapter({ apiKey: process.env.GROQ_API_KEY, timeoutMs: 180_000, onResponse: (observation) => { lastGroqQuota = quotaFromHeaders(observation); } });
+    return { tasks, identity, snapshot, pin, allowance: allowanceData, manifestDigest, createProvider: () => adapter, model: { providerId: "groq", modelId, routeClass: "groq_owner_dev_free_allowance" } };
+  }
   const pin = await pinFreeModel(modelId);
-  const allowance = await dailyAllowance();
-  log(`pinned ${modelId}: $0/$0 confirmed, tools advertised, ctx ${pin.entry.contextLength}; paid twin ${pin.paidTwin?.id ?? "none"}; allowance ${allowance.remaining}/${allowance.limit} remaining; pricing ${path.relative(ROOT, pricingPath)}`);
+  const allowanceData = await dailyAllowance();
+  log(`pinned ${modelId}: $0/$0 confirmed, tools advertised, ctx ${pin.entry.contextLength}; paid twin ${pin.paidTwin?.id ?? "none"}; allowance ${allowanceData.remaining}/${allowanceData.limit} remaining; pricing ${path.relative(ROOT, pricingPath)}`);
   const adapter = createOpenRouterAdapter({ timeoutMs: 180_000 });
-  return { tasks, identity, snapshot, pin, allowance, manifestDigest, createProvider: () => adapter, model: { providerId: "openrouter", modelId, routeClass: "openrouter_free_deposit_unlocked" } };
+  return { tasks, identity, snapshot, pin, allowance: allowanceData, manifestDigest, createProvider: () => adapter, model: { providerId: "openrouter", modelId, routeClass: "openrouter_free_deposit_unlocked" } };
 }
 
 function writeCampaignSummary(phase, result, extra) {
@@ -527,6 +652,7 @@ async function modePrescreen() {
 }
 
 async function modeQualify() {
+  const providerId = flags.provider ?? "openrouter";
   const models = list(flags.models) ?? (() => {
     const file = path.join(EVIDENCE, "pilot", "MODEL-PRESCREEN.json");
     if (!fs.existsSync(file)) return undefined;
@@ -535,23 +661,24 @@ async function modeQualify() {
   if (!models || models.length === 0) throw new Error("qualify requires --models a:free,b:free or a MODEL-PRESCREEN.json with advancing candidates");
   const results = [];
   for (const modelId of models) {
-    log(`=== qualification: ${modelId} ===`);
+    log(`=== qualification: ${providerId}::${modelId} ===`);
     let setup;
     try {
-      setup = await liveSetup(modelId);
+      setup = await liveSetup(modelId, providerId);
     } catch (error) {
-      results.push({ modelId, eligible: false, reason: error instanceof Error ? error.message : String(error) });
+      results.push({ modelId, providerId, eligible: false, reason: error instanceof Error ? error.message : String(error) });
       continue;
     }
     const chosen = selectTasks(setup.tasks, list(flags.tasks), { qualification: true });
-    const result = await runPairs({ phase: "qualification", tasks: chosen, arms: ["optimized"], repetitions: 1, modeFlag: flags.mode === "single" ? "single_agent_run" : "orchestrated", model: setup.model, createProvider: setup.createProvider, freeRecord: setup.pin.freeRecord, routeListedUnitPrice: { inputPerMillionUsd: 0, outputPerMillionUsd: 0 }, pricing: setup.snapshot, identity: setup.identity, live: true });
-    writeCampaignSummary("qualification", result, { model: modelId, pin: setup.pin.entry, allowanceAtStart: setup.allowance, identity: setup.identity });
+    const result = await runPairs({ phase: "qualification", tasks: chosen, arms: ["optimized"], repetitions: 1, modeFlag: flags.mode === "single" ? "single_agent_run" : "orchestrated", model: setup.model, createProvider: setup.createProvider, freeRecord: setup.pin.freeRecord, routeListedUnitPrice: { inputPerMillionUsd: 0, outputPerMillionUsd: 0 }, pricing: setup.snapshot, identity: setup.identity, live: true, providerId });
+    writeCampaignSummary("qualification", result, { model: modelId, providerId, pin: setup.pin.entry, allowanceAtStart: setup.allowance, identity: setup.identity });
     const runs = result.summary;
     const records = runs.map((run) => JSON.parse(fs.readFileSync(path.join(rawDir("qualification"), `${run.runId}.json`), "utf8")));
     const hangsOrUpstream = records.filter((record) => record.inference.calls.some((call) => call.outcome === "error" && (call.rateLimited || (call.httpStatus ?? 0) >= 500 || /hang|timeout/i.test(call.errorCode ?? "")))).length;
     const malformedToolCalls = records.filter((record) => record.outcome.stopReason.toLowerCase().includes("invalid") || record.notes.some((note) => /malformed/i.test(note))).length;
     results.push({
       modelId,
+      providerId,
       eligible: true,
       tasks: runs.length,
       tasksExpected: chosen.length,
@@ -573,7 +700,7 @@ async function modeQualify() {
   const qualified = (r) => r.eligible === true && r.verified === r.tasksExpected && r.hangsOrUpstreamFailures === 0 && r.malformedToolCallRuns === 0;
   const ranked = results.filter((r) => r.eligible).sort((a, b) => (b.verified - a.verified) || (a.hangsOrUpstreamFailures - b.hangsOrUpstreamFailures) || (a.malformedToolCallRuns - b.malformedToolCallRuns) || (a.medianWallMs - b.medianWallMs));
   const winner = ranked.find(qualified)?.modelId ?? null;
-  const selection = { recordedAt: new Date().toISOString(), protocolRule: "§2.2 — reliability and capability only; tokens are not a scoring input; winner requires all tasks verified, zero upstream failures, zero malformed runs", candidates: results.map((r) => ({ ...r, qualified: r.eligible ? qualified(r) : false })), winner, leader: ranked[0]?.modelId ?? null, ranking: ranked.map((r) => r.modelId) };
+  const selection = { recordedAt: new Date().toISOString(), protocolVersion: PROTOCOL_VERSION, protocolRule: "§2.2 — reliability and capability only; tokens are not a scoring input; winner requires all tasks verified, zero upstream failures, zero malformed runs", candidates: results.map((r) => ({ ...r, qualified: r.eligible ? qualified(r) : false })), winner, winnerProvider: ranked.find(qualified)?.providerId ?? null, leader: ranked[0]?.modelId ?? null, ranking: ranked.map((r) => r.modelId) };
   const dir = path.join(EVIDENCE, "pilot");
   fs.mkdirSync(dir, { recursive: true });
   const file = path.join(dir, "MODEL-SELECTION.json");
@@ -595,12 +722,14 @@ function median(values) {
 
 async function modeLivePairs(phase) {
   const modelId = flags.model;
-  if (!modelId) throw new Error(`${phase} requires --model <exact :free id>`);
-  const setup = await liveSetup(modelId);
+  const providerId = flags.provider ?? "openrouter";
+  if (!modelId) throw new Error(`${phase} requires --model <exact model id>`);
+  const setup = await liveSetup(modelId, providerId);
   const selectionPath = path.join(EVIDENCE, "pilot", "MODEL-SELECTION.json");
   if (fs.existsSync(selectionPath)) {
     const selection = JSON.parse(fs.readFileSync(selectionPath, "utf8"));
-    if (selection.winner && selection.winner !== modelId && !flags["override-selection"]) throw new Error(`MODEL-SELECTION.json names ${selection.winner}; refusing to run ${phase} on ${modelId} (protocol §2.2). Pass --override-selection only with a documented reason.`);
+    const providerMismatch = selection.winnerProvider && selection.winnerProvider !== providerId;
+    if (selection.winner && (selection.winner !== modelId || providerMismatch) && !flags["override-selection"]) throw new Error(`MODEL-SELECTION.json names ${selection.winnerProvider ? `${selection.winnerProvider}::` : ""}${selection.winner}; refusing to run ${phase} on ${providerId}::${modelId} (protocol §2.2). Pass --override-selection only with a documented reason.`);
   } else if (phase !== "pilot" || !flags["override-selection"]) {
     throw new Error("pilot/MODEL-SELECTION.json is missing — run the qualification round first (protocol §2.2)");
   }
@@ -608,8 +737,8 @@ async function modeLivePairs(phase) {
   const repetitions = Number(flags.reps ?? 1);
   const modeFlag = flags.mode === "single" ? "single_agent_run" : "orchestrated";
   const arms = list(flags.arms) ?? ["control", "optimized"];
-  const result = await runPairs({ phase, tasks: chosen, arms, repetitions, modeFlag, model: setup.model, createProvider: setup.createProvider, freeRecord: setup.pin.freeRecord, routeListedUnitPrice: { inputPerMillionUsd: 0, outputPerMillionUsd: 0 }, pricing: setup.snapshot, identity: setup.identity, live: true });
-  writeCampaignSummary(phase, result, { model: modelId, pin: setup.pin.entry, paidTwin: setup.pin.paidTwin, allowanceAtStart: setup.allowance, allowanceAtEnd: await dailyAllowance().catch(() => null), identity: setup.identity, mode: modeFlag, repetitions, taskManifestDigest: setup.manifestDigest });
+  const result = await runPairs({ phase, tasks: chosen, arms, repetitions, modeFlag, model: setup.model, createProvider: setup.createProvider, freeRecord: setup.pin.freeRecord, routeListedUnitPrice: { inputPerMillionUsd: 0, outputPerMillionUsd: 0 }, pricing: setup.snapshot, identity: setup.identity, live: true, providerId });
+  writeCampaignSummary(phase, result, { model: modelId, providerId, pin: setup.pin.entry, paidTwin: setup.pin.paidTwin, allowanceAtStart: setup.allowance, allowanceAtEnd: await allowance(providerId).catch(() => null), identity: setup.identity, mode: modeFlag, repetitions, taskManifestDigest: setup.manifestDigest });
 }
 
 const modes = {

@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-09-21T02:20:54.712Z",
+  "recordedAt": "2026-09-21T02:43:32.352Z",
   "protocolRule": "§2.2 pre-screen (v1.0.3): one single-agent qualification task; passers ranked by wall time; outcome-blind cap; infrastructure_void candidates may be re-screened (§6.3), all attempts preserved",
   "task": "qual-js-return-sign",
   "cap": 6,
@@ -302,10 +302,10 @@
       "modelId": "poolside/laguna-xs-2.1:free",
       "passed": false,
       "classification": "infrastructure_void",
-      "wallClockMs": 2563,
+      "wallClockMs": 2688,
       "modelCalls": 1,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-787597a5",
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-d1f1703b",
       "reason": "infrastructure_void",
       "attempts": [
         {
@@ -336,6 +336,16 @@
           "modelCalls": 1,
           "totalTokens": null,
           "runId": "r23-qualification-qual-js-return-sign-optimized-r1-787597a5",
+          "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T02:43:32.352Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2688,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-d1f1703b",
           "reason": "infrastructure_void"
         }
       ]

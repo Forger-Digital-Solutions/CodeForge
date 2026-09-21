@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Protocol id | `codeforge-efficiency-protocol-r23` |
-| Protocol version | **1.0.3** (frozen; any change after the first live pilot run requires a new minor version and a re-run of affected results) |
+| Protocol version | **1.0.4** (frozen; any change after the first live pilot run requires a new minor version and a re-run of affected results) |
 | Frozen at commit | `ae2aa87487e7bd4ca2c4fde47bfc3b978fa50e41` (R22 closure) — the protocol is committed *before* any paired result exists |
 | Date frozen | 2026-09-20 |
 | Authors | R23 engineering team (one founder + AI agents) |
@@ -48,6 +48,14 @@ Every run record carries an `environment_fingerprint` = sha256 of {os, cpu model
 - **Provider:** OpenRouter, via the existing `@codeforge/providers` OpenRouter adapter, credential from the `OPENROUTER_API_KEY` environment variable (never persisted, never logged).
 - **Route class:** exact-pinned `:free` model id. `:free` routes are $0 per request. The account holds a pay-as-you-go deposit that unlocks the higher free allowance — live account read on 2026-09-20: `free_model_daily_requests {limit: 1000, used: 59}`, `total_credits: 25, total_usage: 0`. **The deposit is never to be consumed**: the harness sets an explicit `modelSelection` (exact id) — the runtime never substitutes an explicit selection (R21 M9) — and ForgeZero admits only $0-verified routes. If any run record ever shows `actual_cost > 0`, the campaign halts and the cause is recorded.
 - **Daily allowance:** 1,000 requests/day (resets 00:00 UTC), 20 requests/min. The harness tracks the day's request count from the live `auth/key` endpoint before each run and **refuses to start a run** that would not fit in the remaining allowance with a 15% margin (§6.3).
+- **Substitute primary route (v1.0.4):** if the OpenRouter `:free` pool demonstrably cannot produce a qualified model — defined as: every tool-capable `:free` candidate pre-screened, no candidate meeting the §2.2 bar across at least three qualification rounds, and remaining candidates classified as permanent failures (provider refusal, capability, or policy) rather than transient ones — the primary route may move to **another provider already configured and approved in CodeForge** (an existing credential on the benchmark machine, a `CLEARED` terms status in the provider registry, and an existing adapter). The substitute route must satisfy, with evidence recorded in the pin record:
+  1. ForgeZero admits the exact `{providerId, modelId}` pair under a verified free-access class (`FREE_NATIVE`, `FREE_ROUTED`, `FREE_ALLOWANCE`, or `FREE_PROMO`);
+  2. the provider's documented free allowance is corroborated by live evidence (quota/rate-limit response headers captured at pin time and per response thereafter);
+  3. tool support is verified by a live tool-call probe at pin time, not merely advertised;
+  4. the provider returns usage telemetry on served calls;
+  5. an **equivalent-cost price reference exists**: the same model's paid listing on the reference marketplace (OpenRouter catalog) — the free route's actual cost remains $0 and the §2.1 `actual_cost > 0` halt applies unchanged;
+  6. the unchanged §2.2 qualification bar is applied in full — the substitution changes *where* the bar is applied, never the bar itself. Both arms always run the same provider and model; the A/B comparison is unaffected.
+- **Trigger evidence for this clause (2026-09-21):** 19/19 tool-capable `:free` candidates pre-screened on OpenRouter; `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` — the only prescreen passer — reached **2 verified of 12 qualification runs across four rounds** (intermittent upstream 502s mid-run); all other candidates ended in provider failure, verification failure, budget exhaustion, permanent restriction, or persistent infrastructure void. The substitute route exercised is `groq::openai/gpt-oss-120b` (registry: `FREE_DAILY_ALLOCATION`, terms `CLEARED`, existing adapter + `GROQ_API_KEY`).
 
 ### 2.2 Model selection rule (frozen; the choice is recorded before any pair runs)
 
@@ -67,7 +75,7 @@ Runtime defaults are used unchanged in both arms: temperature `0.7` (runtime def
 ### 2.4 Secondary live routes (not headline)
 
 - Mistral (Free plan, pay-as-you-go disabled, $10 included/month; account privacy setting permits training → **synthetic fixtures only**) may be used for a cross-model replication of a task subset. Reported separately as "replication", never pooled with the primary model.
-- Groq (8K TPM ceiling) and Cerebras ($5 trial credit) are **not used**. OpenAI key (paid) is **never used**. Gemini key is non-functional (403).
+- Groq is eligible as a **substitute primary route** under §2.1 (v1.0.4) — free daily allocation, owner-dev credential, full usage telemetry. Cerebras is **not used** (live 402 — promotional credit exhausted, 2026-09-21). OpenAI key (paid) is **never used**. Gemini key is non-functional (403).
 
 ---
 
@@ -187,7 +195,7 @@ Pairs run back-to-back on the same day and same model. Arm order alternates per 
 
 - Per run: the role's default `AgentExecutionBudget` (model turns, tool calls, writes, commands) — identical in both arms; a run that exhausts its turn budget is `blocked` (R21 budget honesty) and counts as **not verified**.
 - Wall-clock cap per run: **20 minutes** of active time; provider rate-limit waits (429 with `retry-after`, 20 RPM pacing) are recorded as `rate_limit_wait_ms` and excluded from `active_agent_time` but included in `wall_clock_time`.
-- Daily allowance: a run is not started unless `remaining_daily_requests ≥ 1.15 × p90(model_calls per run observed so far, min 40)`. If the allowance runs out mid-pair, the incomplete pair is **voided** (§7) and re-run whole the next day.
+- Daily allowance: a run is not started unless `remaining_daily_requests ≥ 1.15 × p90(model_calls per run observed so far, min 40)`. If the allowance runs out mid-pair, the incomplete pair is **voided** (§7) and re-run whole the next day. For substitute routes (§2.1) the same gate is evaluated on the provider's own capacity signal: live `x-ratelimit-*` headers for the request window, plus the day's cumulative token spend from the per-call ledger against the provider's documented daily token cap (same 15% margin). Minute-scale rate windows are handled by the capacity governor's pacing, which is recorded as `rate_limit_wait_ms`, not counted as allowance exhaustion.
 - A run terminated by a **provider-side** failure (HTTP 5xx, upstream 429 not caused by our own pacing, or a stream hang > 120 s) **before the model's first tool call** is `infrastructure_void` and re-run once in the same arm order; the void is logged. The same failure **after** the first tool call counts as a run failure (`provider_failure`) — autonomous agents must survive their supply, and both arms face the same supply.
 
 ### 6.4 What the harness records (schema in `docs/evidence/r23-efficiency-proof/schemas/`)
@@ -334,4 +342,5 @@ Raw records first (`raw/*.jsonl`), then generated summaries (`summaries/*.json|.
 | 1.0.0 | 2026-09-20 | Frozen before the first pilot run. |
 | 1.0.2 | 2026-09-21 | Before any live run: §2.2 adds the outcome-blind pre-screen and the six-candidate cap for the qualification round (daily-allowance budget). |
 | 1.0.3 | 2026-09-21 | Before any pilot run: §16's receipt-reconciliation item is corrected to match the counter's measured semantics — `free_model_daily_requests.used` advances only on served requests, so it must equal the count of ledger calls with `usage_source: PROVIDER_REPORTED`, not raw attempts (raw attempts include upstream 4xx/5xx that are never served). Verified on live data: 87 served calls = `used: 87`. |
+| 1.0.4 | 2026-09-21 | Before any pilot run, with the qualification bar unchanged and `winner: null` preserved: §2.1 adds a substitute-primary-route clause (necessity amendment — the OpenRouter `:free` pool produced no qualified model: 19/19 pre-screened, best candidate 2/12 verified across four rounds, remainder permanent failures or persistent voids; trigger evidence is recorded in §2.1). §2.4 moves Groq from "not used" to substitute-route eligibility; Cerebras stays excluded (live 402). §6.3 generalises the allowance gate to provider-native capacity signals. Equivalent-cost pricing for a substitute route uses the same model's paid listing on the reference marketplace. No success criterion, threshold, or scoring rule is relaxed. |
 | 1.0.1 | 2026-09-21 | Before any live run, after the scripted dry run of all 15 tasks: (a) §5 defines the completion authority for read-only investigation tasks (the v1.0.0 wording only covered change-making tasks and made every investigation run a false completion by construction); (b) §6.4 records that `dry_run` is a phase. Two product findings from the dry run are recorded, not worked around: ForgeVerify's autonomous path admits only `node`/`npm`/`npx` verifiers (Python tasks fail identically in both arms), and the deterministic diff review blocks verification-config edits (the build-config task fails identically in both arms). Both stay in the corpus as measured. (c) §3.1 corrects the arm table: mission memory and FG-12F evidence reuse are inert on the autonomous run path (FG-12F has no production caller — finding F-3); the exercised switches are the ForgeGreen advisor, FG-1C, FG-1B, the FG-1D/FG-3D cache, the FG-3 context planner, and topology. |

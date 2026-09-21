@@ -1,0 +1,88 @@
+{
+  "campaignId": "qualification-2026-09-21T02-44-04-945Z",
+  "phase": "qualification",
+  "recordedAt": "2026-09-21T02:45:07.169Z",
+  "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+  "pin": {
+    "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+    "name": "NVIDIA: Nemotron 3 Nano Omni (free)",
+    "contextLength": 256000,
+    "pricing": {
+      "prompt": "0",
+      "completion": "0"
+    },
+    "supportedParameters": [
+      "include_reasoning",
+      "max_tokens",
+      "reasoning",
+      "seed",
+      "temperature",
+      "tool_choice",
+      "tools",
+      "top_p"
+    ],
+    "checkedAt": "2026-09-21T02:44:04.910Z"
+  },
+  "allowanceAtStart": {
+    "limit": 1000,
+    "used": 126,
+    "remaining": 874,
+    "usage": 0,
+    "usageDaily": 0,
+    "checkedAt": "2026-09-21T02:44:04.943Z"
+  },
+  "identity": {
+    "protocolVersion": "1.0.3",
+    "protocolDigest": "0f9263db999dd0b7c0d2c9d461d80cb0c50f64a300d559474463038aec057531",
+    "codeforgeCommit": "3436a79c805f6976e92a00a0aa67381027407caf",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "docs/evidence/r23-efficiency-proof/pilot/MODEL-PRESCREEN.json",
+      "docs/evidence/r23-efficiency-proof/raw/exclusions.jsonl",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/runs.jsonl",
+      "docs/evidence/r23-efficiency-proof/pilot/catalog-2026-09-21T0242Z.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-d1f1703b.json"
+    ],
+    "environmentFingerprint": "12d0e878084ae69d6da3c4a9243854647083c7b9b1cb38e5926c79f2b40cf37f",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "stopped": null,
+  "runs": [
+    {
+      "taskId": "qual-js-missing-export",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 7,
+      "totalTokens": null,
+      "wallClockMs": 21935,
+      "runId": "r23-qualification-qual-js-missing-export-optimized-r1-62c76cb4"
+    },
+    {
+      "taskId": "qual-js-off-by-one",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 4,
+      "totalTokens": null,
+      "wallClockMs": 7734,
+      "runId": "r23-qualification-qual-js-off-by-one-optimized-r1-e1287153"
+    },
+    {
+      "taskId": "qual-js-return-sign",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "infrastructure_void",
+      "modelCalls": 3,
+      "totalTokens": null,
+      "wallClockMs": 32133,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-5ad9c781"
+    }
+  ]
+}

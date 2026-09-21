@@ -1,5 +1,5 @@
 import type { CredentialStore, ProviderAdapter, ProviderHealthResponse, ProviderModel, PromptCacheCapability, ProviderResponseObserver } from "./index.js";
-import { ProviderError, quotaHeadersOf } from "./index.js";
+import { EnvironmentCredentialStore, ProviderError, quotaHeadersOf } from "./index.js";
 import { redactSecrets } from "./redact.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
 import {
@@ -70,7 +70,10 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
   private readonly geminiServiceTier: "UNPAID" | "PAID";
 
   constructor(cfg: OpenAICompatibleConfig) {
-    this.cfg = cfg;
+    // Match OpenRouterAdapter: absent an explicit store, resolve `<PROVIDER>_API_KEY` from the
+    // environment — otherwise factory-built adapters fail with MISSING_API_KEY even when the
+    // documented env var is set.
+    this.cfg = { credentialStore: new EnvironmentCredentialStore(), ...cfg };
     this.providerId = cfg.providerId;
     this.timeoutMs = cfg.timeoutMs ?? 60000;
     this.fetchFn = cfg.fetchFn ?? fetch;

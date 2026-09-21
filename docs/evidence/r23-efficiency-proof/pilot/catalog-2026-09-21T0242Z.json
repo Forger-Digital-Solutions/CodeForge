@@ -1,0 +1,101 @@
+{
+ "at": "2026-09-21T02:41:51.990Z",
+ "count": 19,
+ "models": [
+  {
+   "id": "inclusionai/ling-3.0-flash-vl:free",
+   "ctx": 262144,
+   "maxOut": 32768
+  },
+  {
+   "id": "nex-agi/nex-n2.5-mini:free",
+   "ctx": 262144,
+   "maxOut": 235929
+  },
+  {
+   "id": "nex-agi/nex-n2.5-pro:free",
+   "ctx": 262144,
+   "maxOut": 235929
+  },
+  {
+   "id": "inclusionai/ling-3.0-flash-sante:free",
+   "ctx": 262144,
+   "maxOut": 32768
+  },
+  {
+   "id": "inclusionai/ling-3.0-flash-fin:free",
+   "ctx": 262144,
+   "maxOut": 32768
+  },
+  {
+   "id": "qwen/qwen3.8-27b:free",
+   "ctx": 262144,
+   "maxOut": 235929
+  },
+  {
+   "id": "dots-studio/dots-3-note-preview:free",
+   "ctx": 512000,
+   "maxOut": 460800
+  },
+  {
+   "id": "liquid/lfm-2.5-2.6b:free",
+   "ctx": 65536,
+   "maxOut": 8192
+  },
+  {
+   "id": "nvidia/nemotron-3.5-lightning:free",
+   "ctx": 1000000,
+   "maxOut": 65536
+  },
+  {
+   "id": "thinkingmachines/inkling-small:free",
+   "ctx": 1048576,
+   "maxOut": 262144
+  },
+  {
+   "id": "poolside/laguna-s-2.1:free",
+   "ctx": 262144,
+   "maxOut": 32768
+  },
+  {
+   "id": "thinkingmachines/inkling:free",
+   "ctx": 1048576,
+   "maxOut": 262144
+  },
+  {
+   "id": "poolside/laguna-xs-2.1:free",
+   "ctx": 262144,
+   "maxOut": 32768
+  },
+  {
+   "id": "cohere/north-mini-code:free",
+   "ctx": 256000,
+   "maxOut": 64000
+  },
+  {
+   "id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+   "ctx": 1000000,
+   "maxOut": 65536
+  },
+  {
+   "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+   "ctx": 256000,
+   "maxOut": 65536
+  },
+  {
+   "id": "google/gemma-4-26b-a4b-it:free",
+   "ctx": 262144,
+   "maxOut": 32768
+  },
+  {
+   "id": "google/gemma-4-31b-it:free",
+   "ctx": 262144,
+   "maxOut": 32768
+  },
+  {
+   "id": "nvidia/nemotron-3-super-120b-a12b:free",
+   "ctx": 262144,
+   "maxOut": 235929
+  }
+ ]
+}

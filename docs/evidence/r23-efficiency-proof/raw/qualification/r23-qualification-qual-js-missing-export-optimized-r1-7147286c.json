@@ -1,0 +1,296 @@
+{
+  "schemaVersion": "r23-run-record-1",
+  "identity": {
+    "benchmarkVersion": "CodeForge-EfficiencyBench-R23",
+    "protocolId": "codeforge-efficiency-protocol-r23",
+    "protocolVersion": "1.0.4",
+    "protocolDigest": "03023faceb378620b9607569567f39468c898050ed3d4ea2bf8258701b90d8e7",
+    "harnessVersion": "r23-harness-1.0.0",
+    "campaignId": "qualification-2026-09-21T02-57-43-553Z",
+    "phase": "qualification",
+    "runId": "r23-qualification-qual-js-missing-export-optimized-r1-7147286c",
+    "pairId": "qualification-2026-09-21T02-57-43-553Z-qual-js-missing-export-r1",
+    "taskId": "qual-js-missing-export",
+    "taskClass": "small_fix",
+    "taskLanguage": "javascript",
+    "repoSizeClass": "small",
+    "arm": "optimized",
+    "armConfigurationDigest": "f36a2e6a722cbfa84f91c0ab6d18a01176550d730772f21b6f97cdd7d3a61804",
+    "pairOrder": "optimized-first",
+    "repetition": 1,
+    "codeforgeCommit": "3436a79c805f6976e92a00a0aa67381027407caf",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "docs/benchmarks/codeforge-efficiency-protocol-r23.md",
+      "docs/evidence/r23-efficiency-proof/cost/pricing-snapshot-2026-09-21.json",
+      "docs/evidence/r23-efficiency-proof/pilot/MODEL-PRESCREEN.json",
+      "docs/evidence/r23-efficiency-proof/pilot/MODEL-SELECTION.json",
+      "docs/evidence/r23-efficiency-proof/protocol/PROTOCOL-DIGEST.txt",
+      "docs/evidence/r23-efficiency-proof/raw/exclusions.jsonl",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/runs.jsonl",
+      "scripts/r23-efficiency-bench.mjs",
+      "docs/evidence/r23-efficiency-proof/pilot/catalog-2026-09-21T0242Z.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/campaign-qualification-2026-09-21T02-44-04-945Z.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/campaign-qualification-2026-09-21T02-56-52-204Z.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-missing-export-optimized-r1-62c76cb4.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-off-by-one-optimized-r1-e1287153.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-5ad9c781.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-d1f1703b.json"
+    ],
+    "startingTreeHash": "ebce8fedacbb22c6414f2ae6dc0c0451518cbf69d9e63d251c408cbdf3573837",
+    "endingTreeHash": "ebce8fedacbb22c6414f2ae6dc0c0451518cbf69d9e63d251c408cbdf3573837",
+    "taskDigest": "4c8a759571412bcb93a664815f0f85ab9ce07cae588f370724dcd63eaa72c3fb",
+    "modelId": "openai/gpt-oss-120b",
+    "providerId": "groq",
+    "routeClass": "groq_owner_dev_free_allowance",
+    "forgeGreenEnabled": true,
+    "subagentsEnabled": true,
+    "topology": "orchestrated:adaptive",
+    "environmentFingerprint": "b0ea7e66e913f8b6c9d2839f3acb27308a907dc8e29ca814c228ea0d4e2b0ea1",
+    "startedAt": "2026-09-21T02:57:43.564Z",
+    "endedAt": "2026-09-21T02:59:44.958Z"
+  },
+  "outcome": {
+    "runtimeStatus": "blocked",
+    "stopReason": "REVIEWER_FAILED",
+    "claimedComplete": false,
+    "verifierRan": true,
+    "verifierPassed": false,
+    "verifierExitCode": 1,
+    "verifierDurationMs": 102,
+    "completionAuthority": "NOT_RUN",
+    "completionBlockers": [],
+    "forbiddenActionObserved": false,
+    "verifiedComplete": false,
+    "falseComplete": false,
+    "classification": "infrastructure_void",
+    "completionReason": "provider failure before the model's first tool call (MISSING_API_KEY)",
+    "filesChanged": [
+      "package.json",
+      "src"
+    ],
+    "linesAdded": 0,
+    "linesRemoved": 0
+  },
+  "inference": {
+    "totalInputTokens": {
+      "source": "UNKNOWN",
+      "note": "3 call(s) without provider usage"
+    },
+    "totalOutputTokens": {
+      "source": "UNKNOWN",
+      "note": "3 call(s) without provider usage"
+    },
+    "totalTokens": {
+      "source": "UNKNOWN",
+      "note": "input or output unknown"
+    },
+    "cachedInputTokens": {
+      "source": "UNKNOWN",
+      "note": "3 call(s) without provider usage"
+    },
+    "uncachedInputTokens": {
+      "source": "UNKNOWN",
+      "note": "cached unknown"
+    },
+    "reasoningTokens": {
+      "source": "UNKNOWN",
+      "note": "3 call(s) without provider usage"
+    },
+    "modelCalls": 3,
+    "callsWithProviderUsage": 0,
+    "failedModelCalls": 3,
+    "retriedModelCalls": 2,
+    "rateLimitedCalls": 0,
+    "providerFailovers": 0,
+    "modelFailovers": 0,
+    "duplicateRequestsSuppressed": 0,
+    "calls": [
+      {
+        "callIndex": 0,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T02:57:44.698Z",
+        "endedAt": "2026-09-21T02:57:44.699Z",
+        "latencyMs": 1,
+        "requestBytes": 8410,
+        "responseBytes": 0,
+        "messageCount": 2,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "UNKNOWN",
+        "toolCallsEmitted": 0,
+        "outcome": "error",
+        "errorCode": "MISSING_API_KEY",
+        "rateLimited": false,
+        "conversationDigest": "2baf1a122c99cac698127d7151e10a017875b3730a15d0f42306dd731acb5c64"
+      },
+      {
+        "callIndex": 1,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T02:58:44.704Z",
+        "endedAt": "2026-09-21T02:58:44.704Z",
+        "latencyMs": 0,
+        "requestBytes": 11408,
+        "responseBytes": 0,
+        "messageCount": 2,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1
+        },
+        "toolDefinitionCount": 19,
+        "usageSource": "UNKNOWN",
+        "toolCallsEmitted": 0,
+        "outcome": "error",
+        "errorCode": "MISSING_API_KEY",
+        "rateLimited": false,
+        "conversationDigest": "5e6d3b7c16d2cbba5eb6909abe357318bf7db0634bb42e0535a9ccb5a21f542d"
+      },
+      {
+        "callIndex": 2,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T02:59:44.716Z",
+        "endedAt": "2026-09-21T02:59:44.717Z",
+        "latencyMs": 1,
+        "requestBytes": 9288,
+        "responseBytes": 0,
+        "messageCount": 3,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "UNKNOWN",
+        "toolCallsEmitted": 0,
+        "outcome": "error",
+        "errorCode": "MISSING_API_KEY",
+        "rateLimited": false,
+        "conversationDigest": "5f752dbe02ee1c220068fd459986f72b54c3d3a6a524b257342e347455881013"
+      }
+    ]
+  },
+  "context": {
+    "transmittedContextBytes": 29106,
+    "finalConversationBytes": 3799,
+    "providerStatelessnessRepeatBytes": 25307,
+    "avoidableDuplicateBytes": 0,
+    "avoidableDuplicateTokens": {
+      "source": "UNKNOWN",
+      "note": "provider prompt-token/byte ratio unavailable"
+    },
+    "avoidableDuplicateEvents": [],
+    "avoidableDuplicateBytesWithinRole": 0,
+    "avoidableDuplicateBytesCrossRole": 0,
+    "finalComposition": {
+      "systemBytes": 2032,
+      "userTaskBytes": 1767,
+      "assistantBytes": 0,
+      "toolResultBytes": 0,
+      "toolResultBytesByTool": {},
+      "otherBytes": 0
+    },
+    "bootstrapContextBytes": 0,
+    "bootstrapSelectedFiles": 0,
+    "bootstrapCandidateFiles": 0,
+    "canonicalCacheHits": 0,
+    "canonicalCacheMisses": 0,
+    "toolOutputBytesAvoidedByCompression": 0,
+    "providerCacheHitCalls": 0
+  },
+  "activity": {
+    "role": "coder",
+    "toolCallsRequested": 0,
+    "toolCallsExecuted": 0,
+    "toolCallsFailed": 0,
+    "duplicateActionsSuppressed": 0,
+    "byTool": {},
+    "fileReads": 0,
+    "fileWrites": 0,
+    "searches": 0,
+    "listings": 0,
+    "shellCalls": 0,
+    "browserCalls": 0,
+    "mcpCalls": 0,
+    "pluginCalls": 0,
+    "subagentCount": 2,
+    "subagentModelCalls": 0
+  },
+  "time": {
+    "wallClockMs": 121303,
+    "activeAgentMs": 120717,
+    "modelWaitMs": 2,
+    "toolMs": {
+      "source": "UNKNOWN",
+      "note": "no tool execution records available in this mode"
+    },
+    "verificationMs": 0,
+    "rateLimitWaitMs": 0,
+    "pacingWaitMs": 0,
+    "forgeGreenOverheadMs": {
+      "source": "UNKNOWN",
+      "note": "not joined in this record"
+    }
+  },
+  "economics": {
+    "pricingSnapshotId": "openrouter-2026-09-21",
+    "actualCostUsd": {
+      "source": "UNKNOWN",
+      "note": "token totals unknown"
+    },
+    "equivalentPublicApiCostUsd": {
+      "source": "UNKNOWN",
+      "note": "token totals unknown"
+    },
+    "equivalentPublicApiPriceRef": "openrouter::openai/gpt-oss-120b",
+    "equivalentMarketCostUsd": {
+      "source": "UNKNOWN",
+      "note": "token totals unknown"
+    },
+    "equivalentMarketPriceRef": "openrouter::anthropic/claude-sonnet-5"
+  },
+  "resources": {
+    "cpuUserMs": {
+      "value": 656,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "cpuSystemMs": {
+      "value": 250,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "peakRssBytes": {
+      "value": 247664640,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerResponseBytes": {
+      "value": 0,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerRequestBytes": {
+      "value": 29106,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "gpuPowerDrawWattsIdleSample": {
+      "value": 4.1,
+      "source": "OBSERVED",
+      "origin": "HARNESS",
+      "note": "single nvidia-smi sample; local GPU is idle — not inference"
+    },
+    "sampler": "node-process-cpu-rss-1 (harness process only; tool child processes excluded)"
+  },
+  "telemetry": {
+    "efficiencyReasonCodes": []
+  },
+  "notes": [
+    "inert switches on this execution path: memoryDelivery (mission memory is not used by the autonomous run path) and verificationReuse (FG-12F has no production caller) — recorded for provenance, identical in both arms"
+  ]
+}

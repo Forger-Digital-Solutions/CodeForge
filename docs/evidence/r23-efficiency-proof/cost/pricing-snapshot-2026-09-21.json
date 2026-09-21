@@ -1,6 +1,6 @@
 {
   "snapshotId": "openrouter-2026-09-21",
-  "frozenAt": "2026-09-21T00:14:50.556Z",
+  "frozenAt": "2026-09-21T02:56:37.619Z",
   "currency": "USD",
   "equivalents": {
     "openrouter::inclusionai/ling-3.0-flash-vl:free": {
@@ -50,6 +50,18 @@
     "openrouter::nvidia/nemotron-3-super-120b-a12b:free": {
       "priceRef": "openrouter::nvidia/nemotron-3-super-120b-a12b",
       "rationale": "paid listing of the same model on the same provider"
+    },
+    "groq::openai/gpt-oss-120b": {
+      "priceRef": "openrouter::openai/gpt-oss-120b",
+      "rationale": "same model weights served by the substitute provider; priced at the reference marketplace's paid listing (§2.1 v1.0.4)"
+    },
+    "groq::openai/gpt-oss-20b": {
+      "priceRef": "openrouter::openai/gpt-oss-20b",
+      "rationale": "same model weights served by the substitute provider; priced at the reference marketplace's paid listing (§2.1 v1.0.4)"
+    },
+    "groq::qwen/qwen3.8-27b": {
+      "priceRef": "openrouter::qwen/qwen3.8-27b",
+      "rationale": "same model weights served by the substitute provider; priced at the reference marketplace's paid listing (§2.1 v1.0.4)"
     }
   },
   "marketReference": {
@@ -64,7 +76,7 @@
       "outputPerMillionUsd": 0.18,
       "cacheReadPerMillionUsd": 0.012,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     },
     "openrouter::inclusionai/ling-3.0-flash-fin": {
       "id": "openrouter::inclusionai/ling-3.0-flash-fin",
@@ -73,16 +85,16 @@
       "outputPerMillionUsd": 0.18,
       "cacheReadPerMillionUsd": 0.012,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     },
     "openrouter::qwen/qwen3.8-27b": {
       "id": "openrouter::qwen/qwen3.8-27b",
       "displayName": "Qwen: Qwen3.8 27B",
       "inputPerMillionUsd": 0.2,
-      "outputPerMillionUsd": 2.55,
-      "cacheReadPerMillionUsd": 0.085,
+      "outputPerMillionUsd": 2.5,
+      "cacheReadPerMillionUsd": 0.05,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     },
     "openrouter::nvidia/nemotron-3.5-lightning": {
       "id": "openrouter::nvidia/nemotron-3.5-lightning",
@@ -91,7 +103,7 @@
       "outputPerMillionUsd": 0.2,
       "cacheReadPerMillionUsd": 0.04,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     },
     "openrouter::thinkingmachines/inkling-small": {
       "id": "openrouter::thinkingmachines/inkling-small",
@@ -100,7 +112,7 @@
       "outputPerMillionUsd": 1.2,
       "cacheReadPerMillionUsd": 0.1,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     },
     "openrouter::poolside/laguna-s-2.1": {
       "id": "openrouter::poolside/laguna-s-2.1",
@@ -109,7 +121,7 @@
       "outputPerMillionUsd": 0.18,
       "cacheReadPerMillionUsd": 0.009,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     },
     "openrouter::thinkingmachines/inkling": {
       "id": "openrouter::thinkingmachines/inkling",
@@ -118,7 +130,7 @@
       "outputPerMillionUsd": 4.05,
       "cacheReadPerMillionUsd": 0.17,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     },
     "openrouter::poolside/laguna-xs-2.1": {
       "id": "openrouter::poolside/laguna-xs-2.1",
@@ -127,7 +139,7 @@
       "outputPerMillionUsd": 0.12,
       "cacheReadPerMillionUsd": 0.03,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     },
     "openrouter::nvidia/nemotron-3-ultra-550b-a55b": {
       "id": "openrouter::nvidia/nemotron-3-ultra-550b-a55b",
@@ -136,7 +148,7 @@
       "outputPerMillionUsd": 2.4,
       "cacheReadPerMillionUsd": 0.12,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     },
     "openrouter::google/gemma-4-26b-a4b-it": {
       "id": "openrouter::google/gemma-4-26b-a4b-it",
@@ -145,7 +157,7 @@
       "outputPerMillionUsd": 0.3,
       "cacheReadPerMillionUsd": 0.05,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     },
     "openrouter::google/gemma-4-31b-it": {
       "id": "openrouter::google/gemma-4-31b-it",
@@ -154,7 +166,7 @@
       "outputPerMillionUsd": 0.34,
       "cacheReadPerMillionUsd": 0.05,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     },
     "openrouter::nvidia/nemotron-3-super-120b-a12b": {
       "id": "openrouter::nvidia/nemotron-3-super-120b-a12b",
@@ -162,7 +174,7 @@
       "inputPerMillionUsd": 0.08,
       "outputPerMillionUsd": 0.45,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     },
     "openrouter::anthropic/claude-sonnet-5": {
       "id": "openrouter::anthropic/claude-sonnet-5",
@@ -171,7 +183,25 @@
       "outputPerMillionUsd": 10,
       "cacheReadPerMillionUsd": 0.2,
       "source": "https://openrouter.ai/api/v1/models (live catalog)",
-      "retrievedAt": "2026-09-21T00:14:50.556Z"
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
+    },
+    "openrouter::openai/gpt-oss-120b": {
+      "id": "openrouter::openai/gpt-oss-120b",
+      "displayName": "OpenAI: gpt-oss-120b",
+      "inputPerMillionUsd": 0.15,
+      "outputPerMillionUsd": 0.6,
+      "cacheReadPerMillionUsd": 0.075,
+      "source": "https://openrouter.ai/api/v1/models (live catalog)",
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
+    },
+    "openrouter::openai/gpt-oss-20b": {
+      "id": "openrouter::openai/gpt-oss-20b",
+      "displayName": "OpenAI: gpt-oss-20b",
+      "inputPerMillionUsd": 0.03,
+      "outputPerMillionUsd": 0.13,
+      "cacheReadPerMillionUsd": 0.03,
+      "source": "https://openrouter.ai/api/v1/models (live catalog)",
+      "retrievedAt": "2026-09-21T02:56:37.619Z"
     }
   }
 }
