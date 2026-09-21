@@ -1,6 +1,6 @@
 # R23 Efficiency Proof — Continuation Checkpoint
 
-Updated: 2026-09-21 ~00:45 local / ~04:45 UTC (protocol v1.0.5 — §16 served-call denominator; nemotron rounds 7–8 done; still no winner; supply exhausted for this window)
+Updated: 2026-09-21 ~00:50 local / ~04:50 UTC (protocol v1.0.5 — §16 served-call denominator; nemotron rounds 7–8 + full retry-residue resolution done; still no winner; supply exhausted for this window)
 Branch: `forger-digital-solutions-forgegreen-certified`
 Base: `ae2aa87` (R22 closure) — verified clean at M0.
 
@@ -40,7 +40,7 @@ Base: `ae2aa87` (R22 closure) — verified clean at M0.
 
 ## Current benchmark status
 
-- **OR prescreen:** 19 candidates → 1 passer (nemotron). Re-screen 04:13Z: **laguna-xs graduated to `provider_failure`** (4 served calls, full usage, verifier passed — then 429 on call 5; permanently excluded under §6.3); gemma-26b/31b hit their **4th instant-429 void** (Google free pool starved at call 0 in every window today).
+- **OR prescreen:** 19 candidates → 1 passer (nemotron). Re-screen 04:13Z: **laguna-xs graduated to `provider_failure`** (4 served calls, full usage, verifier passed — then 429 on call 5; permanently excluded under §6.3). Retry-eligible residue resolved 04:45Z: **thinkingmachines inkling + inkling-small = PERMANENT 403** ("only available on agentic harnesses" — provider restricts direct API access; verified twice, DO NOT retry); **gemma-26b/31b = transient-429 retryable but starved** (5 windows, 0 calls ever served); **cohere/north-mini-code = `budget_exhausted` real result** (25/25 calls served, never completed the task — route reliable, model too slow for the call budget; not retryable). Catalog refresh 04:45Z: 19 tool-capable free models, **zero composition churn** since the screened set.
 - **OR qualification:** nemotron cumulative **6/24 verified across 8 rounds** (1/3, 0/3, 1/3, 0/3, 2/3, 0/3, 2/3, 0/3). Stochastic upstream 502s at ~40–60% per-call failure; same-route retry absorbs some (verified runs carry failed attempts in ledger) but 3-consecutive-failure boundary kills ~60% of runs. `MODEL-SELECTION.json` → **winner: null**, leader nemotron.
 - **Groq qualification (v1.0.4 substitute route):** `groq::openai/gpt-oss-120b` — **0/4 verified across 2 rounds**, all `provider_failure` on `STREAM_INTERRUPTED` (~13% mid-stream drop, 7/52 calls in round 1). **Verifier passed on 3/4 runs before the terminal drop** — capability proven, free-tier transport reliability failed. 100% usage coverage on all served calls. Round 2 halted by the daily-token gate (conservation working).
 - **Other managed routes probed:** Cerebras 402 + `llama-3.3-70b` 404; Mistral 429 (0 req/min); Gemini 403; GitHub Models 410 (retirement brownout — M14A addendum).
