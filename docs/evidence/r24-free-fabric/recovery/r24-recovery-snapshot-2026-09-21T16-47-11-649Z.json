@@ -1,0 +1,248 @@
+{
+  "recordedAt": "2026-09-21T16:47:11.649Z",
+  "repo": {
+    "branch": "forger-digital-solutions-forgegreen-certified",
+    "head": "0c4d9eb01cfdb9e8edd24316d40cba3a7303fc8c",
+    "headShort": "0c4d9eb",
+    "porcelain": [
+      "?? scripts/r24-recovery-snapshot.mjs"
+    ],
+    "staged": [],
+    "unstaged": [],
+    "untracked": [
+      "scripts/r24-recovery-snapshot.mjs"
+    ],
+    "recentCommits": [
+      "0c4d9eb R23 verdict: winner null — zero-cost supply unqualified; system guarantees proven live",
+      "42d1c12 R23 checkpoint: second continuation — F15 fix, rounds 6+9, M14A-3, §14 gap, capacity addendum",
+      "e2bd3cc R23 evidence: nemotron round 9 (1/3 verified; F14a absorbs 7 supply 502s), malformed-call decomposition",
+      "7e77984 forge-zero: Copilot user-connected entitlement scaffolding (M14A-3, no inference)",
+      "8517443 R23 evidence: groq round 6 task 1 verified (F14a/F14b live-validated), nemotron gate opens, CF re-check",
+      "12cfd79 agent/tools: coder prompt no longer instructs run_command under leases that withhold it (F15)",
+      "424aff2 R23 evidence: round 5 (header-paced governor live), checkpoint to session end, source-state recertification",
+      "3424a67 server/providers: pinned routes get bounded same-route recovery; governor debits completion tokens",
+      "a5669ea R23 bench: the probe-gate ledger does not dirty the tree",
+      "31f12b3 R23 evidence: groq round 4 — gpt-oss-20b 3/3 verified, 0 upstream failures, not qualified under §2.2(c)",
+      "7f1c2d9 server: executeAgentRun honours the injected capacity governor",
+      "544595a security gate: keep npm_config_allow_scripts out of the audit child (npm 11 EALLOWSCRIPTS)"
+    ]
+  },
+  "r23": {
+    "verdictPath": "docs/evidence/r23-efficiency-proof/R23-VERDICT.md",
+    "protocol": {
+      "id": "codeforge-efficiency-protocol-r23",
+      "version": "1.0.6",
+      "digest": [
+        "  1.0.4  03023faceb378620b9607569567f39468c898050ed3d4ea2bf8258701b90d8e7",
+        "  1.0.5  dc39943cc965233a4402d39e87f887810484d264773d0c5f823c646540771773",
+        "  1.0.6  366035299fc1e50ee68dfa96e9d2afeb7cf68986864fc2bac5d33bc1f10104b8"
+      ]
+    },
+    "winner": null,
+    "verdicts": [
+      "R23_CAPABILITY_BLOCKED (groq coder qualification)",
+      "R23_SUPPLY_BLOCKED (nemotron/NVIDIA)",
+      "R23_OWNER_ATTESTATION_REQUIRED (Cloudflare, Copilot)"
+    ]
+  },
+  "probeGates": {
+    "ledger": "docs\\evidence\\r23-efficiency-proof\\supply\\probe-gates.jsonl",
+    "rows": 4,
+    "byRoute": {
+      "openrouter::nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
+        "gates": 2,
+        "open": 1,
+        "closed": 1,
+        "lastVerdict": "open",
+        "lastAt": "2026-09-21T14:43:23.543Z",
+        "probes": 4,
+        "served": 3
+      },
+      "groq::openai/gpt-oss-20b": {
+        "gates": 2,
+        "open": 2,
+        "closed": 0,
+        "lastVerdict": "open",
+        "lastAt": "2026-09-21T14:34:45.953Z",
+        "probes": 4,
+        "served": 4
+      }
+    }
+  },
+  "openrouter": {
+    "checkedAt": "2026-09-21T16:47:12.421Z",
+    "label": "sk-or-v1-f1c...d91",
+    "usage": 0,
+    "usageDaily": 0,
+    "isFreeTier": false,
+    "limit": null,
+    "limitRemaining": null,
+    "freeModelDailyRequests": {
+      "used": 247,
+      "limit": 1000,
+      "remaining": 753
+    },
+    "rateLimit": {
+      "requests": -1,
+      "interval": "10s",
+      "note": "This field is deprecated and safe to ignore."
+    }
+  },
+  "openrouterFreeCatalog": {
+    "checkedAt": "2026-09-21T16:47:12.496Z",
+    "totalModels": 446,
+    "freeModels": 21,
+    "freeToolCapable": 19,
+    "free": [
+      {
+        "id": "inclusionai/ling-3.0-flash-vl:free",
+        "context": 262144,
+        "tools": true,
+        "structured": false
+      },
+      {
+        "id": "nex-agi/nex-n2.5-mini:free",
+        "context": 262144,
+        "tools": true,
+        "structured": true
+      },
+      {
+        "id": "nex-agi/nex-n2.5-pro:free",
+        "context": 262144,
+        "tools": true,
+        "structured": true
+      },
+      {
+        "id": "inclusionai/ling-3.0-flash-sante:free",
+        "context": 262144,
+        "tools": true,
+        "structured": false
+      },
+      {
+        "id": "inclusionai/ling-3.0-flash-fin:free",
+        "context": 262144,
+        "tools": true,
+        "structured": false
+      },
+      {
+        "id": "qwen/qwen3.8-27b:free",
+        "context": 262144,
+        "tools": true,
+        "structured": true
+      },
+      {
+        "id": "dots-studio/dots-3-note-preview:free",
+        "context": 512000,
+        "tools": true,
+        "structured": true
+      },
+      {
+        "id": "liquid/lfm-2.5-2.6b:free",
+        "context": 65536,
+        "tools": true,
+        "structured": true
+      },
+      {
+        "id": "nvidia/nemotron-3.5-lightning:free",
+        "context": 1000000,
+        "tools": true,
+        "structured": false
+      },
+      {
+        "id": "thinkingmachines/inkling-small:free",
+        "context": 1048576,
+        "tools": true,
+        "structured": false
+      },
+      {
+        "id": "poolside/laguna-s-2.1:free",
+        "context": 262144,
+        "tools": true,
+        "structured": false
+      },
+      {
+        "id": "thinkingmachines/inkling:free",
+        "context": 1048576,
+        "tools": true,
+        "structured": false
+      },
+      {
+        "id": "poolside/laguna-xs-2.1:free",
+        "context": 262144,
+        "tools": true,
+        "structured": false
+      },
+      {
+        "id": "cohere/north-mini-code:free",
+        "context": 256000,
+        "tools": true,
+        "structured": false
+      },
+      {
+        "id": "z-ai/glm-5.2:free",
+        "context": 32768,
+        "tools": false,
+        "structured": false
+      },
+      {
+        "id": "nvidia/nemotron-3.5-content-safety:free",
+        "context": 128000,
+        "tools": false,
+        "structured": false
+      },
+      {
+        "id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "context": 1000000,
+        "tools": true,
+        "structured": false
+      },
+      {
+        "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "context": 256000,
+        "tools": true,
+        "structured": false
+      },
+      {
+        "id": "google/gemma-4-26b-a4b-it:free",
+        "context": 262144,
+        "tools": true,
+        "structured": true
+      },
+      {
+        "id": "google/gemma-4-31b-it:free",
+        "context": 262144,
+        "tools": true,
+        "structured": true
+      },
+      {
+        "id": "nvidia/nemotron-3-super-120b-a12b:free",
+        "context": 262144,
+        "tools": true,
+        "structured": true
+      }
+    ]
+  },
+  "groqLastObserved": {
+    "source": "docs/checkpoints/R23-EFFICIENCY-PROOF-CHECKPOINT.md (Live capacity facts)",
+    "note": "Groq exposes bucket state only on completion responses; not re-probed by this snapshot.",
+    "perModelDailyTokens": 200000,
+    "tpmWindow": 8000,
+    "observedUsage": {
+      "openai/gpt-oss-20b": "~119k of 200k served on 2026-09-21 (round 4–6)",
+      "openai/gpt-oss-120b": "~170k of 200k served on 2026-09-21 (rounds 1–3), bucket exhausted"
+    },
+    "refill": "continuous, cap/24h (measured F1/F10)"
+  },
+  "credentialsPresent": {
+    "OPENROUTER_API_KEY": true,
+    "GROQ_API_KEY": true,
+    "GEMINI_API_KEY": true,
+    "MISTRAL_API_KEY": true,
+    "CEREBRAS_API_KEY": true,
+    "OPENAI_API_KEY": true,
+    "CLOUDFLARE_API_TOKEN": false,
+    "GITHUB_TOKEN": false,
+    "CODEFORGE_TEST_POSTGRES_URL": false
+  },
+  "moneyRule": "no inference sent by this snapshot; paid keys present in the environment are never used by R24 Free Fabric work"
+}
