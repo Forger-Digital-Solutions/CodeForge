@@ -80,7 +80,6 @@ if (process.env.OPENROUTER_API_KEY) {
     const key = (await openRouter("/api/v1/auth/key", true)).data ?? {};
     openrouter = {
       checkedAt: new Date().toISOString(),
-      label: key.label,
       usage: key.usage,
       usageDaily: key.usage_daily,
       isFreeTier: key.is_free_tier,

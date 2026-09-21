@@ -13,8 +13,8 @@
       "scripts/r24-recovery-snapshot.mjs"
     ],
     "recentCommits": [
-      "0c4d9eb R23 verdict: winner null — zero-cost supply unqualified; system guarantees proven live",
-      "42d1c12 R23 checkpoint: second continuation — F15 fix, rounds 6+9, M14A-3, §14 gap, capacity addendum",
+      "0c4d9eb R23 verdict: winner null \u2014 zero-cost supply unqualified; system guarantees proven live",
+      "42d1c12 R23 checkpoint: second continuation \u2014 F15 fix, rounds 6+9, M14A-3, \u00a714 gap, capacity addendum",
       "e2bd3cc R23 evidence: nemotron round 9 (1/3 verified; F14a absorbs 7 supply 502s), malformed-call decomposition",
       "7e77984 forge-zero: Copilot user-connected entitlement scaffolding (M14A-3, no inference)",
       "8517443 R23 evidence: groq round 6 task 1 verified (F14a/F14b live-validated), nemotron gate opens, CF re-check",
@@ -22,7 +22,7 @@
       "424aff2 R23 evidence: round 5 (header-paced governor live), checkpoint to session end, source-state recertification",
       "3424a67 server/providers: pinned routes get bounded same-route recovery; governor debits completion tokens",
       "a5669ea R23 bench: the probe-gate ledger does not dirty the tree",
-      "31f12b3 R23 evidence: groq round 4 — gpt-oss-20b 3/3 verified, 0 upstream failures, not qualified under §2.2(c)",
+      "31f12b3 R23 evidence: groq round 4 \u2014 gpt-oss-20b 3/3 verified, 0 upstream failures, not qualified under \u00a72.2(c)",
       "7f1c2d9 server: executeAgentRun honours the injected capacity governor",
       "544595a security gate: keep npm_config_allow_scripts out of the audit child (npm 11 EALLOWSCRIPTS)"
     ]
@@ -71,7 +71,6 @@
   },
   "openrouter": {
     "checkedAt": "2026-09-21T16:47:12.421Z",
-    "label": "sk-or-v1-f1c...d91",
     "usage": 0,
     "usageDaily": 0,
     "isFreeTier": false,
@@ -228,8 +227,8 @@
     "perModelDailyTokens": 200000,
     "tpmWindow": 8000,
     "observedUsage": {
-      "openai/gpt-oss-20b": "~119k of 200k served on 2026-09-21 (round 4–6)",
-      "openai/gpt-oss-120b": "~170k of 200k served on 2026-09-21 (rounds 1–3), bucket exhausted"
+      "openai/gpt-oss-20b": "~119k of 200k served on 2026-09-21 (round 4\u20136)",
+      "openai/gpt-oss-120b": "~170k of 200k served on 2026-09-21 (rounds 1\u20133), bucket exhausted"
     },
     "refill": "continuous, cap/24h (measured F1/F10)"
   },
