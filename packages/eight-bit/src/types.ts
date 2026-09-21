@@ -68,6 +68,9 @@ export const FailureReasonSchema = z.enum([
   "PAID_PLAN_REQUIRED",
   "FREE_TIER_NOT_AVAILABLE",
   "SAFETY_REJECTION",
+  // R23: the provider forbids this client class for the route (e.g. "only available on agentic
+  // harnesses") — a permission restriction, not a credential failure and not transient.
+  "ACCESS_RESTRICTED",
   "BAD_REQUEST",
   "UNKNOWN",
 ]);
@@ -96,6 +99,7 @@ export const FAILURE_POLICY: Readonly<Record<FailureReason, FailurePolicy>> = {
   PAID_PLAN_REQUIRED: "remove_and_refresh",
   FREE_TIER_NOT_AVAILABLE: "remove_and_refresh",
   SAFETY_REJECTION: "surface_only",
+  ACCESS_RESTRICTED: "remove_and_refresh",
   BAD_REQUEST: "surface_only",
   UNKNOWN: "bounded_retry",
 } as const;
@@ -121,6 +125,7 @@ export const FAILURE_USER_MESSAGE: Readonly<Record<FailureReason, string>> = {
   PAID_PLAN_REQUIRED: "This route requires a paid plan on your account — excluded from ForgeAuto/Free.",
   FREE_TIER_NOT_AVAILABLE: "The free tier is not available on this account — excluded from ForgeAuto/Free.",
   SAFETY_REJECTION: "The provider declined this request on safety grounds.",
+  ACCESS_RESTRICTED: "This provider restricts direct API access for this route — excluded from ForgeAuto/Free.",
   BAD_REQUEST: "The provider rejected the request format.",
   UNKNOWN: "Unexpected provider error — retrying.",
 } as const;

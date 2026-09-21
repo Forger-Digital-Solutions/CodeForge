@@ -41,6 +41,7 @@ const REASON_TO_CODE: Record<FailureReason, RunFailureCode> = {
   STRUCTURED_OUTPUT_FAILURE: "invalid_model_output",
   BAD_REQUEST: "invalid_model_output",
   FREE_ELIGIBILITY_REMOVED: "model_unavailable",
+  ACCESS_RESTRICTED: "model_unavailable",
   UNKNOWN: "unknown",
 };
 

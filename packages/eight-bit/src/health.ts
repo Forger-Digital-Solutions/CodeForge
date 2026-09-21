@@ -55,7 +55,13 @@ export function classifyFailure(error: unknown): FailureReason {
   const code = typeof (error as { code?: unknown })?.code === "string" ? (error as { code: string }).code : undefined;
   if (status === 402 || code === "PAYMENT_REQUIRED" || /\b402\b|payment required|insufficient (credits|balance)|upgrade (your|to a) (plan|paid)|requires (a )?paid plan|workers paid/.test(msg)) return "PAID_PLAN_REQUIRED";
   if (/free tier (is )?not available|not on the free (tier|plan)|free plan (has )?ended/.test(msg)) return "FREE_TIER_NOT_AVAILABLE";
+  // R23 live fixtures: a 403 whose text says the ROUTE is closed to this client class (thinkingmachines
+  // inkling: "only available on agentic harnesses") is a permission restriction — permanent for the
+  // direct API path, never a credential problem to retry. A bare 401/403 stays AUTH_FAILURE.
+  if (/only available (on|to|via|for)|not available (for|to) (this|your) (client|harness|integration|application)|restricted to (approved|partner|agentic)|agentic harness/.test(msg)) return "ACCESS_RESTRICTED";
   if (/\b401\b|invalid api key|unauthor|auth ?error|missing_api_key/.test(msg)) return "AUTH_FAILURE";
+  // HTTP 410 is a retirement signal (GitHub Models API brownout, 2026-09-21) — refresh, do not retry.
+  if (status === 410 || /\b410\b|has been retired|is being retired|scheduled for retirement/.test(msg)) return "MODEL_RETIRED";
   // A stream the provider terminated before [DONE] is an upstream failure, not an unknown one —
   // without this the dominant free-tier failure mode lands in UNKNOWN and loses cooldown/rotation
   // semantics. Transport-level stream failures (socket errors, local network) stay TRANSIENT_NETWORK.
@@ -64,7 +70,11 @@ export function classifyFailure(error: unknown): FailureReason {
   if (/\b429\b|rate.?limit/.test(msg)) return "RATE_LIMITED";
   if (/quota|insufficient_quota|credits? exhausted|neurons/.test(msg)) return "QUOTA_EXHAUSTED";
   if (/content_filter|blocked by (the )?(provider|policy)|harmful content|safety (system|filter|policy)/.test(msg)) return "SAFETY_REJECTION";
-  if (/\b503\b|overloaded|at capacity|capacity exceeded|temporarily unavailable|no available (provider|capacity)/.test(msg)) return "TEMPORARY_CAPACITY";
+  // Status/code-level auth signal (after the safety rule: a 403 moderation flag is not a credential fault).
+  if (status === 401 || status === 403 || code === "AUTH_ERROR") return "AUTH_FAILURE";
+  // Upstream saturation reported inside a 502 envelope (OpenRouter → Nvidia, 2026-09-21:
+  // "ResourceExhausted: Worker local total request limit reached (16/16)") is capacity, not an outage.
+  if (/\b503\b|overloaded|at capacity|over capacity|capacity (exceeded|limit)|temporarily unavailable|no available (provider|capacity)|resource ?exhausted|request limit reached|worker local/.test(msg)) return "TEMPORARY_CAPACITY";
   if (/\b404\b|model_not_found|model not found|unknown model/.test(msg)) return "MODEL_NOT_FOUND";
   if (/deprecated|retired|no longer (available|supported)/.test(msg)) return "MODEL_RETIRED";
   if (/context.?length|context.?limit|too many tokens|maximum context/.test(msg)) return "CONTEXT_LIMIT";
@@ -102,7 +112,7 @@ function cooldownMsFor(reason: FailureReason, consecutiveFailures: number): numb
   if (reason === "AUTH_FAILURE" || reason === "PROVIDER_OUTAGE" || reason === "TEMPORARY_CAPACITY") {
     return Math.min(MAX_COOLDOWN_MS, BASE_COOLDOWN_MS * 2 ** Math.min(4, consecutiveFailures - 1));
   }
-  if (reason === "PAID_PLAN_REQUIRED" || reason === "FREE_TIER_NOT_AVAILABLE") {
+  if (reason === "PAID_PLAN_REQUIRED" || reason === "FREE_TIER_NOT_AVAILABLE" || reason === "ACCESS_RESTRICTED") {
     // Not a transient condition: keep the route out until the next free-status refresh.
     return MAX_COOLDOWN_MS;
   }
@@ -122,6 +132,7 @@ function statusFor(reason: FailureReason, consecutiveFailures: number): EightBit
     case "FREE_ELIGIBILITY_REMOVED":
     case "PAID_PLAN_REQUIRED":
     case "FREE_TIER_NOT_AVAILABLE":
+    case "ACCESS_RESTRICTED":
       return "UNAVAILABLE";
     case "TEMPORARY_CAPACITY":
       return "DEGRADED";

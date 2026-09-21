@@ -203,69 +203,126 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       let buffer = "";
       let receivedDone = false;
       let current: { id: string; name: string; arguments: string } | null = null;
+      // Wire-level diagnostics (R23): a stream that ends without `[DONE]` must never be a blind
+      // spot. OpenAI-compatible hosts (Groq among them) report a failure that happens after the
+      // 200 response as an in-band `data: {"error":{...}}` frame; the old parser matched neither
+      // `choices` nor `usage` on that frame, dropped it, and the provider's own message vanished
+      // into a generic STREAM_INTERRUPTED. The terminal `finish_reason` — not the `[DONE]` trailer —
+      // is the protocol's completion marker, so a finished answer is not discarded either.
+      let rawBytes = 0;
+      let frames = 0;
+      let terminalFinish: string | undefined;
+      let bodyHead = "";
+      const finishEvent = (): StreamEvent => ({ type: "finish", finishReason: normalizeStreamFinish(terminalFinish) });
+      const finishTerminal = function* (): Generator<StreamEvent> {
+        if (current) {
+          yield { type: "tool_call_completed", toolCallId: current.id, toolName: current.name, arguments: current.arguments };
+          current = null;
+        }
+        yield finishEvent();
+      };
+      const handleLine = function* (this: OpenAICompatibleAdapter, line: string): Generator<StreamEvent, "continue" | "done" | "error"> {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith("data:")) return "continue";
+        const payload = trimmed.slice(5).trim();
+        if (payload === "[DONE]") {
+          receivedDone = true;
+          yield* finishTerminal();
+          return "done";
+        }
+        let parsed: OaiStreamChunk;
+        try {
+          parsed = JSON.parse(payload) as OaiStreamChunk;
+        } catch {
+          return "continue";
+        }
+        frames += 1;
+        const inBand = parsed.error ?? parsed.x_groq?.error;
+        if (inBand) {
+          yield this.inBandStreamError(inBand, res.status);
+          return "error";
+        }
+        const choice = parsed.choices?.[0];
+        if (choice) {
+          const delta = choice.delta;
+          if (delta?.content) yield { type: "text_delta", delta: delta.content };
+          if (delta?.tool_calls) {
+            for (const tc of delta.tool_calls) {
+              if (tc.function?.name && !current) {
+                current = { id: tc.id ?? `call_${Date.now()}`, name: tc.function.name, arguments: "" };
+                yield { type: "tool_call_started", toolCallId: current.id, toolName: current.name };
+              }
+              if (tc.function?.arguments && current) {
+                current.arguments += tc.function.arguments;
+                yield { type: "tool_call_delta", toolCallId: current.id, delta: tc.function.arguments };
+              }
+            }
+          }
+          if (choice.finish_reason === "error") {
+            yield {
+              type: "error",
+              code: "PROVIDER_ERROR",
+              message: `${this.providerId} stream finished with finish_reason=error`,
+              retryable: true,
+              status: res.status,
+            };
+            return "error";
+          }
+          if (choice.finish_reason === "tool_calls" && current) {
+            yield { type: "tool_call_completed", toolCallId: current.id, toolName: current.name, arguments: current.arguments };
+            current = null;
+          }
+          if (typeof choice.finish_reason === "string" && choice.finish_reason.length > 0) terminalFinish = choice.finish_reason;
+        }
+        if (parsed.usage) {
+          usage = {
+            inputTokens: parsed.usage.prompt_tokens ?? 0,
+            outputTokens: parsed.usage.completion_tokens ?? 0,
+            totalTokens: parsed.usage.total_tokens,
+            ...cachedFieldsFromOaiUsage(parsed.usage),
+          };
+          yield {
+            type: "usage",
+            usage,
+          };
+        }
+        return "continue";
+      };
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        buffer += decoder.decode(value, { stream: true });
+        rawBytes += value.byteLength;
+        const text = decoder.decode(value, { stream: true });
+        if (bodyHead.length < 400) bodyHead += text.slice(0, 400 - bodyHead.length);
+        buffer += text;
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? "";
         for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed.startsWith("data:")) continue;
-          const payload = trimmed.slice(5).trim();
-          if (payload === "[DONE]") {
-            receivedDone = true;
-            if (current) {
-              yield { type: "tool_call_completed", toolCallId: current.id, toolName: current.name, arguments: current.arguments };
-              current = null;
-            }
-            yield { type: "finish", finishReason: "stop" };
-            return;
-          }
-          let parsed: OaiStreamChunk;
-          try {
-            parsed = JSON.parse(payload) as OaiStreamChunk;
-          } catch {
-            continue;
-          }
-          const choice = parsed.choices?.[0];
-          if (choice) {
-            const delta = choice.delta;
-            if (delta?.content) yield { type: "text_delta", delta: delta.content };
-            if (delta?.tool_calls) {
-              for (const tc of delta.tool_calls) {
-                if (tc.function?.name && !current) {
-                  current = { id: tc.id ?? `call_${Date.now()}`, name: tc.function.name, arguments: "" };
-                  yield { type: "tool_call_started", toolCallId: current.id, toolName: current.name };
-                }
-                if (tc.function?.arguments && current) {
-                  current.arguments += tc.function.arguments;
-                  yield { type: "tool_call_delta", toolCallId: current.id, delta: tc.function.arguments };
-                }
-              }
-            }
-            if (choice.finish_reason === "tool_calls" && current) {
-              yield { type: "tool_call_completed", toolCallId: current.id, toolName: current.name, arguments: current.arguments };
-              current = null;
-            }
-          }
-          if (parsed.usage) {
-            usage = {
-              inputTokens: parsed.usage.prompt_tokens ?? 0,
-              outputTokens: parsed.usage.completion_tokens ?? 0,
-              totalTokens: parsed.usage.total_tokens,
-              ...cachedFieldsFromOaiUsage(parsed.usage),
-            };
-            yield {
-              type: "usage",
-              usage,
-            };
-          }
+          const outcome = yield* handleLine.call(this, line);
+          if (outcome !== "continue") return;
         }
       }
+      // A final frame without a trailing newline is still a frame.
+      if (buffer.trim().length > 0) {
+        const outcome = yield* handleLine.call(this, buffer);
+        if (outcome !== "continue") return;
+      }
       if (!receivedDone) {
-        throw new ProviderError(`${this.providerId} stream ended before the provider sent [DONE]`, "STREAM_INTERRUPTED", true);
+        if (terminalFinish !== undefined) {
+          // The provider sent its terminal chunk but no `[DONE]` trailer — the answer is complete.
+          yield* finishTerminal();
+          return;
+        }
+        const safeHead = frames === 0 && rawBytes > 0
+          ? `, body: ${redactSecrets(bodyHead, this.cfg.apiKey ?? this.cfg.credentialStore?.get(this.providerId)).replace(/\s+/g, " ").slice(0, 200)}`
+          : "";
+        throw new ProviderError(
+          `${this.providerId} stream ended before the provider sent [DONE] (HTTP ${res.status}, ${rawBytes} byte(s), ${frames} frame(s), no terminal finish_reason${safeHead})`,
+          "STREAM_INTERRUPTED",
+          true,
+          { status: res.status },
+        );
       }
     } catch (e) {
       if (e instanceof ProviderError) throw e;
@@ -400,6 +457,52 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     }
   }
 
+  /**
+   * Maps a provider's in-band stream error frame to a typed error event. Classification prefers
+   * the structured fields (numeric `code`, `type`) over message text; the message is redacted and
+   * truncated before it can reach a log or an evidence ledger.
+   */
+  private inBandStreamError(error: OaiStreamError, httpStatus: number): StreamEvent {
+    const message = typeof error.message === "string" && error.message.length > 0 ? error.message : "upstream stream error";
+    const rawCode = error.code !== undefined && error.code !== null ? String(error.code) : undefined;
+    const numericCode = rawCode !== undefined && /^\d{3}$/.test(rawCode) ? Number(rawCode) : undefined;
+    const type = typeof error.type === "string" ? error.type.toLowerCase() : "";
+    const lowered = message.toLowerCase();
+    let code = "PROVIDER_ERROR";
+    let retryable = true;
+    let status: number | undefined = numericCode;
+    if (numericCode === 429 || /rate.?limit/.test(type) || /rate limit/.test(lowered)) {
+      code = "RATE_LIMITED";
+      status ??= 429;
+    } else if (numericCode === 401 || numericCode === 403 || /auth|permission/.test(type)) {
+      code = "AUTH_ERROR";
+      retryable = false;
+    } else if (numericCode === 402 || /billing|payment/.test(type)) {
+      code = "PAYMENT_REQUIRED";
+      retryable = false;
+    } else if (numericCode === 404 || /model_not_found|not_found/.test(type)) {
+      code = "MODEL_NOT_FOUND";
+      retryable = false;
+    } else if (numericCode !== undefined && numericCode >= 400 && numericCode < 500 && numericCode !== 408) {
+      retryable = false;
+    } else if (/invalid_request|bad_request/.test(type)) {
+      retryable = false;
+      status ??= 400;
+    } else if (/context.?length|maximum context|too many tokens/.test(lowered)) {
+      code = "CONTEXT_LENGTH";
+      retryable = false;
+    }
+    if (numericCode === undefined && status === undefined && (type === "internal_server_error" || type === "server_error" || type === "service_unavailable")) status = type === "service_unavailable" ? 503 : 500;
+    const safe = redactSecrets(message, this.cfg.apiKey ?? this.cfg.credentialStore?.get(this.providerId)).slice(0, 300);
+    return {
+      type: "error",
+      code,
+      message: `${this.providerId} stream error${rawCode ? ` (${rawCode})` : type ? ` (${type})` : ""} after HTTP ${httpStatus}: ${safe}`,
+      retryable,
+      ...(status !== undefined && status >= 100 && status <= 599 ? { status } : {}),
+    };
+  }
+
   private handleError(status: number, body: string, res?: Response): ProviderError {
     let code = "PROVIDER_ERROR";
     let retryable = false;
@@ -424,9 +527,30 @@ interface OaiChatResponse {
   usage?: OaiUsage;
 }
 
+interface OaiStreamError {
+  message?: string;
+  type?: string;
+  code?: string | number | null;
+}
+
 interface OaiStreamChunk {
   choices?: Array<{ delta?: { content?: string; tool_calls?: Array<{ id?: string; function?: { name?: string; arguments?: string } }> }; finish_reason?: string }>;
   usage?: OaiUsage;
+  /** In-band failure after the 200 response (OpenAI-compatible hosts, Groq, Cloudflare). */
+  error?: OaiStreamError;
+  /** Groq attaches request metadata (and, on failure, the error) under `x_groq`. */
+  x_groq?: { error?: OaiStreamError; usage?: OaiUsage };
+}
+
+function normalizeStreamFinish(reason: string | undefined): "stop" | "tool_calls" | "length" | "content_filter" {
+  switch (reason) {
+    case "tool_calls":
+    case "length":
+    case "content_filter":
+      return reason;
+    default:
+      return "stop";
+  }
 }
 
 interface OaiUsage {
