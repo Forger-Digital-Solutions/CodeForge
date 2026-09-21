@@ -8,7 +8,7 @@ Base: `ae2aa87` (R22 closure) — verified clean at M0.
 
 | | |
 |---|---|
-| HEAD | `653c384` R23: re-screen 3 + nemotron qualification 3 + M14C inventory + §16 note (M14D/E pending commit) |
+| HEAD | `04ad543` R23 M14D/M14E: ForgeAuto aggregation + measured capacity model (clean tree) |
 | Previous | `a0eea9f` M5 re-screen+qualification · `4299036` prescreen (0/19) · `6851e78` stats tests · `70dfbf8` M5 prep · `7969481` M3-M4 · `1ada7c0` M0-M2 · `ae2aa87` R22 closure |
 | Dirty state | post-commit: new live qualification evidence (`raw/qualification/runs.jsonl` + campaign file), `MODEL-PRESCREEN.json` re-screen attempts, `MODEL-SELECTION.json`, `supply/provider-inventory-raw.json`, `instrumentation/R23-INSTRUMENTATION-CERTIFICATION.md` |
 | Canary status | Canonical suite green at recovery: 421 files / 3315 tests / 0 failures / 471 s. Targeted re-runs after M14: forge-zero 172 pass / eight-bit 172 pass / model-registry 85 pass — 0 failures. |
