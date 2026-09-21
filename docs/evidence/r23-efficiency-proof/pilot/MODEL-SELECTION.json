@@ -1,34 +1,32 @@
 {
-  "recordedAt": "2026-09-21T04:31:03.332Z",
-  "protocolVersion": "1.0.5",
+  "recordedAt": "2026-09-21T10:55:05.320Z",
+  "protocolVersion": "1.0.6",
   "protocolRule": "§2.2 — reliability and capability only; tokens are not a scoring input; winner requires all tasks verified, zero upstream failures, zero malformed runs",
   "candidates": [
     {
-      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-      "providerId": "openrouter",
+      "modelId": "openai/gpt-oss-120b",
+      "providerId": "groq",
       "eligible": true,
-      "tasks": 3,
+      "tasks": 1,
       "tasksExpected": 3,
       "verified": 0,
       "falseComplete": 0,
-      "hangsOrUpstreamFailures": 3,
+      "hangsOrUpstreamFailures": 0,
       "malformedToolCallRuns": 0,
-      "medianWallMs": 22054,
-      "medianCalls": 4,
+      "medianWallMs": 732360,
+      "medianCalls": 23,
       "runIds": [
-        "r23-qualification-qual-js-missing-export-optimized-r1-3c7ed449",
-        "r23-qualification-qual-js-off-by-one-optimized-r1-2350d02a",
-        "r23-qualification-qual-js-return-sign-optimized-r1-53f90fde"
+        "r23-qualification-qual-js-missing-export-optimized-r1-f6ade2e1"
       ],
-      "stopped": null,
+      "stopped": "allowance",
       "qualified": false
     }
   ],
   "winner": null,
   "winnerProvider": null,
-  "leader": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+  "leader": "openai/gpt-oss-120b",
   "ranking": [
-    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+    "openai/gpt-oss-120b"
   ],
   "previousRounds": [
     {
@@ -298,6 +296,32 @@
             "r23-qualification-qual-js-missing-export-optimized-r1-e94242f8",
             "r23-qualification-qual-js-off-by-one-optimized-r1-c5d4c7d8",
             "r23-qualification-qual-js-return-sign-optimized-r1-a921aed4"
+          ],
+          "stopped": null,
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-09-21T04:31:03.332Z",
+      "winner": null,
+      "candidates": [
+        {
+          "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "providerId": "openrouter",
+          "eligible": true,
+          "tasks": 3,
+          "tasksExpected": 3,
+          "verified": 0,
+          "falseComplete": 0,
+          "hangsOrUpstreamFailures": 3,
+          "malformedToolCallRuns": 0,
+          "medianWallMs": 22054,
+          "medianCalls": 4,
+          "runIds": [
+            "r23-qualification-qual-js-missing-export-optimized-r1-3c7ed449",
+            "r23-qualification-qual-js-off-by-one-optimized-r1-2350d02a",
+            "r23-qualification-qual-js-return-sign-optimized-r1-53f90fde"
           ],
           "stopped": null,
           "qualified": false

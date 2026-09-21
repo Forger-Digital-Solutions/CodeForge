@@ -1,0 +1,83 @@
+{
+  "campaignId": "qualification-2026-09-21T10-42-51-843Z",
+  "phase": "qualification",
+  "recordedAt": "2026-09-21T10:55:05.312Z",
+  "model": "openai/gpt-oss-120b",
+  "providerId": "groq",
+  "pin": {
+    "id": "openai/gpt-oss-120b",
+    "name": "openai/gpt-oss-120b",
+    "contextLength": 131072,
+    "ownedBy": "OpenAI",
+    "checkedAt": "2026-09-21T10:42:51.819Z",
+    "pricingVerification": "provider-free-tier-policy + ForgeZero FREE_ALLOWANCE admission + live rate-limit headers (§2.1b)",
+    "quotaAtPin": {
+      "providerId": "groq",
+      "status": 200,
+      "requests": {
+        "limit": 1000,
+        "remaining": 999,
+        "reset": "1m26.4s"
+      },
+      "tokens": {
+        "limit": 8000,
+        "remaining": 7797,
+        "reset": "1.522s"
+      },
+      "observedAt": "2026-09-21T10:42:51.816Z"
+    },
+    "toolProbe": {
+      "toolCallsEmitted": 1,
+      "usage": {
+        "queue_time": 0.243312486,
+        "prompt_tokens": 139,
+        "prompt_time": 0.005295186,
+        "completion_tokens": 45,
+        "completion_time": 0.09573975,
+        "total_tokens": 184,
+        "total_time": 0.101034936,
+        "completion_tokens_details": {
+          "reasoning_tokens": 19
+        }
+      }
+    }
+  },
+  "allowanceAtStart": {
+    "limit": 1000,
+    "used": 1,
+    "remaining": 999,
+    "remainingTokens": 7797,
+    "dailyTokensUsed": 134651,
+    "dailyTokenBucketLevel": 128601,
+    "dailyTokenBucketModel": "token bucket cap=200000 refill=cap/24h replayed over ledger (§6.3 v1.0.6)",
+    "source": "x-ratelimit headers (live adapter observation)",
+    "checkedAt": "2026-09-21T10:42:51.841Z"
+  },
+  "identity": {
+    "protocolVersion": "1.0.6",
+    "protocolDigest": "366035299fc1e50ee68dfa96e9d2afeb7cf68986864fc2bac5d33bc1f10104b8",
+    "codeforgeCommit": "76f7b5c2eb70f0929187d736e24d49e6b92963a0",
+    "codeforgeTreeDirty": false,
+    "environmentFingerprint": "9e8bca2c3b5d1e7c35d3ae812251f23c666ef6fdaa2840089f2254b18ce57b90",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "stopped": "allowance",
+  "runs": [
+    {
+      "taskId": "qual-js-missing-export",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 23,
+      "totalTokens": null,
+      "wallClockMs": 732360,
+      "runId": "r23-qualification-qual-js-missing-export-optimized-r1-f6ade2e1"
+    }
+  ]
+}

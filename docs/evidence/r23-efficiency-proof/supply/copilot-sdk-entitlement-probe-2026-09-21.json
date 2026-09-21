@@ -1,0 +1,41 @@
+{
+  "label": "fine-grained PAT without Copilot Requests permission (FORGEREMS_GITHUB_TOKEN)",
+  "startedAt": "2026-09-21T10:48:32.921Z",
+  "startMs": 48,
+  "ping": true,
+  "auth": {},
+  "quota": {
+    "chat": {
+      "unlimited": false,
+      "entitlement": 200,
+      "used": 102,
+      "remainingPct": 49,
+      "overage": 0,
+      "overageAllowed": false,
+      "usageAllowedExhausted": false,
+      "resetDate": "2026-09-21T10:48:32.139Z"
+    },
+    "completions": {
+      "unlimited": false,
+      "entitlement": 2000,
+      "used": 0,
+      "remainingPct": 100,
+      "overage": 0,
+      "overageAllowed": false,
+      "usageAllowedExhausted": false,
+      "resetDate": "2026-09-21T10:48:32.139Z"
+    },
+    "premium_interactions": {
+      "unlimited": false,
+      "entitlement": 0,
+      "used": 0,
+      "remainingPct": 0,
+      "overage": 0,
+      "overageAllowed": false,
+      "usageAllowedExhausted": false,
+      "resetDate": "2026-09-21T10:48:32.139Z"
+    }
+  },
+  "models": "ERR Request models.list failed with message: GenericFailure, {\"kind\":\"http\",\"status\":401,\"statusText\":\"Unauthorized\",\"body\":\"checking third-party user token: unauthorized: Personal Access Token does not have \\\"Copilot Requests\\\" permission\\n\",\"hasRequestId\":true,\"headers\":[{\"name\":\"content-security-poli",
+  "endedAt": "2026-09-21T10:48:33.500Z"
+}

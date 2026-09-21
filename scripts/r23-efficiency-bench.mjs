@@ -190,7 +190,11 @@ async function dailyAllowance() {
 // Substitute routes (protocol §2.1, v1.0.4): provider-native pinning + capacity signals
 // ---------------------------------------------------------------------------------------------
 const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
-/** Registry-documented Groq free-plan caps (provider-definitions.ts → freeAccess.quota). */
+/**
+ * Registry-documented Groq free-plan caps (provider-definitions.ts → freeAccess.quota: "30 RPM /
+ * 1K RPD / 8K TPM / 200K TPD (gpt-oss, qwen)"). Groq keys its daily limits PER MODEL — each
+ * model id has its own TPD bucket — so the ledger replay below is keyed by (provider, model).
+ */
 const GROQ_FREE_DAILY_TOKENS = 200_000;
 let lastGroqQuota; // { requests: {...}, tokens: {...}, observedAt } — filled by the adapter's onResponse
 
@@ -208,7 +212,7 @@ function quotaFromHeaders(observation) {
 }
 
 /** Served calls (end time + provider-reported total tokens) on a route across the ledger, newest last. */
-function servedCallsOnRoute(providerId) {
+function servedCallsOnRoute(providerId, modelId) {
   const calls = [];
   for (const phase of ["qualification", "pilot", "main", "variance"]) {
     const dir = rawDir(phase);
@@ -218,6 +222,7 @@ function servedCallsOnRoute(providerId) {
       try {
         const record = JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"));
         if (record.identity?.providerId !== providerId) continue;
+        if (modelId !== undefined && record.identity?.modelId !== modelId) continue;
         for (const call of record.inference?.calls ?? []) {
           if (!(call.totalTokens > 0)) continue;
           const endedAt = Date.parse(call.endedAt ?? call.startedAt ?? "");
@@ -230,9 +235,9 @@ function servedCallsOnRoute(providerId) {
 }
 
 /** Cumulative served tokens on the route across today's (UTC) run records — the calendar-day model. */
-function dailyTokensUsed(providerId) {
+function dailyTokensUsed(providerId, modelId) {
   const today = new Date().toISOString().slice(0, 10);
-  return servedCallsOnRoute(providerId).filter((c) => new Date(c.endedAt).toISOString().startsWith(today)).reduce((sum, c) => sum + c.tokens, 0);
+  return servedCallsOnRoute(providerId, modelId).filter((c) => new Date(c.endedAt).toISOString().startsWith(today)).reduce((sum, c) => sum + c.tokens, 0);
 }
 
 /**
@@ -242,11 +247,11 @@ function dailyTokensUsed(providerId) {
  * served calls. Returns the modelled level now, in tokens. Conservative by construction: harness
  * probes and pin probes (tens of tokens) are not in the ledger and are covered by the 15% margin.
  */
-function modelledDailyTokenBucket(providerId, cap) {
+function modelledDailyTokenBucket(providerId, modelId, cap) {
   const rate = cap / 86_400_000; // tokens per ms
   let level = cap;
   let last;
-  for (const call of servedCallsOnRoute(providerId)) {
+  for (const call of servedCallsOnRoute(providerId, modelId)) {
     if (last !== undefined) level = Math.min(cap, level + rate * Math.max(0, call.endedAt - last));
     level -= call.tokens;
     last = call.endedAt;
@@ -296,8 +301,9 @@ async function pinGroqModel(modelId) {
 }
 
 async function groqAllowance() {
+  const groqModelId = flags.model ?? list(flags.models)?.[0] ?? "openai/gpt-oss-120b";
   if (lastGroqQuota && Date.now() - Date.parse(lastGroqQuota.observedAt) < 120_000) {
-    return { limit: lastGroqQuota.requests.limit, used: lastGroqQuota.requests.limit !== undefined && lastGroqQuota.requests.remaining !== undefined ? lastGroqQuota.requests.limit - lastGroqQuota.requests.remaining : undefined, remaining: lastGroqQuota.requests.remaining, remainingTokens: lastGroqQuota.tokens.remaining, dailyTokensUsed: dailyTokensUsed("groq"), dailyTokenBucketLevel: modelledDailyTokenBucket("groq", GROQ_FREE_DAILY_TOKENS), dailyTokenBucketModel: "token bucket cap=200000 refill=cap/24h replayed over ledger (§6.3 v1.0.6)", source: "x-ratelimit headers (live adapter observation)", checkedAt: new Date().toISOString() };
+    return { limit: lastGroqQuota.requests.limit, used: lastGroqQuota.requests.limit !== undefined && lastGroqQuota.requests.remaining !== undefined ? lastGroqQuota.requests.limit - lastGroqQuota.requests.remaining : undefined, remaining: lastGroqQuota.requests.remaining, remainingTokens: lastGroqQuota.tokens.remaining, dailyTokensUsed: dailyTokensUsed("groq", groqModelId), dailyTokenBucketLevel: modelledDailyTokenBucket("groq", groqModelId, GROQ_FREE_DAILY_TOKENS), dailyTokenBucketModel: `token bucket per model (${groqModelId}) cap=200000 refill=cap/24h replayed over ledger (§6.3 v1.0.6)`, source: "x-ratelimit headers (live adapter observation)", checkedAt: new Date().toISOString() };
   }
   const key = process.env.GROQ_API_KEY;
   if (!key) throw new Error("GROQ_API_KEY is not set");
@@ -305,7 +311,7 @@ async function groqAllowance() {
   lastGroqQuota = quotaFromHeaders({ providerId: "groq", status: probe.status, headers: [...probe.headers.entries()], observedAt: Date.now() });
   if (!probe.ok) throw new Error(`groq allowance probe → HTTP ${probe.status}`);
   await probe.json();
-  return { limit: lastGroqQuota.requests.limit, used: lastGroqQuota.requests.limit !== undefined && lastGroqQuota.requests.remaining !== undefined ? lastGroqQuota.requests.limit - lastGroqQuota.requests.remaining : undefined, remaining: lastGroqQuota.requests.remaining, remainingTokens: lastGroqQuota.tokens.remaining, dailyTokensUsed: dailyTokensUsed("groq"), dailyTokenBucketLevel: modelledDailyTokenBucket("groq", GROQ_FREE_DAILY_TOKENS), dailyTokenBucketModel: "token bucket cap=200000 refill=cap/24h replayed over ledger (§6.3 v1.0.6)", source: "x-ratelimit headers (probe)", checkedAt: new Date().toISOString() };
+  return { limit: lastGroqQuota.requests.limit, used: lastGroqQuota.requests.limit !== undefined && lastGroqQuota.requests.remaining !== undefined ? lastGroqQuota.requests.limit - lastGroqQuota.requests.remaining : undefined, remaining: lastGroqQuota.requests.remaining, remainingTokens: lastGroqQuota.tokens.remaining, dailyTokensUsed: dailyTokensUsed("groq", groqModelId), dailyTokenBucketLevel: modelledDailyTokenBucket("groq", groqModelId, GROQ_FREE_DAILY_TOKENS), dailyTokenBucketModel: `token bucket per model (${groqModelId}) cap=200000 refill=cap/24h replayed over ledger (§6.3 v1.0.6)`, source: "x-ratelimit headers (probe)", checkedAt: new Date().toISOString() };
 }
 
 function allowance(providerId) {
