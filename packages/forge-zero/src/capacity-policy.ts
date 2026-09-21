@@ -9,6 +9,11 @@ export interface FreeCapacityPolicy {
   allowDistributedUserFree: boolean;
   /** Disabled by default: a deposit must never become an invisible product subsidy. */
   allowDepositUnlockedFree: boolean;
+  /**
+   * Sponsor-funded recurring capacity is admitted only when explicitly enabled: it is $0 to the
+   * user but not zero-cost, so it must never be mistaken for baseline free supply.
+   */
+  allowSponsoredFree: boolean;
 }
 
 export const DEFAULT_FREE_CAPACITY_POLICY: FreeCapacityPolicy = {
@@ -16,6 +21,7 @@ export const DEFAULT_FREE_CAPACITY_POLICY: FreeCapacityPolicy = {
   allowUserConnectedFree: true,
   allowDistributedUserFree: true,
   allowDepositUnlockedFree: false,
+  allowSponsoredFree: false,
 };
 
 export const DEFAULT_PRIVATE_CODE_CONTEXT: RouteDataContext = { dataClass: "PRIVATE_CODE" };
@@ -34,6 +40,7 @@ function supplyEligible(route: CapacityRoute, policy: FreeCapacityPolicy): boole
   if (route.supplyClass === "USER_CONNECTED_FREE") return policy.allowUserConnectedFree && route.capacityPoolScope === "PER_USER_POOL";
   if (route.supplyClass === "DISTRIBUTED_USER_FREE") return policy.allowDistributedUserFree && route.capacityPoolScope === "PER_USER_POOL";
   if (route.supplyClass === "DEPOSIT_UNLOCKED_FREE") return policy.allowDepositUnlockedFree && route.capacityPoolScope === "SHARED_OWNER_POOL";
+  if (route.supplyClass === "SPONSORED_FREE") return policy.allowSponsoredFree && route.capacityPoolScope === "SHARED_OWNER_POOL";
   return false;
 }
 
@@ -69,6 +76,7 @@ export function freeRouteExclusionReason(
   if (route.supplyClass === "OWNER_DEV_FREE") return "OWNER_DEV_FREE_NOT_PRODUCT_FREE";
   if (route.supplyClass === "OWNER_CREDIT_RESERVE") return "OWNER_CREDIT_RESERVE_NOT_PRODUCT_FREE";
   if (route.supplyClass === "DEPOSIT_UNLOCKED_FREE" && !policy.allowDepositUnlockedFree) return "DEPOSIT_UNLOCKED_FREE_NOT_AUTHORIZED";
+  if (route.supplyClass === "SPONSORED_FREE" && !policy.allowSponsoredFree) return "SPONSORED_FREE_NOT_AUTHORIZED";
   if (route.supplyClass === "DISTRIBUTED_USER_FREE" && !policy.allowDistributedUserFree) return "DISTRIBUTED_USER_FREE_NOT_AUTHORIZED";
   if (route.supplyClass === "USER_CONNECTED_FREE" && !policy.allowUserConnectedFree) return "USER_CONNECTED_FREE_NOT_AUTHORIZED";
   if (route.supplyClass === "USER_CONNECTED_FREE" && route.freeOnlyAdmissionProven !== true) return "USER_CONNECTED_FREE_ONLY_GUARD_NOT_PROVEN";
@@ -78,5 +86,7 @@ export function freeRouteExclusionReason(
 
 /** Whether a supply class is a zero-cash inference class, irrespective of product eligibility. */
 export function supplyClassIsZeroCash(source: SupplyClass): boolean {
+  // SPONSORED_FREE is deliberately absent: a sponsor pays real money upstream, so the class is
+  // $0 to the user but not zero-cash. Eligibility is governed by allowSponsoredFree instead.
   return source === "PURE_MANAGED_FREE" || source === "USER_CONNECTED_FREE" || source === "DISTRIBUTED_USER_FREE" || source === "DEPOSIT_UNLOCKED_FREE" || source === "PROMOTIONAL_FREE" || source === "OWNER_DEV_FREE";
 }

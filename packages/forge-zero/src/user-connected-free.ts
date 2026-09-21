@@ -290,3 +290,107 @@ export function simulateOllamaAdoption(input: {
 export function isUserConnectedFreeSupply(source: SupplyClass): boolean {
   return source === "USER_CONNECTED_FREE";
 }
+
+// --- Ollama local (user-owned device compute) -------------------------------------------------
+
+export const OLLAMA_LOCAL_PROVIDER_ID = "ollama-local" as const;
+export const OLLAMA_LOCAL_DEFAULT_BASE_URL = "http://127.0.0.1:11434";
+const NEVER_RESET = "9999-12-31T23:59:59.999Z";
+
+/**
+ * Observed facts about a user's local Ollama daemon. `reachable` is a live probe result, never
+ * assumed: a workstation without a daemon contributes zero remaining capacity but still gets a
+ * pool row so the ledger can show the domain exists.
+ */
+export interface OllamaLocalObservation {
+  reachable: boolean;
+  models: readonly string[];
+  /** Device-bound parallelism (VRAM/CPU constrained); typically 1. */
+  concurrencyLimit: number;
+  observedAt: string;
+  capacityConfidence: CapacityConfidence;
+}
+
+export interface OllamaLocalConnection {
+  userId: string;
+  /** Stable non-secret identity for the physical device (see hashUserAccountIdentity). */
+  deviceIdentity: string;
+  capacityPoolId?: string;
+}
+
+export function ollamaLocalPoolId(userId: string, deviceIdentity: string): string {
+  return `${OLLAMA_LOCAL_PROVIDER_ID}:device:${hashUserAccountIdentity(userId, deviceIdentity)}`;
+}
+
+export function buildOllamaLocalCapacityPool(connection: OllamaLocalConnection, observation: OllamaLocalObservation): ProviderCapacityPool {
+  const concurrency = Math.max(0, observation.concurrencyLimit);
+  return {
+    poolId: connection.capacityPoolId ?? ollamaLocalPoolId(connection.userId, connection.deviceIdentity),
+    providerId: OLLAMA_LOCAL_PROVIDER_ID,
+    scope: "PER_USER_POOL",
+    supplyClass: "DISTRIBUTED_USER_FREE",
+    windows: [{
+      unit: "concurrency",
+      limit: concurrency,
+      remaining: observation.reachable ? concurrency : 0,
+      resetAt: NEVER_RESET,
+      scope: "DEVICE",
+      observedAt: observation.observedAt,
+      authoritative: observation.reachable && observation.capacityConfidence === "HIGH",
+      period: "CONTINUOUS",
+    }],
+    observedAt: observation.observedAt,
+    authoritative: observation.reachable && observation.capacityConfidence === "HIGH",
+    capacityIdentity: hashUserAccountIdentity(connection.userId, connection.deviceIdentity),
+  };
+}
+
+export interface OllamaLocalRouteInput extends OllamaLocalConnection {
+  modelId: string;
+  canonicalModelId: string;
+  family: string;
+  roles: readonly string[];
+  windows: readonly CapacityWindow[];
+  lifecycle?: CapacityRoute["lifecycle"];
+  healthy?: boolean;
+}
+
+/**
+ * A route over the user's own hardware. It is deliberately constructed ineligible: lifecycle
+ * defaults to POLICY_REVIEW and explicitZeroPrice is false because no provider-published $0
+ * price exists — local compute is unmetered user capacity, not a priced route. Enabling local
+ * inference is an owner policy decision, not an accounting detail.
+ */
+export function buildOllamaLocalRoute(input: OllamaLocalRouteInput): CapacityRoute {
+  const capacityIdentity = hashUserAccountIdentity(input.userId, input.deviceIdentity);
+  const capacityPoolId = input.capacityPoolId ?? ollamaLocalPoolId(input.userId, input.deviceIdentity);
+  return {
+    routeId: `${capacityPoolId}:${input.modelId}`,
+    providerId: OLLAMA_LOCAL_PROVIDER_ID,
+    modelId: input.modelId,
+    canonicalModelId: input.canonicalModelId,
+    family: input.family,
+    gateway: OLLAMA_LOCAL_PROVIDER_ID,
+    supplyClass: "DISTRIBUTED_USER_FREE",
+    capacityPoolId,
+    capacityPoolScope: "PER_USER_POOL",
+    capacityScope: "DEVICE",
+    capacityIdentity,
+    dataPolicyProfile: "PRIVATE_CODE_ALLOWED",
+    lifecycle: input.lifecycle ?? "POLICY_REVIEW",
+    explicitZeroPrice: false,
+    freeOnlyAdmissionProven: false,
+    paidFallbackDisabled: true,
+    managedMultiUserAllowed: false,
+    privacyClass: "strict",
+    roles: input.roles,
+    qualityScore: 0,
+    healthy: input.healthy ?? true,
+    enabled: true,
+    windows: input.windows,
+  };
+}
+
+export function isUserLocalSupply(source: SupplyClass): boolean {
+  return source === "DISTRIBUTED_USER_FREE";
+}

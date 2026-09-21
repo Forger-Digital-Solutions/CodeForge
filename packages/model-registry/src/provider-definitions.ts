@@ -804,14 +804,38 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
     kind: "gateway",
     apiStyle: "openai-compatible",
     baseUrl: "https://api.githubcopilot.com",
-    authClasses: ["UNSUPPORTED"],
+    // The official @github/copilot-sdk (v1.x, actively published) is a supported third-party
+    // surface: a per-user GitHub OAuth token drives a Copilot runtime session whose usage bills
+    // to that user's own subscription. It is an agent runtime, not a raw chat endpoint, and its
+    // managed-relay terms have not been reviewed — so the route stays unimplemented and gated.
+    authClasses: ["OAUTH_NATIVE"],
     connection: { fields: [] },
-    discoverySources: ["models.dev"],
-    freeAccess: { class: "FREE_PRODUCT_ONLY", spillover: "NONE", planDetection: "not_required", evidence: { source: "No official third-party inference API for Copilot Free; endpoint is a private VS Code surface", checkedAt: CHECKED } },
+    discoverySources: ["live-catalog"],
+    freeAccess: {
+      class: "FREE_ACCOUNT_ENTITLEMENT",
+      quota: "Per-user Copilot entitlement (Free/Pro/Pro+/student/org plan); premium_interactions/chat/completions quota via account.getQuota, per-model AI credit pricing via models.list",
+      spillover: "ACCOUNT_DEPENDENT",
+      planDetection: "api",
+      evidence: { source: "https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/usage-and-billing", checkedAt: "2026-09-21", note: "Premium-request overage billing depends on the account's plan and settings; included-quota hard stop must be verified per account before Free routing." },
+    },
     privacy: { class: "standard" },
-    terms: { status: "NOT_ALLOWED", note: "No supported third-party client integration; CodeForge does not use Copilot tokens." },
+    terms: { status: "LEGAL_REVIEW_REQUIRED", note: "@github/copilot-sdk officially supports third-party apps spending the authenticated user's own Copilot quota (github.com/github/copilot-sdk, docs/setup/github-oauth.md, multi-tenancy.md). Earlier NOT_ALLOWED referred to the private VS Code endpoint, not the SDK. Managed multi-user relay terms still unreviewed.", source: "https://github.com/github/copilot-sdk" },
+    userConnectedFree: {
+      featureFlag: "githubCopilotUserEntitlement",
+      supplyClass: "USER_CONNECTED_FREE",
+      authTypes: ["API_KEY", "OAUTH"],
+      freeOnlyDefault: true,
+      capacityScope: "USER_ACCOUNT",
+      concurrencyLimit: 1,
+      starterModels: [],
+      signupUrl: "https://github.com/features/copilot/plans",
+      apiKeysUrl: "https://github.com/settings/tokens",
+      usageUrl: "https://github.com/settings/copilot",
+      termsClassification: "USER_CONNECTED_FREE_PERMISSION_REQUIRED",
+    },
     recommendedForFreeDefault: false,
     implemented: false,
+    docsUrl: "https://docs.github.com/en/copilot/how-tos/copilot-sdk",
   },
   anthropic: {
     id: "anthropic",

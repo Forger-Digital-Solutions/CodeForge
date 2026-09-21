@@ -2,12 +2,16 @@ import { describe, expect, it } from "vitest";
 import {
   CapacityReservationLedger,
   OllamaUserConnectedFreeFleet,
+  buildOllamaLocalCapacityPool,
+  buildOllamaLocalRoute,
   buildOllamaUserCapacityPool,
   buildOllamaUserRoute,
   evaluateOllamaFreeOnlyAdmission,
   estimateOllamaUsageUsd,
   forecastCapacity,
   hashUserAccountIdentity,
+  isFreeRouteEligible,
+  ollamaLocalPoolId,
   simulateOllamaAdoption,
   userConnectedPoolId,
 } from "../src/index.js";
@@ -115,5 +119,51 @@ describe("Ollama user-connected Free boundary", () => {
     expect(scenarios[0]?.additionalFreeTasks).toBe(0);
     expect(scenarios[4]?.additionalFreeTasks).toBe(558);
     expect(scenarios[4]?.sharedProviderPressureOffloaded).toBe(100);
+  });
+});
+
+describe("Ollama local (user-owned device) accounting", () => {
+  const localObservation = (reachable = true) => ({
+    reachable,
+    models: ["gemma4"],
+    concurrencyLimit: 1,
+    observedAt,
+    capacityConfidence: "HIGH" as const,
+  });
+
+  it("accounts local capacity as a per-user device domain, separate from cloud entitlement", () => {
+    const pool = buildOllamaLocalCapacityPool({ userId: "user-a", deviceIdentity: "desktop-1" }, localObservation());
+    expect(pool.scope).toBe("PER_USER_POOL");
+    expect(pool.supplyClass).toBe("DISTRIBUTED_USER_FREE");
+    expect(pool.providerId).toBe("ollama-local");
+    expect(pool.poolId).toBe(ollamaLocalPoolId("user-a", "desktop-1"));
+    expect(pool.poolId).not.toBe(userConnectedPoolId("user-a"));
+    expect(pool.capacityIdentity).not.toBe(hashUserAccountIdentity("user-a"));
+    expect(pool.windows[0]?.unit).toBe("concurrency");
+    expect(pool.windows[0]?.remaining).toBe(1);
+    expect(pool.windows[0]?.period).toBe("CONTINUOUS");
+  });
+
+  it("reports zero remaining capacity when the daemon is unreachable instead of assuming it", () => {
+    const pool = buildOllamaLocalCapacityPool({ userId: "user-a", deviceIdentity: "desktop-1" }, localObservation(false));
+    expect(pool.windows[0]?.remaining).toBe(0);
+    expect(pool.authoritative).toBe(false);
+  });
+
+  it("constructs local routes ineligible by default — accounting exists, routing does not", () => {
+    const pool = buildOllamaLocalCapacityPool({ userId: "user-a", deviceIdentity: "desktop-1" }, localObservation());
+    const route = buildOllamaLocalRoute({
+      userId: "user-a",
+      deviceIdentity: "desktop-1",
+      modelId: "gemma4",
+      canonicalModelId: "google/gemma4",
+      family: "gemma",
+      roles: ["coder"],
+      windows: pool.windows,
+    });
+    expect(route.lifecycle).toBe("POLICY_REVIEW");
+    expect(route.explicitZeroPrice).toBe(false);
+    expect(route.managedMultiUserAllowed).toBe(false);
+    expect(isFreeRouteEligible(route)).toBe(false);
   });
 });

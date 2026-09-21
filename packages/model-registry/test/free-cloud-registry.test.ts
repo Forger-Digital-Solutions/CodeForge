@@ -154,7 +154,11 @@ describe("provider definitions and derived policies", () => {
       expect(def.terms.status).toBeDefined();
     }
     expect(PROVIDER_DEFINITIONS.anthropic?.freeAccess.evidence.note).toContain("NO_SUPPORTED_ZERO_COST_ANTHROPIC_ROUTE");
-    expect(PROVIDER_DEFINITIONS["github-copilot"]?.terms.status).toBe("NOT_ALLOWED");
+    // The official @github/copilot-sdk is a supported user-delegated surface; the route remains
+    // unimplemented and legally unreviewed, not impossible (R23 M14A evidence).
+    expect(PROVIDER_DEFINITIONS["github-copilot"]?.terms.status).toBe("LEGAL_REVIEW_REQUIRED");
+    expect(PROVIDER_DEFINITIONS["github-copilot"]?.implemented).toBe(false);
+    expect(PROVIDER_DEFINITIONS["github-copilot"]?.userConnectedFree?.supplyClass).toBe("USER_CONNECTED_FREE");
   });
 
   it("merges Models.dev env aliases and discovers generic OpenAI-compatible providers as BYOK-only", () => {

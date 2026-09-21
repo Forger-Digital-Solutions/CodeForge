@@ -11,10 +11,29 @@ export type SupplyClass =
   | "DISTRIBUTED_USER_FREE"
   | "DEPOSIT_UNLOCKED_FREE"
   | "PROMOTIONAL_FREE"
+  | "SPONSORED_FREE"
   | "OWNER_DEV_FREE"
   | "TRIAL_CREDIT"
   | "OWNER_CREDIT_RESERVE"
   | "PAID";
+
+/**
+ * The named cadence of a capacity window. `resetAt` alone cannot distinguish a per-minute rate
+ * bucket from a daily quota or an expiring promotion, and exhaustion behavior depends on the
+ * difference: a DAILY_RESET window can be awaited, an EXPIRING_PROMOTION cannot.
+ */
+export type QuotaPeriod =
+  | "CONTINUOUS"
+  | "MINUTE_RESET"
+  | "HOURLY_RESET"
+  | "DAILY_RESET"
+  | "WEEKLY_RESET"
+  | "MONTHLY_RESET"
+  | "RECURRING"
+  | "ONE_TIME_CREDIT"
+  | "EXPIRING_PROMOTION"
+  | "TRIAL_ONLY"
+  | "UNKNOWN";
 
 /** Who naturally owns an independently consumable capacity pool. */
 export type CapacityPoolScope = "SHARED_OWNER_POOL" | "PER_USER_POOL";
@@ -71,6 +90,13 @@ export interface CapacityWindow {
   scope: CapacityScope;
   observedAt: string;
   authoritative: boolean;
+  /** Named cadence of this window. Absent means the observer did not report it. */
+  period?: QuotaPeriod;
+  /**
+   * Hard end-of-life for the capacity itself (promotion expiry, trial end). Distinct from
+   * `resetAt`: a reset replenishes the window, an expiry retires it permanently.
+   */
+  expiresAt?: string;
 }
 
 /**

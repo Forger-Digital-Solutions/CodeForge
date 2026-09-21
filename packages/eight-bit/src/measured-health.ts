@@ -35,6 +35,11 @@ export interface EightBitMeasuredHealthRecord {
   lastVerified: string;
   healthyProbeStreak: number;
   reasonCodes: string[];
+  /** Raw observations backing the scores; the ledger reports these, not the scores. */
+  sampleSize: number;
+  latencyP50Ms: number;
+  latencyP95Ms: number;
+  availableCapacity?: number;
 }
 
 export interface EightBitMeasuredHealthPolicy {
@@ -123,6 +128,10 @@ export class EightBitMeasuredHealthTracker {
       lastVerified: measurement.observedAt,
       healthyProbeStreak,
       reasonCodes,
+      sampleSize: measurement.sampleSize,
+      latencyP50Ms: measurement.latencyP50Ms,
+      latencyP95Ms: measurement.latencyP95Ms,
+      availableCapacity: measurement.availableCapacity,
     };
     this.records.set(key, record);
     return record;
