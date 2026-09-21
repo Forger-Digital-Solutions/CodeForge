@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CapacityRoute, CapacityWindow, ProviderCapacityPool } from "@codeforge/forge-zero";
-import { buildRouteLedger, findOwnershipViolations, aggregateSupplyDomains, type RouteLedgerEntry } from "../src/route-ledger.js";
+import { buildRouteLedger, findOwnershipViolations, aggregateSupplyDomains, forgeAutoSupplyPlan, type RouteLedgerEntry } from "../src/route-ledger.js";
 import { EightBitMeasuredHealthTracker, type EightBitRouteMeasurement } from "../src/measured-health.js";
 
 const NOW = Date.parse("2026-09-21T00:00:00.000Z");
@@ -231,6 +231,63 @@ describe("8-Bit route ledger", () => {
     expect(Object.keys(domains.perUser).sort()).toEqual(["alicehash", "bobhash"]);
     expect(domains.perUser["alicehash"]?.creditsRemaining).toBe(5);
     expect(domains.perUser["bobhash"]?.creditsRemaining).toBe(7);
+  });
+});
+
+describe("ForgeAuto Free supply plan", () => {
+  const sponsoredPolicy = { paidInferenceAllowed: false as const, allowUserConnectedFree: true, allowDistributedUserFree: true, allowDepositUnlockedFree: false, allowSponsoredFree: true };
+
+  function entries() {
+    const shared = route("shared-low", { qualityScore: 60 });
+    const sharedHigh = route("shared-high", { qualityScore: 90 });
+    const sponsored = route("sponsored", { supplyClass: "SPONSORED_FREE", qualityScore: 80 });
+    const alice = route("alice", {
+      providerId: "ollama-cloud",
+      supplyClass: "USER_CONNECTED_FREE",
+      capacityPoolId: "ollama-cloud:user:alicehash",
+      capacityPoolScope: "PER_USER_POOL",
+      capacityScope: "USER_ACCOUNT",
+      capacityIdentity: "alicehash",
+      explicitZeroPrice: false,
+      freeOnlyAdmissionProven: true,
+      qualityScore: 95,
+    });
+    const bob = route("bob", {
+      providerId: "ollama-cloud",
+      supplyClass: "USER_CONNECTED_FREE",
+      capacityPoolId: "ollama-cloud:user:bobhash",
+      capacityPoolScope: "PER_USER_POOL",
+      capacityScope: "USER_ACCOUNT",
+      capacityIdentity: "bobhash",
+      explicitZeroPrice: false,
+      freeOnlyAdmissionProven: true,
+      qualityScore: 99,
+    });
+    return buildRouteLedger({ routes: [shared, sharedHigh, sponsored, alice, bob], policy: sponsoredPolicy, now: NOW }).entries;
+  }
+
+  it("orders shared supply first and conserves the user's own entitlement", () => {
+    const plan = forgeAutoSupplyPlan(entries(), "CODER", "alicehash");
+    expect(plan.hasSupply).toBe(true);
+    expect(plan.routes.map((r) => r.routeId)).toEqual(["shared-high", "shared-low", "sponsored", "alice"]);
+    expect(plan.domains.USER_ENTITLEMENT).toBe(1);
+    expect(plan.domains.SHARED_CODEFORGE_POOL).toBe(2);
+    expect(plan.domains.SPONSORED).toBe(1);
+  });
+
+  it("never schedules another user's entitlement", () => {
+    const plan = forgeAutoSupplyPlan(entries(), "CODER", "alicehash");
+    expect(plan.routes.every((r) => r.quotaOwnerIdentity !== "bobhash")).toBe(true);
+    const anon = forgeAutoSupplyPlan(entries(), "CODER");
+    expect(anon.routes.every((r) => r.quotaOwner !== "USER_ENTITLEMENT")).toBe(true);
+  });
+
+  it("drops ineligible routes and reports empty supply honestly", () => {
+    const onlySponsored = buildRouteLedger({ routes: [route("sponsored", { supplyClass: "SPONSORED_FREE" })], now: NOW }).entries;
+    const denied = forgeAutoSupplyPlan(onlySponsored, "CODER");
+    expect(denied.hasSupply).toBe(false);
+    const wrongRole = forgeAutoSupplyPlan(entries(), "VISION");
+    expect(wrongRole.hasSupply).toBe(false);
   });
 });
 

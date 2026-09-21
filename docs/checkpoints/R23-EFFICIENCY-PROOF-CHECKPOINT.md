@@ -1,6 +1,6 @@
 # R23 Efficiency Proof — Continuation Checkpoint
 
-Updated: 2026-09-21 ~22:30 local (M14/M14A/M14B/M14C + §16 note landed; supply still blocked)
+Updated: 2026-09-21 ~22:35 local (M14/M14A–M14E + §16 note landed; supply still blocked)
 Branch: `forger-digital-solutions-forgegreen-certified`
 Base: `ae2aa87` (R22 closure) — verified clean at M0.
 
@@ -8,7 +8,7 @@ Base: `ae2aa87` (R22 closure) — verified clean at M0.
 
 | | |
 |---|---|
-| HEAD | `74fcfea` R23 M14/M14A/M14B: route ledger, Copilot entitlement surface, Ollama local domain |
+| HEAD | `653c384` R23: re-screen 3 + nemotron qualification 3 + M14C inventory + §16 note (M14D/E pending commit) |
 | Previous | `a0eea9f` M5 re-screen+qualification · `4299036` prescreen (0/19) · `6851e78` stats tests · `70dfbf8` M5 prep · `7969481` M3-M4 · `1ada7c0` M0-M2 · `ae2aa87` R22 closure |
 | Dirty state | post-commit: new live qualification evidence (`raw/qualification/runs.jsonl` + campaign file), `MODEL-PRESCREEN.json` re-screen attempts, `MODEL-SELECTION.json`, `supply/provider-inventory-raw.json`, `instrumentation/R23-INSTRUMENTATION-CERTIFICATION.md` |
 | Canary status | Canonical suite green at recovery: 421 files / 3315 tests / 0 failures / 471 s. Targeted re-runs after M14: forge-zero 172 pass / eight-bit 172 pass / model-registry 85 pass — 0 failures. |
@@ -27,6 +27,7 @@ Base: `ae2aa87` (R22 closure) — verified clean at M0.
 - **M14B Ollama entitlement accounting** — cloud path pre-existing; `OLLAMA_LOCAL` domain added (`DISTRIBUTED_USER_FREE`/`DEVICE` scope, unreachable→0 remaining, routes constructed ineligible pending owner policy on local inference). Evidence: `supply/M14B-OLLAMA-ENTITLEMENT.md`; +3 tests.
 - **M14C Managed provider inventory** — `supply/provider-inventory-raw.json` (31 providers from live dist) + `supply/M14C-MANAGED-PROVIDER-INVENTORY.md`: 10 zero-cash+CLEARED+implemented candidates, tier breakdown, env-credential owner-dev supply list.
 - **§16 certification note** — `instrumentation/R23-INSTRUMENTATION-CERTIFICATION.md`: **R23_INSTRUMENTATION_NOT_READY** — 7/8 criteria proven; provider-reported usage 72.1% vs ≥98% bar (supply-side, UNKNOWN preserved); counter reconciliation proven exact 124==124 with a new ~2-min counter-lag caveat.
+- **M14D/M14E** — `forgeAutoSupplyPlan` (shared→sponsored→user-entitlement ordering, cross-user exclusion proven; 11 ledger tests total) + `supply/M14D-M14E-AGGREGATION-AND-CAPACITY-MODEL.md`: measured-demand simulation → **~66 tasks/day ≈ 22 DAU** on today's verified fabric; user entitlement is the dominant scaling lever (~8.5× at 50% Ollama adoption).
 
 ## Live capacity facts (measured 2026-09-21 UTC)
 

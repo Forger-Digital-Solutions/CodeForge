@@ -346,6 +346,64 @@ export function aggregateSupplyDomains(entries: readonly RouteLedgerEntry[]): Su
   return { shared, perUser, ownerDev };
 }
 
+// --- ForgeAuto — Free aggregation (M14D) -------------------------------------------------------
+
+/**
+ * The order ForgeAuto/Free may draw supply from, cheapest-to-conserve first. Shared managed
+ * capacity absorbs cheap roles so a user's own entitlement is preserved for work where it
+ * matters; sponsored supply (when authorized) sits between shared and personal.
+ */
+export const FORGEAUTO_DOMAIN_ORDER: readonly QuotaOwnerKind[] = [
+  "SHARED_CODEFORGE_POOL",
+  "SPONSORED",
+  "USER_ENTITLEMENT",
+];
+
+export interface ForgeAutoSupplyPlan {
+  /** The user this plan was built for (non-secret identity), or undefined for anonymous. */
+  userIdentity?: string;
+  generatedAt: string;
+  /** Ordered eligible routes, first choice first. Empty means ForgeAuto/Free has no supply. */
+  routes: readonly RouteLedgerEntry[];
+  /** Per-domain eligible counts after filtering — the user's effective fabric. */
+  domains: Readonly<Record<QuotaOwnerKind, number>>;
+  /** True when at least one eligible route exists. */
+  hasSupply: boolean;
+}
+
+/**
+ * Builds the per-user ForgeAuto/Free supply plan. Only free-eligible rows participate; the
+ * user's own entitlement routes are selected by `quotaOwnerIdentity` — another user's pool is
+ * never even considered. Domain order conserves personal quota behind shared supply.
+ */
+export function forgeAutoSupplyPlan(
+  entries: readonly RouteLedgerEntry[],
+  role: string,
+  userIdentity?: string,
+): ForgeAutoSupplyPlan {
+  const eligible = entries.filter((e) => e.freeEligible && e.roleSuitability.includes(role));
+  const domainRank = (e: RouteLedgerEntry): number => {
+    const owner = e.quotaOwner === "USER_ENTITLEMENT" && e.quotaOwnerIdentity !== userIdentity
+      ? "UNKNOWN" // never schedulable: someone else's entitlement
+      : e.quotaOwner;
+    return FORGEAUTO_DOMAIN_ORDER.indexOf(owner as QuotaOwnerKind);
+  };
+  const usable = eligible.filter((e) => domainRank(e) !== -1);
+  const routes = [...usable].sort((a, b) =>
+    domainRank(a) - domainRank(b)
+    || b.qualityScore - a.qualityScore
+    || a.routeId.localeCompare(b.routeId));
+  const domains: Record<QuotaOwnerKind, number> = {
+    SHARED_CODEFORGE_POOL: 0,
+    USER_ENTITLEMENT: 0,
+    OWNER_DEV: 0,
+    SPONSORED: 0,
+    UNKNOWN: 0,
+  };
+  for (const r of routes) domains[r.quotaOwner] += 1;
+  return { userIdentity, generatedAt: new Date().toISOString(), routes, domains, hasSupply: routes.length > 0 };
+}
+
 export function buildRouteLedger(input: RouteLedgerInput): RouteLedger {
   const now = input.now ?? Date.now();
   const policy = input.policy ?? DEFAULT_FREE_CAPACITY_POLICY;
