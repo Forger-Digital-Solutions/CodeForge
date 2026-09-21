@@ -667,3 +667,90 @@ describe("FreeCloudService", () => {
     expect(svc.snapshot().models.find((m) => m.canonicalId === "openai/gpt-oss-120b")?.routes.find((r) => r.providerId === "openrouter")?.health).toBe("UNAVAILABLE");
   });
 });
+
+describe("FreeCloudService — Free Fabric capacity projection", () => {
+  function service() {
+    const fw = new ForgeZero();
+    fw.register(freeRecord("groq", "openai/gpt-oss-120b", { accessClass: "FREE_ALLOWANCE" }));
+    fw.register(freeRecord("openrouter", "openai/gpt-oss-120b:free"));
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(createMockProvider({ providerId: "groq" }));
+    catalog.register(createMockProvider({ providerId: "openrouter" }));
+    const svc = new FreeCloudService({
+      firewall: fw,
+      providerCatalog: catalog,
+      registry: new NormalizedModelRegistry(),
+      now: () => NOW,
+      qualificationRunner: async (model) => receipt(model.providerId, model.modelId),
+    });
+    svc.setConnection(connected("groq", { planAttested: true }));
+    svc.setConnection(connected("openrouter", { credentialSource: "OAUTH" }));
+    return { svc, fw };
+  }
+
+  it("projects connected zero-cash routes with supply class, ownership, and honest health", async () => {
+    const { svc } = service();
+    const before = svc.capacityRoutes();
+    expect(before.length).toBeGreaterThanOrEqual(2);
+    for (const route of before) {
+      expect(route.paidFallbackDisabled).toBe(true);
+      expect(route.explicitZeroPrice).toBe(true);
+      expect(route.routeId.startsWith("fabric:")).toBe(true);
+      // Nothing qualified yet → executable is false → the fabric sees UNHEALTHY, not a lie.
+      expect(route.healthy).toBe(false);
+    }
+    const groq = before.find((r) => r.providerId === "groq");
+    expect(groq?.supplyClass).toBe("USER_CONNECTED_FREE");
+    expect(groq?.capacityPoolScope).toBe("PER_USER_POOL");
+    expect(groq?.capacityScope).toBe("USER_ACCOUNT");
+    // planAttested proves a free-plan account for the ACCOUNT_DEPENDENT spillover provider.
+    expect(groq?.freeOnlyAdmissionProven).toBe(true);
+    expect(groq?.capacityIdentity).toBe("localconn:groq");
+    expect(groq?.capacityPoolId).toBe("groq:user:localconn:groq");
+    const openrouter = before.find((r) => r.providerId === "openrouter");
+    // Spillover NONE: the free surface cannot bill — proven without attestation.
+    expect(openrouter?.freeOnlyAdmissionProven).toBe(true);
+
+    await svc.qualifyPending({ budget: 3 });
+    const after = svc.capacityRoutes();
+    expect(after.find((r) => r.providerId === "groq")?.healthy).toBe(true);
+  });
+
+  it("never emits paid routes and carries provider-header quota into windows", () => {
+    const { svc } = service();
+    svc.onProviderResponse({
+      providerId: "groq",
+      modelId: "openai/gpt-oss-120b",
+      status: 200,
+      headers: [
+        ["x-ratelimit-limit-requests", "1000"],
+        ["x-ratelimit-remaining-requests", "750"],
+        ["x-ratelimit-limit-tokens", "60000"],
+        ["x-ratelimit-remaining-tokens", "45000"],
+      ],
+      observedAt: NOW.getTime(),
+    });
+    const groq = svc.capacityRoutes().find((r) => r.providerId === "groq");
+    const requests = groq?.windows.find((w) => w.unit === "requests");
+    const tokens = groq?.windows.find((w) => w.unit === "input_tokens");
+    expect(requests?.remaining).toBe(750);
+    expect(requests?.authoritative).toBe(true);
+    expect(requests?.scope).toBe("USER_ACCOUNT");
+    expect(tokens?.remaining).toBe(45000);
+    expect(svc.capacityRoutes().every((r) => r.supplyClass !== "PAID")).toBe(true);
+  });
+
+  it("builds one physical pool per account and keeps provider-scoped quota at pool level", () => {
+    const { svc } = service();
+    svc.quota.record("groq", undefined, { remainingRequests: 100, limitRequests: 100, observedAt: NOW.toISOString() });
+    const pools = svc.capacityPools();
+    const groqPool = pools.find((p) => p.providerId === "groq");
+    expect(groqPool?.scope).toBe("PER_USER_POOL");
+    expect(groqPool?.capacityIdentity).toBe("localconn:groq");
+    expect(groqPool?.windows.find((w) => w.unit === "requests")?.remaining).toBe(100);
+    const openrouterPool = pools.find((p) => p.providerId === "openrouter");
+    expect(openrouterPool?.capacityIdentity).toBe("localconn:openrouter");
+    // Pool ids are distinct physical accounts — two providers never share a bucket.
+    expect(new Set(pools.map((p) => p.poolId)).size).toBe(pools.length);
+  });
+});

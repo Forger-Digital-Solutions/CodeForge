@@ -1,4 +1,5 @@
 import type { PrivacyClass } from "./types.js";
+import type { FreeCapacityPolicy } from "./capacity-policy.js";
 
 /**
  * The economic source of a route.  This is intentionally more precise than a `free` boolean:
@@ -216,6 +217,9 @@ export interface CapacityReservation {
 export interface CapacityLedgerOptions {
   routes: readonly CapacityRoute[];
   pools?: readonly ProviderCapacityPool[];
+  /** Supply-class authorization the reservations enforce. Must match the eligibility policy
+   *  the caller's supply plan was built under, or an authorized class plans but never admits. */
+  policy?: FreeCapacityPolicy;
   dataContext?: RouteDataContext;
   firstRunReserveRequests?: number;
   firstRunReserveTokens?: number;

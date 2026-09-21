@@ -16,6 +16,7 @@ export * from "./dataset/index.js";
 export * from "./capacity-intelligence.js";
 export * from "./measured-health.js";
 export * from "./route-ledger.js";
+export * from "./free-fabric.js";
 export * from "./shadow.js";
 export * from "./route-health-authority.js";
 export * from "./route-health-ledger.js";

@@ -7,7 +7,7 @@ import {
   type CapacityRoute,
   type ProviderCapacityPool,
 } from "./capacity-types.js";
-import { freeRouteExclusionReason, isFreeRouteEligible, DEFAULT_FREE_CAPACITY_POLICY } from "./capacity-policy.js";
+import { freeRouteExclusionReason, DEFAULT_FREE_CAPACITY_POLICY, type FreeCapacityPolicy } from "./capacity-policy.js";
 
 function nowIso(now: () => number): string {
   return new Date(now()).toISOString();
@@ -22,6 +22,7 @@ export class CapacityReservationLedger {
   private readonly maxActiveReservationsPerUser: number;
   private readonly clock: () => number;
   private readonly dataContext: CapacityLedgerOptions["dataContext"];
+  private readonly policy: FreeCapacityPolicy;
 
   constructor(options: CapacityLedgerOptions) {
     this.routes = new Map(options.routes.map((route) => [route.routeId, route]));
@@ -31,6 +32,21 @@ export class CapacityReservationLedger {
     this.maxActiveReservationsPerUser = Math.max(1, options.maxActiveReservationsPerUser ?? 3);
     this.clock = options.now ?? (() => Date.now());
     this.dataContext = options.dataContext;
+    this.policy = options.policy ?? DEFAULT_FREE_CAPACITY_POLICY;
+  }
+
+  /**
+   * Replace the route/pool tables while keeping live reservations. Route sets refresh as
+   * providers connect, qualify, or lose supply — fairness state (who holds what lease) must
+   * survive those refreshes or every catalog sync would double-admit the same capacity.
+   */
+  updateRoutes(routes: readonly CapacityRoute[], pools?: readonly ProviderCapacityPool[]): void {
+    this.routes.clear();
+    for (const route of routes) this.routes.set(route.routeId, route);
+    if (pools !== undefined) {
+      this.pools.clear();
+      for (const pool of pools) this.pools.set(pool.poolId, pool);
+    }
   }
 
   reserve(request: CapacityReservationRequest): CapacityReservationDecision {
@@ -48,7 +64,7 @@ export class CapacityReservationLedger {
     let protectedByFirstRunReserve = false;
     for (const routeId of request.routeIds) {
       const route = this.routes.get(routeId);
-      if (!route || !route.roles.includes(request.role) || !isFreeRouteEligible(route, DEFAULT_FREE_CAPACITY_POLICY, this.dataContext) || freeRouteExclusionReason(route, DEFAULT_FREE_CAPACITY_POLICY, this.dataContext)) continue;
+      if (!route || !route.roles.includes(request.role) || freeRouteExclusionReason(route, this.policy, this.dataContext) !== undefined) continue;
       if (route.capacityPoolScope === "PER_USER_POOL" && route.capacityIdentity !== undefined && request.capacityIdentity !== route.capacityIdentity) continue;
       sawEligibleRoute = true;
       // Two model routes backed by one provider account must contend for the same reservation

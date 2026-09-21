@@ -1,4 +1,10 @@
 import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
+import {
+  supplyClassIsZeroCash,
+  type CapacityRoute,
+  type CapacityWindow,
+  type ProviderCapacityPool,
+} from "@codeforge/forge-zero";
 import type { ProviderAdapter, ProviderCatalog, ProviderResponseObservation } from "@codeforge/providers";
 import {
   runCompactQualification,
@@ -13,11 +19,13 @@ import {
   buildFreeCloudSnapshot,
   explainRoute,
   freeCandidates,
+  supplyClassFor,
   type FreeCandidate,
   type FreeCloudSnapshot,
   type ProviderConnectionState,
   type ProviderRouteView,
   type RouteHealth,
+  type RouteQuota,
 } from "./free-cloud-registry.js";
 import { PROVIDER_DEFINITIONS, type ProviderDefinition } from "./provider-definitions.js";
 import type { NormalizedModelRegistry } from "./registry.js";
@@ -90,6 +98,20 @@ interface RouteHealthEntry {
 }
 
 const SHARED_MAX_COOLDOWN_MS = 15 * 60_000;
+const NO_RESET = "9999-12-31T23:59:59.999Z";
+
+/** Provider headers only ever report request/token buckets; everything we emit is observed
+ *  evidence (`authoritative: true`) or absent — CodeForge never invents quota numbers. */
+function quotaWindows(quota: RouteQuota | undefined, scope: "ORG" | "USER_ACCOUNT"): CapacityWindow[] {
+  const windows: CapacityWindow[] = [];
+  if (quota?.remainingRequests !== undefined || quota?.limitRequests !== undefined) {
+    windows.push({ unit: "requests", limit: quota.limitRequests ?? quota.remainingRequests ?? 0, remaining: quota.remainingRequests ?? 0, resetAt: quota.resetAt ?? NO_RESET, scope, observedAt: quota.observedAt, authoritative: true });
+  }
+  if (quota?.remainingTokens !== undefined || quota?.limitTokens !== undefined) {
+    windows.push({ unit: "input_tokens", limit: quota.limitTokens ?? quota.remainingTokens ?? 0, remaining: quota.remainingTokens ?? 0, resetAt: quota.resetAt ?? NO_RESET, scope, observedAt: quota.observedAt, authoritative: true });
+  }
+  return windows;
+}
 
 /**
  * 8-Bit Free Cloud Service — the stateful owner of the free fleet on a CodeForge host.
@@ -478,6 +500,114 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       if (r) return explainRoute(r);
     }
     return undefined;
+  }
+
+  /**
+   * R24 Free Fabric: project every zero-cash route the registry knows into ForgeZero's
+   * physical capacity model. Paid/BYOK routes never appear — the fabric is a zero-cost
+   * surface by construction, and `freeRouteExclusionReason` still vets each row. Quota
+   * windows come from the same provider-header evidence the RouteQuotaTracker recorded;
+   * nothing is invented.
+   */
+  capacityRoutes(options: { qualityScoreOf?: (providerId: string, modelId: string) => number | undefined } = {}): CapacityRoute[] {
+    const snap = this.snapshot();
+    const routes: CapacityRoute[] = [];
+    for (const model of snap.models) {
+      for (const r of model.routes) {
+        const supplyClass = r.supplyClass;
+        if (supplyClass === undefined || !supplyClassIsZeroCash(supplyClass)) continue;
+        const conn = this.connections.get(r.providerId);
+        const def = this.definitions[r.providerId];
+        const perUser = supplyClass === "USER_CONNECTED_FREE" || supplyClass === "DISTRIBUTED_USER_FREE";
+        // A plain BYOK connection carries no account hash — the local-connection sentinel keeps
+        // its pool claimable by the owning host's fabric plan (and only that plan) instead of
+        // collapsing every same-provider key into one shared "unclaimed" identity.
+        const capacityIdentity = conn?.userConnectedFree?.capacityIdentity ?? (perUser ? `localconn:${r.providerId}` : undefined);
+        const capacityPoolId = perUser
+          ? conn?.userConnectedFree?.capacityPoolId ?? `${r.providerId}:user:${capacityIdentity}`
+          : supplyClass === "OWNER_DEV_FREE" || supplyClass === "OWNER_CREDIT_RESERVE"
+            ? `owner:${r.providerId}`
+            : `shared:${r.providerId}`;
+        const quota = r.quota ?? this.quota.get(r.providerId, r.providerModelId);
+        routes.push({
+          routeId: `fabric:${r.routeId}`,
+          providerId: r.providerId,
+          modelId: r.providerModelId,
+          canonicalModelId: r.canonicalModelId,
+          family: model.family,
+          gateway: r.providerId,
+          supplyClass,
+          capacityPoolId,
+          capacityPoolScope: perUser ? "PER_USER_POOL" : "SHARED_OWNER_POOL",
+          capacityScope: perUser ? "USER_ACCOUNT" : "ORG",
+          // A permissive provider may train on what it sees: private code requires an explicit
+          // user consent decision, not a silent routing default.
+          dataPolicyProfile: r.privacyClass === "permissive" ? "USER_CONSENT_REQUIRED" : "PRIVATE_CODE_ALLOWED",
+          lifecycle: r.lifecycle === "RETIRED" ? "REJECTED" : "APPROVED",
+          explicitZeroPrice: r.verifiedFree,
+          // USER_CONNECTED_FREE needs proof the account cannot silently bill: a managed
+          // user-connection that completed its own admission, an explicit free-plan
+          // attestation, or a provider whose free surface cannot spill into charges.
+          freeOnlyAdmissionProven: perUser
+            ? conn?.userConnectedFree?.status === "CONNECTED"
+              || conn?.planAttested === true
+              || def?.freeAccess.spillover === "NONE"
+            : undefined,
+          paidFallbackDisabled: true,
+          managedMultiUserAllowed: r.termsStatus === "CLEARED",
+          privacyClass: r.privacyClass ?? "standard",
+          roles: r.roles,
+          qualityScore: options.qualityScoreOf?.(r.providerId, r.providerModelId)
+            ?? this.firewall.getModel(r.providerId, r.providerModelId)?.codingScore
+            ?? this.firewall.getModel(r.providerId, r.providerModelId)?.agentScore
+            ?? (r.qualificationState === "QUALIFIED" ? 70 : r.qualificationState === "PROBATION" ? 55 : r.qualificationState === "NOT_TESTED" ? 40 : 30),
+          // The fabric is a ForgeAuto surface: executable-without-qualification is an explicit
+          // picker privilege, not managed-supply eligibility.
+          healthy: r.forgeAutoEligible,
+          enabled: true,
+          windows: quotaWindows(quota, perUser ? "USER_ACCOUNT" : "ORG"),
+          ...(capacityIdentity !== undefined ? { capacityIdentity } : {}),
+        });
+      }
+    }
+    return routes;
+  }
+
+  /** Physical pools behind {@link capacityRoutes} — one shared bucket per provider account,
+   * one per-user pool per connected account. Pool-level windows carry only provider-scoped
+   * observations; route-scoped quota stays on the routes. */
+  capacityPools(): ProviderCapacityPool[] {
+    const observedAt = this.now().toISOString();
+    const pools = new Map<string, ProviderCapacityPool>();
+    for (const conn of this.connections.values()) {
+      const def = this.definitions[conn.providerId];
+      const supplyClass = supplyClassFor(def, conn);
+      if (supplyClass === undefined || !supplyClassIsZeroCash(supplyClass)) continue;
+      const perUser = supplyClass === "USER_CONNECTED_FREE" || supplyClass === "DISTRIBUTED_USER_FREE";
+      const capacityIdentity = conn.userConnectedFree?.capacityIdentity ?? (perUser ? `localconn:${conn.providerId}` : undefined);
+      const poolId = perUser
+        ? conn.userConnectedFree?.capacityPoolId ?? `${conn.providerId}:user:${capacityIdentity}`
+        : `shared:${conn.providerId}`;
+      if (pools.has(poolId)) continue;
+      const windows: CapacityWindow[] = quotaWindows(this.quota.get(conn.providerId, ""), perUser ? "USER_ACCOUNT" : "ORG");
+      if (conn.userConnectedFree) {
+        windows.push({ unit: "concurrency", limit: conn.userConnectedFree.concurrencyLimit, remaining: conn.userConnectedFree.concurrencyLimit, resetAt: NO_RESET, scope: "USER_ACCOUNT", observedAt, authoritative: true });
+        if (conn.userConnectedFree.includedUsageRemainingUsd !== undefined) {
+          windows.push({ unit: "credits", limit: conn.userConnectedFree.includedUsageRemainingUsd, remaining: conn.userConnectedFree.includedUsageRemainingUsd, resetAt: conn.userConnectedFree.includedUsageResetAt ?? NO_RESET, scope: "USER_ACCOUNT", observedAt, authoritative: conn.userConnectedFree.capacityConfidence === "HIGH" });
+        }
+      }
+      pools.set(poolId, {
+        poolId,
+        providerId: conn.providerId,
+        scope: perUser ? "PER_USER_POOL" : "SHARED_OWNER_POOL",
+        supplyClass,
+        windows,
+        observedAt,
+        authoritative: windows.length > 0,
+        ...(capacityIdentity !== undefined ? { capacityIdentity } : {}),
+      });
+    }
+    return [...pools.values()];
   }
 
   // --- change notification -------------------------------------------------------------------

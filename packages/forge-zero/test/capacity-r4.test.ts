@@ -215,4 +215,42 @@ describe("R4 ForgeZero capacity accounting", () => {
     expect(isCapacityEventActive(event, NOW - 1)).toBe(true);
     expect(isCapacityEventActive(event, NOW)).toBe(false);
   });
+
+  it("updateRoutes refreshes the fleet while live reservations survive", () => {
+    const v1 = route({ routeId: "groq-v1" });
+    const v2 = route({ routeId: "groq-v2", modelId: "openai/gpt-oss-20b", capacityPoolId: "groq-org-2" });
+    const ledger = new CapacityReservationLedger({ routes: [v1], now: () => NOW });
+    const request = (id: string, routeId: string) => ({ reservationId: id, userId: id, routeIds: [routeId], role: "coder", taskKind: "normal", requests: 1, inputTokens: 10, outputTokens: 5, isNewUser: false, priority: "normal" as const, createdAt: new Date(NOW).toISOString(), leaseUntil: new Date(NOW + 60_000).toISOString() });
+    expect(ledger.reserve(request("hold-1", "groq-v1")).admitted).toBe(true);
+
+    // Catalog refresh replaces the route table — the live hold on the removed route must
+    // not be silently dropped (release() still works) and the new fleet must admit.
+    ledger.updateRoutes([v2]);
+    expect(ledger.reserve(request("hold-2", "groq-v1")).reason).toBe("NO_ELIGIBLE_ROUTE");
+    expect(ledger.reserve(request("hold-3", "groq-v2")).admitted).toBe(true);
+    const snap = ledger.snapshot();
+    expect(snap.activeReservations).toBe(2);
+    expect(snap.byRoute["groq-v1"]).toBe(1);
+    expect(ledger.release("hold-1")).toBe(true);
+    expect(ledger.snapshot().activeReservations).toBe(1);
+
+    // Pool tables refresh the same way: replacing pools must not strand live holds.
+    ledger.updateRoutes([v2], [{ poolId: "groq-org-2", providerId: "groq", scope: "SHARED_OWNER_POOL", supplyClass: "PURE_MANAGED_FREE", windows: [], observedAt: new Date(NOW).toISOString(), authoritative: true }]);
+    expect(ledger.snapshot().activeReservations).toBe(1);
+  });
+
+  it("honours a caller-supplied supply policy instead of the package default", () => {
+    const sponsored = route({ routeId: "sponsored", supplyClass: "SPONSORED_FREE" });
+    const request = { reservationId: "s1", userId: "u", routeIds: ["sponsored"], role: "coder", taskKind: "normal", requests: 1, inputTokens: 10, outputTokens: 5, isNewUser: false, priority: "normal" as const, createdAt: new Date(NOW).toISOString(), leaseUntil: new Date(NOW + 60_000).toISOString() };
+
+    const denied = new CapacityReservationLedger({ routes: [sponsored], now: () => NOW });
+    expect(denied.reserve(request).reason).toBe("NO_ELIGIBLE_ROUTE");
+
+    const authorized = new CapacityReservationLedger({
+      routes: [sponsored],
+      now: () => NOW,
+      policy: { paidInferenceAllowed: false, allowUserConnectedFree: true, allowDistributedUserFree: true, allowDepositUnlockedFree: false, allowSponsoredFree: true },
+    });
+    expect(authorized.reserve(request).admitted).toBe(true);
+  });
 });

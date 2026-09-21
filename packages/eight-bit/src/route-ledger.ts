@@ -379,11 +379,14 @@ export interface ForgeAutoSupplyPlan {
 export function forgeAutoSupplyPlan(
   entries: readonly RouteLedgerEntry[],
   role: string,
-  userIdentity?: string,
+  userIdentity?: string | readonly string[],
 ): ForgeAutoSupplyPlan {
   const eligible = entries.filter((e) => e.freeEligible && e.roleSuitability.includes(role));
+  // A user may hold several connected accounts (Copilot + Ollama …): every capacity identity
+  // they own is theirs to schedule on, and every identity they do not own is unreachable.
+  const owned = new Set(typeof userIdentity === "string" ? [userIdentity] : userIdentity ?? []);
   const domainRank = (e: RouteLedgerEntry): number => {
-    const owner = e.quotaOwner === "USER_ENTITLEMENT" && e.quotaOwnerIdentity !== userIdentity
+    const owner = e.quotaOwner === "USER_ENTITLEMENT" && !(e.quotaOwnerIdentity !== undefined && owned.has(e.quotaOwnerIdentity))
       ? "UNKNOWN" // never schedulable: someone else's entitlement
       : e.quotaOwner;
     return FORGEAUTO_DOMAIN_ORDER.indexOf(owner as QuotaOwnerKind);
@@ -401,7 +404,8 @@ export function forgeAutoSupplyPlan(
     UNKNOWN: 0,
   };
   for (const r of routes) domains[r.quotaOwner] += 1;
-  return { userIdentity, generatedAt: new Date().toISOString(), routes, domains, hasSupply: routes.length > 0 };
+  const primary = typeof userIdentity === "string" ? userIdentity : userIdentity?.[0];
+  return { userIdentity: primary, generatedAt: new Date().toISOString(), routes, domains, hasSupply: routes.length > 0 };
 }
 
 export function buildRouteLedger(input: RouteLedgerInput): RouteLedger {
