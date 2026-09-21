@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ProviderCapacityGovernor } from "@codeforge/providers";
 import type { ChatRequest, ChatResponse, ProviderAdapter, ProviderModel, StreamEvent } from "@codeforge/providers";
-import { instrumentGovernor } from "../src/r23/run-task.js";
+import { classify, instrumentGovernor } from "../src/r23/run-task.js";
 
 /**
  * R23 harness regression: pacing waits imposed by the capacity governor must be measured as
@@ -48,5 +48,18 @@ describe("R23 instrumented governor", () => {
     const wrapped = instrumented.governor.wrapAdapter(new TinyAdapter());
     expect((wrapped as { governor?: unknown }).governor).toBe(instrumented.governor);
     expect(instrumented.governor.getEffectiveLimits("groq").maxTokensPerMinute).toBe(7500);
+  });
+});
+
+describe("R23 run classification — authority-boundary stops", () => {
+  const base = { runtimeStatus: "blocked" as const, stopReason: "error", claimedComplete: false, verifiedComplete: false, completionAuthority: "BLOCKED" as const, forbidden: false, calls: [] as never[], timedOut: false };
+  it("labels a TOOL_PERMISSION_DENIED stop security_blocked and states the verifier verdict (four R23 prescreen runs)", () => {
+    const verdict = classify({ ...base, verifierPassed: true, runtimeError: "TOOL_PERMISSION_DENIED" });
+    expect(verdict.classification).toBe("security_blocked");
+    expect(verdict.reason).toContain("TOOL_PERMISSION_DENIED");
+    expect(verdict.reason).toContain("hidden verifier passed");
+  });
+  it("keeps the fall-through for ordinary ended-without-claim runs", () => {
+    expect(classify({ ...base, verifierPassed: false, runtimeError: "AGENT_NO_PROGRESS_DETECTED", stopReason: "no_progress_detected" }).classification).toBe("verification_failed");
   });
 });
