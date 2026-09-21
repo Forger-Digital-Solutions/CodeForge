@@ -1,0 +1,351 @@
+{
+  "schemaVersion": "r23-run-record-1",
+  "identity": {
+    "benchmarkVersion": "CodeForge-EfficiencyBench-R23",
+    "protocolId": "codeforge-efficiency-protocol-r23",
+    "protocolVersion": "1.0.2",
+    "protocolDigest": "f522cc7ce5355cf72b4ac09c052d5328db45bb3764b79c40270c13ea5faccb1f",
+    "harnessVersion": "r23-harness-1.0.0",
+    "campaignId": "qualification-2026-09-21T01-30-37-914Z",
+    "phase": "qualification",
+    "runId": "r23-qualification-qual-js-return-sign-optimized-r1-d626635d",
+    "pairId": "qualification-2026-09-21T01-30-37-914Z-qual-js-return-sign-r1",
+    "taskId": "qual-js-return-sign",
+    "taskClass": "small_fix",
+    "taskLanguage": "javascript",
+    "repoSizeClass": "small",
+    "arm": "optimized",
+    "armConfigurationDigest": "f36a2e6a722cbfa84f91c0ab6d18a01176550d730772f21b6f97cdd7d3a61804",
+    "pairOrder": "optimized-first",
+    "repetition": 1,
+    "codeforgeCommit": "6851e784e79dbedfb24a497d5b1232eef99df6fe",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "ocs/evidence/r23-efficiency-proof/raw/qualification/runs.jsonl",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-0e3ecbe7.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-449a748a.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-dd70cb9d.json"
+    ],
+    "startingTreeHash": "e0eebea58fa9a15bf096d17af36a5e1ad791ef20f3b97872010fbd505fda8b46",
+    "endingTreeHash": "c3aef6687677df0c5306a3755af303c340b75f87fb1a0e1653e77b5089d29e4a",
+    "taskDigest": "354344f94ade5840faec41bf4c7cb11b630d8aac39f6377be20a0f4554c0b91f",
+    "modelId": "inclusionai/ling-3.0-flash-sante:free",
+    "providerId": "openrouter",
+    "routeClass": "openrouter_free_deposit_unlocked",
+    "forgeGreenEnabled": true,
+    "subagentsEnabled": true,
+    "topology": "single_agent_run:adaptive",
+    "environmentFingerprint": "c5a1fc7747779d11189ff83540a1f1db03ead53b8d282932ca65b436382a6758",
+    "startedAt": "2026-09-21T01:30:37.949Z",
+    "endedAt": "2026-09-21T01:30:43.930Z"
+  },
+  "outcome": {
+    "runtimeStatus": "blocked",
+    "stopReason": "error",
+    "claimedComplete": false,
+    "verifierRan": true,
+    "verifierPassed": true,
+    "verifierExitCode": 0,
+    "verifierDurationMs": 100,
+    "completionAuthority": "BLOCKED",
+    "completionBlockers": [
+      "plan_steps_unfinished"
+    ],
+    "forbiddenActionObserved": false,
+    "verifiedComplete": false,
+    "falseComplete": false,
+    "classification": "verification_failed",
+    "completionReason": "run ended blocked (error) without a completion claim",
+    "testsPassed": 3,
+    "testsFailed": 0,
+    "filesChanged": [
+      "src/math.js"
+    ],
+    "linesAdded": 1,
+    "linesRemoved": 1,
+    "runtimeError": "TOOL_PERMISSION_DENIED"
+  },
+  "inference": {
+    "totalInputTokens": {
+      "value": 8891,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "totalOutputTokens": {
+      "value": 221,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "totalTokens": {
+      "value": 9112,
+      "source": "DERIVED",
+      "origin": "PROVIDER",
+      "note": "input + output"
+    },
+    "cachedInputTokens": {
+      "value": 5760,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "uncachedInputTokens": {
+      "value": 3131,
+      "source": "DERIVED",
+      "origin": "PROVIDER",
+      "note": "input − cached"
+    },
+    "reasoningTokens": {
+      "value": 82,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "modelCalls": 3,
+    "callsWithProviderUsage": 3,
+    "failedModelCalls": 0,
+    "retriedModelCalls": 0,
+    "rateLimitedCalls": 0,
+    "providerFailovers": 0,
+    "modelFailovers": 0,
+    "duplicateRequestsSuppressed": 0,
+    "calls": [
+      {
+        "callIndex": 0,
+        "providerId": "openrouter",
+        "requestedModelId": "inclusionai/ling-3.0-flash-sante:free",
+        "startedAt": "2026-09-21T01:30:38.605Z",
+        "endedAt": "2026-09-21T01:30:39.818Z",
+        "latencyMs": 1213,
+        "timeToFirstEventMs": 1117,
+        "requestBytes": 9687,
+        "responseBytes": 23,
+        "messageCount": 2,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2847,
+        "completionTokens": 70,
+        "totalTokens": 2917,
+        "cachedPromptTokens": 0,
+        "reasoningTokens": 47,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "fe8a0c159b43bd0f332a04453953de0b40a6b8dd7414afdd354c364a17298b11"
+      },
+      {
+        "callIndex": 1,
+        "providerId": "openrouter",
+        "requestedModelId": "inclusionai/ling-3.0-flash-sante:free",
+        "startedAt": "2026-09-21T01:30:39.842Z",
+        "endedAt": "2026-09-21T01:30:41.028Z",
+        "latencyMs": 1186,
+        "timeToFirstEventMs": 1029,
+        "requestBytes": 10118,
+        "responseBytes": 83,
+        "messageCount": 4,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 1,
+          "tool": 1
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2982,
+        "completionTokens": 87,
+        "totalTokens": 3069,
+        "cachedPromptTokens": 2816,
+        "reasoningTokens": 35,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "cc13dcb028c0bb6344e5f6071e1b662e4b9d82c5830b4e57215ea1e50d4d3742"
+      },
+      {
+        "callIndex": 2,
+        "providerId": "openrouter",
+        "requestedModelId": "inclusionai/ling-3.0-flash-sante:free",
+        "startedAt": "2026-09-21T01:30:41.056Z",
+        "endedAt": "2026-09-21T01:30:42.067Z",
+        "latencyMs": 1011,
+        "timeToFirstEventMs": 806,
+        "requestBytes": 10493,
+        "responseBytes": 151,
+        "messageCount": 6,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 2,
+          "tool": 2
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 3062,
+        "completionTokens": 64,
+        "totalTokens": 3126,
+        "cachedPromptTokens": 2944,
+        "reasoningTokens": 0,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "edace384e1b1a51044f47cd0ee45a8b856fc7efa2466164118c9da8d682e0995"
+      }
+    ]
+  },
+  "context": {
+    "transmittedContextBytes": 30298,
+    "finalConversationBytes": 3166,
+    "providerStatelessnessRepeatBytes": 27132,
+    "avoidableDuplicateBytes": 0,
+    "avoidableDuplicateTokens": {
+      "value": 0,
+      "source": "DERIVED",
+      "origin": "HARNESS",
+      "note": "bytes × run prompt-token/byte ratio"
+    },
+    "avoidableDuplicateEvents": [],
+    "avoidableDuplicateBytesWithinRole": 0,
+    "avoidableDuplicateBytesCrossRole": 0,
+    "finalComposition": {
+      "systemBytes": 1732,
+      "userTaskBytes": 1210,
+      "assistantBytes": 0,
+      "toolResultBytes": 224,
+      "toolResultBytesByTool": {
+        "read_file": 170,
+        "edit_file": 54
+      },
+      "otherBytes": 0
+    },
+    "bootstrapContextBytes": 0,
+    "bootstrapSelectedFiles": 0,
+    "bootstrapCandidateFiles": 0,
+    "canonicalCacheHits": 0,
+    "canonicalCacheMisses": 0,
+    "toolOutputBytesAvoidedByCompression": 0,
+    "providerCacheHitCalls": 2,
+    "promptTokensPerByte": 0.2934517129843554
+  },
+  "activity": {
+    "role": "coder",
+    "toolCallsRequested": 3,
+    "toolCallsExecuted": 3,
+    "toolCallsFailed": 1,
+    "duplicateActionsSuppressed": 0,
+    "byTool": {
+      "read_file": {
+        "requested": 1,
+        "executed": 1,
+        "suppressed": 0
+      },
+      "edit_file": {
+        "requested": 1,
+        "executed": 1,
+        "suppressed": 0
+      },
+      "run_command": {
+        "requested": 1,
+        "executed": 1,
+        "suppressed": 0
+      }
+    },
+    "fileReads": 1,
+    "fileWrites": 1,
+    "searches": 0,
+    "listings": 0,
+    "shellCalls": 1,
+    "browserCalls": 0,
+    "mcpCalls": 0,
+    "pluginCalls": 0,
+    "subagentCount": 0,
+    "subagentModelCalls": 0
+  },
+  "time": {
+    "wallClockMs": 5886,
+    "activeAgentMs": 4280,
+    "modelWaitMs": 3410,
+    "toolMs": {
+      "value": 3,
+      "source": "OBSERVED",
+      "origin": "RUNTIME"
+    },
+    "verificationMs": 1443,
+    "rateLimitWaitMs": 0,
+    "pacingWaitMs": 0,
+    "forgeGreenOverheadMs": {
+      "value": 0.3670999999740161,
+      "source": "OBSERVED",
+      "origin": "RUNTIME"
+    }
+  },
+  "economics": {
+    "pricingSnapshotId": "openrouter-2026-09-21",
+    "actualCostUsd": {
+      "value": 0,
+      "source": "OBSERVED",
+      "origin": "PROVIDER",
+      "note": "Σ provider-reported per-call cost"
+    },
+    "equivalentPublicApiCostUsd": {
+      "source": "UNKNOWN",
+      "note": "no public-API equivalent declared for openrouter::inclusionai/ling-3.0-flash-sante:free"
+    },
+    "equivalentPublicApiPriceRef": "",
+    "equivalentMarketCostUsd": {
+      "value": 0.009624,
+      "source": "DERIVED",
+      "origin": "SNAPSHOT",
+      "note": "tokens × openrouter::anthropic/claude-sonnet-5"
+    },
+    "equivalentMarketPriceRef": "openrouter::anthropic/claude-sonnet-5"
+  },
+  "resources": {
+    "cpuUserMs": {
+      "value": 172,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "cpuSystemMs": {
+      "value": 172,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "peakRssBytes": {
+      "value": 196366336,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerResponseBytes": {
+      "value": 257,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerRequestBytes": {
+      "value": 30298,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "gpuPowerDrawWattsIdleSample": {
+      "value": 3.38,
+      "source": "OBSERVED",
+      "origin": "HARNESS",
+      "note": "single nvidia-smi sample; local GPU is idle — not inference"
+    },
+    "sampler": "node-process-cpu-rss-1 (harness process only; tool child processes excluded)"
+  },
+  "telemetry": {
+    "forgeGreenR0TelemetryId": "fg-r0-5ef5a39265b2ea67677c3c4a5d9ff46c",
+    "efficiencyReasonCodes": []
+  },
+  "notes": [
+    "inert switches on this execution path: memoryDelivery (mission memory is not used by the autonomous run path) and verificationReuse (FG-12F has no production caller) — recorded for provenance, identical in both arms"
+  ]
+}

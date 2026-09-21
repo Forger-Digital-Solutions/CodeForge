@@ -1,0 +1,257 @@
+{
+  "schemaVersion": "r23-run-record-1",
+  "identity": {
+    "benchmarkVersion": "CodeForge-EfficiencyBench-R23",
+    "protocolId": "codeforge-efficiency-protocol-r23",
+    "protocolVersion": "1.0.2",
+    "protocolDigest": "f522cc7ce5355cf72b4ac09c052d5328db45bb3764b79c40270c13ea5faccb1f",
+    "harnessVersion": "r23-harness-1.0.0",
+    "campaignId": "qualification-2026-09-21T01-34-41-934Z",
+    "phase": "qualification",
+    "runId": "r23-qualification-qual-js-return-sign-optimized-r1-db3b7f33",
+    "pairId": "qualification-2026-09-21T01-34-41-934Z-qual-js-return-sign-r1",
+    "taskId": "qual-js-return-sign",
+    "taskClass": "small_fix",
+    "taskLanguage": "javascript",
+    "repoSizeClass": "small",
+    "arm": "optimized",
+    "armConfigurationDigest": "f36a2e6a722cbfa84f91c0ab6d18a01176550d730772f21b6f97cdd7d3a61804",
+    "pairOrder": "optimized-first",
+    "repetition": 1,
+    "codeforgeCommit": "6851e784e79dbedfb24a497d5b1232eef99df6fe",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "ocs/evidence/r23-efficiency-proof/raw/exclusions.jsonl",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/runs.jsonl",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-0e3ecbe7.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-2f243a58.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-30227a7d.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-449a748a.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-6349eba5.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-64257e45.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-6646a7a6.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-809e5e47.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-8148c4d6.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-d626635d.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-dd70cb9d.json"
+    ],
+    "startingTreeHash": "e0eebea58fa9a15bf096d17af36a5e1ad791ef20f3b97872010fbd505fda8b46",
+    "endingTreeHash": "e0eebea58fa9a15bf096d17af36a5e1ad791ef20f3b97872010fbd505fda8b46",
+    "taskDigest": "354344f94ade5840faec41bf4c7cb11b630d8aac39f6377be20a0f4554c0b91f",
+    "modelId": "thinkingmachines/inkling:free",
+    "providerId": "openrouter",
+    "routeClass": "openrouter_free_deposit_unlocked",
+    "forgeGreenEnabled": true,
+    "subagentsEnabled": true,
+    "topology": "single_agent_run:adaptive",
+    "environmentFingerprint": "c5a1fc7747779d11189ff83540a1f1db03ead53b8d282932ca65b436382a6758",
+    "startedAt": "2026-09-21T01:34:41.955Z",
+    "endedAt": "2026-09-21T01:34:44.416Z"
+  },
+  "outcome": {
+    "runtimeStatus": "failed",
+    "stopReason": "error",
+    "claimedComplete": false,
+    "verifierRan": true,
+    "verifierPassed": false,
+    "verifierExitCode": 1,
+    "verifierDurationMs": 99,
+    "completionAuthority": "BLOCKED",
+    "completionBlockers": [
+      "plan_steps_unfinished"
+    ],
+    "forbiddenActionObserved": false,
+    "verifiedComplete": false,
+    "falseComplete": false,
+    "classification": "infrastructure_void",
+    "completionReason": "provider failure before the model's first tool call (AUTH_ERROR)",
+    "testsPassed": 1,
+    "testsFailed": 2,
+    "filesChanged": [],
+    "linesAdded": 0,
+    "linesRemoved": 0,
+    "runtimeError": "[PROVIDER_UNAVAILABLE] [PROVIDER_UNAVAILABLE] OpenRouter error (403): {\"error\":{\"message\":\"thinkingmachines/inkling:free is only available on agentic harnesses. Try plugging it into a coding agent or productivity app listed on https://openrouter.ai/apps\",\"code\":403,\"met"
+  },
+  "inference": {
+    "totalInputTokens": {
+      "source": "UNKNOWN",
+      "note": "1 call(s) without provider usage"
+    },
+    "totalOutputTokens": {
+      "source": "UNKNOWN",
+      "note": "1 call(s) without provider usage"
+    },
+    "totalTokens": {
+      "source": "UNKNOWN",
+      "note": "input or output unknown"
+    },
+    "cachedInputTokens": {
+      "source": "UNKNOWN",
+      "note": "1 call(s) without provider usage"
+    },
+    "uncachedInputTokens": {
+      "source": "UNKNOWN",
+      "note": "cached unknown"
+    },
+    "reasoningTokens": {
+      "source": "UNKNOWN",
+      "note": "1 call(s) without provider usage"
+    },
+    "modelCalls": 1,
+    "callsWithProviderUsage": 0,
+    "failedModelCalls": 1,
+    "retriedModelCalls": 0,
+    "rateLimitedCalls": 0,
+    "providerFailovers": 0,
+    "modelFailovers": 0,
+    "duplicateRequestsSuppressed": 0,
+    "calls": [
+      {
+        "callIndex": 0,
+        "providerId": "openrouter",
+        "requestedModelId": "thinkingmachines/inkling:free",
+        "startedAt": "2026-09-21T01:34:42.590Z",
+        "endedAt": "2026-09-21T01:34:42.621Z",
+        "latencyMs": 31,
+        "requestBytes": 9687,
+        "responseBytes": 0,
+        "messageCount": 2,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "UNKNOWN",
+        "toolCallsEmitted": 0,
+        "outcome": "error",
+        "errorCode": "AUTH_ERROR",
+        "httpStatus": 403,
+        "retryable": false,
+        "rateLimited": false,
+        "conversationDigest": "fe8a0c159b43bd0f332a04453953de0b40a6b8dd7414afdd354c364a17298b11"
+      }
+    ]
+  },
+  "context": {
+    "transmittedContextBytes": 9687,
+    "finalConversationBytes": 2942,
+    "providerStatelessnessRepeatBytes": 6745,
+    "avoidableDuplicateBytes": 0,
+    "avoidableDuplicateTokens": {
+      "source": "UNKNOWN",
+      "note": "provider prompt-token/byte ratio unavailable"
+    },
+    "avoidableDuplicateEvents": [],
+    "avoidableDuplicateBytesWithinRole": 0,
+    "avoidableDuplicateBytesCrossRole": 0,
+    "finalComposition": {
+      "systemBytes": 1732,
+      "userTaskBytes": 1210,
+      "assistantBytes": 0,
+      "toolResultBytes": 0,
+      "toolResultBytesByTool": {},
+      "otherBytes": 0
+    },
+    "bootstrapContextBytes": 0,
+    "bootstrapSelectedFiles": 0,
+    "bootstrapCandidateFiles": 0,
+    "canonicalCacheHits": 0,
+    "canonicalCacheMisses": 0,
+    "toolOutputBytesAvoidedByCompression": 0,
+    "providerCacheHitCalls": 0
+  },
+  "activity": {
+    "role": "coder",
+    "toolCallsRequested": 0,
+    "toolCallsExecuted": 0,
+    "toolCallsFailed": 0,
+    "duplicateActionsSuppressed": 0,
+    "byTool": {},
+    "fileReads": 0,
+    "fileWrites": 0,
+    "searches": 0,
+    "listings": 0,
+    "shellCalls": 0,
+    "browserCalls": 0,
+    "mcpCalls": 0,
+    "pluginCalls": 0,
+    "subagentCount": 0,
+    "subagentModelCalls": 0
+  },
+  "time": {
+    "wallClockMs": 2381,
+    "activeAgentMs": 772,
+    "modelWaitMs": 31,
+    "toolMs": {
+      "value": 0,
+      "source": "OBSERVED",
+      "origin": "RUNTIME"
+    },
+    "verificationMs": 1435,
+    "rateLimitWaitMs": 0,
+    "pacingWaitMs": 0,
+    "forgeGreenOverheadMs": {
+      "value": 0.18300000007729977,
+      "source": "OBSERVED",
+      "origin": "RUNTIME"
+    }
+  },
+  "economics": {
+    "pricingSnapshotId": "openrouter-2026-09-21",
+    "actualCostUsd": {
+      "source": "UNKNOWN",
+      "note": "token totals unknown"
+    },
+    "equivalentPublicApiCostUsd": {
+      "source": "UNKNOWN",
+      "note": "token totals unknown"
+    },
+    "equivalentPublicApiPriceRef": "openrouter::thinkingmachines/inkling",
+    "equivalentMarketCostUsd": {
+      "source": "UNKNOWN",
+      "note": "token totals unknown"
+    },
+    "equivalentMarketPriceRef": "openrouter::anthropic/claude-sonnet-5"
+  },
+  "resources": {
+    "cpuUserMs": {
+      "value": 78,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "cpuSystemMs": {
+      "value": 156,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "peakRssBytes": {
+      "value": 203784192,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerResponseBytes": {
+      "value": 0,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerRequestBytes": {
+      "value": 9687,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "gpuPowerDrawWattsIdleSample": {
+      "value": 3.84,
+      "source": "OBSERVED",
+      "origin": "HARNESS",
+      "note": "single nvidia-smi sample; local GPU is idle — not inference"
+    },
+    "sampler": "node-process-cpu-rss-1 (harness process only; tool child processes excluded)"
+  },
+  "telemetry": {
+    "forgeGreenR0TelemetryId": "fg-r0-04c7a88b4cb186e82f6cbf8e1242d8da",
+    "efficiencyReasonCodes": []
+  },
+  "notes": [
+    "inert switches on this execution path: memoryDelivery (mission memory is not used by the autonomous run path) and verificationReuse (FG-12F has no production caller) — recorded for provenance, identical in both arms"
+  ]
+}

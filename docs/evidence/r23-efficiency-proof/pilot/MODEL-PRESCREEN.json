@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-09-21T01:09:18.003Z",
+  "recordedAt": "2026-09-21T01:39:06.845Z",
   "protocolRule": "§2.2 pre-screen (v1.0.2): one single-agent qualification task; passers ranked by wall time; outcome-blind cap",
   "task": "qual-js-return-sign",
   "cap": 6,
@@ -8,101 +8,191 @@
       "modelId": "inclusionai/ling-3.0-flash-vl:free",
       "passed": false,
       "classification": "provider_failure",
-      "wallClockMs": 14809,
-      "modelCalls": 6,
+      "wallClockMs": 8787,
+      "modelCalls": 2,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-52738456",
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-0e3ecbe7",
       "reason": "provider_failure (malformed/tool-call error)"
     },
     {
       "modelId": "nex-agi/nex-n2.5-mini:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (1 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/"
+      "classification": "provider_failure",
+      "wallClockMs": 8211,
+      "modelCalls": 5,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-dd70cb9d",
+      "reason": "provider_failure (malformed/tool-call error)"
     },
     {
       "modelId": "nex-agi/nex-n2.5-pro:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (1 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/"
+      "classification": "provider_failure",
+      "wallClockMs": 13611,
+      "modelCalls": 4,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-449a748a",
+      "reason": "provider_failure (malformed/tool-call error)"
     },
     {
       "modelId": "inclusionai/ling-3.0-flash-sante:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (1 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/"
+      "classification": "verification_failed",
+      "wallClockMs": 5886,
+      "modelCalls": 3,
+      "totalTokens": 9112,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-d626635d",
+      "reason": "verification_failed"
     },
     {
       "modelId": "inclusionai/ling-3.0-flash-fin:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (1 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/"
+      "classification": "provider_failure",
+      "wallClockMs": 11751,
+      "modelCalls": 2,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-2f243a58",
+      "reason": "provider_failure (malformed/tool-call error)"
     },
     {
       "modelId": "qwen/qwen3.8-27b:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (1 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/"
+      "classification": "infrastructure_void",
+      "wallClockMs": 3926,
+      "modelCalls": 1,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-6646a7a6",
+      "reason": "infrastructure_void"
     },
     {
       "modelId": "dots-studio/dots-3-note-preview:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (1 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/"
+      "classification": "provider_failure",
+      "wallClockMs": 15974,
+      "modelCalls": 4,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-809e5e47",
+      "reason": "provider_failure (malformed/tool-call error)"
     },
     {
       "modelId": "liquid/lfm-2.5-2.6b:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (1 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/"
+      "classification": "verification_failed",
+      "wallClockMs": 15624,
+      "modelCalls": 6,
+      "totalTokens": 16555,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8148c4d6",
+      "reason": "verification_failed"
     },
     {
       "modelId": "nvidia/nemotron-3.5-lightning:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (1 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/"
+      "classification": "infrastructure_void",
+      "wallClockMs": 122843,
+      "modelCalls": 1,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-6349eba5",
+      "reason": "infrastructure_void"
     },
     {
       "modelId": "thinkingmachines/inkling-small:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (2 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/\n  packages/forgegreen-campaign/test/r23-report-statistics.test.ts"
+      "classification": "infrastructure_void",
+      "wallClockMs": 2267,
+      "modelCalls": 1,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-64257e45",
+      "reason": "infrastructure_void (malformed/tool-call error)"
     },
     {
       "modelId": "poolside/laguna-s-2.1:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (2 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/\n  packages/forgegreen-campaign/test/r23-report-statistics.test.ts"
+      "classification": "provider_failure",
+      "wallClockMs": 8665,
+      "modelCalls": 2,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-30227a7d",
+      "reason": "provider_failure"
     },
     {
       "modelId": "thinkingmachines/inkling:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (2 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/\n  packages/forgegreen-campaign/test/r23-report-statistics.test.ts"
+      "classification": "infrastructure_void",
+      "wallClockMs": 2381,
+      "modelCalls": 1,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-db3b7f33",
+      "reason": "infrastructure_void (malformed/tool-call error)"
     },
     {
       "modelId": "poolside/laguna-xs-2.1:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (2 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/\n  packages/forgegreen-campaign/test/r23-report-statistics.test.ts"
+      "classification": "infrastructure_void",
+      "wallClockMs": 2495,
+      "modelCalls": 1,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-779b1138",
+      "reason": "infrastructure_void"
     },
     {
       "modelId": "cohere/north-mini-code:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (2 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/\n  packages/forgegreen-campaign/test/r23-report-statistics.test.ts"
+      "classification": "budget_exhausted",
+      "wallClockMs": 130854,
+      "modelCalls": 25,
+      "totalTokens": 96251,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-85f02fbf",
+      "reason": "budget_exhausted"
     },
     {
       "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (2 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/\n  packages/forgegreen-campaign/test/r23-report-statistics.test.ts"
+      "classification": "verification_failed",
+      "wallClockMs": 46461,
+      "modelCalls": 3,
+      "totalTokens": 9746,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-9f346aa7",
+      "reason": "verification_failed"
     },
     {
       "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (2 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/\n  packages/forgegreen-campaign/test/r23-report-statistics.test.ts"
+      "classification": "infrastructure_void",
+      "wallClockMs": 2849,
+      "modelCalls": 1,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-76959b51",
+      "reason": "infrastructure_void"
     },
     {
       "modelId": "google/gemma-4-26b-a4b-it:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (2 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/\n  packages/forgegreen-campaign/test/r23-report-statistics.test.ts"
+      "classification": "infrastructure_void",
+      "wallClockMs": 2437,
+      "modelCalls": 1,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-0c32420b",
+      "reason": "infrastructure_void"
     },
     {
       "modelId": "google/gemma-4-31b-it:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (2 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/\n  packages/forgegreen-campaign/test/r23-report-statistics.test.ts"
+      "classification": "infrastructure_void",
+      "wallClockMs": 2614,
+      "modelCalls": 1,
+      "totalTokens": null,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-ddedcc22",
+      "reason": "infrastructure_void"
     },
     {
       "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
       "passed": false,
-      "reason": "ineligible: CodeForge tree is dirty (2 file(s)); commit first or pass --allow-dirty (dirty files are recorded in every run):\n  docs/evidence/r23-efficiency-proof/raw/qualification/\n  packages/forgegreen-campaign/test/r23-report-statistics.test.ts"
+      "classification": "verification_failed",
+      "wallClockMs": 26883,
+      "modelCalls": 5,
+      "totalTokens": 17675,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-952fabe4",
+      "reason": "verification_failed"
     }
   ],
   "advancing": []

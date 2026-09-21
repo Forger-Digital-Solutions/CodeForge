@@ -1,0 +1,456 @@
+{
+  "schemaVersion": "r23-run-record-1",
+  "identity": {
+    "benchmarkVersion": "CodeForge-EfficiencyBench-R23",
+    "protocolId": "codeforge-efficiency-protocol-r23",
+    "protocolVersion": "1.0.2",
+    "protocolDigest": "f522cc7ce5355cf72b4ac09c052d5328db45bb3764b79c40270c13ea5faccb1f",
+    "harnessVersion": "r23-harness-1.0.0",
+    "campaignId": "qualification-2026-09-21T01-31-42-756Z",
+    "phase": "qualification",
+    "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8148c4d6",
+    "pairId": "qualification-2026-09-21T01-31-42-756Z-qual-js-return-sign-r1",
+    "taskId": "qual-js-return-sign",
+    "taskClass": "small_fix",
+    "taskLanguage": "javascript",
+    "repoSizeClass": "small",
+    "arm": "optimized",
+    "armConfigurationDigest": "f36a2e6a722cbfa84f91c0ab6d18a01176550d730772f21b6f97cdd7d3a61804",
+    "pairOrder": "optimized-first",
+    "repetition": 1,
+    "codeforgeCommit": "6851e784e79dbedfb24a497d5b1232eef99df6fe",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "ocs/evidence/r23-efficiency-proof/raw/exclusions.jsonl",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/runs.jsonl",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-0e3ecbe7.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-2f243a58.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-449a748a.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-6646a7a6.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-809e5e47.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-d626635d.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-dd70cb9d.json"
+    ],
+    "startingTreeHash": "e0eebea58fa9a15bf096d17af36a5e1ad791ef20f3b97872010fbd505fda8b46",
+    "endingTreeHash": "c3aef6687677df0c5306a3755af303c340b75f87fb1a0e1653e77b5089d29e4a",
+    "taskDigest": "354344f94ade5840faec41bf4c7cb11b630d8aac39f6377be20a0f4554c0b91f",
+    "modelId": "liquid/lfm-2.5-2.6b:free",
+    "providerId": "openrouter",
+    "routeClass": "openrouter_free_deposit_unlocked",
+    "forgeGreenEnabled": true,
+    "subagentsEnabled": true,
+    "topology": "single_agent_run:adaptive",
+    "environmentFingerprint": "c5a1fc7747779d11189ff83540a1f1db03ead53b8d282932ca65b436382a6758",
+    "startedAt": "2026-09-21T01:31:42.778Z",
+    "endedAt": "2026-09-21T01:31:58.484Z"
+  },
+  "outcome": {
+    "runtimeStatus": "blocked",
+    "stopReason": "no_progress_detected",
+    "claimedComplete": false,
+    "verifierRan": true,
+    "verifierPassed": true,
+    "verifierExitCode": 0,
+    "verifierDurationMs": 87,
+    "completionAuthority": "BLOCKED",
+    "completionBlockers": [
+      "plan_steps_unfinished"
+    ],
+    "forbiddenActionObserved": false,
+    "verifiedComplete": false,
+    "falseComplete": false,
+    "classification": "verification_failed",
+    "completionReason": "run ended blocked (no_progress_detected) without a completion claim",
+    "testsPassed": 3,
+    "testsFailed": 0,
+    "filesChanged": [
+      "src/math.js"
+    ],
+    "linesAdded": 1,
+    "linesRemoved": 1,
+    "runtimeError": "AGENT_NO_PROGRESS_DETECTED"
+  },
+  "inference": {
+    "totalInputTokens": {
+      "value": 15794,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "totalOutputTokens": {
+      "value": 761,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "totalTokens": {
+      "value": 16555,
+      "source": "DERIVED",
+      "origin": "PROVIDER",
+      "note": "input + output"
+    },
+    "cachedInputTokens": {
+      "value": 12896,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "uncachedInputTokens": {
+      "value": 2898,
+      "source": "DERIVED",
+      "origin": "PROVIDER",
+      "note": "input − cached"
+    },
+    "reasoningTokens": {
+      "value": 530,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "modelCalls": 6,
+    "callsWithProviderUsage": 6,
+    "failedModelCalls": 0,
+    "retriedModelCalls": 0,
+    "rateLimitedCalls": 0,
+    "providerFailovers": 0,
+    "modelFailovers": 0,
+    "duplicateRequestsSuppressed": 0,
+    "calls": [
+      {
+        "callIndex": 0,
+        "providerId": "openrouter",
+        "requestedModelId": "liquid/lfm-2.5-2.6b:free",
+        "startedAt": "2026-09-21T01:31:43.354Z",
+        "endedAt": "2026-09-21T01:31:45.635Z",
+        "latencyMs": 2281,
+        "timeToFirstEventMs": 2155,
+        "requestBytes": 9687,
+        "responseBytes": 79,
+        "messageCount": 2,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2442,
+        "completionTokens": 177,
+        "totalTokens": 2619,
+        "cachedPromptTokens": 0,
+        "reasoningTokens": 144,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "fe8a0c159b43bd0f332a04453953de0b40a6b8dd7414afdd354c364a17298b11"
+      },
+      {
+        "callIndex": 1,
+        "providerId": "openrouter",
+        "requestedModelId": "liquid/lfm-2.5-2.6b:free",
+        "startedAt": "2026-09-21T01:31:45.665Z",
+        "endedAt": "2026-09-21T01:31:47.086Z",
+        "latencyMs": 1421,
+        "timeToFirstEventMs": 1285,
+        "requestBytes": 10060,
+        "responseBytes": 58,
+        "messageCount": 4,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 1,
+          "tool": 1
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2500,
+        "completionTokens": 82,
+        "totalTokens": 2582,
+        "cachedPromptTokens": 2432,
+        "reasoningTokens": 54,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "c6ed19c6be607f98da453ac913beb5283cbac5c8daf729f196aebae83dd80552"
+      },
+      {
+        "callIndex": 2,
+        "providerId": "openrouter",
+        "requestedModelId": "liquid/lfm-2.5-2.6b:free",
+        "startedAt": "2026-09-21T01:31:47.114Z",
+        "endedAt": "2026-09-21T01:31:47.941Z",
+        "latencyMs": 827,
+        "timeToFirstEventMs": 825,
+        "requestBytes": 10433,
+        "responseBytes": 23,
+        "messageCount": 6,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 2,
+          "tool": 2
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2537,
+        "completionTokens": 41,
+        "totalTokens": 2578,
+        "cachedPromptTokens": 2496,
+        "reasoningTokens": 26,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "7d12fa5038fc0282b77172a72cb424168a771c754e9ed6f9dfd96b61b1939c5a"
+      },
+      {
+        "callIndex": 3,
+        "providerId": "openrouter",
+        "requestedModelId": "liquid/lfm-2.5-2.6b:free",
+        "startedAt": "2026-09-21T01:31:47.970Z",
+        "endedAt": "2026-09-21T01:31:50.055Z",
+        "latencyMs": 2085,
+        "timeToFirstEventMs": 1194,
+        "requestBytes": 10866,
+        "responseBytes": 231,
+        "messageCount": 8,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 3,
+          "tool": 3
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2632,
+        "completionTokens": 121,
+        "totalTokens": 2753,
+        "cachedPromptTokens": 2528,
+        "reasoningTokens": 45,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "5859ce13fb4527cff4597cd0ad24eff7633278f78a9245a2af11cbe647ac7050"
+      },
+      {
+        "callIndex": 4,
+        "providerId": "openrouter",
+        "requestedModelId": "liquid/lfm-2.5-2.6b:free",
+        "startedAt": "2026-09-21T01:31:50.068Z",
+        "endedAt": "2026-09-21T01:31:54.232Z",
+        "latencyMs": 4164,
+        "timeToFirstEventMs": 4077,
+        "requestBytes": 11737,
+        "responseBytes": 23,
+        "messageCount": 10,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 4,
+          "tool": 4
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2825,
+        "completionTokens": 201,
+        "totalTokens": 3026,
+        "cachedPromptTokens": 2624,
+        "reasoningTokens": 185,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "ce9bab73077714713a15df323ab9d2d0e136211877e33bce6f74a656e603d094"
+      },
+      {
+        "callIndex": 5,
+        "providerId": "openrouter",
+        "requestedModelId": "liquid/lfm-2.5-2.6b:free",
+        "startedAt": "2026-09-21T01:31:54.481Z",
+        "endedAt": "2026-09-21T01:31:56.683Z",
+        "latencyMs": 2202,
+        "timeToFirstEventMs": 1510,
+        "requestBytes": 12027,
+        "responseBytes": 246,
+        "messageCount": 12,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 5,
+          "tool": 5
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2858,
+        "completionTokens": 139,
+        "totalTokens": 2997,
+        "cachedPromptTokens": 2816,
+        "reasoningTokens": 76,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "7a951841e2d53372b8678b96c9b57cc74f83dd7e13a052371294b7e4fe37682b"
+      }
+    ]
+  },
+  "context": {
+    "transmittedContextBytes": 64810,
+    "finalConversationBytes": 3824,
+    "providerStatelessnessRepeatBytes": 60986,
+    "avoidableDuplicateBytes": 0,
+    "avoidableDuplicateTokens": {
+      "value": 0,
+      "source": "DERIVED",
+      "origin": "HARNESS",
+      "note": "bytes × run prompt-token/byte ratio"
+    },
+    "avoidableDuplicateEvents": [],
+    "avoidableDuplicateBytesWithinRole": 0,
+    "avoidableDuplicateBytesCrossRole": 0,
+    "finalComposition": {
+      "systemBytes": 1732,
+      "userTaskBytes": 1210,
+      "assistantBytes": 162,
+      "toolResultBytes": 720,
+      "toolResultBytesByTool": {
+        "edit_file": 54,
+        "read_file": 636,
+        "repo_tests": 30
+      },
+      "otherBytes": 0
+    },
+    "bootstrapContextBytes": 2943,
+    "bootstrapSelectedFiles": 2,
+    "bootstrapCandidateFiles": 3,
+    "canonicalCacheHits": 0,
+    "canonicalCacheMisses": 1,
+    "toolOutputBytesAvoidedByCompression": 0,
+    "providerCacheHitCalls": 5,
+    "promptTokensPerByte": 0.24369696034562568
+  },
+  "activity": {
+    "role": "coder",
+    "toolCallsRequested": 6,
+    "toolCallsExecuted": 4,
+    "toolCallsFailed": 1,
+    "duplicateActionsSuppressed": 1,
+    "byTool": {
+      "edit_file": {
+        "requested": 1,
+        "executed": 1,
+        "suppressed": 0
+      },
+      "read_file": {
+        "requested": 4,
+        "executed": 2,
+        "suppressed": 0
+      },
+      "repo_tests": {
+        "requested": 1,
+        "executed": 1,
+        "suppressed": 0
+      }
+    },
+    "fileReads": 4,
+    "fileWrites": 1,
+    "searches": 1,
+    "listings": 0,
+    "shellCalls": 0,
+    "browserCalls": 0,
+    "mcpCalls": 0,
+    "pluginCalls": 0,
+    "subagentCount": 0,
+    "subagentModelCalls": 0
+  },
+  "time": {
+    "wallClockMs": 15624,
+    "activeAgentMs": 14065,
+    "modelWaitMs": 12980,
+    "toolMs": {
+      "value": 231,
+      "source": "OBSERVED",
+      "origin": "RUNTIME"
+    },
+    "verificationMs": 1413,
+    "rateLimitWaitMs": 0,
+    "pacingWaitMs": 0,
+    "forgeGreenOverheadMs": {
+      "value": 0.5191999999369727,
+      "source": "OBSERVED",
+      "origin": "RUNTIME"
+    }
+  },
+  "economics": {
+    "pricingSnapshotId": "openrouter-2026-09-21",
+    "actualCostUsd": {
+      "value": 0,
+      "source": "OBSERVED",
+      "origin": "PROVIDER",
+      "note": "Σ provider-reported per-call cost"
+    },
+    "equivalentPublicApiCostUsd": {
+      "source": "UNKNOWN",
+      "note": "no public-API equivalent declared for openrouter::liquid/lfm-2.5-2.6b:free"
+    },
+    "equivalentPublicApiPriceRef": "",
+    "equivalentMarketCostUsd": {
+      "value": 0.0159852,
+      "source": "DERIVED",
+      "origin": "SNAPSHOT",
+      "note": "tokens × openrouter::anthropic/claude-sonnet-5"
+    },
+    "equivalentMarketPriceRef": "openrouter::anthropic/claude-sonnet-5"
+  },
+  "resources": {
+    "cpuUserMs": {
+      "value": 125,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "cpuSystemMs": {
+      "value": 125,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "peakRssBytes": {
+      "value": 194404352,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerResponseBytes": {
+      "value": 660,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerRequestBytes": {
+      "value": 64810,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "gpuPowerDrawWattsIdleSample": {
+      "value": 4.16,
+      "source": "OBSERVED",
+      "origin": "HARNESS",
+      "note": "single nvidia-smi sample; local GPU is idle — not inference"
+    },
+    "sampler": "node-process-cpu-rss-1 (harness process only; tool child processes excluded)"
+  },
+  "telemetry": {
+    "forgeGreenR0TelemetryId": "fg-r0-259110adc9e5df5f61bf4bd345339935",
+    "efficiencyReasonCodes": [
+      "stable_prefix_reused",
+      "provider_prompt_cache_reported",
+      "duplicate_action_suppressed",
+      "no_progress_interrupted",
+      "canonical_cache_miss"
+    ]
+  },
+  "notes": [
+    "inert switches on this execution path: memoryDelivery (mission memory is not used by the autonomous run path) and verificationReuse (FG-12F has no production caller) — recorded for provenance, identical in both arms"
+  ]
+}
