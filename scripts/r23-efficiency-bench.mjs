@@ -46,7 +46,7 @@ const MANIFEST_PATH = path.join(ROOT, "benchmarks", "r23", "manifest.json");
 const EVIDENCE = path.join(ROOT, "docs", "evidence", "r23-efficiency-proof");
 const PROTOCOL_PATH = path.join(ROOT, "docs", "benchmarks", "codeforge-efficiency-protocol-r23.md");
 const PROTOCOL_DIGEST_PATH = path.join(EVIDENCE, "protocol", "PROTOCOL-DIGEST.txt");
-const PROTOCOL_VERSION = "1.0.4";
+const PROTOCOL_VERSION = "1.0.5";
 
 // ---------------------------------------------------------------------------------------------
 // CLI
