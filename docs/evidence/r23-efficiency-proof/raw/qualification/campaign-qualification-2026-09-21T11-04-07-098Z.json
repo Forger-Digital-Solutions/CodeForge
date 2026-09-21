@@ -1,0 +1,103 @@
+{
+  "campaignId": "qualification-2026-09-21T11-04-07-098Z",
+  "phase": "qualification",
+  "recordedAt": "2026-09-21T11:28:34.479Z",
+  "model": "openai/gpt-oss-20b",
+  "providerId": "groq",
+  "pin": {
+    "id": "openai/gpt-oss-20b",
+    "name": "openai/gpt-oss-20b",
+    "contextLength": 131072,
+    "ownedBy": "OpenAI",
+    "checkedAt": "2026-09-21T11:04:07.072Z",
+    "pricingVerification": "provider-free-tier-policy + ForgeZero FREE_ALLOWANCE admission + live rate-limit headers (§2.1b)",
+    "quotaAtPin": {
+      "providerId": "groq",
+      "status": 200,
+      "requests": {
+        "limit": 1000,
+        "remaining": 998,
+        "reset": "2m52.8s"
+      },
+      "tokens": {
+        "limit": 8000,
+        "remaining": 7797,
+        "reset": "1.522s"
+      },
+      "observedAt": "2026-09-21T11:04:07.071Z"
+    },
+    "toolProbe": {
+      "toolCallsEmitted": 1,
+      "usage": {
+        "queue_time": 0.092792993,
+        "prompt_tokens": 139,
+        "prompt_time": 0.007388766,
+        "completion_tokens": 52,
+        "completion_time": 0.067102571,
+        "total_tokens": 191,
+        "total_time": 0.074491337,
+        "completion_tokens_details": {
+          "reasoning_tokens": 30
+        }
+      }
+    }
+  },
+  "allowanceAtStart": {
+    "limit": 1000,
+    "used": 2,
+    "remaining": 998,
+    "remainingTokens": 7797,
+    "dailyTokensUsed": 0,
+    "dailyTokenBucketLevel": 200000,
+    "dailyTokenBucketModel": "token bucket per model (openai/gpt-oss-20b) cap=200000 refill=cap/24h replayed over ledger (§6.3 v1.0.6)",
+    "source": "x-ratelimit headers (live adapter observation)",
+    "checkedAt": "2026-09-21T11:04:07.097Z"
+  },
+  "identity": {
+    "protocolVersion": "1.0.6",
+    "protocolDigest": "366035299fc1e50ee68dfa96e9d2afeb7cf68986864fc2bac5d33bc1f10104b8",
+    "codeforgeCommit": "8a41bf7a06c02ab679d9911cfe6efa5a2229dd44",
+    "codeforgeTreeDirty": false,
+    "environmentFingerprint": "b8a9de08aba7fde8837dee43f6d38e3d63f85bc03bc16795314a1afd64d5d3cd",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "stopped": null,
+  "runs": [
+    {
+      "taskId": "qual-js-missing-export",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 21,
+      "totalTokens": null,
+      "wallClockMs": 733134,
+      "runId": "r23-qualification-qual-js-missing-export-optimized-r1-96d0dd54"
+    },
+    {
+      "taskId": "qual-js-off-by-one",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 11,
+      "totalTokens": null,
+      "wallClockMs": 423226,
+      "runId": "r23-qualification-qual-js-off-by-one-optimized-r1-e96d06d8"
+    },
+    {
+      "taskId": "qual-js-return-sign",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 9,
+      "totalTokens": null,
+      "wallClockMs": 307232,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-5adb11f4"
+    }
+  ]
+}

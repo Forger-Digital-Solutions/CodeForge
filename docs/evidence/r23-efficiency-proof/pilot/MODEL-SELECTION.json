@@ -1,32 +1,34 @@
 {
-  "recordedAt": "2026-09-21T10:55:05.320Z",
+  "recordedAt": "2026-09-21T11:28:34.483Z",
   "protocolVersion": "1.0.6",
   "protocolRule": "§2.2 — reliability and capability only; tokens are not a scoring input; winner requires all tasks verified, zero upstream failures, zero malformed runs",
   "candidates": [
     {
-      "modelId": "openai/gpt-oss-120b",
+      "modelId": "openai/gpt-oss-20b",
       "providerId": "groq",
       "eligible": true,
-      "tasks": 1,
+      "tasks": 3,
       "tasksExpected": 3,
-      "verified": 0,
+      "verified": 3,
       "falseComplete": 0,
       "hangsOrUpstreamFailures": 0,
-      "malformedToolCallRuns": 0,
-      "medianWallMs": 732360,
-      "medianCalls": 23,
+      "malformedToolCallRuns": 2,
+      "medianWallMs": 423226,
+      "medianCalls": 11,
       "runIds": [
-        "r23-qualification-qual-js-missing-export-optimized-r1-f6ade2e1"
+        "r23-qualification-qual-js-missing-export-optimized-r1-96d0dd54",
+        "r23-qualification-qual-js-off-by-one-optimized-r1-e96d06d8",
+        "r23-qualification-qual-js-return-sign-optimized-r1-5adb11f4"
       ],
-      "stopped": "allowance",
+      "stopped": null,
       "qualified": false
     }
   ],
   "winner": null,
   "winnerProvider": null,
-  "leader": "openai/gpt-oss-120b",
+  "leader": "openai/gpt-oss-20b",
   "ranking": [
-    "openai/gpt-oss-120b"
+    "openai/gpt-oss-20b"
   ],
   "previousRounds": [
     {
@@ -324,6 +326,30 @@
             "r23-qualification-qual-js-return-sign-optimized-r1-53f90fde"
           ],
           "stopped": null,
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-09-21T10:55:05.320Z",
+      "winner": null,
+      "candidates": [
+        {
+          "modelId": "openai/gpt-oss-120b",
+          "providerId": "groq",
+          "eligible": true,
+          "tasks": 1,
+          "tasksExpected": 3,
+          "verified": 0,
+          "falseComplete": 0,
+          "hangsOrUpstreamFailures": 0,
+          "malformedToolCallRuns": 0,
+          "medianWallMs": 732360,
+          "medianCalls": 23,
+          "runIds": [
+            "r23-qualification-qual-js-missing-export-optimized-r1-f6ade2e1"
+          ],
+          "stopped": "allowance",
           "qualified": false
         }
       ]
