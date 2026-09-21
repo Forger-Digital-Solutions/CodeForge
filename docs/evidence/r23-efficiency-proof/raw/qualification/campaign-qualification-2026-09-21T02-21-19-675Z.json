@@ -1,0 +1,90 @@
+{
+  "campaignId": "qualification-2026-09-21T02-21-19-675Z",
+  "phase": "qualification",
+  "recordedAt": "2026-09-21T02:25:32.828Z",
+  "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+  "pin": {
+    "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+    "name": "NVIDIA: Nemotron 3 Nano Omni (free)",
+    "contextLength": 256000,
+    "pricing": {
+      "prompt": "0",
+      "completion": "0"
+    },
+    "supportedParameters": [
+      "include_reasoning",
+      "max_tokens",
+      "reasoning",
+      "seed",
+      "temperature",
+      "tool_choice",
+      "tools",
+      "top_p"
+    ],
+    "checkedAt": "2026-09-21T02:21:19.646Z"
+  },
+  "allowanceAtStart": {
+    "limit": 1000,
+    "used": 103,
+    "remaining": 897,
+    "usage": 0,
+    "usageDaily": 0,
+    "checkedAt": "2026-09-21T02:21:19.674Z"
+  },
+  "identity": {
+    "protocolVersion": "1.0.3",
+    "protocolDigest": "0f9263db999dd0b7c0d2c9d461d80cb0c50f64a300d559474463038aec057531",
+    "codeforgeCommit": "74fcfeacdb802e7b46b6c5e81e3e03bd725d0b7b",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "docs/evidence/r23-efficiency-proof/pilot/MODEL-PRESCREEN.json",
+      "docs/evidence/r23-efficiency-proof/raw/exclusions.jsonl",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/runs.jsonl",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-1cb48a49.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-7032716a.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-787597a5.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-93c1ce27.json"
+    ],
+    "environmentFingerprint": "5cb9bd168fb34551410dd871a74a22892f1b30b12826215b1567a067b6cedebd",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "stopped": null,
+  "runs": [
+    {
+      "taskId": "qual-js-missing-export",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 19,
+      "totalTokens": null,
+      "wallClockMs": 136251,
+      "runId": "r23-qualification-qual-js-missing-export-optimized-r1-ae7195ff"
+    },
+    {
+      "taskId": "qual-js-off-by-one",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 6,
+      "totalTokens": null,
+      "wallClockMs": 108232,
+      "runId": "r23-qualification-qual-js-off-by-one-optimized-r1-535fcc46"
+    },
+    {
+      "taskId": "qual-js-return-sign",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 4,
+      "totalTokens": null,
+      "wallClockMs": 8085,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-99bcd49b"
+    }
+  ]
+}

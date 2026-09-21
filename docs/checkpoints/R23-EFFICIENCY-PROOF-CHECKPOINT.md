@@ -1,6 +1,6 @@
 # R23 Efficiency Proof — Continuation Checkpoint
 
-Updated: 2026-09-21 ~22:20 local (M14/M14A/M14B landed; supply still blocked)
+Updated: 2026-09-21 ~22:30 local (M14/M14A/M14B/M14C + §16 note landed; supply still blocked)
 Branch: `forger-digital-solutions-forgegreen-certified`
 Base: `ae2aa87` (R22 closure) — verified clean at M0.
 
@@ -8,9 +8,9 @@ Base: `ae2aa87` (R22 closure) — verified clean at M0.
 
 | | |
 |---|---|
-| HEAD | `a0eea9f` R23 M5: prescreen re-screen + qualification round; harness fixes; protocol v1.0.3 (M14 commit pending — see below) |
-| Previous | `4299036` complete prescreen (0/19) · `6851e78` stats tests + interrupted prescreen · `70dfbf8` M5 prep · `7969481` M3-M4 · `1ada7c0` M0-M2 · `ae2aa87` R22 closure |
-| Dirty state | M14/M14A/M14B working set uncommitted: `forge-zero` (SupplyClass/QuotaPeriod/CapacityWindow/Ollama-local), `eight-bit` (route-ledger + measured-health raw fields + 8 tests), `model-registry` (github-copilot definition + test), `supply/` evidence notes. |
+| HEAD | `74fcfea` R23 M14/M14A/M14B: route ledger, Copilot entitlement surface, Ollama local domain |
+| Previous | `a0eea9f` M5 re-screen+qualification · `4299036` prescreen (0/19) · `6851e78` stats tests · `70dfbf8` M5 prep · `7969481` M3-M4 · `1ada7c0` M0-M2 · `ae2aa87` R22 closure |
+| Dirty state | post-commit: new live qualification evidence (`raw/qualification/runs.jsonl` + campaign file), `MODEL-PRESCREEN.json` re-screen attempts, `MODEL-SELECTION.json`, `supply/provider-inventory-raw.json`, `instrumentation/R23-INSTRUMENTATION-CERTIFICATION.md` |
 | Canary status | Canonical suite green at recovery: 421 files / 3315 tests / 0 failures / 471 s. Targeted re-runs after M14: forge-zero 172 pass / eight-bit 172 pass / model-registry 85 pass — 0 failures. |
 
 ## Completed phases
@@ -25,17 +25,19 @@ Base: `ae2aa87` (R22 closure) — verified clean at M0.
 - **M14 8-Bit route ledger** — `eight-bit/src/route-ledger.ts`: consolidated ledger rows (supply class, quota owner/scope/period, remaining/rate limits, reset/expiry, health, latency, 429-rate, lifecycle, terms/production/multi-tenant status, role suitability, on-exhaustion) + `findOwnershipViolations` + `aggregateSupplyDomains`. New `SPONSORED_FREE` supply class (flag-gated, not zero-cash), `QuotaPeriod`, `expiresAt` on `CapacityWindow`. Evidence: `supply/M14-ROUTE-LEDGER.md`; 8 tests.
 - **M14A GitHub Copilot entitlement** — `@github/copilot-sdk` v1.0.14 confirmed official: `account.getQuota`, `models.list`, per-call `assistant.usage` events, per-user OAuth tokens (user's own subscription billed). Provider definition corrected `NOT_ALLOWED`→`LEGAL_REVIEW_REQUIRED`, `FREE_ACCOUNT_ENTITLEMENT`, `userConnectedFree` profile behind `githubCopilotUserEntitlement` flag; `implemented:false`. Evidence: `supply/M14A-GITHUB-COPILOT-ENTITLEMENT.md`.
 - **M14B Ollama entitlement accounting** — cloud path pre-existing; `OLLAMA_LOCAL` domain added (`DISTRIBUTED_USER_FREE`/`DEVICE` scope, unreachable→0 remaining, routes constructed ineligible pending owner policy on local inference). Evidence: `supply/M14B-OLLAMA-ENTITLEMENT.md`; +3 tests.
+- **M14C Managed provider inventory** — `supply/provider-inventory-raw.json` (31 providers from live dist) + `supply/M14C-MANAGED-PROVIDER-INVENTORY.md`: 10 zero-cash+CLEARED+implemented candidates, tier breakdown, env-credential owner-dev supply list.
+- **§16 certification note** — `instrumentation/R23-INSTRUMENTATION-CERTIFICATION.md`: **R23_INSTRUMENTATION_NOT_READY** — 7/8 criteria proven; provider-reported usage 72.1% vs ≥98% bar (supply-side, UNKNOWN preserved); counter reconciliation proven exact 124==124 with a new ~2-min counter-lag caveat.
 
 ## Live capacity facts (measured 2026-09-21 UTC)
 
-- OpenRouter `free_model_daily_requests`: limit 1000/day (resets 00:00 UTC), `used: 87` → ~913 remaining at last check. Receipt reconciliation exact: 87 served ledger calls == `used: 87`.
+- OpenRouter `free_model_daily_requests`: limit 1000/day (resets 00:00 UTC). Cumulative reconciliation exact: **124 served ledger calls == `used: 124`** (02:28:50Z). The counter lags served calls ~1–2 min (observed 102 at 02:26 mid-settlement) — reconciliation reads must wait for settlement.
 - Deposit never consumed: exact-pin `:free`, $0/$0 re-checked per run, any `actual_cost > 0` halts.
 - **Upstream :free capacity saturated this evening** (US peak): upstream 429s, Nvidia 502 "worker limit 16/16", 2 thinkingmachines models permanently 403 (agentic-harness-only).
 
 ## Current benchmark status
 
-- **Prescreen:** 19 candidates → `pilot/MODEL-PRESCREEN.json`. 1 passer: `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`. Still retryable (infra-void): `qwen/qwen3.8-27b`, `poolside/laguna-xs-2.1`, `google/gemma-4-26b-a4b-it`, `google/gemma-4-31b-it`.
-- **Qualification:** nemotron 1/6 verified across 2 rounds (upstream 502s); `MODEL-SELECTION.json` → **winner: null**, leader nemotron. Bar = §2.2.
+- **Prescreen:** 19 candidates → `pilot/MODEL-PRESCREEN.json`. 1 passer: `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`. Re-screen 02:20Z: qwen3.8-27b now `provider_failure` (real attempt, excluded); poolside/gemma-26b/gemma-31b still instant `infrastructure_void`. Live catalog unchanged (same 19 tool-capable `:free`).
+- **Qualification:** nemotron cumulative 2/9 verified across 3 rounds (latest 02:21Z: `qual-js-missing-export` PASS 19 calls/136s, two provider_failures); `MODEL-SELECTION.json` → **winner: null**, leader nemotron.
 - **No pilot run yet** — pilot/main refuse without a winner.
 
 ## Harness notes (fixed this session)

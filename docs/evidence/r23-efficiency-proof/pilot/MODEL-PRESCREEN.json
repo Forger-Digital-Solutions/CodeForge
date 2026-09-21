@@ -1,6 +1,6 @@
 {
-  "recordedAt": "2026-09-21T01:48:44.377Z",
-  "protocolRule": "§2.2 pre-screen (v1.0.2): one single-agent qualification task; passers ranked by wall time; outcome-blind cap; infrastructure_void candidates may be re-screened (§6.3), all attempts preserved",
+  "recordedAt": "2026-09-21T02:20:54.712Z",
+  "protocolRule": "§2.2 pre-screen (v1.0.3): one single-agent qualification task; passers ranked by wall time; outcome-blind cap; infrastructure_void candidates may be re-screened (§6.3), all attempts preserved",
   "task": "qual-js-return-sign",
   "cap": 6,
   "candidates": [
@@ -117,12 +117,12 @@
     {
       "modelId": "qwen/qwen3.8-27b:free",
       "passed": false,
-      "classification": "infrastructure_void",
-      "wallClockMs": 2708,
-      "modelCalls": 1,
+      "classification": "provider_failure",
+      "wallClockMs": 16801,
+      "modelCalls": 2,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8ff7c293",
-      "reason": "infrastructure_void",
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-93c1ce27",
+      "reason": "provider_failure",
       "attempts": [
         {
           "recordedAt": "2026-09-21T01:39:06.845Z",
@@ -143,6 +143,16 @@
           "totalTokens": null,
           "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8ff7c293",
           "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T02:20:54.712Z",
+          "passed": false,
+          "classification": "provider_failure",
+          "wallClockMs": 16801,
+          "modelCalls": 2,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-93c1ce27",
+          "reason": "provider_failure"
         }
       ]
     },
@@ -292,10 +302,10 @@
       "modelId": "poolside/laguna-xs-2.1:free",
       "passed": false,
       "classification": "infrastructure_void",
-      "wallClockMs": 2517,
+      "wallClockMs": 2563,
       "modelCalls": 1,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-b813b537",
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-787597a5",
       "reason": "infrastructure_void",
       "attempts": [
         {
@@ -316,6 +326,16 @@
           "modelCalls": 1,
           "totalTokens": null,
           "runId": "r23-qualification-qual-js-return-sign-optimized-r1-b813b537",
+          "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T02:20:54.712Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2563,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-787597a5",
           "reason": "infrastructure_void"
         }
       ]
@@ -400,10 +420,10 @@
       "modelId": "google/gemma-4-26b-a4b-it:free",
       "passed": false,
       "classification": "infrastructure_void",
-      "wallClockMs": 2461,
+      "wallClockMs": 2559,
       "modelCalls": 1,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8caeea51",
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-7032716a",
       "reason": "infrastructure_void",
       "attempts": [
         {
@@ -425,6 +445,16 @@
           "totalTokens": null,
           "runId": "r23-qualification-qual-js-return-sign-optimized-r1-8caeea51",
           "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T02:20:54.712Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2559,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-7032716a",
+          "reason": "infrastructure_void"
         }
       ]
     },
@@ -432,10 +462,10 @@
       "modelId": "google/gemma-4-31b-it:free",
       "passed": false,
       "classification": "infrastructure_void",
-      "wallClockMs": 2413,
+      "wallClockMs": 2531,
       "modelCalls": 1,
       "totalTokens": null,
-      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-b2a45337",
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-1cb48a49",
       "reason": "infrastructure_void",
       "attempts": [
         {
@@ -456,6 +486,16 @@
           "modelCalls": 1,
           "totalTokens": null,
           "runId": "r23-qualification-qual-js-return-sign-optimized-r1-b2a45337",
+          "reason": "infrastructure_void"
+        },
+        {
+          "recordedAt": "2026-09-21T02:20:54.712Z",
+          "passed": false,
+          "classification": "infrastructure_void",
+          "wallClockMs": 2531,
+          "modelCalls": 1,
+          "totalTokens": null,
+          "runId": "r23-qualification-qual-js-return-sign-optimized-r1-1cb48a49",
           "reason": "infrastructure_void"
         }
       ]
