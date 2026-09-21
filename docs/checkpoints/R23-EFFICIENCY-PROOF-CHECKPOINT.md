@@ -45,7 +45,7 @@ Base: `ae2aa87` (R22 closure) — verified clean at M0.
 - **Groq qualification (v1.0.4 substitute route):** `groq::openai/gpt-oss-120b` — **0/4 verified across 2 rounds**, all `provider_failure` on `STREAM_INTERRUPTED` (~13% mid-stream drop, 7/52 calls in round 1). **Verifier passed on 3/4 runs before the terminal drop** — capability proven, free-tier transport reliability failed. 100% usage coverage on all served calls. Round 2 halted by the daily-token gate (conservation working).
 - **Other managed routes probed:** Cerebras 402 + `llama-3.3-70b` 404; Mistral 429 (0 req/min); Gemini 403; GitHub Models 410 (retirement brownout — M14A addendum).
 - **No pilot run yet** — pilot/main refuse without a winner.
-- **Subagent failover gap (honest product evidence):** a dropped stream on a Reviewer subagent turn terminates the run (`REVIEWER_FAILED`) — subagent calls bypass the same-route retry boundary that protects top-level turns. Recorded, not papered over.
+- **Subagent failure mechanism (traced):** no bypass exists — `runAgentLoop`'s stream catch is the shared safe-failover boundary for top-level AND child agents; under route-pin the dropped stream retried same-route via `bounded_retry`/capacity-blip path until the 3-consecutive-failure escalation bound. `REVIEWER_FAILED` was the terminal symptom when a drop streak (cross-run via route health) landed during the reviewer phase. Bounded retry IS working (verified runs carry retried failed calls in ledger); ~13% drop rate still kills ~2/3 of 20-call runs through 3-in-a-row bursts.
 
 ## Harness notes (fixed this session)
 
