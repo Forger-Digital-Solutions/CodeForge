@@ -187,6 +187,10 @@ export interface CapacityReservationRequest {
   providerUnits?: number;
   /** Stable owner identity required when reserving a per-user pool. */
   capacityIdentity?: string;
+  /** Data class of the work being reserved. The reserve-time eligibility check must see
+   *  the same context the supply plan admitted under, or a public-code request plans
+   *  eligible and then fails closed against a private-code default. */
+  dataContext?: RouteDataContext;
   isNewUser: boolean;
   priority: "first_run" | "normal" | "recovery";
   createdAt: string;

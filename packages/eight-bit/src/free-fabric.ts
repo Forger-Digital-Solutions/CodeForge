@@ -284,6 +284,9 @@ export class FreeFabric {
         // the candidate only reached this point because ownership was already verified.
         // Shared routes carry no owner identity and none is stamped onto the reservation.
         capacityIdentity: entry.quotaOwnerIdentity,
+        // The reservation re-checks route eligibility — it must judge under the same data
+        // class the plan admitted this request under.
+        dataContext,
         isNewUser: request.isNewUser ?? false,
         priority: request.isNewUser ? "first_run" : "normal",
         createdAt: generatedAt,

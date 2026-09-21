@@ -67,7 +67,7 @@ export class CapacityReservationLedger {
     let protectedByFirstRunReserve = false;
     for (const routeId of request.routeIds) {
       const route = this.routes.get(routeId);
-      if (!route || !route.roles.includes(request.role) || freeRouteExclusionReason(route, this.policy, this.dataContext) !== undefined) continue;
+      if (!route || !route.roles.includes(request.role) || freeRouteExclusionReason(route, this.policy, request.dataContext ?? this.dataContext) !== undefined) continue;
       if (route.capacityPoolScope === "PER_USER_POOL" && route.capacityIdentity !== undefined && request.capacityIdentity !== route.capacityIdentity) continue;
       sawEligibleRoute = true;
       // Two model routes backed by one provider account must contend for the same reservation
