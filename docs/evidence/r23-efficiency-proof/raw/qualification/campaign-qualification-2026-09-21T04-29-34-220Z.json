@@ -1,0 +1,90 @@
+{
+  "campaignId": "qualification-2026-09-21T04-29-34-220Z",
+  "phase": "qualification",
+  "recordedAt": "2026-09-21T04:31:03.326Z",
+  "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+  "providerId": "openrouter",
+  "pin": {
+    "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+    "name": "NVIDIA: Nemotron 3 Nano Omni (free)",
+    "contextLength": 256000,
+    "pricing": {
+      "prompt": "0",
+      "completion": "0"
+    },
+    "supportedParameters": [
+      "include_reasoning",
+      "max_tokens",
+      "reasoning",
+      "seed",
+      "temperature",
+      "tool_choice",
+      "tools",
+      "top_p"
+    ],
+    "checkedAt": "2026-09-21T04:29:34.116Z"
+  },
+  "allowanceAtStart": {
+    "limit": 1000,
+    "used": 207,
+    "remaining": 793,
+    "usage": 0,
+    "usageDaily": 0,
+    "checkedAt": "2026-09-21T04:29:34.213Z"
+  },
+  "identity": {
+    "protocolVersion": "1.0.5",
+    "protocolDigest": "dc39943cc965233a4402d39e87f887810484d264773d0c5f823c646540771773",
+    "codeforgeCommit": "5e86da1fb43666f86502a639e37f440af447382c",
+    "codeforgeTreeDirty": true,
+    "dirtyFiles": [
+      "docs/evidence/r23-efficiency-proof/pilot/MODEL-SELECTION.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/runs.jsonl",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/campaign-qualification-2026-09-21T04-20-56-285Z.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-missing-export-optimized-r1-e94242f8.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-off-by-one-optimized-r1-c5d4c7d8.json",
+      "docs/evidence/r23-efficiency-proof/raw/qualification/r23-qualification-qual-js-return-sign-optimized-r1-a921aed4.json"
+    ],
+    "environmentFingerprint": "f4ab42fe53dd3f265c5c0bce32f880d48025467e99d36ff0535f339e7dd20489",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "stopped": null,
+  "runs": [
+    {
+      "taskId": "qual-js-missing-export",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 8,
+      "totalTokens": null,
+      "wallClockMs": 44566,
+      "runId": "r23-qualification-qual-js-missing-export-optimized-r1-3c7ed449"
+    },
+    {
+      "taskId": "qual-js-off-by-one",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 4,
+      "totalTokens": null,
+      "wallClockMs": 22054,
+      "runId": "r23-qualification-qual-js-off-by-one-optimized-r1-2350d02a"
+    },
+    {
+      "taskId": "qual-js-return-sign",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "infrastructure_void",
+      "modelCalls": 3,
+      "totalTokens": null,
+      "wallClockMs": 21384,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-53f90fde"
+    }
+  ]
+}

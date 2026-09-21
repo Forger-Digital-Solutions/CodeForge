@@ -1,32 +1,34 @@
 {
-  "recordedAt": "2026-09-21T04:12:47.590Z",
-  "protocolVersion": "1.0.4",
+  "recordedAt": "2026-09-21T04:31:03.332Z",
+  "protocolVersion": "1.0.5",
   "protocolRule": "§2.2 — reliability and capability only; tokens are not a scoring input; winner requires all tasks verified, zero upstream failures, zero malformed runs",
   "candidates": [
     {
-      "modelId": "openai/gpt-oss-120b",
-      "providerId": "groq",
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "providerId": "openrouter",
       "eligible": true,
-      "tasks": 1,
+      "tasks": 3,
       "tasksExpected": 3,
       "verified": 0,
       "falseComplete": 0,
-      "hangsOrUpstreamFailures": 0,
+      "hangsOrUpstreamFailures": 3,
       "malformedToolCallRuns": 0,
-      "medianWallMs": 675168,
-      "medianCalls": 18,
+      "medianWallMs": 22054,
+      "medianCalls": 4,
       "runIds": [
-        "r23-qualification-qual-js-missing-export-optimized-r1-63e2272a"
+        "r23-qualification-qual-js-missing-export-optimized-r1-3c7ed449",
+        "r23-qualification-qual-js-off-by-one-optimized-r1-2350d02a",
+        "r23-qualification-qual-js-return-sign-optimized-r1-53f90fde"
       ],
-      "stopped": "allowance",
+      "stopped": null,
       "qualified": false
     }
   ],
   "winner": null,
   "winnerProvider": null,
-  "leader": "openai/gpt-oss-120b",
+  "leader": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
   "ranking": [
-    "openai/gpt-oss-120b"
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
   ],
   "previousRounds": [
     {
@@ -246,6 +248,56 @@
             "r23-qualification-qual-js-missing-export-optimized-r1-cf1dc316",
             "r23-qualification-qual-js-off-by-one-optimized-r1-4075cf69",
             "r23-qualification-qual-js-return-sign-optimized-r1-cacc545c"
+          ],
+          "stopped": null,
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-09-21T04:12:47.590Z",
+      "winner": null,
+      "candidates": [
+        {
+          "modelId": "openai/gpt-oss-120b",
+          "providerId": "groq",
+          "eligible": true,
+          "tasks": 1,
+          "tasksExpected": 3,
+          "verified": 0,
+          "falseComplete": 0,
+          "hangsOrUpstreamFailures": 0,
+          "malformedToolCallRuns": 0,
+          "medianWallMs": 675168,
+          "medianCalls": 18,
+          "runIds": [
+            "r23-qualification-qual-js-missing-export-optimized-r1-63e2272a"
+          ],
+          "stopped": "allowance",
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-09-21T04:27:05.177Z",
+      "winner": null,
+      "candidates": [
+        {
+          "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "providerId": "openrouter",
+          "eligible": true,
+          "tasks": 3,
+          "tasksExpected": 3,
+          "verified": 2,
+          "falseComplete": 0,
+          "hangsOrUpstreamFailures": 3,
+          "malformedToolCallRuns": 0,
+          "medianWallMs": 96774,
+          "medianCalls": 6,
+          "runIds": [
+            "r23-qualification-qual-js-missing-export-optimized-r1-e94242f8",
+            "r23-qualification-qual-js-off-by-one-optimized-r1-c5d4c7d8",
+            "r23-qualification-qual-js-return-sign-optimized-r1-a921aed4"
           ],
           "stopped": null,
           "qualified": false

@@ -1,0 +1,672 @@
+{
+  "schemaVersion": "r23-run-record-1",
+  "identity": {
+    "benchmarkVersion": "CodeForge-EfficiencyBench-R23",
+    "protocolId": "codeforge-efficiency-protocol-r23",
+    "protocolVersion": "1.0.5",
+    "protocolDigest": "dc39943cc965233a4402d39e87f887810484d264773d0c5f823c646540771773",
+    "harnessVersion": "r23-harness-1.0.0",
+    "campaignId": "qualification-2026-09-21T04-20-56-285Z",
+    "phase": "qualification",
+    "runId": "r23-qualification-qual-js-off-by-one-optimized-r1-c5d4c7d8",
+    "pairId": "qualification-2026-09-21T04-20-56-285Z-qual-js-off-by-one-r1",
+    "taskId": "qual-js-off-by-one",
+    "taskClass": "small_fix",
+    "taskLanguage": "javascript",
+    "repoSizeClass": "small",
+    "arm": "optimized",
+    "armConfigurationDigest": "f36a2e6a722cbfa84f91c0ab6d18a01176550d730772f21b6f97cdd7d3a61804",
+    "pairOrder": "control-first",
+    "repetition": 1,
+    "codeforgeCommit": "5e86da1fb43666f86502a639e37f440af447382c",
+    "codeforgeTreeDirty": false,
+    "startingTreeHash": "2bafe8f0e5d79bfa44a496973a07bb1f6c01411120ee1cf32179d6a479a9f5da",
+    "endingTreeHash": "a88d80bfb7b6727d9ab2c49a8b00e9102e28faf64ece0c4f2e6a12b8723b5b1d",
+    "taskDigest": "1257ad7152ff930461155ecd2db1de7ece5e8d96fe0e04ee552c98cd20a8f64d",
+    "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+    "providerId": "openrouter",
+    "routeClass": "openrouter_free_deposit_unlocked",
+    "forgeGreenEnabled": true,
+    "subagentsEnabled": true,
+    "topology": "orchestrated:normal",
+    "environmentFingerprint": "f4ab42fe53dd3f265c5c0bce32f880d48025467e99d36ff0535f339e7dd20489",
+    "startedAt": "2026-09-21T04:21:33.989Z",
+    "endedAt": "2026-09-21T04:25:27.468Z"
+  },
+  "outcome": {
+    "runtimeStatus": "completed",
+    "stopReason": "completed",
+    "claimedComplete": true,
+    "verifierRan": true,
+    "verifierPassed": true,
+    "verifierExitCode": 0,
+    "verifierDurationMs": 395,
+    "completionAuthority": "PASS",
+    "completionBlockers": [],
+    "forbiddenActionObserved": false,
+    "verifiedComplete": true,
+    "falseComplete": false,
+    "classification": "verified_complete",
+    "completionReason": "claimed complete; hidden verifier passed; completion authority PASS",
+    "testsPassed": 3,
+    "testsFailed": 0,
+    "filesChanged": [
+      "src/list.js"
+    ],
+    "linesAdded": 1,
+    "linesRemoved": 1
+  },
+  "inference": {
+    "totalInputTokens": {
+      "source": "UNKNOWN",
+      "note": "3 call(s) without provider usage"
+    },
+    "totalOutputTokens": {
+      "source": "UNKNOWN",
+      "note": "3 call(s) without provider usage"
+    },
+    "totalTokens": {
+      "source": "UNKNOWN",
+      "note": "input or output unknown"
+    },
+    "cachedInputTokens": {
+      "source": "UNKNOWN",
+      "note": "3 call(s) without provider usage"
+    },
+    "uncachedInputTokens": {
+      "source": "UNKNOWN",
+      "note": "cached unknown"
+    },
+    "reasoningTokens": {
+      "source": "UNKNOWN",
+      "note": "3 call(s) without provider usage"
+    },
+    "modelCalls": 14,
+    "callsWithProviderUsage": 11,
+    "failedModelCalls": 3,
+    "retriedModelCalls": 3,
+    "rateLimitedCalls": 0,
+    "providerFailovers": 0,
+    "modelFailovers": 0,
+    "duplicateRequestsSuppressed": 0,
+    "calls": [
+      {
+        "callIndex": 0,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:21:39.593Z",
+        "endedAt": "2026-09-21T04:21:45.662Z",
+        "latencyMs": 6069,
+        "timeToFirstEventMs": 6009,
+        "requestBytes": 8235,
+        "responseBytes": 22,
+        "messageCount": 2,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2525,
+        "completionTokens": 233,
+        "totalTokens": 2758,
+        "cachedPromptTokens": 0,
+        "reasoningTokens": 242,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "07483d2f61cc16f5ac639aa7e39495c6f01b3c6d28fefaa7678d4f093dfdd9a3"
+      },
+      {
+        "callIndex": 1,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:21:45.698Z",
+        "endedAt": "2026-09-21T04:21:52.844Z",
+        "latencyMs": 7146,
+        "timeToFirstEventMs": 7134,
+        "requestBytes": 8714,
+        "responseBytes": 42,
+        "messageCount": 4,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 1,
+          "tool": 1
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2655,
+        "completionTokens": 340,
+        "totalTokens": 2995,
+        "cachedPromptTokens": 0,
+        "reasoningTokens": 336,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "8b2ce19c7ca8f0c6685029ce8ed42ab3513bee86c7369b914e901ffa3829df31"
+      },
+      {
+        "callIndex": 2,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:21:52.881Z",
+        "endedAt": "2026-09-21T04:21:53.059Z",
+        "latencyMs": 178,
+        "timeToFirstEventMs": 177,
+        "requestBytes": 9064,
+        "responseBytes": 0,
+        "messageCount": 6,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 2,
+          "tool": 2
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "UNKNOWN",
+        "toolCallsEmitted": 0,
+        "outcome": "error",
+        "errorCode": "502",
+        "httpStatus": 502,
+        "retryable": true,
+        "rateLimited": false,
+        "conversationDigest": "76828eea8bfe77334a8d10f3d3973d745696a21f1204e01c66a48de3bd510610"
+      },
+      {
+        "callIndex": 3,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:22:01.870Z",
+        "endedAt": "2026-09-21T04:22:02.251Z",
+        "latencyMs": 381,
+        "timeToFirstEventMs": 381,
+        "requestBytes": 10797,
+        "responseBytes": 0,
+        "messageCount": 2,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1
+        },
+        "toolDefinitionCount": 19,
+        "usageSource": "UNKNOWN",
+        "toolCallsEmitted": 0,
+        "outcome": "error",
+        "errorCode": "502",
+        "httpStatus": 502,
+        "retryable": true,
+        "rateLimited": false,
+        "conversationDigest": "183a93f1d0415363a56e93bade4c7a1feee362145283c0dda687e73a45417802"
+      },
+      {
+        "callIndex": 4,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:22:04.781Z",
+        "endedAt": "2026-09-21T04:22:06.465Z",
+        "latencyMs": 1684,
+        "timeToFirstEventMs": 1649,
+        "requestBytes": 9108,
+        "responseBytes": 22,
+        "messageCount": 3,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2735,
+        "completionTokens": 58,
+        "totalTokens": 2793,
+        "cachedPromptTokens": 0,
+        "reasoningTokens": 33,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "590a94189e40be1e8d0fcca17e308079a1c9596617e870e4f5b02118c85e54fb"
+      },
+      {
+        "callIndex": 5,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:22:06.503Z",
+        "endedAt": "2026-09-21T04:22:14.864Z",
+        "latencyMs": 8361,
+        "timeToFirstEventMs": 8345,
+        "requestBytes": 9587,
+        "responseBytes": 34,
+        "messageCount": 5,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2,
+          "assistant": 1,
+          "tool": 1
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2865,
+        "completionTokens": 323,
+        "totalTokens": 3188,
+        "cachedPromptTokens": 2176,
+        "reasoningTokens": 300,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "6aafe2cb8b4e626429d612a814e83bdb416612db88f879f2acbbd0fc404910ac"
+      },
+      {
+        "callIndex": 6,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:22:14.898Z",
+        "endedAt": "2026-09-21T04:22:28.044Z",
+        "latencyMs": 13146,
+        "timeToFirstEventMs": 13133,
+        "requestBytes": 9929,
+        "responseBytes": 22,
+        "messageCount": 7,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2,
+          "assistant": 2,
+          "tool": 2
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2931,
+        "completionTokens": 279,
+        "totalTokens": 3210,
+        "cachedPromptTokens": 0,
+        "reasoningTokens": 274,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "2affcdd5590198c7e75ab8961f75bd2c3082be0e85d7716c988e3ac8489b300b"
+      },
+      {
+        "callIndex": 7,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:22:29.445Z",
+        "endedAt": "2026-09-21T04:22:41.034Z",
+        "latencyMs": 11589,
+        "timeToFirstEventMs": 11573,
+        "requestBytes": 10240,
+        "responseBytes": 33,
+        "messageCount": 9,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2,
+          "assistant": 3,
+          "tool": 3
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2985,
+        "completionTokens": 465,
+        "totalTokens": 3450,
+        "cachedPromptTokens": 2176,
+        "reasoningTokens": 470,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "a41970698311604df1b515b60c44c4da543d5ca53b109c310a759c7790049ed8"
+      },
+      {
+        "callIndex": 8,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:22:41.064Z",
+        "endedAt": "2026-09-21T04:23:13.152Z",
+        "latencyMs": 32088,
+        "timeToFirstEventMs": 28246,
+        "requestBytes": 10581,
+        "responseBytes": 715,
+        "messageCount": 11,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2,
+          "assistant": 4,
+          "tool": 4
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 3051,
+        "completionTokens": 1424,
+        "totalTokens": 4475,
+        "cachedPromptTokens": 2176,
+        "reasoningTokens": 1324,
+        "providerReportedCostUsd": 0,
+        "finishReason": "stop",
+        "toolCallsEmitted": 0,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "381e9a1e3086d3c3e2591eb6c4c91b9ebf353c60f9ae7321534bb3c7915e0bfc"
+      },
+      {
+        "callIndex": 9,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:23:15.782Z",
+        "endedAt": "2026-09-21T04:23:20.374Z",
+        "latencyMs": 4592,
+        "timeToFirstEventMs": 4575,
+        "requestBytes": 11389,
+        "responseBytes": 22,
+        "messageCount": 3,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2
+        },
+        "toolDefinitionCount": 19,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 3392,
+        "completionTokens": 173,
+        "totalTokens": 3565,
+        "cachedPromptTokens": 0,
+        "reasoningTokens": 147,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "8fa4f90708a183c9c56d9d6ae7dfe3df12e75d313149f2f926b095512df53bd5"
+      },
+      {
+        "callIndex": 10,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:23:20.406Z",
+        "endedAt": "2026-09-21T04:23:32.154Z",
+        "latencyMs": 11748,
+        "timeToFirstEventMs": 11682,
+        "requestBytes": 11868,
+        "responseBytes": 186,
+        "messageCount": 5,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2,
+          "assistant": 1,
+          "tool": 1
+        },
+        "toolDefinitionCount": 19,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 3522,
+        "completionTokens": 458,
+        "totalTokens": 3980,
+        "cachedPromptTokens": 2176,
+        "reasoningTokens": 392,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "d7cca9ce9f8e0037956700d3850e84dd969fea28996817dbaafed93b5f023333"
+      },
+      {
+        "callIndex": 11,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:23:32.190Z",
+        "endedAt": "2026-09-21T04:25:06.004Z",
+        "latencyMs": 93814,
+        "timeToFirstEventMs": 93765,
+        "requestBytes": 12374,
+        "responseBytes": 22,
+        "messageCount": 7,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2,
+          "assistant": 2,
+          "tool": 2
+        },
+        "toolDefinitionCount": 19,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 3634,
+        "completionTokens": 3686,
+        "totalTokens": 7320,
+        "cachedPromptTokens": 2176,
+        "reasoningTokens": 4050,
+        "providerReportedCostUsd": 0,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "50bf61f33eefe15a7c92a0e2c36569557aeea5a1201b8e8f337e9d7f15fe3468"
+      },
+      {
+        "callIndex": 12,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:25:07.335Z",
+        "endedAt": "2026-09-21T04:25:07.603Z",
+        "latencyMs": 268,
+        "timeToFirstEventMs": 268,
+        "requestBytes": 12685,
+        "responseBytes": 0,
+        "messageCount": 9,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2,
+          "assistant": 3,
+          "tool": 3
+        },
+        "toolDefinitionCount": 19,
+        "usageSource": "UNKNOWN",
+        "toolCallsEmitted": 0,
+        "outcome": "error",
+        "errorCode": "502",
+        "httpStatus": 502,
+        "retryable": true,
+        "rateLimited": false,
+        "conversationDigest": "8e94afc366a99840a895372a8d5dc7c04bf3edb3c66bd5e20b02269e34a5ee4c"
+      },
+      {
+        "callIndex": 13,
+        "providerId": "openrouter",
+        "requestedModelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "startedAt": "2026-09-21T04:25:10.681Z",
+        "endedAt": "2026-09-21T04:25:18.473Z",
+        "latencyMs": 7792,
+        "timeToFirstEventMs": 6345,
+        "requestBytes": 9474,
+        "responseBytes": 305,
+        "messageCount": 3,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 2
+        },
+        "toolDefinitionCount": 15,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2912,
+        "completionTokens": 316,
+        "totalTokens": 3228,
+        "cachedPromptTokens": 2176,
+        "reasoningTokens": 291,
+        "providerReportedCostUsd": 0,
+        "finishReason": "stop",
+        "toolCallsEmitted": 0,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "ff2e34a5ec074911e92443206a39451aa5930edb0f3a93bd8fc737b882d744b8"
+      }
+    ]
+  },
+  "context": {
+    "transmittedContextBytes": 144045,
+    "finalConversationBytes": 3949,
+    "providerStatelessnessRepeatBytes": 140096,
+    "avoidableDuplicateBytes": 390,
+    "avoidableDuplicateTokens": {
+      "source": "UNKNOWN",
+      "note": "provider prompt-token/byte ratio unavailable"
+    },
+    "avoidableDuplicateEvents": [
+      {
+        "kind": "duplicate_tool_result",
+        "tool": "read_file",
+        "argumentsDigest": "754ce3e269bb0fa54a3039cb9d33718310174db4f3c211a9a8d44110b4da3851",
+        "bytes": 195,
+        "firstCallIndex": 0,
+        "repeatCallIndex": 4,
+        "firstRole": "explorer",
+        "repeatRole": "reviewer",
+        "crossRole": true
+      },
+      {
+        "kind": "duplicate_tool_result",
+        "tool": "read_file",
+        "argumentsDigest": "754ce3e269bb0fa54a3039cb9d33718310174db4f3c211a9a8d44110b4da3851",
+        "bytes": 195,
+        "firstCallIndex": 4,
+        "repeatCallIndex": 9,
+        "firstRole": "reviewer",
+        "repeatRole": "coder",
+        "crossRole": true
+      }
+    ],
+    "avoidableDuplicateBytesWithinRole": 0,
+    "avoidableDuplicateBytesCrossRole": 390,
+    "finalComposition": {
+      "systemBytes": 2032,
+      "userTaskBytes": 1917,
+      "assistantBytes": 0,
+      "toolResultBytes": 0,
+      "toolResultBytesByTool": {},
+      "otherBytes": 0
+    },
+    "bootstrapContextBytes": 0,
+    "bootstrapSelectedFiles": 0,
+    "bootstrapCandidateFiles": 0,
+    "canonicalCacheHits": 0,
+    "canonicalCacheMisses": 0,
+    "toolOutputBytesAvoidedByCompression": 0,
+    "providerCacheHitCalls": 6
+  },
+  "activity": {
+    "role": "coder",
+    "toolCallsRequested": 9,
+    "toolCallsExecuted": 0,
+    "toolCallsFailed": 0,
+    "duplicateActionsSuppressed": 0,
+    "byTool": {
+      "read_file": {
+        "requested": 3,
+        "executed": 0,
+        "suppressed": 0
+      },
+      "search_files": {
+        "requested": 3,
+        "executed": 0,
+        "suppressed": 0
+      },
+      "repo_tests": {
+        "requested": 2,
+        "executed": 0,
+        "suppressed": 0
+      },
+      "edit_file": {
+        "requested": 1,
+        "executed": 0,
+        "suppressed": 0
+      }
+    },
+    "fileReads": 3,
+    "fileWrites": 1,
+    "searches": 5,
+    "listings": 0,
+    "shellCalls": 0,
+    "browserCalls": 0,
+    "mcpCalls": 0,
+    "pluginCalls": 0,
+    "subagentCount": 3,
+    "subagentModelCalls": 0
+  },
+  "time": {
+    "wallClockMs": 232911,
+    "activeAgentMs": 228441,
+    "modelWaitMs": 198856,
+    "toolMs": {
+      "source": "UNKNOWN",
+      "note": "no tool execution records available in this mode"
+    },
+    "verificationMs": 1450,
+    "rateLimitWaitMs": 0,
+    "pacingWaitMs": 0,
+    "forgeGreenOverheadMs": {
+      "source": "UNKNOWN",
+      "note": "not joined in this record"
+    }
+  },
+  "economics": {
+    "pricingSnapshotId": "openrouter-2026-09-21",
+    "actualCostUsd": {
+      "value": 0,
+      "source": "OBSERVED",
+      "origin": "PROVIDER",
+      "note": "Σ provider-reported per-call cost"
+    },
+    "equivalentPublicApiCostUsd": {
+      "source": "UNKNOWN",
+      "note": "token totals unknown"
+    },
+    "equivalentPublicApiPriceRef": "",
+    "equivalentMarketCostUsd": {
+      "source": "UNKNOWN",
+      "note": "token totals unknown"
+    },
+    "equivalentMarketPriceRef": "openrouter::anthropic/claude-sonnet-5"
+  },
+  "resources": {
+    "cpuUserMs": {
+      "value": 2437,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "cpuSystemMs": {
+      "value": 7172,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "peakRssBytes": {
+      "value": 245964800,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerResponseBytes": {
+      "value": 1425,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerRequestBytes": {
+      "value": 144045,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "gpuPowerDrawWattsIdleSample": {
+      "value": 18.43,
+      "source": "OBSERVED",
+      "origin": "HARNESS",
+      "note": "single nvidia-smi sample; local GPU is idle — not inference"
+    },
+    "sampler": "node-process-cpu-rss-1 (harness process only; tool child processes excluded)"
+  },
+  "telemetry": {
+    "efficiencyReasonCodes": []
+  },
+  "notes": [
+    "inert switches on this execution path: memoryDelivery (mission memory is not used by the autonomous run path) and verificationReuse (FG-12F has no production caller) — recorded for provenance, identical in both arms"
+  ]
+}
