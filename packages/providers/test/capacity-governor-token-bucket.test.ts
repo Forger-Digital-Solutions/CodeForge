@@ -56,6 +56,25 @@ describe("capacity governor — header-derived token bucket (Groq)", () => {
     expect(slept[0]).toBeLessThan(20_000);
   });
 
+  it("debits this request's completion tokens from a bucket observed mid-request (the round-5 429)", async () => {
+    const clock = { t: 6_000_000 }; const slept: number[] = [];
+    const governor = governorWith(clock, slept);
+    // Request A is admitted; its headers (observed during the request) show 3 000 remaining after
+    // the prompt debit; it then generates a 1 494-token reasoning completion.
+    const a = await governor.acquire("groq", 3300, undefined, { promptTokens: 2620 });
+    clock.t += 500;
+    governor.recordResponse("groq", 200, groqHeaders(3000, 37.5));
+    clock.t += 2_000;
+    a.release(2620 + 1494, 2620);
+    // Without the debit the projection is 3 000 + refill ≈ 3 270 ≥ need (2 600 × 1.15 = 2 990) → admit → 429.
+    // With it: 1 506 + refill → must wait ≈ (2 990 − 1 772) / 0.133 ≈ 9 s.
+    slept.length = 0;
+    await governor.acquire("groq", 3300, undefined, { promptTokens: 2600 });
+    expect(slept.length).toBe(1);
+    expect(slept[0]).toBeGreaterThan(5_000);
+    expect(slept[0]).toBeLessThan(20_000);
+  });
+
   it("falls back to the sliding window when headers are stale or absent", async () => {
     const clock = { t: 3_000_000 }; const slept: number[] = [];
     const governor = governorWith(clock, slept);

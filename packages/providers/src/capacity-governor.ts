@@ -316,6 +316,7 @@ export class ProviderCapacityGovernor {
         state.activeConcurrent++;
         state.inFlightTokens += estimatedTokens;
         state.requestHistory.push(now);
+        const acquiredAt = now;
 
         let released = false;
         return {
@@ -324,17 +325,28 @@ export class ProviderCapacityGovernor {
           release: (actualTokens?: number, actualInputTokens?: number) => {
             if (released) return;
             released = true;
+            const releasedAt = this.now();
             state.activeConcurrent = Math.max(0, state.activeConcurrent - 1);
             state.inFlightTokens = Math.max(0, state.inFlightTokens - estimatedTokens);
 
             const finalTokens = actualTokens !== undefined ? Math.max(0, actualTokens) : estimatedTokens;
             state.tokenHistory.push({
-              timestamp: this.now(),
+              timestamp: releasedAt,
               tokens: finalTokens,
             });
             if (promptEstimate !== undefined && promptEstimate > 0 && typeof actualInputTokens === "number" && actualInputTokens > 0) {
               const observed = actualInputTokens / promptEstimate;
               state.tokenizerRatio = state.tokenizerRatio === undefined ? observed : state.tokenizerRatio * 0.7 + observed * 0.3;
+            }
+            // Rate-limit headers arrive with the response HEAD, after the prompt was debited but
+            // before the completion existed; the provider debits the completion when generation
+            // ends. A bucket observed during this request is therefore optimistic by exactly this
+            // request's completion tokens (R23 round 5: a 1 494-token reasoning completion was
+            // invisible to the projection and the next admission met a 429).
+            const quota = state.observedQuota;
+            if (quota && quota.remainingTokens !== undefined && quota.observedAt >= acquiredAt && quota.observedAt <= releasedAt && typeof actualTokens === "number" && typeof actualInputTokens === "number") {
+              const completionTokens = Math.max(0, actualTokens - actualInputTokens);
+              quota.remainingTokens = Math.max(0, quota.remainingTokens - completionTokens);
             }
           },
         };

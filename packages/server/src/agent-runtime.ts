@@ -453,6 +453,12 @@ export function eightBitRoleForAgentRole(role: AgentRoleType | string): EightBit
 
 /** Bounded rotation budget for a single agent run: initial route + this many provider failures. */
 export const ROLE_ROUTE_MAX_FAILOVERS = 2;
+/**
+ * Same-route retries a pinned selection may take within ONE model turn before the failure is
+ * surfaced. Matches 8-Bit's bounded-retry escalation threshold; 8-Bit's consecutive-failure
+ * streak (reset by every successful call) bounds it across turns.
+ */
+export const PINNED_ROUTE_MAX_SAME_ROUTE_RETRIES = 3;
 
 /**
  * Parse tool-call arguments tolerantly. Handles well-formed JSON, empty args (→ {}), and the
@@ -1307,6 +1313,7 @@ export class AgentRuntime {
 
       const requestModelTurn = async (): Promise<ModelExecutionResponse> => {
         let rotations = 0;
+        let sameRouteRetries = 0;
         for (;;) {
           forgeGreenR0Telemetry.recordModelAttempt({
             providerId: activeSelection?.providerId,
@@ -1353,9 +1360,16 @@ export class AgentRuntime {
               code: normalized.code,
               rateLimited: normalized.code === ERROR_CODES.PROVIDER_RATE_LIMITED,
             });
-            if (isCancelled || !roleRouteRotatable || !activeSelection || rotations >= ROLE_ROUTE_MAX_FAILOVERS) {
-              throw err;
-            }
+            // A pinned (explicit) selection is never rotated, but it still gets 8-Bit's bounded
+            // same-route recovery — a provider-rejected tool call, a transient error, a short
+            // per-minute 429 or a capacity blip is retried on the same route, exactly as the
+            // interactive path does. Before R23 any single model-turn failure on a pinned route
+            // ended the child run: orchestrated runs died in whichever phase the first
+            // unrecovered failure landed, and REVIEWER_FAILED was the visible symptom.
+            const pinned = !roleRouteRotatable;
+            if (isCancelled || !activeSelection) throw err;
+            if (!pinned && rotations >= ROLE_ROUTE_MAX_FAILOVERS) throw err;
+            if (pinned && sameRouteRetries >= PINNED_ROUTE_MAX_SAME_ROUTE_RETRIES) throw err;
             const failing = activeSelection;
             const failingModel = this.firewall.getModel(failing.providerId, failing.modelId);
             const outcome = await this.eightBit.handleTurnFailure({
@@ -1366,9 +1380,9 @@ export class AgentRuntime {
               runId: req.runId,
               agentId: req.agentId,
               current: { providerId: failing.providerId, modelId: failing.modelId },
-              isExactPin: false,
-              pinMode: "auto",
-              sameModelAlternates: this.freeCloud?.sameModelAlternates(failing.providerId, failing.modelId),
+              isExactPin: pinned,
+              pinMode: pinned ? "route" : "auto",
+              sameModelAlternates: pinned ? [] : this.freeCloud?.sameModelAlternates(failing.providerId, failing.modelId),
               policyMode: "adaptive",
               error: err,
               estimatedContextTokens: failingModel?.contextWindow ?? budget.maxContextTokens,
@@ -1393,8 +1407,11 @@ export class AgentRuntime {
             if (outcome.action === "retry_same" || outcome.action === "rotate") {
               forgeGreenR0Telemetry.recordRetry(outcome.reason);
             }
-            if (outcome.action === "retry_same") continue;
-            if (outcome.action !== "rotate") throw err;
+            if (outcome.action === "retry_same") {
+              if (pinned) sameRouteRetries++;
+              continue;
+            }
+            if (outcome.action !== "rotate" || pinned) throw err;
             if (!this.providerCatalog.get(outcome.replacement.providerId)) throw err;
             adapter.emitRouterFailover(req.runId, `${failing.providerId}/${failing.modelId}`, `${outcome.replacement.providerId}/${outcome.replacement.modelId}`, outcome.reason);
             activeSelection = { providerId: outcome.replacement.providerId, modelId: outcome.replacement.modelId };
