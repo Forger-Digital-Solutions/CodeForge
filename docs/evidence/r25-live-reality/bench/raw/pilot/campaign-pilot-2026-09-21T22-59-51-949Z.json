@@ -1,0 +1,137 @@
+{
+  "campaignId": "pilot-2026-09-21T22-59-51-949Z",
+  "phase": "pilot",
+  "recordedAt": "2026-09-21T23:11:51.863Z",
+  "model": "openai/gpt-oss-120b",
+  "providerId": "groq",
+  "pin": {
+    "id": "openai/gpt-oss-120b",
+    "name": "openai/gpt-oss-120b",
+    "contextLength": 131072,
+    "ownedBy": "OpenAI",
+    "checkedAt": "2026-09-21T22:59:51.933Z",
+    "pricingVerification": "provider-free-tier-policy + ForgeZero FREE_ALLOWANCE admission + live rate-limit headers",
+    "quotaAtPin": {
+      "providerId": "groq",
+      "status": 200,
+      "requests": {
+        "limit": 1000,
+        "remaining": 988,
+        "reset": "17m16.8s"
+      },
+      "tokens": {
+        "limit": 8000,
+        "remaining": 4517,
+        "reset": "26.122s"
+      },
+      "observedAt": "2026-09-21T22:59:51.931Z"
+    },
+    "toolProbe": {
+      "toolCallsEmitted": 1,
+      "usage": {
+        "queue_time": 0.145219163,
+        "prompt_tokens": 139,
+        "prompt_time": 0.025320691,
+        "completion_tokens": 48,
+        "completion_time": 0.104176629,
+        "total_tokens": 187,
+        "total_time": 0.12949732,
+        "completion_tokens_details": {
+          "reasoning_tokens": 22
+        }
+      }
+    }
+  },
+  "paidTwin": {
+    "id": "openrouter::openai/gpt-oss-120b",
+    "note": "equivalent-cost reference: same model's paid listing on the reference marketplace"
+  },
+  "allowanceAtStart": {
+    "limit": 1000,
+    "used": 12,
+    "remaining": 988,
+    "remainingTokens": 4517,
+    "dailyTokensUsed": 0,
+    "dailyTokenBucketLevel": 200000,
+    "source": "x-ratelimit headers (live adapter observation)",
+    "checkedAt": "2026-09-21T22:59:51.947Z"
+  },
+  "allowanceAtEnd": {
+    "limit": 1000,
+    "used": 54,
+    "remaining": 946,
+    "remainingTokens": 911,
+    "dailyTokensUsed": 117150,
+    "dailyTokenBucketLevel": 84387,
+    "source": "x-ratelimit headers (live adapter observation)",
+    "checkedAt": "2026-09-21T23:11:51.863Z"
+  },
+  "identity": {
+    "protocolVersion": "r25-live-1.0.0",
+    "protocolDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+    "corpusManifestDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+    "codeforgeCommit": "3818d787cf16ca14b91060f971d4c1389d4ba4bf",
+    "codeforgeTreeDirty": false,
+    "environmentFingerprint": "59be859f261cbeebb835d68bc798b72f5dc3172db6bd5faaeadd67f557862009",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "mode": "single_agent_run",
+  "repetitions": 1,
+  "taskManifestDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+  "probeGate": {
+    "recordedAt": "2026-09-21T22:59:36.251Z",
+    "verdict": "open",
+    "served": 2,
+    "n": 2,
+    "forced": false
+  },
+  "stopped": "allowance",
+  "runs": [
+    {
+      "taskId": "r25-ambiguous-js-checkout-discount",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 7,
+      "totalTokens": null,
+      "wallClockMs": 223823,
+      "runId": "r23-pilot-r25-ambiguous-js-checkout-discount-optimized-r1-76b749ae"
+    },
+    {
+      "taskId": "r25-ambiguous-js-checkout-discount",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 10,
+      "totalTokens": 21031,
+      "wallClockMs": 128803,
+      "runId": "r23-pilot-r25-ambiguous-js-checkout-discount-control-r1-a33f94be"
+    },
+    {
+      "taskId": "r25-ambiguous-ts-session-clock",
+      "arm": "control",
+      "repetition": 1,
+      "classification": "tool_failure",
+      "modelCalls": 11,
+      "totalTokens": 24127,
+      "wallClockMs": 134110,
+      "runId": "r23-pilot-r25-ambiguous-ts-session-clock-control-r1-d720a67c"
+    },
+    {
+      "taskId": "r25-ambiguous-ts-session-clock",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 15,
+      "totalTokens": 44481,
+      "wallClockMs": 232466,
+      "runId": "r23-pilot-r25-ambiguous-ts-session-clock-optimized-r1-70ba362a"
+    }
+  ]
+}

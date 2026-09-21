@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "local_real_postgresql",
+  "recordedAt": "2026-09-21T23:11:55.086Z",
+  "cases": {
+    "A.multi_process_admission": {
+      "pass": true,
+      "detail": "8 processes raced 30 queued on capacity=3 → exactly 3 distinct claims across 3 users; no duplicates"
+    },
+    "B.lease_expiry_fencing": {
+      "pass": true,
+      "detail": "dead worker's lease expired → requeued → stale token rejected → new worker claimed+completed; receipts=QUEUE_ENQUEUED,CAPACITY_RESERVED,LEASE_EXPIRED,CAPACITY_RESERVED,CAPACITY_RELEASED"
+    },
+    "C.idempotent_enqueue": {
+      "pass": true,
+      "detail": "duplicate idempotency key returned existing execution r25c-7a1568b9-0; rows=1"
+    },
+    "D.dispatching_crash_recovery": {
+      "pass": true,
+      "detail": "no dispatch-id: recovery_pending → requeue REFUSED → failed closed; with dispatch-id: requeued → reclaimed at attempt=2"
+    },
+    "E.per_user_fairness": {
+      "pass": true,
+      "detail": "capacity=6, maxUserConcurrent=1, 24 queued across 6 users → 6 claims on 6 distinct users (no single-user capture, no duplicate execution)"
+    },
+    "F.queue_drain": {
+      "pass": true,
+      "detail": "40 executions claimed+completed exactly once each; queue empty, 40 claims"
+    }
+  },
+  "verdict": "DURABLE_ADMISSION_PROVEN"
+}

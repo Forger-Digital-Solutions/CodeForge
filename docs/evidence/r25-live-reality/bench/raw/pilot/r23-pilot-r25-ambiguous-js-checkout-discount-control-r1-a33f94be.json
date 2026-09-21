@@ -1,0 +1,555 @@
+{
+  "schemaVersion": "r23-run-record-1",
+  "identity": {
+    "benchmarkVersion": "CodeForge-EfficiencyBench-R23",
+    "protocolId": "codeforge-efficiency-protocol-r23",
+    "protocolVersion": "r25-live-1.0.0",
+    "protocolDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+    "harnessVersion": "r23-harness-1.0.0",
+    "campaignId": "pilot-2026-09-21T22-59-51-949Z",
+    "phase": "pilot",
+    "runId": "r23-pilot-r25-ambiguous-js-checkout-discount-control-r1-a33f94be",
+    "pairId": "pilot-2026-09-21T22-59-51-949Z-r25-ambiguous-js-checkout-discount-r1",
+    "taskId": "r25-ambiguous-js-checkout-discount",
+    "taskClass": "ambiguous",
+    "taskLanguage": "javascript",
+    "repoSizeClass": "medium",
+    "arm": "control",
+    "armConfigurationDigest": "084eaa452b68723438bc0086f2b038027986217ab0f82d1340bb5bba37e2a681",
+    "pairOrder": "optimized-first",
+    "repetition": 1,
+    "codeforgeCommit": "3818d787cf16ca14b91060f971d4c1389d4ba4bf",
+    "codeforgeTreeDirty": false,
+    "startingTreeHash": "696d37a50bd89e1aedc68f8b27d7fc79118dc54e280ce16669680319892db0ba",
+    "endingTreeHash": "92a6c467f018e068400b4cdce0bba3d73123b203f87fc03b2f84027887740af9",
+    "taskDigest": "42d531478f36962b85b2bbd3592e374d8228fb10b41892e2bebcd87852edd85c",
+    "modelId": "openai/gpt-oss-120b",
+    "providerId": "groq",
+    "routeClass": "groq_owner_dev_free_allowance",
+    "forgeGreenEnabled": false,
+    "subagentsEnabled": false,
+    "topology": "single_agent_run:tiny",
+    "environmentFingerprint": "59be859f261cbeebb835d68bc798b72f5dc3172db6bd5faaeadd67f557862009",
+    "startedAt": "2026-09-21T23:03:35.951Z",
+    "endedAt": "2026-09-21T23:05:44.882Z"
+  },
+  "outcome": {
+    "runtimeStatus": "completed",
+    "stopReason": "completed",
+    "claimedComplete": true,
+    "verifierRan": true,
+    "verifierPassed": true,
+    "verifierExitCode": 0,
+    "verifierDurationMs": 114,
+    "completionAuthority": "PASS",
+    "completionBlockers": [],
+    "forbiddenActionObserved": false,
+    "verifiedComplete": true,
+    "falseComplete": false,
+    "classification": "verified_complete",
+    "completionReason": "claimed complete; hidden verifier passed; completion authority PASS",
+    "testsPassed": 5,
+    "testsFailed": 0,
+    "filesChanged": [
+      "src/checkout/discount.js"
+    ],
+    "linesAdded": 1,
+    "linesRemoved": 1
+  },
+  "inference": {
+    "totalInputTokens": {
+      "value": 19663,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "totalOutputTokens": {
+      "value": 1368,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "totalTokens": {
+      "value": 21031,
+      "source": "DERIVED",
+      "origin": "PROVIDER",
+      "note": "input + output"
+    },
+    "cachedInputTokens": {
+      "source": "UNKNOWN",
+      "note": "cached tokens not reported on every call"
+    },
+    "uncachedInputTokens": {
+      "source": "UNKNOWN",
+      "note": "cached unknown"
+    },
+    "reasoningTokens": {
+      "value": 753,
+      "source": "OBSERVED",
+      "origin": "PROVIDER"
+    },
+    "modelCalls": 10,
+    "callsWithProviderUsage": 10,
+    "failedModelCalls": 0,
+    "retriedModelCalls": 0,
+    "rateLimitedCalls": 0,
+    "providerFailovers": 0,
+    "modelFailovers": 0,
+    "duplicateRequestsSuppressed": 0,
+    "calls": [
+      {
+        "callIndex": 0,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T23:03:41.484Z",
+        "endedAt": "2026-09-21T23:03:41.964Z",
+        "latencyMs": 480,
+        "timeToFirstEventMs": 479,
+        "requestBytes": 8997,
+        "responseBytes": 28,
+        "messageCount": 2,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 1389,
+        "completionTokens": 34,
+        "totalTokens": 1423,
+        "reasoningTokens": 7,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "366276f0d765d4b471eb6f118c0a836b0ce5347640d8201f5e7ef13168663e1a"
+      },
+      {
+        "callIndex": 1,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T23:03:56.792Z",
+        "endedAt": "2026-09-21T23:03:57.238Z",
+        "latencyMs": 446,
+        "timeToFirstEventMs": 446,
+        "requestBytes": 9368,
+        "responseBytes": 29,
+        "messageCount": 4,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 1,
+          "tool": 1
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 1435,
+        "completionTokens": 38,
+        "totalTokens": 1473,
+        "reasoningTokens": 11,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "3bc7e8ecd166f5db55131b29f97aaefb08a87e3cafc6998a314cb2e9fb94a05a"
+      },
+      {
+        "callIndex": 2,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T23:04:06.153Z",
+        "endedAt": "2026-09-21T23:04:06.566Z",
+        "latencyMs": 413,
+        "timeToFirstEventMs": 413,
+        "requestBytes": 10163,
+        "responseBytes": 65,
+        "messageCount": 6,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 2,
+          "tool": 2
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 1606,
+        "completionTokens": 49,
+        "totalTokens": 1655,
+        "reasoningTokens": 33,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "09d9aaec928ac1e6887b2848d9a4e2dbffadadddd9861bd3cb61fb680cfbc140"
+      },
+      {
+        "callIndex": 3,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T23:04:20.683Z",
+        "endedAt": "2026-09-21T23:04:21.591Z",
+        "latencyMs": 908,
+        "timeToFirstEventMs": 908,
+        "requestBytes": 10947,
+        "responseBytes": 52,
+        "messageCount": 8,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 3,
+          "tool": 3
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 1794,
+        "completionTokens": 134,
+        "totalTokens": 1928,
+        "cachedPromptTokens": 1280,
+        "reasoningTokens": 105,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "7453371799328c8f8b56d4c5f6a0e67c976cb2185cc35c942eb527386e6f1402"
+      },
+      {
+        "callIndex": 4,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T23:04:32.826Z",
+        "endedAt": "2026-09-21T23:04:33.349Z",
+        "latencyMs": 523,
+        "timeToFirstEventMs": 523,
+        "requestBytes": 11286,
+        "responseBytes": 53,
+        "messageCount": 10,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 4,
+          "tool": 4
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 1838,
+        "completionTokens": 42,
+        "totalTokens": 1880,
+        "reasoningTokens": 30,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "389e34459dce3f0ea8e0c69475684b9072d815c898de82a4691dbde959c4a382"
+      },
+      {
+        "callIndex": 5,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T23:04:42.964Z",
+        "endedAt": "2026-09-21T23:04:43.657Z",
+        "latencyMs": 693,
+        "timeToFirstEventMs": 693,
+        "requestBytes": 12131,
+        "responseBytes": 219,
+        "messageCount": 12,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 5,
+          "tool": 5
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2007,
+        "completionTokens": 177,
+        "totalTokens": 2184,
+        "reasoningTokens": 89,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "6f37d09bb75b53556109a3a718aa7e7e9d7747c84d6e29d0b30a6699465687d3"
+      },
+      {
+        "callIndex": 6,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T23:04:55.199Z",
+        "endedAt": "2026-09-21T23:04:55.780Z",
+        "latencyMs": 581,
+        "timeToFirstEventMs": 581,
+        "requestBytes": 12691,
+        "responseBytes": 35,
+        "messageCount": 14,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 6,
+          "tool": 6
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2121,
+        "completionTokens": 89,
+        "totalTokens": 2210,
+        "cachedPromptTokens": 1792,
+        "reasoningTokens": 76,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "dfde5e581d84b03136108ee793dae9710b691c0c1bb3c5808eddcb70311fd547"
+      },
+      {
+        "callIndex": 7,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T23:05:15.262Z",
+        "endedAt": "2026-09-21T23:05:16.231Z",
+        "latencyMs": 969,
+        "timeToFirstEventMs": 969,
+        "requestBytes": 13830,
+        "responseBytes": 62,
+        "messageCount": 16,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 7,
+          "tool": 7
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2363,
+        "completionTokens": 138,
+        "totalTokens": 2501,
+        "reasoningTokens": 104,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "139e56a88ea938c7b40b3bb1a63db12c72d645a68af14716ddc33631942a2793"
+      },
+      {
+        "callIndex": 8,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T23:05:19.745Z",
+        "endedAt": "2026-09-21T23:05:20.526Z",
+        "latencyMs": 781,
+        "timeToFirstEventMs": 781,
+        "requestBytes": 14356,
+        "responseBytes": 35,
+        "messageCount": 18,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 8,
+          "tool": 8
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2471,
+        "completionTokens": 72,
+        "totalTokens": 2543,
+        "cachedPromptTokens": 2048,
+        "reasoningTokens": 60,
+        "finishReason": "tool_calls",
+        "toolCallsEmitted": 1,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "c01946e38918aeb017a9d297c30bd437db545da90d41323f4dbd1561b8e234d3"
+      },
+      {
+        "callIndex": 9,
+        "providerId": "groq",
+        "requestedModelId": "openai/gpt-oss-120b",
+        "startedAt": "2026-09-21T23:05:41.289Z",
+        "endedAt": "2026-09-21T23:05:42.978Z",
+        "latencyMs": 1689,
+        "timeToFirstEventMs": 950,
+        "requestBytes": 15172,
+        "responseBytes": 1424,
+        "messageCount": 20,
+        "messageCountByRole": {
+          "system": 1,
+          "user": 1,
+          "assistant": 9,
+          "tool": 9
+        },
+        "toolDefinitionCount": 18,
+        "usageSource": "PROVIDER_REPORTED",
+        "promptTokens": 2639,
+        "completionTokens": 595,
+        "totalTokens": 3234,
+        "cachedPromptTokens": 1792,
+        "reasoningTokens": 238,
+        "finishReason": "stop",
+        "toolCallsEmitted": 0,
+        "outcome": "ok",
+        "rateLimited": false,
+        "conversationDigest": "fd6d34c6f7d59a69f77529c9f4f8ccfb15e835b3d9e7f382add0624b3cc66a43"
+      }
+    ]
+  },
+  "context": {
+    "transmittedContextBytes": 118941,
+    "finalConversationBytes": 5308,
+    "providerStatelessnessRepeatBytes": 113633,
+    "avoidableDuplicateBytes": 0,
+    "avoidableDuplicateTokens": {
+      "value": 0,
+      "source": "DERIVED",
+      "origin": "HARNESS",
+      "note": "bytes × run prompt-token/byte ratio"
+    },
+    "avoidableDuplicateEvents": [],
+    "avoidableDuplicateBytesWithinRole": 0,
+    "avoidableDuplicateBytesCrossRole": 0,
+    "finalComposition": {
+      "systemBytes": 1865,
+      "userTaskBytes": 437,
+      "assistantBytes": 0,
+      "toolResultBytes": 3006,
+      "toolResultBytesByTool": {
+        "list_files": 547,
+        "read_file": 652,
+        "repo_tests": 30,
+        "repo_search": 1710,
+        "edit_file": 67
+      },
+      "otherBytes": 0
+    },
+    "bootstrapContextBytes": 2303,
+    "bootstrapSelectedFiles": 0,
+    "bootstrapCandidateFiles": 0,
+    "canonicalCacheHits": 0,
+    "canonicalCacheMisses": 0,
+    "toolOutputBytesAvoidedByCompression": 0,
+    "providerCacheHitCalls": 4,
+    "promptTokensPerByte": 0.16531725813638695
+  },
+  "activity": {
+    "role": "coder",
+    "toolCallsRequested": 9,
+    "toolCallsExecuted": 9,
+    "toolCallsFailed": 1,
+    "duplicateActionsSuppressed": 0,
+    "byTool": {
+      "list_files": {
+        "requested": 2,
+        "executed": 2,
+        "suppressed": 0
+      },
+      "read_file": {
+        "requested": 2,
+        "executed": 2,
+        "suppressed": 0
+      },
+      "repo_tests": {
+        "requested": 1,
+        "executed": 1,
+        "suppressed": 0
+      },
+      "repo_search": {
+        "requested": 3,
+        "executed": 3,
+        "suppressed": 0
+      },
+      "edit_file": {
+        "requested": 1,
+        "executed": 1,
+        "suppressed": 0
+      }
+    },
+    "fileReads": 2,
+    "fileWrites": 1,
+    "searches": 4,
+    "listings": 2,
+    "shellCalls": 0,
+    "browserCalls": 0,
+    "mcpCalls": 0,
+    "pluginCalls": 0,
+    "subagentCount": 0,
+    "subagentModelCalls": 0
+  },
+  "time": {
+    "wallClockMs": 128803,
+    "activeAgentMs": 9555,
+    "modelWaitMs": 7483,
+    "toolMs": {
+      "value": 1554,
+      "source": "OBSERVED",
+      "origin": "RUNTIME"
+    },
+    "verificationMs": 1441,
+    "rateLimitWaitMs": 0,
+    "pacingWaitMs": 117617,
+    "forgeGreenOverheadMs": {
+      "value": 0.5213000000221655,
+      "source": "OBSERVED",
+      "origin": "RUNTIME"
+    }
+  },
+  "economics": {
+    "pricingSnapshotId": "r25-fixture",
+    "actualCostUsd": {
+      "value": 0,
+      "source": "DERIVED",
+      "origin": "SNAPSHOT",
+      "note": "tokens × route listed unit price"
+    },
+    "equivalentPublicApiCostUsd": {
+      "source": "UNKNOWN",
+      "note": "no public-API equivalent declared for groq::openai/gpt-oss-120b"
+    },
+    "equivalentPublicApiPriceRef": "",
+    "equivalentMarketCostUsd": {
+      "value": 0.079509,
+      "source": "DERIVED",
+      "origin": "SNAPSHOT",
+      "note": "tokens × fixture::reference"
+    },
+    "equivalentMarketPriceRef": "fixture::reference"
+  },
+  "resources": {
+    "cpuUserMs": {
+      "value": 562,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "cpuSystemMs": {
+      "value": 265,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "peakRssBytes": {
+      "value": 190705664,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerResponseBytes": {
+      "value": 2002,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "providerRequestBytes": {
+      "value": 118941,
+      "source": "OBSERVED",
+      "origin": "HARNESS"
+    },
+    "gpuPowerDrawWattsIdleSample": {
+      "value": 4.51,
+      "source": "OBSERVED",
+      "origin": "HARNESS",
+      "note": "single nvidia-smi sample; local GPU is idle — not inference"
+    },
+    "sampler": "node-process-cpu-rss-1 (harness process only; tool child processes excluded)"
+  },
+  "telemetry": {
+    "forgeGreenR0TelemetryId": "fg-r0-fe6fa380d86db2274aaa51b11ecf8a4f",
+    "efficiencyReasonCodes": [
+      "provider_prompt_cache_reported"
+    ]
+  },
+  "notes": [
+    "inert switches on this execution path: memoryDelivery (mission memory is not used by the autonomous run path) and verificationReuse (FG-12F has no production caller) — recorded for provenance, identical in both arms"
+  ]
+}
