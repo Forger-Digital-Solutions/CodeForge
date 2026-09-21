@@ -78,6 +78,9 @@ export const FABRIC_MODEL_ROLE: Readonly<Record<EightBitRole, string>> = {
   VISION: "VISION",
   TOOL_AGENT: "SUBAGENT",
   ANALYST: "SEARCH_ASSIST",
+  // Explorer agents execute as subagents over read/search tools — SUBAGENT is the product
+  // role their capacity routes must declare.
+  EXPLORER: "SUBAGENT",
 };
 
 /**
@@ -146,6 +149,9 @@ export class EightBitRuntime {
       userId: ctx?.userId ?? req.userId ?? "anonymous",
       ...(ctx?.userIdentities ? { userIdentities: ctx.userIdentities } : {}),
       role: FABRIC_MODEL_ROLE[req.role],
+      // The caller knows the real role; product-role mapping alone would assess explorer work
+      // against tool-agent-scoped health evidence (and vice versa).
+      healthRole: req.role,
       ...(req.taskKind ? { taskKind: req.taskKind } : {}),
       ...(req.demand ? { demand: req.demand } : {}),
       isNewUser: req.isNewUser ?? ctx?.isNewUser ?? false,

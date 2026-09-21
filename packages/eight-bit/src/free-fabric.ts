@@ -47,6 +47,11 @@ export interface FabricRequest {
   userIdentities?: readonly string[];
   /** Role contract the work needs, in the routes' own role vocabulary (ModelRole). */
   role: string;
+  /** The work's role in the health authority's vocabulary when the caller knows it. The
+   *  fabric boundary sees product roles (SUBAGENT covers explorer and tool-agent work);
+   *  without this hint, role-scoped health evidence tagged with the real role is invisible
+   *  to the request that produced it. */
+  healthRole?: EightBitRole;
   taskKind?: string;
   /** Capacity this request intends to reserve. Defaults: 1 request, modest token budget. */
   demand?: {
@@ -159,7 +164,8 @@ const FABRIC_HEALTH_ROLE: Readonly<Record<string, EightBitRole>> = {
   FAST_WORKER: "FAST_WORKER", FAST_REASONER: "FAST_WORKER",
   LONG_CONTEXT: "LONG_CONTEXT",
   VISION: "VISION",
-  TOOL_AGENT: "TOOL_AGENT", SUBAGENT: "TOOL_AGENT", SEARCH_ASSIST: "TOOL_AGENT", explorer: "TOOL_AGENT",
+  TOOL_AGENT: "TOOL_AGENT", SUBAGENT: "TOOL_AGENT", SEARCH_ASSIST: "TOOL_AGENT",
+  EXPLORER: "EXPLORER", explorer: "EXPLORER",
   ANALYST: "ANALYST", SUMMARIZER: "ANALYST",
 };
 
@@ -215,7 +221,7 @@ export class FreeFabric {
 
     // Mission A health: hard exclusions remove candidates; strong penalties demote a route
     // behind the next supply domain (saturated shared supply yields to a healthy user pool).
-    const healthRole = this.opts.healthRoleFor?.(request.role) ?? FABRIC_HEALTH_ROLE[request.role];
+    const healthRole = request.healthRole ?? this.opts.healthRoleFor?.(request.role) ?? FABRIC_HEALTH_ROLE[request.role];
     const ranked: Array<{ entry: RouteLedgerEntry; healthState?: RouteHealthCondition; scoreAdjustment: number; effectiveScore: number; domainRank: number }> = [];
     for (const entry of plan.routes) {
       const assess = this.opts.health?.assess(entry.providerId, entry.modelId, { role: healthRole });

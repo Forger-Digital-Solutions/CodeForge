@@ -462,7 +462,7 @@ export const PARSE_FAILED = Symbol("parse_failed");
 export function eightBitRoleForAgentRole(role: AgentRoleType | string): EightBitRole {
   switch (role) {
     case "explorer":
-      return "TOOL_AGENT";
+      return "EXPLORER";
     case "planner":
       return "PLANNER";
     case "reviewer":

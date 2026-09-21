@@ -82,7 +82,7 @@ const STATE_PRECEDENCE: readonly RouteHealthCondition[] = [
 ];
 
 /** Roles whose work depends on well-formed tool calls; TOOL_UNRELIABLE bites them hardest. */
-export const TOOL_DEPENDENT_ROLES: ReadonlySet<EightBitRole> = new Set(["CODER", "TOOL_AGENT", "FAST_WORKER"]);
+export const TOOL_DEPENDENT_ROLES: ReadonlySet<EightBitRole> = new Set(["CODER", "TOOL_AGENT", "FAST_WORKER", "EXPLORER"]);
 
 // --- Normalized observations (§55) -------------------------------------------------------------
 

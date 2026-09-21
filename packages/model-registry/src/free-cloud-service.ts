@@ -7,7 +7,7 @@ import {
 } from "@codeforge/forge-zero";
 import type { ProviderAdapter, ProviderCatalog, ProviderResponseObservation } from "@codeforge/providers";
 import {
-  runCompactQualification,
+  runRoleAwareQualification,
   rateLimitObservationFromHeaders,
   type EightBitRouteHealthAuthority,
   type ModelQualificationReceipt,
@@ -59,8 +59,14 @@ export interface FreeCloudServiceOptions {
   qualificationRunner?: (model: FreeModelRecord, adapter: ProviderAdapter) => Promise<ModelQualificationReceipt>;
   /** Cooldown base for route failures recorded through the hooks. */
   failureCooldownMs?: number;
-  /** Free quota is shared with real work: cap qualification requests per provider per day. Default 12. */
+  /** Free quota is shared with real work: cap qualification requests per provider per day.
+   *  Default 24 — one worst-case role-aware suite (13 probes + retries) per provider per day. */
   qualificationDailyBudgetPerProvider?: number;
+  /** Estimated requests one qualification cycle spends; used for the daily-budget pre-check
+   *  before a suite runs (the receipt's reported count reconciles the real spend after).
+   *  Default: the role-aware suite's clean cost, or the compact suite's 3 when a custom
+   *  `qualificationRunner` is injected without a declared cost. */
+  qualificationRequestsPerCycle?: number;
   /** Minimum interval between qualification cycles for the same provider. Default 20 minutes. */
   qualificationCycleIntervalMs?: number;
   /**
@@ -99,6 +105,10 @@ interface RouteHealthEntry {
 
 const SHARED_MAX_COOLDOWN_MS = 15 * 60_000;
 const NO_RESET = "9999-12-31T23:59:59.999Z";
+/** Clean request cost of the default role-aware suite: 3 compact probes + 10 role cases. */
+const ROLE_SUITE_REQUESTS = 13;
+/** Legacy assumed cycle cost for injected runners that do not declare one. */
+const COMPACT_SUITE_REQUESTS = 3;
 
 /** Provider headers only ever report request/token buckets; everything we emit is observed
  *  evidence (`authoritative: true`) or absent — CodeForge never invents quota numbers. */
@@ -135,6 +145,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private readonly qualificationRunner: NonNullable<FreeCloudServiceOptions["qualificationRunner"]>;
   private readonly failureCooldownMs: number;
   private readonly qualificationDailyBudget: number;
+  private readonly qualificationRequestsPerCycle: number;
   private readonly qualificationCycleIntervalMs: number;
   /** Qualification requests spent per provider, keyed by UTC day. */
   private readonly qualificationSpend = new Map<string, { day: string; requests: number; lastCycleAt: number }>();
@@ -150,9 +161,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     this.qualificationStore = options.qualificationStore ?? new InMemoryQualificationPersistence();
     this.now = options.now ?? (() => new Date());
     this.maxQualificationsPerCycle = options.maxQualificationsPerCycle ?? 3;
-    this.qualificationRunner = options.qualificationRunner ?? ((model, adapter) => runCompactQualification(model, adapter, { now: this.now }));
+    this.qualificationRunner = options.qualificationRunner ?? ((model, adapter) => runRoleAwareQualification(model, adapter, { now: this.now }));
     this.failureCooldownMs = options.failureCooldownMs ?? 30_000;
-    this.qualificationDailyBudget = options.qualificationDailyBudgetPerProvider ?? 12;
+    this.qualificationDailyBudget = options.qualificationDailyBudgetPerProvider ?? 24;
+    this.qualificationRequestsPerCycle =
+      options.qualificationRequestsPerCycle ?? (options.qualificationRunner ? COMPACT_SUITE_REQUESTS : ROLE_SUITE_REQUESTS);
     this.qualificationCycleIntervalMs = options.qualificationCycleIntervalMs ?? 20 * 60_000;
     this.routeHealth = options.routeHealth;
   }
@@ -279,7 +292,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   }
 
   /** True when this provider may run another qualification cycle now (budget + interval). */
-  qualificationAllowed(providerId: string, requests = 3): boolean {
+  qualificationAllowed(providerId: string, requests = this.qualificationRequestsPerCycle): boolean {
     const spend = this.spendFor(providerId);
     if (spend.requests + requests > this.qualificationDailyBudget) return false;
     return this.now().getTime() - spend.lastCycleAt >= this.qualificationCycleIntervalMs;
@@ -307,12 +320,17 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         const adapter = this.providerCatalog.get(route.providerId);
         if (!model || !adapter) continue;
         const spend = this.spendFor(route.providerId);
-        if (spend.requests + 3 > this.qualificationDailyBudget) continue;
+        // Conservative pre-check at the runner's declared cycle cost; the spend is
+        // reconciled to the receipt's real request count after the run.
+        if (spend.requests + this.qualificationRequestsPerCycle > this.qualificationDailyBudget) continue;
         cycleStarted.add(route.providerId);
         spend.lastCycleAt = this.now().getTime();
-        spend.requests += 3;
+        spend.requests += this.qualificationRequestsPerCycle;
         try {
           const receipt = await this.qualificationRunner(model, adapter);
+          if (typeof receipt.metadata?.requests === "number") {
+            spend.requests += receipt.metadata.requests - this.qualificationRequestsPerCycle;
+          }
           // A transient (429/401) probe is not evidence about the model; keep it pending. It
           // still counts against the provider's daily spend (conservative), but not against the
           // per-cycle slots, so the cycle moves on to a route that can actually be scored.

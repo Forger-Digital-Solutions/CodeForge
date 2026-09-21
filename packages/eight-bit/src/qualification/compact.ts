@@ -222,7 +222,7 @@ async function probeStructured(adapter: CompactQualificationAdapter, modelId: st
   return caseResult("compact.structured", "structured_output", passed, started, { details: { textLength: obs.text.length, parsed: parsed !== null } });
 }
 
-function firstJsonObject(text: string): unknown | null {
+export function firstJsonObject(text: string): unknown | null {
   const cleaned = text.replace(/```(?:json)?/gi, "");
   const start = cleaned.indexOf("{");
   if (start === -1) return null;

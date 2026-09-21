@@ -20,6 +20,7 @@ export const EightBitRoleSchema = z.enum([
   "VISION",
   "TOOL_AGENT",
   "ANALYST",
+  "EXPLORER",
 ]);
 export type EightBitRole = z.infer<typeof EightBitRoleSchema>;
 
@@ -46,6 +47,9 @@ export const ROLE_CONTRACTS: Readonly<Record<EightBitRole, RoleContract>> = {
   VISION: { role: "VISION", requiresTools: false, requiresStructuredOutput: false, requiresVision: true, requiresLongContext: false, minContextTokens: 8_000, minToolReliability: 0 },
   TOOL_AGENT: { role: "TOOL_AGENT", requiresTools: true, requiresStructuredOutput: true, requiresVision: false, requiresLongContext: false, minContextTokens: 8_000, minToolReliability: 0.7 },
   ANALYST: { role: "ANALYST", requiresTools: false, requiresStructuredOutput: false, requiresVision: false, requiresLongContext: false, minContextTokens: 8_000, minToolReliability: 0 },
+  // Explorer is the read-only repository-understanding role: real tool discipline (it must
+  // drive read/search tools correctly) plus a structured findings report.
+  EXPLORER: { role: "EXPLORER", requiresTools: true, requiresStructuredOutput: true, requiresVision: false, requiresLongContext: false, minContextTokens: 8_000, minToolReliability: 0.6 },
 } as const;
 
 // --- Failure classification -------------------------------------------------------------------

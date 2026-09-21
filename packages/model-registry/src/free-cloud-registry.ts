@@ -299,11 +299,14 @@ function qualificationFor(receipt: ModelQualificationReceipt | undefined, now: D
     Object.entries(receipt.roleResults).map(([role, result]) => [role, result.status as QualificationState]),
   );
   const roles: ModelRole[] = [];
-  if (qualified.has("CODER") || qualified.has("TOOL_AGENT")) roles.push("PRIMARY_CODING_AGENT");
+  // PRIMARY_CODING_AGENT is earned by the CODER verdict alone — tool competence is necessary
+  // but not sufficient, and conflating it made an explorer-strong/coder-weak model eligible
+  // for coding work it was measured to fail (R24 role differentiation).
+  if (qualified.has("CODER")) roles.push("PRIMARY_CODING_AGENT");
   if (qualified.has("PLANNER")) roles.push("PLANNER");
   if (qualified.has("REVIEWER")) roles.push("REVIEWER", "VERIFIER_ASSIST");
   if (qualified.has("FAST_WORKER") || qualified.has("REASONER")) roles.push("FAST_REASONER");
-  if (qualified.has("TOOL_AGENT")) roles.push("SUBAGENT");
+  if (qualified.has("TOOL_AGENT") || qualified.has("EXPLORER")) roles.push("SUBAGENT");
   if (qualified.has("VISION")) roles.push("VISION");
   if (qualified.has("ANALYST")) roles.push("SEARCH_ASSIST", "SUMMARIZER");
   const state: QualificationState =
