@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "102e49e06ecc3a3b538555d57ff07da376202577b8913dc7951ea4fb5656c909",
-  "surfaceVersion": "r23-prompt-tool-contract-v1",
+  "sourceStateId": "8cbd73831338e80089aa714daf26bc86f959003ee5fc7883e1b47a56c740a1a9",
+  "surfaceVersion": "r24-free-fabric-runtime-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -56,14 +56,14 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "628ae98b43f678640b17ffcd5d1f0930488ea253",
-    "packages/server/src/autonomous-orchestrator.ts": "8e7dc8a6942a8a973233d9af62424323b05f9bc3",
+    "packages/server/src/agent-runtime.ts": "33e50e726084c153fc331052705f75a43df7253c",
+    "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
     "packages/server/src/duplicate-suppression.ts": "fd47f593e297f7910e379961da73e798957cbbf9",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "fd28b8bccec7c03226f100d4c9e284ef129ddff7",
     "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
-    "packages/sessions/src/session-state.ts": "e67a8c5033b1f39d4b5c5f919fdcecc16d8ac6dc",
+    "packages/sessions/src/session-state.ts": "41042502fd939c990ea737745e3334d07c1aa7d5",
     "packages/tools/src/index.ts": "ec150612541c218997aa05789c51eb9065e1babc",
     "packages/workflow/src/forge-verify.ts": "d134438dfde57de85c756cdd8aaab192f1d801e8",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
@@ -1043,18 +1043,48 @@
       "regressionEvidence": "packages/tools/test/prompt-tool-contract.test.ts (new, 4 tests: every tool-shaped name in role prompts is registered; coder prompt never unconditionally instructs a permission-gated tool; read-only roles name no mutating tools; denied permission really excludes the gated tool) — green. packages/tools/test/role-boundary.test.ts and the structured-output security suite unchanged and green; security boundary (no unauthorized tool execution) untouched — the change is prompt text only.",
       "recertifiedAt": "2026-09-21",
       "sourceStateConstant": "CODEFORGE_R23_PROMPT_TOOL_CONTRACT_SOURCE_STATE"
+    },
+    {
+      "label": "R24 free fabric runtime closure",
+      "reason": "The R24 Free Fabric campaign made the fabric authoritative in the production serving path and closed the role/intelligence loop. Three certified material files legitimately evolved: agent-runtime gained shared Free Fabric wiring (per-request fabric context, reservation lifecycle, EXPLORER first-class role, healthRole-scoped route health); autonomous-orchestrator gained the live provider-capacity feed for adaptive topology; session-state gained temporal route-health persistence from Mission A. ForgeGreen optimization candidates, the verification-evidence-reuse advisor, the FG-12F cost gate and ForgeVerify validity authority are unchanged; prior campaign evidence remains historically accurate for its recorded source state. This entry records the reviewed drift rather than rewriting it.",
+      "priorSourceStateId": "102e49e06ecc3a3b538555d57ff07da376202577b8913dc7951ea4fb5656c909",
+      "priorSurfaceVersion": "r23-prompt-tool-contract-v1",
+      "resultingSourceStateId": "8cbd73831338e80089aa714daf26bc86f959003ee5fc7883e1b47a56c740a1a9",
+      "resultingSurfaceVersion": "r24-free-fabric-runtime-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "R24 Missions A/C and Phase 10: shared Free Fabric instance consulted before provider execution for role-routed runs (admission -> reservation -> execution -> release); EXPLORER added as a first-class 8-Bit role (eightBitRoleForAgentRole maps explorer agents to it instead of TOOL_AGENT); FabricRequest.healthRole carries the true role so Explorer-tagged health evidence binds to Explorer work; per-turn failover re-decides through the same fabric. Completion gate, ForgeVerify dispatch, verification-evidence reuse, ForgeGreen ledger persistence and the FG-12F cost gate are untouched.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "R24 Phase 7-9: live provider-capacity feed projected from FreeCloudService routes/pools + route health + live reservations into resolveAdaptiveTopology, so constrained free capacity reduces adaptive parallelism while explicit topology requests retain authority. Paired benchmark: 8 provider calls fixed R1 vs 4 adaptive at equal verified outcome (2x mechanism, not a live-model quality claim).",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/sessions/src/session-state.ts",
+          "change": "R24 Mission A (0a417b9): temporal route-health authority persistence — route-health observations are stored session state so health evidence survives restarts and stays scoped to the observing role.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Phase 13 canonical run: 3472 passed / 4 failed / 48 skipped — one stale role assertion fixed (role-routing 8/8), two source-state guards failing on the pre-recertification fingerprint (this entry), one subprocess flake passing 24/24 standalone. eight-bit 243/243, forge-zero 117/117, model-registry 90/90, server fabric suites 30/30; workspace build clean; eight-bit+server typecheck clean; eight-bit/forge-zero/model-registry lint clean.",
+      "recertifiedAt": "2026-10-06",
+      "sourceStateConstant": "CODEFORGE_R24_FREE_FABRIC_RUNTIME_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 recertifications listed above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the R23 pinned-route recovery and governor injection above, and the R23 prompt/tool-contract coherence fix above.",
-  "recertifiedAt": "2026-09-20T22:56:31.177Z",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 recertifications listed above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the R23 pinned-route recovery and governor injection above, and the R23 prompt/tool-contract coherence fix above. It also includes the R24 free-fabric-runtime recertification above.",
+  "recertifiedAt": "2026-09-21T21:56:24.993Z",
   "recertification": {
-    "phase": "R21 autonomous run_command classification and network-lease enforcement",
-    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed M6 surface so the fg11/fg12e provenance canaries certify the current tree.",
+    "phase": "R24 free fabric runtime closure",
+    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R24 surface so the fg11/fg12e provenance canaries certify the current tree.",
     "changedFiles": [
-      "packages/server/src/agent-runtime.ts"
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/autonomous-orchestrator.ts",
+      "packages/sessions/src/session-state.ts"
     ],
-    "priorSourceStateId": "35d6392a63f798ff8e6be77cead5e99e0f8502e2355c088ec966563380fd47c6",
+    "priorSourceStateId": "102e49e06ecc3a3b538555d57ff07da376202577b8913dc7951ea4fb5656c909",
     "guarded": true
   },
-  "recertificationReason": "R22 external integrations: agent-runtime externalTools surface, duplicate-suppression external classifier, tools registry (intentional milestone changes; canonical gate green)"
+  "recertificationReason": "R24 free fabric runtime: fabric-authoritative serving path, role qualification, capacity-aware topology, temporal route health (intentional milestone changes; canonical gate green)"
 }
