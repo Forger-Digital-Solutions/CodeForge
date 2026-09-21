@@ -59,3 +59,38 @@ Conclusions (unchanged in direction from M14E, now with token-side evidence):
 4. ForgeAuto must weight routes by *usable tasks*, not intelligence: nemotron (7 verified, 5 s/call, 29%
    call failures) and gpt-oss-120b (0.6 s/call, 11% → to be re-measured after F1) are both capable; neither
    is currently a public route.
+
+---
+
+## Update — rounds 6 (gpt-oss-20b) and 9 (nemotron), 2026-09-21 ~15:10Z
+
+Cumulative across all qualification records (same ledger, 80 verifier-served runs):
+
+| Route | Runs | verified_complete | verifier-passed | per-call error rate | malformed runs |
+|---|---|---|---|---|---|
+| openrouter::nvidia/nemotron-…:free | **27** | **8** | 10 | **30.3%** (86+ calls, all `ResourceExhausted 16/16` supply 502s) | **0** |
+| groq::openai/gpt-oss-20b | **5** | **4** | 5 | **9.4%** (all model-side parse/tool rejections + 1 governor 429 now fixed) | 3 |
+| groq::openai/gpt-oss-120b | 5 | 0 | 3 | 12.9% | 4 |
+
+New measurements:
+
+- **20b round 6**: verified task = 44,233 tokens (prompt share 93.7%), 20 served + 3 rejected calls,
+  wall 381.6 s of which pacingWait 360.2 s and activeAgent 19.7 s. Confirms ~18–44k tokens/task
+  range → Groq 20b bucket ≈ **5 tasks/day** standalone.
+- **nemotron round 9**: gate OPEN at 14:43Z, re-saturated ~2 min later. verified task absorbed
+  `retried:7` supply 502s in-route (F14a second live proof); the other two tasks died at
+  4–5 retries. **Gate-to-collapse ≈ 2 min** — the instability is now measured at minute scale,
+  not just "window hours" scale.
+- **Time attribution corrected**: nemotron median call latency revised to ~3.1 s with 30% error
+  rate ⇒ active time dominated by retry-riding (159.9 s active vs 95.8 s modelWait on the
+  verified run). Groq remains ~10× faster per call but spends ~94% of wall in the 30-RPM
+  governor — pacing, not inference, is the Groq wall-clock driver.
+- **Economics precision**: OpenRouter per-call `actualCostUsd` is OBSERVED $0 (provider-reported).
+  Groq returns no usage/cost fields — $0 is inferred from the free-tier plan (no billing instrument
+  on the credential). Report both, don't conflate.
+
+Revised headline (unchanged in direction): **zero qualifiable routes today** — nemotron is
+capability-clean (0 malformed in 27 runs, 8 verified) but supply fails at minute scale; gpt-oss-20b
+is supply-adequate (~5 tasks/day) but capability fails §2.2(c) at ~9–10% malformed calls;
+Cloudflare and Copilot remain attestation-blocked. Managed-free DAU ceiling stays dev-scale;
+the 20b+120b Groq pair yields ≈10 tasks/day, nemotron usable only inside open windows.
