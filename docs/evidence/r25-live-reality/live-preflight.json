@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-21T22:28:46.151Z",
+  "generatedAt": "2026-09-21T23:21:29.390Z",
   "purpose": "R25 §5 zero-spend pre-flight — prove free-only posture before any inference call",
   "providers": [
     {
@@ -250,7 +250,7 @@
         },
         "rateLimitHeaders": {
           "cf-cache-status": "DYNAMIC",
-          "cf-ray": "a3ec813ece14db63-IAD"
+          "cf-ray": "a3ecce79fbe3e5f6-IAD"
         }
       },
       "note": "owner free-plan account (R23 $0 ledger); rate-limit headers observed — free-plan bucket shape is the plan evidence"

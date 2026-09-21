@@ -95,6 +95,45 @@ and sustained contention round-robins perfectly (5/5/5/5). Deeper product-level 
 load (concurrent real inference across user accounts) remains out of scope for this
 environment — owner-key supply is single-tenant.
 
+## Phase 10 — Subagent value & duplicate-work suppression
+
+Runtime-level proof, 22/22 (`fg1-duplicate-suppression`, `fg9-unsafe-mutating`,
+`fg1-runtime-efficiency`):
+
+- Identical read-only actions against unchanged workspace state are suppressed once — prior
+  authoritative result replayed with provenance — then escalate to a bounded no-progress
+  blocker rather than looping.
+- Mutating tools (`write_file`/`edit_file`/`run_command`) can never reach a suppress
+  decision; a legitimate rerun after real state change always executes.
+- Every run starts a fresh supervisor (no cross-run suppression leakage); canonical repo
+  analysis is reused across identical-content runs and recomputed on change.
+- Tool loops (3-turn identical, 6-turn A-B oscillation) fail closed as
+  `AGENT_TOOL_LOOP_DETECTED` — blocked, never completed.
+- Live-qualification finding constraining multi-agent supply: PLANNER qualified on only 2 of
+  6 live routes — free supply for orchestrated topologies is the binding constraint, which is
+  why the pilot ran `single_agent_run`.
+
+## Phase 11 — Tool surface audit
+
+21/21 (`external-tools-wiring`, `agent-tool-loop`): broker permission gates deny
+network-class tools under `network:false`; Tier-3 external commits (`browser_submit`) are
+unreachable on autonomous runs; MCP external-effect tools gated by effect classification;
+read-only roles cannot execute mutating external tools; secrets in tool output are redacted
+before the record and the model; plugin bridge tools execute under namespace guard with
+write-gating. The live pilot additionally exercised real tool calls through the same chain
+(`toolCallsEmitted` on the probe; `tool_failure` classification on a real run shows the
+failure path is honest).
+
+## Phase 12 — Full-stack pilot boundary (quota-constrained, documented)
+
+The Phase 5 pilot ran the real runtime path end-to-end — ForgeZero admission →
+`createAgentRuntime` → live Groq tool calls → hidden verifier → `evaluateCompletion`.
+`forge serve` wraps the same runtime as thin transport. The Phase 8 forecast reports ~2
+task-units remaining under today's real daily token bucket; spending them on transport
+re-verification was judged poor evidence-per-quota, and the allowance margin would void a
+larger campaign anyway (as it already did once). Serve-path certification is deferred to a
+fresh quota window rather than claimed here.
+
 One honest operational finding: under concurrent racing a claim can return empty even with
 eligible capacity (SKIP LOCKED head-row collision) — dispatchers must loop; the proof's
 workers retry up to 5× and all six slots fill.

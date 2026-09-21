@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "8cbd73831338e80089aa714daf26bc86f959003ee5fc7883e1b47a56c740a1a9",
-  "surfaceVersion": "r24-free-fabric-runtime-v1",
+  "sourceStateId": "94aa2fd1d274e9255c7bbd9aa928ee0a70140532b0bc19e21578b802249717d3",
+  "surfaceVersion": "r25-live-reality-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -32,8 +32,10 @@
     "packages/sessions/src/postgres-persistence.ts",
     "packages/sessions/src/session-state.ts",
     "packages/tools/src/index.ts",
+    "packages/workflow/src/diff-review.ts",
     "packages/workflow/src/forge-verify.ts",
     "packages/workflow/src/index.ts",
+    "packages/workflow/src/semantic-diff-review.ts",
     "packages/workflow/src/types.ts",
     "packages/workflow/src/verification-evidence-reuse.ts",
     "packages/workflow/src/verification-reuse-cost-gate.ts",
@@ -65,9 +67,11 @@
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "41042502fd939c990ea737745e3334d07c1aa7d5",
     "packages/tools/src/index.ts": "ec150612541c218997aa05789c51eb9065e1babc",
+    "packages/workflow/src/diff-review.ts": "fc5d57768fe8de30f0d288f0da6c08640b1fc409",
     "packages/workflow/src/forge-verify.ts": "d134438dfde57de85c756cdd8aaab192f1d801e8",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
-    "packages/workflow/src/types.ts": "3c36a8c6f297bb986abe21abcf05691f8cd8dd54",
+    "packages/workflow/src/semantic-diff-review.ts": "7a854b990eb27c1f0aeed04c4d7ba73e06fc2b75",
+    "packages/workflow/src/types.ts": "0d8e43ac6d788d1fd83c7f8f9a28ebe0322aae86",
     "packages/workflow/src/verification-evidence-reuse.ts": "04048bdf9d932c307c45e7d8b44438f757ea8466",
     "packages/workflow/src/verification-reuse-cost-gate.ts": "3c3bc502921ef79a9496d762167f366e5589fd02",
     "packages/workflow/src/verification-service.ts": "9fe62538955e4646e43fba467d1ee9b449a58074"
@@ -1071,6 +1075,44 @@
       "regressionEvidence": "Phase 13 canonical run: 3472 passed / 4 failed / 48 skipped — one stale role assertion fixed (role-routing 8/8), two source-state guards failing on the pre-recertification fingerprint (this entry), one subprocess flake passing 24/24 standalone. eight-bit 243/243, forge-zero 117/117, model-registry 90/90, server fabric suites 30/30; workspace build clean; eight-bit+server typecheck clean; eight-bit/forge-zero/model-registry lint clean.",
       "recertifiedAt": "2026-10-06",
       "sourceStateConstant": "CODEFORGE_R24_FREE_FABRIC_RUNTIME_SOURCE_STATE"
+    },
+    {
+      "label": "R25",
+      "reason": "R25 Live Reality campaign: deterministic semantic diff-review layer added to the certified completion-authority surface (reviewDiff -> evaluateCompletion unchanged as the single authority), plus live free-provider qualification, paired live pilot, durable PostgreSQL admission, crash recovery, quota-forecast, and fairness evidence. The semantic detector is additive and fail-closed: blocking findings flow through the existing review_rejected path.",
+      "priorSourceStateId": "8cbd73831338e80089aa714daf26bc86f959003ee5fc7883e1b47a56c740a1a9",
+      "priorSurfaceVersion": "r24-free-fabric-runtime-v1",
+      "resultingSourceStateId": "94aa2fd1d274e9255c7bbd9aa928ee0a70140532b0bc19e21578b802249717d3",
+      "resultingSurfaceVersion": "r25-live-reality-v1",
+      "changes": [
+        {
+          "file": "packages/workflow/src/semantic-diff-review.ts",
+          "change": "New file. Deterministic semantic detection for adversarial patch patterns: hard-coded fixture responses, test-input special-casing, environment-only behavior, empty/swallowing catches, dead branches, weakened/skipped/deleted assertions, unreferenced new symbols, comment-only changes. Findings are typed into ReviewFinding.code and appended by reviewDiff into the existing ReviewDecision.findings.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/workflow/src/diff-review.ts",
+          "change": "reviewDiff now runs the semantic layer on every diff and appends findings into the same decision object consumed by evaluateCompletion; no second authority added.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/workflow/src/types.ts",
+          "change": "ReviewFinding.code union widened with the seven semantic finding codes (test_assertion_weakened, error_swallow_added, environment_special_case, dead_branch_added, test_input_special_case, unreferenced_new_symbol, non_functional_change).",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/forgegreen-campaign/src/r23/tasks.ts",
+          "change": "Task schema widened additively for R25 corpus classes/roles (reviewer, investigation, test_fix, ambiguous); r23-task-manifest-1 literal preserved for the r23 protocol.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/forgegreen-campaign/src/r23/run-task.ts",
+          "change": "Reviewer tasks deliver their validated structured verdict as the run deliverable; blocked-with-verdict runs surface the structured summary for answer-key verification. Completion authority unchanged.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r25-live-reality/ — R25-RECOVERY-CHECKPOINT.md, R25-PHASE3-4-CHECKPOINT.md, R25-PHASE5-6-CHECKPOINT.md, live-preflight.json, qualification-pass1.json, durable-admission.json, quota-forecast.json, bench/raw/pilot/",
+      "recertifiedAt": "2026-09-21",
+      "sourceStateConstant": "R25_LIVE_REALITY_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 recertifications listed above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the R23 pinned-route recovery and governor injection above, and the R23 prompt/tool-contract coherence fix above. It also includes the R24 free-fabric-runtime recertification above.",

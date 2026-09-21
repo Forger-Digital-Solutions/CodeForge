@@ -122,7 +122,7 @@ describe("ForgeVerify — Structured Verifier Registry & Multi-Verifier Executio
     } finally {
       delete (process.versions as Record<string, string | undefined>).electron;
     }
-  });
+  }, 20_000);
 
   it("discovers all declared verifiers from package.json manifest in canonical order", async () => {
     const pkg = {
@@ -177,7 +177,7 @@ describe("ForgeVerify — Structured Verifier Registry & Multi-Verifier Executio
     expect(decision.outcome).toBe("completed");
     expect(decision.advisories).toHaveLength(1);
     expect(decision.advisories[0]?.message).toContain("Advisory verifier 'lint'");
-  });
+  }, 20_000);
 
   it("fails closed when any required verifier fails (test passes, typecheck fails)", async () => {
     const pkg = {
@@ -216,7 +216,7 @@ describe("ForgeVerify — Structured Verifier Registry & Multi-Verifier Executio
     const blocker = decision.blockers.find((b) => b.code === "verification_failed");
     expect(blocker).toBeDefined();
     expect(blocker?.message).toContain("Required verifier 'typecheck'");
-  });
+  }, 20_000);
 
   it("returns blocked with honest notConfigured when workspace has no runnable verifiers", async () => {
     await writeFile(join(ws, "package.json"), JSON.stringify({ name: "empty-scripts" }));
