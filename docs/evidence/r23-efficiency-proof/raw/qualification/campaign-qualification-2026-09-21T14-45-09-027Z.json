@@ -1,0 +1,89 @@
+{
+  "campaignId": "qualification-2026-09-21T14-45-09-027Z",
+  "phase": "qualification",
+  "recordedAt": "2026-09-21T14:50:36.338Z",
+  "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+  "providerId": "openrouter",
+  "pin": {
+    "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+    "name": "NVIDIA: Nemotron 3 Nano Omni (free)",
+    "contextLength": 256000,
+    "pricing": {
+      "prompt": "0",
+      "completion": "0"
+    },
+    "supportedParameters": [
+      "include_reasoning",
+      "max_tokens",
+      "reasoning",
+      "seed",
+      "temperature",
+      "tool_choice",
+      "tools",
+      "top_p"
+    ],
+    "checkedAt": "2026-09-21T14:45:08.924Z"
+  },
+  "allowanceAtStart": {
+    "limit": 1000,
+    "used": 219,
+    "remaining": 781,
+    "usage": 0,
+    "usageDaily": 0,
+    "checkedAt": "2026-09-21T14:45:09.025Z"
+  },
+  "probeGate": {
+    "recordedAt": "2026-09-21T14:43:23.543Z",
+    "verdict": "open",
+    "served": 2,
+    "n": 2,
+    "forced": false
+  },
+  "identity": {
+    "protocolVersion": "1.0.6",
+    "protocolDigest": "366035299fc1e50ee68dfa96e9d2afeb7cf68986864fc2bac5d33bc1f10104b8",
+    "codeforgeCommit": "85174434c495d4607dd6ec9568fdfea2d1d7f6be",
+    "codeforgeTreeDirty": false,
+    "environmentFingerprint": "19a9ad17176ae572f14a5a6d1781232c00852efcf90b4ec8535693660448dc7f",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "stopped": null,
+  "runs": [
+    {
+      "taskId": "qual-js-missing-export",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 7,
+      "totalTokens": null,
+      "wallClockMs": 45089,
+      "runId": "r23-qualification-qual-js-missing-export-optimized-r1-c08fb44e"
+    },
+    {
+      "taskId": "qual-js-off-by-one",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 14,
+      "totalTokens": null,
+      "wallClockMs": 119411,
+      "runId": "r23-qualification-qual-js-off-by-one-optimized-r1-7424b2ed"
+    },
+    {
+      "taskId": "qual-js-return-sign",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "verified_complete",
+      "modelCalls": 23,
+      "totalTokens": null,
+      "wallClockMs": 161928,
+      "runId": "r23-qualification-qual-js-return-sign-optimized-r1-097dd787"
+    }
+  ]
+}
