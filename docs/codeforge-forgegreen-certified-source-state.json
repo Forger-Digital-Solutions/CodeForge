@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "829fcc5d1dee9d4538464f8b5a07d7ec10bcb274151ac6bb6fdf2583084efbe1",
-  "surfaceVersion": "r21-autonomous-command-gate-v1",
+  "sourceStateId": "2149b1fdcf69cbe7de6b9b159c8c941059588edb3dea036086939629c031df07",
+  "surfaceVersion": "r23-pinned-route-recovery-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -56,7 +56,7 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "b2c44a81c63fec4b06e3450648ccbb1ec0fa0e5a",
+    "packages/server/src/agent-runtime.ts": "628ae98b43f678640b17ffcd5d1f0930488ea253",
     "packages/server/src/autonomous-orchestrator.ts": "8e7dc8a6942a8a973233d9af62424323b05f9bc3",
     "packages/server/src/duplicate-suppression.ts": "fd47f593e297f7910e379961da73e798957cbbf9",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
@@ -1007,9 +1007,27 @@
       "regressionEvidence": "new suite r21-autonomous-command-gate 11/11 (external/network denied under network:false, critical denied under network:true, ordinary commands still run, no durable record on denial); agent-security/runtime/tool-loop/recovery + approval-session-grants + approval-lifecycle + fg9 + fg1-suppression + eight-bit-failover + turn-boundary 62/62.",
       "recertifiedAt": "2026-09-20",
       "sourceStateConstant": "R21_AUTONOMOUS_COMMAND_GATE_SOURCE_STATE"
+    },
+    {
+      "label": "R23 pinned-route recovery and governor injection",
+      "reason": "The R23 free-supply campaign found that the autonomous path had no per-turn fault tolerance for pinned routes and bypassed an injected capacity governor; both are corrected in agent-runtime.ts. ForgeGreen optimization candidates, the verification-evidence-reuse advisor, the FG-12F cost gate and ForgeVerify validity authority are unchanged; prior campaign evidence remains historically accurate for its recorded source state. This entry records the reviewed drift rather than rewriting historical evidence.",
+      "priorSourceStateId": "829fcc5d1dee9d4538464f8b5a07d7ec10bcb274151ac6bb6fdf2583084efbe1",
+      "priorSurfaceVersion": "r21-autonomous-command-gate-v1",
+      "resultingSourceStateId": "2149b1fdcf69cbe7de6b9b159c8c941059588edb3dea036086939629c031df07",
+      "resultingSurfaceVersion": "r23-pinned-route-recovery-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Four reviewed changes on the provider-failure path, none in ForgeGreen policy or ForgeVerify authority: (1) executeAgentRun builds its ModelExecutionAdapter with the runtime's explicitly injected capacity governor instead of always the module singleton, so injected pacing (the R23 harness proxy, per-runtime configuration) is honoured and measured; (2) a pinned (explicit) model selection now consults 8-Bit with pinMode 'route' on a model-turn failure and honours bounded same-route retries (PINNED_ROUTE_MAX_SAME_ROUTE_RETRIES = 3 per turn, 8-Bit's consecutive-failure streak across turns) — rotation remains refused; previously every failure on a pinned route ended the child run outright; (3) a provider-rejected tool call (INVALID_TOOL_OUTPUT) is recorded in 8-Bit's tool-reliability ledger, the same ledger the locally-detected malformed-argument path feeds; (4) the production tool schemas are exported as agentToolDefinitions()/repositoryToolDefinitions() and the private builders delegate to them (no behavioural change) so production-shaped probes exercise the real request shape. Completion gate, ForgeVerify dispatch, verification-evidence reuse, ForgeGreen ledger persistence and the FG-12F cost gate are untouched.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Canonical vitest suite on 2026-09-21 (commit 3424a67): 426 files / 3 365 tests passed, 47 skipped, and exactly these two source-state guards failing on the pre-recertification fingerprint; providers (203), eight-bit, forgegreen-campaign R23 goldens and the server failover/security suites pass; security gate PASS (secret scan, dependency audit 0 high/critical, public claims, doc links).",
+      "recertifiedAt": "2026-09-21",
+      "sourceStateConstant": "CODEFORGE_R23_PINNED_ROUTE_RECOVERY_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 recertifications listed above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 recertifications listed above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the R23 pinned-route recovery and governor injection above.",
   "recertifiedAt": "2026-09-20T22:56:31.177Z",
   "recertification": {
     "phase": "R21 autonomous run_command classification and network-lease enforcement",

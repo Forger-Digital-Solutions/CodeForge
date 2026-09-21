@@ -11,6 +11,7 @@ on the provider (capability signal); "verified task" = protocol `verified_comple
 |---|---|---|---|---|---|---|---|---|---|
 | openrouter::nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free | 23 | 7 | 9 | **28.9%** (56/194) | 40 962 · 80 792 | 0.90 | 7 · 15 | **5.2 s** | 52 s |
 | groq::openai/gpt-oss-120b | 4 | 0 | 3 | 11.4% (8/70, all through the adapter blind spot — F1) | — (36 565 · 48 680 per verifier-passed run) | 0.94 | 18 · 22 | **0.63 s** | 675 s (≈ 93% governor pacing — F2) |
+| groq::openai/gpt-oss-20b (rounds 4–5) | 4 | 3 | 4 | 9.6% (5/52: 4 model-side tool rejections, 1 governor-caused 429 — fixed) | 17 878 · 42 441 (3 verified tasks: 42.4k / 17.9k / 14.3k) | 0.93 | 11 · 21 | ~0.5 s | 423 s (round 4, 60 s pacing) → 292 s (round 5, header-paced, 21 s active) |
 | openrouter::inclusionai/ling-3.0-flash-vl:free | 2 | 0 | 1 | 25% | — | 0.98 | 6 | 1.7 s | 15 s |
 
 Readings:
@@ -27,9 +28,10 @@ Readings:
 | Pool | Cap | Per task | Tasks/day | State today |
 |---|---|---|---|---|
 | OpenRouter `:free` (deposit-unlocked) | 1 000 requests/day | 15 calls (p90) | **~66** | upstream saturated at 10:32Z; usable only in clean windows; multi-tenant managed use not terms-cleared (M14C) |
-| Groq free tier, gpt-oss-120b | 200 000 tokens/day, continuous refill (8.3k/h) | ~37–41k tokens | **~5** | round 3 in flight; owner-dev credential (not a public pool) |
+| Groq free tier, gpt-oss-120b | 200 000 tokens/day, continuous refill (8.3k/h) | ~37–41k tokens | **~5** | not qualifiable (§2.2(c), 11–17% malformed calls); owner-dev credential (not a public pool) |
+| Groq free tier, gpt-oss-20b (separate bucket) | 200 000 tokens/day, continuous refill | ~18–42k tokens (median 18k) | **~5–11** | 3/3 verified, not qualified (§2.2(c), ~10% malformed calls); per-model buckets mean Groq ≈ 10–16 tasks/day across both |
 | Cloudflare Workers AI, if Workers Free is attested | 10 000 neurons/day hard-stop | ~1 400 neurons (list-price conversion: $0.35/M in, $0.75/M out, $0.011 per 1k neurons) | **~7** | fail-closed: plan and usage unreadable with the current token (F6) |
-| **All managed pools, optimistic** | | | **~78 tasks/day ≈ 26 DAU at 3 tasks/user/day** | |
+| **All managed pools, optimistic** | | | **~83–89 tasks/day ≈ 28–30 DAU at 3 tasks/user/day** (none qualified today) | |
 
 User-connected entitlement (per user, not pooled): GitHub Copilot Free ≈ 50 premium requests/month ≈ 1.6
 agent tasks/day/user; Copilot Pro ≈ 300/month ≈ 10/day/user (each agent task ≈ one premium request at 1×

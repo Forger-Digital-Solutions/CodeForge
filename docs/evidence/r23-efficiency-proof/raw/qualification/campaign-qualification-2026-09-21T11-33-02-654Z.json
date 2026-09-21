@@ -1,0 +1,90 @@
+{
+  "campaignId": "qualification-2026-09-21T11-33-02-654Z",
+  "phase": "qualification",
+  "recordedAt": "2026-09-21T11:37:55.378Z",
+  "model": "openai/gpt-oss-20b",
+  "providerId": "groq",
+  "pin": {
+    "id": "openai/gpt-oss-20b",
+    "name": "openai/gpt-oss-20b",
+    "contextLength": 131072,
+    "ownedBy": "OpenAI",
+    "checkedAt": "2026-09-21T11:33:02.611Z",
+    "pricingVerification": "provider-free-tier-policy + ForgeZero FREE_ALLOWANCE admission + live rate-limit headers (§2.1b)",
+    "quotaAtPin": {
+      "providerId": "groq",
+      "status": 200,
+      "requests": {
+        "limit": 1000,
+        "remaining": 956,
+        "reset": "1h3m21.6s"
+      },
+      "tokens": {
+        "limit": 8000,
+        "remaining": 7797,
+        "reset": "1.522s"
+      },
+      "observedAt": "2026-09-21T11:33:02.604Z"
+    },
+    "toolProbe": {
+      "toolCallsEmitted": 1,
+      "usage": {
+        "queue_time": 0.003095723,
+        "prompt_tokens": 139,
+        "prompt_time": 0.006792951,
+        "completion_tokens": 50,
+        "completion_time": 0.052901671,
+        "total_tokens": 189,
+        "total_time": 0.059694622,
+        "completion_tokens_details": {
+          "reasoning_tokens": 28
+        }
+      }
+    }
+  },
+  "allowanceAtStart": {
+    "limit": 1000,
+    "used": 44,
+    "remaining": 956,
+    "remainingTokens": 7797,
+    "dailyTokensUsed": 74650,
+    "dailyTokenBucketLevel": 129364,
+    "dailyTokenBucketModel": "token bucket per model (openai/gpt-oss-20b) cap=200000 refill=cap/24h replayed over ledger (§6.3 v1.0.6)",
+    "source": "x-ratelimit headers (live adapter observation)",
+    "checkedAt": "2026-09-21T11:33:02.652Z"
+  },
+  "probeGate": {
+    "recordedAt": "2026-09-21T11:31:53.124Z",
+    "verdict": "open",
+    "served": 2,
+    "n": 2,
+    "forced": false
+  },
+  "identity": {
+    "protocolVersion": "1.0.6",
+    "protocolDigest": "366035299fc1e50ee68dfa96e9d2afeb7cf68986864fc2bac5d33bc1f10104b8",
+    "codeforgeCommit": "a5669eae2ff324776c74a79e34c07b1badd2c19a",
+    "codeforgeTreeDirty": false,
+    "environmentFingerprint": "76a567a124fd2a4b4fea53d40afeae1170ef9d6805cff54ea804afbcee6974f7",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "stopped": "allowance",
+  "runs": [
+    {
+      "taskId": "qual-js-missing-export",
+      "arm": "optimized",
+      "repetition": 1,
+      "classification": "provider_failure",
+      "modelCalls": 21,
+      "totalTokens": null,
+      "wallClockMs": 291590,
+      "runId": "r23-qualification-qual-js-missing-export-optimized-r1-18907f6e"
+    }
+  ]
+}
