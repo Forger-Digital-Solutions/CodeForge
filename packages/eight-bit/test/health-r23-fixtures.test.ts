@@ -36,6 +36,16 @@ describe("classifyFailure — R23 live campaign fixtures (2026-09-21)", () => {
     expect(classifyFailure(Object.assign(new Error("mistral error (429): Requests rate limit exceeded"), { code: "RATE_LIMITED", status: 429 }))).toBe("RATE_LIMITED");
   });
 
+  it("[PASS] Groq server-side tool validation is INVALID_TOOL_OUTPUT (bounded retry), even behind the runtime's \"Provider error:\" prefix", () => {
+    // R23 round 3 (10:42–10:55Z): 4 of 23 calls — json/repo_tree hallucinated tool names, run_command missing 'command'.
+    const runtimeShaped = new Error("Provider error: INVALID_TOOL_OUTPUT - groq stream error (tool_use_failed) after HTTP 200: Tool call validation failed: tool call validation failed: attempted to call tool 'json' which was not in request.tools");
+    expect(classifyFailure(runtimeShaped)).toBe("INVALID_TOOL_OUTPUT");
+    expect(classifyFailure(new Error("Provider error: PROVIDER_ERROR - groq stream error (tool_use_failed) after HTTP 200: Tool call validation failed: parameters for tool run_command did not match schema: errors: [missing properties: 'command']"))).toBe("INVALID_TOOL_OUTPUT");
+    expect(FAILURE_POLICY.INVALID_TOOL_OUTPUT).toBe("bounded_retry");
+    // The prefix alone must not turn a real outage classification off.
+    expect(classifyFailure(new Error("Provider error: 502 - Provider returned error"))).toBe("PROVIDER_OUTAGE");
+  });
+
   it("[PASS] Groq in-band frames surfaced by the adapter classify by their own message, no longer as generic interruptions", () => {
     expect(classifyFailure(new Error("Provider error: RATE_LIMITED - groq stream error (rate_limit_exceeded) after HTTP 200: Rate limit reached for model openai/gpt-oss-120b on tokens per minute (TPM): Limit 8000, Used 7900, Requested 3300. Please try again in 24.75s."))).toBe("RATE_LIMITED");
     expect(classifyFailure(new Error("Provider error: PROVIDER_ERROR - groq stream error (internal_server_error) after HTTP 200: over capacity"))).toBe("TEMPORARY_CAPACITY");

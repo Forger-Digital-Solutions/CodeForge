@@ -471,7 +471,13 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     let code = "PROVIDER_ERROR";
     let retryable = true;
     let status: number | undefined = numericCode;
-    if (numericCode === 429 || /rate.?limit/.test(type) || /rate limit/.test(lowered)) {
+    if (type === "tool_use_failed" || /tool call validation failed|not in request\.tools|did not match schema/.test(lowered)) {
+      // Groq validates tool calls server-side and rejects the whole response (R23 round 3:
+      // "attempted to call tool 'json' which was not in request.tools"). The model's output is
+      // invalid, not the route — a resample is the right recovery, and the ledger must say so.
+      code = "INVALID_TOOL_OUTPUT";
+      status ??= 400;
+    } else if (numericCode === 429 || /rate.?limit/.test(type) || /rate limit/.test(lowered)) {
       code = "RATE_LIMITED";
       status ??= 429;
     } else if (numericCode === 401 || numericCode === 403 || /auth|permission/.test(type)) {

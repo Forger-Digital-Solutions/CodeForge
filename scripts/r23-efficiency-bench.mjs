@@ -705,7 +705,9 @@ async function modeQualify() {
     const runs = result.summary;
     const records = runs.map((run) => JSON.parse(fs.readFileSync(path.join(rawDir("qualification"), `${run.runId}.json`), "utf8")));
     const hangsOrUpstream = records.filter((record) => record.inference.calls.some((call) => call.outcome === "error" && (call.rateLimited || (call.httpStatus ?? 0) >= 500 || /hang|timeout/i.test(call.errorCode ?? "")))).length;
-    const malformedToolCalls = records.filter((record) => record.outcome.stopReason.toLowerCase().includes("invalid") || record.notes.some((note) => /malformed/i.test(note))).length;
+    // §2.2(c): a run with any tool call the provider rejected as malformed (INVALID_TOOL_OUTPUT —
+    // Groq server-side validation, R23 round 3) is a malformed-tool-call run, retried or not.
+    const malformedToolCalls = records.filter((record) => record.outcome.stopReason.toLowerCase().includes("invalid") || record.notes.some((note) => /malformed/i.test(note)) || record.inference.calls.some((call) => call.outcome === "error" && call.errorCode === "INVALID_TOOL_OUTPUT")).length;
     results.push({
       modelId,
       providerId,

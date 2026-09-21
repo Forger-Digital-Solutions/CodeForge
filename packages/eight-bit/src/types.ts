@@ -91,7 +91,10 @@ export const FAILURE_POLICY: Readonly<Record<FailureReason, FailurePolicy>> = {
   AUTH_FAILURE: "cooldown_and_rotate",
   FREE_ELIGIBILITY_REMOVED: "remove_and_refresh",
   CONTEXT_LIMIT: "surface_only",
-  INVALID_TOOL_OUTPUT: "surface_only",
+  // A tool call the provider rejected (or the runtime could not parse) is a per-sample model error:
+  // resample the same route a bounded number of times, exactly as the agent loop already tolerates
+  // locally-detected malformed arguments (R23: Groq server-side validation, ~17% of gpt-oss calls).
+  INVALID_TOOL_OUTPUT: "bounded_retry",
   STRUCTURED_OUTPUT_FAILURE: "surface_only",
   TEMPORARY_CAPACITY: "cooldown_and_rotate",
   // A 402 / "upgrade your plan" answer means this route is not free for THIS account: drop it
@@ -119,7 +122,7 @@ export const FAILURE_USER_MESSAGE: Readonly<Record<FailureReason, string>> = {
   AUTH_FAILURE: "This provider connection needs attention — switching to another route.",
   FREE_ELIGIBILITY_REMOVED: "This route stopped being free — removed from ForgeAuto/Free.",
   CONTEXT_LIMIT: "The task context is too large for this model.",
-  INVALID_TOOL_OUTPUT: "The model produced an invalid tool call.",
+  INVALID_TOOL_OUTPUT: "The model produced an invalid tool call — retrying on the same route.",
   STRUCTURED_OUTPUT_FAILURE: "The model produced invalid structured output.",
   TEMPORARY_CAPACITY: "Free providers are temporarily at capacity — switching routes.",
   PAID_PLAN_REQUIRED: "This route requires a paid plan on your account — excluded from ForgeAuto/Free.",

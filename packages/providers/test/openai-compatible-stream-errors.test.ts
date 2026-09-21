@@ -128,6 +128,19 @@ describe("OpenAICompatibleAdapter in-band stream errors", () => {
     await expect(collect(adapter(fetchFn).streamChat(req))).rejects.toMatchObject({ code: "STREAM_INTERRUPTED", retryable: true, message: expect.stringContaining("0 byte(s)") });
   });
 
+  it("maps Groq server-side tool validation (tool_use_failed) to INVALID_TOOL_OUTPUT, retryable", async () => {
+    // R23 round 3, live: the model called a tool that was not in request.tools.
+    const fetchFn = (async () => sseResponse([
+      `data: {"error":{"message":"Tool call validation failed: tool call validation failed: attempted to call tool 'json' which was not in request.tools","type":"tool_use_failed","code":"tool_use_failed"}}`,
+    ])) as unknown as typeof fetch;
+    const events = await collect(adapter(fetchFn).streamChat(req));
+    const error = events.at(-1) as Extract<StreamEvent, { type: "error" }>;
+    expect(error.code).toBe("INVALID_TOOL_OUTPUT");
+    expect(error.retryable).toBe(true);
+    expect(error.status).toBe(400);
+    expect(error.message).toContain("not in request.tools");
+  });
+
   it("applies to the factory-built Groq adapter", async () => {
     const fetchFn = (async () => sseResponse(['data: {"error":{"message":"Internal Server Error","type":"internal_server_error"}}'])) as unknown as typeof fetch;
     const events = await collect(createGroqAdapter({ apiKey: "g", fetchFn }).streamChat(req));

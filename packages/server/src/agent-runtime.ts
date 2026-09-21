@@ -3818,6 +3818,10 @@ export class AgentRuntime {
       ),
     });
 
+    // A provider-rejected tool call is a model-quality fact for 8-Bit's reliability ledger (the same
+    // ledger the locally-detected malformed-argument path feeds), not a route-health event.
+    if (outcome.reason === "INVALID_TOOL_OUTPUT") this.eightBit.recordToolCallOutcome(state.providerId, state.modelId, "malformed");
+
     // Shared (cross-session) 8-Bit health: the registry and Settings see the same cooldown the
     // turn just observed, so a rate-limited route is not re-picked by the next session either.
     if (outcome.action !== "retry_same" && outcome.action !== "surface") {

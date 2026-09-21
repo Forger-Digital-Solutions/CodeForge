@@ -65,6 +65,11 @@ export function classifyFailure(error: unknown): FailureReason {
   // A stream the provider terminated before [DONE] is an upstream failure, not an unknown one —
   // without this the dominant free-tier failure mode lands in UNKNOWN and loses cooldown/rotation
   // semantics. Transport-level stream failures (socket errors, local network) stay TRANSIENT_NETWORK.
+  // Server-side tool-call validation (Groq `tool_use_failed`, R23 round 3: hallucinated tool
+  // names, missing required parameters) is the model's fault, never the route's health. Evaluated
+  // before every outage/transport rule: the runtime prefixes thrown stream errors with
+  // "Provider error: <code> - …", which the outage fallback below would otherwise match.
+  if (code === "INVALID_TOOL_OUTPUT" || /invalid.*tool.*(call|output)|malformed.*tool|tool_use_failed|tool call validation failed|not in request\.tools|did not match schema/.test(msg)) return "INVALID_TOOL_OUTPUT";
   if (code === "STREAM_INTERRUPTED" || code === "PROVIDER_STREAM_INTERRUPTED" || /ended before the provider sent|stream disconnect/.test(msg)) return "PROVIDER_OUTAGE";
   if (code === "STREAM_FAILED") return "TRANSIENT_NETWORK";
   if (/\b429\b|rate.?limit/.test(msg)) return "RATE_LIMITED";
@@ -81,7 +86,6 @@ export function classifyFailure(error: unknown): FailureReason {
   if (/timed? ?out|timeout/.test(msg)) return "TIMEOUT";
   if (/\b5\d\d\b|upstream|bad gateway|service unavailable|provider (error|outage)/.test(msg)) return "PROVIDER_OUTAGE";
   if (/econnreset|econnrefused|enotfound|network|fetch failed/.test(msg)) return "TRANSIENT_NETWORK";
-  if (/invalid.*tool.*(call|output)|malformed.*tool/.test(msg)) return "INVALID_TOOL_OUTPUT";
   if (/structured output|schema validation failed|json parse/.test(msg)) return "STRUCTURED_OUTPUT_FAILURE";
   if (status === 400 || /\b400\b|bad request|invalid_request_error|unsupported parameter/.test(msg)) return "BAD_REQUEST";
   return "UNKNOWN";
