@@ -13,3 +13,4 @@ export * from "./capacity-preflight.js";
 export * from "./capacity-events.js";
 export * from "./capacity-simulator.js";
 export * from "./user-connected-free.js";
+export * from "./copilot-user-connected.js";

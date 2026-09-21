@@ -81,3 +81,28 @@ operates no quota here and pays nothing; the user's plan does. ForgeZero admissi
 3. Product decision: Settings → Connected providers → "GitHub Copilot" (state: `Account connection required`).
 
 Nothing above is a workaround: every call used the official SDK with the user's own token.
+
+## 8. M14A-3 — supply-side scaffolding landed (2026-09-21 ~14:55Z, no inference)
+
+`packages/forge-zero/src/copilot-user-connected.ts` now implements the entitlement domain without touching
+any inference path:
+
+- `CopilotFreeConnection` / `COPILOT_PROVIDER_ID` (`github-copilot`) — `USER_CONNECTED_FREE`, `PER_USER_POOL`,
+  `USER_ACCOUNT` scope, per-user pool id via `copilotPoolId` (account identity hashed, never raw).
+- `evaluateCopilotFreeOnlyAdmission` — READY only with a proven hard stop: any bucket with
+  `overageAllowedWithExhaustedQuota` or `usageAllowedWithExhaustedQuota` true → `PAID_CROSSOVER_BLOCKED`;
+  missing bucket → `UNKNOWN_BALANCE`; stale `getQuota` observation (>15 min) → `STALE_QUOTA`; remainder
+  under estimate → `EXHAUSTED`. `copilotHardStopProven` requires every observed bucket's post-quota flags
+  explicitly false.
+- `buildCopilotUserCapacityPool` — chat bucket → `requests` window, premiumInteractions → `provider_units`
+  (zero premium never starves chat; completions is the inline-product surface, not agentic capacity).
+- `buildCopilotUserRoute` — **ineligible by default**: `lifecycle: POLICY_REVIEW`,
+  `managedMultiUserAllowed: false`, `explicitZeroPrice: false` (entitlement, not a $0 price),
+  `paidFallbackDisabled: true`. Eligibility requires terms cleared + APPROVED + `freeOnlyAdmissionProven`.
+- `CopilotUserConnectedFreeFleet` — projects only `policyEnabled && supportsToolCalls` models, per-user
+  isolation, disconnect removes the user entirely.
+
+Tests: `packages/forge-zero/test/copilot-user-connected.test.ts` — 11 tests green, built on the real account
+fixture (chat 200/102, premium 0/0, hard-stop flags false). Still not implemented: the inference adapter
+(Copilot SDK session → provider interface), token acquisition UX, `assistant.usage` → receipts. Those need
+§7 items 1–3.
