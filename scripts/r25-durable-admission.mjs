@@ -174,6 +174,28 @@ try {
       : fail("E.per_user_fairness", `claims=${claims.length} distinctExec=${distinctExec.size} distinctUsers=${distinctUsers.size}`);
   }
 
+  // ---- Case G: fairness under sustained contention — round-robin across users ----------------
+  {
+    const route = { providerId: `r25-g-${suffix}`, modelId: "verified-free" };
+    const users = await Promise.all(Array.from({ length: 4 }, async (_, i) => (await db.createUser({ displayName: `R25 G${i}`, primaryIdentity: `r25:${suffix}:g:${i}` })).id));
+    await db.setHostedProviderCapacity({ ...route, maxConcurrent: 2 });
+    for (let i = 0; i < 20; i++) await db.enqueueHostedExecution({ id: `r25g-${suffix}-${i}`, idempotencyKey: `r25g-key-${suffix}-${i}`, userId: users[i % users.length], taskId: `task-g-${i}`, ...route });
+    const admittedPerUser = new Map(users.map((u) => [u, 0]));
+    let claims = 0;
+    for (let round = 0; round < 20; round++) {
+      const claim = await db.claimNextHostedExecution({ workerId: `fair-w${round % 2}`, leaseMs: 30_000, maxUserConcurrent: 4, providerIds: [route.providerId] });
+      if (!claim) break;
+      claims++;
+      admittedPerUser.set(claim.execution.userId, (admittedPerUser.get(claim.execution.userId) ?? 0) + 1);
+      await db.completeHostedExecution({ executionId: claim.execution.id, userId: claim.execution.userId, workerId: `fair-w${round % 2}`, leaseToken: claim.execution.leaseToken, status: "completed" });
+    }
+    const counts = [...admittedPerUser.values()];
+    const min = Math.min(...counts), max = Math.max(...counts);
+    claims === 20 && min >= 3 && max - min <= 2
+      ? pass("G.fair_scheduling", `capacity=2, 20 executions across 4 users drained round-robin — per-user admissions ${counts.join("/")} (spread ≤2, no starvation)`)
+      : fail("G.fair_scheduling", `claims=${claims} perUser=${counts.join("/")} spread=${max - min}`);
+  }
+
   // ---- Case F: queue drain — every execution completes exactly once --------------------------
   {
     const route = { providerId: `r25-f-${suffix}`, modelId: "verified-free" };

@@ -52,6 +52,48 @@ explicit small pools (max 4) after the R20 harness saturated the server (20 work
 | D dispatching crash | no dispatch-id → `recovery_pending` → requeue **refused** → failed closed; with dispatch-id → requeued → reclaimed at attempt=2 under a new fencing token |
 | E per-user fairness | capacity 6, `maxUserConcurrent` 1, 24 queued across 6 users → 6 claims on 6 distinct users (no capture, no dupes) |
 | F queue drain | 40 executions claimed+completed exactly once each; queue empty |
+| G fair scheduling | capacity 2, 20 executions across 4 users drained round-robin → per-user admissions **5/5/5/5** — no starvation, no capture |
+
+## Phase 7 — Chaos and crash recovery (real process boundaries)
+
+`packages/server/test/run-recovery.test.ts` — 18/18 pass standalone (Windows, 17.4 s). The
+suite kills real spawned child processes mid-run and verifies recovery through durable
+SQLite journals + tool-execution records:
+
+- **RESUME** — crash before first model call → completes; crash after a real file write →
+  completes with **no duplicate write**; crash with an unobserved read-only call → replayed
+  **exactly once**.
+- **REPLAN** — crash with an unobserved `write_file` or `run_command` converges honestly to
+  `converged_failed`; the unobserved side effect is **never re-executed** (verified on disk).
+- **FAIL** — a non-terminal worker with no durable journal converges to `failed`.
+- Cancelled/terminal workers never resurrect; a killed reviewer resumes and still fails the
+  run closed when its verdict blocks.
+
+Combined with Phase 6 case D (post-dispatch worker loss → `recovery_pending` → fail-closed
+resolution), the runtime-crash and queue-crash surfaces are both proven.
+
+## Phase 8 — Quota forecast vs observed reality
+
+`scripts/r25-quota-forecast.mjs` replays the pilot's **live-observed** quota headers through
+ForgeZero's real `forecastCapacity` engine with a demand profile measured from the actual runs
+(≈11 calls / ≈32 k tokens per arm):
+
+- **Product posture:** route ineligible — `MANAGED_MULTI_USER_TERMS_NOT_CLEARED`. Correct:
+  owner-plan supply is not managed multi-user capacity; the gate is honest.
+- **Terms-cleared physical capacity:** `estimatedTaskUnits = 2` (946 requests / 84 387 daily
+  tokens remaining) — matches the allowance gate's actual decision to void the third pair.
+  Forecast prediction ↔ observed enforcement agree.
+- **Alert recorded:** provider concentration 100 % on a single route (>80 % threshold).
+- **Actual pair deltas (honest):** `checkout-discount` optimized −3 calls vs control (30 %
+  fewer calls, both verified); `session-clock` optimized +4 calls / +20 354 tokens (control
+  truncated by tool_failure). One pair saved quota, one did not — reported as measured.
+
+## Phase 9 — Multi-user fairness
+
+Admission-layer evidence above (cases E + G): concurrent claims isolate per-user capacity,
+and sustained contention round-robins perfectly (5/5/5/5). Deeper product-level multi-user
+load (concurrent real inference across user accounts) remains out of scope for this
+environment — owner-key supply is single-tenant.
 
 One honest operational finding: under concurrent racing a claim can return empty even with
 eligible capacity (SKIP LOCKED head-row collision) — dispatchers must loop; the proof's

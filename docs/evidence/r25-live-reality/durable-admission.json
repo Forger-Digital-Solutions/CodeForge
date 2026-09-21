@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "evidenceClass": "local_real_postgresql",
-  "recordedAt": "2026-09-21T23:11:55.086Z",
+  "recordedAt": "2026-09-21T23:18:14.757Z",
   "cases": {
     "A.multi_process_admission": {
       "pass": true,
@@ -13,7 +13,7 @@
     },
     "C.idempotent_enqueue": {
       "pass": true,
-      "detail": "duplicate idempotency key returned existing execution r25c-7a1568b9-0; rows=1"
+      "detail": "duplicate idempotency key returned existing execution r25c-42626539-0; rows=1"
     },
     "D.dispatching_crash_recovery": {
       "pass": true,
@@ -22,6 +22,10 @@
     "E.per_user_fairness": {
       "pass": true,
       "detail": "capacity=6, maxUserConcurrent=1, 24 queued across 6 users → 6 claims on 6 distinct users (no single-user capture, no duplicate execution)"
+    },
+    "G.fair_scheduling": {
+      "pass": true,
+      "detail": "capacity=2, 20 executions across 4 users drained round-robin — per-user admissions 5/5/5/5 (spread ≤2, no starvation)"
     },
     "F.queue_drain": {
       "pass": true,

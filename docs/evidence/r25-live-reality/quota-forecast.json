@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "live_quota_observation + real_forecast_engine",
+  "recordedAt": "2026-09-21T23:16:44.539Z",
+  "campaignId": "pilot-2026-09-21T22-59-51-949Z",
+  "route": "groq::openai/gpt-oss-120b",
+  "observedQuota": {
+    "requests": {
+      "limit": 1000,
+      "remaining": 946,
+      "source": "x-ratelimit headers (live adapter observation)"
+    },
+    "dailyTokens": {
+      "limit": 200000,
+      "used": 117150,
+      "remaining": 84387,
+      "source": "x-ratelimit headers (live adapter observation)"
+    }
+  },
+  "measuredDemand": {
+    "avgCallsPerRun": 10.75,
+    "avgTokensPerRun": 29880,
+    "sampleSize": 4
+  },
+  "forecast": {
+    "productPosture": {
+      "eligible": false,
+      "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+      "estimatedTaskUnits": 0,
+      "availableRequests": 0,
+      "availableTokens": 0,
+      "countedInPool": false,
+      "alerts": [
+        "role coder has no eligible route"
+      ]
+    },
+    "termsClearedVariant": {
+      "eligible": true,
+      "exclusionReason": null,
+      "estimatedTaskUnits": 2,
+      "availableRequests": 946,
+      "availableTokens": 84387,
+      "countedInPool": true,
+      "alerts": [
+        "provider concentration 100.0% exceeds 80%"
+      ]
+    }
+  },
+  "pairDeltas": [
+    {
+      "taskId": "r25-ambiguous-js-checkout-discount",
+      "complete": true,
+      "control": {
+        "calls": 10,
+        "tokens": 21031,
+        "classification": "verified_complete"
+      },
+      "optimized": {
+        "calls": 7,
+        "tokens": null,
+        "classification": "verified_complete"
+      },
+      "callDelta": -3,
+      "tokenDelta": null
+    },
+    {
+      "taskId": "r25-ambiguous-ts-session-clock",
+      "complete": true,
+      "control": {
+        "calls": 11,
+        "tokens": 24127,
+        "classification": "tool_failure"
+      },
+      "optimized": {
+        "calls": 15,
+        "tokens": 44481,
+        "classification": "verified_complete"
+      },
+      "callDelta": 4,
+      "tokenDelta": 20354
+    }
+  ],
+  "interpretation": "productPosture is the honest product-level verdict (owner-plan supply is not managed-multi-user capacity); termsClearedVariant is the raw physical quota answer. pairDeltas report actual optimized-minus-control consumption (negative = optimized saved quota)."
+}
