@@ -1,36 +1,18 @@
 {
-  "schema": "r27-forgegreen-ab-evidence-3",
-  "recordedAt": "2026-09-22T22:49:55.261Z",
+  "schema": "r27-forgegreen-preflight-evidence-1",
+  "recordedAt": "2026-09-22T22:51:26.506Z",
   "manifestVersion": "r27-golden-manifest-1",
-  "status": "R27_FORGEGREEN_DETERMINISTIC_MECHANISM_PROVEN_LIVE_VALUE_NOT_PROVEN",
-  "classification": "DETERMINISTIC_MECHANISM_AB_PLUS_PREFLIGHT",
-  "supersedes": "r27-forgegreen-ab-evidence-1",
-  "correction": "The superseded runner generated provider, token, context, tool, and wall-time values with hard-coded simulation profiles. Those values were not measured from ForgeGreen or AgentRuntime and cannot support an empirical A/B claim.",
+  "status": "R27_FORGEGREEN_PREFLIGHT_COMPLETE",
+  "classification": "DETERMINISTIC_PRECONDITION_ONLY",
+  "purpose": "Golden-fixture preflight only; this command does not create or replace ForgeGreen A/B evidence.",
+  "correction": "The former runner generated provider, token, context, tool, and wall-time values with hard-coded simulation profiles. Those values were not measured from ForgeGreen or AgentRuntime and cannot support an empirical A/B claim.",
   "measured": {
     "referenceFixtureVerifierEligibility": true,
-    "forgeGreenMechanismAB": true,
+    "forgeGreenMechanismAB": false,
     "adaptiveTopologyAB": false,
     "liveModelValue": false
   },
-  "deterministicRuntimeReceipt": {
-    "path": "R27-FORGREEN-RUNTIME-DETERMINISTIC/forgegreen-ab.json",
-    "command": "R21_EVIDENCE_DIR=<receipt-directory> node node_modules/vitest/vitest.mjs run packages/server/test/r21-forgegreen-ab.test.ts",
-    "result": "1 test file, 15 tests passed",
-    "design": "Production AgentRuntime, ForgeGreen OFF versus ON, deterministic scripted provider, three alternating repetitions per arm, equal status/summary/workspace hash required.",
-    "observed": {
-      "tasks": 13,
-      "offPhysicalToolExecutions": 103,
-      "onPhysicalToolExecutions": 81,
-      "toolDispatchesAvoided": 22,
-      "offModelVisibleContextBytes": 9532009,
-      "onModelVisibleContextBytes": 7821991,
-      "providerCallsAvoided": 0,
-      "tasksWithWallTimeImprovement": 10,
-      "crossSiblingSuppression": "none; explorer overlap remains a measured waste candidate"
-    },
-    "limitation": "The scripted model follows a fixed tool trace, so this proves duplicate-suppression mechanics and equal deterministic outcomes, not changes in a live model's decisions, topology crossover, or live value."
-  },
-  "requiredForLiveValue": "Run paired live free-route topology experiments with identical repository state, model budget, verifier, tool permissions, and completion criteria; persist only observed provider receipts and preserve quota or availability blockers.",
+  "requiredForAB": "Run identical production AgentRuntime/orchestrator arms with ForgeGreen OFF and ON, then persist their receipts. A deterministic scripted-provider run can prove mechanism behavior only; a live-model run is additionally required for live value.",
   "summary": {
     "total": 15,
     "referenceVerifierPassed": 13,

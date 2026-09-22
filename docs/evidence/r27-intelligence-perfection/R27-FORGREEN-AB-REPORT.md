@@ -1,34 +1,46 @@
-# R27 ForgeGreen Clean A/B Campaign Report
+# R27 ForgeGreen A/B Report
 
-Status: `R27_FORGEGREEN_CLEAN_AB_PROVEN`
+Status: `R27_FORGEGREEN_DETERMINISTIC_MECHANISM_PROVEN_LIVE_VALUE_NOT_PROVEN`
 
-## Executive Summary
+## Correction to the superseded R27 output
 
-The R27 Clean A/B Campaign resolved the core attribution confounding identified in the R26 campaign. In R26, eight distinct switches were toggled simultaneously between control and treatment, making it impossible to separate the contribution of individual ForgeGreen mechanisms from topology orchestration overhead.
+The prior R27 A/B script generated provider, token, context, tool, and elapsed-time values from
+hard-coded simulation profiles. It only ran golden-task reference verifiers, not ForgeGreen or
+AgentRuntime. Those former empirical efficiency and crossover claims are withdrawn. The retained
+preflight confirms 13 of 15 reference fixtures pass and the two Python fixtures are honestly
+`BLOCKED_ENVIRONMENT`.
 
-R27 decoupled these variables by executing two orthogonal, strictly controlled benchmark series across the digest-locked golden task suite:
-1. **Experiment 1 (Mechanism A/B):** Topology was held constant at `single_agent` with identical verifiers and context parameters, testing ForgeGreen OFF vs ON.
-2. **Experiment 2 (Topology A/B):** Evaluated single-agent execution against the adaptive orchestrator across task complexity tiers.
+## Deterministic production-runtime A/B
 
-## Crossover & Efficiency Results by Task Category
+`packages/server/test/r21-forgegreen-ab.test.ts` was rerun with its structured receipt persisted
+at `R27-FORGREEN-RUNTIME-DETERMINISTIC/forgegreen-ab.json`. It executes production AgentRuntime
+arms with ForgeGreen OFF and ON, a deterministic scripted provider, and three alternating
+repetitions per arm. The 15-test suite passed.
 
-| Category | Tasks Evaluated | Mechanism Token Delta | Mechanism Wall Time Delta | Optimal Topology Policy | Crossover Verdict |
-|---|---|---|---|---|---|
-| **Tiny** | 5 | +1.8% | -3.3% | Minimal Single Coder (0 subagents) | `NEUTRAL_MINIMAL_INTERVENTION` |
-| **Small** | 2 | +7.5% | +4.3% | Selective / Dual-Agent | `MODERATE_EFFICIENCY_GAIN` |
-| **Medium** | 4 | +17.2% | +15.2% | Parallel Explorer + Coder + Reviewer | `STRONG_EFFICIENCY_GAIN` |
-| **Large** | 1 | +24.8% | +22.9% | Full Orchestration (2 Explorers + Planner + Coder + Reviewer) | `MAXIMUM_EFFICIENCY_GAIN` |
-| **Ambiguous** | 1 | +14.6% | +11.8% | Targeted Exploration | `STRONG_EFFICIENCY_GAIN` |
+Across 13 deterministic tasks, the arms had equal terminal status, summary, and workspace hash.
+ForgeGreen reduced physical tool executions from 103 to 81 (22 avoided) and the receipt recorded
+7,821,991 model-visible context bytes versus 9,532,009 in control. Provider calls were unchanged,
+as expected with a fixed model tool trace. Ten task medians showed a wall-time improvement, but
+wall time is retained as a receipt rather than a performance guarantee.
 
-## Key Empirical Findings
+The subagent-heavy case also records an important limit: ForgeGreen suppresses duplicate reads
+within an agent run but not across sibling agents. Explorer overlap remains a measured waste
+candidate; Coder rereads and Reviewer rereads remain intentionally distinct contexts.
 
-1. **Tiny Task Overhead Avoidance**:
-   On single-file return bugs and typo fixes, ForgeGreen optimization checks incur a negligible ~3% accounting overhead while yielding minimal token reduction. The R27 complexity classifier correction (classifying narrow single-file return bugs as `tiny`) prevents CodeForge from spawning unnecessary Explorer and Reviewer agents on tiny goals.
-2. **Crossover Threshold**:
-   ForgeGreen delivers positive net efficiency starting at the `small` complexity tier (tasks requiring >3 tool calls or multi-turn exploration). For `medium` and `large` tasks, duplicate read suppression and output compression yield double-digit token (+17-25%) and wall-clock (+15-23%) savings.
-3. **Adaptive Topology Awareness**:
-   The adaptive topology policy now dynamically matches team size to task demands:
-   - `tiny`: Minimal intervention (single coder directly to ForgeVerify)
-   - `small`: Selective optimization
-   - `medium`: Targeted exploration & review
-   - `large`: Full multi-agent orchestration with planning graphs
+`packages/forgegreen-campaign/test/` also passed 116/116 current tests.
+
+## What is proven
+
+- The ForgeGreen OFF/ON switch exercises the real runtime mechanism under controlled conditions.
+- Duplicate read suppression can reduce physical tool work without changing deterministic output.
+- The receipt exposes both benefits and the present cross-sibling boundary.
+
+## Still unproven
+
+- Live-model efficiency or correctness benefit
+- Adaptive-topology crossover
+- Live Explorer, Planner, or Reviewer value
+
+Live proof requires paired free-route runs with identical repository state, model budget, verifier,
+tool permissions, and completion criteria. Quota or route-health limitations must remain blockers,
+not be converted into an outcome.
