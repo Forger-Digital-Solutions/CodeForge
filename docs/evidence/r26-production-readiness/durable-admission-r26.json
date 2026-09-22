@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "local_real_postgresql",
+  "recordedAt": "2026-09-22T00:34:25.467Z",
+  "cases": {
+    "A.multi_process_admission": {
+      "pass": true,
+      "detail": "8 processes raced 30 queued on capacity=3 → exactly 3 distinct claims across 3 users; no duplicates"
+    },
+    "B.lease_expiry_fencing": {
+      "pass": true,
+      "detail": "dead worker's lease expired → requeued → stale token rejected → new worker claimed+completed; receipts=QUEUE_ENQUEUED,CAPACITY_RESERVED,LEASE_EXPIRED,CAPACITY_RESERVED,CAPACITY_RELEASED"
+    },
+    "C.idempotent_enqueue": {
+      "pass": true,
+      "detail": "duplicate idempotency key returned existing execution r25c-60053878-0; rows=1"
+    },
+    "D.dispatching_crash_recovery": {
+      "pass": true,
+      "detail": "no dispatch-id: recovery_pending → requeue REFUSED → failed closed; with dispatch-id: requeued → reclaimed at attempt=2"
+    },
+    "E.per_user_fairness": {
+      "pass": true,
+      "detail": "capacity=6, maxUserConcurrent=1, 24 queued across 6 users → 6 claims on 6 distinct users (no single-user capture, no duplicate execution)"
+    },
+    "G.fair_scheduling": {
+      "pass": true,
+      "detail": "capacity=2, 20 executions across 4 users drained round-robin — per-user admissions 5/5/5/5 (spread ≤2, no starvation)"
+    },
+    "F.queue_drain": {
+      "pass": true,
+      "detail": "40 executions claimed+completed exactly once each; queue empty, 40 claims"
+    }
+  },
+  "verdict": "DURABLE_ADMISSION_PROVEN",
+  "schemaNote": "R26 re-verification of R25 durable admission on HEAD 2c89ca9 — same harness, fresh PostgreSQL run",
+  "r26Head": "2c89ca9"
+}

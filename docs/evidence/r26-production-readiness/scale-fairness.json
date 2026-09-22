@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "serve_transport_scale_fairness",
+  "recordedAt": "2026-09-22T00:29:39.018Z",
+  "parts": {
+    "burst": {
+      "admitted": 1,
+      "rejected": 9,
+      "winnerPhase": "completed"
+    },
+    "handoff_scale-a-0": "completed",
+    "handoff_scale-a-1": "completed",
+    "handoff_scale-a-2": "completed",
+    "handoff_scale-a-3": "completed",
+    "handoff_scale-a-4": "completed",
+    "handoff_scale-a-5": "completed",
+    "handoff_scale-a-6": "completed",
+    "handoff_scale-a-7": "completed",
+    "handoff_scale-a-8": "completed",
+    "handoff_scale-a-9": "completed",
+    "chatLoad": {
+      "sessions": 20,
+      "accepted": 20,
+      "wallMs": 56,
+      "p50": 52,
+      "p95": 53,
+      "p99": 53,
+      "peakConcurrentProviderCalls": 20
+    }
+  },
+  "invariants": {
+    "burst_lease_exclusive": {
+      "pass": true,
+      "detail": "1 admitted, 9 rejected (WORKSPACE_LEASE_CONFLICT)"
+    },
+    "burst_winner_terminal": {
+      "pass": true,
+      "detail": "winner → completed"
+    },
+    "lease_handoff_rotates": {
+      "pass": true,
+      "detail": "10 completions across 10 distinct sessions — lease rotates, no starvation pin"
+    },
+    "chat_concurrency_real": {
+      "pass": true,
+      "detail": "20/20 chat sends accepted; peak concurrent provider calls=20 (wall 56ms)"
+    },
+    "no_orphans_under_load": {
+      "pass": true,
+      "detail": "0 non-terminal workflows after 10+20 submissions"
+    },
+    "healthy_under_load": {
+      "pass": true,
+      "detail": "sessions endpoint 200"
+    }
+  },
+  "verdict": "R26_SCALE_FAIRNESS_CLEAN"
+}

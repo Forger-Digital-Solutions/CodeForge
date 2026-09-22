@@ -9,6 +9,9 @@ export interface CloudDatabaseConfig {
   dbPath?: string;
   databaseUrl?: string;
   databaseSsl?: boolean;
+  /** Postgres pool size for this process. Falls back to CODEFORGE_DB_POOL_MAX, then 20.
+   *  Size deliberately: workers × poolMax + reserved admin connections ≤ max_connections. */
+  poolMax?: number;
 }
 
 export class CloudDatabase extends SQLiteCloudDatabase {
@@ -26,7 +29,9 @@ export function createCloudDatabase(config: CloudDatabaseConfig = {}): ICloudDat
     if (!rawDbUrl) {
       throw new Error("CODEFORGE_CLOUD_DB_DRIVER is 'postgres' but DATABASE_URL is missing.");
     }
-    return new PostgresCloudDatabase({ connectionString: rawDbUrl, ssl: config.databaseSsl });
+    const envPoolMax = Number(process.env.CODEFORGE_DB_POOL_MAX);
+    const poolMax = config.poolMax ?? (Number.isInteger(envPoolMax) && envPoolMax > 0 ? envPoolMax : undefined);
+    return new PostgresCloudDatabase({ connectionString: rawDbUrl, ssl: config.databaseSsl, poolMax });
   }
 
   if (driver === "sqlite") {

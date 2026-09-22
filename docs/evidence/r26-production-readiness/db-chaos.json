@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "local_real_postgresql_chaos",
+  "recordedAt": "2026-09-22T00:45:03.189Z",
+  "cases": {
+    "C1.conn_kill_mid_drain": {
+      "pass": true,
+      "detail": "drained 20/20 exactly-once through 7 kill rounds (claimErrors=5 completeErrors=0)"
+    },
+    "C2.pool_exhaustion": {
+      "pass": true,
+      "detail": "3 claims all unique on a 2-conn pool; outcomes all resolved honestly (no crash, no double-claim)"
+    },
+    "C3.aborted_txn": {
+      "pass": true,
+      "detail": "aborted sibling released the row; fresh claim succeeded (status=claimed)"
+    },
+    "C4.kill_mid_claim": {
+      "pass": true,
+      "detail": "1 atomic claims, 0 killed mid-flight, 0 half-claimed rows"
+    }
+  },
+  "verdict": "R26_DB_CHAOS_CLEAN"
+}

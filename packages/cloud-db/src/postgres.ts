@@ -76,6 +76,9 @@ export interface PostgresCloudDatabaseOptions {
   /** Enables certificate-validated TLS for remote PostgreSQL connections. */
   ssl?: boolean;
   pool?: pg.Pool;
+  /** Max pool connections when constructing the default pool. Deliberate sizing matters:
+   *  N worker processes × this value must stay under the server's max_connections. */
+  poolMax?: number;
 }
 
 /**
@@ -124,7 +127,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       this.pool = new Pool({
         connectionString,
         ssl: options.ssl === undefined ? undefined : options.ssl ? { rejectUnauthorized: true } : false,
-        max: 20,
+        max: options.poolMax ?? 20,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 10000,
       });
@@ -323,6 +326,14 @@ export class PostgresCloudDatabase implements ICloudDatabase {
    */
   async withTx<T>(fn: (client: pg.PoolClient) => Promise<T>): Promise<T> {
     const client = await this.pool.connect();
+    // pg-pool only absorbs 'error' on clients while they sit idle IN the pool. A checked-out
+    // client whose backend is killed mid-transaction (admin terminate, restart, network flap)
+    // emits 'error' with no listener → unhandled → process crash. Absorb it here; in-flight
+    // queries already reject via the driver's own pending-query error path, and releasing
+    // with the error tells the pool to destroy the dead socket rather than recycle it.
+    let clientError: Error | undefined;
+    const onClientError = (err: Error) => { clientError ??= err; };
+    client.on?.("error", onClientError);
     try {
       await client.query("BEGIN");
       const result = await fn(client);
@@ -334,7 +345,8 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       } catch {}
       throw error;
     } finally {
-      client.release();
+      client.removeListener?.("error", onClientError);
+      client.release(clientError);
     }
   }
 

@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-22T00:03:09.225Z",
+  "purpose": "R25 §5 zero-spend pre-flight — prove free-only posture before any inference call",
+  "providers": [
+    {
+      "providerId": "openrouter",
+      "required": [
+        "OPENROUTER_API_KEY"
+      ],
+      "verdict": "LIVE_OK",
+      "checks": {
+        "credential": {
+          "present": true
+        },
+        "catalog": {
+          "status": 200,
+          "modelCount": 443,
+          "freeModelCount": 21,
+          "freeModels": [
+            {
+              "id": "inclusionai/ling-3.0-flash-vl:free",
+              "contextLength": 262144,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "nex-agi/nex-n2.5-mini:free",
+              "contextLength": 262144,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "nex-agi/nex-n2.5-pro:free",
+              "contextLength": 262144,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "inclusionai/ling-3.0-flash-sante:free",
+              "contextLength": 262144,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "inclusionai/ling-3.0-flash-fin:free",
+              "contextLength": 262144,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "qwen/qwen3.8-27b:free",
+              "contextLength": 262144,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "dots-studio/dots-3-note-preview:free",
+              "contextLength": 512000,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "liquid/lfm-2.5-2.6b:free",
+              "contextLength": 65536,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "nvidia/nemotron-3.5-lightning:free",
+              "contextLength": 1000000,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "thinkingmachines/inkling-small:free",
+              "contextLength": 1048576,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "poolside/laguna-s-2.1:free",
+              "contextLength": 262144,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "thinkingmachines/inkling:free",
+              "contextLength": 1048576,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "poolside/laguna-xs-2.1:free",
+              "contextLength": 262144,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "cohere/north-mini-code:free",
+              "contextLength": 256000,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "z-ai/glm-5.2:free",
+              "contextLength": 32768,
+              "toolCalling": false,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "nvidia/nemotron-3.5-content-safety:free",
+              "contextLength": 128000,
+              "toolCalling": false,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+              "contextLength": 1000000,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+              "contextLength": 256000,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "google/gemma-4-26b-a4b-it:free",
+              "contextLength": 262144,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "google/gemma-4-31b-it:free",
+              "contextLength": 262144,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            },
+            {
+              "id": "nvidia/nemotron-3-super-120b-a12b:free",
+              "contextLength": 262144,
+              "toolCalling": true,
+              "unitPrice": {
+                "prompt": 0,
+                "completion": 0
+              }
+            }
+          ]
+        },
+        "account": {
+          "status": 200,
+          "usage": 0,
+          "limit": null,
+          "limitRemaining": null,
+          "isFreeTier": false
+        }
+      },
+      "note": ":free routes are $0-unit-priced in the live catalog; negative balance can 402 but cannot bill"
+    },
+    {
+      "providerId": "groq",
+      "required": [
+        "GROQ_API_KEY"
+      ],
+      "verdict": "LIVE_OK",
+      "checks": {
+        "credential": {
+          "present": true
+        },
+        "catalog": {
+          "status": 200,
+          "modelCount": 13,
+          "modelIds": [
+            "allam-2-7b",
+            "canopylabs/orpheus-arabic-saudi",
+            "canopylabs/orpheus-v1-english",
+            "groq/compound",
+            "groq/compound-mini",
+            "meta-llama/llama-prompt-guard-2-22m",
+            "meta-llama/llama-prompt-guard-2-86m",
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+            "openai/gpt-oss-safeguard-20b",
+            "qwen/qwen3.8-27b",
+            "whisper-large-v3",
+            "whisper-large-v3-turbo"
+          ]
+        },
+        "rateLimitHeaders": {
+          "cf-cache-status": "DYNAMIC",
+          "cf-ray": "a3ed0b8188583c96-ORD"
+        }
+      },
+      "note": "owner free-plan account (R23 $0 ledger); rate-limit headers observed — free-plan bucket shape is the plan evidence"
+    },
+    {
+      "providerId": "cloudflare-workers-ai",
+      "required": [
+        "CLOUDFLARE_API_KEY",
+        "CLOUDFLARE_ACCOUNT_ID"
+      ],
+      "verdict": "LIVE_OK",
+      "checks": {
+        "credential": {
+          "present": true
+        },
+        "catalog": {
+          "status": 200,
+          "modelCount": 31,
+          "allowlistPresent": [
+            "@cf/openai/gpt-oss-120b",
+            "@cf/openai/gpt-oss-20b",
+            "@cf/zai-org/glm-4.7-flash",
+            "@cf/nvidia/nemotron-3-120b-a12b",
+            "@cf/qwen/qwen3.8-27b",
+            "@cf/qwen/qwen3-30b-a3b-fp8",
+            "@cf/qwen/qwen2.5-coder-32b-instruct",
+            "@cf/google/gemma-4-26b-a4b-it",
+            "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+            "@cf/meta/llama-4-scout-17b-16e-instruct",
+            "@cf/mistralai/mistral-small-3.1-24b-instruct"
+          ],
+          "allowlistAbsent": []
+        },
+        "account": {
+          "status": 403
+        }
+      },
+      "note": "Workers Free allocation is a provider-side hard stop (10k neurons/day on Free plan); allowlist models only; neuron usage observed per call"
+    },
+    {
+      "providerId": "google",
+      "required": [
+        "GEMINI_API_KEY"
+      ],
+      "verdict": "SKIPPED_FREE_ONLY_NOT_PROVEN",
+      "checks": {
+        "credential": {
+          "present": true
+        },
+        "catalog": {
+          "status": 403
+        }
+      },
+      "note": "ACCOUNT_DEPENDENT: project billing state is not readable from the API; free-only cannot be proven → inference stays skipped (§5)"
+    }
+  ]
+}
