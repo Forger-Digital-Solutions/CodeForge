@@ -489,6 +489,16 @@ export class BrowserSessionImpl {
     return { tabId, state };
   }
 
+  private async resetTabPage(state: TabState): Promise<void> {
+    await state.page.close().catch(() => undefined);
+    const page = await this.context.newPage();
+    state.page = page;
+    state.console = [];
+    state.network = [];
+    state.downloads = [];
+    this.instrumentPage(page, state);
+  }
+
   private tab(tabId?: string): { tabId: string; state: TabState } {
     const id = tabId ?? this.activeTabId;
     if (!id) throw new BrowserRuntimeError(BROWSER_RUNTIME_ERRORS.BROWSER_TAB_NOT_FOUND, "No tab is open");
@@ -519,10 +529,18 @@ export class BrowserSessionImpl {
     if (!decision.allowed) {
       throw new BrowserRuntimeError(BROWSER_RUNTIME_ERRORS.BROWSER_NAVIGATION_DENIED, `Navigation denied: ${decision.reason}`);
     }
+    const createdTab = options.tabId === undefined;
     const { tabId, state } = options.tabId ? this.tab(options.tabId) : await this.newTab();
     try {
       await state.page.goto(url, { waitUntil: options.waitUntil ?? "load", timeout: NAVIGATION_TIMEOUT_MS });
     } catch (error) {
+      if (createdTab) {
+        await this.closeTab(tabId);
+      } else {
+        // Chromium can continue into chrome-error:// after goto rejects. Replacing the page
+        // makes the same tab id immediately reusable instead of racing that error navigation.
+        await this.resetTabPage(state).catch(() => undefined);
+      }
       throw new BrowserRuntimeError(
         BROWSER_RUNTIME_ERRORS.BROWSER_NAVIGATION_FAILED,
         `Navigation failed: ${redactSecrets(error instanceof Error ? error.message : String(error)).slice(0, 300)}`,

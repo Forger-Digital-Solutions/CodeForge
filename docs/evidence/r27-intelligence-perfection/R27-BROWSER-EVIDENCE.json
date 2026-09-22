@@ -1,0 +1,51 @@
+{
+  "schema": "r27-browser-evidence-1",
+  "status": "R27_BROWSER_RUNTIME_AND_PACKAGED_SECURITY_PROVEN_RECOVERY_FIX_NOT_PACKAGED",
+  "paidInferenceUsed": false,
+  "evidenceBoundary": "Real locally installed Chromium-family browser sessions against loopback fixtures, deterministic scripted-provider server wiring, and inspection of the existing desktop app.asar. No live web research or live cloud inference was invoked.",
+  "problemRecovered": "A failed navigation that created an implicit tab left that tab allocated. A failed explicit-tab navigation could still be racing Chromium's chrome-error navigation, preventing immediate retry on the same tab id.",
+  "change": {
+    "implicitFailure": "A newly created tab is closed when its first navigation fails.",
+    "explicitFailure": "A failed explicit tab replaces its underlying page with a fresh page while retaining the tab id, then returns BROWSER_NAVIGATION_FAILED. The caller can retry on that id immediately.",
+    "safety": "URL policy, request-level redirect checks, isolated profiles, secret redaction, download quarantine, and autonomous external-write denial remain unchanged."
+  },
+  "deterministicValidation": {
+    "realBrowserRuntime": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/browser/test",
+      "filesPassed": 4,
+      "testsPassed": 34,
+      "testsFailed": 0,
+      "approxWallTimeMs": 14420,
+      "coverage": ["loopback navigation", "separate research tabs", "DOM inspection", "click/type/select/submit", "screenshots", "download quarantine", "policy and redirect denial", "failed-navigation recovery", "ForgeVerify browser verdict"]
+    },
+    "serverAndDesktopSecurity": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/external-tools-wiring.test.ts apps/desktop/test/packaged-browser-security.test.ts",
+      "filesPassed": 2,
+      "testsPassed": 27,
+      "testsFailed": 0,
+      "approxWallTimeMs": 23940
+    },
+    "packagedArtifactAudit": {
+      "command": "node apps/desktop/scripts/audit-packaged-browser-security.mjs apps/desktop/release",
+      "status": "PACKAGED_BROWSER_SECURITY_VALID=PASS",
+      "archive": "apps/desktop/release/win-unpacked/resources/app.asar",
+      "verified": ["sandbox", "nodeIntegration=false", "contextIsolation", "webSecurity", "control-plane bearer injection", "preload bearer-free", "browser runtime/tools/verifier modules included"]
+    },
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc -b packages/browser packages/server",
+      "passed": true
+    }
+  },
+  "proven": [
+    "The governed browser runtime can drive an installed Chromium-family browser through local navigation, multi-tab research, inspection, interaction, screenshot, and verification paths.",
+    "Failed navigation no longer leaks an implicit tab and an explicit tab is immediately reusable under the same tab id.",
+    "The existing packaged app contains the governed browser runtime, tool executor, and verifier modules and passes the BrowserWindow security audit.",
+    "Browser external tools remain wired through the server's governed external-tool surface and protected by permission/authority tests."
+  ],
+  "notProven": [
+    "The new navigation-recovery change in a freshly rebuilt or signed desktop artifact; the inspected app.asar predates this source change.",
+    "Live public-web research quality, provider-driven browser tool choice, or browser-assisted engineering completion rate.",
+    "A visible end-user browser workbench or packaged UI activity display beyond the existing security boundary."
+  ],
+  "requiredNextEvidence": "Build a new local desktop artifact in a separate output location, audit that artifact, and perform a user-visible browser-workbench smoke test. Live proof requires paired free-route tasks with identical repositories, budgets, and verifiers, recording browser receipts and external-route failures."
+}
