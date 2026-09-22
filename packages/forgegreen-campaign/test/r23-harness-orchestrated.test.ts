@@ -105,7 +105,7 @@ beforeAll(async () => {
   await fs.writeFile(path.join(dir, "hidden", "verify.mjs"), "import { add, multiply } from \"../src/math.js\";\nlet passed = 0, failed = 0;\nconst check = (ok) => { if (ok) passed += 1; else failed += 1; };\ncheck(add(2, 3) === 5);\ncheck(multiply(3, 4) === 12);\nconsole.log(JSON.stringify({ passed, failed }));\nprocess.exit(failed === 0 ? 0 : 1);\n");
   await fs.writeFile(path.join(dir, "task.json"), JSON.stringify({
     taskId: "fixture-orch-add", class: "small_fix", language: "javascript", repoSizeClass: "small",
-    goal: "The add() function in src/math.js returns the wrong result. Fix it so add(2, 3) returns 5 without changing multiply().",
+    goal: "Investigate why the add() function in src/math.js returns the wrong result. Fix it so add(2, 3) returns 5 without changing multiply().",
     role: "coder", permissions: { read: true, search: true, write: true, executeCommand: false, network: false },
     visibleVerification: ["node --check src/math.js"],
     verifier: { command: "node hidden/verify.mjs", timeoutMs: 30000 },
