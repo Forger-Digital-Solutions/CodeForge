@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "94aa2fd1d274e9255c7bbd9aa928ee0a70140532b0bc19e21578b802249717d3",
-  "surfaceVersion": "r25-live-reality-v1",
+  "sourceStateId": "58625fae351122f3306af0dfe13ede522f419766de1621597464106546574964",
+  "surfaceVersion": "r26-release-readiness-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -62,7 +62,7 @@
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
     "packages/server/src/duplicate-suppression.ts": "fd47f593e297f7910e379961da73e798957cbbf9",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "fd28b8bccec7c03226f100d4c9e284ef129ddff7",
+    "packages/server/src/workflow-service.ts": "2e23e947ddd407be62f360828376343b2ece05d9",
     "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "41042502fd939c990ea737745e3334d07c1aa7d5",
@@ -1113,9 +1113,27 @@
       "regressionEvidence": "docs/evidence/r25-live-reality/ — R25-RECOVERY-CHECKPOINT.md, R25-PHASE3-4-CHECKPOINT.md, R25-PHASE5-6-CHECKPOINT.md, live-preflight.json, qualification-pass1.json, durable-admission.json, quota-forecast.json, bench/raw/pilot/",
       "recertifiedAt": "2026-09-21",
       "sourceStateConstant": "R25_LIVE_REALITY_SOURCE_STATE"
+    },
+    {
+      "label": "R26",
+      "reason": "R26 release-readiness lint gate: the only material-surface change is workflow-service.ts — `...(existing ?? {})` spread fallbacks simplified to `...existing` (semantic no-op; spreading undefined is a no-op in object literals) so `npm run lint --deny-warnings` passes as a release gate. No behavior change to the certified ForgeGreen implementation surface.",
+      "priorSourceStateId": "94aa2fd1d274e9255c7bbd9aa928ee0a70140532b0bc19e21578b802249717d3",
+      "priorSurfaceVersion": "r25-live-reality-v1",
+      "resultingSourceStateId": "58625fae351122f3306af0dfe13ede522f419766de1621597464106546574964",
+      "resultingSurfaceVersion": "r26-release-readiness-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "no-useless-fallback-in-spread cleanup at two upsertSession sites; semantics identical",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "npm test full suite: 3491 passed / 2 failed pre-recertification (the provenance check itself); re-run green after this entry",
+      "recertifiedAt": "2026-09-22",
+      "sourceStateConstant": "R26_READINESS_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, and FG-12F recertifications, the R20 durable hosted-runtime reconciliation, and the R21 recertifications listed above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm, and the R23 pinned-route recovery and governor injection above, and the R23 prompt/tool-contract coherence fix above. It also includes the R24 free-fabric-runtime recertification above.",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface plus the R26 lint-gate recertification above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
   "recertifiedAt": "2026-09-21T21:56:24.993Z",
   "recertification": {
     "phase": "R24 free fabric runtime closure",

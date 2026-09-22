@@ -1,0 +1,4209 @@
+{
+  "schema": "codeforge-r26-capacity-v1",
+  "generatedAt": "2026-09-22T02:05:26.308Z",
+  "deterministic": true,
+  "demand": {
+    "taskKind": "r26-measured-engineering-task",
+    "requests": 11,
+    "inputTokens": 22410,
+    "outputTokens": 7470,
+    "roleRequests": {
+      "explorer": 1,
+      "planner": 1,
+      "coder": 8,
+      "reviewer": 1
+    }
+  },
+  "postures": {
+    "productPosture": [
+      {
+        "scenarioId": "registered-1",
+        "registeredUsers": 1,
+        "dailyActiveUsers": 1,
+        "demand": {
+          "totalTasks": 1,
+          "firstRunTasks": 1,
+          "normalTasks": 0
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0,
+          "normalSuccessRate": 1,
+          "capacityBlocks": 1,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 60,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "1 tasks capacity-blocked in registered-1"
+        ]
+      },
+      {
+        "scenarioId": "registered-50",
+        "registeredUsers": 50,
+        "dailyActiveUsers": 50,
+        "demand": {
+          "totalTasks": 50,
+          "firstRunTasks": 1,
+          "normalTasks": 49
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0,
+          "normalSuccessRate": 0,
+          "capacityBlocks": 50,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 3000,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "50 tasks capacity-blocked in registered-50"
+        ]
+      },
+      {
+        "scenarioId": "registered-100",
+        "registeredUsers": 100,
+        "dailyActiveUsers": 100,
+        "demand": {
+          "totalTasks": 100,
+          "firstRunTasks": 1,
+          "normalTasks": 99
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0,
+          "normalSuccessRate": 0,
+          "capacityBlocks": 100,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 6000,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "100 tasks capacity-blocked in registered-100"
+        ]
+      },
+      {
+        "scenarioId": "registered-200",
+        "registeredUsers": 200,
+        "dailyActiveUsers": 200,
+        "demand": {
+          "totalTasks": 200,
+          "firstRunTasks": 1,
+          "normalTasks": 199
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0,
+          "normalSuccessRate": 0,
+          "capacityBlocks": 200,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 12000,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "200 tasks capacity-blocked in registered-200"
+        ]
+      },
+      {
+        "scenarioId": "registered-373",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 373,
+        "demand": {
+          "totalTasks": 373,
+          "firstRunTasks": 1,
+          "normalTasks": 372
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0,
+          "normalSuccessRate": 0,
+          "capacityBlocks": 373,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 22380,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "373 tasks capacity-blocked in registered-373"
+        ]
+      },
+      {
+        "scenarioId": "registered-500",
+        "registeredUsers": 500,
+        "dailyActiveUsers": 500,
+        "demand": {
+          "totalTasks": 500,
+          "firstRunTasks": 1,
+          "normalTasks": 499
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0,
+          "normalSuccessRate": 0,
+          "capacityBlocks": 500,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 30000,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "500 tasks capacity-blocked in registered-500",
+          "registered-user scale exceeds the 373-user early-access proof population"
+        ]
+      },
+      {
+        "scenarioId": "registered-1000",
+        "registeredUsers": 1000,
+        "dailyActiveUsers": 1000,
+        "demand": {
+          "totalTasks": 1000,
+          "firstRunTasks": 1,
+          "normalTasks": 999
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0,
+          "normalSuccessRate": 0,
+          "capacityBlocks": 1000,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 60000,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "1000 tasks capacity-blocked in registered-1000",
+          "registered-user scale exceeds the 373-user early-access proof population"
+        ]
+      },
+      {
+        "scenarioId": "registered-373-dau-75",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 75,
+        "demand": {
+          "totalTasks": 150,
+          "firstRunTasks": 25,
+          "normalTasks": 125
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0,
+          "normalSuccessRate": 0,
+          "capacityBlocks": 150,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 9000,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "150 tasks capacity-blocked in registered-373-dau-75"
+        ]
+      },
+      {
+        "scenarioId": "registered-373-dau-150",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 150,
+        "demand": {
+          "totalTasks": 300,
+          "firstRunTasks": 25,
+          "normalTasks": 275
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0,
+          "normalSuccessRate": 0,
+          "capacityBlocks": 300,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 18000,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "300 tasks capacity-blocked in registered-373-dau-150"
+        ]
+      },
+      {
+        "scenarioId": "registered-373-dau-373",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 373,
+        "demand": {
+          "totalTasks": 746,
+          "firstRunTasks": 25,
+          "normalTasks": 721
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0,
+          "normalSuccessRate": 0,
+          "capacityBlocks": 746,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 44760,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "746 tasks capacity-blocked in registered-373-dau-373"
+        ]
+      },
+      {
+        "scenarioId": "top-provider-outage",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 75,
+        "demand": {
+          "totalTasks": 150,
+          "firstRunTasks": 25,
+          "normalTasks": 125
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0,
+          "normalSuccessRate": 0,
+          "capacityBlocks": 150,
+          "failoverCoverage": 0,
+          "p95WaitMinutes": 9000,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "UNHEALTHY",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "UNHEALTHY",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "UNHEALTHY",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "150 tasks capacity-blocked in top-provider-outage",
+          "no failover route remains"
+        ]
+      },
+      {
+        "scenarioId": "gateway-outage",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 75,
+        "demand": {
+          "totalTasks": 150,
+          "firstRunTasks": 25,
+          "normalTasks": 125
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0,
+          "normalSuccessRate": 0,
+          "capacityBlocks": 150,
+          "failoverCoverage": 0,
+          "p95WaitMinutes": 9000,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "UNHEALTHY",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "UNHEALTHY",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "UNHEALTHY",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "150 tasks capacity-blocked in gateway-outage",
+          "no failover route remains"
+        ]
+      },
+      {
+        "scenarioId": "50-huge-vs-50-normal",
+        "registeredUsers": 100,
+        "dailyActiveUsers": 100,
+        "demand": {
+          "totalTasks": 450,
+          "firstRunTasks": 0,
+          "normalTasks": 450
+        },
+        "capacity": {
+          "totalTasks": 0,
+          "firstRunTasks": 0,
+          "normalTasks": 0
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 1,
+          "normalSuccessRate": 0,
+          "capacityBlocks": 450,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 27000,
+          "qualityFloorPass": false
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "MANAGED_MULTI_USER_TERMS_NOT_CLEARED",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 0,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 0,
+          "roleScarcity": {
+            "explorer": 0,
+            "planner": 0,
+            "coder": 0,
+            "reviewer": 0
+          },
+          "providerConcentration": {},
+          "gatewayConcentration": {},
+          "familyConcentration": {},
+          "poolConcentration": {},
+          "alerts": [
+            "role explorer has no eligible route",
+            "role planner has no eligible route",
+            "role coder has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "role explorer has no eligible route",
+          "role planner has no eligible route",
+          "role coder has no eligible route",
+          "role reviewer has no eligible route",
+          "450 tasks capacity-blocked in 50-huge-vs-50-normal"
+        ]
+      }
+    ],
+    "termsClearedCeiling": [
+      {
+        "scenarioId": "registered-1",
+        "registeredUsers": 1,
+        "dailyActiveUsers": 1,
+        "demand": {
+          "totalTasks": 1,
+          "firstRunTasks": 1,
+          "normalTasks": 0
+        },
+        "capacity": {
+          "totalTasks": 196,
+          "firstRunTasks": 20,
+          "normalTasks": 176
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 1,
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 0,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 196,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 196,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0.459184,
+            "coder": 1,
+            "reviewer": 0.459184
+          },
+          "providerConcentration": {
+            "groq": 0.540816,
+            "openrouter": 0.459184
+          },
+          "gatewayConcentration": {
+            "direct": 0.540816,
+            "openrouter": 0.459184
+          },
+          "familyConcentration": {
+            "gpt-oss": 0.081633,
+            "qwen": 0.459184,
+            "nex-agi": 0.459184
+          },
+          "poolConcentration": {
+            "groq:openai/gpt-oss-120b": 0.040816,
+            "groq:openai/gpt-oss-20b": 0.040816,
+            "groq:qwen/qwen3.8-27b": 0.459184,
+            "openrouter:account-free": 0.459184
+          },
+          "alerts": [
+            "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+          ]
+        },
+        "alerts": [
+          "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+        ]
+      },
+      {
+        "scenarioId": "registered-50",
+        "registeredUsers": 50,
+        "dailyActiveUsers": 50,
+        "demand": {
+          "totalTasks": 50,
+          "firstRunTasks": 1,
+          "normalTasks": 49
+        },
+        "capacity": {
+          "totalTasks": 196,
+          "firstRunTasks": 20,
+          "normalTasks": 176
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 1,
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 0,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 196,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 196,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0.459184,
+            "coder": 1,
+            "reviewer": 0.459184
+          },
+          "providerConcentration": {
+            "groq": 0.540816,
+            "openrouter": 0.459184
+          },
+          "gatewayConcentration": {
+            "direct": 0.540816,
+            "openrouter": 0.459184
+          },
+          "familyConcentration": {
+            "gpt-oss": 0.081633,
+            "qwen": 0.459184,
+            "nex-agi": 0.459184
+          },
+          "poolConcentration": {
+            "groq:openai/gpt-oss-120b": 0.040816,
+            "groq:openai/gpt-oss-20b": 0.040816,
+            "groq:qwen/qwen3.8-27b": 0.459184,
+            "openrouter:account-free": 0.459184
+          },
+          "alerts": [
+            "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+          ]
+        },
+        "alerts": [
+          "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+        ]
+      },
+      {
+        "scenarioId": "registered-100",
+        "registeredUsers": 100,
+        "dailyActiveUsers": 100,
+        "demand": {
+          "totalTasks": 100,
+          "firstRunTasks": 1,
+          "normalTasks": 99
+        },
+        "capacity": {
+          "totalTasks": 196,
+          "firstRunTasks": 20,
+          "normalTasks": 176
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 1,
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 0,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 196,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 196,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0.459184,
+            "coder": 1,
+            "reviewer": 0.459184
+          },
+          "providerConcentration": {
+            "groq": 0.540816,
+            "openrouter": 0.459184
+          },
+          "gatewayConcentration": {
+            "direct": 0.540816,
+            "openrouter": 0.459184
+          },
+          "familyConcentration": {
+            "gpt-oss": 0.081633,
+            "qwen": 0.459184,
+            "nex-agi": 0.459184
+          },
+          "poolConcentration": {
+            "groq:openai/gpt-oss-120b": 0.040816,
+            "groq:openai/gpt-oss-20b": 0.040816,
+            "groq:qwen/qwen3.8-27b": 0.459184,
+            "openrouter:account-free": 0.459184
+          },
+          "alerts": [
+            "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+          ]
+        },
+        "alerts": [
+          "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+        ]
+      },
+      {
+        "scenarioId": "registered-200",
+        "registeredUsers": 200,
+        "dailyActiveUsers": 200,
+        "demand": {
+          "totalTasks": 200,
+          "firstRunTasks": 1,
+          "normalTasks": 199
+        },
+        "capacity": {
+          "totalTasks": 196,
+          "firstRunTasks": 20,
+          "normalTasks": 176
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 1,
+          "normalSuccessRate": 0.884422,
+          "capacityBlocks": 23,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 8,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 196,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 196,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0.459184,
+            "coder": 1,
+            "reviewer": 0.459184
+          },
+          "providerConcentration": {
+            "groq": 0.540816,
+            "openrouter": 0.459184
+          },
+          "gatewayConcentration": {
+            "direct": 0.540816,
+            "openrouter": 0.459184
+          },
+          "familyConcentration": {
+            "gpt-oss": 0.081633,
+            "qwen": 0.459184,
+            "nex-agi": 0.459184
+          },
+          "poolConcentration": {
+            "groq:openai/gpt-oss-120b": 0.040816,
+            "groq:openai/gpt-oss-20b": 0.040816,
+            "groq:qwen/qwen3.8-27b": 0.459184,
+            "openrouter:account-free": 0.459184
+          },
+          "alerts": [
+            "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+          ]
+        },
+        "alerts": [
+          "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "23 tasks capacity-blocked in registered-200"
+        ]
+      },
+      {
+        "scenarioId": "registered-373",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 373,
+        "demand": {
+          "totalTasks": 373,
+          "firstRunTasks": 1,
+          "normalTasks": 372
+        },
+        "capacity": {
+          "totalTasks": 196,
+          "firstRunTasks": 20,
+          "normalTasks": 176
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 1,
+          "normalSuccessRate": 0.473118,
+          "capacityBlocks": 196,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 60,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 196,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 196,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0.459184,
+            "coder": 1,
+            "reviewer": 0.459184
+          },
+          "providerConcentration": {
+            "groq": 0.540816,
+            "openrouter": 0.459184
+          },
+          "gatewayConcentration": {
+            "direct": 0.540816,
+            "openrouter": 0.459184
+          },
+          "familyConcentration": {
+            "gpt-oss": 0.081633,
+            "qwen": 0.459184,
+            "nex-agi": 0.459184
+          },
+          "poolConcentration": {
+            "groq:openai/gpt-oss-120b": 0.040816,
+            "groq:openai/gpt-oss-20b": 0.040816,
+            "groq:qwen/qwen3.8-27b": 0.459184,
+            "openrouter:account-free": 0.459184
+          },
+          "alerts": [
+            "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+          ]
+        },
+        "alerts": [
+          "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "196 tasks capacity-blocked in registered-373"
+        ]
+      },
+      {
+        "scenarioId": "registered-500",
+        "registeredUsers": 500,
+        "dailyActiveUsers": 500,
+        "demand": {
+          "totalTasks": 500,
+          "firstRunTasks": 1,
+          "normalTasks": 499
+        },
+        "capacity": {
+          "totalTasks": 196,
+          "firstRunTasks": 20,
+          "normalTasks": 176
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 1,
+          "normalSuccessRate": 0.352705,
+          "capacityBlocks": 323,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 99,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 196,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 196,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0.459184,
+            "coder": 1,
+            "reviewer": 0.459184
+          },
+          "providerConcentration": {
+            "groq": 0.540816,
+            "openrouter": 0.459184
+          },
+          "gatewayConcentration": {
+            "direct": 0.540816,
+            "openrouter": 0.459184
+          },
+          "familyConcentration": {
+            "gpt-oss": 0.081633,
+            "qwen": 0.459184,
+            "nex-agi": 0.459184
+          },
+          "poolConcentration": {
+            "groq:openai/gpt-oss-120b": 0.040816,
+            "groq:openai/gpt-oss-20b": 0.040816,
+            "groq:qwen/qwen3.8-27b": 0.459184,
+            "openrouter:account-free": 0.459184
+          },
+          "alerts": [
+            "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+          ]
+        },
+        "alerts": [
+          "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "323 tasks capacity-blocked in registered-500",
+          "registered-user scale exceeds the 373-user early-access proof population"
+        ]
+      },
+      {
+        "scenarioId": "registered-1000",
+        "registeredUsers": 1000,
+        "dailyActiveUsers": 1000,
+        "demand": {
+          "totalTasks": 1000,
+          "firstRunTasks": 1,
+          "normalTasks": 999
+        },
+        "capacity": {
+          "totalTasks": 196,
+          "firstRunTasks": 20,
+          "normalTasks": 176
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 1,
+          "normalSuccessRate": 0.176176,
+          "capacityBlocks": 823,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 252,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 196,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 196,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0.459184,
+            "coder": 1,
+            "reviewer": 0.459184
+          },
+          "providerConcentration": {
+            "groq": 0.540816,
+            "openrouter": 0.459184
+          },
+          "gatewayConcentration": {
+            "direct": 0.540816,
+            "openrouter": 0.459184
+          },
+          "familyConcentration": {
+            "gpt-oss": 0.081633,
+            "qwen": 0.459184,
+            "nex-agi": 0.459184
+          },
+          "poolConcentration": {
+            "groq:openai/gpt-oss-120b": 0.040816,
+            "groq:openai/gpt-oss-20b": 0.040816,
+            "groq:qwen/qwen3.8-27b": 0.459184,
+            "openrouter:account-free": 0.459184
+          },
+          "alerts": [
+            "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+          ]
+        },
+        "alerts": [
+          "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "823 tasks capacity-blocked in registered-1000",
+          "registered-user scale exceeds the 373-user early-access proof population"
+        ]
+      },
+      {
+        "scenarioId": "registered-373-dau-75",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 75,
+        "demand": {
+          "totalTasks": 150,
+          "firstRunTasks": 25,
+          "normalTasks": 125
+        },
+        "capacity": {
+          "totalTasks": 196,
+          "firstRunTasks": 20,
+          "normalTasks": 176
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0.8,
+          "normalSuccessRate": 1,
+          "capacityBlocks": 5,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 2,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 196,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 196,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0.459184,
+            "coder": 1,
+            "reviewer": 0.459184
+          },
+          "providerConcentration": {
+            "groq": 0.540816,
+            "openrouter": 0.459184
+          },
+          "gatewayConcentration": {
+            "direct": 0.540816,
+            "openrouter": 0.459184
+          },
+          "familyConcentration": {
+            "gpt-oss": 0.081633,
+            "qwen": 0.459184,
+            "nex-agi": 0.459184
+          },
+          "poolConcentration": {
+            "groq:openai/gpt-oss-120b": 0.040816,
+            "groq:openai/gpt-oss-20b": 0.040816,
+            "groq:qwen/qwen3.8-27b": 0.459184,
+            "openrouter:account-free": 0.459184
+          },
+          "alerts": [
+            "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+          ]
+        },
+        "alerts": [
+          "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "5 tasks capacity-blocked in registered-373-dau-75"
+        ]
+      },
+      {
+        "scenarioId": "registered-373-dau-150",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 150,
+        "demand": {
+          "totalTasks": 300,
+          "firstRunTasks": 25,
+          "normalTasks": 275
+        },
+        "capacity": {
+          "totalTasks": 196,
+          "firstRunTasks": 20,
+          "normalTasks": 176
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0.8,
+          "normalSuccessRate": 0.64,
+          "capacityBlocks": 104,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 32,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 196,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 196,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0.459184,
+            "coder": 1,
+            "reviewer": 0.459184
+          },
+          "providerConcentration": {
+            "groq": 0.540816,
+            "openrouter": 0.459184
+          },
+          "gatewayConcentration": {
+            "direct": 0.540816,
+            "openrouter": 0.459184
+          },
+          "familyConcentration": {
+            "gpt-oss": 0.081633,
+            "qwen": 0.459184,
+            "nex-agi": 0.459184
+          },
+          "poolConcentration": {
+            "groq:openai/gpt-oss-120b": 0.040816,
+            "groq:openai/gpt-oss-20b": 0.040816,
+            "groq:qwen/qwen3.8-27b": 0.459184,
+            "openrouter:account-free": 0.459184
+          },
+          "alerts": [
+            "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+          ]
+        },
+        "alerts": [
+          "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "104 tasks capacity-blocked in registered-373-dau-150"
+        ]
+      },
+      {
+        "scenarioId": "registered-373-dau-373",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 373,
+        "demand": {
+          "totalTasks": 746,
+          "firstRunTasks": 25,
+          "normalTasks": 721
+        },
+        "capacity": {
+          "totalTasks": 196,
+          "firstRunTasks": 20,
+          "normalTasks": 176
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0.8,
+          "normalSuccessRate": 0.244105,
+          "capacityBlocks": 550,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 169,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.040816
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.459184
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 196,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 196,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0.459184,
+            "coder": 1,
+            "reviewer": 0.459184
+          },
+          "providerConcentration": {
+            "groq": 0.540816,
+            "openrouter": 0.459184
+          },
+          "gatewayConcentration": {
+            "direct": 0.540816,
+            "openrouter": 0.459184
+          },
+          "familyConcentration": {
+            "gpt-oss": 0.081633,
+            "qwen": 0.459184,
+            "nex-agi": 0.459184
+          },
+          "poolConcentration": {
+            "groq:openai/gpt-oss-120b": 0.040816,
+            "groq:openai/gpt-oss-20b": 0.040816,
+            "groq:qwen/qwen3.8-27b": 0.459184,
+            "openrouter:account-free": 0.459184
+          },
+          "alerts": [
+            "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+          ]
+        },
+        "alerts": [
+          "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "550 tasks capacity-blocked in registered-373-dau-373"
+        ]
+      },
+      {
+        "scenarioId": "top-provider-outage",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 75,
+        "demand": {
+          "totalTasks": 150,
+          "firstRunTasks": 25,
+          "normalTasks": 125
+        },
+        "capacity": {
+          "totalTasks": 90,
+          "firstRunTasks": 9,
+          "normalTasks": 81
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0.36,
+          "normalSuccessRate": 0.648,
+          "capacityBlocks": 60,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 40,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": false,
+              "exclusionReason": "UNHEALTHY",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": false,
+              "exclusionReason": "UNHEALTHY",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": false,
+              "exclusionReason": "UNHEALTHY",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 1
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 90,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 90,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0,
+            "coder": 1,
+            "reviewer": 0
+          },
+          "providerConcentration": {
+            "openrouter": 1
+          },
+          "gatewayConcentration": {
+            "openrouter": 1
+          },
+          "familyConcentration": {
+            "nex-agi": 1
+          },
+          "poolConcentration": {
+            "openrouter:account-free": 1
+          },
+          "alerts": [
+            "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "provider concentration 100.0% exceeds 80%",
+            "role planner has no eligible route",
+            "role reviewer has no eligible route"
+          ]
+        },
+        "alerts": [
+          "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "provider concentration 100.0% exceeds 80%",
+          "role planner has no eligible route",
+          "role reviewer has no eligible route",
+          "60 tasks capacity-blocked in top-provider-outage"
+        ]
+      },
+      {
+        "scenarioId": "gateway-outage",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 75,
+        "demand": {
+          "totalTasks": 150,
+          "firstRunTasks": 25,
+          "normalTasks": 125
+        },
+        "capacity": {
+          "totalTasks": 106,
+          "firstRunTasks": 11,
+          "normalTasks": 95
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 0.44,
+          "normalSuccessRate": 0.76,
+          "capacityBlocks": 44,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 25,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.075472
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 8,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.075472
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 90,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.849057
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": false,
+              "exclusionReason": "UNHEALTHY",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": false,
+              "exclusionReason": "UNHEALTHY",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": false,
+              "exclusionReason": "UNHEALTHY",
+              "availableRequests": 0,
+              "availableTokens": 0,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 106,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 106,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0.849057,
+            "coder": 1,
+            "reviewer": 0.849057
+          },
+          "providerConcentration": {
+            "groq": 1
+          },
+          "gatewayConcentration": {
+            "direct": 1
+          },
+          "familyConcentration": {
+            "gpt-oss": 0.150943,
+            "qwen": 0.849057
+          },
+          "poolConcentration": {
+            "groq:openai/gpt-oss-120b": 0.075472,
+            "groq:openai/gpt-oss-20b": 0.075472,
+            "groq:qwen/qwen3.8-27b": 0.849057
+          },
+          "alerts": [
+            "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "provider concentration 100.0% exceeds 80%"
+          ]
+        },
+        "alerts": [
+          "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "provider concentration 100.0% exceeds 80%",
+          "44 tasks capacity-blocked in gateway-outage"
+        ]
+      },
+      {
+        "scenarioId": "50-huge-vs-50-normal",
+        "registeredUsers": 100,
+        "dailyActiveUsers": 100,
+        "demand": {
+          "totalTasks": 450,
+          "firstRunTasks": 0,
+          "normalTasks": 450
+        },
+        "capacity": {
+          "totalTasks": 42,
+          "firstRunTasks": 5,
+          "normalTasks": 37
+        },
+        "outcomes": {
+          "firstRunSuccessRate": 1,
+          "normalSuccessRate": 0.082222,
+          "capacityBlocks": 413,
+          "failoverCoverage": 1,
+          "p95WaitMinutes": 590,
+          "qualityFloorPass": true
+        },
+        "forecast": {
+          "generatedAt": "2026-09-22T02:05:26.308Z",
+          "policy": "DETERMINISTIC_HARD_ACCOUNTING",
+          "routes": [
+            {
+              "routeId": "groq-gpt-oss-120b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 1,
+              "capacityPoolId": "groq:openai/gpt-oss-120b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.02381
+            },
+            {
+              "routeId": "groq-gpt-oss-20b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 200000,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 1,
+              "capacityPoolId": "groq:openai/gpt-oss-20b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.02381
+            },
+            {
+              "routeId": "groq-qwen3.8-27b",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 20,
+              "capacityPoolId": "groq:qwen/qwen3.8-27b",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.47619
+            },
+            {
+              "routeId": "openrouter-nex-n2.5-pro",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 20,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": true,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0.47619
+            },
+            {
+              "routeId": "openrouter-nemotron-3-ultra",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            },
+            {
+              "routeId": "openrouter-nemotron-3.5-lightning",
+              "eligible": true,
+              "availableRequests": 1000,
+              "availableTokens": 9007199254740991,
+              "availableConcurrent": 0,
+              "availableCredits": 0,
+              "availableProviderUnits": 0,
+              "estimatedTaskUnits": 0,
+              "capacityPoolId": "openrouter:account-free",
+              "capacityPoolScope": "SHARED_OWNER_POOL",
+              "countedInPool": false,
+              "resetAt": "2026-09-23T00:00:00.000Z",
+              "concentrationShare": 0
+            }
+          ],
+          "estimatedTaskUnits": 42,
+          "firstRunTaskUnits": 0,
+          "normalTaskUnits": 42,
+          "roleScarcity": {
+            "explorer": 1,
+            "planner": 0.47619,
+            "coder": 1,
+            "reviewer": 0.47619
+          },
+          "providerConcentration": {
+            "groq": 0.52381,
+            "openrouter": 0.47619
+          },
+          "gatewayConcentration": {
+            "direct": 0.52381,
+            "openrouter": 0.47619
+          },
+          "familyConcentration": {
+            "gpt-oss": 0.047619,
+            "qwen": 0.47619,
+            "nex-agi": 0.47619
+          },
+          "poolConcentration": {
+            "groq:openai/gpt-oss-120b": 0.02381,
+            "groq:openai/gpt-oss-20b": 0.02381,
+            "groq:qwen/qwen3.8-27b": 0.47619,
+            "openrouter:account-free": 0.47619
+          },
+          "alerts": [
+            "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+            "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification"
+          ]
+        },
+        "alerts": [
+          "groq:openai/gpt-oss-120b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:openai/gpt-oss-20b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "groq:qwen/qwen3.8-27b: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "openrouter:account-free: physical capacity pool was inferred from a route; capture a provider pool observation before certification",
+          "413 tasks capacity-blocked in 50-huge-vs-50-normal"
+        ]
+      }
+    ],
+    "userConnected": [
+      {
+        "scenarioId": "registered-1",
+        "registeredUsers": 1,
+        "dailyActiveUsers": 1,
+        "demand": {
+          "totalTasks": 1
+        },
+        "capacity": {
+          "totalTasks": 196
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": []
+      },
+      {
+        "scenarioId": "registered-50",
+        "registeredUsers": 50,
+        "dailyActiveUsers": 50,
+        "demand": {
+          "totalTasks": 50
+        },
+        "capacity": {
+          "totalTasks": 9800
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": []
+      },
+      {
+        "scenarioId": "registered-100",
+        "registeredUsers": 100,
+        "dailyActiveUsers": 100,
+        "demand": {
+          "totalTasks": 100
+        },
+        "capacity": {
+          "totalTasks": 19600
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": []
+      },
+      {
+        "scenarioId": "registered-200",
+        "registeredUsers": 200,
+        "dailyActiveUsers": 200,
+        "demand": {
+          "totalTasks": 200
+        },
+        "capacity": {
+          "totalTasks": 39200
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": []
+      },
+      {
+        "scenarioId": "registered-373",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 373,
+        "demand": {
+          "totalTasks": 373
+        },
+        "capacity": {
+          "totalTasks": 73108
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": []
+      },
+      {
+        "scenarioId": "registered-500",
+        "registeredUsers": 500,
+        "dailyActiveUsers": 500,
+        "demand": {
+          "totalTasks": 500
+        },
+        "capacity": {
+          "totalTasks": 98000
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": []
+      },
+      {
+        "scenarioId": "registered-1000",
+        "registeredUsers": 1000,
+        "dailyActiveUsers": 1000,
+        "demand": {
+          "totalTasks": 1000
+        },
+        "capacity": {
+          "totalTasks": 196000
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": []
+      },
+      {
+        "scenarioId": "registered-373-dau-75",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 75,
+        "demand": {
+          "totalTasks": 150
+        },
+        "capacity": {
+          "totalTasks": 14700
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": []
+      },
+      {
+        "scenarioId": "registered-373-dau-150",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 150,
+        "demand": {
+          "totalTasks": 300
+        },
+        "capacity": {
+          "totalTasks": 29400
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": []
+      },
+      {
+        "scenarioId": "registered-373-dau-373",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 373,
+        "demand": {
+          "totalTasks": 746
+        },
+        "capacity": {
+          "totalTasks": 73108
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": []
+      },
+      {
+        "scenarioId": "top-provider-outage",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 75,
+        "demand": {
+          "totalTasks": 150
+        },
+        "capacity": {
+          "totalTasks": 6750
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": [
+          "provider concentration 100.0% exceeds 80%",
+          "role planner has no eligible route",
+          "role reviewer has no eligible route"
+        ]
+      },
+      {
+        "scenarioId": "gateway-outage",
+        "registeredUsers": 373,
+        "dailyActiveUsers": 75,
+        "demand": {
+          "totalTasks": 150
+        },
+        "capacity": {
+          "totalTasks": 7950
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": [
+          "provider concentration 100.0% exceeds 80%"
+        ]
+      },
+      {
+        "scenarioId": "50-huge-vs-50-normal",
+        "registeredUsers": 100,
+        "dailyActiveUsers": 100,
+        "demand": {
+          "totalTasks": 450
+        },
+        "capacity": {
+          "totalTasks": 19600
+        },
+        "outcomes": {
+          "normalSuccessRate": 1,
+          "capacityBlocks": 0,
+          "p95WaitMinutes": 0
+        },
+        "alerts": []
+      }
+    ]
+  }
+}
