@@ -1,28 +1,43 @@
 {
-  "schema": "r27-subagent-evidence-1",
-  "status": "mechanics_proven_live_value_not_proven",
+  "schema": "r27-subagent-evidence-2",
+  "status": "R27_SUBAGENT_DETERMINISTIC_VALUE_PARTIALLY_PROVEN_LIVE_VALUE_NOT_PROVEN",
   "paidInferenceUsed": false,
+  "evidenceBoundary": "Structural and deterministic scripted-provider evidence only. No live cloud inference was invoked.",
   "tests": {
-    "filesPassed": 5,
-    "testsPassed": 38,
-    "testsFailed": 0,
-    "approxWallTimeMs": 106000
+    "existingStructuralSuite": {
+      "filesPassed": 5,
+      "testsPassed": 38,
+      "testsFailed": 0,
+      "approxWallTimeMs": 82030
+    },
+    "r27RuntimeComparison": {
+      "filesPassed": 1,
+      "testsPassed": 5,
+      "testsFailed": 0,
+      "receipt": "R27-SUBAGENT-RUNTIME-DETERMINISTIC.json"
+    }
+  },
+  "deterministicMeasurements": {
+    "tiny": "Both arms completed with zero children and zero provider calls.",
+    "normalHealthy": "The single-agent arm and adaptive arm both completed; adaptive used two child/provider calls.",
+    "normalReviewerRepair": "The single-agent arm was blocked by the semantic verifier; the adaptive arm completed after one reviewer-led revision, three child/provider calls, and two coder attempts.",
+    "complexHealthy": "The single-agent arm and adaptive arm both completed; adaptive used four child/provider calls.",
+    "measurementNotes": "Request bytes are observed from AgentRuntime. Provider token values are scripted usage. Wall time is recorded but not used to declare a crossover."
   },
   "proven": [
-    "smallest-useful topology for tiny tasks",
-    "selective Explorer and Reviewer topology for normal tasks",
-    "Planner and two-Explorer topology for complex tasks",
-    "capacity-aware parallel reduction",
-    "review finding drives bounded revision",
-    "invalid Planner graph is rejected before coding",
-    "isolated coder worktree and durable lifecycle artifacts"
+    "tiny topology avoids subagent bureaucracy",
+    "adaptive normal and complex topology executes through the production Explorer/Planner/Reviewer path",
+    "a reviewer can drive one bounded corrective revision before ForgeVerify",
+    "the semantic verifier and completion gate still decide terminal success",
+    "subagent overhead is visible when correctness is equal"
   ],
   "notProven": [
     "live Explorer relevance",
     "live Planner quality",
     "Reviewer precision and recall",
     "reconciliation of conflicting live child results",
-    "net live token/call/wall-time benefit"
+    "net live token/call/wall-time benefit",
+    "a live-model topology crossover threshold"
   ],
-  "requiredNextEvidence": "paired live free-route topology experiment with correctness and efficiency guard"
+  "requiredNextEvidence": "Paired live free-route topology runs with the same repository state, model budget, verifier, and completion criteria; record only observed provider receipts and preserve quota or availability blockers."
 }

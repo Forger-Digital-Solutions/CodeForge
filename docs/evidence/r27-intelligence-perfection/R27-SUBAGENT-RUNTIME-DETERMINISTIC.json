@@ -1,0 +1,240 @@
+{
+  "schema": "r27-subagent-runtime-deterministic-1",
+  "recordedAt": "2026-09-22T22:43:33.385Z",
+  "status": "R27_SUBAGENT_DETERMINISTIC_VALUE_PARTIALLY_PROVEN_LIVE_VALUE_NOT_PROVEN",
+  "method": "Equivalent temporary repositories, coder executor, semantic verifier, and completion gate; the adaptive arm alone invokes the production Explorer/Planner/Reviewer path through a deterministic scripted free provider.",
+  "measurements": "Provider-call counts and request bytes are observed from AgentRuntime. Token counts are scripted provider usage values. Wall time is measured but not used for assertions. No tool calls are emitted by this focused role-protocol fixture.",
+  "limitations": [
+    "Scripted responses cannot establish live-model relevance, planning quality, reviewer precision/recall, or crossover economics.",
+    "The single-agent arm uses the production tiny topology with the same deterministic coder executor; it does not call a model for coding.",
+    "The reviewer-repair scenario proves a controlled correction path, not general reviewer effectiveness."
+  ],
+  "comparisons": [
+    {
+      "scenario": "tiny",
+      "expectedAdaptiveTopology": "tiny",
+      "verifier": "node semantic file-content check",
+      "singleAgent": {
+        "arm": "single_agent",
+        "status": "completed",
+        "completion": {
+          "outcome": "completed",
+          "blockers": [],
+          "advisories": [
+            {
+              "code": "review_rejected",
+              "severity": "advisory",
+              "message": "Independent diff review raised 1 advisory finding(s).",
+              "evidence": "New export multiply in src/math.ts is referenced nowhere else in the workspace; it may be dead code added instead of a fix."
+            }
+          ],
+          "rationale": "All required completion checks passed."
+        },
+        "topology": "tiny",
+        "childrenSpawned": 0,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "providerCalls": 0,
+        "actualRequestBytes": 0,
+        "scriptedProviderTokens": 0,
+        "toolCalls": 0,
+        "wallTimeMs": 4525,
+        "coderAttempts": 1
+      },
+      "adaptiveSubagents": {
+        "arm": "adaptive_subagents",
+        "status": "completed",
+        "completion": {
+          "outcome": "completed",
+          "blockers": [],
+          "advisories": [
+            {
+              "code": "review_rejected",
+              "severity": "advisory",
+              "message": "Independent diff review raised 1 advisory finding(s).",
+              "evidence": "New export multiply in src/math.ts is referenced nowhere else in the workspace; it may be dead code added instead of a fix."
+            }
+          ],
+          "rationale": "All required completion checks passed."
+        },
+        "topology": "tiny",
+        "childrenSpawned": 0,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "providerCalls": 0,
+        "actualRequestBytes": 0,
+        "scriptedProviderTokens": 0,
+        "toolCalls": 0,
+        "wallTimeMs": 4562,
+        "coderAttempts": 1
+      },
+      "outcome": "OVERHEAD_AVOIDED"
+    },
+    {
+      "scenario": "normal_healthy",
+      "expectedAdaptiveTopology": "normal",
+      "verifier": "node semantic file-content check",
+      "singleAgent": {
+        "arm": "single_agent",
+        "status": "completed",
+        "completion": {
+          "outcome": "completed",
+          "blockers": [],
+          "advisories": [
+            {
+              "code": "review_rejected",
+              "severity": "advisory",
+              "message": "Independent diff review raised 1 advisory finding(s).",
+              "evidence": "New export multiply in src/math.ts is referenced nowhere else in the workspace; it may be dead code added instead of a fix."
+            }
+          ],
+          "rationale": "All required completion checks passed."
+        },
+        "topology": "tiny",
+        "childrenSpawned": 0,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "providerCalls": 0,
+        "actualRequestBytes": 0,
+        "scriptedProviderTokens": 0,
+        "toolCalls": 0,
+        "wallTimeMs": 4457,
+        "coderAttempts": 1
+      },
+      "adaptiveSubagents": {
+        "arm": "adaptive_subagents",
+        "status": "completed",
+        "completion": {
+          "outcome": "completed",
+          "blockers": [],
+          "advisories": [
+            {
+              "code": "review_rejected",
+              "severity": "advisory",
+              "message": "Independent diff review raised 1 advisory finding(s).",
+              "evidence": "New export multiply in src/math.ts is referenced nowhere else in the workspace; it may be dead code added instead of a fix."
+            }
+          ],
+          "rationale": "All required completion checks passed."
+        },
+        "topology": "normal",
+        "childrenSpawned": 2,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "providerCalls": 2,
+        "actualRequestBytes": 7930,
+        "scriptedProviderTokens": 1840,
+        "toolCalls": 0,
+        "wallTimeMs": 5705,
+        "coderAttempts": 1
+      },
+      "outcome": "OVERHEAD_WITH_EQUAL_CORRECTNESS"
+    },
+    {
+      "scenario": "normal_reviewer_repair",
+      "expectedAdaptiveTopology": "normal",
+      "verifier": "node semantic file-content check",
+      "singleAgent": {
+        "arm": "single_agent",
+        "status": "blocked",
+        "childrenSpawned": 0,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "providerCalls": 0,
+        "actualRequestBytes": 0,
+        "scriptedProviderTokens": 0,
+        "toolCalls": 0,
+        "wallTimeMs": 3393,
+        "coderAttempts": 1
+      },
+      "adaptiveSubagents": {
+        "arm": "adaptive_subagents",
+        "status": "completed",
+        "completion": {
+          "outcome": "completed",
+          "blockers": [],
+          "advisories": [
+            {
+              "code": "review_rejected",
+              "severity": "advisory",
+              "message": "Independent diff review raised 1 advisory finding(s).",
+              "evidence": "New export multiply in src/math.ts is referenced nowhere else in the workspace; it may be dead code added instead of a fix."
+            }
+          ],
+          "rationale": "All required completion checks passed."
+        },
+        "topology": "normal",
+        "childrenSpawned": 3,
+        "reviewRounds": 1,
+        "taskAttempts": 1,
+        "providerCalls": 3,
+        "actualRequestBytes": 11879,
+        "scriptedProviderTokens": 2910,
+        "toolCalls": 0,
+        "wallTimeMs": 6378,
+        "coderAttempts": 2
+      },
+      "outcome": "REVIEWER_REPAIR_VALUE"
+    },
+    {
+      "scenario": "complex_healthy",
+      "expectedAdaptiveTopology": "complex",
+      "verifier": "node semantic file-content check",
+      "singleAgent": {
+        "arm": "single_agent",
+        "status": "completed",
+        "completion": {
+          "outcome": "completed",
+          "blockers": [],
+          "advisories": [
+            {
+              "code": "review_rejected",
+              "severity": "advisory",
+              "message": "Independent diff review raised 1 advisory finding(s).",
+              "evidence": "New export multiply in src/math.ts is referenced nowhere else in the workspace; it may be dead code added instead of a fix."
+            }
+          ],
+          "rationale": "All required completion checks passed."
+        },
+        "topology": "tiny",
+        "childrenSpawned": 0,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "providerCalls": 0,
+        "actualRequestBytes": 0,
+        "scriptedProviderTokens": 0,
+        "toolCalls": 0,
+        "wallTimeMs": 4447,
+        "coderAttempts": 1
+      },
+      "adaptiveSubagents": {
+        "arm": "adaptive_subagents",
+        "status": "completed",
+        "completion": {
+          "outcome": "completed",
+          "blockers": [],
+          "advisories": [
+            {
+              "code": "review_rejected",
+              "severity": "advisory",
+              "message": "Independent diff review raised 1 advisory finding(s).",
+              "evidence": "New export multiply in src/math.ts is referenced nowhere else in the workspace; it may be dead code added instead of a fix."
+            }
+          ],
+          "rationale": "All required completion checks passed."
+        },
+        "topology": "complex",
+        "childrenSpawned": 4,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "providerCalls": 4,
+        "actualRequestBytes": 14957,
+        "scriptedProviderTokens": 3580,
+        "toolCalls": 0,
+        "wallTimeMs": 6644,
+        "coderAttempts": 1
+      },
+      "outcome": "OVERHEAD_WITH_EQUAL_CORRECTNESS"
+    }
+  ]
+}

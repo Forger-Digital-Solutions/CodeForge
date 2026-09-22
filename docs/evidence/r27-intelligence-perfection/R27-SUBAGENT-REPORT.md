@@ -1,46 +1,48 @@
 # R27 Subagent Value Report
 
-Status: `R27_SUBAGENT_MECHANICS_PROVEN_LIVE_VALUE_NOT_PROVEN`
+Status: `R27_SUBAGENT_DETERMINISTIC_VALUE_PARTIALLY_PROVEN_LIVE_VALUE_NOT_PROVEN`
 
-## What was verified
+## Evidence boundary
 
-The existing orchestrator integration suite was run against the current source, not inferred from
-class presence. It covers the production pipeline, isolated coder worktrees, Explorer/Planner/
-Reviewer lifecycle records, bounded Explorer ceilings, malformed or unauthorized Planner graphs,
-adaptive topology selection, deterministic review/revision, parallel orchestration, cancellation,
-and recovery paths.
+No live model inference or paid inference was used. The R27 runtime comparison uses equivalent
+temporary repositories, the same coder executor, semantic verifier, and completion gate. Only the
+adaptive arm invokes the production Explorer/Planner/Reviewer path through a deterministic scripted
+free provider. Its structured receipt is `R27-SUBAGENT-RUNTIME-DETERMINISTIC.json`.
 
-Command:
+## Structural coverage
 
-```text
-node node_modules/vitest/vitest.mjs run packages/server/test/r21-adaptive-topology-wiring.test.ts packages/server/test/agent-orchestrator-integration.test.ts packages/server/test/autonomous-orchestrator.test.ts packages/server/test/mission-acceptance.test.ts packages/server/test/parallel-orchestrator-integration.test.ts
-```
+The current orchestrator integration rerun covers isolated coder worktrees, persisted lifecycle
+records, bounded exploration, planner authorization, cancellation, recovery, and deterministic
+review/revision. It passed 38/38 tests across five files in approximately 82 seconds.
 
-Result: 5 test files passed, 38/38 tests passed. Wall time was approximately 106 seconds, with the
-worktree and recovery portions accounting for most of the run.
+## Controlled runtime comparison
 
-## Deterministic value evidence
+| Scenario | Single-agent result | Adaptive result | Observed consequence |
+| --- | --- | --- | --- |
+| Tiny multiplication fix | completed, 0 child calls | completed, 0 child calls | Adaptive correctly stays out of the way. |
+| Healthy normal task | completed, 0 child calls | completed, 2 child calls | Extra coordination had no deterministic correctness gain. |
+| Reviewer-repair task | blocked by semantic verifier | completed after 1 revision, 3 child calls | The controlled Reviewer finding triggered a bounded repair that changed the terminal outcome. |
+| Healthy complex task | completed, 0 child calls | completed, 4 child calls | Extra coordination had no deterministic correctness gain. |
 
-- Tiny tasks select Coder → ForgeVerify and spawn no Explorer, Planner, or independent Reviewer.
-- Normal tasks select Explorer → Coder → Reviewer → ForgeVerify.
-- Complex tasks select two Explorers → Planner → Coder → Reviewer → ForgeVerify when capacity allows.
-- Constrained provider capacity reduces parallel exploration without overriding an explicit topology.
-- A deterministic Reviewer finding drives a bounded coder revision and can block unsafe completion.
-- Planner graphs with cycles or missing dependencies are rejected before the Coder starts.
-- Coder work is isolated in a Git worktree and lifecycle/artifact records are persisted.
+AgentRuntime observed request bytes for the adaptive role calls. The test provider reports scripted
+token usage, and wall time is retained as a receipt rather than a crossover claim. The focused
+protocol fixture emits no tool calls. Every successful arm passed ForgeVerify and the completion
+gate; the one single-agent repair arm ended `blocked` rather than being counted as success.
 
-These prove that the topology and safety contracts are real and that a Reviewer can add a
-deterministic correction gate in a controlled fixture.
+## What is proven
 
-## What is not proven
+- Tiny work reaches the smallest useful topology with no child-agent overhead.
+- The adaptive normal and complex paths invoke the production subagent lifecycle and free-fabric
+  admission path.
+- A Reviewer can supply a blocking finding, trigger one bounded coder revision, and enable a
+  subsequent semantic-verifier pass.
+- Coordination cost is measurable and visible where both arms have equal correctness.
 
-This is not evidence that free-model subagents improve real engineering outcomes. The test provider
-returns controlled outputs, so it cannot establish Explorer relevance, Planner quality, Reviewer
-precision/recall, reconciliation quality, or net token/call benefit on live models. R26's live
-subagent value A/B was quota-limited and was not repeated here. No paid inference was used.
+## What remains unproven
 
-The R27 live experiment remains required: paired task runs with the same repository state and model
-budget, comparing no-subagent, selective, and full topologies across tiny, small, medium, large,
-ambiguous, adversarial, and recovery classes. A topology may only be called valuable when it
-improves correctness or autonomy enough to justify its measured calls, tokens, and wall time.
-
+This does not establish live Explorer relevance, Planner semantic quality, Reviewer precision or
+recall, conflict reconciliation, or net live-model benefit. A scripted provider follows its fixed
+role protocol, so it cannot establish a real topology crossover point. Live proof requires paired
+free-route runs with the same repository state, model budget, verifier, tool permissions, and
+completion criteria. Quota, route-health, or availability constraints must remain recorded as
+blockers rather than converted into a result.
