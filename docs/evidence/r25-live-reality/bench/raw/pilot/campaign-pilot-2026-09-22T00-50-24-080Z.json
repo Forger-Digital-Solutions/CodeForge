@@ -1,0 +1,96 @@
+{
+  "campaignId": "pilot-2026-09-22T00-50-24-080Z",
+  "phase": "pilot",
+  "recordedAt": "2026-09-22T00:50:24.194Z",
+  "model": "openai/gpt-oss-120b",
+  "providerId": "groq",
+  "pin": {
+    "id": "openai/gpt-oss-120b",
+    "name": "openai/gpt-oss-120b",
+    "contextLength": 131072,
+    "ownedBy": "OpenAI",
+    "checkedAt": "2026-09-22T00:50:24.031Z",
+    "pricingVerification": "provider-free-tier-policy + ForgeZero FREE_ALLOWANCE admission + live rate-limit headers",
+    "quotaAtPin": {
+      "providerId": "groq",
+      "status": 200,
+      "requests": {
+        "limit": 1000,
+        "remaining": 986,
+        "reset": "20m9.6s"
+      },
+      "tokens": {
+        "limit": 8000,
+        "remaining": 7815,
+        "reset": "1.387s"
+      },
+      "observedAt": "2026-09-22T00:50:24.028Z"
+    },
+    "toolProbe": {
+      "toolCallsEmitted": 1,
+      "usage": {
+        "queue_time": 0.004812209,
+        "prompt_tokens": 139,
+        "prompt_time": 0.005531177,
+        "completion_tokens": 50,
+        "completion_time": 0.10553421,
+        "total_tokens": 189,
+        "total_time": 0.111065387,
+        "completion_tokens_details": {
+          "reasoning_tokens": 24
+        }
+      }
+    }
+  },
+  "paidTwin": {
+    "id": "openrouter::openai/gpt-oss-120b",
+    "note": "equivalent-cost reference: same model's paid listing on the reference marketplace"
+  },
+  "allowanceAtStart": {
+    "limit": 1000,
+    "used": 14,
+    "remaining": 986,
+    "remainingTokens": 7815,
+    "dailyTokensUsed": 0,
+    "dailyTokenBucketLevel": 98073,
+    "source": "x-ratelimit headers (live adapter observation)",
+    "checkedAt": "2026-09-22T00:50:24.076Z"
+  },
+  "allowanceAtEnd": {
+    "limit": 1000,
+    "used": 14,
+    "remaining": 986,
+    "remainingTokens": 7815,
+    "dailyTokensUsed": 0,
+    "dailyTokenBucketLevel": 98073,
+    "source": "x-ratelimit headers (live adapter observation)",
+    "checkedAt": "2026-09-22T00:50:24.193Z"
+  },
+  "identity": {
+    "protocolVersion": "r25-live-1.0.0",
+    "protocolDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+    "corpusManifestDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+    "codeforgeCommit": "60616c6540aafb0a5fc0effeaed37ff7a88c3a82",
+    "codeforgeTreeDirty": false,
+    "environmentFingerprint": "4128996b7d9b2c1cea75e1e96a9e01446489b578db0e0eb7ac291799b8f212da",
+    "environment": {
+      "os": "win32 10.0.26200",
+      "cpuModel": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+      "cpus": 12,
+      "totalMemGB": 32,
+      "node": "v24.19.0"
+    }
+  },
+  "mode": "orchestrated",
+  "repetitions": 1,
+  "taskManifestDigest": "4695e7e1bb5dc0a71d2f71f63fa3a792a09e620e3e0c1f88efb14b9230b8ebc1",
+  "probeGate": {
+    "recordedAt": "2026-09-22T00:48:02.274Z",
+    "verdict": "open",
+    "served": 2,
+    "n": 2,
+    "forced": false
+  },
+  "stopped": "allowance",
+  "runs": []
+}
