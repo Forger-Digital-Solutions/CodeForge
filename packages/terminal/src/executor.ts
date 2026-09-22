@@ -370,7 +370,10 @@ export function terminateProcessTreeByPid(pid: number): void {
         windowsHide: true,
         stdio: "ignore",
       });
-      if (killed.error) {
+      // Managed Windows process isolation can reject taskkill for a direct child even though
+      // Node is still allowed to terminate that child itself. Treat every non-zero taskkill
+      // result as a failed tree kill so timeout settlement never leaves the root alive.
+      if (killed.error || killed.status !== 0) {
         try { process.kill(pid, "SIGKILL"); } catch { /* already gone */ }
       }
     } catch {
