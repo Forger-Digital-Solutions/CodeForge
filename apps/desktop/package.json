@@ -106,6 +106,8 @@
         "filter": [
           "agent/dist/**/*.js",
           "agent/package.json",
+          "browser/dist/**/*.js",
+          "browser/package.json",
           "core/dist/**/*.js",
           "core/package.json",
           "director/dist/**/*.js",
@@ -150,6 +152,8 @@
           "cloud-db/package.json",
           "legal-policy/dist/**/*.js",
           "legal-policy/package.json",
+          "mcp/dist/**/*.js",
+          "mcp/package.json",
           "ui/dist/**/*.js",
           "ui/package.json",
           "workflow/dist/**/*.js",
@@ -239,6 +243,101 @@
       {
         "from": "node_modules/xtend",
         "to": "node_modules/xtend",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/playwright-core",
+        "to": "node_modules/playwright-core",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/@modelcontextprotocol",
+        "to": "node_modules/@modelcontextprotocol",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/ajv",
+        "to": "node_modules/ajv",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/ajv-formats",
+        "to": "node_modules/ajv-formats",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/content-type",
+        "to": "node_modules/content-type",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/cross-spawn",
+        "to": "node_modules/cross-spawn",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/eventsource",
+        "to": "node_modules/eventsource",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/eventsource-parser",
+        "to": "node_modules/eventsource-parser",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/fast-deep-equal",
+        "to": "node_modules/fast-deep-equal",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/fast-uri",
+        "to": "node_modules/fast-uri",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/isexe",
+        "to": "node_modules/isexe",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/json-schema-traverse",
+        "to": "node_modules/json-schema-traverse",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/path-key",
+        "to": "node_modules/path-key",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/pkce-challenge",
+        "to": "node_modules/pkce-challenge",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/require-from-string",
+        "to": "node_modules/require-from-string",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/shebang-command",
+        "to": "node_modules/shebang-command",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/shebang-regex",
+        "to": "node_modules/shebang-regex",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/which",
+        "to": "node_modules/which",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/zod-to-json-schema",
+        "to": "node_modules/zod-to-json-schema",
         "filter": ["**/*"]
       },
       {
