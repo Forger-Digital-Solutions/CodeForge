@@ -19,6 +19,7 @@ import { UserIntentHoldController } from "../src/user-intent-hold.js";
 class DeterministicScriptedProvider implements ProviderAdapter {
   readonly providerId: string;
   readonly isTestProvider = true;
+  readonly requests: ChatRequest[] = [];
   private responses: Array<(req: ChatRequest) => AsyncIterable<StreamEvent>>;
   private callCount = 0;
 
@@ -46,6 +47,7 @@ class DeterministicScriptedProvider implements ProviderAdapter {
   }
 
   async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+    this.requests.push(req);
     const handler = this.responses[this.callCount] ?? this.responses[this.responses.length - 1];
     this.callCount++;
     if (!handler) {
@@ -193,6 +195,11 @@ describe("AgentRuntime — Production Invocation & Lifecycle Certification (CF-0
     expect(result.filesChanged).toContain("calculator.ts");
     const updatedContent = await fs.readFile(srcFile, "utf-8");
     expect(updatedContent).toContain("return a + b;");
+    expect(result.contextMetrics).toMatchObject({ contextRefreshes: 1, staleContextInvalidations: 1 });
+    const finalRequest = provider.requests.at(-1)!;
+    expect(finalRequest.messages[1]?.content).toContain("Prior repository excerpts were removed because they are stale");
+    expect(finalRequest.messages[1]?.content).not.toContain("return a - b;");
+    expect(finalRequest.messages.some((message) => message.content.includes("Runtime invalidated this prior read of calculator.ts"))).toBe(true);
   });
 
   it("handles Reviewer run using validated findings rather than prose", async () => {

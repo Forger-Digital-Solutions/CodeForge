@@ -1,0 +1,64 @@
+{
+  "schema": "r27-context-evidence-1",
+  "status": "R27_CONTEXT_STALENESS_INVALIDATION_DETERMINISTICALLY_PROVEN",
+  "paidInferenceUsed": false,
+  "evidenceBoundary": "Static inspection and deterministic scripted-provider tests only. No live cloud inference was invoked.",
+  "problemRecovered": "AgentRuntime assembled repository context once at run start and retained its original excerpts after a successful workspace mutation. A later model turn could therefore receive stale file content.",
+  "change": {
+    "afterSuccessfulWorkspaceMutation": [
+      "Refresh RepositoryIntelligence for the changed path, or conservatively for the workspace when a potentially mutating command has no path.",
+      "Remove the bootstrap repository excerpts and their exported evidence references.",
+      "Replace prior read_file observations for changed files with an explicit invalidation marker.",
+      "Require a fresh read before the next model turn may rely on file content."
+    ],
+    "failureMode": "If refresh cannot build a fresh index, stale excerpts and read observations still remain removed; the next turn receives a runtime invalidation notice rather than stale content.",
+    "efficiency": "The runtime does not rebuild and retransmit a full context pack after every edit. It refreshes the index and uses incremental re-read, avoiding coordination latency and repeated context bytes.",
+    "metrics": ["contextRefreshes", "staleContextInvalidations"]
+  },
+  "deterministicValidation": {
+    "focusedContextRuntime": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/agent-runtime.test.ts packages/server/test/cf14-agent-integration.test.ts packages/context/test/context-pack.test.ts packages/context/test/fg3-pages.test.ts packages/context/test/fg3-cross-worktree.test.ts",
+      "filesPassed": 5,
+      "testsPassed": 27,
+      "testsFailed": 0,
+      "approxWallTimeMs": 25090
+    },
+    "contextPackageRegression": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/context/test",
+      "filesPassed": 8,
+      "testsPassed": 55,
+      "testsFailed": 0,
+      "approxWallTimeMs": 44700
+    },
+    "parallelWorktreeRegression": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/parallel-orchestrator-integration.test.ts",
+      "filesPassed": 1,
+      "testsPassed": 4,
+      "testsFailed": 0,
+      "approxWallTimeMs": 66050
+    },
+    "broaderOrchestrationRegression": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/r21-adaptive-topology-wiring.test.ts packages/server/test/agent-orchestrator-integration.test.ts packages/server/test/autonomous-orchestrator.test.ts packages/server/test/mission-acceptance.test.ts packages/server/test/parallel-orchestrator-integration.test.ts",
+      "filesPassed": 5,
+      "testsPassed": 39,
+      "testsFailed": 0,
+      "approxWallTimeMs": 150790
+    },
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc -b packages/context packages/server",
+      "passed": true
+    }
+  },
+  "proven": [
+    "A post-read edit removes the original bootstrap excerpt and invalidates the previous read observation before the next model request.",
+    "Repository generation is refreshed and the run records context refresh/invalidation metrics.",
+    "An unavailable refresh fails closed with stale context removed.",
+    "The fixed behavior preserves the existing context and parallel-worktree regressions without increasing their configured timeout."
+  ],
+  "notProven": [
+    "Live-model correctness or token savings from incremental re-read.",
+    "The optimal context refresh policy for every repository size or command class.",
+    "Browser-research, generated-artifact, and external-tool freshness beyond the governed workspace mutation surface."
+  ],
+  "requiredNextEvidence": "Paired live free-route engineering runs that record context refreshes, fresh reads, provider token receipts, verification outcomes, and any route/quota blockers under the same repository state and completion criteria."
+}

@@ -42,6 +42,7 @@ import {
   createContextAssembler,
   createContextPageStore,
   resolveContextCapacity,
+  type AssembledContext,
 } from "@codeforge/context";
 import {
   canonicalCacheKey,
@@ -154,6 +155,8 @@ export interface AgentContextMetrics {
   repositoryGeneration?: number;
   contextHash?: string;
   reasonCodes?: string[];
+  contextRefreshes?: number;
+  staleContextInvalidations?: number;
   efficiencyReceipt?: EfficiencyReceipt;
 }
 
@@ -1129,8 +1132,50 @@ export class AgentRuntime {
       // bootstrap context. Re-assembling from the current workspace could silently change what
       // the conversation refers to, so assembly is skipped entirely and counters are restored.
       let contextMetrics: AgentContextMetrics | undefined;
+      let bootstrapContextMessageIndex: number | undefined;
+      let bootstrapSupplementalBytes = 0;
+      let bootstrapEvidence: AgentEvidenceRef[] = [];
+      const readToolMessages = new Map<string, ChatMessage[]>();
+      const replaceBootstrapEvidence = (assembled: AssembledContext): void => {
+        for (const prior of bootstrapEvidence) {
+          const index = evidence.indexOf(prior);
+          if (index >= 0) evidence.splice(index, 1);
+        }
+        bootstrapEvidence = assembled.evidence.map((ev) => ({
+          kind: ev.source,
+          ref: ev.path ?? ev.symbol ?? req.workspacePath,
+          description: ev.reasons?.join(", ") ?? "Context evidence",
+        }));
+        evidence.push(...bootstrapEvidence);
+      };
+      const clearBootstrapEvidence = (): void => {
+        for (const prior of bootstrapEvidence) {
+          const index = evidence.indexOf(prior);
+          if (index >= 0) evidence.splice(index, 1);
+        }
+        bootstrapEvidence = [];
+      };
+      const invalidateReadToolMessages = (changedPaths?: readonly string[]): void => {
+        const paths = changedPaths && changedPaths.length > 0 ? new Set(changedPaths) : undefined;
+        for (const [filePath, observations] of readToolMessages) {
+          if (paths && !paths.has(filePath)) continue;
+          for (const observation of observations) {
+            observation.content = `Runtime invalidated this prior read of ${filePath} after a successful workspace mutation. Re-read the file before relying on its content.`;
+          }
+        }
+      };
+      const invalidateResumedToolMessages = (): void => {
+        if (!resumeJournal) return;
+        for (const message of messages) {
+          if (message.role === "tool") {
+            message.content = "Runtime invalidated this prior tool observation after a successful workspace mutation. Re-read or rerun it before relying on its content.";
+          }
+        }
+      };
       if (resumeJournal) {
         messages = fromJournalMessages(resumeJournal.messages);
+        const initialUserMessage = messages.findIndex((message, index) => index > 0 && message.role === "user");
+        bootstrapContextMessageIndex = initialUserMessage >= 0 ? initialUserMessage : undefined;
         turnCount = resumeJournal.turnCount;
         toolCallCount = resumeJournal.toolCallCount;
         writeCallCount = resumeJournal.writeCallCount;
@@ -1146,6 +1191,8 @@ export class AgentRuntime {
           contextMaximum: resolvedMaxContextTokens,
           reservedOutputTokens: budget.maxOutputTokens ?? 0,
           reasonCodes: ["recovery_resume"],
+          contextRefreshes: 0,
+          staleContextInvalidations: 0,
         };
       }
       if (!resumeJournal) {
@@ -1178,7 +1225,7 @@ export class AgentRuntime {
         intelligence = undefined;
       }
 
-      const assembled = await contextAssembler.assemble({
+      const assembleContext = (): Promise<AssembledContext> => contextAssembler.assemble({
         role: req.role,
         goal: req.goal,
         workspacePath: req.workspacePath,
@@ -1200,21 +1247,14 @@ export class AgentRuntime {
         modelContextWindow: routedModel?.contextWindow,
         pageStore: contextPageStore,
       });
-
-      if (assembled.evidence) {
-        for (const ev of assembled.evidence) {
-          evidence.push({
-            kind: ev.source,
-            ref: ev.path ?? ev.symbol ?? req.workspacePath,
-            description: ev.reasons?.join(", ") ?? "Context evidence",
-          });
-        }
-      }
+      const assembled = await assembleContext();
+      replaceBootstrapEvidence(assembled);
 
       messages = [
         { role: "system", content: assembled.systemPrompt },
         { role: "user", content: assembled.contextPrompt },
       ];
+      bootstrapContextMessageIndex = 1;
 
       if (req.initialContext) {
         messages.push({
@@ -1229,6 +1269,7 @@ export class AgentRuntime {
           content: `Structured Review Findings to address:\n${req.reviewFeedback}`,
         });
       }
+      bootstrapSupplementalBytes = Buffer.byteLength(messages.slice(2).map((message) => message.content).join("\n"), "utf8");
 
       contextMetrics = {
         candidateFileCount: indexStatus?.fileCount ?? 0,
@@ -1242,6 +1283,8 @@ export class AgentRuntime {
         repositoryGeneration: assembled.receipt?.repositoryGeneration ?? indexStatus?.generation ?? 1,
         contextHash: assembled.receipt?.contextHash,
         reasonCodes: assembled.receipt?.reasonCodes,
+        contextRefreshes: 0,
+        staleContextInvalidations: 0,
         efficiencyReceipt: assembled.efficiencyReceipt,
       };
       forgeGreenActualContextBytes = contextMetrics.contextBytes;
@@ -1255,6 +1298,71 @@ export class AgentRuntime {
       }
       }
       if (!contextMetrics) throw new Error("Agent run context metrics were not initialized");
+      const refreshBootstrapContext = async (changedPaths?: readonly string[]): Promise<void> => {
+        invalidateReadToolMessages(changedPaths);
+        invalidateResumedToolMessages();
+        if (bootstrapContextMessageIndex === undefined) return;
+        const prior = contextMetrics!;
+        const staleContextInvalidations = (prior.staleContextInvalidations ?? 0) + 1;
+        try {
+          if (!intelligence) throw new Error("Repository intelligence is unavailable");
+          const paths = changedPaths && changedPaths.length > 0 ? [...new Set(changedPaths)] : undefined;
+          await intelligence.refresh(paths, req.signal);
+          const refreshMetrics = intelligence.lastRefreshMetrics();
+          if (refreshMetrics) {
+            ledger.recordRepositoryRefresh({
+              filesParsed: refreshMetrics.filesParsed,
+              filesReused: refreshMetrics.unchanged,
+              parseCacheHits: refreshMetrics.cacheHits,
+              invalidations: refreshMetrics.invalidatedDependents.length,
+            });
+          }
+          clearBootstrapEvidence();
+          messages[bootstrapContextMessageIndex] = {
+            role: "user",
+            content: `Goal:\n${req.goal}\n\nRuntime refreshed the repository index after a successful workspace mutation. Prior repository excerpts were removed because they are stale. Re-read any file before relying on its content.`,
+          };
+          const status = intelligence.status();
+          contextMetrics = {
+            candidateFileCount: status.fileCount,
+            candidateSymbolCount: status.symbolCount,
+            selectedFileCount: 0,
+            selectedEvidenceCount: 0,
+            contextBytes: Buffer.byteLength(`${messages[0]?.content ?? ""}\n${messages[bootstrapContextMessageIndex]?.content ?? ""}`, "utf8") + bootstrapSupplementalBytes,
+            estimatedInputTokens: Math.ceil((Buffer.byteLength(messages[bootstrapContextMessageIndex]?.content ?? "", "utf8") + bootstrapSupplementalBytes) / 4),
+            contextMaximum: resolvedMaxContextTokens,
+            reservedOutputTokens: prior.reservedOutputTokens,
+            repositoryGeneration: status.generation,
+            contextHash: undefined,
+            reasonCodes: [...new Set([...(prior.reasonCodes ?? []), "context_invalidated_after_mutation", "repository_refreshed_after_mutation"])],
+            contextRefreshes: (prior.contextRefreshes ?? 0) + 1,
+            staleContextInvalidations,
+            efficiencyReceipt: prior.efficiencyReceipt,
+          };
+          forgeGreenActualContextBytes = contextMetrics.contextBytes;
+          forgeGreenActualContextTokens = contextMetrics.estimatedInputTokens;
+          forgeGreenR0Telemetry.recordRepositoryGeneration(contextMetrics.repositoryGeneration);
+        } catch {
+          clearBootstrapEvidence();
+          messages[bootstrapContextMessageIndex] = {
+            role: "user",
+            content: `Goal:\n${req.goal}\n\nRuntime context invalidated after a successful workspace mutation. Prior repository excerpts were removed because the fresh index could not be built. Re-read any file before relying on its content.`,
+          };
+          contextMetrics = {
+            ...prior,
+            selectedFileCount: 0,
+            selectedEvidenceCount: 0,
+            contextBytes: Buffer.byteLength(`${messages[0]?.content ?? ""}\n${messages[bootstrapContextMessageIndex]?.content ?? ""}`, "utf8") + bootstrapSupplementalBytes,
+            estimatedInputTokens: Math.ceil((Buffer.byteLength(messages[bootstrapContextMessageIndex]?.content ?? "", "utf8") + bootstrapSupplementalBytes) / 4),
+            contextHash: undefined,
+            reasonCodes: [...new Set([...(prior.reasonCodes ?? []), "context_invalidated_after_mutation", "context_refresh_unavailable"])],
+            contextRefreshes: prior.contextRefreshes ?? 0,
+            staleContextInvalidations,
+          };
+          forgeGreenActualContextBytes = contextMetrics.contextBytes;
+          forgeGreenActualContextTokens = contextMetrics.estimatedInputTokens;
+        }
+      };
       forgeGreenR0Telemetry.recordRepositoryGeneration(contextMetrics.repositoryGeneration);
       forgeGreenR0Telemetry.recordContext({
         initialContextBytes: contextMetrics.contextBytes,
@@ -1275,12 +1383,14 @@ export class AgentRuntime {
       let duplicateRequestSuppressedSeen = false;
       let stablePrefixReusedSeen = false;
       const createRunReceipt = (): EfficiencyReceipt => {
+        const currentContextMetrics = contextMetrics;
+        if (!currentContextMetrics) throw new Error("Agent run context metrics were not initialized");
         const supervisorMetrics = duplicateSupervisor.metrics;
         return this.forgeGreen.createReceipt({
           workspaceId: req.workspaceId,
-          repositoryGeneration: contextMetrics.repositoryGeneration ?? 1,
-          requestedTokens: contextMetrics.estimatedInputTokens,
-          deliveredTokens: contextMetrics.estimatedInputTokens,
+          repositoryGeneration: currentContextMetrics.repositoryGeneration ?? 1,
+          requestedTokens: currentContextMetrics.estimatedInputTokens,
+          deliveredTokens: currentContextMetrics.estimatedInputTokens,
           reasonCodes: [
             ...(duplicateRequestSuppressedSeen ? ["duplicate_request_suppressed" as const] : []),
             ...(stablePrefixReusedSeen ? ["stable_prefix_reused" as const] : []),
@@ -2093,17 +2203,38 @@ export class AgentRuntime {
             }
           }
 
+          if (toolExec.success && (tc.name === "write_file" || tc.name === "edit_file" || tc.name === "run_command")) {
+            const parsedArgs = parseToolArgs(tc.arguments);
+            const changedPath = (tc.name === "write_file" || tc.name === "edit_file") && typeof parsedArgs === "object" && parsedArgs && "path" in parsedArgs
+              ? String((parsedArgs as { path: string }).path)
+              : undefined;
+            const commandIsReadOnly = tc.name === "run_command" && typeof parsedArgs === "object" && parsedArgs && "command" in parsedArgs
+              ? classifyCommand(String((parsedArgs as { command: string }).command)).category === "read-only"
+              : false;
+            if (!commandIsReadOnly) await refreshBootstrapContext(changedPath ? [changedPath] : undefined);
+          }
+
           if (toolExec.success) {
             adapter.emitToolExecutionCompleted(req.runId, tc.id, tc.name, toolExec.output);
           } else {
             adapter.emitToolExecutionFailed(req.runId, tc.id, tc.name, toolExec.error ?? toolExec.output);
           }
 
-          messages.push({
+          const toolMessage: ChatMessage = {
             role: "tool",
             content: toolExec.modelContextOutput ?? toolExec.output,
             toolCallId: tc.id,
-          });
+          };
+          messages.push(toolMessage);
+          if (toolExec.success && tc.name === "read_file") {
+            const parsedArgs = parseToolArgs(tc.arguments);
+            if (typeof parsedArgs === "object" && parsedArgs && "path" in parsedArgs) {
+              const filePath = String((parsedArgs as { path: string }).path);
+              const observations = readToolMessages.get(filePath) ?? [];
+              observations.push(toolMessage);
+              readToolMessages.set(filePath, observations);
+            }
+          }
           durableExecution.state = "observation_recorded";
           durableExecution.recoveryDisposition = classifyToolRecovery(durableExecution);
           durableExecution.updatedAt = new Date().toISOString();
