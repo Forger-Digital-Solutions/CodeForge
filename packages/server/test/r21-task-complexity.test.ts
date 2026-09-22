@@ -18,6 +18,7 @@ const CORPUS: Array<[string, TaskComplexityTier]> = [
   ["Add a missing semicolon in utils.js", "tiny"],
   ["Change the default value of MAX_RETRIES to 5", "tiny"],
   ["one-line fix: off-by-one in the pagination loop", "tiny"],
+  ["Fix clamp(value, min, max) in src/clamp.js so values below min return min, values above max return max, and values inside the range return unchanged", "tiny"],
   // normal — ordinary bug/feature/investigation
   ["Fix the authentication refresh bug", "normal"],
   ["Users report the login page hangs after a password reset; investigate and fix", "normal"],

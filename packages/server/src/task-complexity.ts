@@ -59,6 +59,10 @@ const TINY_PATTERNS: readonly RegExp[] = [
   /\b(add|remove)\s+(a\s+|the\s+)?(missing\s+)?(semicolon|trailing comma|newline|whitespace|blank line)\b/i,
   /\bfix\s+(the\s+)?(lint|formatting|indentation)\s+(error|warning|issue)s?\b/i,
   /\bchange\s+(the\s+)?(default\s+)?(value|string|label|text|constant)\s+(of|for)\b.*\bto\b/i,
+  // Detailed acceptance criteria for a single return-value bug are still tiny when they do not
+  // name investigation, breadth, or a second target. This keeps the smallest-useful topology
+  // from being defeated by a precise one-file bug report.
+  /\b(fix|correct|repair)\b[\s\S]{0,220}\breturns?\b/i,
 ];
 
 const CROSS_CUTTING_PATTERNS: readonly RegExp[] = [
@@ -138,7 +142,7 @@ export function classifyTaskComplexity(signals: TaskComplexitySignals): TaskComp
     return { tier: "complex", reasonCodes, rationale: `Cross-cutting work: ${reasonCodes.join(", ")}.`, classifierVersion: TASK_COMPLEXITY_CLASSIFIER_VERSION };
   }
 
-  if (tiny && breadthSignals === 0 && !investigation && words <= 24 && files <= 1) {
+  if (tiny && breadthSignals === 0 && !investigation && words <= 48 && files <= 1) {
     reasonCodes.push("GOAL_MATCHES_TINY_PATTERN", "GOAL_IS_SHORT");
     if (files === 1) reasonCodes.push("GOAL_NAMES_SINGLE_FILE");
     return { tier: "tiny", reasonCodes, rationale: "A single, narrowly scoped edit with no breadth signal; a coder plus ForgeVerify is the smallest useful team.", classifierVersion: TASK_COMPLEXITY_CLASSIFIER_VERSION };
