@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "local_production_shaped_canary",
+  "recordedAt": "2026-09-22T00:02:01.093Z",
+  "canaries": {
+    "tiny": {
+      "outcome": "completed",
+      "detail": "accepted=true fixed=true error=none",
+      "fileCorrect": true
+    },
+    "small": {
+      "outcome": "completed",
+      "detail": "accepted=true fixed=true error=none",
+      "fileCorrect": true
+    },
+    "medium": {
+      "outcome": "completed",
+      "detail": "accepted=true fixed=true error=none",
+      "fileCorrect": true
+    },
+    "flawed": {
+      "outcome": "failed",
+      "detail": "accepted=true fixed=true error=none"
+    },
+    "cancellation": {
+      "outcome": "cancelled",
+      "detail": "inflight=true cancel http=200 terminal=cancelled error=none"
+    },
+    "duplicate_submission": {
+      "outcome": "completed+completed",
+      "detail": "first=completed(ok) resubmit http=200 phase=completed providerCalls 2→4"
+    },
+    "user_contention": {
+      "outcome": "1 completed, 7 lease-rejected",
+      "detail": "2266ms wall; 1 admitted / 7 explicit 409 WORKSPACE_LEASE_CONFLICT"
+    },
+    "provider_failure": {
+      "outcome": "failed",
+      "detail": "429 injected → terminal failed error=none"
+    },
+    "postfail_routing": {
+      "outcome": "failed",
+      "detail": "post-429 task → failed (fail-closed expected: not completed)"
+    }
+  },
+  "invariants": {
+    "verifier_bypass": {
+      "pass": true,
+      "detail": "flawed patch terminated failed (must not be completed)"
+    },
+    "canary_ladder": {
+      "pass": true,
+      "detail": "tiny/small/medium completed with correct on-disk fixes"
+    },
+    "cancellation_clean": {
+      "pass": true,
+      "detail": "cancel during live stream → cancelled (inflight=true)"
+    },
+    "duplicate_execution_explained": {
+      "pass": true,
+      "detail": "NO send-layer idempotency: resubmit ran 2 more provider calls as a second task — recorded as a gap, not silently ignored"
+    },
+    "workspace_lease_exclusive": {
+      "pass": true,
+      "detail": "exactly-one-writer enforced: 1 admitted+completed, 7 explicitly rejected"
+    },
+    "contention_terminal": {
+      "pass": true,
+      "detail": "all reached terminal/rejected state: completed,rejected_409,rejected_409,rejected_409,rejected_409,rejected_409,rejected_409,rejected_409"
+    },
+    "failure_honest": {
+      "pass": true,
+      "detail": "terminal=failed, no completion claim on provider failure"
+    },
+    "fail_closed_routing": {
+      "pass": true,
+      "detail": "after route death, next task → failed"
+    },
+    "cross_user_leak": {
+      "pass": true,
+      "detail": "0 foreign-session events across 12 filtered streams"
+    },
+    "secret_leak": {
+      "pass": true,
+      "detail": "0/18 provider requests contained the planted secret"
+    },
+    "paid_crossover": {
+      "pass": true,
+      "detail": "0 paid routes admitted; 18 calls all via verified-free record"
+    },
+    "orphan_queue_record": {
+      "pass": true,
+      "detail": "0 non-terminal workflows after canary"
+    },
+    "reservation_leak": {
+      "pass": true,
+      "detail": "no active workflows holding leases at end"
+    },
+    "duplicate_terminal_result": {
+      "pass": true,
+      "detail": "0 tasks emitted >2 terminal-class events"
+    },
+    "server_healthy_post_canary": {
+      "pass": true,
+      "detail": "sessions endpoint 200"
+    }
+  },
+  "providerCallsByTag": {
+    "tiny": 2,
+    "small": 3,
+    "medium": 3,
+    "flawed": 2,
+    "cancel": 1,
+    "dupe": 4,
+    "contention": 2,
+    "fail": 1
+  },
+  "verdict": "R26_CANARY_CLEAN"
+}
