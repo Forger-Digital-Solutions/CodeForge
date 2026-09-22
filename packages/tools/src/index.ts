@@ -905,7 +905,11 @@ export class ToolBroker {
             if (result.spawnError) {
               throw new Error(result.spawnError);
             }
-            rawResult = `Exit code: ${result.exitCode}\n${result.output || "(no output)"}`;
+            const commandResult = `Exit code: ${result.exitCode}\n${result.output || "(no output)"}`;
+            if (result.exitCode !== 0) {
+              throw new Error(commandResult);
+            }
+            rawResult = commandResult;
           }
           break;
         }

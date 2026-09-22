@@ -79,6 +79,19 @@ describe("FG-1C duplicate / no-progress suppression", () => {
     expect(supervisor.classify(command).action).toBe("execute");
   });
 
+  it("suppresses a command only after the runtime has conservatively classified it read-only", () => {
+    const supervisor = createDuplicateActionSupervisor();
+    const command = {
+      tool: "run_command",
+      canonicalArguments: { command: "cat index.ts" },
+      runtimeClassifiedReadOnly: true,
+    };
+    expect(supervisor.isMutating(command)).toBe(false);
+    supervisor.recordReadResult(command, "export const codeforge = true;", true, "exec-command-1");
+    expect(supervisor.classify(command).action).toBe("suppress");
+    expect(supervisor.isMutating({ tool: "run_command", canonicalArguments: { command: "cat index.ts" } })).toBe(true);
+  });
+
   it("distinguishes identical tool text by canonical arguments", () => {
     const supervisor = createDuplicateActionSupervisor();
     supervisor.classify(identity("read_file", { path: "src/a.ts" }));

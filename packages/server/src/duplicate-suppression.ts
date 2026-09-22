@@ -18,6 +18,11 @@ export interface DuplicateActionIdentity {
   tool: string;
   /** Stable canonical form of the parsed tool arguments (not raw model text). */
   canonicalArguments: unknown;
+  /**
+   * A runtime-owned classification for a normally state-changing surface. This is deliberately
+   * not model input: only a conservative command classifier may set it after parsing arguments.
+   */
+  runtimeClassifiedReadOnly?: boolean;
   /** Targeted workstream scope, so alpha never suppresses (or is suppressed by) beta. */
   workstreamScope?: string;
   policyVersion?: string;
@@ -127,6 +132,10 @@ export class DuplicateActionSupervisor {
     this.stateVersion++;
   }
 
+  recordNoProgressInterruption(): void {
+    this.metrics.noProgressEscalations++;
+  }
+
   identityKey(identity: DuplicateActionIdentity): string {
     return fingerprint({
       tool: identity.tool,
@@ -136,11 +145,15 @@ export class DuplicateActionSupervisor {
     });
   }
 
-  isReadOnly(tool: string): boolean {
+  isReadOnly(identity: DuplicateActionIdentity | string): boolean {
+    if (typeof identity !== "string" && identity.runtimeClassifiedReadOnly === true) return true;
+    const tool = typeof identity === "string" ? identity : identity.tool;
     return READ_ONLY_SUPPRESSIBLE.has(tool) || this.options.externalClassifier?.isReadOnly?.(tool) === true;
   }
 
-  isMutating(tool: string): boolean {
+  isMutating(identity: DuplicateActionIdentity | string): boolean {
+    if (this.isReadOnly(identity)) return false;
+    const tool = typeof identity === "string" ? identity : identity.tool;
     return MUTATING_TOOLS.has(tool) || this.options.externalClassifier?.isStateChanging?.(tool) === true;
   }
 
@@ -149,12 +162,12 @@ export class DuplicateActionSupervisor {
    * Mutating actions are always executed and only update the state version after completion.
    */
   classify(identity: DuplicateActionIdentity): DuplicateDecision {
-    if (!this.isReadOnly(identity.tool)) {
+    if (!this.isReadOnly(identity)) {
       return { action: "execute" };
     }
     const progress = this.readProgress.get(this.stateVersion);
     if (progress && progress.noProgressObservations >= NO_PROGRESS_READ_LIMIT) {
-      this.metrics.noProgressEscalations++;
+      this.recordNoProgressInterruption();
       return {
         action: "escalate",
         reason: `No-progress investigation: ${progress.noProgressObservations} distinct read-only observations against unchanged state produced only malformed, empty, or repeated evidence.`,
@@ -167,7 +180,7 @@ export class DuplicateActionSupervisor {
     }
     if (record.success === true) {
       if (record.suppressionsAtState >= 1) {
-        this.metrics.noProgressEscalations++;
+        this.recordNoProgressInterruption();
         return {
           action: "escalate",
           reason: `No-progress loop: read-only action "${identity.tool}" was executed and then suppressed once against unchanged workspace state and is being requested again.`,
@@ -185,7 +198,7 @@ export class DuplicateActionSupervisor {
     // Prior result class at this state was a failure. Allow exactly one retry; a third
     // identical attempt against unchanged state is a no-progress loop.
     if (record.attemptsAtState >= 2) {
-      this.metrics.noProgressEscalations++;
+      this.recordNoProgressInterruption();
       return {
         action: "escalate",
         reason: `No-progress loop: failing action "${identity.tool}" repeated against unchanged workspace state without remediation.`,

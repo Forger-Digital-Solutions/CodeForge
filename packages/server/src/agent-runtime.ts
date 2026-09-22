@@ -524,6 +524,12 @@ export function parseToolArgs(argsJson: string): unknown {
   }
 }
 
+function isClassifiedReadOnlyCommand(toolName: string, args: unknown): boolean {
+  if (toolName !== "run_command" || typeof args !== "object" || args === null || !("command" in args)) return false;
+  const command = (args as { command?: unknown }).command;
+  return typeof command === "string" && classifyCommand(command).category === "read-only";
+}
+
 /**
  * The exact tool schemas the production agent loop sends with every model call. Exported so
  * production-shaped probes (R23 route gating) exercise the same request shape as a real run.
@@ -1940,9 +1946,12 @@ export class AgentRuntime {
             const last3 = toolCallHistory.slice(-3);
             if (last3[0] === last3[1] && last3[1] === last3[2]) {
               const err = `[${ERROR_CODES.AGENT_TOOL_LOOP_DETECTED}] Deterministic loop detected: tool "${tc.name}" called 3 consecutive times with identical arguments.`;
+              duplicateSupervisor.recordNoProgressInterruption();
+              ledger.recordNoProgressInterruption(err);
               adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.AGENT_TOOL_LOOP_DETECTED);
               stopReason = "tool_loop_detected";
               forgeGreenR0RunStatus = "blocked";
+              contextMetrics.efficiencyReceipt = createRunReceipt();
               return {
                 status: "blocked",
                 summary: err,
@@ -1953,6 +1962,7 @@ export class AgentRuntime {
                 stopReason,
                 filesChanged: Array.from(changedFiles),
                 error: ERROR_CODES.AGENT_TOOL_LOOP_DETECTED,
+                contextMetrics,
               };
             }
           }
@@ -1962,9 +1972,12 @@ export class AgentRuntime {
             const last6 = toolCallHistory.slice(-6);
             if (last6[0] === last6[2] && last6[2] === last6[4] && last6[1] === last6[3] && last6[3] === last6[5] && last6[0] !== last6[1]) {
               const err = `[${ERROR_CODES.AGENT_TOOL_LOOP_DETECTED}] Deterministic tool oscillation loop detected between "${last6[0]}" and "${last6[1]}".`;
+              duplicateSupervisor.recordNoProgressInterruption();
+              ledger.recordNoProgressInterruption(err);
               adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.AGENT_TOOL_LOOP_DETECTED);
               stopReason = "tool_loop_detected";
               forgeGreenR0RunStatus = "blocked";
+              contextMetrics.efficiencyReceipt = createRunReceipt();
               return {
                 status: "blocked",
                 summary: err,
@@ -1975,6 +1988,7 @@ export class AgentRuntime {
                 stopReason,
                 filesChanged: Array.from(changedFiles),
                 error: ERROR_CODES.AGENT_TOOL_LOOP_DETECTED,
+                contextMetrics,
               };
             }
           }
@@ -1987,6 +2001,7 @@ export class AgentRuntime {
           const duplicateIdentity: DuplicateActionIdentity = {
             tool: tc.name,
             canonicalArguments: supervisorArgs === PARSE_FAILED ? tc.arguments : supervisorArgs,
+            runtimeClassifiedReadOnly: isClassifiedReadOnlyCommand(tc.name, supervisorArgs),
             workstreamScope: req.workstreamScope,
           };
           const duplicateDecision = this.efficiencyControls.duplicateSuppression ? duplicateSupervisor.classify(duplicateIdentity) : { action: "execute" as const };
@@ -2156,7 +2171,7 @@ export class AgentRuntime {
           );
 
           toolExecutions.push(toolExec);
-          if (duplicateSupervisor.isMutating(tc.name)) {
+          if (duplicateSupervisor.isMutating(duplicateIdentity)) {
             duplicateSupervisor.recordMutationExecution(duplicateIdentity, toolExec.success);
           } else {
             duplicateSupervisor.recordReadResult(duplicateIdentity, toolExec.output, toolExec.success, executionId);
@@ -2208,9 +2223,7 @@ export class AgentRuntime {
             const changedPath = (tc.name === "write_file" || tc.name === "edit_file") && typeof parsedArgs === "object" && parsedArgs && "path" in parsedArgs
               ? String((parsedArgs as { path: string }).path)
               : undefined;
-            const commandIsReadOnly = tc.name === "run_command" && typeof parsedArgs === "object" && parsedArgs && "command" in parsedArgs
-              ? classifyCommand(String((parsedArgs as { command: string }).command)).category === "read-only"
-              : false;
+            const commandIsReadOnly = isClassifiedReadOnlyCommand(tc.name, parsedArgs);
             if (!commandIsReadOnly) await refreshBootstrapContext(changedPath ? [changedPath] : undefined);
           }
 
@@ -4590,8 +4603,13 @@ export class AgentRuntime {
     // (suppressed actions are read-only and never reach approval). Steer consumption and any
     // mutating execution advance the supervisor's state version, so post-steer and post-write
     // reruns are always treated as legitimate new work.
-    if (duplicateSupervisor && duplicateSupervisor.isReadOnly(toolName)) {
-      const decision = this.efficiencyControls.duplicateSuppression ? duplicateSupervisor.classify({ tool: toolName, canonicalArguments: parsedArgs }) : { action: "execute" as const };
+    const duplicateIdentity: DuplicateActionIdentity = {
+      tool: toolName,
+      canonicalArguments: parsedArgs,
+      runtimeClassifiedReadOnly: isClassifiedReadOnlyCommand(toolName, parsedArgs),
+    };
+    if (duplicateSupervisor && duplicateSupervisor.isReadOnly(duplicateIdentity)) {
+      const decision = this.efficiencyControls.duplicateSuppression ? duplicateSupervisor.classify(duplicateIdentity) : { action: "execute" as const };
       if (decision.action === "escalate") {
         adapter.emitToolExecutionBlocked(turnId, toolCallId, toolName, ERROR_CODES.AGENT_NO_PROGRESS_DETECTED);
         throw new Error(`[${ERROR_CODES.AGENT_NO_PROGRESS_DETECTED}] ${decision.reason}`);
@@ -4714,11 +4732,10 @@ export class AgentRuntime {
         ? truncateOutput(safeResult, MAX_COMMAND_OUTPUT_BYTES, toolName)
         : safeResult;
       if (duplicateSupervisor) {
-        const identity = { tool: toolName, canonicalArguments: parsedArgs };
-        if (duplicateSupervisor.isMutating(toolName)) {
-          duplicateSupervisor.recordMutationExecution(identity, true);
-        } else if (duplicateSupervisor.isReadOnly(toolName)) {
-          duplicateSupervisor.recordReadResult(identity, boundedResult, true, toolCallId);
+        if (duplicateSupervisor.isMutating(duplicateIdentity)) {
+          duplicateSupervisor.recordMutationExecution(duplicateIdentity, true);
+        } else if (duplicateSupervisor.isReadOnly(duplicateIdentity)) {
+          duplicateSupervisor.recordReadResult(duplicateIdentity, boundedResult, true, toolCallId);
         }
       }
       adapter.emitToolExecutionCompleted(turnId, toolCallId, toolName, boundedResult);
@@ -4733,11 +4750,10 @@ export class AgentRuntime {
         ? truncateOutput(errorMessage, MAX_COMMAND_OUTPUT_BYTES, toolName)
         : errorMessage;
       if (duplicateSupervisor) {
-        const identity = { tool: toolName, canonicalArguments: parsedArgs };
-        if (duplicateSupervisor.isMutating(toolName)) {
-          duplicateSupervisor.recordMutationExecution(identity, false);
-        } else if (duplicateSupervisor.isReadOnly(toolName)) {
-          duplicateSupervisor.recordReadResult(identity, boundedError, false, toolCallId);
+        if (duplicateSupervisor.isMutating(duplicateIdentity)) {
+          duplicateSupervisor.recordMutationExecution(duplicateIdentity, false);
+        } else if (duplicateSupervisor.isReadOnly(duplicateIdentity)) {
+          duplicateSupervisor.recordReadResult(duplicateIdentity, boundedError, false, toolCallId);
         }
       }
       adapter.emitToolExecutionFailed(turnId, toolCallId, toolName, boundedError);

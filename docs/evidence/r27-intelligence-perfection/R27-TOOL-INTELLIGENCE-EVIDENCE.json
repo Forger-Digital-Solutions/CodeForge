@@ -1,0 +1,55 @@
+{
+  "schema": "r27-tool-intelligence-evidence-1",
+  "status": "R27_TOOL_COMMAND_TRUTHFULNESS_AND_LOOP_RECEIPTS_DETERMINISTICALLY_PROVEN",
+  "paidInferenceUsed": false,
+  "evidenceBoundary": "Static inspection and deterministic scripted-provider tests only. No live cloud inference was invoked.",
+  "problemRecovered": [
+    "run_command treated every completed process as successful, even when the terminal supplied a nonzero exit code.",
+    "The duplicate supervisor treated all run_command calls as mutating, including command-classifier-proven read-only inspections.",
+    "The generic terminal tool-loop exit was terminal but did not create the normal no-progress receipt."
+  ],
+  "change": {
+    "exitStatus": "A nonzero terminal exit is now a TOOL_EXECUTION_FAILED tool result with the redacted Exit code and command output retained in the diagnostic.",
+    "readOnlyCommands": "Only a parsed run_command whose existing conservative classifier returns read-only enters duplicate suppression. Other commands remain non-suppressible and state-changing.",
+    "loopObservability": "Three identical consecutive tool requests and six-turn oscillations record a no-progress interruption in the ledger and return an efficiency receipt before blocking."
+  },
+  "deterministicValidation": {
+    "toolPackage": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/tools/test/command-exit-status.test.ts packages/tools/test/role-boundary.test.ts packages/tools/test/prompt-tool-contract.test.ts packages/tools/test/fg1-compression.test.ts",
+      "filesPassed": 4,
+      "testsPassed": 15,
+      "testsFailed": 0,
+      "approxWallTimeMs": 2460
+    },
+    "focusedRuntime": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/fg1-duplicate-suppression.test.ts packages/server/test/fg1-runtime-efficiency.test.ts packages/server/test/r21-autonomous-command-gate.test.ts packages/server/test/r21-agent-budget-honesty.test.ts",
+      "filesPassed": 4,
+      "testsPassed": 36,
+      "testsFailed": 0,
+      "approxWallTimeMs": 26280
+    },
+    "adjacentRuntime": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/agent-runtime.test.ts packages/server/test/run-failure.test.ts packages/server/test/agent-orchestrator-integration.test.ts",
+      "filesPassed": 3,
+      "testsPassed": 32,
+      "testsFailed": 0,
+      "approxWallTimeMs": 72600
+    },
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc -b packages/tools packages/server",
+      "passed": true
+    }
+  },
+  "proven": [
+    "A nonzero shell-process exit cannot be presented to the runtime as a successful tool result.",
+    "A repeated classifier-proven read-only terminal inspection executes once, replays its authoritative result once, and records the avoided dispatch in the ledger.",
+    "A repeated failed classifier-proven read-only terminal inspection physically executes at most twice before the run blocks with an AGENT_TOOL_LOOP_DETECTED receipt and ledger interruption.",
+    "Mutating and unclassified commands do not become suppressible through model-provided arguments."
+  ],
+  "notProven": [
+    "Live-model improvement in tool selection, retries, token use, or completion rate.",
+    "Browser-tool, external-tool, or general unnecessary-chain reduction beyond the governed command and duplicate-read surface.",
+    "Packaged desktop terminal UX or Windows console visibility."
+  ],
+  "requiredNextEvidence": "Run paired live free-route engineering tasks under the same repository, route, budget, verifier, and completion criteria. Record command exit results, duplicate suppression, retries, token receipts, and verification outcomes; preserve route or quota unavailability as a blocker."
+}

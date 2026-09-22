@@ -154,6 +154,71 @@ describe("FG-1 runtime efficiency integration", () => {
     expect(record.totals.noProgressInterruptions).toBe(1);
   });
 
+  it("suppresses a repeatable read-only terminal inspection and emits its receipt", async () => {
+    const provider = new RecordingScriptedProvider("test-provider", [
+      toolCallTurn("tc-command-1", "run_command", { command: "dir index.ts" }),
+      toolCallTurn("tc-command-2", "run_command", { command: "dir index.ts" }),
+      finalTurn("inspection complete"),
+    ]);
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(provider);
+    const runtime = createAgentRuntime({ sessionId: "fg1-command-suppress", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: tmpDir });
+
+    const result = await runtime.executeAgentRun({
+      runId: "fg1-command-suppress",
+      agentId: "coder",
+      role: "coder",
+      goal: "Inspect index.ts twice",
+      workspaceId: "ws-fg1",
+      workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+    });
+
+    expect(result.status).toBe("completed");
+    expect(result.toolExecutions).toHaveLength(1);
+    expect(result.toolExecutions[0]!.toolName).toBe("run_command");
+    expect(result.toolExecutions[0]!.success).toBe(true);
+    expect(result.contextMetrics?.efficiencyReceipt?.duplicateActionsSuppressed).toBe(1);
+    const finalTurnToolMessages = provider.requests[2]!.messages.filter((message) => message.role === "tool");
+    expect(finalTurnToolMessages.some((message) => message.content.includes("duplicate read-only action suppressed"))).toBe(true);
+    const ledgers = await persistence.getWorkItemsByKind("forgegreen_ledger");
+    const record = (ledgers[0] as unknown as { record: { totals: { duplicateActionsSuppressed: number; avoidedToolDispatches: number } } }).record;
+    expect(record.totals.duplicateActionsSuppressed).toBe(1);
+    expect(record.totals.avoidedToolDispatches).toBe(1);
+  });
+
+  it("retries a failed read-only terminal inspection once, then blocks with an inspectable receipt", async () => {
+    const provider = new RecordingScriptedProvider("test-provider", [
+      toolCallTurn("tc-command-fail-1", "run_command", { command: "dir does-not-exist.ts" }),
+      toolCallTurn("tc-command-fail-2", "run_command", { command: "dir does-not-exist.ts" }),
+      toolCallTurn("tc-command-fail-3", "run_command", { command: "dir does-not-exist.ts" }),
+      finalTurn("unreachable"),
+    ]);
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(provider);
+    const runtime = createAgentRuntime({ sessionId: "fg1-command-failure", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: tmpDir });
+
+    const result = await runtime.executeAgentRun({
+      runId: "fg1-command-failure",
+      agentId: "coder",
+      role: "coder",
+      goal: "Repeat a failed terminal inspection",
+      workspaceId: "ws-fg1",
+      workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+    });
+
+    expect(result.status).toBe("blocked");
+    expect(result.stopReason).toBe("tool_loop_detected");
+    expect(result.error).toBe(ERROR_CODES.AGENT_TOOL_LOOP_DETECTED);
+    expect(result.toolExecutions).toHaveLength(2);
+    expect(result.toolExecutions.every((execution) => execution.success === false)).toBe(true);
+    expect(result.contextMetrics?.efficiencyReceipt?.noProgressInterruptions).toBe(1);
+    const ledgers = await persistence.getWorkItemsByKind("forgegreen_ledger");
+    const record = (ledgers[0] as unknown as { record: { totals: { noProgressInterruptions: number } } }).record;
+    expect(record.totals.noProgressInterruptions).toBe(1);
+  });
+
   it("executes a legitimate rerun after a real state change, and starts every run with a fresh supervisor", async () => {
     const read = () => toolCallTurn(`tc-read-${Math.random()}`, "read_file", { path: "index.ts" });
     const provider = new RecordingScriptedProvider("test-provider", [
