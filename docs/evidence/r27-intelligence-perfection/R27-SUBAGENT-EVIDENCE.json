@@ -1,0 +1,28 @@
+{
+  "schema": "r27-subagent-evidence-1",
+  "status": "mechanics_proven_live_value_not_proven",
+  "paidInferenceUsed": false,
+  "tests": {
+    "filesPassed": 5,
+    "testsPassed": 38,
+    "testsFailed": 0,
+    "approxWallTimeMs": 106000
+  },
+  "proven": [
+    "smallest-useful topology for tiny tasks",
+    "selective Explorer and Reviewer topology for normal tasks",
+    "Planner and two-Explorer topology for complex tasks",
+    "capacity-aware parallel reduction",
+    "review finding drives bounded revision",
+    "invalid Planner graph is rejected before coding",
+    "isolated coder worktree and durable lifecycle artifacts"
+  ],
+  "notProven": [
+    "live Explorer relevance",
+    "live Planner quality",
+    "Reviewer precision and recall",
+    "reconciliation of conflicting live child results",
+    "net live token/call/wall-time benefit"
+  ],
+  "requiredNextEvidence": "paired live free-route topology experiment with correctness and efficiency guard"
+}
