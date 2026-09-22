@@ -780,6 +780,14 @@ export class CodeForgeServer {
       return;
     }
 
+    // Unauthenticated liveness: readiness probes (installer smoke, hosted health checks) carry
+    // no bearer. Reveals only that the process serves HTTP — no internals, no session data.
+    if (url.pathname === "/api/health" && req.method === "GET") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ status: "ok" }));
+      return;
+    }
+
     // Per-process bearer. The desktop main process attaches it to the primary window's own
     // requests (including the EventSource stream) and to its own calls; it is never accepted
     // from the URL, so it cannot leak through query-string logging or referrers.

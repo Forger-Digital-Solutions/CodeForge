@@ -27,7 +27,6 @@ import { PostgresCloudDatabase } from "../packages/cloud-db/dist/postgres.js";
 const connectionString = process.env.CODEFORGE_TEST_POSTGRES_URL;
 if (!connectionString) throw new Error("CODEFORGE_TEST_POSTGRES_URL is required");
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const SMALL_POOL = { max: 4, idleTimeoutMillis: 10_000 };
 
 const results = { schemaVersion: 1, evidenceClass: "local_real_postgresql_chaos", recordedAt: new Date().toISOString(), cases: {} };
 const pass = (name, detail) => { results.cases[name] = { pass: true, detail }; console.log(`PASS ${name}: ${detail}`); };
@@ -88,9 +87,9 @@ try {
     const counts = await statusCounts(route.providerId);
     const completed = Number(counts.find((r) => r.status === "completed")?.count ?? 0);
     const leftover = counts.filter((r) => !["completed", "failed", "cancelled"].includes(r.status)).reduce((s, r) => s + Number(r.count), 0);
-    completed === 20 && leftover === 0 && completedIds.size === 20
+    void (completed === 20 && leftover === 0 && completedIds.size === 20
       ? pass("C1.conn_kill_mid_drain", `drained 20/20 exactly-once through ${killRounds} kill rounds (claimErrors=${claimErrors} completeErrors=${completeErrors})`)
-      : fail("C1.conn_kill_mid_drain", `completed=${completed}/20 leftover=${leftover} unique=${completedIds.size} kills=${killRounds} claimErr=${claimErrors} completeErr=${completeErrors}`);
+      : fail("C1.conn_kill_mid_drain", `completed=${completed}/20 leftover=${leftover} unique=${completedIds.size} kills=${killRounds} claimErr=${claimErrors} completeErr=${completeErrors}`));
     await db.close();
   }
 
@@ -109,9 +108,10 @@ try {
     const claims = outcomes.filter((o) => o.status === "fulfilled" && o.value).map((o) => o.value.execution.id);
     const unique = new Set(claims);
     const noCrash = outcomes.every((o) => o.status === "fulfilled" || (o.reason instanceof Error));
-    unique.size === claims.length && noCrash && claims.length <= 8
+    void (unique.size === claims.length && noCrash && claims.length <= 8
       ? pass("C2.pool_exhaustion", `${claims.length} claims all unique on a 2-conn pool; outcomes all resolved honestly (no crash, no double-claim)`)
-      : fail("C2.pool_exhaustion", `claims=${claims.length} unique=${unique.size} rejections=${outcomes.filter((o) => o.status === "rejected").length}`);
+      : fail("C2.pool_exhaustion", `claims=${claims.length} unique=${unique.size} rejections=${outcomes.filter((o) => o.status === "rejected").length}`));
+
     await db.close();
   }
 
@@ -136,9 +136,9 @@ try {
     // A fresh claim must still work — row must be queued, not stuck.
     const claim = await db.claimNextHostedExecution({ workerId: "survivor", leaseMs: 15_000, maxUserConcurrent: 1, providerIds: [route.providerId] });
     const st = (await admin.query("SELECT status FROM hosted_executions WHERE id=$1", [execId])).rows[0]?.status;
-    claim && ["claimed", "running", "dispatching"].includes(st)
+    void (claim && ["claimed", "running", "dispatching"].includes(st)
       ? pass("C3.aborted_txn", `aborted sibling released the row; fresh claim succeeded (status=${st})`)
-      : fail("C3.aborted_txn", `claim=${claim ? "ok" : "null"} status=${st}`);
+      : fail("C3.aborted_txn", `claim=${claim ? "ok" : "null"} status=${st}`));
     await db.close();
   }
 
@@ -159,9 +159,9 @@ try {
     const claimedIds = attempts.filter((a) => a.status === "fulfilled" && a.value).map((a) => a.value.execution.id);
     const states = (await admin.query("SELECT id, status FROM hosted_executions WHERE provider_id=$1", [route.providerId])).rows;
     const stuck = states.filter((s) => ["claimed", "dispatching"].includes(s.status) && !claimedIds.includes(s.id));
-    new Set(claimedIds).size === claimedIds.length && stuck.length === 0
+    void (new Set(claimedIds).size === claimedIds.length && stuck.length === 0
       ? pass("C4.kill_mid_claim", `${claimedIds.length} atomic claims, ${attempts.filter((a) => a.status === "rejected").length} killed mid-flight, 0 half-claimed rows`)
-      : fail("C4.kill_mid_claim", `claimed=${claimedIds.length} dupes=${claimedIds.length - new Set(claimedIds).size} stuck=${stuck.length}`);
+      : fail("C4.kill_mid_claim", `claimed=${claimedIds.length} dupes=${claimedIds.length - new Set(claimedIds).size} stuck=${stuck.length}`));
     await db.close();
   }
 } finally {

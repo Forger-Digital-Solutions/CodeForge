@@ -131,6 +131,7 @@ try {
 
   // 2. SSE connect + workspace bind
   const sse1 = await sseConnect("e2e-session");
+  void sse1;
   const setWs = await api("/api/workspace/set", "POST", { path: ws });
   check("workspace.bind", setWs.status === 200, `status=${setWs.status}`);
 
@@ -173,7 +174,6 @@ try {
   // 7. SSE reconnect — lastSeq replay loses nothing
   const preReconnectCount = sseEvents.filter((e) => e._seq).length;
   const lastSeen = sseLastSeq;
-  const replayEvents = [];
   const sse2 = await sseConnect("e2e-session", Math.max(0, lastSeen - 3));
   await new Promise((r) => setTimeout(r, 400));
   sse2.cancel();

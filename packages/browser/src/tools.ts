@@ -259,20 +259,20 @@ export function createBrowserToolExecutor(
           return formatUntrustedData(JSON.stringify(existing.info()), "browser session");
         }
         const created = await runtime.openSession({
-          ...(typeof args.targetRevision === "string" ? { targetRevision: args.targetRevision } : options.defaultTargetRevision ? { targetRevision: options.defaultTargetRevision } : {}),
+          targetRevision: typeof args.targetRevision === "string" ? args.targetRevision : options.defaultTargetRevision,
         });
         lastSessionId = created.sessionId;
         return formatUntrustedData(JSON.stringify(created.info()), "browser session");
       }
       case "browser_navigate": {
         const receipt = await session(args).navigate(String(args.url ?? ""), {
-          ...(tabId(args) ? { tabId: tabId(args) } : {}),
-          ...(typeof args.waitUntil === "string" ? { waitUntil: args.waitUntil as "load" | "domcontentloaded" | "networkidle" } : {}),
+          tabId: tabId(args),
+          waitUntil: typeof args.waitUntil === "string" ? args.waitUntil as "load" | "domcontentloaded" | "networkidle" : undefined,
         });
         return formatUntrustedData(JSON.stringify(receipt), "browser navigation");
       }
       case "browser_inspect": {
-        const { snapshot, receipt } = await session(args).inspect({ ...(tabId(args) ? { tabId: tabId(args) } : {}) });
+        const { snapshot, receipt } = await session(args).inspect({ tabId: tabId(args) });
         return formatUntrustedData(JSON.stringify({ snapshot, receipt }), "page DOM");
       }
       case "browser_state": {
@@ -287,39 +287,39 @@ export function createBrowserToolExecutor(
         return formatUntrustedData(JSON.stringify(state), "browser state");
       }
       case "browser_click": {
-        const receipt = await session(args).click(parseTarget(args.target), { ...(tabId(args) ? { tabId: tabId(args) } : {}) });
+        const receipt = await session(args).click(parseTarget(args.target), { tabId: tabId(args) });
         return formatUntrustedData(JSON.stringify(receipt), "browser action");
       }
       case "browser_type": {
         const receipt = await session(args).type(parseTarget(args.target), String(args.text ?? ""), {
-          ...(tabId(args) ? { tabId: tabId(args) } : {}),
-          ...(args.sensitive === true ? { sensitive: true } : {}),
-          ...(args.submit === true ? { submit: true } : {}),
+          tabId: tabId(args),
+          sensitive: args.sensitive === true ? true : undefined,
+          submit: args.submit === true ? true : undefined,
         });
         return formatUntrustedData(JSON.stringify(receipt), "browser action");
       }
       case "browser_select": {
         const values = Array.isArray(args.values) ? args.values.map(String) : [];
-        const receipt = await session(args).select(parseTarget(args.target), values, { ...(tabId(args) ? { tabId: tabId(args) } : {}) });
+        const receipt = await session(args).select(parseTarget(args.target), values, { tabId: tabId(args) });
         return formatUntrustedData(JSON.stringify(receipt), "browser action");
       }
       case "browser_submit": {
-        const receipt = await session(args).submit(parseTarget(args.target), { ...(tabId(args) ? { tabId: tabId(args) } : {}) });
+        const receipt = await session(args).submit(parseTarget(args.target), { tabId: tabId(args) });
         return formatUntrustedData(JSON.stringify(receipt), "browser action");
       }
       case "browser_wait": {
         const receipt = await session(args).waitFor({
-          ...(tabId(args) ? { tabId: tabId(args) } : {}),
-          ...(typeof args.selector === "string" ? { selector: args.selector } : {}),
-          ...(typeof args.state === "string" ? { state: args.state as "attached" | "visible" | "hidden" } : {}),
-          ...(typeof args.url === "string" ? { url: args.url } : {}),
-          ...(typeof args.timeoutMs === "number" ? { timeoutMs: args.timeoutMs } : {}),
+          tabId: tabId(args),
+          selector: typeof args.selector === "string" ? args.selector : undefined,
+          state: typeof args.state === "string" ? args.state as "attached" | "visible" | "hidden" : undefined,
+          url: typeof args.url === "string" ? args.url : undefined,
+          timeoutMs: typeof args.timeoutMs === "number" ? args.timeoutMs : undefined,
         });
         return formatUntrustedData(JSON.stringify(receipt), "browser wait");
       }
       case "browser_screenshot": {
         const { record, receipt } = await session(args).screenshot({
-          ...(tabId(args) ? { tabId: tabId(args) } : {}),
+          tabId: tabId(args),
           persist: args.persist === true,
         });
         return formatUntrustedData(JSON.stringify({ record, receipt }), "browser screenshot");

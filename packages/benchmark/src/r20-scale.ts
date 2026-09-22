@@ -333,7 +333,7 @@ export class R20FairScheduler {
 
   recoverExpired(now: number): number {
     let recovered = 0;
-    for (const reservation of [...this.reservations.values()]) {
+    for (const reservation of this.reservations.values()) {
       if (reservation.leaseUntil > now) continue;
       this.reservations.delete(reservation.reservationId);
       this.activeByUser.set(reservation.userId, Math.max(0, (this.activeByUser.get(reservation.userId) ?? 1) - 1));

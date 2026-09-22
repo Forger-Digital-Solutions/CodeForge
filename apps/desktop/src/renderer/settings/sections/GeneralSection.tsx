@@ -1,6 +1,6 @@
 import React from "react";
 import { useSettings } from "../settings-context.js";
-import { Toggle, SettingsGroup, SettingsRow, SettingsButton, StatusBadge } from "../settings-controls.js";
+import { Toggle, SettingsGroup, SettingsRow, SettingsButton } from "../settings-controls.js";
 
 /**
  * General — the settings that own no other home: startup/recovery behavior and pointers into the

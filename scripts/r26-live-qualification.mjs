@@ -51,7 +51,6 @@ const DEFAULT_ROUTES = [
 const routesArg = option("routes", undefined);
 const routes = (routesArg
   ? routesArg.split(",").map((pair) => {
-      const [providerId, modelId] = pair.split(":");
       const idx = pair.indexOf(":");
       return { providerId: pair.slice(0, idx), modelId: pair.slice(idx + 1) };
     })

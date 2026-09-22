@@ -3,7 +3,7 @@ import http from "node:http";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { GovernedBrowserRuntime, BrowserRuntimeError, BROWSER_RUNTIME_ERRORS } from "../src/index.js";
+import { GovernedBrowserRuntime, BROWSER_RUNTIME_ERRORS } from "../src/index.js";
 
 /**
  * Real-browser tests: playwright-core driving the installed Edge/Chrome, isolated context per

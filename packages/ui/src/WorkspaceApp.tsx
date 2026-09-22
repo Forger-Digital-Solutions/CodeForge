@@ -18,7 +18,6 @@ import { loadModelFavorites } from "./model-favorites.js";
 import type { ActivityOverviewData, ActivityPeriod } from "./ActivityOverview.js";
 import type { WorkspaceBriefData } from "./Conversation.js";
 import "./workspace.css";
-import { humanizeError } from "./error-copy.js";
 import { failureBannerLabel } from "./run-inspection.js";
 export { humanizeError } from "./error-copy.js";
 

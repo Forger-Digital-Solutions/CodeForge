@@ -25,7 +25,7 @@ export interface HostedAdmissionResult {
 }
 
 function assertBoundedIdentifier(value: string, name: string, maxLength = 255): void {
-  if (value.length < 1 || value.length > maxLength || /[\u0000-\u001f]/.test(value)) throw new Error(`${name} must be 1-${maxLength} printable characters`);
+  if (value.length < 1 || value.length > maxLength || [...value].some((c) => c.charCodeAt(0) < 0x20)) throw new Error(`${name} must be 1-${maxLength} printable characters`);
 }
 
 function assertBoundedPayload(value: string | undefined, name: string): void {

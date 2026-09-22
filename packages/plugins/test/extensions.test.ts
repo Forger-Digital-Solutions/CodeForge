@@ -4,7 +4,6 @@ import os from "node:os";
 import path from "node:path";
 import {
   ExtensionManager,
-  ExtensionHost,
   ManifestError,
   PermissionDeniedError,
   assertPermission,
@@ -64,7 +63,7 @@ function memorySecretStore(): SecretStore & { data: Map<string, string> } {
     set: async (ext, key, value) => void data.set(`${ext}:${key}`, value),
     delete: async (ext, key) => void data.delete(`${ext}:${key}`),
     deleteAll: async (ext) => {
-      for (const key of [...data.keys()]) if (key.startsWith(`${ext}:`)) data.delete(key);
+      for (const key of data.keys()) if (key.startsWith(`${ext}:`)) data.delete(key);
     },
   };
 }

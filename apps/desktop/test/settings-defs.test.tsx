@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import React from "react";
-import { AppSettingsSchema, type AppSettings } from "../src/app-settings.js";
-import { SETTING_DEFS, getSettingDef, getSectionSettings, resolveKeyPath } from "../src/renderer/settings/settings-defs.js";
-import { SETTINGS_SECTIONS, getSettingsSection, searchSettings } from "../src/renderer/settings/settings-registry.js";
+import { AppSettingsSchema } from "../src/app-settings.js";
+import { SETTING_DEFS, getSectionSettings, resolveKeyPath } from "../src/renderer/settings/settings-defs.js";
+import { getSettingsSection, searchSettings } from "../src/renderer/settings/settings-registry.js";
 import { renderSection, createSettingsContext } from "./settings-test-harness.js";
 import { ExtensionsSection } from "../src/renderer/settings/sections/ExtensionsSection.js";
 

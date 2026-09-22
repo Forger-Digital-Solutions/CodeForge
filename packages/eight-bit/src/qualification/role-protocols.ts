@@ -169,7 +169,7 @@ export const EXPLORER_REPO: ExplorerFixtureRepo = {
       "export const log = (m: string) => m;",
     ].join("\n"),
     "test/router.test.ts": [
-      'import { test } from "vitest";',
+      '/// <reference types="vitest" />',
       'test("route executes", () => {});',
     ].join("\n"),
     "docs/flow.md": "# Request flow\nselectRoute -> executeProviderCall",

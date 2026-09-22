@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { SQLiteCloudDatabase } from "../src/sqlite.js";
-import type { HostedExecutionEvent, ICloudDatabase } from "../src/index.js";
+import type { HostedExecutionEvent } from "../src/index.js";
 
 const route = { providerId: "synthetic-dist", modelId: "free-model" };
 

@@ -720,7 +720,7 @@ export class WorkflowService {
     const sessionIdentity = async (fallbackTitle: string, fallbackCreatedAt: string) => {
       const existing = await this.persistence.getSession(sessionId).catch(() => undefined);
       return {
-        ...(existing ?? {}),
+        ...existing,
         id: sessionId,
         title: existing?.title || fallbackTitle,
         taskTitle: existing?.taskTitle || existing?.title || fallbackTitle,
@@ -1448,7 +1448,7 @@ export class WorkflowService {
       // repair-context blob ("Continuing the same task…"), which must never rename the sidebar task.
       const existingSession = await this.persistence.getSession(workflow.sessionId).catch(() => undefined);
       await this.persistence.upsertSession({
-        ...(existingSession ?? {}),
+        ...existingSession,
         id: workflow.sessionId,
         title: existingSession?.title || redactSecrets(message.slice(0, 80)),
         taskTitle: existingSession?.taskTitle || existingSession?.title || redactSecrets(message.slice(0, 80)),

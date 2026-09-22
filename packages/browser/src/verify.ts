@@ -1,4 +1,3 @@
-import type { DomSnapshot } from "./runtime.js";
 import { BrowserRuntimeError, GovernedBrowserRuntime } from "./runtime.js";
 
 /**

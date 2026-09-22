@@ -17,7 +17,7 @@ import { ProvidersSection } from "./sections/ProvidersSection.js";
 import { ExtensionsSection } from "./sections/ExtensionsSection.js";
 import { AdvancedSection } from "./sections/AdvancedSection.js";
 import { AboutSection } from "./sections/AboutSection.js";
-import { SETTING_DEFS, SETTING_SCOPE_LABELS, type SettingDef } from "./settings-defs.js";
+import { SETTING_DEFS, SETTING_SCOPE_LABELS } from "./settings-defs.js";
 
 export interface SettingsSectionDef {
   id: string;

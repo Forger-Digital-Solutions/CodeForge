@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import type { ExecutionMode, SendAttachment, SendRequest, WorkspaceEvent, SessionStatus, UserIntentHoldRequest } from "@codeforge/protocol";
-import { DEFAULT_EXECUTION_MODE, ExecutionModeSchema, WorkspaceEventSchema, isWorkspaceEvent } from "@codeforge/protocol";
+import { DEFAULT_EXECUTION_MODE, ExecutionModeSchema, WorkspaceEventSchema } from "@codeforge/protocol";
 import type { SessionRecord, TurnRecord, WorkItem } from "@codeforge/sessions";
 import { isEventForSession, mergeEvent } from "./session-events.js";
 import { humanizeError } from "./error-copy.js";

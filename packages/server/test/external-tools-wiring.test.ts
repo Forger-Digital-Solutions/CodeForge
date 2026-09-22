@@ -11,10 +11,10 @@ import {
   type StreamEvent,
   InMemoryProviderCatalog,
 } from "@codeforge/providers";
-import { EventStore, createSessionPersistence, type WorkItem } from "@codeforge/sessions";
+import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 import type { ToolDefinition } from "@codeforge/tools";
 import { createAgentRuntime } from "../src/agent-runtime.js";
-import { createExternalToolSurface, pluginToolName, type PluginToolHost } from "../src/external-tools.js";
+import { createExternalToolSurface, type PluginToolHost } from "../src/external-tools.js";
 import { ERROR_CODES } from "@codeforge/agent";
 
 /**

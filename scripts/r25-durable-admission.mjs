@@ -81,9 +81,9 @@ try {
     const claims = (await Promise.all(Array.from({ length: 8 }, (_, i) => runWorker(i, { providerId: route.providerId })))).filter((c) => c?.providerId === route.providerId);
     const distinctExec = new Set(claims.map((c) => c.executionId));
     const distinctUsers = new Set(claims.map((c) => c.userId));
-    claims.length === 3 && distinctExec.size === 3 && distinctUsers.size === 3
+    void (claims.length === 3 && distinctExec.size === 3 && distinctUsers.size === 3
       ? pass("A.multi_process_admission", `8 processes raced 30 queued on capacity=3 → exactly 3 distinct claims across 3 users; no duplicates`)
-      : fail("A.multi_process_admission", `claims=${claims.length} distinctExec=${distinctExec.size} distinctUsers=${distinctUsers.size}`);
+      : fail("A.multi_process_admission", `claims=${claims.length} distinctExec=${distinctExec.size} distinctUsers=${distinctUsers.size}`));
   }
 
   // ---- Case B: lease expiry reclaim + fencing token ----------------------------------------
@@ -108,8 +108,8 @@ try {
     const completed = reclaimOk ? await db.completeHostedExecution({ executionId: execId, userId: user, workerId: "recovery-worker", leaseToken: reclaim.execution.leaseToken, status: "completed" }) : { transitioned: false };
     const receipts = await receiptsFor(execId);
     const ok = recovered.executionIds.includes(execId) && afterRecovery.status === "queued" && staleRejected && reclaimOk && completed.transitioned === true && receipts.includes("LEASE_EXPIRED");
-    ok ? pass("B.lease_expiry_fencing", `dead worker's lease expired → requeued → stale token rejected → new worker claimed+completed; receipts=${receipts.join(",")}`)
-       : fail("B.lease_expiry_fencing", `recovered=${recovered.recovered} status=${afterRecovery.status} staleRejected=${staleRejected} reclaimOk=${reclaimOk} completed=${completed.transitioned} receipts=${receipts.join(",")}`);
+    void (ok ? pass("B.lease_expiry_fencing", `dead worker's lease expired → requeued → stale token rejected → new worker claimed+completed; receipts=${receipts.join(",")}`)
+       : fail("B.lease_expiry_fencing", `recovered=${recovered.recovered} status=${afterRecovery.status} staleRejected=${staleRejected} reclaimOk=${reclaimOk} completed=${completed.transitioned} receipts=${receipts.join(",")}`));
   }
 
   // ---- Case C: idempotent enqueue -----------------------------------------------------------
@@ -120,9 +120,9 @@ try {
     const first = await db.enqueueHostedExecution({ id: `r25c-${suffix}-0`, idempotencyKey: key, userId: user, taskId: "task-c", ...route });
     const second = await db.enqueueHostedExecution({ id: `r25c-${suffix}-dup`, idempotencyKey: key, userId: user, taskId: "task-c", ...route });
     const count = Number((await raw.query("SELECT COUNT(*)::int AS c FROM hosted_executions WHERE idempotency_key=$1", [key])).rows[0].c);
-    first.created && !second.created && count === 1 && first.execution.id === second.execution.id
+    void (first.created && !second.created && count === 1 && first.execution.id === second.execution.id
       ? pass("C.idempotent_enqueue", `duplicate idempotency key returned existing execution ${first.execution.id}; rows=${count}`)
-      : fail("C.idempotent_enqueue", `created=${first.created}/${second.created} sameId=${first.execution.id === second.execution.id} rows=${count}`);
+      : fail("C.idempotent_enqueue", `created=${first.created}/${second.created} sameId=${first.execution.id === second.execution.id} rows=${count}`));
   }
 
   // ---- Case D: dispatching crash → recovery_pending → fail-closed resolve -------------------
@@ -156,8 +156,8 @@ try {
     const reclaim = await db.claimNextHostedExecution({ workerId: "worker-after-requeue", leaseMs: 30_000, maxUserConcurrent: 4, providerIds: [route.providerId] });
     const ok = pending.status === "recovery_pending" && requeueRefused && failed.transitioned && (await statusOf(noDispatchId)).status === "failed"
       && requeued.transitioned && reStatus.status === "queued" && reclaim?.execution.id === withDispatchId && reclaim.execution.attempt === 2;
-    ok ? pass("D.dispatching_crash_recovery", `no dispatch-id: recovery_pending → requeue REFUSED → failed closed; with dispatch-id: requeued → reclaimed at attempt=2`)
-       : fail("D.dispatching_crash_recovery", `pending=${pending.status} requeueRefused=${requeueRefused} failedTransition=${failed.transitioned} requeued=${requeued.transitioned} reStatus=${reStatus.status} reclaimAttempt=${reclaim?.execution.attempt}`);
+    void (ok ? pass("D.dispatching_crash_recovery", `no dispatch-id: recovery_pending → requeue REFUSED → failed closed; with dispatch-id: requeued → reclaimed at attempt=2`)
+       : fail("D.dispatching_crash_recovery", `pending=${pending.status} requeueRefused=${requeueRefused} failedTransition=${failed.transitioned} requeued=${requeued.transitioned} reStatus=${reStatus.status} reclaimAttempt=${reclaim?.execution.attempt}`));
   }
 
   // ---- Case E: per-user fairness under maxUserConcurrent ------------------------------------
@@ -169,9 +169,9 @@ try {
     const claims = (await Promise.all(Array.from({ length: 6 }, (_, i) => runWorker(i, { maxUserConcurrent: 1, providerId: route.providerId })))).filter(Boolean);
     const distinctExec = new Set(claims.map((c) => c.executionId));
     const distinctUsers = new Set(claims.map((c) => c.userId));
-    claims.length === 6 && distinctExec.size === claims.length && distinctUsers.size === claims.length
+    void (claims.length === 6 && distinctExec.size === claims.length && distinctUsers.size === claims.length
       ? pass("E.per_user_fairness", `capacity=6, maxUserConcurrent=1, 24 queued across 6 users → ${claims.length} claims on ${distinctUsers.size} distinct users (no single-user capture, no duplicate execution)`)
-      : fail("E.per_user_fairness", `claims=${claims.length} distinctExec=${distinctExec.size} distinctUsers=${distinctUsers.size}`);
+      : fail("E.per_user_fairness", `claims=${claims.length} distinctExec=${distinctExec.size} distinctUsers=${distinctUsers.size}`));
   }
 
   // ---- Case G: fairness under sustained contention — round-robin across users ----------------
@@ -191,9 +191,9 @@ try {
     }
     const counts = [...admittedPerUser.values()];
     const min = Math.min(...counts), max = Math.max(...counts);
-    claims === 20 && min >= 3 && max - min <= 2
+    void (claims === 20 && min >= 3 && max - min <= 2
       ? pass("G.fair_scheduling", `capacity=2, 20 executions across 4 users drained round-robin — per-user admissions ${counts.join("/")} (spread ≤2, no starvation)`)
-      : fail("G.fair_scheduling", `claims=${claims} perUser=${counts.join("/")} spread=${max - min}`);
+      : fail("G.fair_scheduling", `claims=${claims} perUser=${counts.join("/")} spread=${max - min}`));
   }
 
   // ---- Case F: queue drain — every execution completes exactly once --------------------------
@@ -213,9 +213,9 @@ try {
     }
     const remaining = Number((await raw.query("SELECT COUNT(*)::int AS c FROM hosted_executions WHERE provider_id=$1 AND status='queued'", [route.providerId])).rows[0].c);
     const completed = Number((await raw.query("SELECT COUNT(*)::int AS c FROM hosted_executions WHERE provider_id=$1 AND status='completed'", [route.providerId])).rows[0].c);
-    completedIds.size === 40 && remaining === 0 && completed === 40
+    void (completedIds.size === 40 && remaining === 0 && completed === 40
       ? pass("F.queue_drain", `40 executions claimed+completed exactly once each; queue empty, ${claims} claims`)
-      : fail("F.queue_drain", `completedUnique=${completedIds.size} remaining=${remaining} completed=${completed} claims=${claims}`);
+      : fail("F.queue_drain", `completedUnique=${completedIds.size} remaining=${remaining} completed=${completed} claims=${claims}`));
   }
 } finally {
   await db.close();

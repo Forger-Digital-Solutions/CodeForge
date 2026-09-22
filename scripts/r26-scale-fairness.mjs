@@ -112,9 +112,8 @@ try {
 
   // ---- Part B: lease handoff fairness — rejected sessions retry serially ----
   // After each terminal, every remaining session retries; track the winner sequence.
-  const contenders = Array.from({ length: N }, (_, i) => `scale-a-${i}`).filter((s) => !admitted[0] || true);
+  const contenders = Array.from({ length: N }, (_, i) => `scale-a-${i}`);
   const winOrder = [];
-  const admittedSession = null;
   for (let round = 0; round < N; round++) {
     // retry all not-yet-completed sessions simultaneously
     const pending = contenders.filter((s) => !winOrder.includes(s));
