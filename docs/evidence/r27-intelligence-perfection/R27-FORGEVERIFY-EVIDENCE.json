@@ -1,38 +1,35 @@
 {
-  "schema": "r27-forgeverify-evidence-1",
-  "status": "windows_timeout_lifecycle_fixed_and_proven",
+  "schema": "r27-forgeverify-evidence-2",
+  "status": "windows_timeout_lifecycle_fixed_and_revalidated",
   "defect": "windows_timeout_process_tree_cleanup_eperm",
-  "rootCause": "Premature promise settlement after taskkill without awaiting process close / handle release, leading to EPERM during temporary workspace removal, plus potential race condition where timeout timer could overwrite cancellation",
-  "settlementMechanism": "child_close_event_with_bounded_fallback",
+  "rootCause": "In the managed Windows process boundary, taskkill /T /F returned access denied for a direct child. The executor treated a non-zero taskkill status as success, skipped Node's permitted root-process fallback, and returned after the bounded wait while the child retained the temporary workspace.",
+  "settlementMechanism": "taskkill_tree_kill_then_root_fallback_on_error_or_nonzero_status_then_child_close_or_bounded_fallback",
   "fallbackGraceMs": 2000,
-  "tests": {
-    "terminalExecutorSuite": { "passed": 29, "failed": 0 },
-    "timeoutRemovabilityRegression": { "passed": 4, "failed": 0 },
-    "repeatedTimeoutExecutions": { "iterations": 10, "epermCount": 0, "leakedChildProcesses": 0, "doubleSettlements": 0, "timeoutsObserved": 10 },
-    "forgeVerifySuite": {
-      "forgeVerifyEvidence": { "passed": 5, "failed": 0 },
-      "forgeVerifyMultiVerifier": { "passed": 6, "failed": 0 },
-      "forgeVerifyIntegrity": { "passed": 7, "failed": 0 },
-      "verificationService": { "passed": 17, "failed": 0 },
-      "staleEvidenceMatrix": { "passed": 11, "failed": 0 },
-      "maliciousCorpus": { "passed": 24, "failed": 0 },
-      "totalTests": 70,
-      "totalPassed": 70,
+  "currentTests": {
+    "terminalSuite": { "passed": 38, "failed": 0 },
+    "forgeVerifyFocusedRevalidation": {
+      "commands": [
+        { "testsPassed": 5, "testsFailed": 0, "scope": "forge-verify evidence" },
+        { "testsPassed": 23, "testsFailed": 0, "scope": "forge-verify and verification service" },
+        { "testsPassed": 18, "testsFailed": 0, "scope": "integrity and stale-evidence matrix" },
+        { "testsPassed": 26, "testsFailed": 0, "scope": "malicious corpus and ForgeVerify replan" }
+      ],
+      "totalPassed": 72,
       "totalFailed": 0
-    }
+    },
+    "typecheck": "packages/terminal, packages/workflow, and packages/server passed"
   },
   "proven": [
     "timeout preserves exitCode 124 and timedOut=true",
     "abort preserves exitCode 130 and cancelled=true without timeout race",
     "pre-aborted signals cancel immediately",
-    "entire process tree terminated via taskkill /T /F on Windows and process group SIGKILL on POSIX",
-    "workspace directory is immediately removable with 0 EPERM",
-    "10 consecutive timeouts produce 0 EPERM and 0 leaked processes",
-    "single settlement guarantee holds under timeout, abort, error, and delayed close",
-    "both pipe and ConPTY backends share hardened termination lifecycle"
+    "taskkill errors and non-zero statuses fall back to terminating the direct root process",
+    "the timeout tests immediately remove their temporary workspaces with zero EPERM across ten consecutive executions",
+    "single settlement holds under timeout, abort, error, and delayed close",
+    "both pipe and ConPTY backends share the hardened termination lifecycle"
   ],
   "remainingDocumentedBoundaries": [
-    "Outside-workspace scripts and gitignored generated files are outside evidence identity hash by design",
-    "Declared verification command remains repository authority on verification semantics"
+    "Outside-workspace scripts and gitignored generated files remain outside evidence identity hashing by design",
+    "Declared verification commands remain repository authority on verification semantics"
   ]
 }
