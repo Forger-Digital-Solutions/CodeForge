@@ -172,9 +172,9 @@ export async function verifyAllowanceViaProbe(
   const result = await probe(rep.modelId);
   if (!result.ok) return { records, overlays, verifiedCount: 0 };
 
-  // Account confirmed to have free-tier access → verify the chat candidates as FREE_ALLOWANCE.
   for (const m of candidates) {
-    let record = registry.get(providerId, m.modelId) ?? recordFromLive(providerId, m);
+    const known = registry.get(providerId, m.modelId);
+    let record = known ? applyLiveCapabilities(known, m) : recordFromLive(providerId, m);
     if (record.accessClass !== "FREE_ALLOWANCE") {
       record = { ...record, accessClass: "FREE_ALLOWANCE", privacyClass: derivePrivacyClass(policy, "FREE_ALLOWANCE") };
     }

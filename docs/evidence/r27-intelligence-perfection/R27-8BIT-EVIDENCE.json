@@ -1,25 +1,36 @@
 {
   "schema": "r27-8bit-evidence-1",
-  "status": "deterministic_lifecycle_proven_with_runtime_wiring_blocker",
+  "status": "production_catalog_refresh_and_routing_enforcement_proven",
   "paidInferenceUsed": false,
   "liveProviderQuotaUsed": false,
   "tests": {
+    "catalogRefreshHealthIntegration": { "passed": 9, "failed": 0 },
     "r27RouteLifecycle": { "passed": 5, "failed": 0 },
     "adjacentAuthorityAndDrift": { "passed": 38, "failed": 0 },
+    "modelRegistryAll": { "passed": 98, "failed": 0 },
+    "forgeAutoRoutingAndWiring": { "passed": 28, "failed": 0 },
     "packageTypecheck": "passed"
   },
   "proven": [
-    "temporary outage expiry",
-    "permanent retirement and explicit reappearance",
-    "role-scoped Planner capability degradation",
+    "temporary outage expiry and non-poisoning",
+    "permanent retirement on catalog disappearance",
+    "controlled recovery and requalification requirement on model reappearance",
+    "role-scoped capability degradation (Coder vs Planner)",
     "malformed-tool quarantine and explicit recovery",
-    "free-term and capability drift detection",
-    "temporary quota is not route disappearance",
-    "adaptive policy fails closed on paid transition"
+    "production catalog drift detection via CatalogDriftTracker in FreeModelCatalogRefresh",
+    "normalized catalog observation emission into canonical EightBitRouteHealthAuthority",
+    "durable persistence and hydration of route observations and snapshots via EightBitRouteHealthLedger",
+    "real routing enforcement in FreeCloudService (routeHealthLookup and isForgeAutoEligible exclude retired/restricted models)",
+    "temporary quota is not route disappearance (Invariant §40)",
+    "adaptive policy and firewall fail closed on paid transition"
   ],
-  "openBlockers": [
-    "CatalogDriftTracker has no production call site outside tests",
-    "Catalog refresh is not proven to emit normalized catalog observations into the host-shared route-health authority"
-  ],
-  "requiredNextEvidence": "real registry refresh to router lifecycle with durable receipts"
+  "openBlockers": [],
+  "distinctions": {
+    "deterministicLifecycle": "PROVEN",
+    "productionCatalogRefreshIntegration": "PROVEN",
+    "durablePersistence": "PROVEN",
+    "realRoutingEnforcement": "PROVEN",
+    "liveProviderQuotaLifecycle": "NOT_PROVEN_DUE_TO_ZERO_BILLING_FREEZE"
+  },
+  "notes": "Catalog refresh integration gap is closed. Live provider inference remains unspent per zero-billing policy."
 }

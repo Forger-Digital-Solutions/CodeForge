@@ -1,6 +1,6 @@
 {
   "schemaVersion": "r27-golden-task-validation-1",
-  "validatedAt": "2026-09-22T13:21:14.309Z",
+  "validatedAt": "2026-09-22T21:57:38.359Z",
   "manifestVersion": "r27-golden-manifest-1",
   "taskCount": 15,
   "failures": 2,
@@ -52,7 +52,7 @@
         "status": 1,
         "expected": "fail",
         "observed": true,
-        "stderr": "file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/r27-untouched-qual-js-missing-export-lXRcjq/hidden/verify.mjs:1\r\nimport { capitalize, trimAll } from \"../src/index.js\";\r\n         ^^^^^^^^^^\r\nSyntaxError: The requested module '../src/index.js' does not provide an export named 'capitalize'\r\n    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)\r\n    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)\r\n    at async node:internal/modules/esm/loader:643:26\r\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\r\n\r\nNode.js v24.19.0"
+        "stderr": "file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/r27-untouched-qual-js-missing-export-O9q0p7/hidden/verify.mjs:1\r\nimport { capitalize, trimAll } from \"../src/index.js\";\r\n         ^^^^^^^^^^\r\nSyntaxError: The requested module '../src/index.js' does not provide an export named 'capitalize'\r\n    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)\r\n    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)\r\n    at async node:internal/modules/esm/loader:643:26\r\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\r\n\r\nNode.js v24.19.0"
       },
       "reference": {
         "status": 0,
@@ -185,7 +185,7 @@
         "status": 1,
         "expected": "fail",
         "observed": true,
-        "stderr": "Local/Temp/r27-untouched-js-feature-rate-limiter-24NmYc/hidden/verify.mjs:1\r\nimport { createRateLimiter, createRetryPolicy, parseHeaders } from \"../src/index.js\";\r\n         ^^^^^^^^^^^^^^^^^\r\nSyntaxError: The requested module '../src/index.js' does not provide an export named 'createRateLimiter'\r\n    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)\r\n    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)\r\n    at async node:internal/modules/esm/loader:643:26\r\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\r\n\r\nNode.js v24.19.0"
+        "stderr": "Local/Temp/r27-untouched-js-feature-rate-limiter-xMs1O9/hidden/verify.mjs:1\r\nimport { createRateLimiter, createRetryPolicy, parseHeaders } from \"../src/index.js\";\r\n         ^^^^^^^^^^^^^^^^^\r\nSyntaxError: The requested module '../src/index.js' does not provide an export named 'createRateLimiter'\r\n    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)\r\n    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)\r\n    at async node:internal/modules/esm/loader:643:26\r\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\r\n\r\nNode.js v24.19.0"
       },
       "reference": {
         "status": 0,
@@ -223,7 +223,7 @@
         "status": 1,
         "expected": "fail",
         "observed": true,
-        "stderr": "erThread (node:internal/modules/esm/loader:721:38)\r\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)\r\n    at #resolve (node:internal/modules/esm/loader:683:17)\r\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)\r\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)\r\n    at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {\r\n  code: 'ERR_MODULE_NOT_FOUND',\r\n  url: 'file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/r27-untouched-ts-refactor-extract-validator-ArmHbm/src/validation/order.ts'\r\n}\r\n\r\nNode.js v24.19.0"
+        "stderr": "erThread (node:internal/modules/esm/loader:721:38)\r\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)\r\n    at #resolve (node:internal/modules/esm/loader:683:17)\r\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)\r\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)\r\n    at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {\r\n  code: 'ERR_MODULE_NOT_FOUND',\r\n  url: 'file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/r27-untouched-ts-refactor-extract-validator-aC9axf/src/validation/order.ts'\r\n}\r\n\r\nNode.js v24.19.0"
       },
       "reference": {
         "status": 0,

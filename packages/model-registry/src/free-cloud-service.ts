@@ -30,6 +30,7 @@ import {
 import { PROVIDER_DEFINITIONS, type ProviderDefinition } from "./provider-definitions.js";
 import type { NormalizedModelRegistry } from "./registry.js";
 import { RouteQuotaTracker, parseRouteQuota } from "./quota.js";
+import { createFreeModelCatalogRefresh, type FreeModelCatalogRefresh, type RefreshOptions } from "./catalog-refresh.js";
 
 /**
  * Routing hooks ForgeAuto (the server's AgentRuntime) consumes. 8-Bit maintains the pool; the
@@ -174,6 +175,29 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
    * host creates the service before the server that owns the authority. */
   setRouteHealth(authority: EightBitRouteHealthAuthority | undefined): void {
     this.routeHealth = authority;
+  }
+
+  getRouteHealth(): EightBitRouteHealthAuthority | undefined {
+    return this.routeHealth;
+  }
+
+  invalidateReceipt(providerId: string, modelId: string): boolean {
+    const key = `${providerId}::${modelId}`;
+    const deleted = this.receipts.delete(key);
+    if (deleted) this.emit();
+    return deleted;
+  }
+
+  createCatalogRefresh(options?: Partial<RefreshOptions>): FreeModelCatalogRefresh {
+    return createFreeModelCatalogRefresh({
+      firewall: this.firewall,
+      providerCatalog: this.providerCatalog,
+      registry: this.registry,
+      routeHealth: this.routeHealth,
+      service: this,
+      now: this.now,
+      ...options,
+    });
   }
 
   // --- definitions ---------------------------------------------------------------------------
@@ -362,6 +386,47 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   // --- health / quota ------------------------------------------------------------------------
 
   private routeHealthLookup = (providerId: string, modelId: string): { status: RouteHealth; cooldownUntil?: number } | undefined => {
+    if (this.routeHealth) {
+      const assessment = this.routeHealth.assess(providerId, modelId, { now: this.now().getTime() });
+      if (assessment.state !== "UNKNOWN") {
+        let status: RouteHealth;
+        let cooldownUntil: number | undefined = assessment.expiresAt;
+        switch (assessment.state) {
+          case "HEALTHY":
+            status = "HEALTHY";
+            break;
+          case "DEGRADED":
+          case "TOOL_UNRELIABLE":
+          case "CAPABILITY_LIMITED":
+            status = "DEGRADED";
+            break;
+          case "SATURATED":
+          case "RATE_LIMITED":
+          case "TEMPORARY_CAPACITY":
+            status = "COOLDOWN";
+            break;
+          case "DAILY_QUOTA_EXHAUSTED":
+            status = "QUOTA_EXHAUSTED";
+            break;
+          case "AUTH_REQUIRED":
+          case "USER_CONNECTION_REQUIRED":
+            status = "AUTH_REQUIRED";
+            break;
+          case "MODEL_RETIRED":
+          case "ACCESS_RESTRICTED":
+            status = "UNAVAILABLE";
+            break;
+          case "BILLING_VERIFICATION_REQUIRED":
+          case "QUARANTINED":
+            status = "INELIGIBLE";
+            break;
+          default:
+            status = "UNKNOWN";
+            break;
+        }
+        return { status, cooldownUntil };
+      }
+    }
     const entry = this.health.get(`${providerId}::${modelId}`);
     if (!entry) return undefined;
     if (entry.cooldownUntil !== undefined && entry.cooldownUntil > this.now().getTime()) {
