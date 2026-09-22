@@ -19,6 +19,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@codeforge/agent": "*",
     "@codeforge/core": "*",
     "@codeforge/protocol": "*",
     "@codeforge/forge-zero": "*",

@@ -30,7 +30,7 @@ class FullFlowScriptedProvider implements ProviderAdapter {
   explorerActive = 0;
   maxExplorerConcurrency = 0;
 
-  constructor(providerId: string, plannerTasks?: unknown[]) {
+  constructor(providerId: string, plannerTasks?: unknown[], private readonly plannerOutput?: unknown) {
     this.providerId = providerId;
     this.plannerTasks = plannerTasks ?? [
       { id: "implement-multiply", title: "Implement multiply", objective: "Update math.mjs to multiply inputs", dependencies: [], assignedRole: "coder" },
@@ -65,7 +65,10 @@ class FullFlowScriptedProvider implements ProviderAdapter {
     }
 
     if (isPlanner) {
-      yield { type: "text_delta", delta: JSON.stringify({ summary: "Implement and verify multiply.", tasks: this.plannerTasks }) };
+      yield {
+        type: "text_delta",
+        delta: JSON.stringify(this.plannerOutput ?? { summary: "Implement and verify multiply.", tasks: this.plannerTasks }),
+      };
       yield { type: "finish", finishReason: "stop" };
       return;
     }
@@ -221,6 +224,35 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
     // Verify file content in primary repository
     const mainMath = await fs.readFile(path.join(repoDir, "math.mjs"), "utf-8");
     expect(mainMath).toContain("return a * b;");
+  }, 30000);
+
+  it("normalizes semantic Planner steps before the existing graph and completion gates", async () => {
+    const catalog = new InMemoryProviderCatalog();
+    const provider = new FullFlowScriptedProvider("test-provider", undefined, {
+      protocol: "semantic_steps_v1",
+      summary: "Implement multiply, then independently verify the focused behavior.",
+      steps: [
+        { id: "implement-multiply", intent: "Implement multiply in math.mjs", phase: "implementation", after: [] },
+        { id: "review-multiply", intent: "Review and verify the focused math test", phase: "verification", after: ["implement-multiply"] },
+      ],
+      planningIntent: { verification: ["Run node --test test/math.test.mjs"], completionEvidence: ["The focused test passes"] },
+    });
+    catalog.register(provider);
+    const workspaceService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
+    const runtime = createAgentRuntime({ sessionId: "session-semantic-planner", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: repoDir });
+    const subagentManager = createSubagentManager({ persistence, workspaceService, agentRuntime: runtime });
+    const orchestrator = createAutonomousRunOrchestrator({ workspaceService, persistence, subagentManager, agentRuntime: runtime });
+
+    const result = await orchestrator.startRun({
+      sessionId: "session-semantic-planner",
+      workspacePath: repoDir,
+      goal: "Implement multiply function and make its focused test pass",
+      verificationCommands: ["node --test test/math.test.mjs"],
+    });
+
+    expect(result.status).toBe("completed");
+    expect(result.integration.status).toBe("integrated");
+    expect(await fs.readFile(path.join(repoDir, "math.mjs"), "utf-8")).toContain("return a * b;");
   }, 30000);
 
   it("runs the flagged R1 path with parallel read-only explorers and one durable isolated writer", async () => {

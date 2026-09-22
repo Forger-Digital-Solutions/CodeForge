@@ -1,0 +1,54 @@
+{
+  "schema": "r27-planner-evidence-1",
+  "status": "R27_PLANNER_SEMANTIC_COMPATIBILITY_DETERMINISTIC_PROVEN_LIVE_QUALITY_NOT_PROVEN",
+  "paidInferenceUsed": false,
+  "evidenceBoundary": "Static code inspection and deterministic scripted-provider tests only. No live cloud inference was invoked.",
+  "problemRecovered": {
+    "runtime": "The production planner accepted only the legacy tasks/assignedRole graph.",
+    "qualification": "The previous qualification probe accepted a looser task shape that did not match production's required summary and fields.",
+    "risk": "A model could be marked planner-capable under qualification yet be rejected by runtime solely for wire-format incompatibility."
+  },
+  "change": {
+    "legacyProtocol": "task_graph_v1 remains accepted, including payloads that predate the explicit protocol field.",
+    "semanticProtocol": "semantic_steps_v1 accepts explicit id, intent, phase, and after fields and canonicalizes phases to the same explorer/planner/coder/reviewer graph.",
+    "safety": [
+      "A semantic payload may not mix legacy task-graph fields.",
+      "Unknown phases and missing dependency lists fail closed.",
+      "Canonical output still passes planning completeness, graph authorization, dependency validation, review, ForgeVerify, and the completion gate."
+    ],
+    "qualificationVersion": "PLANNER_PROTOCOL_V2 under R27_ROLE_QUALIFICATION_V2; PLANNER_PROTOCOL_V1 remains retained for historical receipt interpretation."
+  },
+  "deterministicValidation": {
+    "focusedTests": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/agent/test/structured-output-security.test.ts packages/eight-bit/test/role-qualification.test.ts packages/server/test/agent-runtime.test.ts packages/server/test/agent-orchestrator-integration.test.ts",
+      "filesPassed": 4,
+      "testsPassed": 39,
+      "testsFailed": 0,
+      "approxWallTimeMs": 62270
+    },
+    "broaderOrchestrationRegression": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/r21-adaptive-topology-wiring.test.ts packages/server/test/agent-orchestrator-integration.test.ts packages/server/test/autonomous-orchestrator.test.ts packages/server/test/mission-acceptance.test.ts packages/server/test/parallel-orchestrator-integration.test.ts",
+      "filesPassed": 5,
+      "testsPassed": 39,
+      "testsFailed": 0,
+      "approxWallTimeMs": 148760
+    },
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc -b packages/agent packages/eight-bit packages/server",
+      "passed": true
+    }
+  },
+  "proven": [
+    "Both explicit task-graph and semantic-steps payloads are parsed to one canonical PlannerResult.",
+    "Malformed, mixed, unknown-phase, and dependency-incomplete semantic payloads are rejected before authorization.",
+    "The production Explorer-to-Planner-to-Coder-to-Reviewer pipeline completes with a semantic planner payload only after existing verification and completion checks pass.",
+    "Planner qualification now uses the production parser instead of a looser duplicate schema."
+  ],
+  "notProven": [
+    "Live free-model semantic planning quality.",
+    "Live improvement in planner qualification rate.",
+    "Live token, latency, or completion-rate benefit.",
+    "A live crossover threshold for choosing semantic_steps_v1."
+  ],
+  "requiredNextEvidence": "Run paired live, free-route planner tasks with the same repository state, budget, verifier, and completion criteria. Record provider receipts and preserve route, quota, or availability failures as blockers."
+}

@@ -1,5 +1,5 @@
 /**
- * R24 Phase 10 — role qualification suite executor.
+ * R27 — role qualification suite executor.
  *
  * Runs the frozen {@link ROLE_PROTOCOLS} against a provider adapter and emits per-role
  * {@link RoleQualificationResult}s shaped exactly like the compact suite's, so the existing
@@ -13,6 +13,7 @@
  */
 
 import type { ChatRequest, ToolDefinition } from "@codeforge/providers";
+import { type PlannerResult, validateStructuredAgentResult } from "@codeforge/agent";
 import type { FreeModelRecord, ModelQualificationReceipt, RoleQualificationResult, TestCaseResult } from "./types.js";
 import type { EightBitRole } from "../types.js";
 import { firstJsonObject, runCompactQualification, type CompactQualificationAdapter, type CompactQualificationOptions } from "./compact.js";
@@ -255,9 +256,9 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
         {
           role: "system",
           content:
-            "You are a task planner. Reply with JSON only: {\"tasks\": [{\"id\",\"title\",\"objective\",\"dependencies\",\"assignedRole\"}]}. " +
-            "assignedRole must be one of explorer, planner, coder, reviewer. dependencies is an array of task ids that must finish first. " +
-            "Plan only what the task requires — no invented files, no rewrites.",
+            "You are a task planner. Reply with exactly one JSON protocol. task_graph_v1 is {\"protocol\":\"task_graph_v1\",\"summary\",\"tasks\":[{\"id\",\"title\",\"objective\",\"dependencies\",\"assignedRole\"}]}; " +
+            "semantic_steps_v1 is {\"protocol\":\"semantic_steps_v1\",\"summary\",\"steps\":[{\"id\",\"intent\",\"phase\",\"after\"}]}, where phase is investigation, planning, implementation, or verification. " +
+            "Never mix protocols. Both forms are normalized to the same task graph: implementation must precede verification. Plan only what the task requires — no invented files, no rewrites.",
         },
         { role: "user", content: `Task: ${caze.task}\n\nExplorer findings (the only repository files that exist for you):\n${findings}` },
       ],
@@ -268,11 +269,10 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
   );
   if (obs.error) return caseResult(caze.caseId, "plan", false, started, { error: obs.error.slice(0, 200) });
 
-  const parsed = firstJsonObject(obs.text) as { tasks?: PlannerGraphTask[] } | null;
-  const tasks = Array.isArray(parsed?.tasks) ? parsed!.tasks! : [];
-  const schemaValid =
-    tasks.length > 0 &&
-    tasks.every((t) => typeof t.id === "string" && typeof t.assignedRole === "string" && (t.dependencies === undefined || Array.isArray(t.dependencies)) && (typeof t.objective === "string" || typeof t.title === "string"));
+  const validation = validateStructuredAgentResult("planner", obs.text);
+  const plan = validation.success ? validation.data as PlannerResult : undefined;
+  const tasks = plan?.tasks ?? [];
+  const schemaValid = !!plan;
 
   const roles = tasks.map((t) => String(t.assignedRole).toLowerCase());
   const requiredRolesPresent = caze.requiredRoles.every((r) => roles.includes(r));
@@ -298,7 +298,7 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
   const inventedPaths = [...new Set(tasks.flatMap((t) => plannerTaskText(t).match(pathToken) ?? []).filter((p) => !knownPaths.has(p) && !p.startsWith("http")))];
   const verificationStepPresent = tasks.some((t) => /verif|test|review/i.test(plannerTaskText(t)) || String(t.assignedRole).toLowerCase() === "reviewer");
   const scopeWithinBudget = tasks.length <= caze.maxTasks;
-  const details = { tasks: tasks.length, roles, requiredRolesPresent, dependencyOrderValid, inventedPaths, verificationStepPresent, scopeWithinBudget, schemaValid };
+  const details = { protocol: plan?.sourceProtocol ?? plan?.protocol, tasks: tasks.length, roles, requiredRolesPresent, dependencyOrderValid, inventedPaths, verificationStepPresent, scopeWithinBudget, schemaValid };
   const passed = schemaValid && requiredRolesPresent && dependencyOrderValid && inventedPaths.length === 0 && verificationStepPresent && scopeWithinBudget;
   return caseResult(caze.caseId, "plan", passed, started, { details, hardFailure: !schemaValid });
 }

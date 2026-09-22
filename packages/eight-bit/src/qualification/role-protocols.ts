@@ -9,7 +9,7 @@
  * their protocol so old evidence can never be silently reinterpreted under new rules.
  */
 
-export const ROLE_QUALIFICATION_SUITE_VERSION = "R24_ROLE_QUALIFICATION_V1";
+export const ROLE_QUALIFICATION_SUITE_VERSION = "R27_ROLE_QUALIFICATION_V2";
 
 export type RoleProtocolId = "EXPLORER" | "PLANNER" | "REVIEWER";
 
@@ -55,7 +55,8 @@ export const EXPLORER_PROTOCOL: RoleProtocol = {
   evidenceFormat: "per_case_details_v1",
 };
 
-export const PLANNER_PROTOCOL: RoleProtocol = {
+/** Retained verbatim so R24 receipts remain interpretable under their original contract. */
+export const PLANNER_PROTOCOL_V1: RoleProtocol = {
   protocolId: "role.planner",
   version: "PLANNER_PROTOCOL_V1",
   role: "PLANNER",
@@ -75,6 +76,19 @@ export const PLANNER_PROTOCOL: RoleProtocol = {
     "scope_within_budget",
   ],
   evidenceFormat: "per_case_details_v1",
+};
+
+/**
+ * R27 extends planner qualification to both machine-readable runtime protocols. The semantic
+ * protocol is normalized before scoring, so it cannot bypass graph or verification obligations.
+ */
+export const PLANNER_PROTOCOL: RoleProtocol = {
+  ...PLANNER_PROTOCOL_V1,
+  version: "PLANNER_PROTOCOL_V2",
+  scoringDimensions: [
+    "protocol_recognized",
+    ...PLANNER_PROTOCOL_V1.scoringDimensions,
+  ],
 };
 
 export const REVIEWER_PROTOCOL: RoleProtocol = {

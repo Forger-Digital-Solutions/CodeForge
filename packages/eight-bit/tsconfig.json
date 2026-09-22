@@ -8,6 +8,7 @@
   "include": ["src/**/*"],
   "exclude": ["test", "dist"],
   "references": [
+    { "path": "../agent" },
     { "path": "../core" },
     { "path": "../protocol" },
     { "path": "../forge-zero" },

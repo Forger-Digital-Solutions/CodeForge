@@ -15,11 +15,25 @@ describe("validateStructuredAgentResult — adversarial extraction security", ()
       { id: "t1", title: "Implement fix", objective: "Fix function", dependencies: [], assignedRole: "coder" },
     ],
   };
+  const validSemanticPlanner = {
+    protocol: "semantic_steps_v1",
+    summary: "Implement then verify the narrow fix",
+    steps: [
+      { id: "implement", intent: "Implement the narrow fix", phase: "implementation", after: [] },
+      { id: "verify", intent: "Verify the focused behavior", phase: "verification", after: ["implement"] },
+    ],
+  };
 
   it("accepts the legitimate shapes the runtime emits", () => {
     expect(validateStructuredAgentResult("reviewer", JSON.stringify(validReview)).success).toBe(true);
     expect(validateStructuredAgentResult("reviewer", "```json\n" + JSON.stringify(validReview, null, 2) + "\n```").success).toBe(true);
     expect(validateStructuredAgentResult("planner", JSON.stringify(validPlanner)).success).toBe(true);
+    const semantic = validateStructuredAgentResult("planner", JSON.stringify(validSemanticPlanner));
+    expect(semantic).toMatchObject({ success: true, data: { protocol: "task_graph_v1", sourceProtocol: "semantic_steps_v1", tasks: [
+      { id: "implement", assignedRole: "coder" },
+      { id: "verify", dependencies: ["implement"], assignedRole: "reviewer" },
+    ] } });
+    if (semantic.success) expect(validateStructuredAgentResult("planner", semantic.data).success).toBe(true);
   });
 
   it("rejects multiple fenced blocks instead of stitching them together", () => {
@@ -48,6 +62,25 @@ describe("validateStructuredAgentResult — adversarial extraction security", ()
       tasks: [{ id: "t1", title: "t", objective: "o", dependencies: [], assignedRole: "admin" }],
     }));
     expect(badRole.success).toBe(false);
+  });
+
+  it("rejects ambiguous semantic planner payloads instead of guessing a graph", () => {
+    expect(validateStructuredAgentResult("planner", JSON.stringify({
+      ...validSemanticPlanner,
+      tasks: validPlanner.tasks,
+    })).success).toBe(false);
+    expect(validateStructuredAgentResult("planner", JSON.stringify({
+      ...validSemanticPlanner,
+      steps: [{ id: "unsafe", intent: "Do the work", phase: "admin", after: [] }],
+    })).success).toBe(false);
+    expect(validateStructuredAgentResult("planner", JSON.stringify({
+      ...validSemanticPlanner,
+      steps: [{ id: "unsafe", intent: "Do the work", phase: "implementation" }],
+    })).success).toBe(false);
+    expect(validateStructuredAgentResult("planner", JSON.stringify({
+      ...validPlanner,
+      sourceProtocol: "unknown_protocol",
+    })).success).toBe(false);
   });
 
   it("rejects missing required fields", () => {

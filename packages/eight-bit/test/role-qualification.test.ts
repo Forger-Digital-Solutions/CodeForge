@@ -2,10 +2,10 @@ import { describe, it, expect } from "vitest";
 import type { ChatRequest, StreamEvent } from "@codeforge/providers";
 import { createGenericFreeRecord } from "@codeforge/forge-zero";
 import { runRoleQualification, runRoleAwareQualification, ROLE_QUALIFICATION_SUITE_VERSION } from "../src/qualification/role-suite.js";
-import { EXPLORER_REPO, ROLE_PROTOCOLS } from "../src/qualification/role-protocols.js";
+import { EXPLORER_REPO, PLANNER_PROTOCOL_V1, ROLE_PROTOCOLS } from "../src/qualification/role-protocols.js";
 
 /**
- * R24 Phase 10 — role protocol tests. Every adapter is a deterministic script driven by the
+ * R27 role protocol tests. Every adapter is a deterministic script driven by the
  * request's own text, so a verdict is a fact about the scripted behaviour, never a mock of the
  * scorer. Model profiles prove specialization is representable: explorer-strong/coder-weak is
  * a different route capability than coder-strong/explorer-weak.
@@ -51,6 +51,7 @@ function plannerJsonFor(req: ChatRequest): string {
   const t = body(req);
   const file = t.includes("admission.ts") ? "src/fabric/admission.ts" : "src/provider/client.ts";
   return JSON.stringify({
+    summary: "Implement the smallest safe change and verify it.",
     tasks: [
       { id: "t1", title: `Implement the change in ${file}`, objective: `Make the minimal fix in ${file}`, dependencies: [], assignedRole: "coder" },
       { id: "t2", title: "Review and verify", objective: "Verify the fix with the existing test command", dependencies: ["t1"], assignedRole: "reviewer" },
@@ -84,14 +85,15 @@ function goodScript(req: ChatRequest): StreamEvent[] {
   return text("{}");
 }
 
-describe("R24 Phase 10 — frozen role protocols", () => {
-  it("freezes three protocols with disjoint acceptance surfaces", () => {
+describe("R27 — versioned role protocols", () => {
+  it("keeps R24 evidence frozen while qualifying the R27 planner protocol", () => {
     expect(ROLE_PROTOCOLS.map((p) => p.role)).toEqual(["EXPLORER", "PLANNER", "REVIEWER"]);
     for (const p of ROLE_PROTOCOLS) {
-      expect(p.version.endsWith("_V1")).toBe(true);
+      expect(p.version).toMatch(p.role === "PLANNER" ? /_V2$/ : /_V1$/);
       expect(p.evidenceFormat).toBe("per_case_details_v1");
       expect(p.scoringDimensions.length).toBeGreaterThan(0);
     }
+    expect(PLANNER_PROTOCOL_V1.version).toBe("PLANNER_PROTOCOL_V1");
     // Explorer is the only protocol that offers tools — including the edit trap.
     expect(EXPLORER_REPO.files["src/router.ts"]).toBeTruthy();
   });
@@ -131,10 +133,28 @@ describe("R24 Phase 10 — frozen role protocols", () => {
     expect(prose.roleResults.PLANNER!.hardFailures).toContain("planner.schema");
   });
 
+  it("PLANNER: semantic steps qualify only after canonical graph validation", async () => {
+    const semantic = new ScriptedAdapter((req) => {
+      if (!body(req).includes("task planner")) return goodScript(req);
+      const file = body(req).includes("admission.ts") ? "src/fabric/admission.ts" : "src/provider/client.ts";
+      return text(JSON.stringify({
+        protocol: "semantic_steps_v1",
+        summary: "Implement the smallest change and verify it.",
+        steps: [
+          { id: "implement", intent: `Implement the smallest change in ${file}`, phase: "implementation", after: [] },
+          { id: "verify", intent: "Review and verify the existing focused test", phase: "verification", after: ["implement"] },
+        ],
+      }));
+    });
+    const out = await runRoleQualification(MODEL, semantic);
+    expect(out.roleResults.PLANNER!.status).toBe("QUALIFIED");
+    expect(out.roleResults.PLANNER!.testCases[0]!.details).toMatchObject({ protocol: "semantic_steps_v1" });
+  });
+
   it("PLANNER: invented paths and missing reviewer dependency are scored failures", async () => {
     const invented = new ScriptedAdapter((req) => {
       if (!body(req).includes("task planner")) return goodScript(req);
-      return text(JSON.stringify({ tasks: [
+      return text(JSON.stringify({ summary: "Attempt a scoped implementation and review.", tasks: [
         { id: "t1", title: "Rewrite src/architecture/everything.ts", objective: "Rebuild the framework in src/architecture/everything.ts", dependencies: [], assignedRole: "coder" },
         { id: "t2", title: "Review", objective: "verify", dependencies: [], assignedRole: "reviewer" },
       ] }));
@@ -164,7 +184,7 @@ describe("R24 Phase 10 — frozen role protocols", () => {
   });
 });
 
-describe("R24 Phase 10 — composed runner emits one receipt with all role evidence", () => {
+describe("R27 — composed runner emits one receipt with all role evidence", () => {
   it("merges compact + role suites under the R24 suite version", async () => {
     const receipt = await runRoleAwareQualification(MODEL, new ScriptedAdapter(goodScript));
     expect(receipt.suiteVersion).toBe(ROLE_QUALIFICATION_SUITE_VERSION);
