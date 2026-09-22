@@ -1,0 +1,236 @@
+{
+  "schemaVersion": "r27-golden-manifest-validation-1",
+  "validatedAt": "2026-09-22T13:20:57.715Z",
+  "manifestVersion": "r27-golden-manifest-1",
+  "sourceManifestVersion": "r23-task-manifest-1",
+  "taskCount": 15,
+  "failures": 0,
+  "rows": [
+    {
+      "r27TaskId": "r27-tiny-qual-return-sign",
+      "sourceTaskId": "qual-js-return-sign",
+      "category": "tiny",
+      "actualTreeDigest": "3eeaff8e7629819d471959fdf4d97a0c6282a991169f5ad5a4b65ee6bfb9d53b",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-tiny-qual-off-by-one",
+      "sourceTaskId": "qual-js-off-by-one",
+      "category": "tiny",
+      "actualTreeDigest": "b2bfa5e32549234d60de094cfd483e4c820451ce53fe9973d92207b1d1be6ba4",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-tiny-qual-missing-export",
+      "sourceTaskId": "qual-js-missing-export",
+      "category": "tiny",
+      "actualTreeDigest": "b613e18b1b3258101b6d7d2a1c4c30951462887924487714f3be3a626a59797b",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-tiny-clamp",
+      "sourceTaskId": "js-small-fix-clamp",
+      "category": "tiny",
+      "actualTreeDigest": "5052a9736b627165b10839198f09396bb7a516d84f71e3d176be0850e83864d7",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-tiny-median",
+      "sourceTaskId": "py-small-fix-median",
+      "category": "tiny",
+      "actualTreeDigest": "2e37b8664bda6f0ec7bd1e79a69dec4165ba2913804922a70a924f7dc736ffca",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-tiny-slugify",
+      "sourceTaskId": "ts-small-fix-slugify",
+      "category": "tiny",
+      "actualTreeDigest": "5a88d3dad4c09ba52933ed8483ea813756bcce6bdbedf9f1034a79698fa4d714",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-small-cart-total",
+      "sourceTaskId": "js-bug-fix-cart-total",
+      "category": "small",
+      "actualTreeDigest": "c3ff54ce5c170eac7ef838fdf918f8b573ecee2b49b92f1205fd391994f952a1",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-small-config-merge",
+      "sourceTaskId": "py-bug-fix-config-merge",
+      "category": "small",
+      "actualTreeDigest": "2bb1ee8306e73978d21692329bae01747688880809ed749386e6a333d793a1e7",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-small-queue-order",
+      "sourceTaskId": "ts-bug-fix-queue-order",
+      "category": "small",
+      "actualTreeDigest": "85f30992ce6db1fce556cf7b8d0cb216235f1fc6926c5ed6afc2a6c596996c02",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-medium-rate-limiter",
+      "sourceTaskId": "js-feature-rate-limiter",
+      "category": "medium",
+      "actualTreeDigest": "c98360861e8ac322bf4135c9b2e234585d24617d760778e0ec2e2a29dad779e3",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-medium-cli-stats",
+      "sourceTaskId": "ts-feature-cli-stats",
+      "category": "medium",
+      "actualTreeDigest": "269d3abc55d6af99fcf3e921372f755efbd2517f844fc843ef7be1142b91ec48",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-medium-extract-validator",
+      "sourceTaskId": "ts-refactor-extract-validator",
+      "category": "medium",
+      "actualTreeDigest": "cd840ea10bd0995a943adf5e8b2204c20e3e061121cd1acde639646fb788afbd",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-medium-build-config",
+      "sourceTaskId": "js-build-config-test-script",
+      "category": "medium",
+      "actualTreeDigest": "124a28180cd1544350d89c052816e1cdb3fa76e0f353c4a0d09819498218cea8",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-large-config-rename",
+      "sourceTaskId": "ts-large-context-rename-config-key",
+      "category": "large",
+      "actualTreeDigest": "11ae2ea3649772e92fcf55610383e10ea4e63436c720c20ad157d04e09c08660",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-ambiguous-webhook-retries",
+      "sourceTaskId": "js-investigation-webhook-retries",
+      "category": "ambiguous",
+      "actualTreeDigest": "5a87fdefad5afee296cda1bf0f4bceb4aac8add5c73816ecf823396f1952758e",
+      "checks": {
+        "sourceManifestEntry": true,
+        "sourceManifestDigest": true,
+        "taskId": true,
+        "fixturePresent": true,
+        "hiddenVerifierPresent": true,
+        "treeDigest": true
+      },
+      "ok": true
+    }
+  ],
+  "status": "PASS"
+}

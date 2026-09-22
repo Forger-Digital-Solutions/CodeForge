@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "r27-golden-task-suite-1",
+  "campaign": "R27 Intelligence Perfection & Single-User Mastery",
+  "createdAt": "2026-09-22",
+  "fixturePolicy": {
+    "taskSource": "Existing R23 fixtures may be reused only after manifest digest verification; new fixtures must be immutable, hidden-verifier-backed, and isolated from product source.",
+    "execution": "Every task runs in a disposable worktree with a clean baseline and a recorded pre-run digest.",
+    "truth": "A model response is never task success; success requires the hidden verifier, semantic evidence, and completion gate.",
+    "liveAndDeterministic": "Deterministic fixtures establish architecture behavior. Live routes establish model and routing behavior. Results are reported separately."
+  },
+  "classes": [
+    {
+      "id": "tiny",
+      "purpose": "Prove simple work does not trigger unnecessary planning, subagents, or context overhead.",
+      "targetCount": 8,
+      "requiredShapes": ["one-line bug", "obvious typo", "trivial type error", "tiny test repair"],
+      "expectedTopology": "usually SOLO or CODER→test",
+      "existingCandidates": ["r23:js-small-fix-clamp", "r23:py-small-fix-median", "r23:ts-small-fix-slugify"],
+      "status": "candidate-fixtures-require-digest-lock"
+    },
+    {
+      "id": "small",
+      "purpose": "Measure focused implementation and regression repair.",
+      "targetCount": 8,
+      "requiredShapes": ["validation", "one endpoint", "focused UI fix", "API behavior repair"],
+      "existingCandidates": ["r23:js-bug-fix-cart-total", "r23:py-bug-fix-config-merge", "r23:ts-bug-fix-queue-order"],
+      "status": "candidate-fixtures-require-digest-lock"
+    },
+    {
+      "id": "medium",
+      "purpose": "Measure cross-module implementation, safe refactoring, and state synchronization.",
+      "targetCount": 6,
+      "requiredShapes": ["multi-module feature", "persistent settings", "state synchronization", "tool integration"],
+      "newFixturesRequired": true,
+      "status": "specification-only"
+    },
+    {
+      "id": "large",
+      "purpose": "Measure end-to-end autonomy on realistic subsystem changes.",
+      "targetCount": 4,
+      "requiredShapes": ["cross-package refactor", "architecture migration", "feature plus tests", "complicated bug"],
+      "newFixturesRequired": true,
+      "status": "specification-only"
+    },
+    {
+      "id": "ambiguous",
+      "purpose": "Test investigation, clarification discipline, and resistance to implementation hallucination.",
+      "targetCount": 4,
+      "requiredShapes": ["underspecified behavior", "unclear ownership", "missing acceptance detail", "conflicting local signals"],
+      "newFixturesRequired": true,
+      "status": "specification-only"
+    },
+    {
+      "id": "adversarial",
+      "purpose": "Test evidence gathering and resistance to repository traps.",
+      "targetCount": 6,
+      "requiredShapes": ["misleading test", "stale documentation", "similarly named module", "irrelevant files", "misleading comment", "fixture trap"],
+      "newFixturesRequired": true,
+      "status": "specification-only"
+    },
+    {
+      "id": "failure_recovery",
+      "purpose": "Test safe continuation after real workflow failures.",
+      "targetCount": 8,
+      "requiredShapes": ["429", "timeout", "malformed provider response", "tool crash", "failed test", "patch conflict", "stale file", "interrupted workflow"],
+      "newFixturesRequired": true,
+      "status": "specification-only"
+    },
+    {
+      "id": "repository_scale",
+      "purpose": "Measure context selection and stale-context protection on realistic repository topology.",
+      "targetCount": 4,
+      "requiredShapes": ["large irrelevant surface", "generated artifacts", "deep dependency graph", "cross-package symbol search"],
+      "newFixturesRequired": true,
+      "status": "specification-only"
+    }
+  ],
+  "ablationArms": [
+    {"id": "current", "description": "Current production CodeForge configuration."},
+    {"id": "direct_single_model", "description": "Single model with CodeForge tools and verification, no adaptive subagent topology."},
+    {"id": "orchestrated", "description": "Current orchestration with subagents and ForgeVerify."},
+    {"id": "forgegreen_off", "description": "Same topology with ForgeGreen disabled."},
+    {"id": "forgegreen_on", "description": "Same topology with production ForgeGreen policy."},
+    {"id": "adaptive_topology", "description": "Topology selected from task complexity and observed capacity."}
+  ],
+  "requiredEvidence": [
+    "task digest and fixture version",
+    "configuration and topology receipt",
+    "route/provider receipt without secrets",
+    "context assembly and staleness receipt",
+    "tool-call ledger",
+    "verification evidence",
+    "completion-gate verdict",
+    "intervention and recovery events",
+    "paired aggregate comparison"
+  ],
+  "antiCheatChecks": [
+    "hidden cases are not present in task prompt",
+    "tests cannot be made green by deleting or skipping required coverage",
+    "hardcoded fixture answer is rejected by mutation or hidden cases",
+    "no-op changes are rejected",
+    "wrong similarly named module is rejected",
+    "stale evidence cannot satisfy current revision",
+    "paid or local inference is not silently substituted for free arms"
+  ],
+  "status": "manifest-specification-created; fixtures-and-runner-next"
+}

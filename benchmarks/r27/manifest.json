@@ -1,0 +1,36 @@
+{
+  "manifestVersion": "r27-golden-manifest-1",
+  "frozenAt": "2026-09-22",
+  "sourceCorpus": {
+    "name": "r23",
+    "root": "benchmarks/r23/tasks",
+    "manifest": "benchmarks/r23/manifest.json",
+    "rule": "R27 locks the existing R23 fixture and hidden-verifier bytes; it does not regenerate or mutate them."
+  },
+  "lockedTasks": [
+    {"r27TaskId":"r27-tiny-qual-return-sign","category":"tiny","sourceTaskId":"qual-js-return-sign","sourceManifestDigest":"354344f94ade5840faec41bf4c7cb11b630d8aac39f6377be20a0f4554c0b91f","treeDigest":"3eeaff8e7629819d471959fdf4d97a0c6282a991169f5ad5a4b65ee6bfb9d53b","liveEligible":true},
+    {"r27TaskId":"r27-tiny-qual-off-by-one","category":"tiny","sourceTaskId":"qual-js-off-by-one","sourceManifestDigest":"1257ad7152ff930461155ecd2db1de7ece5e8d96fe0e04ee552c98cd20a8f64d","treeDigest":"b2bfa5e32549234d60de094cfd483e4c820451ce53fe9973d92207b1d1be6ba4","liveEligible":true},
+    {"r27TaskId":"r27-tiny-qual-missing-export","category":"tiny","sourceTaskId":"qual-js-missing-export","sourceManifestDigest":"4c8a759571412bcb93a664815f0f85ab9ce07cae588f370724dcd63eaa72c3fb","treeDigest":"b613e18b1b3258101b6d7d2a1c4c30951462887924487714f3be3a626a59797b","liveEligible":true},
+    {"r27TaskId":"r27-tiny-clamp","category":"tiny","sourceTaskId":"js-small-fix-clamp","sourceManifestDigest":"086d3526d9fd0818068fcf2c160a321c6142527ee1955d5d818e0a82534f2d86","treeDigest":"5052a9736b627165b10839198f09396bb7a516d84f71e3d176be0850e83864d7","liveEligible":true},
+    {"r27TaskId":"r27-tiny-median","category":"tiny","sourceTaskId":"py-small-fix-median","sourceManifestDigest":"db3ea1891506465713d5a196b9a87ff171f8ee8fb94bd1301f9599cd56050c17","treeDigest":"2e37b8664bda6f0ec7bd1e79a69dec4165ba2913804922a70a924f7dc736ffca","liveEligible":true},
+    {"r27TaskId":"r27-tiny-slugify","category":"tiny","sourceTaskId":"ts-small-fix-slugify","sourceManifestDigest":"6ef5eaed1ef974492c62eea2284258088606c1cc56b3ce3605592c0cdd602185","treeDigest":"5a88d3dad4c09ba52933ed8483ea813756bcce6bdbedf9f1034a79698fa4d714","liveEligible":true},
+    {"r27TaskId":"r27-small-cart-total","category":"small","sourceTaskId":"js-bug-fix-cart-total","sourceManifestDigest":"337052f08645b6e17db659db0e3fea678db3eba7db16edda4b10988cab87018b","treeDigest":"c3ff54ce5c170eac7ef838fdf918f8b573ecee2b49b92f1205fd391994f952a1","liveEligible":true},
+    {"r27TaskId":"r27-small-config-merge","category":"small","sourceTaskId":"py-bug-fix-config-merge","sourceManifestDigest":"1add7d21d6b56b8827fc4980ef9110fec6bba2a64590fc5f24aa92a7546d1891","treeDigest":"2bb1ee8306e73978d21692329bae01747688880809ed749386e6a333d793a1e7","liveEligible":true},
+    {"r27TaskId":"r27-small-queue-order","category":"small","sourceTaskId":"ts-bug-fix-queue-order","sourceManifestDigest":"32b49c63f1fb094e966b2588214d296c5d560b1548c2d969437ea3a63d05b6f7","treeDigest":"85f30992ce6db1fce556cf7b8d0cb216235f1fc6926c5ed6afc2a6c596996c02","liveEligible":true},
+    {"r27TaskId":"r27-medium-rate-limiter","category":"medium","sourceTaskId":"js-feature-rate-limiter","sourceManifestDigest":"91c2f1beb75722364638eb960f76dc7dad8e2b9df5727d69601e5ca6bea4b538","treeDigest":"c98360861e8ac322bf4135c9b2e234585d24617d760778e0ec2e2a29dad779e3","liveEligible":true},
+    {"r27TaskId":"r27-medium-cli-stats","category":"medium","sourceTaskId":"ts-feature-cli-stats","sourceManifestDigest":"ec44f87274a607cc2a729089aacffc0df1d65853a8ff7142a52326c89fad1eed","treeDigest":"269d3abc55d6af99fcf3e921372f755efbd2517f844fc843ef7be1142b91ec48","liveEligible":true},
+    {"r27TaskId":"r27-medium-extract-validator","category":"medium","sourceTaskId":"ts-refactor-extract-validator","sourceManifestDigest":"fc4415ca44638488fcb97da1854fa2890d301e5c71f2451f759dac24a397ee3b","treeDigest":"cd840ea10bd0995a943adf5e8b2204c20e3e061121cd1acde639646fb788afbd","liveEligible":true},
+    {"r27TaskId":"r27-medium-build-config","category":"medium","sourceTaskId":"js-build-config-test-script","sourceManifestDigest":"70ce3985af72067cfb122418d84bb96585bf835fe0d6fec0f9bae0da213046ad","treeDigest":"124a28180cd1544350d89c052816e1cdb3fa76e0f353c4a0d09819498218cea8","liveEligible":true},
+    {"r27TaskId":"r27-large-config-rename","category":"large","sourceTaskId":"ts-large-context-rename-config-key","sourceManifestDigest":"2e4d9abfd7c2b96bd5629aaf00c773b92b45b742b87d759af366b170de795415","treeDigest":"11ae2ea3649772e92fcf55610383e10ea4e63436c720c20ad157d04e09c08660","liveEligible":true},
+    {"r27TaskId":"r27-ambiguous-webhook-retries","category":"ambiguous","sourceTaskId":"js-investigation-webhook-retries","sourceManifestDigest":"2258e7e834ccdd42cc872515206d550d2a831ced6a6eeb81781dfe7b20cfea28","treeDigest":"5a87fdefad5afee296cda1bf0f4bceb4aac8add5c73816ecf823396f1952758e","liveEligible":true}
+  ],
+  "plannedExpansion": {
+    "adversarial": 6,
+    "failure_recovery": 8,
+    "repository_scale": 4,
+    "medium": 2,
+    "large": 3,
+    "ambiguous": 3
+  },
+  "status": "15 digest-locked tasks; expansion fixtures pending"
+}
