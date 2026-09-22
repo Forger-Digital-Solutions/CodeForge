@@ -1,0 +1,25 @@
+{
+  "schema": "r27-8bit-evidence-1",
+  "status": "deterministic_lifecycle_proven_with_runtime_wiring_blocker",
+  "paidInferenceUsed": false,
+  "liveProviderQuotaUsed": false,
+  "tests": {
+    "r27RouteLifecycle": { "passed": 5, "failed": 0 },
+    "adjacentAuthorityAndDrift": { "passed": 38, "failed": 0 },
+    "packageTypecheck": "passed"
+  },
+  "proven": [
+    "temporary outage expiry",
+    "permanent retirement and explicit reappearance",
+    "role-scoped Planner capability degradation",
+    "malformed-tool quarantine and explicit recovery",
+    "free-term and capability drift detection",
+    "temporary quota is not route disappearance",
+    "adaptive policy fails closed on paid transition"
+  ],
+  "openBlockers": [
+    "CatalogDriftTracker has no production call site outside tests",
+    "Catalog refresh is not proven to emit normalized catalog observations into the host-shared route-health authority"
+  ],
+  "requiredNextEvidence": "real registry refresh to router lifecycle with durable receipts"
+}
