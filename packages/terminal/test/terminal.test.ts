@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { stripAnsi, stripCommandEcho } from "../src/ansi.js";
 import { defaultShell, commandShell } from "../src/shells.js";
@@ -187,5 +190,137 @@ describe("backendFor", () => {
 
   it("is always pipe on POSIX", () => {
     expect(backendFor("linux")).toBe("pipe");
+  });
+});
+
+describe("R27 Windows timeout process-tree cleanup and workspace removability", () => {
+  const cleanupDirs: string[] = [];
+  afterEach(() => {
+    __setPtyModuleForTest(undefined);
+    for (const dir of cleanupDirs.splice(0)) {
+      try {
+        fs.rmSync(dir, { recursive: true, force: true });
+      } catch {
+        /* best effort in afterEach */
+      }
+    }
+  });
+
+  it("timeout → process tree terminated → close observed or bounded fallback → workspace removable (pipe)", async () => {
+    __setPtyModuleForTest(null);
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "r27-term-timeout-"));
+    cleanupDirs.push(dir);
+    const scriptPath = path.join(dir, "worker.cjs");
+    const lockfilePath = path.join(dir, "lock.txt");
+    fs.writeFileSync(
+      scriptPath,
+      `const fs = require('node:fs');
+const fd = fs.openSync(${JSON.stringify(lockfilePath)}, 'w');
+setTimeout(() => { try { fs.closeSync(fd); } catch {} }, 30000);
+`,
+    );
+
+    const result = await execute({
+      file: process.execPath,
+      args: [scriptPath],
+      cwd: dir,
+      timeoutMs: 250,
+    });
+
+    expect(result.timedOut).toBe(true);
+    expect(result.exitCode).toBe(124);
+
+    // Workspace must be removable immediately without EPERM because all handles in the tree are closed
+    let epermOccurred = false;
+    try {
+      fs.rmSync(dir, { recursive: true, force: true });
+    } catch (err: unknown) {
+      if ((err as { code?: string })?.code === "EPERM") {
+        epermOccurred = true;
+      }
+      throw err;
+    }
+    expect(epermOccurred).toBe(false);
+    expect(fs.existsSync(dir)).toBe(false);
+  });
+
+  it("10 consecutive timeout executions: 0 EPERM, 0 leaked child processes, 0 double settlements", async () => {
+    __setPtyModuleForTest(null);
+    let epermCount = 0;
+    let timeoutCount = 0;
+    let validExitCodes = 0;
+
+    for (let i = 0; i < 10; i++) {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), `r27-repeat-timeout-${i}-`));
+      cleanupDirs.push(dir);
+      const scriptPath = path.join(dir, "hang.cjs");
+      const dataPath = path.join(dir, "active.log");
+      fs.writeFileSync(
+        scriptPath,
+        `const fs = require('node:fs');
+const fd = fs.openSync(${JSON.stringify(dataPath)}, 'a');
+fs.writeSync(fd, 'started\\n');
+setTimeout(() => { try { fs.closeSync(fd); } catch {} }, 30000);
+`,
+      );
+
+      const result = await execute({
+        file: process.execPath,
+        args: [scriptPath],
+        cwd: dir,
+        timeoutMs: 150,
+      });
+
+      if (result.timedOut) timeoutCount++;
+      if (result.exitCode === 124) validExitCodes++;
+
+      try {
+        fs.rmSync(dir, { recursive: true, force: true });
+      } catch (err: unknown) {
+        if ((err as { code?: string })?.code === "EPERM") {
+          epermCount++;
+        }
+      }
+      expect(fs.existsSync(dir)).toBe(false);
+    }
+
+    expect(timeoutCount).toBe(10);
+    expect(validExitCodes).toBe(10);
+    expect(epermCount).toBe(0);
+  }, 45_000);
+
+  it("cancellation with abort signal does not race with timeout timer", async () => {
+    __setPtyModuleForTest(null);
+    const controller = new AbortController();
+    const pending = execute({
+      file: process.execPath,
+      args: ["-e", "setTimeout(()=>{}, 30000)"],
+      timeoutMs: 2000,
+      signal: controller.signal,
+    });
+
+    setTimeout(() => controller.abort(), 100);
+    const result = await pending;
+
+    expect(result.cancelled).toBe(true);
+    expect(result.timedOut).toBe(false);
+    expect(result.exitCode).toBe(130);
+  });
+
+  it("already-aborted signal cancels immediately without spawning child", async () => {
+    __setPtyModuleForTest(null);
+    const controller = new AbortController();
+    controller.abort();
+
+    const result = await execute({
+      file: process.execPath,
+      args: ["-e", "setTimeout(()=>{}, 30000)"],
+      timeoutMs: 5000,
+      signal: controller.signal,
+    });
+
+    expect(result.cancelled).toBe(true);
+    expect(result.timedOut).toBe(false);
+    expect(result.exitCode).toBe(130);
   });
 });

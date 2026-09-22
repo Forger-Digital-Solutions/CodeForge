@@ -22,6 +22,8 @@ import { loadPty, teardownPty, type PtyLike } from "./pty-loader.js";
 export type ExecutionBackend = "conpty" | "pipe";
 export type OutputStream = "stdout" | "stderr";
 
+const PROCESS_TREE_SETTLE_GRACE_MS = 2_000;
+
 /**
  * What to run. Either `commandLine` (a full shell command line executed via the
  * platform command shell) or `file` + `args` (a direct executable spawn).
@@ -132,6 +134,8 @@ async function executeViaConpty(input: ExecSpec): Promise<ExecResult> {
     let settled = false;
     let timedOut = false;
     let cancelled = false;
+    let terminationStarted = false;
+    let terminationSettleTimer: ReturnType<typeof setTimeout> | null = null;
     let sentinelCode: number | null = null;
     let p: PtyLike;
     try {
@@ -162,6 +166,7 @@ async function executeViaConpty(input: ExecSpec): Promise<ExecResult> {
       if (settled) return;
       settled = true;
       if (timer) clearTimeout(timer);
+      if (terminationSettleTimer) clearTimeout(terminationSettleTimer);
       abortListener?.();
       dataListener?.dispose();
       exitListener?.dispose();
@@ -187,12 +192,14 @@ async function executeViaConpty(input: ExecSpec): Promise<ExecResult> {
     };
 
     const stop = (): void => {
-      if (settled) return;
+      if (settled || terminationStarted) return;
+      terminationStarted = true;
+      if (timer) clearTimeout(timer);
       // taskkill /T /F on the pty's root pid kills the whole tree; p.kill() would race
       // it — its console-list agent crashes once the console is already destroyed.
       terminateProcessTreeByPid(p.pid);
-      // ConPTY teardown is asynchronous; give the exit event a beat, then force-settle.
-      setTimeout(() => finish(1), 500);
+      // ConPTY teardown is asynchronous; wait for exit event with bounded fallback.
+      terminationSettleTimer = setTimeout(() => finish(1), PROCESS_TREE_SETTLE_GRACE_MS);
     };
 
     const timer = spec.timeoutMs
@@ -208,8 +215,12 @@ async function executeViaConpty(input: ExecSpec): Promise<ExecResult> {
         cancelled = true;
         stop();
       };
-      spec.signal.addEventListener("abort", onAbort, { once: true });
-      abortListener = () => spec.signal!.removeEventListener("abort", onAbort);
+      if (spec.signal.aborted) {
+        onAbort();
+      } else {
+        spec.signal.addEventListener("abort", onAbort, { once: true });
+        abortListener = () => spec.signal!.removeEventListener("abort", onAbort);
+      }
     }
 
     const dataListener = p.onData((chunk) => {
@@ -249,6 +260,7 @@ async function executeViaPipe(spec: ExecSpec): Promise<ExecResult> {
     let timedOut = false;
     let cancelled = false;
     let terminationStarted = false;
+    let terminationSettleTimer: ReturnType<typeof setTimeout> | null = null;
 
     const spawnOptions = {
       cwd: spec.cwd,
@@ -281,6 +293,7 @@ async function executeViaPipe(spec: ExecSpec): Promise<ExecResult> {
       if (settled) return;
       settled = true;
       if (timer) clearTimeout(timer);
+      if (terminationSettleTimer) clearTimeout(terminationSettleTimer);
       abortListener?.();
       const exitCode = timedOut ? 124 : cancelled ? 130 : (code ?? 1);
       resolve({
@@ -299,8 +312,12 @@ async function executeViaPipe(spec: ExecSpec): Promise<ExecResult> {
     const stop = (): void => {
       if (settled || terminationStarted) return;
       terminationStarted = true;
+      if (timer) clearTimeout(timer);
       if (child.pid) terminateProcessTreeByPid(child.pid);
-      setTimeout(() => finish(null), 250);
+      // taskkill is synchronous, but Windows can release descendants' file handles slightly
+      // after it returns. Keep the timeout/cancelled result, while waiting for `close` before
+      // resolving so ForgeVerify callers can safely remove an isolated workspace.
+      terminationSettleTimer = setTimeout(() => finish(null), PROCESS_TREE_SETTLE_GRACE_MS);
     };
 
     const timer = spec.timeoutMs
@@ -316,8 +333,12 @@ async function executeViaPipe(spec: ExecSpec): Promise<ExecResult> {
         cancelled = true;
         stop();
       };
-      spec.signal.addEventListener("abort", onAbort, { once: true });
-      abortListener = () => spec.signal!.removeEventListener("abort", onAbort);
+      if (spec.signal.aborted) {
+        onAbort();
+      } else {
+        spec.signal.addEventListener("abort", onAbort, { once: true });
+        abortListener = () => spec.signal!.removeEventListener("abort", onAbort);
+      }
     }
 
     child.stdout?.on("data", (data: Buffer) => {
@@ -333,9 +354,7 @@ async function executeViaPipe(spec: ExecSpec): Promise<ExecResult> {
       spec.onOutput?.(chunk, "stderr");
     });
     child.once("error", (error) => finish(null, error));
-    child.once("close", (code) => {
-      if (!terminationStarted) finish(code);
-    });
+    child.once("close", (code) => finish(code));
   });
 }
 

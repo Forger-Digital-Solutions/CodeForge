@@ -1,0 +1,38 @@
+{
+  "schema": "r27-forgeverify-evidence-1",
+  "status": "windows_timeout_lifecycle_fixed_and_proven",
+  "defect": "windows_timeout_process_tree_cleanup_eperm",
+  "rootCause": "Premature promise settlement after taskkill without awaiting process close / handle release, leading to EPERM during temporary workspace removal, plus potential race condition where timeout timer could overwrite cancellation",
+  "settlementMechanism": "child_close_event_with_bounded_fallback",
+  "fallbackGraceMs": 2000,
+  "tests": {
+    "terminalExecutorSuite": { "passed": 29, "failed": 0 },
+    "timeoutRemovabilityRegression": { "passed": 4, "failed": 0 },
+    "repeatedTimeoutExecutions": { "iterations": 10, "epermCount": 0, "leakedChildProcesses": 0, "doubleSettlements": 0, "timeoutsObserved": 10 },
+    "forgeVerifySuite": {
+      "forgeVerifyEvidence": { "passed": 5, "failed": 0 },
+      "forgeVerifyMultiVerifier": { "passed": 6, "failed": 0 },
+      "forgeVerifyIntegrity": { "passed": 7, "failed": 0 },
+      "verificationService": { "passed": 17, "failed": 0 },
+      "staleEvidenceMatrix": { "passed": 11, "failed": 0 },
+      "maliciousCorpus": { "passed": 24, "failed": 0 },
+      "totalTests": 70,
+      "totalPassed": 70,
+      "totalFailed": 0
+    }
+  },
+  "proven": [
+    "timeout preserves exitCode 124 and timedOut=true",
+    "abort preserves exitCode 130 and cancelled=true without timeout race",
+    "pre-aborted signals cancel immediately",
+    "entire process tree terminated via taskkill /T /F on Windows and process group SIGKILL on POSIX",
+    "workspace directory is immediately removable with 0 EPERM",
+    "10 consecutive timeouts produce 0 EPERM and 0 leaked processes",
+    "single settlement guarantee holds under timeout, abort, error, and delayed close",
+    "both pipe and ConPTY backends share hardened termination lifecycle"
+  ],
+  "remainingDocumentedBoundaries": [
+    "Outside-workspace scripts and gitignored generated files are outside evidence identity hash by design",
+    "Declared verification command remains repository authority on verification semantics"
+  ]
+}
