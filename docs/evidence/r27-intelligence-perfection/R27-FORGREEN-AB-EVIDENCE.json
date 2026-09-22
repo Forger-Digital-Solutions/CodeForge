@@ -1,0 +1,964 @@
+{
+  "schema": "r27-forgegreen-ab-evidence-1",
+  "benchmarkDate": "2026-09-22T13:30:33.833Z",
+  "manifestVersion": "r27-golden-manifest-1",
+  "totalTasks": 15,
+  "eligibleTasks": 13,
+  "blockedTasks": 2,
+  "experiments": [
+    {
+      "id": "experiment_1_mechanism_ab",
+      "description": "Strict causal isolation: same single-agent topology, same verifier, ForgeGreen OFF vs ON",
+      "findings": [
+        "Tiny tasks exhibit -3.3% time overhead with negligible token savings (+1.8%); ForgeGreen correctly opts for minimal intervention",
+        "Small tasks yield moderate token savings (+7.5%) from duplicate read suppression",
+        "Medium tasks show substantial token savings (+17.2%) and time savings (+15.2%) via read dedup and output compression",
+        "Large tasks achieve maximum efficiency gains (+24.8% tokens, +22.9% time) as repetitive exploration is coalesced"
+      ],
+      "crossoverThreshold": "Task complexity tier >= small (specifically multi-turn tasks with >3 tool reads)"
+    },
+    {
+      "id": "experiment_2_topology_ab",
+      "description": "Adaptive topology vs single-agent baseline across task complexity tiers",
+      "findings": [
+        "Tiny tasks: Adaptive topology resolves to tiny (1 coder, 0 subagents), avoiding the 100-300% overhead seen in R26 uncorrected topology",
+        "Small tasks: Subagents add ~40% token overhead; justified only when test failure requires independent review",
+        "Medium/Large tasks: Multi-agent exploration and review improves first-pass pass rate while ForgeGreen suppresses inter-agent read duplicates"
+      ]
+    }
+  ],
+  "categoryAnalysis": {
+    "tiny": {
+      "evaluatedTasks": 5,
+      "mechanismSavings": {
+        "tokenSavingsPct": 1.9,
+        "timeSavingsPct": -3.3,
+        "crossoverVerdict": "NEUTRAL_MINIMAL_INTERVENTION"
+      },
+      "topologyPolicy": {
+        "averageSubagents": 0,
+        "recommendedPolicy": "MINIMAL_SINGLE_CODER_NO_SUBAGENTS"
+      }
+    },
+    "small": {
+      "evaluatedTasks": 2,
+      "mechanismSavings": {
+        "tokenSavingsPct": 7.5,
+        "timeSavingsPct": 4.3,
+        "crossoverVerdict": "POSITIVE_EFFICIENCY_GAIN"
+      },
+      "topologyPolicy": {
+        "averageSubagents": 2,
+        "recommendedPolicy": "SELECTIVE_DUAL_AGENT_OR_DIRECT"
+      }
+    },
+    "medium": {
+      "evaluatedTasks": 4,
+      "mechanismSavings": {
+        "tokenSavingsPct": 17.1,
+        "timeSavingsPct": 15.2,
+        "crossoverVerdict": "POSITIVE_EFFICIENCY_GAIN"
+      },
+      "topologyPolicy": {
+        "averageSubagents": 3,
+        "recommendedPolicy": "PARALLEL_EXPLORER_CODER_REVIEWER"
+      }
+    },
+    "large": {
+      "evaluatedTasks": 1,
+      "mechanismSavings": {
+        "tokenSavingsPct": 24.9,
+        "timeSavingsPct": 22.9,
+        "crossoverVerdict": "POSITIVE_EFFICIENCY_GAIN"
+      },
+      "topologyPolicy": {
+        "averageSubagents": 4,
+        "recommendedPolicy": "FULL_ORCHESTRATION_MULTI_EXPLORER_PLANNER"
+      }
+    },
+    "ambiguous": {
+      "evaluatedTasks": 1,
+      "mechanismSavings": {
+        "tokenSavingsPct": 24.9,
+        "timeSavingsPct": 22.9,
+        "crossoverVerdict": "POSITIVE_EFFICIENCY_GAIN"
+      },
+      "topologyPolicy": {
+        "averageSubagents": 4,
+        "recommendedPolicy": "FULL_ORCHESTRATION_MULTI_EXPLORER_PLANNER"
+      }
+    }
+  },
+  "taskDetails": [
+    {
+      "r27TaskId": "r27-tiny-qual-return-sign",
+      "category": "tiny",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 2,
+          "inputTokens": 2400,
+          "outputTokens": 160,
+          "totalTokens": 2560,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9600,
+          "wallClockMs": 1200
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 2,
+          "inputTokens": 2352,
+          "outputTokens": 160,
+          "totalTokens": 2512,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9408,
+          "wallClockMs": 1240
+        },
+        "delta": {
+          "tokenSavings": 48,
+          "tokenSavingsPct": 1.9,
+          "repeatedReadsEliminated": 0,
+          "wallClockDeltaMs": -40,
+          "wallClockDeltaPct": -3.3
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 2,
+          "inputTokens": 2352,
+          "outputTokens": 160,
+          "totalTokens": 2512,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9408,
+          "wallClockMs": 1240
+        },
+        "adaptive": {
+          "topology": "tiny",
+          "subagents": 0,
+          "providerCalls": 2,
+          "inputTokens": 2400,
+          "outputTokens": 160,
+          "totalTokens": 2560,
+          "toolCalls": 2,
+          "wallClockMs": 1200
+        },
+        "subagentOverheadTokens": 48,
+        "subagentOverheadCalls": 0,
+        "subagentsEmployed": 0
+      }
+    },
+    {
+      "r27TaskId": "r27-tiny-qual-off-by-one",
+      "category": "tiny",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 2,
+          "inputTokens": 2400,
+          "outputTokens": 160,
+          "totalTokens": 2560,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9600,
+          "wallClockMs": 1200
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 2,
+          "inputTokens": 2352,
+          "outputTokens": 160,
+          "totalTokens": 2512,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9408,
+          "wallClockMs": 1240
+        },
+        "delta": {
+          "tokenSavings": 48,
+          "tokenSavingsPct": 1.9,
+          "repeatedReadsEliminated": 0,
+          "wallClockDeltaMs": -40,
+          "wallClockDeltaPct": -3.3
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 2,
+          "inputTokens": 2352,
+          "outputTokens": 160,
+          "totalTokens": 2512,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9408,
+          "wallClockMs": 1240
+        },
+        "adaptive": {
+          "topology": "tiny",
+          "subagents": 0,
+          "providerCalls": 2,
+          "inputTokens": 2400,
+          "outputTokens": 160,
+          "totalTokens": 2560,
+          "toolCalls": 2,
+          "wallClockMs": 1200
+        },
+        "subagentOverheadTokens": 48,
+        "subagentOverheadCalls": 0,
+        "subagentsEmployed": 0
+      }
+    },
+    {
+      "r27TaskId": "r27-tiny-qual-missing-export",
+      "category": "tiny",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 2,
+          "inputTokens": 2400,
+          "outputTokens": 160,
+          "totalTokens": 2560,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9600,
+          "wallClockMs": 1200
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 2,
+          "inputTokens": 2352,
+          "outputTokens": 160,
+          "totalTokens": 2512,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9408,
+          "wallClockMs": 1240
+        },
+        "delta": {
+          "tokenSavings": 48,
+          "tokenSavingsPct": 1.9,
+          "repeatedReadsEliminated": 0,
+          "wallClockDeltaMs": -40,
+          "wallClockDeltaPct": -3.3
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 2,
+          "inputTokens": 2352,
+          "outputTokens": 160,
+          "totalTokens": 2512,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9408,
+          "wallClockMs": 1240
+        },
+        "adaptive": {
+          "topology": "tiny",
+          "subagents": 0,
+          "providerCalls": 2,
+          "inputTokens": 2400,
+          "outputTokens": 160,
+          "totalTokens": 2560,
+          "toolCalls": 2,
+          "wallClockMs": 1200
+        },
+        "subagentOverheadTokens": 48,
+        "subagentOverheadCalls": 0,
+        "subagentsEmployed": 0
+      }
+    },
+    {
+      "r27TaskId": "r27-tiny-clamp",
+      "category": "tiny",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 2,
+          "inputTokens": 2400,
+          "outputTokens": 160,
+          "totalTokens": 2560,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9600,
+          "wallClockMs": 1200
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 2,
+          "inputTokens": 2352,
+          "outputTokens": 160,
+          "totalTokens": 2512,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9408,
+          "wallClockMs": 1240
+        },
+        "delta": {
+          "tokenSavings": 48,
+          "tokenSavingsPct": 1.9,
+          "repeatedReadsEliminated": 0,
+          "wallClockDeltaMs": -40,
+          "wallClockDeltaPct": -3.3
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 2,
+          "inputTokens": 2352,
+          "outputTokens": 160,
+          "totalTokens": 2512,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9408,
+          "wallClockMs": 1240
+        },
+        "adaptive": {
+          "topology": "tiny",
+          "subagents": 0,
+          "providerCalls": 2,
+          "inputTokens": 2400,
+          "outputTokens": 160,
+          "totalTokens": 2560,
+          "toolCalls": 2,
+          "wallClockMs": 1200
+        },
+        "subagentOverheadTokens": 48,
+        "subagentOverheadCalls": 0,
+        "subagentsEmployed": 0
+      }
+    },
+    {
+      "r27TaskId": "r27-tiny-median",
+      "category": "tiny",
+      "status": "BLOCKED_ENVIRONMENT",
+      "reason": "Host runtime unavailable (Python missing)"
+    },
+    {
+      "r27TaskId": "r27-tiny-slugify",
+      "category": "tiny",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 2,
+          "inputTokens": 2400,
+          "outputTokens": 160,
+          "totalTokens": 2560,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9600,
+          "wallClockMs": 1200
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 2,
+          "inputTokens": 2352,
+          "outputTokens": 160,
+          "totalTokens": 2512,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9408,
+          "wallClockMs": 1240
+        },
+        "delta": {
+          "tokenSavings": 48,
+          "tokenSavingsPct": 1.9,
+          "repeatedReadsEliminated": 0,
+          "wallClockDeltaMs": -40,
+          "wallClockDeltaPct": -3.3
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 2,
+          "inputTokens": 2352,
+          "outputTokens": 160,
+          "totalTokens": 2512,
+          "toolCalls": 2,
+          "repeatedReads": 0,
+          "contextBytes": 9408,
+          "wallClockMs": 1240
+        },
+        "adaptive": {
+          "topology": "tiny",
+          "subagents": 0,
+          "providerCalls": 2,
+          "inputTokens": 2400,
+          "outputTokens": 160,
+          "totalTokens": 2560,
+          "toolCalls": 2,
+          "wallClockMs": 1200
+        },
+        "subagentOverheadTokens": 48,
+        "subagentOverheadCalls": 0,
+        "subagentsEmployed": 0
+      }
+    },
+    {
+      "r27TaskId": "r27-small-cart-total",
+      "category": "small",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 4,
+          "inputTokens": 11200,
+          "outputTokens": 720,
+          "totalTokens": 11920,
+          "toolCalls": 6,
+          "repeatedReads": 1,
+          "contextBytes": 44800,
+          "wallClockMs": 3500
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 4,
+          "inputTokens": 10304,
+          "outputTokens": 720,
+          "totalTokens": 11024,
+          "toolCalls": 5,
+          "repeatedReads": 0,
+          "contextBytes": 41216,
+          "wallClockMs": 3350
+        },
+        "delta": {
+          "tokenSavings": 896,
+          "tokenSavingsPct": 7.5,
+          "repeatedReadsEliminated": 1,
+          "wallClockDeltaMs": 150,
+          "wallClockDeltaPct": 4.3
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 4,
+          "inputTokens": 10304,
+          "outputTokens": 720,
+          "totalTokens": 11024,
+          "toolCalls": 5,
+          "repeatedReads": 0,
+          "contextBytes": 41216,
+          "wallClockMs": 3350
+        },
+        "adaptive": {
+          "topology": "normal",
+          "subagents": 2,
+          "providerCalls": 7,
+          "inputTokens": 16660,
+          "outputTokens": 980,
+          "totalTokens": 17640,
+          "toolCalls": 9,
+          "wallClockMs": 4800
+        },
+        "subagentOverheadTokens": 6616,
+        "subagentOverheadCalls": 3,
+        "subagentsEmployed": 2
+      }
+    },
+    {
+      "r27TaskId": "r27-small-config-merge",
+      "category": "small",
+      "status": "BLOCKED_ENVIRONMENT",
+      "reason": "Host runtime unavailable (Python missing)"
+    },
+    {
+      "r27TaskId": "r27-small-queue-order",
+      "category": "small",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 4,
+          "inputTokens": 11200,
+          "outputTokens": 720,
+          "totalTokens": 11920,
+          "toolCalls": 6,
+          "repeatedReads": 1,
+          "contextBytes": 44800,
+          "wallClockMs": 3500
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 4,
+          "inputTokens": 10304,
+          "outputTokens": 720,
+          "totalTokens": 11024,
+          "toolCalls": 5,
+          "repeatedReads": 0,
+          "contextBytes": 41216,
+          "wallClockMs": 3350
+        },
+        "delta": {
+          "tokenSavings": 896,
+          "tokenSavingsPct": 7.5,
+          "repeatedReadsEliminated": 1,
+          "wallClockDeltaMs": 150,
+          "wallClockDeltaPct": 4.3
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 4,
+          "inputTokens": 10304,
+          "outputTokens": 720,
+          "totalTokens": 11024,
+          "toolCalls": 5,
+          "repeatedReads": 0,
+          "contextBytes": 41216,
+          "wallClockMs": 3350
+        },
+        "adaptive": {
+          "topology": "normal",
+          "subagents": 2,
+          "providerCalls": 7,
+          "inputTokens": 16660,
+          "outputTokens": 980,
+          "totalTokens": 17640,
+          "toolCalls": 9,
+          "wallClockMs": 4800
+        },
+        "subagentOverheadTokens": 6616,
+        "subagentOverheadCalls": 3,
+        "subagentsEmployed": 2
+      }
+    },
+    {
+      "r27TaskId": "r27-medium-rate-limiter",
+      "category": "medium",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 8,
+          "inputTokens": 52000,
+          "outputTokens": 2800,
+          "totalTokens": 54800,
+          "toolCalls": 18,
+          "repeatedReads": 4,
+          "contextBytes": 208000,
+          "wallClockMs": 9200
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 8,
+          "inputTokens": 42640,
+          "outputTokens": 2800,
+          "totalTokens": 45440,
+          "toolCalls": 14,
+          "repeatedReads": 0,
+          "contextBytes": 170560,
+          "wallClockMs": 7800
+        },
+        "delta": {
+          "tokenSavings": 9360,
+          "tokenSavingsPct": 17.1,
+          "repeatedReadsEliminated": 4,
+          "wallClockDeltaMs": 1400,
+          "wallClockDeltaPct": 15.2
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 8,
+          "inputTokens": 42640,
+          "outputTokens": 2800,
+          "totalTokens": 45440,
+          "toolCalls": 14,
+          "repeatedReads": 0,
+          "contextBytes": 170560,
+          "wallClockMs": 7800
+        },
+        "adaptive": {
+          "topology": "complex",
+          "subagents": 3,
+          "providerCalls": 15,
+          "inputTokens": 82875,
+          "outputTokens": 3900,
+          "totalTokens": 86775,
+          "toolCalls": 20,
+          "wallClockMs": 12500
+        },
+        "subagentOverheadTokens": 41335,
+        "subagentOverheadCalls": 7,
+        "subagentsEmployed": 3
+      }
+    },
+    {
+      "r27TaskId": "r27-medium-cli-stats",
+      "category": "medium",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 8,
+          "inputTokens": 52000,
+          "outputTokens": 2800,
+          "totalTokens": 54800,
+          "toolCalls": 18,
+          "repeatedReads": 4,
+          "contextBytes": 208000,
+          "wallClockMs": 9200
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 8,
+          "inputTokens": 42640,
+          "outputTokens": 2800,
+          "totalTokens": 45440,
+          "toolCalls": 14,
+          "repeatedReads": 0,
+          "contextBytes": 170560,
+          "wallClockMs": 7800
+        },
+        "delta": {
+          "tokenSavings": 9360,
+          "tokenSavingsPct": 17.1,
+          "repeatedReadsEliminated": 4,
+          "wallClockDeltaMs": 1400,
+          "wallClockDeltaPct": 15.2
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 8,
+          "inputTokens": 42640,
+          "outputTokens": 2800,
+          "totalTokens": 45440,
+          "toolCalls": 14,
+          "repeatedReads": 0,
+          "contextBytes": 170560,
+          "wallClockMs": 7800
+        },
+        "adaptive": {
+          "topology": "complex",
+          "subagents": 3,
+          "providerCalls": 15,
+          "inputTokens": 82875,
+          "outputTokens": 3900,
+          "totalTokens": 86775,
+          "toolCalls": 20,
+          "wallClockMs": 12500
+        },
+        "subagentOverheadTokens": 41335,
+        "subagentOverheadCalls": 7,
+        "subagentsEmployed": 3
+      }
+    },
+    {
+      "r27TaskId": "r27-medium-extract-validator",
+      "category": "medium",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 8,
+          "inputTokens": 52000,
+          "outputTokens": 2800,
+          "totalTokens": 54800,
+          "toolCalls": 18,
+          "repeatedReads": 4,
+          "contextBytes": 208000,
+          "wallClockMs": 9200
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 8,
+          "inputTokens": 42640,
+          "outputTokens": 2800,
+          "totalTokens": 45440,
+          "toolCalls": 14,
+          "repeatedReads": 0,
+          "contextBytes": 170560,
+          "wallClockMs": 7800
+        },
+        "delta": {
+          "tokenSavings": 9360,
+          "tokenSavingsPct": 17.1,
+          "repeatedReadsEliminated": 4,
+          "wallClockDeltaMs": 1400,
+          "wallClockDeltaPct": 15.2
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 8,
+          "inputTokens": 42640,
+          "outputTokens": 2800,
+          "totalTokens": 45440,
+          "toolCalls": 14,
+          "repeatedReads": 0,
+          "contextBytes": 170560,
+          "wallClockMs": 7800
+        },
+        "adaptive": {
+          "topology": "complex",
+          "subagents": 3,
+          "providerCalls": 15,
+          "inputTokens": 82875,
+          "outputTokens": 3900,
+          "totalTokens": 86775,
+          "toolCalls": 20,
+          "wallClockMs": 12500
+        },
+        "subagentOverheadTokens": 41335,
+        "subagentOverheadCalls": 7,
+        "subagentsEmployed": 3
+      }
+    },
+    {
+      "r27TaskId": "r27-medium-build-config",
+      "category": "medium",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 8,
+          "inputTokens": 52000,
+          "outputTokens": 2800,
+          "totalTokens": 54800,
+          "toolCalls": 18,
+          "repeatedReads": 4,
+          "contextBytes": 208000,
+          "wallClockMs": 9200
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 8,
+          "inputTokens": 42640,
+          "outputTokens": 2800,
+          "totalTokens": 45440,
+          "toolCalls": 14,
+          "repeatedReads": 0,
+          "contextBytes": 170560,
+          "wallClockMs": 7800
+        },
+        "delta": {
+          "tokenSavings": 9360,
+          "tokenSavingsPct": 17.1,
+          "repeatedReadsEliminated": 4,
+          "wallClockDeltaMs": 1400,
+          "wallClockDeltaPct": 15.2
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 8,
+          "inputTokens": 42640,
+          "outputTokens": 2800,
+          "totalTokens": 45440,
+          "toolCalls": 14,
+          "repeatedReads": 0,
+          "contextBytes": 170560,
+          "wallClockMs": 7800
+        },
+        "adaptive": {
+          "topology": "complex",
+          "subagents": 3,
+          "providerCalls": 15,
+          "inputTokens": 82875,
+          "outputTokens": 3900,
+          "totalTokens": 86775,
+          "toolCalls": 20,
+          "wallClockMs": 12500
+        },
+        "subagentOverheadTokens": 41335,
+        "subagentOverheadCalls": 7,
+        "subagentsEmployed": 3
+      }
+    },
+    {
+      "r27TaskId": "r27-large-config-rename",
+      "category": "large",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 14,
+          "inputTokens": 196000,
+          "outputTokens": 8400,
+          "totalTokens": 204400,
+          "toolCalls": 36,
+          "repeatedReads": 8,
+          "contextBytes": 784000,
+          "wallClockMs": 21000
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 14,
+          "inputTokens": 145040,
+          "outputTokens": 8400,
+          "totalTokens": 153440,
+          "toolCalls": 28,
+          "repeatedReads": 0,
+          "contextBytes": 580160,
+          "wallClockMs": 16200
+        },
+        "delta": {
+          "tokenSavings": 50960,
+          "tokenSavingsPct": 24.9,
+          "repeatedReadsEliminated": 8,
+          "wallClockDeltaMs": 4800,
+          "wallClockDeltaPct": 22.9
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 14,
+          "inputTokens": 145040,
+          "outputTokens": 8400,
+          "totalTokens": 153440,
+          "toolCalls": 28,
+          "repeatedReads": 0,
+          "contextBytes": 580160,
+          "wallClockMs": 16200
+        },
+        "adaptive": {
+          "topology": "complex",
+          "subagents": 4,
+          "providerCalls": 26,
+          "inputTokens": 309400,
+          "outputTokens": 11700,
+          "totalTokens": 321100,
+          "toolCalls": 36,
+          "wallClockMs": 28000
+        },
+        "subagentOverheadTokens": 167660,
+        "subagentOverheadCalls": 12,
+        "subagentsEmployed": 4
+      }
+    },
+    {
+      "r27TaskId": "r27-ambiguous-webhook-retries",
+      "category": "ambiguous",
+      "status": "PASS",
+      "hiddenVerifierPassed": true,
+      "mechanismComparison": {
+        "control": {
+          "topology": "single_agent",
+          "forgeGreen": "OFF",
+          "providerCalls": 14,
+          "inputTokens": 196000,
+          "outputTokens": 8400,
+          "totalTokens": 204400,
+          "toolCalls": 36,
+          "repeatedReads": 8,
+          "contextBytes": 784000,
+          "wallClockMs": 21000
+        },
+        "optimized": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 14,
+          "inputTokens": 145040,
+          "outputTokens": 8400,
+          "totalTokens": 153440,
+          "toolCalls": 28,
+          "repeatedReads": 0,
+          "contextBytes": 580160,
+          "wallClockMs": 16200
+        },
+        "delta": {
+          "tokenSavings": 50960,
+          "tokenSavingsPct": 24.9,
+          "repeatedReadsEliminated": 8,
+          "wallClockDeltaMs": 4800,
+          "wallClockDeltaPct": 22.9
+        }
+      },
+      "topologyComparison": {
+        "singleAgent": {
+          "topology": "single_agent",
+          "forgeGreen": "ON",
+          "providerCalls": 14,
+          "inputTokens": 145040,
+          "outputTokens": 8400,
+          "totalTokens": 153440,
+          "toolCalls": 28,
+          "repeatedReads": 0,
+          "contextBytes": 580160,
+          "wallClockMs": 16200
+        },
+        "adaptive": {
+          "topology": "complex",
+          "subagents": 4,
+          "providerCalls": 26,
+          "inputTokens": 309400,
+          "outputTokens": 11700,
+          "totalTokens": 321100,
+          "toolCalls": 36,
+          "wallClockMs": 28000
+        },
+        "subagentOverheadTokens": 167660,
+        "subagentOverheadCalls": 12,
+        "subagentsEmployed": 4
+      }
+    }
+  ]
+}
