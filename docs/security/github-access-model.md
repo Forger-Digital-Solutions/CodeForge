@@ -39,7 +39,7 @@ permissions above, after re-checking the live installation still lists that repo
 - Identity callback: one fixed HTTPS URL (`${CODEFORGE_PUBLIC_URL}/v1/auth/github/callback`); a loopback URL is never registered with GitHub; forged/replayed state ends on a static page (ATTACK-007/008).
 - App callback state: 256-bit random, single-use, bound to the CodeForge user and device session.
 - App JWTs: RS256, 9-minute life, created inside `GitHubAppClient` only; GitHub responses are collapsed to stable error codes so an `Authorization` header can never be echoed.
-- Webhooks: CodeForge does **not** currently consume GitHub webhooks (installation changes are observed live at authorization/publication time). If webhooks are added, signature verification (`X-Hub-Signature-256`) is mandatory.
+- Webhooks: when `GITHUB_APP_WEBHOOK_SECRET` is configured, Cloud accepts `POST /v1/github-app/webhook` only after HMAC-SHA256 verification of the raw body and durable delivery-id deduplication. Installation deletion/suspension and repository removal revoke the affected publication authority. Without that secret, the route returns `503` and processes nothing.
 
 ## Revocation and disconnect
 
@@ -57,5 +57,5 @@ permissions above, after re-checking the live installation still lists that repo
 - [x] Installation tokens are requested with `repository_ids` of length 1 and exactly `contents:write`, `pull_requests:write`.
 - [x] The live installation is re-read before every mint; suspended installations are refused.
 - [x] Bundles are content-addressed and deleted after use; purged on account deletion and terminal failure.
-- [ ] GitHub webhook consumption — not implemented (nothing to verify).
+- [x] GitHub webhook consumption verifies `X-Hub-Signature-256`, deduplicates `X-GitHub-Delivery` durably, and applies scoped installation/repository authorization invalidation.
 - [ ] Organization SSO/SAML enforcement — a GitHub-side setting; CodeForge simply fails to mint if the installation is blocked (REQUIRES THIRD-PARTY VERIFICATION).

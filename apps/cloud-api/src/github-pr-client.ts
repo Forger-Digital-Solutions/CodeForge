@@ -99,8 +99,9 @@ export class GitHubPRClient {
   }
 
   private assertMatches(pr: PullRequestIdentity, request: CreatePullRequestRequest): PullRequestIdentity {
-    if (pr.headRef !== request.head || pr.baseRef !== request.base) throw new PublicationError(PUBLICATION_ERROR_CODES.PULL_REQUEST_RECONCILIATION_FAILED);
-    if (pr.headSha && pr.headSha !== request.expectedHeadSha) throw new PublicationError(PUBLICATION_ERROR_CODES.PULL_REQUEST_RECONCILIATION_FAILED);
+    if (pr.state !== "open" || pr.headRef !== request.head || pr.baseRef !== request.base || !pr.headSha || pr.headSha !== request.expectedHeadSha) {
+      throw new PublicationError(PUBLICATION_ERROR_CODES.PULL_REQUEST_RECONCILIATION_FAILED);
+    }
     return pr;
   }
 

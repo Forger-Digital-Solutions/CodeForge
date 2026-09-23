@@ -1,0 +1,42 @@
+{
+  "schema": "r27-github-evidence-1",
+  "status": "R27_GITHUB_PUBLICATION_DETERMINISTICALLY_PROVEN_LIVE_WORKFLOW_NOT_PROVEN",
+  "paidInferenceUsed": false,
+  "evidenceBoundary": "Local fake-GitHub HTTP services, local bare Git remotes, temporary SQLite databases, and static source inspection only. No GitHub account, OAuth consent, remote repository, push, PR, CI run, or external write was used.",
+  "problemsRecovered": [
+    "The Cloud PR reconciler accepted a response without a head SHA even though the publication contract requires the certified commit.",
+    "The same reconciler could accept a closed PR after a retry, allowing a completed publication receipt to point at a non-open review surface.",
+    "The GitHub access-model document incorrectly reported webhook consumption as unimplemented despite a signed, durable webhook service and Cloud route."
+  ],
+  "change": {
+    "prReconciliation": "A created or reconciled PR must be open, must target the expected base and managed head ref, and must contain a head SHA exactly equal to the certified publication commit. Any missing or mismatched value returns PULL_REQUEST_RECONCILIATION_FAILED.",
+    "documentation": "The GitHub access model now accurately documents signed webhook handling, durable delivery deduplication, and scoped revocation behavior."
+  },
+  "deterministicValidation": {
+    "oauthPublicationAndWebhook": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/cloud-auth/test/auth.test.ts packages/cloud-auth/test/github-app.test.ts packages/cloud-auth/test/github-webhook.test.ts apps/cloud-api/test/github-pr-client.test.ts apps/cloud-api/test/publication-executor.test.ts apps/cloud-api/test/publication-service.e2e.test.ts apps/cloud-api/test/publication-http.e2e.test.ts apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts",
+      "filesPassed": 8,
+      "testsPassed": 58,
+      "testsFailed": 0,
+      "approxWallTimeMs": 28380,
+      "coverage": ["server-brokered GitHub OAuth PKCE", "repository-scoped installation tokens", "callback replay/user binding", "webhook signature and durable delivery deduplication", "local bundle verification and controlled bare-remote push", "PR creation/reconciliation", "missing head-SHA rejection", "closed-PR rejection", "desktop-to-Cloud credential isolation"]
+    },
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc -b packages/cloud-auth apps/cloud-api",
+      "passed": true
+    }
+  },
+  "proven": [
+    "Identity OAuth is a separate server-brokered PKCE flow requesting only read:user and user:email; publication authority remains a repository-scoped GitHub App grant.",
+    "A publication token is revalidated against the live installation and restricted to one numeric repository id with contents:write and pull_requests:write before a local test push/PR flow proceeds.",
+    "PR reconciliation cannot complete without an open PR whose exact head SHA matches the certified commit.",
+    "A Cloud-owned local publication flow handles bounded artifact transfer, certified bundle materialization, target divergence, retry reconciliation, durable leases, and avoids exposing an installation token to the desktop fixture.",
+    "Signed webhook service behavior revokes only the affected installation/repository grants and rejects malformed, unsigned, tampered, oversized, and duplicate deliveries."
+  ],
+  "notProven": [
+    "A real GitHub OAuth login, App installation, webhook delivery, branch push, PR, or CI run against an authorized disposable remote repository.",
+    "Issue inspection, CI/check-run inspection, CI repair, or follow-up publication. No GitHub Actions/check-runs client is implemented under the current least-privilege App permission set.",
+    "Packaged desktop publication UX or external account configuration, including organization SSO/SAML enforcement."
+  ],
+  "requiredNextEvidence": "With explicit owner authorization and a disposable GitHub repository, install the App on that repository only, perform OAuth sign-in, publish one certified branch, create/reconcile one PR, and capture redacted receipt/CI results. CI inspection or repair first requires an explicitly approved App-permission and product-scope decision."
+}
