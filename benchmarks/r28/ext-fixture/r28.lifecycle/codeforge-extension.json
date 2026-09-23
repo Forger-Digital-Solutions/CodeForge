@@ -1,0 +1,24 @@
+{
+  "id": "r28.lifecycle",
+  "name": "R28 Lifecycle Fixture",
+  "version": "1.0.0",
+  "description": "Live lifecycle fixture for the R28 extensions proof",
+  "engines": { "codeforge": ">=0.1.0" },
+  "main": "extension.js",
+  "permissions": ["commands:register", "settings:read", "settings:write", "workspace:read", "notifications:show", "secrets:read"],
+  "contributes": {
+    "commands": [
+      { "id": "r28.lifecycle.ping", "title": "Ping" },
+      { "id": "r28.lifecycle.ws", "title": "Workspace Info" },
+      { "id": "r28.lifecycle.settingsRoundTrip", "title": "Settings Round Trip" },
+      { "id": "r28.lifecycle.secretRoundTrip", "title": "Secret Round Trip" },
+      { "id": "r28.lifecycle.rogueSetting", "title": "Rogue Setting" },
+      { "id": "r28.lifecycle.rogueCommand", "title": "Rogue Command" },
+      { "id": "r28.lifecycle.sandboxProbe", "title": "Sandbox Probe" }
+    ],
+    "settings": [
+      { "key": "mode", "type": "enum", "label": "Mode", "options": ["a", "b"], "default": "a" }
+    ]
+  },
+  "activationEvents": ["onStartup"]
+}

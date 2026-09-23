@@ -368,12 +368,14 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "PACKAGED_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
         "packages/plugins/test/extensions.test.ts — 25 tests incl. sandbox isolation/timeout kill",
-        "packaged smoke: extension discovery/command/workspace/lifecycle PASS"
+        "packaged smoke: extension discovery/command/workspace/lifecycle PASS",
+        "benchmarks/r28/extensions-live-check.mjs — 21/21 lifecycle checks",
+        "docs/evidence/r28-capability-completion/R28-EXTENSIONS-LIVE-EVIDENCE.json"
       ],
       "note": "Phase 24 clarification: CodeForge has ONE extension abstraction — packages/plugins ExtensionManager (ExtensionManifest, managed install dir, enable/disable, engine compat, sandboxed eval, contributed commands → plugin__<ext>__<command> tools via external-tools surface). Plugin == Extension; there is no second plugin system. Naming unified in evidence; ledger treats this entry as the extension subsystem.",
       "gaps": [
@@ -387,13 +389,15 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "PACKAGED_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
-        "packaged_extensions_loaded/command/workspace_read/lifecycle=PASS in full smoke"
+        "packaged_extensions_loaded/command/workspace_read/lifecycle=PASS in full smoke",
+        "benchmarks/r28/extensions-live-check.mjs — 21/21 lifecycle checks",
+        "docs/evidence/r28-capability-completion/R28-EXTENSIONS-LIVE-EVIDENCE.json"
       ],
-      "note": "Extension host inside packaged bytes discovered, activated, permission-gated a command, read workspace, and completed lifecycle; corrupt manifest contained. | Phase 24: same subsystem as Plugins — see Plugins entry.",
+      "note": "Extension host inside packaged bytes discovered, activated, permission-gated a command, read workspace, and completed lifecycle; corrupt manifest contained. R28 live: real ExtensionManager + vm-sandbox ExtensionHost end-to-end — dev-load, activation, 7-command bridging, sandbox has no process/require/fs/fetch, undeclared setting/command writes refused, settings+sealed-secrets+workspace delegates, disable→refuse→re-enable, managed-dir discovery on fresh start, engine gating (>=99 refused), broken manifest contained, record persisted across instances, uninstall removes copy + purges secrets. | Phase 24: same subsystem as Plugins — see Plugins entry.",
       "gaps": [
         "isolation boundaries",
         "version compat",

@@ -1,0 +1,7 @@
+{
+  "id": "r28.broken",
+  "name": "Broken Fixture",
+  "version": "not-semver",
+  "main": "../escape.js",
+  "permissions": ["commands:register"]
+}

@@ -1,0 +1,112 @@
+{
+  "schema": "r28-extensions-live-check-1",
+  "recordedAt": "2026-09-23T16:24:33.745Z",
+  "fixture": "benchmarks/r28/ext-fixture/r28.lifecycle (vm sandbox, real delegates)",
+  "results": [
+    {
+      "name": "start with empty managed dir",
+      "ok": true,
+      "detail": "0 extensions"
+    },
+    {
+      "name": "dev-load activates fixture",
+      "ok": true,
+      "detail": "status=active"
+    },
+    {
+      "name": "commands bridged from manifest",
+      "ok": true,
+      "detail": "7 commands"
+    },
+    {
+      "name": "command executes in sandbox",
+      "ok": true,
+      "detail": "\"PONG\""
+    },
+    {
+      "name": "workspace:read delegate injected",
+      "ok": true,
+      "detail": "\"{\\\"name\\\":\\\"r28-live-ws\\\",\\\"rootPath\\\":\\\"G:\\\\\\\\CodeForge\\\"}\""
+    },
+    {
+      "name": "settings round-trip through persisted store",
+      "ok": true,
+      "detail": "\"mode=b\""
+    },
+    {
+      "name": "manager.getSetting reflects persisted value",
+      "ok": true,
+      "detail": "\"b\""
+    },
+    {
+      "name": "sealed secrets round-trip",
+      "ok": true,
+      "detail": "\"SECRET_OK\""
+    },
+    {
+      "name": "undeclared setting write refused",
+      "ok": true,
+      "detail": "Extension \"r28.lifecycle\" tried to write undeclared setting \"undeclared\""
+    },
+    {
+      "name": "undeclared command registration refused",
+      "ok": true,
+      "detail": "Extension \"r28.lifecycle\" tried to register undeclared command \"r28.lifecycle.notdeclared\""
+    },
+    {
+      "name": "sandbox has no process/require/fs",
+      "ok": true,
+      "detail": "\"{\\\"process\\\":\\\"undefined\\\",\\\"require\\\":\\\"undefined\\\",\\\"fs\\\":\\\"undefined\\\",\\\"fetch\\\":\\\"undefined\\\",\\\"codeforge\\\":\\\"objec"
+    },
+    {
+      "name": "unregistered command id errors",
+      "ok": true,
+      "detail": "Command \"r28.lifecycle.nothere\" is not registered by \"r28.lifecycle\""
+    },
+    {
+      "name": "disabled extension refuses commands",
+      "ok": true,
+      "detail": "Extension is not enabled"
+    },
+    {
+      "name": "re-enable restores commands",
+      "ok": true,
+      "detail": "\"PONG\""
+    },
+    {
+      "name": "broken manifest contained as error",
+      "ok": true,
+      "detail": "Invalid extension manifest — version: Version must be semver (x.y.z); main: main must be a relative "
+    },
+    {
+      "name": "engine-incompatible extension refused",
+      "ok": true,
+      "detail": "Extension requires CodeForge >=99.0.0; this build is 0.4.0"
+    },
+    {
+      "name": "managed-dir extension discovered + activated on start",
+      "ok": true,
+      "detail": "status=active"
+    },
+    {
+      "name": "managed extension command runs",
+      "ok": true,
+      "detail": "\"MANAGED_OK\""
+    },
+    {
+      "name": "dev-load record persisted across manager instances",
+      "ok": true,
+      "detail": "devMode=true status=active"
+    },
+    {
+      "name": "uninstall removes record + managed copy",
+      "ok": true,
+      "detail": "exists=false"
+    },
+    {
+      "name": "uninstall purges sealed secrets",
+      "ok": true,
+      "detail": "secret removed"
+    }
+  ]
+}
