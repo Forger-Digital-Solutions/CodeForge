@@ -1,0 +1,55 @@
+{
+  "schema": "r27-memory-evidence-1",
+  "status": "R27_MISSION_MEMORY_FRESHNESS_AND_BOUNDARIES_DETERMINISTICALLY_PROVEN",
+  "paidInferenceUsed": false,
+  "evidenceBoundary": "Deterministic local repository, real local-Git worktree, temporary SQLite, and synthetic retrieval-corpus tests only. No cloud model, external account, or production task corpus was used.",
+  "problemsRecovered": [
+    "Mission memory marked pre-drift milestone summaries stale on the durable record but still delivered their text to the replanner, making freshness advisory rather than enforced at the prompt boundary."
+  ],
+  "change": {
+    "staleMemoryProjection": "projectMissionMemoryForPrompt omits entries with stale:true and emits omittedStaleMilestoneSummaryCount. The durable record retains the stale entry for audit; initial planning and replanning receive the projection rather than the raw memory object."
+  },
+  "deterministicValidation": {
+    "missionMemoryState": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/mission-state.test.ts --reporter=verbose",
+      "filesPassed": 1,
+      "testsPassed": 12,
+      "testsFailed": 0,
+      "approxWallTimeMs": 1140,
+      "coverage": ["16 KB serialized cap", "deterministic shedding", "revision staleness marking", "stale-summary prompt omission", "omission count", "deterministic byte reduction"]
+    },
+    "missionDriftAndContradiction": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/mission-acceptance.test.ts --reporter=verbose",
+      "filesPassed": 1,
+      "testsPassed": 4,
+      "testsFailed": 0,
+      "approxWallTimeMs": 98870,
+      "coverage": ["real repository contradiction invalidates an assumption and replans", "external target drift retains stale memory only durably", "replanner receives stale-summary omission count", "final acceptance remains gated"]
+    },
+    "memoryRetrievalDurabilityAndSecurity": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/mission-security.test.ts packages/server/test/mission-recovery.test.ts packages/server/test/mission-steering.test.ts packages/repo-intelligence/test/r21-retrieval-quality.test.ts packages/context/test/context-pack.test.ts --reporter=verbose",
+      "filesPassed": 5,
+      "testsPassed": 23,
+      "testsFailed": 0,
+      "approxWallTimeMs": 130190,
+      "coverage": ["private-context exclusion", "hostile-memory/authority resistance", "durable recovery", "human steering", "seeded retrieval recall/rank and freshness", "context-window budgets", "external-HEAD context refresh"]
+    },
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc -b packages/server packages/repo-intelligence packages/context",
+      "passed": true
+    }
+  },
+  "proven": [
+    "Mission memory is one-mission, structured, bounded to 16,000 serialized bytes, and retains only public summaries, evidence references, contracts, risks, failures, and steering summaries rather than agent transcripts or private context.",
+    "A revision change labels old milestone summaries stale in durable memory while projectMissionMemoryForPrompt removes their text from planning input and records how many were omitted.",
+    "Repository evidence that contradicts a planner assumption causes runtime-owned assumption invalidation and a replan; a model cannot self-certify acceptance or rewrite the mission intent.",
+    "The seeded repository corpus achieved full expected-file coverage in its top-15 delivered retrieval window, rejects generated/vendor contamination, and refreshes a renamed symbol without leaving its stale target record leading the result.",
+    "Context assembly respects tested 16K/32K/64K/128K budgets and protects private role context across mission recovery and steering flows."
+  ],
+  "notProven": [
+    "Cross-mission or cross-session task memory, repository memory, execution history, or project/user preferences. Those capabilities are not implemented; mission memory is deliberately scoped to one mission.",
+    "Retrieval relevance on a real production task corpus, user-specific preference usefulness, or provider-token cost. The byte cap and synthetic corpus are deterministic proxies, not production measurements.",
+    "Mechanical exclusion of every unversioned memory field after repository drift. The enforced projection currently rejects only explicitly revisioned stale milestone summaries; remaining public state stays untrusted and cannot grant completion authority."
+  ],
+  "requiredNextEvidence": "Before adding persistent cross-mission memory, define explicit user ownership, retention, deletion, retrieval relevance, contradiction-resolution, and prompt-cost contracts. Validate them on an authorized anonymized task corpus with a held-out retrieval set and retain redacted route, context-byte, verification, and completion-gate receipts."
+}

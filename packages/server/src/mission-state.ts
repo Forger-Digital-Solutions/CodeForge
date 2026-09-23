@@ -237,6 +237,11 @@ export interface MissionMemory {
   compactions: number;
 }
 
+export interface MissionMemoryPromptView extends Omit<MissionMemory, "milestoneSummaries"> {
+  milestoneSummaries: MissionMemory["milestoneSummaries"];
+  omittedStaleMilestoneSummaryCount: number;
+}
+
 export interface MissionEvent {
   type: string;
   sessionId: string;
@@ -386,6 +391,16 @@ export function compactMissionMemory(memory: MissionMemory): MissionMemory {
 /** Marks memory entries whose captured repository revision no longer matches reality. */
 export function markMemoryStaleness(memory: MissionMemory, currentRevision: string): MissionMemory {
   return { ...memory, milestoneSummaries: memory.milestoneSummaries.map((entry) => ({ ...entry, stale: entry.contextRevision !== currentRevision })) };
+}
+
+/** Stale milestone summaries are historical records, not prompt facts for a new plan. */
+export function projectMissionMemoryForPrompt(memory: MissionMemory): MissionMemoryPromptView {
+  const milestoneSummaries = memory.milestoneSummaries.filter((entry) => entry.stale !== true);
+  return {
+    ...memory,
+    milestoneSummaries,
+    omittedStaleMilestoneSummaryCount: memory.milestoneSummaries.length - milestoneSummaries.length,
+  };
 }
 
 export interface BudgetCheck { ok: boolean; code?: MissionErrorCode; detail?: string; warnings: string[] }

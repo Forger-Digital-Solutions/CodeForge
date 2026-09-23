@@ -3,7 +3,7 @@ import { createSessionPersistence } from "@codeforge/sessions";
 import {
   DEFAULT_MISSION_BUDGET, MISSION_ERRORS, MISSION_MEMORY_LIMITS, MissionStore,
   checkMissionBudget, compactMissionMemory, diffMissionPlans, emptyMissionMemory, emptyMissionUsage,
-  markMemoryStaleness, missionIntentDigest, replanFingerprint, unprovenMandatoryCriteria,
+  markMemoryStaleness, missionIntentDigest, projectMissionMemoryForPrompt, replanFingerprint, unprovenMandatoryCriteria,
   validateMilestoneRoadmap, verifyMissionIntent,
   type AutonomousMission, type MissionIntent, type MissionMilestone,
 } from "../src/mission-state.js";
@@ -110,6 +110,21 @@ describe("CF-09 mission memory stays bounded", () => {
     const memory = compactMissionMemory({ ...emptyMissionMemory(), milestoneSummaries: [{ milestoneId: "m1", summary: "done", revision: "rev1", contextRevision: "rev1" }] });
     expect(markMemoryStaleness(memory, "rev1").milestoneSummaries[0]!.stale).toBe(false);
     expect(markMemoryStaleness(memory, "rev2").milestoneSummaries[0]!.stale).toBe(true);
+  });
+
+  it("omits stale milestone summaries from planning context while retaining a count", () => {
+    const memory = {
+      ...emptyMissionMemory(),
+      milestoneSummaries: [
+        { milestoneId: "old", summary: "stale claim", revision: "rev1", contextRevision: "rev1", stale: true },
+        { milestoneId: "current", summary: "current claim", revision: "rev2", contextRevision: "rev2", stale: false },
+      ],
+    };
+    const projected = projectMissionMemoryForPrompt(memory);
+    expect(projected.milestoneSummaries).toEqual([memory.milestoneSummaries[1]]);
+    expect(projected.omittedStaleMilestoneSummaryCount).toBe(1);
+    expect(JSON.stringify(projected)).not.toContain("stale claim");
+    expect(Buffer.byteLength(JSON.stringify(projected), "utf8")).toBeLessThan(Buffer.byteLength(JSON.stringify(memory), "utf8"));
   });
 });
 

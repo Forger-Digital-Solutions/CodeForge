@@ -19,7 +19,7 @@ import { evaluateAutonomousCompletion } from "./completion-authority.js";
 import {
   BUDGET_WARNING_RATIO, DEFAULT_MISSION_BUDGET, MISSION_ERRORS, MissionStore,
   checkMissionBudget, compactMissionMemory, diffMissionPlans, emptyMissionMemory, emptyMissionUsage,
-  markMemoryStaleness, missionIntentDigest, replanFingerprint, unprovenMandatoryCriteria, validateMilestoneRoadmap, verifyMissionIntent,
+  markMemoryStaleness, missionIntentDigest, projectMissionMemoryForPrompt, replanFingerprint, unprovenMandatoryCriteria, validateMilestoneRoadmap, verifyMissionIntent,
   type AutonomousMission, type AutonomousMissionResult, type EvidenceRef,
   type MissionAssumption, type MissionBudget, type MissionEvent, type MissionIntent, type MissionMilestone,
   type MissionPlanVersion, type MissionSteering, type MissionWaveResult, type ReplanTrigger, type RetainedAutonomousWork,
@@ -364,7 +364,7 @@ export class MissionSupervisor {
     const run = await this.options.agentRuntime.executeAgentRun({
       runId: `${mission.id}:plan:1`, agentId: "mission-planner", role: "mission-planner",
       goal: `Mission roadmap for: ${mission.originalGoal}`,
-      taskPlan: JSON.stringify({ missionIntent: this.publicIntent(mission), missionMemory: mission.memory }),
+      taskPlan: JSON.stringify({ missionIntent: this.publicIntent(mission), missionMemory: projectMissionMemoryForPrompt(mission.memory) }),
       workspaceId: workspace.id, workspacePath: workspace.rootPath,
       permissions: { read: true, search: true, write: false, executeCommand: false, network: false },
       structuredOutput: "mission_plan", signal,
@@ -482,7 +482,7 @@ export class MissionSupervisor {
         currentPlan: mission.milestones.map((milestone) => ({ id: milestone.id, title: milestone.title, objective: milestone.objective, dependencies: milestone.dependencies, acceptanceCriteria: milestone.acceptanceCriteria, verificationCommands: milestone.verificationCommands, status: milestone.status })),
         completedEvidence: mission.milestones.filter((milestone) => milestone.status === "completed").map((milestone) => ({ id: milestone.id, revision: milestone.resultRevision, checkpointId: milestone.checkpointId })),
         assumptions: mission.assumptions.map((assumption) => ({ id: assumption.id, statement: assumption.statement, status: assumption.status })),
-        missionMemory: mission.memory,
+        missionMemory: projectMissionMemoryForPrompt(mission.memory),
         trigger,
       }),
       workspaceId: workspace.id, workspacePath: workspace.rootPath,
