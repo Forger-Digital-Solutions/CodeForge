@@ -347,14 +347,16 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
         "packages/mcp client+registry+types, 2 test files",
-        "packages/mcp/test — 19 real-protocol tests (official SDK, stdio transport, fixture server, crash→dead, trust profiles, malformed descriptors)"
+        "packages/mcp/test — 19 real-protocol tests (official SDK, stdio transport, fixture server, crash→dead, trust profiles, malformed descriptors)",
+        "benchmarks/r28/mcp-live-check.mjs + mcp-fixture-server.mjs — 16/16 live checks",
+        "docs/evidence/r28-capability-completion/R28-MCP-LIVE-EVIDENCE.json"
       ],
-      "note": "Governed MCP client (R22): real MCP protocol over official SDK, stdio + streamable-HTTP, bounded timeouts/buffers, sanitized child env, schema-validated descriptors, dead-server state. Config: ~/.codeforge/external-tools.json or CODEFORGE_EXTERNAL_TOOLS_CONFIG → server composition → mcp__* bridged tools through TaskAuthority. End-to-end wiring exists but no live agent-driven MCP call proven yet.",
+      "note": "Governed MCP client (R22): real MCP protocol over official SDK, stdio + streamable-HTTP, bounded timeouts/buffers, sanitized child env, schema-validated descriptors, dead-server state. R28 live: real SDK server child over stdio — handshake, 4-tool enumeration, mcp__* namespaced bridging, effect override (echo→network_read) + default external + deny-effect exclusion, real echo/add/mutate calls with receipts, disabled server refused without spawn, crashed server transitioned to dead and post-mortem calls fail honestly, closeAll teardown.",
       "gaps": [
         "live agent-driven MCP tool call through workflow",
         "packaged MCP lifecycle",

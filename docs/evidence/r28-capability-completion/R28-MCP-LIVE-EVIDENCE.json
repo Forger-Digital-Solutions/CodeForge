@@ -1,0 +1,87 @@
+{
+  "schema": "r28-mcp-live-check-1",
+  "recordedAt": "2026-09-23T16:21:12.987Z",
+  "transport": "stdio (real @modelcontextprotocol/sdk 1.30 server child)",
+  "results": [
+    {
+      "name": "enabled server connects + enumerates tools",
+      "ok": true,
+      "detail": "4 tools"
+    },
+    {
+      "name": "disabled server refuses without spawning",
+      "ok": true,
+      "detail": "MCP_SERVER_DISABLED"
+    },
+    {
+      "name": "server state connected with tool count",
+      "ok": true,
+      "detail": "{\"name\":\"r28-fixture\",\"status\":\"connected\",\"connectedAt\":\"2026-09-23T16:21:10.963Z\",\"serverVersion\":\"r28-mcp-fixture@1.0.0\",\"toolCount\":4}"
+    },
+    {
+      "name": "namespaced tool definitions bridged",
+      "ok": true,
+      "detail": "mcp__r28-fixture__add,mcp__r28-fixture__echo,mcp__r28-fixture__mutate"
+    },
+    {
+      "name": "deny-effect tool never advertised",
+      "ok": true,
+      "detail": "crash excluded"
+    },
+    {
+      "name": "effect override honored (echo→network_read)",
+      "ok": true,
+      "detail": "network_read"
+    },
+    {
+      "name": "default effect applied (mutate→external)",
+      "ok": true,
+      "detail": "external"
+    },
+    {
+      "name": "real call: echo returns server output",
+      "ok": true,
+      "detail": "<<<UNTRUSTED_DATA source=\"MCP server r28-fixture\">>>\n{\"receipt\":{\"serverName\":\"r28-fixture\",\"toolNam"
+    },
+    {
+      "name": "call receipt carries effect + server",
+      "ok": true,
+      "detail": "receipt ok"
+    },
+    {
+      "name": "real call: add computes",
+      "ok": true,
+      "detail": "<<<UNTRUSTED_DATA source=\"MCP server r28-fixture\">>>\n{\"receipt\":{\"serverName\":\"r"
+    },
+    {
+      "name": "real call: stateful mutate increments",
+      "ok": true,
+      "detail": "<<<UNTRUSTED_DATA source=\"MCP server r28-fixture\">>>\n{\"receipt\":{\"serverName\":\"r"
+    },
+    {
+      "name": "non-MCP tools fall through",
+      "ok": true,
+      "detail": "undefined for foreign tool"
+    },
+    {
+      "name": "unknown tool errors honestly",
+      "ok": true,
+      "detail": "No connected MCP server provides mcp__r28-fixture__nope"
+    },
+    {
+      "name": "crashed server transitions out of connected",
+      "ok": true,
+      "detail": "status=dead"
+    },
+    {
+      "name": "call to dead server fails honestly",
+      "ok": true,
+      "detail": "MCP server \"r28-fixture2\" is not connected (dead)"
+    },
+    {
+      "name": "closeAll tears down sessions",
+      "ok": true,
+      "detail": "status=dead"
+    }
+  ]
+}

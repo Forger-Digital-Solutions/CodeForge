@@ -55,7 +55,7 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | WSL | ✔ | ✔ 12/12 | ✔ | ✔ host | ✗ | ✗ | packaged proof, in-workflow routing, desktop surface |
 | Git | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | packaged dirty/conflict/worktree/stash flows |
 | GitHub | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live OAuth + safe test-repo PR/CI cycle |
-| MCP | ✔ | ✔ | ✗ | ✗ | ✗ | ✗ | real server lifecycle + permission gating |
+| MCP | ✔ | ✔ 19+16 | ✔ | ✔ host 16/16 | ✗ | ✗ | agent-routed MCP call in workflow, packaged lifecycle |
 | Plugins | ✔ | ✔ | ✗ | ✗ | ✗ | ✗ | contract + working integration lifecycle |
 | Extensions | ✔ | ✔ | ✔ | ✗ | ✔ | ✗ | isolation, version compat, update behavior |
 | Settings | ✔ | ✔ | ✔ | ✗ | ✔ | ✗ | per-setting functional audit + migration |
