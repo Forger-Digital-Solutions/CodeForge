@@ -1,0 +1,41 @@
+{
+  "schema": "r27-ux-evidence-1",
+  "status": "R27_DESKTOP_UX_DETERMINISTICALLY_PROVEN_CURRENT_PACKAGE_NOT_PROVEN",
+  "paidInferenceUsed": false,
+  "evidenceBoundary": "Renderer/component and desktop-main deterministic tests plus TypeScript builds. A local packaged artifact exists but predates the current source revision and was not launched or rebuilt in this audit. No provider, browser automation, or external account was used.",
+  "deterministicValidation": {
+    "ui": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/ui/test --reporter=dot",
+      "filesPassed": 24,
+      "testsPassed": 324,
+      "testsFailed": 0,
+      "approxWallTimeMs": 5800,
+      "coverage": ["grouped activity with failed-operation visibility", "persistent accessible composer", "canonical run lifecycle", "approval queue recovery/idempotency", "workflow progress", "command history", "changed-file and verification projections", "subagent hierarchy", "failure and final-completion presentation"]
+    },
+    "desktop": {
+      "command": "node node_modules/vitest/vitest.mjs run apps/desktop/test --reporter=dot",
+      "filesPassed": 40,
+      "testsPassed": 344,
+      "testsFailed": 0,
+      "approxWallTimeMs": 6160,
+      "coverage": ["renderer/main bridges", "settings and approval messaging", "model selector boundaries", "packaging/security source gates", "runtime ownership and port isolation", "loopback control-plane trust"]
+    },
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc -b packages/ui apps/desktop",
+      "passed": true
+    }
+  },
+  "proven": [
+    "Adjacent successful tool calls are grouped without hiding an individual failed operation; terminal runs reconcile orphaned in-progress tool, worker, and approval rows to a truthful cancelled/interrupted state.",
+    "The composer remains mounted below the task surface, supports Agent/Chat mode, accessible Enter/Shift+Enter/IME behavior, and lifecycle-derived working or waiting status rather than a stale raw running flag.",
+    "Current plan/state is rendered through WorkflowProgress and the canonical lifecycle; the inspector projects commands, changed files, subagents, approvals, ForgeVerify evidence, repairs, completion decision, and terminal failure detail from durable events/work items.",
+    "Approval state is an ordered, idempotent queue. Reload hydration adopts the server's authoritative pending list, and resolving one approval cannot erase another.",
+    "Executed command history is visible as a Commands panel with status, duration, and bounded output. This is honestly named command history, not an interactive terminal."
+  ],
+  "notProven": [
+    "The current source revision running as a rebuilt/installed Windows package. The available local package was built on 2026-09-21, before this audit's 2026-09-23 source state.",
+    "A dedicated live browser session panel or interactive PTY terminal. Browser actions appear only as governed tool activity, and the desktop intentionally presents completed/running command history rather than a terminal emulator.",
+    "Human usability, accessibility with assistive technology, responsive layout, or visual correctness on an actual packaged Windows window. Static markup and deterministic state transitions are not user-study evidence."
+  ],
+  "requiredNextEvidence": "Build an isolated fresh Windows package from the current commit, run its full/interruption/recovery smoke suite against a temporary smoke root, and perform a manual accessibility/responsive pass. Add a dedicated browser or terminal presentation only after defining the user-visible state, redaction, lifecycle, and approval contracts for those surfaces."
+}
