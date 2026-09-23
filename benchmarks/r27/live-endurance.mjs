@@ -97,7 +97,19 @@ async function runVerifier(command, cwd, timeoutMs) {
   }
 }
 
-function createBoundedAdapter(inner, maxRequests, records) {
+export function createBoundedAdapter(inner, maxRequests, maxOutputTokens, records) {
+  const rejectAfterOutputCapViolation = () => {
+    if (records.some((record) => record.outputCapExceeded === true)) {
+      throw new ProviderError("R27 live run stopped before another dispatch because the provider reported output above the configured ceiling.", "R27_LIVE_OUTPUT_CAP");
+    }
+  };
+  const observeOutput = (record, outputTokens) => {
+    record.outputTokens = outputTokens;
+    if (typeof outputTokens === "number" && outputTokens > maxOutputTokens) {
+      record.outputCapExceeded = true;
+      record.outcome = "output_cap_exceeded";
+    }
+  };
   const guarded = {
     providerId: inner.providerId,
     isTestProvider: inner.isTestProvider,
@@ -108,16 +120,17 @@ function createBoundedAdapter(inner, maxRequests, records) {
       ? (modelId) => inner.getPromptCacheCapability(modelId)
       : undefined,
     async chat(request) {
+      rejectAfterOutputCapViolation();
       if (records.length >= maxRequests) throw new ProviderError("R27 live request ceiling reached before dispatch", "R27_LIVE_REQUEST_CAP");
       const startedAt = Date.now();
-      const record = { requestNumber: records.length + 1, kind: "chat", elapsedMs: 0, firstUsefulEventMs: null, inputTokens: null, outputTokens: null, outcome: "started" };
+      const record = { requestNumber: records.length + 1, kind: "chat", elapsedMs: 0, firstUsefulEventMs: null, inputTokens: null, outputTokens: null, outputCapExceeded: false, outcome: "started" };
       records.push(record);
       try {
         const response = await inner.chat(request);
         record.elapsedMs = Date.now() - startedAt;
         record.inputTokens = response.usage?.inputTokens ?? null;
-        record.outputTokens = response.usage?.outputTokens ?? null;
-        record.outcome = "completed";
+        observeOutput(record, response.usage?.outputTokens ?? null);
+        if (record.outcome === "started") record.outcome = "completed";
         return response;
       } catch (error) {
         record.elapsedMs = Date.now() - startedAt;
@@ -126,9 +139,10 @@ function createBoundedAdapter(inner, maxRequests, records) {
       }
     },
     async *streamChat(request, signal) {
+      rejectAfterOutputCapViolation();
       if (records.length >= maxRequests) throw new ProviderError("R27 live request ceiling reached before dispatch", "R27_LIVE_REQUEST_CAP");
       const startedAt = Date.now();
-      const record = { requestNumber: records.length + 1, kind: "stream", elapsedMs: 0, firstUsefulEventMs: null, inputTokens: null, outputTokens: null, outcome: "started" };
+      const record = { requestNumber: records.length + 1, kind: "stream", elapsedMs: 0, firstUsefulEventMs: null, inputTokens: null, outputTokens: null, outputCapExceeded: false, outcome: "started" };
       records.push(record);
       try {
         for await (const event of inner.streamChat(request, signal)) {
@@ -137,12 +151,12 @@ function createBoundedAdapter(inner, maxRequests, records) {
           }
           if (event.type === "usage") {
             record.inputTokens = event.usage.inputTokens ?? null;
-            record.outputTokens = event.usage.outputTokens ?? null;
+            observeOutput(record, event.usage.outputTokens ?? null);
           }
           yield event;
         }
         record.elapsedMs = Date.now() - startedAt;
-        record.outcome = "completed";
+        if (record.outcome === "started") record.outcome = "completed";
       } catch (error) {
         record.elapsedMs = Date.now() - startedAt;
         record.outcome = error instanceof Error ? error.name : "error";
@@ -218,7 +232,7 @@ async function main() {
   await cp(taskRoot, taskCopy, { recursive: true, force: false, errorOnExist: true });
 
   const requestRecords = [];
-  const adapter = createBoundedAdapter(inner, maxRequests, requestRecords);
+  const adapter = createBoundedAdapter(inner, maxRequests, maxOutputTokens, requestRecords);
   const catalog = new InMemoryProviderCatalog();
   catalog.register(adapter);
   const firewall = new ForgeZero();
@@ -363,7 +377,9 @@ async function main() {
   process.exitCode = receipt.runtime.status === "completed" && receipt.verification.allPassed ? 0 : 2;
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
+}

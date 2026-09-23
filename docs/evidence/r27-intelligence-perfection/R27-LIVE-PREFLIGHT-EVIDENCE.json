@@ -43,7 +43,7 @@
     "taskCorpusDigest": "3eeaff8e7629819d471959fdf4d97a0c6282a991169f5ad5a4b65ee6bfb9d53b",
     "workspace": "temporary isolated fixture only; hidden verifier materialized after the model stops",
     "maximumRequestsPerRun": 4,
-    "maximumOutputTokensPerRequest": 256,
+    "requestedMaximumOutputTokensPerRequest": 256,
     "maximumContextTokens": 12000,
     "maximumWallClockMs": 90000,
     "commandExecutionAllowed": false,
@@ -66,7 +66,7 @@
       "file": "R27-LIVE-RUNS/r27-live-9413803e-59f0-4141-abaa-490a92e60294.json",
       "inferenceRequests": 4,
       "status": "LIVE_RUNTIME_COMPLETED_HARNESS_VERIFIER_PATH_INVALID",
-      "finding": "Actual runtime completed, made three successful tool calls, and changed src/math.js. The hidden verifier was initially placed at the wrong fixture-relative path; the harness was corrected before the next run."
+      "finding": "Actual runtime completed, made three successful tool calls, and changed src/math.js. The hidden verifier was initially placed at the wrong fixture-relative path; the harness was corrected before the next run. The provider also reported 270 and 321 output tokens on individual requests despite the requested 256-token limit; the later harness revision halts before any subsequent dispatch after this condition."
     },
     {
       "file": "R27-LIVE-RUNS/r27-live-29f6bc32-f1dd-45e3-901d-4eb43d5e6745.json",
@@ -84,6 +84,7 @@
     ],
     "doesNotProve": [
       "A completion-gated CodeForge workflow success.",
+      "A provider-enforced per-response output ceiling: earlier receipts show the route reporting two outputs above the requested value; the revised harness prevents a following dispatch but has not yet re-proven provider-side enforcement.",
       "Endurance, sustained availability, quota remaining, account plan entitlement, cost beyond the live catalog's zero-unit declaration, or multi-user behavior.",
       "ForgeVerify workflow execution, 8-Bit adaptive routing, ForgeGreen A/B benefit, packaged desktop behavior, or hardware performance."
     ]

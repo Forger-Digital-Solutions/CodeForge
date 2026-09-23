@@ -16,7 +16,7 @@
       "packaged": "NOT_PROVEN",
       "hardware": "NOT_PROVEN",
       "evidence": ["R27-ENDURANCE-EVIDENCE.json", "R27-SINGLE-USER-PERFORMANCE-EVIDENCE.json", "R27-LIVE-PREFLIGHT-EVIDENCE.json"],
-      "note": "A bounded live AgentRuntime/tool/context slice reached a hidden-verifier-passing isolated edit. Completion-gated workflow success and endurance remain unproven."
+      "note": "A bounded live AgentRuntime/tool/context slice reached a hidden-verifier-passing isolated edit. The harness now blocks every following dispatch after a provider-reported output-cap breach; provider-side per-response enforcement, completion-gated workflow success, and endurance remain unproven."
     },
     {
       "name": "ForgeGreen",
@@ -220,6 +220,7 @@
   "verdict": "R27_INTELLIGENCE_IMPROVED_WITH_BOUNDED_LIVE_RUNTIME_PROOF_AND_BLOCKERS",
   "nextRequiredEvidence": [
     "A separately completion-gated live workflow whose terminal completed state passes evaluateCompletion; this bounded AgentRuntime harness deliberately does not invoke it.",
+    "A provider route that demonstrably enforces the requested per-response output ceiling before output is generated; the current guard can only prevent a following dispatch after a reported breach.",
     "A representative sustained live run only after the completion-gated slice is successful; current four-turn proof is not endurance.",
     "A clean-source Windows package from the current source commit, exact-byte audit, and successful packaged smoke/dogfood on a host where the sandboxed renderer launches.",
     "Machine-profiled hardware measurements and a second-device comparison when an accessible device exists."
