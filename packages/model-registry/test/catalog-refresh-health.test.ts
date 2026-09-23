@@ -11,7 +11,6 @@ import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import {
   FreeCloudService,
   NormalizedModelRegistry,
-  createFreeModelCatalogRefresh,
   type ProviderConnectionState,
 } from "../src/index.js";
 

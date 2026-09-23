@@ -41,7 +41,7 @@ class RecoveryProvider implements ProviderAdapter {
       yield { type: "finish", finishReason: "stop" }; return;
     }
     if (system.includes("CodeForge Coder")) {
-      const id = Object.keys(WORKSTREAM_FILES).find((candidate) => all.includes(`"workstream":"${candidate}"`)) ?? "alpha";
+      const id = Object.keys(WORKSTREAM_FILES).find((candidate) => all.includes(`Implement the ${candidate} module`)) ?? "alpha";
       if (!request.messages.some((message) => message.role === "tool")) {
         yield { type: "tool_call_started", toolCallId: `write-${id}`, toolName: "write_file" };
         yield { type: "tool_call_completed", toolCallId: `write-${id}`, toolName: "write_file", arguments: JSON.stringify({ path: WORKSTREAM_FILES[id], content: `export const ${id} = '${id}';\n` }) };

@@ -73,7 +73,7 @@ class ScopedSteerProvider implements ProviderAdapter {
       yield { type: "finish", finishReason: "stop" }; return;
     }
     if (system.includes("CodeForge Coder")) {
-      const id = all.includes('"workstream":"alpha"') ? "alpha" : "beta";
+      const id = all.includes("Create the alpha partial module") ? "alpha" : "beta";
       const role = "coder" as const;
       const firstRound = !request.messages.some((message) => message.role === "tool");
       if (firstRound) {

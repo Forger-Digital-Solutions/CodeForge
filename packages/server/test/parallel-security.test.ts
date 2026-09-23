@@ -48,7 +48,7 @@ class PrivacyProvider implements ProviderAdapter {
   private classify(system: string, all: string): string {
     if (system.includes("CodeForge Planner")) return "planner";
     if (system.includes("CodeForge Reviewer")) return all.includes("Review synthesized implementation") ? "reviewer:global" : all.includes("Review workstream alpha") ? "reviewer:alpha" : "reviewer:beta";
-    if (system.includes("CodeForge Coder")) return all.includes('"workstream":"alpha"') ? "coder:alpha" : "coder:beta";
+    if (system.includes("CodeForge Coder")) return all.includes("Implement the user API module") ? "coder:alpha" : "coder:beta";
     return "other";
   }
   async *streamChat(request: ChatRequest): AsyncIterable<StreamEvent> {

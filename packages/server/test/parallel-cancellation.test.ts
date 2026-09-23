@@ -68,7 +68,7 @@ class CancellationProvider implements ProviderAdapter {
       yield { type: "finish", finishReason: "stop" }; return;
     }
     if (system.includes("CodeForge Coder")) {
-      const id = all.includes('"workstream":"alpha"') ? "alpha" : all.includes('"workstream":"beta"') ? "beta" : "gamma";
+      const id = all.includes("Create the alpha partial module") ? "alpha" : all.includes("Create the beta partial module") ? "beta" : "gamma";
       if (!request.messages.some((message) => message.role === "tool")) {
         await this.barrier.enter(id);
         const target = id === "alpha" ? { path: ALPHA_FILE, content: ALPHA_CONTENT } : { path: BETA_FILE, content: BETA_CONTENT };
