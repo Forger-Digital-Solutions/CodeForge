@@ -64,7 +64,7 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | Permissions | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live 32/32 ToolBroker penetration (role ceilings, all escape forms, sensitive denylist) — packaged IPC spoof remains |
 | Diagnostics | ✔ | ✔ | ✗ | ✗ | ✗ | ✗ | bundle redaction proof |
 | Installer | ✔ built | ✔ | ✗ | ✗ | ✗ | ✗ | install/upgrade/uninstall/retention flows |
-| Recovery | ✔ | ✔ | ✔ | ✗ | ✔ | ✗ | mid-operation interruptions, stale receipts |
+| Recovery | ✔ | ✔ | ✔ | ✔ | ✔ | ✗ | live 23/23 continuation state machine + crash repair + lease contention — packaged mid-op kill remains |
 | Provider Mgmt | ✔ | ✔ | ✔ | ✔ preflight | ✔ | ✗ | sustained multi-route health |
 | Endurance | ✔ | ✔ | ✔ 79/79 | ✗ | ✗ | ✗ | all live/packaged levels |
 | Hardware Profile | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | real measurements; 2nd device if available |

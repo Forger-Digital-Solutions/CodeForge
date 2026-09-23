@@ -526,18 +526,19 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "PACKAGED_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
         "R27-ENDURANCE-EVIDENCE.json",
-        "recover smoke PASS: electron_restart_failed_safely/no_approval_replay/fresh_task"
+        "recover smoke PASS: electron_restart_failed_safely/no_approval_replay/fresh_task",
+        "recovery-live-check.mjs=23/23 PASS — R28-RECOVERY-LIVE-EVIDENCE.json"
       ],
-      "note": "Packaged interrupt+recover proven: failed safely, no approval replay, fresh task accepted. Interruption mid-agent-operation in packaged product pending.",
+      "note": "Packaged interrupt+recover proven: failed safely, no approval replay, fresh task accepted. R28 live: real DurableAgentContinuationStore over SQLite — full suspended-tool-boundary state machine (prepared→awaiting_worker→result_available→result_consumed→advanced), crash-retry dedup, identity-conflict refusal, binding enforcement (issue/result/observation), crash-window repair (rebindPrepared), resume-lease contention (foreign owner blocked, same-owner retry reuses persisted observation — no double-append), block/cancel terminals, restart durability. Honest semantic recorded: result_consumed+advanced is NOT in the cancel skip-list — a fully-resumed continuation can still be flipped to cancelled.",
       "gaps": [
-        "interruptions at each workflow stage",
+        "interruptions at each workflow stage (packaged mid-agent-operation kill)",
         "stale receipt invalidation",
-        "safe continuation"
+        "cancel semantics on consumed+advanced continuations — recorded, needs product decision"
       ]
     },
     {

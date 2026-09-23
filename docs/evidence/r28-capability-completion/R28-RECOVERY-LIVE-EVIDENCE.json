@@ -1,0 +1,122 @@
+{
+  "schema": "r28-recovery-live-check-1",
+  "recordedAt": "2026-09-23T16:46:26.782Z",
+  "surface": "real DurableAgentContinuationStore over SqliteSessionPersistence — full suspended-tool-boundary state machine, dedup, binding enforcement, crash-window repair, lease contention, terminals, restart durability",
+  "results": [
+    {
+      "name": "continuation created prepared",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "identical re-create deduped (crash-retry safe)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "conflicting identity on retry → refused",
+      "ok": true,
+      "detail": "Continuation identity conflicts with a different suspended tool boundary"
+    },
+    {
+      "name": "issue without durable action → refused",
+      "ok": true,
+      "detail": "Continuation action is not durably issued with the required binding"
+    },
+    {
+      "name": "issued → awaiting_worker",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "re-issue idempotent (still awaiting)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "result without terminal action → refused",
+      "ok": true,
+      "detail": "Continuation result is not durably available"
+    },
+    {
+      "name": "terminal result → result_available + ready",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "resume claim → result_consumed + leased",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "lease contention: second owner blocked",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "same-owner crash retry reuses persisted observation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "mismatched observation binding → refused",
+      "ok": true,
+      "detail": "Continuation observation binding does not match the pending tool"
+    },
+    {
+      "name": "resume advanced → terminal",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "claim after advance → refused",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "advanced state stable after foreign advance attempt",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "crash-window repair → awaiting_worker",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rebind on non-prepared → no-op returns item",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "block → terminal blocked + advanced",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cancelForTurn cancels live continuation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cancel skips blocked terminal only",
+      "ok": true,
+      "detail": "cancelled=1"
+    },
+    {
+      "name": "consumed+advanced continuation is cancellable (recorded semantics)",
+      "ok": true,
+      "detail": "cancelled"
+    },
+    {
+      "name": "restart: continuation record + observation durable",
+      "ok": true,
+      "detail": "cancelled"
+    },
+    {
+      "name": "findAwaitingAction honest after restart (not awaiting)",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}
