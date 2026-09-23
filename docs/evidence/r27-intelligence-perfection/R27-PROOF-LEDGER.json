@@ -23,7 +23,7 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "LIVE_PROVEN",
+      "live": "NOT_PROVEN",
       "packaged": "NOT_PROVEN",
       "hardware": "NOT_PROVEN",
       "evidence": ["R27-FORGREEN-AB-EVIDENCE.json", "R27-FORGREEN-RUNTIME-DETERMINISTIC/forgegreen-ab.json"],
@@ -60,7 +60,7 @@
       "packaged": "NOT_PROVEN",
       "hardware": "NOT_PROVEN",
       "evidence": ["R27-FORGEVERIFY-EVIDENCE.json", "ea3ad8b"],
-      "note": "Windows timeout/process-tree cleanup was revalidated locally; exact current packaged bytes are not yet built."
+      "note": "Windows timeout/process-tree cleanup was revalidated locally; current packaged bytes exist and passed archive audits, but renderer startup failed before ForgeVerify could be exercised in the package."
     },
     {
       "name": "Subagents",
@@ -89,7 +89,7 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "hardware": "NOT_PROVEN",
       "evidence": ["R27-CONTEXT-EVIDENCE.json", "R27-SINGLE-USER-PERFORMANCE-EVIDENCE.json", "R27-LIVE-PREFLIGHT-EVIDENCE.json", "f9c0273"],
@@ -214,10 +214,16 @@
       "packaged": "BLOCKED",
       "hardware": "BLOCKED",
       "evidence": ["R26-DESKTOP-E2E.md (historical)", "R27-UX-EVIDENCE.json", "R27-PACKAGED-DOGFOOD-EVIDENCE.json"],
-      "note": "Fresh production-stamped installer, portable, and archive bytes were built from f197385 and audited, but the identity is dirty because of the protected user diff. Both the new and an R9 control package hit host renderer launch-failed:49, so smoke and hardware proof are blocked without attributing an unproven source cause."
+      "note": "Fresh production-stamped installer, portable, and archive bytes were built from ffa2c21 and audited, but the identity is dirty because of the protected user diff. Both the current-source build and an R9 control package hit renderer launch-failed:49 on this host, so smoke and hardware proof are blocked without attributing an unproven source cause."
     }
   ],
-  "verdict": "R27_INTELLIGENCE_IMPROVED_WITH_BOUNDED_LIVE_RUNTIME_PROOF_AND_BLOCKERS",
+  "verdict": "R27_INTELLIGENCE_IMPROVED_WITH_BLOCKERS",
+  "currentCertifiedSourceState": {
+    "id": "3c5e635f4981a8e8955bef25e22c851ef13c9a32e9c0507b1569100f69f92e1e",
+    "document": "../../codeforge-forgegreen-certified-source-state.json",
+    "recertificationScript": "../../../scripts/r27-recertify-source-state.mjs"
+  },
+  "regressionEvidence": "R27-REGRESSION-EVIDENCE.json",
   "nextRequiredEvidence": [
     "A separately completion-gated live workflow whose terminal completed state passes evaluateCompletion; this bounded AgentRuntime harness deliberately does not invoke it.",
     "A provider route that demonstrably enforces the requested per-response output ceiling before output is generated; the current guard can only prevent a following dispatch after a reported breach.",

@@ -1,6 +1,6 @@
 # R27 Proof Ledger
 
-Status: `R27_INTELLIGENCE_IMPROVED_WITH_BOUNDED_LIVE_RUNTIME_PROOF_AND_BLOCKERS`
+Status: `R27_INTELLIGENCE_IMPROVED_WITH_BLOCKERS`
 
 | Subsystem | Deterministic | Live | Packaged | Hardware |
 | --- | --- | --- | --- | --- |
@@ -24,3 +24,6 @@ The machine-readable [proof ledger](R27-PROOF-LEDGER.json) carries the complete 
 and source references. [The live preflight receipt](R27-LIVE-PREFLIGHT-EVIDENCE.json) proves only
 a tightly bounded route/runtime slice; it does not promote that slice into completion-gated
 workflow success, endurance, current-packaged, or hardware claims.
+
+The final [intelligence certification report](R27-FINAL-INTELLIGENCE-CERTIFICATION.md) records the
+current-source package, exact artifact hashes, live sample counts, and the startup blocker.

@@ -1,27 +1,34 @@
 {
   "schema": "r27-packaged-dogfood-evidence-1",
-  "recordedAt": "2026-09-23T12:34:10.569Z",
+  "recordedAt": "2026-09-23T12:48:27.000Z",
   "sourceIdentity": {
-    "commit": "f197385f334a92d68819d849c386e00e333ce994",
+    "commit": "ffa2c21db6809e42df4e8d254f4eb7e621269e6e",
     "version": "0.4.0",
     "channel": "production",
     "dirty": true,
     "dirtyReason": "The user-protected docs/evidence/r27-intelligence-perfection/R27-GOLDEN-TASK-VALIDATION.json change was intentionally left unstaged and uncommitted."
+  },
+  "hostProfile": {
+    "os": "win32 10.0.26200 x64",
+    "cpu": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+    "logicalCpuCount": 12,
+    "totalMemoryBytes": 34060460032,
+    "source": "node:os on the package-build/smoke host; inventory only, not a performance benchmark"
   },
   "build": {
     "status": "PACKAGED",
     "artifacts": [
       {
         "path": "apps/desktop/release/CodeForge-Setup-0.4.0.exe",
-        "sha256": "013a132b699461b8e8fe61b1160c8657eaf34a48c08a4177e83798351ead66de"
+        "sha256": "672dfe75c5051905fdebd91bd7183c05f579846f43a1e2aa9da500f462e2eaf"
       },
       {
         "path": "apps/desktop/release/CodeForge-Portable.exe",
-        "sha256": "9ef8dae9ad7a980413c3e5c789cb5868182b212ddccdf89c2283088b30e15721"
+        "sha256": "3b279850cf84404782c8f6ca2c3f22fe9c380867d2392e2ad46a9793471103c4"
       },
       {
         "path": "apps/desktop/release/win-unpacked/resources/app.asar",
-        "sha256": "5ad5b5d9b57baa3be8822f56c08f7789dd57e77e3f8780c93b71acd7b4eeeec4"
+        "sha256": "35a31e67985114215cdb8f06dcb88774fcae3a15a951ed7f556807ec8833442b"
       }
     ],
     "releasePreflight": "PASS: the configured production Cloud reported live/ready, hosted inference readiness, current version 0.4.0, required hosted features, and at least one eligible free route. This was read-only and sent no inference."
@@ -31,13 +38,13 @@
     "runtimeDependencyGraph": "PASS (346 runtime modules; 17 external packages)",
     "browserSecurity": "PASS (sandbox, contextIsolation, webSecurity enabled; nodeIntegration disabled; control-plane bearer protected)",
     "embeddedEndpoint": "PASS (production HTTPS authority)",
-    "buildIdentity": "PASS (commit matches f197385; main and renderer stamps agree; dirty=true disclosed)"
+    "buildIdentity": "PASS (commit matches ffa2c21; main and renderer stamps agree; dirty=true disclosed)"
   },
   "smoke": {
     "full": "BLOCKED",
     "observedFailure": "Renderer process launch-failed (exit 49), followed by ERR_FAILED loading the packaged file URL. The local control plane had already bound before the renderer failed.",
     "archiveRendererPresent": true,
-    "controlComparison": "The prior apps/desktop/release-r9-rc1 packaged executable reproduced the same launch-failed:49 behavior on this host.",
+    "controlComparison": "The prior apps/desktop/release-r9-rc1 packaged executable reproduced the same launch-failed:49 behavior on this host. The current-source ffa2c21 package also reproduced it after the local server started; no matching Windows Application event was found in the diagnostic interval.",
     "classification": "HOST_RENDERER_LAUNCH_BLOCKER_REPRODUCED; no source-level root cause inferred and no production sandbox setting weakened.",
     "notRun": [
       "interrupt smoke",

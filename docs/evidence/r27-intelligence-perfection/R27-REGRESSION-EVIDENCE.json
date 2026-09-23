@@ -1,0 +1,51 @@
+{
+  "schema": "r27-regression-evidence-1",
+  "recordedAt": "2026-09-23T13:56:03.000Z",
+  "sourceApplicationCommit": "ffa2c21db6809e42df4e8d254f4eb7e621269e6e",
+  "certifiedSourceStateId": "3c5e635f4981a8e8955bef25e22c851ef13c9a32e9c0507b1569100f69f92e1e",
+  "preRecertificationFullRun": {
+    "command": "node node_modules/vitest/vitest.mjs run --maxWorkers=2 --reporter=dot",
+    "filesPassed": 442,
+    "filesFailed": 5,
+    "filesSkipped": 8,
+    "testsPassed": 3533,
+    "testsFailed": 5,
+    "testsSkipped": 48,
+    "failureClassification": [
+      "Two source-state provenance canaries correctly rejected four reviewed R27 material-file changes.",
+      "Three parallel integration fixtures classified follow-up requests by a task-plan JSON fragment absent after context refresh; stable workstream-goal classification restored the intended test provider behavior without changing assertions or timeouts."
+    ]
+  },
+  "recertification": {
+    "script": "scripts/r27-recertify-source-state.mjs",
+    "document": "docs/codeforge-forgegreen-certified-source-state.json",
+    "changedMaterialFiles": [
+      "packages/agent/src/index.ts",
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/duplicate-suppression.ts",
+      "packages/tools/src/index.ts"
+    ],
+    "postGenerationVerification": "stable=true; changedFiles=[]",
+    "targetedCanaryAndParallelRun": "6 files, 17 tests passed"
+  },
+  "postRecertificationFullRun": {
+    "command": "node node_modules/vitest/vitest.mjs run --maxWorkers=2 --reporter=dot --silent=passed-only",
+    "exitCode": 0,
+    "filesPassed": 447,
+    "filesSkipped": 8,
+    "testsPassed": 3538,
+    "testsSkipped": 48,
+    "durationSeconds": 1301.56
+  },
+  "additionalGates": {
+    "lint": "PASS: npm.cmd run lint",
+    "typecheck": "PASS: npm.cmd run typecheck -- forced TypeScript project build",
+    "workspaceBuild": "PASS: npm.cmd run build",
+    "focusedRuntimeReleaseCatalog": "PASS: 4 files, 25 tests",
+    "liveHarnessOutputCap": "PASS: node --test benchmarks/r27/live-endurance.test.mjs -- 1 test",
+    "securityGate": "PASS: npm.cmd run security:gate",
+    "packagedArchiveAudits": "PASS: dependency graphs, build identity, production endpoint, browser security",
+    "packagedFullSmoke": "FAIL: renderer launch-failed:49 before interactive test markers"
+  },
+  "boundary": "Source regression and archive audits pass. The failed packaged smoke still blocks packaged, endurance, and hardware certification."
+}
