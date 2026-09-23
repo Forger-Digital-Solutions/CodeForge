@@ -1,0 +1,540 @@
+{
+  "schema": "r28-forgegreen-matched-pair-2",
+  "recordedAt": "2026-09-23T17:50:13.263Z",
+  "design": {
+    "topology": "agent_runtime_executeAgentRun",
+    "measurementPath": "ForgeGreen telemetry/receipts persist in executeAgentRun's finally — the workflow startTurn path does not record them",
+    "armDifference": "forgeGreen advisor enabled:false vs enabled:true (advisor-owned caches, stable-prefix observations, model-request deduplication, verification recommendations); compression + duplicate/no-progress supervision run in BOTH arms per r1r causality audit",
+    "task": {
+      "sourceTaskId": "qual-js-return-sign",
+      "class": "small_fix",
+      "corpusDigest": "3eeaff8e7629819d471959fdf4d97a0c6282a991169f5ad5a4b65ee6bfb9d53b"
+    },
+    "providerId": "openrouter",
+    "modelId": "nex-agi/nex-n2.5-mini:free",
+    "role": "coder",
+    "maxRequestsPerArm": 40,
+    "maxOutputTokens": 4096
+  },
+  "arms": {
+    "control": {
+      "arm": "control_forgegreen_off",
+      "forgeGreenEnabled": false,
+      "status": "completed",
+      "summary": "Fixed `src/math.js`:\n\n- Corrected `add(a, b)` to return `a + b`, so `add(2, 3)` returns `5`.\n- Left `multiply()` unchanged.\n\nVerification: Ran a Node.js check confirming `add(2, 3) === 5` and `multiply(2, 3) === 6`.",
+      "filesChanged": [
+        "src/math.js"
+      ],
+      "provider": {
+        "inferenceRequestCount": 9,
+        "requests": [
+          {
+            "requestNumber": 1,
+            "kind": "stream",
+            "elapsedMs": 1044,
+            "firstUsefulEventMs": 967,
+            "inputTokens": 2947,
+            "outputTokens": 88,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 2,
+            "kind": "stream",
+            "elapsedMs": 2757,
+            "firstUsefulEventMs": 2405,
+            "inputTokens": 3086,
+            "outputTokens": 137,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 3,
+            "kind": "stream",
+            "elapsedMs": 1114,
+            "firstUsefulEventMs": 1104,
+            "inputTokens": 2874,
+            "outputTokens": 91,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 4,
+            "kind": "stream",
+            "elapsedMs": 873,
+            "firstUsefulEventMs": 776,
+            "inputTokens": 5577,
+            "outputTokens": 62,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 5,
+            "kind": "stream",
+            "elapsedMs": 786,
+            "firstUsefulEventMs": 714,
+            "inputTokens": 3079,
+            "outputTokens": 47,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 6,
+            "kind": "stream",
+            "elapsedMs": 1703,
+            "firstUsefulEventMs": 1023,
+            "inputTokens": 5782,
+            "outputTokens": 171,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 7,
+            "kind": "stream",
+            "elapsedMs": 2578,
+            "firstUsefulEventMs": 2462,
+            "inputTokens": 6442,
+            "outputTokens": 334,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 8,
+            "kind": "stream",
+            "elapsedMs": 5543,
+            "firstUsefulEventMs": 5150,
+            "inputTokens": 5928,
+            "outputTokens": 844,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 9,
+            "kind": "stream",
+            "elapsedMs": 4284,
+            "firstUsefulEventMs": 3561,
+            "inputTokens": 6051,
+            "outputTokens": 147,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          }
+        ]
+      },
+      "timing": {
+        "wallClockMs": 28114,
+        "aborted": false
+      },
+      "eventTypes": {
+        "agent.started": 1,
+        "tool.call_started": 8,
+        "tool.execution_started": 8,
+        "tool.execution_completed": 7,
+        "tool.execution_failed": 1,
+        "agent.completed": 1,
+        "forgegreen.r0_telemetry_recorded": 1,
+        "forgegreen.run_started": 1,
+        "forgegreen.model_usage_recorded": 1,
+        "forgegreen.tool_usage_recorded": 1,
+        "forgegreen.verification_usage_recorded": 1,
+        "forgegreen.baseline_generated": 1,
+        "forgegreen.energy_estimated": 1,
+        "forgegreen.run_finalized": 1,
+        "forgegreen.optimization_candidate": 1,
+        "forgegreen.optimization_summary": 1
+      },
+      "persistedCounts": {
+        "forgegreen_r0_telemetry": 1,
+        "forgegreen_sustainability_receipt": 1,
+        "forgegreen_optimization_decision": 0,
+        "forgegreen_optimization_receipt": 0,
+        "forgegreen_ledger": 1
+      },
+      "r0Telemetry": {
+        "telemetryId": "fg-r0-64018f211cfda0b9fb0eb57327c05709",
+        "routeClass": "explicit_route",
+        "taskCompletionStatus": "completed",
+        "stopReason": "completed",
+        "wallTimeMs": 28028,
+        "forgeGreenOverheadMs": 4.393200000009074,
+        "model": {
+          "providerAttempts": 9,
+          "modelAttempts": 9,
+          "inputTokens": 41766,
+          "cachedInputTokens": 13248,
+          "outputTokens": 1921,
+          "totalTokens": 43687,
+          "effectiveUncachedInputTokens": 28518,
+          "stablePromptCacheHits": 0,
+          "providerPromptCacheReports": 9
+        },
+        "context": {
+          "initialContextBytes": 3076,
+          "modelContextBytes": 25100,
+          "stablePromptBytes": 16785
+        },
+        "tools": {
+          "toolCalls": 8,
+          "executedToolCalls": 8,
+          "failedToolCalls": 1,
+          "duplicateEquivalentToolCalls": 0,
+          "rawToolOutputBytes": 733,
+          "bytesDeliveredToModelContext": 740,
+          "compressionBytesAvoided": 0,
+          "compressionRatio": 1
+        },
+        "retries": {
+          "retryCount": 0,
+          "reasons": []
+        }
+      },
+      "sustainabilityReceipt": {
+        "receiptId": "fg8-256e4fe7281efbc44a78e916",
+        "measurementStatus": "complete",
+        "failureReasonCodes": [],
+        "tokenAccounting": {
+          "inputTokens": 41766,
+          "outputTokens": 1921,
+          "cachedInputTokens": 13248,
+          "totalTokens": 43687,
+          "requestCount": 9,
+          "provider": "openrouter",
+          "model": "nex-agi/nex-n2.5-mini:free",
+          "coverage": "provider_reported"
+        },
+        "toolAccounting": {
+          "toolCallCount": 8,
+          "toolFailureCount": 1,
+          "readOnlyToolCallCount": 4,
+          "mutatingToolCallCount": 4,
+          "duplicateActionsSuppressed": 0,
+          "noProgressInterruptions": 0,
+          "toolWallClockMs": 2251,
+          "coverage": "directly_measured"
+        },
+        "verificationAccounting": {
+          "obligationsGenerated": 0,
+          "targetedSuitesUsed": 0,
+          "fullSuitesAvoided": 0,
+          "fullSuitesRequired": 0,
+          "evidenceReused": 0,
+          "rerunsAvoided": 0,
+          "staleEvidenceRejected": 0,
+          "blockedEvents": 0,
+          "coverage": "derived_from_authoritative_telemetry"
+        },
+        "baselineKinds": [
+          {
+            "kind": "A_FIXED_MODEL_NO_SMART_ROUTING",
+            "basis": "simulated"
+          },
+          {
+            "kind": "C_NAIVE_SEQUENTIAL_RETRY",
+            "basis": "simulated"
+          },
+          {
+            "kind": "D_VERIFICATION_OVERHEAD_COMPARISON",
+            "basis": "measured"
+          }
+        ],
+        "energyEstimate": {
+          "estimatorId": "insufficient-data",
+          "confidence": "INSUFFICIENT_DATA"
+        },
+        "contextPopulation": null
+      },
+      "optimizationDecisions": [],
+      "optimizationReceipts": [],
+      "ledgerRecords": 1,
+      "verification": {
+        "visible": [
+          {
+            "command": "node --check src/math.js",
+            "passed": true,
+            "elapsedMs": 259,
+            "outputHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+          }
+        ],
+        "hidden": {
+          "command": "node hidden/verify.mjs",
+          "passed": true,
+          "elapsedMs": 194,
+          "outputHash": "eecc28b3447dd57a762fa2bdc0f794cb350411e01e00092ea25ba6cab8a28947"
+        }
+      }
+    },
+    "experiment": {
+      "arm": "experiment_forgegreen_on",
+      "forgeGreenEnabled": true,
+      "status": "completed",
+      "summary": "Fixed `src/math.js`:\n\n- Changed `add(a, b)` to return `a + b`.\n- Left `multiply(a, b)` unchanged.\n\nVerification:\n- `add(2, 3)` now evaluates to `5`.\n- `multiply(2, 3)` remains `6`.\n- Runtime tests could not execute because Node.js is unavailable in both the Windows and WSL environments.",
+      "filesChanged": [
+        "src/math.js"
+      ],
+      "provider": {
+        "inferenceRequestCount": 8,
+        "requests": [
+          {
+            "requestNumber": 1,
+            "kind": "stream",
+            "elapsedMs": 1118,
+            "firstUsefulEventMs": 1027,
+            "inputTokens": 5507,
+            "outputTokens": 112,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 2,
+            "kind": "stream",
+            "elapsedMs": 1179,
+            "firstUsefulEventMs": 785,
+            "inputTokens": 6158,
+            "outputTokens": 146,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 3,
+            "kind": "stream",
+            "elapsedMs": 1182,
+            "firstUsefulEventMs": 1160,
+            "inputTokens": 5434,
+            "outputTokens": 53,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 4,
+            "kind": "stream",
+            "elapsedMs": 904,
+            "firstUsefulEventMs": 873,
+            "inputTokens": 5897,
+            "outputTokens": 65,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 5,
+            "kind": "stream",
+            "elapsedMs": 681,
+            "firstUsefulEventMs": 670,
+            "inputTokens": 6092,
+            "outputTokens": 43,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 6,
+            "kind": "stream",
+            "elapsedMs": 2066,
+            "firstUsefulEventMs": 1330,
+            "inputTokens": 6299,
+            "outputTokens": 227,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 7,
+            "kind": "stream",
+            "elapsedMs": 2351,
+            "firstUsefulEventMs": 1527,
+            "inputTokens": 6619,
+            "outputTokens": 288,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 8,
+            "kind": "stream",
+            "elapsedMs": 2588,
+            "firstUsefulEventMs": 2021,
+            "inputTokens": 7002,
+            "outputTokens": 237,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          }
+        ]
+      },
+      "timing": {
+        "wallClockMs": 66342,
+        "aborted": false
+      },
+      "eventTypes": {
+        "agent.started": 1,
+        "tool.call_started": 7,
+        "tool.execution_started": 7,
+        "tool.execution_completed": 5,
+        "tool.execution_failed": 2,
+        "agent.completed": 1,
+        "forgegreen.r0_telemetry_recorded": 1,
+        "forgegreen.run_started": 1,
+        "forgegreen.model_usage_recorded": 1,
+        "forgegreen.tool_usage_recorded": 1,
+        "forgegreen.verification_usage_recorded": 1,
+        "forgegreen.baseline_generated": 1,
+        "forgegreen.energy_estimated": 1,
+        "forgegreen.run_finalized": 1,
+        "forgegreen.optimization_candidate": 1,
+        "forgegreen.optimization_summary": 1
+      },
+      "persistedCounts": {
+        "forgegreen_r0_telemetry": 1,
+        "forgegreen_sustainability_receipt": 1,
+        "forgegreen_optimization_decision": 0,
+        "forgegreen_optimization_receipt": 0,
+        "forgegreen_ledger": 1
+      },
+      "r0Telemetry": {
+        "telemetryId": "fg-r0-ec34707cd3e8a975e9aaeb4f261941b3",
+        "routeClass": "explicit_route",
+        "taskCompletionStatus": "completed",
+        "stopReason": "completed",
+        "wallTimeMs": 66283,
+        "forgeGreenOverheadMs": 1.3384000000551168,
+        "model": {
+          "providerAttempts": 8,
+          "modelAttempts": 8,
+          "inputTokens": 49008,
+          "cachedInputTokens": 23744,
+          "outputTokens": 1171,
+          "totalTokens": 50179,
+          "effectiveUncachedInputTokens": 25264,
+          "stablePromptCacheHits": 7,
+          "providerPromptCacheReports": 8
+        },
+        "context": {
+          "initialContextBytes": 3076,
+          "modelContextBytes": 22421,
+          "stablePromptBytes": 14920
+        },
+        "tools": {
+          "toolCalls": 7,
+          "executedToolCalls": 7,
+          "failedToolCalls": 2,
+          "duplicateEquivalentToolCalls": 0,
+          "rawToolOutputBytes": 790,
+          "bytesDeliveredToModelContext": 804,
+          "compressionBytesAvoided": 0,
+          "compressionRatio": 1
+        },
+        "retries": {
+          "retryCount": 0,
+          "reasons": []
+        }
+      },
+      "sustainabilityReceipt": {
+        "receiptId": "fg8-c643895dde9388610a9ce24a",
+        "measurementStatus": "complete",
+        "failureReasonCodes": [],
+        "tokenAccounting": {
+          "inputTokens": 49008,
+          "outputTokens": 1171,
+          "cachedInputTokens": 23744,
+          "totalTokens": 50179,
+          "requestCount": 8,
+          "provider": "openrouter",
+          "model": "nex-agi/nex-n2.5-mini:free",
+          "coverage": "provider_reported"
+        },
+        "toolAccounting": {
+          "toolCallCount": 7,
+          "toolFailureCount": 2,
+          "readOnlyToolCallCount": 4,
+          "mutatingToolCallCount": 3,
+          "duplicateActionsSuppressed": 0,
+          "noProgressInterruptions": 0,
+          "toolWallClockMs": 15553,
+          "coverage": "directly_measured"
+        },
+        "verificationAccounting": {
+          "obligationsGenerated": 0,
+          "targetedSuitesUsed": 0,
+          "fullSuitesAvoided": 0,
+          "fullSuitesRequired": 0,
+          "evidenceReused": 0,
+          "rerunsAvoided": 0,
+          "staleEvidenceRejected": 0,
+          "blockedEvents": 0,
+          "coverage": "derived_from_authoritative_telemetry"
+        },
+        "baselineKinds": [
+          {
+            "kind": "A_FIXED_MODEL_NO_SMART_ROUTING",
+            "basis": "simulated"
+          },
+          {
+            "kind": "C_NAIVE_SEQUENTIAL_RETRY",
+            "basis": "simulated"
+          },
+          {
+            "kind": "D_VERIFICATION_OVERHEAD_COMPARISON",
+            "basis": "measured"
+          }
+        ],
+        "energyEstimate": {
+          "estimatorId": "insufficient-data",
+          "confidence": "INSUFFICIENT_DATA"
+        },
+        "contextPopulation": null
+      },
+      "optimizationDecisions": [],
+      "optimizationReceipts": [],
+      "ledgerRecords": 1,
+      "verification": {
+        "visible": [
+          {
+            "command": "node --check src/math.js",
+            "passed": true,
+            "elapsedMs": 314,
+            "outputHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+          }
+        ],
+        "hidden": {
+          "command": "node hidden/verify.mjs",
+          "passed": true,
+          "elapsedMs": 194,
+          "outputHash": "eecc28b3447dd57a762fa2bdc0f794cb350411e01e00092ea25ba6cab8a28947"
+        }
+      }
+    }
+  },
+  "comparison": {
+    "wallTimeMsDelta": 38255,
+    "forgeGreenOverheadMs": {
+      "control": 4.393200000009074,
+      "experiment": 1.3384000000551168
+    },
+    "inputTokensDelta": 7242,
+    "effectiveUncachedInputTokens": {
+      "control": 28518,
+      "experiment": 25264
+    },
+    "cachedInputTokens": {
+      "control": 13248,
+      "experiment": 23744
+    },
+    "stablePromptCacheHits": {
+      "control": 0,
+      "experiment": 7
+    },
+    "stablePromptBytes": {
+      "control": 16785,
+      "experiment": 14920
+    },
+    "modelContextBytesDelta": -2679,
+    "outputTokensDelta": -750,
+    "toolCallsDelta": -1,
+    "duplicateEquivalentToolCalls": {
+      "control": 0,
+      "experiment": 0
+    },
+    "compressionBytesAvoided": {
+      "control": 0,
+      "experiment": 0
+    }
+  },
+  "honesty": {
+    "singlePair": true,
+    "note": "One matched pair cannot separate advisor effect from model-output stochasticity; values are observed provider receipts and persisted product records, not causal proof of magnitude."
+  }
+}

@@ -68,17 +68,17 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "PACKAGED_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
         "R27-FORGREEN-AB-EVIDENCE.json",
-        "FORGEGREEN_RUNTIME=PASS"
+        "FORGEGREEN_RUNTIME=PASS",
+        "R28-FORGEGREEN-AB-LIVE-EVIDENCE.json"
       ],
-      "note": "Duplicate-suppression mechanics deterministic; runtime initializes packaged. No live token/tool-execution A/B yet.",
+      "note": "Live matched pair on executeAgentRun (real openrouter nex-n2.5-mini, both arms completed + hidden verifier passed): advisor-enabled arm produced 7 provider-reported stable prompt cache hits vs 0, cachedInputTokens 23,744 vs 13,248, effectiveUncachedInputTokens 25,264 vs 28,518. R0 telemetry + sustainability receipts persisted in both arms. Single pair — magnitude not causal, mechanism presence is.",
       "gaps": [
-        "live matched-pair efficiency proof",
-        "crossover measurement"
+        "multi-pair crossover magnitude under varied task classes"
       ]
     },
     {

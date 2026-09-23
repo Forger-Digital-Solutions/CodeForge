@@ -40,7 +40,7 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | Subsystem | Impl | Tested | Deterministic | Live | Packaged | Endurance | Key gap |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Core Agent | ✔ | ✔ | ✔ | ✔ **completion-gated** | ✔ | ✗ | sustained live; medium/large tasks |
-| ForgeGreen | ✔ | ✔ | ✔ | ✗ | ✔ runtime | ✗ | live matched-pair efficiency + crossover |
+| ForgeGreen | ✔ | ✔ | ✔ | ✔ | ✔ runtime | ✗ | live matched pair — 7 stable-cache hits vs 0, +10.5k cached tokens; multi-pair magnitude remains |
 | 8-Bit | ✔ | ✔ | ✔ | ✔ | ✔ runtime | ✗ | live qualification cycle (real probes → PROBATION receipt) — outage/recovery events remain |
 | 16-Bit | ✔ | ✔ | ✔ | BLOCKED (policy) | ✗ | ✗ | completeness audit DONE — statically complete, empirically absent by policy (no authorized paid probes) |
 | ForgeAuto | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live 17/17 fabric + real qualification — task-class routing differentiation + multi-provider failover remain |
