@@ -1,0 +1,289 @@
+{
+  "schema": "r28-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-23T15:23:19.965Z",
+  "runId": "r28-live-3e2b7e18-aae1-4224-88d3-89cbfde60ae9",
+  "task": {
+    "r27TaskId": "r27-small-cart-total",
+    "sourceTaskId": "js-bug-fix-cart-total",
+    "taskClass": "bug_fix",
+    "corpusDigest": "c3ff54ce5c170eac7ef838fdf918f8b573ecee2b49b92f1205fd391994f952a1"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nex-agi/nex-n2.5-mini:free",
+    "routeLock": "route",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 50,
+    "maxOutputTokens": 1024,
+    "timeoutMs": 1200000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine"
+  },
+  "provider": {
+    "inferenceRequestCount": 9,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 2414,
+        "firstUsefulEventMs": 1454,
+        "inputTokens": 3619,
+        "outputTokens": 180,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 2383,
+        "firstUsefulEventMs": 2081,
+        "inputTokens": 3756,
+        "outputTokens": 146,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 3025,
+        "firstUsefulEventMs": 2719,
+        "inputTokens": 7551,
+        "outputTokens": 212,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 2423,
+        "firstUsefulEventMs": 2315,
+        "inputTokens": 9133,
+        "outputTokens": 331,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 5,
+        "kind": "stream",
+        "elapsedMs": 4869,
+        "firstUsefulEventMs": 4039,
+        "inputTokens": 6872,
+        "outputTokens": 649,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 6,
+        "kind": "stream",
+        "elapsedMs": 3186,
+        "firstUsefulEventMs": 2339,
+        "inputTokens": 13878,
+        "outputTokens": 395,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 7,
+        "kind": "stream",
+        "elapsedMs": 3775,
+        "firstUsefulEventMs": 2584,
+        "inputTokens": 14780,
+        "outputTokens": 627,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 8,
+        "kind": "stream",
+        "elapsedMs": 6741,
+        "firstUsefulEventMs": 5931,
+        "inputTokens": 13700,
+        "outputTokens": 749,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 9,
+        "kind": "stream",
+        "elapsedMs": 9487,
+        "firstUsefulEventMs": 8596,
+        "inputTokens": 16787,
+        "outputTokens": 1073,
+        "outputCapExceeded": true,
+        "outcome": "output_cap_exceeded"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790176911750
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790176914098
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790176916997
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790176919591
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790176921519
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790176925001
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790176929268
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790176932933
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790176982045
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790176991372
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "bb606067-215c-413c-83ca-4afec44529cd",
+    "status": "blocked",
+    "phase": "blocked",
+    "completion": {
+      "outcome": "blocked",
+      "rationale": "7 plan step(s) did not finish successfully.",
+      "blockers": [
+        {
+          "code": "plan_steps_unfinished",
+          "severity": "blocking",
+          "message": "7 plan step(s) did not finish successfully."
+        }
+      ]
+    },
+    "diffs": [],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "verifier-1-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": true,
+      "findings": []
+    },
+    "forgeVerifySummary": {
+      "planId": "ca38bf4d-9646-42b3-a0c8-f136a6c2649d",
+      "policyVersion": "legacy-workflow-policy-v1",
+      "requiredCount": 1,
+      "satisfiedCount": 1,
+      "missingCount": 0,
+      "staleCount": 0,
+      "verificationComplete": true,
+      "missingRequiredVerifiers": [],
+      "evidence": [
+        {
+          "evidenceId": "f704b477-5fe6-4df2-be4e-70c30e67b39a",
+          "verifierId": "legacy.custom.94d4c25b4135fc66",
+          "status": "passed",
+          "durationMs": 1184,
+          "outputTruncated": false
+        }
+      ]
+    },
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 9,
+    "decisions": {
+      "allow:0": 9
+    },
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.mjs",
+      "passed": false,
+      "elapsedMs": 96,
+      "exitCode": 1,
+      "outputHash": "e3aae5ec10c52062ac41040a9b8139506375d5e31fd286c48cb6091f22367b88"
+    },
+    "workflowAllPassed": true
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 2,
+    "task.state_changed": 13,
+    "status.changed": 15,
+    "plan.started": 1,
+    "agent.started": 2,
+    "router.selection": 1,
+    "tool.call_started": 9,
+    "tool.call_completed": 9,
+    "token.usage": 9,
+    "tool.execution_started": 9,
+    "file.read": 7,
+    "tool.execution_completed": 9,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "run.outcome": 1
+  },
+  "timing": {
+    "wallClockMs": 87932,
+    "deadlineHit": false
+  },
+  "memory": {
+    "rssBefore": 209567744,
+    "rssAfter": 187748352,
+    "heapUsedBefore": 83950208,
+    "heapUsedAfter": 85927704
+  }
+}

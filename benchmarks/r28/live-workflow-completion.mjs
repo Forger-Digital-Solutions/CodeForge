@@ -142,7 +142,11 @@ async function main() {
   // can take several model iterations, and a repair cycle adds more; the request ceiling bounds
   // spend, not success.
   const maxRequests = boundedPositive("R28_LIVE_MAX_REQUESTS", 24, 60);
-  const maxOutputTokens = boundedPositive("R28_LIVE_MAX_OUTPUT_TOKENS", 512, 1024);
+  // Per-request output ceiling. The runtime sends provider max_tokens=4096, so a
+  // harness ceiling below that measures discipline, not room — medium tasks with
+  // file-write payloads legitimately exceed 1024. The spend bound stays via the
+  // request ceiling; 4096 matches the product's own per-request bound.
+  const maxOutputTokens = boundedPositive("R28_LIVE_MAX_OUTPUT_TOKENS", 512, 4096);
   const timeoutMs = boundedPositive("R28_LIVE_TIMEOUT_MS", 20 * 60_000, 30 * 60_000);
   const permissionMode = process.env.R28_LIVE_PERMISSION_MODE === "ask_more" ? "ask_more" : "full_autonomy";
 
