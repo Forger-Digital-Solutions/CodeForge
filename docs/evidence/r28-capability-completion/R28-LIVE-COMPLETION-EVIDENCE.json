@@ -1,0 +1,52 @@
+{
+  "schema": "r28-live-completion-evidence-1",
+  "recordedAt": "2026-09-23",
+  "question": "Can CodeForge complete a real engineering task through the canonical completion authority evaluateCompletion on a real free provider route?",
+  "answer": "YES — proven on the digest-locked tiny task qual-js-return-sign.",
+  "harness": {
+    "path": "benchmarks/r28/live-workflow-completion.mjs",
+    "design": "Drives the production WorkflowService → WorkflowEngine → AgentRuntime path (same code the packaged server uses), not an AgentRuntime-only slice. Success criterion is the workflow's own completion-gated terminal state plus an independent hidden verifier.",
+    "bounds": {
+      "requestCeiling": "R28_LIVE_MAX_REQUESTS (default 24, hard max 60) enforced by bounded adapter",
+      "outputCeiling": "R28_LIVE_MAX_OUTPUT_TOKENS (default 512, hard max 1024); a provider-reported breach blocks any further dispatch",
+      "wallClock": "R28_LIVE_TIMEOUT_MS (default 20min, hard max 30min)",
+      "freeOnly": "FREE_API providers with zero declared paid spillover; route must report verified_free in the live catalog; ForgeZero firewall registered",
+      "workspace": "disposable temp copy of the digest-locked fixture; deleted unless R28_LIVE_KEEP_WORKSPACE=true",
+      "spend": "no request is ever sent unless R28_LIVE_ENABLE=true"
+    },
+    "authority": "TaskAuthority lease permissionMode=full_autonomy planMode=auto (a real product mode). Plan auto-approved via policy receipt; tier-3/4 actions still escalate."
+  },
+  "run": {
+    "receipt": "R28-LIVE-RUNS/r28-live-33143667-6ab4-480d-840a-46504653d8e7.json",
+    "task": "qual-js-return-sign (r27-tiny-qual-return-sign, small_fix)",
+    "route": "openrouter / nex-agi/nex-n2.5-mini:free, route-locked",
+    "result": {
+      "workflowStatus": "completed",
+      "completionOutcome": "completed",
+      "completionRationale": "All required completion checks passed.",
+      "completionBlockers": [],
+      "forgeVerify": "verificationComplete=true; requiredCount=1 satisfiedCount=1",
+      "workflowVerifier": "node --check src/math.js → passed exit 0",
+      "review": "approved, zero findings",
+      "diff": "src/math.js modified",
+      "hiddenVerifier": "node hidden/verify.mjs → PASSED (independent, materialized post-run)",
+      "inferenceRequests": 13,
+      "outputTokenMax": 228,
+      "wallClockMs": 381477
+    },
+    "authorityReceipts": {
+      "total": 11,
+      "tier0Allow": 8,
+      "tier1Allow": 2,
+      "tier3Ask": 1,
+      "note": "One tier-3 action correctly escalated to ask and went unanswered; the agent adapted and completed anyway — permission enforcement held under live conditions."
+    }
+  },
+  "gapClosed": "R27 Gap 2 (canonical live task completion) is closed at tiny scale. The R27 run ended blocked at a 4-turn AgentRuntime budget before the workflow gate; R28 drove the actual workflow to the gate.",
+  "notProven": [
+    "medium/large live task completion (in progress)",
+    "sustained multi-task live sessions",
+    "live endurance",
+    "packaged live completion through the installed product"
+  ]
+}

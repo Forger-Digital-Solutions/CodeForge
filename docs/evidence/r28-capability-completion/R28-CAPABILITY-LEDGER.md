@@ -39,14 +39,14 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 
 | Subsystem | Impl | Tested | Deterministic | Live | Packaged | Endurance | Key gap |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Core Agent | ✔ | ✔ | ✔ | ✔ bounded | ✔ | ✗ | canonical `evaluateCompletion` passage; sustained live |
+| Core Agent | ✔ | ✔ | ✔ | ✔ **completion-gated** | ✔ | ✗ | sustained live; medium/large tasks |
 | ForgeGreen | ✔ | ✔ | ✔ | ✗ | ✔ runtime | ✗ | live matched-pair efficiency + crossover |
 | 8-Bit | ✔ | ✔ | ✔ | ✗ | ✔ runtime | ✗ | live quota/outage/recovery lifecycle |
 | 16-Bit | ✔ | ✔ | ✔ | BLOCKED (policy) | ✗ | ✗ | completeness audit; no paid probes |
 | ForgeAuto | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live routing across task classes |
 | Subagents | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live crossover vs single-agent |
 | Planner | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live authorized useful plans |
-| ForgeVerify | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live completion verification |
+| ForgeVerify | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live verification on larger tasks |
 | Context | ✔ | ✔ | ✔ | ✔ bounded | ✔ | ✗ | long-session growth/bounds |
 | Memory | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | cross-session value + isolation |
 | Browser | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | packaged nav/tabs/forms/downloads/localhost + hygiene |

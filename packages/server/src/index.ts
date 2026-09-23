@@ -2923,7 +2923,7 @@ export * from "./workspace-event-adapter.js";
 export * from "./agent-runtime.js";
 export * from "./duplicate-suppression.js";
 export * from "./forge-verify-persistence.js";
-export { recoverInterruptedForgeVerifyAttempts } from "./workflow-service.js";
+export { recoverInterruptedForgeVerifyAttempts, createWorkflowService, WorkflowService, type WorkflowServiceOptions, type WorkflowRunRequest } from "./workflow-service.js";
 export { evaluateAutonomousCompletion, type AutonomousCompletionEvidence } from "./completion-authority.js";
 export * from "./filesystem-service.js";
 export * from "./command-service.js";
