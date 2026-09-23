@@ -29,6 +29,10 @@ const healthy = {
 };
 
 describe("production Cloud release gate", () => {
+  it("reads the production authority from this checkout's endpoint manifest", () => {
+    expect(gate.configuredProductionUrl()).toBe("https://codeforge-cloud-va.onrender.com");
+  });
+
   it("passes only a ready v0.4+ Cloud with native hosted tools and an eligible-free catalog", () => {
     expect(gate.evaluateProductionCloud(healthy).passed).toBe(true);
   });

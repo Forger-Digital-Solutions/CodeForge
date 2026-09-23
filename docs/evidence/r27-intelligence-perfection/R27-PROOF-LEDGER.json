@@ -211,17 +211,17 @@
       "tested": "TESTED",
       "deterministic": "NOT_PROVEN",
       "live": "NOT_PROVEN",
-      "packaged": "NOT_PROVEN",
-      "hardware": "NOT_PROVEN",
-      "evidence": ["R26-DESKTOP-E2E.md (historical)", "R27-UX-EVIDENCE.json"],
-      "note": "Existing release bytes predate current R27 HEAD; no exact-byte current-source build/smoke exists."
+      "packaged": "BLOCKED",
+      "hardware": "BLOCKED",
+      "evidence": ["R26-DESKTOP-E2E.md (historical)", "R27-UX-EVIDENCE.json", "R27-PACKAGED-DOGFOOD-EVIDENCE.json"],
+      "note": "Fresh production-stamped installer, portable, and archive bytes were built from f197385 and audited, but the identity is dirty because of the protected user diff. Both the new and an R9 control package hit host renderer launch-failed:49, so smoke and hardware proof are blocked without attributing an unproven source cause."
     }
   ],
   "verdict": "R27_INTELLIGENCE_IMPROVED_WITH_BOUNDED_LIVE_RUNTIME_PROOF_AND_BLOCKERS",
   "nextRequiredEvidence": [
     "A separately completion-gated live workflow whose terminal completed state passes evaluateCompletion; this bounded AgentRuntime harness deliberately does not invoke it.",
     "A representative sustained live run only after the completion-gated slice is successful; current four-turn proof is not endurance.",
-    "Fresh Windows package from the current source commit, exact-byte audit, and packaged smoke/dogfood.",
+    "A clean-source Windows package from the current source commit, exact-byte audit, and successful packaged smoke/dogfood on a host where the sandboxed renderer launches.",
     "Machine-profiled hardware measurements and a second-device comparison when an accessible device exists."
   ]
 }

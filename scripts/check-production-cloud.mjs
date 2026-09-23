@@ -8,7 +8,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repositoryRoot = resolve(here, "..", "..");
+const repositoryRoot = resolve(here, "..");
 const endpointManifestPath = resolve(repositoryRoot, "apps", "desktop", "cloud-endpoints.json");
 export const REQUIRED_FEATURES = ["HOSTED_FREE", "DYNAMIC_MODELS", "HOSTED_TOOLS"];
 export const DEFAULT_MINIMUM_SERVER_VERSION = "0.4.0";
@@ -120,7 +120,7 @@ export async function probeProductionCloud(rawUrl, options = {}) {
   return evaluateProductionCloud({ url, live, ready, meta, models }, options);
 }
 
-function configuredProductionUrl() {
+export function configuredProductionUrl() {
   const manifest = JSON.parse(readFileSync(endpointManifestPath, "utf8"));
   if (typeof manifest?.endpoints?.production !== "string") throw new Error("cloud-endpoints.json has no production Cloud endpoint.");
   return manifest.endpoints.production;

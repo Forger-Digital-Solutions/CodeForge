@@ -18,7 +18,7 @@ Status: `R27_INTELLIGENCE_IMPROVED_WITH_BOUNDED_LIVE_RUNTIME_PROOF_AND_BLOCKERS`
 | Live provider preflight | Not applicable | Bounded free route proven | Not proven | Not proven |
 | Recovery and endurance | Proven deterministic stress | Not proven | Not proven | Not proven |
 | Single-user performance | Proven synthetic guard bounds | Not proven | Not proven | Not proven |
-| Packaged desktop | Historical R26 tests only | Not proven | Not proven at current HEAD | Not proven |
+| Packaged desktop | Historical R26 tests only | Not proven | Fresh bytes audited; smoke blocked | Host renderer blocker reproduced |
 
 The machine-readable [proof ledger](R27-PROOF-LEDGER.json) carries the complete evidence mapping
 and source references. [The live preflight receipt](R27-LIVE-PREFLIGHT-EVIDENCE.json) proves only
