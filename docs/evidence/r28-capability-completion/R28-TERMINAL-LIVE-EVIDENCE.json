@@ -1,0 +1,57 @@
+{
+  "schema": "r28-terminal-live-check-1",
+  "recordedAt": "2026-09-23T16:18:06.573Z",
+  "backend": "conpty",
+  "results": [
+    {
+      "name": "backend resolved",
+      "ok": true,
+      "detail": "conpty (pty=true)"
+    },
+    {
+      "name": "command executes + stdout captured",
+      "ok": true,
+      "detail": "exit=0 out=TERMINAL_LIVE_MARKER"
+    },
+    {
+      "name": "nonzero exit code propagates",
+      "ok": true,
+      "detail": "exit=3"
+    },
+    {
+      "name": "stderr surfaced",
+      "ok": true,
+      "detail": "stderr= merged=ERR_LINE"
+    },
+    {
+      "name": "streaming output chunks arrive",
+      "ok": true,
+      "detail": "3 chunks"
+    },
+    {
+      "name": "long-running command times out",
+      "ok": true,
+      "detail": "timedOut=true dur=2780ms"
+    },
+    {
+      "name": "process tree killed — no orphaned children",
+      "ok": true,
+      "detail": "0 orphan(s) found"
+    },
+    {
+      "name": "abort signal cancels execution",
+      "ok": true,
+      "detail": "cancelled=true timedOut=false"
+    },
+    {
+      "name": "custom env var reaches child",
+      "ok": true,
+      "detail": "env_ok_42"
+    },
+    {
+      "name": "cwd honored",
+      "ok": true,
+      "detail": "C:\\Windows"
+    }
+  ]
+}

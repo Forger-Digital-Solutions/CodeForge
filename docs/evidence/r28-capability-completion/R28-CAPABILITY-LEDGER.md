@@ -51,7 +51,7 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | Memory | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | cross-session value + isolation |
 | Browser | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | packaged nav/tabs/forms/downloads/localhost + hygiene |
 | Computer Use | ✔ | ✔ 22/22 | ✔ | ✔ host 9/9 | ✗ | ✗ | packaged enablement, focused-window click/type live run |
-| Terminal | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | packaged interactive sessions, leak check |
+| Terminal | ✔ | ✔ 51/51 | ✔ | ✔ host 10/10 | ✗ | ✗ | packaged interactive sessions, leak check |
 | WSL | ✔ | ✔ 12/12 | ✔ | ✔ host | ✗ | ✗ | packaged proof, in-workflow routing, desktop surface |
 | Git | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | packaged dirty/conflict/worktree/stash flows |
 | GitHub | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live OAuth + safe test-repo PR/CI cycle |

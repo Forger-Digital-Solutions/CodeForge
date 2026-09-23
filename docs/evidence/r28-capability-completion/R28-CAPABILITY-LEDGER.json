@@ -271,14 +271,16 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
         "R27-TERMINAL-EVIDENCE.json",
-        "1bc39b4"
+        "1bc39b4",
+        "benchmarks/r28/terminal-live-check.mjs — 10/10 live checks on ConPTY",
+        "docs/evidence/r28-capability-completion/R28-TERMINAL-LIVE-EVIDENCE.json"
       ],
-      "note": "PTY process-tree cleanup deterministic. Packaged long-session hygiene unproven.",
+      "note": "R28 live: real ConPTY backend (node-pty loaded) — execution, exit-code propagation, merged stderr, streaming chunks, timeout with verified process-tree kill (0 orphaned ping.exe children), AbortSignal cancellation, custom env, cwd. 51/51 unit tests.",
       "gaps": [
         "packaged interactive sessions",
         "repeated-session leak check"
