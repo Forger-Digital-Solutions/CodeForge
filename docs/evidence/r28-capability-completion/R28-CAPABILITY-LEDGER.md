@@ -53,7 +53,7 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | Computer Use | ✔ | ✔ 22/22 | ✔ | ✔ host 9/9 | ✗ | ✗ | packaged enablement, focused-window click/type live run |
 | Terminal | ✔ | ✔ 51/51 | ✔ | ✔ host 10/10 | ✗ | ✗ | packaged interactive sessions, leak check |
 | WSL | ✔ | ✔ 12/12 | ✔ | ✔ host | ✗ | ✗ | packaged proof, in-workflow routing, desktop surface |
-| Git | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | packaged dirty/conflict/worktree/stash flows |
+| Git | ✔ | ✔ | ✔ | ✔ host 15/15 | ✗ | ✗ | packaged dirty/conflict/worktree/stash flows |
 | GitHub | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live OAuth + safe test-repo PR/CI cycle |
 | MCP | ✔ | ✔ 19+16 | ✔ | ✔ host 16/16 | ✗ | ✗ | agent-routed MCP call in workflow, packaged lifecycle |
 | Plugins | ✔ | ✔ 25+21 | ✔ | ✔ host 21/21 | ✔ | ✗ | agent-routed extension call in workflow |

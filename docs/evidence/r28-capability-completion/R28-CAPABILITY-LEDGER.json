@@ -311,14 +311,16 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
         "R27-GIT-EVIDENCE.json",
-        "b8b73d1"
+        "b8b73d1",
+        "benchmarks/r28/git-live-check.mjs — 15/15 checks on a real git repo",
+        "docs/evidence/r28-capability-completion/R28-GIT-LIVE-EVIDENCE.json"
       ],
-      "note": "Dirty-tree/restore/stale-revision deterministic. Packaged adversarial-repo flows pending.",
+      "note": "R28 live on a real repo via CheckpointService: dirty-tree git_stash snapshot with untracked inventory; restore correctly REFUSED to clobber diverged uncommitted changes (RESTORE_BLOCKED_DIVERGED_WORKSPACE) leaving workspace untouched; force-restore byte-exact across tracked+staged+untracked; git status mirrors captured dirty shape; committed-drift reporting honest; clean git_clean snapshot; committed-head rewind; bogus refs and missing checkpoints fail honestly.",
       "gaps": [
         "packaged dirty-repo ops",
         "conflict/worktree/stash safety in product"

@@ -1,0 +1,82 @@
+{
+  "schema": "r28-git-live-check-1",
+  "recordedAt": "2026-09-23T16:28:20.522Z",
+  "repo": "real temp git repository (git init -b main)",
+  "results": [
+    {
+      "name": "dirty checkpoint → git_stash snapshot",
+      "ok": true,
+      "detail": "kind=git_stash dirty=true"
+    },
+    {
+      "name": "checkpoint inventories untracked file",
+      "ok": true,
+      "detail": "untracked=c-untracked.txt"
+    },
+    {
+      "name": "diverged uncommitted restore blocked",
+      "ok": true,
+      "detail": "RESTORE_BLOCKED_DIVERGED_WORKSPACE"
+    },
+    {
+      "name": "workspace untouched after blocked restore",
+      "ok": true,
+      "detail": "a.txt preserved"
+    },
+    {
+      "name": "forced restore succeeds",
+      "ok": true,
+      "detail": "restored=3 paths diverged=undefined"
+    },
+    {
+      "name": "tracked file restored exactly",
+      "ok": true,
+      "detail": "a=\"A2-modified\\n\""
+    },
+    {
+      "name": "untracked file restored",
+      "ok": true,
+      "detail": "c-untracked restored"
+    },
+    {
+      "name": "staged change restored",
+      "ok": true,
+      "detail": "b=\"B2-staged\\n\""
+    },
+    {
+      "name": "git status mirrors checkpoint's dirty shape",
+      "ok": true,
+      "detail": "[\"M a.txt\",\"M  b.txt\",\"?? c-untracked.txt\"]"
+    },
+    {
+      "name": "compareCheckpoint reports committed drift (stash holds uncommitted state)",
+      "ok": true,
+      "detail": "changes=1 +2 -2"
+    },
+    {
+      "name": "clean checkpoint → git_clean snapshot",
+      "ok": true,
+      "detail": "kind=git_clean"
+    },
+    {
+      "name": "restore rewinds committed head to checkpoint",
+      "ok": true,
+      "detail": "success=true a=\"A2-modified\\n\""
+    },
+    {
+      "name": "committed drift reported honestly after rewind",
+      "ok": true,
+      "detail": "changes=1"
+    },
+    {
+      "name": "bogus checkpoint ref rejected",
+      "ok": true,
+      "detail": "threw"
+    },
+    {
+      "name": "missing checkpoint restore fails honestly",
+      "ok": true,
+      "detail": "CHECKPOINT_UNAVAILABLE: Checkpoint definitely-missing not found"
+    }
+  ]
+}
