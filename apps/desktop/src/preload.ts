@@ -39,6 +39,18 @@ const api = {
   getPlatform: (): Promise<string> => {
     return ipcRenderer.invoke("app:getPlatform");
   },
+  updaterGetStatus: (): Promise<unknown> => {
+    return ipcRenderer.invoke("updater:getStatus");
+  },
+  updaterCheck: (): Promise<unknown> => {
+    return ipcRenderer.invoke("updater:check");
+  },
+  updaterDownload: (): Promise<unknown> => {
+    return ipcRenderer.invoke("updater:download");
+  },
+  updaterInstall: (): Promise<unknown> => {
+    return ipcRenderer.invoke("updater:install");
+  },
   getProviderCredentialStatus: (): Promise<Record<string, boolean>> => {
     return ipcRenderer.invoke("provider:getCredentialStatus");
   },

@@ -34,18 +34,19 @@
     "build:channel": "node scripts/set-build-channel.mjs"
   },
   "dependencies": {
-    "@codeforge/ui": "*",
-    "@codeforge/server": "*",
-    "@codeforge/paid-auto": "*",
-    "@codeforge/protocol": "*",
-    "@codeforge/sessions": "*",
     "@codeforge/forge-zero": "*",
-    "@codeforge/providers": "*",
-    "@codeforge/model-registry": "*",
-    "@codeforge/plugins": "*",
     "@codeforge/legal-policy": "*",
+    "@codeforge/model-registry": "*",
+    "@codeforge/paid-auto": "*",
+    "@codeforge/plugins": "*",
+    "@codeforge/protocol": "*",
+    "@codeforge/providers": "*",
+    "@codeforge/server": "*",
+    "@codeforge/sessions": "*",
     "@codeforge/terminal": "*",
+    "@codeforge/ui": "*",
     "better-sqlite3": "^12.11.1",
+    "electron-updater": "^6.8.9",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
@@ -183,162 +184,226 @@
       {
         "from": "node_modules/pg",
         "to": "node_modules/pg",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/pg-connection-string",
         "to": "node_modules/pg-connection-string",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/pg-pool",
         "to": "node_modules/pg-pool",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/pg-protocol",
         "to": "node_modules/pg-protocol",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/pg-types",
         "to": "node_modules/pg-types",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/pgpass",
         "to": "node_modules/pgpass",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/pg-int8",
         "to": "node_modules/pg-int8",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/postgres-array",
         "to": "node_modules/postgres-array",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/postgres-bytea",
         "to": "node_modules/postgres-bytea",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/postgres-date",
         "to": "node_modules/postgres-date",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/postgres-interval",
         "to": "node_modules/postgres-interval",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/split2",
         "to": "node_modules/split2",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/xtend",
         "to": "node_modules/xtend",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/playwright-core",
         "to": "node_modules/playwright-core",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/@modelcontextprotocol",
         "to": "node_modules/@modelcontextprotocol",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/ajv",
         "to": "node_modules/ajv",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/ajv-formats",
         "to": "node_modules/ajv-formats",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/content-type",
         "to": "node_modules/content-type",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/cross-spawn",
         "to": "node_modules/cross-spawn",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/eventsource",
         "to": "node_modules/eventsource",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/eventsource-parser",
         "to": "node_modules/eventsource-parser",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/fast-deep-equal",
         "to": "node_modules/fast-deep-equal",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/fast-uri",
         "to": "node_modules/fast-uri",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/isexe",
         "to": "node_modules/isexe",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/json-schema-traverse",
         "to": "node_modules/json-schema-traverse",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/path-key",
         "to": "node_modules/path-key",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/pkce-challenge",
         "to": "node_modules/pkce-challenge",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/require-from-string",
         "to": "node_modules/require-from-string",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/shebang-command",
         "to": "node_modules/shebang-command",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/shebang-regex",
         "to": "node_modules/shebang-regex",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/which",
         "to": "node_modules/which",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/zod-to-json-schema",
         "to": "node_modules/zod-to-json-schema",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/better-sqlite3",

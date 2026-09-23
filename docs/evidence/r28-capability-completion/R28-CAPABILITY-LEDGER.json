@@ -410,18 +410,24 @@
     },
     {
       "name": "Updater",
-      "implemented": "ABSENT",
-      "tested": "NOT_PROVEN",
-      "deterministic": "NOT_PROVEN",
-      "live": "NOT_PROVEN",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
-        "grep: no autoUpdater/electron-updater/checkForUpdates anywhere"
+        "apps/desktop/src/updater.ts (electron-updater 6.8.9, env-configured generic feed)",
+        "apps/desktop/src/main.ts + preload.ts — updater:* IPC surface",
+        "benchmarks/r28/updater-app — Electron main-process live harness",
+        "docs/evidence/r28-capability-completion/R28-UPDATER-LIVE-EVIDENCE.json — 5/5 live checks"
       ],
-      "note": "No update path exists. Needs implementation or honest ABSENT.",
+      "note": "R28: real electron-updater integration built and live-proven in an Electron main process against a localhost generic feed: check → available(9.9.9) → download → sha512-verified staged artifact. Tampered manifest rejected with a real 'sha512 checksum mismatch' (download refused). Dead feed reports honest error state. Unconfigured feed reports unavailable (fail-closed). Live run required unsetting ELECTRON_RUN_AS_NODE (was set in shell env).",
       "gaps": [
-        "entire capability: version check, metadata, download, integrity, apply, restart, migration, rollback"
+        "packaged app update proof (NSIS install → real update cycle)",
+        "update apply + restart flow (quitAndInstall live)",
+        "production feed configuration / publish channel",
+        "rollback and migration-on-update"
       ]
     },
     {

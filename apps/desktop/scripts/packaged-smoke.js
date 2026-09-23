@@ -44,6 +44,7 @@ const requiredMarkers = {
     'packaged_settings_roundtrip=PASS', 'packaged_settings_invalid_rejected=PASS',
     'packaged_extensions_loaded=PASS', 'packaged_extension_command=PASS', 'packaged_extension_workspace_read=PASS',
     'packaged_extension_lifecycle=PASS', 'settings_repo_intel_page=PASS', 'settings_extensions_page=PASS',
+    'packaged_updater_status=PASS', 'packaged_updater_check=PASS', 'packaged_updater_install_guarded=PASS',
     // Local control-plane trust boundary: bearer never reaches the renderer, main authenticates the
     // primary document, everything else (no/wrong bearer, forged origin, secondary renderer) fails closed.
     'control_plane_renderer_bearer_absent=PASS', 'control_plane_trusted_renderer=PASS', 'control_plane_missing_bearer_rejected=PASS',

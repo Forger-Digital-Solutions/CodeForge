@@ -1,0 +1,32 @@
+{
+  "schema": "r28-updater-live-check-1",
+  "recordedAt": "2026-09-23T16:02:08.593Z",
+  "feed": "localhost generic provider",
+  "results": [
+    {
+      "name": "status surface",
+      "ok": true,
+      "detail": "{\"state\":\"idle\",\"currentVersion\":\"0.4.0\"}"
+    },
+    {
+      "name": "check → update available",
+      "ok": true,
+      "detail": "{\"state\":\"available\",\"currentVersion\":\"0.4.0\",\"availableVersion\":\"9.9.9\"}"
+    },
+    {
+      "name": "download → sha512 verified + file staged",
+      "ok": true,
+      "detail": "downloaded C:\\Users\\Daddy_FDS\\AppData\\Local\\cf-updater-check\\pending\\CodeForge-Setup-9.9.9.exe"
+    },
+    {
+      "name": "tampered sha512 → honest failure",
+      "ok": true,
+      "detail": "check=available download={\"state\":\"error\",\"currentVersion\":\"0.4.0\",\"error\":\"sha512 checksum mismatch, expected PwlK0y3Xaxbqmkz+gAaNbicP5PYK9Ac2Jf"
+    },
+    {
+      "name": "dead feed → honest error",
+      "ok": true,
+      "detail": "{\"state\":\"error\",\"currentVersion\":\"0.4.0\",\"error\":\"net::ERR_CONNECTION_REFUSED\"}"
+    }
+  ]
+}

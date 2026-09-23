@@ -52,14 +52,14 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | Browser | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | packaged nav/tabs/forms/downloads/localhost + hygiene |
 | Computer Use | ABSENT | ✗ | ✗ | ✗ | ✗ | ✗ | entire capability (browser ≠ computer use) |
 | Terminal | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | packaged interactive sessions, leak check |
-| WSL | STUB | ✗ | ✗ | ✗ | ✗ | ✗ | detection, path translation, env authority, cleanup |
+| WSL | ✔ | ✔ 12/12 | ✔ | ✔ host | ✗ | ✗ | packaged proof, in-workflow routing, desktop surface |
 | Git | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | packaged dirty/conflict/worktree/stash flows |
 | GitHub | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live OAuth + safe test-repo PR/CI cycle |
 | MCP | ✔ | ✔ | ✗ | ✗ | ✗ | ✗ | real server lifecycle + permission gating |
 | Plugins | ✔ | ✔ | ✗ | ✗ | ✗ | ✗ | contract + working integration lifecycle |
 | Extensions | ✔ | ✔ | ✔ | ✗ | ✔ | ✗ | isolation, version compat, update behavior |
 | Settings | ✔ | ✔ | ✔ | ✗ | ✔ | ✗ | per-setting functional audit + migration |
-| Updater | ABSENT | ✗ | ✗ | ✗ | ✗ | ✗ | entire capability |
+| Updater | ✔ | ✔ 5/5 live | ✔ | ✔ host feed | ✗ | ✗ | packaged update cycle, apply+restart, production feed |
 | Authentication | ✔ | ✔ | ✔ | ✗ | ✔ credentials | ✗ | live OAuth lifecycle |
 | Permissions | ✔ | ✔ | ✗ (R26 historical) | ✗ | ✗ | ✗ | current-HEAD recert + new-surface penetration |
 | Diagnostics | ✔ | ✔ | ✗ | ✗ | ✗ | ✗ | bundle redaction proof |

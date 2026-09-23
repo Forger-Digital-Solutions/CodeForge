@@ -56,6 +56,7 @@ import {
 import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
 import { describeCloudAuthFailure, CloudAuthError, runCodeForgeCloudAuth } from "./cloud-auth-flow.js";
 import { initDiagnostics, closeDiagnostics, logDiagnostic, writeDiagnosticBundle } from "./diagnostics.js";
+import { checkForUpdates, downloadUpdate, getUpdaterStatus, installDownloadedUpdate, onUpdaterStatus } from "./updater.js";
 import {
   installSingleInstanceGuard,
   activateWindow,
@@ -2104,6 +2105,18 @@ async function runPackagedFullSmoke(workspacePath: string, testSecret: string): 
   if (!(await evaluateRenderer<boolean>(`window.electronAPI.setExtensionEnabled("acme.smoke", true)`))) throw new Error("setExtensionEnabled(true) returned false");
   smokeRecord("packaged_extension_lifecycle=PASS");
 
+  // Updater surface: honest status with no feed configured; install refused without a download.
+  const updaterStatus = await evaluateRenderer<{ state?: string; currentVersion?: string }>(`window.electronAPI.updaterGetStatus()`);
+  if (typeof updaterStatus?.state !== "string" || updaterStatus.currentVersion !== app.getVersion()) throw new Error(`Updater status malformed: ${JSON.stringify(updaterStatus)}`);
+  smokeRecord("packaged_updater_status=PASS");
+  const updaterCheck = await evaluateRenderer<{ state?: string; detail?: string }>(`window.electronAPI.updaterCheck()`);
+  if (!updaterCheck || (updaterCheck.state !== "unavailable" && updaterCheck.state !== "none" && updaterCheck.state !== "available")) throw new Error(`Updater check returned unexpected state: ${JSON.stringify(updaterCheck)}`);
+  smokeRecord(`packaged_updater_check_state=${updaterCheck.state}`);
+  smokeRecord("packaged_updater_check=PASS");
+  const updaterInstall = await evaluateRenderer<{ state?: string; error?: string }>(`window.electronAPI.updaterInstall()`);
+  if (updaterInstall?.state !== "error" || !String(updaterInstall.error ?? "").includes("no downloaded update")) throw new Error(`Updater install without download did not fail honestly: ${JSON.stringify(updaterInstall)}`);
+  smokeRecord("packaged_updater_install_guarded=PASS");
+
   verifyCredentialPersistence(testSecret);
   smokeRecord("safe_storage_available=PASS");
   smokeRecord("credential_round_trip=PASS");
@@ -2654,6 +2667,29 @@ ipcMain.handle("shell:openExternal", async (event, url: string) => {
 ipcMain.handle("app:getVersion", (event) => {
   assertMainWindowSender(event);
   return app.getVersion();
+});
+
+// --- Update surface (R28): user-driven check → download → install. ---
+// Every step is explicit; nothing auto-downloads or auto-installs.
+
+ipcMain.handle("updater:getStatus", (event) => {
+  assertMainWindowSender(event);
+  return getUpdaterStatus();
+});
+
+ipcMain.handle("updater:check", async (event) => {
+  assertMainWindowSender(event);
+  return checkForUpdates();
+});
+
+ipcMain.handle("updater:download", async (event) => {
+  assertMainWindowSender(event);
+  return downloadUpdate();
+});
+
+ipcMain.handle("updater:install", async (event) => {
+  assertMainWindowSender(event);
+  return installDownloadedUpdate();
 });
 
 ipcMain.handle("app:getPlatform", (event) => {
