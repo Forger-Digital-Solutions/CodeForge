@@ -1,0 +1,41 @@
+{
+  "schema": "r28-installer-evidence-1",
+  "recordedAt": "2026-09-23",
+  "artifact": {
+    "path": "apps/desktop/release/CodeForge-Setup-0.4.0.exe",
+    "sha256": "672dfe75c5051905fdebd91bd7183c05f579846f43a1e2aa9da500f462e2eaf",
+    "nsisConfig": "oneClick=false (assisted wizard), perMachine=false (per-user, no admin), allowToChangeInstallationDirectory, desktop+start-menu shortcuts"
+  },
+  "installMatrix": {
+    "freshSilentInstall": {
+      "command": "CodeForge-Setup-0.4.0.exe /S",
+      "result": "PASS — installed to %LOCALAPPDATA%\\Programs\\CodeForge per-user",
+      "installedAsar": "35A31E67985114215CDB8F06DCB88774FCAE3A15A951ED7F556807EC8833442B (exact match to packaged win-unpacked bytes)",
+      "registry": "HKCU uninstall entry created (key 5f9ca3ee-d929-5c0e-815d-8c970892966c, QuietUninstallString present)",
+      "shortcuts": "Desktop\\CodeForge.lnk + Start Menu\\Programs\\CodeForge.lnk created"
+    },
+    "installedAppLaunch": {
+      "result": "PASS — installer auto-launched; process tree main(318MB)+renderer(96MB)+utility(54MB); window title 'CodeForge'; renderer RUNNING",
+      "significance": "First proof of renderer startup through the real install path, not win-unpacked"
+    },
+    "cleanShutdown": "PASS — CloseMainWindow exited all processes, no zombies",
+    "interactiveUninstallDataRemoval": {
+      "result": "PASS — interactive 'remove your CodeForge data?' prompt answered Yes by the user",
+      "removed": [
+        "%LOCALAPPDATA%\\Programs\\CodeForge (all program files)",
+        "HKCU uninstall registry entry",
+        "Desktop + Start Menu shortcuts",
+        "%APPDATA%\\codeforge-desktop (20MB profile: settings, codeforge.db task history, encrypted sign-in)",
+        "%LOCALAPPDATA%\\codeforge-desktop-updater (115MB cache)",
+        "%LOCALAPPDATA%\\CodeForge\\repository-indexes"
+      ],
+      "preserved": "%LOCALAPPDATA%\\CodeForge\\worktrees — user's own git checkouts protected exactly per installer.nsh contract (RMDir non-recursive only removes empty parent)"
+    },
+    "reinstallAfterWipe": {
+      "result": "PASS — silent reinstall of identical bytes; app launched fresh first-run state with renderer"
+    },
+    "upgradeInstall": "NOT_TESTED — no older-version installer + live data set available to preserve across upgrade in this pass"
+  },
+  "toolingNote": "MSYS2/Git Bash mangles '/S' into 'C:/Program Files/Git/S' — two early attempts opened the interactive wizard because the flag never reached NSIS. Using MSYS2_ARG_CONV_EXCL='*' and '//S' passes the flag verbatim; harness scripts must do the same.",
+  "verdict": "INSTALLER_PROVEN for fresh install, launch, clean shutdown, interactive uninstall with data removal, worktrees protection, and reinstall. Upgrade path untested."
+}

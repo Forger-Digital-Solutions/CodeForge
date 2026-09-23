@@ -1,0 +1,153 @@
+{
+  "schema": "r28-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-23T14:46:55.112Z",
+  "runId": "r28-live-22c5bd8a-b2f7-4cfc-9256-04235b067b90",
+  "task": {
+    "r27TaskId": "r27-small-cart-total",
+    "sourceTaskId": "js-bug-fix-cart-total",
+    "taskClass": "bug_fix",
+    "corpusDigest": "c3ff54ce5c170eac7ef838fdf918f8b573ecee2b49b92f1205fd391994f952a1"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "qwen/qwen3.8-27b:free",
+    "routeLock": "route",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 24,
+    "maxOutputTokens": 512,
+    "timeoutMs": 1200000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine"
+  },
+  "provider": {
+    "inferenceRequestCount": 1,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 179,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "ProviderError"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790174812090
+      },
+      {
+        "modelId": "qwen/qwen3.8-27b:free",
+        "status": 429,
+        "headers": [],
+        "observedAt": 1790174813156
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "0225dd68-0216-46c6-badc-6ca9be11e1ad",
+    "status": "blocked",
+    "phase": "blocked",
+    "completion": {
+      "outcome": "blocked",
+      "rationale": "7 plan step(s) did not finish successfully.",
+      "blockers": [
+        {
+          "code": "plan_steps_unfinished",
+          "severity": "blocking",
+          "message": "7 plan step(s) did not finish successfully."
+        }
+      ]
+    },
+    "diffs": [],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "verifier-1-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": true,
+      "findings": []
+    },
+    "forgeVerifySummary": {
+      "planId": "d35d3325-4e51-467f-9c04-59eb66441cfb",
+      "policyVersion": "legacy-workflow-policy-v1",
+      "requiredCount": 1,
+      "satisfiedCount": 1,
+      "missingCount": 0,
+      "staleCount": 0,
+      "verificationComplete": true,
+      "missingRequiredVerifiers": [],
+      "evidence": [
+        {
+          "evidenceId": "48f10614-1615-46f4-8fd6-1f08dd4ae48d",
+          "verifierId": "legacy.custom.94d4c25b4135fc66",
+          "status": "passed",
+          "durationMs": 1119,
+          "outputTruncated": false
+        }
+      ]
+    },
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 0,
+    "decisions": {},
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.mjs",
+      "passed": false,
+      "elapsedMs": 82,
+      "exitCode": 1,
+      "outputHash": "e3aae5ec10c52062ac41040a9b8139506375d5e31fd286c48cb6091f22367b88"
+    },
+    "workflowAllPassed": true
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 2,
+    "task.state_changed": 13,
+    "status.changed": 15,
+    "plan.started": 1,
+    "agent.started": 2,
+    "router.selection": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "run.outcome": 1
+  },
+  "timing": {
+    "wallClockMs": 2799,
+    "deadlineHit": false
+  },
+  "memory": {
+    "rssBefore": 209248256,
+    "rssAfter": 237285376,
+    "heapUsedBefore": 83925712,
+    "heapUsedAfter": 97507968
+  }
+}
