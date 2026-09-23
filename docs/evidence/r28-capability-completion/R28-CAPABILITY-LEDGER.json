@@ -455,16 +455,17 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "PACKAGED_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
-        "cloud-auth-flow/openrouter-oauth-flow; credential store packaged markers"
+        "cloud-auth-flow/openrouter-oauth-flow; credential store packaged markers",
+        "auth-live-check.mjs=26/26 PASS — R28-AUTH-LIVE-EVIDENCE.json"
       ],
-      "note": "GitHub OAuth + PKCE + JWT + refresh-token flow (cloud-auth pkg), safeStorage-sealed credential migration (legacy plaintext sealed on startup, blocked entries fail closed), packaged smoke: credential encryption/round-trip + plaintext absence PASS.",
+      "note": "GitHub OAuth + PKCE + JWT + refresh-token flow (cloud-auth pkg), safeStorage-sealed credential migration (legacy plaintext sealed on startup, blocked entries fail closed), packaged smoke: credential encryption/round-trip + plaintext absence PASS. R28 live crypto lifecycle on the real package: PKCE challenge is genuine S256 (independently recomputed), verifyPkce accepts/rejects correctly, 200-unique state entropy, JWT sign/verify round-trip with every hostile variant rejected — tampered signature, wrong secret, forged payload, alg=none, RS256 confusion, expired, 5 malformed forms, missing sub, wrong issuer, short secret refused at signing; refresh/desktop-auth/browser-session tokens mint+hash correctly.",
       "gaps": [
         "interactive live OAuth login (requires user browser flow in packaged app)",
-        "expired-token refresh under live session",
+        "expired-token refresh under live session against the hosted service",
         "logout/re-login cycle"
       ]
     },

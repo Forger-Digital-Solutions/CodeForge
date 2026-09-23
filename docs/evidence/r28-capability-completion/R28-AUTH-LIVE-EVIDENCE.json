@@ -1,0 +1,138 @@
+{
+  "schema": "r28-auth-live-check-1",
+  "recordedAt": "2026-09-23T16:42:08.040Z",
+  "surface": "real @codeforge/cloud-auth crypto — PKCE S256, HS256 JWT lifecycle + hostile inputs, refresh/desktop/browser token mint+hash",
+  "note": "Full OAuth browser dance + cloud sign-in against the real hosted service is not exercised here; this proves the on-device cryptographic lifecycle and rejection behavior.",
+  "results": [
+    {
+      "name": "PKCE challenge is real S256 of verifier",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "verifyPkce accepts correct pair",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "verifyPkce rejects wrong verifier",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "state entropy (200 unique)",
+      "ok": true,
+      "detail": "200/200"
+    },
+    {
+      "name": "verifier entropy (100 unique)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "JWT round-trip verifies",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "tampered signature rejected",
+      "ok": true,
+      "detail": "Invalid JWT signature"
+    },
+    {
+      "name": "wrong secret rejected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "forged payload rejected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "alg=none rejected",
+      "ok": true,
+      "detail": "Invalid JWT token structure"
+    },
+    {
+      "name": "alg confusion (RS256) rejected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "expired token rejected",
+      "ok": true,
+      "detail": "JWT token has expired"
+    },
+    {
+      "name": "malformed \"\" rejected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "malformed \"a.b\" rejected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "malformed \"a.b.c.d\" rejected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "malformed \"!!.@@.##\" rejected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "malformed \"eyJhbGciOiJIUzI1\" rejected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "missing sub rejected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "short secret refused at signing",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "wrong issuer rejected",
+      "ok": true,
+      "detail": "Invalid JWT issuer"
+    },
+    {
+      "name": "refresh tokens unique",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "refresh hash deterministic + salted-proof",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "desktop auth code recognized",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "desktop auth code hash stable",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "random string not an auth code",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "browser session token hashed",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

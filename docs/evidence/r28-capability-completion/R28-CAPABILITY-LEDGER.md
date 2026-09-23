@@ -60,7 +60,7 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | Extensions | ✔ | ✔ 21/21 | ✔ | ✔ host | ✔ | ✗ | update behavior |
 | Settings | ✔ | ✔ | ✔ | ✔ | ✔ | ✗ | live 13/13 (auth 401s, privacy-mode eligibility transitions, invalid rejection) — remaining per-setting audit + migration |
 | Updater | ✔ | ✔ 5/5 live | ✔ | ✔ host feed | ✗ | ✗ | packaged update cycle, apply+restart, production feed |
-| Authentication | ✔ | ✔ | ✔ | ✗ | ✔ credentials | ✗ | live OAuth lifecycle |
+| Authentication | ✔ | ✔ | ✔ | ✔ | ✔ credentials | ✗ | crypto lifecycle live 26/26 — interactive OAuth dance + hosted refresh remain |
 | Permissions | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live 32/32 ToolBroker penetration (role ceilings, all escape forms, sensitive denylist) — packaged IPC spoof remains |
 | Diagnostics | ✔ | ✔ | ✗ | ✗ | ✗ | ✗ | bundle redaction proof |
 | Installer | ✔ built | ✔ | ✗ | ✗ | ✗ | ✗ | install/upgrade/uninstall/retention flows |
