@@ -3,6 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { InMemoryProviderCatalog, createMockProvider } from "@codeforge/providers";
+import { createPaidAutoService } from "@codeforge/paid-auto";
 import { CodeForgeServer } from "../src/index.js";
 
 // Exercise the real AgentRuntime turn path (not demo mode).
@@ -148,6 +149,63 @@ describe("HTTP model-selection boundary", () => {
       "deepseek-v4.1-flash",
     ]);
     expect(paidAuto.every((model) => model.tier === "paid-auto" && model.eligible === false && model.paidAutoState === "DISABLED")).toBe(true);
+  });
+
+  it("rejects Paid Auto selections without storing a dead paid route", async () => {
+    const sessionId = "boundary-paid-auto";
+    const selection = await postJSON("/api/model-selection", {
+      sessionId,
+      providerId: "paid-auto",
+      modelId: "gpt-5.6-luna",
+    });
+    expect(selection.status).toBe(409);
+    expect(selection.json.error).toBe("PAID_AUTO_BLOCKED_BY_FREE_ONLY_POLICY");
+
+    const turnId = await sendTurn(sessionId, "must remain on free routing");
+    const turn = await settledTurn(sessionId, turnId);
+    expect(turn.status).toBe("completed");
+    expect(await currentModelOf(sessionId)).toBe("free-model-1");
+  });
+
+  it("keeps an internally qualified Paid Auto route policy-blocked", async () => {
+    const qualifiedPaidAuto = createPaidAutoService({
+      paidExecutionEnabled: true,
+      routeQualifications: {
+        "gpt-5.6-luna:direct": {
+          state: "READY",
+          commercialEligibility: "verified",
+          privacy: "verified",
+          capabilityParity: "verified",
+          certification: "CERTIFIED",
+        },
+      },
+    });
+    const isolatedDir = await mkdtemp(join(tmpdir(), "cf-paid-auto-policy-"));
+    const isolatedServer = new CodeForgeServer({
+      port: 0,
+      dbPath: join(isolatedDir, "policy.db"),
+      paidAuto: qualifiedPaidAuto,
+    });
+    await isolatedServer.start();
+    const isolatedBase = `http://127.0.0.1:${isolatedServer.httpPort}`;
+    try {
+      const models = (await (await fetch(`${isolatedBase}/api/models`)).json()) as Array<{ id: string; providerId: string; eligible?: boolean; paidAutoState?: string }>;
+      expect(models.find((model) => model.providerId === "paid-auto" && model.id === "gpt-5.6-luna")).toMatchObject({
+        eligible: false,
+        paidAutoState: "BLOCKED_BY_FREE_ONLY_POLICY",
+      });
+
+      const response = await fetch(`${isolatedBase}/api/model-selection`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: "qualified-paid-auto", providerId: "paid-auto", modelId: "gpt-5.6-luna" }),
+      });
+      expect(response.status).toBe(409);
+      await expect(response.json()).resolves.toMatchObject({ error: "PAID_AUTO_BLOCKED_BY_FREE_ONLY_POLICY" });
+    } finally {
+      await isolatedServer.stop();
+      await rm(isolatedDir, { recursive: true, force: true });
+    }
   });
 
   it("valid paid selection for entitled user executes the GEMS model", async () => {

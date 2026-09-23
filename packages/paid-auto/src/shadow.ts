@@ -18,8 +18,8 @@ export interface SixteenBitShadowInput {
 
 /**
  * A pure recommendation surface. It deliberately receives no budget ledger and has no route,
- * reservation, authorization, or provider-call method. Callers may label controlled test inputs
- * as MOCK, but the default represents an observed deterministic production decision.
+ * reservation, authorization, or provider-call method. Provenance therefore defaults to MOCK;
+ * a production or benchmark caller must explicitly attest its evidence source.
  */
 export function observeSixteenBitShadow(input: SixteenBitShadowInput, options: { enabled: boolean; artifact?: ShadowModelArtifact; provenance?: "OBSERVED_PRODUCTION" | "OBSERVED_BENCHMARK" | "MOCK" }): IntelligenceRecord {
   const record = sanitizeIntelligenceRecord({
@@ -31,7 +31,7 @@ export function observeSixteenBitShadow(input: SixteenBitShadowInput, options: {
       observedAt: new Date().toISOString(),
       policyVersion: "paid-auto-r13",
       sourceClassification: "R13",
-      provenance: options.provenance ?? "OBSERVED_PRODUCTION",
+      provenance: options.provenance ?? "MOCK",
       taskFamilyHash: "paid-evaluation",
     },
     task: { taskClass: "UNKNOWN", requestedOperation: "UNKNOWN" },

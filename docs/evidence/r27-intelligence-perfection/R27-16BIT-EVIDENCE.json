@@ -1,0 +1,41 @@
+{
+  "schema": "r27-16bit-evidence-1",
+  "status": "R27_16_BIT_QUARANTINE_AND_EVIDENCE_HONESTY_DETERMINISTICALLY_PROVEN",
+  "paidInferenceUsed": false,
+  "evidenceBoundary": "Static source inspection and deterministic fake-adapter, local HTTP, and in-memory SQLite tests only. No paid credential, paid provider request, pricing lookup, external model probe, or external write was used.",
+  "problemsRecovered": [
+    "The server could accept and persist a Paid Auto model selection even though ForgeZero deliberately excludes paid models from the execution catalog; an internally ready route could therefore be advertised as available before the turn failed closed later.",
+    "The pure 16-Bit shadow helper defaulted arbitrary caller input to OBSERVED_PRODUCTION even though it has no provider-call, reservation, or evidence-ingestion capability."
+  ],
+  "change": {
+    "serverPolicyBoundary": "Paid Auto remains visible for audit but is always ineligible in the free-only server. Manual Paid Auto selection now returns PAID_AUTO_BLOCKED_BY_FREE_ONLY_POLICY and does not replace the session's free-route selection. Paid Auto readiness can no longer make the server leave demo mode.",
+    "shadowProvenance": "16-Bit shadow records now default to MOCK provenance. A caller must explicitly attest OBSERVED_PRODUCTION or OBSERVED_BENCHMARK provenance."
+  },
+  "deterministicValidation": {
+    "paidRouteBoundary": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/model-selection-boundary.test.ts packages/paid-auto/test/paid-auto.test.ts packages/paid-auto/test/evaluation-budget.test.ts packages/paid-auto/test/shadow.test.ts packages/forge-zero/test/paid-catalog.test.ts apps/desktop/test/model-sections.test.ts",
+      "filesPassed": 6,
+      "testsPassed": 71,
+      "testsFailed": 0,
+      "approxWallTimeMs": 4990,
+      "coverage": ["free-only HTTP selection boundary", "no-network Paid Auto default", "exact direct and same-model fallback mapping", "fallback suppression for authorization, partial-output, and ambiguous execution", "exact-current-price and output-bound budget admission", "model-identity mismatch reservation release", "durable concurrent budget ceiling", "pure shadow ledger isolation", "default MOCK provenance", "ForgeZero paid-catalog exclusion", "desktop disabled Paid Auto presentation"]
+    },
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc -b packages/paid-auto packages/server apps/desktop",
+      "passed": true
+    }
+  },
+  "proven": [
+    "ForgeZero's adaptive router excludes paid catalog records and returns no route rather than choosing paid when free routes are unavailable.",
+    "A default Paid Auto service rejects before invoking its adapter, and the free-only server rejects manual Paid Auto selection before it can be stored or executed.",
+    "The static route registry fixes four canonical identities and uses only direct-first, same-model fallback identities; gateway auto-selection is excluded.",
+    "The evaluation ledger requires an exact, current, non-low-confidence price card and an explicit output bound, reserves below a finite campaign ceiling, and releases a reservation when the served model identity differs.",
+    "The 16-Bit shadow path is pure with respect to the monetary ledger and cannot self-label synthetic input as production evidence by default."
+  ],
+  "notProven": [
+    "Actual paid-provider cost, current pricing, latency, quality, tool capability, role suitability, provider reliability, fallback cost, or serving identity.",
+    "Any paid credential, commercial authorization, privacy review, certification, provider health, or live fallback behavior.",
+    "A production 16-Bit intelligence claim. No empirical model measurements or controlled paid evaluation campaign was run."
+  ],
+  "requiredNextEvidence": "Only after an explicit policy change permitting paid inference and owner authorization of a capped disposable evaluation account: use a current documented price card, a finite pre-authorized budget, redacted receipts, exact served-model checks, and a predeclared benchmark covering latency, quality, tool use, role fit, reliability, and fallback cost. Keep any result separate from ForgeZero free routing and GEMS."
+}

@@ -8,6 +8,7 @@ describe("R13 16-Bit shadow isolation", () => {
     const before = ledger.snapshot();
     const record = observeSixteenBitShadow({ campaignId: "shadow", requestId: "request-1", providerId: "openrouter", canonicalModelId: "gpt-5.6-luna", routeId: "route", expectedTotalTaskCostUsd: "0.12", remainingCampaignBudgetUsd: "15.0" }, { enabled: true });
     expect(record.shadowRecommendation?.recommendationKind).toBe("ECONOMIC_VALUE");
+    expect(record.lineage.provenance).toBe("MOCK");
     expect(ledger.snapshot()).toEqual(before);
   });
 });

@@ -164,7 +164,10 @@ export interface ServerOptions {
    * supply; they can never spend another user's pool.
    */
   localUserId?: string;
-  /** Paid Auto is a separate commercial route family and is disabled unless explicitly enabled. */
+  /**
+   * Paid Auto metadata may be supplied for visibility and audit, but this free-only server never
+   * permits its routes to become execution-eligible.
+   */
   paidAuto?: PaidAutoService;
   paidExecutionEnabled?: boolean;
   openRouterFallbackEnabled?: boolean;
@@ -2291,7 +2294,7 @@ export class CodeForgeServer {
    * server from demo to real without a restart. Test/mock providers never flip it.
    */
   private realRuntimeEnabled(): boolean {
-    return this.useRealRuntime || this.paidAuto.hasExecutableRoute() || this.providerCatalog.all().some((a) => a.isTestProvider !== true && a.providerId !== PAID_AUTO_PROVIDER_ID);
+    return this.useRealRuntime || this.providerCatalog.all().some((a) => a.isTestProvider !== true && a.providerId !== PAID_AUTO_PROVIDER_ID);
   }
 
   private getOrCreateRuntime(sessionId: string, userId?: string, hostedWorker?: HostedWorkerOptions): AgentRuntime {
@@ -2488,12 +2491,9 @@ export class CodeForgeServer {
             respond(400, { error: "MODEL_NOT_FOUND", message: `Unknown Paid Auto model ${modelId}` });
             return;
           }
-          const lock = data.lock === "route" ? "route" : "model";
-          const view = this.paidAuto.modelViews().find((candidate) => candidate.id === paidModel.canonicalModelId);
-          runtime.setModelSelection({ providerId: PAID_AUTO_PROVIDER_ID, modelId: paidModel.canonicalModelId, canonicalModelId: paidModel.canonicalModelId, lock });
-          respond(200, {
-            ok: true,
-            selection: { providerId: PAID_AUTO_PROVIDER_ID, modelId: paidModel.canonicalModelId, canonicalModelId: paidModel.canonicalModelId, tier: "paid-auto", lock, available: view?.available ?? false, state: view?.state ?? "DISABLED" },
+          respond(409, {
+            error: "PAID_AUTO_BLOCKED_BY_FREE_ONLY_POLICY",
+            message: "Paid Auto is audit-only in this free-only server; no paid request will be sent.",
           });
           return;
         }
@@ -2575,13 +2575,15 @@ export class CodeForgeServer {
       authMode: "API_KEY",
       deprecated: false,
       verifiedFree: false,
-      eligible: m.available,
+      // Paid Auto is shown for route-audit visibility only. ForgeZero is the sole execution
+      // authority in this server, and it deliberately contains no paid routes.
+      eligible: false,
       canonicalId: m.canonicalId,
       forgeAutoEligible: false,
       contextWindow: m.contextWindow,
       capabilities: m.capabilities,
       costProfile: m.costProfile,
-      paidAutoState: m.state,
+      paidAutoState: m.available ? "BLOCKED_BY_FREE_ONLY_POLICY" : m.state,
       paidAutoDirectProviderId: m.directProviderId,
       paidAutoDirectModelId: m.directModelId,
       paidAutoOpenRouterSlug: m.openRouterSlug,
