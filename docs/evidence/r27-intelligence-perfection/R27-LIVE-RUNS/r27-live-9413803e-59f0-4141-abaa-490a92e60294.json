@@ -1,0 +1,202 @@
+{
+  "schema": "r27-live-agent-runtime-receipt-1",
+  "recordedAt": "2026-09-23T12:28:28.068Z",
+  "runId": "r27-live-9413803e-59f0-4141-abaa-490a92e60294",
+  "task": {
+    "r27TaskId": "r27-tiny-qual-return-sign",
+    "sourceTaskId": "qual-js-return-sign",
+    "taskClass": "small_fix",
+    "corpusDigest": "3eeaff8e7629819d471959fdf4d97a0c6282a991169f5ad5a4b65ee6bfb9d53b"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nex-agi/nex-n2.5-mini:free",
+    "routeLock": "route",
+    "topology": "single_coder_agent_runtime",
+    "forgeGreen": "not_measured_by_this_harness",
+    "maxRequests": 4,
+    "maxOutputTokens": 256,
+    "maxContextTokens": 12000,
+    "timeoutMs": 90000
+  },
+  "provider": {
+    "inferenceRequestCount": 4,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 3763,
+        "firstUsefulEventMs": 3348,
+        "inputTokens": 2747,
+        "outputTokens": 166,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 2172,
+        "firstUsefulEventMs": 1587,
+        "inputTokens": 2886,
+        "outputTokens": 270,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 1176,
+        "firstUsefulEventMs": 1082,
+        "inputTokens": 2778,
+        "outputTokens": 89,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 2434,
+        "firstUsefulEventMs": 1933,
+        "inputTokens": 2921,
+        "outputTokens": 321,
+        "outcome": "completed"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790166497037
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790166500567
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790166502735
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790166504785
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790166505847
+      }
+    ],
+    "providerReportedUsage": {
+      "inputTokens": 11332,
+      "outputTokens": 846,
+      "requestCount": 4,
+      "toolCount": 3,
+      "cachedTokens": 5056,
+      "provider": "openrouter",
+      "model": "nex-agi/nex-n2.5-mini:free"
+    }
+  },
+  "runtime": {
+    "status": "completed",
+    "stopReason": "completed",
+    "error": null,
+    "summaryHash": "68ed49f383b3926db66de3547d782b64ba9d519aea0c390dad70f8afbc78e880",
+    "findings": 0,
+    "evidence": 0,
+    "filesChanged": [
+      "src/math.js"
+    ],
+    "toolCalls": 3,
+    "toolFailures": 0,
+    "context": {
+      "candidateFileCount": 3,
+      "candidateSymbolCount": 7,
+      "selectedFileCount": 0,
+      "selectedEvidenceCount": 0,
+      "contextBytes": 2180,
+      "estimatedInputTokens": 79,
+      "contextMaximum": 12000,
+      "reservedOutputTokens": 4096,
+      "repositoryGeneration": 3,
+      "reasonCodes": [
+        "DIRECT_DEPENDENCY",
+        "DIRECT_DEPENDENT",
+        "RELATED_TEST",
+        "context_invalidated_after_mutation",
+        "repository_refreshed_after_mutation"
+      ],
+      "contextRefreshes": 1,
+      "staleContextInvalidations": 1,
+      "efficiencyReceipt": {
+        "receiptId": "385d1bbe8e2cc1065aba74f9",
+        "workspaceId": "r27-qual-js-return-sign",
+        "repositoryGeneration": 3,
+        "contextRequestedTokens": 79,
+        "contextDeliveredTokens": 79,
+        "tokensAvoided": 0,
+        "retrievalCacheHits": 0,
+        "promptPrefixCacheHits": 3,
+        "duplicateRequestsAvoided": 0,
+        "fallbackUsed": false,
+        "reasonCodes": [
+          "stable_prefix_reused",
+          "provider_prompt_cache_reported"
+        ],
+        "policyVersion": "cf15-1",
+        "promptCacheAccounting": "provider_reported",
+        "providerCachedInputTokens": 5056
+      }
+    },
+    "eventTypes": {
+      "agent.started": 1,
+      "tool.call_started": 3,
+      "tool.execution_started": 3,
+      "tool.execution_completed": 3,
+      "agent.completed": 1,
+      "forgegreen.r0_telemetry_recorded": 1,
+      "forgegreen.run_started": 1,
+      "forgegreen.model_usage_recorded": 1,
+      "forgegreen.tool_usage_recorded": 1,
+      "forgegreen.verification_usage_recorded": 1,
+      "forgegreen.baseline_generated": 1,
+      "forgegreen.energy_estimated": 1,
+      "forgegreen.run_finalized": 1,
+      "forgegreen.optimization_candidate": 1,
+      "forgegreen.optimization_summary": 1
+    }
+  },
+  "verification": {
+    "visible": [
+      {
+        "command": "node --check src/math.js",
+        "passed": true,
+        "elapsedMs": 76,
+        "outputHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      }
+    ],
+    "hidden": {
+      "command": "node hidden/verify.mjs",
+      "passed": false,
+      "elapsedMs": 73,
+      "exitCode": 1,
+      "outputHash": "9f28d5a353a81ac5a9df5b4d13cf99aa87ff7a9b1364674fe0b64ffc1940ffcd"
+    },
+    "allPassed": false
+  },
+  "completionGate": "not_invoked: this harness measures the actual AgentRuntime loop; full workflow/mission completion remains a separate proof surface.",
+  "timing": {
+    "wallClockMs": 10948,
+    "timedOut": false
+  },
+  "memory": {
+    "rssBefore": 207724544,
+    "rssAfter": 163762176,
+    "heapUsedBefore": 82258272,
+    "heapUsedAfter": 80772232
+  }
+}

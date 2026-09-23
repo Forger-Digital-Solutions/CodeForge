@@ -1,0 +1,132 @@
+{
+  "schema": "r27-live-agent-runtime-receipt-1",
+  "recordedAt": "2026-09-23T12:25:34.813Z",
+  "runId": "r27-live-be432955-f91a-4262-8e77-0b20dbac10ca",
+  "task": {
+    "r27TaskId": "r27-tiny-qual-return-sign",
+    "sourceTaskId": "qual-js-return-sign",
+    "taskClass": "small_fix",
+    "corpusDigest": "3eeaff8e7629819d471959fdf4d97a0c6282a991169f5ad5a4b65ee6bfb9d53b"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nex-agi/nex-n2.5-mini:free",
+    "routeLock": "route",
+    "topology": "single_coder_agent_runtime",
+    "forgeGreen": "not_measured_by_this_harness",
+    "maxRequests": 4,
+    "maxOutputTokens": 256,
+    "maxContextTokens": 12000,
+    "timeoutMs": 90000
+  },
+  "provider": {
+    "inferenceRequestCount": 2,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 2894,
+        "firstUsefulEventMs": 2388,
+        "inputTokens": 2747,
+        "outputTokens": 250,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 728,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outcome": "ProviderError"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790166330092
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790166332265
+      },
+      {
+        "modelId": "nex-agi/nex-n2.5-mini:free",
+        "status": 400,
+        "headers": [],
+        "observedAt": 1790166334584
+      }
+    ],
+    "providerReportedUsage": {
+      "inputTokens": 2747,
+      "outputTokens": 250,
+      "requestCount": 2,
+      "toolCount": 1,
+      "cachedTokens": 0,
+      "provider": "openrouter",
+      "model": "nex-agi/nex-n2.5-mini:free"
+    }
+  },
+  "runtime": {
+    "status": "failed",
+    "stopReason": "error",
+    "error": "[PROVIDER_UNAVAILABLE] [PROVIDER_UNAVAILABLE] OpenRouter error (400): {\"error\":{\"message\":\"Provider returned error\",\"code\":400,\"metadata\":{\"raw\":\"{\\\"error\\\":{\\\"message\\\":\\\"unexpected content after document: line 1 column 24 (char 23)\\\",\\\"type\\\":\\\"invalid_request_error\\\"",
+    "summaryHash": "890ef6a490a73970f7eabe57818870e45a592326d34689e4ac6e7634ff6cfffd",
+    "findings": 0,
+    "evidence": 3,
+    "filesChanged": [],
+    "toolCalls": 1,
+    "toolFailures": 1,
+    "context": null,
+    "eventTypes": {
+      "agent.started": 1,
+      "tool.call_started": 1,
+      "tool.execution_started": 1,
+      "tool.execution_failed": 1,
+      "turn.failed": 1,
+      "forgegreen.r0_telemetry_recorded": 1,
+      "forgegreen.run_started": 1,
+      "forgegreen.model_usage_recorded": 1,
+      "forgegreen.tool_usage_recorded": 1,
+      "forgegreen.verification_usage_recorded": 1,
+      "forgegreen.baseline_generated": 1,
+      "forgegreen.energy_estimated": 1,
+      "forgegreen.run_finalized": 1,
+      "forgegreen.optimization_candidate": 1,
+      "forgegreen.optimization_summary": 1
+    }
+  },
+  "verification": {
+    "visible": [
+      {
+        "command": "node --check src/math.js",
+        "passed": true,
+        "elapsedMs": 75,
+        "outputHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      }
+    ],
+    "hidden": {
+      "command": "node hidden/verify.mjs",
+      "passed": false,
+      "elapsedMs": 78,
+      "exitCode": 1,
+      "outputHash": "f57a1b4e0476ac3f0df9c3b156e7f0d8232c8fa281ee6a1e2462a7d8d4f4e512"
+    },
+    "allPassed": false
+  },
+  "completionGate": "not_invoked: this harness measures the actual AgentRuntime loop; full workflow/mission completion remains a separate proof surface.",
+  "timing": {
+    "wallClockMs": 4640,
+    "timedOut": false
+  },
+  "memory": {
+    "rssBefore": 207429632,
+    "rssAfter": 211607552,
+    "heapUsedBefore": 82568336,
+    "heapUsedAfter": 92869216
+  }
+}

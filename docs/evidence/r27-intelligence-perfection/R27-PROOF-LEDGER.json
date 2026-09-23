@@ -1,0 +1,227 @@
+{
+  "schema": "r27-proof-ledger-1",
+  "recordedAt": "2026-09-23",
+  "scope": "single-user-local-codeforge",
+  "rules": {
+    "levels": ["IMPLEMENTED", "TESTED", "DETERMINISTICALLY_PROVEN", "LIVE_PROVEN", "PACKAGED_PROVEN", "HARDWARE_PROVEN", "BLOCKED", "NOT_PROVEN"],
+    "interpretation": "A higher level never follows from a lower one without evidence at that level. Historical R26 evidence is cited only as historical and never treated as current R27 packaged or hardware proof."
+  },
+  "subsystems": [
+    {
+      "name": "Core runtime",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "LIVE_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-ENDURANCE-EVIDENCE.json", "R27-SINGLE-USER-PERFORMANCE-EVIDENCE.json", "R27-LIVE-PREFLIGHT-EVIDENCE.json"],
+      "note": "A bounded live AgentRuntime/tool/context slice reached a hidden-verifier-passing isolated edit. Completion-gated workflow success and endurance remain unproven."
+    },
+    {
+      "name": "ForgeGreen",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "LIVE_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-FORGREEN-AB-EVIDENCE.json", "R27-FORGREEN-RUNTIME-DETERMINISTIC/forgegreen-ab.json"],
+      "note": "Scripted A/B proves duplicate-suppression mechanics, not live-model economic benefit or crossover."
+    },
+    {
+      "name": "8-Bit free-route health",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-8BIT-EVIDENCE.json", "a205529"],
+      "note": "Catalog drift, canonical health authority, durable ledger, and Free Auto enforcement are deterministic; no provider quota lifecycle was spent."
+    },
+    {
+      "name": "16-Bit paid-route intelligence",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "BLOCKED",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-16BIT-EVIDENCE.json", "2b93fc5"],
+      "note": "The free-only R27 server quarantines paid execution; paid probes require an explicit policy and spend authorization."
+    },
+    {
+      "name": "ForgeVerify",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-FORGEVERIFY-EVIDENCE.json", "ea3ad8b"],
+      "note": "Windows timeout/process-tree cleanup was revalidated locally; exact current packaged bytes are not yet built."
+    },
+    {
+      "name": "Subagents",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-SUBAGENT-EVIDENCE.json", "R27-SUBAGENT-RUNTIME-DETERMINISTIC.json", "b8d1a52"],
+      "note": "The deterministic reviewer-repair case has value; live relevance, precision/recall, and crossover remain unmeasured."
+    },
+    {
+      "name": "Planner",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-PLANNER-EVIDENCE.json", "945f12a"],
+      "note": "Semantic and legacy protocols canonicalize safely; no live quality or qualification-rate claim exists."
+    },
+    {
+      "name": "Context",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-CONTEXT-EVIDENCE.json", "R27-SINGLE-USER-PERFORMANCE-EVIDENCE.json", "R27-LIVE-PREFLIGHT-EVIDENCE.json", "f9c0273"],
+      "note": "One bounded live run observed context invalidation/refresh after a real edit. Live token economics and endurance remain unproven."
+    },
+    {
+      "name": "Mission memory",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-MEMORY-EVIDENCE.json", "27b977b"],
+      "note": "One-mission stale-summary prompt exclusion is proven; cross-session preference/history behavior is not implemented."
+    },
+    {
+      "name": "Browser",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-BROWSER-EVIDENCE.json", "99a5c2f"],
+      "note": "Loopback Chromium runtime and navigation recovery are covered; current packaged browser dogfood is absent."
+    },
+    {
+      "name": "Terminal",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-TERMINAL-EVIDENCE.json", "1bc39b4"],
+      "note": "PTY process-tree cleanup is locally proven; packaged long-session hygiene is absent."
+    },
+    {
+      "name": "Git",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-GIT-EVIDENCE.json", "b8b73d1"],
+      "note": "Local dirty-tree, restore, and stale-revision safety are deterministic evidence only."
+    },
+    {
+      "name": "GitHub",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-GITHUB-EVIDENCE.json", "c19997d"],
+      "note": "PR reconciliation rejects stale/closed state; OAuth/App test-repository flow, push, and CI inspection remain external authorization work."
+    },
+    {
+      "name": "Permissions",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "NOT_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R26-PERMISSION-AUDIT.md (historical)"],
+      "note": "R26 has a 44/44 audit; it has not been independently revalidated on current R27 HEAD."
+    },
+    {
+      "name": "Recovery",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-ENDURANCE-EVIDENCE.json", "R27-FORGEVERIFY-EVIDENCE.json"],
+      "note": "Worker, mission, synthesis, and process-cleanup recovery are local deterministic evidence."
+    },
+    {
+      "name": "Live provider preflight",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-LIVE-PREFLIGHT-EVIDENCE.json", "R27-LIVE-RUNS/"],
+      "note": "OpenRouter catalog/health and a bounded zero-unit route were observed live. Google is suspended, Groq is not plan-attested, and remaining account capacity is unknown."
+    },
+    {
+      "name": "Endurance",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-ENDURANCE-EVIDENCE.json", "1a04565"],
+      "note": "79/79 recovery/growth stress tests are not an unattended multi-hour live soak."
+    },
+    {
+      "name": "Single-user performance",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R27-SINGLE-USER-PERFORMANCE-EVIDENCE.json", "622c56c"],
+      "note": "Synthetic million-line and UI projection guards are not portable hardware measurements."
+    },
+    {
+      "name": "Packaged desktop",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "NOT_PROVEN",
+      "live": "NOT_PROVEN",
+      "packaged": "NOT_PROVEN",
+      "hardware": "NOT_PROVEN",
+      "evidence": ["R26-DESKTOP-E2E.md (historical)", "R27-UX-EVIDENCE.json"],
+      "note": "Existing release bytes predate current R27 HEAD; no exact-byte current-source build/smoke exists."
+    }
+  ],
+  "verdict": "R27_INTELLIGENCE_IMPROVED_WITH_BOUNDED_LIVE_RUNTIME_PROOF_AND_BLOCKERS",
+  "nextRequiredEvidence": [
+    "A separately completion-gated live workflow whose terminal completed state passes evaluateCompletion; this bounded AgentRuntime harness deliberately does not invoke it.",
+    "A representative sustained live run only after the completion-gated slice is successful; current four-turn proof is not endurance.",
+    "Fresh Windows package from the current source commit, exact-byte audit, and packaged smoke/dogfood.",
+    "Machine-profiled hardware measurements and a second-device comparison when an accessible device exists."
+  ]
+}

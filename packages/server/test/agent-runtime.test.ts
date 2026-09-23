@@ -138,6 +138,34 @@ describe("AgentRuntime — Production Invocation & Lifecycle Certification (CF-0
     expect(result.usage.toolCount).toBe(1);
   });
 
+  it("normalizes concatenated tool JSON for execution and the next provider transcript", async () => {
+    await fs.writeFile(path.join(tmpDir, "index.ts"), "export const ready = true;", "utf-8");
+    const catalog = new InMemoryProviderCatalog();
+    const provider = new DeterministicScriptedProvider("test-provider", [
+      async function* () {
+        yield { type: "tool_call_started", toolCallId: "tc-joined", toolName: "list_files" };
+        yield { type: "tool_call_completed", toolCallId: "tc-joined", toolName: "list_files", arguments: '{"path":"."}{"path":"ignored"}' };
+        yield { type: "finish", finishReason: "tool_calls" };
+      },
+      async function* () {
+        yield { type: "text_delta", delta: "Listed the workspace." };
+        yield { type: "finish", finishReason: "stop" };
+      },
+    ]);
+    catalog.register(provider);
+    const runtime = createAgentRuntime({ sessionId: "test-session", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: tmpDir });
+
+    const result = await runtime.executeAgentRun({
+      runId: "run-normalize-tool-json", agentId: "explorer", role: "explorer", goal: "List files", workspaceId: "ws-1", workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: false, executeCommand: false, network: false },
+    });
+
+    expect(result.status).toBe("completed");
+    expect(result.toolExecutions[0]).toMatchObject({ toolName: "list_files", success: true, arguments: { path: "." } });
+    const assistantToolTurn = provider.requests[1]!.messages.find((message) => message.role === "assistant" && message.toolCalls?.some((call) => call.id === "tc-joined"));
+    expect(assistantToolTurn?.toolCalls?.[0]?.function.arguments).toBe('{"path":"."}');
+  });
+
   it("executes a standalone Coder run that edits files and tracks modified files accurately", async () => {
     const srcFile = path.join(tmpDir, "calculator.ts");
     await fs.writeFile(srcFile, "export function add(a: number, b: number) { return a - b; }", "utf-8");

@@ -524,6 +524,13 @@ export function parseToolArgs(argsJson: string): unknown {
   }
 }
 
+function normalizeToolArgumentsForExecution(argsJson: string): string | undefined {
+  const parsed = parseToolArgs(argsJson);
+  return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
+    ? JSON.stringify(parsed)
+    : undefined;
+}
+
 function isClassifiedReadOnlyCommand(toolName: string, args: unknown): boolean {
   if (toolName !== "run_command" || typeof args !== "object" || args === null || !("command" in args)) return false;
   const command = (args as { command?: unknown }).command;
@@ -1809,19 +1816,27 @@ export class AgentRuntime {
           finalSummary = response.text;
         }
 
+        // A small model can concatenate JSON objects while streaming a tool call. The tool
+        // broker and the follow-up provider request must see the same bounded, parseable first
+        // object; otherwise a recoverable malformed call becomes an upstream 400 on turn two.
+        const toolCalls = response.toolCalls.map((tc) => {
+          const argumentsJson = normalizeToolArgumentsForExecution(tc.arguments);
+          return argumentsJson ? { ...tc, arguments: argumentsJson } : tc;
+        });
+
         // R2: the assistant turn (text and/or decoded tool requests) is durable before any tool
         // executes, so a crash mid-tool leaves the request visible in the transcript.
         messages.push({
           role: "assistant",
           content: response.text,
-          ...(response.toolCalls?.length
-            ? { toolCalls: response.toolCalls.map((tc) => ({ id: tc.id, type: "function" as const, function: { name: tc.name, arguments: tc.arguments } })) }
+          ...(toolCalls.length
+            ? { toolCalls: toolCalls.map((tc) => ({ id: tc.id, type: "function" as const, function: { name: tc.name, arguments: normalizeToolArgumentsForExecution(tc.arguments) ?? "{}" } })) }
             : {}),
         });
         await writeRunJournal("active");
 
         // If no tools requested -> Assistant finished
-        if (!response.toolCalls || response.toolCalls.length === 0) {
+        if (toolCalls.length === 0) {
           if (expectedStructuredOutput) {
             const validation = validateStructuredAgentResult(expectedStructuredOutput, finalSummary);
             if (!validation.success) {
@@ -1859,7 +1874,7 @@ export class AgentRuntime {
 
         await persistModelTurn("tool_requests_decoded");
 
-        for (const tc of response.toolCalls) {
+        for (const tc of toolCalls) {
           if (req.signal?.aborted) {
             throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
           }
