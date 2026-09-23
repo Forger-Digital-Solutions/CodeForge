@@ -1,0 +1,32 @@
+{
+  "schema": "r28-hardware-profile-1",
+  "recordedAt": "2026-09-23T18:06:58.672Z",
+  "host": {
+    "manufacturer": "Dell Inc.",
+    "model": "Precision 5540",
+    "cpu": "Intel Core i7-9850H @ 2.60GHz (6 cores / 12 threads)",
+    "totalPhysicalMemoryBytes": 34060460032,
+    "os": "Microsoft Windows 11 Pro 10.0.26200 (64-bit)",
+    "gpu": [
+      "Intel UHD Graphics 630",
+      "NVIDIA Quadro T2000 4GB"
+    ],
+    "displays": "multi-monitor (observed 3600x1080 virtual bounds during computer-use live check, 125% DPI scaling on primary)"
+  },
+  "packagedStartup": {
+    "source": "apps/desktop/release/smoke-result.log full-mode run on ccd1c93 build",
+    "windowConstructedToWorkspaceInteractiveMs": 3495,
+    "preloadEntryToInteractiveMs": 1016,
+    "bootstrapToInteractiveMs": 762,
+    "rendererReloadCycleMs": "~130ms per reload (5 reloads measured in packaged_renderer_reload_count=5)",
+    "coldStartNote": "Includes full runtime server init + provider connections + extension host + repository index build inside the packaged asar; workspace-interactive is the first user-usable frame."
+  },
+  "packagedFootprint": {
+    "note": "Working-set and handle trend under a 20-minute idle+live soak: see R28-ENDURANCE-PACKAGED-EVIDENCE.json samples (recorded from this host)."
+  },
+  "boundaries": {
+    "measuredOnThisHost": true,
+    "secondDevice": "unavailable — single-host profile only",
+    "noLocalInference": "all measurements are of the free-cloud-routed product; no local LLM loads were exercised"
+  }
+}

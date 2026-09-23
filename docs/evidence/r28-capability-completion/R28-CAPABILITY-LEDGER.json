@@ -497,17 +497,16 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "PACKAGED_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
-        "apps/desktop/src/diagnostics.ts logDiagnostic/writeDiagnosticBundle"
+        "apps/desktop/src/diagnostics.ts logDiagnostic/writeDiagnosticBundle",
+        "live log audit: endurance-user-data + smoke-user-data codeforge-main.log — zero secret-shaped strings, zero key material, zero test-secret leakage"
       ],
-      "note": "apps/desktop/src/diagnostics.ts — persistent sanitized main-process log, SECRET_KEY/VALUE pattern redaction, sync writes for pre-crash capture, single-share bundle export via diagnostics:export IPC. Verified live during packaged smoke runs.",
+      "note": "apps/desktop/src/diagnostics.ts — persistent sanitized main-process log, SECRET_KEY/VALUE pattern redaction, sync writes for pre-crash capture, single-share bundle export via diagnostics:export IPC. Live audit of packaged soak + smoke logs: 0 credential material across all emitted lines.",
       "gaps": [
-        "bundle content audit on demand",
-        "provider-health section",
-        "user-facing export UX check"
+        "interactive bundle export through renderer UX"
       ]
     },
     {
@@ -569,33 +568,34 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
-      "packaged": "NOT_PROVEN",
-      "endurance": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
+      "packaged": "PACKAGED_PROVEN",
+      "endurance": "PROVEN_20MIN_LEVEL",
       "evidence": [
-        "R27-ENDURANCE-EVIDENCE.json 79/79"
+        "R27-ENDURANCE-EVIDENCE.json 79/79",
+        "R28-ENDURANCE-LIVE-EVIDENCE.json",
+        "R28-ENDURANCE-PACKAGED-EVIDENCE.json"
       ],
-      "note": "Deterministic stress only. No 15-30min/60-90min/multi-hour live or packaged soak.",
+      "note": "Live 20min soak: 10 sequential executeAgentRun iterations on one session across 10 distinct locked tasks, 127 provider requests, 8 completed/1 blocked/1 deadline-cancelled — RSS +16MB total, heap flat, DB/event growth linear, zero leak signature. Packaged 20min soak: 39 samples, process alive throughout, 39/39 unauthenticated probes returned 401 (auth boundary held under soak), zero working-set slope, clean force-kill with 0 leftover processes.",
       "gaps": [
-        "all live endurance levels",
-        "packaged endurance",
-        "resource trends"
+        "60-90min and multi-hour levels",
+        "packaged task-level workload soak (current is process-level)"
       ]
     },
     {
       "name": "Hardware Profile",
-      "implemented": "NOT_PROVEN",
-      "tested": "NOT_PROVEN",
-      "deterministic": "NOT_PROVEN",
-      "live": "NOT_PROVEN",
-      "packaged": "NOT_PROVEN",
-      "endurance": "NOT_PROVEN",
+      "implemented": "MEASURED",
+      "tested": "MEASURED",
+      "deterministic": "MEASURED",
+      "live": "MEASURED",
+      "packaged": "MEASURED",
+      "endurance": "MEASURED",
       "evidence": [
-        "R27 host inventory only"
+        "R28-HARDWARE-PROFILE-EVIDENCE.json",
+        "R28-ENDURANCE-PACKAGED-EVIDENCE.json"
       ],
-      "note": "No cold/warm startup, idle/peak RAM, CPU, latency measurements on real hardware. Second device unavailable unless provided.",
+      "note": "Dell Precision 5540 / i7-9850H 6C12T / 32GB / Win11 Pro 26200 / UHD630+Quadro T2000. Packaged cold start window-constructed→workspace-interactive 3.5s incl. full runtime+provider+extension+index init; renderer reload ~130ms; 20-min soak memory flat. Single host only.",
       "gaps": [
-        "full real-hardware profile",
         "optional second device"
       ]
     }

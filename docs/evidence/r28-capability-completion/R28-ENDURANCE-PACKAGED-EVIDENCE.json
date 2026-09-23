@@ -1,0 +1,529 @@
+{
+  "schema": "r28-endurance-packaged-1",
+  "recordedAt": "2026-09-23T18:24:58.996Z",
+  "exePath": "G:\\CodeForge\\apps\\desktop\\release\\win-unpacked\\CodeForge.exe",
+  "profile": "G:\\CodeForge\\apps\\desktop\\release\\endurance-user-data",
+  "soak": {
+    "minutesBudgeted": 20,
+    "sampleEveryMs": 30000,
+    "samplesTaken": 39,
+    "wallClockMs": 1219101
+  },
+  "runtime": {
+    "endpoint": "http://127.0.0.1:51242",
+    "pid": 22784,
+    "version": "0.4.0"
+  },
+  "outcome": {
+    "processAliveThroughSoak": true,
+    "endpointReachableCount": 39,
+    "endpoint401Count": 39,
+    "endpointUnexpectedStatuses": [],
+    "childExitCode": 1,
+    "shutdown": "forced_after_graceful_timeout",
+    "leftoverProcessesAfterKill": 0
+  },
+  "resourceTrends": {
+    "workingSetBytesPerSample": 0,
+    "handlesPerSample": 0,
+    "processCountPerSample": 0,
+    "first": {
+      "t": 2770,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    "last": {
+      "t": 1170168,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    }
+  },
+  "samples": [
+    {
+      "t": 2770,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 33921,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 65113,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 96605,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 128042,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 159226,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 190481,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 222055,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 253394,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 284777,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 316314,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 347765,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 378219,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 408668,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 439302,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 469978,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 500560,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 531063,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 561484,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 591879,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 622305,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 652744,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 683159,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 713543,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 743965,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 774439,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 804962,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 835429,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 865891,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 896296,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 926682,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 957073,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 987541,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 1017971,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 1048381,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 1078791,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 1109184,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 1139657,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    },
+    {
+      "t": 1170168,
+      "processCount": 0,
+      "totalWorkingSetBytes": 0,
+      "maxProcessWorkingSetBytes": 0,
+      "totalHandles": 0,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true
+    }
+  ],
+  "honesty": {
+    "probe": "Unauthenticated GET /api/models — 401 expected and counted; it proves liveness and the auth boundary holding under soak, not authenticated throughput.",
+    "scope": "Process-level packaged soak (uptime, memory/handle trend, liveness). Does not drive workflows; task-level packaged endurance is separate."
+  }
+}

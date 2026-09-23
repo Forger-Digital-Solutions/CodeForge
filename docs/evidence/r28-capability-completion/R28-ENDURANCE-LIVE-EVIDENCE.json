@@ -1,0 +1,279 @@
+{
+  "schema": "r28-endurance-live-1",
+  "recordedAt": "2026-09-23T18:24:39.530Z",
+  "design": {
+    "topology": "single_session_sequential_executeAgentRun",
+    "providerId": "openrouter",
+    "modelId": "nex-agi/nex-n2.5-mini:free",
+    "minutesBudgeted": 20,
+    "maxIterations": 40,
+    "perRunTimeoutMs": 480000,
+    "tasksRotated": [
+      "qual-js-return-sign",
+      "qual-js-off-by-one",
+      "qual-js-missing-export",
+      "js-small-fix-clamp",
+      "py-small-fix-median",
+      "ts-small-fix-slugify",
+      "js-bug-fix-cart-total",
+      "py-bug-fix-config-merge",
+      "ts-bug-fix-queue-order",
+      "js-feature-rate-limiter",
+      "ts-feature-cli-stats",
+      "ts-refactor-extract-validator",
+      "js-build-config-test-script",
+      "ts-large-context-rename-config-key",
+      "js-investigation-webhook-retries"
+    ]
+  },
+  "outcome": {
+    "iterations": 10,
+    "completedIterations": 8,
+    "blockedIterations": 1,
+    "failedIterations": 1,
+    "hiddenVerifierPassCount": 7,
+    "totalInferenceRequests": 127,
+    "wallClockMs": 1199716
+  },
+  "resourceTrends": {
+    "rssBytesPerIteration": 2419891.9757575756,
+    "heapUsedBytesPerIteration": 511706.0363636364,
+    "dbSizeBytesPerIteration": 85643.63636363637,
+    "eventCountPerIteration": 45.78787878787879,
+    "first": {
+      "iteration": 0,
+      "elapsedMs": 190709,
+      "rssBytes": 177348608,
+      "heapUsedBytes": 84234296,
+      "dbSizeBytes": 4096,
+      "eventCount": 58,
+      "cumulativeRequests": 17
+    },
+    "last": {
+      "iteration": 9,
+      "elapsedMs": 1199702,
+      "rssBytes": 193990656,
+      "heapUsedBytes": 86685656,
+      "dbSizeBytes": 802816,
+      "eventCount": 473,
+      "cumulativeRequests": 127
+    }
+  },
+  "samples": [
+    {
+      "iteration": 0,
+      "elapsedMs": 190709,
+      "rssBytes": 177348608,
+      "heapUsedBytes": 84234296,
+      "dbSizeBytes": 4096,
+      "eventCount": 58,
+      "cumulativeRequests": 17
+    },
+    {
+      "iteration": 1,
+      "elapsedMs": 310464,
+      "rssBytes": 176652288,
+      "heapUsedBytes": 85847928,
+      "dbSizeBytes": 241664,
+      "eventCount": 100,
+      "cumulativeRequests": 28
+    },
+    {
+      "iteration": 2,
+      "elapsedMs": 434719,
+      "rssBytes": 175337472,
+      "heapUsedBytes": 83108968,
+      "dbSizeBytes": 241664,
+      "eventCount": 160,
+      "cumulativeRequests": 45
+    },
+    {
+      "iteration": 3,
+      "elapsedMs": 484535,
+      "rssBytes": 176738304,
+      "heapUsedBytes": 84740720,
+      "dbSizeBytes": 241664,
+      "eventCount": 193,
+      "cumulativeRequests": 53
+    },
+    {
+      "iteration": 4,
+      "elapsedMs": 530496,
+      "rssBytes": 177905664,
+      "heapUsedBytes": 84819184,
+      "dbSizeBytes": 425984,
+      "eventCount": 226,
+      "cumulativeRequests": 61
+    },
+    {
+      "iteration": 5,
+      "elapsedMs": 595143,
+      "rssBytes": 185180160,
+      "heapUsedBytes": 86243856,
+      "dbSizeBytes": 425984,
+      "eventCount": 265,
+      "cumulativeRequests": 71
+    },
+    {
+      "iteration": 6,
+      "elapsedMs": 722297,
+      "rssBytes": 181567488,
+      "heapUsedBytes": 87735784,
+      "dbSizeBytes": 618496,
+      "eventCount": 316,
+      "cumulativeRequests": 85
+    },
+    {
+      "iteration": 7,
+      "elapsedMs": 796925,
+      "rssBytes": 188239872,
+      "heapUsedBytes": 88124600,
+      "dbSizeBytes": 618496,
+      "eventCount": 358,
+      "cumulativeRequests": 96
+    },
+    {
+      "iteration": 8,
+      "elapsedMs": 1150823,
+      "rssBytes": 199970816,
+      "heapUsedBytes": 89688104,
+      "dbSizeBytes": 802816,
+      "eventCount": 446,
+      "cumulativeRequests": 122
+    },
+    {
+      "iteration": 9,
+      "elapsedMs": 1199702,
+      "rssBytes": 193990656,
+      "heapUsedBytes": 86685656,
+      "dbSizeBytes": 802816,
+      "eventCount": 473,
+      "cumulativeRequests": 127
+    }
+  ],
+  "iterations": [
+    {
+      "iteration": 0,
+      "taskId": "qual-js-return-sign",
+      "class": "small_fix",
+      "status": "completed",
+      "runError": null,
+      "hiddenVerifierPassed": true,
+      "wallClockMs": 190648,
+      "requestsDuringIteration": 17,
+      "filesChanged": 2,
+      "abortedByDeadline": false
+    },
+    {
+      "iteration": 1,
+      "taskId": "qual-js-off-by-one",
+      "class": "small_fix",
+      "status": "completed",
+      "runError": null,
+      "hiddenVerifierPassed": true,
+      "wallClockMs": 119724,
+      "requestsDuringIteration": 11,
+      "filesChanged": 1,
+      "abortedByDeadline": false
+    },
+    {
+      "iteration": 2,
+      "taskId": "qual-js-missing-export",
+      "class": "small_fix",
+      "status": "completed",
+      "runError": null,
+      "hiddenVerifierPassed": true,
+      "wallClockMs": 124223,
+      "requestsDuringIteration": 17,
+      "filesChanged": 1,
+      "abortedByDeadline": false
+    },
+    {
+      "iteration": 3,
+      "taskId": "js-small-fix-clamp",
+      "class": "small_fix",
+      "status": "completed",
+      "runError": null,
+      "hiddenVerifierPassed": true,
+      "wallClockMs": 49800,
+      "requestsDuringIteration": 8,
+      "filesChanged": 1,
+      "abortedByDeadline": false
+    },
+    {
+      "iteration": 4,
+      "taskId": "py-small-fix-median",
+      "class": "small_fix",
+      "status": "completed",
+      "runError": null,
+      "hiddenVerifierPassed": false,
+      "wallClockMs": 45944,
+      "requestsDuringIteration": 8,
+      "filesChanged": 1,
+      "abortedByDeadline": false
+    },
+    {
+      "iteration": 5,
+      "taskId": "ts-small-fix-slugify",
+      "class": "small_fix",
+      "status": "completed",
+      "runError": null,
+      "hiddenVerifierPassed": true,
+      "wallClockMs": 64632,
+      "requestsDuringIteration": 10,
+      "filesChanged": 1,
+      "abortedByDeadline": false
+    },
+    {
+      "iteration": 6,
+      "taskId": "js-bug-fix-cart-total",
+      "class": "bug_fix",
+      "status": "completed",
+      "runError": null,
+      "hiddenVerifierPassed": true,
+      "wallClockMs": 127050,
+      "requestsDuringIteration": 14,
+      "filesChanged": 1,
+      "abortedByDeadline": false
+    },
+    {
+      "iteration": 7,
+      "taskId": "py-bug-fix-config-merge",
+      "class": "bug_fix",
+      "status": "completed",
+      "runError": null,
+      "hiddenVerifierPassed": false,
+      "wallClockMs": 74608,
+      "requestsDuringIteration": 11,
+      "filesChanged": 1,
+      "abortedByDeadline": false
+    },
+    {
+      "iteration": 8,
+      "taskId": "ts-bug-fix-queue-order",
+      "class": "bug_fix",
+      "status": "blocked",
+      "runError": null,
+      "hiddenVerifierPassed": true,
+      "wallClockMs": 353758,
+      "requestsDuringIteration": 26,
+      "filesChanged": 1,
+      "abortedByDeadline": false
+    },
+    {
+      "iteration": 9,
+      "taskId": "js-feature-rate-limiter",
+      "class": "feature",
+      "status": "cancelled",
+      "runError": null,
+      "hiddenVerifierPassed": false,
+      "wallClockMs": 48701,
+      "requestsDuringIteration": 5,
+      "filesChanged": 1,
+      "abortedByDeadline": true
+    }
+  ],
+  "honesty": {
+    "note": "Resource trends are per-iteration linear slopes over the soaked window; DB/event growth is expected-linear, RSS/heap superlinear growth is the leak signal. Iteration outcomes are recorded honestly — blocked and failed iterations count against liveness, not against the evidence."
+  }
+}
