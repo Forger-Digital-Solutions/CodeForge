@@ -1,0 +1,47 @@
+{
+  "schema": "r28-canonical-regression-1",
+  "recordedAt": "2026-09-23T18:52:00.000Z",
+  "question": "Did anything regress across the canonical battery during the R28 capability campaign?",
+  "answer": "NO — every canonical check reproduced its baseline outcome on current bytes.",
+  "checks": [
+    {
+      "name": "r27_golden_task_validation",
+      "command": "node benchmarks/r27/validate-golden-tasks.mjs",
+      "result": "IDENTICAL_TO_BASELINE",
+      "detail": "15 digest-locked tasks: 13 PASS + 2 BLOCKED_ENVIRONMENT (py-small-fix-median, py-bug-fix-config-merge — 'python' absent on this host; the same two tasks blocked in the committed baseline record). Untouched-fail / reference-pass contract intact on all 13 runnable tasks.",
+      "evidence": "docs/evidence/r27-intelligence-perfection/R27-GOLDEN-TASK-VALIDATION.json"
+    },
+    {
+      "name": "server_unit_suite",
+      "command": "npx vitest run packages/server",
+      "result": "PASS",
+      "detail": "115 test files, 732 tests passed, 3 skipped (postgres-conditional)."
+    },
+    {
+      "name": "computer_use_unit_suite",
+      "command": "npx vitest run packages/computer-use",
+      "result": "PASS",
+      "detail": "2 test files, 22 tests passed — package introduced during R28."
+    },
+    {
+      "name": "packaged_smoke_full",
+      "command": "node apps/desktop/scripts/packaged-smoke.js full",
+      "result": "PASS",
+      "detail": "PACKAGED_FULL_SMOKE_OK — all markers green including updater (status/check/install-guarded), control-plane trust boundary (bearer withheld, forged approval/origin rejected, secondary renderer rejected), repository index (READY, 258 files), zero-prompt workflow, failure-repair, renderer reload ×5, settings, extensions, credential encryption.",
+      "packagedBytes": "apps/desktop/release/win-unpacked/CodeForge.exe built 2026-09-23 13:34 — includes all production changes through computer-use packaging + updater preload."
+    },
+    {
+      "name": "packaged_smoke_interrupt",
+      "command": "node apps/desktop/scripts/packaged-smoke.js interrupt",
+      "result": "PASS",
+      "detail": "Expected exit 73; electron_restart_interruption_ready=PASS."
+    },
+    {
+      "name": "packaged_smoke_recover",
+      "command": "node apps/desktop/scripts/packaged-smoke.js recover",
+      "result": "PASS",
+      "detail": "PACKAGED_RECOVERY_SMOKE_OK — corrupt credential fails closed, legacy plaintext rejected+migrated, restart decrypt, no approval replay, fresh task."
+    }
+  ],
+  "note": "No production code changed between the last packaged build and this regression run (only benchmark harnesses + evidence receipts), so the packaged bytes under test are current."
+}

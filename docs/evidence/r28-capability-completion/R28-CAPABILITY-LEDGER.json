@@ -1,6 +1,6 @@
 {
   "schema": "r28-capability-ledger-1",
-  "recordedAt": "2026-09-23T18:37:55.594Z",
+  "recordedAt": "2026-09-23T18:46:38.316Z",
   "scope": "single-user-local-codeforge",
   "rules": {
     "levels": [
@@ -601,7 +601,7 @@
       ]
     }
   ],
-  "verdict": "R28_IN_PROGRESS",
+  "verdict": "CODEFORGE_R28_CAPABILITY_COMPLETE_LIMITS_DECLARED",
   "campaignRules": {
     "multiUserFreeze": "No DAU/SaaS/multi-tenant scaling work",
     "gemsFreeze": "GEMS stays proprietary family; no Sapphire/Topaz 1.1 integration before certification",
@@ -635,5 +635,16 @@
       }
     },
     "boundary": "forge serve intentionally ships no provider connections (the desktop owns provider wiring) — recorded honestly; the dogfood server is the same production createServer with the same registration calls the desktop performs. Packaged-Electron interactive OAuth+UI dogfood remains."
+  },
+  "certification": "docs/certification/codeforge-r28-capability-completion-2026-09-23.md",
+  "canonicalRegression": {
+    "status": "PASS",
+    "evidence": "R28-CANONICAL-REGRESSION-EVIDENCE.json",
+    "detail": "golden battery identical (13+2 env-blocked); server 732 tests; computer-use 22/22; packaged smoke all 3 modes on current bytes"
+  },
+  "technicalDemo": {
+    "status": "COMPLETE",
+    "evidence": "R28-TECHNICAL-DEMO-TRANSCRIPT.{md,json}",
+    "detail": "narrated 6-scene live demo: verified-free fabric, 401 boundary, real task to gate-completion, fail-closed route refusal"
   }
 }

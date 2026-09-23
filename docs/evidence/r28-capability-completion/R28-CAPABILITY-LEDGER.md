@@ -70,10 +70,19 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | Endurance | ✔ | ✔ | ✔ 79/79 | ✔ 20min | ✔ 20min | ✔ 20min | 60-90min + multi-hour levels; packaged task-level soak |
 | Hardware Profile | ✔ measured | ✔ | ✔ | ✔ | ✔ | ✔ | single host (i7-9850H/32GB/Win11); 2nd device unavailable |
 
-## Execution order (active)
+## Execution order (complete)
 
 packaged launch proof ✔ → installer flows → canonical live completion gate → medium/large live tasks
 → Browser/Computer Use/Terminal/WSL/Git/GitHub/MCP/Plugins/Extensions → Settings/Updater/Auth/
 Memory/Context/Recovery → permissions penetration → live ForgeGreen/Subagent/Planner/8-Bit/ForgeAuto
-proofs → live + packaged endurance → hardware profiles → dogfood → demo → canonical regression →
-recertification → final matrix + verdict.
+proofs → live + packaged endurance → hardware profiles → dogfood ✔ → demo ✔ → canonical regression ✔ →
+recertification ✔ → final matrix + verdict.
+
+## Verdict
+
+`CODEFORGE_R28_CAPABILITY_COMPLETE_LIMITS_DECLARED` — see
+[docs/certification/codeforge-r28-capability-completion-2026-09-23.md](../../certification/codeforge-r28-capability-completion-2026-09-23.md).
+Declared residual limits: large-task capability ceiling on verified-free routes (3 blocked,
+preserved); interactive OAuth + packaged-UI dogfood; packaged IPC-spoof/MCP-extension/export-UX
+penetration; multi-hour endurance; second hardware profile; single-provider failover; installer
+signing identity.

@@ -1,0 +1,270 @@
+{
+  "schema": "r28-evidence-freeze-1",
+  "frozenAt": "2026-09-23T18:46:52.201Z",
+  "verdict": "CODEFORGE_R28_CAPABILITY_COMPLETE_LIMITS_DECLARED",
+  "certification": "docs/certification/codeforge-r28-capability-completion-2026-09-23.md",
+  "gitHead": "b5745846f415c48e6285648a76844964c8833f6a",
+  "fileCount": 52,
+  "files": [
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-16BIT-COMPLETENESS-AUDIT.json",
+      "sha256": "3d8d3dc37a6ca214eeaacd33556546c00b17aff6c918ae844cdb6de5a9a11864",
+      "bytes": 4251
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-AUTH-LIVE-EVIDENCE.json",
+      "sha256": "5e732d1680782b1924926830155cc8299a1ea76b1fb12e8a7bb2fc2f65b7effb",
+      "bytes": 3010
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-BROWSER-LIVE-EVIDENCE.json",
+      "sha256": "9d46c9c55070f9fe07c596bf514609bea2d79087084f3ace51d7f7b509e2aea9",
+      "bytes": 1760
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-CANONICAL-REGRESSION-EVIDENCE.json",
+      "sha256": "27acd13ac6fa13fdd5ff30c446b880d0ae78752ea711fbe1b28550e53142de83",
+      "bytes": 2707
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-CAPABILITY-LEDGER.json",
+      "sha256": "1f8960d15c454584fc9568dcd05a149bce2c5c9c0a8dc0cfb636f6ab1f417ed2",
+      "bytes": 38636
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-CAPABILITY-LEDGER.md",
+      "sha256": "115ed1f237955e1c26ee98de1beb850fcdba1e0d58e60e2f168f223f31e50fe2",
+      "bytes": 7755
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-COMPUTER-USE-LIVE-EVIDENCE.json",
+      "sha256": "c577dd90a65156172de1df7cddcd0ca8a32f77f83f8a485ff6a0136aea320869",
+      "bytes": 1495
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-DIAGNOSTICS-LIVE-EVIDENCE.json",
+      "sha256": "927013fc0f5d3c4f8eee6e7588b3f1b799993aaed66bc90da7df0cc7aa0db80c",
+      "bytes": 2366
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-DOGFOOD-EVIDENCE.json",
+      "sha256": "486550e4cfe3d578fdcee560075335c78dff2298826ec46f21e1bc150ebbf240",
+      "bytes": 1845028
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-ENDURANCE-LIVE-EVIDENCE.json",
+      "sha256": "c8123c5ad40e3efd150e8c343406f4069ae7b4d4e99926f60c7ce3e8c0174b73",
+      "bytes": 7325
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-ENDURANCE-PACKAGED-EVIDENCE.json",
+      "sha256": "99dea9f81da1d952cdd7a1d71d28869886780967d2b6d4cf442e5728ca67da7e",
+      "bytes": 11731
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-EXTENSIONS-LIVE-EVIDENCE.json",
+      "sha256": "cf43e2c72cd10fae5cf111ae29f783c354353fc9821c737daea63aebcbd4813b",
+      "bytes": 3173
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-FORGEAUTO-LIVE-EVIDENCE.json",
+      "sha256": "0bd4b63e3deda865e9fe76deddc850a4400b98d074add5685bd83107ca480f5a",
+      "bytes": 3081
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-FORGEGREEN-AB-LIVE-EVIDENCE.json",
+      "sha256": "3f9b982626693b772091c43833ac41bacd31a91a19414acd7c63fb2666be68ad",
+      "bytes": 17289
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-GIT-LIVE-EVIDENCE.json",
+      "sha256": "1b3ccfbf57acc3b6f51e9960eeabd7117c4ee8faf63f543fdb3f1002c8d66042",
+      "bytes": 2124
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-GITHUB-LIVE-EVIDENCE.json",
+      "sha256": "ca6047d551598b6b3b2ea5f0887a612e6d28424249c1d9379686c90b379aa127",
+      "bytes": 1595
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-HARDWARE-PROFILE-EVIDENCE.json",
+      "sha256": "1a93efc6d96e25ab3138eb55e04665b305218eef408b0ec97b9c763b2fb365e0",
+      "bytes": 1521
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-INSTALLER-EVIDENCE.json",
+      "sha256": "cfb25a719507262a5d6a00427966f9012e669de408bad677b5ac0a24208c4ad4",
+      "bytes": 2779
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-COMPLETION-EVIDENCE.json",
+      "sha256": "f9cf731f01364866075b4ea1e0270718cdfafff458959f8c0c938a700f2a351e",
+      "bytes": 3110
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-0917fc7b-f339-4a3e-aff4-046b5841dcc6.json",
+      "sha256": "2486ecae34f5dddd0132a56835869fd95f52c76bd5a6dc5e616a4b8c3092261e",
+      "bytes": 6829
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-22c5bd8a-b2f7-4cfc-9256-04235b067b90.json",
+      "sha256": "e9bf643c87375c1ce089b9234004ed43d9fa3fc8df33fa0907e2b797d7f6af0a",
+      "bytes": 3966
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-263ed6b4-a787-4e0c-96dd-a8818f83be7e.json",
+      "sha256": "f2c27a45516443a5b8fc5db3ddf4eccc20f920b63cf90a22a613f634a058b392",
+      "bytes": 7560
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-284eadea-38b2-414a-94d5-d594a0c97ed4.json",
+      "sha256": "0114532fe335a538dbf1e16192e31c445b9fb6e98eb09fc1823eb8cb559dcbe4",
+      "bytes": 6369
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-30840533-031c-4ac3-a4d7-e35aa4542e5c.json",
+      "sha256": "2999b8f80a294f080c9d9555aa6c6daffaea66f0e2cd7571decba442595b1bb9",
+      "bytes": 14655
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-33143667-6ab4-480d-840a-46504653d8e7.json",
+      "sha256": "29e4820fdd2fe5c6474d0b05aeb4e9a652d5838d0d07c4215f3359bde2dedb71",
+      "bytes": 9295
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-3e2b7e18-aae1-4224-88d3-89cbfde60ae9.json",
+      "sha256": "712d6a2d62020e8309c46c108e377efcc107de6ea2b9154a097578825af683f2",
+      "bytes": 7436
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-46283ec8-d5ef-486b-81dc-41867c4bcabd.json",
+      "sha256": "2c39cb22221a7b68c40a5a9c5e3ee893c0961a6d2dc261db69adb57797fe8dd1",
+      "bytes": 23500
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-4cbabd3c-11fa-42b5-9039-e61f1e48a043.json",
+      "sha256": "855e3a236267d8630a45f3fb1588fbf714dfa883117cc90aff31419d014b64d3",
+      "bytes": 6370
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-6909d366-3299-405d-93f1-4957a370972f.json",
+      "sha256": "42bfcd4a21c80d65b908e98a687155d97c2426ea357d90234703a4f55e9534b2",
+      "bytes": 5493
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-734e2dc9-f731-40e0-bfcf-74818601bf7e.json",
+      "sha256": "9821a2b0716c260a3a29d133ce2bfffd367a91651428425fac41895d024a4fd9",
+      "bytes": 6426
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-73caac05-d9b1-47d4-a2b4-64c3d8aa31d6.json",
+      "sha256": "d9886a3676d0cd612ee634f6ece252b7d3d41065bebccbf39bd0cb81db9c13e4",
+      "bytes": 5513
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-87ea4cf7-23df-4332-bbf6-5ff0fede9771.json",
+      "sha256": "a41b5f694075ccad6d5a44f135ec481f0040e60c55fb8a9245417314c2b47bbb",
+      "bytes": 6371
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-8a018f80-9dbb-4633-8984-95d73cb733e4.json",
+      "sha256": "f3ce0726f455a3f8867276637a895f178d2985c678df575f6765c3e2ee536c8b",
+      "bytes": 9735
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-ad11797d-6a92-478f-a7a1-7c2f8696412b.json",
+      "sha256": "d876cef2e53c5a0e484a6a8d62b48a0f3e745aadf9aa331b7c5546862de892d3",
+      "bytes": 6623
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-b68de72b-0918-4870-9cc1-b833121e33f2.json",
+      "sha256": "fef0cd25327badd59b35cb519f8709dc2e634cfdc68097f0bcd1c88645325f4e",
+      "bytes": 8318
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-b9a11571-be7c-4a53-a1a3-df9bd880b4cb.json",
+      "sha256": "1765bec6f428f24ddca2c483ea736dc88988b9ee0fea579d4adde75c5655d458",
+      "bytes": 6649
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-LIVE-RUNS/r28-live-f6ddbc7e-7435-4974-8f8b-be246990d549.json",
+      "sha256": "233709874422dde533abb3139b3ce07938bde25b917d89eb235da4ebbbed9a6d",
+      "bytes": 13159
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-MCP-LIVE-EVIDENCE.json",
+      "sha256": "25b726bdac6216d7580bff27f6c62342b1ecc1506609c07c5d2ec0069d0968f2",
+      "bytes": 2567
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-MEMORY-LIVE-EVIDENCE.json",
+      "sha256": "76a4cbbed9597f5cc567ab5631b9a2269cdb88803b36311859fdbe7298ab2900",
+      "bytes": 2158
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-PACKAGED-SMOKE-EVIDENCE.json",
+      "sha256": "7748ac7a7ff8ee854df2e2f7fc5d2f6ef440cb9cda25b75f4d868b288218b676",
+      "bytes": 1145
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-PACKAGED-STARTUP-EVIDENCE.json",
+      "sha256": "31f5a7d7cad3b49a0aeea593eeec10a2bdf7ec998249eb6b46a7706ae747ea27",
+      "bytes": 3919
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-PERMISSIONS-LIVE-EVIDENCE.json",
+      "sha256": "56207bdcd41159f5f17d906eaba9cd3de273149cd18cb5c6eb79e2664525b1f7",
+      "bytes": 4455
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-PLANNER-LIVE-EVIDENCE.json",
+      "sha256": "a75287b4212d29e3c087155482161b5d1ddbeb3c3147f8e40912bd71d891ca5c",
+      "bytes": 1325
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-RECOVERY-LIVE-EVIDENCE.json",
+      "sha256": "b35ea062e72e76a67b49552b21fd38bd57a8a9c253804b9222bfe4d1adece591",
+      "bytes": 3123
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-SETTINGS-LIVE-EVIDENCE.json",
+      "sha256": "3efc08a5d9cd5dfc9854c3e73843eacbd584a3fd869b68b8599071af738a6c16",
+      "bytes": 1798
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-SUBAGENT-AB-LIVE-EVIDENCE.json",
+      "sha256": "46a2f646c4251d5e74fe6c2af4277730841ce4efc1775db17f88890304f38057",
+      "bytes": 32282
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-TECHNICAL-DEMO-TRANSCRIPT.json",
+      "sha256": "ed94fa02a377d5edc9da7fdedd584c59a13586a4f742b889933615b0bf93b690",
+      "bytes": 3144
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-TECHNICAL-DEMO-TRANSCRIPT.md",
+      "sha256": "3fb6001ba50cfb1501e253e3ca5a31fb758740c7761200b4016031e3eb39eb97",
+      "bytes": 2221
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-TERMINAL-LIVE-EVIDENCE.json",
+      "sha256": "59d5196fd6f90943e2c3240761e29d3b14287a23b1f61ef413180af0a2f7a19b",
+      "bytes": 1251
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-UPDATER-LIVE-EVIDENCE.json",
+      "sha256": "7859e03b57296313065c3d2483b756c175c93b8826a756961a6d93a63328681c",
+      "bytes": 1111
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-WSL-LIVE-CHECK.log",
+      "sha256": "91934e9927f3a5c014e98771c928dc4677298b09c2d1b3a4390cec8d7225ec15",
+      "bytes": 935
+    },
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-WSL-LIVE-EVIDENCE.json",
+      "sha256": "1497b031205ec71410cbc2601952dcd6f34a7853b2cce8c65647fe01a2ea29c9",
+      "bytes": 1686
+    }
+  ]
+}
