@@ -62,12 +62,12 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | Updater | ✔ | ✔ 5/5 live | ✔ | ✔ host feed | ✗ | ✗ | packaged update cycle, apply+restart, production feed |
 | Authentication | ✔ | ✔ | ✔ | ✔ | ✔ credentials | ✗ | crypto lifecycle live 26/26 — interactive OAuth dance + hosted refresh remain |
 | Permissions | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live 32/32 ToolBroker penetration (role ceilings, all escape forms, sensitive denylist) — packaged IPC spoof remains |
-| Diagnostics | ✔ | ✔ | ✗ | ✗ | ✗ | ✗ | bundle redaction proof |
+| Diagnostics | ✔ | ✔ | ✔ | ✔ | ✔ | ✗ | live log audit clean — interactive export UX remains |
 | Installer | ✔ built | ✔ | ✗ | ✗ | ✗ | ✗ | install/upgrade/uninstall/retention flows |
 | Recovery | ✔ | ✔ | ✔ | ✔ | ✔ | ✗ | live 23/23 continuation state machine + crash repair + lease contention — packaged mid-op kill remains |
 | Provider Mgmt | ✔ | ✔ | ✔ | ✔ preflight | ✔ | ✗ | sustained multi-route health |
-| Endurance | ✔ | ✔ | ✔ 79/79 | ✗ | ✗ | ✗ | all live/packaged levels |
-| Hardware Profile | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | real measurements; 2nd device if available |
+| Endurance | ✔ | ✔ | ✔ 79/79 | ✔ 20min | ✔ 20min | ✔ 20min | 60-90min + multi-hour levels; packaged task-level soak |
+| Hardware Profile | ✔ measured | ✔ | ✔ | ✔ | ✔ | ✔ | single host (i7-9850H/32GB/Win11); 2nd device unavailable |
 
 ## Execution order (active)
 
