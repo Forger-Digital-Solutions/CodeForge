@@ -1,0 +1,49 @@
+{
+  "schema": "r28-planner-live-check-1",
+  "recordedAt": "2026-09-23T17:04:53.533Z",
+  "model": "nvidia/nemotron-3-super-120b-a12b:free",
+  "provider": "openrouter",
+  "surface": "real planner turn — ROLE_PROMPTS.planner + authority boundary → OpenRouter chat → validateStructuredAgentResult → validatePlanningCompleteness (same pipeline as autonomous-orchestrator)",
+  "results": [
+    {
+      "name": "planner produced output",
+      "ok": true,
+      "detail": "2384 chars, finish=stop, 9254ms"
+    },
+    {
+      "name": "output canonicalizes via validateStructuredAgentResult",
+      "ok": true,
+      "detail": "6 tasks, sourceProtocol=task_graph_v1"
+    },
+    {
+      "name": "planning completeness gate",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "plan has coder + reviewer (authorization requirement)",
+      "ok": true,
+      "detail": "explorer,coder,reviewer"
+    },
+    {
+      "name": "all dependencies resolve to real task ids",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "dependency graph is acyclic",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "plan contains verification/review coverage",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "tasks carry real objectives",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

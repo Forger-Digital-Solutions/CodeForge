@@ -157,16 +157,17 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
         "R27-PLANNER-EVIDENCE.json",
-        "945f12a"
+        "945f12a",
+        "planner-live-check.mjs=8/8 PASS — R28-PLANNER-LIVE-EVIDENCE.json"
       ],
-      "note": "Semantic+legacy protocols canonicalize safely. Real models producing authorized useful plans unproven.",
+      "note": "Semantic+legacy protocols canonicalize safely. R28 live: real nemotron-3-super planner turn with production ROLE_PROMPTS.planner + authority boundary — 6-task task_graph_v1 output canonicalized through validateStructuredAgentResult, passed validatePlanningCompleteness, acyclic dependency graph with resolvable deps, explorer+coder+reviewer roles satisfying the authorization requirement, real objectives, 9.3s wall clock.",
       "gaps": [
-        "live plan quality across ordering/parallel/review/verification/ownership cases"
+        "live plan quality across more task shapes (parallel workstreams, semantic_steps_v1 production)"
       ]
     },
     {

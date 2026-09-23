@@ -45,7 +45,7 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | 16-Bit | ✔ | ✔ | ✔ | BLOCKED (policy) | ✗ | ✗ | completeness audit DONE — statically complete, empirically absent by policy (no authorized paid probes) |
 | ForgeAuto | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live routing across task classes |
 | Subagents | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live crossover vs single-agent |
-| Planner | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live authorized useful plans |
+| Planner | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live 8/8 — real nemotron planner turn, valid acyclic authorized plan |
 | ForgeVerify | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live verification on larger tasks |
 | Context | ✔ | ✔ | ✔ | ✔ bounded | ✔ | ✗ | long-session growth/bounds |
 | Memory | ✔ | ✔ | ✔ | ✔ | ✔ | ✗ | live 18/18 (200t/500e accumulation, isolation, idempotency, restart) — no semantic recall layer (declared) |
