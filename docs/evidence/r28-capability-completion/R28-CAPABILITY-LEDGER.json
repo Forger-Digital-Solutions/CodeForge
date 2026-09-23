@@ -1,6 +1,6 @@
 {
   "schema": "r28-capability-ledger-1",
-  "recordedAt": "2026-09-23",
+  "recordedAt": "2026-09-23T18:37:55.594Z",
   "scope": "single-user-local-codeforge",
   "rules": {
     "levels": [
@@ -502,9 +502,10 @@
       "endurance": "NOT_PROVEN",
       "evidence": [
         "apps/desktop/src/diagnostics.ts logDiagnostic/writeDiagnosticBundle",
-        "live log audit: endurance-user-data + smoke-user-data codeforge-main.log — zero secret-shaped strings, zero key material, zero test-secret leakage"
+        "live log audit: endurance-user-data + smoke-user-data codeforge-main.log — zero secret-shaped strings, zero key material, zero test-secret leakage",
+        "benchmarks/r28/diag-app + R28-DIAGNOSTICS-LIVE-EVIDENCE.json — 30/30 live check: real Electron main drives built diagnostics module; 8 planted credential shapes (sk-*, Bearer JWT, ghp_*, session_secret, PEM, hex40) all redacted in sanitizer, on-disk bundle state, and persistent log; safe values retained"
       ],
-      "note": "apps/desktop/src/diagnostics.ts — persistent sanitized main-process log, SECRET_KEY/VALUE pattern redaction, sync writes for pre-crash capture, single-share bundle export via diagnostics:export IPC. Live audit of packaged soak + smoke logs: 0 credential material across all emitted lines.",
+      "note": "apps/desktop/src/diagnostics.ts — persistent sanitized main-process log, SECRET_KEY/VALUE redaction, sync writes, single-share bundle via diagnostics:export. Live 30/30: planted-secret redaction proven end-to-end on real on-disk artifacts (bundle + log). Prior packaged soak/smoke log audit: 0 credential material.",
       "gaps": [
         "interactive bundle export through renderer UX"
       ]
@@ -607,5 +608,32 @@
     "freeOnly": "ForgeZero zero-billing; no paid inference; no local LLM",
     "protectedFile": "R27-GOLDEN-TASK-VALIDATION.json never staged/modified/regenerated",
     "evidenceDiscipline": "IMPLEMENTED != TESTED != DETERMINISTIC != LIVE != PACKAGED != ENDURANCE"
+  },
+  "dogfoodProof": {
+    "status": "LIVE_PROVEN",
+    "recordedAt": "2026-09-23T18:37:55.593Z",
+    "harness": "benchmarks/r28/dogfood-live-check.mjs",
+    "evidence": "docs/evidence/r28-capability-completion/R28-DOGFOOD-EVIDENCE.json",
+    "path": "Production createServer (the server the desktop embeds via initializeServer) wired identically to Electron main: createProviderAdapterFromDefinition + EnvironmentCredentialStore + InMemoryProviderCatalog + discoverAndVerifyFree→ForgeZero. Real API flow: workspace/set → model-selection → workflow/run → supervised poll (approvals/questions resolved through the real endpoints) → terminal.",
+    "result": {
+      "task": "js-bug-fix-cart-total (medium bug_fix)",
+      "route": "openrouter / nex-agi/nex-n2.5-mini:free",
+      "workflowStatus": "complete",
+      "completionOutcome": "completed",
+      "hiddenVerifierPassed": true,
+      "apiCalls": 35,
+      "events": 285,
+      "workItemKinds": {
+        "plan": 1,
+        "eight_bit_route_state": 1,
+        "eight_bit_decision_receipt": 1,
+        "eight_bit_route_health": 1,
+        "agent_final_response": 2,
+        "verification": 3,
+        "run_inspection": 1,
+        "evidence": 1
+      }
+    },
+    "boundary": "forge serve intentionally ships no provider connections (the desktop owns provider wiring) — recorded honestly; the dogfood server is the same production createServer with the same registration calls the desktop performs. Packaged-Electron interactive OAuth+UI dogfood remains."
   }
 }

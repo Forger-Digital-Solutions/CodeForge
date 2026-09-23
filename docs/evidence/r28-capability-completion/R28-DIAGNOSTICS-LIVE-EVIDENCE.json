@@ -1,0 +1,132 @@
+{
+  "schema": "r28-diagnostics-live-1",
+  "at": "2026-09-23T18:37:06.023Z",
+  "checks": [
+    {
+      "name": "init_log_created",
+      "ok": true
+    },
+    {
+      "name": "sanitizer_catches:planted_0",
+      "ok": true
+    },
+    {
+      "name": "sanitizer_catches:planted_1",
+      "ok": true
+    },
+    {
+      "name": "sanitizer_catches:planted_2",
+      "ok": true
+    },
+    {
+      "name": "sanitizer_catches:planted_3",
+      "ok": true
+    },
+    {
+      "name": "sanitizer_catches:planted_4",
+      "ok": true
+    },
+    {
+      "name": "sanitizer_catches:planted_5",
+      "ok": true
+    },
+    {
+      "name": "sanitizer_catches:planted_6",
+      "ok": true
+    },
+    {
+      "name": "sanitizer_catches:planted_7",
+      "ok": true
+    },
+    {
+      "name": "sanitizer_keeps_safe",
+      "ok": true
+    },
+    {
+      "name": "bundle_written",
+      "ok": true
+    },
+    {
+      "name": "bundle_shape",
+      "ok": true,
+      "detail": "13 tail lines"
+    },
+    {
+      "name": "bundle_redacts:planted_0",
+      "ok": true
+    },
+    {
+      "name": "bundle_redacts:planted_1",
+      "ok": true
+    },
+    {
+      "name": "bundle_redacts:planted_2",
+      "ok": true
+    },
+    {
+      "name": "bundle_redacts:planted_3",
+      "ok": true
+    },
+    {
+      "name": "bundle_redacts:planted_4",
+      "ok": true
+    },
+    {
+      "name": "bundle_redacts:planted_5",
+      "ok": true
+    },
+    {
+      "name": "bundle_redacts:planted_6",
+      "ok": true
+    },
+    {
+      "name": "bundle_redacts:planted_7",
+      "ok": true
+    },
+    {
+      "name": "bundle_state_present",
+      "ok": true,
+      "detail": "connection summary retained"
+    },
+    {
+      "name": "log_captured_probe",
+      "ok": true,
+      "detail": "25 lines"
+    },
+    {
+      "name": "log_redacts:planted_0",
+      "ok": true
+    },
+    {
+      "name": "log_redacts:planted_1",
+      "ok": true
+    },
+    {
+      "name": "log_redacts:planted_2",
+      "ok": true
+    },
+    {
+      "name": "log_redacts:planted_3",
+      "ok": true
+    },
+    {
+      "name": "log_redacts:planted_4",
+      "ok": true
+    },
+    {
+      "name": "log_redacts:planted_5",
+      "ok": true
+    },
+    {
+      "name": "log_redacts:planted_6",
+      "ok": true
+    },
+    {
+      "name": "log_redacts:planted_7",
+      "ok": true
+    }
+  ],
+  "pass": 30,
+  "total": 30,
+  "failures": []
+}

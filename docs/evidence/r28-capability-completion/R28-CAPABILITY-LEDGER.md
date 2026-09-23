@@ -62,7 +62,8 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | Updater | ✔ | ✔ 5/5 live | ✔ | ✔ host feed | ✗ | ✗ | packaged update cycle, apply+restart, production feed |
 | Authentication | ✔ | ✔ | ✔ | ✔ | ✔ credentials | ✗ | crypto lifecycle live 26/26 — interactive OAuth dance + hosted refresh remain |
 | Permissions | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live 32/32 ToolBroker penetration (role ceilings, all escape forms, sensitive denylist) — packaged IPC spoof remains |
-| Diagnostics | ✔ | ✔ | ✔ | ✔ | ✔ | ✗ | live log audit clean — interactive export UX remains |
+| Diagnostics | ✔ | ✔ | ✔ | ✔ | ✔ | ✗ | live 30/30 planted-secret redaction (bundle + persistent log + sanitizer) — interactive export UX remains |
+| Dogfood | — | — | — | ✔ real workflow | ✗ | ✗ | production API E2E: workspace→model-select→workflow→gate-completed+hidden-verifier (35 calls, 285 events) |
 | Installer | ✔ built | ✔ | ✗ | ✗ | ✗ | ✗ | install/upgrade/uninstall/retention flows |
 | Recovery | ✔ | ✔ | ✔ | ✔ | ✔ | ✗ | live 23/23 continuation state machine + crash repair + lease contention — packaged mid-op kill remains |
 | Provider Mgmt | ✔ | ✔ | ✔ | ✔ preflight | ✔ | ✗ | sustained multi-route health |
