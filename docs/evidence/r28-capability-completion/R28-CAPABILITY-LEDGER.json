@@ -142,16 +142,17 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
-        "R27-SUBAGENT-EVIDENCE.json"
+        "R27-SUBAGENT-EVIDENCE.json",
+        "R28-SUBAGENT-AB-LIVE-EVIDENCE.json"
       ],
-      "note": "Deterministic reviewer-repair value. Live crossover vs single-agent unmeasured.",
+      "note": "Live matched pair through AutonomousRunOrchestrator (production R1 wiring, real openrouter nex-n2.5-mini): adaptive classified the task tiny → 9 requests, 69s, completed+hidden pass; fixed_r1 spawned 6 children → 79 requests, 754s, blocked REVIEW_REVISION_LIMIT. Reviewer's blocking finding was legitimate: the task's visible verification (node --check) never asserts semantics. Live crossover observed: adaptive routing saved 8.8x requests AND produced the only completed arm; the fixed team's reviewer caught a real weak-verification defect.",
       "gaps": [
-        "live single-vs-adaptive comparison",
-        "net-value crossover"
+        "task classes where fixed_r1 outperforms adaptive (crossover direction varies)",
+        "reviewer-vs-weak-verification policy resolution"
       ]
     },
     {

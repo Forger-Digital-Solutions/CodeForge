@@ -44,7 +44,7 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | 8-Bit | ✔ | ✔ | ✔ | ✔ | ✔ runtime | ✗ | live qualification cycle (real probes → PROBATION receipt) — outage/recovery events remain |
 | 16-Bit | ✔ | ✔ | ✔ | BLOCKED (policy) | ✗ | ✗ | completeness audit DONE — statically complete, empirically absent by policy (no authorized paid probes) |
 | ForgeAuto | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live 17/17 fabric + real qualification — task-class routing differentiation + multi-provider failover remain |
-| Subagents | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live crossover vs single-agent |
+| Subagents | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live matched pair — adaptive tiny 9req/completed vs fixed_r1 79req/blocked; reviewer caught weak task verification |
 | Planner | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live 8/8 — real nemotron planner turn, valid acyclic authorized plan |
 | ForgeVerify | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live verification on larger tasks |
 | Context | ✔ | ✔ | ✔ | ✔ bounded | ✔ | ✗ | long-session growth/bounds |

@@ -1,0 +1,1067 @@
+{
+  "schema": "r28-subagent-matched-pair-1",
+  "recordedAt": "2026-09-23T18:04:16.611Z",
+  "design": {
+    "topology": "autonomous_orchestrator_subagent_manager_agent_runtime",
+    "productionWiring": "subagentsR1Enabled=true + getAgentRuntime — the configuration under which all child roles execute through the real model route",
+    "armDifference": "fixed_r1 explicit topology vs adaptive classifier on the same goal/repo/model/budget",
+    "task": {
+      "sourceTaskId": "qual-js-return-sign",
+      "class": "small_fix",
+      "corpusDigest": "3eeaff8e7629819d471959fdf4d97a0c6282a991169f5ad5a4b65ee6bfb9d53b"
+    },
+    "providerId": "openrouter",
+    "modelId": "nex-agi/nex-n2.5-mini:free",
+    "maxRequestsPerArm": 80,
+    "maxOutputTokens": 4096
+  },
+  "arms": {
+    "fixed_r1": {
+      "arm": "fixed_r1",
+      "requestedTopology": "fixed_r1",
+      "result": {
+        "runId": "run-0424083b-b54a-4f8e-8329-fb374f6be4d2",
+        "status": "blocked",
+        "summary": "Reviewer identified persistent blocking issues after 2 revision rounds: The supplied verification does not execute add(2, 3) or assert that it returns 5, so the required verification remains unmet.",
+        "changedFiles": [],
+        "completion": null,
+        "review": {
+          "passed": false,
+          "findingCount": 1
+        },
+        "verification": [],
+        "integration": {
+          "status": "blocked",
+          "branch": "codeforge/worktree/run-0424083b-b54a-4f8e-8329-fb374f6be4d2-476c87c1",
+          "worktreeId": "wt-476c87c1",
+          "reason": "REVIEW_REVISION_LIMIT"
+        },
+        "counters": {
+          "childrenSpawned": 6,
+          "reviewRounds": 3,
+          "taskAttempts": 1,
+          "verificationAttempts": 0
+        },
+        "topologyDecision": null
+      },
+      "provider": {
+        "inferenceRequestCount": 79,
+        "requests": [
+          {
+            "requestNumber": 1,
+            "kind": "stream",
+            "elapsedMs": 2935,
+            "firstUsefulEventMs": 1697,
+            "inputTokens": 2468,
+            "outputTokens": 416,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 2,
+            "kind": "stream",
+            "elapsedMs": 3500,
+            "firstUsefulEventMs": 2134,
+            "inputTokens": 2540,
+            "outputTokens": 387,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 3,
+            "kind": "stream",
+            "elapsedMs": 3465,
+            "firstUsefulEventMs": 1825,
+            "inputTokens": 5592,
+            "outputTokens": 367,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 4,
+            "kind": "stream",
+            "elapsedMs": 2362,
+            "firstUsefulEventMs": 941,
+            "inputTokens": 6332,
+            "outputTokens": 311,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 5,
+            "kind": "stream",
+            "elapsedMs": 1162,
+            "firstUsefulEventMs": 1064,
+            "inputTokens": 5759,
+            "outputTokens": 112,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 6,
+            "kind": "stream",
+            "elapsedMs": 1978,
+            "firstUsefulEventMs": 958,
+            "inputTokens": 7206,
+            "outputTokens": 243,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 7,
+            "kind": "stream",
+            "elapsedMs": 2023,
+            "firstUsefulEventMs": 1927,
+            "inputTokens": 7311,
+            "outputTokens": 176,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 8,
+            "kind": "stream",
+            "elapsedMs": 5472,
+            "firstUsefulEventMs": 2445,
+            "inputTokens": 8344,
+            "outputTokens": 712,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 9,
+            "kind": "stream",
+            "elapsedMs": 4835,
+            "firstUsefulEventMs": 2407,
+            "inputTokens": 9072,
+            "outputTokens": 632,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 10,
+            "kind": "stream",
+            "elapsedMs": 4428,
+            "firstUsefulEventMs": 2960,
+            "inputTokens": 2482,
+            "outputTokens": 400,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 11,
+            "kind": "stream",
+            "elapsedMs": 4019,
+            "firstUsefulEventMs": 3046,
+            "inputTokens": 3097,
+            "outputTokens": 347,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 12,
+            "kind": "stream",
+            "elapsedMs": 3164,
+            "firstUsefulEventMs": 1885,
+            "inputTokens": 5293,
+            "outputTokens": 310,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 13,
+            "kind": "stream",
+            "elapsedMs": 2679,
+            "firstUsefulEventMs": 1796,
+            "inputTokens": 6456,
+            "outputTokens": 205,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 14,
+            "kind": "stream",
+            "elapsedMs": 2416,
+            "firstUsefulEventMs": 1766,
+            "inputTokens": 5959,
+            "outputTokens": 282,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 15,
+            "kind": "stream",
+            "elapsedMs": 3007,
+            "firstUsefulEventMs": 1907,
+            "inputTokens": null,
+            "outputTokens": null,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 16,
+            "kind": "stream",
+            "elapsedMs": 30004,
+            "firstUsefulEventMs": null,
+            "inputTokens": null,
+            "outputTokens": null,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 17,
+            "kind": "stream",
+            "elapsedMs": 11902,
+            "firstUsefulEventMs": 9503,
+            "inputTokens": 2884,
+            "outputTokens": 1692,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 18,
+            "kind": "stream",
+            "elapsedMs": 2914,
+            "firstUsefulEventMs": 2366,
+            "inputTokens": 3521,
+            "outputTokens": 389,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 19,
+            "kind": "stream",
+            "elapsedMs": 4136,
+            "firstUsefulEventMs": 3810,
+            "inputTokens": 3660,
+            "outputTokens": 241,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 20,
+            "kind": "stream",
+            "elapsedMs": 1372,
+            "firstUsefulEventMs": 1104,
+            "inputTokens": 5806,
+            "outputTokens": 165,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 21,
+            "kind": "stream",
+            "elapsedMs": 1836,
+            "firstUsefulEventMs": 1823,
+            "inputTokens": 5949,
+            "outputTokens": 105,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 22,
+            "kind": "stream",
+            "elapsedMs": 1083,
+            "firstUsefulEventMs": 1019,
+            "inputTokens": 6077,
+            "outputTokens": 43,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 23,
+            "kind": "stream",
+            "elapsedMs": 3930,
+            "firstUsefulEventMs": 3897,
+            "inputTokens": 6220,
+            "outputTokens": 64,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 24,
+            "kind": "stream",
+            "elapsedMs": 2381,
+            "firstUsefulEventMs": 1298,
+            "inputTokens": 7236,
+            "outputTokens": 284,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 25,
+            "kind": "stream",
+            "elapsedMs": 1961,
+            "firstUsefulEventMs": 1753,
+            "inputTokens": 7512,
+            "outputTokens": 250,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 26,
+            "kind": "stream",
+            "elapsedMs": 1852,
+            "firstUsefulEventMs": 1804,
+            "inputTokens": 6422,
+            "outputTokens": 215,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 27,
+            "kind": "stream",
+            "elapsedMs": 3178,
+            "firstUsefulEventMs": 2590,
+            "inputTokens": 7141,
+            "outputTokens": 353,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 28,
+            "kind": "stream",
+            "elapsedMs": 1625,
+            "firstUsefulEventMs": 1376,
+            "inputTokens": 7250,
+            "outputTokens": 184,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 29,
+            "kind": "stream",
+            "elapsedMs": 3699,
+            "firstUsefulEventMs": 2877,
+            "inputTokens": 7493,
+            "outputTokens": 493,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 30,
+            "kind": "stream",
+            "elapsedMs": 5144,
+            "firstUsefulEventMs": 5081,
+            "inputTokens": 2828,
+            "outputTokens": 144,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 31,
+            "kind": "stream",
+            "elapsedMs": 4537,
+            "firstUsefulEventMs": 4317,
+            "inputTokens": 5812,
+            "outputTokens": 258,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 32,
+            "kind": "stream",
+            "elapsedMs": 7053,
+            "firstUsefulEventMs": 6361,
+            "inputTokens": 6184,
+            "outputTokens": 541,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 33,
+            "kind": "stream",
+            "elapsedMs": 2310,
+            "firstUsefulEventMs": 1987,
+            "inputTokens": 6281,
+            "outputTokens": 291,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 34,
+            "kind": "stream",
+            "elapsedMs": 3083,
+            "firstUsefulEventMs": 2258,
+            "inputTokens": 3864,
+            "outputTokens": 343,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 35,
+            "kind": "stream",
+            "elapsedMs": 1223,
+            "firstUsefulEventMs": 1221,
+            "inputTokens": 7719,
+            "outputTokens": 130,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 36,
+            "kind": "stream",
+            "elapsedMs": 3824,
+            "firstUsefulEventMs": 2996,
+            "inputTokens": 7916,
+            "outputTokens": 248,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 37,
+            "kind": "stream",
+            "elapsedMs": 1627,
+            "firstUsefulEventMs": 1210,
+            "inputTokens": 8155,
+            "outputTokens": 178,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 38,
+            "kind": "stream",
+            "elapsedMs": 7099,
+            "firstUsefulEventMs": 6084,
+            "inputTokens": 6363,
+            "outputTokens": 272,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 39,
+            "kind": "stream",
+            "elapsedMs": 2016,
+            "firstUsefulEventMs": 1918,
+            "inputTokens": 6890,
+            "outputTokens": 61,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 40,
+            "kind": "stream",
+            "elapsedMs": 2043,
+            "firstUsefulEventMs": 1186,
+            "inputTokens": 6649,
+            "outputTokens": 293,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 41,
+            "kind": "stream",
+            "elapsedMs": 2546,
+            "firstUsefulEventMs": 1619,
+            "inputTokens": 7261,
+            "outputTokens": 370,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 42,
+            "kind": "stream",
+            "elapsedMs": 3194,
+            "firstUsefulEventMs": 2582,
+            "inputTokens": 8334,
+            "outputTokens": 308,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 43,
+            "kind": "stream",
+            "elapsedMs": 3723,
+            "firstUsefulEventMs": 3557,
+            "inputTokens": 7308,
+            "outputTokens": 494,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 44,
+            "kind": "stream",
+            "elapsedMs": 1972,
+            "firstUsefulEventMs": 1585,
+            "inputTokens": 8164,
+            "outputTokens": 195,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 45,
+            "kind": "stream",
+            "elapsedMs": 5379,
+            "firstUsefulEventMs": 4732,
+            "inputTokens": 8968,
+            "outputTokens": 715,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 46,
+            "kind": "stream",
+            "elapsedMs": 4590,
+            "firstUsefulEventMs": 4474,
+            "inputTokens": 8400,
+            "outputTokens": 514,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 47,
+            "kind": "stream",
+            "elapsedMs": 6018,
+            "firstUsefulEventMs": 3533,
+            "inputTokens": 9119,
+            "outputTokens": 500,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 48,
+            "kind": "stream",
+            "elapsedMs": 3169,
+            "firstUsefulEventMs": 2042,
+            "inputTokens": 9518,
+            "outputTokens": 380,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 49,
+            "kind": "stream",
+            "elapsedMs": 3929,
+            "firstUsefulEventMs": 3630,
+            "inputTokens": 10105,
+            "outputTokens": 557,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 50,
+            "kind": "stream",
+            "elapsedMs": 6314,
+            "firstUsefulEventMs": 4262,
+            "inputTokens": 10053,
+            "outputTokens": 909,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 51,
+            "kind": "stream",
+            "elapsedMs": 1775,
+            "firstUsefulEventMs": 1461,
+            "inputTokens": 10947,
+            "outputTokens": 71,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 52,
+            "kind": "stream",
+            "elapsedMs": 2550,
+            "firstUsefulEventMs": 2114,
+            "inputTokens": 10209,
+            "outputTokens": 229,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 53,
+            "kind": "stream",
+            "elapsedMs": 4448,
+            "firstUsefulEventMs": 3522,
+            "inputTokens": 11479,
+            "outputTokens": 709,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 54,
+            "kind": "stream",
+            "elapsedMs": 3861,
+            "firstUsefulEventMs": 2640,
+            "inputTokens": 2884,
+            "outputTokens": 465,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 55,
+            "kind": "stream",
+            "elapsedMs": 2633,
+            "firstUsefulEventMs": 2174,
+            "inputTokens": 3731,
+            "outputTokens": 220,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 56,
+            "kind": "stream",
+            "elapsedMs": 1990,
+            "firstUsefulEventMs": 1310,
+            "inputTokens": 6459,
+            "outputTokens": 221,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 57,
+            "kind": "stream",
+            "elapsedMs": 0,
+            "firstUsefulEventMs": null,
+            "inputTokens": null,
+            "outputTokens": null,
+            "outputCapExceeded": false,
+            "outcome": "started"
+          },
+          {
+            "requestNumber": 58,
+            "kind": "stream",
+            "elapsedMs": 2979,
+            "firstUsefulEventMs": 2551,
+            "inputTokens": 7424,
+            "outputTokens": 344,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 59,
+            "kind": "stream",
+            "elapsedMs": 6506,
+            "firstUsefulEventMs": 4334,
+            "inputTokens": 7561,
+            "outputTokens": 832,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 60,
+            "kind": "stream",
+            "elapsedMs": 0,
+            "firstUsefulEventMs": null,
+            "inputTokens": null,
+            "outputTokens": null,
+            "outputCapExceeded": false,
+            "outcome": "started"
+          },
+          {
+            "requestNumber": 61,
+            "kind": "stream",
+            "elapsedMs": 1806,
+            "firstUsefulEventMs": 1296,
+            "inputTokens": 6740,
+            "outputTokens": 162,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 62,
+            "kind": "stream",
+            "elapsedMs": 1233,
+            "firstUsefulEventMs": 646,
+            "inputTokens": 7612,
+            "outputTokens": 130,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 63,
+            "kind": "stream",
+            "elapsedMs": 2798,
+            "firstUsefulEventMs": 1976,
+            "inputTokens": 7077,
+            "outputTokens": 326,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 64,
+            "kind": "stream",
+            "elapsedMs": 2739,
+            "firstUsefulEventMs": 1947,
+            "inputTokens": 8103,
+            "outputTokens": 281,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 65,
+            "kind": "stream",
+            "elapsedMs": 3059,
+            "firstUsefulEventMs": 2522,
+            "inputTokens": 8488,
+            "outputTokens": 353,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 66,
+            "kind": "stream",
+            "elapsedMs": 3192,
+            "firstUsefulEventMs": 2141,
+            "inputTokens": 8162,
+            "outputTokens": 282,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 67,
+            "kind": "stream",
+            "elapsedMs": 7578,
+            "firstUsefulEventMs": 7528,
+            "inputTokens": 8394,
+            "outputTokens": 328,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 68,
+            "kind": "stream",
+            "elapsedMs": 3687,
+            "firstUsefulEventMs": 2848,
+            "inputTokens": 7795,
+            "outputTokens": 363,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 69,
+            "kind": "stream",
+            "elapsedMs": 2529,
+            "firstUsefulEventMs": 1650,
+            "inputTokens": 9150,
+            "outputTokens": 396,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 70,
+            "kind": "stream",
+            "elapsedMs": 4833,
+            "firstUsefulEventMs": 4601,
+            "inputTokens": 8678,
+            "outputTokens": 501,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 71,
+            "kind": "stream",
+            "elapsedMs": 3330,
+            "firstUsefulEventMs": 3016,
+            "inputTokens": 9404,
+            "outputTokens": 419,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 72,
+            "kind": "stream",
+            "elapsedMs": 6244,
+            "firstUsefulEventMs": 4505,
+            "inputTokens": 9539,
+            "outputTokens": 683,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 73,
+            "kind": "stream",
+            "elapsedMs": 6469,
+            "firstUsefulEventMs": 5765,
+            "inputTokens": 9853,
+            "outputTokens": 712,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 74,
+            "kind": "stream",
+            "elapsedMs": 5091,
+            "firstUsefulEventMs": 4073,
+            "inputTokens": 10332,
+            "outputTokens": 687,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 75,
+            "kind": "stream",
+            "elapsedMs": 1611,
+            "firstUsefulEventMs": 1549,
+            "inputTokens": 10238,
+            "outputTokens": 164,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 76,
+            "kind": "stream",
+            "elapsedMs": 2433,
+            "firstUsefulEventMs": 2044,
+            "inputTokens": 10535,
+            "outputTokens": 269,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 77,
+            "kind": "stream",
+            "elapsedMs": 3628,
+            "firstUsefulEventMs": 3407,
+            "inputTokens": 11240,
+            "outputTokens": 467,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 78,
+            "kind": "stream",
+            "elapsedMs": 6193,
+            "firstUsefulEventMs": 6039,
+            "inputTokens": 11432,
+            "outputTokens": 400,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 79,
+            "kind": "stream",
+            "elapsedMs": 5504,
+            "firstUsefulEventMs": 4577,
+            "inputTokens": 5446,
+            "outputTokens": 687,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          }
+        ]
+      },
+      "timing": {
+        "wallClockMs": 753828,
+        "aborted": false
+      },
+      "verification": {
+        "hidden": {
+          "command": "node hidden/verify.mjs",
+          "passed": false,
+          "elapsedMs": 225,
+          "exitCode": 1,
+          "outputHash": "7a3ab67a14f0e50d2c217a39a23a9c605d1a27856d62489bc03bae3361fadd67"
+        }
+      }
+    },
+    "adaptive": {
+      "arm": "adaptive",
+      "requestedTopology": "adaptive",
+      "result": {
+        "runId": "run-f7374249-5b95-4958-bf1a-91e4d64d0c2e",
+        "status": "completed",
+        "summary": "Successfully implemented, reviewed, verified, and integrated \"The add() function in src/math.js returns the wrong result. Fix it so add(2, 3) returns 5 without changing multiply().\"",
+        "changedFiles": [
+          "src/math.js"
+        ],
+        "completion": {
+          "outcome": "completed",
+          "blockers": [],
+          "advisories": [],
+          "rationale": "All required completion checks passed."
+        },
+        "review": {
+          "passed": true,
+          "findingCount": 0
+        },
+        "verification": [
+          {
+            "command": "node --check src/math.js",
+            "passed": 1,
+            "exitCode": 0
+          }
+        ],
+        "integration": {
+          "status": "integrated",
+          "branch": "codeforge/worktree/run-f7374249-5b95-4958-bf1a-91e4d64d0c2e-de26829b",
+          "worktreeId": "wt-de26829b"
+        },
+        "counters": {
+          "childrenSpawned": 0,
+          "reviewRounds": 0,
+          "taskAttempts": 1,
+          "verificationAttempts": 1
+        },
+        "topologyDecision": {
+          "policy": "adaptive",
+          "complexity": {
+            "tier": "tiny",
+            "reasonCodes": [
+              "GOAL_MATCHES_TINY_PATTERN",
+              "GOAL_IS_SHORT",
+              "GOAL_NAMES_SINGLE_FILE"
+            ],
+            "rationale": "A single, narrowly scoped edit with no breadth signal; a coder plus ForgeVerify is the smallest useful team.",
+            "classifierVersion": "r21-task-complexity-v1"
+          },
+          "plan": {
+            "topology": "tiny",
+            "explorers": 0,
+            "hasPlanner": false,
+            "hasReviewer": false,
+            "hasVision": false,
+            "requiresForgeVerify": true,
+            "reason": "Tiny task: single targeted Coder mutation directly to ForgeVerify; ForgeGreen capacity advice: PROVIDER_CAPACITY_UNOBSERVED",
+            "stages": [
+              "Coder",
+              "ForgeVerify"
+            ]
+          },
+          "repositoryFileCount": 3,
+          "decidedAt": "2026-09-23T18:03:07.919Z"
+        }
+      },
+      "provider": {
+        "inferenceRequestCount": 9,
+        "requests": [
+          {
+            "requestNumber": 1,
+            "kind": "stream",
+            "elapsedMs": 1831,
+            "firstUsefulEventMs": 1830,
+            "inputTokens": 3353,
+            "outputTokens": 85,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 2,
+            "kind": "stream",
+            "elapsedMs": 1885,
+            "firstUsefulEventMs": 1447,
+            "inputTokens": 6820,
+            "outputTokens": 181,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 3,
+            "kind": "stream",
+            "elapsedMs": 1208,
+            "firstUsefulEventMs": 1205,
+            "inputTokens": 5783,
+            "outputTokens": 123,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 4,
+            "kind": "stream",
+            "elapsedMs": 1293,
+            "firstUsefulEventMs": 861,
+            "inputTokens": 5980,
+            "outputTokens": 137,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 5,
+            "kind": "stream",
+            "elapsedMs": 708,
+            "firstUsefulEventMs": 707,
+            "inputTokens": 6571,
+            "outputTokens": 46,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 6,
+            "kind": "stream",
+            "elapsedMs": 3309,
+            "firstUsefulEventMs": 2689,
+            "inputTokens": 6138,
+            "outputTokens": 258,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 7,
+            "kind": "stream",
+            "elapsedMs": 1395,
+            "firstUsefulEventMs": 1322,
+            "inputTokens": 7054,
+            "outputTokens": 172,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 8,
+            "kind": "stream",
+            "elapsedMs": 2932,
+            "firstUsefulEventMs": 2096,
+            "inputTokens": 7549,
+            "outputTokens": 355,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          },
+          {
+            "requestNumber": 9,
+            "kind": "stream",
+            "elapsedMs": 4253,
+            "firstUsefulEventMs": 3382,
+            "inputTokens": 6587,
+            "outputTokens": 538,
+            "outputCapExceeded": false,
+            "outcome": "completed"
+          }
+        ]
+      },
+      "timing": {
+        "wallClockMs": 68991,
+        "aborted": false
+      },
+      "verification": {
+        "hidden": {
+          "command": "node hidden/verify.mjs",
+          "passed": true,
+          "elapsedMs": 294,
+          "outputHash": "eecc28b3447dd57a762fa2bdc0f794cb350411e01e00092ea25ba6cab8a28947"
+        }
+      }
+    }
+  },
+  "comparison": {
+    "inferenceRequests": {
+      "fixed_r1": 79,
+      "adaptive": 9
+    },
+    "wallClockMs": {
+      "fixed_r1": 753828,
+      "adaptive": 68991
+    },
+    "statuses": {
+      "fixed_r1": "blocked",
+      "adaptive": "completed"
+    },
+    "completionOutcomes": {
+      "fixed_r1": null,
+      "adaptive": "completed"
+    },
+    "hiddenVerifierPassed": {
+      "fixed_r1": false,
+      "adaptive": true
+    },
+    "childrenSpawned": {
+      "fixed_r1": 6,
+      "adaptive": 0
+    },
+    "topologyResolved": {
+      "fixed_r1": "fixed_r1",
+      "adaptive": "tiny"
+    },
+    "complexityTier": "tiny"
+  },
+  "honesty": {
+    "singlePair": true,
+    "note": "One matched pair cannot separate topology effect from model-output stochasticity; reported values are observed provider receipts, and quota/availability blockers are preserved rather than retried away."
+  }
+}
