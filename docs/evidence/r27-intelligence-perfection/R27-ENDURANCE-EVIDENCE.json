@@ -1,0 +1,61 @@
+{
+  "schema": "r27-endurance-evidence-1",
+  "recordedAt": "2026-09-23",
+  "status": "R27_MULTI_STAGE_RECOVERY_AND_BOUNDED_GROWTH_DETERMINISTICALLY_PROVEN",
+  "paidInferenceUsed": false,
+  "evidenceBoundary": "Deterministic scripted free providers, temporary local Git repositories/worktrees, temporary SQLite stores, and local Node verification only. No live cloud inference, external repository, packaged desktop session, or unattended hours-long run was used.",
+  "campaignResult": {
+    "primaryMatrix": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/workflow/test/workflow-engine.test.ts packages/server/test/run-recovery.test.ts packages/server/test/mission-recovery.test.ts packages/server/test/parallel-recovery.test.ts packages/server/test/autonomous-run-pinned-route-recovery.test.ts packages/server/test/agent-tool-loop.test.ts packages/server/test/agent-recovery.test.ts packages/forge-green/test/fg8r-measurement-failure-observability.test.ts packages/forge-green/test/fg8r-live-context-baseline.test.ts packages/forge-green/test/fg8r-duplicate-finalization-retry.test.ts --reporter=verbose",
+      "filesPassed": 10,
+      "testsPassed": 61,
+      "testsFailed": 0,
+      "elapsedMs": 101220,
+      "coverage": [
+        "full workflow lifecycle including approval, failed verification, bounded repair, re-verification, review, and completion-gate result",
+        "real child-process crash/restart recovery across before-model, after-write, read replay, write/command replan, reviewer failure, cancellation, terminal, duplicate-lease, and missing-worktree states",
+        "mission restart recovery at planning, in-flight workstream, completed-milestone, and replanning boundaries",
+        "three-workstream synthesis interrupted after the first inclusion, then resumed without a duplicate cherry-pick and globally verified",
+        "same pinned free route retry for one retryable tool-output rejection and one short 429; recurring retryable failure terminates as failed",
+        "identical and oscillating tool loops, plus model-turn/tool-call budgets, terminate blocked rather than completed",
+        "ForgeGreen receipt persistence, duplicate finalization, and malformed/failed measurement observability"
+      ]
+    },
+    "growthAndAcceptanceMatrix": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/r21-agent-budget-honesty.test.ts packages/server/test/agent-certification-r.test.ts packages/server/test/fg1-runtime-efficiency.test.ts packages/server/test/mission-acceptance.test.ts --reporter=verbose",
+      "filesPassed": 4,
+      "testsPassed": 18,
+      "testsFailed": 0,
+      "elapsedMs": 79940,
+      "coverage": [
+        "per-role model-turn exhaustion is blocked rather than presented as a completed run",
+        "final-turn completion remains possible without a false budget block",
+        "duplicate read suppression, repeated failed inspection bounds, state-change re-execution, compression, prompt-cache telemetry boundaries, and repository-analysis reuse",
+        "synthetic 100,000-file / 1,000,000-symbol repository context is bounded before provider transmission and excludes sensitive paths",
+        "final mission gate blocks unverified milestones, reviewer-rejected work, invalidated assumptions, and promotion over user changes"
+      ]
+    }
+  },
+  "measured": {
+    "completion": "Completed workflow, resumed crash-recovery worker, resumed mission, and resumed three-workstream synthesis paths are asserted by the deterministic tests. Invalid, rejected, exhausted, and unrecoverable paths assert failed or blocked instead of success.",
+    "humanIntervention": "The workflow fixture records the required approval transition; restart and recovery paths resume through durable state without a simulated human repair. This is not a measurement of real-user intervention frequency.",
+    "retriesAndProviderFailures": "One retryable provider tool-output rejection and one short pinned-route 429 recover on the same free route. A persistent retryable failure is bounded to at most five provider calls and fails. Scripted fixtures do not quantify live provider failure rate.",
+    "recovery": "Process-boundary recovery preserves an observed write, replays only an unobserved read-only call, replans for unobserved writes/commands, prevents resurrection of cancellation/completion, and prevents duplicate synthesis inclusion.",
+    "contextAndTokenGrowth": "Role budgets cap model turns, tool calls, and 64,000 context tokens. The large-repository fixture reports 100,000 candidate files, 1,000,000 symbols, 14 selected evidence entries, and a bounded pre-provider context; it does not measure a real provider tokenizer over hours of work.",
+    "verificationQuality": "Verification failure invokes bounded repair in the workflow path, and mission/parallel acceptance tests require independent verification and completion-gate evidence before promotion. The fixtures do not establish hidden-test or live-repository quality rates."
+  },
+  "proven": [
+    "A multi-stage deterministic workflow can survive the tested failure/restart conditions without duplicating an observed file write or an already-included synthesis workstream.",
+    "A short retryable 429 on a pinned free route is retried without rotating the route; repeated retryable failures are bounded and truthfully fail.",
+    "Loop, retry, and model-turn exhaustion paths block or fail rather than fabricate completion, while bounded duplicate-read behavior leaves a receipt.",
+    "The tested context-selection boundary remains bounded and secret-safe at the synthetic large-repository scale.",
+    "Acceptance, reviewer, and completion-gate tests prevent unverified, stale, or user-overwritten work from being promoted."
+  ],
+  "notProven": [
+    "Unattended hours-long operation, real wall-clock endurance, memory/resource leak behavior, or recovery after real machine sleep/reboot/network interruption.",
+    "Live free-provider completion, intervention rate, retry rate, provider-failure rate, token growth, context growth, or verification quality on a held-out engineering corpus.",
+    "A five-minute task is not treated as endurance evidence; this campaign is a 181.16-second deterministic multi-stage stress matrix, not an hours-long soak.",
+    "Packaged desktop endurance, browser-session endurance, and terminal-process endurance beyond their focused earlier test suites."
+  ],
+  "requiredNextEvidence": "On an explicitly authorized free route and disposable local repository, run a predeclared multi-hour, checkpointed engineering corpus with redacted per-run receipts for route, calls, provider tokens, context bytes, tool actions, retries, recovery, verifier outcome, completion-gate verdict, elapsed time, and resource samples. Preserve quota or route unavailability as BLOCKED rather than synthesizing a result."
+}
