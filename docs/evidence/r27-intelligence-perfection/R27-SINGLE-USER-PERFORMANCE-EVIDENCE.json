@@ -1,0 +1,50 @@
+{
+  "schema": "r27-single-user-performance-evidence-1",
+  "recordedAt": "2026-09-23",
+  "status": "R27_SINGLE_USER_SCALE_GUARDS_DETERMINISTICALLY_PROVEN",
+  "evidenceBoundary": "Local deterministic fixtures and machine-local wall-clock guard assertions only. No cloud inference, production traffic, multi-user/DAU simulator, or cross-machine benchmark comparison was used.",
+  "scope": "One developer's repository indexing, context assembly, and desktop run-inspection projection. Multi-user throughput and fairness are deliberately out of scope.",
+  "deterministicValidation": {
+    "repositoryContextAndInspection": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts packages/ui/test/run-inspection.test.tsx packages/context/test/context-pack.test.ts packages/server/test/agent-certification-r.test.ts --reporter=verbose",
+      "filesPassed": 4,
+      "testsPassed": 24,
+      "testsFailed": 0,
+      "elapsedMs": 34480,
+      "coverage": [
+        "1,000,000+ line deterministic repository initial index, symbol/dependency/text lookup, 32K context-pack retrieval, one-file incremental refresh, and repeated-query reuse",
+        "context windows at 16K, 32K, 64K, and 128K with provenance deduplication, history compaction, current-diff prioritization, and external-HEAD refresh",
+        "100,000 candidate files / 1,000,000 symbols bounded before provider transmission with sensitive-path exclusion",
+        "1,000 tool events, 500 file changes, and 200 token events projected from a replay duplicated in input without double-counting",
+        "100,500-line diff truncated to at most 2,000 rendered review lines"
+      ]
+    },
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc -b packages/repo-intelligence packages/context packages/ui",
+      "passed": true
+    }
+  },
+  "guardedBounds": {
+    "initialIndexMs": 120000,
+    "symbolSearchMedianMs": 100,
+    "dependencySearchMedianMs": 50,
+    "textSearchMedianMs": 200,
+    "contextPackMedianMs": 500,
+    "oneFileRefreshMs": 2000,
+    "repeatedSymbolSearchMedianMs": 50,
+    "largeReplayProjectionMs": 1000,
+    "renderedDiffLineCap": 2000
+  },
+  "proven": [
+    "The tested single-user repository intelligence path avoids an obvious million-line indexing/query/context-pack regression under its explicit local guard bounds.",
+    "Incremental refresh reparses one changed file in the fixture, and repeated symbol lookup uses the indexed state rather than requiring a full repository rebuild.",
+    "Context and run-inspection projections remain bounded at their tested synthetic input sizes and do not duplicate replayed events or usage.",
+    "Sensitive .env-like paths are excluded before the tested provider request is assembled."
+  ],
+  "notProven": [
+    "Portable latency, CPU, memory, disk, startup, or battery figures. The suite asserts local upper bounds but does not publish the machine-specific sample values.",
+    "Performance on a real customer repository, an actual million-symbol code graph, a packaged Electron process, or a long-running browser/terminal session.",
+    "Multi-user throughput, fairness, DAU capacity, hosted scaling, or provider-service latency; these are outside R27's single-user scope."
+  ],
+  "requiredNextEvidence": "For a publishable performance claim, capture versioned hardware/OS/runtime details, repeated raw samples, p50/p95 distributions, peak RSS/CPU/disk data, repository characteristics, cold/warm cache state, and explicit regression thresholds. Keep the run single-user unless scope is explicitly expanded."
+}
