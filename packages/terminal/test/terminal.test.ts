@@ -4,7 +4,7 @@ import path from "node:path";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { stripAnsi, stripCommandEcho } from "../src/ansi.js";
 import { defaultShell, commandShell } from "../src/shells.js";
-import { execute, executePrepared, backendFor, __setPtyModuleForTest } from "../src/index.js";
+import { execute, executePrepared, backendFor, TerminalSession, __setPtyModuleForTest } from "../src/index.js";
 
 const isWin = process.platform === "win32";
 
@@ -192,6 +192,45 @@ describe("backendFor", () => {
     expect(backendFor("linux")).toBe("pipe");
   });
 });
+
+describe("TerminalSession process-tree lifecycle", () => {
+  afterEach(() => __setPtyModuleForTest(undefined));
+
+  it("kills a persistent terminal's shell-launched child process", async () => {
+    if (!TerminalSession.supported()) return;
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "r27-terminal-session-"));
+    const readyPath = path.join(dir, "child-ready.txt");
+    const orphanPath = path.join(dir, "orphan.txt");
+    const childScript = `const fs = require('node:fs'); setTimeout(() => fs.writeFileSync(${JSON.stringify(orphanPath)}, 'orphan'), 700); setInterval(() => {}, 1000);`;
+    const rootScript = `const fs = require('node:fs'); const { spawn } = require('node:child_process'); const child = spawn(process.execPath, ['-e', ${JSON.stringify(childScript)}], { stdio: 'ignore' }); fs.writeFileSync(${JSON.stringify(readyPath)}, String(child.pid)); setInterval(() => {}, 1000);`;
+    const session = new TerminalSession({ shell: process.execPath, shellArgs: ["-e", rootScript], cwd: dir });
+    try {
+      await waitForFile(readyPath);
+      const exited = new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error("terminal session did not exit after kill")), 5_000);
+        session.onExit(() => {
+          clearTimeout(timer);
+          resolve();
+        });
+      });
+      session.kill();
+      await exited;
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      expect(fs.existsSync(orphanPath)).toBe(false);
+    } finally {
+      session.kill();
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  }, 10_000);
+});
+
+async function waitForFile(file: string): Promise<void> {
+  const deadline = Date.now() + 5_000;
+  while (!fs.existsSync(file)) {
+    if (Date.now() >= deadline) throw new Error(`Timed out waiting for ${file}`);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+}
 
 describe("R27 Windows timeout process-tree cleanup and workspace removability", () => {
   const cleanupDirs: string[] = [];

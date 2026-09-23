@@ -1,0 +1,44 @@
+{
+  "schema": "r27-terminal-evidence-1",
+  "status": "R27_TERMINAL_PROCESS_TREE_LIFECYCLE_DETERMINISTICALLY_PROVEN_ON_HOST",
+  "paidInferenceUsed": false,
+  "evidenceBoundary": "Deterministic local-process tests on this host only. No cloud inference, production deployment, or external command was invoked.",
+  "problemRecovered": "Persistent interactive TerminalSession.kill() called only the PTY root kill operation, whereas bounded command execution already used platform process-tree termination. A terminal-root descendant therefore had a weaker cancellation guarantee.",
+  "change": {
+    "interactiveLifecycle": "TerminalSession.kill() now invokes the shared terminateProcessTreeByPid implementation used by bounded execution.",
+    "platformBehavior": "Windows uses taskkill /T /F with a direct-child fallback; POSIX attempts the process group before the root fallback.",
+    "unchanged": ["ConPTY/pipe output streaming", "timeout and cancellation exit codes", "Windows console-host protections", "bounded timeout settlement"]
+  },
+  "deterministicValidation": {
+    "ptyAvailability": "TERMINAL_SESSION_PTY_SUPPORTED=PASS on this host.",
+    "terminalSuite": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/terminal/test/terminal.test.ts",
+      "filesPassed": 1,
+      "testsPassed": 30,
+      "testsFailed": 0,
+      "approxWallTimeMs": 9430
+    },
+    "combinedRegression": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/terminal/test/terminal.test.ts packages/server/test/runtime.test.ts packages/server/test/run-failure.test.ts packages/tools/test/command-exit-status.test.ts",
+      "filesPassed": 4,
+      "testsPassed": 66,
+      "testsFailed": 0,
+      "approxWallTimeMs": 10400
+    },
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc -b packages/terminal packages/server packages/tools",
+      "passed": true
+    }
+  },
+  "proven": [
+    "A real supported PTY session whose root starts a child process terminates without that child later writing its orphan marker.",
+    "Timeout, abort, process-tree cleanup, workspace removal, output streaming, and command-service terminal completion remain covered by the adjacent regressions.",
+    "Command nonzero exits remain structured failures rather than successful observations."
+  ],
+  "notProven": [
+    "Every Windows desktop, shell, antivirus, or process-permission configuration.",
+    "Absence of console flashes in a freshly rebuilt packaged Electron application.",
+    "Long-lived interactive user-terminal behavior under arbitrary child-process trees."
+  ],
+  "requiredNextEvidence": "Build a fresh isolated desktop artifact and run a visible Windows smoke test covering persistent terminal launch, nested npm/cmd child cancellation, output streaming, no console flash, and immediate workspace cleanup."
+}

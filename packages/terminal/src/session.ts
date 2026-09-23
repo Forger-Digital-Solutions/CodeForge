@@ -1,5 +1,6 @@
 import { loadPty, teardownPty, type PtyLike } from "./pty-loader.js";
 import { defaultShell, resolveExecutable } from "./shells.js";
+import { terminateProcessTreeByPid } from "./executor.js";
 
 /**
  * Persistent interactive terminal session (the user-facing Terminal work surface).
@@ -95,10 +96,6 @@ export class TerminalSession {
 
   kill(): void {
     if (this.exited) return;
-    try {
-      this.pty.kill();
-    } catch {
-      // already gone
-    }
+    terminateProcessTreeByPid(this.pid);
   }
 }
