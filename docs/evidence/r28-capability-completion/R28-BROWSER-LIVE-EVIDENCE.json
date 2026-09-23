@@ -1,0 +1,71 @@
+{
+  "schema": "r28-browser-live-check-1",
+  "recordedAt": "2026-09-23T15:52:16.206Z",
+  "checks": [
+    {
+      "name": "openSession",
+      "ok": true,
+      "detail": "browser-22b3d6a5-fe5c-40d5-92e9-92991e7a492b"
+    },
+    {
+      "name": "navigate localhost",
+      "ok": true,
+      "detail": "{\"sessionId\":\"browser-22b3d6a5-fe5c-40d5-92e9-92991e7a492b\",\"tabId\":\"tab-1-3be5ac31\",\"action\":\"navigate\",\"url\":\"http://1"
+    },
+    {
+      "name": "inspect DOM",
+      "ok": true,
+      "detail": "snapshot 584B"
+    },
+    {
+      "name": "type+click updates DOM",
+      "ok": true,
+      "detail": "{\"sessionId\":\"browser-22b3d6a5-fe5c-40d5-92e9-92991e7a492b\",\"tabId\":\"tab-1-3be5ac31\",\"action\":\"click"
+    },
+    {
+      "name": "screenshot persisted",
+      "ok": true,
+      "detail": "14044B sha256=5dc230b0e544"
+    },
+    {
+      "name": "console log captured",
+      "ok": true,
+      "detail": "1 entries"
+    },
+    {
+      "name": "network log host-only",
+      "ok": true,
+      "detail": "1 obs"
+    },
+    {
+      "name": "second navigation",
+      "ok": true
+    },
+    {
+      "name": "metadata endpoint denied",
+      "ok": true,
+      "detail": "cloud metadata endpoints are never navigable"
+    },
+    {
+      "name": "private network denied",
+      "ok": true,
+      "detail": "private-network targets require allowPrivateNetwork"
+    },
+    {
+      "name": "plaintext public http denied",
+      "ok": true,
+      "detail": "plaintext http: is allowed only for loopback development targets"
+    },
+    {
+      "name": "session close",
+      "ok": true
+    }
+  ],
+  "evidence": {
+    "sessionId": "browser-22b3d6a5-fe5c-40d5-92e9-92991e7a492b",
+    "scratchContents": [
+      "downloads",
+      "shots"
+    ]
+  }
+}

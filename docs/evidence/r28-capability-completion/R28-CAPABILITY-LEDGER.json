@@ -228,18 +228,20 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
         "R27-BROWSER-EVIDENCE.json",
-        "99a5c2f"
+        "99a5c2f",
+        "R28-BROWSER-LIVE-EVIDENCE.json — 12/12 real Chromium session checks"
       ],
-      "note": "Loopback Chromium runtime + navigation recovery deterministic. Packaged browser dogfood not exercised in smoke.",
+      "note": "GovernedBrowserRuntime verified live on host: real headless Chromium session — open/navigate localhost/DOM inspect/type+click with real DOM mutation/persisted screenshot (14KB sha256)/console+sanitized network logs/second nav/clean close. Policy denials verified live: 169.254.169.254 metadata, RFC-1918 private, plaintext public http all refused. 11 agent-facing browser_* tools bridge through external-tools surface with network permission gating.",
       "gaps": [
-        "packaged navigation/tabs/forms/downloads/localhost",
-        "process cleanup",
-        "prompt-injection boundaries"
+        "agent-driven browser use inside live workflow",
+        "packaged-app browser launch",
+        "download quarantine end-to-end",
+        "multi-tab handling"
       ]
     },
     {
