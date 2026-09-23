@@ -1,0 +1,38 @@
+{
+  "schema": "r28-packaged-smoke-2",
+  "recordedAt": "2026-09-23T17:35:49.057Z",
+  "build": {
+    "commit": "ccd1c930a0b96bdabb1e292057c7389c3306fb5f",
+    "exe": "release/win-unpacked/CodeForge.exe",
+    "includes": [
+      "updater IPC via shipped preload.cjs",
+      "computer-use in asar dep graph"
+    ]
+  },
+  "modes": {
+    "full": "SUCCESS exit 0",
+    "interrupt": "SUCCESS exit 73",
+    "recover": "SUCCESS exit 0"
+  },
+  "updaterMarkers": [
+    "packaged_updater_status=PASS",
+    "packaged_updater_check=PASS",
+    "packaged_updater_install_guarded=PASS"
+  ],
+  "tail": [
+    "PACKAGED_STARTUP=PASS",
+    "FORGEGREEN_RUNTIME=PASS",
+    "EIGHT_BIT_RUNTIME=PASS",
+    "CLOUD_DB_PACKAGED_RUNTIME=PASS",
+    "electron_restart_failed_safely=PASS",
+    "electron_restart_no_approval_replay=PASS",
+    "credential_plaintext_absent=PASS",
+    "credential_encrypted_payload=PASS",
+    "corrupt_credential_fails_closed=PASS",
+    "legacy_plaintext_credential_rejected=PASS",
+    "legacy_plaintext_credential_migrated=PASS",
+    "credential_restart_decrypt=PASS",
+    "electron_restart_fresh_task=PASS",
+    "PACKAGED_RECOVERY_SMOKE_OK"
+  ]
+}
