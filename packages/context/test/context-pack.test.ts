@@ -64,4 +64,34 @@ describe("context architecture", () => {
     expect(pack.tokenEstimate).toBeLessThanOrEqual(pack.budget.repository);
     await intelligence.closeWorkspace();
   });
+
+  it("refreshes the repository index when an external Git checkout moves HEAD", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "codeforge-context-checkout-"));
+    const cache = fs.mkdtempSync(path.join(os.tmpdir(), "codeforge-context-checkout-cache-"));
+    roots.push(root, cache);
+    fs.mkdirSync(path.join(root, "src"));
+    fs.writeFileSync(path.join(root, "src", "branch.ts"), "export const branchAOnly = true;\n");
+    execFileSync("git", ["init", "-q"], { cwd: root });
+    execFileSync("git", ["add", "."], { cwd: root });
+    execFileSync("git", ["-c", "user.name=CodeForge", "-c", "user.email=codeforge@example.invalid", "commit", "-qm", "branch a"], { cwd: root });
+    const branchA = execFileSync("git", ["branch", "--show-current"], { cwd: root, encoding: "utf8" }).trim();
+    execFileSync("git", ["checkout", "-qb", "branch-b"], { cwd: root });
+    fs.writeFileSync(path.join(root, "src", "branch.ts"), "export const branchBOnly = true;\n");
+    execFileSync("git", ["add", "."], { cwd: root });
+    execFileSync("git", ["-c", "user.name=CodeForge", "-c", "user.email=codeforge@example.invalid", "commit", "-qm", "branch b"], { cwd: root });
+    execFileSync("git", ["checkout", "-q", branchA], { cwd: root });
+
+    const intelligence = createRepositoryIntelligence({ cacheRoot: cache });
+    await intelligence.openWorkspace(root);
+    await intelligence.indexWorkspace();
+    const indexedHead = intelligence.status().gitHead;
+    execFileSync("git", ["checkout", "-q", "branch-b"], { cwd: root });
+
+    const pack = await buildContextPack("Inspect branchBOnly", intelligence, { contextWindow: 32_000 });
+    expect(pack.chunks.some((chunk) => chunk.content.includes("branchBOnly"))).toBe(true);
+    expect(pack.chunks.some((chunk) => chunk.content.includes("branchAOnly"))).toBe(false);
+    expect(intelligence.status().gitHead).not.toBe(indexedHead);
+    expect(pack.gitContext.branch).toBe("branch-b");
+    await intelligence.closeWorkspace();
+  });
 });

@@ -155,6 +155,7 @@ describe("CF-05 Final Certification — Exact Staging, Restart Recovery & Ref Va
     await execFile("git", ["add", "fileB.txt"], { cwd: ws });
     await rm(join(ws, "fileC.txt"));
     await rm(join(ws, "fileD.txt"));
+    await writeFile(join(ws, "post_checkpoint_untracked.txt"), "must not survive forced restore\n");
 
     // Restore checkpoint
     const restoreRes = await svc.restoreCheckpoint("chk-mixed-001", { force: true });
@@ -174,6 +175,7 @@ describe("CF-05 Final Certification — Exact Staging, Restart Recovery & Ref Va
     expect(sha256(await readFile(join(ws, "fileB.txt")))).toBe(hashB_before);
     expect(sha256(await readFile(join(ws, "fileC.txt")))).toBe(hashC_before);
     expect(sha256(await readFile(join(ws, "fileD.txt")))).toBe(hashD_before);
+    await expect(readFile(join(ws, "post_checkpoint_untracked.txt"), "utf-8")).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it("CF-05C: Durable Ref Validation fails closed when durable Git ref is deleted or corrupt", async () => {

@@ -375,6 +375,10 @@ export interface IndexStatus {
   cacheHits?: number;
   bytesRead?: number;
   lastSuccessfulUpdate?: string;
+  /** Git revision observed by the most recent completed index refresh, when available. */
+  gitHead?: string;
+  /** Git branch observed by the most recent completed index refresh, when available. */
+  gitBranch?: string;
   createdAt?: string;
   updatedAt?: string;
   sizeBytes: number;

@@ -74,6 +74,9 @@ const CREDENTIAL_PATTERNS: Array<{ re: RegExp; reason: string }> = [
 ];
 
 const PROJECT_MODIFYING_PATTERNS: Array<{ re: RegExp; reason: string }> = [
+  { re: /^\s*git\s+branch\b/i, reason: "git branch can create, move, or delete refs" },
+  { re: /^\s*git\s+worktree\b/i, reason: "git worktree can create or remove a checkout" },
+  { re: /^\s*git\s+(?:checkout|switch|restore|merge|rebase|cherry-pick|commit|stash|update-ref)\b/i, reason: "git workspace or ref mutation" },
   { re: /\bnpm\s+(install|i)\b/i, reason: "npm install" },
   { re: /\byarn\s+add\b/i, reason: "yarn add" },
   { re: /\bpnpm\s+add\b/i, reason: "pnpm add" },
@@ -87,7 +90,7 @@ const READ_ONLY_EXACT: Array<{ re: RegExp; reason: string }> = [
   { re: /^\s*git\s+status\b/i, reason: "git status" },
   { re: /^\s*git\s+diff\b/i, reason: "git diff" },
   { re: /^\s*git\s+log\b/i, reason: "git log" },
-  { re: /^\s*git\s+branch\b/i, reason: "git branch" },
+  { re: /^\s*git\s+rev-parse\b/i, reason: "git revision inspection" },
   { re: /^\s*ls\b/i, reason: "directory listing" },
   { re: /^\s*dir\b/i, reason: "directory listing" },
   { re: /^\s*cat\b/i, reason: "file cat" },
@@ -128,6 +131,15 @@ export function classifyCommand(command: string): Classification {
     if (p.re.test(trimmed)) {
       return { risk: "high", category: "network-sensitive", reasons: [p.reason, ...reasons], requiresApproval: true };
     }
+  }
+
+  // `git diff` is normally observational, but these flags may invoke a configured external
+  // helper. Treat them as an execution boundary instead of silently granting a read-only lease.
+  if (/^\s*git\s+diff\b.*(?:--ext-diff|--textconv)\b/i.test(trimmed)) {
+    return { risk: "critical", category: "privileged", reasons: ["git diff external helper or text conversion"], requiresApproval: true };
+  }
+  if (/^\s*git\s+diff\b.*--output(?:=|\s+\S)/i.test(trimmed)) {
+    return { risk: "critical", category: "destructive", reasons: ["git diff writes an output file"], requiresApproval: true };
   }
 
   // If shell operators present but not yet matched destructive/privileged, treat conservatively

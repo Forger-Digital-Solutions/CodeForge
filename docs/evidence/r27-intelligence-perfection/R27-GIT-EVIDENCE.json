@@ -1,0 +1,51 @@
+{
+  "schema": "r27-git-evidence-1",
+  "status": "R27_GIT_SAFETY_AND_REVISION_FRESHNESS_DETERMINISTICALLY_PROVEN",
+  "paidInferenceUsed": false,
+  "evidenceBoundary": "Deterministic local-Git fixtures and static command-policy tests only. No remote, GitHub, cloud inference, or production deployment was invoked.",
+  "problemsRecovered": [
+    "A forced checkpoint restore replayed checkpoint files but could leave a newly created non-ignored untracked file in the workspace while reporting success.",
+    "The command classifier described every git branch form as read-only even though branch forms can create, move, or delete refs; git diff external-helper and output-file forms could also be treated as ordinary inspection.",
+    "Context-pack assembly trusted the current repository index until a caller explicitly refreshed it, so a Git checkout performed outside the runtime could select symbols from the prior revision."
+  ],
+  "change": {
+    "checkpointRestore": "force:true now runs git clean -fd -- before restoring the durable checkpoint snapshot. The existing divergence guard still blocks non-forced restores before any mutation. The checkpoint only captures non-ignored untracked content, matching git stash -u.",
+    "commandPolicy": "git branch/worktree/workspace-ref mutation forms are project-modifying rather than read-only; git diff --ext-diff, --textconv, and --output are critical execution boundaries.",
+    "revisionFreshness": "IndexStatus exposes the revision recorded by the last index refresh. buildContextPack compares it with live HEAD and refreshes before retrieval on a mismatch, preserving content-addressed reuse for unchanged files."
+  },
+  "deterministicValidation": {
+    "gitSafetyAndContext": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/server/test/checkpoint.test.ts packages/server/test/checkpoint-certification.test.ts packages/server/test/hardening-adversarial.test.ts packages/context/test/context-pack.test.ts packages/context/test/fg3-cross-worktree.test.ts packages/repo-intelligence/test/engine.test.ts",
+      "filesPassed": 6,
+      "testsPassed": 84,
+      "testsFailed": 0,
+      "approxWallTimeMs": 14080,
+      "coverage": ["clean and dirty checkpoint capture", "mixed staged/unstaged/untracked restoration", "post-checkpoint untracked residue removal", "durable-ref validation", "Git command classification", "external branch-checkout context refresh", "linked-worktree context-page isolation and reuse"]
+    },
+    "desktopGitBoundary": {
+      "command": "node node_modules/vitest/vitest.mjs run apps/desktop/test/git-exec-allowlist.test.ts apps/desktop/test/git-workspace-info.test.ts",
+      "filesPassed": 2,
+      "testsPassed": 33,
+      "testsFailed": 0,
+      "approxWallTimeMs": 365,
+      "coverage": ["renderer Git allowlist", "config/credential rejection", "global-flag injection rejection", "normal, detached, and linked-worktree identification"]
+    },
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc -b packages/repo-intelligence packages/context packages/server",
+      "passed": true
+    }
+  },
+  "proven": [
+    "A force-authorized restore removes a file created after the checkpoint and reproduces the captured staged, unstaged, and non-ignored untracked state from a real temporary Git repository.",
+    "A non-forced restore still fails closed on a divergent dirty workspace before any restore operation.",
+    "Mutating Git branch/worktree/ref commands do not receive a read-only classification, and configured diff-helper or output-file execution is denied to autonomous runs as critical.",
+    "A branch checkout outside the runtime triggers a context-index refresh before context retrieval; the resulting pack contains the new-branch symbol, excludes the old-branch symbol, and reports the new branch.",
+    "The renderer-to-main Git bridge remains limited to validated read-only workspace/identity queries, and linked worktrees are identified and isolated by actual Git directory topology."
+  ],
+  "notProven": [
+    "Remote operations, GitHub workflows, push/pull/fetch behavior, credentials, or hosting integrations.",
+    "All possible external dirty-working-tree mutations that leave HEAD unchanged; in-run successful mutations already refresh, and delivered file chunks are hash-checked, but a no-HEAD external change is not a general filesystem watcher.",
+    "Live-model Git command selection, autonomous engineering completion, or packaged desktop behavior after a fresh build."
+  ],
+  "requiredNextEvidence": "For live proof, run paired free-route engineering tasks that include an approved branch switch or checkpoint restore, then retain route, Git-status, context-generation, verifier, and completion-gate receipts. Keep remote operations in an explicitly authorized disposable repository."
+}

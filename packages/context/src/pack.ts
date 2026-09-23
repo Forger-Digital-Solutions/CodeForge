@@ -228,7 +228,15 @@ export async function buildContextPack(
   intelligence: RepositoryIntelligence,
   options: BuildContextPackOptions,
 ): Promise<ContextPack> {
-  const status = intelligence.status();
+  let status = intelligence.status();
+  // Git operations may occur outside this runtime (for example, a user switches a branch in a
+  // terminal). Detect a revision boundary before retrieval so a pack cannot select symbols from
+  // the previous checkout. The repository index keeps content-addressed reuse on refresh.
+  const liveHead = git(status.root, ["rev-parse", "HEAD"]);
+  if (liveHead && liveHead !== status.gitHead) {
+    await intelligence.refresh();
+    status = intelligence.status();
+  }
   const budget = calculateContextBudget(options);
   const relevant = await intelligence.findRelevantContext(task, {
     limit: options.maxCandidates ?? 100,

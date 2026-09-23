@@ -187,6 +187,21 @@ describe("Command risk classification (conservative)", () => {
     expect(c.risk).toBe("safe");
     expect(c.requiresApproval).toBe(false);
   });
+  it("does not classify ref-mutating git branch commands as read-only", () => {
+    const c = classifyCommand("git branch feature/new-work");
+    expect(c.category).toBe("project-modifying");
+    expect(c.requiresApproval).toBe(true);
+  });
+  it("blocks git diff forms that can execute configured helpers", () => {
+    const c = classifyCommand("git diff --ext-diff");
+    expect(c.risk).toBe("critical");
+    expect(c.requiresApproval).toBe(true);
+  });
+  it("blocks git diff forms that write an output file", () => {
+    const c = classifyCommand("git diff --output=outside-workspace.patch");
+    expect(c.risk).toBe("critical");
+    expect(c.category).toBe("destructive");
+  });
   it("safe: ls, cat, grep without operators", () => {
     expect(classifyCommand("ls -la").risk).toBe("safe");
     expect(classifyCommand("cat package.json").risk).toBe("safe");

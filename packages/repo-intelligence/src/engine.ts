@@ -722,6 +722,8 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       generation: Number(this.meta("generation")) || 1,
       graphGeneration: Number(this.meta("graph_generation")) || 1,
       lastSuccessfulUpdate: this.meta("last_successful_update"),
+      gitHead: this.meta("head") || undefined,
+      gitBranch: this.meta("branch") || undefined,
       createdAt: this.meta("created_at"),
       updatedAt: this.meta("updated_at"),
       sizeBytes,

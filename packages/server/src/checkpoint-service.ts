@@ -391,6 +391,14 @@ export class CheckpointService {
     const restoredPaths: string[] = [];
     const commitSha = checkpoint.commitSha;
 
+    // A forced restore promises the checkpoint's captured state, not a merge with files
+    // created afterwards. The checkpoint can only capture non-ignored untracked files
+    // (`stash -u`), so clean those before replaying its snapshot. Without `force`, the
+    // divergence check above rejects the operation before any workspace mutation.
+    if (opts.force) {
+      await this.gitCommandArgs(["clean", "-fd", "--"]);
+    }
+
     // Inspect whether this commit is a clean snapshot or a stash snapshot with parents
     let isStashSnapshot = checkpoint.snapshotKind === "git_stash";
     if (!isStashSnapshot) {
