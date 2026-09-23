@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "58625fae351122f3306af0dfe13ede522f419766de1621597464106546574964",
-  "surfaceVersion": "r26-release-readiness-v1",
+  "sourceStateId": "3c5e635f4981a8e8955bef25e22c851ef13c9a32e9c0507b1569100f69f92e1e",
+  "surfaceVersion": "r27-single-user-runtime-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -42,7 +42,7 @@
     "packages/workflow/src/verification-service.ts"
   ],
   "materialFileHashes": {
-    "packages/agent/src/index.ts": "a56cfdd75637b7e1eed62965ab57262263c1a261",
+    "packages/agent/src/index.ts": "1dc267c8afd35b2ded86efa18a58b917a6bef2d7",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
     "packages/benchmark/src/index.ts": "615c02c9d77491a17e8b6a80a82cb619efd6be02",
@@ -58,15 +58,15 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "33e50e726084c153fc331052705f75a43df7253c",
+    "packages/server/src/agent-runtime.ts": "0d21cfb6f9fd957d2325847df438e18a3df32133",
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
-    "packages/server/src/duplicate-suppression.ts": "fd47f593e297f7910e379961da73e798957cbbf9",
+    "packages/server/src/duplicate-suppression.ts": "855e2763fe7390d9dc97c22a5f1209f7f7b60b49",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/workflow-service.ts": "2e23e947ddd407be62f360828376343b2ece05d9",
     "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "41042502fd939c990ea737745e3334d07c1aa7d5",
-    "packages/tools/src/index.ts": "ec150612541c218997aa05789c51eb9065e1babc",
+    "packages/tools/src/index.ts": "b9ac8cf1e2fee28c68c324c29ac090025722bd86",
     "packages/workflow/src/diff-review.ts": "fc5d57768fe8de30f0d288f0da6c08640b1fc409",
     "packages/workflow/src/forge-verify.ts": "d134438dfde57de85c756cdd8aaab192f1d801e8",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
@@ -1131,20 +1131,54 @@
       "regressionEvidence": "npm test full suite: 3491 passed / 2 failed pre-recertification (the provenance check itself); re-run green after this entry",
       "recertifiedAt": "2026-09-22",
       "sourceStateConstant": "R26_READINESS_SOURCE_STATE"
+    },
+    {
+      "label": "R27 single-user runtime and live-proof repairs",
+      "reason": "Re-issue the frozen ForgeGreen source-state over four reviewed R27 material files. Earlier ForgeGreen observations retain their historical source identities; this new identity covers current Planner, runtime/context/tool, and duplicate-suppression behavior without relaxing ForgeZero or the completion gate.",
+      "priorSourceStateId": "58625fae351122f3306af0dfe13ede522f419766de1621597464106546574964",
+      "priorSurfaceVersion": "r26-release-readiness-v1",
+      "resultingSourceStateId": "3c5e635f4981a8e8955bef25e22c851ef13c9a32e9c0507b1569100f69f92e1e",
+      "resultingSurfaceVersion": "r27-single-user-runtime-v1",
+      "changes": [
+        {
+          "file": "packages/agent/src/index.ts",
+          "change": "R27 Planner accepts a separately validated semantic-steps protocol and canonicalizes it to the existing task graph; malformed or mixed protocols remain rejected.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "R27 runtime refreshes or invalidates stale repository context after successful mutations, accounts for no-progress tool loops, applies runtime-owned read-only command classification, and canonicalizes recoverable streamed tool arguments for both execution and provider transcript continuity. Completion authority remains in evaluateCompletion.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/duplicate-suppression.ts",
+          "change": "R27 duplicate supervisor accepts a runtime-classified read-only identity for safe command reuse and records no-progress interruptions; mutating actions remain executable.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/tools/src/index.ts",
+          "change": "R27 command tool treats a nonzero child exit as a failed execution, preserving the exit code and output for the agent instead of reporting tool success.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "R27 bounded live runtime receipts and focused 25/25 runtime/release/catalog tests passed. The pre-recertification canonical suite had 3533 passed, 48 skipped, and five failures: two expected source-state canaries and three scripted parallel-provider classifiers corrected without timeout or assertion relaxation; affected files passed alone. Final post-recertification regression is recorded in R27-FINAL-INTELLIGENCE-CERTIFICATION.md.",
+      "recertifiedAt": "2026-09-23",
+      "sourceStateConstant": "CODEFORGE_R27_SINGLE_USER_RUNTIME_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface plus the R26 lint-gate recertification above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-21T21:56:24.993Z",
+  "generationNote": "This source-state ID is deterministically derived from the reviewed FG-8 through R27 material implementation surface by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm. Historical campaign evidence remains bound to its recorded source-state identity.",
+  "recertifiedAt": "2026-09-23T13:31:17.336Z",
   "recertification": {
-    "phase": "R24 free fabric runtime closure",
-    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R24 surface so the fg11/fg12e provenance canaries certify the current tree.",
+    "phase": "R27 single-user runtime and live-proof repairs",
+    "reason": "Re-issue the frozen ForgeGreen source-state over four reviewed R27 material files. Earlier ForgeGreen observations retain their historical source identities; this new identity covers current Planner, runtime/context/tool, and duplicate-suppression behavior without relaxing ForgeZero or the completion gate.",
     "changedFiles": [
+      "packages/agent/src/index.ts",
       "packages/server/src/agent-runtime.ts",
-      "packages/server/src/autonomous-orchestrator.ts",
-      "packages/sessions/src/session-state.ts"
+      "packages/server/src/duplicate-suppression.ts",
+      "packages/tools/src/index.ts"
     ],
-    "priorSourceStateId": "102e49e06ecc3a3b538555d57ff07da376202577b8913dc7951ea4fb5656c909",
+    "priorSourceStateId": "58625fae351122f3306af0dfe13ede522f419766de1621597464106546574964",
     "guarded": true
   },
-  "recertificationReason": "R24 free fabric runtime: fabric-authoritative serving path, role qualification, capacity-aware topology, temporal route health (intentional milestone changes; canonical gate green)"
+  "recertificationReason": "Re-issue the frozen ForgeGreen source-state over four reviewed R27 material files. Earlier ForgeGreen observations retain their historical source identities; this new identity covers current Planner, runtime/context/tool, and duplicate-suppression behavior without relaxing ForgeZero or the completion gate."
 }
