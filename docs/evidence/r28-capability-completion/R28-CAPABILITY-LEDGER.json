@@ -208,19 +208,19 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "PACKAGED_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
         "R27-MEMORY-EVIDENCE.json",
-        "27b977b"
+        "27b977b",
+        "memory-live-check.mjs=18/18 PASS — R28-MEMORY-LIVE-EVIDENCE.json"
       ],
-      "note": "Durable memory = session persistence (SQLite events/runs/receipts, restart-proven in packaged smoke), repo indexes on disk, mission.memory field, settings. No semantic recall layer — the agent does not retrieve prior-run knowledge into new tasks. Packaged recovery smoke proved restart durability.",
+      "note": "Durable memory = session persistence (SQLite events/runs/receipts, restart-proven in packaged smoke), repo indexes on disk, mission.memory field, settings. No semantic recall layer — the agent does not retrieve prior-run knowledge into new tasks. R28 live: real SqliteSessionPersistence (node:sqlite) — 200-turn/500-event long-session accumulation retrieved in order, strict cross-session isolation, insertIfAbsent durable idempotency (duplicate delivery → single record), full restart durability across process-fresh instances, compound transactions, scoped purge, 240KiB real file.",
       "gaps": [
-        "semantic recall across tasks",
+        "semantic recall across tasks (no recall layer exists — declared, not claimed)",
         "stale-memory rejection tests",
-        "repo-switch isolation tests",
-        "long-session accumulation"
+        "repo-switch isolation tests"
       ]
     },
     {

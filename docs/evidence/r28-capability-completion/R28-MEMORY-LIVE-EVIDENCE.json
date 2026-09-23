@@ -1,0 +1,97 @@
+{
+  "schema": "r28-memory-live-check-1",
+  "recordedAt": "2026-09-23T16:43:46.725Z",
+  "surface": "real SqliteSessionPersistence — 200-turn/500-event accumulation, session isolation, insertIfAbsent idempotency, restart durability, transactions, purge",
+  "results": [
+    {
+      "name": "driver is a real sqlite binding",
+      "ok": true,
+      "detail": "node:sqlite"
+    },
+    {
+      "name": "200 turns accumulated + retrieved in order",
+      "ok": true,
+      "detail": "200 turns"
+    },
+    {
+      "name": "500 events accumulated",
+      "ok": true,
+      "detail": "500 events"
+    },
+    {
+      "name": "session isolation: B sees only its own",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "isolation: no A content in B events",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "insertIfAbsent dedupes duplicate delivery",
+      "ok": true,
+      "detail": "first=true second=false"
+    },
+    {
+      "name": "duplicate insert kept single record",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "restart: all 200 turns survive",
+      "ok": true,
+      "detail": "200"
+    },
+    {
+      "name": "restart: all 500 events survive",
+      "ok": true,
+      "detail": "500"
+    },
+    {
+      "name": "restart: both sessions listed",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "name": "restart: work item survives",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "session update persists",
+      "ok": true,
+      "detail": "completed"
+    },
+    {
+      "name": "nonexistent session → undefined not crash",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "nonexistent turn → undefined",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "compound tx write visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "purge removes session + events",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "purge did not touch other sessions",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "real SQLite file on disk, non-trivial",
+      "ok": true,
+      "detail": "240 KiB"
+    }
+  ]
+}

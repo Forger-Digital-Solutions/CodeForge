@@ -48,7 +48,7 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | Planner | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live authorized useful plans |
 | ForgeVerify | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live verification on larger tasks |
 | Context | ✔ | ✔ | ✔ | ✔ bounded | ✔ | ✗ | long-session growth/bounds |
-| Memory | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | cross-session value + isolation |
+| Memory | ✔ | ✔ | ✔ | ✔ | ✔ | ✗ | live 18/18 (200t/500e accumulation, isolation, idempotency, restart) — no semantic recall layer (declared) |
 | Browser | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | packaged nav/tabs/forms/downloads/localhost + hygiene |
 | Computer Use | ✔ | ✔ 22/22 | ✔ | ✔ host 9/9 | ✗ | ✗ | packaged enablement, focused-window click/type live run |
 | Terminal | ✔ | ✔ 51/51 | ✔ | ✔ host 10/10 | ✗ | ✗ | packaged interactive sessions, leak check |
