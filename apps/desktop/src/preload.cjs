@@ -180,6 +180,19 @@ const api = {
   runExtensionCommand: (extensionId, commandId, args) => {
     return ipcRenderer.invoke("extensions:runCommand", { extensionId, commandId, args });
   },
+  // --- Updater (electron-updater; status/check/download/install guarded by main) ---
+  updaterGetStatus: () => {
+    return ipcRenderer.invoke("updater:getStatus");
+  },
+  updaterCheck: () => {
+    return ipcRenderer.invoke("updater:check");
+  },
+  updaterDownload: () => {
+    return ipcRenderer.invoke("updater:download");
+  },
+  updaterInstall: () => {
+    return ipcRenderer.invoke("updater:install");
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);

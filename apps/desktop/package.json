@@ -149,6 +149,8 @@
           "tools/package.json",
           "context/dist/**/*.js",
           "context/package.json",
+          "computer-use/dist/**/*.js",
+          "computer-use/package.json",
           "cloud-db/dist/**/*.js",
           "cloud-db/package.json",
           "legal-policy/dist/**/*.js",
