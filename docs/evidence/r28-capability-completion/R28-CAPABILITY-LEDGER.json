@@ -275,23 +275,22 @@
     },
     {
       "name": "WSL",
-      "implemented": "STUB",
-      "tested": "NOT_PROVEN",
-      "deterministic": "NOT_PROVEN",
-      "live": "NOT_PROVEN",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
-        "grep: forge-zero canonical mention only; R8 notes WSL E_ACCESSDENIED on this host"
+        "packages/terminal/src/wsl.ts",
+        "packages/terminal/test/wsl.test.ts (12 tests)",
+        "benchmarks/r28/wsl-live-check.mjs — real Ubuntu WSL2 exec on host"
       ],
-      "note": "No first-class WSL detection/distro/path-translation/workspace-mapping layer. Also WSL itself may be restricted on this host (E_ACCESSDENIED seen R8).",
+      "note": "R28: first-class WSL layer built. detectWsl() enumerates real distros (Ubuntu*/Debian/docker-desktop on host), windowsPathToWsl/wslPathToWindows translate both directions, execInWsl runs via wsl.exe --exec /bin/bash -lc with an in-shell cd guard. Silent-mix closed: wsl --cd falls back to home with exit 0 when the workspace drive is unmounted — the marker guard converts that to WSL_PATH_UNMAPPABLE with the command never run (verified live on G: workspace). run_command gained environment+wslDistro params under the same executeCommand permission and workspace confinement.",
       "gaps": [
-        "detection",
-        "distro discovery",
-        "path translation",
-        "env authority",
-        "build/test in WSL",
-        "cleanup"
+        "agent-routed WSL execution inside a live workflow",
+        "WSL interactive terminal session surface in desktop",
+        "packaged WSL proof"
       ]
     },
     {
@@ -334,36 +333,38 @@
       "name": "MCP",
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
-      "deterministic": "NOT_PROVEN",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
       "live": "NOT_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
-        "packages/mcp client+registry+types, 2 test files"
+        "packages/mcp client+registry+types, 2 test files",
+        "packages/mcp/test — 19 real-protocol tests (official SDK, stdio transport, fixture server, crash→dead, trust profiles, malformed descriptors)"
       ],
-      "note": "Client/registry exist with unit tests. Real server connect/discovery/tool-execution/permission-gating unproven.",
+      "note": "Governed MCP client (R22): real MCP protocol over official SDK, stdio + streamable-HTTP, bounded timeouts/buffers, sanitized child env, schema-validated descriptors, dead-server state. Config: ~/.codeforge/external-tools.json or CODEFORGE_EXTERNAL_TOOLS_CONFIG → server composition → mcp__* bridged tools through TaskAuthority. End-to-end wiring exists but no live agent-driven MCP call proven yet.",
       "gaps": [
-        "healthy server lifecycle",
-        "dead/malformed/timeout/denial cases",
-        "name collision",
-        "reconnect"
+        "live agent-driven MCP tool call through workflow",
+        "packaged MCP lifecycle",
+        "server reconnect under load"
       ]
     },
     {
       "name": "Plugins",
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
-      "deterministic": "NOT_PROVEN",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
       "live": "NOT_PROVEN",
-      "packaged": "NOT_PROVEN",
+      "packaged": "PACKAGED_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
-        "packages/plugins manager/host/manifest/permissions/api, 1 test file"
+        "packages/plugins/test/extensions.test.ts — 25 tests incl. sandbox isolation/timeout kill",
+        "packaged smoke: extension discovery/command/workspace/lifecycle PASS"
       ],
-      "note": "Contract exists. Discover/install/configure/permissions/use/disable lifecycle unproven end-to-end.",
+      "note": "Phase 24 clarification: CodeForge has ONE extension abstraction — packages/plugins ExtensionManager (ExtensionManifest, managed install dir, enable/disable, engine compat, sandboxed eval, contributed commands → plugin__<ext>__<command> tools via external-tools surface). Plugin == Extension; there is no second plugin system. Naming unified in evidence; ledger treats this entry as the extension subsystem.",
       "gaps": [
-        "define contract",
-        "working integrations lifecycle"
+        "live agent-driven extension command in workflow",
+        "extension install-from-source UX",
+        "update flow for installed extensions"
       ]
     },
     {
@@ -377,7 +378,7 @@
       "evidence": [
         "packaged_extensions_loaded/command/workspace_read/lifecycle=PASS in full smoke"
       ],
-      "note": "Extension host inside packaged bytes discovered, activated, permission-gated a command, read workspace, and completed lifecycle; corrupt manifest contained.",
+      "note": "Extension host inside packaged bytes discovered, activated, permission-gated a command, read workspace, and completed lifecycle; corrupt manifest contained. | Phase 24: same subsystem as Plugins — see Plugins entry.",
       "gaps": [
         "isolation boundaries",
         "version compat",

@@ -1,0 +1,54 @@
+{
+  "schema": "r28-wsl-live-check-1",
+  "recordedAt": "2026-09-23T15:22:19.395Z",
+  "host": {
+    "platform": "win32",
+    "wslHost": "real Windows WSL2"
+  },
+  "detection": {
+    "available": true,
+    "distros": [
+      {
+        "name": "Ubuntu",
+        "isDefault": true,
+        "state": "Stopped",
+        "version": 2
+      },
+      {
+        "name": "Debian",
+        "isDefault": false,
+        "state": "Stopped",
+        "version": 2
+      },
+      {
+        "name": "docker-desktop",
+        "isDefault": false,
+        "state": "Stopped",
+        "version": 2
+      }
+    ]
+  },
+  "translations": [
+    "C:\\cf-wsl-test -> /mnt/c/cf-wsl-test",
+    "G:\\CodeForge -> /mnt/g/CodeForge",
+    "\\\\server\\share -> null"
+  ],
+  "execInMappedWorkspace": {
+    "exit": 0,
+    "env": "wsl",
+    "distro": "Ubuntu",
+    "cwd": "/mnt/c/cf-wsl-test",
+    "out": "/mnt/c/cf-wsl-test\nLinux 6.6.114.1-microsoft-standard-WSL2\nWSL_MARKER_OK",
+    "spawnError": null
+  },
+  "unmappableDriveFailsClosed": {
+    "exit": 203,
+    "spawnError": "[WSL_PATH_UNMAPPABLE] Workspace path \"G:\\CodeForge\" does not exist inside WSL distro \"Ubuntu\" (translated: /mnt/g/CodeForge) — the command was not run",
+    "out": "__CF_WSL_CWD_MISSING__"
+  },
+  "missingDistroFailsClosed": {
+    "exit": 1,
+    "spawnError": "[WSL_DISTRO_MISSING] WSL distribution \"cf-no-such-distro\" is not installed (have: Ubuntu, Debian, docker-desktop)"
+  },
+  "summary": "detectWsl enumerated 3 real distros; execInWsl ran bash in /mnt/c/cf-wsl-test (exit 0, real Linux uname); unmounted G: drive -> WSL_PATH_UNMAPPABLE with command never run; unknown distro -> WSL_DISTRO_MISSING; UNC -> null at translation."
+}

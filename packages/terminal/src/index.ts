@@ -14,3 +14,16 @@ export {
 } from "./executor.js";
 export { TerminalSession, type TerminalSessionOptions } from "./session.js";
 export { needsConsoleHost, isGuiSubsystemExecutable, readPeSubsystem, buildHostedCommandLine, quoteForCommandHost } from "./console-host.js";
+export {
+  detectWsl,
+  defaultWslDistro,
+  windowsPathToWsl,
+  wslPathToWindows,
+  execInWsl,
+  __resetWslCacheForTest,
+  type WslDetection,
+  type WslDistro,
+  type WslExecOptions,
+  type WslExecResult,
+  type WslUnavailableReason,
+} from "./wsl.js";

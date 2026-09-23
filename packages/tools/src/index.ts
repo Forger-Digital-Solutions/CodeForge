@@ -3,7 +3,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { type AgentPermissions, ERROR_CODES } from "@codeforge/agent";
 import { redactSecrets } from "@codeforge/secrets";
-import { execute } from "@codeforge/terminal";
+import { execute, execInWsl } from "@codeforge/terminal";
 
 export interface ToolDefinition {
   name: string;
@@ -295,12 +295,14 @@ export const BUILT_IN_TOOL_DEFINITIONS: Record<string, ToolDefinition> = {
   },
   run_command: {
     name: "run_command",
-    description: "Execute a shell command in the workspace directory with sanitized environment.",
+    description: "Execute a shell command in the workspace directory with sanitized environment. Defaults to the Windows host; set environment to wsl to run inside a WSL distribution at the same workspace path.",
     parameters: {
       type: "object",
       properties: {
         command: { type: "string", description: "Command to execute" },
         cwd: { type: "string", description: "Optional working directory relative to workspace root" },
+        environment: { type: "string", enum: ["windows", "wsl"], description: "Execution environment (default windows). 'wsl' runs the command via the default or named WSL distribution." },
+        wslDistro: { type: "string", description: "WSL distribution name when environment is 'wsl' (default: the system default distro)" },
       },
       required: ["command"],
     },
@@ -859,6 +861,8 @@ export class ToolBroker {
 
         case "run_command": {
           const cmd = String(args.command);
+          const environment = args.environment === "wsl" ? "wsl" : "windows";
+          const wslDistro = typeof args.wslDistro === "string" && args.wslDistro.trim().length > 0 ? args.wslDistro.trim() : undefined;
           // `cmd.exe` can be launched with a constrained environment where
           // command lookup is unreliable even when the Node runtime is on
           // PATH. Resolve the runtime's own executable explicitly for the
@@ -878,24 +882,34 @@ export class ToolBroker {
             const sanitizedEnv = getSanitizedEnvForChild();
             // Headless ConPTY execution keeps console-subsystem grandchildren
             // (npm shims, cmd internals) invisible on Windows; pipes on POSIX.
-            const result = await execute(
-              nodeEval
-                ? {
-                    file: process.execPath,
-                    args: ["-e", nodeEval[2] ?? nodeEval[3] ?? ""],
-                    cwd: confinement.resolvedPath,
-                    env: sanitizedEnv,
-                    timeoutMs: 60_000,
-                    signal: context.signal,
-                  }
-                : {
-                    commandLine: executionCommand,
-                    cwd: confinement.resolvedPath,
-                    env: sanitizedEnv,
-                    timeoutMs: 60_000,
-                    signal: context.signal,
-                  },
-            );
+            // WSL runs the same confined workspace path translated to /mnt/<drive>
+            // and fails closed when the drive cannot be mapped.
+            const result = environment === "wsl"
+              ? await execInWsl(cmd, {
+                  distro: wslDistro,
+                  cwd: confinement.resolvedPath,
+                  env: sanitizedEnv,
+                  timeoutMs: 60_000,
+                  signal: context.signal,
+                })
+              : await execute(
+                  nodeEval
+                    ? {
+                        file: process.execPath,
+                        args: ["-e", nodeEval[2] ?? nodeEval[3] ?? ""],
+                        cwd: confinement.resolvedPath,
+                        env: sanitizedEnv,
+                        timeoutMs: 60_000,
+                        signal: context.signal,
+                      }
+                    : {
+                        commandLine: executionCommand,
+                        cwd: confinement.resolvedPath,
+                        env: sanitizedEnv,
+                        timeoutMs: 60_000,
+                        signal: context.signal,
+                      },
+                );
             if (result.timedOut) {
               throw new Error(`[${ERROR_CODES.TOOL_TIMEOUT}] Command timed out after 60 seconds: ${cmd}`);
             }
@@ -903,9 +917,12 @@ export class ToolBroker {
               throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Command execution cancelled`);
             }
             if (result.spawnError) {
-              throw new Error(result.spawnError);
+              const unavailable = "environment" in result && result.environment === "wsl" && result.spawnError.includes("WSL_UNAVAILABLE");
+              throw new Error(unavailable ? `[${ERROR_CODES.TOOL_ENVIRONMENT_UNAVAILABLE}] ${result.spawnError}` : result.spawnError);
             }
-            const commandResult = `Exit code: ${result.exitCode}\n${result.output || "(no output)"}`;
+            const commandResult = environment === "wsl" && "distro" in result && result.distro
+              ? `Environment: wsl(${result.distro})\nExit code: ${result.exitCode}\n${result.output || "(no output)"}`
+              : `Exit code: ${result.exitCode}\n${result.output || "(no output)"}`;
             if (result.exitCode !== 0) {
               throw new Error(commandResult);
             }
