@@ -1,0 +1,72 @@
+{
+  "schema": "r28-settings-live-check-1",
+  "recordedAt": "2026-09-23T16:38:27.275Z",
+  "surface": "real CodeForge server (createServer port:0) — control-plane auth + privacy-mode + repository-index + model-selection",
+  "results": [
+    {
+      "name": "missing token → 401",
+      "ok": true,
+      "detail": "status=401"
+    },
+    {
+      "name": "wrong token → 401",
+      "ok": true,
+      "detail": "status=401"
+    },
+    {
+      "name": "privacy-mode GET returns a mode",
+      "ok": true,
+      "detail": "STANDARD"
+    },
+    {
+      "name": "models endpoint returns eligibility flags",
+      "ok": true,
+      "detail": "11 models, 1 eligible"
+    },
+    {
+      "name": "POST STRICT accepted",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "STRICT → only strict-class models eligible",
+      "ok": true,
+      "detail": "0 eligible, 0 violations"
+    },
+    {
+      "name": "POST MAXIMUM_FREE accepted",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "MAXIMUM_FREE → eligibility superset of STRICT",
+      "ok": true,
+      "detail": "STRICT=0 MAX=1"
+    },
+    {
+      "name": "invalid mode rejected",
+      "ok": true,
+      "detail": "status=400"
+    },
+    {
+      "name": "rejected change did not apply",
+      "ok": true,
+      "detail": "MAXIMUM_FREE"
+    },
+    {
+      "name": "repository-index settings POST accepted",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "repository-index setting persisted in runtime",
+      "ok": true,
+      "detail": "{\"enabled\":false}"
+    },
+    {
+      "name": "non-free model selection refused",
+      "ok": true,
+      "detail": "status=400 {\"error\":\"MODEL_NOT_FOUND\",\"message\":\"Unknown model openrouter/paid/fake-model\"}"
+    }
+  ]
+}

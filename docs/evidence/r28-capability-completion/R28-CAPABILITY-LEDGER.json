@@ -414,15 +414,16 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "PACKAGED_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
-        "packaged_settings_roundtrip/invalid_rejected=PASS, settings pages PASS"
+        "packaged_settings_roundtrip/invalid_rejected=PASS, settings pages PASS",
+        "settings-live-check.mjs=13/13 PASS — R28-SETTINGS-LIVE-EVIDENCE.json"
       ],
-      "note": "44 registered settings across 17 sections (settings-defs.ts canonical registry); storage honestly declared per row (app-settings zod-validated/server/secure-storage/renderer/cloud/git/none); storage:none rows present live facts not fake persistence; packaged smoke proved round-trip + invalid-input rejection.",
+      "note": "44 registered settings across 17 sections (settings-defs.ts canonical registry); storage honestly declared per row (app-settings zod-validated/server/secure-storage/renderer/cloud/git/none); storage:none rows present live facts not fake persistence; packaged smoke proved round-trip + invalid-input rejection. R28 live functional audit on the real server (createServer port:0): control-plane auth enforced (missing/wrong token → 401), privacy-mode transitions changed real model eligibility (STANDARD 1 eligible → STRICT 0 → MAXIMUM_FREE 1, strict-class violations 0), invalid mode → 400 and did not apply, repository-index settings round-trip persisted, paid-model selection refused (MODEL_NOT_FOUND).",
       "gaps": [
-        "per-setting runtime-effect audit (does each toggle actually change behavior)",
+        "remaining per-setting runtime-effect audit (privacy-mode + repository-index proven live; notifications/appearance are renderer-side)",
         "migration from older schemaVersion",
         "reset-preferences flow"
       ]

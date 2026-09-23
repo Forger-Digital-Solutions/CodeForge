@@ -58,7 +58,7 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | MCP | ✔ | ✔ 19+16 | ✔ | ✔ host 16/16 | ✗ | ✗ | agent-routed MCP call in workflow, packaged lifecycle |
 | Plugins | ✔ | ✔ 25+21 | ✔ | ✔ host 21/21 | ✔ | ✗ | agent-routed extension call in workflow |
 | Extensions | ✔ | ✔ 21/21 | ✔ | ✔ host | ✔ | ✗ | update behavior |
-| Settings | ✔ | ✔ | ✔ | ✗ | ✔ | ✗ | per-setting functional audit + migration |
+| Settings | ✔ | ✔ | ✔ | ✔ | ✔ | ✗ | live 13/13 (auth 401s, privacy-mode eligibility transitions, invalid rejection) — remaining per-setting audit + migration |
 | Updater | ✔ | ✔ 5/5 live | ✔ | ✔ host feed | ✗ | ✗ | packaged update cycle, apply+restart, production feed |
 | Authentication | ✔ | ✔ | ✔ | ✗ | ✔ credentials | ✗ | live OAuth lifecycle |
 | Permissions | ✔ | ✔ | ✗ (R26 historical) | ✗ | ✗ | ✗ | current-HEAD recert + new-surface penetration |
