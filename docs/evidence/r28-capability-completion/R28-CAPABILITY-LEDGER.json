@@ -110,11 +110,12 @@
       "endurance": "NOT_PROVEN",
       "evidence": [
         "R27-16BIT-EVIDENCE.json",
-        "2b93fc5"
+        "2b93fc5",
+        "R28-16BIT-COMPLETENESS-AUDIT.json"
       ],
-      "note": "Paid execution quarantine proven. Completeness audit of routing intelligence (provider/model/cost/context/latency/role suitability) still required; no paid probes authorized.",
+      "note": "Paid execution quarantine proven. R28 completeness audit done: STATICALLY_COMPLETE_EMPIRICALLY_ABSENT — registry complete on identity/provider-model mapping/direct pricing/context/capabilities/priority/freshness/budget admission; latency, quality, role suitability, reliability, live fallback all absent by policy (unauthorized paid probes), honestly marked UNKNOWN/MOCK rather than fabricated. No blocking gap for the free-only product.",
       "gaps": [
-        "full completeness audit"
+        "empirical paid evaluation requires owner-authorized capped account (policy boundary, not a defect)"
       ]
     },
     {

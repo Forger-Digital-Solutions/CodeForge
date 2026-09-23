@@ -1,0 +1,26 @@
+{
+  "schema": "r28-16bit-completeness-audit-1",
+  "recordedAt": "2026-02-14T00:00:00.000Z",
+  "subject": "16-Bit / Paid Auto routing-intelligence completeness audit (packages/paid-auto)",
+  "method": "Static dimension-by-dimension audit of registry.ts, service.ts, evaluation-budget.ts, shadow.ts against the required routing-intelligence set. No paid credential, probe, or pricing lookup used — consistent with the quarantine boundary proven in R27-16BIT-EVIDENCE.json.",
+  "dimensions": [
+    { "dimension": "canonical identity", "status": "PRESENT", "detail": "4 fixed canonicalModelIds (gpt-5.6-luna, glm-5.3-flash, qwen3.8-flash, deepseek-v4.1-flash); direct + same-model OpenRouter fallback identities only; gateway auto-selection deliberately excluded" },
+    { "dimension": "provider/model mapping", "status": "PRESENT", "detail": "each route carries providerId + providerModelId + kind (direct|openrouter) + priority 1|2 + documentation source URL" },
+    { "dimension": "cost", "status": "PRESENT_WITH_HONEST_GAPS", "detail": "per-route input/output costPerMillion with currency, unit, effectiveDate, lastVerified, and status CURRENT|UNKNOWN|STALE. Direct routes carry CURRENT pricing; every OpenRouter fallback is explicitly status:UNKNOWN with null costs — the registry refuses to fabricate fallback pricing" },
+    { "dimension": "context window", "status": "PRESENT", "detail": "1M-token contextWindow on all four models plus maxOutput" },
+    { "dimension": "capabilities", "status": "PRESENT", "detail": "text/coding/toolCalling/vision/structuredOutput/longContext booleans per model" },
+    { "dimension": "verification provenance", "status": "PRESENT", "detail": "verifiedAt + per-route sources[]; PAID_AUTO_VERIFIED_AT constant; shadow records default to MOCK provenance and require explicit attestation for OBSERVED_PRODUCTION" },
+    { "dimension": "budget admission", "status": "PRESENT", "detail": "evaluation-budget.ts requires exact current non-low-confidence price card + explicit output bound, reserves below a finite campaign ceiling, releases reservation on served-model identity mismatch" },
+    { "dimension": "latency", "status": "ABSENT_BY_POLICY", "detail": "no latency field or estimate exists anywhere in the registry; measuring latency requires paid provider calls that are not authorized — the absence is honest, not a fabrication" },
+    { "dimension": "quality scores", "status": "ABSENT_BY_POLICY", "detail": "free models carry codingScore/agentScore consumed by ForgeZero; paid models carry no quality scoring — it cannot be sourced without running the models" },
+    { "dimension": "role suitability", "status": "ABSENT_BY_POLICY", "detail": "no per-role (explorer/planner/coder/reviewer) suitability data; requires evaluation runs" },
+    { "dimension": "provider reliability/health", "status": "ABSENT_BY_POLICY", "detail": "no reliability or health metrics; requires live observation" },
+    { "dimension": "live fallback behavior", "status": "ABSENT_BY_POLICY", "detail": "fallback routes exist as identities + pricing status only; real failover is unmeasured" }
+  ],
+  "verdict": {
+    "completeness": "STATICALLY_COMPLETE_EMPIRICALLY_ABSENT",
+    "summary": "The registry is complete on every dimension that can be honestly sourced without paid inference: identity, provider/model mapping, direct pricing, context, capabilities, route priority, freshness provenance, and budget admission. Every dimension requiring empirical measurement (latency, quality, role suitability, reliability, live fallback) is absent by policy rather than fabricated — consistent with the free-only boundary: no paid credential is authorized, and the server already blocks Paid Auto execution (PAID_AUTO_BLOCKED_BY_FREE_ONLY_POLICY).",
+    "blockingGap": "None for the free-only product. A production 16-Bit intelligence claim remains impossible until owner-authorized capped paid evaluation runs exist (see R27-16BIT-EVIDENCE.json requiredNextEvidence)."
+  },
+  "testsCorroborating": "vitest run packages/server/test/model-selection-boundary.test.ts packages/paid-auto/test/*.test.ts — 71 tests covering boundary, budget admission, reservation release, shadow provenance (R27 evidence, unchanged this audit)"
+}
