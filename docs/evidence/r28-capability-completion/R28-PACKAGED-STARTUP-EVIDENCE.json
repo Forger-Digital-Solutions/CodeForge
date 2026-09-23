@@ -1,0 +1,53 @@
+{
+  "schema": "r28-packaged-startup-evidence-1",
+  "recordedAt": "2026-09-23",
+  "sourceIdentity": {
+    "commit": "2e48ea9fa1176224ad242632f79511e2100bedda",
+    "packagedFromAppCommit": "ffa2c21db6809e42df4e8d254f4eb7e621269e6e",
+    "version": "0.4.0",
+    "dirtyReason": "Protected user-owned R27-GOLDEN-TASK-VALIDATION.json remains unstaged/uncommitted by policy."
+  },
+  "artifacts": {
+    "CodeForge-Setup-0.4.0.exe": "672dfe75c5051905fdebd91bd7183c05f579846f43a1e2aa9da500f462e2eaf",
+    "CodeForge-Portable.exe": "3b279850cf84404782c8f6ca2c3f22fe9c380867d2392e2ad46a9793471103c4",
+    "win-unpacked/resources/app.asar": "35a31e67985114215cdb8f06dcb88774fcae3a15a951ed7f556807ec8833442b",
+    "note": "Identical bytes to the R27 certification artifacts; built 2026-09-23 08:44-08:45 local."
+  },
+  "launchContext": {
+    "shellIsProcessInJob": true,
+    "priorBlocker": "R8 forensics (docs/evidence/desktop-release/renderer-blocker-investigation.md) proved a zero-CodeForge Electron 44.4.1 minimal control failed with launch-failed:49 inside the Codex agent shell's restrictive Windows Job Object.",
+    "r28Observation": "Under this Devin shell's job containment, the same R27 artifact bytes launch the sandboxed renderer and pass every packaged smoke mode. The R27 failure is therefore classified as launch-context environment, not a product defect."
+  },
+  "smoke": {
+    "full": {
+      "result": "PASS exit 0",
+      "markers": [
+        "PACKAGED_STARTUP=PASS", "FORGEGREEN_RUNTIME=PASS", "EIGHT_BIT_RUNTIME=PASS", "CLOUD_DB_PACKAGED_RUNTIME=PASS",
+        "packaged_renderer_lifecycle_chain=PASS", "packaged_zero_prompt_workflow=PASS", "packaged_failure_repair_pass=PASS",
+        "packaged_renderer_reload_count=5", "packaged_renderer_reload=PASS",
+        "packaged_settings_roundtrip=PASS", "packaged_settings_invalid_rejected=PASS",
+        "packaged_extensions_loaded=PASS", "packaged_extension_command=PASS", "packaged_extension_workspace_read=PASS", "packaged_extension_lifecycle=PASS",
+        "settings_repo_intel_page=PASS", "settings_extensions_page=PASS",
+        "control_plane_renderer_bearer_absent=PASS", "control_plane_trusted_renderer=PASS", "control_plane_missing_bearer_rejected=PASS",
+        "control_plane_wrong_bearer_rejected=PASS", "control_plane_forged_approval_rejected=PASS", "control_plane_forged_origin_rejected=PASS",
+        "control_plane_secondary_renderer_ipc_rejected=PASS", "control_plane_secondary_renderer_unauthenticated=PASS", "control_plane_trust_boundary=PASS",
+        "credential_plaintext_absent=PASS", "PACKAGED_FULL_SMOKE_OK"
+      ],
+      "rendererLifecycle": "preload-entry, preload-bridge-ready, bootstrap, root-mounted, first-frame, workspace-root, runtime-connected, workspace-interactive observed across 5 reloads",
+      "agentWorkflow": "Packaged agent repaired seeded src/calc.ts (a-b -> a+b) via smoke test provider; no launch-failed/RENDER_PROCESS_GONE/ERR_FAILED anywhere in run"
+    },
+    "interrupt": { "result": "PASS exit 73 (expected)", "markers": ["electron_restart_interruption_ready=PASS", "PACKAGED_INTERRUPT_EXPECTED_EXIT"] },
+    "recover": {
+      "result": "PASS exit 0",
+      "markers": ["electron_restart_failed_safely=PASS", "electron_restart_no_approval_replay=PASS", "corrupt_credential_fails_closed=PASS", "legacy_plaintext_credential_rejected=PASS", "legacy_plaintext_credential_migrated=PASS", "credential_restart_decrypt=PASS", "electron_restart_fresh_task=PASS", "PACKAGED_RECOVERY_SMOKE_OK"]
+    }
+  },
+  "securityPosture": "Unchanged: sandbox, contextIsolation, webSecurity enabled; nodeIntegration disabled; control-plane bearer boundary verified in packaged bytes.",
+  "verdict": "PACKAGED_STARTUP_PROVEN_ON_THIS_HOST",
+  "notProven": [
+    "Installer install/upgrade/uninstall/reinstall flows",
+    "Packaged endurance (multi-hour)",
+    "Real-hardware performance profile",
+    "Second-device validation"
+  ]
+}
