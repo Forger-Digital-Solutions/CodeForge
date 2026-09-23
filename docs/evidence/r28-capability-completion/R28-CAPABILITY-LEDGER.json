@@ -331,17 +331,20 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
         "R27-GITHUB-EVIDENCE.json",
-        "c19997d"
+        "c19997d",
+        "benchmarks/r28/github-live-check.mjs — 10/10 authorized live checks",
+        "docs/evidence/r28-capability-completion/R28-GITHUB-LIVE-EVIDENCE.json"
       ],
-      "note": "PR reconciliation rejects stale/closed. OAuth + safe test-repo PR/CI flow requires authorized external mutation.",
+      "note": "R28 live (user-authorized external mutation): production GitHubPullRequestClient against real GitHub — disposable private repo created, real branch pushed, createPullRequest → live PR #1, findOpenPullRequest resolved with matching head sha, honest empty pre-PR, invalid token → REMOTE_AUTH_FAILED, PR closed via gh and no longer found. Client has no merge/close authority by design. Residual: repo teardown needed delete_repo scope the token lacked — fixture repo left on account for manual deletion; RemotePublicationService full state machine proven deterministically, not live end-to-end.",
       "gaps": [
-        "live OAuth",
-        "safe test-repo connect/branch/push/PR/checks cycle"
+        "live OAuth device flow (check used existing gh credential)",
+        "RemotePublicationService live end-to-end (authorize → validate → push → PR → remote_pr_ready)",
+        "checks/CI status read on a live PR"
       ]
     },
     {

@@ -1,0 +1,56 @@
+{
+  "schema": "r28-github-live-check-1",
+  "recordedAt": "2026-09-23T16:35:05.529Z",
+  "account": "Forger-Digital-Solutions",
+  "repo": "Forger-Digital-Solutions/cf-r28-proof-muebpwc0 (created + deleted in-check)",
+  "results": [
+    {
+      "name": "normalizeGitHubRemote parses real remote",
+      "ok": true,
+      "detail": "{\"provider\":\"github\",\"owner\":\"Forger-Digital-Solutions\",\"name\":\"cf-r28-proof-muebpwc0\",\"canonical\":\"github.com/forger-digital-solutions/cf-r28-proof-muebpwc0\"}"
+    },
+    {
+      "name": "normalizeGitHubRemote rejects non-github",
+      "ok": true,
+      "detail": "gitlab rejected"
+    },
+    {
+      "name": "assertReady passes with live token",
+      "ok": true,
+      "detail": "token accepted"
+    },
+    {
+      "name": "real branch pushed to live repo",
+      "ok": true,
+      "detail": "sha=9650cd42"
+    },
+    {
+      "name": "findOpenPullRequest before PR → honest empty",
+      "ok": true
+    },
+    {
+      "name": "createPullRequest → real open PR",
+      "ok": true,
+      "detail": "#1 https://github.com/Forger-Digital-Solutions/cf-r28-proof-muebpwc0/pull/1"
+    },
+    {
+      "name": "findOpenPullRequest resolves the created PR",
+      "ok": true,
+      "detail": "#1 head=r28-proof-branch"
+    },
+    {
+      "name": "PR head sha matches pushed commit",
+      "ok": true,
+      "detail": "9650cd42 vs 9650cd42"
+    },
+    {
+      "name": "invalid token → REMOTE_AUTH_FAILED",
+      "ok": true,
+      "detail": "REMOTE_AUTH_FAILED"
+    },
+    {
+      "name": "closed PR no longer found open",
+      "ok": true
+    }
+  ]
+}

@@ -54,7 +54,7 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | Terminal | ✔ | ✔ 51/51 | ✔ | ✔ host 10/10 | ✗ | ✗ | packaged interactive sessions, leak check |
 | WSL | ✔ | ✔ 12/12 | ✔ | ✔ host | ✗ | ✗ | packaged proof, in-workflow routing, desktop surface |
 | Git | ✔ | ✔ | ✔ | ✔ host 15/15 | ✗ | ✗ | packaged dirty/conflict/worktree/stash flows |
-| GitHub | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live OAuth + safe test-repo PR/CI cycle |
+| GitHub | ✔ | ✔ | ✔ | ✔ auth 10/10 | ✗ | ✗ | OAuth device flow, publication service E2E, CI checks |
 | MCP | ✔ | ✔ 19+16 | ✔ | ✔ host 16/16 | ✗ | ✗ | agent-routed MCP call in workflow, packaged lifecycle |
 | Plugins | ✔ | ✔ 25+21 | ✔ | ✔ host 21/21 | ✔ | ✗ | agent-routed extension call in workflow |
 | Extensions | ✔ | ✔ 21/21 | ✔ | ✔ host | ✔ | ✗ | update behavior |
