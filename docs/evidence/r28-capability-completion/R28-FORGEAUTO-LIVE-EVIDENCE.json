@@ -1,0 +1,98 @@
+{
+  "schema": "r28-forgeauto-live-check-1",
+  "recordedAt": "2026-09-23T17:25:04.936Z",
+  "surface": "production-wired free-cloud fabric — real OpenRouter listModels → discoverAndVerifyFree → ForgeZero → FreeCloudService → server endpoints",
+  "refresh": {
+    "registered": 23,
+    "failed": 0,
+    "errors": []
+  },
+  "note": "Routing fabric proven against the live provider catalog. Task-class inference differentiation additionally evidenced by R28 live workflow runs through ForgeZero. One host limitation recorded honestly: only OpenRouter connected, so same-model cross-provider failover is untestable here (mechanism present, single route per canonical).",
+  "results": [
+    {
+      "name": "live catalog refresh registered verified-free models",
+      "ok": true,
+      "detail": "registered=23 failed=0 errors=0"
+    },
+    {
+      "name": "registry exposes canonical models",
+      "ok": true,
+      "detail": "121 canonical models"
+    },
+    {
+      "name": "executable routes exist (connected + verified + routable)",
+      "ok": true,
+      "detail": "20/134 executable"
+    },
+    {
+      "name": "unqualified routes honestly not ForgeAuto-eligible yet",
+      "ok": true,
+      "detail": "pending=19 — eligibility requires qualification"
+    },
+    {
+      "name": "qualification cycle executed",
+      "ok": true,
+      "detail": "qualified=1 pending=18 1158s"
+    },
+    {
+      "name": "receipt openrouter/nvidia/nemotron-3.5-lightning:free → PROBATION",
+      "ok": true,
+      "detail": "cases=16"
+    },
+    {
+      "name": "ForgeAuto-eligible routes after qualification",
+      "ok": true,
+      "detail": "1 eligible"
+    },
+    {
+      "name": "qualification receipts recorded",
+      "ok": true,
+      "detail": "1 receipts"
+    },
+    {
+      "name": "receipt has real case results",
+      "ok": true,
+      "detail": "13 cases, suite=R27_ROLE_QUALIFICATION_V2, state=PROBATION"
+    },
+    {
+      "name": "candidates carry role recommendations",
+      "ok": true,
+      "detail": "1 candidates"
+    },
+    {
+      "name": "canonical model with executable route found",
+      "ok": true,
+      "detail": "nvidia/nemotron-3.5-lightning"
+    },
+    {
+      "name": "canonical selection resolves concrete route",
+      "ok": "nvidia/nemotron-3.5-lightning:free",
+      "detail": "openrouter/nvidia/nemotron-3.5-lightning:free (1 routes)"
+    },
+    {
+      "name": "resolved route is actually executable",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "canonical id preserved on selection",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "unknown canonical → refused honestly",
+      "ok": true,
+      "detail": "status=409"
+    },
+    {
+      "name": "auto selection clears to per-request routing",
+      "ok": true,
+      "detail": "{\"modelId\":\"auto\"}"
+    },
+    {
+      "name": "multi-route failover surface",
+      "ok": true,
+      "detail": "single-provider fabric (openrouter) — same-model cross-provider failover untestable on this host; alternates/priority mechanism present"
+    }
+  ]
+}

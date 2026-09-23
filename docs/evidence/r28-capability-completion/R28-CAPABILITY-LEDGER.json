@@ -86,17 +86,17 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "PACKAGED_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
         "R27-8BIT-EVIDENCE.json",
-        "EIGHT_BIT_RUNTIME=PASS"
+        "EIGHT_BIT_RUNTIME=PASS",
+        "R28-FORGEAUTO-LIVE-EVIDENCE.json (real qualification cycle)"
       ],
-      "note": "Catalog drift, health authority, durable ledger deterministic. No live quota/outage/recovery lifecycle spent.",
+      "note": "Catalog drift, health authority, durable ledger deterministic. R28 live: real bounded qualification cycle on the production FreeCloudService — 19.3min, R27_ROLE_QUALIFICATION_V2 suite (16 real probe cases) against openrouter/nemotron-3.5-lightning:free → PROBATION receipt, pending queue decremented 19→18, route became ForgeAuto-eligible, receipt persisted with case-level pass/fail. Qualification spending is real free quota — the budget gates (3/cycle, 24/day/provider, 20min interval) enforced by construction.",
       "gaps": [
-        "live quota event",
-        "route disappearance/recovery",
+        "route disappearance/recovery under real events",
         "role regression under real events"
       ]
     },
@@ -123,16 +123,18 @@
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
       "deterministic": "DETERMINISTICALLY_PROVEN",
-      "live": "NOT_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
         "packages/eight-bit free-fabric/failover",
-        "forge-zero canonical"
+        "forge-zero canonical",
+        "forgeauto-live-check.mjs=17/17 — R28-FORGEAUTO-LIVE-EVIDENCE.json"
       ],
-      "note": "Free Auto enforcement deterministic. End-to-end live proof across task classes pending.",
+      "note": "R28 live on production wiring: real OpenRouter listModels → discoverAndVerifyFree → 23 verified-free records → 121 canonical models, 20/134 executable routes. Unqualified routes honestly NOT ForgeAuto-eligible (pending=19). Real bounded qualification cycle (19.3min, 16 probe cases, R27_ROLE_QUALIFICATION_V2) qualified nemotron-3.5-lightning → PROBATION → 1 ForgeAuto-eligible route. Canonical selection resolved to the real executable route with canonical id preserved; ghost canonical → 409; auto clears to per-request routing. Honest limitation: single-provider fabric, same-model cross-provider failover untestable on this host.",
       "gaps": [
-        "live routing across tiny/backend/frontend/planning/review/long-context/tool-heavy tasks"
+        "live routing differentiation across task classes (needs multi-class inference runs; medium task + planner turn partially evidenced)",
+        "cross-provider same-model failover (needs ≥2 connected providers)"
       ]
     },
     {

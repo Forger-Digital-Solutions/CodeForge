@@ -41,9 +41,9 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Core Agent | ✔ | ✔ | ✔ | ✔ **completion-gated** | ✔ | ✗ | sustained live; medium/large tasks |
 | ForgeGreen | ✔ | ✔ | ✔ | ✗ | ✔ runtime | ✗ | live matched-pair efficiency + crossover |
-| 8-Bit | ✔ | ✔ | ✔ | ✗ | ✔ runtime | ✗ | live quota/outage/recovery lifecycle |
+| 8-Bit | ✔ | ✔ | ✔ | ✔ | ✔ runtime | ✗ | live qualification cycle (real probes → PROBATION receipt) — outage/recovery events remain |
 | 16-Bit | ✔ | ✔ | ✔ | BLOCKED (policy) | ✗ | ✗ | completeness audit DONE — statically complete, empirically absent by policy (no authorized paid probes) |
-| ForgeAuto | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live routing across task classes |
+| ForgeAuto | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live 17/17 fabric + real qualification — task-class routing differentiation + multi-provider failover remain |
 | Subagents | ✔ | ✔ | ✔ | ✗ | ✗ | ✗ | live crossover vs single-agent |
 | Planner | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live 8/8 — real nemotron planner turn, valid acyclic authorized plan |
 | ForgeVerify | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live verification on larger tasks |
