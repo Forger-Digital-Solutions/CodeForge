@@ -472,17 +472,18 @@
       "name": "Permissions",
       "implemented": "IMPLEMENTED",
       "tested": "TESTED",
-      "deterministic": "NOT_PROVEN",
-      "live": "NOT_PROVEN",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
-        "R26-PERMISSION-AUDIT.md historical 44/44"
+        "R26-PERMISSION-AUDIT.md historical 44/44",
+        "permissions-live-check.mjs=32/32 PASS — R28-PERMISSIONS-LIVE-EVIDENCE.json"
       ],
-      "note": "Historical audit only; needs revalidation on current HEAD plus new-surface penetration (MCP/plugins/extensions/subagents/nested tools).",
+      "note": "R28 current-HEAD penetration harness against the real ToolBroker: all 4 read-only roles denied mutation even with granted permission flags (role ceiling wins); coder denied without the specific flag; every escape form refused (../, ..\\..\\, absolute, mid-path traversal, UNC, junction-symlink) as TOOL_PATH_ESCAPE; sensitive-path denylist holds for read AND write (.env*, credentials, id_rsa, *.pem); registry integrity (TOOL_UNKNOWN / TOOL_ARGUMENT_INVALID); positive controls execute in-workspace; zero escaped writes. Computer-use/browser tools classify executeCommand+high-risk approval in external-tools surface (live-proven in their own checks).",
       "gaps": [
-        "current-HEAD recert",
-        "escalation attempts across all new capabilities"
+        "packaged-surface penetration (IPC sender-spoof attempts on packaged build)",
+        "extension-sandbox escalation attempts beyond declared permissions (partially covered by extensions-live-check)"
       ]
     },
     {

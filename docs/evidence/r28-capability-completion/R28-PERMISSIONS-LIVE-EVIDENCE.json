@@ -1,0 +1,167 @@
+{
+  "schema": "r28-permissions-live-check-1",
+  "recordedAt": "2026-09-23T16:40:31.102Z",
+  "surface": "real ToolBroker.executeTool — role ceilings, permission flags, workspace/symlink confinement, sensitive-path denylist, registry integrity",
+  "results": [
+    {
+      "name": "explorer: write_file denied despite granted perms",
+      "ok": true,
+      "detail": "TOOL_PERMISSION_DENIED"
+    },
+    {
+      "name": "explorer: run_command denied",
+      "ok": true,
+      "detail": "TOOL_PERMISSION_DENIED"
+    },
+    {
+      "name": "reviewer: write_file denied despite granted perms",
+      "ok": true,
+      "detail": "TOOL_PERMISSION_DENIED"
+    },
+    {
+      "name": "reviewer: run_command denied",
+      "ok": true,
+      "detail": "TOOL_PERMISSION_DENIED"
+    },
+    {
+      "name": "planner: write_file denied despite granted perms",
+      "ok": true,
+      "detail": "TOOL_PERMISSION_DENIED"
+    },
+    {
+      "name": "planner: run_command denied",
+      "ok": true,
+      "detail": "TOOL_PERMISSION_DENIED"
+    },
+    {
+      "name": "replanner: write_file denied despite granted perms",
+      "ok": true,
+      "detail": "TOOL_PERMISSION_DENIED"
+    },
+    {
+      "name": "replanner: run_command denied",
+      "ok": true,
+      "detail": "TOOL_PERMISSION_DENIED"
+    },
+    {
+      "name": "coder without write perm → denied",
+      "ok": true,
+      "detail": "TOOL_PERMISSION_DENIED"
+    },
+    {
+      "name": "coder without executeCommand → denied",
+      "ok": true,
+      "detail": "TOOL_PERMISSION_DENIED"
+    },
+    {
+      "name": "read_file escape \"../outside-secret.txt\" → denied",
+      "ok": true,
+      "detail": "TOOL_PATH_ESCAPE"
+    },
+    {
+      "name": "read_file escape \"..\\\\..\\\\outside-secret.txt\" → denied",
+      "ok": true,
+      "detail": "TOOL_PATH_ESCAPE"
+    },
+    {
+      "name": "read_file escape \"C:\\\\Users\\\\DADDY_~1\\\\AppData\\\\Local\\\\Temp\\\\cf-\" → denied",
+      "ok": true,
+      "detail": "TOOL_PATH_ESCAPE"
+    },
+    {
+      "name": "read_file escape \"sub/../../outside-secret.txt\" → denied",
+      "ok": true,
+      "detail": "TOOL_PATH_ESCAPE"
+    },
+    {
+      "name": "read_file escape \"//server/share/x\" → denied",
+      "ok": true,
+      "detail": "TOOL_PATH_ESCAPE"
+    },
+    {
+      "name": "write_file escape → denied",
+      "ok": true,
+      "detail": "TOOL_PATH_ESCAPE"
+    },
+    {
+      "name": "run_command cwd escape → denied",
+      "ok": true,
+      "detail": "TOOL_PATH_ESCAPE"
+    },
+    {
+      "name": "symlink escape → denied",
+      "ok": true,
+      "detail": "TOOL_PATH_ESCAPE"
+    },
+    {
+      "name": "sensitive read .env → denied",
+      "ok": true,
+      "detail": "TOOL_SENSITIVE_PATH_DENIED"
+    },
+    {
+      "name": "sensitive read .env.local → denied",
+      "ok": true,
+      "detail": "TOOL_SENSITIVE_PATH_DENIED"
+    },
+    {
+      "name": "sensitive read sub/../.env → denied",
+      "ok": true,
+      "detail": "TOOL_SENSITIVE_PATH_DENIED"
+    },
+    {
+      "name": "sensitive read credentials.json → denied",
+      "ok": true,
+      "detail": "TOOL_SENSITIVE_PATH_DENIED"
+    },
+    {
+      "name": "sensitive read id_rsa → denied",
+      "ok": true,
+      "detail": "TOOL_SENSITIVE_PATH_DENIED"
+    },
+    {
+      "name": "sensitive read server.pem → denied",
+      "ok": true,
+      "detail": "TOOL_SENSITIVE_PATH_DENIED"
+    },
+    {
+      "name": "sensitive write .env.production → denied",
+      "ok": true,
+      "detail": "TOOL_SENSITIVE_PATH_DENIED"
+    },
+    {
+      "name": "unknown tool → TOOL_UNKNOWN",
+      "ok": true,
+      "detail": "TOOL_UNKNOWN"
+    },
+    {
+      "name": "malformed JSON args → TOOL_ARGUMENT_INVALID",
+      "ok": true,
+      "detail": "TOOL_ARGUMENT_INVALID"
+    },
+    {
+      "name": "missing required arg → TOOL_ARGUMENT_INVALID",
+      "ok": true,
+      "detail": "TOOL_ARGUMENT_INVALID"
+    },
+    {
+      "name": "explorer read_file inside ws → works",
+      "ok": true,
+      "detail": "hello workspace\n\n[hash:bad18e717145fcf190f9144d635a3295ab55f"
+    },
+    {
+      "name": "coder write_file inside ws → works",
+      "ok": true,
+      "detail": "Successfully wrote 13 characters to sub/new.txt"
+    },
+    {
+      "name": "coder run_command inside ws → works",
+      "ok": true,
+      "detail": "Exit code: 0\ncmd-ok\n"
+    },
+    {
+      "name": "no writes escaped the workspace",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

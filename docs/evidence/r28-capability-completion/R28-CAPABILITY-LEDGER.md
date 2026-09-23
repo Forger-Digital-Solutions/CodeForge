@@ -61,7 +61,7 @@ permission setting was weakened. Packaged startup on this host is now `PACKAGED_
 | Settings | ✔ | ✔ | ✔ | ✔ | ✔ | ✗ | live 13/13 (auth 401s, privacy-mode eligibility transitions, invalid rejection) — remaining per-setting audit + migration |
 | Updater | ✔ | ✔ 5/5 live | ✔ | ✔ host feed | ✗ | ✗ | packaged update cycle, apply+restart, production feed |
 | Authentication | ✔ | ✔ | ✔ | ✗ | ✔ credentials | ✗ | live OAuth lifecycle |
-| Permissions | ✔ | ✔ | ✗ (R26 historical) | ✗ | ✗ | ✗ | current-HEAD recert + new-surface penetration |
+| Permissions | ✔ | ✔ | ✔ | ✔ | ✗ | ✗ | live 32/32 ToolBroker penetration (role ceilings, all escape forms, sensitive denylist) — packaged IPC spoof remains |
 | Diagnostics | ✔ | ✔ | ✗ | ✗ | ✗ | ✗ | bundle redaction proof |
 | Installer | ✔ built | ✔ | ✗ | ✗ | ✗ | ✗ | install/upgrade/uninstall/retention flows |
 | Recovery | ✔ | ✔ | ✔ | ✗ | ✔ | ✗ | mid-operation interruptions, stale receipts |
