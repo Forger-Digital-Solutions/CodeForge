@@ -4857,6 +4857,15 @@ export class AgentRuntime {
           }
           return { tool: toolName, action: "read", reason: `read browser state${target ? ` at ${target}` : ""}`, insideWorkspace: false, risk: "safe" };
         }
+        if (toolName.startsWith("computer_")) {
+          // Real-desktop control: injected input alters the user's actual session — same
+          // always-ask class as external side effects. Observation stays a read, but flagged
+          // moderate because screen contents may expose anything on the desktop.
+          if (toolName === "computer_screenshot" || toolName === "computer_status") {
+            return { tool: toolName, action: "read", reason: "observe the real desktop screen state", insideWorkspace: false, risk: "moderate" };
+          }
+          return { tool: toolName, action: "external", reason: "inject input into the real desktop session", insideWorkspace: false, risk: "high" };
+        }
         if (toolName.startsWith("mcp__")) {
           // The MCP registry is the sole classifier — a server never self-declares its tier.
           // Unknown effect fails closed to "external" (Tier 3, always asks).

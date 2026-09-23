@@ -246,18 +246,24 @@
     },
     {
       "name": "Computer Use",
-      "implemented": "ABSENT",
-      "tested": "NOT_PROVEN",
-      "deterministic": "NOT_PROVEN",
-      "live": "NOT_PROVEN",
+      "implemented": "IMPLEMENTED",
+      "tested": "TESTED",
+      "deterministic": "DETERMINISTICALLY_PROVEN",
+      "live": "LIVE_PROVEN",
       "packaged": "NOT_PROVEN",
       "endurance": "NOT_PROVEN",
       "evidence": [
-        "grep: only incidental references (provider-factory, vscode-test)"
+        "packages/computer-use — policy.ts, backend.ts, runtime.ts, tools.ts",
+        "22 unit tests (policy bounds/budget/rate-limit, executor validation, key allowlist)",
+        "benchmarks/r28/computer-use-live-check.mjs — 9/9 live host checks",
+        "docs/evidence/r28-capability-completion/R28-COMPUTER-USE-LIVE-EVIDENCE.json"
       ],
-      "note": "No governed computer-interaction architecture exists. Browser automation is NOT computer use. Requires audit + core implementation or honest ABSENT classification.",
+      "note": "R28: governed computer-use surface built from zero. WindowsComputerBackend drives the real session via PowerShell+.NET (System.Drawing capture; user32 SetCursorPos/mouse_event/SendInput) through sanitized, time-boxed, EncodedCommand children — no native modules. GovernedComputerRuntime enforces screen-bounds validation, per-session input budget, action rate limit, type-length cap, key allowlist. Six agent tools (status/screenshot/mouse_move/mouse_click/type_text/key_press) bridge through the external-tools surface behind executeCommand permission; input actions classify external/high → always-ask tier. DPI bug found and fixed live: backend now sets PER_MONITOR_AWARE_V2 or coordinates virtualize on scaled displays (was 0.8x on 125% host). Live verified: real 3600x1080 multi-monitor bounds, 6.6MB PNG capture hashed+persisted, SetCursorPos verified via OS GetCursorPos on two moves, SendInput keypress executed, all denials enforced.",
       "gaps": [
-        "entire capability"
+        "click/type into a focused window proven by unit + SendInput path only — controlled-focus live run pending",
+        "packaged-app computer-use enablement",
+        "non-Windows backends (currently win32-only, fails closed elsewhere)",
+        "screenshot image bytes never reach the model — vision-observation path is a separate design question"
       ]
     },
     {

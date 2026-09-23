@@ -1,0 +1,53 @@
+{
+  "schema": "r28-computer-use-live-check-1",
+  "recordedAt": "2026-09-23T16:15:38.385Z",
+  "backend": "windows: System.Drawing capture + user32 SetCursorPos/mouse_event/SendInput",
+  "results": [
+    {
+      "name": "status → supported + real bounds",
+      "ok": true,
+      "detail": "{\"x\":-1680,\"y\":0,\"width\":3600,\"height\":1080}"
+    },
+    {
+      "name": "screenshot → real PNG persisted + hashed",
+      "ok": true,
+      "detail": "6632665B sha256=20ceffe2e53a… 3600x1080"
+    },
+    {
+      "name": "mouse move → OS cursor position verified",
+      "ok": true,
+      "detail": "target=(120,540) actual=(120,540)"
+    },
+    {
+      "name": "second move → cursor tracked",
+      "ok": true,
+      "detail": "target=(160,580) actual=(160,580)"
+    },
+    {
+      "name": "key press → SendInput path executed (shift, no side effect)",
+      "ok": true,
+      "detail": "shift"
+    },
+    {
+      "name": "out-of-bounds move rejected",
+      "ok": true,
+      "detail": "COMPUTER_INVALID_TARGET"
+    },
+    {
+      "name": "unknown key rejected",
+      "ok": true,
+      "detail": "COMPUTER_INVALID_KEY"
+    },
+    {
+      "name": "empty key list rejected",
+      "ok": true,
+      "detail": "COMPUTER_INVALID_KEY"
+    },
+    {
+      "name": "session budget exhaustion",
+      "ok": true,
+      "detail": "COMPUTER_BUDGET_EXHAUSTED"
+    }
+  ],
+  "gap": "real click/type into a focused window requires a controlled session; move+keypress prove the injection pipeline"
+}

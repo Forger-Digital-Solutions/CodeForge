@@ -37,6 +37,7 @@
     "@codeforge/model-registry": "*",
     "@codeforge/paid-auto": "*",
     "@codeforge/browser": "*",
-    "@codeforge/mcp": "*"
+    "@codeforge/mcp": "*",
+    "@codeforge/computer-use": "*"
   }
 }

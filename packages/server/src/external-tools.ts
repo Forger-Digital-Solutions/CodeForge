@@ -9,6 +9,12 @@ import {
   isBrowserTool,
   type BrowserPolicy,
 } from "@codeforge/browser";
+import {
+  COMPUTER_TOOL_DEFINITIONS,
+  GovernedComputerRuntime,
+  createComputerToolExecutor,
+  isComputerTool,
+} from "@codeforge/computer-use";
 import { McpRegistry, type McpServerConfig } from "@codeforge/mcp";
 import type { ToolDefinition } from "@codeforge/tools";
 
@@ -32,6 +38,18 @@ export interface ExternalToolConfig {
     allowedHosts?: string[];
     deniedHosts?: string[];
     maxSessions?: number;
+  };
+  /**
+   * Real-desktop input/capture. Off by default and independently gated: enabling here only
+   * *exposes* the tools — every input-injection call still requires the executeCommand
+   * permission flag and maps to the highest approval tier.
+   */
+  computerUse?: {
+    enabled?: boolean;
+    maxActionsPerSession?: number;
+    minActionIntervalMs?: number;
+    maxTypeLength?: number;
+    allowMultiMonitor?: boolean;
   };
   /** Explicit MCP server list. Only named servers are ever spawned. */
   mcpServers?: McpServerConfig[];
@@ -67,7 +85,7 @@ export interface ExternalToolSurface {
   init(): Promise<void>;
   close(): Promise<void>;
   /** Introspection for status endpoints and evidence — states, never payloads. */
-  describe(): { browser: { enabled: boolean }; mcpServers: { name: string; status: string; tools: number }[]; plugins: { bridgedCommands: number } };
+  describe(): { browser: { enabled: boolean }; computerUse?: { enabled: boolean }; mcpServers: { name: string; status: string; tools: number }[]; plugins: { bridgedCommands: number } };
 }
 
 /**
@@ -139,10 +157,15 @@ export function createExternalToolSurface(
   const browserCfg = config.browser ?? {};
   const browserEnabled =
     (browserCfg.enabled ?? process.env.CODEFORGE_BROWSER === "1") && process.env.CODEFORGE_BROWSER !== "0";
+  const computerCfg = config.computerUse ?? {};
+  const computerEnabled =
+    (computerCfg.enabled ?? process.env.CODEFORGE_COMPUTER_USE === "1") &&
+    process.env.CODEFORGE_COMPUTER_USE !== "0" &&
+    process.platform === "win32";
   const mcpConfigs = (config.mcpServers ?? []).filter((s) => s.trust?.enabled !== false);
   const pluginHost =
     opts.pluginHost && config.plugins?.exposeCommands !== false ? opts.pluginHost : undefined;
-  if (!browserEnabled && mcpConfigs.length === 0 && !pluginHost) return DISABLED_SURFACE;
+  if (!browserEnabled && !computerEnabled && mcpConfigs.length === 0 && !pluginHost) return DISABLED_SURFACE;
 
   const baseDir = opts.configDir ?? path.join(os.homedir(), ".codeforge");
   const coreDefinitions: ToolDefinition[] = [];
@@ -208,6 +231,22 @@ export function createExternalToolSurface(
     coreDefinitions.push(...BROWSER_TOOL_DEFINITIONS);
   }
 
+  let computerRuntime: GovernedComputerRuntime | undefined;
+  let computerExecutor: ((name: string, args: Record<string, unknown>) => Promise<string | undefined>) | undefined;
+  if (computerEnabled) {
+    computerRuntime = new GovernedComputerRuntime({
+      evidenceDir: path.join(baseDir, "computer-evidence"),
+      policy: {
+        ...(computerCfg.maxActionsPerSession !== undefined ? { maxActionsPerSession: computerCfg.maxActionsPerSession } : {}),
+        ...(computerCfg.minActionIntervalMs !== undefined ? { minActionIntervalMs: computerCfg.minActionIntervalMs } : {}),
+        ...(computerCfg.maxTypeLength !== undefined ? { maxTypeLength: computerCfg.maxTypeLength } : {}),
+        ...(computerCfg.allowMultiMonitor !== undefined ? { allowMultiMonitor: computerCfg.allowMultiMonitor } : {}),
+      },
+    });
+    computerExecutor = createComputerToolExecutor(computerRuntime);
+    coreDefinitions.push(...COMPUTER_TOOL_DEFINITIONS);
+  }
+
   const registry = new McpRegistry({
     ...(config.clientTimeoutsMs?.connect !== undefined ? { connectTimeoutMs: config.clientTimeoutsMs.connect } : {}),
     ...(config.clientTimeoutsMs?.call !== undefined ? { callTimeoutMs: config.clientTimeoutsMs.call } : {}),
@@ -226,6 +265,12 @@ export function createExternalToolSurface(
           throw new Error("browser is disabled — enable it in external-tools.json or CODEFORGE_BROWSER=1");
         }
         return browserExecutor(name, args);
+      }
+      if (isComputerTool(name)) {
+        if (!computerExecutor) {
+          throw new Error("computer use is disabled — enable it in external-tools.json or CODEFORGE_COMPUTER_USE=1");
+        }
+        return computerExecutor(name, args);
       }
       if (name.startsWith("mcp__")) return registry.executor()(name, args);
       if (name.startsWith("plugin__")) {
@@ -256,11 +301,13 @@ export function createExternalToolSurface(
     async close() {
       await registry.closeAll();
       await browserRuntime?.shutdown();
+      await computerRuntime?.shutdown();
     },
 
     describe() {
       return {
         browser: { enabled: browserEnabled },
+        computerUse: { enabled: computerEnabled },
         mcpServers: registry.listServerStates().map((s) => ({
           name: s.name,
           status: s.status,
