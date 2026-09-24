@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "c92386e90cbd1bf8dffb5a40f81083db0d53d12fab735ae319f1a221d67595a7",
-  "surfaceVersion": "r31-release-closure-v1",
+  "sourceStateId": "5314df384678807aed7ca06d63c921cc35c2996e6ec2592fee479c2b97be0056",
+  "surfaceVersion": "r32-autonomy-perfection-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -58,16 +58,16 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "e0e71d7d6be08d26b40bd3c6764e85d5fefb9db9",
+    "packages/server/src/agent-runtime.ts": "7f0b6e84e868e48852abad090cc7bce5dfadc116",
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
     "packages/server/src/duplicate-suppression.ts": "5609d0e3817b1214cf1540810f355bef3ce842c3",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "0d6f948ba3d9d36b74e4bf79936548d3bc6d032e",
+    "packages/server/src/workflow-service.ts": "98e9c62e239b8fdff39c2359eda877266f6872d2",
     "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "41042502fd939c990ea737745e3334d07c1aa7d5",
     "packages/tools/src/index.ts": "ad3007606e0674f65a396786c8264ddd32732cdc",
-    "packages/workflow/src/diff-review.ts": "d4fd554d0e5ccaada229391948ae8688b641096b",
+    "packages/workflow/src/diff-review.ts": "3cb34d3f7e6496781088b2ac7f0e5923fc1d3120",
     "packages/workflow/src/forge-verify.ts": "d134438dfde57de85c756cdd8aaab192f1d801e8",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
     "packages/workflow/src/semantic-diff-review.ts": "7a854b990eb27c1f0aeed04c4d7ba73e06fc2b75",
@@ -1248,19 +1248,48 @@
       "regressionEvidence": "docs/evidence/r31-production-release-closure/full-regression.log and docs/evidence/r31-production-release-closure/02-large-task-reliability/r31-acceptance-taxonomy.json",
       "recertifiedAt": "2026-09-24",
       "sourceStateConstant": "CODEFORGE_R31_GOAL_REVIEW_SOURCE_STATE"
+    },
+    {
+      "label": "R32 autonomy perfection and false-success closure",
+      "reason": "Re-issue the frozen ForgeGreen source-state over three reviewed R32 material files. The changes strengthen the semantic-review tail (reserved inference lane, fail-closed inconclusive verdicts, deterministic stated-contract enforcement, non-git created-file coverage). Completion authority remains solely in evaluateCompletion; no gate was relaxed.",
+      "priorSourceStateId": "c92386e90cbd1bf8dffb5a40f81083db0d53d12fab735ae319f1a221d67595a7",
+      "priorSurfaceVersion": "r31-release-closure-v1",
+      "resultingSourceStateId": "5314df384678807aed7ca06d63c921cc35c2996e6ec2592fee479c2b97be0056",
+      "resultingSurfaceVersion": "r32-autonomy-perfection-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "R32 repair turns and goal-review turns route through the inference budget's reserved partition so semantic review is guaranteed a lane after implementation exhausts its primary partition; review-phase routing is scoped per run.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "R32 fail-closed semantic review: inconclusive or budget-starved review turns can never produce a met verdict; deterministic stated-contract check compares declared diff signatures against explicitly stated goal contracts and emits blocking goal_not_satisfied findings independent of model verdict, hardened against comment/string-literal spoofing; goal reviewers are told the diff digest is system-captured evidence they may cite directly.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/diff-review.ts",
+          "change": "R32 non-git workspace coverage: when the workspace is not a git repository, reviewDiff walks the filesystem with the same snapshot exclusions and timestamp filters so newly created files reach review and deterministic contract checks instead of being invisible.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "R32 live acceptance batch receipts under docs/evidence/r32-autonomy-perfection/10-live-acceptance; deterministic starvation/contract matrix green in workflow-goal-review.test.ts; packaged live-provider proof in 30-packaged-live-proof. Final post-recertification regression is recorded in the R32 certification document.",
+      "recertifiedAt": "2026-09-24",
+      "sourceStateConstant": "CODEFORGE_R32_AUTONOMY_PERFECTION_SOURCE_STATE"
     }
   ],
-  "generationNote": "The current source-state ID covers the reviewed material implementation through R31. Historical campaign evidence remains bound to its recorded source-state identity.",
-  "recertifiedAt": "2026-09-24T14:04:28.494Z",
+  "generationNote": "This source-state ID is deterministically derived from the reviewed FG-8 through R32 material implementation surface by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm. Historical campaign evidence remains bound to its recorded source-state identity.",
+  "recertifiedAt": "2026-09-24T19:14:18.897Z",
   "recertification": {
-    "phase": "R31 goal-conformance review and blocker evidence",
-    "reason": "Recertify the reviewed R31 reliability changes: an independent bounded goal-conformance review after verification closes the R30 weak-visible-checks false-success class, and completion blockers now carry evidence end to end. Loop recovery (one bounded continuation after a post-edit no-progress turn) touched non-material packages only. ForgeZero, provider routing, and completion-gate authority are unchanged.",
+    "phase": "R32 autonomy perfection and false-success closure",
+    "reason": "Re-issue the frozen ForgeGreen source-state over three reviewed R32 material files. The changes strengthen the semantic-review tail (reserved inference lane, fail-closed inconclusive verdicts, deterministic stated-contract enforcement, non-git created-file coverage). Completion authority remains solely in evaluateCompletion; no gate was relaxed.",
     "changedFiles": [
+      "packages/server/src/agent-runtime.ts",
       "packages/server/src/workflow-service.ts",
-      "packages/workflow/src/types.ts"
+      "packages/workflow/src/diff-review.ts"
     ],
-    "priorSourceStateId": "162cdd36424201706f972d52aaa966484237ea13c0ddebf1496d4a2a2c0d5368",
+    "priorSourceStateId": "c92386e90cbd1bf8dffb5a40f81083db0d53d12fab735ae319f1a221d67595a7",
     "guarded": true
   },
-  "recertificationReason": "Recertify the reviewed R31 reliability changes: an independent bounded goal-conformance review after verification closes the R30 weak-visible-checks false-success class, and completion blockers now carry evidence end to end. Loop recovery (one bounded continuation after a post-edit no-progress turn) touched non-material packages only. ForgeZero, provider routing, and completion-gate authority are unchanged."
+  "recertificationReason": "Re-issue the frozen ForgeGreen source-state over three reviewed R32 material files. The changes strengthen the semantic-review tail (reserved inference lane, fail-closed inconclusive verdicts, deterministic stated-contract enforcement, non-git created-file coverage). Completion authority remains solely in evaluateCompletion; no gate was relaxed."
 }

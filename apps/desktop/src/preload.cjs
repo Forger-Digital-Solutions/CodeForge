@@ -193,6 +193,13 @@ const api = {
   updaterInstall: () => {
     return ipcRenderer.invoke("updater:install");
   },
+  // --- Remote marketplace (signed catalog; install requires the source's pinned key) ---
+  marketplaceCatalog: () => {
+    return ipcRenderer.invoke("marketplace:catalog");
+  },
+  marketplaceInstall: (sourceUrl, extensionId) => {
+    return ipcRenderer.invoke("marketplace:install", { sourceUrl, extensionId });
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);
