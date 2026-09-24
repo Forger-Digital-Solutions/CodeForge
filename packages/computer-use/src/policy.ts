@@ -14,6 +14,8 @@ export interface ComputerUsePolicy {
   maxTypeLength: number;
   /** Capture all monitors (virtual screen) or the primary display only. */
   allowMultiMonitor: boolean;
+  /** Maximum UI Automation elements a single grounding enumeration may return. */
+  maxUiaElements: number;
 }
 
 export const DEFAULT_COMPUTER_USE_POLICY: ComputerUsePolicy = {
@@ -21,12 +23,15 @@ export const DEFAULT_COMPUTER_USE_POLICY: ComputerUsePolicy = {
   minActionIntervalMs: 250,
   maxTypeLength: 2000,
   allowMultiMonitor: true,
+  maxUiaElements: 600,
 };
 
 export const COMPUTER_USE_ERRORS = {
   COMPUTER_UNSUPPORTED: "COMPUTER_UNSUPPORTED",
   COMPUTER_INVALID_TARGET: "COMPUTER_INVALID_TARGET",
   COMPUTER_INVALID_KEY: "COMPUTER_INVALID_KEY",
+  COMPUTER_TARGET_NOT_FOUND: "COMPUTER_TARGET_NOT_FOUND",
+  COMPUTER_AMBIGUOUS_TARGET: "COMPUTER_AMBIGUOUS_TARGET",
   COMPUTER_BUDGET_EXHAUSTED: "COMPUTER_BUDGET_EXHAUSTED",
   COMPUTER_RATE_LIMITED: "COMPUTER_RATE_LIMITED",
   COMPUTER_BACKEND_FAILED: "COMPUTER_BACKEND_FAILED",

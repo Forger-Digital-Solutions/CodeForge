@@ -5,15 +5,17 @@ import path from "node:path";
 import { GovernedComputerRuntime } from "../src/runtime.js";
 import { createComputerToolExecutor, COMPUTER_TOOL_DEFINITIONS } from "../src/tools.js";
 import { WindowsComputerBackend, type RunnerResult } from "../src/backend.js";
-import type { ComputerBackend, CapturedFrame, ScreenBounds } from "../src/backend.js";
+import type { ComputerBackend, CapturedFrame, ScreenBounds, UiaElement } from "../src/backend.js";
 import { COMPUTER_USE_ERRORS, keyNameToVk } from "../src/policy.js";
 
 const BOUNDS: ScreenBounds = { x: 0, y: 0, width: 800, height: 600 };
 
 class FakeBackend implements ComputerBackend {
+  elements: UiaElement[] = [];
   isSupported(): boolean { return true; }
   async screenBounds(): Promise<ScreenBounds> { return BOUNDS; }
   async capturePng(): Promise<CapturedFrame> { return { png: Buffer.from("PNGDATA"), bounds: BOUNDS }; }
+  async uiaElements(max: number): Promise<UiaElement[]> { return this.elements.slice(0, max); }
   async setCursorPosition(): Promise<void> {}
   async click(): Promise<void> {}
   async typeText(): Promise<void> {}
@@ -30,10 +32,13 @@ function makeExecutor() {
 }
 
 describe("computer tool definitions", () => {
-  it("exposes a six-tool surface, all executeCommand-gated", () => {
+  it("exposes a nine-tool surface, all executeCommand-gated", () => {
     expect(COMPUTER_TOOL_DEFINITIONS.map((d) => d.name)).toEqual([
       "computer_status",
       "computer_screenshot",
+      "computer_inspect_ui",
+      "computer_click_element",
+      "computer_type_into_element",
       "computer_mouse_move",
       "computer_mouse_click",
       "computer_type_text",
@@ -43,7 +48,9 @@ describe("computer tool definitions", () => {
       expect(def.requiredPermission).toBe("executeCommand");
     }
     expect(COMPUTER_TOOL_DEFINITIONS.find((d) => d.name === "computer_screenshot")?.readOnly).toBe(true);
+    expect(COMPUTER_TOOL_DEFINITIONS.find((d) => d.name === "computer_inspect_ui")?.readOnly).toBe(true);
     expect(COMPUTER_TOOL_DEFINITIONS.find((d) => d.name === "computer_mouse_click")?.readOnly).toBe(false);
+    expect(COMPUTER_TOOL_DEFINITIONS.find((d) => d.name === "computer_click_element")?.readOnly).toBe(false);
   });
 });
 
@@ -84,6 +91,25 @@ describe("computer tool executor", () => {
     const exec = makeExecutor();
     await expect(exec("computer_key_press", { keys: ["definitely-not-a-key"] })).rejects.toMatchObject({ code: COMPUTER_USE_ERRORS.COMPUTER_INVALID_KEY });
     await exec("computer_key_press", { keys: ["ctrl", "shift", "escape"] });
+  });
+
+  it("validates semantic query args", async () => {
+    const exec = makeExecutor();
+    await expect(exec("computer_click_element", { name: 42 })).rejects.toMatchObject({ code: COMPUTER_USE_ERRORS.COMPUTER_INVALID_TARGET });
+    await expect(exec("computer_type_into_element", { name: "x" })).rejects.toMatchObject({ code: COMPUTER_USE_ERRORS.COMPUTER_INVALID_TARGET });
+  });
+
+  it("dispatches semantic tools and returns verification receipts", async () => {
+    const rt = new GovernedComputerRuntime({
+      backend: new FakeBackend(),
+      evidenceDir: mkdtempSync(path.join(os.tmpdir(), "cf-cu-evid-")),
+      policy: { minActionIntervalMs: 0 },
+    });
+    const exec = createComputerToolExecutor(rt);
+    const out = await exec("computer_inspect_ui", { controlType: "Edit" });
+    expect(out).toMatch(/untrusted/i);
+    expect(out).toContain("elementCount");
+    await expect(exec("computer_click_element", { name: "nope" })).rejects.toMatchObject({ code: COMPUTER_USE_ERRORS.COMPUTER_TARGET_NOT_FOUND });
   });
 });
 

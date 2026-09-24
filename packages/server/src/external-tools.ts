@@ -50,6 +50,7 @@ export interface ExternalToolConfig {
     minActionIntervalMs?: number;
     maxTypeLength?: number;
     allowMultiMonitor?: boolean;
+    maxUiaElements?: number;
   };
   /** Explicit MCP server list. Only named servers are ever spawned. */
   mcpServers?: McpServerConfig[];
@@ -241,6 +242,7 @@ export function createExternalToolSurface(
         ...(computerCfg.minActionIntervalMs !== undefined ? { minActionIntervalMs: computerCfg.minActionIntervalMs } : {}),
         ...(computerCfg.maxTypeLength !== undefined ? { maxTypeLength: computerCfg.maxTypeLength } : {}),
         ...(computerCfg.allowMultiMonitor !== undefined ? { allowMultiMonitor: computerCfg.allowMultiMonitor } : {}),
+        ...(computerCfg.maxUiaElements !== undefined ? { maxUiaElements: computerCfg.maxUiaElements } : {}),
       },
     });
     computerExecutor = createComputerToolExecutor(computerRuntime);

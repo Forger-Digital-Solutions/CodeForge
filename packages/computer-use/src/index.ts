@@ -15,6 +15,7 @@ export {
   type ComputerRunner,
   type RunnerResult,
   type ScreenBounds,
+  type UiaElement,
 } from "./backend.js";
 export {
   GovernedComputerRuntime,
@@ -22,6 +23,9 @@ export {
   type ComputerStatus,
   type GovernedComputerRuntimeOptions,
   type ScreenshotReceipt,
+  type UiaQuery,
+  type UiInspection,
+  type VerifiedActionReceipt,
 } from "./runtime.js";
 export {
   COMPUTER_TOOL_DEFINITIONS,

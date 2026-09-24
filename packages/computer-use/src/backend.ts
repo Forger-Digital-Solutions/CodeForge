@@ -25,10 +25,35 @@ export interface CapturedFrame {
   bounds: ScreenBounds;
 }
 
+/**
+ * One control in the UI Automation tree, captured as plain data — a UIA element handle is
+ * volatile and never crosses the process boundary. `runtimeId` is the serialized UIA
+ * RuntimeId: stable only within the target process's current UI state, so consumers must
+ * re-resolve after any UI change instead of caching elements.
+ */
+export interface UiaElement {
+  name: string;
+  automationId: string;
+  controlType: string;
+  className: string;
+  processId: number;
+  enabled: boolean;
+  offscreen: boolean;
+  hasKeyboardFocus: boolean;
+  bounds: ScreenBounds;
+  runtimeId: string;
+}
+
 export interface ComputerBackend {
   isSupported(): boolean;
   screenBounds(): Promise<ScreenBounds>;
   capturePng(multiMonitor: boolean): Promise<CapturedFrame>;
+  /**
+   * Enumerate the UI Automation control view of the whole desktop, capped at maxElements.
+   * Disabled controls are included (a greyed-out button is still something the operator can
+   * see); elements with neither a name nor an automation id are dropped as unactionable.
+   */
+  uiaElements(maxElements: number): Promise<UiaElement[]>;
   setCursorPosition(x: number, y: number): Promise<void>;
   click(x: number, y: number, button: "left" | "right" | "middle", count: number): Promise<void>;
   typeText(text: string): Promise<void>;
@@ -157,6 +182,42 @@ export class WindowsComputerBackend implements ComputerBackend {
     }
     const parsed = JSON.parse(boundsJson) as { x: number; y: number; width: number; height: number };
     return { png: Buffer.from(b64, "base64"), bounds: parsed };
+  }
+
+  async uiaElements(maxElements: number): Promise<UiaElement[]> {
+    const max = Math.max(1, Math.min(2000, Math.floor(maxElements)));
+    const out = await this.run(
+      [
+        "Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes;",
+        "$root=[System.Windows.Automation.AutomationElement]::RootElement;",
+        "$els=$root.FindAll([System.Windows.Automation.TreeScope]::Descendants,[System.Windows.Automation.Condition]::ControlViewCondition);",
+        "$out=@(); $i=0;",
+        "foreach ($e in $els) {",
+        `  if ($i -ge ${max}) { break }`,
+        "  $c=$e.Current;",
+        "  if ([string]::IsNullOrWhiteSpace($c.Name) -and [string]::IsNullOrWhiteSpace($c.AutomationId)) { continue }",
+        "  $r=$c.BoundingRectangle;",
+        "  $out += [pscustomobject]@{",
+        "    name=[string]$c.Name; automationId=[string]$c.AutomationId;",
+        "    controlType=[string]$c.ControlType.ProgrammaticName; className=[string]$c.ClassName;",
+        "    processId=[int]$c.ProcessId; enabled=[bool]$c.IsEnabled; offscreen=[bool]$c.IsOffscreen;",
+        "    hasKeyboardFocus=[bool]$c.HasKeyboardFocus;",
+        "    bounds=@{x=[double]$r.X; y=[double]$r.Y; width=[double]$r.Width; height=[double]$r.Height};",
+        "    runtimeId=(($e.GetRuntimeId()) -join '.');",
+        "  };",
+        "  $i++;",
+        "}",
+        "if ($out.Count -eq 0) { Write-Output '[]' } else { $out | ConvertTo-Json -Compress -Depth 4 }",
+      ].join(" "),
+    );
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(out);
+    } catch {
+      throw new ComputerUseError(COMPUTER_USE_ERRORS.COMPUTER_BACKEND_FAILED, `unparseable UI Automation tree: ${out.slice(0, 200)}`);
+    }
+    const list = Array.isArray(parsed) ? parsed : [parsed];
+    return list.filter((item): item is UiaElement => typeof item === "object" && item !== null);
   }
 
   async setCursorPosition(x: number, y: number): Promise<void> {
