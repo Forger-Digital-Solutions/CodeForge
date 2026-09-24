@@ -144,6 +144,11 @@ export interface ServerOptions {
   /** Agent working budget per workflow implementation/repair turn (ms); tests use small values. */
   agentWorkingBudgetMs?: number;
   /**
+   * Per-run inference-request budget for autonomous workflows. `reserve` is the partition
+   * implementation can never touch — kept for the goal-conformance review tail.
+   */
+  workflowInferenceBudget?: { total?: number; reserve?: number };
+  /**
    * R1: the 8-Bit Free Cloud Service (owned by the trusted host process). When supplied, ForgeAuto
    * routes only through admitted routes, `/api/free-cloud/*` exposes the canonical registry, and
    * qualification receipts persist in this server's session database.
@@ -394,6 +399,7 @@ export class CodeForgeServer {
       authorityFor: (sessionId: string) => this.authorityFor(sessionId),
       onPolicyReceipt: (receipt) => { void this.appendExecutionEvent(receipt.sessionId, "permission.decision", receipt as unknown as Record<string, unknown>).catch(() => {}); },
       ...(options.agentWorkingBudgetMs !== undefined ? { agentWorkingBudgetMs: options.agentWorkingBudgetMs } : {}),
+      ...(options.workflowInferenceBudget !== undefined ? { inferenceBudget: options.workflowInferenceBudget } : {}),
     });
   }
 

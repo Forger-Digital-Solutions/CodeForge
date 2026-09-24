@@ -63,6 +63,11 @@ describe("Workflow ↔ AgentRuntime Real Integration", () => {
           { type: "text_delta", delta: "Fixed" } as any,
           { type: "finish", finishReason: "stop" } as any,
         ],
+        // Goal-conformance review turn: a decisive verdict authorizes completion.
+        [
+          { type: "text_delta", delta: '{"verdicts":[{"goal":"add returns a + b","status":"met","evidence":"src/calc.ts returns a + b","path":"src/calc.ts"}]}' } as any,
+          { type: "finish", finishReason: "stop" } as any,
+        ],
       ],
     }));
 
@@ -174,6 +179,9 @@ describe("Workflow ↔ AgentRuntime Real Integration", () => {
         [{ type: "text_delta", delta: "fixed" } as any, { type: "finish", finishReason: "stop" } as any],
         [...toolCall("edit_file", { path: "src/calc.ts", oldText: "  return a - b;", newText: "  return a + b;", expectedHash: hash }, "rep1"), { type: "finish", finishReason: "tool_calls" } as any],
         [{ type: "text_delta", delta: "repaired" } as any, { type: "finish", finishReason: "stop" } as any],
+        // Second goal-review turn (the first reads a stale edit + the "repaired" text and
+        // cannot parse a verdict): a decisive verdict closes the review.
+        [{ type: "text_delta", delta: '{"verdicts":[{"goal":"Fix add function","status":"met","evidence":"src/calc.ts returns a + b","path":"src/calc.ts"}]}' } as any, { type: "finish", finishReason: "stop" } as any],
       ],
     }));
     server = createServer({

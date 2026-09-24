@@ -22,6 +22,7 @@ import type { RunFailure, RunOutcome } from "@codeforge/protocol";
 import type { TurnState } from "./agent-runtime.js";
 import type { PolicyReceipt, TaskAuthority } from "@codeforge/permissions";
 import { WorkspaceService, createWorkspaceService } from "./workspace-service.js";
+import { createWorkflowInferenceBudget, type InferenceLane } from "./inference-budget.js";
 
 export interface WorkflowServiceOptions {
   eventStore: EventStore;
@@ -40,6 +41,13 @@ export interface WorkflowServiceOptions {
   userIntentHold?: UserIntentHoldController;
   /** Agent working budget per implementation/repair turn (ms). Tests use small values. */
   agentWorkingBudgetMs?: number;
+  /**
+   * Per-run inference-request budget. `total` bounds the whole run's spend; `reserve` is the
+   * partition implementation can never touch, kept for the goal-conformance review and the
+   * repairs it drives — a run whose implementation consumed everything used to reach the
+   * review with no requests left and complete on deterministic checks alone.
+   */
+  inferenceBudget?: { total?: number; reserve?: number };
   /** Shared task authority — plan mode and lease grants live here. */
   authorityFor?: (sessionId: string) => TaskAuthority;
   /** Durable sink for policy decisions made without a user-facing card. */
@@ -73,6 +81,13 @@ const WORKFLOW_TIMEOUT_MS = WORKFLOW_TIMEOUT_MINUTES * 60 * 1000;
 // multi-file change with a free route — it timed out mid-edit on the first real live task — so
 // the default now leaves the rest of the task budget for verification and repair.
 const DEFAULT_AGENT_WORKING_BUDGET_MS = 20 * 60 * 1000;
+// Per-run inference-request budget, partitioned so implementation can never starve the
+// semantic tail. R31 measured 11–30 requests for a whole passing run and ~6–10 for a
+// goal-review turn; reserve 24 covers the review plus one bounded conformance repair and
+// re-review, and the 40-request primary partition gives implementation real headroom over
+// the heaviest observed run (24). The cap bounds spend — it is never a success signal.
+const DEFAULT_WORKFLOW_INFERENCE_TOTAL = 64;
+const DEFAULT_WORKFLOW_INFERENCE_RESERVE = 24;
 const MAX_WORKSPACE_PATH_LENGTH = 1024;
 
 /** One plan step as a person reads it: what happens, to which file or command, at what risk. */
@@ -212,13 +227,15 @@ function describeExecutorFailure(turn: TurnState | undefined): { failure?: { cod
 /**
  * The goal-review turn's final response is a JSON verdict list. Extraction is deliberately
  * tolerant (fence, trailing prose, or raw JSON) but the failure mode is never silent success:
- * an unparseable or empty verdict yields one advisory inconclusive finding, and only an
- * explicit "unmet" verdict — evidence attached — becomes a blocking finding.
+ * a review that produced no decisive "met"/"unmet" verdict on any stated goal proves nothing,
+ * so it yields a BLOCKING inconclusive finding — deterministic checks alone cannot authorize
+ * completion. A verdict explicitly marked "indeterminate" beside decisive ones stays advisory:
+ * the review ran and reported its honest uncertainty.
  */
 function parseGoalReviewFindings(response: string, intent: TaskIntent): ReviewFinding[] {
   const inconclusive = (detail: string): ReviewFinding[] => [{
     code: "goal_review_inconclusive",
-    severity: "advisory",
+    severity: "blocking",
     path: "",
     message: `Independent goal review produced no usable verdict (${detail}).`,
   }];
@@ -243,6 +260,7 @@ function parseGoalReviewFindings(response: string, intent: TaskIntent): ReviewFi
   const verdicts = (parsed as { verdicts?: unknown } | undefined)?.verdicts;
   if (!parsed || !Array.isArray(verdicts)) return inconclusive("no verdicts array");
   const findings: ReviewFinding[] = [];
+  let decisive = false;
   for (const verdict of verdicts.slice(0, 12)) {
     if (!verdict || typeof verdict !== "object") continue;
     const { goal, status, evidence, path: verdictPath } = verdict as { goal?: unknown; status?: unknown; evidence?: unknown; path?: unknown };
@@ -250,12 +268,15 @@ function parseGoalReviewFindings(response: string, intent: TaskIntent): ReviewFi
     const detail = typeof evidence === "string" && evidence.trim() ? ` Evidence: ${evidence.trim().slice(0, 300)}` : "";
     const path = typeof verdictPath === "string" ? verdictPath.slice(0, 300) : "";
     if (status === "unmet") {
+      decisive = true;
       findings.push({
         code: "goal_not_satisfied",
         severity: "blocking",
         path,
         message: `Independent goal review: goal not satisfied — ${redactSecrets(goal).slice(0, 300)}.${detail}`,
       });
+    } else if (status === "met") {
+      decisive = true;
     } else if (status === "indeterminate") {
       findings.push({
         code: "goal_review_inconclusive",
@@ -265,8 +286,8 @@ function parseGoalReviewFindings(response: string, intent: TaskIntent): ReviewFi
       });
     }
   }
-  if (findings.length === 0 && verdicts.length === 0 && intent.goals.length > 0) {
-    return inconclusive("verdicts list was empty");
+  if (!decisive && intent.goals.length > 0) {
+    return inconclusive(verdicts.length === 0 ? "verdicts list was empty" : "no decisive verdict on any stated goal");
   }
   return findings;
 }
@@ -347,7 +368,7 @@ export function describeWorkflowOutcome(result: WorkflowResult, turnId: string):
     // Both belong in the headline — a run stopped by its working budget must not read as a bare
     // unfinished plan.
     const stopDetail = /^Implementation stopped: (.+)$/m.exec(result.summary)?.[1];
-    const why = reasonCode === "plan_steps_unfinished"
+    let why = reasonCode === "plan_steps_unfinished"
       ? `The implementation did not finish every planned step${stopDetail ? ` — ${stopDetail}` : ""}`
       : reasonCode === "verification_not_current"
         ? "The verification evidence is not current for the final changes"
@@ -358,6 +379,11 @@ export function describeWorkflowOutcome(result: WorkflowResult, turnId: string):
             : reasonCode === "review_rejected"
               ? "The review found blocking issues"
               : first?.message ?? "The completion gate blocked this run";
+    // Another blocker may headline the outcome (e.g. an unverdicted review) while the
+    // implementation itself was stopped by a budget — the stop reason stays in the headline.
+    if (stopDetail && reasonCode !== "plan_steps_unfinished") {
+      why += ` The implementation stopped early — ${stopDetail}.`;
+    }
     return {
       ...base,
       outcome: "blocked",
@@ -404,6 +430,7 @@ export class WorkflowService {
   private readonly isRealRuntimeEnabled: () => boolean;
   private readonly userIntentHold?: UserIntentHoldController;
   private readonly agentWorkingBudgetMs: number;
+  private readonly workflowInferenceBudget: { total: number; reserve: number };
   private readonly authorityFor?: (sessionId: string) => TaskAuthority;
   private readonly onPolicyReceipt?: (receipt: PolicyReceipt) => void;
   /** Plans already authorized this session, keyed `${planId}@${revision}` — a
@@ -421,6 +448,10 @@ export class WorkflowService {
     this.isRealRuntimeEnabled = typeof realRuntime === "function" ? realRuntime : () => realRuntime;
     this.userIntentHold = options.userIntentHold;
     this.agentWorkingBudgetMs = options.agentWorkingBudgetMs ?? DEFAULT_AGENT_WORKING_BUDGET_MS;
+    this.workflowInferenceBudget = {
+      total: options.inferenceBudget?.total ?? DEFAULT_WORKFLOW_INFERENCE_TOTAL,
+      reserve: options.inferenceBudget?.reserve ?? DEFAULT_WORKFLOW_INFERENCE_RESERVE,
+    };
     this.authorityFor = options.authorityFor;
     this.onPolicyReceipt = options.onPolicyReceipt;
   }
@@ -492,6 +523,13 @@ export class WorkflowService {
     hostedWorker?: HostedWorkerOptions,
   ): NonNullable<import("@codeforge/workflow").WorkflowEngineOptions["agentExecutor"]> {
     const getRuntime = this.getOrCreateRuntime!;
+    // One budget per run, shared by every dispatched turn. `primary` (implementation and
+    // verification repairs) stops short of the reserve; the goal-review phase and the repairs
+    // it drives draw from `reserved`. The engine's control flow guarantees the first review
+    // turn precedes every conformance repair, so a single flag is enough to switch lanes.
+    const inferenceBudget = createWorkflowInferenceBudget(this.workflowInferenceBudget.total, this.workflowInferenceBudget.reserve);
+    let reviewPhaseReached = false;
+    const repairLane = (): InferenceLane => (reviewPhaseReached ? "reserved" : "primary");
     const waitForTurn = async (runtime: AgentRuntime, turnId: string, workingBudgetMs = this.agentWorkingBudgetMs): Promise<{ status: string; turn?: ReturnType<AgentRuntime["getTurn"]>; reason?: string; continuationId?: string; workingMs: number }> => {
       // This budget bounds how long the AGENT may work. Time the turn spends parked on a human
       // decision is not the agent working, so it is excluded: otherwise a user who takes longer than
@@ -633,7 +671,7 @@ export class WorkflowService {
         adapter.emitAgentStarted(`agent-${plan.id.slice(0, 8)}`, "Builder", plan.id);
         const runtime = getRuntime(sessionId, userId, hostedWorker);
         const seqBefore = this.eventStore.getLastSeq();
-        let turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Implementing the approved plan" });
+        let turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Implementing the approved plan", inferenceBudget, inferenceLane: "primary" });
         let result = await waitForTurn(runtime, turnId);
         const changedFilesSinceStart = (): string[] => [...new Set(
           this.eventStore
@@ -665,7 +703,7 @@ export class WorkflowService {
               `Do not repeat a read or search without a specific unanswered question. When implementation is complete, give a concise final response and stop using tools.`,
               `The workflow will run verification and review after this turn.`,
             ].join("\n");
-            turnId = await runtime.startTurn(recoveryPrompt, adapter, { origin: "workflow", label: "Recovering a stalled implementation" });
+            turnId = await runtime.startTurn(recoveryPrompt, adapter, { origin: "workflow", label: "Recovering a stalled implementation", inferenceBudget, inferenceLane: "primary" });
             result = await waitForTurn(runtime, turnId, remainingWorkingMs);
           }
         }
@@ -695,7 +733,7 @@ export class WorkflowService {
       ): Promise<{ success: boolean; output: string; turnId?: string; failure?: { code: string; message: string; terminal?: boolean } }> => {
         const prompt = buildRepairPrompt(analysis, verification, context, intent);
         const runtime = getRuntime(sessionId, userId, hostedWorker);
-        const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Repairing verification failures" });
+        const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Repairing verification failures", inferenceBudget, inferenceLane: repairLane() });
         const result = await waitForTurn(runtime, turnId);
         if (result.status === "completed") return { success: true, output: `Repair turn ${turnId} completed`, turnId };
         return { success: false, output: `Repair turn ${turnId} ${result.status}${result.reason ? `: ${result.reason}` : ""}`, ...describeExecutorFailure(result.turn) };
@@ -709,16 +747,17 @@ export class WorkflowService {
       ): Promise<{ findings: ReviewFinding[]; turnId?: string }> => {
         const prompt = buildGoalReviewPrompt(intent, plan, diffs, verification);
         const runtime = getRuntime(sessionId, userId, hostedWorker);
-        const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Reviewing goal conformance" });
+        reviewPhaseReached = true;
+        const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Reviewing goal conformance", inferenceBudget, inferenceLane: "reserved" });
         const result = await waitForTurn(runtime, turnId);
         if (result.status !== "completed") {
           return {
             turnId,
             findings: [{
               code: "goal_review_inconclusive",
-              severity: "advisory",
+              severity: "blocking",
               path: "",
-              message: `Independent goal review turn did not finish (${result.status}${result.reason ? `: ${result.reason}` : ""}); deterministic checks only.`,
+              message: `Independent goal review turn did not finish (${result.status}${result.reason ? `: ${result.reason}` : ""}); goal conformance is unproven.`,
             }],
           };
         }

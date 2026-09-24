@@ -117,7 +117,7 @@ export function describeRunFailure(error: unknown, context: RunFailureContext = 
       message: "No eligible verified-free route is currently available. CodeForge stopped safely without using a paid or unknown-cost route.",
     };
   }
-  if (/stopped after \d+ iterations|working budget of/i.test(raw)) {
+  if (/stopped after \d+ iterations|working budget of|inference request budget/i.test(raw)) {
     return { ...base, ownership: "runtime", code: "budget_exhausted", retryable: true, message: "CodeForge stopped before finishing: the working budget for this run was used up. The task is incomplete and unverified." };
   }
   if (/workflow timed out/i.test(raw)) {

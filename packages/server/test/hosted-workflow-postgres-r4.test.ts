@@ -29,6 +29,13 @@ class HostedFixtureProvider implements ProviderAdapter {
 
   async *streamChat(request: ChatRequest): AsyncIterable<StreamEvent> {
     this.requests.push({ ...request, messages: [...request.messages] });
+    // The goal-conformance review turn judges the finished workspace — answering with a
+    // decisive verdict keeps this fixture on the same completion path production runs.
+    if (request.messages.some((message) => typeof message.content === "string" && message.content.includes("independent completion reviewer"))) {
+      yield { type: "text_delta", delta: '{"verdicts":[{"goal":"Fix add","status":"met","evidence":"add.js returns a + b","path":"add.js"}]}' };
+      yield { type: "finish", finishReason: "stop" };
+      return;
+    }
     const observations = request.messages.filter((message): message is ChatMessage & { role: "tool" } => message.role === "tool");
     if (observations.length === 0) {
       yield { type: "tool_call_started", toolCallId: "inspect-add", toolName: "read_file" };

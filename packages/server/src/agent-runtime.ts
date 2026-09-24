@@ -97,6 +97,7 @@ import { createToolBroker, type ToolDefinition as RegistryToolDefinition, type T
 import { createModelExecutionAdapter, normalizeProviderError, type ModelExecutionResponse } from "./model-execution-adapter.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import type { PaidAutoService } from "@codeforge/paid-auto";
+import { tryConsumeInferenceRequest, type InferenceLane, type WorkflowInferenceBudget } from "./inference-budget.js";
 
 export interface AgentRuntimeRequest {
   runId: string;
@@ -318,6 +319,9 @@ export interface TurnState {
    * finished. Exhausting a budget is not success and must never complete the turn.
    */
   budgetExhausted?: boolean;
+  /** Why the budget fired when the cap was not the plain iteration limit (e.g. a run-scoped
+   * inference-request budget). */
+  budgetExhaustedDetail?: string;
   /** Who authored the turn: the user (chat / repair) or a workflow dispatching an internal turn. */
   origin?: "user" | "workflow" | "repair";
   /** 8-Bit found no eligible replacement route after a failure; the turn ends for routing reasons. */
@@ -705,6 +709,12 @@ export class AgentRuntime {
   private readonly pendingQuestions: Map<string, QuestionRequest> = new Map();
   private readonly abortControllers: Map<string, AbortController> = new Map();
   private readonly messageHistory: ChatMessage[] = [];
+  /**
+   * Run-scoped inference budgets attached to individual turns by their dispatcher (the workflow
+   * executor). Deliberately not on TurnState: the budget is shared mutable accounting, never
+   * per-turn durable state. Entries are dropped when the turn's execution settles.
+   */
+  private readonly turnInferenceBudgets: Map<string, { budget: WorkflowInferenceBudget; lane: InferenceLane }> = new Map();
   private turnCount = 0;
   private maxIterations = 50;
   private readonly approvalService: ApprovalService;
@@ -2665,7 +2675,17 @@ export class AgentRuntime {
   async startTurn(
     userMessage: string,
     eventAdapter?: WorkspaceEventAdapter,
-    options?: { origin?: "user" | "workflow" | "repair"; label?: string },
+    options?: {
+      origin?: "user" | "workflow" | "repair";
+      label?: string;
+      /**
+       * Shared run-scoped inference budget. `lane` selects the partition the turn may draw
+       * from — implementation lanes stop short of the reserve so the review tail can never
+       * be starved by the work it is judging.
+       */
+      inferenceBudget?: WorkflowInferenceBudget;
+      inferenceLane?: InferenceLane;
+    },
   ): Promise<string> {
     // Single-turn exclusivity per session for real active turns
     if (this.demoMode) {
@@ -2686,6 +2706,10 @@ export class AgentRuntime {
 
     const turnId = crypto.randomUUID();
     this.turnCount++;
+
+    if (options?.inferenceBudget) {
+      this.turnInferenceBudgets.set(turnId, { budget: options.inferenceBudget, lane: options.inferenceLane ?? "primary" });
+    }
 
     const state: TurnState = {
       turnId,
@@ -2746,6 +2770,7 @@ export class AgentRuntime {
       })
       .finally(() => {
         if (this.activeExecutions.get(turnId) === execution) this.activeExecutions.delete(turnId);
+        this.turnInferenceBudgets.delete(turnId);
         // R24 Mission C: the turn's fabric admission ends with the turn — success, failure,
         // and cancellation all settle the reservation so the freed capacity is immediately
         // visible to other sessions' decide() calls.
@@ -3239,7 +3264,7 @@ export class AgentRuntime {
       // Running out of iterations is not finishing. Reporting it as success is the exact
       // fake-completion this runtime must never produce.
       if (state.budgetExhausted) {
-        const reason = `Stopped after ${this.maxIterations} iterations without finishing. The task is incomplete and unverified.`;
+        const reason = state.budgetExhaustedDetail ?? `Stopped after ${this.maxIterations} iterations without finishing. The task is incomplete and unverified.`;
         const failure = describeRunFailure(new Error(reason), { providerId: state.providerId, modelId: state.modelId });
         state.status = "failed";
         state.completedAt = new Date();
@@ -3675,6 +3700,25 @@ export class AgentRuntime {
           throw new Error(`Model ${turnState.providerId}::${turnState.modelId} no longer eligible: ${v.error.message}`);
         }
       }
+    }
+
+    // Run-scoped inference budget: every dispatch below is a real provider request, so the
+    // charge happens here at the dispatch boundary — once per iteration, and once more for
+    // each failover retry/rotation that re-enters this loop. A turn whose lane is exhausted
+    // stops as budget-exhausted, never as finished.
+    const turnBudget = this.turnInferenceBudgets.get(turnId);
+    if (turnBudget && !tryConsumeInferenceRequest(turnBudget.budget, turnBudget.lane)) {
+      adapter.emitTextDelta(turnId, "\n[Inference request budget exhausted for this phase. Stopping.]");
+      const budgetState = this.activeTurns.get(turnId);
+      if (budgetState) {
+        budgetState.budgetExhausted = true;
+        budgetState.budgetExhaustedDetail =
+          turnBudget.lane === "reserved"
+            ? "The run's inference request budget was exhausted inside the reserved review phase. The task is incomplete and unverified."
+            : "The run's inference request budget was exhausted before the review phase. The task is incomplete and unverified.";
+        this.activeTurns.set(turnId, budgetState);
+      }
+      return { kind: "failed", reason: "inference_budget_exhausted" };
     }
 
     let currentText = "";

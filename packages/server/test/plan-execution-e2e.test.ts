@@ -90,6 +90,11 @@ describe("autonomous plan execution — approve / reject / cancel", () => {
             { type: "finish", finishReason: "tool_calls" },
           ],
           [{ type: "text_delta", delta: "Fixed add()" }, { type: "finish", finishReason: "stop" }],
+          // Goal-conformance review turn: the run only completes on a decisive verdict.
+          [
+            { type: "text_delta", delta: '{"verdicts":[{"goal":"add correctly adds two numbers","status":"met","evidence":"src/calc.js returns a + b and npm test passes","path":"src/calc.js"}]}' },
+            { type: "finish", finishReason: "stop" },
+          ],
         ],
       }) as any,
     );

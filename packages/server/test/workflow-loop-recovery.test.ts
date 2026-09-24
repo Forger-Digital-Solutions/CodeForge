@@ -57,6 +57,9 @@ describe("workflow recovery after a post-edit tool loop", () => {
         toolCall("read_file", { path: "src/calc.ts" }, "read-3"),
         toolCall("read_file", { path: "src/calc.ts" }, "read-4"),
         [{ type: "text_delta", delta: "The implementation is ready for verification." }, { type: "finish", finishReason: "stop" }],
+        // The goal-conformance review turn runs on the reserved lane after implementation;
+        // its decisive verdict is what authorizes completion.
+        [{ type: "text_delta", delta: '{"verdicts":[{"goal":"sum adds two numbers","status":"met","evidence":"src/calc.ts returns a + b","path":"src/calc.ts"}]}' }, { type: "finish", finishReason: "stop" }],
       ],
     }));
     server = createServer({ port: 0, dbPath: ":memory:", providerCatalog: catalog, useRealRuntime: true });
@@ -91,7 +94,7 @@ describe("workflow recovery after a post-edit tool loop", () => {
     expect(events.some((event) => event.type === "workflow.verification_completed")).toBe(true);
     expect(await readFile(join(workspace, "src", "calc.ts"), "utf8")).toContain("a + b");
     expect(status).toBe("complete");
-  });
+  }, 30_000);
 
   it("does not continue a loop that changed no file", async () => {
     const before = await readFile(join(workspace, "src", "calc.ts"), "utf8");
@@ -129,10 +132,12 @@ describe("workflow recovery after a post-edit tool loop", () => {
     const events = session.body.events as Array<{ type: string; payload?: { label?: string } }>;
     expect(events.filter((event) => event.type === "turn.started" && event.payload?.label === "Implementing the approved plan")).toHaveLength(1);
     expect(events.some((event) => event.type === "turn.started" && event.payload?.label === "Recovering a stalled implementation")).toBe(false);
-    expect(events.filter((event) => event.type === "turn.started" && event.payload?.label === "Reviewing goal conformance")).toHaveLength(1);
+    // The review never reaches a verdict (scripted calls loop), so the engine re-reviews
+    // once and the gate then blocks the unproven run.
+    expect(events.filter((event) => event.type === "turn.started" && event.payload?.label === "Reviewing goal conformance")).toHaveLength(2);
     expect(await readFile(join(workspace, "src", "calc.ts"), "utf8")).toBe(before);
     expect(status).toBe("blocked");
-  });
+  }, 30_000);
 
   it("stops after one continuation when the model loops again", async () => {
     const before = await readFile(join(workspace, "src", "calc.ts"), "utf8");
@@ -173,9 +178,11 @@ describe("workflow recovery after a post-edit tool loop", () => {
 
     const session = await fetchJson(`${base}/api/sessions/repeated-loop-session`);
     const events = session.body.events as Array<{ type: string; payload?: { label?: string } }>;
-    expect(events.filter((event) => event.type === "turn.started" && event.payload?.label)).toHaveLength(3);
+    // Implement + one recovery + two unverdicted review turns (initial plus the bounded
+    // re-review) — nothing here may claim success.
+    expect(events.filter((event) => event.type === "turn.started" && event.payload?.label)).toHaveLength(4);
     expect(events.filter((event) => event.type === "turn.started" && event.payload?.label === "Recovering a stalled implementation")).toHaveLength(1);
-    expect(events.filter((event) => event.type === "turn.started" && event.payload?.label === "Reviewing goal conformance")).toHaveLength(1);
+    expect(events.filter((event) => event.type === "turn.started" && event.payload?.label === "Reviewing goal conformance")).toHaveLength(2);
     expect(status).toBe("blocked");
-  });
+  }, 30_000);
 });

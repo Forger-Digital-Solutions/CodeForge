@@ -23,6 +23,7 @@ export type CompletionBlockerCode =
   | "verification_failed"
   | "verification_policy_insufficient"
   | "review_rejected"
+  | "goal_review_inconclusive"
   | "no_effective_change"
   | "budget_exhausted"
   | "plan_steps_unfinished"
@@ -338,12 +339,26 @@ function collectReviewBlockers(review: ReviewDecision, policy: CompletionPolicy)
 
   const blockers: CompletionBlocker[] = [];
 
-  if (blocking.length > 0) {
+  // An unverdicted review is a different failure than a rejected one: the work may be fine,
+  // but nothing proved it — so it blocks on its own code instead of reading as a rejection.
+  const inconclusive = blocking.filter((f) => f.code === "goal_review_inconclusive");
+  const rejected = blocking.filter((f) => f.code !== "goal_review_inconclusive");
+
+  if (rejected.length > 0) {
     blockers.push({
       code: "review_rejected",
       severity: policy.requireCleanReview ? "blocking" : "advisory",
-      message: `Independent diff review raised ${blocking.length} blocking finding(s).`,
-      evidence: truncate(blocking.map((f) => f.message).join(" | ")),
+      message: `Independent diff review raised ${rejected.length} blocking finding(s).`,
+      evidence: truncate(rejected.map((f) => f.message).join(" | ")),
+    });
+  }
+
+  if (inconclusive.length > 0) {
+    blockers.push({
+      code: "goal_review_inconclusive",
+      severity: policy.requireCleanReview ? "blocking" : "advisory",
+      message: "The independent goal-conformance review produced no decisive verdict, so goal conformance is unproven. Deterministic checks alone cannot authorize completion.",
+      evidence: truncate(inconclusive.map((f) => f.message).join(" | ")),
     });
   }
 

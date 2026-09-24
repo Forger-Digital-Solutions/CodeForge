@@ -73,6 +73,12 @@ function resolveWithinWorkspace(workspacePath: string, requested: string): { val
 }
 
 const MAX_REPAIR_ATTEMPTS = 3;
+// The goal review gets one bounded re-review when the first attempt produced no decisive
+// verdict (route loss, budget pressure, unparseable output). More retries would spend the
+// reserve on a phase that is already failing; the completion gate reads the absence of a
+// verdict as the blocker it is.
+const MAX_GOAL_REVIEW_ATTEMPTS = 2;
+const GOAL_FINDING_CODES = new Set<ReviewFinding["code"]>(["goal_not_satisfied", "goal_review_inconclusive"]);
 
 /** Plan targets and observed write paths disagree on separators, case, and leading ./ — compare on shape. */
 function normalizeStepPath(p: string, workspacePath?: string): string {
@@ -518,9 +524,14 @@ export class WorkflowEngine {
       // The cycle shares `attempts` with the verification repair loop, so total repair spend
       // stays bounded by maxRepairAttempts.
       let goalReviewRan = false;
+      let goalReviewAttempts = 0;
+      // Goal findings from the previous review cycle are tracked so a re-review replaces
+      // them instead of stacking a stale inconclusive on top of a fresh decisive verdict.
+      let priorGoalIssues = new Set<string>();
       while (this.agentExecutor?.executeGoalReview && !this.terminalStop) {
         this.ensureNotAborted();
         goalReviewRan = true;
+        goalReviewAttempts++;
         let goalFindings: ReviewFinding[];
         let goalReviewTurnId: string | undefined;
         try {
@@ -530,17 +541,19 @@ export class WorkflowEngine {
         } catch (error) {
           goalFindings = [{
             code: "goal_review_inconclusive",
-            severity: "advisory",
+            severity: "blocking",
             path: "",
-            message: `Independent goal review could not finish: ${error instanceof Error ? error.message : String(error)}. Deterministic checks only.`,
+            message: `Independent goal review could not finish: ${error instanceof Error ? error.message : String(error)}. Goal conformance is unproven.`,
           }];
         }
+        const mergedFindings = [...review.findings.filter((f) => !GOAL_FINDING_CODES.has(f.code)), ...goalFindings];
         review = {
           ...review,
-          approved: !review.findings.some((f) => f.severity === "blocking") && !goalFindings.some((f) => f.severity === "blocking"),
-          issues: [...review.issues, ...goalFindings.map((f) => f.message)],
-          findings: [...review.findings, ...goalFindings],
+          approved: !mergedFindings.some((f) => f.severity === "blocking"),
+          issues: [...review.issues.filter((issue) => !priorGoalIssues.has(issue)), ...goalFindings.map((f) => f.message)],
+          findings: mergedFindings,
         };
+        priorGoalIssues = new Set(goalFindings.map((f) => f.message));
         this.onEvent?.({
           type: "workflow.review_finished",
           phase: this.phase,
@@ -548,8 +561,17 @@ export class WorkflowEngine {
         });
 
         const unmet = goalFindings.filter((f) => f.code === "goal_not_satisfied" && f.severity === "blocking");
-        if (unmet.length === 0 || !this.agentExecutor.executeRepair || attempts >= this.maxRepairAttempts) break;
+        if (unmet.length === 0) {
+          // A review that produced no decisive verdict gets one bounded retry; the reserved
+          // inference lane means a genuinely starved provider fails this turn fast rather
+          // than burning the implementation partition.
+          const reviewProducedNoVerdict = goalFindings.some((f) => f.code === "goal_review_inconclusive" && f.severity === "blocking");
+          if (reviewProducedNoVerdict && goalReviewAttempts < MAX_GOAL_REVIEW_ATTEMPTS) continue;
+          break;
+        }
+        if (!this.agentExecutor.executeRepair || attempts >= this.maxRepairAttempts) break;
         attempts++;
+        priorGoalIssues = new Set();
         this.setPhase("repairing", "repairing");
         const conformanceAnalysis: FailureAnalysis = {
           hasFailures: true,
