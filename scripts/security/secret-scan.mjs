@@ -14,6 +14,7 @@
  *   node scripts/security/secret-scan.mjs [--json <out>] [--allowlist scripts/security/secret-scan-allowlist.json]
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 const root = process.cwd();
@@ -59,7 +60,11 @@ async function loadAllowlist() {
 }
 
 function isAllowlisted(allowlist, finding) {
-  return allowlist.some((entry) => entry.path === finding.path && (entry.type === "*" || entry.type === finding.type));
+  return allowlist.some((entry) =>
+    entry.path === finding.path &&
+    (entry.type === "*" || entry.type === finding.type) &&
+    (entry.line === undefined || entry.line === finding.line) &&
+    (entry.lineSha256 === undefined || entry.lineSha256 === finding.lineSha256));
 }
 
 function classify(relativePath, line, type) {
@@ -108,7 +113,13 @@ function scanContents(relativePath, contents) {
     if (seen.has(key)) return;
     seen.add(key);
     const line = lines[lineNumber - 1] ?? "";
-    const finding = { path: relativePath, line: lineNumber, type, classification: classify(relativePath, line, type) };
+    const finding = {
+      path: relativePath,
+      line: lineNumber,
+      type,
+      lineSha256: createHash("sha256").update(line).digest("hex"),
+      classification: classify(relativePath, line, type),
+    };
     if (finding.classification === "owner-review-required" && isAllowlisted(allowlist, finding)) finding.classification = "allowlisted";
     found.push(finding);
   };
@@ -150,6 +161,22 @@ if (args.includes("--self-test")) {
     const hit = scanContents(file, text).some((f) => f.classification === "owner-review-required");
     if (hit) { ok = false; console.error(`SELF-TEST FAIL: unexpected finding for ${file}`); }
   }
+  const fingerprinted = allowlist.find((entry) => entry.lineSha256 && Number.isInteger(entry.line));
+  if (!fingerprinted) {
+    ok = false;
+    console.error("SELF-TEST FAIL: no exact-line reviewed fixture exists");
+  } else {
+    const finding = { path: fingerprinted.path, line: fingerprinted.line, type: fingerprinted.type, lineSha256: "0".repeat(64) };
+    if (isAllowlisted(allowlist, finding)) {
+      ok = false;
+      console.error("SELF-TEST FAIL: edited reviewed fixture was still allowlisted");
+    }
+    finding.lineSha256 = fingerprinted.lineSha256;
+    if (!isAllowlisted(allowlist, finding)) {
+      ok = false;
+      console.error("SELF-TEST FAIL: exact reviewed fixture was not allowlisted");
+    }
+  }
   console.log(JSON.stringify({ selfTest: ok ? "PASS" : "FAIL" }));
   if (!ok) process.exit(3);
   if (!args.includes("--scan")) process.exit(0);
@@ -170,7 +197,9 @@ for (const relativePath of listFiles()) {
   findings.push(...scanContents(relativePath, contents));
 }
 
-const ownerReviewRequired = findings.filter((f) => f.classification === "owner-review-required");
+const ownerReviewRequired = findings
+  .filter((f) => f.classification === "owner-review-required")
+  .map(({ lineSha256: _lineSha256, ...finding }) => finding);
 const result = {
   schemaVersion: 2,
   generatedAt: new Date().toISOString(),
@@ -180,7 +209,7 @@ const result = {
   allowlisted: findings.filter((f) => f.classification === "allowlisted").length,
   ownerReviewRequired,
   status: ownerReviewRequired.length === 0 ? "PASS" : "REVIEW_REQUIRED",
-  policy: "Findings carry path, line and pattern type only; matched values are never emitted.",
+  policy: "Findings carry path, line and pattern type only; matched values and source line hashes are never emitted. Reviewed fixture allowlist entries are pinned to exact source line hashes.",
 };
 
 await fs.mkdir(path.dirname(path.resolve(root, jsonOut)), { recursive: true });
