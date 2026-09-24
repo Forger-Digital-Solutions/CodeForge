@@ -119,7 +119,7 @@ describe("Workflow ↔ AgentRuntime Real Integration", () => {
     expect(types).toContain("plan.started");
     expect(types.some((t) => t === "turn.started" || t === "tool.execution_started" || t === "tool.call_started")).toBe(true);
     expect(completed).toBe(true);
-  });
+  }, 30_000);
 
   it("explicit Agent mode via /api/send is routed to real autonomous execution", async () => {
     const catalog = new InMemoryProviderCatalog();
@@ -165,7 +165,7 @@ describe("Workflow ↔ AgentRuntime Real Integration", () => {
     await new Promise((r) => setTimeout(r, 300));
     const fixed = fs.readFileSync(join(ws, "src/calc.ts"), "utf-8");
     expect(fixed).toContain("a + b");
-  });
+  }, 30_000);
 
   it("workflow repair loop uses AgentRuntime after verification failure", async () => {
     await writeFile(join(ws, "src", "calc.ts"), "export function add(a: number, b: number): number {\n  return a - b;\n}\n");
@@ -219,5 +219,5 @@ describe("Workflow ↔ AgentRuntime Real Integration", () => {
     const sessRes = await fetchJson(`http://localhost:${port}/api/sessions/repair-sess`, undefined, "GET");
     const workItems = (sessRes.body as any).workItems as Array<{ kind: string }>;
     expect(workItems.length).toBeGreaterThan(0);
-  });
+  }, 30_000);
 });

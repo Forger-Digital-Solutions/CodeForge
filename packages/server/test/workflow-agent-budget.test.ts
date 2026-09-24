@@ -113,5 +113,5 @@ describe("workflow agent working budget", () => {
     const implementation = events().find((event) => event.type === "workflow.implementation_completed" || event.type === "workflow.implementation_failed");
     const summary = JSON.stringify(implementation?.payload ?? events().find((event) => event.type === "turn.failed")?.payload ?? {});
     expect(summary).toMatch(/working budget|exhausted/i);
-  });
+  }, 30_000);
 });

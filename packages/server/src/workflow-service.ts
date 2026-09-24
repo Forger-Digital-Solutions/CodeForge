@@ -276,7 +276,9 @@ function parseGoalReviewFindings(response: string, intent: TaskIntent): ReviewFi
         message: `Independent goal review: goal not satisfied — ${redactSecrets(goal).slice(0, 300)}.${detail}`,
       });
     } else if (status === "met") {
-      decisive = true;
+      // A "met" claim is only decisive when the reviewer states what it observed — a bare
+      // assertion is the exact failure mode of a lazy review and must not open the gate.
+      if (detail) decisive = true;
     } else if (status === "indeterminate") {
       findings.push({
         code: "goal_review_inconclusive",
@@ -382,8 +384,9 @@ export function describeWorkflowOutcome(result: WorkflowResult, turnId: string):
     // Another blocker may headline the outcome (e.g. an unverdicted review) while the
     // implementation itself was stopped by a budget — the stop reason stays in the headline.
     if (stopDetail && reasonCode !== "plan_steps_unfinished") {
-      why += ` The implementation stopped early — ${stopDetail}.`;
+      why += ` The implementation stopped early — ${stopDetail.replace(/\.+$/, "")}.`;
     }
+    why = why.replace(/\.+$/, "");
     return {
       ...base,
       outcome: "blocked",
@@ -650,10 +653,13 @@ export class WorkflowService {
       lines.push(`\nVerification command output (tail):`);
       lines.push(redactSecrets(verification.output.slice(-2_000)) || "(no verification output)");
       lines.push(`\nInstructions:`);
+      lines.push(`- The observed diff above is system-captured workspace evidence, not the agent's claim — verdicts may cite it directly. Use tool calls only for what the diff cannot show: unchanged call sites, files outside the diff, or runtime behavior.`);
       lines.push(`- Inspect the workspace yourself: read_file, search_files, list_files are available.`);
       lines.push(`- You may run_command ONLY for read-only checks the task implies (e.g. running a CLI, a quick node -e probe). Never install packages, never modify files, never use edit_file or write_file — a reviewer changes nothing.`);
-      lines.push(`- Judge every stated goal: "met" only when the workspace itself demonstrates it, "unmet" when evidence shows it missing or wrong, "indeterminate" when you cannot tell.`);
-      lines.push(`- Check behavior, not just syntax: if the task asks for a feature, verify it is wired and produces the requested output; if a rename, verify external names (CLI flags, wire keys, public API) are unchanged unless the task asked otherwise.`);
+      lines.push(`- Decompose every stated goal into its atomic, individually checkable requirements and emit ONE verdict per requirement — never a single blanket verdict for a compound goal. For an extraction or refactor that means at minimum: the new module/export exists, its signature and return shape match the goal LITERALLY (compare declarations — "string[]" is not "ValidationResult"), every original call site uses it, and behavior is preserved.`);
+      lines.push(`- Judge every requirement: "met" only when the workspace itself demonstrates it, "unmet" when evidence shows it missing or wrong, "indeterminate" when you cannot tell.`);
+      lines.push(`- "met" requires evidence you actually observed — a declaration you read, a probe you ran, an output you saw. If you cannot check a requirement, mark it "indeterminate"; do not assert.`);
+      lines.push(`- Check behavior, not just syntax: if the task asks for a feature, verify it is wired and produces the requested output; if a rename, verify external names (CLI flags, wire keys, public API) are unchanged unless the task asked otherwise. When an export contract or return shape is stated, verify it literally — reading "function f(): T" against the required shape, or running a node -e probe that prints the actual result.`);
       lines.push(`- Your final response must be ONLY a JSON object, no prose before or after:`);
       lines.push(`  {"verdicts":[{"goal":"<stated goal>","status":"met|unmet|indeterminate","evidence":"<what you observed, with path or command>","path":"<relevant file or empty>"}]}`);
       return lines.join("\n");
