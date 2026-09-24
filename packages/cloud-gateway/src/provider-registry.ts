@@ -7,6 +7,7 @@ import {
   PROVIDER_DEFINITIONS,
   type LiveModelInfo,
 } from "@codeforge/model-registry";
+import { REGION_UNKNOWN } from "@codeforge/legal-policy";
 import {
   createProviderAdapterById,
   createProviderAdapterFromDefinition,
@@ -90,6 +91,7 @@ export type ProviderCapacityStatus =
   | "rate_limited"
   | "offline"
   | "misconfigured"
+  | "policy_blocked"
   | "skipped_paid_only";
 
 export interface ProviderCapacityReport {
@@ -225,6 +227,18 @@ export class CloudProviderRegistry {
     // as hosted-free capacity. Direct/BYOK can still use it on the desktop; the cloud pool cannot.
     if (policy?.paidOnly) {
       return { ...base, status: "skipped_paid_only" };
+    }
+
+    // Discovery must not advertise capacity that the hosted legal gate would refuse at
+    // execution. Unknown-region denial is conservative for a global capacity report.
+    const hostedPolicy = this.firewallManager.checkProviderPolicy(
+      { providerId, serviceTier: "FREE" }, REGION_UNKNOWN,
+    );
+    if (hostedPolicy.decision === "DENY") {
+      for (const existingId of this.firewallManager.listProviderModelIds(providerId)) {
+        this.firewallManager.unregisterModel(providerId, existingId);
+      }
+      return { ...base, status: "policy_blocked", error: hostedPolicy.reasonCode };
     }
 
     // Cloudflare needs an account id in addition to the API token.

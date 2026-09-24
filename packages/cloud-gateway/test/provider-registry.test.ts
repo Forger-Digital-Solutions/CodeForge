@@ -54,8 +54,17 @@ class FakeAdapter implements ProviderAdapter {
   }
 }
 
-function makeRegistry(adapters: Record<string, FakeAdapter>, extra: { now?: () => Date } = {}) {
-  const firewallManager = new CloudFirewallManager();
+function makeRegistry(adapters: Record<string, FakeAdapter>, extra: { now?: () => Date; standardTerms?: boolean } = {}) {
+  const firewallManager = new CloudFirewallManager(extra.standardTerms ? undefined : {
+    enterpriseOverrides: {
+      openrouter: {
+        providerId: "openrouter",
+        status: "ENTERPRISE_AUTHORIZED",
+        agreementReference: "test-only-fixture",
+        allowedArchitectures: ["HOSTED_MULTI_TENANT"],
+      },
+    },
+  });
   const store = new MapCredentialStore();
   for (const id of Object.keys(adapters)) store.set(id, "sk-fake");
   store.set("cloudflare-account-id", "acct-fake");
@@ -71,6 +80,16 @@ function makeRegistry(adapters: Record<string, FakeAdapter>, extra: { now?: () =
 }
 
 describe("CloudProviderRegistry — real capacity discovery", () => {
+  it("does not advertise standard-terms OpenRouter as managed multi-user capacity", async () => {
+    const openrouter = new FakeAdapter({ providerId: "openrouter", models: [model("x/y:free", true)] });
+    const { firewallManager, registry } = makeRegistry({ openrouter }, { standardTerms: true });
+    const [report] = await registry.discover();
+    expect(report?.status).toBe("policy_blocked");
+    expect(report?.error).toBe("OPENROUTER_ENTERPRISE_AGREEMENT_REQUIRED");
+    expect(firewallManager.firewall.eligibleModels()).toHaveLength(0);
+    expect(firewallManager.providerCatalog.get("openrouter")).toBeUndefined();
+  });
+
   it("discovers zero-unit free models from a gateway provider (OpenRouter :free)", async () => {
     const openrouter = new FakeAdapter({
       providerId: "openrouter",

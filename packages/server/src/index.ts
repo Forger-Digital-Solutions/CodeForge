@@ -143,10 +143,7 @@ export interface ServerOptions {
   controlPlaneToken?: string;
   /** Agent working budget per workflow implementation/repair turn (ms); tests use small values. */
   agentWorkingBudgetMs?: number;
-  /**
-   * Per-run inference-request budget for autonomous workflows. `reserve` is the partition
-   * implementation can never touch — kept for the goal-conformance review tail.
-   */
+  /** Optional finite request envelope for controlled tests and operator diagnostics. */
   workflowInferenceBudget?: { total?: number; reserve?: number };
   /**
    * R1: the 8-Bit Free Cloud Service (owned by the trusted host process). When supplied, ForgeAuto

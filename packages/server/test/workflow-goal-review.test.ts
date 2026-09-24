@@ -147,6 +147,35 @@ describe("workflow goal-conformance review", () => {
     expect(JSON.stringify(decided?.payload ?? {})).toContain("goal_review_inconclusive");
   }, 30_000);
 
+  it("continues useful edits beyond the old 32-request envelope and still requires review", async () => {
+    let source = await readFile(join(workspace, "src", "calc.ts"), "utf8");
+    const calls: unknown[][] = [];
+    for (let n = 1; n <= 33; n++) {
+      const next = source.replace(/a - b(?: \+ \d+)?/, `a - b + ${n}`);
+      calls.push(toolCall("edit_file", {
+        path: "src/calc.ts",
+        oldText: source.trimEnd(),
+        newText: next.trimEnd(),
+        expectedHash: createHash("sha256").update(source).digest("hex"),
+      }, `edit-${n}`));
+      source = next;
+    }
+    calls.push(toolCall("edit_file", {
+      path: "src/calc.ts",
+      oldText: source.trimEnd(),
+      newText: source.replace(/a - b \+ 33/, "a + b").trimEnd(),
+      expectedHash: createHash("sha256").update(source).digest("hex"),
+    }, "edit-final"));
+    calls.push(finalText("Implementation finished."), finalText(MET_VERDICT));
+
+    const { status, events } = await runToTerminal("goal-review-beyond-old-envelope", calls,
+      "node -e \"const fs=require('fs');process.exit(fs.readFileSync('src/calc.ts','utf8').includes('a + b')?0:1)\"");
+
+    expect(status).toBe("complete");
+    expect((await readFile(join(workspace, "src", "calc.ts"), "utf8"))).toContain("a + b");
+    expect(events.filter((event) => event.type === "turn.started" && event.payload?.label === "Reviewing goal conformance")).toHaveLength(1);
+  }, 90_000);
+
   it("still reaches the review when implementation exhausts the primary inference partition", async () => {
     const before = await readFile(join(workspace, "src", "calc.ts"), "utf8");
     const hash = createHash("sha256").update(before).digest("hex");

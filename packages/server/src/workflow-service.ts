@@ -41,12 +41,7 @@ export interface WorkflowServiceOptions {
   userIntentHold?: UserIntentHoldController;
   /** Agent working budget per implementation/repair turn (ms). Tests use small values. */
   agentWorkingBudgetMs?: number;
-  /**
-   * Per-run inference-request budget. `total` bounds the whole run's spend; `reserve` is the
-   * partition implementation can never touch, kept for the goal-conformance review and the
-   * repairs it drives — a run whose implementation consumed everything used to reach the
-   * review with no requests left and complete on deterministic checks alone.
-   */
+  /** Explicit finite request budget for controlled tests and operator diagnostics. */
   inferenceBudget?: { total?: number; reserve?: number };
   /** Shared task authority — plan mode and lease grants live here. */
   authorityFor?: (sessionId: string) => TaskAuthority;
@@ -81,13 +76,6 @@ const WORKFLOW_TIMEOUT_MS = WORKFLOW_TIMEOUT_MINUTES * 60 * 1000;
 // multi-file change with a free route — it timed out mid-edit on the first real live task — so
 // the default now leaves the rest of the task budget for verification and repair.
 const DEFAULT_AGENT_WORKING_BUDGET_MS = 20 * 60 * 1000;
-// Per-run inference-request budget, partitioned so implementation can never starve the
-// semantic tail. R31 measured 11–30 requests for a whole passing run and ~6–10 for a
-// goal-review turn; reserve 24 covers the review plus one bounded conformance repair and
-// re-review, and the 40-request primary partition gives implementation real headroom over
-// the heaviest observed run (24). The cap bounds spend — it is never a success signal.
-const DEFAULT_WORKFLOW_INFERENCE_TOTAL = 64;
-const DEFAULT_WORKFLOW_INFERENCE_RESERVE = 24;
 const MAX_WORKSPACE_PATH_LENGTH = 1024;
 
 /** One plan step as a person reads it: what happens, to which file or command, at what risk. */
@@ -550,7 +538,7 @@ export class WorkflowService {
   private readonly isRealRuntimeEnabled: () => boolean;
   private readonly userIntentHold?: UserIntentHoldController;
   private readonly agentWorkingBudgetMs: number;
-  private readonly workflowInferenceBudget: { total: number; reserve: number };
+  private readonly workflowInferenceBudget?: { total: number; reserve: number };
   private readonly authorityFor?: (sessionId: string) => TaskAuthority;
   private readonly onPolicyReceipt?: (receipt: PolicyReceipt) => void;
   /** Plans already authorized this session, keyed `${planId}@${revision}` — a
@@ -568,10 +556,12 @@ export class WorkflowService {
     this.isRealRuntimeEnabled = typeof realRuntime === "function" ? realRuntime : () => realRuntime;
     this.userIntentHold = options.userIntentHold;
     this.agentWorkingBudgetMs = options.agentWorkingBudgetMs ?? DEFAULT_AGENT_WORKING_BUDGET_MS;
-    this.workflowInferenceBudget = {
-      total: options.inferenceBudget?.total ?? DEFAULT_WORKFLOW_INFERENCE_TOTAL,
-      reserve: options.inferenceBudget?.reserve ?? DEFAULT_WORKFLOW_INFERENCE_RESERVE,
-    };
+    if (options.inferenceBudget) {
+      this.workflowInferenceBudget = {
+        total: options.inferenceBudget.total ?? 64,
+        reserve: options.inferenceBudget.reserve ?? 24,
+      };
+    }
     this.authorityFor = options.authorityFor;
     this.onPolicyReceipt = options.onPolicyReceipt;
   }
@@ -643,11 +633,11 @@ export class WorkflowService {
     hostedWorker?: HostedWorkerOptions,
   ): NonNullable<import("@codeforge/workflow").WorkflowEngineOptions["agentExecutor"]> {
     const getRuntime = this.getOrCreateRuntime!;
-    // One budget per run, shared by every dispatched turn. `primary` (implementation and
-    // verification repairs) stops short of the reserve; the goal-review phase and the repairs
-    // it drives draw from `reserved`. The engine's control flow guarantees the first review
-    // turn precedes every conformance repair, so a single flag is enough to switch lanes.
-    const inferenceBudget = createWorkflowInferenceBudget(this.workflowInferenceBudget.total, this.workflowInferenceBudget.reserve);
+    // A finite request envelope is opt-in. The normal run is governed by verified supply,
+    // fair admission, working time, no-progress detection and the completion gate.
+    const inferenceBudget = this.workflowInferenceBudget
+      ? createWorkflowInferenceBudget(this.workflowInferenceBudget.total, this.workflowInferenceBudget.reserve)
+      : undefined;
     let reviewPhaseReached = false;
     const repairLane = (): InferenceLane => (reviewPhaseReached ? "reserved" : "primary");
     const waitForTurn = async (runtime: AgentRuntime, turnId: string, workingBudgetMs = this.agentWorkingBudgetMs): Promise<{ status: string; turn?: ReturnType<AgentRuntime["getTurn"]>; reason?: string; continuationId?: string; workingMs: number }> => {

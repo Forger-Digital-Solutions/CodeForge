@@ -1,7 +1,7 @@
 /**
- * A workflow run's inference-request budget, shared by every turn the run dispatches.
+ * An explicit finite inference-request budget, shared by every turn the run dispatches.
  *
- * The budget exists so implementation work can never starve the semantic tail of the run.
+ * This opt-in diagnostic budget preserves the R32 partition when deliberately configured.
  * `primary` lanes (implementation and verification-driven repairs) may consume up to
  * `total - reserve` requests; `reserved` lanes (the independent goal-conformance review
  * and the repairs it drives) may draw on the reserve up to `total`. The lane cap bounds
