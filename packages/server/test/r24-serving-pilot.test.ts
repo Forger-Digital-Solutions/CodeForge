@@ -364,18 +364,24 @@ describe("R24 serving pilot — a day of traffic across managed, sponsored and u
     await runtime.init();
     const t1 = await runtime.startTurn("Work under contention");
     const f1 = await waitForTerminal(runtime, persistence, "sess-carol", t1);
-    // Carol has no pool of her own; both shared pools are full — the turn fails closed and
-    // no provider was ever called. Alice's entitlement is not even a candidate for her.
-    expect(f1?.status).toBe("failed");
+    // Carol has no pool of her own; both shared pools are full — the turn parks durably
+    // rather than terminalizing, no provider was ever called, and the parked wait holds no
+    // reservation. Alice's entitlement is not even a candidate for her.
+    expect(f1?.status).toBe("waiting_for_free_capacity");
     expect(managedProvider.callCount).toBe(0);
     expect(sponsoredProvider.callCount).toBe(0);
     expect(aliceProvider.callCount).toBe(0);
     expect(reservations.snapshot().activeReservations).toBe(2);
+    const waitItems = (await persistence.getWorkItems("sess-carol")).filter((it) => it.kind === "free_capacity_wait" && it.turnId === t1);
+    expect(waitItems).toHaveLength(1);
+    expect(waitItems[0]?.state).toBe("waiting");
 
-    // A slot frees; carol's retry is admitted on whichever pool opened — honest drain order.
+    // A slot frees; an explicit probe re-decides through the fabric and the parked turn
+    // resumes on whichever pool opened — honest drain order, no steal, no bypass.
     fabric.release("hold-1");
-    const t2 = await runtime.startTurn("Work after drain");
-    const f2 = await waitForTerminal(runtime, persistence, "sess-carol", t2);
+    expect(await runtime.probeCapacityWait(t1)).toBe("ADMITTED");
+    await runtime.resumeTurn(t1);
+    const f2 = await waitForTerminal(runtime, persistence, "sess-carol", t1);
     expect(f2?.status).toBe("completed");
     expect(managedProvider.callCount + sponsoredProvider.callCount).toBe(1);
     expect(reservations.snapshot().activeReservations).toBe(1); // only hold-2 remains

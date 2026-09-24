@@ -3360,6 +3360,9 @@ export class AgentRuntime {
   }
 
   private async updateCapacityWait(turnId: string, status: "resumed" | "cancelled"): Promise<void> {
+    // A persistence surface without work items could never have recorded the wait — cancellation
+    // of a parked turn must still succeed rather than crash on the bookkeeping path.
+    if (typeof this.persistence.getWorkItem !== "function" || typeof this.persistence.upsertWorkItem !== "function") return;
     const previous = await this.persistence.getWorkItem(`free-capacity-wait-${turnId}`);
     if (previous?.kind !== "free_capacity_wait") return;
     await this.persistence.upsertWorkItem({ ...previous, state: status, updatedAt: new Date().toISOString() });
