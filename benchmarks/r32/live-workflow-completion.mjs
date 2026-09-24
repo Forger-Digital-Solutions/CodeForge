@@ -227,6 +227,12 @@ async function main() {
     throw new Error(`'${providerId}/${modelId}' has no positive catalog-declared context window, so the live harness will not guess one.`);
   }
 
+  // Build identity is captured at startup: this process loaded dist modules when it
+  // spawned, so hashing at receipt-write time could record a build that never ran.
+  const sourceCommit = (await execFile("git", ["rev-parse", "HEAD"], { cwd: REPOSITORY_ROOT, windowsHide: true })).stdout.trim();
+  const workflowServiceSourceSha256 = sha256(await readFile(path.join(REPOSITORY_ROOT, "packages/server/src/workflow-service.ts")));
+  const workflowServiceDistSha256 = sha256(await readFile(path.join(REPOSITORY_ROOT, "packages/server/dist/workflow-service.js")));
+
   const { locked, taskRoot, task } = await loadLockedTask(corpus, taskId);
   const runId = `r32-live-${randomUUID()}`;
   const runRoot = await mkdtemp(path.join(os.tmpdir(), "codeforge-r32-live-"));
@@ -396,9 +402,9 @@ async function main() {
   const receipt = {
     schema: "r32-live-workflow-completion-receipt-1",
     recordedAt: new Date().toISOString(),
-    sourceCommit: (await execFile("git", ["rev-parse", "HEAD"], { cwd: REPOSITORY_ROOT, windowsHide: true })).stdout.trim(),
-    workflowServiceSourceSha256: sha256(await readFile(path.join(REPOSITORY_ROOT, "packages/server/src/workflow-service.ts"))),
-    workflowServiceDistSha256: sha256(await readFile(path.join(REPOSITORY_ROOT, "packages/server/dist/workflow-service.js"))),
+    sourceCommit,
+    workflowServiceSourceSha256,
+    workflowServiceDistSha256,
     runId,
     task: {
       corpus,
