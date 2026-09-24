@@ -111,7 +111,10 @@ export const defaultComputerRunner: ComputerRunner = (scriptBody, timeoutMs) =>
  * disagrees with physical pixels (and clamps on secondary monitors). Set once per script.
  */
 const DPI_PREAMBLE =
-  "$d=Add-Type -MemberDefinition '[DllImport(\"user32.dll\")] public static extern bool SetProcessDpiAwarenessContext(System.IntPtr v);' -Name Dpi -Namespace CfComputer -PassThru; [void][CfComputer.Dpi]::SetProcessDpiAwarenessContext([System.IntPtr]::new(-4));";
+  // OutputEncoding must be UTF-8: the default OEM codepage silently rewrites
+  // non-ASCII characters (e.g. U+2192 → becomes byte 0x1A in cp437), which lands
+  // as raw control characters inside JSON payloads and breaks parsing.
+  "[Console]::OutputEncoding=[System.Text.Encoding]::UTF8; $d=Add-Type -MemberDefinition '[DllImport(\"user32.dll\")] public static extern bool SetProcessDpiAwarenessContext(System.IntPtr v);' -Name Dpi -Namespace CfComputer -PassThru; [void][CfComputer.Dpi]::SetProcessDpiAwarenessContext([System.IntPtr]::new(-4));";
 
 const USER32_DECL =
   "$u=Add-Type -MemberDefinition '[DllImport(\"user32.dll\")] public static extern bool SetCursorPos(int X,int Y); [DllImport(\"user32.dll\")] public static extern void mouse_event(uint f,uint x,uint y,uint d,System.UIntPtr e); [StructLayout(LayoutKind.Sequential)] public struct KBD { public ushort wVk; public ushort wScan; public uint dwFlags; public uint time; public System.IntPtr dwExtraInfo; } [StructLayout(LayoutKind.Explicit)] public struct U { [FieldOffset(0)] public KBD ki; } [StructLayout(LayoutKind.Sequential)] public struct INP { public uint type; public U u; } [DllImport(\"user32.dll\")] public static extern uint SendInput(uint n,INP[] p,int cb); public static void SendUnicodeKey(ushort scan) { var k=new KBD(); k.wScan=scan; k.dwFlags=4; var u=new U(); u.ki=k; var i=new INP(); i.type=1; i.u=u; SendInput(1,new INP[]{i},System.Runtime.InteropServices.Marshal.SizeOf(i)); k.dwFlags=6; u.ki=k; i.u=u; SendInput(1,new INP[]{i},System.Runtime.InteropServices.Marshal.SizeOf(i)); } public static void SendVk(ushort vk,bool keyUp) { var k=new KBD(); k.wVk=vk; k.dwFlags=keyUp?2u:0u; var u=new U(); u.ki=k; var i=new INP(); i.type=1; i.u=u; SendInput(1,new INP[]{i},System.Runtime.InteropServices.Marshal.SizeOf(i)); }' -Name U32 -Namespace CfComputer -PassThru;";
@@ -190,16 +193,25 @@ export class WindowsComputerBackend implements ComputerBackend {
       [
         "Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes;",
         "$root=[System.Windows.Automation.AutomationElement]::RootElement;",
-        "$els=$root.FindAll([System.Windows.Automation.TreeScope]::Descendants,[System.Windows.Automation.Condition]::ControlViewCondition);",
+        // Control view is defined as IsControlElement=true. The static
+        // Condition.ControlViewCondition composes an AndCondition that materializes as
+        // null on some .NET/PowerShell combinations — constructing the equivalent
+        // PropertyCondition directly works on both.
+        "$cv=New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::IsControlElementProperty,$true);",
+        "$els=$root.FindAll([System.Windows.Automation.TreeScope]::Descendants,$cv);",
         "$out=@(); $i=0;",
         "foreach ($e in $els) {",
         `  if ($i -ge ${max}) { break }`,
         "  $c=$e.Current;",
         "  if ([string]::IsNullOrWhiteSpace($c.Name) -and [string]::IsNullOrWhiteSpace($c.AutomationId)) { continue }",
         "  $r=$c.BoundingRectangle;",
+        // ConvertTo-Json passes raw C0/DEL control characters through into string
+        // literals, producing invalid JSON — real element names carry them
+        // (observed U+001A in a live "Restart to Update" button).
+        "  $clean={ param($s) ([string]$s) -replace '[\\x00-\\x1F\\x7F]','' };",
         "  $out += [pscustomobject]@{",
-        "    name=[string]$c.Name; automationId=[string]$c.AutomationId;",
-        "    controlType=[string]$c.ControlType.ProgrammaticName; className=[string]$c.ClassName;",
+        "    name=(&$clean $c.Name); automationId=(&$clean $c.AutomationId);",
+        "    controlType=[string]$c.ControlType.ProgrammaticName; className=(&$clean $c.ClassName);",
         "    processId=[int]$c.ProcessId; enabled=[bool]$c.IsEnabled; offscreen=[bool]$c.IsOffscreen;",
         "    hasKeyboardFocus=[bool]$c.HasKeyboardFocus;",
         "    bounds=@{x=[double]$r.X; y=[double]$r.Y; width=[double]$r.Width; height=[double]$r.Height};",
