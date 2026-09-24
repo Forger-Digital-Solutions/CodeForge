@@ -84,6 +84,26 @@ export interface ExtensionView {
   settings: ExtensionSettingDef[];
 }
 
+/** A catalog entry from a signature-verified remote marketplace source. */
+export interface MarketplaceEntryView {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  publisher: string;
+  permissions: string[];
+  sizeBytes: number;
+  /** The configured source URL this entry came from — needed to install it. */
+  sourceUrl: string;
+  installed: boolean;
+  installedVersion?: string;
+}
+
+export interface MarketplaceCatalogView {
+  entries: MarketplaceEntryView[];
+  errors: Array<{ source: string; error: string }>;
+}
+
 export interface SettingsContextValue {
   settings: AppSettings;
   closeBehavior: CloseBehavior;
@@ -133,6 +153,10 @@ export interface SettingsContextValue {
   loadExtensionFolder: () => Promise<{ ok: boolean; error?: string } | null>;
   getExtensionSetting: (extensionId: string, key: string) => Promise<unknown>;
   setExtensionSetting: (extensionId: string, key: string, value: unknown) => Promise<boolean>;
+
+  /** Signed remote catalog; null when no marketplace source is configured or all fetches failed. */
+  marketplaceCatalog: () => Promise<MarketplaceCatalogView | null>;
+  installMarketplaceExtension: (sourceUrl: string, extensionId: string) => Promise<{ ok: boolean; error?: string }>;
 
   defaultExecutionMode: "agent" | "chat";
   setDefaultExecutionMode: (mode: "agent" | "chat") => Promise<void>;

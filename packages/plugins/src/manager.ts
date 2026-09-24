@@ -216,6 +216,49 @@ export class ExtensionManager {
   }
 
   /**
+   * Managed install: register a directory already placed inside `extensionsDir` (e.g. by the
+   * marketplace client) as a non-dev extension. The manifest must parse and its id must equal
+   * the directory name — a catalog entry cannot claim another extension's slot.
+   */
+  async installManaged(dir: string): Promise<{ ok: boolean; error?: string }> {
+    const resolved = path.resolve(dir);
+    const managedRoot = path.resolve(this.deps.extensionsDir);
+    if (!resolved.startsWith(managedRoot + path.sep) || path.dirname(resolved) !== managedRoot) {
+      return { ok: false, error: "Managed installs must live directly inside the extensions directory" };
+    }
+    const id = path.basename(resolved);
+    const manifestPath = path.join(resolved, EXTENSION_MANIFEST_FILENAME);
+    let manifest: ExtensionManifest;
+    try {
+      manifest = parseExtensionManifest(JSON.parse(fs.readFileSync(manifestPath, "utf8")));
+    } catch (error) {
+      return { ok: false, error: error instanceof Error ? error.message : String(error) };
+    }
+    if (manifest.id !== id) {
+      return { ok: false, error: `Manifest id "${manifest.id}" does not match install directory "${id}"` };
+    }
+    if (this.loaded.has(id) || this.records[id]) {
+      return { ok: false, error: `Extension "${id}" is already installed` };
+    }
+    if (!engineSatisfied(this.deps.appVersion, manifest.engines?.codeforge)) {
+      return { ok: false, error: `Extension requires CodeForge ${manifest.engines?.codeforge}; this build is ${this.deps.appVersion}` };
+    }
+    const record: ExtensionRecord = {
+      id,
+      sourceDir: resolved,
+      enabled: true,
+      devMode: false,
+      installedAt: new Date().toISOString(),
+      settings: {},
+    };
+    this.records[id] = record;
+    this.persist();
+    const ext = await this.loadFromDir(resolved, record);
+    if (ext && ext.status !== "error") await this.host.activate(ext);
+    return { ok: true };
+  }
+
+  /**
    * Developer loading: validate the manifest in place and register the folder without copying.
    * devMode extensions are marked in the UI and uninstalled by removing the record only.
    */

@@ -20,3 +20,20 @@ export {
   type ExtensionStateStore,
   type SecretStore,
 } from "./manager.js";
+export {
+  canonicalize,
+  MARKETPLACE_ERRORS,
+  MARKETPLACE_INDEX_SCHEMA,
+  MARKETPLACE_PACKAGE_SCHEMA,
+  MarketplaceClient,
+  MarketplaceError,
+  signMarketplaceIndex,
+  type ExtensionPackage,
+  type ExtensionPackageFile,
+  type FetchLike,
+  type MarketplaceCatalogEntry,
+  type MarketplaceClientOptions,
+  type MarketplaceErrorCode,
+  type MarketplaceIndex,
+  type MarketplaceSource,
+} from "./catalog.js";

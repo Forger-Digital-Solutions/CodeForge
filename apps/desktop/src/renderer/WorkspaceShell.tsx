@@ -9,7 +9,7 @@ import { accessBadge, buildModelSections, buildCanonicalModelSections, canDriveA
 import type { CanonicalModelView } from "@codeforge/model-registry";
 import { classifyGitWorkspace, GIT_WORKSPACE_INFO_ARGS, type GitWorkspaceInfo } from "./git-workspace-info.js";
 import SettingsApp from "./settings/SettingsApp.js";
-import type { SettingsContextValue, CloudAccountView, SystemInfoView, DesktopRuntimeStatus, RepositoryIndexStatus, ExtensionView } from "./settings/settings-context.js";
+import type { SettingsContextValue, CloudAccountView, SystemInfoView, DesktopRuntimeStatus, RepositoryIndexStatus, ExtensionView, MarketplaceCatalogView } from "./settings/settings-context.js";
 import { computeWorkNotifications, type RunningCounters } from "./settings/notifications-client.js";
 import { describeHeaderActivity, summarizeActiveWork } from "../close-lifecycle.js";
 import type { AppSettings, AppSettingsPatch, CloseBehavior, ExecutionMode, SettingsSnapshot } from "../app-settings.js";
@@ -588,6 +588,18 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
       setExtensionSetting: async (extensionId, key, value) => {
         const result = await window.electronAPI?.setExtensionSetting?.(extensionId, key, value).catch(() => false);
         return result === true;
+      },
+      marketplaceCatalog: async () => {
+        const result = await window.electronAPI?.marketplaceCatalog?.().catch(() => null);
+        if (!result || typeof result !== "object" || !Array.isArray((result as { entries?: unknown }).entries)) return null;
+        return result as MarketplaceCatalogView;
+      },
+      installMarketplaceExtension: async (sourceUrl, extensionId) => {
+        const result = await window.electronAPI?.marketplaceInstall?.(sourceUrl, extensionId).catch((error) => ({ ok: false, error: String(error) }));
+        await window.electronAPI?.listExtensions?.().then((list) => {
+          if (Array.isArray(list)) setExtensions(list as ExtensionView[]);
+        });
+        return result ?? { ok: false, error: "Marketplace install is unavailable" };
       },
       repositoryIndex,
       setRepositoryIndexEnabled,

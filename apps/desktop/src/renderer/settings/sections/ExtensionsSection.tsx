@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSettings, type ExtensionView } from "../settings-context.js";
+import { useSettings, type ExtensionView, type MarketplaceCatalogView, type MarketplaceEntryView } from "../settings-context.js";
 import { Toggle, CfSelect, SettingsGroup, SettingsRow, SettingsButton, StatusBadge } from "../settings-controls.js";
 
 /**
@@ -160,6 +160,97 @@ function ExtensionCard({ ext }: { ext: ExtensionView }): React.ReactElement {
   );
 }
 
+function MarketplaceCard({ entry, onInstalled }: { entry: MarketplaceEntryView; onInstalled: () => void }): React.ReactElement {
+  const ctx = useSettings();
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+
+  const install = async () => {
+    setBusy(true);
+    setNote(null);
+    try {
+      const result = await ctx.installMarketplaceExtension(entry.sourceUrl, entry.id);
+      if (!result.ok) {
+        setNote(result.error ?? "Install was rejected.");
+      } else {
+        onInstalled();
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="provider-card" data-marketplace-id={entry.id}>
+      <div className="provider-card-header">
+        <div className="provider-info">
+          <h3 className="provider-name">
+            {entry.name}
+            <span className="model-pick-badge" style={{ marginLeft: 8 }}>v{entry.version}</span>
+            <span className="model-pick-badge" style={{ marginLeft: 6 }}>{entry.publisher}</span>
+          </h3>
+          <p className="provider-description">{entry.description || entry.id}</p>
+        </div>
+        {entry.installed ? <StatusBadge kind="ok">Installed{entry.installedVersion === entry.version ? "" : ` v${entry.installedVersion}`}</StatusBadge> : <StatusBadge kind="info">Verified catalog</StatusBadge>}
+      </div>
+
+      {entry.permissions.length > 0 ? (
+        <div className="provider-models">
+          {entry.permissions.map((p) => <span key={p} className="provider-badge">{permissionLabel(p)}</span>)}
+        </div>
+      ) : (
+        <div className="provider-models"><span className="provider-badge">No permissions — runs fully isolated</span></div>
+      )}
+
+      <div className="provider-actions">
+        <SettingsButton disabled={busy || entry.installed} onClick={() => void install()}>
+          {entry.installed ? "Installed" : busy ? "Verifying & installing…" : "Install"}
+        </SettingsButton>
+      </div>
+      {note ? <div className="settings-note" role="alert" style={{ color: "var(--cf-danger)" }}>{note}</div> : null}
+    </div>
+  );
+}
+
+function MarketplaceGroup(): React.ReactElement | null {
+  const ctx = useSettings();
+  const [catalog, setCatalog] = useState<MarketplaceCatalogView | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  const refresh = async () => {
+    const result = await ctx.marketplaceCatalog();
+    setCatalog(result);
+    setLoaded(true);
+  };
+
+  useEffect(() => { void refresh(); }, []);
+
+  if (loaded && catalog === null) return null;
+
+  return (
+    <SettingsGroup title={`Marketplace${catalog ? ` (${catalog.entries.length})` : ""}`}>
+      {!loaded ? (
+        <SettingsRow title="Checking configured catalogs…" description="Marketplace sources are verified with pinned signing keys before anything is listed." />
+      ) : (
+        <>
+          {catalog?.errors.map((error) => (
+            <div key={error.source} className="settings-note" role="alert" style={{ color: "var(--cf-danger)", padding: "4px 14px" }}>
+              {error.source}: {error.error}
+            </div>
+          ))}
+          {catalog?.entries.length === 0 ? (
+            <SettingsRow title="Catalog is empty" description="The configured marketplace sources verified but listed no extensions." />
+          ) : (
+            catalog?.entries.map((entry) => (
+              <MarketplaceCard key={`${entry.sourceUrl}#${entry.id}`} entry={entry} onInstalled={() => void ctx.refreshExtensions()} />
+            ))
+          )}
+        </>
+      )}
+    </SettingsGroup>
+  );
+}
+
 export function ExtensionsSection(): React.ReactElement {
   const ctx = useSettings();
   const [loading, setLoading] = useState(false);
@@ -188,6 +279,8 @@ export function ExtensionsSection(): React.ReactElement {
           ctx.extensions.map((ext) => <ExtensionCard key={ext.id} ext={ext} />)
         )}
       </SettingsGroup>
+
+      <MarketplaceGroup />
 
       <SettingsGroup title="Developer">
         <SettingsRow

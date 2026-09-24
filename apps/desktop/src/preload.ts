@@ -203,6 +203,13 @@ const api = {
   runExtensionCommand: (extensionId: string, commandId: string, args?: unknown[]): Promise<{ ok: boolean; error?: string }> => {
     return ipcRenderer.invoke("extensions:runCommand", { extensionId, commandId, args });
   },
+  // --- Remote marketplace (signed catalog; install requires the source's pinned key) ---
+  marketplaceCatalog: (): Promise<unknown> => {
+    return ipcRenderer.invoke("marketplace:catalog");
+  },
+  marketplaceInstall: (sourceUrl: string, extensionId: string): Promise<{ ok: boolean; error?: string }> => {
+    return ipcRenderer.invoke("marketplace:install", { sourceUrl, extensionId });
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);

@@ -36,7 +36,7 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
 }
 
 import { CodeForgeServer, type CodeForgeRuntimeStatus } from "@codeforge/server";
-import { ExtensionManager, type ExtensionRecord, type ExtensionStateStore, type SecretStore } from "@codeforge/plugins";
+import { ExtensionManager, MarketplaceClient, MarketplaceError, type ExtensionRecord, type ExtensionStateStore, type MarketplaceCatalogEntry, type MarketplaceSource, type SecretStore } from "@codeforge/plugins";
 import { ForgeZero, createGenericFreeRecord, hashUserAccountIdentity, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider, createProviderAdapterFromDefinition, HostedProviderAdapter, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent, type ProviderResponseObservation } from "@codeforge/providers";
 import { createPaidAutoService } from "@codeforge/paid-auto";
@@ -2797,6 +2797,114 @@ ipcMain.handle("extensions:runCommand", async (event, payload: { extensionId?: u
   if (!extensionManager) return { ok: false, error: "Extension host is not running" };
   const args = Array.isArray(payload.args) ? payload.args : [];
   return extensionManager.runCommand(payload.extensionId, payload.commandId, args);
+});
+
+// --- Remote marketplace (signed catalog → verified install into the managed extensions dir) ---
+
+const MARKETPLACE_SETTINGS_KEY = "codeforge:marketplace";
+
+/**
+ * Marketplace sources come from settings.json (`codeforge:marketplace` → { sources }) or, for
+ * development/packaged seeds, CODEFORGE_MARKETPLACE_SOURCES as an inline JSON array. Each source
+ * pins its own trusted ed25519 keys — a source the user never configured is never contacted.
+ * CODEFORGE_MARKETPLACE_ALLOW_LOOPBACK=1 permits http://127.0.0.1 sources for local development.
+ */
+function readMarketplaceSources(): MarketplaceSource[] {
+  const sources: MarketplaceSource[] = [];
+  const settings = readSettings()[MARKETPLACE_SETTINGS_KEY];
+  const configured = (settings as { sources?: unknown } | undefined)?.sources;
+  if (Array.isArray(configured)) {
+    for (const raw of configured) {
+      if (raw && typeof raw === "object" && typeof (raw as MarketplaceSource).url === "string" && typeof (raw as MarketplaceSource).trustedKeys === "object") {
+        sources.push(raw as MarketplaceSource);
+      }
+    }
+  }
+  const env = process.env.CODEFORGE_MARKETPLACE_SOURCES;
+  if (env) {
+    try {
+      const parsed = JSON.parse(env) as MarketplaceSource[];
+      if (Array.isArray(parsed)) {
+        for (const raw of parsed) {
+          if (raw && typeof raw.url === "string" && typeof raw.trustedKeys === "object") sources.push(raw);
+        }
+      }
+    } catch {
+      logDiagnostic("warn", "marketplace_env_sources_invalid", {});
+    }
+  }
+  return sources.filter((source) => source.enabled !== false);
+}
+
+function marketplaceClient(source: MarketplaceSource): MarketplaceClient {
+  return new MarketplaceClient({
+    trustedKeys: source.trustedKeys,
+    allowInsecureLoopback: process.env.CODEFORGE_MARKETPLACE_ALLOW_LOOPBACK === "1",
+  });
+}
+
+function marketplaceExtensionsDir(): string {
+  return path.join(app.getPath("userData"), "extensions");
+}
+
+interface MarketplaceEntryView extends MarketplaceCatalogEntry {
+  sourceUrl: string;
+  publisher: string;
+  installed: boolean;
+  installedVersion?: string;
+}
+
+ipcMain.handle("marketplace:catalog", async (event) => {
+  assertMainWindowSender(event);
+  const installed = new Map((extensionManager?.list() ?? []).map((ext) => [ext.id, ext.version]));
+  const entries: MarketplaceEntryView[] = [];
+  const errors: Array<{ source: string; error: string }> = [];
+  for (const source of readMarketplaceSources()) {
+    try {
+      const index = await marketplaceClient(source).fetchIndex(source.url);
+      for (const entry of index.extensions) {
+        entries.push({
+          ...entry,
+          sourceUrl: source.url,
+          installed: installed.has(entry.id),
+          installedVersion: installed.get(entry.id),
+        });
+      }
+    } catch (error) {
+      errors.push({
+        source: source.url,
+        error: error instanceof MarketplaceError ? `${error.code}: ${error.message}` : String(error),
+      });
+    }
+  }
+  return { entries, errors };
+});
+
+ipcMain.handle("marketplace:install", async (event, payload: { sourceUrl?: unknown; extensionId?: unknown }) => {
+  assertMainWindowSender(event);
+  if (typeof payload?.sourceUrl !== "string" || typeof payload?.extensionId !== "string") {
+    throw new Error("Invalid marketplace install payload");
+  }
+  if (!extensionManager) return { ok: false, error: "Extension host is not running" };
+  const source = readMarketplaceSources().find((s) => s.url === payload.sourceUrl);
+  if (!source) return { ok: false, error: "No configured marketplace source matches that URL" };
+  try {
+    // The index is re-fetched at install time: a stale or swapped catalog never installs a
+    // different package than the one whose sha256 the signed index currently attests.
+    const index = await marketplaceClient(source).fetchIndex(source.url);
+    const entry = index.extensions.find((e) => e.id === payload.extensionId);
+    if (!entry) return { ok: false, error: `Extension "${payload.extensionId}" is not in that catalog` };
+    const { dir } = await marketplaceClient(source).install(entry, marketplaceExtensionsDir());
+    const registered = await extensionManager.installManaged(dir);
+    if (!registered.ok) {
+      try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort */ }
+      return { ok: false, error: registered.error ?? "Install was rejected by the extension host" };
+    }
+    logDiagnostic("info", "marketplace_install", { extensionId: entry.id, version: entry.version, source: source.url });
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: error instanceof MarketplaceError ? `${error.code}: ${error.message}` : String(error) };
+  }
 });
 
 /**
