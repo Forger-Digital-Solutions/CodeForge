@@ -37,8 +37,11 @@ function classifyType(message: string): TaskType {
 }
 
 function extractGoals(message: string): string[] {
+  // Split only on sentence-terminal punctuation followed by whitespace or end-of-text —
+  // a bare `.` split shreds every file path (`order.ts`, `merge.py`) into fake sentences
+  // and silently drops real goals past the slice limit.
   const sentences = message
-    .split(/[.!?]+/)
+    .split(/(?<=[.!?])(?:\s+|$)/)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
   if (sentences.length === 0) return [message.trim()];

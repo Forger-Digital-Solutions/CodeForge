@@ -319,7 +319,9 @@ function declaredTypeTokens(declared: string): Set<string> {
 }
 
 export function checkStatedContracts(intent: TaskIntent, diffs: DiffEntry[]): ReviewFinding[] {
-  const sources = [intent.title, ...intent.goals].join("\n");
+  // Scan the raw task text, not just extracted goals — a contract stated anywhere in the
+  // task is binding regardless of where goal extraction sliced the message.
+  const sources = [intent.rawMessage, intent.title, ...intent.goals].join("\n");
   const contracts = new Map<string, string>();
   for (const match of sources.matchAll(STATED_CONTRACT_RE)) {
     const [, name, , statedType] = match;

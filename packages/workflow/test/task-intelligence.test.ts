@@ -57,4 +57,13 @@ describe("TaskIntelligence R9 regression (read-only commissioning)", () => {
     expect(intent.taskType).toBe("bugfix");
     expect(intent.constraints.some((c) => c.includes("read-only"))).toBe(false);
   });
+
+  it("does not shred goals on file extensions — a stated contract survives goal extraction", () => {
+    const intent = understandTask(
+      "The three request handlers in src/handlers/ (create-order.ts, update-order.ts, quote-order.ts) each contain a copy of the same order validation logic. Extract it into a new module src/validation/order.ts exporting validateOrder(input): ValidationResult ({ ok: true } or { ok: false, errors: string[] }), make all three handlers use it, and remove the duplicated code. Behaviour must not change: the same inputs must produce the same handler results and error messages as before.",
+    );
+    expect(intent.goals.length).toBe(3);
+    expect(intent.goals.some((g) => g.includes("validateOrder(input): ValidationResult"))).toBe(true);
+    expect(intent.goals.every((g) => !/^\s*ts[,.]?/i.test(g))).toBe(true);
+  });
 });
