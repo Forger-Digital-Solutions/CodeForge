@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "channel": "production",
+  "version": "0.4.0",
+  "buildIdentity": {
+    "commit": "397263782a764e9378167addbc5f9e4ad097868a",
+    "dirty": true,
+    "builtAt": "2026-09-24T00:47:14.731Z"
+  },
+  "audits": {
+    "internalDependencies": "pass",
+    "runtimeDependencies": "pass",
+    "runtimeModulesScanned": 353,
+    "externalImportsScanned": 18,
+    "buildIdentity": "pass",
+    "productionEndpoint": "pass"
+  },
+  "artifacts": [
+    {
+      "path": "apps/desktop/release/win-unpacked/resources/app.asar",
+      "bytes": 45564482,
+      "sha256": "8891adea66c2aa58aec263f69f726d9d38678f941c7869a1034be5e6d5caac28"
+    },
+    {
+      "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+      "bytes": 246415872,
+      "sha256": "a368a2e0599681cc81f258230baf214c9b15c21ebe013587c1e8c9128338a1f6",
+      "authenticode": "NotSigned"
+    },
+    {
+      "path": "apps/desktop/release/CodeForge-Setup-0.4.0.exe",
+      "bytes": 120823691,
+      "sha256": "4d677f2ea5f6de94288825f1aef4ba5d98eb1243a3dc2cc7231b918335fe70c7",
+      "authenticode": "NotSigned"
+    },
+    {
+      "path": "apps/desktop/release/CodeForge-Portable.exe",
+      "bytes": 120488294,
+      "sha256": "9f634f4caf38cb52e36d94f4ae20dc344c6209cdbcb84679e115f47aef81b3f4",
+      "authenticode": "NotSigned"
+    }
+  ],
+  "limitations": [
+    "Build was created before the R29 source commits and its identity therefore names the clean R28 base plus dirty working-tree state.",
+    "Install, update, uninstall, and recovery lifecycle were not exercised on these artifacts.",
+    "Artifacts are ignored local outputs and are not part of the evidence freeze."
+  ]
+}
