@@ -1,0 +1,704 @@
+{
+  "schema": "r31-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-24T12:44:33.527Z",
+  "sourceCommit": "fe4248c4c8dc664ef88cdb80acf5e91ae99961fb",
+  "workflowServiceSourceSha256": "e5438492a5ac6388ebdf9a0688e2736166a23907017aebe85a4cc021289cef85",
+  "workflowServiceDistSha256": "2197008313d48cae04d3e5b92345ec584c7e720b13e793eea7ed180d9fa468b7",
+  "runId": "r31-live-7d32fab3-2212-481c-8a3b-02550fb71f77",
+  "task": {
+    "corpus": "r23",
+    "r27TaskId": "r27-small-cart-total",
+    "sourceTaskId": "js-bug-fix-cart-total",
+    "taskClass": "bug_fix",
+    "repoSizeClass": "medium",
+    "corpusDigest": "c3ff54ce5c170eac7ef838fdf918f8b573ecee2b49b92f1205fd391994f952a1"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "routeMode": "auto",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 24,
+    "maxOutputTokens": 4096,
+    "timeoutMs": 1200000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine",
+    "failureInjection": null
+  },
+  "provider": {
+    "inferenceRequestCount": 24,
+    "measuredInputTokens": 205944,
+    "measuredOutputTokens": 14454,
+    "requestsWithoutTokenUsage": 0,
+    "injected429Count": 0,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 17915,
+        "firstUsefulEventMs": 17891,
+        "inputTokens": 3988,
+        "outputTokens": 1899,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 6323,
+        "firstUsefulEventMs": 6304,
+        "inputTokens": 4124,
+        "outputTokens": 360,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 7590,
+        "firstUsefulEventMs": 7571,
+        "inputTokens": 4315,
+        "outputTokens": 493,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 8686,
+        "firstUsefulEventMs": 8655,
+        "inputTokens": 4462,
+        "outputTokens": 1144,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 5,
+        "kind": "stream",
+        "elapsedMs": 2249,
+        "firstUsefulEventMs": 2231,
+        "inputTokens": 5878,
+        "outputTokens": 241,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 6,
+        "kind": "stream",
+        "elapsedMs": 3748,
+        "firstUsefulEventMs": 3733,
+        "inputTokens": 7274,
+        "outputTokens": 446,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 7,
+        "kind": "stream",
+        "elapsedMs": 7036,
+        "firstUsefulEventMs": 7003,
+        "inputTokens": 7431,
+        "outputTokens": 636,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 8,
+        "kind": "stream",
+        "elapsedMs": 29716,
+        "firstUsefulEventMs": 29700,
+        "inputTokens": 7591,
+        "outputTokens": 2574,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 9,
+        "kind": "stream",
+        "elapsedMs": 6750,
+        "firstUsefulEventMs": 6732,
+        "inputTokens": 7958,
+        "outputTokens": 917,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 10,
+        "kind": "stream",
+        "elapsedMs": 7606,
+        "firstUsefulEventMs": 7586,
+        "inputTokens": 8282,
+        "outputTokens": 851,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 11,
+        "kind": "stream",
+        "elapsedMs": 2877,
+        "firstUsefulEventMs": 2859,
+        "inputTokens": 9696,
+        "outputTokens": 235,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 12,
+        "kind": "stream",
+        "elapsedMs": 5393,
+        "firstUsefulEventMs": 5356,
+        "inputTokens": 9853,
+        "outputTokens": 463,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 13,
+        "kind": "stream",
+        "elapsedMs": 11983,
+        "firstUsefulEventMs": 11823,
+        "inputTokens": 10062,
+        "outputTokens": 1290,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 14,
+        "kind": "stream",
+        "elapsedMs": 2246,
+        "firstUsefulEventMs": 2229,
+        "inputTokens": 10334,
+        "outputTokens": 115,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 15,
+        "kind": "stream",
+        "elapsedMs": 3635,
+        "firstUsefulEventMs": 3602,
+        "inputTokens": 10672,
+        "outputTokens": 262,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 16,
+        "kind": "stream",
+        "elapsedMs": 1204,
+        "firstUsefulEventMs": 1186,
+        "inputTokens": 10941,
+        "outputTokens": 101,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 17,
+        "kind": "stream",
+        "elapsedMs": 3931,
+        "firstUsefulEventMs": 3914,
+        "inputTokens": 11032,
+        "outputTokens": 382,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 18,
+        "kind": "stream",
+        "elapsedMs": 7342,
+        "firstUsefulEventMs": 7325,
+        "inputTokens": 11094,
+        "outputTokens": 143,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 19,
+        "kind": "stream",
+        "elapsedMs": 2237,
+        "firstUsefulEventMs": 2218,
+        "inputTokens": 11231,
+        "outputTokens": 231,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 20,
+        "kind": "stream",
+        "elapsedMs": 5442,
+        "firstUsefulEventMs": 5413,
+        "inputTokens": 11279,
+        "outputTokens": 464,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 21,
+        "kind": "stream",
+        "elapsedMs": 6828,
+        "firstUsefulEventMs": 6810,
+        "inputTokens": 11493,
+        "outputTokens": 309,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 22,
+        "kind": "stream",
+        "elapsedMs": 2334,
+        "firstUsefulEventMs": 2301,
+        "inputTokens": 11636,
+        "outputTokens": 219,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 23,
+        "kind": "stream",
+        "elapsedMs": 1659,
+        "firstUsefulEventMs": 857,
+        "inputTokens": 11873,
+        "outputTokens": 184,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 24,
+        "kind": "stream",
+        "elapsedMs": 5519,
+        "firstUsefulEventMs": 5404,
+        "inputTokens": 3445,
+        "outputTokens": 495,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253582820
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253585923
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253604305
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253610707
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253617802
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253626581
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253628757
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253632540
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253639650
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253669463
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253676214
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253686755
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253692685
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253699765
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253729618
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253744043
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253749539
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253758103
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253771870
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253791857
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253807704
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253813156
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253822142
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253839153
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790253853935
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "70fb9033-3ac1-48b1-86ef-2ddbfe89a280",
+    "status": "completed",
+    "phase": "completed",
+    "completion": {
+      "outcome": "completed",
+      "rationale": "All required completion checks passed.",
+      "blockers": []
+    },
+    "diffs": [
+      {
+        "path": "src/pricing/discounts.js",
+        "changeType": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "diff": "--- a/src/pricing/discounts.js\n+++ b/src/pricing/discounts.js\n-  return percent / 100;\n+  return 1 - percent / 100;"
+      }
+    ],
+    "changedFileSnapshots": [
+      {
+        "path": "FIX_SUMMARY.md",
+        "beforeSha256": null,
+        "afterSha256": "83df7becf8d167e9979e51a10368408563a7814a5104797cc8c6a6929cde61b8",
+        "beforeBytes": null,
+        "afterBytes": 515,
+        "afterContent": "Bugfix: Checkout totals are wrong when a percentage discount is applied.\n\nThe issue was in src/pricing/discounts.js where the discountMultiplier function returned the fraction of the discount (percent/100) instead of the fraction of the subtotal the customer pays after the discount (1 - percent/100).\n\nChanged:\n  return percent / 100;\nto:\n  return 1 - percent / 100;\n\nNow a cart with one item at 100.00 and a 10% discount code (WELCOME10) correctly returns 90.00 instead of 10.00.\n\nNo other files required changes."
+      },
+      {
+        "path": "src/pricing/discounts.js",
+        "beforeSha256": "43f3a1a8b9698d8c159802af902354fbe666d9e2955789a21cbdfe01cef1d90f",
+        "afterSha256": "1b664559a074066caaefbb74edcd23aa58fe80588138374cb047afb123187c62",
+        "beforeBytes": 294,
+        "afterBytes": 298,
+        "afterContent": "import { DISCOUNT_CODES } from \"./codes.js\";\n\n/** Fraction of the subtotal the customer pays after the code is applied. */\nexport function discountMultiplier(code) {\n  if (!code) return 1;\n  const percent = DISCOUNT_CODES[code];\n  if (percent === undefined) return 1;\n  return 1 - percent / 100;\n}\n"
+      },
+      {
+        "path": "test_discount.js",
+        "beforeSha256": null,
+        "afterSha256": "6f56c91fb7bb050d501c88427c874e6f133a24a152ea69a5630012d7c4dd22ac",
+        "beforeBytes": null,
+        "afterBytes": 768,
+        "afterContent": "import { computeTotal } from './src/checkout/total.js';\nimport { subtotal } from './src/checkout/subtotal.js';\nimport { discountMultiplier } from './src/pricing/discounts.js';\n\n// Test data\nconst cart = { items: [{ unitPrice: 100, quantity: 1 }] };\nconst discountCode = 'WELCOME10';\n\nconsole.log('Testing discount calculation...');\nconsole.log('Subtotal:', subtotal(cart.items));\nconsole.log('Discount multiplier for', discountCode, ':', discountMultiplier(discountCode));\nconsole.log('Total:', computeTotal(cart, discountCode));\n\n// Expected: 90\nconst expected = 90;\nconst actual = computeTotal(cart, discountCode);\nif (Math.abs(actual - expected) < 0.01) {\n  console.log('PASS: Total is correct');\n} else {\n  console.log('FAIL: Expected', expected, 'got', actual);\n}"
+      }
+    ],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "verifier-1-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": true,
+      "findings": [
+        {
+          "code": "goal_review_inconclusive",
+          "severity": "advisory",
+          "path": "",
+          "message": "Independent goal review turn did not finish (failed); deterministic checks only."
+        }
+      ]
+    },
+    "forgeVerifySummary": {
+      "planId": "f80810c2-b767-483c-b112-86a7ece2d1a4",
+      "policyVersion": "legacy-workflow-policy-v1",
+      "requiredCount": 1,
+      "satisfiedCount": 1,
+      "missingCount": 0,
+      "staleCount": 0,
+      "verificationComplete": true,
+      "missingRequiredVerifiers": [],
+      "evidence": [
+        {
+          "evidenceId": "d800b75a-1976-4822-b9d0-d946c18569cd",
+          "verifierId": "legacy.custom.94d4c25b4135fc66",
+          "status": "passed",
+          "durationMs": 1292,
+          "outputTruncated": false
+        }
+      ]
+    },
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 22,
+    "decisions": {
+      "allow:0": 12,
+      "allow:1": 5,
+      "allow:2": 5
+    },
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.mjs",
+      "passed": true,
+      "elapsedMs": 221,
+      "outputHash": "e819b9539c62c98ad77f3fffeb59e0188cf32380b824e45e10b3750ad9bf0b24",
+      "output": "{\"passed\":6,\"failed\":0}\n\n"
+    },
+    "answerKeyPassed": true,
+    "agentResponses": [
+      "Bugfix: Checkout totals are wrong when a percentage discount is applied.\n\nThe issue was in src/pricing/discounts.js where the discountMultiplier function returned the fraction of the discount (percent/100) instead of the fraction of the subtotal the customer pays after the discount (1 - percent/100).\n\nChanged:\n  return percent / 100;\nto:\n  return 1 - percent / 100;\n\nNow a cart with one item at 100.00 and a 10% discount code (WELCOME10) correctly returns 90.00 instead of 10.00.\n\nNo other files required changes. Verified with a test.\n"
+    ],
+    "workflowAllPassed": true
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 3,
+    "task.state_changed": 12,
+    "status.changed": 17,
+    "plan.started": 1,
+    "agent.started": 3,
+    "router.selection": 2,
+    "tool.call_started": 23,
+    "tool.call_completed": 23,
+    "token.usage": 24,
+    "tool.execution_started": 22,
+    "file.read": 7,
+    "tool.execution_completed": 21,
+    "tool.execution_blocked": 1,
+    "file.written": 4,
+    "file.change_proposed": 4,
+    "file.change_applied": 4,
+    "command.started": 3,
+    "command.executed": 3,
+    "tool.execution_failed": 1,
+    "assistant.message.started": 1,
+    "text.delta": 40,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 3,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "eightbit.status": 1,
+    "turn.failed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1,
+    "run.outcome": 1
+  },
+  "failures": [
+    {
+      "type": "tool.execution_failed",
+      "error": "[TOOL_NO_EFFECT] FIX_SUMMARY.md already has exactly these bytes. Re-read the target and choose a different edit; this call made no progress.",
+      "toolName": "write_file"
+    },
+    {
+      "type": "turn.failed",
+      "error": "No eligible route is available to continue this task. CodeForge stopped safely without switching to a paid or unknown-cost route."
+    }
+  ],
+  "toolSequence": [
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.execution_blocked",
+      "toolName": "read_file",
+      "reason": "forgegreen_duplicate_suppressed"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "write_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "write_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "remove"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "write_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "finish"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "write_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "list_files"
+    }
+  ],
+  "timing": {
+    "wallClockMs": 289980,
+    "deadlineHit": false,
+    "activeAfterCancellation": false
+  },
+  "memory": {
+    "rssBefore": 218718208,
+    "rssAfter": 180011008,
+    "heapUsedBefore": 80139776,
+    "heapUsedAfter": 88994264
+  }
+}

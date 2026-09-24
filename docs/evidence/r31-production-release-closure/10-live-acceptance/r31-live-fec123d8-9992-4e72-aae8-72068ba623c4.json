@@ -1,0 +1,395 @@
+{
+  "schema": "r31-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-24T13:05:17.002Z",
+  "sourceCommit": "3d11fc64ee3b654947c0fdd54b5b62aae5965f21",
+  "workflowServiceSourceSha256": "e5438492a5ac6388ebdf9a0688e2736166a23907017aebe85a4cc021289cef85",
+  "workflowServiceDistSha256": "2197008313d48cae04d3e5b92345ec584c7e720b13e793eea7ed180d9fa468b7",
+  "runId": "r31-live-fec123d8-9992-4e72-aae8-72068ba623c4",
+  "task": {
+    "corpus": "r25",
+    "sourceTaskId": "r25-testfix-js-stale-expected",
+    "taskClass": "test_fix",
+    "repoSizeClass": "small",
+    "corpusDigest": "1bc7b163eb90ac1c3459a4ea5929d48ba783df692abb0994b893fa915ef885b3"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "routeMode": "auto",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 32,
+    "maxOutputTokens": 4096,
+    "timeoutMs": 1200000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine",
+    "failureInjection": null
+  },
+  "provider": {
+    "inferenceRequestCount": 11,
+    "measuredInputTokens": 39205,
+    "measuredOutputTokens": 8232,
+    "requestsWithoutTokenUsage": 1,
+    "injected429Count": 0,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 8457,
+        "firstUsefulEventMs": 8437,
+        "inputTokens": 3360,
+        "outputTokens": 660,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 18529,
+        "firstUsefulEventMs": 18515,
+        "inputTokens": 3542,
+        "outputTokens": 911,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 2344,
+        "firstUsefulEventMs": 2324,
+        "inputTokens": 3946,
+        "outputTokens": 177,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 2812,
+        "firstUsefulEventMs": 2780,
+        "inputTokens": 4083,
+        "outputTokens": 224,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 5,
+        "kind": "stream",
+        "elapsedMs": 1549,
+        "firstUsefulEventMs": 906,
+        "inputTokens": 4205,
+        "outputTokens": 140,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 6,
+        "kind": "stream",
+        "elapsedMs": 3050,
+        "firstUsefulEventMs": 3030,
+        "inputTokens": 3402,
+        "outputTokens": 299,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 7,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 8,
+        "kind": "stream",
+        "elapsedMs": 4033,
+        "firstUsefulEventMs": 4015,
+        "inputTokens": 3528,
+        "outputTokens": 414,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 9,
+        "kind": "stream",
+        "elapsedMs": 6125,
+        "firstUsefulEventMs": 6092,
+        "inputTokens": 3675,
+        "outputTokens": 622,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 10,
+        "kind": "stream",
+        "elapsedMs": 18734,
+        "firstUsefulEventMs": 18717,
+        "inputTokens": 4640,
+        "outputTokens": 1697,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 11,
+        "kind": "stream",
+        "elapsedMs": 40397,
+        "firstUsefulEventMs": 36526,
+        "inputTokens": 4824,
+        "outputTokens": 3088,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254994126
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254996051
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790255004482
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790255023122
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790255025389
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790255029777
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790255034317
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790255037428
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790255045917
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790255049886
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790255056479
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790255075184
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "6d4410f5-fe60-4e36-b1f6-f69540afe250",
+    "status": "completed",
+    "phase": "completed",
+    "completion": {
+      "outcome": "completed",
+      "rationale": "All required completion checks passed.",
+      "blockers": []
+    },
+    "diffs": [
+      {
+        "path": "test/pricing.test.js",
+        "changeType": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "diff": "--- a/test/pricing.test.js\n+++ b/test/pricing.test.js\n-  assert.equal(totalWithTax(100), 105);\n+  assert.equal(totalWithTax(100), 108);\n-  assert.equal(totalWithTax(250), 262.5);\n+  assert.equal(totalWithTax(250), 270);"
+      }
+    ],
+    "changedFileSnapshots": [
+      {
+        "path": "test/pricing.test.js",
+        "beforeSha256": "6de39461af0f7d9cea7886b27711ab1590a6de0471d2b5128149e6b3daa2bc08",
+        "afterSha256": "35cc49278131f30d9851b873d45344910fc73d4c8570a614855afea305707c10",
+        "beforeBytes": 236,
+        "afterBytes": 234,
+        "afterContent": "import test from \"node:test\";\nimport assert from \"node:assert/strict\";\nimport { totalWithTax } from \"../src/pricing.js\";\n\ntest(\"applies tax\", () => {\n  assert.equal(totalWithTax(100), 108);\n  assert.equal(totalWithTax(250), 270);\n});\n"
+      }
+    ],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "verifier-1-test",
+            "kind": "test",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": true,
+      "findings": []
+    },
+    "forgeVerifySummary": {
+      "planId": "fd3e7bd0-0ff3-4c92-9e72-0d1afcd4082c",
+      "policyVersion": "legacy-workflow-policy-v1",
+      "requiredCount": 1,
+      "satisfiedCount": 1,
+      "missingCount": 0,
+      "staleCount": 0,
+      "verificationComplete": true,
+      "missingRequiredVerifiers": [],
+      "evidence": [
+        {
+          "evidenceId": "da52adbd-2514-4622-bfb1-ca0264aae2d0",
+          "verifierId": "legacy.test.7621d03866151084",
+          "status": "passed",
+          "durationMs": 1578,
+          "outputTruncated": false
+        }
+      ]
+    },
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 8,
+    "decisions": {
+      "allow:0": 6,
+      "allow:1": 1,
+      "allow:2": 1
+    },
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.mjs",
+      "passed": true,
+      "elapsedMs": 1155,
+      "outputHash": "eecc28b3447dd57a762fa2bdc0f794cb350411e01e00092ea25ba6cab8a28947",
+      "output": "{\"passed\":3,\"failed\":0}\n\n"
+    },
+    "answerKeyPassed": true,
+    "agentResponses": [
+      "The test expectations have been updated to match the documented 8% tax rate in docs/PRICING.md. The implementation in src/pricing.js already correctly calculates tax as 8% (subtotal * 1.08, rounded to cents). The test now asserts the correct values: totalWithTax(100) expects 108, and totalWithTax(250) expects 270. Verification shows the test passes. No further changes are needed.",
+      "{\n  \"verdicts\": [\n    {\n      \"goal\": \"The pricing suite fails after the tax-rate update\",\n      \"status\": \"met\",\n      \"evidence\": \"Reading the original test expectations from the diff shows they expected 105 and 262.5, but the current implementation returns 108 and 270 for inputs 100 and 250, confirming the test would fail with the old expectations.\",\n      \"path\": \"test/pricing.test.js\"\n    },\n    {\n      \"goal\": \"The implementation already matches docs/PRICING.md\",\n      \"status\": \"met\",\n      \"evidence\": \"docs/PRICING.md states tax is 8% of subtotal rounded to cents. src/pricing.js implements totalWithTax(subtotal) = Math.round(subtotal * 108) / 100, which matches 8% tax rounded to cents.\",\n      \"path\": \"src/pricing.js\"\n    },\n    {\n      \"goal\": \"so the stale test expectations are the bug\",\n      \"status\": \"met\",\n      \"evidence\": \"The old test expectations (105, 262.5) correspond to a 5% tax rate, while the implementation and documentation specify 8%, confirming the test expectations are stale.\",\n      \"path\": \"test/pricing.test.js\"\n    },\n    {\n      \"goal\": \"Update the tests to match the documented behaviour; do not change src/\",\n      \"status\": \"met\",\n      \"evidence\": \"The test file was updated to expect 108 and 270 (matching 8% tax) and the src file was unchanged. Running the test passes, confirming the update aligns with documented behavior.\",\n      \"path\": \"test/pricing.test.js\"\n    }\n  ]\n}"
+    ],
+    "workflowAllPassed": true
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 3,
+    "task.state_changed": 11,
+    "status.changed": 16,
+    "plan.started": 1,
+    "agent.started": 3,
+    "router.selection": 2,
+    "tool.call_started": 8,
+    "tool.call_completed": 8,
+    "token.usage": 10,
+    "tool.execution_started": 8,
+    "file.read": 5,
+    "tool.execution_completed": 8,
+    "file.written": 1,
+    "file.change_proposed": 1,
+    "file.change_applied": 1,
+    "command.started": 2,
+    "command.executed": 2,
+    "assistant.message.started": 2,
+    "text.delta": 138,
+    "assistant.message.completed": 2,
+    "turn.completed": 3,
+    "agent.completed": 3,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "eightbit.status": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1,
+    "run.outcome": 1
+  },
+  "failures": [],
+  "toolSequence": [
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    }
+  ],
+  "timing": {
+    "wallClockMs": 121452,
+    "deadlineHit": false,
+    "activeAfterCancellation": false
+  },
+  "memory": {
+    "rssBefore": 220549120,
+    "rssAfter": 170930176,
+    "heapUsedBefore": 78947128,
+    "heapUsedAfter": 84224784
+  }
+}

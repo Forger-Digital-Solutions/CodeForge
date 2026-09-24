@@ -1,0 +1,49 @@
+{
+  "schema": "codeforge-r31-install-preflight-1",
+  "checkedAt": "2026-09-24T11:44:44.7462639Z",
+  "identity": {
+    "name": "DESKTOP-84IIHSU\\CodexSandboxOffline",
+    "sid": "S-1-5-21-4216180201-2602677666-2239766292-1004",
+    "profile": "C:\\Users\\CodexSandboxOffline"
+  },
+  "folders": {
+    "UserProfileEnvironment": "C:\\Users\\Daddy_FDS",
+    "ApplicationData": "C:\\Users\\Daddy_FDS\\AppData\\Roaming",
+    "ApplicationDataEnvironment": "C:\\Users\\Daddy_FDS\\AppData\\Roaming",
+    "LocalApplicationData": "C:\\Users\\Daddy_FDS\\AppData\\Local",
+    "LocalApplicationDataEnvironment": "C:\\Users\\Daddy_FDS\\AppData\\Local",
+    "Desktop": "C:\\Users\\Daddy_FDS\\Desktop",
+    "StartMenu": "C:\\Users\\Daddy_FDS\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu"
+  },
+  "markerPath": "C:\\Users\\CodexSandboxOffline\\.codeforge-r31-disposable-profile.json",
+  "markerValid": false,
+  "candidate": {
+    "version": "0.4.0",
+    "installer": "G:\\CodeForge\\apps\\desktop\\release\\CodeForge-Setup-0.4.0.exe",
+    "previousInstaller": null,
+    "hashes": {
+      "Installer": "6ae47b2e42dc165940ac6127f1ef238b56aee5de095dedf0fa7c9d529a88223b",
+      "UnpackedExecutable": "404225edd63ca1cc0372272d1ecf5086def9e22183c5c44d02c38831718194cc",
+      "UnpackedArchive": "768b6557819dd527f50dcb3e3e12c09adfcd0f586cd2db19a04e3279986777bd",
+      "PreviousInstaller": null
+    }
+  },
+  "installDirectory": "G:\\CodeForge\\docs\\evidence\\r31-production-release-closure\\10-lifecycle\\installed-app",
+  "existingInstallCount": 0,
+  "runningProcessCount": 0,
+  "readyForExecution": false,
+  "violations": [
+    "UserProfileEnvironment resolves outside the current identity profile",
+    "ApplicationData resolves outside the current identity profile",
+    "ApplicationDataEnvironment resolves outside the current identity profile",
+    "LocalApplicationData resolves outside the current identity profile",
+    "LocalApplicationDataEnvironment resolves outside the current identity profile",
+    "Desktop resolves outside the current identity profile",
+    "StartMenu resolves outside the current identity profile",
+    "explicit disposable-account SID was not supplied or does not match",
+    "explicit disposable profile path was not supplied or does not match",
+    "disposable profile marker is absent or invalid",
+    "candidate installer SHA-256 was not pinned or does not match"
+  ],
+  "action": "preflight_only"
+}

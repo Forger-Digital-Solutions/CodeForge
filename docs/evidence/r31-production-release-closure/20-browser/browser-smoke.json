@@ -1,0 +1,111 @@
+{
+ "launch": {
+  "sessionId": "browser-abd0f034-119a-444f-96f9-9dfae2592f8a",
+  "status": "active",
+  "headless": true,
+  "executableSource": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+  "createdAt": "2026-09-24T12:17:59.277Z"
+ },
+ "navigate": {
+  "sessionId": "browser-abd0f034-119a-444f-96f9-9dfae2592f8a",
+  "tabId": "tab-1-7500e8f1",
+  "action": "navigate",
+  "url": "http://127.0.0.1:56345/",
+  "title": "R31Probe",
+  "consoleErrorCount": 0,
+  "failedRequestCount": 0,
+  "at": "2026-09-24T12:17:59.539Z",
+  "networkClass": "loopback"
+ },
+ "inspect": {
+  "snapshot": {
+   "url": "http://127.0.0.1:56345/",
+   "title": "R31Probe",
+   "snapshotHash": "b6c9cb113fe5631bb54bf5cf9129e9cebc1af06a33a18da6001ebeae969cb597",
+   "interactiveElements": [
+    {
+     "index": 0,
+     "tag": "h1",
+     "accessibleName": "R31 browser proof",
+     "testId": "hdr",
+     "selectorHint": "[data-testid=\"hdr\"]",
+     "disabled": false
+    },
+    {
+     "index": 1,
+     "tag": "input",
+     "role": "textbox",
+     "accessibleName": "q",
+     "selectorHint": "input:nth-of-type(2)",
+     "disabled": false
+    },
+    {
+     "index": 2,
+     "tag": "button",
+     "role": "button",
+     "accessibleName": "Go",
+     "selectorHint": "button:nth-of-type(3)",
+     "disabled": false
+    }
+   ],
+   "textExcerpt": "R31 browser proof Go",
+   "truncated": false
+  },
+  "receipt": {
+   "sessionId": "browser-abd0f034-119a-444f-96f9-9dfae2592f8a",
+   "tabId": "tab-1-7500e8f1",
+   "action": "inspect",
+   "url": "http://127.0.0.1:56345/",
+   "title": "R31Probe",
+   "consoleErrorCount": 0,
+   "failedRequestCount": 0,
+   "at": "2026-09-24T12:17:59.547Z",
+   "snapshotHash": "b6c9cb113fe5631bb54bf5cf9129e9cebc1af06a33a18da6001ebeae969cb597"
+  }
+ },
+ "screenshot": {
+  "record": {
+   "screenshotId": "shot-c4061ad4-3d75-48d3-a18f-ccd63cd1d4b1",
+   "sha256": "49e56e2901b3a54ae75f4d35cdf74de6d3ee0cdf160f8794e7db0b2ba8ced87c",
+   "bytes": 9599,
+   "path": "docs\\evidence\\r31-production-release-closure\\20-browser\\shots\\shot-c4061ad4-3d75-48d3-a18f-ccd63cd1d4b1.png",
+   "at": "2026-09-24T12:17:59.784Z"
+  },
+  "receipt": {
+   "sessionId": "browser-abd0f034-119a-444f-96f9-9dfae2592f8a",
+   "tabId": "tab-1-7500e8f1",
+   "action": "screenshot",
+   "url": "http://127.0.0.1:56345/",
+   "title": "",
+   "consoleErrorCount": 0,
+   "failedRequestCount": 0,
+   "at": "2026-09-24T12:17:59.784Z",
+   "screenshotHash": "49e56e2901b3a54ae75f4d35cdf74de6d3ee0cdf160f8794e7db0b2ba8ced87c"
+  }
+ },
+ "click": {
+  "sessionId": "browser-abd0f034-119a-444f-96f9-9dfae2592f8a",
+  "tabId": "tab-1-7500e8f1",
+  "action": "click",
+  "url": "http://127.0.0.1:56345/",
+  "title": "R31Probe",
+  "consoleErrorCount": 0,
+  "failedRequestCount": 0,
+  "at": "2026-09-24T12:17:59.838Z"
+ },
+ "type": {
+  "sessionId": "browser-abd0f034-119a-444f-96f9-9dfae2592f8a",
+  "tabId": "tab-1-7500e8f1",
+  "action": "type",
+  "url": "http://127.0.0.1:56345/",
+  "title": "R31Probe",
+  "consoleErrorCount": 0,
+  "failedRequestCount": 0,
+  "at": "2026-09-24T12:17:59.849Z"
+ },
+ "metadataNav": "BROWSER_NAVIGATION_DENIED",
+ "fileNav": "BROWSER_NAVIGATION_DENIED",
+ "close": {
+  "closed": "browser-abd0f034-119a-444f-96f9-9dfae2592f8a"
+ }
+}

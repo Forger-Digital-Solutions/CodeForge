@@ -1,0 +1,397 @@
+{
+  "schema": "r31-evidence-freeze-1",
+  "frozenAt": "2026-09-24T16:55:18.651Z",
+  "verdict": "CODEFORGE_R31_RELEASE_BLOCKED",
+  "sourceHead": "e64d815355d5b27918e4706fbfced76297265c19",
+  "artifactSourceCommit": "fe4248c4c8dc664ef88cdb80acf5e91ae99961fb",
+  "artifactReceipt": "docs/evidence/r31-production-release-closure/16-final-package/artifacts.json",
+  "certification": "docs/certification/codeforge-r31-production-release-closure-2026-09-24.md",
+  "environment": {
+    "platform": "win32",
+    "release": "10.0.26200",
+    "arch": "x64",
+    "logicalProcessors": 12,
+    "totalMemoryBytes": 34060460032,
+    "nodeVersion": "v24.19.0"
+  },
+  "fileCount": 71,
+  "files": [
+    {
+      "path": "benchmarks/r31/capability-inventory.mjs",
+      "bytes": 10140,
+      "sha256": "00f27c05f31cddc6ae879b0d70c315240c9a6acf78252316d70524b51e0d6485"
+    },
+    {
+      "path": "benchmarks/r31/freeze-evidence.mjs",
+      "bytes": 8241,
+      "sha256": "09709a083928022d7f77074961684fe9e99ccc0b024b70b36e331a12d12ee2e1"
+    },
+    {
+      "path": "benchmarks/r31/install-lifecycle.ps1",
+      "bytes": 13084,
+      "sha256": "82256db9c4a707c157102bf5403a13cfcd47daf96ad5764c229ce40641773ed5"
+    },
+    {
+      "path": "benchmarks/r31/live-workflow-completion.mjs",
+      "bytes": 23754,
+      "sha256": "198be1876c141cfca7210f450a2abe2ebd5afebca8c46a708f16f6e3072472eb"
+    },
+    {
+      "path": "benchmarks/r31/mcp-lifecycle-evidence.mjs",
+      "bytes": 5667,
+      "sha256": "fd8d0cf3dae232fa0af5d6a1b4e088c7e663f568d13979cb9afd8d970c6cf00c"
+    },
+    {
+      "path": "benchmarks/r31/packaged-endurance.mjs",
+      "bytes": 22926,
+      "sha256": "411f37c27a3cd9bd70fdb6c9fa9a4756ba290a793b6c5c9245f46069c832a13d"
+    },
+    {
+      "path": "benchmarks/r31/recertify-source-state.mjs",
+      "bytes": 4343,
+      "sha256": "2c4b51c73bbdcd03b74efe0f78f20da6309087bcb3d5959e86401802bcde4067"
+    },
+    {
+      "path": "benchmarks/r31/run-acceptance-batch.ps1",
+      "bytes": 2113,
+      "sha256": "8597afcd14a20ae4c4293b4de922b93e67a902dc1c99e486435abd9858cdf323"
+    },
+    {
+      "path": "benchmarks/r31/signing-readiness.ps1",
+      "bytes": 4788,
+      "sha256": "af35182c6d74a9683826155eaaca295d5d03395366f905592a999879c92b6d80"
+    },
+    {
+      "path": "benchmarks/r31/summarize-live.mjs",
+      "bytes": 3667,
+      "sha256": "7cfd0e7977df6e2490bcbb7ad548098ee8da81103cefdc4a441328f850abb2c3"
+    },
+    {
+      "path": "benchmarks/r31/verify-inherited-evidence.mjs",
+      "bytes": 4741,
+      "sha256": "bbffd3757d5b70985bc9f42b850c9ba3adfba0593278421d0e796fec8cbec229"
+    },
+    {
+      "path": "docs/certification/codeforge-r31-production-release-closure-2026-09-24.md",
+      "bytes": 11097,
+      "sha256": "d7ce789d2c4275ebd258b3f70c2d86b60e470ea168c4acee653b5f305881f672"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/00-recovery/inherited-baseline.json",
+      "bytes": 3227,
+      "sha256": "8ffccb94e214c09db94b94fa7db82ff7ee994ca6fb3f23e48661869aea04630f"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/00-recovery/interruption-recovery.md",
+      "bytes": 4998,
+      "sha256": "f259fa59eda202afd3d871e3611dfae5638c5365f5c1280985b69b220a5ff4e5"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/02-large-task-reliability/r30-failure-taxonomy.json",
+      "bytes": 10790,
+      "sha256": "b7caf9acd851136f1b8ddd4b27e60ec7fae75a9177a01f98f8df067fedd5ff2d"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/02-large-task-reliability/r31-acceptance-taxonomy.json",
+      "bytes": 7048,
+      "sha256": "abed52453bd6346d9cc7e38f20e2498fccd0ea2f21200045a20c0cb33ee62d08"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/08-endurance/packaged-2026-09-24T12-45-12.361Z-b732f42f.json",
+      "bytes": 484909,
+      "sha256": "73ff2e211244ad77379e5d05a2f8333b45859e5ac95228b9b064715f69d0059c"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/09-security/dependency-audit.json",
+      "bytes": 319,
+      "sha256": "3757a1b0b57f3ffdb13b8839845466a9b2be3423e1ee24e042e15fa25dd9d0b7"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/09-security/doc-links.json",
+      "bytes": 160,
+      "sha256": "47fb3e3ada4ceb045e6504f5eefc583236a381c157b162499d029839bc819c14"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/09-security/penetration-focused.json",
+      "bytes": 22884,
+      "sha256": "3d77460234ffd262bf9b3abd4a5ecb3becfb0d449065bf00f4b7079e9ef886d4"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/09-security/public-claims-scan.json",
+      "bytes": 151,
+      "sha256": "5205a5ba9e481f35673e1efcce5c7d8239885162c9918d5c81b50d3f61f3d976"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/09-security/sbom.json",
+      "bytes": 184409,
+      "sha256": "479e31bcc5e4a3a8949dc24834afb1aa8e9704673de3b79ef4f228dbad579be7"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/09-security/secret-scan.json",
+      "bytes": 404,
+      "sha256": "9957d60e26471aae90364519873e8835112cbd36aa4c7800030cd4082ae27491"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-lifecycle/EXECUTION-STATUS.md",
+      "bytes": 2832,
+      "sha256": "3a18a1954475dde5070668fdc8c81b9b4bf41e48d711bc7bae40b985ec7be1eb"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-lifecycle/preflight.json",
+      "bytes": 2470,
+      "sha256": "3f3e43c10314e33e02dd8f041b968545c34e291ca7704ba49756f661544b76aa"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/REPORT.md",
+      "bytes": 4312,
+      "sha256": "7f3fa3645221c6fca5abf3a420fb2dadb6cda77f2129a61a38ace1ea095950b3"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/batch-index.json",
+      "bytes": 1145,
+      "sha256": "d69f71dffacbeba96b8275262b00960c3d5da28c3daac3d767c5ab75a8bca462"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/batch-js-bug-fix-cart-total.log",
+      "bytes": 668,
+      "sha256": "cd0121b4a7218b371d8103ea4050d8d356d5f50b2d5512b289bad768ab6f9c98"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/batch-js-investigation-webhook-retries.log",
+      "bytes": 660,
+      "sha256": "b5f805e9840a74ab8c6f7ae3ff9b8f4418436acfbbb0d5c7e87798cbc41e4bc3"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/batch-py-bug-fix-config-merge.log",
+      "bytes": 944,
+      "sha256": "efb460609e2d22cb96984e247b2d863f29df17cb0b0216cf7184231a3a28444f"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/batch-qual-js-missing-export.log",
+      "bytes": 670,
+      "sha256": "d6be22f2f37799651e319d37f4e21f888cc6ecef4ef721c4fa3da238d63e28ff"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/batch-r25-review-js-retry-storm.log",
+      "bytes": 660,
+      "sha256": "c6e89815b9a0b3c8b12739c96defdf229a7ab677bcb3ecc69e32f0528f9aaf8b"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/batch-r25-testfix-js-stale-expected.log",
+      "bytes": 668,
+      "sha256": "0cc47d680ff4b00fc42b91c7270c779b35317cf28bea7e2c46dffea5c7547449"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/batch-ts-bug-fix-queue-order.log",
+      "bytes": 660,
+      "sha256": "34c30f7066c1bf1cdb4b0bc84626d1b12e514d282a89f5f3fb9855709e6610e1"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/batch-ts-feature-cli-stats.log",
+      "bytes": 662,
+      "sha256": "6e7af8c8d182a74bc53656b5a755d0cea84d9bbbcf6d490f61bed71577d00463"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/batch-ts-large-context-rename-config-key.log",
+      "bytes": 650,
+      "sha256": "7b074718d43ca8e1d0b06cda22172456527a06ebb41f713083932e921ef8146a"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/batch-ts-refactor-extract-validator.log",
+      "bytes": 670,
+      "sha256": "9bf190390023fb7b242d9284af95894da8e050df1b49f47fde5b58b2043f64a4"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/r31-live-08b0a4e8-fd5e-4a47-b0e3-631d7c3f4ced.json",
+      "bytes": 26233,
+      "sha256": "21940f34210bdd44636fe2a0ab79ec5ad7577eba657e1a620afd74d9d23436f1"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/r31-live-114a835b-d2d9-4fde-92b1-332b8171308a.json",
+      "bytes": 22020,
+      "sha256": "1330bfc5e949883443ed4af7c85dc493a7fe0342758e300976e7fc0a6c86c7d2"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/r31-live-4b551e3c-85b5-4410-96af-7254ff7efc56.json",
+      "bytes": 26443,
+      "sha256": "6fb6ae42556c0afa2b587f7fe222ab7463c3a4c5c7e9d6de6203f0611f116836"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/r31-live-698ec14a-de21-4285-9529-b3d63f884390.json",
+      "bytes": 24842,
+      "sha256": "1b0bdb207f4ee1b1c9ffb03a813a223b64450978a110c9c712c0ad49f0379506"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/r31-live-753b9e45-5752-4201-b0bf-b45abebb0f02.json",
+      "bytes": 3992,
+      "sha256": "24482221e0e8620533d21f5e088144e7f426ba02c36442c1e0e914b227f78f41"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/r31-live-7d32fab3-2212-481c-8a3b-02550fb71f77.json",
+      "bytes": 20712,
+      "sha256": "4181ddf47678bf016ba3ee4871f31f14f39e0e38a3e0f331c21467de4c4d1011"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/r31-live-965e4007-d4bf-4deb-91b3-8f4863bb04f6.json",
+      "bytes": 13712,
+      "sha256": "01c6faa1768dc0a1060824dc5e020a811775cb1b371265f83d8b794ef42aaf75"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/r31-live-a29f6907-2ddf-4a29-a3c1-f1af776cb2b1.json",
+      "bytes": 10788,
+      "sha256": "3ecfa3347efeaa6db4124834e0f92b3ac676ac792716ee763d941bb8b239c50e"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/r31-live-a36f52ea-4af8-4a25-ac90-ec469b7dcc06.json",
+      "bytes": 20782,
+      "sha256": "5784174477bf7e2b0fe02d79479cbf4928924b0fd4eb1ce9387e77ac83d0f810"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/r31-live-b739749a-719d-403f-be1e-2d1c8d34f6d8.json",
+      "bytes": 20481,
+      "sha256": "879b52b13b9c3c8f22264dcde3e3ad278af14b3c99707b5df85dd8e64121cf25"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/r31-live-c1861820-c001-4fef-87ab-a8a5d7020a22.json",
+      "bytes": 21227,
+      "sha256": "61851f7a1137ee932960898b656398a7f5cf8c75dd0c0aa1ebd4ae3d88b7db1c"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/10-live-acceptance/r31-live-fec123d8-9992-4e72-aae8-72068ba623c4.json",
+      "bytes": 12696,
+      "sha256": "86a89f93625d53ea6adbd9570daff485bce11353b03547e2f4ada02414faa871"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/12-signing/SIGNING-STATUS.md",
+      "bytes": 1472,
+      "sha256": "dfd7cb7163b5447388fad2157a8dfefa440b4cc1838b7d1f45297866c973034e"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/12-signing/readiness.json",
+      "bytes": 2867,
+      "sha256": "40bc9812d38cfad9388501b07e3788bda1c008ede7da72e2c5e8689a62371387"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/13-second-hardware/STATUS.md",
+      "bytes": 1773,
+      "sha256": "542f7b8261aa2a7f3d6babfe44369b84717306a2d1e01fb09d73c2e545e13f88"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/16-final-package/artifacts.json",
+      "bytes": 1040,
+      "sha256": "9ea0aa92f95de366c23a3d638f5c6e9557f75829ce0446b4a980cc0f4899c277"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/19-capability-registry/AUDIT.md",
+      "bytes": 5705,
+      "sha256": "56eaa5d47d06c375faa1b2831e1bbd4565d7ec28bb551d37eed408d05bed4321"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/19-capability-registry/capability-inventory.json",
+      "bytes": 25934,
+      "sha256": "27da667fe0164f25700e2d327e5ce0d41a5f52d75b2f4ec52dfdf403980347d9"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/20-browser/AUDIT.md",
+      "bytes": 1986,
+      "sha256": "d0658d5d4840da5896220435645971789e4c714f6db477e055ecfaeec292c0df"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/20-browser/browser-smoke.json",
+      "bytes": 3206,
+      "sha256": "faf095c283274c81f2fdd3b39501b70812662547d9d840d80746331f66b98506"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/20-browser/shots/shot-c4061ad4-3d75-48d3-a18f-ccd63cd1d4b1.png",
+      "bytes": 9599,
+      "sha256": "49e56e2901b3a54ae75f4d35cdf74de6d3ee0cdf160f8794e7db0b2ba8ced87c"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/20-computer-use/AUDIT.md",
+      "bytes": 1961,
+      "sha256": "6637adc65caabf2d7d916de8183043b5b8e50f657b0c1af8501c4614088bafe0"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/20-computer-use/shots/computer-2026-09-24T12-17-29-360Z-b032e0b3.png",
+      "bytes": 2542956,
+      "sha256": "b032e0b3214aefb5e6309880da72e0f07ac9db9fd82758040d70134a391fd0f5"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/21-tools-permissions/AUDIT.md",
+      "bytes": 2488,
+      "sha256": "986fd594a8fc21890e2bbce12f447dcf31008e69f9f858792f657847a384fdd6"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/22-plugins/AUDIT.md",
+      "bytes": 1979,
+      "sha256": "77b65ff516fb8a570b3330ad0521b8b7126de09f1af34df1b2f8a45cfc5cbcb9"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/23-extensions/AUDIT.md",
+      "bytes": 1849,
+      "sha256": "7b5bfd48ea94fdb1575e0af76a94153c846d9a0b457465e4e857e49ff10ae511"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/24-tool-servers/AUDIT.md",
+      "bytes": 1993,
+      "sha256": "0d837a0ef1aa7803e1bbcae11c7bbaf2862ff7ff4e64a6cf5eb2698d21d52636"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/24-tool-servers/mcp-lifecycle.json",
+      "bytes": 2855,
+      "sha256": "e349779d451657757eb42adacb91d7a35685eddeebc08ab8f7619a75c2cdc257"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/25-marketplace/AUDIT.md",
+      "bytes": 1361,
+      "sha256": "a0f20ecee9df79dd27f210b696384a696a407d6abfecf48576924d404bef3b8b"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/26-integration-security/AUDIT.md",
+      "bytes": 2680,
+      "sha256": "6909790849cc6c6c3bd9ea1fc3dcc42ca8493b433facc50d0e523a4d37cb5156"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/27-capability-persistence/PERSISTENCE.md",
+      "bytes": 2501,
+      "sha256": "734da5b789a982cf284fbefbfc5cff4e30dec0df0fcf032a297847c5264cc1aa"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/28-platform-golden-task/GOLDEN-TASK.md",
+      "bytes": 2425,
+      "sha256": "37efafdc595bf00b66c4874f2bc5cc83b245f8b1256386e160a8ce16a8a94825"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/full-regression-final.log",
+      "bytes": 369693,
+      "sha256": "b7cc711e96aa2201df80f81e31424484e1a33e433832419c941008a36bc7d1c2"
+    },
+    {
+      "path": "docs/evidence/r31-production-release-closure/full-regression.log",
+      "bytes": 375542,
+      "sha256": "fff13b355a7e281af2752df2585c9e11f60ce25edbbd40ca7e43253254492b80"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "apps/desktop/release/CodeForge-Portable.exe",
+      "bytes": 120494503,
+      "sha256": "9780135e4e3c8ebd20aef04a4f0efe251992ea933ffdd9a4190b9e3db24cf0ad"
+    },
+    {
+      "path": "apps/desktop/release/CodeForge-Setup-0.4.0.exe",
+      "bytes": 120829954,
+      "sha256": "3ebb9f599cbe82eb4c535317e64abc251f849576ab9dfa5dd70af57da2d565da"
+    },
+    {
+      "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+      "bytes": 246415872,
+      "sha256": "0079d559221901662452ec0ef04385ba67339ee41b0495c6888ab8e1b2921439"
+    },
+    {
+      "path": "apps/desktop/release/win-unpacked/resources/app.asar",
+      "bytes": 45579451,
+      "sha256": "b2cbd913012b021a1cf6af35943a3e4c86c759c59e67bda86878ac3a51155d1d"
+    }
+  ]
+}

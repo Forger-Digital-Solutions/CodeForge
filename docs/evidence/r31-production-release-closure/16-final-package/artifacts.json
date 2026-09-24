@@ -1,0 +1,30 @@
+{
+  "schema": "codeforge-r31-artifact-receipt-1",
+  "recordedAt": "2026-09-24T14:05:19.283Z",
+  "sourceCommit": "fe4248c4c8dc664ef88cdb80acf5e91ae99961fb",
+  "version": "0.4.0",
+  "buildChannel": "production",
+  "cloudEndpoint": "https://codeforge-cloud-va.onrender.com",
+  "artifacts": [
+    {
+      "path": "apps/desktop/release/CodeForge-Setup-0.4.0.exe",
+      "bytes": 120829954,
+      "sha256": "3ebb9f599cbe82eb4c535317e64abc251f849576ab9dfa5dd70af57da2d565da"
+    },
+    {
+      "path": "apps/desktop/release/CodeForge-Portable.exe",
+      "bytes": 120494503,
+      "sha256": "9780135e4e3c8ebd20aef04a4f0efe251992ea933ffdd9a4190b9e3db24cf0ad"
+    },
+    {
+      "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+      "bytes": 246415872,
+      "sha256": "0079d559221901662452ec0ef04385ba67339ee41b0495c6888ab8e1b2921439"
+    },
+    {
+      "path": "apps/desktop/release/win-unpacked/resources/app.asar",
+      "bytes": 45579451,
+      "sha256": "b2cbd913012b021a1cf6af35943a3e4c86c759c59e67bda86878ac3a51155d1d"
+    }
+  ]
+}

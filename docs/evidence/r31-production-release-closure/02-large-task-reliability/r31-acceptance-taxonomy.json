@@ -1,0 +1,58 @@
+{
+  "schema": "codeforge-r31-large-task-taxonomy-1",
+  "recordedAt": "2026-09-24",
+  "evidenceDir": "docs/evidence/r31-production-release-closure/10-live-acceptance",
+  "batchDriver": "benchmarks/r31/run-acceptance-batch.ps1",
+  "harness": "benchmarks/r31/live-workflow-completion.mjs",
+  "route": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "class": "FREE_API",
+    "spillover": "NONE",
+    "paidFallback": "none — all failures terminated inside the free route"
+  },
+  "bounds": {
+    "requestCeiling": "R31_LIVE_MAX_REQUESTS default raised 24→32 mid-batch after tail starvation was measured (tasks before ts-large-context ran at 24; r25-review-js-retry-storm and later at 32)",
+    "outputTokenCeiling": 4096,
+    "wallClockCeilingMs": 1200000
+  },
+  "attemptCount": 12,
+  "definitions": {
+    "autonomousPass": "workflow status completed AND hidden verifier passed",
+    "correctBlock": "workflow blocked AND the blocked judgement was correct (goal unmet or verification genuinely absent)",
+    "blockedWorkCorrect": "workflow blocked but hidden verifier passed — route/budget exhaustion cut the run before verify",
+    "falseSuccess": "workflow completed but hidden verifier failed",
+    "providerFailure": "run ended by provider-side failure (output cap, route unavailable)"
+  },
+  "attempts": [
+    { "taskId": "qual-js-off-by-one", "receipt": "r31-live-753b9e45", "workflowStatus": "failed", "hiddenVerifier": false, "requests": 1, "categories": ["PROVIDER_OUTPUT_CAP"], "classification": "providerFailure", "note": "single request ended over the 4096-token output ceiling; fail-closed" },
+    { "taskId": "qual-js-off-by-one", "receipt": "r31-live-965e4007", "workflowStatus": "completed", "hiddenVerifier": true, "requests": 15, "categories": [], "classification": "autonomousPass" },
+    { "taskId": "js-bug-fix-cart-total", "receipt": "r31-live-7d32fab3", "workflowStatus": "completed", "hiddenVerifier": true, "requests": 24, "categories": [], "classification": "autonomousPass", "note": "goal review inconclusive at ceiling; deterministic checks still verified correctly" },
+    { "taskId": "ts-feature-cli-stats", "receipt": "r31-live-4b551e3c", "workflowStatus": "blocked", "hiddenVerifier": false, "requests": 24, "categories": ["MODEL_REASONING_FAILURE"], "classification": "correctBlock", "note": "agent created src/commands/stats.ts instead of wiring the stats subcommand into src/cli.ts; goal review emitted goal_not_satisfied and the gate blocked — the R30 false-success class is closed for this case" },
+    { "taskId": "ts-refactor-extract-validator", "receipt": "r31-live-08b0a4e8", "workflowStatus": "completed", "hiddenVerifier": false, "requests": 24, "categories": ["MODEL_REASONING_FAILURE", "REVIEW_STARVED"], "classification": "falseSuccess", "note": "validator extracted with wrong function shape ({ok/errors} contract missed); visible checks were node --check only; goal-review turn hit the request ceiling and returned inconclusive (advisory) — residual gap: weak visible checks + starved review can still complete" },
+    { "taskId": "ts-large-context-rename-config-key", "receipt": "r31-live-c1861820", "workflowStatus": "failed", "hiddenVerifier": false, "requests": 24, "categories": ["REQUEST_CEILING_EXHAUSTED", "IMPLEMENTATION_UNFINISHED"], "classification": "honestFail", "note": "partial rename — src/ops/health-report.ts still referenced maxRetries; terminated at ceiling, no false completion" },
+    { "taskId": "js-investigation-webhook-retries", "receipt": "r31-live-a29f6907", "workflowStatus": "blocked", "hiddenVerifier": true, "requests": 13, "categories": ["ROUTE_UNAVAILABLE", "VERIFICATION_NOT_RUN"], "classification": "blockedWorkCorrect", "note": "provider route went unavailable at request 13 (below ceiling); blocked on verification_not_run though the answer doc passed the hidden verifier" },
+    { "taskId": "r25-testfix-js-stale-expected", "receipt": "r31-live-fec123d8", "workflowStatus": "completed", "hiddenVerifier": true, "requests": 11, "categories": [], "classification": "autonomousPass" },
+    { "taskId": "r25-review-js-retry-storm", "receipt": "r31-live-698ec14a", "workflowStatus": "blocked", "hiddenVerifier": true, "requests": 32, "categories": ["REQUEST_CEILING_EXHAUSTED", "VERIFICATION_NOT_RUN"], "classification": "blockedWorkCorrect", "note": "review answer correct (hidden 3/3) but run consumed the raised 32-request ceiling before its verify step" },
+    { "taskId": "qual-js-missing-export", "receipt": "r31-live-a36f52ea", "workflowStatus": "completed", "hiddenVerifier": true, "requests": 30, "categories": [], "classification": "autonomousPass", "note": "R31_LIVE_INJECT_429_ONCE=true — provider 429 recovered, one AGENT_NO_PROGRESS turn received the bounded post-edit continuation, then completed: both R31 fixes exercised in a single live run" },
+    { "taskId": "ts-bug-fix-queue-order", "receipt": "r31-live-114a835b", "workflowStatus": "blocked", "hiddenVerifier": true, "requests": 26, "categories": ["MODEL_REASONING_FAILURE"], "classification": "correctBlock", "note": "goal review found run() still used Promise.all (concurrent, not FIFO) — a real defect the shallow hidden verifier (4/4) missed; reviewer outperformed the task's own hidden checks" },
+    { "taskId": "py-bug-fix-config-merge", "receipt": "r31-live-b739749a", "workflowStatus": "cancelled", "hiddenVerifier": true, "requests": 32, "categories": ["WALL_CLOCK_EXHAUSTED"], "classification": "blockedWorkCorrect", "note": "first attempt rejected pre-run — verifier lock allowed only 'node …' while this task's hidden verifier is 'python hidden/verify.py' (harness gap, zero spend); lock extended to a resolved python interpreter and re-run: hit the 20-minute wall-clock ceiling after 32 requests with the merge correct per hidden verifier" }
+  ],
+  "totals": {
+    "autonomousPass": 4,
+    "correctBlock": 2,
+    "blockedWorkCorrect": 3,
+    "falseSuccess": 1,
+    "providerFailure": 1,
+    "honestFail": 1
+  },
+  "comparisonR30": {
+    "r30": "1/8 autonomous pass; loop stall and false-success classes open",
+    "r31": "4/11 autonomous pass (36%); zero unreviewed false-completions in which the goal review actually ran; both inherited defect classes demonstrably exercised live (429+loop recovery on qual-js-missing-export; goal_not_satisfied blocks on cli-stats and queue-order)"
+  },
+  "residualGaps": [
+    "REVIEW_STARVED: when the request/route budget is exhausted exactly at the tail review, weak visible checks can still complete a run whose hidden contract is unmet (ts-refactor-extract-validator). Ceiling raised 24→32 for headroom; a product-side reserved review budget is not implemented — the adapter-level cap is invisible to the workflow engine.",
+    "Free-provider capacity is the dominant non-code failure source (output cap, mid-run route unavailability).",
+    "Analysis tasks whose verify step sits after budget exhaustion terminate verification_not_run despite correct deliverables."
+  ]
+}

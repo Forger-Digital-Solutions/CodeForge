@@ -1,0 +1,53 @@
+﻿{
+    "schema":  "codeforge-r31-signing-readiness-1",
+    "checkedAt":  "2026-09-24T12:49:28.6558040Z",
+    "sourceHead":  "3d11fc64ee3b654947c0fdd54b5b62aae5965f21",
+    "version":  "0.4.0",
+    "availableCodeSigningIdentityCount":  0,
+    "signingEnvironmentConfigured":  {
+                                         "WIN_CSC_LINK":  false,
+                                         "WIN_CSC_KEY_PASSWORD":  false
+                                     },
+    "artifacts":  [
+                      {
+                          "kind":  "unpackedExecutable",
+                          "path":  "G:\\CodeForge\\apps\\desktop\\release\\win-unpacked\\CodeForge.exe",
+                          "exists":  true,
+                          "bytes":  246415872,
+                          "sha256":  "0079d559221901662452ec0ef04385ba67339ee41b0495c6888ab8e1b2921439",
+                          "signatureStatus":  "NotSigned",
+                          "signerThumbprint":  null,
+                          "signerSubject":  null,
+                          "timestamped":  false,
+                          "timestampThumbprint":  null
+                      },
+                      {
+                          "kind":  "installer",
+                          "path":  "G:\\CodeForge\\apps\\desktop\\release\\CodeForge-Setup-0.4.0.exe",
+                          "exists":  true,
+                          "bytes":  120829954,
+                          "sha256":  "3ebb9f599cbe82eb4c535317e64abc251f849576ab9dfa5dd70af57da2d565da",
+                          "signatureStatus":  "NotSigned",
+                          "signerThumbprint":  null,
+                          "signerSubject":  null,
+                          "timestamped":  false,
+                          "timestampThumbprint":  null
+                      },
+                      {
+                          "kind":  "portableExecutable",
+                          "path":  "G:\\CodeForge\\apps\\desktop\\release\\CodeForge-Portable.exe",
+                          "exists":  true,
+                          "bytes":  120494503,
+                          "sha256":  "9780135e4e3c8ebd20aef04a4f0efe251992ea933ffdd9a4190b9e3db24cf0ad",
+                          "signatureStatus":  "NotSigned",
+                          "signerThumbprint":  null,
+                          "signerSubject":  null,
+                          "timestamped":  false,
+                          "timestampThumbprint":  null
+                      }
+                  ],
+    "allArtifactsTrustedAndTimestamped":  false,
+    "unsignedNegativeGate":  null,
+    "result":  "SIGNING_PENDING",
+    "interpretation":  "At least one local release executable is missing, unsigned, untrusted, or lacks a timestamp. A production signing identity and successful tagged-build path remain unproven."
+}

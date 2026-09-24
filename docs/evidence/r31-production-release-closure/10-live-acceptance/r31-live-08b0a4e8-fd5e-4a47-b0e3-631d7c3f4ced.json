@@ -1,0 +1,728 @@
+{
+  "schema": "r31-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-24T12:54:48.661Z",
+  "sourceCommit": "3d11fc64ee3b654947c0fdd54b5b62aae5965f21",
+  "workflowServiceSourceSha256": "e5438492a5ac6388ebdf9a0688e2736166a23907017aebe85a4cc021289cef85",
+  "workflowServiceDistSha256": "2197008313d48cae04d3e5b92345ec584c7e720b13e793eea7ed180d9fa468b7",
+  "runId": "r31-live-08b0a4e8-fd5e-4a47-b0e3-631d7c3f4ced",
+  "task": {
+    "corpus": "r23",
+    "r27TaskId": "r27-medium-extract-validator",
+    "sourceTaskId": "ts-refactor-extract-validator",
+    "taskClass": "refactor",
+    "repoSizeClass": "medium",
+    "corpusDigest": "cd840ea10bd0995a943adf5e8b2204c20e3e061121cd1acde639646fb788afbd"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "routeMode": "auto",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 24,
+    "maxOutputTokens": 4096,
+    "timeoutMs": 1200000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine",
+    "failureInjection": null
+  },
+  "provider": {
+    "inferenceRequestCount": 24,
+    "measuredInputTokens": 171659,
+    "measuredOutputTokens": 7746,
+    "requestsWithoutTokenUsage": 3,
+    "injected429Count": 0,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 13205,
+        "firstUsefulEventMs": 13166,
+        "inputTokens": 4288,
+        "outputTokens": 318,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 2503,
+        "firstUsefulEventMs": 2486,
+        "inputTokens": 4678,
+        "outputTokens": 165,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 9581,
+        "firstUsefulEventMs": 9407,
+        "inputTokens": 5055,
+        "outputTokens": 468,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 5089,
+        "firstUsefulEventMs": 5076,
+        "inputTokens": 5319,
+        "outputTokens": 218,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 5,
+        "kind": "stream",
+        "elapsedMs": 28646,
+        "firstUsefulEventMs": 28631,
+        "inputTokens": 5722,
+        "outputTokens": 1950,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 6,
+        "kind": "stream",
+        "elapsedMs": 1573,
+        "firstUsefulEventMs": 1536,
+        "inputTokens": 6689,
+        "outputTokens": 51,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 7,
+        "kind": "stream",
+        "elapsedMs": 4813,
+        "firstUsefulEventMs": 4794,
+        "inputTokens": 7066,
+        "outputTokens": 506,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 8,
+        "kind": "stream",
+        "elapsedMs": 886,
+        "firstUsefulEventMs": 870,
+        "inputTokens": 7984,
+        "outputTokens": 71,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 9,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 10,
+        "kind": "stream",
+        "elapsedMs": 3674,
+        "firstUsefulEventMs": 3640,
+        "inputTokens": 8387,
+        "outputTokens": 572,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 11,
+        "kind": "stream",
+        "elapsedMs": 9416,
+        "firstUsefulEventMs": 9240,
+        "inputTokens": 9402,
+        "outputTokens": 209,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 12,
+        "kind": "stream",
+        "elapsedMs": 3311,
+        "firstUsefulEventMs": 3293,
+        "inputTokens": 9471,
+        "outputTokens": 234,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 13,
+        "kind": "stream",
+        "elapsedMs": 6638,
+        "firstUsefulEventMs": 6597,
+        "inputTokens": 9771,
+        "outputTokens": 308,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 14,
+        "kind": "stream",
+        "elapsedMs": 2406,
+        "firstUsefulEventMs": 2394,
+        "inputTokens": 9829,
+        "outputTokens": 173,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 15,
+        "kind": "stream",
+        "elapsedMs": 12039,
+        "firstUsefulEventMs": 11974,
+        "inputTokens": 10041,
+        "outputTokens": 231,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 16,
+        "kind": "stream",
+        "elapsedMs": 13696,
+        "firstUsefulEventMs": 13656,
+        "inputTokens": 10241,
+        "outputTokens": 605,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 17,
+        "kind": "stream",
+        "elapsedMs": 4333,
+        "firstUsefulEventMs": 4156,
+        "inputTokens": 10319,
+        "outputTokens": 189,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 18,
+        "kind": "stream",
+        "elapsedMs": 5356,
+        "firstUsefulEventMs": 5342,
+        "inputTokens": 10406,
+        "outputTokens": 355,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 19,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 20,
+        "kind": "stream",
+        "elapsedMs": 8623,
+        "firstUsefulEventMs": 8607,
+        "inputTokens": 10566,
+        "outputTokens": 427,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 21,
+        "kind": "stream",
+        "elapsedMs": 5867,
+        "firstUsefulEventMs": 2497,
+        "inputTokens": 10660,
+        "outputTokens": 318,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 22,
+        "kind": "stream",
+        "elapsedMs": 2411,
+        "firstUsefulEventMs": 1821,
+        "inputTokens": 11037,
+        "outputTokens": 158,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 23,
+        "kind": "stream",
+        "elapsedMs": 4637,
+        "firstUsefulEventMs": 4621,
+        "inputTokens": 4728,
+        "outputTokens": 220,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 24,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254137747
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254140884
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254154228
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254156629
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254166324
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254171359
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254200048
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254201589
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254206484
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254207365
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254216629
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254231951
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254302589
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254305850
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254312508
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254314895
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254327084
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254402339
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254406826
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254412144
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254420747
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254429410
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254466634
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254474795
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790254479531
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "4051570f-8f9d-4720-b36c-3e5e6e49f562",
+    "status": "completed",
+    "phase": "completed",
+    "completion": {
+      "outcome": "completed",
+      "rationale": "All required completion checks passed.",
+      "blockers": []
+    },
+    "diffs": [
+      {
+        "path": "src/handlers/create-order.ts",
+        "changeType": "modified",
+        "additions": 8,
+        "deletions": 19,
+        "diff": "--- a/src/handlers/create-order.ts\n+++ b/src/handlers/create-order.ts\n-\n+import { validateOrder } from \"../validation/order.ts\";\n-function validateCreate(input: OrderInput): string[] {\n+\n-  const errors: string[] = [];\n+export function createOrder(input: OrderInput): HandlerResult {\n-  if (!input.customerId || input.customerId.trim() === \"\") errors.push(\"customerId is required\");\n+  const errors = validateOrder(input);\n-  if (!Array.isArray(input.lines) || input.lines.length === 0) errors.push(\"at least one line is required\");\n+  if (errors.length > 0) return { status: 400, body: { errors } };\n-  for (const [index, line] of (input.lines ?? []).entries()) {\n+  return { status: 201, body: { id: `ord-${input.customerId}-${input.lines.length}`, currency: input.currency ?? \"USD\" } };\n-    if (!line.sku) errors.push(`lines[${index}].sku is required`);\n+}\n-    if (!Number.isInteger(line.quantity) || line.quantity <= 0) errors.push(`lines[${index}].quantity must be a positive integer`);\n+\n-  }\n-  if (input.currency !== undefined && !/^[A-Z]{3}$/.test(input.currency)) errors.push(\"currency must be a 3-letter code\");\n-  return errors;\n-}\n-\n-export function createOrder(input: OrderInput): HandlerResult {\n-  const errors = validateCreate(input);\n-  if (errors.length > 0) return { status: 400, body: { errors } };\n-  return { status: 201, body: { id: `ord-${input.customerId}-${input.lines.length}`, currency: input.currency ?? \"USD\" } };\n-}\n-"
+      },
+      {
+        "path": "src/handlers/quote-order.ts",
+        "changeType": "modified",
+        "additions": 9,
+        "deletions": 20,
+        "diff": "--- a/src/handlers/quote-order.ts\n+++ b/src/handlers/quote-order.ts\n-\n+import { validateOrder } from \"../validation/order.ts\";\n-function validateQuote(input: OrderInput): string[] {\n+\n-  const errors: string[] = [];\n+export function quoteOrder(input: OrderInput): HandlerResult {\n-  if (!input.customerId || input.customerId.trim() === \"\") errors.push(\"customerId is required\");\n+  const errors = validateOrder(input);\n-  if (!Array.isArray(input.lines) || input.lines.length === 0) errors.push(\"at least one line is required\");\n+  if (errors.length > 0) return { status: 400, body: { errors } };\n-  for (const [index, line] of (input.lines ?? []).entries()) {\n+  const units = input.lines.reduce((sum, line) => sum + line.quantity, 0);\n-    if (!line.sku) errors.push(`lines[${index}].sku is required`);\n+  return { status: 200, body: { units, currency: input.currency ?? \"USD\" } };\n-    if (!Number.isInteger(line.quantity) || line.quantity <= 0) errors.push(`lines[${index}].quantity must be a positive integer`);\n+}\n-  }\n+\n-  if (input.currency !== undefined && !/^[A-Z]{3}$/.test(input.currency)) errors.push(\"currency must be a 3-letter code\");\n-  return errors;\n-}\n-\n-export function quoteOrder(input: OrderInput): HandlerResult {\n-  const errors = validateQuote(input);\n-  if (errors.length > 0) return { status: 400, body: { errors } };\n-  const units = input.lines.reduce((sum, line) => sum + line.quantity, 0);\n-  return { status: 200, body: { units, currency: input.currency ?? \"USD\" } };\n-}\n-"
+      },
+      {
+        "path": "src/handlers/update-order.ts",
+        "changeType": "modified",
+        "additions": 8,
+        "deletions": 19,
+        "diff": "--- a/src/handlers/update-order.ts\n+++ b/src/handlers/update-order.ts\n-\n+import { validateOrder } from \"../validation/order.ts\";\n-function validateUpdate(input: OrderInput): string[] {\n+\n-  const errors: string[] = [];\n+export function updateOrder(id: string, input: OrderInput): HandlerResult {\n-  if (!input.customerId || input.customerId.trim() === \"\") errors.push(\"customerId is required\");\n+  const errors = validateOrder(input);\n-  if (!Array.isArray(input.lines) || input.lines.length === 0) errors.push(\"at least one line is required\");\n+  if (errors.length > 0) return { status: 400, body: { errors } };\n-  for (const [index, line] of (input.lines ?? []).entries()) {\n+  return { status: 200, body: { id, lines: input.lines.length } };\n-    if (!line.sku) errors.push(`lines[${index}].sku is required`);\n+}\n-    if (!Number.isInteger(line.quantity) || line.quantity <= 0) errors.push(`lines[${index}].quantity must be a positive integer`);\n+\n-  }\n-  if (input.currency !== undefined && !/^[A-Z]{3}$/.test(input.currency)) errors.push(\"currency must be a 3-letter code\");\n-  return errors;\n-}\n-\n-export function updateOrder(id: string, input: OrderInput): HandlerResult {\n-  const errors = validateUpdate(input);\n-  if (errors.length > 0) return { status: 400, body: { errors } };\n-  return { status: 200, body: { id, lines: input.lines.length } };\n-}\n-"
+      }
+    ],
+    "changedFileSnapshots": [
+      {
+        "path": "src/handlers/create-order.ts",
+        "beforeSha256": "dd4aafd31d9cb16d5c1286e77eee70fd91833431af124508f5daa6db3513239b",
+        "afterSha256": "dd6075dc344deb02a175a550f6864890fdbed91c9eb9bada777349b01ccdd4d2",
+        "beforeBytes": 1062,
+        "afterBytes": 415,
+        "afterContent": "import type { HandlerResult, OrderInput } from \"../types.ts\";\nimport { validateOrder } from \"../validation/order.ts\";\n\nexport function createOrder(input: OrderInput): HandlerResult {\n  const errors = validateOrder(input);\n  if (errors.length > 0) return { status: 400, body: { errors } };\n  return { status: 201, body: { id: `ord-${input.customerId}-${input.lines.length}`, currency: input.currency ?? \"USD\" } };\n}\n"
+      },
+      {
+        "path": "src/handlers/quote-order.ts",
+        "beforeSha256": "c9489ef02778f194be52547dbb399a44f44938e280c7d45d87bc3740888cf9b6",
+        "afterSha256": "66e7d1ca19466436226312fb8bd0d53c0b084061ef8fc10eb752d27cfb35aeac",
+        "beforeBytes": 1088,
+        "afterBytes": 443,
+        "afterContent": "import type { HandlerResult, OrderInput } from \"../types.ts\";\nimport { validateOrder } from \"../validation/order.ts\";\n\nexport function quoteOrder(input: OrderInput): HandlerResult {\n  const errors = validateOrder(input);\n  if (errors.length > 0) return { status: 400, body: { errors } };\n  const units = input.lines.reduce((sum, line) => sum + line.quantity, 0);\n  return { status: 200, body: { units, currency: input.currency ?? \"USD\" } };\n}\n"
+      },
+      {
+        "path": "src/handlers/update-order.ts",
+        "beforeSha256": "09bab8922117a612feac470089d0d04fe99a7434859516d25faffd397eb724bc",
+        "afterSha256": "0dd09fee88db37ad573de348df04a8d40ef248d8e4fdbe0eee151d9beb95d845",
+        "beforeBytes": 1017,
+        "afterBytes": 370,
+        "afterContent": "import type { HandlerResult, OrderInput } from \"../types.ts\";\nimport { validateOrder } from \"../validation/order.ts\";\n\nexport function updateOrder(id: string, input: OrderInput): HandlerResult {\n  const errors = validateOrder(input);\n  if (errors.length > 0) return { status: 400, body: { errors } };\n  return { status: 200, body: { id, lines: input.lines.length } };\n}\n"
+      },
+      {
+        "path": "src/validation/order.ts",
+        "beforeSha256": null,
+        "afterSha256": "740e8128f9baf18fe04eaaa14806b4ae093e5a44f4ed8acac0f9dbc64a1d7431",
+        "beforeBytes": null,
+        "afterBytes": 754,
+        "afterContent": "import type { OrderInput } from \"../types.ts\";\n\nexport function validateOrder(input: OrderInput): string[] {\n  const errors: string[] = [];\n  if (!input.customerId || input.customerId.trim() === \"\") errors.push(\"customerId is required\");\n  if (!Array.isArray(input.lines) || input.lines.length === 0) errors.push(\"at least one line is required\");\n  for (const [index, line] of (input.lines ?? []).entries()) {\n    if (!line.sku) errors.push(`lines[${index}].sku is required`);\n    if (!Number.isInteger(line.quantity) || line.quantity <= 0) errors.push(`lines[${index}].quantity must be a positive integer`);\n  }\n  if (input.currency !== undefined && !/^[A-Z]{3}$/.test(input.currency)) errors.push(\"currency must be a 3-letter code\");\n  return errors;\n}"
+      }
+    ],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "verifier-1-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          },
+          {
+            "id": "verifier-2-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          },
+          {
+            "id": "verifier-3-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": true,
+      "findings": [
+        {
+          "code": "goal_review_inconclusive",
+          "severity": "advisory",
+          "path": "",
+          "message": "Independent goal review turn did not finish (failed); deterministic checks only."
+        }
+      ]
+    },
+    "forgeVerifySummary": {
+      "planId": "ec673693-5ee5-481d-8d2f-4d99bb5a5146",
+      "policyVersion": "legacy-workflow-policy-v1",
+      "requiredCount": 3,
+      "satisfiedCount": 3,
+      "missingCount": 0,
+      "staleCount": 0,
+      "verificationComplete": true,
+      "missingRequiredVerifiers": [],
+      "evidence": [
+        {
+          "evidenceId": "75e563d3-2e38-4d55-a4d5-81d70241247a",
+          "verifierId": "legacy.custom.36d5a55802cabc7f",
+          "status": "passed",
+          "durationMs": 1340,
+          "outputTruncated": false
+        },
+        {
+          "evidenceId": "1549b862-8835-4847-b15d-91368c057c21",
+          "verifierId": "legacy.custom.85edff05c8a48f8d",
+          "status": "passed",
+          "durationMs": 1352,
+          "outputTruncated": false
+        },
+        {
+          "evidenceId": "e04fbce5-5823-4ade-9792-92d9f7eb0f68",
+          "verifierId": "legacy.custom.305189140f660c50",
+          "status": "passed",
+          "durationMs": 1262,
+          "outputTruncated": false
+        }
+      ]
+    },
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 20,
+    "decisions": {
+      "allow:0": 14,
+      "allow:1": 6
+    },
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.ts",
+      "passed": false,
+      "elapsedMs": 364,
+      "exitCode": 1,
+      "outputHash": "c527cbe221bb6de0fdec173762195a224c188696e21599c433b04289b30b3b39",
+      "output": "{\"passed\":10,\"failed\":2}\n\nFAIL validator-shape-ok\nFAIL validator-shape-bad\n"
+    },
+    "answerKeyPassed": true,
+    "agentResponses": [
+      "The validation logic has been successfully extracted from the three request handlers into a shared module at `src/validation/order.ts`. Each handler (`create-order.ts`, `update-order.ts`, `quote-order.ts`) now imports and uses this shared validation function. The duplicate validation functions have been removed from the handlers.\n\nAll changes are minimal and preserve existing behavior. The task is complete."
+    ],
+    "workflowAllPassed": true
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 3,
+    "task.state_changed": 12,
+    "status.changed": 17,
+    "plan.started": 1,
+    "agent.started": 3,
+    "router.selection": 2,
+    "tool.call_started": 20,
+    "tool.call_completed": 20,
+    "token.usage": 21,
+    "tool.execution_started": 20,
+    "file.read": 10,
+    "tool.execution_completed": 20,
+    "file.written": 4,
+    "file.change_proposed": 4,
+    "file.change_applied": 4,
+    "eightbit.status": 4,
+    "command.started": 2,
+    "command.executed": 2,
+    "assistant.message.started": 2,
+    "text.delta": 42,
+    "assistant.message.completed": 2,
+    "turn.completed": 2,
+    "agent.completed": 3,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 3,
+    "forgeverify.evidence_created": 3,
+    "workflow.verification_completed": 1,
+    "turn.failed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1,
+    "run.outcome": 1
+  },
+  "failures": [
+    {
+      "type": "turn.failed",
+      "error": "No eligible route is available to continue this task. CodeForge stopped safely without switching to a paid or unknown-cost route."
+    }
+  ],
+  "toolSequence": [
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "write_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "create_checkpoint"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "list_files"
+    }
+  ],
+  "timing": {
+    "wallClockMs": 350037,
+    "deadlineHit": false,
+    "activeAfterCancellation": false
+  },
+  "memory": {
+    "rssBefore": 221212672,
+    "rssAfter": 183635968,
+    "heapUsedBefore": 80576592,
+    "heapUsedAfter": 86170472
+  }
+}

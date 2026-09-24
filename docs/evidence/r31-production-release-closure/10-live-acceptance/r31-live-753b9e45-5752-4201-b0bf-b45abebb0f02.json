@@ -1,0 +1,144 @@
+{
+  "schema": "r31-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-24T12:20:58.929Z",
+  "sourceCommit": "fe4248c4c8dc664ef88cdb80acf5e91ae99961fb",
+  "workflowServiceSourceSha256": "e5438492a5ac6388ebdf9a0688e2736166a23907017aebe85a4cc021289cef85",
+  "workflowServiceDistSha256": "17ccf90307e857b02d6ea3d8aa09616aab6fdc1c70ef12a0858984d724372c1b",
+  "runId": "r31-live-753b9e45-5752-4201-b0bf-b45abebb0f02",
+  "task": {
+    "corpus": "r23",
+    "r27TaskId": "r27-tiny-qual-off-by-one",
+    "sourceTaskId": "qual-js-off-by-one",
+    "taskClass": "small_fix",
+    "repoSizeClass": "small",
+    "corpusDigest": "b2bfa5e32549234d60de094cfd483e4c820451ce53fe9973d92207b1d1be6ba4"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "routeMode": "auto",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 24,
+    "maxOutputTokens": 512,
+    "timeoutMs": 1200000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine",
+    "failureInjection": null
+  },
+  "provider": {
+    "inferenceRequestCount": 1,
+    "measuredInputTokens": 3195,
+    "measuredOutputTokens": 569,
+    "requestsWithoutTokenUsage": 0,
+    "injected429Count": 0,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 5972,
+        "firstUsefulEventMs": 5960,
+        "inputTokens": 3195,
+        "outputTokens": 569,
+        "outputCapExceeded": true,
+        "outcome": "output_cap_exceeded"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790252451770
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790252452580
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "8681f9a9-dc2b-4092-9a23-1ea1efa3cae2",
+    "status": "failed",
+    "phase": "failed",
+    "completion": null,
+    "diffs": [],
+    "changedFileSnapshots": [],
+    "verificationAttempts": [],
+    "review": {
+      "approved": false,
+      "findings": []
+    },
+    "forgeVerifySummary": null,
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 1,
+    "decisions": {
+      "allow:0": 1
+    },
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.mjs",
+      "passed": false,
+      "elapsedMs": 74,
+      "exitCode": 1,
+      "outputHash": "76ff436cb7bbff0178be5ab2b879135f1f0c9bd11b54e09f4a836b33073fd16b",
+      "output": "{\"passed\":2,\"failed\":1}\n\nFAIL last\n"
+    },
+    "answerKeyPassed": true,
+    "agentResponses": [],
+    "workflowAllPassed": false
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 2,
+    "task.state_changed": 9,
+    "status.changed": 11,
+    "plan.started": 1,
+    "agent.started": 2,
+    "router.selection": 1,
+    "tool.call_started": 1,
+    "tool.call_completed": 1,
+    "token.usage": 1,
+    "tool.execution_started": 1,
+    "file.read": 1,
+    "tool.execution_completed": 1,
+    "eightbit.status": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "run.outcome": 1
+  },
+  "failures": [
+    {
+      "type": "turn.failed",
+      "error": "No eligible route is available to continue this task. CodeForge stopped safely without switching to a paid or unknown-cost route."
+    },
+    {
+      "type": "turn.failed",
+      "error": "No eligible route is available to continue this task. CodeForge stopped safely without switching to a paid or unknown-cost route."
+    }
+  ],
+  "toolSequence": [
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    }
+  ],
+  "timing": {
+    "wallClockMs": 7001,
+    "deadlineHit": false,
+    "activeAfterCancellation": false
+  },
+  "memory": {
+    "rssBefore": 207986688,
+    "rssAfter": 211193856,
+    "heapUsedBefore": 82539888,
+    "heapUsedAfter": 91131096
+  }
+}

@@ -1,0 +1,98 @@
+{
+ "generatedAt": "2026-09-24T12:18:42.175Z",
+ "cases": {
+  "normal": {
+   "toolsDiscovered": [
+    {
+     "toolName": "mcp__normal__echo",
+     "effect": "external"
+    },
+    {
+     "toolName": "mcp__normal__read_things",
+     "effect": "external",
+     "readOnlyHint": true
+    },
+    {
+     "toolName": "mcp__normal__mutate_things",
+     "effect": "external",
+     "readOnlyHint": true
+    }
+   ],
+   "echoResult": "<<<UNTRUSTED_DATA source=\"MCP server normal\">>>\n{\"receipt\":{\"serverName\":\"normal\",\"toolName\":\"mcp__normal__echo\",\"remoteName\":\"echo\",\"effect\":\"external\",\"isError\":false,\"outputBytes\":14,\"durationMs\":2",
+   "stateAfterCall": [
+    {
+     "name": "normal",
+     "status": "connected",
+     "connectedAt": "2026-09-24T12:18:42.253Z",
+     "serverVersion": "fixture-mcp@1.2.3",
+     "toolCount": 3
+    }
+   ],
+   "stateAfterClose": [
+    {
+     "name": "normal",
+     "status": "dead",
+     "connectedAt": "2026-09-24T12:18:42.253Z",
+     "serverVersion": "fixture-mcp@1.2.3",
+     "toolCount": 3
+    }
+   ],
+   "reconnectTools": 3
+  },
+  "lying_annotations_default_external": {
+   "mutate": "external",
+   "read": "external"
+  },
+  "deny_effect": {
+   "mutateDenied": "MCP_TOOL_DENIED"
+  },
+  "crash_after_init": {
+   "connectErr": null,
+   "state": [
+    {
+     "name": "crash",
+     "status": "dead",
+     "connectedAt": "2026-09-24T12:18:42.553Z",
+     "serverVersion": "fixture-mcp@1.2.3",
+     "toolCount": 3
+    }
+   ]
+  },
+  "hang_tools_timeout": {
+   "elapsedMs": 2082,
+   "err": "MCP_CALL_FAILED",
+   "state": [
+    {
+     "name": "hang",
+     "status": "degraded",
+     "connectedAt": "2026-09-24T12:18:43.025Z",
+     "serverVersion": "fixture-mcp@1.2.3",
+     "lastError": "MCP error -32001: Request timed out"
+    }
+   ]
+  },
+  "lying_schema": {
+   "err": "MCP_MALFORMED_DESCRIPTOR",
+   "state": [
+    {
+     "name": "lies",
+     "status": "degraded",
+     "connectedAt": "2026-09-24T12:18:45.112Z",
+     "serverVersion": "fixture-mcp@1.2.3",
+     "lastError": "[\n  {\n    \"expected\": \"object\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"tools\",\n      0,\n      \"inputSchema\"\n    ],\n    \"message\": \"Invalid input: expected object, received undefined\"\n  },\n  {\n    \"expected\": \"object\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"tools\",\n      1,\n      "
+    }
+   ]
+  },
+  "secret_echo_redaction": {
+   "leaked": false,
+   "outputSample": "<<<UNTRUSTED_DATA source=\"MCP server secrets\">>>\n{\"receipt\":{\"serverName\":\"secrets\",\"toolName\":\"mcp__secrets__echo\",\"remoteName\":\"echo\",\"effect\":\"external\",\"isError\":false,\"outputBytes\":50,\"durationMs\":0,\"at\":\"2026-09-24"
+  },
+  "giant_result_truncation": {
+   "outputBytes": 65971,
+   "truncatedMarker": true
+  },
+  "unconfigured": {
+   "err": "MCP_TOOL_UNKNOWN"
+  }
+ }
+}

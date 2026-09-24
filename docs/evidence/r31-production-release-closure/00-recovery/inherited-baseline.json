@@ -1,0 +1,87 @@
+{
+  "schema": "r31-inherited-baseline-1",
+  "checkedAt": "2026-09-24T11:40:45.000Z",
+  "repositoryRoot": "G:/CodeForge",
+  "branch": "codex/r29-release-closure",
+  "head": "fe4248c4c8dc664ef88cdb80acf5e91ae99961fb",
+  "r30Head": "fe4248c4c8dc664ef88cdb80acf5e91ae99961fb",
+  "r30HeadIsAncestor": true,
+  "preEditCleanObserved": true,
+  "currentWorkingTreeClean": false,
+  "recentCommits": [
+    "fe4248c4c8dc664ef88cdb80acf5e91ae99961fb Certify blocked R30 release and freeze evidence",
+    "999d41683da9b6eb5fa2059e28f46f8b1d3dc576 Load the staged Cloud manifest from packaged desktop output",
+    "2a77d3ff00d9e4d26133600bcff15b8ffaf99e1b Stage release endpoint without dirtying source and gate Windows signatures",
+    "af728430432dc516d15557e310374c15aab79504 Preserve external interfaces in large-task renames"
+  ],
+  "historicalFreezes": [
+    {
+      "path": "docs/evidence/r28-capability-completion/R28-EVIDENCE-FREEZE.json",
+      "manifestSha256": "0c834d95fc3f5abbcd854c4736a7a6c6d6dbd6c4d54895b5513e217fa011b663",
+      "verdict": "CODEFORGE_R28_CAPABILITY_COMPLETE_LIMITS_DECLARED",
+      "declaredEvidenceFiles": 52,
+      "listedEvidenceFiles": 52,
+      "listedArtifacts": 0,
+      "checked": 52,
+      "mismatches": [],
+      "passed": true
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/R29-EVIDENCE-FREEZE.json",
+      "manifestSha256": "6c2d91d75f985f4ee9952561d53762f3c4ec6997a26052d2512d9135f497c977",
+      "verdict": "CODEFORGE_R29_RELEASE_BLOCKED",
+      "declaredEvidenceFiles": 38,
+      "listedEvidenceFiles": 38,
+      "listedArtifacts": 0,
+      "checked": 38,
+      "mismatches": [],
+      "passed": true
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/R30-EVIDENCE-FREEZE.json",
+      "manifestSha256": "7008335478c3585f5391deeca6bd9bd6cedd2798a35b6acf3a8cd15a10f16a4b",
+      "verdict": "CODEFORGE_R30_RELEASE_BLOCKED",
+      "declaredEvidenceFiles": 48,
+      "listedEvidenceFiles": 48,
+      "listedArtifacts": 4,
+      "checked": 52,
+      "mismatches": [],
+      "passed": true
+    }
+  ],
+  "r30ProductSourceCommit": "999d41683da9b6eb5fa2059e28f46f8b1d3dc576",
+  "r30Artifacts": [
+    {
+      "path": "apps/desktop/release/win-unpacked/resources/app.asar",
+      "bytes": 45564776,
+      "sha256": "768b6557819dd527f50dcb3e3e12c09adfcd0f586cd2db19a04e3279986777bd",
+      "matchesR30Receipt": true
+    },
+    {
+      "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+      "bytes": 246415872,
+      "sha256": "404225edd63ca1cc0372272d1ecf5086def9e22183c5c44d02c38831718194cc",
+      "matchesR30Receipt": true
+    },
+    {
+      "path": "apps/desktop/release/CodeForge-Setup-0.4.0.exe",
+      "bytes": 120823725,
+      "sha256": "6ae47b2e42dc165940ac6127f1ef238b56aee5de095dedf0fa7c9d529a88223b",
+      "matchesR30Receipt": true
+    },
+    {
+      "path": "apps/desktop/release/CodeForge-Portable.exe",
+      "bytes": 120488313,
+      "sha256": "3c0931c6211193c4bd87edb6396b0c42b70a02808cd4ac0ab9cf9604af6e664f",
+      "matchesR30Receipt": true
+    }
+  ],
+  "environment": {
+    "platform": "win32",
+    "release": "10.0.26200",
+    "arch": "x64",
+    "logicalProcessors": 12,
+    "totalMemoryBytes": 34060460032,
+    "nodeVersion": "v24.19.0"
+  }
+}

@@ -1,0 +1,904 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-24T12:17:02.428Z",
+  "head": "fe4248c4c8dc664ef88cdb80acf5e91ae99961fb",
+  "branch": "codex/r29-release-closure",
+  "surfaces": {
+    "builtInTools": 19,
+    "browserTools": 11,
+    "computerTools": 6,
+    "namespaces": [
+      "(builtin)",
+      "browser_",
+      "mcp__<server>__<tool>",
+      "plugin__<ext>__<cmd>",
+      "computer_"
+    ],
+    "externalSurfaceDefault": "disabled",
+    "browserPolicyDefaults": {
+      "allowLoopbackHttp": true,
+      "allowPlainHttp": false,
+      "allowPrivateNetwork": false
+    },
+    "computerPolicyDefaults": {
+      "maxActionsPerSession": 120,
+      "minActionIntervalMs": 250,
+      "maxTypeLength": 2000,
+      "allowMultiMonitor": true
+    }
+  },
+  "capabilities": [
+    {
+      "id": "read_file",
+      "kind": "tool",
+      "requiredPermission": "read",
+      "readOnly": true,
+      "executionClass": "read",
+      "schemaKeys": [
+        "path",
+        "startLine",
+        "endLine"
+      ],
+      "required": [
+        "path"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "list_files",
+      "kind": "tool",
+      "requiredPermission": "read",
+      "readOnly": true,
+      "executionClass": "read",
+      "schemaKeys": [
+        "path",
+        "recursive"
+      ],
+      "required": [
+        "path"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "search_files",
+      "kind": "tool",
+      "requiredPermission": "search",
+      "readOnly": true,
+      "executionClass": "read",
+      "schemaKeys": [
+        "query",
+        "regex",
+        "caseSensitive",
+        "maxMatches"
+      ],
+      "required": [
+        "query"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "write_file",
+      "kind": "tool",
+      "requiredPermission": "write",
+      "readOnly": false,
+      "executionClass": "write",
+      "schemaKeys": [
+        "path",
+        "content"
+      ],
+      "required": [
+        "path",
+        "content"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "edit_file",
+      "kind": "tool",
+      "requiredPermission": "write",
+      "readOnly": false,
+      "executionClass": "write",
+      "schemaKeys": [
+        "path",
+        "oldText",
+        "newText",
+        "expectedOccurrences",
+        "expectedHash"
+      ],
+      "required": [
+        "path",
+        "oldText",
+        "newText"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "run_command",
+      "kind": "tool",
+      "requiredPermission": "executeCommand",
+      "readOnly": false,
+      "executionClass": "command",
+      "schemaKeys": [
+        "command",
+        "cwd",
+        "environment",
+        "wslDistro"
+      ],
+      "required": [
+        "command"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "repo_search",
+      "kind": "tool",
+      "requiredPermission": "search",
+      "readOnly": true,
+      "executionClass": "repo",
+      "schemaKeys": [
+        "query",
+        "limit"
+      ],
+      "required": [
+        "query"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "repo_symbol",
+      "kind": "tool",
+      "requiredPermission": "search",
+      "readOnly": true,
+      "executionClass": "repo",
+      "schemaKeys": [
+        "query",
+        "limit"
+      ],
+      "required": [
+        "query"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "repo_references",
+      "kind": "tool",
+      "requiredPermission": "search",
+      "readOnly": true,
+      "executionClass": "repo",
+      "schemaKeys": [
+        "query",
+        "limit"
+      ],
+      "required": [
+        "query"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "repo_dependencies",
+      "kind": "tool",
+      "requiredPermission": "read",
+      "readOnly": true,
+      "executionClass": "repo",
+      "schemaKeys": [
+        "path",
+        "limit"
+      ],
+      "required": [
+        "path"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "repo_dependents",
+      "kind": "tool",
+      "requiredPermission": "read",
+      "readOnly": true,
+      "executionClass": "repo",
+      "schemaKeys": [
+        "path",
+        "limit"
+      ],
+      "required": [
+        "path"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "repo_tests",
+      "kind": "tool",
+      "requiredPermission": "read",
+      "readOnly": true,
+      "executionClass": "repo",
+      "schemaKeys": [
+        "path",
+        "limit"
+      ],
+      "required": [
+        "path"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "repo_impact",
+      "kind": "tool",
+      "requiredPermission": "read",
+      "readOnly": true,
+      "executionClass": "repo",
+      "schemaKeys": [
+        "paths",
+        "path",
+        "maxDepth",
+        "limit"
+      ],
+      "required": [],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "repo_file_summary",
+      "kind": "tool",
+      "requiredPermission": "read",
+      "readOnly": true,
+      "executionClass": "repo",
+      "schemaKeys": [
+        "path",
+        "limit"
+      ],
+      "required": [
+        "path"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "repo_callees",
+      "kind": "tool",
+      "requiredPermission": "read",
+      "readOnly": true,
+      "executionClass": "repo",
+      "schemaKeys": [
+        "path",
+        "limit"
+      ],
+      "required": [
+        "path"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "repo_callers",
+      "kind": "tool",
+      "requiredPermission": "read",
+      "readOnly": true,
+      "executionClass": "repo",
+      "schemaKeys": [
+        "query",
+        "limit"
+      ],
+      "required": [
+        "query"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "repo_context",
+      "kind": "tool",
+      "requiredPermission": "read",
+      "readOnly": true,
+      "executionClass": "repo",
+      "schemaKeys": [
+        "query",
+        "contextWindow"
+      ],
+      "required": [
+        "query"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "repo_index_status",
+      "kind": "tool",
+      "requiredPermission": "read",
+      "readOnly": true,
+      "executionClass": "repo",
+      "schemaKeys": [],
+      "required": [],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "create_checkpoint",
+      "kind": "tool",
+      "requiredPermission": "read",
+      "readOnly": false,
+      "executionClass": "checkpoint",
+      "schemaKeys": [
+        "label"
+      ],
+      "required": [
+        "label"
+      ],
+      "category": "built_in_tool",
+      "source": "packages/tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "browser_launch",
+      "kind": "tool",
+      "requiredPermission": "network",
+      "readOnly": false,
+      "executionClass": "network",
+      "schemaKeys": [
+        "sessionId",
+        "targetRevision"
+      ],
+      "required": [],
+      "category": "browser",
+      "source": "packages/browser",
+      "availability": "opt_in_external_tools",
+      "enablePath": "~/.codeforge/external-tools.json browser.enabled | CODEFORGE_BROWSER=1",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "browser_navigate",
+      "kind": "tool",
+      "requiredPermission": "network",
+      "readOnly": true,
+      "executionClass": "network",
+      "schemaKeys": [
+        "url",
+        "sessionId",
+        "waitUntil"
+      ],
+      "required": [
+        "url"
+      ],
+      "category": "browser",
+      "source": "packages/browser",
+      "availability": "opt_in_external_tools",
+      "enablePath": "~/.codeforge/external-tools.json browser.enabled | CODEFORGE_BROWSER=1",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "browser_inspect",
+      "kind": "tool",
+      "requiredPermission": "network",
+      "readOnly": true,
+      "executionClass": "network",
+      "schemaKeys": [
+        "sessionId",
+        "tabId"
+      ],
+      "required": [],
+      "category": "browser",
+      "source": "packages/browser",
+      "availability": "opt_in_external_tools",
+      "enablePath": "~/.codeforge/external-tools.json browser.enabled | CODEFORGE_BROWSER=1",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "browser_state",
+      "kind": "tool",
+      "requiredPermission": "network",
+      "readOnly": true,
+      "executionClass": "network",
+      "schemaKeys": [
+        "sessionId",
+        "tabId"
+      ],
+      "required": [],
+      "category": "browser",
+      "source": "packages/browser",
+      "availability": "opt_in_external_tools",
+      "enablePath": "~/.codeforge/external-tools.json browser.enabled | CODEFORGE_BROWSER=1",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "browser_click",
+      "kind": "tool",
+      "requiredPermission": "network",
+      "readOnly": false,
+      "executionClass": "network",
+      "schemaKeys": [
+        "sessionId",
+        "tabId",
+        "target"
+      ],
+      "required": [
+        "target"
+      ],
+      "category": "browser",
+      "source": "packages/browser",
+      "availability": "opt_in_external_tools",
+      "enablePath": "~/.codeforge/external-tools.json browser.enabled | CODEFORGE_BROWSER=1",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "browser_type",
+      "kind": "tool",
+      "requiredPermission": "network",
+      "readOnly": false,
+      "executionClass": "network",
+      "schemaKeys": [
+        "sessionId",
+        "tabId",
+        "target",
+        "text",
+        "sensitive",
+        "submit"
+      ],
+      "required": [
+        "target",
+        "text"
+      ],
+      "category": "browser",
+      "source": "packages/browser",
+      "availability": "opt_in_external_tools",
+      "enablePath": "~/.codeforge/external-tools.json browser.enabled | CODEFORGE_BROWSER=1",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "browser_select",
+      "kind": "tool",
+      "requiredPermission": "network",
+      "readOnly": false,
+      "executionClass": "network",
+      "schemaKeys": [
+        "sessionId",
+        "tabId",
+        "target",
+        "values"
+      ],
+      "required": [
+        "target",
+        "values"
+      ],
+      "category": "browser",
+      "source": "packages/browser",
+      "availability": "opt_in_external_tools",
+      "enablePath": "~/.codeforge/external-tools.json browser.enabled | CODEFORGE_BROWSER=1",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "browser_submit",
+      "kind": "tool",
+      "requiredPermission": "network",
+      "readOnly": false,
+      "executionClass": "network",
+      "schemaKeys": [
+        "sessionId",
+        "tabId",
+        "target"
+      ],
+      "required": [
+        "target"
+      ],
+      "category": "browser",
+      "source": "packages/browser",
+      "availability": "opt_in_external_tools",
+      "enablePath": "~/.codeforge/external-tools.json browser.enabled | CODEFORGE_BROWSER=1",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "browser_wait",
+      "kind": "tool",
+      "requiredPermission": "network",
+      "readOnly": true,
+      "executionClass": "network",
+      "schemaKeys": [
+        "sessionId",
+        "tabId",
+        "selector",
+        "state",
+        "url",
+        "timeoutMs"
+      ],
+      "required": [],
+      "category": "browser",
+      "source": "packages/browser",
+      "availability": "opt_in_external_tools",
+      "enablePath": "~/.codeforge/external-tools.json browser.enabled | CODEFORGE_BROWSER=1",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "browser_screenshot",
+      "kind": "tool",
+      "requiredPermission": "network",
+      "readOnly": true,
+      "executionClass": "network",
+      "schemaKeys": [
+        "sessionId",
+        "tabId",
+        "persist"
+      ],
+      "required": [],
+      "category": "browser",
+      "source": "packages/browser",
+      "availability": "opt_in_external_tools",
+      "enablePath": "~/.codeforge/external-tools.json browser.enabled | CODEFORGE_BROWSER=1",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "browser_close",
+      "kind": "tool",
+      "requiredPermission": "network",
+      "readOnly": false,
+      "executionClass": "network",
+      "schemaKeys": [
+        "sessionId",
+        "tabId"
+      ],
+      "required": [],
+      "category": "browser",
+      "source": "packages/browser",
+      "availability": "opt_in_external_tools",
+      "enablePath": "~/.codeforge/external-tools.json browser.enabled | CODEFORGE_BROWSER=1",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "computer_status",
+      "kind": "tool",
+      "requiredPermission": "executeCommand",
+      "readOnly": true,
+      "executionClass": "read",
+      "schemaKeys": [],
+      "required": [],
+      "category": "computer_use",
+      "source": "packages/computer-use",
+      "availability": "opt_in_external_tools_win32_only",
+      "enablePath": "external-tools.json computerUse.enabled | CODEFORGE_COMPUTER_USE=1",
+      "state": "IMPLEMENTED_PARTIAL",
+      "note": "coordinate-space input injection via PowerShell+user32; bounds-checked, budgeted, hashed PNG evidence; no UIA/window grounding yet"
+    },
+    {
+      "id": "computer_screenshot",
+      "kind": "tool",
+      "requiredPermission": "executeCommand",
+      "readOnly": true,
+      "executionClass": "read",
+      "schemaKeys": [],
+      "required": [],
+      "category": "computer_use",
+      "source": "packages/computer-use",
+      "availability": "opt_in_external_tools_win32_only",
+      "enablePath": "external-tools.json computerUse.enabled | CODEFORGE_COMPUTER_USE=1",
+      "state": "IMPLEMENTED_PARTIAL",
+      "note": "coordinate-space input injection via PowerShell+user32; bounds-checked, budgeted, hashed PNG evidence; no UIA/window grounding yet"
+    },
+    {
+      "id": "computer_mouse_move",
+      "kind": "tool",
+      "requiredPermission": "executeCommand",
+      "readOnly": false,
+      "executionClass": "command",
+      "schemaKeys": [
+        "x",
+        "y"
+      ],
+      "required": [
+        "x",
+        "y"
+      ],
+      "category": "computer_use",
+      "source": "packages/computer-use",
+      "availability": "opt_in_external_tools_win32_only",
+      "enablePath": "external-tools.json computerUse.enabled | CODEFORGE_COMPUTER_USE=1",
+      "state": "IMPLEMENTED_PARTIAL",
+      "note": "coordinate-space input injection via PowerShell+user32; bounds-checked, budgeted, hashed PNG evidence; no UIA/window grounding yet"
+    },
+    {
+      "id": "computer_mouse_click",
+      "kind": "tool",
+      "requiredPermission": "executeCommand",
+      "readOnly": false,
+      "executionClass": "command",
+      "schemaKeys": [
+        "x",
+        "y",
+        "button",
+        "clicks"
+      ],
+      "required": [
+        "x",
+        "y"
+      ],
+      "category": "computer_use",
+      "source": "packages/computer-use",
+      "availability": "opt_in_external_tools_win32_only",
+      "enablePath": "external-tools.json computerUse.enabled | CODEFORGE_COMPUTER_USE=1",
+      "state": "IMPLEMENTED_PARTIAL",
+      "note": "coordinate-space input injection via PowerShell+user32; bounds-checked, budgeted, hashed PNG evidence; no UIA/window grounding yet"
+    },
+    {
+      "id": "computer_type_text",
+      "kind": "tool",
+      "requiredPermission": "executeCommand",
+      "readOnly": false,
+      "executionClass": "command",
+      "schemaKeys": [
+        "text"
+      ],
+      "required": [
+        "text"
+      ],
+      "category": "computer_use",
+      "source": "packages/computer-use",
+      "availability": "opt_in_external_tools_win32_only",
+      "enablePath": "external-tools.json computerUse.enabled | CODEFORGE_COMPUTER_USE=1",
+      "state": "IMPLEMENTED_PARTIAL",
+      "note": "coordinate-space input injection via PowerShell+user32; bounds-checked, budgeted, hashed PNG evidence; no UIA/window grounding yet"
+    },
+    {
+      "id": "computer_key_press",
+      "kind": "tool",
+      "requiredPermission": "executeCommand",
+      "readOnly": false,
+      "executionClass": "command",
+      "schemaKeys": [
+        "keys"
+      ],
+      "required": [
+        "keys"
+      ],
+      "category": "computer_use",
+      "source": "packages/computer-use",
+      "availability": "opt_in_external_tools_win32_only",
+      "enablePath": "external-tools.json computerUse.enabled | CODEFORGE_COMPUTER_USE=1",
+      "state": "IMPLEMENTED_PARTIAL",
+      "note": "coordinate-space input injection via PowerShell+user32; bounds-checked, budgeted, hashed PNG evidence; no UIA/window grounding yet"
+    },
+    {
+      "id": "tool_registry",
+      "category": "registry",
+      "source": "packages/tools ToolRegistry+ToolBroker",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "single canonical registry; BUILT_IN + namespaced external defs; broker validates JSON args, denies sensitive paths, emits ToolExecutionRecord"
+    },
+    {
+      "id": "external_tool_surface",
+      "category": "registry",
+      "source": "packages/server/src/external-tools.ts",
+      "availability": "opt_in",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "composition root; disabled by default; CODEFORGE_EXTERNAL_TOOLS=0 hard-disable; namespace guard rejects un-prefixed external defs"
+    },
+    {
+      "id": "mcp_servers",
+      "category": "tool_servers",
+      "source": "packages/mcp",
+      "availability": "configured_only",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "McpRegistry + GovernedMcpClient; stdio+http transports; states configured/connecting/connected/degraded/dead/disabled; mcp__ns namespacing; effect classes deny/network_read/external; readOnlyHint untrusted by default; output wrapped as untrusted data"
+    },
+    {
+      "id": "extensions",
+      "category": "extensions",
+      "source": "packages/plugins ExtensionManager+ExtensionHost",
+      "availability": "desktop",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "managed dir + dev-mode loading; node:vm sandbox (no require/process/fs/net); eval/activate/command timeouts; 16KB result bound; enable/disable/uninstall persisted; IPC + settings UI"
+    },
+    {
+      "id": "plugin_command_bridge",
+      "category": "plugins",
+      "source": "external-tools.ts pluginCommands",
+      "availability": "desktop",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "plugin__<ext>__<cmd> tools; write-gated Tier2; re-enumerated per run so disable takes effect without restart"
+    },
+    {
+      "id": "permissions",
+      "category": "permissions",
+      "source": "packages/permissions TaskAuthority",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "tier0-4 deterministic classifyAction; lease grants never cover tier3/4; read-only subagent actor caps; receipts for every decision"
+    },
+    {
+      "id": "approval_ux",
+      "category": "permissions",
+      "source": "packages/server approval-service + renderer approval cards",
+      "availability": "interactive",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "allow_once/task/workspace scopes mint lease grants; deny/cancel paths exercised in workflow tests"
+    },
+    {
+      "id": "subagents",
+      "category": "orchestration",
+      "source": "packages/server subagent-manager.ts",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "role-scoped runtimes; explorer/planner/reviewer are read-only capped; delegated tool surface follows role contract"
+    },
+    {
+      "id": "parallel_workstreams",
+      "category": "orchestration",
+      "source": "parallel-orchestrator.ts parallel-state.ts",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "mission_supervisor",
+      "category": "orchestration",
+      "source": "mission-supervisor.ts mission-state.ts",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "forgezero",
+      "category": "policy",
+      "source": "packages/forge-zero",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "zero-billing firewall; fail-closed model eligibility"
+    },
+    {
+      "id": "forgegreen",
+      "category": "efficiency",
+      "source": "packages/forge-green + duplicate-suppression.ts",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "context optimizer + duplicate tool suppression with state-window invalidation"
+    },
+    {
+      "id": "capacity_governor",
+      "category": "providers",
+      "source": "packages/providers capacity-governor.ts",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "R31 fix: streaming 429 now records cooldown (previously slot released without health update)"
+    },
+    {
+      "id": "route_health",
+      "category": "providers",
+      "source": "packages/eight-bit route-health-authority.ts",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "terminal",
+      "category": "tools",
+      "source": "packages/terminal",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "pty-loader, sessions, shells incl. wsl; run_command built-in is the governed path"
+    },
+    {
+      "id": "repo_intelligence",
+      "category": "tools",
+      "source": "packages/repo-intelligence + repo_* tools",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "lsp",
+      "category": "tools",
+      "source": "packages/lsp",
+      "availability": "always",
+      "state": "IMPLEMENTED_PARTIAL",
+      "note": "package exists; not wired into the agent tool surface (no lsp__ tools)"
+    },
+    {
+      "id": "checkpoints",
+      "category": "persistence",
+      "source": "checkpoint-service.ts + create_checkpoint tool",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "persistence",
+      "category": "persistence",
+      "source": "packages/sessions sqlite (node:sqlite + better-sqlite3 fallback)",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "github",
+      "category": "integration",
+      "source": "github-pr-client.ts",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "cloud",
+      "category": "integration",
+      "source": "cloud-* packages + cloud-api app",
+      "availability": "configured",
+      "state": "IMPLEMENTED_AND_USED"
+    },
+    {
+      "id": "sandbox_exec",
+      "category": "tools",
+      "source": "packages/sandbox",
+      "availability": "internal",
+      "state": "IMPLEMENTED_PARTIAL",
+      "note": "package exists; command execution is governed by run_command/terminal, not exposed as a separate agent tool"
+    },
+    {
+      "id": "vision",
+      "category": "model_capability",
+      "source": "computer_screenshot + browser_screenshot receipts",
+      "availability": "opt_in",
+      "state": "IMPLEMENTED_PARTIAL",
+      "note": "screenshots persist as hashed evidence files; receipts cross the tool boundary, image bytes do not feed model vision in this surface"
+    },
+    {
+      "id": "marketplace",
+      "category": "catalog",
+      "source": "(none)",
+      "availability": "absent",
+      "state": "MISSING",
+      "note": "no remote extension/plugin catalog; extension install is local-folder + dev-mode only; model-registry 'catalog' is the provider model catalog, unrelated"
+    },
+    {
+      "id": "capability_health_endpoint",
+      "category": "registry",
+      "source": "external-tools describe() + settings UI",
+      "availability": "always",
+      "state": "IMPLEMENTED_AND_USED",
+      "note": "describe() exposes browser/computer/mcp/plugin states to status endpoints"
+    }
+  ],
+  "counts": {
+    "total": 61,
+    "byState": {
+      "IMPLEMENTED_AND_USED": 51,
+      "IMPLEMENTED_PARTIAL": 9,
+      "MISSING": 1
+    }
+  }
+}
