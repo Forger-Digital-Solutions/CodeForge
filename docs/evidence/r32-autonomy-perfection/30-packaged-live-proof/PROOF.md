@@ -19,7 +19,11 @@ with `CODEFORGE_PACKAGED_SMOKE_MODE=live-task`. In this mode:
 - the workspace fixture is the same `src/calc.ts` (`a - b` → `a + b`) used by the packaged
   smoke suite.
 
-## Result (run at commit `acfb06d`)
+## Result v2 — final binary (commit `858482b`, post all R32 fixes)
+
+Rerun on the final tree so the proof covers the shipped preload marketplace methods
+(`c3d8abe`), the extractGoals/raw-message contract fix (`c29ee75`), and the v2 source-state
+recertification (`cb4cf0e`) — all of which postdate the first proof binary.
 
 - `app_is_packaged=true` — the proof ran in the packaged executable, not dev mode.
 - `packaged_live_free_models=24` — live catalog discovery verified 24 free models.
@@ -27,11 +31,23 @@ with `CODEFORGE_PACKAGED_SMOKE_MODE=live-task`. In this mode:
 - `packaged_live_task_phase=completed` — workflow reached terminal `completed`.
 - `packaged_live_task_file_correct=true` — `src/calc.ts` contains `a + b`.
 - `packaged_live_task=PASS` — smoke runner verdict: `Mode live-task SUCCESS (exit code: 0)`.
+- Output frozen in `smoke-result-live-task-v2.txt`; `TASK_TERMINAL_PHASE_completed_SUMMARY__ERROR_`
+  is the marker template with empty summary/error fields, not a failure.
+- Internal + runtime dependency audits on this build: `PACKAGED_INTERNAL_DEPENDENCY_GRAPH_PASS`,
+  `PACKAGED_RUNTIME_DEPENDENCY_GRAPH_PASS` (355 modules, 18 external packages).
+
+## Result v1 (run at commit `acfb06d`)
+
+- Same markers, all PASS on the earlier binary (`artifact-hashes.txt`,
+  `smoke-result-live-task.txt`). Superseded by v2 as the release-relevant proof because
+  `acfb06d` predates the final preload and task-intelligence fixes.
 
 ## Artifact identity
 
-See `artifact-hashes.txt` — SHA-256 of `CodeForge.exe` and `app.asar` for the exact binary
-under test. Build identity recorded at build time: commit `acfb06d`, `dirty:false`.
+`artifact-hashes-v2.txt` — SHA-256 of `CodeForge.exe`
+(`d8b1f58c…b8cc`) and `app.asar` (`772a20cd…e27d`) for the final binary under test.
+Build identity recorded at build time: commit `858482bf`, `dirty:false`.
+The v1 binary hashes remain in `artifact-hashes.txt`.
 
 ## What this does NOT prove
 

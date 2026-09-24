@@ -1,0 +1,4 @@
+release/win-unpacked/CodeForge.exe  sha256=d8b1f58cac67fbbbe659c7a99c5735d3f9ff97b9523523bdf9579aae7b83b8cc
+release/win-unpacked/resources/app.asar  sha256=772a20cd9d6a0c13a9197b47fa35d2ee3916b32491c28c9c45f0f704dde3e27d
+build commit 858482bf437c1e86bbd965aad66f51c5e3b77e5c (dirty:false, builtAt 2026-09-24T20:33:14Z)
+packaged live-task proof run: 2026-09-24 ~16:36 local — packaged_live_task=PASS
