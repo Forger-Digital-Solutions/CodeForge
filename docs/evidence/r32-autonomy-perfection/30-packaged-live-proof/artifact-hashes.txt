@@ -1,0 +1,2 @@
+apps/desktop/release/win-unpacked/CodeForge.exe sha256=59422917d0e6de4c36d8009a17bb1202c1164a62dea97849779270698f79d683
+apps/desktop/release/win-unpacked/resources/app.asar sha256=c2e65a25b71ecb682a9634c420f948be0a64e987f464733a86f8c1e24560c029
