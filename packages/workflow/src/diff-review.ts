@@ -352,12 +352,20 @@ export async function reviewDiff(
 
       const afterContent = after ? after.toString("utf-8") : "";
       const computed = computeDiff(relPath, before.content, afterContent);
-      const additions = afterContent.split("\n").length - before.content.split("\n").length;
+      const beforeLines = before.content.split("\n");
+      const afterLines = afterContent.split("\n");
+      let additions = 0;
+      let deletions = 0;
+      for (let index = 0; index < Math.max(beforeLines.length, afterLines.length); index++) {
+        if (beforeLines[index] === afterLines[index]) continue;
+        if (beforeLines[index] !== undefined) deletions++;
+        if (afterLines[index] !== undefined) additions++;
+      }
       diffs.push({
         path: relPath,
         changeType,
-        additions: Math.max(0, additions),
-        deletions: Math.max(0, -additions),
+        additions,
+        deletions,
         diff: computed.diff,
         beforeHash: before.hash,
         afterHash,

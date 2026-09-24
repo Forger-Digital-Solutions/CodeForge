@@ -815,6 +815,9 @@ export class ToolBroker {
             throw new Error(`[${ERROR_CODES.TOOL_WORKSPACE_ESCAPE}] ${confinement.error}`);
           }
           const content = String(args.content ?? "");
+          if (fs.existsSync(confinement.resolvedPath) && fs.readFileSync(confinement.resolvedPath).equals(Buffer.from(content, "utf-8"))) {
+            throw new Error(`[${ERROR_CODES.TOOL_NO_EFFECT}] ${targetPath} already has exactly these bytes. Re-read the target and choose a different edit; this call made no progress.`);
+          }
           const dir = path.dirname(confinement.resolvedPath);
           if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
           fs.writeFileSync(confinement.resolvedPath, content, "utf-8");
@@ -853,6 +856,9 @@ export class ToolBroker {
           }
 
           const replaced = raw.replace(oldText, newText);
+          if (replaced === raw) {
+            throw new Error(`[${ERROR_CODES.TOOL_NO_EFFECT}] ${targetPath} is unchanged by this replacement. Re-read the target and choose a different edit; this call made no progress.`);
+          }
           fs.writeFileSync(confinement.resolvedPath, replaced, "utf-8");
           const afterHash = crypto.createHash("sha256").update(replaced).digest("hex");
           rawResult = `Successfully edited ${targetPath} (after hash: ${afterHash.slice(0, 8)})`;
@@ -953,7 +959,7 @@ export class ToolBroker {
       const rawMsg = err instanceof Error ? err.message : String(err);
       const redacted = redactSecrets(rawMsg);
       const isEscape = redacted.includes(ERROR_CODES.TOOL_WORKSPACE_ESCAPE);
-      const errorCode = isEscape ? ERROR_CODES.TOOL_PATH_ESCAPE : ERROR_CODES.TOOL_EXECUTION_FAILED;
+      const errorCode = isEscape ? ERROR_CODES.TOOL_PATH_ESCAPE : redacted.includes(ERROR_CODES.TOOL_NO_EFFECT) ? ERROR_CODES.TOOL_NO_EFFECT : ERROR_CODES.TOOL_EXECUTION_FAILED;
 
       return {
         toolExecutionId,

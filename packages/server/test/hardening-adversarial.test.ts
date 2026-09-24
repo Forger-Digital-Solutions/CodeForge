@@ -434,6 +434,18 @@ describe("Exact replacement editing", () => {
     expect(res.afterHash).toBeDefined();
   });
 
+  it("rejects an exact replacement that leaves the file unchanged", () => {
+    const file = join(ws, "hello.txt");
+    const before = fs.readFileSync(file, "utf-8");
+    const mtime = fs.statSync(file).mtimeMs;
+    const res = replaceExact({ workspacePath: ws, relativePath: "hello.txt", oldText: "hello world", newText: "hello world" });
+    expect(res.success).toBe(false);
+    expect(res.error).toContain("TOOL_NO_EFFECT");
+    expect(res.beforeHash).toBe(res.afterHash);
+    expect(fs.readFileSync(file, "utf-8")).toBe(before);
+    expect(fs.statSync(file).mtimeMs).toBe(mtime);
+  });
+
   it("fails if oldText not found", () => {
     const res = replaceExact({ workspacePath: ws, relativePath: "hello.txt", oldText: "missing", newText: "x" });
     expect(res.success).toBe(false);

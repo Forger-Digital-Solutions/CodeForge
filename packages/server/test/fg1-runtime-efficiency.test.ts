@@ -219,6 +219,40 @@ describe("FG-1 runtime efficiency integration", () => {
     expect(record.totals.noProgressInterruptions).toBe(1);
   });
 
+  it("feeds back no-effect writes, then blocks repeated no-progress edits", async () => {
+    for (const name of ["a.ts", "b.ts", "c.ts", "d.ts"]) {
+      await fs.writeFile(path.join(tmpDir, name), "export const same = true;\n", "utf-8");
+    }
+    const provider = new RecordingScriptedProvider("test-provider", [
+      ...["a.ts", "b.ts", "c.ts", "d.ts"].map((name, index) =>
+        toolCallTurn(`no-effect-${index}`, "write_file", { path: name, content: "export const same = true;\n" })),
+      finalTurn("unreachable"),
+    ]);
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(provider);
+    const runtime = createAgentRuntime({ sessionId: "no-effect-write", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: tmpDir });
+
+    const result = await runtime.executeAgentRun({
+      runId: "no-effect-write",
+      agentId: "coder",
+      role: "coder",
+      goal: "Change four existing files",
+      workspaceId: "ws-fg1",
+      workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: true, executeCommand: false, network: false },
+    });
+
+    expect(result.status).toBe("blocked");
+    expect(result.error).toBe(ERROR_CODES.AGENT_NO_PROGRESS_DETECTED);
+    expect(result.toolExecutions).toHaveLength(4);
+    expect(result.toolExecutions.every((execution) => execution.error === ERROR_CODES.TOOL_NO_EFFECT)).toBe(true);
+    expect(result.filesChanged).toEqual([]);
+    expect(provider.calls).toBe(4);
+    expect(provider.requests[2]!.messages.some((message) => message.role === "tool" && message.content.includes("new approach"))).toBe(true);
+    expect(result.contextMetrics?.efficiencyReceipt?.noProgressInterruptions).toBe(1);
+    expect(eventStore.getAll({ sessionId: "no-effect-write", types: ["file.written"] })).toHaveLength(0);
+  });
+
   it("executes a legitimate rerun after a real state change, and starts every run with a fresh supervisor", async () => {
     const read = () => toolCallTurn(`tc-read-${Math.random()}`, "read_file", { path: "index.ts" });
     const provider = new RecordingScriptedProvider("test-provider", [

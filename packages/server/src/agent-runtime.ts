@@ -2186,8 +2186,16 @@ export class AgentRuntime {
           );
 
           toolExecutions.push(toolExec);
+          let noEffectWriteCount = 0;
           if (duplicateSupervisor.isMutating(duplicateIdentity)) {
-            duplicateSupervisor.recordMutationExecution(duplicateIdentity, toolExec.success);
+            if (toolExec.error === ERROR_CODES.TOOL_NO_EFFECT) {
+              noEffectWriteCount = duplicateSupervisor.recordNoEffectWrite();
+              if (noEffectWriteCount >= 2) {
+                toolExec.output += "\nRepeated no-effect writes require a new approach: re-read the relevant files, reconsider the plan and target paths, and make one independently verifiable change before continuing.";
+              }
+            } else {
+              duplicateSupervisor.recordMutationExecution(duplicateIdentity, toolExec.success);
+            }
           } else {
             duplicateSupervisor.recordReadResult(duplicateIdentity, toolExec.output, toolExec.success, executionId);
           }
@@ -2290,6 +2298,26 @@ export class AgentRuntime {
               stopReason,
               filesChanged: Array.from(changedFiles),
               error: toolExec.error,
+            };
+          }
+          if (noEffectWriteCount >= 4) {
+            const reason = "Four consecutive file writes made no change. The remaining plan needs replanning or a different coding route.";
+            duplicateSupervisor.recordNoProgressInterruption();
+            ledger.recordNoProgressInterruption(reason);
+            stopReason = "no_progress_detected";
+            forgeGreenR0RunStatus = "blocked";
+            contextMetrics.efficiencyReceipt = createRunReceipt();
+            return {
+              status: "blocked",
+              summary: `[${ERROR_CODES.AGENT_NO_PROGRESS_DETECTED}] ${reason}`,
+              findings,
+              evidence,
+              toolExecutions,
+              usage: totalUsage,
+              stopReason,
+              filesChanged: Array.from(changedFiles),
+              error: ERROR_CODES.AGENT_NO_PROGRESS_DETECTED,
+              contextMetrics,
             };
           }
         }
@@ -5057,6 +5085,9 @@ export class AgentRuntime {
           if (!raw.includes("\0")) oldContent = raw;
         } catch {}
       }
+      if (existed && fs.readFileSync(resolvedPath).equals(Buffer.from(content, "utf-8"))) {
+        throw new Error(`[${ERROR_CODES.TOOL_NO_EFFECT}] ${filePath} already has exactly these bytes. Re-read the target and choose a different edit; this call made no progress.`);
+      }
       // Atomic write
       const tmpName = `.cf-tmp-${crypto.randomUUID()}-${path.basename(resolvedPath)}`;
       const tmpPath = path.join(dir, tmpName);
@@ -5076,6 +5107,7 @@ export class AgentRuntime {
       adapter.emitFileChangeApplied(changeId, filePath);
       return `Successfully wrote ${content.length} characters to ${filePath}`;
     } catch (error) {
+      if (error instanceof Error && error.message.includes(ERROR_CODES.TOOL_NO_EFFECT)) throw error;
       return `Error writing file: ${error instanceof Error ? error.message : String(error)}`;
     }
   }
@@ -5245,6 +5277,7 @@ export class AgentRuntime {
       expectedHash,
     });
     if (!result.success) {
+      if (result.error?.includes(ERROR_CODES.TOOL_NO_EFFECT)) throw new Error(result.error);
       return `Error: ${redactSecrets(result.error ?? "edit failed")}\n[beforeHash:${result.beforeHash}]`;
     }
     adapter.emitFileWritten(crypto.randomUUID(), filePath, result.bytesWritten ?? 0);

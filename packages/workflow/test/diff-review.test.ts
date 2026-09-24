@@ -25,6 +25,8 @@ describe("DiffReview", () => {
     const review = await reviewDiff(ws, { beforeSnapshots: before });
     expect(review.diffs.length).toBe(1);
     expect(review.diffs[0]!.diff).toContain("changed");
+    expect(review.diffs[0]!.additions).toBe(1);
+    expect(review.diffs[0]!.deletions).toBe(1);
     expect(review.summary).toContain("1 file");
   });
 

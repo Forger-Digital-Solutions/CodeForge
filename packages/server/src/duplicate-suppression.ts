@@ -114,6 +114,7 @@ export interface ExternalToolClassifier {
 
 export class DuplicateActionSupervisor {
   private stateVersion = 1;
+  private consecutiveNoEffectWrites = 0;
   private readonly records = new Map<string, DuplicateRecord>();
   private readonly readProgress = new Map<number, ReadProgressState>();
   readonly metrics: DuplicateSuppressionMetrics = { duplicateActionsSuppressed: 0, noProgressEscalations: 0, noProgressReadSignals: 0 };
@@ -241,6 +242,7 @@ export class DuplicateActionSupervisor {
   /** Record a mutating action: it executed and advanced workspace-relevant state. */
   recordMutationExecution(identity: DuplicateActionIdentity, success: boolean): void {
     this.stateVersion++;
+    if (success) this.consecutiveNoEffectWrites = 0;
     this.readProgress.delete(this.stateVersion - 1);
     const key = this.identityKey(identity);
     this.records.set(key, {
@@ -250,6 +252,14 @@ export class DuplicateActionSupervisor {
       attemptsAtState: 1,
     });
     this.bounded();
+  }
+
+  /** A rejected identical write gives the model new feedback, but never counts as a workspace edit. */
+  recordNoEffectWrite(): number {
+    this.consecutiveNoEffectWrites++;
+    this.stateVersion++;
+    this.readProgress.delete(this.stateVersion - 1);
+    return this.consecutiveNoEffectWrites;
   }
 
   private bounded(): void {

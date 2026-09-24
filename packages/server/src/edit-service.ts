@@ -173,6 +173,15 @@ export function replaceExact(params: ReplaceExactParams): EditResult {
   }
 
   const newContent = currentContent.replace(oldText, newText);
+  if (newContent === currentContent) {
+    return {
+      success: false,
+      path: relativePath,
+      beforeHash,
+      afterHash: beforeHash,
+      error: `[TOOL_NO_EFFECT] ${relativePath} is unchanged by this replacement. Re-read the target and choose a different edit; this call made no progress.`,
+    };
+  }
   if (Buffer.byteLength(newContent, "utf-8") > MAX_FILE_BYTES) {
     return { success: false, path: relativePath, beforeHash, error: "Resulting file too large" };
   }
