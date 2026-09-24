@@ -60,15 +60,27 @@ export interface FailoverRequest {
    * R24 Mission C: when a Free Fabric governs admission, an `auto`-mode rotation is decided
    * by the fabric — it releases/replaces the failed route's reservation atomically and only
    * returns routes the fabric actually admitted. Returning undefined falls back to the
-   * bounded same-route path, which still holds the original reservation.
+   * bounded same-route path, which still holds the original reservation. `capacityPoolId`
+   * identifies the admitted replacement's physical quota pool so callers can keep pool
+   * identity truthful across a migration.
    */
-  fabricReplacement?: (exclude: RouteKey) => { route: RouteKey; reasonCodes: string[] } | undefined;
+  fabricReplacement?: (exclude: RouteKey) => { route: RouteKey; reasonCodes: string[]; capacityPoolId?: string } | undefined;
 }
 
 export type FailoverOutcome =
   | { action: "retry_same"; reason: FailureReason }
-  | { action: "rotate"; reason: FailureReason; replacement: RouteKey; receipt: DecisionReceipt }
-  | { action: "no_replacement"; reason: FailureReason; receipt: DecisionReceipt }
+  | { action: "rotate"; reason: FailureReason; replacement: RouteKey; capacityPoolId?: string; receipt: DecisionReceipt }
+  | {
+    action: "no_replacement";
+    reason: FailureReason;
+    receipt: DecisionReceipt;
+    /**
+     * R33: set when the fabric re-decide reported QUEUED_FOR_CAPACITY — eligible free supply
+     * exists but is busy, so the caller should park durably instead of terminalizing. Absent
+     * means the denial was structural (no eligible route at all) and stays fail-closed.
+     */
+    capacityWait?: { reasonCodes: string[]; nextAvailableAt?: string };
+  }
   | { action: "surface"; reason: FailureReason };
 
 /**
@@ -201,7 +213,7 @@ export class EightBitFailoverCoordinator {
       }
       const receipt = this.buildReceipt(req, "ROTATE", [reason, "FABRIC_ADMITTED_REPLACEMENT", ...replacement.reasonCodes], replacement.route);
       await this.store.recordReceipt(receipt);
-      return { action: "rotate", reason, replacement: replacement.route, receipt };
+      return { action: "rotate", reason, replacement: replacement.route, ...(replacement.capacityPoolId ? { capacityPoolId: replacement.capacityPoolId } : {}), receipt };
     }
 
     const result = this.router.selectReplacement(options, req.current, alternates);

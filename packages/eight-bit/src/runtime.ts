@@ -135,6 +135,14 @@ export class EightBitRuntime {
     requestId: string;
     sessionId: string;
     role: EightBitRole;
+    /**
+     * Health-evidence scope when it differs from the admission role — e.g. a review turn
+     * admits on coding-capable supply but its outcomes belong in REVIEWER-scoped evidence.
+     */
+    healthRole?: EightBitRole;
+    /** R33: prefer a physical quota pool different from this one (reviewer independence).
+     *  The same pool remains reachable only after independent routes fail admission. */
+    preferIndependentFromPoolId?: string;
     userId?: string;
     taskKind?: string;
     demand?: FabricRequest["demand"];
@@ -151,7 +159,8 @@ export class EightBitRuntime {
       role: FABRIC_MODEL_ROLE[req.role],
       // The caller knows the real role; product-role mapping alone would assess explorer work
       // against tool-agent-scoped health evidence (and vice versa).
-      healthRole: req.role,
+      healthRole: req.healthRole ?? req.role,
+      ...(req.preferIndependentFromPoolId ? { preferIndependentFromPoolId: req.preferIndependentFromPoolId } : {}),
       ...(req.taskKind ? { taskKind: req.taskKind } : {}),
       ...(req.demand ? { demand: req.demand } : {}),
       isNewUser: req.isNewUser ?? ctx?.isNewUser ?? false,
@@ -348,6 +357,9 @@ export class EightBitRuntime {
     // route's hold is replaced atomically by the next admissible route's reservation (same
     // requestId), so a failover can never execute unadmitted or double-spend the pool.
     const requestId = req.fabricRequestId ?? req.runId ?? req.turnId;
+    // R33: remember the fabric's verdict. `no_replacement` must distinguish "eligible supply
+    // is busy" (a durable capacity wait) from "no eligible supply exists" (fail closed).
+    let lastFabricDecision: FabricRouteDecision | undefined;
     const reqWithFabric: typeof req = this.options.freeFabric && (req.pinMode ?? (req.isExactPin ? "route" : "auto")) === "auto"
       ? {
         ...req,
@@ -360,6 +372,7 @@ export class EightBitRuntime {
             taskKind: "failover",
             demand: { requests: 1, inputTokens: Math.min(req.estimatedContextTokens ?? 16_000, 16_000) },
           });
+          lastFabricDecision = decision;
           if (decision?.outcome !== "ADMITTED" || !decision.selected) return undefined;
           const sel = decision.selected;
           if (!req.hasAdapter(sel.providerId)) {
@@ -374,11 +387,20 @@ export class EightBitRuntime {
             // executes under exactly this reservation.
             return undefined;
           }
-          return { route: { providerId: sel.providerId, modelId: sel.modelId }, reasonCodes: decision.explanation.reasonCodes };
+          return { route: { providerId: sel.providerId, modelId: sel.modelId }, reasonCodes: decision.explanation.reasonCodes, capacityPoolId: sel.capacityPoolId };
         },
       }
       : req;
     const outcome = await this.failover.handleFailure(reqWithFabric);
+    if (outcome.action === "no_replacement" && lastFabricDecision?.outcome === "QUEUED_FOR_CAPACITY") {
+      return {
+        ...outcome,
+        capacityWait: {
+          reasonCodes: lastFabricDecision.explanation.reasonCodes,
+          ...(lastFabricDecision.nextAvailableAt ? { nextAvailableAt: lastFabricDecision.nextAvailableAt } : {}),
+        },
+      };
+    }
     // Persist the FAILED route's health regardless of outcome — this is what a restart needs
     // to keep excluding it, independent of whatever the binding row ends up pointing at.
     await this.store.saveRouteHealth(req.sessionId, req.current.providerId, req.current.modelId, this.health.getHealth(req.current.providerId, req.current.modelId));

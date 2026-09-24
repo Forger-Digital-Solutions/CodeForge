@@ -82,6 +82,7 @@ export const EightBitStatusSchema = EventBase(
       "ROUTE_ROTATED",
       "ROUTE_READY",
       "NO_ELIGIBLE_FREE_MODEL",
+      "FREE_CAPACITY_WAIT",
     ]),
     role: z.string(),
     previous: z.object({ providerId: z.string(), modelId: z.string() }).optional(),

@@ -20,6 +20,7 @@ export type RunState =
   | "RUNNING"
   | "WAITING_FOR_APPROVAL"
   | "WAITING_FOR_INPUT"
+  | "WAITING_FOR_CAPACITY"
   | "VERIFYING"
   | "REPAIRING"
   | "REVIEWING"
@@ -44,7 +45,7 @@ export type RunPhase =
   | "answering";
 
 export const TERMINAL_RUN_STATES: ReadonlySet<RunState> = new Set<RunState>(["COMPLETED", "FAILED", "BLOCKED", "CANCELLED", "ROUTE_EXHAUSTED"]);
-export const WAITING_RUN_STATES: ReadonlySet<RunState> = new Set<RunState>(["WAITING_FOR_APPROVAL", "WAITING_FOR_INPUT", "PAUSED", "INTERRUPTED"]);
+export const WAITING_RUN_STATES: ReadonlySet<RunState> = new Set<RunState>(["WAITING_FOR_APPROVAL", "WAITING_FOR_INPUT", "WAITING_FOR_CAPACITY", "PAUSED", "INTERRUPTED"]);
 
 export type RunOutcomePayload = RunOutcome["payload"];
 
@@ -155,7 +156,7 @@ function outcomeToState(outcome: RunOutcomePayload["outcome"]): RunState {
  */
 export function lifecycleFromSessionRecord(session: SessionRecord | null | undefined, turns: TurnRecord[] = []): RunLifecycle | null {
   if (!session) return null;
-  const inFlightTurn = turns.find((turn) => ["running", "paused", "recovering", "waiting_for_approval", "waiting_for_question"].includes(String(turn.status)));
+  const inFlightTurn = turns.find((turn) => ["running", "paused", "recovering", "waiting_for_approval", "waiting_for_question", "waiting_for_free_capacity"].includes(String(turn.status)));
   const status = String(session.status);
   const outcome = session.outcome;
   const lastTurn = [...turns].sort((a, b) => (a.startedAt ?? "").localeCompare(b.startedAt ?? "")).at(-1);
@@ -166,6 +167,10 @@ export function lifecycleFromSessionRecord(session: SessionRecord | null | undef
   if (inFlightTurn?.status === "paused") return finalize(base, { state: "PAUSED", activeTurnId: inFlightTurn.id });
   if (inFlightTurn?.status === "waiting_for_approval") return finalize(base, { state: "WAITING_FOR_APPROVAL", activeTurnId: inFlightTurn.id });
   if (inFlightTurn?.status === "waiting_for_question") return finalize(base, { state: "WAITING_FOR_INPUT", activeTurnId: inFlightTurn.id });
+  // A durable capacity wait survives restart — the record IS the parked turn, not a dead run.
+  if (inFlightTurn?.status === "waiting_for_free_capacity" || status === "waiting_for_free_capacity") {
+    return finalize(base, { state: "WAITING_FOR_CAPACITY", activeTurnId: inFlightTurn?.id });
+  }
   if (inFlightTurn?.status === "running") return finalize(base, { state: "RUNNING", activeTurnId: inFlightTurn.id });
   const endedAt = lastTurn?.completedAt ? { endedAt: lastTurn.completedAt } : {};
   switch (status) {
@@ -332,7 +337,7 @@ export function deriveRunLifecycle(events: readonly WorkspaceEvent[], context: R
       }
       case "turn.resumed": {
         if (run.terminal) break;
-        if (run.state === "PAUSED" || run.state === "INTERRUPTED") resumeAfterWait();
+        if (run.state === "PAUSED" || run.state === "INTERRUPTED" || run.state === "WAITING_FOR_CAPACITY") resumeAfterWait();
         break;
       }
       case "turn.recovery": {
@@ -359,6 +364,9 @@ export function deriveRunLifecycle(events: readonly WorkspaceEvent[], context: R
           setState(back.state === "REROUTING" ? "RUNNING" : back.state, { phase: back.phase, reroutes: run.reroutes + (p.event === "ROUTE_READY" ? 1 : 0), cooldown: undefined, ...route });
         } else if (p.event === "ROUTE_COOLDOWN") {
           run = finalize(run, { cooldown: p.accessibleText });
+        } else if (p.event === "FREE_CAPACITY_WAIT") {
+          // The runtime parked the turn durably — nonterminal, resumable, never a failure.
+          setState("WAITING_FOR_CAPACITY", { cooldown: p.accessibleText });
         } else if (p.event === "NO_ELIGIBLE_FREE_MODEL") {
           run = finalize(run, { routeExhaustedAnnounced: true, cooldown: undefined });
         }
@@ -574,6 +582,10 @@ export function presentRun(lifecycle: RunLifecycle): RunPresentation {
       return { ...base, label: "Needs your approval", tone: "waiting", inProgress: true, controls: { ...off, stop: true }, composer: "approve", sidebarStatus: "Needs your approval" };
     case "WAITING_FOR_INPUT":
       return { ...base, label: "Needs your answer", tone: "waiting", inProgress: true, controls: { ...off, stop: true }, composer: "answer", sidebarStatus: "Needs your answer" };
+    case "WAITING_FOR_CAPACITY":
+      // Parked on the free-capacity broker, not on the user — resumes itself when supply
+      // returns; the only user action that makes sense is cancel.
+      return { ...base, label: "Waiting for free capacity", detail: lifecycle.cooldown ?? "Resumes automatically when a verified-free route is available", tone: "waiting", inProgress: true, controls: { ...off, stop: true }, composer: "steer", sidebarStatus: "Waiting for free capacity" };
     case "PAUSED":
       return { ...base, label: "Paused", tone: "paused", inProgress: true, controls: { ...off, stop: true, resume: true }, composer: "resume", sidebarStatus: "Paused" };
     case "INTERRUPTED":
@@ -623,6 +635,8 @@ export function presentSessionSummary(summary: { status?: string; outcome?: stri
       return { label: "Needs your approval", tone: "waiting" };
     case "waiting_for_question":
       return { label: "Needs your answer", tone: "waiting" };
+    case "waiting_for_free_capacity":
+      return { label: "Waiting for free capacity", tone: "waiting" };
     case "paused":
       return { label: "Paused", tone: "paused" };
     case "recovering":

@@ -613,7 +613,8 @@ export class WorkspaceEventAdapter {
       | "ROUTE_ROTATION_STARTED"
       | "ROUTE_ROTATED"
       | "ROUTE_READY"
-      | "NO_ELIGIBLE_FREE_MODEL",
+      | "NO_ELIGIBLE_FREE_MODEL"
+      | "FREE_CAPACITY_WAIT",
     role: string,
     reasonCodes: string[],
     accessibleText: string,

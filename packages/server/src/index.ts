@@ -1274,7 +1274,7 @@ export class CodeForgeServer {
           const activeTurns = runtime.getActiveTurns();
           const targetTurn = (data.turnId ? runtime.getTurn(data.turnId) : null) ?? activeTurns[0];
 
-          if (!targetTurn || (targetTurn.status !== "running" && targetTurn.status !== "paused" && targetTurn.status !== "waiting_for_approval" && targetTurn.status !== "waiting_for_question" && targetTurn.status !== "recovering")) {
+          if (!targetTurn || (targetTurn.status !== "running" && targetTurn.status !== "paused" && targetTurn.status !== "waiting_for_approval" && targetTurn.status !== "waiting_for_question" && targetTurn.status !== "waiting_for_free_capacity" && targetTurn.status !== "recovering")) {
             res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
             res.end(JSON.stringify({
               error: "NO_ACTIVE_TURN",
@@ -1522,7 +1522,7 @@ export class CodeForgeServer {
       const action = data.action === "release" ? "release" : data.action === "request" ? "request" : undefined;
       if (!action) { this.sendJson(res, 400, { error: "action must be request or release" }); return; }
       const runtime = this.runtimes.get(sessionId);
-      const active = runtime?.getActiveTurns().find((turn) => turn.status === "running" || turn.status === "paused" || turn.status === "waiting_for_approval" || turn.status === "waiting_for_question" || turn.status === "recovering");
+      const active = runtime?.getActiveTurns().find((turn) => turn.status === "running" || turn.status === "paused" || turn.status === "waiting_for_approval" || turn.status === "waiting_for_question" || turn.status === "waiting_for_free_capacity" || turn.status === "recovering");
       const runId = typeof data.runId === "string" && data.runId ? data.runId : active?.turnId ?? sessionId;
       const turnId = typeof data.turnId === "string" && data.turnId ? data.turnId : active?.turnId;
       if (action === "request") {
@@ -2321,6 +2321,7 @@ export class CodeForgeServer {
         paidAuto: this.paidAuto,
         hostedWorker,
         routeHealth: this.routeHealth,
+        capacityWaitRetryMs: 15_000,
         authorityFor: () => this.authorityFor(sessionId),
         externalTools: this.externalToolSurface,
       });
@@ -2344,6 +2345,7 @@ export class CodeForgeServer {
         fabricContext: this.fabricContext,
         paidAuto: this.paidAuto,
         routeHealth: this.routeHealth,
+        capacityWaitRetryMs: 15_000,
         authorityFor: () => this.authorityFor(sessionId),
         externalTools: this.externalToolSurface,
       });

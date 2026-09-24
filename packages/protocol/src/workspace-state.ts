@@ -6,6 +6,7 @@ export const SessionStatusSchema = z.enum([
   "paused",
   "waiting_for_approval",
   "waiting_for_question",
+  "waiting_for_free_capacity",
   "recovering",
   "completed",
   "failed",

@@ -41,6 +41,13 @@ export interface WorkflowServiceOptions {
   userIntentHold?: UserIntentHoldController;
   /** Agent working budget per implementation/repair turn (ms). Tests use small values. */
   agentWorkingBudgetMs?: number;
+  /**
+   * R33: cadence (ms) at which a workflow re-polls the Free Fabric on behalf of a turn parked
+   * in `waiting_for_free_capacity`. The probe is a fresh admission decision; ADMITTED resumes
+   * the turn in place, QUEUED keeps it parked. Parked time is not agent work and is never
+   * charged to the working budget. Default 2s; tests set it small for deterministic resumes.
+   */
+  capacityWaitPollMs?: number;
   /** Explicit finite request budget for controlled tests and operator diagnostics. */
   inferenceBudget?: { total?: number; reserve?: number };
   /** Shared task authority — plan mode and lease grants live here. */
@@ -538,6 +545,7 @@ export class WorkflowService {
   private readonly isRealRuntimeEnabled: () => boolean;
   private readonly userIntentHold?: UserIntentHoldController;
   private readonly agentWorkingBudgetMs: number;
+  private readonly capacityWaitPollMs: number;
   private readonly workflowInferenceBudget?: { total: number; reserve: number };
   private readonly authorityFor?: (sessionId: string) => TaskAuthority;
   private readonly onPolicyReceipt?: (receipt: PolicyReceipt) => void;
@@ -556,6 +564,7 @@ export class WorkflowService {
     this.isRealRuntimeEnabled = typeof realRuntime === "function" ? realRuntime : () => realRuntime;
     this.userIntentHold = options.userIntentHold;
     this.agentWorkingBudgetMs = options.agentWorkingBudgetMs ?? DEFAULT_AGENT_WORKING_BUDGET_MS;
+    this.capacityWaitPollMs = options.capacityWaitPollMs ?? 2_000;
     if (options.inferenceBudget) {
       this.workflowInferenceBudget = {
         total: options.inferenceBudget.total ?? 64,
@@ -631,14 +640,25 @@ export class WorkflowService {
     signal: AbortSignal,
     adapter: WorkspaceEventAdapter,
     hostedWorker?: HostedWorkerOptions,
+    /** R33: publishes the runtime the executor actually used so the run timeout can see a
+     * parked capacity wait without conjuring a runtime just to check. */
+    onRuntime?: (runtime: AgentRuntime) => void,
   ): NonNullable<import("@codeforge/workflow").WorkflowEngineOptions["agentExecutor"]> {
-    const getRuntime = this.getOrCreateRuntime!;
+    const getRuntime: NonNullable<WorkflowServiceOptions["getOrCreateRuntime"]> = (sid, uid, worker) => {
+      const runtime = this.getOrCreateRuntime!(sid, uid, worker);
+      onRuntime?.(runtime);
+      return runtime;
+    };
     // A finite request envelope is opt-in. The normal run is governed by verified supply,
     // fair admission, working time, no-progress detection and the completion gate.
     const inferenceBudget = this.workflowInferenceBudget
       ? createWorkflowInferenceBudget(this.workflowInferenceBudget.total, this.workflowInferenceBudget.reserve)
       : undefined;
     let reviewPhaseReached = false;
+    // R33: the physical quota pool the implementation turn last admitted on. The goal review
+    // prefers a DIFFERENT pool — two models sharing one quota domain are not independent
+    // capacity, so pool identity (not provider/model names) is what the hint carries.
+    let lastImplementPoolId: string | undefined;
     const repairLane = (): InferenceLane => (reviewPhaseReached ? "reserved" : "primary");
     const waitForTurn = async (runtime: AgentRuntime, turnId: string, workingBudgetMs = this.agentWorkingBudgetMs): Promise<{ status: string; turn?: ReturnType<AgentRuntime["getTurn"]>; reason?: string; continuationId?: string; workingMs: number }> => {
       // This budget bounds how long the AGENT may work. Time the turn spends parked on a human
@@ -652,6 +672,7 @@ export class WorkflowService {
       const timeoutMs = workingBudgetMs;
       let workingMs = 0;
       let lastTick = Date.now();
+      let nextCapacityPollAt = 0;
       while (workingMs < timeoutMs) {
         if (signal.aborted) {
           try { await runtime.cancelTurn(turnId, "Workflow cancelled"); } catch {}
@@ -686,6 +707,25 @@ export class WorkflowService {
           // stays paused until an explicit user decision reaches its ApprovalService through the
           // normal API/UI route. A workflow must not manufacture an approval on the user's behalf.
           await new Promise((r) => setTimeout(r, 100));
+          continue;
+        }
+        if (turn.status === "waiting_for_free_capacity") {
+          // R33: parked on free-capacity supply, not working — excluded from the working budget
+          // for the same reason an approval wait is. The workflow drives the resume itself: each
+          // poll is a FRESH fabric admission decision (probe), and an ADMITTED verdict resumes the
+          // turn in place. QUEUED/DENIED probes keep it parked. Cancellation still lands through
+          // signal.aborted above; a parked turn never silently converts to success or failure.
+          if (now >= nextCapacityPollAt) {
+            nextCapacityPollAt = now + this.capacityWaitPollMs;
+            try {
+              if (await runtime.probeCapacityWait(turnId) === "ADMITTED") {
+                await runtime.resumeTurn(turnId);
+              }
+            } catch {
+              // A failed probe/resume keeps the durable wait — the next poll retries.
+            }
+          }
+          await new Promise((r) => setTimeout(r, Math.min(200, this.capacityWaitPollMs)));
           continue;
         }
         workingMs += elapsed;
@@ -821,6 +861,9 @@ export class WorkflowService {
           }
         }
         const filesChanged = changedFilesSinceStart();
+        // Whatever the outcome, remember the pool the implementation last ran on — the review
+        // phase asks the fabric for capacity independent of it.
+        lastImplementPoolId = runtime.getTurn(turnId)?.capacityPoolId ?? lastImplementPoolId;
         if (result.status === "completed") {
           adapter.emitAgentCompleted(`agent-${plan.id.slice(0, 8)}`, plan.id);
           return { success: true, output: `Turn ${turnId} completed`, turnId, filesChanged };
@@ -864,7 +907,21 @@ export class WorkflowService {
         // Stated-contract checks are deterministic: they run on the diff itself and hold
         // whether or not the semantic review turn survives its budget.
         const contractFindings = checkStatedContracts(intent, diffs);
-        const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Reviewing goal conformance", inferenceBudget, inferenceLane: "reserved" });
+        const turnId = await runtime.startTurn(prompt, adapter, {
+          origin: "workflow",
+          label: "Reviewing goal conformance",
+          inferenceBudget,
+          inferenceLane: "reserved",
+          capacityHint: {
+            // Prefer REVIEWER-qualified, reviewer-scoped supply on a quota pool independent of
+            // the implementation route; when none can admit, the fabric falls back to
+            // coding-capable supply (SAME_POOL_FALLBACK is recorded honestly, never hidden).
+            role: "REVIEWER",
+            healthRole: "REVIEWER",
+            fallbackRole: "CODER",
+            ...(lastImplementPoolId ? { preferIndependentFromPoolId: lastImplementPoolId } : {}),
+          },
+        });
         const result = await waitForTurn(runtime, turnId);
         if (result.status !== "completed") {
           return {
@@ -993,8 +1050,22 @@ export class WorkflowService {
     adapter.emitStatusChanged("idle", "running");
 
     const controller = new AbortController();
-    const workflowTimeout = setTimeout(() => {
-      if (!controller.signal.aborted) {
+    // A mutable slot the executor fills with the runtime it actually used — the timeout reads
+    // turn state from it without creating a runtime just to check.
+    const agentExecutorRef: { current?: AgentRuntime } = {};
+    // R33: the timeout bounds runaway WORK. A turn parked in waiting_for_free_capacity is
+    // doing no work — killing the run for a supply outage would report "timeout" for what is
+    // really a capacity wait. Defer while any owned turn is parked; user cancellation still
+    // lands through the signal, and the parked turn itself is durable across restarts.
+    let workflowTimer: NodeJS.Timeout | undefined;
+    const armWorkflowTimeout = () => {
+      workflowTimer = setTimeout(() => {
+        if (controller.signal.aborted) return;
+        const parked = agentExecutorRef.current?.getActiveTurns().some((t) => t.status === "waiting_for_free_capacity") ?? false;
+        if (parked) {
+          armWorkflowTimeout();
+          return;
+        }
         // Abort WITH a reason so the engine can classify this as a timeout, not a user cancel.
         controller.abort(new Error(`Workflow timed out after ${WORKFLOW_TIMEOUT_MINUTES} minutes`));
         try {
@@ -1002,17 +1073,18 @@ export class WorkflowService {
           adapter.emitStatusChanged("running", "failed");
           adapter.emitTurnFailed(turnId, `Workflow timed out after ${WORKFLOW_TIMEOUT_MINUTES} minutes`);
         } catch {}
-      }
-    }, WORKFLOW_TIMEOUT_MS);
+      }, WORKFLOW_TIMEOUT_MS);
+    };
+    armWorkflowTimeout();
     // Ensure timeout is cleared when workflow settles
-    const clearWorkflowTimeout = () => clearTimeout(workflowTimeout);
+    const clearWorkflowTimeout = () => { if (workflowTimer) clearTimeout(workflowTimer); };
 
     const shouldUseRealAgent = !request.forceHeuristic && this.isRealRuntimeEnabled() && !!this.getOrCreateRuntime;
     const hostedWorker = hostedWorkflow?.kind === "hosted_workflow"
       ? { workflowId: hostedWorkflow.id, workerId: hostedWorkflow.workerId, autoResume: false }
       : undefined;
     const agentExecutor = shouldUseRealAgent
-      ? this.createAgentExecutor(sessionId, request.userId, controller.signal, adapter, hostedWorker)
+      ? this.createAgentExecutor(sessionId, request.userId, controller.signal, adapter, hostedWorker, (runtime) => { agentExecutorRef.current = runtime; })
       : undefined;
 
     const repairAttempts: Array<{ attempt: number; summary: string }> = [];

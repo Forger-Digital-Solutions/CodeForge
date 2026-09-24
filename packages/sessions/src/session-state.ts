@@ -542,13 +542,27 @@ export const WorkItemSchema = z.discriminatedUnion("kind", [
     id: z.string(),
     sessionId: z.string(),
     turnId: z.string(),
-    originalStatus: z.enum(["running", "paused", "waiting_for_approval", "waiting_for_question", "recovering"]),
+    originalStatus: z.enum(["running", "paused", "waiting_for_approval", "waiting_for_question", "waiting_for_free_capacity", "recovering"]),
     state: z.enum(["hydrated", "replan_required", "replan_started", "resumed", "blocked"]),
     generation: z.number().int().positive(),
     staleExecutionCount: z.number().int().nonnegative(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
     detail: z.string().optional(),
+  }),
+  z.object({
+    kind: z.literal("free_capacity_wait"),
+    id: z.string(),
+    sessionId: z.string(),
+    turnId: z.string(),
+    state: z.enum(["waiting", "resumed", "cancelled"]),
+    reasonCodes: z.array(z.string()),
+    nextAvailableAt: z.string().datetime().optional(),
+    /** True when the turn parked after execution began — a restored wait must resume under
+     * the no-replay capacity directive, not restart blind. Absent on pre-admission waits. */
+    midTurn: z.boolean().optional(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
   }),
   z.object({
     kind: z.literal("agent_tool_execution"),

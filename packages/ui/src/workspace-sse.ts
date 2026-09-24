@@ -322,6 +322,7 @@ const RUN_STATE_TO_SESSION_STATUS: Record<RunState, SessionStatus> = {
   REROUTING: "running",
   WAITING_FOR_APPROVAL: "waiting_for_approval",
   WAITING_FOR_INPUT: "waiting_for_question",
+  WAITING_FOR_CAPACITY: "waiting_for_free_capacity",
   PAUSED: "paused",
   INTERRUPTED: "recovering",
   COMPLETED: "completed",
@@ -357,6 +358,7 @@ export function lifecycleActivePhase(lifecycle: RunLifecycle): string {
     case "REVIEWING": return "reviewing";
     case "WAITING_FOR_APPROVAL": return "awaiting_approval";
     case "WAITING_FOR_INPUT": return "user_input_required";
+    case "WAITING_FOR_CAPACITY": return "waiting_for_free_capacity";
     case "INTERRUPTED": return "recovering";
     case "COMPLETED": return "complete";
     case "FAILED": return "failed_safely";
@@ -444,7 +446,7 @@ export function deriveRestoredRunState(
   turns: TurnRecord[] | undefined,
 ): Partial<Pick<WorkspaceState, "agentStatus" | "activePhase" | "isRunning" | "workflowError" | "workflowProgress">> | null {
   if (!session) return null;
-  const inFlight = (turns ?? []).some((turn) => ["running", "paused", "recovering", "waiting_for_approval", "waiting_for_question"].includes(turn.status));
+  const inFlight = (turns ?? []).some((turn) => ["running", "paused", "recovering", "waiting_for_approval", "waiting_for_question", "waiting_for_free_capacity"].includes(turn.status));
   if (inFlight) return null;
   const lastTurn = [...(turns ?? [])].sort((a, b) => (a.startedAt ?? "").localeCompare(b.startedAt ?? "")).at(-1);
   // Persisted status is wider than the live enum (older records carry workflow phases).

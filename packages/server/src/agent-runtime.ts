@@ -71,7 +71,7 @@ import {
   type NormalizedIdentity,
 } from "@codeforge/forge-green";
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
-import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider } from "@codeforge/eight-bit";
+import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider, type FabricOutcome, type FabricRouteDecision } from "@codeforge/eight-bit";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
@@ -296,12 +296,34 @@ export type TurnStatus =
   | "paused"
   | "waiting_for_approval"
   | "waiting_for_question"
+  | "waiting_for_free_capacity"
   | "waiting_for_worker"
   | "blocked"
   | "recovering"
   | "completed"
   | "failed"
   | "cancelled";
+
+class FreeCapacityQueued extends Error {
+  constructor(readonly reasonCodes: string[], readonly nextAvailableAt?: string) {
+    super("Verified free capacity is temporarily busy. This turn is waiting for a free route.");
+  }
+}
+
+/**
+ * R33: per-turn admission hints a dispatcher may attach. `role`/`healthRole` let a review
+ * turn admit on REVIEWER-scoped evidence; `fallbackRole` widens to coding-capable supply
+ * when no reviewer-qualified route can admit (honest degradation, never a paid substitute);
+ * `preferIndependentFromPoolId` asks the fabric for a physical quota pool different from
+ * the implementation route's so review is judged by genuinely separate capacity.
+ */
+export interface TurnCapacityHint {
+  role?: EightBitRole;
+  healthRole?: EightBitRole;
+  /** Admission role tried when `role` yields no admissible supply (DENIED or QUEUED). */
+  fallbackRole?: EightBitRole;
+  preferIndependentFromPoolId?: string;
+}
 
 export interface TurnState {
   turnId: string;
@@ -324,6 +346,12 @@ export interface TurnState {
   budgetExhaustedDetail?: string;
   /** Who authored the turn: the user (chat / repair) or a workflow dispatching an internal turn. */
   origin?: "user" | "workflow" | "repair";
+  /** The adapter this turn was started with (a workflow turn's events carry its runId). Kept
+   * so a capacity-wait resume emits on the same stream — never persisted. */
+  adapter?: WorkspaceEventAdapter;
+  /** Physical quota pool the admitted route draws from — the identity reviewer independence
+   * is measured against. Different models in one pool are NOT independent capacity. */
+  capacityPoolId?: string;
   /** 8-Bit found no eligible replacement route after a failure; the turn ends for routing reasons. */
   routeExhausted?: boolean;
   /** Classified terminal failure (what `error` says, structured). */
@@ -420,6 +448,13 @@ export interface AgentRuntimeOptions {
   paidAuto?: PaidAutoService;
   /** Shared provider pacing. Supplying one explicitly also governs deterministic test adapters. */
   capacityGovernor?: ProviderCapacityGovernor;
+  /**
+   * R33: cadence (ms) at which the runtime re-polls the Free Fabric on behalf of turns parked
+   * in `waiting_for_free_capacity`. A fresh admission decision replaces a manual resume — the
+   * turn wakes itself when eligible supply returns. 0/absent disables the sweeper (tests
+   * drive `resumeTurn` explicitly so waits stay deterministic).
+   */
+  capacityWaitRetryMs?: number;
   /**
    * Task-scoped authority lookup. When supplied, every tool action resolves
    * through the shared TaskPermissionLease (modes + grant patterns) so plan
@@ -715,6 +750,18 @@ export class AgentRuntime {
    * per-turn durable state. Entries are dropped when the turn's execution settles.
    */
   private readonly turnInferenceBudgets: Map<string, { budget: WorkflowInferenceBudget; lane: InferenceLane }> = new Map();
+  /**
+   * Admission hints a dispatcher attaches to a turn (review turns ask for reviewer-scoped
+   * health and a physical quota pool independent of the implementation route). In-memory
+   * only — a resumed turn re-admits under the same hints; a restored turn loses them with
+   * the workflow that owned it.
+   */
+  private readonly turnCapacityHints: Map<string, TurnCapacityHint> = new Map();
+  /** Turns parked mid-execution on capacity — resume injects a "prior work exists" directive. */
+  private readonly capacityResumeTurns = new Set<string>();
+  /** Lazy interval that re-polls the fabric for parked capacity waits (production resume path). */
+  private capacityWaitTimer?: NodeJS.Timeout;
+  private readonly capacityWaitRetryMs: number;
   private turnCount = 0;
   private maxIterations = 50;
   private readonly approvalService: ApprovalService;
@@ -776,6 +823,7 @@ export class AgentRuntime {
     this.hostedWorker = options.hostedWorker;
     this.authorityFor = options.authorityFor;
     this.externalTools = options.externalTools;
+    this.capacityWaitRetryMs = options.capacityWaitRetryMs ?? 0;
   }
 
   /**
@@ -911,6 +959,7 @@ export class AgentRuntime {
       const canRestoreApprovalWait = originalStatus === "waiting_for_approval" && pendingApproval?.kind === "approval";
       const canRestoreQuestionWait = originalStatus === "waiting_for_question" && pendingQuestion?.kind === "question";
       const canRestoreWorkerWait = originalStatus === "waiting_for_worker";
+      const canRestoreCapacityWait = originalStatus === "waiting_for_free_capacity" && workItems.some((item) => item.kind === "free_capacity_wait" && item.turnId === record.id && item.state === "waiting");
       if (canRestoreApprovalWait) {
         const createdAt = Date.parse(pendingApproval.createdAt);
         this.approvalService.restorePending({
@@ -935,6 +984,20 @@ export class AgentRuntime {
         });
       } else if (canRestoreWorkerWait) {
         // Preserves waiting_for_worker status across restarts
+      } else if (canRestoreCapacityWait) {
+        // The wait item records whether the park happened mid-execution; a restored mid-turn
+        // wait resumes under the "inspect the workspace, do not replay" capacity directive,
+        // while one parked at admission starts cleanly.
+        const waitItem = workItems.find((item) => item.kind === "free_capacity_wait" && item.turnId === record.id && item.state === "waiting");
+        if (waitItem?.kind === "free_capacity_wait" && waitItem.midTurn) {
+          this.capacityResumeTurns.add(record.id);
+        }
+        // The workflow engine does not survive restart — a parked workflow turn is adopted
+        // by the session so its outcome still reaches the user.
+        state.origin = "user";
+        // Restored waits must wake on their own: re-arm the probe sweeper that
+        // enterCapacityWait would have started had the wait been entered this process.
+        this.scheduleCapacitySweeper();
       } else {
         state.status = "recovering";
         this.recoveryRequiredTurns.add(record.id);
@@ -982,7 +1045,7 @@ export class AgentRuntime {
       ? "waiting_for_approval"
       : originalStatus === "blocked"
       ? "recovering"
-      : originalStatus) as "running" | "paused" | "waiting_for_approval" | "waiting_for_question" | "recovering";
+      : originalStatus) as "running" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "recovering";
     await this.persistence.upsertWorkItem({
       kind: "agent_turn_recovery",
       id: `agent-turn-recovery-${turnId}`,
@@ -2685,6 +2748,9 @@ export class AgentRuntime {
        */
       inferenceBudget?: WorkflowInferenceBudget;
       inferenceLane?: InferenceLane;
+      /** Admission hints (reviewer role evidence, physical pool independence) the fabric
+       * applies on this turn's initial admission and every capacity re-admission. */
+      capacityHint?: TurnCapacityHint;
     },
   ): Promise<string> {
     // Single-turn exclusivity per session for real active turns
@@ -2697,7 +2763,7 @@ export class AgentRuntime {
       }
     } else {
       const running = Array.from(this.activeTurns.values()).find(
-        (t) => t.status === "running" || t.status === "paused" || t.status === "waiting_for_approval" || t.status === "waiting_for_question" || t.status === "recovering",
+        (t) => t.status === "running" || t.status === "paused" || t.status === "waiting_for_approval" || t.status === "waiting_for_question" || t.status === "waiting_for_free_capacity" || t.status === "recovering",
       );
       if (running) {
         throw new Error(`A turn (${running.turnId}) is already active in session ${this.sessionId}. Steer the active turn or wait for it to complete.`);
@@ -2709,6 +2775,9 @@ export class AgentRuntime {
 
     if (options?.inferenceBudget) {
       this.turnInferenceBudgets.set(turnId, { budget: options.inferenceBudget, lane: options.inferenceLane ?? "primary" });
+    }
+    if (options?.capacityHint) {
+      this.turnCapacityHints.set(turnId, options.capacityHint);
     }
 
     const state: TurnState = {
@@ -2738,6 +2807,7 @@ export class AgentRuntime {
     // A workflow supplies its run-scoped adapter. Ordinary Chat keeps its existing session-scoped
     // adapter, so the UI never mistakes a chat tool call for autonomous workflow evidence.
     const adapter = eventAdapter ?? this.createAdapter();
+    state.adapter = adapter;
     adapter.emitStatusChanged("idle", "running");
     adapter.emitTurnStarted(turnId, userMessage, undefined, options?.origin ? { origin: options.origin, label: options.label } : undefined);
 
@@ -2770,10 +2840,17 @@ export class AgentRuntime {
       })
       .finally(() => {
         if (this.activeExecutions.get(turnId) === execution) this.activeExecutions.delete(turnId);
-        this.turnInferenceBudgets.delete(turnId);
+        // A turn parked on capacity keeps its dispatcher-supplied hints and budget — the
+        // resume re-admits under exactly the same terms. They're dropped only when the turn
+        // actually settles, not when it parks.
+        const parked = this.activeTurns.get(turnId)?.status === "waiting_for_free_capacity";
+        if (!parked) {
+          this.turnInferenceBudgets.delete(turnId);
+          this.turnCapacityHints.delete(turnId);
+        }
         // R24 Mission C: the turn's fabric admission ends with the turn — success, failure,
-        // and cancellation all settle the reservation so the freed capacity is immediately
-        // visible to other sessions' decide() calls.
+        // cancellation, and capacity-park all settle the reservation so the freed capacity is
+        // immediately visible to other sessions' decide() calls. A waiting turn holds nothing.
         this.eightBit.releaseFabricAdmission(`forgeauto:${turnId}`);
       });
     this.activeExecutions.set(turnId, execution);
@@ -2834,15 +2911,17 @@ export class AgentRuntime {
     if (!state) {
       throw new Error(`Turn  not found`);
     }
-    if (state.status !== "paused" && state.status !== "recovering") {
-      throw new Error(`Turn ${turnId} is not paused or recovering`);
+    if (state.status !== "paused" && state.status !== "recovering" && state.status !== "waiting_for_free_capacity") {
+      throw new Error(`Turn ${turnId} is not paused, recovering, or waiting for free capacity`);
     }
-    const adapter = this.createAdapter();
+    // Resume on the turn's own adapter when known — a workflow turn's wait/resume events keep
+    // their runId; a restored turn (no adapter survives restart) falls back to the session one.
+    const adapter = state.adapter ?? this.createAdapter();
     const recovering = state.status === "recovering";
     const generation = this.recoveryGenerationByTurn.get(turnId);
     const originalStatus = this.recoveryOriginalStatusByTurn.get(turnId);
     if (recovering && generation && originalStatus) {
-      const recovery = await this.persistence.getWorkItem(`agent-turn-recovery-`);
+      const recovery = await this.persistence.getWorkItem(`agent-turn-recovery-${turnId}`);
       await this.persistRecovery(turnId, originalStatus, "replan_started", generation,
         recovery?.kind === "agent_turn_recovery" ? recovery.staleExecutionCount : 0,
         "A new attempt is planning from current workspace and durable evidence.");
@@ -2850,10 +2929,12 @@ export class AgentRuntime {
       this.recoveryRequiredTurns.add(turnId);
     }
     await adapter.emitTurnResumed(turnId);
-    adapter.emitStatusChanged(recovering ? "recovering" : "paused", "running");
+    const previousStatus = state.status;
+    adapter.emitStatusChanged(previousStatus, "running");
     state.status = "running";
     this.activeTurns.set(turnId, state);
     await this.persistTurn(state);
+    if (previousStatus === "waiting_for_free_capacity") await this.updateCapacityWait(turnId, "resumed");
     const session = await this.persistence.getSession(this.sessionId);
     if (session) await this.persistence.upsertSession({ ...session, status: "running", updatedAt: new Date().toISOString() });
     const abortController = new AbortController();
@@ -2892,6 +2973,7 @@ export class AgentRuntime {
     state.completedAt = new Date();
     this.activeTurns.set(turnId, state);
     await this.persistTurn(state);
+    await this.updateCapacityWait(turnId, "cancelled");
     await this.persistSessionOutcome(state, "cancelled", "user_stopped");
     const adapter = this.createAdapter();
     await adapter.emitTurnCancelled(turnId, reason);
@@ -2982,7 +3064,7 @@ export class AgentRuntime {
 
   getActiveTurns(): TurnState[] {
     return Array.from(this.activeTurns.values()).filter(
-      (t) => t.status === "running" || t.status === "paused" || t.status === "waiting_for_approval" || t.status === "waiting_for_question" || t.status === "recovering",
+      (t) => t.status === "running" || t.status === "paused" || t.status === "waiting_for_approval" || t.status === "waiting_for_question" || t.status === "waiting_for_free_capacity" || t.status === "recovering",
     );
   }
 
@@ -2992,6 +3074,7 @@ export class AgentRuntime {
    * persistence write, so an uncooperative stream cannot write into closed persistence.
    */
   async shutdown(reason = "Server shutting down"): Promise<void> {
+    if (this.capacityWaitTimer) { clearInterval(this.capacityWaitTimer); this.capacityWaitTimer = undefined; }
     const executions = Array.from(this.activeExecutions.entries());
     for (const [turnId] of executions) this.abortControllers.get(turnId)?.abort();
     if (executions.length === 0) return;
@@ -3191,6 +3274,97 @@ export class AgentRuntime {
     await adapter.emitTurnRecovery(turnState.turnId, "replan_required", generation, detail);
   }
 
+  private async enterCapacityWait(state: TurnState, queued: FreeCapacityQueued, adapter: WorkspaceEventAdapter): Promise<void> {
+    const now = new Date().toISOString();
+    const id = `free-capacity-wait-${state.turnId}`;
+    const previous = await this.persistence.getWorkItem(id);
+    // A turn that already had a route parked mid-execution: resume replans over the durable
+    // workspace rather than replaying the prior attempt's in-memory continuation. The flag is
+    // persisted on the wait item so a restart restores the same directive decision.
+    const midTurn = Boolean(state.providerId);
+    await this.persistence.upsertWorkItem({
+      kind: "free_capacity_wait",
+      id,
+      sessionId: this.sessionId,
+      turnId: state.turnId,
+      state: "waiting",
+      reasonCodes: queued.reasonCodes,
+      ...(queued.nextAvailableAt && !Number.isNaN(Date.parse(queued.nextAvailableAt)) ? { nextAvailableAt: queued.nextAvailableAt } : {}),
+      ...(midTurn ? { midTurn: true } : {}),
+      createdAt: previous?.kind === "free_capacity_wait" ? previous.createdAt : now,
+      updatedAt: now,
+    });
+    if (midTurn) this.capacityResumeTurns.add(state.turnId);
+    state.status = "waiting_for_free_capacity";
+    this.activeTurns.set(state.turnId, state);
+    await this.persistTurn(state);
+    const session = await this.persistence.getSession(this.sessionId);
+    if (session) await this.persistence.upsertSession({ ...session, status: "waiting_for_free_capacity", updatedAt: now });
+    adapter.emitEightBitStatus(
+      "FREE_CAPACITY_WAIT",
+      this.turnCapacityHints.get(state.turnId)?.healthRole ?? this.turnCapacityHints.get(state.turnId)?.role ?? "CODER",
+      queued.reasonCodes,
+      queued.nextAvailableAt
+        ? `All eligible free routes are at capacity right now; the task waits safely until supply returns (earliest known reset ${queued.nextAvailableAt}).`
+        : "All eligible free routes are at capacity right now; the task waits safely until supply returns.",
+      state.providerId ? { providerId: state.providerId, modelId: state.modelId ?? "" } : undefined,
+    );
+    adapter.emitStatusChanged("running", "waiting_for_free_capacity");
+    this.scheduleCapacitySweeper();
+  }
+
+  /**
+   * A fresh fabric admission probe for a parked turn — no status change, no events. Returns
+   * the outcome; ADMITTED holds a reservation under the turn's requestId that `resumeTurn`'s
+   * own re-decide replaces idempotently, so probe + resume never double-books the pool.
+   */
+  async probeCapacityWait(turnId: string): Promise<FabricOutcome | undefined> {
+    const state = this.activeTurns.get(turnId);
+    if (state?.status !== "waiting_for_free_capacity" || !this.eightBit.hasFreeFabric) return undefined;
+    const decision = this.admitForTurn(turnId);
+    if (!decision) return undefined;
+    if (decision.outcome === "QUEUED_FOR_CAPACITY" && decision.nextAvailableAt) {
+      const previous = await this.persistence.getWorkItem(`free-capacity-wait-${turnId}`);
+      if (previous?.kind === "free_capacity_wait" && previous.state === "waiting" && previous.nextAvailableAt !== decision.nextAvailableAt) {
+        await this.persistence.upsertWorkItem({ ...previous, nextAvailableAt: decision.nextAvailableAt, updatedAt: new Date().toISOString() });
+      }
+    }
+    return decision.outcome;
+  }
+
+  /**
+   * R33: parked turns must wake when free supply returns — a user task is not lost merely
+   * because the routes were busy. The sweeper re-polls the fabric and resumes each waiting
+   * turn whose fresh decision admits; re-queued turns stay parked for the next tick.
+   */
+  private scheduleCapacitySweeper(): void {
+    if (this.capacityWaitRetryMs <= 0 || this.capacityWaitTimer) return;
+    this.capacityWaitTimer = setInterval(() => { void this.sweepCapacityWaits(); }, this.capacityWaitRetryMs);
+    this.capacityWaitTimer.unref?.();
+  }
+
+  private async sweepCapacityWaits(): Promise<void> {
+    const waiting = Array.from(this.activeTurns.values()).filter((t) => t.status === "waiting_for_free_capacity");
+    if (waiting.length === 0) {
+      if (this.capacityWaitTimer) { clearInterval(this.capacityWaitTimer); this.capacityWaitTimer = undefined; }
+      return;
+    }
+    for (const turn of waiting) {
+      try {
+        if (await this.probeCapacityWait(turn.turnId) === "ADMITTED") await this.resumeTurn(turn.turnId);
+      } catch {
+        // A probe/resume failure keeps the durable wait — the next tick retries. The wait
+        // must never terminalize itself.
+      }
+    }
+  }
+
+  private async updateCapacityWait(turnId: string, status: "resumed" | "cancelled"): Promise<void> {
+    const previous = await this.persistence.getWorkItem(`free-capacity-wait-${turnId}`);
+    if (previous?.kind !== "free_capacity_wait") return;
+    await this.persistence.upsertWorkItem({ ...previous, state: status, updatedAt: new Date().toISOString() });
+  }
+
   private async executeTurn(
     turnId: string,
     userMessage: string,
@@ -3210,7 +3384,19 @@ export class AgentRuntime {
     const duplicateSupervisor = this.newDuplicateSupervisor();
 
     try {
-      const model = this.resolveTurnModel(turnId);
+      let model: FreeModelRecord | null;
+      try {
+        model = this.resolveTurnModel(turnId);
+      } catch (error) {
+        // R33: a fabric QUEUED verdict means eligible free supply exists but is busy — the
+        // turn parks durably instead of failing. This applies to workflow-owned turns too:
+        // the dispatcher's waitForTurn observes the parked status and drives the resume.
+        if (error instanceof FreeCapacityQueued) {
+          await this.enterCapacityWait(state, error, adapter);
+          return;
+        }
+        throw error;
+      }
       // No admitted, healthy route is a failed turn, never a finished one: the loop below cannot
       // run without a model, and letting the turn fall through to "completed" reported a task
       // that did nothing as a success (observed in R5 after a provider-wide capacity cooldown).
@@ -3258,8 +3444,9 @@ export class AgentRuntime {
       state = this.activeTurns.get(turnId);
       if (!state) return;
 
-      // If turn was cancelled or suspended for worker, do not mark completed
-      if (state.status === "cancelled" || state.status === "waiting_for_worker" || state.status === "blocked") return;
+      // If turn was cancelled, suspended for worker, blocked, or parked on capacity, do not
+      // mark completed — a capacity wait is nonterminal and resolved by resume, not success.
+      if (state.status === "cancelled" || state.status === "waiting_for_worker" || state.status === "blocked" || state.status === "waiting_for_free_capacity") return;
 
       // Running out of iterations is not finishing. Reporting it as success is the exact
       // fake-completion this runtime must never produce.
@@ -3439,6 +3626,32 @@ export class AgentRuntime {
     }
   }
 
+  /**
+   * Ask the Free Fabric for this turn's admission under its dispatcher-supplied hints
+   * (reviewer role evidence, physical pool independence). When a review turn's preferred
+   * role cannot admit anywhere, the declared fallback role widens to coding-capable supply
+   * — the fallback decision is what the wait/deny evidence then reports honestly.
+   */
+  private admitForTurn(turnId: string | undefined): FabricRouteDecision | undefined {
+    const requestId = `forgeauto:${turnId ?? this.sessionId}`;
+    const hint = turnId ? this.turnCapacityHints.get(turnId) : undefined;
+    const decide = (role: EightBitRole) => this.eightBit.admitThroughFabric({
+      requestId,
+      sessionId: this.sessionId,
+      role,
+      ...(hint?.healthRole ? { healthRole: hint.healthRole } : {}),
+      ...(hint?.preferIndependentFromPoolId ? { preferIndependentFromPoolId: hint.preferIndependentFromPoolId } : {}),
+      userId: this.userId,
+      taskKind: "interactive_turn",
+      demand: { requests: 1, inputTokens: 16_000 },
+    });
+    let decision = decide(hint?.role ?? "CODER");
+    if (decision && decision.outcome !== "ADMITTED" && hint?.role && hint.fallbackRole && hint.role !== hint.fallbackRole) {
+      decision = decide(hint.fallbackRole);
+    }
+    return decision;
+  }
+
   private selectModel(turnId?: string): FreeModelRecord | null {
     // R24 Mission C: when a Free Fabric governs this runtime it is the admission authority for
     // ForgeAuto — an ADMITTED verdict holds a real capacity reservation for this turn, and a
@@ -3446,17 +3659,20 @@ export class AgentRuntime {
     // route the fabric did not admit, and a missing/unexecutable pick is released immediately.
     if (this.eightBit.hasFreeFabric) {
       const requestId = `forgeauto:${turnId ?? this.sessionId}`;
-      const decision = this.eightBit.admitThroughFabric({
-        requestId,
-        sessionId: this.sessionId,
-        role: "CODER",
-        userId: this.userId,
-        taskKind: "interactive_turn",
-        demand: { requests: 1, inputTokens: 16_000 },
-      });
+      const decision = this.admitForTurn(turnId);
+      if (decision?.outcome === "QUEUED_FOR_CAPACITY") {
+        throw new FreeCapacityQueued(decision.explanation.reasonCodes, decision.nextAvailableAt);
+      }
       const selected = decision?.outcome === "ADMITTED" ? decision.selected : undefined;
       const record = selected ? this.firewall.getModel(selected.providerId, selected.modelId) : undefined;
       if (record && this.providerCatalog.get(record.providerId) && record.capabilities.toolCalling) {
+        if (turnId) {
+          const state = this.activeTurns.get(turnId);
+          if (state) {
+            state.capacityPoolId = selected!.capacityPoolId;
+            this.activeTurns.set(turnId, state);
+          }
+        }
         return record;
       }
       this.eightBit.releaseFabricAdmission(requestId);
@@ -3618,6 +3834,8 @@ export class AgentRuntime {
     const systemPrompt = this.buildSystemPrompt();
     const recoveryDirective = this.recoveryRequiredTurns.has(turnId)
       ? "[Recovery directive] A prior process stopped during this turn. Treat all unfinished pre-restart execution as stale. Inspect the current workspace and durable evidence, then create a new plan. Do not replay a prior command, tool call, or model continuation."
+      : this.capacityResumeTurns.has(turnId)
+      ? "[Capacity directive] This turn paused mid-execution waiting for verified free capacity, and is resuming on a fresh admission decision — possibly a different route and quota pool. Inspect the current workspace and durable evidence; continue the remaining work without replaying tool calls or edits that already succeeded."
       : undefined;
     const userMessage: ChatMessage = { role: "user", content: state.userMessage };
     this.messageHistory.length = 0;
@@ -3625,6 +3843,7 @@ export class AgentRuntime {
     if (recoveryDirective) this.messageHistory.push({ role: "system", content: recoveryDirective });
     this.messageHistory.push(userMessage);
     this.recoveryRequiredTurns.delete(turnId);
+    this.capacityResumeTurns.delete(turnId);
 
     const tools = this.getAvailableTools();
 
@@ -4363,6 +4582,13 @@ export class AgentRuntime {
     }
 
     if (outcome.action !== "rotate") {
+      if (outcome.action === "no_replacement" && outcome.capacityWait) {
+        // R33: the fabric still sees eligible free supply — it is all busy, not absent.
+        // Park the turn durably; a fresh admission decision resumes it when a pool frees up.
+        // Only a structural denial (no eligible route at all) stays terminal below.
+        await this.enterCapacityWait(state, new FreeCapacityQueued(outcome.capacityWait.reasonCodes, outcome.capacityWait.nextAvailableAt), adapter);
+        return true;
+      }
       if (outcome.action === "no_replacement" && outcome.receipt.action === "NO_ELIGIBLE_ROUTE") {
         // The turn is over for routing reasons; the terminal failure names that, not the last 429.
         state.routeExhausted = true;
@@ -4412,6 +4638,7 @@ export class AgentRuntime {
     const previousRoute = { providerId: state.providerId, modelId: state.modelId };
     state.modelId = outcome.replacement.modelId;
     state.providerId = outcome.replacement.providerId;
+    if (outcome.capacityPoolId) state.capacityPoolId = outcome.capacityPoolId;
     this.activeTurns.set(turnId, state);
     await this.persistTurn(state);
     adapter.emitRouterFailover(turnId, `${previousRoute.providerId}/${previousRoute.modelId}`, `${outcome.replacement.providerId}/${outcome.replacement.modelId}`, outcome.reason);

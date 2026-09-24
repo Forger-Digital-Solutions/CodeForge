@@ -35,6 +35,7 @@ type StreamScript = (call: number) => StreamEvent[];
 class ScriptedRouteProvider implements ProviderAdapter {
   readonly isTestProvider = true;
   callCount = 0;
+  readonly requests: ChatRequest[] = [];
 
   constructor(
     readonly providerId: string,
@@ -56,8 +57,9 @@ class ScriptedRouteProvider implements ProviderAdapter {
     throw new Error("Use streamChat");
   }
 
-  async *streamChat(_req: ChatRequest, _signal?: AbortSignal): AsyncIterable<StreamEvent> {
+  async *streamChat(req: ChatRequest, _signal?: AbortSignal): AsyncIterable<StreamEvent> {
     this.callCount++;
+    this.requests.push(req);
     yield* this.script(this.callCount);
   }
 
@@ -256,7 +258,7 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
   });
 
-  it("a queued verdict fails the interactive turn closed — the provider is never called", async () => {
+  it("a queued ForgeAuto turn remains durable and resumes only after free capacity returns", async () => {
     // One request slot in the shared pool; an earlier user already holds it.
     const route = managedRoute("provider-a", { windows: [quotaWindow({ limit: 1, remaining: 1 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
     registerFleet("provider-a", "provider-a-model");
@@ -270,12 +272,33 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     const runtime = makeRuntime("sess-fabric-queued", fabric);
     await runtime.init();
     const turnId = await runtime.startTurn("Say hello");
-    const final = await waitForTerminal(runtime, persistence, "sess-fabric-queued", turnId);
-
-    expect(final?.status).toBe("failed");
+    for (let i = 0; i < 100 && runtime.getTurn(turnId)?.status !== "waiting_for_free_capacity"; i++) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    expect(runtime.getTurn(turnId)?.status).toBe("waiting_for_free_capacity");
+    expect((await persistence.getTurns("sess-fabric-queued")).find((turn) => turn.id === turnId)?.status).toBe("waiting_for_free_capacity");
+    expect((await persistence.getSession("sess-fabric-queued"))?.status).toBe("waiting_for_free_capacity");
+    expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toMatchObject({ kind: "free_capacity_wait", state: "waiting", turnId });
     expect(provider.callCount).toBe(0);
-    // The denied turn left no stray hold behind; the earlier user's reservation is untouched.
     expect(fabric.reservationSnapshot()?.activeReservations).toBe(1);
+
+    const recovered = makeRuntime("sess-fabric-queued", fabric);
+    await recovered.init();
+    expect(recovered.getTurn(turnId)?.status).toBe("waiting_for_free_capacity");
+    await recovered.resumeTurn(turnId);
+    for (let i = 0; i < 100 && recovered.getTurn(turnId)?.status !== "waiting_for_free_capacity"; i++) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    expect(recovered.getTurn(turnId)?.status).toBe("waiting_for_free_capacity");
+    expect(provider.callCount).toBe(0);
+
+    expect(fabric.release(holdout.selected!.reservationId!)).toBe(true);
+    await recovered.resumeTurn(turnId);
+    const final = await waitForTerminal(recovered, persistence, "sess-fabric-queued", turnId);
+    expect(final?.status).toBe("completed");
+    expect(provider.callCount).toBe(1);
+    expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toMatchObject({ state: "resumed" });
+    expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
   });
 
   it("a role-routed run decides through the fabric and releases its reservation when the run ends", async () => {
@@ -399,7 +422,266 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
   });
 
-  it("two sessions contend for one shared slot through the shared ledger — the loser fails closed, then succeeds after release", async () => {
+  it("a workflow-owned turn parks durably on capacity wait and resumes on a fresh admission", async () => {
+    const route = managedRoute("provider-a", { windows: [quotaWindow({ limit: 1, remaining: 1 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
+    registerFleet("provider-a", "provider-a-model");
+    const fabric = makeFabric([route], [poolFor(route)]);
+    const holdout = fabric.decide({ requestId: "other-user-hold", userId: "user-other", role: "PRIMARY_CODING_AGENT" });
+    expect(holdout.outcome).toBe("ADMITTED");
+
+    const provider = new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents());
+    catalog.register(provider);
+    const runtime = makeRuntime("sess-fabric-wf", fabric);
+    await runtime.init();
+    const workflowAdapter = createWorkspaceEventAdapter({ sessionId: "sess-fabric-wf", eventStore, persistence, runId: "wf-task-1" });
+    const turnId = await runtime.startTurn("Implement step", workflowAdapter, { origin: "workflow", label: "Implementing" });
+    for (let i = 0; i < 100 && runtime.getTurn(turnId)?.status !== "waiting_for_free_capacity"; i++) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    expect(runtime.getTurn(turnId)?.status).toBe("waiting_for_free_capacity");
+    expect(provider.callCount).toBe(0);
+    const waitItem = await persistence.getWorkItem(`free-capacity-wait-${turnId}`);
+    expect(waitItem).toMatchObject({ kind: "free_capacity_wait", state: "waiting", turnId });
+
+    // Capacity returns — the workflow's probe-driven resume lands the turn on the freed slot.
+    expect(fabric.release(holdout.selected!.reservationId!)).toBe(true);
+    await runtime.resumeTurn(turnId);
+    const final = await waitForTerminal(runtime, persistence, "sess-fabric-wf", turnId);
+    expect(final?.status).toBe("completed");
+    expect(provider.callCount).toBe(1);
+    expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toMatchObject({ state: "resumed" });
+    expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+  });
+
+  it("mid-turn provider exhaustion parks the turn and resumes on an independent pool", async () => {
+    const routeA = managedRoute("provider-a", { qualityScore: 60 });
+    // B outranks A, so the external hold takes B's only slot deterministically and the turn's
+    // own admission falls to A — whose mid-stream 429 then has nowhere admissible to rotate to.
+    const routeB = managedRoute("provider-b", { qualityScore: 95, windows: [quotaWindow({ limit: 1, remaining: 1 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
+    registerFleet("provider-a", "provider-a-model");
+    registerFleet("provider-b", "provider-b-model");
+    const fabric = makeFabric([routeA, routeB], [poolFor(routeA), poolFor(routeB)]);
+    const holdout = fabric.decide({ requestId: "other-user-hold", userId: "user-other", role: "PRIMARY_CODING_AGENT" });
+    expect(holdout.selected?.capacityPoolId).toBe("shared:provider-b");
+
+    const providerA = new ScriptedRouteProvider("provider-a", "provider-a-model", () => [
+      { type: "error", code: "PROVIDER_RATE_LIMITED", status: 429, message: "429 rate limited", retryable: true },
+    ]);
+    const providerB = new ScriptedRouteProvider("provider-b", "provider-b-model", () => okEvents());
+    catalog.register(providerA);
+    catalog.register(providerB);
+
+    const runtime = makeRuntime("sess-fabric-midturn", fabric);
+    await runtime.init();
+    const turnId = await runtime.startTurn("Do work");
+    for (let i = 0; i < 200 && runtime.getTurn(turnId)?.status !== "waiting_for_free_capacity"; i++) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    const parked = runtime.getTurn(turnId);
+    expect(parked?.status).toBe("waiting_for_free_capacity");
+    expect(providerA.callCount).toBeGreaterThanOrEqual(1);
+    expect(providerB.callCount).toBe(0);
+    // Parked turns hold no reservation — the failed route's hold was settled at park time.
+    expect(fabric.reservationSnapshot()?.activeReservations).toBe(1);
+
+    fabric.release(holdout.selected!.reservationId!);
+    await runtime.resumeTurn(turnId);
+    const final = await waitForTerminal(runtime, persistence, "sess-fabric-midturn", turnId);
+    expect(final?.status).toBe("completed");
+    // Cross-pool migration: the resume admitted the other physical pool, not just another model.
+    expect(final?.providerId).toBe("provider-b");
+    expect(final?.capacityPoolId).toBe("shared:provider-b");
+    expect(providerB.callCount).toBe(1);
+    expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+  });
+
+  it("a mid-turn park survives a runtime restart and resumes on independent supply without replaying tools", async () => {
+    await fs.writeFile(path.join(tmpDir, "target.ts"), "export const value = 1;\n");
+    const routeA = managedRoute("provider-a", { qualityScore: 95 });
+    // B exists but its request window is exhausted — the failover re-decide has supply to
+    // point at yet nothing admissible, which is exactly QUEUED_FOR_CAPACITY. The pool and the
+    // route share one windows array, so raising `remaining` models the provider's quota reset.
+    const routeB = managedRoute("provider-b", { qualityScore: 60, windows: [quotaWindow({ limit: 1, remaining: 0 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
+    registerFleet("provider-a", "provider-a-model");
+    registerFleet("provider-b", "provider-b-model");
+    const poolB = poolFor(routeB);
+    const fabric = makeFabric([routeA, routeB], [poolFor(routeA), poolB]);
+
+    const providerA = new ScriptedRouteProvider("provider-a", "provider-a-model", (call) => {
+      if (call === 1) {
+        const id = "tc-read-1";
+        return [
+          { type: "tool_call_started", toolCallId: id, toolName: "read_file" },
+          { type: "tool_call_completed", toolCallId: id, toolName: "read_file", arguments: JSON.stringify({ path: "target.ts" }) },
+          { type: "finish", finishReason: "tool_calls" },
+        ];
+      }
+      return [{ type: "error", code: "PROVIDER_RATE_LIMITED", status: 429, message: "429 rate limited", retryable: true }];
+    });
+    const providerB = new ScriptedRouteProvider("provider-b", "provider-b-model", () => okEvents());
+    catalog.register(providerA);
+    catalog.register(providerB);
+
+    const runtime = makeRuntime("sess-fabric-restart", fabric);
+    await runtime.init();
+    const turnId = await runtime.startTurn("Inspect target.ts and report");
+    for (let i = 0; i < 200 && runtime.getTurn(turnId)?.status !== "waiting_for_free_capacity"; i++) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    expect(runtime.getTurn(turnId)?.status).toBe("waiting_for_free_capacity");
+    // The park happened after the turn had a live route — durable evidence a restart must
+    // restore as a mid-turn wait (the no-replay directive), not a clean admission wait.
+    expect(providerA.callCount).toBe(2);
+    expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toMatchObject({ kind: "free_capacity_wait", state: "waiting", midTurn: true });
+
+    // Process restart: a fresh runtime hydrates the parked turn from durable state alone.
+    const restored = makeRuntime("sess-fabric-restart", fabric);
+    await restored.init();
+    const restoredTurn = restored.getTurn(turnId);
+    expect(restoredTurn?.status).toBe("waiting_for_free_capacity");
+
+    // Supply returns on the OTHER pool (quota window reset); the resumed turn must carry the
+    // no-replay directive onto the replacement route.
+    poolB.windows[0] = { ...poolB.windows[0], remaining: 1 };
+    await restored.resumeTurn(turnId);
+    const final = await waitForTerminal(restored, persistence, "sess-fabric-restart", turnId);
+    expect(final?.status).toBe("completed");
+    expect(final?.capacityPoolId).toBe("shared:provider-b");
+    expect(providerB.callCount).toBe(1);
+    const resumedMessages = providerB.requests[0]?.messages ?? [];
+    expect(resumedMessages.some((m) => typeof m.content === "string" && m.content.includes("[Capacity directive]"))).toBe(true);
+    expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+  });
+
+  it("a review turn prefers a quota pool independent of the implementation route", async () => {
+    // A outscores B — without the independence hint the fabric would give review the same pool.
+    const routeA = managedRoute("provider-a", { qualityScore: 95 });
+    const routeB = managedRoute("provider-b", { qualityScore: 60 });
+    registerFleet("provider-a", "provider-a-model");
+    registerFleet("provider-b", "provider-b-model");
+    const fabric = makeFabric([routeA, routeB], [poolFor(routeA), poolFor(routeB)]);
+    catalog.register(new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents()));
+    catalog.register(new ScriptedRouteProvider("provider-b", "provider-b-model", () => okEvents()));
+
+    const runtime = makeRuntime("sess-review-independence", fabric);
+    await runtime.init();
+    const implTurn = await runtime.startTurn("Implement the change");
+    const implFinal = await waitForTerminal(runtime, persistence, "sess-review-independence", implTurn);
+    expect(implFinal?.status).toBe("completed");
+    expect(implFinal?.capacityPoolId).toBe("shared:provider-a");
+
+    const reviewTurn = await runtime.startTurn("Review the change", undefined, {
+      origin: "workflow",
+      label: "Reviewing goal conformance",
+      capacityHint: { role: "REVIEWER", healthRole: "REVIEWER", fallbackRole: "CODER", preferIndependentFromPoolId: "shared:provider-a" },
+    });
+    const reviewFinal = await waitForTerminal(runtime, persistence, "sess-review-independence", reviewTurn);
+    expect(reviewFinal?.status).toBe("completed");
+    expect(reviewFinal?.capacityPoolId).toBe("shared:provider-b");
+  });
+
+  it("a review turn on a single-pool fleet falls back honestly instead of denying review", async () => {
+    const routeA = managedRoute("provider-a");
+    registerFleet("provider-a", "provider-a-model");
+    const fabric = makeFabric([routeA], [poolFor(routeA)]);
+    catalog.register(new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents()));
+
+    const runtime = makeRuntime("sess-review-samepool", fabric);
+    await runtime.init();
+    const reviewTurn = await runtime.startTurn("Review the change", undefined, {
+      origin: "workflow",
+      capacityHint: { role: "REVIEWER", healthRole: "REVIEWER", fallbackRole: "CODER", preferIndependentFromPoolId: "shared:provider-a" },
+    });
+    const final = await waitForTerminal(runtime, persistence, "sess-review-samepool", reviewTurn);
+    // Same-pool fallback is the honest outcome — recorded, not hidden; review still ran.
+    expect(final?.status).toBe("completed");
+    expect(final?.capacityPoolId).toBe("shared:provider-a");
+  });
+
+  it("a review turn widens to coding-capable supply when no reviewer-qualified route exists", async () => {
+    const routeA = managedRoute("provider-a", { roles: ["PRIMARY_CODING_AGENT"] });
+    registerFleet("provider-a", "provider-a-model");
+    const fabric = makeFabric([routeA], [poolFor(routeA)]);
+    catalog.register(new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents()));
+
+    const runtime = makeRuntime("sess-review-fallback", fabric);
+    await runtime.init();
+    const reviewTurn = await runtime.startTurn("Review the change", undefined, {
+      origin: "workflow",
+      capacityHint: { role: "REVIEWER", healthRole: "REVIEWER", fallbackRole: "CODER" },
+    });
+    const final = await waitForTerminal(runtime, persistence, "sess-review-fallback", reviewTurn);
+    expect(final?.status).toBe("completed");
+    expect(final?.capacityPoolId).toBe("shared:provider-a");
+  });
+
+  it("a parked user turn can be cancelled while waiting and never resumes or executes", async () => {
+    const route = managedRoute("provider-a", { windows: [quotaWindow({ limit: 1, remaining: 1 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
+    registerFleet("provider-a", "provider-a-model");
+    const fabric = makeFabric([route], [poolFor(route)]);
+    const holdout = fabric.decide({ requestId: "other-user-hold", userId: "user-other", role: "PRIMARY_CODING_AGENT" });
+    expect(holdout.outcome).toBe("ADMITTED");
+
+    const provider = new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents());
+    catalog.register(provider);
+    const runtime = makeRuntime("sess-fabric-cancel", fabric);
+    await runtime.init();
+    const turnId = await runtime.startTurn("Say hello");
+    for (let i = 0; i < 100 && runtime.getTurn(turnId)?.status !== "waiting_for_free_capacity"; i++) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    expect(runtime.getTurn(turnId)?.status).toBe("waiting_for_free_capacity");
+
+    await runtime.cancelTurn(turnId, "user stopped waiting");
+    expect(runtime.getTurn(turnId)?.status).toBe("cancelled");
+    expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toMatchObject({ state: "cancelled" });
+
+    // Capacity returning afterwards must not resurrect a cancelled turn.
+    fabric.release(holdout.selected!.reservationId!);
+    await expect(runtime.resumeTurn(turnId)).rejects.toThrow();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(provider.callCount).toBe(0);
+    expect(runtime.getTurn(turnId)?.status).toBe("cancelled");
+  });
+
+  it("the capacity sweeper resumes a parked turn on its own once supply returns", async () => {
+    const route = managedRoute("provider-a", { windows: [quotaWindow({ limit: 1, remaining: 1 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
+    registerFleet("provider-a", "provider-a-model");
+    const fabric = makeFabric([route], [poolFor(route)]);
+    const holdout = fabric.decide({ requestId: "other-user-hold", userId: "user-other", role: "PRIMARY_CODING_AGENT" });
+    expect(holdout.outcome).toBe("ADMITTED");
+
+    const provider = new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents());
+    catalog.register(provider);
+    const runtime = createAgentRuntime({
+      sessionId: "sess-fabric-sweep",
+      eventStore,
+      persistence,
+      firewall,
+      providerCatalog: catalog,
+      workspacePath: tmpDir,
+      routeHealth: authority,
+      freeFabric: fabric,
+      capacityWaitRetryMs: 20,
+      fabricContext: () => ({ userId: "user-sweep", userIdentities: [] }),
+    });
+    await runtime.init();
+    const turnId = await runtime.startTurn("Say hello");
+    for (let i = 0; i < 100 && runtime.getTurn(turnId)?.status !== "waiting_for_free_capacity"; i++) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    expect(runtime.getTurn(turnId)?.status).toBe("waiting_for_free_capacity");
+
+    // No explicit resume — the sweeper's own probe must drive it.
+    fabric.release(holdout.selected!.reservationId!);
+    const final = await waitForTerminal(runtime, persistence, "sess-fabric-sweep", turnId);
+    expect(final?.status).toBe("completed");
+    expect(provider.callCount).toBe(1);
+    expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toMatchObject({ state: "resumed" });
+    await runtime.shutdown();
+  });
+
+  it("two sessions contend for one shared slot through the shared ledger — the waiting turn resumes after release", async () => {
     const route = managedRoute("provider-a", { windows: [quotaWindow({ limit: 1, remaining: 1 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
     registerFleet("provider-a", "provider-a-model");
     const fabric = makeFabric([route], [poolFor(route)]);
@@ -429,10 +711,10 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(gatedProvider.callCount).toBe(1);
     expect(fabric.reservationSnapshot()?.activeReservations).toBe(1);
 
-    // Session B asks the same fabric for the same single slot: QUEUED → fail closed.
+    // Session B asks the same fabric for the same single slot: QUEUED → durable wait.
     const turnB = await runtimeB.startTurn("Other work");
-    const finalB = await waitForTerminal(runtimeB, persistence, "sess-fabric-b", turnB);
-    expect(finalB?.status).toBe("failed");
+    for (let i = 0; i < 100 && runtimeB.getTurn(turnB)?.status !== "waiting_for_free_capacity"; i++) await new Promise((r) => setTimeout(r, 10));
+    expect(runtimeB.getTurn(turnB)?.status).toBe("waiting_for_free_capacity");
     expect(gatedProvider.callCount).toBe(1); // B never reached the provider
     expect(fabric.reservationSnapshot()?.activeReservations).toBe(1);
 
@@ -442,8 +724,8 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(finalA?.status).toBe("completed");
     expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
 
-    const turnB2 = await runtimeB.startTurn("Other work, retried");
-    const finalB2 = await waitForTerminal(runtimeB, persistence, "sess-fabric-b", turnB2);
+    await runtimeB.resumeTurn(turnB);
+    const finalB2 = await waitForTerminal(runtimeB, persistence, "sess-fabric-b", turnB);
     expect(finalB2?.status).toBe("completed");
     expect(gatedProvider.callCount).toBe(2);
     expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
