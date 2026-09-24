@@ -390,6 +390,47 @@ export async function reviewDiff(
         if (entry) diffs.push(entry);
       }
     }
+    // A workspace that is not a git repo produces no porcelain rows at all, so the
+    // created-file detection above is blind there. Walk the filesystem with the same
+    // exclusions the snapshot walk uses — otherwise files created in an un-initialized
+    // folder never reach review evidence.
+    if (gitDiff === null) {
+      const snapshots = options.beforeSnapshots;
+      const seen = new Set(diffs.map((entry) => entry.path));
+      const walk = (dir: string): void => {
+        let entries: fs.Dirent[];
+        try {
+          entries = fs.readdirSync(dir, { withFileTypes: true });
+        } catch {
+          return;
+        }
+        for (const entry of entries) {
+          if (entry.name === ".git" || entry.name === "node_modules" || entry.name === "dist") continue;
+          if (entry.name.startsWith(".") && entry.name !== ".gitignore") continue;
+          const full = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            walk(full);
+            continue;
+          }
+          if (!entry.isFile()) continue;
+          const rel = path.relative(workspacePath, full).split(path.sep).join("/");
+          if (snapshots.has(rel) || seen.has(rel)) continue;
+          if (options.sinceMs !== undefined) {
+            try {
+              if (fs.statSync(full).mtimeMs < options.sinceMs) continue;
+            } catch {
+              continue;
+            }
+          }
+          const created = createdEntryFromDisk(workspacePath, rel);
+          if (created) {
+            diffs.push(created);
+            seen.add(rel);
+          }
+        }
+      };
+      walk(workspacePath);
+    }
   } else if (gitDiff !== null) {
     // Git fallback: one entry per file so path-scoped findings bind to the file they describe,
     // then created entries for untracked files, which `git diff` never reports. A change that

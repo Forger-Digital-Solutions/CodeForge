@@ -4,7 +4,9 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createServer } from "../src/index.js";
+import { checkStatedContracts } from "../src/workflow-service.js";
 import { InMemoryProviderCatalog, createMockProvider } from "@codeforge/providers";
+import type { DiffEntry } from "@codeforge/workflow";
 
 type Server = ReturnType<typeof createServer>;
 type ApiResponse = { status: number; body: Record<string, unknown> };
@@ -54,7 +56,7 @@ describe("workflow goal-conformance review", () => {
     await rm(workspace, { recursive: true, force: true });
   });
 
-  async function runToTerminal(sessionId: string, streamEvents: unknown[][], verification: string, serverOptions: Record<string, unknown> = {}): Promise<{ status: string; events: Array<{ type: string; payload?: { label?: string; blockers?: Array<{ code: string }> } }> }> {
+  async function runToTerminal(sessionId: string, streamEvents: unknown[][], verification: string, serverOptions: Record<string, unknown> = {}, message = "Fix sum so it adds two numbers"): Promise<{ status: string; events: Array<{ type: string; payload?: { label?: string; blockers?: Array<{ code: string }> } }> }> {
     const catalog = new InMemoryProviderCatalog();
     catalog.register(createMockProvider({ providerId: "codeforge", streamEvents: streamEvents as never }));
     server = createServer({ port: 0, dbPath: ":memory:", providerCatalog: catalog, useRealRuntime: true, ...serverOptions });
@@ -63,7 +65,7 @@ describe("workflow goal-conformance review", () => {
     expect((await fetchJson(`${base}/api/workspace/set`, { path: workspace })).status).toBe(200);
     const started = await fetchJson(`${base}/api/workflow/run`, {
       sessionId,
-      message: "Fix sum so it adds two numbers",
+      message,
       verificationCommands: [verification],
     });
     expect(started.status).toBe(200);
@@ -233,4 +235,105 @@ describe("workflow goal-conformance review", () => {
     expect(status).toBe("complete");
     expect(events.filter((event) => event.type === "turn.started" && event.payload?.label === "Reviewing goal conformance")).toHaveLength(1);
   }, 30_000);
+
+  it("blocks on a stated-contract violation the semantic review judged met, then completes after repair", async () => {
+    // The R31 false-success class deterministically closed: the goal states
+    // validateOrder(input): ValidationResult; the scripted implementation declares string[];
+    // the scripted review wrongly says "met". The stated-contract check — not the model —
+    // produces the blocking finding and drives a conformance repair.
+    const handler = [
+      "type OrderInput = { customerId: string };",
+      "type HandlerResult = { status: number; body: unknown };",
+      "function validateCreate(input: OrderInput): string[] { return input.customerId ? [] : [\"customerId required\"]; }",
+      "export function createOrder(input: OrderInput): HandlerResult {",
+      "  const errors = validateCreate(input);",
+      "  if (errors.length) return { status: 400, body: { errors } };",
+      "  return { status: 201, body: { id: `ord-${input.customerId}` } };",
+      "}",
+    ].join("\n");
+    await mkdir(join(workspace, "src", "handlers"), { recursive: true });
+    await writeFile(join(workspace, "src", "handlers", "create-order.ts"), handler);
+    const wrongValidator = "export function validateOrder(input: { customerId: string }): string[] {\n  return input.customerId ? [] : [\"customerId required\"];\n}\n";
+    const fixedValidator = "export type ValidationResult = { ok: true } | { ok: false; errors: string[] };\nexport function validateOrder(input: { customerId: string }): ValidationResult {\n  return input.customerId ? { ok: true } : { ok: false, errors: [\"customerId required\"] };\n}\n";
+    const message = "Extract order validation into src/validation/order.ts exporting validateOrder(input): ValidationResult ({ ok: true } or { ok: false, errors: string[] }) and make the handler use it.";
+    const lazyMet = `{"verdicts":[{"goal":"validateOrder exported with ValidationResult signature","status":"met","evidence":"src/validation/order.ts exports validateOrder","path":"src/validation/order.ts"}]}`;
+    const { status, events } = await runToTerminal("goal-review-contract", [
+      toolCall("write_file", { path: "src/validation/order.ts", content: wrongValidator }, "write-1"),
+      toolCall("edit_file", { path: "src/handlers/create-order.ts", oldText: "const errors = validateCreate(input);", newText: "const errors = validateOrder(input).ok ? [] : [\"bad\"];" }, "edit-1"),
+      finalText("Extracted the validator."),
+      finalText(lazyMet),
+      toolCall("write_file", { path: "src/validation/order.ts", content: fixedValidator }, "repair-write"),
+      finalText("Corrected the return type."),
+      finalText(lazyMet),
+    ], "node -e \"process.exit(0)\"", {}, message);
+
+    expect(status).toBe("complete");
+    expect(await readFile(join(workspace, "src", "validation", "order.ts"), "utf8")).toBe(fixedValidator);
+    const decided = JSON.stringify(events.find((event) => event.type === "workflow.completion_decided")?.payload ?? {});
+    expect(decided).not.toContain("goal_not_satisfied");
+  }, 30_000);
+
+  it("stays blocked when a stated-contract violation survives every repair attempt", async () => {
+    const handler = "export function createOrder(input: { customerId: string }) { return { status: 201 }; }\n";
+    await mkdir(join(workspace, "src", "handlers"), { recursive: true });
+    await writeFile(join(workspace, "src", "handlers", "create-order.ts"), handler);
+    const wrongValidator = "export function validateOrder(input: { customerId: string }): string[] {\n  return [];\n}\n";
+    const message = "Extract order validation into src/validation/order.ts exporting validateOrder(input): ValidationResult.";
+    const lazyMet = `{"verdicts":[{"goal":"validator extracted","status":"met","evidence":"order.ts exists","path":"src/validation/order.ts"}]}`;
+    const unrelatedEdit = (id: string) => toolCall("edit_file", { path: "src/handlers/create-order.ts", oldText: "return { status: 201 };", newText: `return { status: 201 }; // ${id}` }, id);
+    const { status, events } = await runToTerminal("goal-review-contract-stuck", [
+      toolCall("write_file", { path: "src/validation/order.ts", content: wrongValidator }, "write-1"),
+      finalText("Extracted the validator."),
+      finalText(lazyMet),
+      unrelatedEdit("r1"), finalText("Adjusted."),
+      finalText(lazyMet),
+      unrelatedEdit("r2"), finalText("Adjusted again."),
+      finalText(lazyMet),
+      unrelatedEdit("r3"), finalText("Adjusted once more."),
+      finalText(lazyMet),
+    ], "node -e \"process.exit(0)\"", {}, message);
+
+    expect(status).toBe("blocked");
+    const decided = JSON.stringify(events.find((event) => event.type === "workflow.completion_decided")?.payload ?? {});
+    expect(decided).toContain("review_rejected");
+    expect(decided).toContain("Stated contract unmet");
+    expect(decided).toContain("ValidationResult");
+  }, 60_000);
+});
+
+describe("checkStatedContracts", () => {
+  const intent = { title: "Extract validateOrder(input): ValidationResult", goals: [] } as Parameters<typeof checkStatedContracts>[0];
+  const diff = (added: string): DiffEntry[] => [{
+    path: "src/validation/order.ts",
+    changeType: "created",
+    additions: added.split("\n").length,
+    deletions: 0,
+    diff: `--- /dev/null\n+++ b/src/validation/order.ts\n${added.split("\n").map((l) => `+${l}`).join("\n")}`,
+    beforeHash: "",
+    afterHash: "x",
+  }];
+
+  it("flags a declaration whose return type contradicts the stated contract", () => {
+    const findings = checkStatedContracts(intent, diff("export function validateOrder(input: OrderInput): string[] {\n  return [];\n}"));
+    expect(findings).toHaveLength(1);
+    expect(findings[0].code).toBe("goal_not_satisfied");
+    expect(findings[0].severity).toBe("blocking");
+    expect(findings[0].message).toContain("string[]");
+  });
+
+  it("accepts declarations matching the stated type, including generic wrappers", () => {
+    expect(checkStatedContracts(intent, diff("export function validateOrder(input: OrderInput): ValidationResult {"))).toHaveLength(0);
+    expect(checkStatedContracts(intent, diff("export function validateOrder(input: OrderInput): Promise<ValidationResult> {"))).toHaveLength(0);
+  });
+
+  it("ignores untyped declarations, unstated names, and absent declarations", () => {
+    expect(checkStatedContracts(intent, diff("export function validateOrder(input) {\n  return [];\n}"))).toHaveLength(0);
+    expect(checkStatedContracts(intent, diff("export function unrelated(input: X): number {"))).toHaveLength(0);
+    expect(checkStatedContracts({ title: "rename the thing", goals: [] } as typeof intent, diff("export function f(): string[] {"))).toHaveLength(0);
+  });
+
+  it("flags arrow-function and method-shorthand declarations too", () => {
+    expect(checkStatedContracts(intent, diff("export const validateOrder = (input: OrderInput): string[] => []"))).toHaveLength(1);
+    expect(checkStatedContracts(intent, diff("  validateOrder(input: OrderInput): string[];"))).toHaveLength(1);
+  });
 });

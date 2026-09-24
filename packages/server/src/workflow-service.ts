@@ -294,6 +294,81 @@ function parseGoalReviewFindings(response: string, intent: TaskIntent): ReviewFi
   return findings;
 }
 
+/**
+ * Deterministic stated-contract check — the layer no model verdict can talk past.
+ *
+ * When a goal literally spells out a signature (`validateOrder(input): ValidationResult`),
+ * the diff's added declarations of that name are compared against the stated return type.
+ * A declaration that exists but declares a different type is an unmet goal with quoted
+ * evidence — the exact failure the R31 false success shipped (`string[]` where the goal
+ * stated `ValidationResult`, judged "met" by a lazy review).
+ *
+ * Deliberately narrow: it fires only on typed declarations in added diff lines for a name
+ * the goal states with an explicit `: Type`. Untyped declarations and names not stated with
+ * a type are ignored — this check proves contradictions, it does not infer intent.
+ */
+const STATED_CONTRACT_RE = /\b([A-Za-z_$][\w$]*)\s*\(([^()]{0,120})\)\s*:\s*([A-Za-z_$][\w$]*(?:<[^>\n]{0,80}>)?)/g;
+const CONTRACT_NAME_SKIP = new Set(["if", "for", "while", "switch", "catch", "return", "function", "new", "typeof", "e.g", "i.e"]);
+
+function escapeRe(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function declaredTypeTokens(declared: string): Set<string> {
+  return new Set(declared.split(/[^A-Za-z0-9_$]+/).filter((token) => token.length > 0));
+}
+
+export function checkStatedContracts(intent: TaskIntent, diffs: DiffEntry[]): ReviewFinding[] {
+  const sources = [intent.title, ...intent.goals].join("\n");
+  const contracts = new Map<string, string>();
+  for (const match of sources.matchAll(STATED_CONTRACT_RE)) {
+    const [, name, , statedType] = match;
+    if (!name || !statedType || CONTRACT_NAME_SKIP.has(name) || name.length > 60) continue;
+    contracts.set(`${name}:${statedType}`, statedType);
+    if (contracts.size >= 8) break;
+  }
+  if (contracts.size === 0) return [];
+
+  const addedLines = diffs.flatMap((diff) =>
+    diff.diff.split("\n").filter((line) => line.startsWith("+") && !line.startsWith("+++")).map((line) => `${diff.path}: ${line.slice(1)}`),
+  );
+
+  const findings: ReviewFinding[] = [];
+  for (const key of contracts.keys()) {
+    const [name, statedType] = key.split(":", 2) as [string, string];
+    const declRes = [
+      // function name(args): DeclaredType
+      new RegExp(`\\bfunction\\s+${escapeRe(name)}\\s*\\([^)]*\\)\\s*:\\s*([^\\n{]+)`, "g"),
+      // const name = (args): DeclaredType =>   /   name = async (args): DeclaredType =>
+      new RegExp(`\\b${escapeRe(name)}\\s*=\\s*(?:async\\s*)?\\([^)]*\\)\\s*:\\s*([^\\n{=]+?)(?:=>|\\n)`, "g"),
+      // method/interface shorthand: name(args): DeclaredType
+      new RegExp(`\\b${escapeRe(name)}\\s*\\([^)]*\\)\\s*:\\s*([^\\n{]+)`, "g"),
+    ];
+    const declaredTypes: Array<{ declared: string; line: string }> = [];
+    for (const line of addedLines) {
+      for (const re of declRes) {
+        re.lastIndex = 0;
+        for (const m of line.matchAll(re)) {
+          const declared = (m[1] ?? "").replace(/=>\s*$/, "").replace(/[{;]\s*$/, "").trim();
+          if (declared) declaredTypes.push({ declared, line: line.slice(0, 300) });
+        }
+      }
+    }
+    if (declaredTypes.length === 0) continue; // stated name not declared in the diff — nothing proven
+    const satisfied = declaredTypes.some(({ declared }) => declaredTypeTokens(declared).has(statedType));
+    if (!satisfied) {
+      const observed = declaredTypes[0]!;
+      findings.push({
+        code: "goal_not_satisfied",
+        severity: "blocking",
+        path: observed.line.split(":")[0] ?? "",
+        message: `Stated contract unmet — the goal requires ${name}(…): ${statedType} but the diff declares ${observed.declared.replace(/\s+/g, " ").slice(0, 160)}. Observed: ${observed.line.slice(0, 200)}`,
+      });
+    }
+  }
+  return findings;
+}
+
 type RunOutcomePayload = Omit<RunOutcome["payload"], "runId"> & { runId?: string };
 
 /**
@@ -754,12 +829,15 @@ export class WorkflowService {
         const prompt = buildGoalReviewPrompt(intent, plan, diffs, verification);
         const runtime = getRuntime(sessionId, userId, hostedWorker);
         reviewPhaseReached = true;
+        // Stated-contract checks are deterministic: they run on the diff itself and hold
+        // whether or not the semantic review turn survives its budget.
+        const contractFindings = checkStatedContracts(intent, diffs);
         const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Reviewing goal conformance", inferenceBudget, inferenceLane: "reserved" });
         const result = await waitForTurn(runtime, turnId);
         if (result.status !== "completed") {
           return {
             turnId,
-            findings: [{
+            findings: [...contractFindings, {
               code: "goal_review_inconclusive",
               severity: "blocking",
               path: "",
@@ -769,7 +847,7 @@ export class WorkflowService {
         }
         const item = await this.persistence.getWorkItem(`agent-final-response-${turnId}`).catch(() => undefined);
         const response = item && "response" in item ? String(item.response) : "";
-        return { turnId, findings: parseGoalReviewFindings(response, intent) };
+        return { turnId, findings: [...contractFindings, ...parseGoalReviewFindings(response, intent)] };
       },
     };
   }
