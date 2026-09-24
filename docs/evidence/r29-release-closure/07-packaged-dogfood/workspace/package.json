@@ -1,0 +1,8 @@
+{
+  "name": "r29-packaged-dogfood-fixture",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test/add.test.mjs"
+  }
+}

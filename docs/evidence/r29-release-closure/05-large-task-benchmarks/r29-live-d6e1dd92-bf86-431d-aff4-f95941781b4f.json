@@ -1,0 +1,193 @@
+{
+  "schema": "r29-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-23T19:37:11.590Z",
+  "runId": "r29-live-d6e1dd92-bf86-431d-aff4-f95941781b4f",
+  "task": {
+    "r27TaskId": "r27-large-config-rename",
+    "sourceTaskId": "ts-large-context-rename-config-key",
+    "taskClass": "large_context",
+    "corpusDigest": "11ae2ea3649772e92fcf55610383e10ea4e63436c720c20ad157d04e09c08660"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "routeLock": "route",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 30,
+    "maxOutputTokens": 4096,
+    "timeoutMs": 900000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine"
+  },
+  "provider": {
+    "inferenceRequestCount": 4,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 7839,
+        "firstUsefulEventMs": 7802,
+        "inputTokens": 3323,
+        "outputTokens": 864,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 10592,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "ProviderError"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 10607,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "ProviderError"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 10656,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "ProviderError"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790192161276
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790192184264
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "557409bd-5623-4879-b301-9b475d154e03",
+    "status": "blocked",
+    "phase": "blocked",
+    "completion": {
+      "outcome": "blocked",
+      "rationale": "4 plan step(s) did not finish successfully.",
+      "blockers": [
+        {
+          "code": "plan_steps_unfinished",
+          "severity": "blocking",
+          "message": "4 plan step(s) did not finish successfully."
+        }
+      ]
+    },
+    "diffs": [],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "verifier-1-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": true,
+      "findings": []
+    },
+    "forgeVerifySummary": {
+      "planId": "b6fe9ba5-0be4-43a4-9e34-3063321aaa3d",
+      "policyVersion": "legacy-workflow-policy-v1",
+      "requiredCount": 1,
+      "satisfiedCount": 1,
+      "missingCount": 0,
+      "staleCount": 0,
+      "verificationComplete": true,
+      "missingRequiredVerifiers": [],
+      "evidence": [
+        {
+          "evidenceId": "acdf496d-fb8a-484d-8e8e-ac9f058f6bd7",
+          "verifierId": "legacy.custom.d382ccf0543a8a6b",
+          "status": "passed",
+          "durationMs": 1165,
+          "outputTruncated": false
+        }
+      ]
+    },
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 1,
+    "decisions": {
+      "allow:0": 1
+    },
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.ts",
+      "passed": false,
+      "elapsedMs": 860,
+      "exitCode": 1,
+      "outputHash": "4064d3d149897840153dc977cd5ef9b4624ae3aa9ec456ec03d744484c269093",
+      "output": "{\"passed\":2,\"failed\":7}\n\nFAIL old-key-gone-from-object\nFAIL default-preserved\nFAIL validation-renamed\nFAIL attempt-budget\nFAIL describe\nFAIL flags\nFAIL no-maxRetries-under-src\nstill references maxRetries: src\\config\\defaults.ts, src\\config\\load-config.ts, src\\config\\types.ts, src\\net\\attempt-budget.ts, src\\net\\retry-executor.ts, src\\ops\\cli-flags.ts, src\\ops\\health-report.ts\n"
+    },
+    "workflowAllPassed": true
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 2,
+    "task.state_changed": 12,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "router.selection": 1,
+    "tool.call_started": 1,
+    "tool.call_completed": 1,
+    "token.usage": 1,
+    "tool.execution_started": 1,
+    "file.read": 1,
+    "tool.execution_completed": 1,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "run.outcome": 1
+  },
+  "timing": {
+    "wallClockMs": 67294,
+    "deadlineHit": false
+  },
+  "memory": {
+    "rssBefore": 246849536,
+    "rssAfter": 203288576,
+    "heapUsedBefore": 119521632,
+    "heapUsedAfter": 100406336
+  },
+  "retainedWorkspace": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\codeforge-r29-live-8wd9T1\\task\\fixture"
+}

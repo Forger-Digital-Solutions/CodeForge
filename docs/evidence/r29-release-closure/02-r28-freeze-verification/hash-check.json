@@ -1,0 +1,10 @@
+{
+  "schema": "r29-r28-freeze-hash-check-1",
+  "checkedAt": "2026-09-24T00:54:51.863Z",
+  "sourceManifest": "docs/evidence/r28-capability-completion/R28-EVIDENCE-FREEZE.json",
+  "declaredFileCount": 52,
+  "listedFileCount": 52,
+  "matched": 52,
+  "mismatches": [],
+  "passed": true
+}

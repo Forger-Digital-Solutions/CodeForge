@@ -1,0 +1,296 @@
+{
+  "schemaVersion": "r27-golden-task-validation-1",
+  "validatedAt": "2026-09-24T00:43:33.414Z",
+  "manifestVersion": "r27-golden-manifest-1",
+  "taskCount": 15,
+  "failures": 2,
+  "blocked": 2,
+  "rows": [
+    {
+      "r27TaskId": "r27-tiny-qual-return-sign",
+      "sourceTaskId": "qual-js-return-sign",
+      "category": "tiny",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "FAIL add(2,3)\nFAIL add(-1,1)"
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-tiny-qual-off-by-one",
+      "sourceTaskId": "qual-js-off-by-one",
+      "category": "tiny",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "FAIL last"
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-tiny-qual-missing-export",
+      "sourceTaskId": "qual-js-missing-export",
+      "category": "tiny",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/r27-untouched-qual-js-missing-export-ZN2ey2/hidden/verify.mjs:1\r\nimport { capitalize, trimAll } from \"../src/index.js\";\r\n         ^^^^^^^^^^\r\nSyntaxError: The requested module '../src/index.js' does not provide an export named 'capitalize'\r\n    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)\r\n    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)\r\n    at async node:internal/modules/esm/loader:643:26\r\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\r\n\r\nNode.js v24.19.0"
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-tiny-clamp",
+      "sourceTaskId": "js-small-fix-clamp",
+      "category": "tiny",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "FAIL below\nFAIL above\nFAIL inside\nFAIL edge-max\nFAIL lerp\nFAIL lerp-clamped"
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-tiny-median",
+      "sourceTaskId": "py-small-fix-median",
+      "category": "tiny",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "'python' is not recognized as an internal or external command,\r\noperable program or batch file."
+      },
+      "reference": {
+        "status": 1,
+        "expected": "pass",
+        "observed": false,
+        "stderr": "'python' is not recognized as an internal or external command,\r\noperable program or batch file."
+      },
+      "status": "BLOCKED_ENVIRONMENT",
+      "ok": false
+    },
+    {
+      "r27TaskId": "r27-tiny-slugify",
+      "sourceTaskId": "ts-small-fix-slugify",
+      "category": "tiny",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "FAIL basic\nFAIL runs\nFAIL unicode-strip\nFAIL isSlug\nFAIL empty"
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-small-cart-total",
+      "sourceTaskId": "js-bug-fix-cart-total",
+      "category": "small",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "FAIL ten-percent\nFAIL quarter\nFAIL multiplier"
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-small-config-merge",
+      "sourceTaskId": "py-bug-fix-config-merge",
+      "category": "small",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "'python' is not recognized as an internal or external command,\r\noperable program or batch file."
+      },
+      "reference": {
+        "status": 1,
+        "expected": "pass",
+        "observed": false,
+        "stderr": "'python' is not recognized as an internal or external command,\r\noperable program or batch file."
+      },
+      "status": "BLOCKED_ENVIRONMENT",
+      "ok": false
+    },
+    {
+      "r27TaskId": "r27-small-queue-order",
+      "sourceTaskId": "ts-bug-fix-queue-order",
+      "category": "small",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "FAIL completion-order\nFAIL results-order\nFAIL sequential"
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-medium-rate-limiter",
+      "sourceTaskId": "js-feature-rate-limiter",
+      "category": "medium",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "Local/Temp/r27-untouched-js-feature-rate-limiter-7jedia/hidden/verify.mjs:1\r\nimport { createRateLimiter, createRetryPolicy, parseHeaders } from \"../src/index.js\";\r\n         ^^^^^^^^^^^^^^^^^\r\nSyntaxError: The requested module '../src/index.js' does not provide an export named 'createRateLimiter'\r\n    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)\r\n    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)\r\n    at async node:internal/modules/esm/loader:643:26\r\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\r\n\r\nNode.js v24.19.0"
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-medium-cli-stats",
+      "sourceTaskId": "ts-feature-cli-stats",
+      "category": "medium",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "FAIL exit-0\nFAIL lines\nFAIL words\nFAIL bytes\nFAIL missing-exit-2\nFAIL registered-in-index"
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-medium-extract-validator",
+      "sourceTaskId": "ts-refactor-extract-validator",
+      "category": "medium",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "erThread (node:internal/modules/esm/loader:721:38)\r\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)\r\n    at #resolve (node:internal/modules/esm/loader:683:17)\r\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)\r\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)\r\n    at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {\r\n  code: 'ERR_MODULE_NOT_FOUND',\r\n  url: 'file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/r27-untouched-ts-refactor-extract-validator-swCdIL/src/validation/order.ts'\r\n}\r\n\r\nNode.js v24.19.0"
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-medium-build-config",
+      "sourceTaskId": "js-build-config-test-script",
+      "category": "medium",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "FAIL npm-test-exit-0\nFAIL three-tests-ran"
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-large-config-rename",
+      "sourceTaskId": "ts-large-context-rename-config-key",
+      "category": "large",
+      "untouched": {
+        "status": 1,
+        "expected": "fail",
+        "observed": true,
+        "stderr": "FAIL old-key-gone-from-object\nFAIL default-preserved\nFAIL validation-renamed\nFAIL attempt-budget\nFAIL describe\nFAIL flags\nFAIL no-maxRetries-under-src\nstill references maxRetries: src\\config\\defaults.ts, src\\config\\load-config.ts, src\\config\\types.ts, src\\net\\attempt-budget.ts, src\\net\\retry-executor.ts, src\\ops\\cli-flags.ts, src\\ops\\health-report.ts"
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    },
+    {
+      "r27TaskId": "r27-ambiguous-webhook-retries",
+      "sourceTaskId": "js-investigation-webhook-retries",
+      "category": "ambiguous",
+      "untouched": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "reference": {
+        "status": 0,
+        "expected": "pass",
+        "observed": true,
+        "stderr": ""
+      },
+      "status": "PASS",
+      "ok": true
+    }
+  ],
+  "status": "PARTIAL"
+}

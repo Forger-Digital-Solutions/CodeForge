@@ -1,0 +1,125 @@
+{
+  "schema": "r29-packaged-authenticated-dogfood-1",
+  "recordedAt": "2026-09-23T19:37:04.342Z",
+  "session": {
+    "id": "0a02cfee-0452-407b-a8f2-9ee00743c0f2",
+    "status": "completed",
+    "outcome": "completed",
+    "createdAt": "2026-09-23T19:31:42.561Z",
+    "updatedAt": "2026-09-23T19:32:53.154Z"
+  },
+  "package": {
+    "asarPath": "G:\\CodeForge\\apps\\desktop\\release\\win-unpacked\\resources\\app.asar",
+    "asarSha256": "4e44af1770e052e0478a50c9f72e1caba7ad833d38163b315fc3a6ae4e3ba330"
+  },
+  "model": {
+    "providerId": "codeforge-cloud",
+    "modelId": "groq::openai/gpt-oss-120b",
+    "routing": [
+      {
+        "providerId": "codeforge-cloud",
+        "modelId": "groq::openai/gpt-oss-120b",
+        "score": 75
+      }
+    ]
+  },
+  "runtime": {
+    "eventTypes": {
+      "execution.requested": 1,
+      "task.created": 1,
+      "task.started": 1,
+      "turn.started": 2,
+      "task.state_changed": 11,
+      "status.changed": 14,
+      "plan.started": 1,
+      "agent.started": 2,
+      "router.selection": 1,
+      "tool.call_started": 5,
+      "tool.call_completed": 5,
+      "token.usage": 6,
+      "permission.decision": 5,
+      "tool.execution_started": 5,
+      "file.read": 2,
+      "tool.execution_completed": 5,
+      "file.written": 1,
+      "file.change_proposed": 1,
+      "file.change_applied": 1,
+      "command.started": 1,
+      "command.executed": 1,
+      "eightbit.status": 1,
+      "assistant.message.started": 1,
+      "text.delta": 44,
+      "assistant.message.completed": 1,
+      "turn.completed": 2,
+      "agent.completed": 2,
+      "workflow.verification_started": 1,
+      "forgeverify.plan_created": 1,
+      "forgeverify.attempt_started": 1,
+      "forgeverify.evidence_created": 1,
+      "workflow.verification_completed": 1,
+      "workflow.review_completed": 1,
+      "workflow.completion_decided": 1,
+      "evidence.created": 1,
+      "checkpoint.created": 1,
+      "task.completed": 1,
+      "run.outcome": 1
+    },
+    "toolCalls": [
+      "read_file",
+      "read_file",
+      "edit_file",
+      "run_command",
+      "repo_search"
+    ],
+    "commands": [
+      {
+        "command": "npm test",
+        "exitCode": 0
+      }
+    ],
+    "usage": {
+      "inputTokens": 11787,
+      "outputTokens": 554
+    }
+  },
+  "result": {
+    "runId": "21826312-a175-45f8-8e32-220fe183b229",
+    "outcome": "completed",
+    "changedFiles": 1,
+    "completion": {
+      "outcome": "completed",
+      "rationale": "All required completion checks passed.",
+      "blockers": []
+    },
+    "diffs": [
+      {
+        "path": "src/add.mjs",
+        "changeType": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "test",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": true,
+      "findings": []
+    },
+    "independentHiddenVerifier": {
+      "passed": true,
+      "exitCode": 0,
+      "cases": 6
+    },
+    "changedFileSha256": "5b63136552577a64d788dc3cd4552739d0d60f9e1adb63ec4dfb6932d56fc75d"
+  }
+}
