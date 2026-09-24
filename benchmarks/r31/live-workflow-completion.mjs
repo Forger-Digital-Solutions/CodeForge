@@ -13,6 +13,7 @@
  * wall-clock ceiling, free-only route, disposable workspace, full receipts.
  */
 import { createHash, randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
 import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -82,19 +83,35 @@ function resolveEvidenceDirectory() {
   return directory;
 }
 
-function parseNodeCommand(command) {
+function parseVerifierCommand(command) {
   const argv = command.trim().split(/\s+/);
-  if (argv[0] !== "node" || argv.length < 2 || argv.some((entry) => !/^[A-Za-z0-9_./-]+$/.test(entry))) {
-    throw new Error(`Only a simple locked 'node …' verifier command is supported, received: ${command}`);
+  const interpreter = argv[0];
+  if ((interpreter !== "node" && interpreter !== "python" && interpreter !== "python3") ||
+      argv.length < 2 || argv.some((entry) => !/^[A-Za-z0-9_./-]+$/.test(entry))) {
+    throw new Error(`Only a simple locked 'node|python <script> …' verifier command is supported, received: ${command}`);
   }
-  return argv.slice(1);
+  return { interpreter, args: argv.slice(1) };
+}
+
+function resolvePython() {
+  const candidates = [
+    process.env.R31_LIVE_PYTHON,
+    "C:/Users/Daddy_FDS/AppData/Local/Programs/Python/Python313/python.exe",
+    "C:/Users/Daddy_FDS/AppData/Local/Programs/Python/Python312/python.exe",
+    "C:/Users/Daddy_FDS/AppData/Local/Programs/Python/Python311/python.exe",
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate;
+  }
+  throw new Error("Task verifier requires python but no interpreter was found (set R31_LIVE_PYTHON).");
 }
 
 async function runVerifier(command, cwd, timeoutMs) {
-  const args = parseNodeCommand(command);
+  const { interpreter, args } = parseVerifierCommand(command);
+  const executable = interpreter === "node" ? process.execPath : resolvePython();
   const startedAt = Date.now();
   try {
-    const result = await execFile(process.execPath, args, {
+    const result = await execFile(executable, args, {
       cwd,
       timeout: timeoutMs,
       windowsHide: true,
@@ -183,7 +200,7 @@ async function main() {
   // The workflow path runs plan→implement→verify→(repair)→review→gate. One implement turn alone
   // can take several model iterations, and a repair cycle adds more; the request ceiling bounds
   // spend, not success.
-  const maxRequests = boundedPositive("R31_LIVE_MAX_REQUESTS", 24, 60);
+  const maxRequests = boundedPositive("R31_LIVE_MAX_REQUESTS", 32, 60);
   // Per-request output ceiling. The runtime sends provider max_tokens=4096, so a
   // harness ceiling below that measures discipline, not room — medium tasks with
   // file-write payloads legitimately exceed 1024. The spend bound stays via the

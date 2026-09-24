@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "162cdd36424201706f972d52aaa966484237ea13c0ddebf1496d4a2a2c0d5368",
-  "surfaceVersion": "r30-large-task-rename-v2",
+  "sourceStateId": "c92386e90cbd1bf8dffb5a40f81083db0d53d12fab735ae319f1a221d67595a7",
+  "surfaceVersion": "r31-release-closure-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -62,7 +62,7 @@
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
     "packages/server/src/duplicate-suppression.ts": "5609d0e3817b1214cf1540810f355bef3ce842c3",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "3561bb641da1ee960574665413f4263a6675b562",
+    "packages/server/src/workflow-service.ts": "0d6f948ba3d9d36b74e4bf79936548d3bc6d032e",
     "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "41042502fd939c990ea737745e3334d07c1aa7d5",
@@ -71,7 +71,7 @@
     "packages/workflow/src/forge-verify.ts": "d134438dfde57de85c756cdd8aaab192f1d801e8",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
     "packages/workflow/src/semantic-diff-review.ts": "7a854b990eb27c1f0aeed04c4d7ba73e06fc2b75",
-    "packages/workflow/src/types.ts": "0d8e43ac6d788d1fd83c7f8f9a28ebe0322aae86",
+    "packages/workflow/src/types.ts": "fc0886656007832fba84a8b394570b4bc9ada7f7",
     "packages/workflow/src/verification-evidence-reuse.ts": "04048bdf9d932c307c45e7d8b44438f757ea8466",
     "packages/workflow/src/verification-reuse-cost-gate.ts": "3c3bc502921ef79a9496d762167f366e5589fd02",
     "packages/workflow/src/verification-service.ts": "9fe62538955e4646e43fba467d1ee9b449a58074"
@@ -1225,18 +1225,42 @@
       "regressionEvidence": "docs/evidence/r30-release-unblocking/04-large-task-benchmarks/r30-live-20cf0e22-5ade-47bf-a94b-a45f3d6f3ccd.json",
       "recertifiedAt": "2026-09-24",
       "sourceStateConstant": "CODEFORGE_R30_LARGE_TASK_RENAME_SOURCE_STATE"
+    },
+    {
+      "label": "R31 goal-conformance review and blocker evidence",
+      "reason": "Recertify the reviewed R31 reliability changes: an independent bounded goal-conformance review after verification closes the R30 weak-visible-checks false-success class, and completion blockers now carry evidence end to end. Loop recovery (one bounded continuation after a post-edit no-progress turn) touched non-material packages only. ForgeZero, provider routing, and completion-gate authority are unchanged.",
+      "priorSourceStateId": "162cdd36424201706f972d52aaa966484237ea13c0ddebf1496d4a2a2c0d5368",
+      "priorSurfaceVersion": "r30-large-task-rename-v2",
+      "resultingSourceStateId": "c92386e90cbd1bf8dffb5a40f81083db0d53d12fab735ae319f1a221d67595a7",
+      "resultingSurfaceVersion": "r31-release-closure-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "Wires the bounded independent goal-conformance review turn into the workflow pipeline (real-runtime executor only) and forwards CompletionBlocker.evidence through the completion event and persisted run inspection. Completion-gate authority is unchanged.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/types.ts",
+          "change": "Adds review/goal-conformance and blocker-evidence surface types used by the review turn and event adapter. No gate policy change.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r31-production-release-closure/full-regression.log and docs/evidence/r31-production-release-closure/02-large-task-reliability/r31-acceptance-taxonomy.json",
+      "recertifiedAt": "2026-09-24",
+      "sourceStateConstant": "CODEFORGE_R31_GOAL_REVIEW_SOURCE_STATE"
     }
   ],
-  "generationNote": "The current source-state ID covers the reviewed material implementation through R30. Historical campaign evidence remains bound to its recorded source-state identity.",
-  "recertifiedAt": "2026-09-24T06:03:18.390Z",
+  "generationNote": "The current source-state ID covers the reviewed material implementation through R31. Historical campaign evidence remains bound to its recorded source-state identity.",
+  "recertifiedAt": "2026-09-24T14:04:28.494Z",
   "recertification": {
-    "phase": "R30 large-task rename safeguard",
-    "reason": "A bounded R30 live run changed the external --max-retries CLI flag while renaming an internal configuration property. The implementation prompt now tells the coder to preserve external interfaces unless requested. A subsequent locked large-task run kept that flag and passed all nine independent semantic checks. ForgeZero and completion authority are unchanged.",
+    "phase": "R31 goal-conformance review and blocker evidence",
+    "reason": "Recertify the reviewed R31 reliability changes: an independent bounded goal-conformance review after verification closes the R30 weak-visible-checks false-success class, and completion blockers now carry evidence end to end. Loop recovery (one bounded continuation after a post-edit no-progress turn) touched non-material packages only. ForgeZero, provider routing, and completion-gate authority are unchanged.",
     "changedFiles": [
-      "packages/server/src/workflow-service.ts"
+      "packages/server/src/workflow-service.ts",
+      "packages/workflow/src/types.ts"
     ],
-    "priorSourceStateId": "57da084fd15cb01e887629b470a780c2fc67c7993e7195deba4d478d1048f358",
+    "priorSourceStateId": "162cdd36424201706f972d52aaa966484237ea13c0ddebf1496d4a2a2c0d5368",
     "guarded": true
   },
-  "recertificationReason": "A bounded R30 live run changed the external --max-retries CLI flag while renaming an internal configuration property. The implementation prompt now tells the coder to preserve external interfaces unless requested. A subsequent locked large-task run kept that flag and passed all nine independent semantic checks. ForgeZero and completion authority are unchanged."
+  "recertificationReason": "Recertify the reviewed R31 reliability changes: an independent bounded goal-conformance review after verification closes the R30 weak-visible-checks false-success class, and completion blockers now carry evidence end to end. Loop recovery (one bounded continuation after a post-edit no-progress turn) touched non-material packages only. ForgeZero, provider routing, and completion-gate authority are unchanged."
 }
