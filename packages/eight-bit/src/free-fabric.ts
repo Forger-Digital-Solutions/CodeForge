@@ -52,6 +52,9 @@ export interface FabricRequest {
    *  without this hint, role-scoped health evidence tagged with the real role is invisible
    *  to the request that produced it. */
   healthRole?: EightBitRole;
+  /** Prefer a different physical quota pool from the implementation route for review.
+   *  The same pool remains eligible only after independent routes fail admission. */
+  preferIndependentFromPoolId?: string;
   taskKind?: string;
   /** Capacity this request intends to reserve. Defaults: 1 request, modest token budget. */
   demand?: {
@@ -242,7 +245,13 @@ export class FreeFabric {
         + (adjustment <= this.opts.domainDemotionScore ? FORGEAUTO_DOMAIN_ORDER.length : 0);
       ranked.push({ entry, healthState: assess?.state, scoreAdjustment: adjustment, effectiveScore: entry.qualityScore + adjustment, domainRank });
     }
-    ranked.sort((a, b) => a.domainRank - b.domainRank || b.effectiveScore - a.effectiveScore || a.entry.routeId.localeCompare(b.entry.routeId));
+    ranked.sort((a, b) => {
+      const priorPool = request.preferIndependentFromPoolId;
+      const independenceOrder = priorPool === undefined ? 0
+        : Number(a.entry.capacityPoolId === priorPool) - Number(b.entry.capacityPoolId === priorPool);
+      return independenceOrder || a.domainRank - b.domainRank
+        || b.effectiveScore - a.effectiveScore || a.entry.routeId.localeCompare(b.entry.routeId);
+    });
 
     const demand = {
       requests: Math.max(1, request.demand?.requests ?? 1),
@@ -266,7 +275,7 @@ export class FreeFabric {
           canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
           quotaOwner: entry.quotaOwner, capacityPoolId: entry.capacityPoolId,
         };
-        reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", "ROLE_QUALIFIED", "HEALTH_ACCEPTED"], candidate.healthState, candidate.scoreAdjustment));
+        reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", "ROLE_QUALIFIED", "HEALTH_ACCEPTED", ...this.independenceReason(request, entry)], candidate.healthState, candidate.scoreAdjustment));
         break;
       }
       const decision = this.opts.reservations.reserve({
@@ -299,7 +308,7 @@ export class FreeFabric {
           quotaOwner: entry.quotaOwner, capacityPoolId: entry.capacityPoolId,
           reservationId: decision.reservationId,
         };
-        reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", "ROLE_QUALIFIED", "QUOTA_RESERVED", decision.reason], candidate.healthState, candidate.scoreAdjustment));
+        reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", "ROLE_QUALIFIED", "QUOTA_RESERVED", decision.reason, ...this.independenceReason(request, entry)], candidate.healthState, candidate.scoreAdjustment));
         break;
       }
       reports.set(entry.routeId, this.reportFor(entry, decision.reason === "CAPACITY_EXHAUSTED" || decision.reason === "FIRST_RUN_RESERVE_PROTECTED" ? "CAPACITY_DENIED" : "RESERVATION_DENIED", [decision.reason], candidate.healthState, candidate.scoreAdjustment));
@@ -378,6 +387,12 @@ export class FreeFabric {
       quotaOwner: entry.quotaOwner, quotaOwnerIdentity: entry.quotaOwnerIdentity,
       status, reasonCodes, healthState, scoreAdjustment,
     };
+  }
+
+  private independenceReason(request: FabricRequest, entry: RouteLedgerEntry): string[] {
+    if (request.preferIndependentFromPoolId === undefined) return [];
+    return [entry.capacityPoolId === request.preferIndependentFromPoolId
+      ? "SAME_POOL_FALLBACK" : "INDEPENDENT_POOL_PREFERRED"];
   }
 
   private explainExcluded(entry: RouteLedgerEntry, role: string, owned: ReadonlySet<string>): FabricCandidateReport {

@@ -315,3 +315,52 @@ describe("R24 multi-pool — policy boundaries bind alongside capacity", () => {
     expect(admitted.selected?.quotaOwner).toBe("SHARED_CODEFORGE_POOL");
   });
 });
+
+describe("FreeFabric — independent reviewer quota pools", () => {
+  function reviewerFabric(routes: CapacityRoute[], pools: ProviderCapacityPool[]): FreeFabric {
+    return createFreeFabric({
+      managedRoutes: () => routes,
+      managedPools: () => pools,
+      reservations: new CapacityReservationLedger({ routes: [], now: () => NOW, maxActiveReservationsPerUser: 8 }),
+      now: () => NOW,
+    });
+  }
+
+  it("prefers an independent pool over higher-scored models sharing the implementation quota", () => {
+    const implementation = route("implementation", { providerId: "provider-a", capacityPoolId: "account-a", roles: ["REVIEWER"], qualityScore: 95 });
+    const sibling = route("sibling", { providerId: "provider-a", capacityPoolId: "account-a", roles: ["REVIEWER"], qualityScore: 90 });
+    const independent = route("independent", { providerId: "provider-b", capacityPoolId: "account-b", roles: ["REVIEWER"], qualityScore: 50 });
+    const fabric = reviewerFabric([implementation, sibling, independent], [poolFor(implementation), poolFor(independent)]);
+
+    const decision = fabric.decide({ requestId: "review-1", userId: "alice", role: "REVIEWER", preferIndependentFromPoolId: "account-a" });
+    expect(decision.outcome).toBe("ADMITTED");
+    expect(decision.selected?.routeId).toBe("independent");
+    expect(decision.explanation.reasonCodes).toContain("INDEPENDENT_POOL_PREFERRED");
+    expect(decision.explanation.candidates.find((candidate) => candidate.routeId === "sibling")?.status).toBe("STANDBY");
+  });
+
+  it("tries every independent pool before falling back to the implementation pool", () => {
+    const implementation = route("implementation", { providerId: "provider-a", capacityPoolId: "account-a", roles: ["REVIEWER"], qualityScore: 95 });
+    const exhausted = route("exhausted", { providerId: "provider-b", capacityPoolId: "account-b", roles: ["REVIEWER"], qualityScore: 80, windows: [quotaWindow({ remaining: 0 })] });
+    const available = route("available", { providerId: "provider-c", capacityPoolId: "account-c", roles: ["REVIEWER"], qualityScore: 40 });
+    const fabric = reviewerFabric([implementation, exhausted, available], [poolFor(implementation), poolFor(exhausted), poolFor(available)]);
+
+    const decision = fabric.decide({ requestId: "review-2", userId: "alice", role: "REVIEWER", preferIndependentFromPoolId: "account-a" });
+    expect(decision.selected?.routeId).toBe("available");
+    expect(decision.explanation.candidates.find((candidate) => candidate.routeId === "exhausted")?.status).toBe("CAPACITY_DENIED");
+    expect(decision.explanation.candidates.find((candidate) => candidate.routeId === "implementation")?.status).toBe("STANDBY");
+  });
+
+  it("admits the same pool deterministically after independent capacity is denied", () => {
+    const implementation = route("implementation", { providerId: "provider-a", capacityPoolId: "account-a", roles: ["REVIEWER"], qualityScore: 90 });
+    const sibling = route("sibling", { providerId: "provider-a", capacityPoolId: "account-a", roles: ["REVIEWER"], qualityScore: 90 });
+    const exhausted = route("exhausted", { providerId: "provider-b", capacityPoolId: "account-b", roles: ["REVIEWER"], windows: [quotaWindow({ remaining: 0 })] });
+    const fabric = reviewerFabric([sibling, exhausted, implementation], [poolFor(implementation), poolFor(exhausted)]);
+
+    const decision = fabric.decide({ requestId: "review-3", userId: "alice", role: "REVIEWER", preferIndependentFromPoolId: "account-a" });
+    expect(decision.outcome).toBe("ADMITTED");
+    expect(decision.selected?.routeId).toBe("implementation");
+    expect(decision.explanation.reasonCodes).toContain("SAME_POOL_FALLBACK");
+    expect(decision.explanation.candidates.find((candidate) => candidate.routeId === "exhausted")?.status).toBe("CAPACITY_DENIED");
+  });
+});
