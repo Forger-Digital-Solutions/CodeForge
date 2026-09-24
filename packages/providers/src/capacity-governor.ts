@@ -609,6 +609,11 @@ export class GovernedProviderAdapter implements ProviderAdapter {
         }
         yield event;
       }
+    } catch (error) {
+      if (error instanceof ProviderError && error.status === 429) {
+        this.governor.recordRateLimit(this.providerId, error.retryAfter);
+      }
+      throw error;
     } finally {
       reservation.release(totalTokens > 0 ? totalTokens : estimatedTokens, inputTokens);
     }

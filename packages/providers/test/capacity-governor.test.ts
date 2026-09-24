@@ -469,4 +469,33 @@ describe("ProviderCapacityGovernor — evidence-driven capacity control", () => 
     expect(governor.isCoolingDown("openrouter")).toBe(true);
     expect(governor.getCapacityReport("openrouter").cooldownRemainingMs).toBe(9_000);
   });
+
+  it("records a thrown stream 429 and releases its reservation before another request", async () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep });
+    const retryAfter = clock.getCurrentTime() + 9_000;
+
+    async function* rateLimitedStream(): AsyncIterable<StreamEvent> {
+      throw new ProviderError("rate limited", "RATE_LIMITED", true, { status: 429, retryAfter });
+    }
+
+    const innerAdapter: ProviderAdapter = {
+      providerId: "openrouter",
+      listModels: vi.fn().mockResolvedValue([]),
+      healthCheck: vi.fn().mockResolvedValue({ status: "healthy" }),
+      chat: vi.fn(),
+      streamChat: vi.fn().mockImplementation(() => rateLimitedStream()),
+    };
+
+    const governed = governor.wrapAdapter(innerAdapter);
+    const consume = async () => {
+      for await (const _event of governed.streamChat({ model: "m", messages: [{ role: "user", content: "hi" }] })) {
+        throw new Error("Unexpected stream event before rate limit");
+      }
+    };
+    await expect(consume()).rejects.toThrow("rate limited");
+    expect(governor.getCapacityReport("openrouter").cooldownRemainingMs).toBe(9_000);
+    expect(governor.getCapacityReport("openrouter").activeConcurrent).toBe(0);
+    expect(governor.getCapacityReport("openrouter").inFlightTokens).toBe(0);
+  });
 });
