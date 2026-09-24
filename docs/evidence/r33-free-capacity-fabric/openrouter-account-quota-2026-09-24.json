@@ -1,0 +1,18 @@
+{
+  "observedAt": "2026-09-24T21:01:49Z",
+  "source": "authenticated read-only GET https://openrouter.ai/api/v1/key",
+  "scope": "one configured account, all free-model requests",
+  "freeModelDailyRequests": {
+    "used": 718,
+    "limit": 1000,
+    "remaining": 282
+  },
+  "isFreeTier": false,
+  "accountLimit": null,
+  "accountLimitRemaining": null,
+  "tokenLimit": null,
+  "concurrencyLimit": null,
+  "commercialHostedUse": "BLOCKED_PENDING_WRITTEN_AGREEMENT",
+  "managedFreeUsableRequestsToday": null,
+  "notes": "Counters were observed without an inference request or secret disclosure. The 282 remaining account requests are not certified CodeForge managed multi-user supply. The endpoint did not expose a token or concurrency limit."
+}

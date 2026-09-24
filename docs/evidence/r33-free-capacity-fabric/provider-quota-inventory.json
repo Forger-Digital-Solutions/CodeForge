@@ -15,7 +15,7 @@
       "scope": "OpenRouter account free-model request pool; additional API keys or accounts do not increase its published global limits",
       "modelDimension": "All :free routes share account free-model request budget; upstream provider capacity is another constraint",
       "publicLimits": {"rpm": 20, "rpdWithoutCreditPurchase": 50, "rpdWithQualifyingCreditPurchase": 1000, "tpm": null, "tpd": null, "maxConcurrency": null, "reset": "daily UTC counter"},
-      "actualCodeForge": {"creditTier": "unknown", "remainingRequests": null, "observedThroughput": null},
+      "actualCodeForge": {"creditTier": "1,000-free-model-requests-per-day account tier observed", "remainingRequests": 282, "observedAt": "2026-09-24T21:01:49Z", "observedThroughput": null, "managedFreeCommercialPermission": "blocked_pending_written_agreement", "receipt": "openrouter-account-quota-2026-09-24.json"},
       "telemetry": "GET /api/v1/key returns free_model_daily_requests used/limit/remaining; successful inference omits X-RateLimit headers; 429 may include limit/remaining/reset and Retry-After",
       "commercialHostedProxyStatus": "blocked_pending_written_agreement",
       "commercialBasis": "Standard terms Section 7(4) restrict resale of API access; enterprise agreement explicitly licenses service to end customers. User-owned BYOK/OAuth is distinct from a CodeForge-owned shared proxy.",

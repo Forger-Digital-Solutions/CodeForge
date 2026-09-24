@@ -1,6 +1,6 @@
 # R33 provider quota-domain inventory
 
-Checked 2026-09-24 against current official public documentation and the repository. The companion [JSON inventory](provider-quota-inventory.json) is the machine-readable record. This pass made **no authenticated provider API or inference requests**. Public numbers below are advertised ceilings and must not be used as actual CodeForge supply until plan, remaining capacity, route price, permission, and billing controls are verified.
+Checked 2026-09-24 against current official public documentation and the repository. The companion [JSON inventory](provider-quota-inventory.json) is the machine-readable record. The initial inventory pass made no authenticated provider or inference requests. A subsequent read-only OpenRouter account query is recorded in [the account receipt](openrouter-account-quota-2026-09-24.json). Public numbers below are advertised ceilings and must not be used as actual CodeForge supply until plan, remaining capacity, route price, permission, and billing controls are verified.
 
 ## Quota domains and published limits
 
@@ -34,7 +34,7 @@ The catalog in `packages/model-registry/src/provider-definitions.ts` has adapter
 
 There is one material internal contradiction: `provider-definitions.ts` marks OpenRouter terms `CLEARED`, while `docs/legal/provider-terms-register.md` correctly classifies a CodeForge-owned shared hosted OpenRouter key as restricted without an enterprise agreement. A Free Capacity Broker must use the stricter hosted-use status. Groq’s current agreement is more nuanced than a blanket no-proxy rule: it expressly allows Customer Applications and End Users while prohibiting raw resale. The broker should represent those as different permissions.
 
-No actual remaining requests/tokens, concurrency, failed-request charging, retry charging, observed throughput, account tier, or reset behavior was measured in this pass. Those fields remain `null` or explicitly unknown in JSON. There is no defensible sum of “total CodeForge capacity” from this inventory. In particular, adding 50 OpenRouter model listings, three Groq models, or multiple Cloudflare models would multiply catalog choices, not independent quota.
+At 2026-09-24 21:01:49 UTC, the configured OpenRouter account reported **718/1,000 free-model requests used and 282 remaining** via `GET /api/v1/key`. This is one account pool. It does not establish hosted commercial permission, token or concurrency limits, reset behavior, or usable throughput. No other account's actual remaining requests/tokens, concurrency, failed-request charging, retry charging, or throughput was measured. There is no defensible sum of “total CodeForge capacity” from this inventory. Adding OpenRouter model listings, Groq models, or Cloudflare models would multiply catalog choices, not independent quota.
 
 ## Qualification sequence for the capacity broker
 
