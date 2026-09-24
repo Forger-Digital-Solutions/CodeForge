@@ -1,0 +1,382 @@
+{
+  "schema": "r32-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-24T19:26:36.457Z",
+  "sourceCommit": "c3d8abe381ce860c65cac95b60106aa039cb06ef",
+  "workflowServiceSourceSha256": "51477067d887bd02717b08c0e37d6a48c96655cd8d2a102a69d0f88cf7545cbb",
+  "workflowServiceDistSha256": "2109eb8f689c623a688045ad4028e61b9b88998f0bb9b1cc0b5785f7a2ce557d",
+  "runId": "r32-live-e7f83d4b-5893-4198-8bdf-6771f7d91b96",
+  "task": {
+    "corpus": "r25",
+    "sourceTaskId": "r25-testfix-js-stale-expected",
+    "taskClass": "test_fix",
+    "repoSizeClass": "small",
+    "corpusDigest": "1bc7b163eb90ac1c3459a4ea5929d48ba783df692abb0994b893fa915ef885b3"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "routeMode": "auto",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 32,
+    "maxOutputTokens": 4096,
+    "timeoutMs": 1200000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine",
+    "failureInjection": null,
+    "inferenceBudget": {
+      "total": 32,
+      "reserve": 10
+    }
+  },
+  "provider": {
+    "inferenceRequestCount": 10,
+    "measuredInputTokens": 40481,
+    "measuredOutputTokens": 5204,
+    "requestsWithoutTokenUsage": 0,
+    "injected429Count": 0,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 4950,
+        "firstUsefulEventMs": 4927,
+        "inputTokens": 3361,
+        "outputTokens": 749,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 1287,
+        "firstUsefulEventMs": 1271,
+        "inputTokens": 3487,
+        "outputTokens": 81,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 14549,
+        "firstUsefulEventMs": 14427,
+        "inputTokens": 3669,
+        "outputTokens": 1255,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 1551,
+        "firstUsefulEventMs": 1533,
+        "inputTokens": 4073,
+        "outputTokens": 112,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 5,
+        "kind": "stream",
+        "elapsedMs": 3178,
+        "firstUsefulEventMs": 3010,
+        "inputTokens": 4210,
+        "outputTokens": 43,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 6,
+        "kind": "stream",
+        "elapsedMs": 3838,
+        "firstUsefulEventMs": 3717,
+        "inputTokens": 4347,
+        "outputTokens": 68,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 7,
+        "kind": "stream",
+        "elapsedMs": 1418,
+        "firstUsefulEventMs": 1398,
+        "inputTokens": 4468,
+        "outputTokens": 154,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 8,
+        "kind": "stream",
+        "elapsedMs": 2974,
+        "firstUsefulEventMs": 2954,
+        "inputTokens": 4560,
+        "outputTokens": 316,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 9,
+        "kind": "stream",
+        "elapsedMs": 1143,
+        "firstUsefulEventMs": 607,
+        "inputTokens": 4686,
+        "outputTokens": 111,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 10,
+        "kind": "stream",
+        "elapsedMs": 23511,
+        "firstUsefulEventMs": 16820,
+        "inputTokens": 3620,
+        "outputTokens": 2315,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277931294
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277932498
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277937454
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277938804
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277953436
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277957194
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277959777
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277964669
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277966148
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277969144
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277972335
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "5a74402d-7d8f-4573-bd93-9cc61d1e6429",
+    "status": "completed",
+    "phase": "completed",
+    "completion": {
+      "outcome": "completed",
+      "rationale": "All required completion checks passed.",
+      "blockers": []
+    },
+    "diffs": [
+      {
+        "path": "test/pricing.test.js",
+        "changeType": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "diff": "--- a/test/pricing.test.js\n+++ b/test/pricing.test.js\n-  assert.equal(totalWithTax(100), 105);\n+  assert.equal(totalWithTax(100), 108);\n-  assert.equal(totalWithTax(250), 262.5);\n+  assert.equal(totalWithTax(250), 270);"
+      }
+    ],
+    "changedFileSnapshots": [
+      {
+        "path": "test/pricing.test.js",
+        "beforeSha256": "6de39461af0f7d9cea7886b27711ab1590a6de0471d2b5128149e6b3daa2bc08",
+        "afterSha256": "35cc49278131f30d9851b873d45344910fc73d4c8570a614855afea305707c10",
+        "beforeBytes": 236,
+        "afterBytes": 234,
+        "afterContent": "import test from \"node:test\";\nimport assert from \"node:assert/strict\";\nimport { totalWithTax } from \"../src/pricing.js\";\n\ntest(\"applies tax\", () => {\n  assert.equal(totalWithTax(100), 108);\n  assert.equal(totalWithTax(250), 270);\n});\n"
+      }
+    ],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "verifier-1-test",
+            "kind": "test",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": true,
+      "findings": []
+    },
+    "forgeVerifySummary": {
+      "planId": "4828cb8b-31b0-435d-a8bc-00a9469f2cb8",
+      "policyVersion": "legacy-workflow-policy-v1",
+      "requiredCount": 1,
+      "satisfiedCount": 1,
+      "missingCount": 0,
+      "staleCount": 0,
+      "verificationComplete": true,
+      "missingRequiredVerifiers": [],
+      "evidence": [
+        {
+          "evidenceId": "6e1500e8-a96a-421c-833d-c0ce7f6d2891",
+          "verifierId": "legacy.test.7621d03866151084",
+          "status": "passed",
+          "durationMs": 1213,
+          "outputTruncated": false
+        }
+      ]
+    },
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 8,
+    "decisions": {
+      "allow:0": 6,
+      "allow:1": 1,
+      "allow:2": 1
+    },
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.mjs",
+      "passed": true,
+      "elapsedMs": 389,
+      "outputHash": "eecc28b3447dd57a762fa2bdc0f794cb350411e01e00092ea25ba6cab8a28947",
+      "output": "{\"passed\":3,\"failed\":0}\n\n"
+    },
+    "answerKeyPassed": true,
+    "agentResponses": [
+      "The test file has been updated to match the documented 8% tax rate (100 → 108, 250 → 270). The implementation in src/pricing.js already matches the docs/PRICING.md. No changes were made to src/ as required. The test now passes. Task is complete.",
+      "{\n  \"verdicts\": [\n    {\n      \"goal\": \"The pricing suite fails after the tax-rate update.\",\n      \"status\": \"met\",\n      \"evidence\": \"After test updates, verification shows test passes: node --test test/pricing.test.js outputs '✔ applies tax' with 1 pass, 0 fail.\",\n      \"path\": \"test/pricing.test.js\"\n    },\n    {\n      \"goal\": \"The implementation already matches docs/PRICING.md\",\n      \"status\": \"met\",\n      \"evidence\": \"docs/PRICING.md states tax rate is 8% (0.08). src/pricing.js implements totalWithTax = subtotal * (1 + taxRate) with taxRate = 0.08. For subtotal 100, expected 108; for 250, expected 270, matching updated test expectations.\",\n      \"path\": \"docs/PRICING.md\"\n    },\n    {\n      \"goal\": \"The stale test expectations are the bug\",\n      \"status\": \"met\",\n      \"evidence\": \"Original test expected 105 (5% tax) and 262.5 (5% tax) for inputs 100 and 250. Documentation specifies 8% tax. Updated test expects 108 and 270, aligning with 8% tax rate, confirming stale expectations caused failure.\",\n      \"path\": \"test/pricing.test.js\"\n    },\n    {\n      \"goal\": \"Update the tests to match the documented behaviour; do not change src/\",\n      \"status\": \"met\",\n      \"evidence\": \"test/pricing.test.js updated to expect 108 and 270 (8% tax). src/pricing.js unchanged (verified via diff showing no src changes and file content matches documentation).\",\n      \"path\": \"test/pricing.test.js\"\n    }\n  ]\n}"
+    ],
+    "workflowAllPassed": true
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 3,
+    "task.state_changed": 11,
+    "status.changed": 16,
+    "plan.started": 1,
+    "agent.started": 3,
+    "router.selection": 2,
+    "tool.call_started": 8,
+    "tool.call_completed": 8,
+    "token.usage": 10,
+    "tool.execution_started": 8,
+    "file.read": 4,
+    "tool.execution_completed": 8,
+    "file.written": 1,
+    "file.change_proposed": 1,
+    "file.change_applied": 1,
+    "command.started": 2,
+    "command.executed": 2,
+    "assistant.message.started": 2,
+    "text.delta": 146,
+    "assistant.message.completed": 2,
+    "turn.completed": 3,
+    "agent.completed": 3,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1,
+    "run.outcome": 1
+  },
+  "failures": [],
+  "toolSequence": [
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    }
+  ],
+  "timing": {
+    "wallClockMs": 64539,
+    "deadlineHit": false,
+    "activeAfterCancellation": false
+  },
+  "memory": {
+    "rssBefore": 216174592,
+    "rssAfter": 177082368,
+    "heapUsedBefore": 83223968,
+    "heapUsedAfter": 84353400
+  }
+}

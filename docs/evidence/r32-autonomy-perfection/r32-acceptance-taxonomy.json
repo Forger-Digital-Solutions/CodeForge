@@ -1,0 +1,76 @@
+{
+  "schema": "codeforge-r32-large-task-taxonomy-1",
+  "recordedAt": "2026-09-24",
+  "evidenceDir": "docs/evidence/r32-autonomy-perfection/10-live-acceptance",
+  "batchDriver": "benchmarks/r32/run-acceptance-batch.ps1",
+  "harness": "benchmarks/r32/live-workflow-completion.mjs",
+  "route": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "class": "FREE_API",
+    "spillover": "NONE",
+    "paidFallback": "none — every run terminated inside the free route; route exhaustion is recorded as such, never masked"
+  },
+  "bounds": {
+    "requestCeiling": 32,
+    "productInferenceBudget": { "total": 32, "reserve": 10, "note": "R32 wires the product inference budget into the harness: implementation gets a 22-request primary partition, semantic review a guaranteed 10-request reserve the implementation lane can never consume" },
+    "outputTokenCeiling": 4096,
+    "wallClockCeilingMs": 1200000
+  },
+  "codeUnderTest": {
+    "note": "Each receipt records workflowServiceSourceSha256 captured at process start. Fixes landed mid-batch, so cohorts are keyed by exact loaded source hash.",
+    "cohorts": {
+      "a66ed9c9": "post-6f9c448 (reserved review lane + fail-closed verdicts), pre-prompt/diff guidance — standalone validator attempt",
+      "5acda7aa": "post-8423412 (reviewers cite captured diffs), pre-contract-check — batch task 1",
+      "81da2def": "post-8423412, pre-c30b5bb — standalone validator attempt",
+      "cc9b473b": "c30b5bb contract-check content staged pre-commit — batch task 2",
+      "51477067": "b4bea58 final hardened check (comment/string-spoof hardened) — batch tasks 3-12"
+    }
+  },
+  "attemptCount": 14,
+  "definitions": {
+    "autonomousPass": "workflow completed AND hidden verifier passed AND answer key passed",
+    "blockedWorkCorrect": "non-completed terminal state AND hidden verifier passed — capacity or wall clock cut a good run",
+    "correctBlock": "blocked AND the non-completion was correct — work unproven or unfinished; the gate refused honestly",
+    "falseSuccess": "workflow completed but hidden verifier failed",
+    "providerCapacity": "run terminated by free-route capacity (request/route exhaustion) distinct from product logic",
+    "environmental": "host environment limitation outside product control (e.g. interpreter absent from PATH)"
+  },
+  "attempts": [
+    { "taskId": "ts-refactor-extract-validator", "receipt": "7d656d4c", "recordedAt": "17:57", "workflowStatus": "completed", "hiddenVerifier": false, "answerKey": true, "wsSha": "a66ed9c9", "classification": "falseSuccess", "note": "STANDALONE attempt on pre-contract-check code: model returned string[] against the stated ValidationResult contract; semantic review approved — the exact R31 residual class, recorded to pin the baseline the deterministic check then closed" },
+    { "taskId": "ts-refactor-extract-validator", "receipt": "68a156ad", "recordedAt": "18:06", "workflowStatus": "blocked", "hiddenVerifier": false, "answerKey": true, "wsSha": "5acda7aa", "categories": ["INFERENCE_BUDGET_EXHAUSTED", "REVIEW_RESERVE_EXHAUSTED"], "classification": "correctBlock", "note": "batch task 1 on pre-contract-check code: implementation consumed the 22-request primary lane, both review attempts consumed the 10-request reserve without a verdict → goal_review_inconclusive → blocked. The reserved lane held exactly as designed; starvation is provider capacity, not product logic" },
+    { "taskId": "ts-refactor-extract-validator", "receipt": "fb8c2323", "recordedAt": "18:15", "workflowStatus": "blocked", "hiddenVerifier": false, "answerKey": true, "wsSha": "81da2def", "categories": ["INFERENCE_BUDGET_EXHAUSTED", "IMPLEMENTATION_UNFINISHED"], "classification": "correctBlock", "note": "STANDALONE attempt: implementation starved before finishing the plan; review ran on the partial diff and found no blocking issue; gate refused on plan_steps_unfinished" },
+    { "taskId": "js-bug-fix-cart-total", "receipt": "3477fbc7", "recordedAt": "18:35", "workflowStatus": "failed", "hiddenVerifier": false, "answerKey": true, "wsSha": "cc9b473b", "categories": ["ROUTE_EXHAUSTED"], "classification": "providerCapacity", "note": "verification passed and ForgeVerify was satisfied; goal review found an unmet goal; the repair turn hit the 32-dispatch adapter cap → route_exhausted → terminal failed by design (gate never evaluated; floor gave out). Answer key confirms the fix was correct" },
+    { "taskId": "ts-feature-cli-stats", "receipt": "86552d74", "recordedAt": "18:55", "workflowStatus": "cancelled", "hiddenVerifier": true, "answerKey": true, "wsSha": "51477067", "categories": ["AGENT_NO_PROGRESS", "WALL_CLOCK_EXHAUSTED"], "classification": "blockedWorkCorrect", "note": "hidden verifier and answer key both passed but the model kept looping past done; AGENT_NO_PROGRESS_DETECTED at the 20-minute deadline — the detector worked as designed on a provider/model-quality loop" },
+    { "taskId": "js-feature-rate-limiter", "receipt": "f9938349", "recordedAt": "18:58", "workflowStatus": "completed", "hiddenVerifier": false, "answerKey": true, "wsSha": "51477067", "classification": "falseSuccess", "note": "the batch's one real false success on FINAL code: visible verification passed, goal review approved the stated goals, run completed — but the hidden verifier failed 3/14 sliding-window edge cases (slides, reject-again, single-slide). Root class: stated-verification coverage < hidden rigor; the deterministic contract check is signature-scoped by design and cannot see behavioral edge cases; free-model semantic review did not catch them. Recorded honestly — this class is a model-quality/verification-coverage residual, not a gate defect" },
+    { "taskId": "js-build-config-test-script", "receipt": "b9385be1", "recordedAt": "19:03", "workflowStatus": "blocked", "hiddenVerifier": true, "answerKey": true, "wsSha": "51477067", "categories": ["INFERENCE_BUDGET_EXHAUSTED"], "classification": "blockedWorkCorrect", "note": "primary lane exhausted before review; review ran on the reserve and reported blocking issues on partial work; hidden verifier confirms the deliverable was actually correct — capacity cut a good run" },
+    { "taskId": "py-bug-fix-config-merge", "receipt": "5fa9fcf5", "recordedAt": "19:15", "workflowStatus": "failed", "hiddenVerifier": true, "answerKey": true, "wsSha": "51477067", "categories": ["VERIFIER_ENVIRONMENT"], "classification": "environmental", "note": "the host has no python on PATH (no py launcher either); prepareShellCommand could not resolve 'python' so the visible verifier could not enter ForgeVerify and the run failed closed — honest refusal, correct work stranded by host environment. The harness's own hidden verifier resolves the interpreter by absolute path and passed" },
+    { "taskId": "ts-bug-fix-queue-order", "receipt": "ea20aaba", "recordedAt": "19:17", "workflowStatus": "completed", "hiddenVerifier": true, "answerKey": true, "wsSha": "51477067", "classification": "autonomousPass", "note": "FIFO fix verified end-to-end on final code — the same task R31 correctly blocked for Promise.all concurrency; here the model implemented it correctly and review approved legitimately" },
+    { "taskId": "js-investigation-webhook-retries", "receipt": "e647a92e", "recordedAt": "19:20", "workflowStatus": "blocked", "hiddenVerifier": true, "answerKey": true, "wsSha": "51477067", "categories": ["VERIFICATION_NOT_RUN"], "classification": "blockedWorkCorrect", "note": "analysis deliverable correct per hidden verifier; the run ended on verification_not_run inside the budget — fail-closed, never claimed success" },
+    { "taskId": "ts-large-context-rename-config-key", "receipt": "030bb6bb", "recordedAt": "19:25", "workflowStatus": "blocked", "hiddenVerifier": false, "answerKey": true, "wsSha": "51477067", "categories": ["INFERENCE_BUDGET_EXHAUSTED", "IMPLEMENTATION_UNFINISHED"], "classification": "correctBlock", "note": "partial rename at primary-lane exhaustion; hidden verifier correctly reports the rename incomplete — refused honestly" },
+    { "taskId": "r25-testfix-js-stale-expected", "receipt": "e7f83d4b", "recordedAt": "19:26", "workflowStatus": "completed", "hiddenVerifier": true, "answerKey": true, "wsSha": "51477067", "classification": "autonomousPass" },
+    { "taskId": "r25-review-ts-config-swallow", "receipt": "d06baf18", "recordedAt": "19:33", "workflowStatus": "blocked", "hiddenVerifier": false, "answerKey": true, "wsSha": "51477067", "categories": ["REVIEW_RESERVE_EXHAUSTED", "VERIFICATION_NOT_RUN"], "classification": "correctBlock", "note": "review task: the reserved review lane held, the reviewer consumed all 10 reserve requests and still reported blocking issues without finishing verification — refused honestly" },
+    { "taskId": "qual-js-missing-export", "receipt": "8a92240d", "recordedAt": "19:52", "workflowStatus": "cancelled", "hiddenVerifier": true, "answerKey": true, "wsSha": "51477067", "categories": ["INJECTED_429_RECOVERED", "WALL_CLOCK_EXHAUSTED"], "classification": "blockedWorkCorrect", "note": "R32_LIVE_INJECT_429_ONCE exercised live: injected ProviderError on request 1, route recovered and served real tokens on request 2 — the R31 thrown-429 cooldown path proven again on final code. The model then looped to the 20-minute deadline with the deliverable already correct" }
+  ],
+  "totals": {
+    "autonomousPass": 2,
+    "blockedWorkCorrect": 4,
+    "correctBlock": 4,
+    "falseSuccess": 2,
+    "providerCapacity": 1,
+    "environmental": 1
+  },
+  "falseSuccessDetail": {
+    "a66ed9c9_standalone": "pre-contract-check code — the deterministic check did not yet exist; recorded as the baseline the fix closed",
+    "51477067_batch": "final code — visible-verification coverage gap on behavioral edge cases; outside the signature-scoped deterministic check; model-quality residual"
+  },
+  "comparisonR31": {
+    "r31": "4/12 autonomous pass; one false-success class open (starved tail review); review could be skipped entirely by budget exhaustion",
+    "r32": "2/12 batch autonomous pass on stricter honesty guarantees — every run now reaches review (guaranteed reserve), unverdicted review can never pass, and stated contract mismatches are caught deterministically. Raw pass count fell because the reserve deliberately trades implementation capacity for review certainty on the same free-tier route"
+  },
+  "residualGaps": [
+    "VISIBLE_VERIFICATION_COVERAGE: a run can still complete when the task's own verification is shallower than hidden ground truth and free-model semantic review misses behavioral edge cases (rate-limiter). Mitigations that exist: deterministic stated-contract enforcement (signature class closed), ForgeVerify, typechecking. Residual is model quality, not gate authority.",
+    "FREE_TIER_CAPACITY: the dominant non-pass source — implementation starves a 22-request primary lane on multi-step tasks; review then runs on partial diffs. The reserve guarantees review happens; it cannot manufacture provider capacity.",
+    "HOST_ENVIRONMENT: verifiers naming interpreters absent from PATH fail closed (py-bug-fix-config-merge); honest but stranded correct work."
+  ]
+}

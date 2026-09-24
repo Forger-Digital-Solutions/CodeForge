@@ -1,0 +1,526 @@
+{
+  "schema": "r32-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-24T19:15:15.367Z",
+  "sourceCommit": "b4bea58b6995758a2bee56f786ac56fe441706d1",
+  "workflowServiceSourceSha256": "51477067d887bd02717b08c0e37d6a48c96655cd8d2a102a69d0f88cf7545cbb",
+  "workflowServiceDistSha256": "2109eb8f689c623a688045ad4028e61b9b88998f0bb9b1cc0b5785f7a2ce557d",
+  "runId": "r32-live-5fa9fcf5-d601-42d0-926a-8d591d742b3f",
+  "task": {
+    "corpus": "r23",
+    "r27TaskId": "r27-small-config-merge",
+    "sourceTaskId": "py-bug-fix-config-merge",
+    "taskClass": "bug_fix",
+    "repoSizeClass": "small",
+    "corpusDigest": "2bb1ee8306e73978d21692329bae01747688880809ed749386e6a333d793a1e7"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "routeMode": "auto",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 32,
+    "maxOutputTokens": 4096,
+    "timeoutMs": 1200000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine",
+    "failureInjection": null,
+    "inferenceBudget": {
+      "total": 32,
+      "reserve": 10
+    }
+  },
+  "provider": {
+    "inferenceRequestCount": 19,
+    "measuredInputTokens": 98699,
+    "measuredOutputTokens": 10511,
+    "requestsWithoutTokenUsage": 0,
+    "injected429Count": 0,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 12805,
+        "firstUsefulEventMs": 12765,
+        "inputTokens": 3388,
+        "outputTokens": 1191,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 1744,
+        "firstUsefulEventMs": 1728,
+        "inputTokens": 3545,
+        "outputTokens": 119,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 37475,
+        "firstUsefulEventMs": 37456,
+        "inputTokens": 3668,
+        "outputTokens": 2688,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 22822,
+        "firstUsefulEventMs": 22796,
+        "inputTokens": 3883,
+        "outputTokens": 3151,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 5,
+        "kind": "stream",
+        "elapsedMs": 1715,
+        "firstUsefulEventMs": 1677,
+        "inputTokens": 4371,
+        "outputTokens": 109,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 6,
+        "kind": "stream",
+        "elapsedMs": 7505,
+        "firstUsefulEventMs": 7467,
+        "inputTokens": 4592,
+        "outputTokens": 725,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 7,
+        "kind": "stream",
+        "elapsedMs": 7147,
+        "firstUsefulEventMs": 7105,
+        "inputTokens": 5028,
+        "outputTokens": 429,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 8,
+        "kind": "stream",
+        "elapsedMs": 2010,
+        "firstUsefulEventMs": 1995,
+        "inputTokens": 5462,
+        "outputTokens": 97,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 9,
+        "kind": "stream",
+        "elapsedMs": 1432,
+        "firstUsefulEventMs": 1416,
+        "inputTokens": 5534,
+        "outputTokens": 98,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 10,
+        "kind": "stream",
+        "elapsedMs": 1919,
+        "firstUsefulEventMs": 1888,
+        "inputTokens": 5594,
+        "outputTokens": 116,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 11,
+        "kind": "stream",
+        "elapsedMs": 4064,
+        "firstUsefulEventMs": 4049,
+        "inputTokens": 5666,
+        "outputTokens": 98,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 12,
+        "kind": "stream",
+        "elapsedMs": 2037,
+        "firstUsefulEventMs": 2027,
+        "inputTokens": 5738,
+        "outputTokens": 147,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 13,
+        "kind": "stream",
+        "elapsedMs": 1367,
+        "firstUsefulEventMs": 1355,
+        "inputTokens": 5795,
+        "outputTokens": 144,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 14,
+        "kind": "stream",
+        "elapsedMs": 3008,
+        "firstUsefulEventMs": 2991,
+        "inputTokens": 5879,
+        "outputTokens": 150,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 15,
+        "kind": "stream",
+        "elapsedMs": 1319,
+        "firstUsefulEventMs": 1307,
+        "inputTokens": 5940,
+        "outputTokens": 69,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 16,
+        "kind": "stream",
+        "elapsedMs": 5857,
+        "firstUsefulEventMs": 5829,
+        "inputTokens": 5999,
+        "outputTokens": 310,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 17,
+        "kind": "stream",
+        "elapsedMs": 7447,
+        "firstUsefulEventMs": 7401,
+        "inputTokens": 6076,
+        "outputTokens": 333,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 18,
+        "kind": "stream",
+        "elapsedMs": 3250,
+        "firstUsefulEventMs": 3211,
+        "inputTokens": 6160,
+        "outputTokens": 311,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 19,
+        "kind": "stream",
+        "elapsedMs": 3639,
+        "firstUsefulEventMs": 1946,
+        "inputTokens": 6381,
+        "outputTokens": 226,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276582209
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276583198
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276596039
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276597701
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276635231
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276658070
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276659769
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276668447
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276676648
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276678729
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276680307
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276682360
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276686448
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276988618
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276989952
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276993222
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277294751
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277300636
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277308140
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790277311353
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "213a4cfb-4910-4fdf-bdb0-86519687061c",
+    "status": "failed",
+    "phase": "failed",
+    "completion": null,
+    "diffs": [],
+    "changedFileSnapshots": [
+      {
+        "path": "config/merge.py",
+        "beforeSha256": "80020c9f88e73482f73f9f1cac222c85bdbeaef54efb93d992c9ea082010a6e5",
+        "afterSha256": "7435bd66be6b522bc9aefd02125806ab0aeceb5938158dc31da270fc3a4963e2",
+        "beforeBytes": 237,
+        "afterBytes": 574,
+        "afterContent": "\"\"\"Configuration layering.\"\"\"\n\n\ndef merge_config(base, override):\n    \"\"\"Return base with override applied (override wins).\"\"\"\n    result = {}\n    for key, value in base.items():\n        if key in override:\n            if isinstance(value, dict) and isinstance(override[key], dict):\n                result[key] = merge_config(value, override[key])\n            else:\n                result[key] = override[key]\n        else:\n            result[key] = value\n    for key, value in override.items():\n        if key not in base:\n            result[key] = value\n    return result\n"
+      }
+    ],
+    "verificationAttempts": [],
+    "review": null,
+    "forgeVerifySummary": null,
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 17,
+    "decisions": {
+      "allow:0": 8,
+      "allow:1": 1,
+      "allow:2": 6,
+      "ask:3": 2
+    },
+    "asksUnanswered": 2
+  },
+  "verification": {
+    "hidden": {
+      "command": "python hidden/verify.py",
+      "passed": true,
+      "elapsedMs": 291,
+      "outputHash": "57beb1874bd507d2321ebab189ca36d917641dec9706cdb8ac2dc63ff854ff8b",
+      "output": "{\"passed\": 7, \"failed\": 0}\r\n\n"
+    },
+    "answerKeyPassed": true,
+    "agentResponses": [
+      "The merge_config function has been updated to properly deep-merge nested dictionaries while preserving the required behavior:\n- override keys win\n- untouched nested keys are preserved\n- lists and scalars in override replace the base value entirely\n- neither input is mutated\n\nThe implementation recursively merges when both base and override values are dictionaries, otherwise uses the override value. Keys present only in override are added, and keys present only in base are preserved.\n\nThe change is minimal and focused, addressing the specific issue where whole nested sections were being replaced instead of merged.\n\nNo further action is required. The workflow will run verification automatically."
+    ],
+    "workflowAllPassed": false
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 2,
+    "task.state_changed": 9,
+    "status.changed": 15,
+    "plan.started": 1,
+    "agent.started": 2,
+    "router.selection": 1,
+    "tool.call_started": 18,
+    "tool.call_completed": 18,
+    "token.usage": 19,
+    "tool.execution_started": 15,
+    "file.read": 4,
+    "tool.execution_completed": 15,
+    "tool.execution_blocked": 1,
+    "file.written": 1,
+    "file.change_proposed": 1,
+    "file.change_applied": 1,
+    "command.started": 6,
+    "command.executed": 6,
+    "approval.requested": 2,
+    "assistant.message.started": 1,
+    "text.delta": 47,
+    "assistant.message.completed": 1,
+    "turn.completed": 1,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "turn.failed": 1,
+    "run.outcome": 1
+  },
+  "failures": [
+    {
+      "type": "turn.failed",
+      "error": "Workflow failed: Legacy verifier 'verifier-1-custom' requires a shell and cannot enter ForgeVerify."
+    }
+  ],
+  "toolSequence": [
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.execution_blocked",
+      "toolName": "read_file",
+      "reason": "forgegreen_duplicate_suppressed"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "list_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "list_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    }
+  ],
+  "timing": {
+    "wallClockMs": 732712,
+    "deadlineHit": false,
+    "activeAfterCancellation": false
+  },
+  "memory": {
+    "rssBefore": 216805376,
+    "rssAfter": 178892800,
+    "heapUsedBefore": 83072832,
+    "heapUsedAfter": 84474416
+  }
+}

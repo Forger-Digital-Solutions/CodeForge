@@ -1,0 +1,15 @@
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m packages/server/test/approval-session-grants.test.ts[2m > [22mtask grants on the session lease[2m > [22mdestructive commands always ask and Allow for task cannot mint a grant for them
+[31m[1mError[22m: EBUSY: resource busy or locked, rmdir 'C:\Users\DADDY_~1\AppData\Local\Temp\cf-approval-grant-O5gBE1'[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m450 passed[39m[22m[2m | [22m[33m8 skipped[39m[90m (462)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m3618 passed[39m[22m[2m | [22m[33m48 skipped[39m[90m (3671)[39m
+[2m   Start at [22m 15:09:47
+[2m   Duration [22m 514.26s[2m (tests 88%, import 10%, transform 1%)[22m
+
+[2m    Isolate [22m [33m462 workers spawned[39m[2m · ~256ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~19.46s faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+

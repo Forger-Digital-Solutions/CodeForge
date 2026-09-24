@@ -1,0 +1,715 @@
+{
+  "schema": "r32-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-24T19:03:01.002Z",
+  "sourceCommit": "b4bea58b6995758a2bee56f786ac56fe441706d1",
+  "workflowServiceSourceSha256": "51477067d887bd02717b08c0e37d6a48c96655cd8d2a102a69d0f88cf7545cbb",
+  "workflowServiceDistSha256": "2109eb8f689c623a688045ad4028e61b9b88998f0bb9b1cc0b5785f7a2ce557d",
+  "runId": "r32-live-b9385be1-2d4f-4f81-a80d-11672bf8cc29",
+  "task": {
+    "corpus": "r23",
+    "r27TaskId": "r27-medium-build-config",
+    "sourceTaskId": "js-build-config-test-script",
+    "taskClass": "build_config_dependency",
+    "repoSizeClass": "small",
+    "corpusDigest": "124a28180cd1544350d89c052816e1cdb3fa76e0f353c4a0d09819498218cea8"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "routeMode": "auto",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 32,
+    "maxOutputTokens": 4096,
+    "timeoutMs": 1200000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine",
+    "failureInjection": null,
+    "inferenceBudget": {
+      "total": 32,
+      "reserve": 10
+    }
+  },
+  "provider": {
+    "inferenceRequestCount": 24,
+    "measuredInputTokens": 128724,
+    "measuredOutputTokens": 11706,
+    "requestsWithoutTokenUsage": 2,
+    "injected429Count": 0,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 5538,
+        "firstUsefulEventMs": 5254,
+        "inputTokens": 3415,
+        "outputTokens": 143,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 3335,
+        "firstUsefulEventMs": 3315,
+        "inputTokens": 3658,
+        "outputTokens": 315,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 21027,
+        "firstUsefulEventMs": 20848,
+        "inputTokens": 3813,
+        "outputTokens": 1001,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 9170,
+        "firstUsefulEventMs": 9145,
+        "inputTokens": 4043,
+        "outputTokens": 1162,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 5,
+        "kind": "stream",
+        "elapsedMs": 2067,
+        "firstUsefulEventMs": 2048,
+        "inputTokens": 4563,
+        "outputTokens": 198,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 6,
+        "kind": "stream",
+        "elapsedMs": 1343,
+        "firstUsefulEventMs": 1327,
+        "inputTokens": 4636,
+        "outputTokens": 64,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 7,
+        "kind": "stream",
+        "elapsedMs": 2942,
+        "firstUsefulEventMs": 2920,
+        "inputTokens": 4791,
+        "outputTokens": 268,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 8,
+        "kind": "stream",
+        "elapsedMs": 927,
+        "firstUsefulEventMs": 900,
+        "inputTokens": 5085,
+        "outputTokens": 65,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 9,
+        "kind": "stream",
+        "elapsedMs": 819,
+        "firstUsefulEventMs": 794,
+        "inputTokens": 5529,
+        "outputTokens": 69,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 10,
+        "kind": "stream",
+        "elapsedMs": 4749,
+        "firstUsefulEventMs": 4732,
+        "inputTokens": 5600,
+        "outputTokens": 498,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 11,
+        "kind": "stream",
+        "elapsedMs": 2858,
+        "firstUsefulEventMs": 2840,
+        "inputTokens": 5897,
+        "outputTokens": 47,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 12,
+        "kind": "stream",
+        "elapsedMs": 16225,
+        "firstUsefulEventMs": 16180,
+        "inputTokens": 6057,
+        "outputTokens": 596,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 13,
+        "kind": "stream",
+        "elapsedMs": 1118,
+        "firstUsefulEventMs": 1100,
+        "inputTokens": 6360,
+        "outputTokens": 55,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 14,
+        "kind": "stream",
+        "elapsedMs": 12705,
+        "firstUsefulEventMs": 12693,
+        "inputTokens": 6808,
+        "outputTokens": 584,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 15,
+        "kind": "stream",
+        "elapsedMs": 12470,
+        "firstUsefulEventMs": 11118,
+        "inputTokens": 6965,
+        "outputTokens": 568,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 16,
+        "kind": "stream",
+        "elapsedMs": 25157,
+        "firstUsefulEventMs": 24833,
+        "inputTokens": 7395,
+        "outputTokens": 1320,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 17,
+        "kind": "stream",
+        "elapsedMs": 32341,
+        "firstUsefulEventMs": 32326,
+        "inputTokens": 7549,
+        "outputTokens": 1505,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 18,
+        "kind": "stream",
+        "elapsedMs": 13239,
+        "firstUsefulEventMs": 13226,
+        "inputTokens": 7758,
+        "outputTokens": 990,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 19,
+        "kind": "stream",
+        "elapsedMs": 15398,
+        "firstUsefulEventMs": 15356,
+        "inputTokens": 8186,
+        "outputTokens": 511,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 20,
+        "kind": "stream",
+        "elapsedMs": 9516,
+        "firstUsefulEventMs": 9476,
+        "inputTokens": 8339,
+        "outputTokens": 713,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 21,
+        "kind": "stream",
+        "elapsedMs": 1463,
+        "firstUsefulEventMs": 1448,
+        "inputTokens": 8639,
+        "outputTokens": 64,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 22,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 23,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 24,
+        "kind": "stream",
+        "elapsedMs": 13118,
+        "firstUsefulEventMs": 10479,
+        "inputTokens": 3638,
+        "outputTokens": 970,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276308705
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276310200
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276315903
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276319128
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276340299
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276349518
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276353535
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276354861
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276357819
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276360853
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276361665
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276366489
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276375792
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276392049
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276409436
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276423510
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276447674
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276472514
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276505048
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276520652
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276535907
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276545537
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276548366
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276558697
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790276567113
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "cf9d8f39-9ae8-4d57-b512-b43da58e9a67",
+    "status": "blocked",
+    "phase": "blocked",
+    "completion": {
+      "outcome": "blocked",
+      "rationale": "Independent diff review raised 1 blocking finding(s). 6 plan step(s) did not finish successfully.",
+      "blockers": [
+        {
+          "code": "review_rejected",
+          "severity": "blocking",
+          "message": "Independent diff review raised 1 blocking finding(s).",
+          "evidence": "Verification script(s) \"test\" changed in package.json; verification ran under a definition this change rewrote."
+        },
+        {
+          "code": "plan_steps_unfinished",
+          "severity": "blocking",
+          "message": "6 plan step(s) did not finish successfully.",
+          "evidence": "s3:queued, s4:queued, s5:queued, s6:queued, s7:failed, s9:blocked"
+        }
+      ]
+    },
+    "diffs": [
+      {
+        "path": "package.json",
+        "changeType": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "diff": "--- a/package.json\n+++ b/package.json\n-    \"test\": \"node --test test/\"\n+    \"test\": \"node --test tests/*.js\""
+      },
+      {
+        "path": "tests/parse.test.js",
+        "changeType": "modified",
+        "additions": 3,
+        "deletions": 3,
+        "diff": "--- a/tests/parse.test.js\n+++ b/tests/parse.test.js\n-const test = require(\"node:test\");\n+import test from \"node:test\";\n-const assert = require(\"node:assert/strict\");\n+import assert from \"node:assert/strict\";\n-const { parseKv } = require(\"../src/parse.js\");\n+import { parseKv } from \"../src/parse.js\";"
+      }
+    ],
+    "changedFileSnapshots": [
+      {
+        "path": "package.json",
+        "beforeSha256": "b92ddec48cb0756303fd3647560e2bc5e9bb59e847614d4569bdd286e0115311",
+        "afterSha256": "12e6ee0c65b958c5d2e60922c92509d92c9d81cb3ba2eb5c79d3afff59a4f2fd",
+        "beforeBytes": 138,
+        "afterBytes": 143,
+        "afterContent": "{\n  \"name\": \"kv-parse\",\n  \"version\": \"0.3.0\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"test\": \"node --test tests/*.js\"\n  }\n}\n"
+      },
+      {
+        "path": "tests/parse.test.js",
+        "beforeSha256": "c0c689acf6f518c460a245515aea5e5981dffa1f8c9263b15d22382cf27be59a",
+        "afterSha256": "4ad327ad75b8d5b65c8c9594de5e9f9cca7f5250eb139bbe4938c59731a49592",
+        "beforeBytes": 433,
+        "afterBytes": 418,
+        "afterContent": "import test from \"node:test\";\nimport assert from \"node:assert/strict\";\nimport { parseKv } from \"../src/parse.js\";\n\ntest(\"parses pairs\", () => {\n  assert.deepEqual(parseKv(\"a=1\\nb = two\"), { a: \"1\", b: \"two\" });\n});\n\ntest(\"ignores comments and blanks\", () => {\n  assert.deepEqual(parseKv(\"# c\\n\\nx=y\"), { x: \"y\" });\n});\n\ntest(\"rejects invalid lines\", () => {\n  assert.throws(() => parseKv(\"nope\"), /invalid line/);\n});\n"
+      }
+    ],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "verifier-1-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": false,
+      "findings": [
+        {
+          "code": "verification_config_modified",
+          "severity": "blocking",
+          "path": "package.json",
+          "message": "Verification script(s) \"test\" changed in package.json; verification ran under a definition this change rewrote."
+        },
+        {
+          "code": "goal_review_inconclusive",
+          "severity": "advisory",
+          "path": "",
+          "message": "Independent goal review could not establish goal — npm test fails in this repository. Evidence: We cannot determine if npm test originally failed because we only have the current state after the agent's changes. The task said npm test fails, but we have not observed the original state. We can only verify the current state."
+        }
+      ]
+    },
+    "forgeVerifySummary": {
+      "planId": "87c22801-8ed6-43eb-80bb-1c4c182ef839",
+      "policyVersion": "legacy-workflow-policy-v1",
+      "requiredCount": 1,
+      "satisfiedCount": 1,
+      "missingCount": 0,
+      "staleCount": 0,
+      "verificationComplete": true,
+      "missingRequiredVerifiers": [],
+      "evidence": [
+        {
+          "evidenceId": "f02a913e-20ff-4958-b575-dbe7a2731253",
+          "verifierId": "legacy.custom.f395a9416671b0cb",
+          "status": "passed",
+          "durationMs": 1124,
+          "outputTruncated": false
+        }
+      ]
+    },
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 20,
+    "decisions": {
+      "allow:0": 11,
+      "allow:1": 5,
+      "allow:2": 4
+    },
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.mjs",
+      "passed": true,
+      "elapsedMs": 705,
+      "outputHash": "974b874dbbe29e979084c54901b723e3b1308c1ba46c6ebd396417a11667ed70",
+      "output": "{\"passed\":4,\"failed\":0}\n\n"
+    },
+    "answerKeyPassed": true,
+    "agentResponses": [
+      "{\n  \"verdicts\": [\n    {\n      \"goal\": \"npm test fails in this repository\",\n      \"status\": \"indeterminate\",\n      \"evidence\": \"We cannot determine if npm test originally failed because we only have the current state after the agent's changes. The task said npm test fails, but we have not observed the original state. We can only verify the current state.\",\n      \"path\": \"\"\n    },\n    {\n      \"goal\": \"Make npm test run the test files under tests/ with Node's built-in test runner and pass, without rewriting the tests' assertions\",\n      \"status\": \"met\",\n      \"evidence\": \"The test script in package.json is now \\\"node --test tests/*.js\\\" which runs Node's built-in test runner on files matching tests/*.js. Running npm test shows the test passes (output shows 'PASS' and no failures). The assertions in tests/parse.test.js are unchanged except for import syntax (require -> import), which does not rewrite assertions.\",\n      \"path\": \"package.json, tests/parse.test.js\"\n    },\n    {\n      \"goal\": \"The package must remain an ES module package\",\n      \"status\": \"met\",\n      \"evidence\": \"package.json contains \\\"type\\\": \\\"module\\\" (unchanged from diff showing only test script modification). The test file uses ES module imports (import ... from ...) and the source file src/parse.js is also ES module (as inferred from import statements).\",\n      \"path\": \"package.json\"\n    }\n  ]\n}"
+    ],
+    "workflowAllPassed": true
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 3,
+    "task.state_changed": 13,
+    "status.changed": 17,
+    "plan.started": 1,
+    "agent.started": 3,
+    "router.selection": 2,
+    "tool.call_started": 21,
+    "tool.call_completed": 21,
+    "token.usage": 22,
+    "tool.execution_started": 20,
+    "file.read": 6,
+    "tool.execution_completed": 20,
+    "file.written": 4,
+    "file.change_proposed": 4,
+    "file.change_applied": 4,
+    "command.started": 8,
+    "command.executed": 8,
+    "tool.execution_blocked": 1,
+    "eightbit.status": 2,
+    "text.delta": 104,
+    "turn.failed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "assistant.message.started": 1,
+    "assistant.message.completed": 1,
+    "turn.completed": 1,
+    "agent.completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "run.outcome": 1
+  },
+  "failures": [
+    {
+      "type": "turn.failed",
+      "error": "The run's inference request budget was exhausted before the review phase. The task is incomplete and unverified."
+    },
+    {
+      "type": "turn.failed",
+      "error": "The review found blocking issues The implementation stopped early — CodeForge stopped before finishing: the working budget for this run was used up. The task is incomplete and unverified, so CodeForge did not mark this task complete. Review found blocking issues; verification passed. 2 files changed."
+    }
+  ],
+  "toolSequence": [
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "list_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.execution_blocked",
+      "toolName": "read_file",
+      "reason": "forgegreen_duplicate_suppressed"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    }
+  ],
+  "timing": {
+    "wallClockMs": 271404,
+    "deadlineHit": false,
+    "activeAfterCancellation": false
+  },
+  "memory": {
+    "rssBefore": 232902656,
+    "rssAfter": 185921536,
+    "heapUsedBefore": 79064472,
+    "heapUsedAfter": 86221096
+  }
+}

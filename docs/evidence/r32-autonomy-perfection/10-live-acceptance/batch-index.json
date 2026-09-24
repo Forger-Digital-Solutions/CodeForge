@@ -1,0 +1,62 @@
+[
+  {
+    "task": "ts-refactor-extract-validator",
+    "corpus": "r23",
+    "exitCode": 2
+  },
+  {
+    "task": "js-bug-fix-cart-total",
+    "corpus": "r23",
+    "exitCode": 2
+  },
+  {
+    "task": "ts-feature-cli-stats",
+    "corpus": "r23",
+    "exitCode": 2
+  },
+  {
+    "task": "js-feature-rate-limiter",
+    "corpus": "r23",
+    "exitCode": 2
+  },
+  {
+    "task": "js-build-config-test-script",
+    "corpus": "r23",
+    "exitCode": 2
+  },
+  {
+    "task": "py-bug-fix-config-merge",
+    "corpus": "r23",
+    "exitCode": 2
+  },
+  {
+    "task": "ts-bug-fix-queue-order",
+    "corpus": "r23",
+    "exitCode": 0
+  },
+  {
+    "task": "js-investigation-webhook-retries",
+    "corpus": "r23",
+    "exitCode": 2
+  },
+  {
+    "task": "ts-large-context-rename-config-key",
+    "corpus": "r23",
+    "exitCode": 2
+  },
+  {
+    "task": "r25-testfix-js-stale-expected",
+    "corpus": "r25",
+    "exitCode": 0
+  },
+  {
+    "task": "r25-review-ts-config-swallow",
+    "corpus": "r25",
+    "exitCode": 2
+  },
+  {
+    "task": "qual-js-missing-export",
+    "corpus": "r23",
+    "exitCode": 2
+  }
+]

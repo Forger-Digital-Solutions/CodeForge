@@ -1,0 +1,464 @@
+{
+  "schema": "r32-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-24T19:53:38.846Z",
+  "sourceCommit": "c3d8abe381ce860c65cac95b60106aa039cb06ef",
+  "workflowServiceSourceSha256": "51477067d887bd02717b08c0e37d6a48c96655cd8d2a102a69d0f88cf7545cbb",
+  "workflowServiceDistSha256": "2109eb8f689c623a688045ad4028e61b9b88998f0bb9b1cc0b5785f7a2ce557d",
+  "runId": "r32-live-8a92240d-4eed-4141-a770-90d7545d0bf5",
+  "task": {
+    "corpus": "r23",
+    "r27TaskId": "r27-tiny-qual-missing-export",
+    "sourceTaskId": "qual-js-missing-export",
+    "taskClass": "small_fix",
+    "repoSizeClass": "small",
+    "corpusDigest": "b613e18b1b3258101b6d7d2a1c4c30951462887924487714f3be3a626a59797b"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "routeMode": "auto",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 32,
+    "maxOutputTokens": 4096,
+    "timeoutMs": 1200000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine",
+    "failureInjection": "one controlled provider 429 before first inference dispatch",
+    "inferenceBudget": {
+      "total": 32,
+      "reserve": 10
+    }
+  },
+  "provider": {
+    "inferenceRequestCount": 17,
+    "measuredInputTokens": 53539,
+    "measuredOutputTokens": 4828,
+    "requestsWithoutTokenUsage": 3,
+    "injected429Count": 1,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 2,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "ProviderError"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 5179,
+        "firstUsefulEventMs": 5164,
+        "inputTokens": 3317,
+        "outputTokens": 468,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 836,
+        "firstUsefulEventMs": 800,
+        "inputTokens": 3433,
+        "outputTokens": 42,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 5959,
+        "firstUsefulEventMs": 5945,
+        "inputTokens": 3586,
+        "outputTokens": 231,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 5,
+        "kind": "stream",
+        "elapsedMs": 1890,
+        "firstUsefulEventMs": 1877,
+        "inputTokens": 3807,
+        "outputTokens": 180,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 6,
+        "kind": "stream",
+        "elapsedMs": 2986,
+        "firstUsefulEventMs": 2972,
+        "inputTokens": 3946,
+        "outputTokens": 361,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 7,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 8,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 9,
+        "kind": "stream",
+        "elapsedMs": 8042,
+        "firstUsefulEventMs": 3180,
+        "inputTokens": 4044,
+        "outputTokens": 252,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 10,
+        "kind": "stream",
+        "elapsedMs": 3724,
+        "firstUsefulEventMs": 3696,
+        "inputTokens": 3544,
+        "outputTokens": 233,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 11,
+        "kind": "stream",
+        "elapsedMs": 10385,
+        "firstUsefulEventMs": 10369,
+        "inputTokens": 3662,
+        "outputTokens": 189,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 12,
+        "kind": "stream",
+        "elapsedMs": 5904,
+        "firstUsefulEventMs": 5893,
+        "inputTokens": 3815,
+        "outputTokens": 560,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 13,
+        "kind": "stream",
+        "elapsedMs": 5278,
+        "firstUsefulEventMs": 5267,
+        "inputTokens": 3886,
+        "outputTokens": 522,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 14,
+        "kind": "stream",
+        "elapsedMs": 3492,
+        "firstUsefulEventMs": 3434,
+        "inputTokens": 4025,
+        "outputTokens": 290,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 15,
+        "kind": "stream",
+        "elapsedMs": 2986,
+        "firstUsefulEventMs": 2967,
+        "inputTokens": 4095,
+        "outputTokens": 308,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 16,
+        "kind": "stream",
+        "elapsedMs": 6223,
+        "firstUsefulEventMs": 6190,
+        "inputTokens": 4152,
+        "outputTokens": 621,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 17,
+        "kind": "stream",
+        "elapsedMs": 5584,
+        "firstUsefulEventMs": 5550,
+        "inputTokens": 4227,
+        "outputTokens": 571,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278417867
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278419973
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278425192
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278425950
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278432061
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278433813
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278436854
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278445255
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278453668
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278463714
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278467516
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278477903
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278783834
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790278789174
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790279092729
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790279096754
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790279403050
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "61b91b5d-6301-4dd9-ad5a-61aba0a11f47",
+    "status": "cancelled",
+    "phase": "cancelled",
+    "completion": null,
+    "diffs": [],
+    "changedFileSnapshots": [
+      {
+        "path": "src/index.js",
+        "beforeSha256": "8f6d4786c9be6f0552c17539a287b8907c4ab5180df818c1f54c0ff4d77ad710",
+        "afterSha256": "e78498f889fe31e910bd5b959d81f16482d1028707ebdcf61d59f4b72d8440f9",
+        "beforeBytes": 40,
+        "afterBytes": 52,
+        "afterContent": "export { capitalize, trimAll } from \"./strings.js\";\n"
+      }
+    ],
+    "verificationAttempts": [],
+    "review": null,
+    "forgeVerifySummary": null,
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 13,
+    "decisions": {
+      "allow:0": 7,
+      "allow:1": 1,
+      "ask:3": 4,
+      "allow:2": 1
+    },
+    "asksUnanswered": 4
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.mjs",
+      "passed": true,
+      "elapsedMs": 76,
+      "outputHash": "f76f5403d6b88e9a82637a36543329745883742c21cea196642c5bf7caac626c",
+      "output": "{\"passed\":2,\"failed\":0}\n\n"
+    },
+    "answerKeyPassed": true,
+    "agentResponses": [
+      "The task is to fix the re-export of `capitalize` from `src/strings.js` in `src/index.js` so that importing `{ capitalize }` from `src/index.js` works and `capitalize('abc')` returns `'Abc'`.\n\nChanges made:\n1. Updated `src/index.js` to export both `capitalize` and `trimAll` from `\"./strings.js\"`.\n   - Before: `export { trimAll } from \"./strings.js\";`\n   - After: `export { capitalize, trimAll } from \"./strings.js\";`\n\nNo changes were needed in `src/strings.js` as it already correctly exports the `capitalize` function.\n\nVerification: The export now matches the requirement. The workflow will run verification automatically.\n\nTask completed."
+    ],
+    "workflowAllPassed": false
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 3,
+    "task.state_changed": 11,
+    "status.changed": 24,
+    "plan.started": 1,
+    "agent.started": 3,
+    "router.selection": 2,
+    "eightbit.status": 3,
+    "tool.call_started": 13,
+    "tool.call_completed": 13,
+    "token.usage": 14,
+    "tool.execution_started": 9,
+    "file.read": 6,
+    "tool.execution_completed": 9,
+    "file.written": 1,
+    "file.change_proposed": 1,
+    "file.change_applied": 1,
+    "assistant.message.started": 1,
+    "text.delta": 49,
+    "assistant.message.completed": 1,
+    "turn.completed": 1,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "approval.requested": 4,
+    "command.started": 1,
+    "command.executed": 1,
+    "turn.cancelled": 3,
+    "workflow.review_completed": 1,
+    "task.cancelled": 1,
+    "run.outcome": 1
+  },
+  "failures": [],
+  "toolSequence": [
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "run_command"
+    }
+  ],
+  "timing": {
+    "wallClockMs": 1200732,
+    "deadlineHit": true,
+    "activeAfterCancellation": false
+  },
+  "memory": {
+    "rssBefore": 216424448,
+    "rssAfter": 177238016,
+    "heapUsedBefore": 83105024,
+    "heapUsedAfter": 84820520
+  }
+}

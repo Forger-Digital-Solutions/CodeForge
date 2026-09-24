@@ -1,0 +1,359 @@
+{
+  "schema": "r32-live-task-summary-1",
+  "generatedAt": "2026-09-24T19:09:48.611Z",
+  "attemptCount": 7,
+  "substantialAttemptCount": 7,
+  "autonomousPasses": 0,
+  "acceptanceCohorts": [
+    {
+      "buildKey": "cc9b473ba508216ba2b8cdf52343d007dbdd441efa7a4536f1c68faa90b3ccdf",
+      "sourceCommits": [
+        "e6ac511aad6800ebe1e6a744510512f619f9ee16"
+      ],
+      "attemptCount": 1,
+      "distinctTaskCount": 1,
+      "autonomousPasses": 0,
+      "autonomousSuccessRate": 0,
+      "taskClasses": [
+        "bug_fix"
+      ],
+      "hasInjected429": false,
+      "falseSuccessCount": 0,
+      "meetsSampleAndReliabilityTarget": false
+    },
+    {
+      "buildKey": "5acda7aa3f72fdb27954797b7d23f3d9b6834be1940a7adac83037bc4873cb2c",
+      "sourceCommits": [
+        "6f9c4481cc462cb02f790dea09c2d076b80ba29d"
+      ],
+      "attemptCount": 1,
+      "distinctTaskCount": 1,
+      "autonomousPasses": 0,
+      "autonomousSuccessRate": 0,
+      "taskClasses": [
+        "refactor"
+      ],
+      "hasInjected429": false,
+      "falseSuccessCount": 0,
+      "meetsSampleAndReliabilityTarget": false
+    },
+    {
+      "buildKey": "a66ed9c9d95cb705fb730e3f0347350100f87349d2d055a48cbc684be4a8f476",
+      "sourceCommits": [
+        "6f9c4481cc462cb02f790dea09c2d076b80ba29d"
+      ],
+      "attemptCount": 1,
+      "distinctTaskCount": 1,
+      "autonomousPasses": 0,
+      "autonomousSuccessRate": 0,
+      "taskClasses": [
+        "refactor"
+      ],
+      "hasInjected429": false,
+      "falseSuccessCount": 1,
+      "meetsSampleAndReliabilityTarget": false
+    },
+    {
+      "buildKey": "51477067d887bd02717b08c0e37d6a48c96655cd8d2a102a69d0f88cf7545cbb",
+      "sourceCommits": [
+        "b4bea58b6995758a2bee56f786ac56fe441706d1"
+      ],
+      "attemptCount": 3,
+      "distinctTaskCount": 3,
+      "autonomousPasses": 0,
+      "autonomousSuccessRate": 0,
+      "taskClasses": [
+        "build_config_dependency",
+        "feature"
+      ],
+      "hasInjected429": false,
+      "falseSuccessCount": 1,
+      "meetsSampleAndReliabilityTarget": false
+    },
+    {
+      "buildKey": "81da2defed4047e8cd2b3bb2bbd3bab6aeb1c38ffaf7e016eb63a0120940738a",
+      "sourceCommits": [
+        "c56ba1332800aeb373cdcf009c7353124a6b52c5"
+      ],
+      "attemptCount": 1,
+      "distinctTaskCount": 1,
+      "autonomousPasses": 0,
+      "autonomousSuccessRate": 0,
+      "taskClasses": [
+        "refactor"
+      ],
+      "hasInjected429": false,
+      "falseSuccessCount": 0,
+      "meetsSampleAndReliabilityTarget": false
+    }
+  ],
+  "entries": [
+    {
+      "receipt": "r32-live-3477fbc7-00f5-417d-8517-5583a85b818f.json",
+      "runId": "r32-live-3477fbc7-00f5-417d-8517-5583a85b818f",
+      "sourceCommit": "e6ac511aad6800ebe1e6a744510512f619f9ee16",
+      "buildKey": "cc9b473ba508216ba2b8cdf52343d007dbdd441efa7a4536f1c68faa90b3ccdf",
+      "corpus": "r23",
+      "taskId": "js-bug-fix-cart-total",
+      "taskClass": "bug_fix",
+      "repoSizeClass": "medium",
+      "substantial": true,
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "inferenceBudget": {
+        "total": 32,
+        "reserve": 10
+      },
+      "workflowStatus": "failed",
+      "completionOutcome": null,
+      "blockers": [],
+      "goalReviewInconclusive": false,
+      "independentVerifierPassed": false,
+      "autonomousPass": false,
+      "wallClockMs": 1189907,
+      "modelRequests": 28,
+      "toolCalls": 21,
+      "failedToolExecutions": 0,
+      "inputTokens": 106147,
+      "outputTokens": 16342,
+      "tokenUsageUnknownRequests": 6,
+      "changedPaths": [],
+      "injected429Count": 0,
+      "humanTaskIntervention": "none"
+    },
+    {
+      "receipt": "r32-live-68a156ad-4779-4feb-b16a-89db3dd86465.json",
+      "runId": "r32-live-68a156ad-4779-4feb-b16a-89db3dd86465",
+      "sourceCommit": "6f9c4481cc462cb02f790dea09c2d076b80ba29d",
+      "buildKey": "5acda7aa3f72fdb27954797b7d23f3d9b6834be1940a7adac83037bc4873cb2c",
+      "corpus": "r23",
+      "taskId": "ts-refactor-extract-validator",
+      "taskClass": "refactor",
+      "repoSizeClass": "medium",
+      "substantial": true,
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "inferenceBudget": {
+        "total": 32,
+        "reserve": 10
+      },
+      "workflowStatus": "blocked",
+      "completionOutcome": "blocked",
+      "blockers": [
+        "goal_review_inconclusive",
+        "plan_steps_unfinished"
+      ],
+      "goalReviewInconclusive": true,
+      "independentVerifierPassed": false,
+      "autonomousPass": false,
+      "wallClockMs": 327421,
+      "modelRequests": 32,
+      "toolCalls": 24,
+      "failedToolExecutions": 0,
+      "inputTokens": 166292,
+      "outputTokens": 7465,
+      "tokenUsageUnknownRequests": 8,
+      "changedPaths": [
+        "src/handlers/create-order.ts",
+        "src/handlers/quote-order.ts",
+        "src/handlers/update-order.ts",
+        "src/validation/order.ts"
+      ],
+      "injected429Count": 0,
+      "humanTaskIntervention": "none"
+    },
+    {
+      "receipt": "r32-live-7d656d4c-245c-448c-9715-7244b13805e0.json",
+      "runId": "r32-live-7d656d4c-245c-448c-9715-7244b13805e0",
+      "sourceCommit": "6f9c4481cc462cb02f790dea09c2d076b80ba29d",
+      "buildKey": "a66ed9c9d95cb705fb730e3f0347350100f87349d2d055a48cbc684be4a8f476",
+      "corpus": "r23",
+      "taskId": "ts-refactor-extract-validator",
+      "taskClass": "refactor",
+      "repoSizeClass": "medium",
+      "substantial": true,
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "inferenceBudget": {
+        "total": 32,
+        "reserve": 10
+      },
+      "workflowStatus": "completed",
+      "completionOutcome": "completed",
+      "blockers": [],
+      "goalReviewInconclusive": false,
+      "independentVerifierPassed": false,
+      "autonomousPass": false,
+      "wallClockMs": 187955,
+      "modelRequests": 24,
+      "toolCalls": 18,
+      "failedToolExecutions": 0,
+      "inputTokens": 128384,
+      "outputTokens": 7372,
+      "tokenUsageUnknownRequests": 4,
+      "changedPaths": [
+        "src/handlers/create-order.ts",
+        "src/handlers/quote-order.ts",
+        "src/handlers/update-order.ts",
+        "src/validation/order.ts"
+      ],
+      "injected429Count": 0,
+      "humanTaskIntervention": "none"
+    },
+    {
+      "receipt": "r32-live-86552d74-e9a2-4364-8b16-9faaada21e4d.json",
+      "runId": "r32-live-86552d74-e9a2-4364-8b16-9faaada21e4d",
+      "sourceCommit": "b4bea58b6995758a2bee56f786ac56fe441706d1",
+      "buildKey": "51477067d887bd02717b08c0e37d6a48c96655cd8d2a102a69d0f88cf7545cbb",
+      "corpus": "r23",
+      "taskId": "ts-feature-cli-stats",
+      "taskClass": "feature",
+      "repoSizeClass": "medium",
+      "substantial": true,
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "inferenceBudget": {
+        "total": 32,
+        "reserve": 10
+      },
+      "workflowStatus": "cancelled",
+      "completionOutcome": null,
+      "blockers": [],
+      "goalReviewInconclusive": false,
+      "independentVerifierPassed": true,
+      "autonomousPass": false,
+      "wallClockMs": 1200753,
+      "modelRequests": 20,
+      "toolCalls": 19,
+      "failedToolExecutions": 0,
+      "inputTokens": 91040,
+      "outputTokens": 8910,
+      "tokenUsageUnknownRequests": 1,
+      "changedPaths": [
+        "src/commands/index.ts",
+        "src/commands/stats.ts"
+      ],
+      "injected429Count": 0,
+      "humanTaskIntervention": "none"
+    },
+    {
+      "receipt": "r32-live-b9385be1-2d4f-4f81-a80d-11672bf8cc29.json",
+      "runId": "r32-live-b9385be1-2d4f-4f81-a80d-11672bf8cc29",
+      "sourceCommit": "b4bea58b6995758a2bee56f786ac56fe441706d1",
+      "buildKey": "51477067d887bd02717b08c0e37d6a48c96655cd8d2a102a69d0f88cf7545cbb",
+      "corpus": "r23",
+      "taskId": "js-build-config-test-script",
+      "taskClass": "build_config_dependency",
+      "repoSizeClass": "small",
+      "substantial": true,
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "inferenceBudget": {
+        "total": 32,
+        "reserve": 10
+      },
+      "workflowStatus": "blocked",
+      "completionOutcome": "blocked",
+      "blockers": [
+        "review_rejected",
+        "plan_steps_unfinished"
+      ],
+      "goalReviewInconclusive": true,
+      "independentVerifierPassed": true,
+      "autonomousPass": false,
+      "wallClockMs": 271404,
+      "modelRequests": 24,
+      "toolCalls": 21,
+      "failedToolExecutions": 0,
+      "inputTokens": 128724,
+      "outputTokens": 11706,
+      "tokenUsageUnknownRequests": 2,
+      "changedPaths": [
+        "package.json",
+        "tests/parse.test.js"
+      ],
+      "injected429Count": 0,
+      "humanTaskIntervention": "none"
+    },
+    {
+      "receipt": "r32-live-f9938349-fffb-4b41-b4cc-ddebec0928e6.json",
+      "runId": "r32-live-f9938349-fffb-4b41-b4cc-ddebec0928e6",
+      "sourceCommit": "b4bea58b6995758a2bee56f786ac56fe441706d1",
+      "buildKey": "51477067d887bd02717b08c0e37d6a48c96655cd8d2a102a69d0f88cf7545cbb",
+      "corpus": "r23",
+      "taskId": "js-feature-rate-limiter",
+      "taskClass": "feature",
+      "repoSizeClass": "medium",
+      "substantial": true,
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "inferenceBudget": {
+        "total": 32,
+        "reserve": 10
+      },
+      "workflowStatus": "completed",
+      "completionOutcome": "completed",
+      "blockers": [],
+      "goalReviewInconclusive": false,
+      "independentVerifierPassed": false,
+      "autonomousPass": false,
+      "wallClockMs": 170608,
+      "modelRequests": 17,
+      "toolCalls": 15,
+      "failedToolExecutions": 0,
+      "inputTokens": 116062,
+      "outputTokens": 10772,
+      "tokenUsageUnknownRequests": 0,
+      "changedPaths": [
+        "src/index.js",
+        "src/net/rate-limiter.js",
+        "src/net/rate-limiter.test.js"
+      ],
+      "injected429Count": 0,
+      "humanTaskIntervention": "none"
+    },
+    {
+      "receipt": "r32-live-fb8c2323-6e20-4b14-b940-05084b3b0ce9.json",
+      "runId": "r32-live-fb8c2323-6e20-4b14-b940-05084b3b0ce9",
+      "sourceCommit": "c56ba1332800aeb373cdcf009c7353124a6b52c5",
+      "buildKey": "81da2defed4047e8cd2b3bb2bbd3bab6aeb1c38ffaf7e016eb63a0120940738a",
+      "corpus": "r23",
+      "taskId": "ts-refactor-extract-validator",
+      "taskClass": "refactor",
+      "repoSizeClass": "medium",
+      "substantial": true,
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "inferenceBudget": {
+        "total": 32,
+        "reserve": 10
+      },
+      "workflowStatus": "blocked",
+      "completionOutcome": "blocked",
+      "blockers": [
+        "plan_steps_unfinished"
+      ],
+      "goalReviewInconclusive": false,
+      "independentVerifierPassed": false,
+      "autonomousPass": false,
+      "wallClockMs": 276393,
+      "modelRequests": 28,
+      "toolCalls": 25,
+      "failedToolExecutions": 0,
+      "inputTokens": 195856,
+      "outputTokens": 10032,
+      "tokenUsageUnknownRequests": 2,
+      "changedPaths": [
+        "TASK_COMPLETED",
+        "TASK_DONE",
+        "TASK_SUMMARY.md",
+        "src/handlers/create-order.ts",
+        "src/handlers/quote-order.ts",
+        "src/handlers/update-order.ts",
+        "src/validation/order.ts"
+      ],
+      "injected429Count": 0,
+      "humanTaskIntervention": "none"
+    }
+  ]
+}
