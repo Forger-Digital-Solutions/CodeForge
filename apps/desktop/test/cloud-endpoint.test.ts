@@ -189,8 +189,8 @@ describe("desktop Cloud endpoint resolution", () => {
     it("parses the committed repository manifest", () => {
       const raw = JSON.parse(readFileSync(resolve(here, "..", "cloud-endpoints.json"), "utf8"));
       const manifest = parseCloudEndpointManifest(raw);
-      // The committed manifest is a DEVELOPMENT manifest: a release build's packaging step rewrites
-      // it. Committing a production channel with no endpoint would fail every developer's startup.
+      // The committed manifest stays on development; release packaging stages its own manifest
+      // under dist/. Committing a production channel here would break source-checkout startup.
       expect(manifest.channel).toBe("development");
       const resolved = resolveCloudEndpoint({ manifest, env: {}, isPackaged: false });
       expect(resolved.url).toBe(DEFAULT_DEVELOPMENT_CLOUD_URL);

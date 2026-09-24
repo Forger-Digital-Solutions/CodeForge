@@ -14,12 +14,13 @@
     "build": "npm run build:packages && npm run build:main && npm run build:renderer",
     "build:packages": "tsc -b ../../tsconfig.json",
     "build:native": "node scripts/rebuild-native.mjs",
-    "build:main": "tsc -p tsconfig.main.json && node -e \"require('fs').copyFileSync('src/preload.cjs', 'dist/preload.cjs')\" && node scripts/build-identity.mjs",
+    "build:main": "tsc -p tsconfig.main.json && node -e \"const fs=require('fs'); fs.copyFileSync('src/preload.cjs', 'dist/preload.cjs'); fs.copyFileSync('cloud-endpoints.json', 'dist/cloud-endpoints.json')\" && node scripts/build-identity.mjs",
     "build:renderer": "node scripts/check-renderer-sources.mjs && vite build",
     "build:prod": "npm run dist",
     "pack": "npm run build && npm run build:native && electron-builder --dir && npm run audit:internal-deps && npm run audit:runtime-deps",
     "dist": "node scripts/package-release.mjs",
     "dist:builder": "npm run build && npm run build:native && electron-builder && npm run audit:internal-deps && npm run audit:runtime-deps && npm run audit:build-identity",
+    "package:builder": "electron-builder && npm run audit:internal-deps && npm run audit:runtime-deps && npm run audit:build-identity",
     "rebuild:native": "node scripts/rebuild-native.mjs",
     "smoke": "node scripts/packaged-smoke.js full",
     "smoke:interrupt": "node scripts/packaged-smoke.js interrupt",
@@ -91,7 +92,10 @@
     },
     "files": [
       "apps/desktop/dist/**/*",
-      "apps/desktop/cloud-endpoints.json",
+      {
+        "from": "apps/desktop/dist/cloud-endpoints.json",
+        "to": "apps/desktop/cloud-endpoints.json"
+      },
       "!apps/desktop/dist/**/*.map",
       "!apps/desktop/dist/**/*.d.ts",
       "!apps/desktop/dist/preload.js",

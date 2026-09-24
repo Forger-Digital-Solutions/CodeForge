@@ -69,8 +69,22 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Require production signing identity for release tags
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          WIN_CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+        run: |
+          if (-not $env:WIN_CSC_LINK -or -not $env:WIN_CSC_KEY_PASSWORD) {
+            throw "Tagged Windows releases require WINDOWS_CSC_LINK and WINDOWS_CSC_KEY_PASSWORD secrets."
+          }
+
       - name: Package (NSIS installer + portable)
         shell: pwsh
+        env:
+          WIN_CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
         run: |
           Write-Host "Pre-package check:"
           Write-Host "app-builder-bin path:"
@@ -126,6 +140,11 @@ jobs:
           }
           Write-Host "Found artifacts:"
           $artifacts | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
+
+      - name: Verify release signatures and timestamps
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: ./scripts/verify-windows-signatures.ps1 -ReleaseRoot apps/desktop/release -Version 0.4.0
 
       - uses: actions/upload-artifact@v4
         with:

@@ -3,8 +3,8 @@
  * Produce a distribution artifact with an explicit non-development Cloud authority.
  *
  * The committed manifest deliberately remains on development so source checkouts can use the
- * local runtime. This wrapper is the release boundary: it stamps an isolated production/staging
- * manifest for electron-builder, verifies the archive it produced, then restores the checkout.
+ * local runtime. This wrapper builds first, stages a release manifest under ignored dist/, and
+ * then packages and verifies the archive without modifying tracked source.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -15,6 +15,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const desktopDirectory = resolve(here, "..");
 const repositoryRoot = resolve(desktopDirectory, "..", "..");
 const manifestPath = resolve(desktopDirectory, "cloud-endpoints.json");
+const generatedManifestPath = resolve(desktopDirectory, "dist", "cloud-endpoints.json");
 const productionCloudGatePath = resolve(repositoryRoot, "scripts", "check-production-cloud.mjs");
 const channels = new Set(["staging", "production"]);
 
@@ -100,12 +101,14 @@ function main() {
     run(process.execPath, [productionCloudGatePath, "--url", stamped.endpoints.production, "--minimum-server-version", "0.4.0"]);
   }
 
-  writeFileSync(manifestPath, `${JSON.stringify(stamped, null, 2)}\n`, "utf8");
+  runNpm(["run", "build"]);
+  runNpm(["run", "build:native"]);
+  writeFileSync(generatedManifestPath, `${JSON.stringify(stamped, null, 2)}\n`, "utf8");
   try {
-    runNpm(["run", "dist:builder"]);
+    runNpm(["run", "package:builder"]);
     run(process.execPath, ["scripts/audit-packaged-auth-endpoint.mjs", "release", "--channel", channel, "--expected-url", stamped.endpoints[channel]]);
   } finally {
-    writeFileSync(manifestPath, originalText, "utf8");
+    writeFileSync(generatedManifestPath, originalText, "utf8");
   }
 }
 
