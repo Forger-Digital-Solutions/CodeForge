@@ -60,6 +60,7 @@ export interface WorkspaceAppProps {
   onSendMessage?: (message: string, steer: boolean, executionMode: ExecutionMode, attachments?: Attachment[]) => void;
   models?: ModelSelectorItem[];
   selectedModelId?: string | null;
+  modelSelection?: { modelId: string; providerId?: string; canonicalModelId?: string };
   onSelectModel?: (model: ModelSelectorItem, sessionId?: string) => void;
   onShowModelDetails?: (model: ModelSelectorItem) => void;
   onUpgradeNavigation?: (url: string) => void;
@@ -96,6 +97,7 @@ export default function WorkspaceApp({
   onSendMessage,
   models,
   selectedModelId,
+  modelSelection,
   onSelectModel,
   onShowModelDetails,
   onUpgradeNavigation,
@@ -406,7 +408,7 @@ export default function WorkspaceApp({
     if (onSendMessage) {
       onSendMessage(message, false, requestMode, attachments);
     } else {
-      sendMessage(message, false, requestMode, { attachments: toSendAttachments(attachments) });
+      sendMessage(message, false, requestMode, { attachments: toSendAttachments(attachments), modelSelection });
     }
   };
 

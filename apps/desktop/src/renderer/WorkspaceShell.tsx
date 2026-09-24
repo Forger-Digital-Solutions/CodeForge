@@ -282,35 +282,15 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     return () => unsubscribe?.();
   }, [refreshModelsAndHealth, loadCloudAccount]);
 
-  // Re-apply the persisted default model exactly once per workspace mount, after the catalog
-  // has loaded — the local server's model selection is per-process, so without this the user's
-  // pinned default silently reset to ForgeAuto on every restart.
+  // Restore the user's pinned choice before route discovery finishes. The selection is applied
+  // to the actual task session at send time, where unavailable routes fail closed.
   useEffect(() => {
     if (appliedDefaultModelRef.current) return;
-    if (!settingsSnapshot || apiModels.length === 0) return;
+    if (!settingsSnapshot) return;
     appliedDefaultModelRef.current = true;
     const defaultModelId = settingsSnapshot.settings.models.defaultModelId;
-    if (defaultModelId === "auto") return;
-    if (isCanonicalSelection(defaultModelId)) {
-      void fetch(`${serverBaseUrl}/api/model-selection`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ modelId: defaultModelId, canonicalModelId: canonicalIdOfSelection(defaultModelId), sessionId: "default" }),
-      }).then((response) => {
-        if (response.ok) setSelectedModelId(defaultModelId);
-      }).catch(() => {});
-      return;
-    }
-    const found = apiModels.find((m) => m.id === defaultModelId);
-    if (!found || found.eligible !== true) return;
-    void fetch(`${serverBaseUrl}/api/model-selection`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ modelId: defaultModelId, providerId: found.providerId, sessionId: "default" }),
-    }).then((response) => {
-      if (response.ok) setSelectedModelId(defaultModelId);
-    }).catch(() => {});
-  }, [settingsSnapshot, apiModels, runtimeEndpoint]);
+    setSelectedModelId(defaultModelId);
+  }, [settingsSnapshot]);
 
   // Runtime-status polling: feeds the Settings runtime surfaces and the OS notification policy.
   useEffect(() => {
@@ -912,6 +892,11 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
             sseUrl={runtimeEndpoint ? `${serverBaseUrl}/api/events` : ""}
             models={models}
             selectedModelId={selectedModelId}
+            modelSelection={selectedModelId && isCanonicalSelection(selectedModelId)
+              ? { modelId: selectedModelId, canonicalModelId: canonicalIdOfSelection(selectedModelId) }
+              : selectedModelId && selectedModelId !== "auto"
+                ? { modelId: selectedModelId, providerId: modelProviders[selectedModelId] ?? apiModels.find((model) => model.id === selectedModelId)?.providerId }
+                : { modelId: "auto" }}
             onSelectModel={handleSelectModel}
             onShowModelDetails={handleShowModelDetails}
             onUpgradeNavigation={() => setSettingsSection("profile")}

@@ -987,7 +987,7 @@ export function useWorkspaceSSE(url: string) {
   }, [url, activeSessionId, clearReconnect, scheduleHydrate]);
 
   const sendMessage = useCallback(
-    async (message: string, steer = false, executionMode: ExecutionMode = DEFAULT_EXECUTION_MODE, options?: { repair?: boolean; attachments?: SendAttachment[] }) => {
+    async (message: string, steer = false, executionMode: ExecutionMode = DEFAULT_EXECUTION_MODE, options?: { repair?: boolean; attachments?: SendAttachment[]; modelSelection?: { modelId: string; providerId?: string; canonicalModelId?: string } }) => {
       const sessionId = resolveSendSessionId(state.session?.id);
       rememberActiveSession(sessionId);
       if (!state.session?.id) {
@@ -1022,6 +1022,17 @@ export function useWorkspaceSSE(url: string) {
       }));
 
       try {
+        if (!steer && options?.modelSelection) {
+          const selectionResponse = await fetch(resolveApiPath(url, "/api/model-selection"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...options.modelSelection, sessionId }),
+          });
+          if (!selectionResponse.ok) {
+            const detail = await selectionResponse.json().catch(() => ({})) as { message?: string };
+            throw new Error(detail.message ?? `Model selection rejected (${selectionResponse.status})`);
+          }
+        }
         const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

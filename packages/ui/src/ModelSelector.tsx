@@ -170,7 +170,8 @@ export function ModelSelector({
     }
   };
 
-  const selectedModel = models.find((m) => m.id === selectedId);
+  const selectedModel = models.find((m) => m.id === selectedId)
+    ?? modelSections?.flatMap((section) => section.models).find((m) => m.id === selectedId);
   // The trigger is a compact chip — the routing explanation lives in the tooltip and the picker.
   const triggerLabel = selectedModel ? selectedModel.displayName : "ForgeAuto/Free";
   const triggerTitle = selectedModel

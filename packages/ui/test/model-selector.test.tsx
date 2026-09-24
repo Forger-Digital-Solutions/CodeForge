@@ -161,6 +161,26 @@ describe("ModelSelector rendering", () => {
     expect(markup).toContain("Best Free Model");
     expect(markup).toContain("aria-selected=\"true\"");
   });
+
+  it("shows the selected canonical model when it is provided only through sections", () => {
+    const canonical: ModelSelectorItem = {
+      id: "canonical:openai/gpt-oss-120b",
+      displayName: "GPT-OSS 120B",
+      tier: "free",
+      description: "CodeForge Free · Ready",
+    };
+    const markup = renderToStaticMarkup(
+      React.createElement(ModelSelector, {
+        models: [{ id: "auto", displayName: "ForgeAuto/Free", tier: "free" }],
+        modelSections: [{ sectionId: "free-coding", sectionLabel: "FREE CODING", models: [canonical] }],
+        selectedId: canonical.id,
+        onSelect: () => {},
+      }),
+    );
+    expect(markup).toContain("GPT-OSS 120B");
+    expect(markup).toContain("CodeForge Free · Ready");
+    expect(markup).not.toContain("Automatic verified-free routing");
+  });
 });
 
 describe("ModelSelector section information architecture", () => {
