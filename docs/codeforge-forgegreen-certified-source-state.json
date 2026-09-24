@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "7f059ffee8ef5e27829ee92fede825f8ebc3452112befb1f3365c6775a9e5d11",
-  "surfaceVersion": "r33-free-capacity-fabric-interim-v2",
+  "sourceStateId": "98387a8b3a505c8bf1052c5b192bfeae596fbd8f022329f6c96c362c6e67a3a7",
+  "surfaceVersion": "r33-free-capacity-fabric-interim-v3",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -58,7 +58,7 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "a7d6af2815e7feb0399584af718cde9bd59614c6",
+    "packages/server/src/agent-runtime.ts": "01a321a251e26e850b13cb3caa9a0e78c8f5bc1b",
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
     "packages/server/src/duplicate-suppression.ts": "5609d0e3817b1214cf1540810f355bef3ce842c3",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
@@ -1340,20 +1340,36 @@
       "regressionEvidence": "docs/evidence/r33-free-capacity-fabric/INTERIM-CERTIFICATION.md and load-simulation/README.md; focused server/eight-bit/forge-zero/benchmark/UI suites and the 1M production-ledger control-plane run recorded there.",
       "recertifiedAt": "2026-09-24",
       "sourceStateConstant": "CODEFORGE_R33_INTERIM_FREE_CAPACITY_SOURCE_STATE_V2"
+    },
+    {
+      "label": "R33 capacity-wait cancel-path guard",
+      "reason": "Record the reviewed guard on AgentRuntime.updateCapacityWait so cancellation of a parked turn cannot crash when a persistence surface lacks work-item support. Capacity-wait semantics, completion-gate, ForgeVerify, and ForgeZero authority are unchanged. This is an interim source identity, not final R33 release certification.",
+      "priorSourceStateId": "7f059ffee8ef5e27829ee92fede825f8ebc3452112befb1f3365c6775a9e5d11",
+      "priorSurfaceVersion": "r33-free-capacity-fabric-interim-v2",
+      "resultingSourceStateId": "98387a8b3a505c8bf1052c5b192bfeae596fbd8f022329f6c96c362c6e67a3a7",
+      "resultingSurfaceVersion": "r33-free-capacity-fabric-interim-v3",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "updateCapacityWait returns early when the persistence surface has no work-item API; the wait record could not exist there, so the bookkeeping write must never break cancellation.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r33-free-capacity-fabric/INTERIM-CERTIFICATION.md; canonical vitest run recorded there.",
+      "recertifiedAt": "2026-09-24",
+      "sourceStateConstant": "CODEFORGE_R33_INTERIM_FREE_CAPACITY_SOURCE_STATE_V3"
     }
   ],
-  "generationNote": "This interim source-state ID is derived from the reviewed FG-8 through R33 material implementation surface by packages/forgegreen-campaign/src/source-state.ts. Historical R32 and interim-v1 evidence remains bound to its prior identity; this is not final R33 release certification.",
-  "recertifiedAt": "2026-09-24T23:04:56.993Z",
+  "generationNote": "This interim source-state ID is derived from the reviewed FG-8 through R33 material implementation surface by packages/forgegreen-campaign/src/source-state.ts. Historical R32, interim-v1, and interim-v2 identities remain bound to their prior states; this is not final R33 release certification.",
+  "recertifiedAt": "2026-09-24T23:15:49.486Z",
   "recertification": {
-    "phase": "R33 durable capacity waiting and reviewer pool independence",
-    "reason": "Record the reviewed R33 durable capacity-wait changes: turns park on waiting_for_free_capacity (persisted via free_capacity_wait work items including a midTurn flag in session-state), resume only on fresh fabric admission, defer workflow timeout and working budget while parked, and route reviewer admission to an independent physical pool. Completion-gate, ForgeVerify, and ForgeZero zero-billing authority are unchanged. This is an interim source identity, not final R33 release certification.",
+    "phase": "R33 capacity-wait cancel-path guard",
+    "reason": "Record the reviewed guard on AgentRuntime.updateCapacityWait so cancellation of a parked turn cannot crash when a persistence surface lacks work-item support. Capacity-wait semantics, completion-gate, ForgeVerify, and ForgeZero authority are unchanged. This is an interim source identity, not final R33 release certification.",
     "changedFiles": [
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/src/workflow-service.ts",
-      "packages/sessions/src/session-state.ts"
+      "packages/server/src/agent-runtime.ts"
     ],
-    "priorSourceStateId": "bd2f90f6ea49cb420c9e0f3021ae34bb2db055b453ef169f8e2e27f6eb864441",
+    "priorSourceStateId": "7f059ffee8ef5e27829ee92fede825f8ebc3452112befb1f3365c6775a9e5d11",
     "guarded": true
   },
-  "recertificationReason": "Record the reviewed R33 durable capacity-wait changes: turns park on waiting_for_free_capacity (persisted via free_capacity_wait work items including a midTurn flag in session-state), resume only on fresh fabric admission, defer workflow timeout and working budget while parked, and route reviewer admission to an independent physical pool. Completion-gate, ForgeVerify, and ForgeZero zero-billing authority are unchanged. This is an interim source identity, not final R33 release certification."
+  "recertificationReason": "Record the reviewed guard on AgentRuntime.updateCapacityWait so cancellation of a parked turn cannot crash when a persistence surface lacks work-item support. Capacity-wait semantics, completion-gate, ForgeVerify, and ForgeZero authority are unchanged. This is an interim source identity, not final R33 release certification."
 }
