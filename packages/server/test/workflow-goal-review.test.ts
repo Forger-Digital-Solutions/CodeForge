@@ -336,4 +336,15 @@ describe("checkStatedContracts", () => {
     expect(checkStatedContracts(intent, diff("export const validateOrder = (input: OrderInput): string[] => []"))).toHaveLength(1);
     expect(checkStatedContracts(intent, diff("  validateOrder(input: OrderInput): string[];"))).toHaveLength(1);
   });
+
+  it("cannot be satisfied by signatures inside comments or string literals", () => {
+    const commented = "// export function validateOrder(input: OrderInput): ValidationResult {\nexport function validateOrder(input: OrderInput): string[] {\n  return [];\n}";
+    const findings = checkStatedContracts(intent, diff(commented));
+    expect(findings).toHaveLength(1);
+    expect(findings[0].code).toBe("goal_not_satisfied");
+    const blockCommented = "/* export function validateOrder(input: OrderInput): ValidationResult { */\nexport function validateOrder(input: OrderInput): string[] {";
+    expect(checkStatedContracts(intent, diff(blockCommented))).toHaveLength(1);
+    const inString = "const expected = \"validateOrder(input): ValidationResult\";\nexport function validateOrder(input: OrderInput): string[] {";
+    expect(checkStatedContracts(intent, diff(inString))).toHaveLength(1);
+  });
 });

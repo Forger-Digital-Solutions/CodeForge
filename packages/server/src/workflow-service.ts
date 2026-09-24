@@ -329,9 +329,49 @@ export function checkStatedContracts(intent: TaskIntent, diffs: DiffEntry[]): Re
   }
   if (contracts.size === 0) return [];
 
-  const addedLines = diffs.flatMap((diff) =>
-    diff.diff.split("\n").filter((line) => line.startsWith("+") && !line.startsWith("+++")).map((line) => `${diff.path}: ${line.slice(1)}`),
-  );
+  // Scan added lines with comments and string literals removed — a signature quoted in a
+  // comment or embedded in a test's expected-output string is not a declaration, and must
+  // not be allowed to satisfy the contract on the impl's behalf.
+  const stripQuotedSpans = (line: string): string =>
+    line.replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`/g, '""');
+  const addedLines: string[] = [];
+  for (const diff of diffs) {
+    let inBlockComment = false;
+    for (const raw of diff.diff.split("\n")) {
+      if (!raw.startsWith("+") || raw.startsWith("+++")) continue;
+      let line = raw.slice(1);
+      if (inBlockComment) {
+        const end = line.indexOf("*/");
+        if (end === -1) continue;
+        line = line.slice(end + 2);
+        inBlockComment = false;
+      }
+      let stateful = "";
+      for (let rest = line; rest.length > 0; ) {
+        const start = rest.indexOf("/*");
+        const lineComment = rest.indexOf("//");
+        if (lineComment !== -1 && (start === -1 || lineComment < start)) {
+          stateful += rest.slice(0, lineComment);
+          rest = "";
+          break;
+        }
+        if (start === -1) {
+          stateful += rest;
+          break;
+        }
+        const end = rest.indexOf("*/", start + 2);
+        if (end === -1) {
+          stateful += rest.slice(0, start);
+          inBlockComment = true;
+          break;
+        }
+        stateful += rest.slice(0, start);
+        rest = rest.slice(end + 2);
+      }
+      const stripped = stripQuotedSpans(stateful).trim();
+      if (stripped) addedLines.push(`${diff.path}: ${stripped}`);
+    }
+  }
 
   const findings: ReviewFinding[] = [];
   for (const key of contracts.keys()) {

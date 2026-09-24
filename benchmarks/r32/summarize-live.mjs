@@ -17,6 +17,9 @@ for (const name of (await readdir(directory)).filter((name) => /^r32-live-.*\.js
     receipt: name,
     runId: receipt.runId,
     sourceCommit: receipt.sourceCommit,
+    // The code under test is the workflow-service build, not the repo HEAD — commits
+    // that touch unrelated packages (computer-use, plugins) must not split the cohort.
+    buildKey: receipt.workflowServiceSourceSha256 ?? receipt.sourceCommit,
     corpus: receipt.task.corpus,
     taskId: receipt.task.sourceTaskId,
     taskClass: receipt.task.taskClass,
@@ -44,15 +47,16 @@ for (const name of (await readdir(directory)).filter((name) => /^r32-live-.*\.js
   });
 }
 
-const bySourceCommit = Object.groupBy(entries.filter((entry) => entry.substantial), (entry) => entry.sourceCommit);
-const acceptanceCohorts = Object.entries(bySourceCommit).map(([sourceCommit, attempts]) => {
+const byBuild = Object.groupBy(entries.filter((entry) => entry.substantial), (entry) => entry.buildKey);
+const acceptanceCohorts = Object.entries(byBuild).map(([buildKey, attempts]) => {
   const distinctTaskCount = new Set(attempts.map((entry) => `${entry.corpus}/${entry.taskId}`)).size;
   const successes = attempts.filter((entry) => entry.autonomousPass).length;
   const classes = [...new Set(attempts.map((entry) => entry.taskClass))].sort();
   const hasInjected429 = attempts.some((entry) => entry.injected429Count > 0);
   const falseSuccesses = attempts.filter((entry) => entry.workflowStatus === "completed" && !entry.independentVerifierPassed);
   return {
-    sourceCommit,
+    buildKey,
+    sourceCommits: [...new Set(attempts.map((entry) => entry.sourceCommit))].sort(),
     attemptCount: attempts.length,
     distinctTaskCount,
     autonomousPasses: successes,
