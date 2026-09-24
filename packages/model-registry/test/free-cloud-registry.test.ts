@@ -17,6 +17,7 @@ import {
   buildFreeCloudSnapshot,
   evaluateAdmission,
   parseRouteQuota,
+  effectiveQuota,
   supplyClassFor,
   FreeCloudService,
   NormalizedModelRegistry,
@@ -451,6 +452,45 @@ describe("quota capture", () => {
     expect(new Date(q.resetAt!).getTime() - NOW.getTime()).toBeCloseTo(179560, -2);
     expect(parseRouteQuota([["content-type", "application/json"]], () => NOW)).toBeUndefined();
   });
+
+  it("parses Mistral per-minute header aliases — measured live on codestral-latest", () => {
+    const q = parseRouteQuota(
+      [
+        ["x-ratelimit-limit-req-minute", "125"],
+        ["x-ratelimit-remaining-req-minute", "124"],
+        ["x-ratelimit-limit-tokens-minute", "625000"],
+        ["x-ratelimit-remaining-tokens-minute", "624990"],
+      ],
+      () => NOW,
+    )!;
+    expect(q.limitRequests).toBe(125);
+    expect(q.remainingRequests).toBe(124);
+    expect(q.limitTokens).toBe(625000);
+    expect(q.remainingTokens).toBe(624990);
+  });
+
+  it("effectiveQuota refills a window whose declared reset elapsed, and keeps a stale zero when no limit was observed", () => {
+    const past = new Date(NOW.getTime() - 60_000).toISOString();
+    const future = new Date(NOW.getTime() + 60_000).toISOString();
+    expect(
+      effectiveQuota(
+        { limitRequests: 1000, remainingRequests: 0, resetAt: past, observedAt: NOW.toISOString() },
+        () => NOW,
+      ),
+    ).toEqual({ limitRequests: 1000, remainingRequests: 1000, resetAt: undefined, observedAt: NOW.toISOString() });
+    expect(
+      effectiveQuota(
+        { remainingRequests: 0, resetAt: past, observedAt: NOW.toISOString() },
+        () => NOW,
+      )?.remainingRequests,
+    ).toBe(0);
+    expect(
+      effectiveQuota(
+        { limitRequests: 1000, remainingRequests: 0, resetAt: future, observedAt: NOW.toISOString() },
+        () => NOW,
+      )?.remainingRequests,
+    ).toBe(0);
+  });
 });
 
 describe("FreeCloudService", () => {
@@ -542,6 +582,35 @@ describe("FreeCloudService", () => {
       scoreAdjustment: -100,
       reasonCodes: ["KNOWN_CAPACITY_EXHAUSTED"],
     });
+  });
+
+  it("refills declared-reset windows instead of stranding the pool on a stale zero", async () => {
+    const { svc } = service();
+    await svc.qualifyPending({ budget: 3 });
+    // Observation made before the reset elapsed: remaining 0, limit 1000, reset already past.
+    const pastReset = new Date(NOW.getTime() - 5 * 60_000).toISOString();
+    svc.onProviderResponse({
+      providerId: "groq",
+      modelId: "openai/gpt-oss-120b",
+      status: 200,
+      headers: [
+        ["x-ratelimit-limit-requests", "1000"],
+        ["x-ratelimit-remaining-requests", "0"],
+        ["x-ratelimit-reset-requests", pastReset],
+      ],
+      observedAt: NOW.getTime() - 6 * 60_000,
+    });
+    expect(svc.capacityRoutingAdvice("groq", "openai/gpt-oss-120b")).toEqual({
+      scoreAdjustment: 0,
+      reasonCodes: ["CAPACITY_AVAILABLE"],
+    });
+    expect(svc.quotaRemaining("groq", "openai/gpt-oss-120b")).toBe(1000);
+    const route = svc
+      .capacityRoutes()
+      .find((candidate) => candidate.providerId === "groq" && candidate.modelId === "openai/gpt-oss-120b");
+    const requests = route?.windows.find((w) => w.unit === "requests");
+    expect(requests?.remaining).toBe(1000);
+    expect(requests?.limit).toBe(1000);
   });
 
   it("enforces the per-provider daily qualification budget and cycle interval", async () => {

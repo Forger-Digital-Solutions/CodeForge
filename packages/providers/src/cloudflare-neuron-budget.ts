@@ -229,6 +229,74 @@ export class StaticCloudflareUsageSource implements CloudflareUsageSource {
   }
 }
 
+/**
+ * Account-level Workers AI neuron usage from the GraphQL Analytics API
+ * (`aiInferenceAdaptiveGroups` → `sum.totalNeurons`) — the same data the dashboard renders.
+ * Any failure (network, authz, malformed payload) returns undefined so the guard fails closed:
+ * without account truth we cannot know whether other consumers share the daily allocation.
+ * Responses are cached briefly because the guard calls read() on every request.
+ */
+export class GraphqlCloudflareUsageSource implements CloudflareUsageSource {
+  private readonly resolveToken: () => string | undefined;
+  private readonly resolveAccountId: () => string | undefined;
+  private readonly fetchFn: typeof fetch;
+  private readonly cacheTtlMs: number;
+  private cached: { utcDay: string; observation?: CloudflareUsageObservation; at: number } | undefined;
+
+  constructor(options: {
+    resolveToken: () => string | undefined;
+    resolveAccountId: () => string | undefined;
+    fetchFn?: typeof fetch;
+    cacheTtlMs?: number;
+  }) {
+    this.resolveToken = options.resolveToken;
+    this.resolveAccountId = options.resolveAccountId;
+    this.fetchFn = options.fetchFn ?? fetch;
+    this.cacheTtlMs = options.cacheTtlMs ?? 60_000;
+  }
+
+  async read(utcDay: string): Promise<CloudflareUsageObservation | undefined> {
+    const now = Date.now();
+    if (this.cached && this.cached.utcDay === utcDay && now - this.cached.at < this.cacheTtlMs) {
+      return this.cached.observation ? { ...this.cached.observation } : undefined;
+    }
+    const observation = await this.query(utcDay);
+    this.cached = { utcDay, observation, at: now };
+    return observation;
+  }
+
+  private async query(utcDay: string): Promise<CloudflareUsageObservation | undefined> {
+    const token = this.resolveToken();
+    const accountId = this.resolveAccountId();
+    if (!token || !accountId) return undefined;
+    try {
+      const res = await this.fetchFn("https://api.cloudflare.com/client/v4/graphql", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query:
+            "query($accountTag: String!, $day: Date!) { viewer { accounts(filter: {accountTag: $accountTag}) " +
+            "{ aiInferenceAdaptiveGroups(limit: 1, filter: {date_geq: $day, date_leq: $day}) " +
+            "{ sum { totalNeurons } } } } }",
+          variables: { accountTag: accountId, day: utcDay },
+        }),
+      });
+      if (!res.ok) return undefined;
+      const body = (await res.json()) as {
+        data?: { viewer?: { accounts?: Array<{ aiInferenceAdaptiveGroups?: Array<{ sum?: { totalNeurons?: number } }> }> } };
+        errors?: unknown;
+      };
+      const groups = body.data?.viewer?.accounts?.[0]?.aiInferenceAdaptiveGroups;
+      if (!Array.isArray(groups)) return undefined;
+      const totalNeurons = groups.reduce((sum, group) => sum + (group.sum?.totalNeurons ?? 0), 0);
+      if (!validNeuronCount(totalNeurons)) return undefined;
+      return { utcDay, usedNeurons: totalNeurons, source: "provider-api", observedAt: new Date().toISOString() };
+    } catch {
+      return undefined;
+    }
+  }
+}
+
 type StoredReservation = {
   reservationId: string;
   requestId: string;

@@ -191,6 +191,29 @@ describe("EightBitRouteHealthAuthority — quota, rate limits, auth", () => {
     expect(authority.assess(GROQ20B.providerId, GROQ20B.modelId, { now: observedAt + 8_000 }).hardExclude).toBe(false);
   });
 
+  it("[PASS] Mistral per-minute aliases parse — measured live on codestral-latest (124/125 req, 624,990/625,000 tok)", () => {
+    const MISTRAL = { providerId: "mistral", modelId: "codestral-latest" };
+    const obs = rateLimitObservationFromHeaders({
+      ...MISTRAL,
+      status: 200,
+      observedAt: T0,
+      headers: [
+        ["x-ratelimit-limit-req-minute", "125"],
+        ["x-ratelimit-remaining-req-minute", "124"],
+        ["x-ratelimit-limit-tokens-minute", "625000"],
+        ["x-ratelimit-remaining-tokens-minute", "624990"],
+      ],
+    });
+    expect(obs).toBeDefined();
+    expect(obs!.requestsRemaining).toBe(124);
+    expect(obs!.requestsLimit).toBe(125);
+    expect(obs!.tokensRemaining).toBe(624990);
+    expect(obs!.tokensLimit).toBe(625000);
+    const authority = createEightBitRouteHealthAuthority({}, () => T0);
+    authority.observe(obs!);
+    expect(authority.assess(MISTRAL.providerId, MISTRAL.modelId).hardExclude).toBe(false);
+  });
+
   it("[PASS] retry-after seconds and epoch resets are both understood; a header set with no quota facts yields no observation", () => {
     expect(rateLimitObservationFromHeaders({ ...GROQ20B, status: 200, observedAt: T0, headers: [["content-type", "application/json"]] })).toBeUndefined();
     const obs = rateLimitObservationFromHeaders({ ...GROQ20B, status: 429, observedAt: T0, headers: [["retry-after", "30"], ["x-ratelimit-reset", String(Math.floor(T0 / 1000) + 90)]] });

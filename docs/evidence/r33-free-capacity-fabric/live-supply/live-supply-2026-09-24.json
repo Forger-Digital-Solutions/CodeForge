@@ -1,0 +1,332 @@
+{
+  "generatedAt": "2026-09-24T23:35:53.649Z",
+  "providers": [
+    {
+      "provider": "openrouter",
+      "status": "POLICY_BLOCKED",
+      "measurement": "read-only GET /api/v1/key — no inference burned",
+      "keyReceipt": {
+        "data": {
+          "label": "sk-or-v1-f1c...d91",
+          "is_management_key": false,
+          "is_provisioning_key": false,
+          "limit": null,
+          "limit_reset": null,
+          "limit_remaining": null,
+          "include_byok_in_limit": false,
+          "usage": 0,
+          "usage_daily": 0,
+          "usage_weekly": 0,
+          "usage_monthly": 0,
+          "byok_usage": 0,
+          "byok_usage_daily": 0,
+          "byok_usage_weekly": 0,
+          "byok_usage_monthly": 0,
+          "is_free_tier": false,
+          "expires_at": null,
+          "creator_user_id": "user_3D6KR1Ac2SKKo4uNjc1vFsUlpsp",
+          "organization_id": null,
+          "workspace_id": "6df8209b-aeac-5d2a-b1cf-9272a887f71b",
+          "allowed_data_regions": [
+            "global"
+          ],
+          "free_model_daily_requests": {
+            "used": 718,
+            "limit": 1000,
+            "remaining": 282
+          },
+          "rate_limit": {
+            "requests": -1,
+            "interval": "10s",
+            "note": "This field is deprecated and safe to ignore."
+          }
+        }
+      },
+      "quotaDomain": "single account free-model request pool (shared across all :free models)",
+      "policy": "Hosted managed multi-user use requires enterprise/hosted agreement; BYOK user-owned route is separate. Standard terms restrict resale."
+    },
+    {
+      "provider": "groq",
+      "probeModel": "openai/gpt-oss-120b",
+      "quotaDomain": "groq-org (organization, per-model limits)",
+      "catalog": {
+        "httpStatus": 200,
+        "modelCount": 11,
+        "sample": [
+          "meta-llama/llama-prompt-guard-2-22m",
+          "meta-llama/llama-prompt-guard-2-86m",
+          "openai/gpt-oss-20b",
+          "allam-2-7b",
+          "canopylabs/orpheus-arabic-saudi",
+          "whisper-large-v3",
+          "qwen/qwen3.8-27b",
+          "openai/gpt-oss-safeguard-20b",
+          "openai/gpt-oss-120b",
+          "canopylabs/orpheus-v1-english",
+          "whisper-large-v3-turbo"
+        ],
+        "headers": {
+          "cf-cache-status": "DYNAMIC",
+          "cf-ray": "a4059bb25b31c4c8-IAD",
+          "x-groq-region": "dls",
+          "x-request-id": "req_01m3awd2wne1ra7t3b3ff0gpjq"
+        }
+      },
+      "inferenceProbe": {
+        "httpStatus": 200,
+        "latencyMs": 171,
+        "headers": {
+          "cf-cache-status": "DYNAMIC",
+          "cf-ray": "a4059bb2ed8cc4c8-IAD",
+          "x-groq-region": "msp",
+          "x-ratelimit-limit-requests": "1000",
+          "x-ratelimit-limit-tokens": "8000",
+          "x-ratelimit-remaining-requests": "999",
+          "x-ratelimit-remaining-tokens": "7916",
+          "x-ratelimit-reset-requests": "1m26.4s",
+          "x-ratelimit-reset-tokens": "630ms",
+          "x-request-id": "req_01m3awd2z4edxt7zrrwtz6hqs3"
+        },
+        "usage": {
+          "queue_time": 0.091541951,
+          "prompt_tokens": 76,
+          "prompt_time": 0.00297157,
+          "completion_tokens": 8,
+          "completion_time": 0.016615108,
+          "total_tokens": 84,
+          "total_time": 0.019586678,
+          "completion_tokens_details": {
+            "reasoning_tokens": 6
+          }
+        },
+        "content": ""
+      },
+      "status": "LIVE_VERIFIED"
+    },
+    {
+      "provider": "cerebras",
+      "probeModel": "llama-3.3-70b",
+      "quotaDomain": "cerebras-org (shared $5/30d trial credit — non-recurring per provider FAQ)",
+      "catalog": {
+        "httpStatus": 200,
+        "modelCount": 2,
+        "sample": [
+          "qwen-3.8-27b",
+          "gpt-oss-120b"
+        ],
+        "headers": {
+          "cf-cache-status": "DYNAMIC",
+          "cf-ray": "a4059bb45ad0e819-ORD",
+          "x-content-type-options": "nosniff"
+        }
+      },
+      "inferenceProbe": {
+        "httpStatus": 404,
+        "latencyMs": 65,
+        "headers": {
+          "cf-cache-status": "DYNAMIC",
+          "cf-ray": "a4059bb4bc4ae819-ORD",
+          "x-content-type-options": "nosniff"
+        },
+        "usage": null,
+        "error": {
+          "message": "Model does not exist or you do not have access to it.",
+          "type": "not_found_error",
+          "param": "model",
+          "code": "model_not_found"
+        }
+      },
+      "status": "HTTP_404"
+    },
+    {
+      "provider": "mistral",
+      "probeModel": "devstral-small-latest",
+      "quotaDomain": "mistral-org (monthly included allowance + per-model RPS/TPM)",
+      "catalog": {
+        "httpStatus": 200,
+        "modelCount": 46,
+        "sample": [
+          "codestral-2508",
+          "codestral-latest",
+          "mistral-code-latest",
+          "mistral-code-fim-latest",
+          "mistral-small-2603",
+          "mistral-small-latest",
+          "mistral-vibe-cli-fast",
+          "magistral-small-latest",
+          "voxtral-small-2507",
+          "voxtral-small-latest",
+          "labs-leanstral-1-5-1",
+          "labs-leanstral-1-5",
+          "ministral-3b-2512",
+          "ministral-3b-latest",
+          "ministral-8b-2512",
+          "ministral-8b-latest",
+          "ministral-14b-2512",
+          "ministral-14b-latest",
+          "mistral-medium-latest",
+          "mistral-medium",
+          "mistral-medium-3-5",
+          "mistral-medium-3.5",
+          "mistral-medium-3",
+          "mistral-medium-2604",
+          "mistral-vibe-cli-latest",
+          "mistral-vibe-cli-with-tools",
+          "magistral-medium-latest",
+          "mistral-embed-2312",
+          "mistral-embed",
+          "codestral-embed",
+          "codestral-embed-2505",
+          "mistral-moderation-2603",
+          "mistral-ocr-2512",
+          "mistral-ocr-3-0",
+          "mistral-ocr-3",
+          "mistral-ocr-4-0",
+          "mistral-ocr-latest",
+          "mistral-ocr-4",
+          "mistral-ocr-4-1",
+          "voxtral-mini-2602"
+        ],
+        "headers": {
+          "cf-cache-status": "DYNAMIC",
+          "cf-ray": "a4059bb55c74d65f-IAD",
+          "x-content-type-options": "nosniff",
+          "x-envoy-upstream-service-time": "57",
+          "x-kong-proxy-latency": "10",
+          "x-kong-request-id": "01a0d5c6-8d8f-72b9-9a08-65d1364494bf",
+          "x-kong-upstream-latency": "58"
+        }
+      },
+      "inferenceProbe": {
+        "httpStatus": 429,
+        "latencyMs": 180,
+        "headers": {
+          "cf-cache-status": "DYNAMIC",
+          "cf-ray": "a4059bb6b8bcd65f-IAD",
+          "x-content-type-options": "nosniff",
+          "x-envoy-upstream-service-time": "33",
+          "x-kong-proxy-latency": "12",
+          "x-kong-request-id": "01a0d5c6-8e6d-7f49-a0e1-f5d083573046",
+          "x-kong-upstream-latency": "33",
+          "x-ratelimit-limit-req-minute": "0",
+          "x-ratelimit-remaining-req-minute": "0"
+        },
+        "usage": null,
+        "error": {
+          "object": "error",
+          "message": "Rate limit exceeded",
+          "type": "rate_limited",
+          "param": null,
+          "code": "1300",
+          "raw_status_code": 429
+        }
+      },
+      "status": "RATE_LIMITED"
+    },
+    {
+      "provider": "google",
+      "probeModel": "gemini-2.5-flash",
+      "quotaDomain": "google-project (per-project RPM/TPM/RPD, Pacific-midnight reset)",
+      "catalog": {
+        "httpStatus": 403,
+        "modelCount": 0,
+        "sample": [],
+        "headers": {
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "SAMEORIGIN",
+          "x-xss-protection": "0"
+        }
+      },
+      "inferenceProbe": {
+        "httpStatus": 403,
+        "latencyMs": 119,
+        "headers": {
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "SAMEORIGIN",
+          "x-xss-protection": "0"
+        },
+        "usage": null,
+        "error": [
+          {
+            "error": {
+              "code": 403,
+              "message": "Permission denied: Consumer 'api_key:[REDACTED — provider echoed the submitted key]' has been suspended.",
+              "status": "PERMISSION_DENIED",
+              "details": [
+                {
+                  "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+                  "reason": "CONSUMER_SUSPENDED",
+                  "domain": "googleapis.com",
+                  "metadata": {
+                    "consumer": "projects/247254299611 (suspended)",
+                    "service": "generativelanguage.googleapis.com",
+                    "containerInfo": "api_key:[REDACTED]"
+                  }
+                },
+                {
+                  "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+                  "locale": "en-US",
+                  "message": "Permission denied: Consumer 'api_key:AIzaSyD59YlkCFHE6ssh6Ya9o7e3wtfAY0m6NyA' has been suspended."
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "status": "AUTH_OR_POLICY_BLOCKED"
+    },
+    {
+      "provider": "cloudflare-workers-ai",
+      "probeModel": "@cf/zai-org/glm-4.7-flash",
+      "quotaDomain": "cloudflare-account (10k Neurons/day + 300 RPM text-gen default)",
+      "catalog": {
+        "httpStatus": 405,
+        "modelCount": 0,
+        "sample": [],
+        "headers": {
+          "cf-auditlog-id": "01a0d5c6-900b-775b-8773-7c205bddaef6",
+          "cf-ray": "a4059bb99ff3f493-IAD"
+        }
+      },
+      "inferenceProbe": {
+        "httpStatus": 200,
+        "latencyMs": 589,
+        "headers": {
+          "cf-ai-neurons": "0.35",
+          "cf-auditlog-id": "01a0d5c6-905b-7fcf-a000-c3b96f9b74fd",
+          "cf-ray": "a4059bba1b14fa1b-ORD"
+        },
+        "usage": {
+          "prompt_tokens": 10,
+          "completion_tokens": 8,
+          "total_tokens": 18,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "neurons": 0.3462
+        }
+      },
+      "status": "LIVE_VERIFIED"
+    },
+    {
+      "provider": "github-models",
+      "probeModel": "openai/gpt-4.1-mini",
+      "quotaDomain": "github-account (per-model RPM/RPD/concurrency, free tier)",
+      "note": "No provider adapter exists in the registry — candidate domain only.",
+      "catalog": {
+        "httpStatus": 200,
+        "modelCount": 0,
+        "sample": [],
+        "headers": {}
+      },
+      "inferenceProbe": {
+        "httpStatus": 200,
+        "latencyMs": 45,
+        "headers": {},
+        "usage": null
+      },
+      "status": "LIVE_VERIFIED"
+    }
+  ],
+  "note": "Live measurement. Catalog listings are not secured capacity; only LIVE_VERIFIED domains with observed quota may count as current supply."
+}

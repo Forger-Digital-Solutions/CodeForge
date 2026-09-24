@@ -6,6 +6,7 @@ import {
   InMemoryCloudflareNeuronBudgetStore,
   OpenAICompatibleAdapter,
   StaticCloudflareUsageSource,
+  GraphqlCloudflareUsageSource,
   type CloudflareNeuronRate,
 } from "../src/index.js";
 import type { ChatResponse } from "../src/chat-types.js";
@@ -151,5 +152,59 @@ describe("Cloudflare Workers AI neuron budget guard", () => {
     await expect(guard.reserve({ ...request, maxTokens: undefined })).rejects.toMatchObject({ code: "CLOUDFLARE_OUTPUT_BOUND_UNKNOWN" });
     expect(guard).toBeInstanceOf(CloudflareNeuronBudgetGuard);
     expect(new CloudflareNeuronBudgetError("CLOUDFLARE_USAGE_UNKNOWN", "test").message).toContain("CLOUDFLARE_USAGE_UNKNOWN");
+  });
+});
+
+describe("GraphqlCloudflareUsageSource", () => {
+  const source = (fetchFn: typeof fetch, cacheTtlMs = 60_000) =>
+    new GraphqlCloudflareUsageSource({
+      resolveToken: () => "token",
+      resolveAccountId: () => "acct",
+      fetchFn,
+      cacheTtlMs,
+    });
+
+  it("reads account-day totalNeurons from aiInferenceAdaptiveGroups", async () => {
+    const fetchFn = (async (input: unknown, init?: { body?: string }) => {
+      const body = JSON.parse(String(init?.body));
+      expect(body.variables).toEqual({ accountTag: "acct", day: "2026-09-24" });
+      return new Response(JSON.stringify({
+        data: { viewer: { accounts: [{ aiInferenceAdaptiveGroups: [{ sum: { totalNeurons: 1234 } }] }] } },
+      }), { status: 200 });
+    }) as typeof fetch;
+    const observation = await source(fetchFn).read("2026-09-24");
+    expect(observation).toMatchObject({ utcDay: "2026-09-24", usedNeurons: 1234, source: "provider-api" });
+  });
+
+  it("sums multiple groups and returns undefined on authz, http, or malformed failures", async () => {
+    const multi = await source(async () => new Response(JSON.stringify({
+      data: { viewer: { accounts: [{ aiInferenceAdaptiveGroups: [{ sum: { totalNeurons: 10 } }, { sum: { totalNeurons: 5 } }] }] } },
+    }), { status: 200 })).read("2026-09-24");
+    expect(multi?.usedNeurons).toBe(15);
+
+    const authz = await source(async () => new Response(JSON.stringify({ data: null, errors: [{ message: "not authorized for that account" }] }), { status: 200 })).read("2026-09-24");
+    expect(authz).toBeUndefined();
+    const http = await source(async () => new Response("bad", { status: 403 })).read("2026-09-24");
+    expect(http).toBeUndefined();
+    const malformed = await source(async () => new Response(JSON.stringify({ data: { viewer: { accounts: [{ aiInferenceAdaptiveGroups: [{ sum: { totalNeurons: "lots" } }] }] } } }), { status: 200 })).read("2026-09-24");
+    expect(malformed).toBeUndefined();
+    const threw = await source((async () => { throw new Error("offline"); }) as typeof fetch).read("2026-09-24");
+    expect(threw).toBeUndefined();
+  });
+
+  it("returns undefined without credentials and caches reads within the TTL", async () => {
+    const noToken = new GraphqlCloudflareUsageSource({ resolveToken: () => undefined, resolveAccountId: () => "acct", fetchFn: async () => new Response("x") });
+    expect(await noToken.read("2026-09-24")).toBeUndefined();
+
+    let calls = 0;
+    const counting = source(async () => {
+      calls++;
+      return new Response(JSON.stringify({ data: { viewer: { accounts: [{ aiInferenceAdaptiveGroups: [{ sum: { totalNeurons: 7 } }] }] } } }), { status: 200 });
+    });
+    expect((await counting.read("2026-09-24"))?.usedNeurons).toBe(7);
+    expect((await counting.read("2026-09-24"))?.usedNeurons).toBe(7);
+    expect(calls).toBe(1);
+    expect(await counting.read("2026-09-25")).toBeDefined();
+    expect(calls).toBe(2);
   });
 });

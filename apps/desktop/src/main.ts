@@ -38,7 +38,7 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
 import { CodeForgeServer, type CodeForgeRuntimeStatus } from "@codeforge/server";
 import { ExtensionManager, MarketplaceClient, MarketplaceError, type ExtensionRecord, type ExtensionStateStore, type MarketplaceCatalogEntry, type MarketplaceSource, type SecretStore } from "@codeforge/plugins";
 import { ForgeZero, createGenericFreeRecord, hashUserAccountIdentity, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog, createMockProvider, createProviderAdapterFromDefinition, HostedProviderAdapter, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent, type ProviderResponseObservation } from "@codeforge/providers";
+import { InMemoryProviderCatalog, createMockProvider, createProviderAdapterFromDefinition, HostedProviderAdapter, CloudflareNeuronBudgetGuard, FileCloudflareNeuronBudgetStore, GraphqlCloudflareUsageSource, configFieldKey, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent, type ProviderResponseObservation } from "@codeforge/providers";
 import { createPaidAutoService } from "@codeforge/paid-auto";
 import {
   NormalizedModelRegistry,
@@ -995,6 +995,31 @@ const providerOracle: ProviderAvailabilityOracle = {
 };
 
 /** Build + register a provider adapter by id from its definition using the desktop credential store. Idempotent. */
+let cloudflareNeuronGuard: CloudflareNeuronBudgetGuard | null = null;
+
+/**
+ * Workers AI needs an account-level usage oracle before the adapter may spend neurons: the
+ * GraphQL analytics read tells us the whole account's day usage (including consumers outside
+ * this process), and the file ledger keeps our own reservations durable across restarts. A
+ * token without analytics read still resolves — the guard then fails closed, which is the
+ * designed behavior for unknown account state, now with a diagnosable source.
+ */
+function buildCloudflareNeuronGuard(): CloudflareNeuronBudgetGuard {
+  if (cloudflareNeuronGuard) return cloudflareNeuronGuard;
+  const store = desktopCredentialStore;
+  cloudflareNeuronGuard = new CloudflareNeuronBudgetGuard({
+    store: new FileCloudflareNeuronBudgetStore(path.join(app.getPath("userData"), "cloudflare-neuron-budget.json")),
+    usageSource: new GraphqlCloudflareUsageSource({
+      resolveToken: () => store?.get("cloudflare-workers-ai"),
+      resolveAccountId: () =>
+        store?.get(configFieldKey("cloudflare-workers-ai", "accountId"))
+        ?? store?.get("cloudflare-account-id")
+        ?? process.env.CLOUDFLARE_ACCOUNT_ID,
+    }),
+  });
+  return cloudflareNeuronGuard;
+}
+
 function registerProviderAdapter(providerId: string): ProviderAdapter | undefined {
   if (!providerCatalog || !desktopCredentialStore) return undefined;
   const existing = providerCatalog.get(providerId);
@@ -1004,6 +1029,7 @@ function registerProviderAdapter(providerId: string): ProviderAdapter | undefine
   const adapter = createProviderAdapterFromDefinition(def, {
     credentialStore: desktopCredentialStore,
     onResponse: freeCloud?.onProviderResponse,
+    cloudflareNeuronGuard: providerId === "cloudflare-workers-ai" ? buildCloudflareNeuronGuard() : undefined,
     geminiFreePolicyGate: providerId === "google" ? providerConnections?.geminiPolicyGate() : undefined,
   });
   if (adapter) {

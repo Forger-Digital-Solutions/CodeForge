@@ -17,10 +17,13 @@ export function parseRouteQuota(headers: Iterable<[string, string]>, now: () => 
     }
     return undefined;
   };
-  const remainingRequests = num("x-ratelimit-remaining-requests", "x-ratelimit-remaining");
-  const limitRequests = num("x-ratelimit-limit-requests", "x-ratelimit-limit");
-  const remainingTokens = num("x-ratelimit-remaining-tokens");
-  const limitTokens = num("x-ratelimit-limit-tokens");
+  // Mistral names its per-minute windows x-ratelimit-*-req-minute / *-tokens-minute — measured
+  // live on codestral 2026-09-24 (124/125 RPM, 624,990/625,000 TPM). Without the suffix these
+  // headers parse to nothing and the route looks unmeasured instead of metered.
+  const remainingRequests = num("x-ratelimit-remaining-requests", "x-ratelimit-remaining", "x-ratelimit-remaining-req-minute");
+  const limitRequests = num("x-ratelimit-limit-requests", "x-ratelimit-limit", "x-ratelimit-limit-req-minute");
+  const remainingTokens = num("x-ratelimit-remaining-tokens", "x-ratelimit-remaining-tokens-minute");
+  const limitTokens = num("x-ratelimit-limit-tokens", "x-ratelimit-limit-tokens-minute");
   const retryAfterMs = parseRetryAfterMs(h.get("retry-after"), now);
   const resetAt = parseResetAt(h.get("x-ratelimit-reset-requests") ?? h.get("x-ratelimit-reset"), now);
   if (remainingRequests === undefined && limitRequests === undefined && remainingTokens === undefined && retryAfterMs === undefined && resetAt === undefined) {
@@ -61,6 +64,25 @@ function parseResetAt(value: string | undefined, now: () => Date): string | unde
   }
   const date = Date.parse(value);
   return Number.isFinite(date) ? new Date(date).toISOString() : undefined;
+}
+
+/**
+ * A declared reset that has already elapsed means the provider refilled its window — the raw
+ * `remaining` is stale. Reporting it forever would strand a pool at zero with no traffic to
+ * refresh the headers (no calls → no observations → still exhausted). The refilled budget is
+ * the window's own declared limit, never an invented number; when no limit was observed the
+ * stale remainder is kept rather than claimed as refilled.
+ */
+export function effectiveQuota(quota: RouteQuota | undefined, now: () => Date = () => new Date()): RouteQuota | undefined {
+  if (!quota?.resetAt) return quota;
+  const reset = Date.parse(quota.resetAt);
+  if (!Number.isFinite(reset) || reset > now().getTime()) return quota;
+  return {
+    ...quota,
+    remainingRequests: quota.limitRequests ?? quota.remainingRequests,
+    remainingTokens: quota.limitTokens ?? quota.remainingTokens,
+    resetAt: undefined,
+  };
 }
 
 /** In-memory per-route quota observations, keyed `${providerId}::${modelId}`. */

@@ -29,7 +29,7 @@ import {
 } from "./free-cloud-registry.js";
 import { PROVIDER_DEFINITIONS, type ProviderDefinition } from "./provider-definitions.js";
 import type { NormalizedModelRegistry } from "./registry.js";
-import { RouteQuotaTracker, parseRouteQuota } from "./quota.js";
+import { RouteQuotaTracker, parseRouteQuota, effectiveQuota } from "./quota.js";
 import { createFreeModelCatalogRefresh, type FreeModelCatalogRefresh, type RefreshOptions } from "./catalog-refresh.js";
 
 /**
@@ -112,14 +112,17 @@ const ROLE_SUITE_REQUESTS = 13;
 const COMPACT_SUITE_REQUESTS = 3;
 
 /** Provider headers only ever report request/token buckets; everything we emit is observed
- *  evidence (`authoritative: true`) or absent — CodeForge never invents quota numbers. */
-function quotaWindows(quota: RouteQuota | undefined, scope: "ORG" | "USER_ACCOUNT"): CapacityWindow[] {
+ *  evidence (`authoritative: true`) or absent — CodeForge never invents quota numbers. An
+ *  elapsed reset refills to the declared limit (`effectiveQuota`) — a stale zero otherwise
+ *  strands the pool forever because no traffic flows to refresh the headers. */
+function quotaWindows(quota: RouteQuota | undefined, scope: "ORG" | "USER_ACCOUNT", now: () => Date): CapacityWindow[] {
+  const effective = effectiveQuota(quota, now);
   const windows: CapacityWindow[] = [];
-  if (quota?.remainingRequests !== undefined || quota?.limitRequests !== undefined) {
-    windows.push({ unit: "requests", limit: quota.limitRequests ?? quota.remainingRequests ?? 0, remaining: quota.remainingRequests ?? 0, resetAt: quota.resetAt ?? NO_RESET, scope, observedAt: quota.observedAt, authoritative: true });
+  if (effective?.remainingRequests !== undefined || effective?.limitRequests !== undefined) {
+    windows.push({ unit: "requests", limit: effective.limitRequests ?? effective.remainingRequests ?? 0, remaining: effective.remainingRequests ?? 0, resetAt: effective.resetAt ?? NO_RESET, scope, observedAt: effective.observedAt, authoritative: true });
   }
-  if (quota?.remainingTokens !== undefined || quota?.limitTokens !== undefined) {
-    windows.push({ unit: "input_tokens", limit: quota.limitTokens ?? quota.remainingTokens ?? 0, remaining: quota.remainingTokens ?? 0, resetAt: quota.resetAt ?? NO_RESET, scope, observedAt: quota.observedAt, authoritative: true });
+  if (effective?.remainingTokens !== undefined || effective?.limitTokens !== undefined) {
+    windows.push({ unit: "input_tokens", limit: effective.limitTokens ?? effective.remainingTokens ?? 0, remaining: effective.remainingTokens ?? 0, resetAt: effective.resetAt ?? NO_RESET, scope, observedAt: effective.observedAt, authoritative: true });
   }
   return windows;
 }
@@ -493,11 +496,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   };
 
   quotaRemaining(providerId: string, modelId: string): number | undefined {
-    return this.quota.remainingRequests(providerId, modelId);
+    return effectiveQuota(this.quota.get(providerId, modelId), this.now)?.remainingRequests;
   }
 
   capacityRoutingAdvice(providerId: string, modelId: string): { scoreAdjustment: number; reasonCodes: string[] } {
-    const quota = this.quota.get(providerId, modelId);
+    const quota = effectiveQuota(this.quota.get(providerId, modelId), this.now);
     if (!quota) return { scoreAdjustment: 0, reasonCodes: ["CAPACITY_UNOBSERVED"] };
 
     const reasons: string[] = [];
@@ -648,7 +651,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
           // picker privilege, not managed-supply eligibility.
           healthy: r.forgeAutoEligible,
           enabled: true,
-          windows: quotaWindows(quota, perUser ? "USER_ACCOUNT" : "ORG"),
+          windows: quotaWindows(quota, perUser ? "USER_ACCOUNT" : "ORG", this.now),
           ...(capacityIdentity !== undefined ? { capacityIdentity } : {}),
         });
       }
@@ -672,7 +675,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         ? conn.userConnectedFree?.capacityPoolId ?? `${conn.providerId}:user:${capacityIdentity}`
         : `shared:${conn.providerId}`;
       if (pools.has(poolId)) continue;
-      const windows: CapacityWindow[] = quotaWindows(this.quota.get(conn.providerId, ""), perUser ? "USER_ACCOUNT" : "ORG");
+      const windows: CapacityWindow[] = quotaWindows(this.quota.get(conn.providerId, ""), perUser ? "USER_ACCOUNT" : "ORG", this.now);
       if (conn.userConnectedFree) {
         windows.push({ unit: "concurrency", limit: conn.userConnectedFree.concurrencyLimit, remaining: conn.userConnectedFree.concurrencyLimit, resetAt: NO_RESET, scope: "USER_ACCOUNT", observedAt, authoritative: true });
         if (conn.userConnectedFree.includedUsageRemainingUsd !== undefined) {

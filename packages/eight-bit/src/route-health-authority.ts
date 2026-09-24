@@ -1013,10 +1013,13 @@ export function rateLimitObservationFromHeaders(input: {
     }
     return undefined;
   };
-  const requestsLimit = num("x-ratelimit-limit-requests", "ratelimit-limit", "x-rate-limit-limit");
-  const requestsRemaining = num("x-ratelimit-remaining-requests", "ratelimit-remaining", "x-rate-limit-remaining");
-  const tokensLimit = num("x-ratelimit-limit-tokens");
-  const tokensRemaining = num("x-ratelimit-remaining-tokens");
+  // Mistral's per-minute windows use -req-minute / -tokens-minute suffixes (measured live
+  // 2026-09-24); Groq/OpenRouter/Cerebras use the standard names. Both shapes are the same
+  // evidence class: the provider's own declared window.
+  const requestsLimit = num("x-ratelimit-limit-requests", "ratelimit-limit", "x-rate-limit-limit", "x-ratelimit-limit-req-minute");
+  const requestsRemaining = num("x-ratelimit-remaining-requests", "ratelimit-remaining", "x-rate-limit-remaining", "x-ratelimit-remaining-req-minute");
+  const tokensLimit = num("x-ratelimit-limit-tokens", "x-ratelimit-limit-tokens-minute");
+  const tokensRemaining = num("x-ratelimit-remaining-tokens", "x-ratelimit-remaining-tokens-minute");
   const retryAfterRaw = map.get("retry-after");
   let retryAfterMs: number | undefined;
   if (retryAfterRaw !== undefined) {

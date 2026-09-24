@@ -492,6 +492,7 @@ export {
   FileCloudflareNeuronBudgetStore,
   InMemoryCloudflareNeuronBudgetStore,
   StaticCloudflareUsageSource,
+  GraphqlCloudflareUsageSource,
   CLOUDFLARE_INCLUDED_DAILY_NEURONS,
   CLOUDFLARE_LLM_NEURON_RATES,
   CLOUDFLARE_NEURON_BUDGET_POLICY_VERSION,

@@ -20,6 +20,9 @@ import {
   createGroqAdapter,
   createCloudflareAdapter,
   createZaiAdapter,
+  CloudflareNeuronBudgetGuard,
+  GraphqlCloudflareUsageSource,
+  InMemoryCloudflareNeuronBudgetStore,
 } from "@codeforge/providers";
 
 const args = process.argv.slice(2);
@@ -69,11 +72,20 @@ function adapterFor(spec, observations) {
   const onResponse = (observation) => observations.push(observation);
   if (spec.id === "groq") return createGroqAdapter({ apiKey: process.env.GROQ_API_KEY, timeoutMs: 60_000, onResponse });
   if (spec.id === "cloudflare-workers-ai") {
+    const token = () => process.env.CLOUDFLARE_API_KEY ?? process.env.CLOUDFLARE_API_TOKEN;
+    const accountId = () => process.env.CLOUDFLARE_ACCOUNT_ID;
     return createCloudflareAdapter({
-      apiKey: process.env.CLOUDFLARE_API_KEY ?? process.env.CLOUDFLARE_API_TOKEN,
-      accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
+      apiKey: token(),
+      accountId: accountId(),
       timeoutMs: 60_000,
       onResponse,
+      // The account-day usage oracle: without it the guard fails closed on every request.
+      // A token lacking analytics read gets CLOUDFLARE_USAGE_UNKNOWN — a diagnosable truth,
+      // not a silent bypass.
+      cloudflareNeuronGuard: new CloudflareNeuronBudgetGuard({
+        store: new InMemoryCloudflareNeuronBudgetStore(),
+        usageSource: new GraphqlCloudflareUsageSource({ resolveToken: token, resolveAccountId: accountId }),
+      }),
     });
   }
   if (spec.id === "zai") return createZaiAdapter({ apiKey: process.env.ZAI_API_KEY ?? process.env.ZHIPU_API_KEY, timeoutMs: 60_000, onResponse });
